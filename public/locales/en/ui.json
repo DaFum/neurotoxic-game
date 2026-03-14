@@ -652,6 +652,7 @@
   "roadieRun.itemTypes.DRUMS": "Drums",
   "roadieRun.itemTypes.GUITAR": "Guitar",
   "roadieRun.itemTypes.unknown": "Unknown item",
+  "save.corruptFailed": "Save file is corrupt or invalid.",
   "save.parseFailed": "Save file parsing failed. Falling back to initial state.",
   "scene.loading": "Loading Scene...",
   "seconds": "{{count}}s",
@@ -828,51 +829,5 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%",
-  "travel.errors.alreadyPlayedHere": "You just played a gig here! Hit the road and find a new crowd.",
-  "overworld.band_hq_button": "BAND HQ",
-  "stash": {
-    "selectMemberFirst": "Select a band member first!",
-    "itemUsed": "{{action}} {{itemName}}!"
-  },
-  "contraband": {
-    "title": "CONTRABAND STASH",
-    "description": "Artifacts and strange detritus gathered from the void. Use with caution.",
-    "targetMemberLabel": "Target Member:",
-    "noItems": "No contraband collected yet.",
-    "useItem": "USE ITEM",
-    "passiveActive": "PASSIVE EFFECT ACTIVE",
-    "close": "CLOSE STASH",
-    "button": "STASH",
-    "requiresTarget": "Requires target member.",
-    "gigs": "GIGS",
-    "applied": "APPLIED",
-    "applyItem": "APPLY EFFECT"
-  },
-  "member": {
-    "unknown": "Unknown"
-  },
-  "item": {
-    "unknown": "Unknown Item",
-    "typeUnknown": "Unknown Type",
-    "descriptionUnknown": "Unknown Description",
-    "type_consumable": "consumable",
-    "type_equipment": "equipment",
-    "type_relic": "Relic"
-  },
-  "postGig": {
-    "harmony": "Harmony",
-    "money": "Money"
-  },
-  "rarity": {
-    "common": "COMMON",
-    "uncommon": "UNCOMMON",
-    "rare": "RARE",
-    "epic": "EPIC"
-  },
-  "stash.actionUsed": "Used",
-  "stash.actionApplied": "Applied",
-  "contraband.dropped": "Found contraband!",
-  "save.parseFailed": "Save file parsing failed. Falling back to initial state.",
-  "save.corruptFailed": "Save file is corrupt or invalid."
+  "volume.set": "Set volume to {{pct}}%"
 }
