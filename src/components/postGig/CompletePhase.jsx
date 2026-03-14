@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
@@ -20,7 +20,8 @@ export const CompletePhase = ({
     return new Intl.NumberFormat(i18n.language || 'en', {
       style: 'currency',
       currency: 'EUR',
-      signDisplay: 'always'
+      signDisplay: 'always',
+      maximumFractionDigits: 0
     })
   }, [i18n.language])
 
