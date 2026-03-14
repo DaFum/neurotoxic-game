@@ -70,7 +70,7 @@ const calculateTicketIncome = (
 ) => {
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
-  // Fame needs to be ~10x capacity to fill it easily
+  // Fame needs to be ~8x capacity to fill it easily
   const fameRatio = Math.min(
     1.0,
     playerFame /
