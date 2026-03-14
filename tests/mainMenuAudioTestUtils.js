@@ -52,7 +52,8 @@ export const setupMainMenuAudioTest = async () => {
   mock.module('react-i18next', {
     namedExports: {
       useTranslation: mockUseTranslation,
-      Trans: ({ i18nKey }) => i18nKey
+      Trans: ({ i18nKey }) => i18nKey,
+      initReactI18next: { type: '3rdParty', init: () => {} }
     }
   })
 

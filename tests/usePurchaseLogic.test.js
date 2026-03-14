@@ -2,15 +2,31 @@ import { describe, test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
+// Initialize i18n to prevent Suspense fallback from returning null
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
 import { usePurchaseLogic } from '../src/hooks/usePurchaseLogic.js'
 
 describe('usePurchaseLogic', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     setupJSDOM()
+    if (!i18n.isInitialized) {
+      await i18n.use(initReactI18next).init({
+        lng: 'en',
+        fallbackLng: 'en',
+        resources: {
+          en: { ui: {}, items: {} }
+        },
+        react: { useSuspense: false }
+      })
+    }
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     cleanup()
+    // Give promises a tick to flush out React renders
+    await new Promise(resolve => setTimeout(resolve, 0))
     teardownJSDOM()
   })
 

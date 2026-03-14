@@ -8,17 +8,16 @@ import {
 
 /**
  * Integration tests for contraband data usage patterns
- * Ensures the removal of imagePrompt doesn't break expected workflows
+ * Ensures the presence of imagePrompt and that related workflows behave as expected
  */
 describe('Contraband Integration Tests', () => {
   describe('Item consumption workflow', () => {
-    it('should allow consumable items to be used without imagePrompt field', () => {
+    it('should allow consumable items to be used with imagePrompt field', () => {
       const consumableItem = CONTRABAND_DB.find(
         item => item.type === 'consumable'
       )
       assert.ok(consumableItem, 'Should have at least one consumable item')
 
-      // Simulate using the item - should not require imagePrompt
       const itemData = {
         ...consumableItem,
         quantity: 1
@@ -27,49 +26,47 @@ describe('Contraband Integration Tests', () => {
       assert.ok(itemData.id)
       assert.ok(itemData.effectType)
       assert.ok(typeof itemData.value === 'number')
-      assert.equal(itemData.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(itemData, 'imagePrompt'), true)
     })
 
-    it('should handle equipment items without imagePrompt field', () => {
+    it('should handle equipment items with imagePrompt field', () => {
       const equipmentItem = CONTRABAND_DB.find(
         item => item.type === 'equipment'
       )
       assert.ok(equipmentItem, 'Should have at least one equipment item')
 
-      // Equipment should have icon instead of imagePrompt
       assert.ok(equipmentItem.icon)
-      assert.equal(equipmentItem.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(equipmentItem, 'imagePrompt'), true)
       assert.equal(equipmentItem.applyOnAdd, true)
     })
   })
 
   describe('Item rendering data', () => {
-    it('should use icon field for all visual representation', () => {
+    it('should have imagePrompt for all visual representation alongside icon', () => {
       for (const item of CONTRABAND_DB) {
-        // Icon should be the source of visual data, not imagePrompt
         assert.ok(
           typeof item.icon === 'string' && item.icon.length > 0,
           `Item ${item.id} should have a valid icon field for rendering`
         )
         assert.equal(
-          item.hasOwnProperty('imagePrompt'),
-          false,
-          `Item ${item.id} should not have imagePrompt field`
+          Object.hasOwn(item, 'imagePrompt'),
+          true,
+          `Item ${item.id} should have imagePrompt field`
         )
       }
     })
 
-    it('should provide all necessary data for UI display without imagePrompt', () => {
+    it('should provide all necessary data for UI display with imagePrompt', () => {
       const randomItem = CONTRABAND_DB[0]
 
-      // Verify all UI-necessary fields exist without imagePrompt
       const uiFields = {
         id: randomItem.id,
         name: randomItem.name,
         description: randomItem.description,
         icon: randomItem.icon,
         rarity: randomItem.rarity,
-        type: randomItem.type
+        type: randomItem.type,
+        imagePrompt: randomItem.imagePrompt
       }
 
       for (const [field, value] of Object.entries(uiFields)) {
@@ -78,91 +75,67 @@ describe('Contraband Integration Tests', () => {
           `UI field ${field} should be present`
         )
       }
-
-      assert.equal(
-        randomItem.hasOwnProperty('imagePrompt'),
-        false,
-        'UI display should not depend on imagePrompt'
-      )
     })
   })
 
   describe('Loot drop system integration', () => {
-    it('should support loot generation without imagePrompt', () => {
-      // Simulate loot drop from each rarity tier
+    it('should support loot generation with imagePrompt', () => {
       for (const rarity of ['common', 'uncommon', 'rare', 'epic']) {
         const items = CONTRABAND_BY_RARITY[rarity]
         assert.ok(items.length > 0, `Should have items for ${rarity}`)
 
         const droppedItem = items[0]
-        // Verify dropped item has all necessary fields without imagePrompt
         assert.ok(droppedItem.id)
         assert.ok(droppedItem.icon)
         assert.ok(droppedItem.name)
-        assert.equal(droppedItem.hasOwnProperty('imagePrompt'), false)
+        assert.equal(Object.hasOwn(droppedItem, 'imagePrompt'), true)
       }
     })
   })
 
   describe('Inventory management integration', () => {
-    it('should support stacking logic without imagePrompt', () => {
+    it('should support stacking logic with imagePrompt intact', () => {
       const stackableItems = CONTRABAND_DB.filter(item => item.stackable)
       assert.ok(stackableItems.length > 0, 'Should have stackable items')
 
       for (const item of stackableItems) {
-        // Verify stacking logic only needs these fields
         assert.ok(item.id, 'Need id for stacking')
         assert.equal(item.stackable, true, 'Need stackable flag')
 
-        // maxStacks can be undefined for unlimited stacking
         if (item.maxStacks !== undefined) {
           assert.ok(item.maxStacks > 0, 'maxStacks should be positive')
         }
 
-        assert.equal(
-          item.hasOwnProperty('imagePrompt'),
-          false,
-          'Stacking logic should not need imagePrompt'
-        )
+        assert.equal(Object.hasOwn(item, 'imagePrompt'), true)
       }
     })
 
-    it('should support effect application without imagePrompt', () => {
+    it('should support effect application with imagePrompt intact', () => {
       const effectItems = CONTRABAND_DB.filter(item => item.applyOnAdd)
       assert.ok(effectItems.length > 0, 'Should have effect items')
 
       for (const item of effectItems) {
-        // Verify effect application only needs these fields
         assert.ok(item.effectType, 'Need effectType')
         assert.ok(typeof item.value === 'number', 'Need value')
         assert.equal(item.applyOnAdd, true, 'Need applyOnAdd flag')
-
-        assert.equal(
-          item.hasOwnProperty('imagePrompt'),
-          false,
-          'Effect system should not need imagePrompt'
-        )
+        assert.equal(Object.hasOwn(item, 'imagePrompt'), true)
       }
     })
   })
 
   describe('Persistence and serialization', () => {
-    it('should serialize/deserialize items without imagePrompt', () => {
+    it('should serialize/deserialize items with imagePrompt', () => {
       const item = CONTRABAND_DB[0]
 
-      // Simulate save/load cycle
       const serialized = JSON.stringify(item)
       const deserialized = JSON.parse(serialized)
 
-      // Verify all important data survives serialization
       assert.equal(deserialized.id, item.id)
       assert.equal(deserialized.name, item.name)
       assert.equal(deserialized.icon, item.icon)
       assert.equal(deserialized.rarity, item.rarity)
       assert.equal(deserialized.type, item.type)
-
-      // Verify imagePrompt is not in serialized data
-      assert.equal(deserialized.hasOwnProperty('imagePrompt'), false)
+      assert.equal(deserialized.imagePrompt, item.imagePrompt)
     })
 
     it('should have consistent item structure for all items', () => {
@@ -192,40 +165,21 @@ describe('Contraband Integration Tests', () => {
           )
         }
 
-        // imagePrompt should never be present
         assert.ok(
-          !itemKeys.includes('imagePrompt'),
-          `Item ${item.id} should not have imagePrompt`
+          Object.hasOwn(item, 'imagePrompt'),
+          `Item ${item.id} should have imagePrompt`
         )
       }
     })
   })
 
   describe('Backward compatibility', () => {
-    it('should work with code that checks for icon presence', () => {
-      // Old code might check for icon OR imagePrompt
-      // Verify all items have icon (new way)
-      for (const item of CONTRABAND_DB) {
-        const hasVisual = item.icon || item.imagePrompt
-        assert.ok(
-          hasVisual,
-          `Item ${item.id} should have a visual representation`
-        )
-        assert.ok(item.icon, `Item ${item.id} should specifically have icon`)
-      }
-    })
-
-    it('should not break lookup by ID after imagePrompt removal', () => {
-      // Verify Map lookup still works
+    it('should not break lookup by ID', () => {
       for (const item of CONTRABAND_DB) {
         const lookedUp = CONTRABAND_BY_ID.get(item.id)
         assert.ok(lookedUp, `Should find item ${item.id}`)
         assert.deepEqual(lookedUp, item, 'Looked up item should match')
-        assert.equal(
-          lookedUp.hasOwnProperty('imagePrompt'),
-          false,
-          'Looked up item should not have imagePrompt'
-        )
+        assert.equal(Object.hasOwn(lookedUp, 'imagePrompt'), true)
       }
     })
   })

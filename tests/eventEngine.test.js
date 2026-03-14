@@ -19,7 +19,7 @@ const mockLogger = {
 }
 
 mock.module('../src/utils/logger.js', {
-  namedExports: { logger: mockLogger }
+  namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }, Logger: class Logger {} }
 })
 
 mock.module('../src/data/events/index.js', {
