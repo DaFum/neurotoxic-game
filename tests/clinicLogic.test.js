@@ -17,6 +17,7 @@ test('clinicReducer', async t => {
 
       const payload = {
         memberId: 'm1',
+        type: 'heal',
         cost: 100,
         fameCost: 0,
         staminaGain: 60, // Should clamp to 100
@@ -25,7 +26,7 @@ test('clinicReducer', async t => {
 
       const nextState = handleClinicHeal(state, payload)
 
-      assert.equal(nextState.player.money, 400)
+      assert.equal(nextState.player.money, 350)
       assert.equal(nextState.player.clinicVisits, 1)
       assert.equal(nextState.band.members[0].stamina, 100)
       assert.equal(nextState.band.members[0].mood, 60)
@@ -38,7 +39,8 @@ test('clinicReducer', async t => {
         band: { members: [{ id: 'm1', stamina: 50, mood: 50 }] }
       }
 
-      const payload = { memberId: 'm1', cost: 100 }
+      const payload = { memberId: 'm1', type: 'heal',
+        cost: 100 }
       const nextState = handleClinicHeal(state, payload)
 
       assert.equal(nextState, state) // Returns original state
@@ -58,6 +60,7 @@ test('clinicReducer', async t => {
 
       const payload = {
         memberId: 'm1',
+        type: 'enhance',
         cost: 0,
         fameCost: 500,
         trait: 'cyber_lungs'
@@ -77,7 +80,9 @@ test('clinicReducer', async t => {
         band: { members: [{ id: 'm1', traits: [] }] }
       }
 
-      const payload = { memberId: 'm1', cost: 0, fameCost: 100 }
+      const payload = { memberId: 'm1', type: 'enhance',
+        cost: 0,
+        fameCost: 100 }
       const nextState = handleClinicEnhance(state, payload)
 
       assert.equal(nextState, state)
@@ -95,6 +100,7 @@ test('clinicReducer', async t => {
 
       const payload = {
         memberId: 'm1',
+        type: 'enhance',
         cost: 0,
         fameCost: 500,
         trait: 'cyber_lungs'

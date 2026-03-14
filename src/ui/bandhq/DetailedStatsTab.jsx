@@ -14,7 +14,7 @@ const isUnlocked = val => {
 }
 
 const CHAR_MAP = Object.fromEntries(
-  Object.values(CHARACTERS).map(c => [c.name, c])
+  Object.values(CHARACTERS).filter(c => c.role !== 'NPC').map(c => [c.name, c])
 )
 
 const DetailRow = ({ label, value, subtext, locked, className = '' }) => (
@@ -436,7 +436,20 @@ const InventoryEquipmentSection = ({ band, t }) => (
 
 const MemberTraits = ({ member, t }) => {
   const def = CHAR_MAP[member.name]
-  const potentialTraits = def?.traits || []
+  // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
+  const baseTraits = def?.traits || []
+  const runtimeTraits = member?.traits || []
+
+  // Build a unique list of traits to display
+  const allTraitsMap = new Map()
+  baseTraits.forEach(bt => allTraitsMap.set(bt.id, bt))
+  runtimeTraits.forEach(rt => {
+    if (!allTraitsMap.has(rt.id)) {
+      allTraitsMap.set(rt.id, rt)
+    }
+  })
+
+  const potentialTraits = Array.from(allTraitsMap.values())
   if (potentialTraits.length === 0)
     return (
       <div className='text-xs text-ash-gray'>

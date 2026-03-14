@@ -38,7 +38,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByText('VIRAL HIT!')).toBeTruthy()
+    expect(screen.getByText('ui:postGig.viralHit')).toBeTruthy()
     expect(screen.getByText('Your post went viral!')).toBeTruthy()
   })
 
@@ -58,7 +58,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByText('FLOPOCOLYPSE')).toBeTruthy()
+    expect(screen.getByText('ui:postGig.flop')).toBeTruthy()
   })
 
   test('displays follower count with platform', async () => {
@@ -75,7 +75,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByText('+1000 Followers')).toBeTruthy()
+    expect(screen.getByText('+1000 ui:postGig.followers')).toBeTruthy()
     expect(screen.getByText('Instagram')).toBeTruthy()
   })
 
@@ -95,7 +95,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByText('-100 Followers')).toBeTruthy()
+    expect(screen.getByText('-100 ui:postGig.followers')).toBeTruthy()
   })
 
   test('shows money change when present', async () => {
@@ -129,7 +129,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(container.textContent).toContain('Harmony')
+    expect(container.textContent).toContain('ui:postGig.harmony')
     expect(container.textContent).toContain('+10')
   })
 
@@ -147,7 +147,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(container.textContent).toContain('Controversy')
+    expect(container.textContent).toContain('ui:postGig.controversy')
     expect(container.textContent).toContain('+5')
   })
 
@@ -167,7 +167,7 @@ describe('CompletePhase', () => {
     )
 
     const continueButton = screen.getByRole('button', {
-      name: /back to tour/i
+      name: /ui:postGig.backToTour/i
     })
     await user.click(continueButton)
 
@@ -191,7 +191,7 @@ describe('CompletePhase', () => {
     )
 
     const spinButton = screen.queryByRole('button', {
-      name: /spin story/i
+      name: /ui:postGig.spinStory/i
     })
     expect(spinButton).toBeTruthy()
   })
@@ -215,7 +215,7 @@ describe('CompletePhase', () => {
     )
 
     const spinButton = screen.queryByRole('button', {
-      name: /spin story/i
+      name: /ui:postGig.spinStory/i
     })
     expect(spinButton).toBeFalsy()
   })
@@ -239,7 +239,7 @@ describe('CompletePhase', () => {
     )
 
     const spinButton = screen.queryByRole('button', {
-      name: /spin story/i
+      name: /ui:postGig.spinStory/i
     })
     expect(spinButton).toBeFalsy()
   })
@@ -262,7 +262,7 @@ describe('CompletePhase', () => {
     )
 
     const spinButton = screen.getByRole('button', {
-      name: /spin story/i
+      name: /ui:postGig.spinStory/i
     })
     await user.click(spinButton)
 
@@ -283,7 +283,7 @@ describe('CompletePhase', () => {
 
     render(<CompletePhase result={minimalResult} onContinue={mockContinue} />)
 
-    expect(screen.getByText('VIRAL HIT!')).toBeTruthy()
+    expect(screen.getByText('ui:postGig.viralHit')).toBeTruthy()
   })
 
   test('applies correct color styling for positive money change', async () => {

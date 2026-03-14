@@ -7,7 +7,7 @@ import {
   createChangeSceneAction,
   createAddToastAction
 } from '../context/actionCreators'
-import { GAME_PHASES, CLINIC_CONFIG } from '../context/gameConstants'
+import { GAME_PHASES, CLINIC_CONFIG, calculateClinicCost } from '../context/gameConstants'
 
 export const useClinicLogic = () => {
   const { t } = useTranslation(['ui'])
@@ -15,13 +15,8 @@ export const useClinicLogic = () => {
 
   const currentVisits = player?.clinicVisits || 0
 
-  const calculateCost = useCallback(
-    baseCost => Math.floor(baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)),
-    [currentVisits]
-  )
-
-  const healCostMoney = calculateCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY)
-  const enhanceCostFame = calculateCost(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME)
+  const healCostMoney = calculateClinicCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY, currentVisits)
+  const enhanceCostFame = calculateClinicCost(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME, currentVisits)
 
   const healMember = useCallback(
     memberId => {

@@ -387,8 +387,7 @@ export const createUseContrabandAction = (instanceId, memberId) => ({
  * Creates an action to heal a band member in the Void Clinic.
  * @param {Object} payload
  * @param {string} payload.memberId - The ID of the band member.
- * @param {number} payload.cost - The monetary cost of the heal.
- * @param {number} payload.fameCost - The fame cost of the heal.
+ * @param {string} payload.type - Action type ('heal' or 'enhance') used to compute cost.
  * @param {number} payload.staminaGain - The amount of stamina gained.
  * @param {number} payload.moodGain - The amount of mood gained.
  * @returns {Object} Action object
@@ -402,8 +401,7 @@ export const createClinicHealAction = payload => ({
  * Creates an action to enhance a band member in the Void Clinic.
  * @param {Object} payload
  * @param {string} payload.memberId - The ID of the band member.
- * @param {number} payload.cost - The monetary cost of the enhancement.
- * @param {number} payload.fameCost - The fame cost of the enhancement.
+ * @param {string} payload.type - Action type ('heal' or 'enhance') used to compute cost.
  * @param {string} payload.trait - The ID of the trait to graft.
  * @returns {Object} Action object
  */

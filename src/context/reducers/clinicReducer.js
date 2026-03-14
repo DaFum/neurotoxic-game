@@ -1,3 +1,4 @@
+import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants.js'
 import { logger } from '../../utils/logger'
 import { clampPlayerMoney } from '../../utils/gameStateUtils.js'
 import { getTraitById } from '../../utils/traitUtils.js'
@@ -9,16 +10,14 @@ import { getTraitById } from '../../utils/traitUtils.js'
  * @param {Function} memberUpdater - A function to apply updates to the target member.
  * @returns {Object} The updated state or the original state if validation fails.
  */
-import { CLINIC_CONFIG } from '../gameConstants.js'
+
 
 const executeClinicAction = (state, payload, memberUpdater) => {
   const { memberId, type } = payload
   const currentVisits = state.player?.clinicVisits || 0
-  const costMultiplier = Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)
-
   // Calculate costs directly from state
-  const cost = type === 'heal' ? Math.floor(CLINIC_CONFIG.HEAL_BASE_COST_MONEY * costMultiplier) : 0
-  const fameCost = type === 'enhance' ? Math.floor(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME * costMultiplier) : 0
+  const cost = type === 'heal' ? calculateClinicCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY, currentVisits) : 0
+  const fameCost = type === 'enhance' ? calculateClinicCost(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME, currentVisits) : 0
 
   if (!state.player || !state.band) {
     logger.warn('ClinicReducer', 'Missing player or band state')
@@ -71,8 +70,7 @@ const executeClinicAction = (state, payload, memberUpdater) => {
  * @param {Object} state - The current game state.
  * @param {Object} payload - The payload containing the requested changes.
  * @param {string} payload.memberId - The ID of the band member to heal.
- * @param {number} payload.cost - The money cost.
- * @param {number} payload.fameCost - The fame cost.
+ * @param {string} payload.type - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
  * @param {number} payload.staminaGain - The stamina gain.
  * @param {number} payload.moodGain - The mood gain.
  * @returns {Object} The updated game state.
@@ -92,8 +90,7 @@ export const handleClinicHeal = (state, payload) => {
  * @param {Object} state - The current game state.
  * @param {Object} payload - The payload containing the requested changes.
  * @param {string} payload.memberId - The ID of the band member.
- * @param {number} payload.cost - The money cost.
- * @param {number} payload.fameCost - The fame cost.
+ * @param {string} payload.type - Must be 'heal' or 'enhance'. Used to compute cost from CLINIC_CONFIG.
  * @param {string} payload.trait - The trait to add or upgrade.
  * @returns {Object} The updated game state.
  */
