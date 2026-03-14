@@ -37,7 +37,10 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 })
 
 mock.module('../src/utils/traitUtils.js', {
-  namedExports: { applyTraitUnlocks: mockApplyTraitUnlocks }
+  namedExports: {
+    applyTraitUnlocks: mockApplyTraitUnlocks,
+    getTraitById: mock.fn(() => ({ id: 'mock_trait' }))
+  }
 })
 
 // Import SUT after mocking
@@ -624,7 +627,8 @@ describe('ActionTypes', () => {
       'CONSUME_ITEM',
       'ADVANCE_DAY',
       'UNLOCK_TRAIT',
-      'ADD_UNLOCK'
+      'ADD_UNLOCK',
+      'PIRATE_BROADCAST'
     ]
 
     expectedTypes.forEach(type => {
