@@ -8,7 +8,7 @@ import {
 
 /**
  * Integration tests for contraband data usage patterns
- * Ensures the removal of imagePrompt doesn't break expected workflows
+ * Ensures the presence of imagePrompt and that related workflows behave as expected
  */
 describe('Contraband Integration Tests', () => {
   describe('Item consumption workflow', () => {

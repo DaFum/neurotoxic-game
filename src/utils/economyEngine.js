@@ -690,8 +690,9 @@ export const calculateKabelsalatMinigameResult = (results, bandState) => {
     stress = 15
   } else {
     // Success! Reward based on time remaining
-    const timeBonus = Math.floor(results.timeLeft / 5)
-    reward = 60 + timeBonus * 15 // Base 60, scaling better for quick completion
+    const validTimeLeft = Number.isFinite(results.timeLeft) ? results.timeLeft : 0
+    const timeBonus = Math.max(0, Math.floor(validTimeLeft / 5))
+    reward = Math.max(0, 60 + timeBonus * 15) // Base 60, scaling better for quick completion
 
     // Tech Wizard trait increases rewards
     if (bandHasTrait(bandState, 'tech_wizard')) {
