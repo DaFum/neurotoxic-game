@@ -70,6 +70,8 @@ export const useClinicLogic = () => {
       const member = band?.members?.find(m => m.id === memberId)
       if (!member) return
 
+      if (member.traits && member.traits.some(t => t.id === trait)) return
+
       if (player.fame < enhanceCostFame) {
         dispatch(
           createAddToastAction({

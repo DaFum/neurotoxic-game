@@ -27,7 +27,7 @@ describe('Contraband Integration Tests', () => {
       assert.ok(itemData.id)
       assert.ok(itemData.effectType)
       assert.ok(typeof itemData.value === 'number')
-      assert.equal(itemData.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(itemData, 'imagePrompt'), false)
     })
 
     it('should handle equipment items without imagePrompt field', () => {
@@ -38,7 +38,7 @@ describe('Contraband Integration Tests', () => {
 
       // Equipment should have icon instead of imagePrompt
       assert.ok(equipmentItem.icon)
-      assert.equal(equipmentItem.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(equipmentItem, 'imagePrompt'), false)
       assert.equal(equipmentItem.applyOnAdd, true)
     })
   })
@@ -52,7 +52,7 @@ describe('Contraband Integration Tests', () => {
           `Item ${item.id} should have a valid icon field for rendering`
         )
         assert.equal(
-          item.hasOwnProperty('imagePrompt'),
+          Object.hasOwn(item, 'imagePrompt'),
           false,
           `Item ${item.id} should not have imagePrompt field`
         )
@@ -80,7 +80,7 @@ describe('Contraband Integration Tests', () => {
       }
 
       assert.equal(
-        randomItem.hasOwnProperty('imagePrompt'),
+        Object.hasOwn(randomItem, 'imagePrompt'),
         false,
         'UI display should not depend on imagePrompt'
       )
@@ -99,7 +99,7 @@ describe('Contraband Integration Tests', () => {
         assert.ok(droppedItem.id)
         assert.ok(droppedItem.icon)
         assert.ok(droppedItem.name)
-        assert.equal(droppedItem.hasOwnProperty('imagePrompt'), false)
+        assert.equal(Object.hasOwn(droppedItem, 'imagePrompt'), false)
       }
     })
   })
@@ -120,7 +120,7 @@ describe('Contraband Integration Tests', () => {
         }
 
         assert.equal(
-          item.hasOwnProperty('imagePrompt'),
+          Object.hasOwn(item, 'imagePrompt'),
           false,
           'Stacking logic should not need imagePrompt'
         )
@@ -138,7 +138,7 @@ describe('Contraband Integration Tests', () => {
         assert.equal(item.applyOnAdd, true, 'Need applyOnAdd flag')
 
         assert.equal(
-          item.hasOwnProperty('imagePrompt'),
+          Object.hasOwn(item, 'imagePrompt'),
           false,
           'Effect system should not need imagePrompt'
         )
@@ -162,7 +162,7 @@ describe('Contraband Integration Tests', () => {
       assert.equal(deserialized.type, item.type)
 
       // Verify imagePrompt is not in serialized data
-      assert.equal(deserialized.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(deserialized, 'imagePrompt'), false)
     })
 
     it('should have consistent item structure for all items', () => {
@@ -222,7 +222,7 @@ describe('Contraband Integration Tests', () => {
         assert.ok(lookedUp, `Should find item ${item.id}`)
         assert.deepEqual(lookedUp, item, 'Looked up item should match')
         assert.equal(
-          lookedUp.hasOwnProperty('imagePrompt'),
+          Object.hasOwn(lookedUp, 'imagePrompt'),
           false,
           'Looked up item should not have imagePrompt'
         )

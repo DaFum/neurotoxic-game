@@ -12,7 +12,7 @@ describe('Contraband Schema (Post-imagePrompt Removal)', () => {
     it('should have all items without imagePrompt field', () => {
       for (const item of CONTRABAND_DB) {
         assert.equal(
-          item.hasOwnProperty('imagePrompt'),
+          Object.hasOwn(item, 'imagePrompt'),
           false,
           `Item ${item.id} should not have imagePrompt field`
         )
@@ -33,7 +33,7 @@ describe('Contraband Schema (Post-imagePrompt Removal)', () => {
       for (const item of CONTRABAND_DB) {
         for (const field of requiredFields) {
           assert.ok(
-            item.hasOwnProperty(field),
+            Object.hasOwn(item, field),
             `Item ${item.id} is missing required field: ${field}`
           )
           assert.ok(
@@ -203,7 +203,7 @@ describe('Contraband Schema (Post-imagePrompt Removal)', () => {
     it('should have c_void_energy without imagePrompt', () => {
       const item = CONTRABAND_BY_ID.get('c_void_energy')
       assert.ok(item, 'c_void_energy not found')
-      assert.equal(item.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(item, 'imagePrompt'), false)
       assert.equal(item.icon, 'icon_void_energy')
       assert.equal(item.type, 'consumable')
     })
@@ -211,7 +211,7 @@ describe('Contraband Schema (Post-imagePrompt Removal)', () => {
     it('should have c_cursed_pick without imagePrompt', () => {
       const item = CONTRABAND_BY_ID.get('c_cursed_pick')
       assert.ok(item, 'c_cursed_pick not found')
-      assert.equal(item.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(item, 'imagePrompt'), false)
       assert.equal(item.icon, 'icon_cursed_pick')
       assert.equal(item.effectType, 'guitar_difficulty')
     })
@@ -219,7 +219,7 @@ describe('Contraband Schema (Post-imagePrompt Removal)', () => {
     it('should have c_broken_compass without imagePrompt', () => {
       const item = CONTRABAND_BY_ID.get('c_broken_compass')
       assert.ok(item, 'c_broken_compass not found')
-      assert.equal(item.hasOwnProperty('imagePrompt'), false)
+      assert.equal(Object.hasOwn(item, 'imagePrompt'), false)
       assert.equal(item.icon, 'icon_compass')
       assert.equal(item.type, 'equipment')
     })
