@@ -84,7 +84,6 @@
   "contract.p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzufügen</0>.",
   "contract.sealed": "VERSIEGELT",
   "contract.sig": "UNTERSCHRIFT (BLUT/VOID):",
-  "contract.sign_aria": "Vertrag unterschreiben",
   "contract.title": "Bindende Vereinbarung",
   "contract.warning": "Zuwiderhandlung führt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
   "cost": "{{cost}} €",
@@ -857,5 +856,7 @@
   "pirate_radio.harmony_cost": "HARMONIE VERLUST",
   "pirate_radio.button": "PIRATENSENDER",
   "pirate_radio.success": "Übertragung beendet. Das Signal lebt. Fame +{{deltaFame}}, Zealotry +{{deltaZealotry}}, Kontroverse +{{deltaControversy}}, Harmonie {{deltaHarmony}}, Kosten {{cost}}€.",
-  "pirate_radio.required_offering": "[ BENÖTIGTES OPFER ]"
+  "pirate_radio.required_offering": "[ BENÖTIGTES OPFER ]",
+  "contract.sign_aria": "Vertrag unterschreiben",
+  "button.sign": "UNTERSCHREIBEN"
 }

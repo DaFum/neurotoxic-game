@@ -100,8 +100,13 @@ export const useKabelsalatState = () => {
     if (isGameOver && !transitionedRef.current) {
       transitionedRef.current = true
       const timer = setTimeout(() => {
-        completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
-        changeScene(GAME_PHASES.GIG)
+        try {
+          completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
+          changeScene(GAME_PHASES.GIG)
+        } catch (error) {
+          logger.error('Kabelsalat', 'Failed to complete minigame', error)
+          changeScene(GAME_PHASES.GIG)
+        }
       }, 3500)
       return () => clearTimeout(timer)
     }

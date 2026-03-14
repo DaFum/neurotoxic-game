@@ -1539,9 +1539,11 @@ export const SelloutContract = memo(() => {
               <button
                 type='button'
                 aria-label={t('ui:contract.sign_aria')}
-                className='h-8 border-b-2 border-toxic-green w-full cursor-pointer hover:bg-toxic-green/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+                className='h-8 border-b-2 border-toxic-green w-full cursor-pointer hover:bg-toxic-green/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green flex items-center justify-center font-bold tracking-widest text-toxic-green/50 hover:text-toxic-green text-xs'
                 onClick={() => setSigned(true)}
-              ></button>
+              >
+                [ {t('ui:button.sign', { defaultValue: 'SIGN' })} ]
+              </button>
             )}
           </div>
 
