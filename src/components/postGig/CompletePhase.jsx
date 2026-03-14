@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +15,14 @@ export const CompletePhase = ({
   const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
+
+  const currencyFormatter = useMemo(() => {
+    return new Intl.NumberFormat(i18n.language || 'en', {
+      style: 'currency',
+      currency: 'EUR',
+      signDisplay: 'always'
+    })
+  }, [i18n.language])
 
   const getOutcomeImagePrompt = () => {
     if (result.success) {
@@ -92,12 +101,7 @@ export const CompletePhase = ({
                 result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
               }
             >
-              💰{' '}
-              {new Intl.NumberFormat(i18n.language || 'en', {
-                style: 'currency',
-                currency: 'EUR',
-                signDisplay: 'always'
-              }).format(result.moneyChange)}
+              💰 {currencyFormatter.format(result.moneyChange)}
             </div>
           ) : null}
 

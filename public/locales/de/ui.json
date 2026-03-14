@@ -515,6 +515,11 @@
     "harmony": "Harmonie",
     "money": "Geld",
     "mood": "Stimmung",
+    "platforms": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube"
+    },
     "socialPhase": {
       "altZealotryCult": "Zealot-Kult"
     },
@@ -811,6 +816,24 @@
   "travel.repair.notEnoughMoney": "Nicht genug Geld! Du brauchst {{cost}}€ für die Reparatur.",
   "travel.repair.repaired": "Repariert: -{{cost}}€",
   "travel.repair.vanAlreadyPerfect": "Der Van ist bereits in perfektem Zustand!",
+  "tutorial": {
+    "map": {
+      "text": "Reise zwischen Städten, um Gigs zu spielen. Reisen kostet Treibstoff und Zeit. Achte auf deine Vorräte.",
+      "title": "DIE KARTE"
+    },
+    "perform": {
+      "text": "Triff die Noten, wenn sie unten ankommen. Pfeiltasten oder klicke auf die Spuren. Hohe Combo = Mehr Ruhm.",
+      "title": "AUFTRITT"
+    },
+    "stats": {
+      "text": "Behalte die Gesundheit (Stimmung) und das Geld im Auge. Wenn das Geld auf 0 fällt, ist das Spiel vorbei. Wenn die Stimmung auf 0 fällt, löst sich die Band auf.",
+      "title": "WERTE"
+    },
+    "welcome": {
+      "text": "Du bist der Manager von NEUROTOXIC. Dein Ziel: Überlebe die Tour, erlange Ruhm und geh nicht pleite.",
+      "title": "WILLKOMMEN IM GRIND"
+    }
+  },
   "tutorial.ariaLabel": "Tutorial",
   "tutorial.done": "FERTIG",
   "tutorial.header": "TUTORIAL {{current}}/{{total}}",
