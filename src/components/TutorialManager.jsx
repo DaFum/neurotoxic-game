@@ -35,22 +35,33 @@ export const TutorialManager = () => {
         currentScene === GAME_PHASES.OVERWORLD)
     ) {
       return {
-        title: 'WELCOME TO THE GRIND',
-        text: "You are the manager of NEUROTOXIC. Your goal: survive the tour, earn fame, and don't go broke.",
+        title: t('ui:tutorial.welcome.title', {
+          defaultValue: 'WELCOME TO THE GRIND'
+        }),
+        text: t('ui:tutorial.welcome.text', {
+          defaultValue:
+            "You are the manager of NEUROTOXIC. Your goal: survive the tour, earn fame, and don't go broke."
+        }),
         target: null // Centered
       }
     }
     if (step === 1 && currentScene === GAME_PHASES.OVERWORLD) {
       return {
-        title: 'THE MAP',
-        text: 'Travel between cities to play Gigs. Traveling costs Fuel and Time. Watch your supplies.',
+        title: t('ui:tutorial.map.title', { defaultValue: 'THE MAP' }),
+        text: t('ui:tutorial.map.text', {
+          defaultValue:
+            'Travel between cities to play Gigs. Traveling costs Fuel and Time. Watch your supplies.'
+        }),
         target: 'map-container'
       }
     }
     if (step === 2 && currentScene === GAME_PHASES.OVERWORLD) {
       return {
-        title: 'STATS',
-        text: 'Keep an eye on Health (Mood) and Money. If Money hits 0, game over. If Mood hits 0, the band breaks up.',
+        title: t('ui:tutorial.stats.title', { defaultValue: 'STATS' }),
+        text: t('ui:tutorial.stats.text', {
+          defaultValue:
+            'Keep an eye on Health (Mood) and Money. If Money hits 0, game over. If Mood hits 0, the band breaks up.'
+        }),
         target: 'hud-stats'
       }
     }
@@ -60,8 +71,11 @@ export const TutorialManager = () => {
         currentScene === GAME_PHASES.PRACTICE)
     ) {
       return {
-        title: 'PERFORM',
-        text: 'Hit the notes when they reach the bottom. Arrow Keys or Click the lanes. High Combo = More Fame.',
+        title: t('ui:tutorial.perform.title', { defaultValue: 'PERFORM' }),
+        text: t('ui:tutorial.perform.text', {
+          defaultValue:
+            'Hit the notes when they reach the bottom. Arrow Keys or Click the lanes. High Combo = More Fame.'
+        }),
         target: 'game-canvas'
       }
     }
@@ -86,7 +100,11 @@ export const TutorialManager = () => {
         >
           <div className='bg-void-black/95 border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'>
             <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>
-              {t('ui:tutorial.header', { current: step + 1, total: TOTAL_STEPS, defaultValue: `TUTORIAL ${step + 1}/${TOTAL_STEPS}` })}
+              {t('ui:tutorial.header', {
+                current: step + 1,
+                total: TOTAL_STEPS,
+                defaultValue: `TUTORIAL ${step + 1}/${TOTAL_STEPS}`
+              })}
             </div>
 
             <h3 className='text-xl text-star-white font-[Metal_Mania] mb-2'>
@@ -125,7 +143,9 @@ export const TutorialManager = () => {
                 onClick={completeStep}
                 className='bg-toxic-green text-void-black px-6 py-1.5 font-bold hover:bg-star-white transition-colors'
               >
-                {step < TOTAL_STEPS - 1 ? t('ui:tutorial.next', { defaultValue: 'NEXT' }) : t('ui:tutorial.done', { defaultValue: 'DONE' })}
+                {step < TOTAL_STEPS - 1
+                  ? t('ui:tutorial.next', { defaultValue: 'NEXT' })
+                  : t('ui:tutorial.done', { defaultValue: 'DONE' })}
               </button>
             </div>
           </div>

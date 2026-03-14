@@ -41,7 +41,7 @@ test('BlockMeter renders correct number of blocks', () => {
 })
 
 test('StatBlock renders label, value and icon', () => {
-  const DummyIcon = () => <svg data-testid="dummy-icon" />
+  const DummyIcon = () => <svg data-testid='dummy-icon' />
   render(<StatBlock label='Test Stat' value='100' icon={DummyIcon} />)
   expect(screen.getByText('Test Stat')).toBeInTheDocument()
   expect(screen.getByText('100')).toBeInTheDocument()

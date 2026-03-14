@@ -34,6 +34,7 @@
   "chatter.random3": "BOOOOOOOOO",
   "chatter.random4": "my ears are bleeding (in a bad way)",
   "chatter.random5": "refund immediately",
+  "chatter_labels.CLINIC": "Clinic Feed",
   "chatter_labels.CREDITS": "Crew Feed",
   "chatter_labels.GAMEOVER": "Last Broadcast",
   "chatter_labels.GIG": "Live Feed",
@@ -45,7 +46,6 @@
   "chatter_labels.PRE_GIG_MINIGAME": "Roadie Feed",
   "chatter_labels.SETTINGS": "System Feed",
   "chatter_labels.TRAVEL_MINIGAME": "Travel Feed",
-  "chatter_labels.CLINIC": "Clinic Feed",
   "chatter_labels.default_fallback": "Unknown",
   "chatter_labels.default_speaker": "Band",
   "checklist.done": "INITIATE GIG",
@@ -55,6 +55,19 @@
   "checklist.task3": "BRIBE VENUE BOUNCER",
   "checklist.task4": "CALIBRATE AMPS",
   "checklist.waiting": "AWAITING SEQUENCE",
+  "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
+  "clinic.enhance_success": "Flesh upgraded.",
+  "clinic.fame": "FAME:",
+  "clinic.funds": "FUNDS:",
+  "clinic.heal_button": "HEAL ({{cost}}€)",
+  "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
+  "clinic.leave": "LEAVE CLINIC",
+  "clinic.lore": "Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.",
+  "clinic.mood": "Mood:",
+  "clinic.not_enough_fame": "Not enough fame. The void demands sacrifice.",
+  "clinic.not_enough_money": "Not enough money.",
+  "clinic.stamina": "Stamina:",
+  "clinic.title": "THE VOID CLINIC",
   "closeModal": "Close modal",
   "confirm": "CONFIRM",
   "confirm_delete": "CONFIRM DELETE",
@@ -62,18 +75,18 @@
   "confirm_identity": "CONFIRM IDENTITY",
   "continue": "CONTINUE",
   "contraband": {
-    "title": "CONTRABAND STASH",
-    "description": "Artifacts and strange detritus gathered from the void. Use with caution.",
-    "targetMemberLabel": "Target Member:",
-    "noItems": "No contraband collected yet.",
-    "useItem": "USE ITEM",
-    "passiveActive": "PASSIVE EFFECT ACTIVE",
-    "close": "CLOSE STASH",
-    "button": "STASH",
-    "requiresTarget": "Requires target member.",
-    "gigs": "GIGS",
     "applied": "APPLIED",
-    "applyItem": "APPLY EFFECT"
+    "applyItem": "APPLY EFFECT",
+    "button": "STASH",
+    "close": "CLOSE STASH",
+    "description": "Artifacts and strange detritus gathered from the void. Use with caution.",
+    "gigs": "GIGS",
+    "noItems": "No contraband collected yet.",
+    "passiveActive": "PASSIVE EFFECT ACTIVE",
+    "requiresTarget": "Requires target member.",
+    "targetMemberLabel": "Target Member:",
+    "title": "CONTRABAND STASH",
+    "useItem": "USE ITEM"
   },
   "contraband.dropped": "Found contraband!",
   "contract.confidential": "DOCUMENT: CONFIDENTIAL",
@@ -229,22 +242,10 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        [
-          "ui:featureList.sec2.rows.0.0",
-          "ui:featureList.sec2.rows.0.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.1.0",
-          "ui:featureList.sec2.rows.1.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.2.0",
-          "ui:featureList.sec2.rows.2.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.3.0",
-          "ui:featureList.sec2.rows.3.1"
-        ]
+        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
+        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
+        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
+        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -267,22 +268,10 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        [
-          "ui:featureList.sec4.rows.0.0",
-          "ui:featureList.sec4.rows.0.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.1.0",
-          "ui:featureList.sec4.rows.1.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.2.0",
-          "ui:featureList.sec4.rows.2.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.3.0",
-          "ui:featureList.sec4.rows.3.1"
-        ]
+        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
+        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
+        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
+        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -392,12 +381,12 @@
   "inventory.emptySlot": "Empty inventory slot: {{label}}",
   "inventory.slot": "Inventory slot: {{name}}",
   "item": {
-    "unknown": "Unknown Item",
-    "typeUnknown": "Unknown Type",
     "descriptionUnknown": "Unknown Description",
+    "typeUnknown": "Unknown Type",
     "type_consumable": "consumable",
     "type_equipment": "equipment",
-    "type_relic": "Relic"
+    "type_relic": "Relic",
+    "unknown": "Unknown Item"
   },
   "keyboardHint": "Press [1-{{count}}] or click to choose",
   "keyboardHint_one": "Press [1] or click to choose",
@@ -524,7 +513,17 @@
   "overworld.void_clinic_button": "VOID CLINIC",
   "postGig": {
     "harmony": "Harmony",
-    "money": "Money"
+    "money": "Money",
+    "mood": "Mood",
+    "platforms": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube"
+    },
+    "socialPhase": {
+      "altZealotryCult": "Zealotry Cult"
+    },
+    "stamina": "Stamina"
   },
   "postGig.acceptedDeal": "Accepted deal: {{dealName}}",
   "postGig.backToTour": "Back to Tour >",
@@ -611,9 +610,9 @@
   "radio.stop": "Stop Radio",
   "rarity": {
     "common": "COMMON",
-    "uncommon": "UNCOMMON",
+    "epic": "EPIC",
     "rare": "RARE",
-    "epic": "EPIC"
+    "uncommon": "UNCOMMON"
   },
   "rewards.fameWithAmount": "+{{count}} Fame",
   "rewards.fameWithAmount_one": "+{{count}} Fame",
@@ -717,8 +716,8 @@
   "socials": "SOCIALS",
   "start_game": "Start Tour",
   "stash": {
-    "selectMemberFirst": "Select a band member first!",
-    "itemUsed": "{{action}} {{itemName}}!"
+    "itemUsed": "{{action}} {{itemName}}!",
+    "selectMemberFirst": "Select a band member first!"
   },
   "stash.actionApplied": "Applied",
   "stash.actionUsed": "Used",
@@ -817,6 +816,24 @@
   "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}€ to repair.",
   "travel.repair.repaired": "Repaired: -{{cost}}€",
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
+  "tutorial": {
+    "map": {
+      "text": "Travel between cities to play Gigs. Traveling costs Fuel and Time. Watch your supplies.",
+      "title": "THE MAP"
+    },
+    "perform": {
+      "text": "Hit the notes when they reach the bottom. Arrow Keys or Click the lanes. High Combo = More Fame.",
+      "title": "PERFORM"
+    },
+    "stats": {
+      "text": "Keep an eye on Health (Mood) and Money. If Money hits 0, game over. If Mood hits 0, the band breaks up.",
+      "title": "STATS"
+    },
+    "welcome": {
+      "text": "You are the manager of NEUROTOXIC. Your goal: survive the tour, earn fame, and don't go broke.",
+      "title": "WELCOME TO THE GRIND"
+    }
+  },
   "tutorial.ariaLabel": "Tutorial",
   "tutorial.done": "DONE",
   "tutorial.header": "TUTORIAL {{current}}/{{total}}",
@@ -831,18 +848,5 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%",
-  "clinic.title": "THE VOID CLINIC",
-  "clinic.lore": "Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.",
-  "clinic.funds": "FUNDS:",
-  "clinic.fame": "FAME:",
-  "clinic.stamina": "Stamina:",
-  "clinic.mood": "Mood:",
-  "clinic.heal_button": "HEAL ({{cost}}€)",
-  "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
-  "clinic.leave": "LEAVE CLINIC",
-  "clinic.not_enough_money": "Not enough money.",
-  "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
-  "clinic.not_enough_fame": "Not enough fame. The void demands sacrifice.",
-  "clinic.enhance_success": "Flesh upgraded."
+  "volume.set": "Set volume to {{pct}}%"
 }

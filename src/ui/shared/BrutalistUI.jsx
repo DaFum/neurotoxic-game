@@ -1372,9 +1372,7 @@ export const IndustrialChecklist = memo(() => {
             )}
           </div>
 
-          <span
-            className='font-bold tracking-widest uppercase transition-all duration-200 text-toxic-green'
-          >
+          <span className='font-bold tracking-widest uppercase transition-all duration-200 text-toxic-green'>
             {t(task.key)}
           </span>
 

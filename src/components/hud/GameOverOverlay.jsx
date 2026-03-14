@@ -11,7 +11,9 @@ export const GameOverOverlay = memo(function GameOverOverlay({ isGameOver }) {
         {t('ui:game-over.booed-off-stage', { defaultValue: 'BOOED OFF STAGE' })}
       </h1>
       <div className='mt-4 text-ash-gray font-mono text-sm animate-pulse tracking-widest'>
-        {t('ui:game-over.crowd-spoken', { defaultValue: 'THE CROWD HAS SPOKEN' })}
+        {t('ui:game-over.crowd-spoken', {
+          defaultValue: 'THE CROWD HAS SPOKEN'
+        })}
       </div>
     </div>
   )

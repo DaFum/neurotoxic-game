@@ -6,6 +6,22 @@ import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { handleError } from '../../utils/errorHandler.js'
+import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
+
+const getAlignmentImagePrompt = alignment => {
+  switch (alignment) {
+    case BRAND_ALIGNMENTS.EVIL:
+      return IMG_PROMPTS.BRAND_DEAL_EVIL
+    case BRAND_ALIGNMENTS.CORPORATE:
+      return IMG_PROMPTS.BRAND_DEAL_CORPORATE
+    case BRAND_ALIGNMENTS.INDIE:
+      return IMG_PROMPTS.BRAND_DEAL_INDIE
+    case BRAND_ALIGNMENTS.SUSTAINABLE:
+      return IMG_PROMPTS.BRAND_DEAL_SUSTAINABLE
+    default:
+      return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
+  }
+}
 
 const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
   const { t } = useTranslation()
@@ -105,10 +121,14 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     <div className='space-y-6'>
       <div className='text-center mb-4'>
         <h3 className='text-xl font-mono tracking-widest text-warning-yellow'>
-          {t('ui:deals.incomingOffers', { defaultValue: 'INCOMING BRAND OFFERS' })}
+          {t('ui:deals.incomingOffers', {
+            defaultValue: 'INCOMING BRAND OFFERS'
+          })}
         </h3>
         <div className='text-[10px] text-ash-gray tracking-wider mt-1'>
-          {t('ui:deals.sellOutOrStayTrue', { defaultValue: 'SELL OUT OR STAY TRUE?' })}
+          {t('ui:deals.sellOutOrStayTrue', {
+            defaultValue: 'SELL OUT OR STAY TRUE?'
+          })}
         </div>
       </div>
 
@@ -131,60 +151,86 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                 {displayDeal.alignment?.[0]}
               </div>
 
-              <div className='flex-1 z-10'>
-                <div className='flex items-baseline gap-3'>
-                  <div
-                    className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
-                  >
-                    {displayDeal.name}
-                  </div>
-                  {displayDeal.alignment && (
-                    <span
-                      className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+              <div className='flex-1 z-10 flex gap-4 items-start'>
+                <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
+                  <img
+                    src={getGenImageUrl(
+                      getAlignmentImagePrompt(displayDeal.alignment)
+                    )}
+                    alt={displayDeal.name}
+                    className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
+                    loading='lazy'
+                  />
+                </div>
+                <div className='flex-1'>
+                  <div className='flex items-baseline gap-3'>
+                    <div
+                      className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
                     >
-                      {getAlignmentBadge(displayDeal.alignment)}
-                    </span>
-                  )}
-                </div>
+                      {displayDeal.name}
+                    </div>
+                    {displayDeal.alignment && (
+                      <span
+                        className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+                      >
+                        {getAlignmentBadge(displayDeal.alignment)}
+                      </span>
+                    )}
+                  </div>
 
-                <div className='text-xs text-ash-gray italic mb-2'>
-                  {displayDeal.description}
-                </div>
-                <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
-                  <div>💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}: {displayDeal.offer.upfront}€</div>
-                  <div>📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}: {displayDeal.offer.duration} {t('ui:deals.gigs', { defaultValue: 'Gigs' })}</div>
-                  {displayDeal.offer.perGig && (
-                    <div>💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}: {displayDeal.offer.perGig}€</div>
-                  )}
-                  {displayDeal.offer.item && (
-                    <div>🎁 {t('ui:deals.item', { defaultValue: 'Item' })}: {displayDeal.offer.item}</div>
-                  )}
-                  {displayDeal.penalty && (
-                    <div className='text-blood-red'>
-                      ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
-                      {Object.entries(displayDeal.penalty)
-                        .map(([k, v]) => `${k}: ${v}`)
-                        .join(', ')}
+                  <div className='text-xs text-ash-gray italic mb-2'>
+                    {displayDeal.description}
+                  </div>
+                  <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
+                    <div>
+                      💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
+                      {displayDeal.offer.upfront}€
+                    </div>
+                    <div>
+                      📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
+                      {displayDeal.offer.duration}{' '}
+                      {t('ui:deals.gigs', { defaultValue: 'Gigs' })}
+                    </div>
+                    {displayDeal.offer.perGig && (
+                      <div>
+                        💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
+                        {displayDeal.offer.perGig}€
+                      </div>
+                    )}
+                    {displayDeal.offer.item && (
+                      <div>
+                        🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
+                        {displayDeal.offer.item}
+                      </div>
+                    )}
+                    {displayDeal.penalty && (
+                      <div className='text-blood-red'>
+                        ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
+                        {Object.entries(displayDeal.penalty)
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join(', ')}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reputation Status */}
+                  {social.brandReputation?.[displayDeal.alignment] !==
+                    undefined && (
+                    <div className='mt-2 text-[10px] text-ash-gray'>
+                      {t('ui:deals.reputation', { defaultValue: 'Reputation' })}
+                      :{' '}
+                      <span
+                        className={
+                          social.brandReputation[displayDeal.alignment] > 0
+                            ? 'text-toxic-green'
+                            : 'text-blood-red'
+                        }
+                      >
+                        {social.brandReputation[displayDeal.alignment]}
+                      </span>
                     </div>
                   )}
                 </div>
-
-                {/* Reputation Status */}
-                {social.brandReputation?.[displayDeal.alignment] !==
-                  undefined && (
-                  <div className='mt-2 text-[10px] text-ash-gray'>
-                    {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
-                    <span
-                      className={
-                        social.brandReputation[displayDeal.alignment] > 0
-                          ? 'text-toxic-green'
-                          : 'text-blood-red'
-                      }
-                    >
-                      {social.brandReputation[displayDeal.alignment]}
-                    </span>
-                  </div>
-                )}
               </div>
 
               <div className='flex flex-col gap-2 ml-4 z-10 min-w-[140px]'>
@@ -210,10 +256,16 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                         className={`text-center text-[10px] font-mono tracking-wider ${negotiationState.status === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
                       >
                         {negotiationState.status === 'SUCCESS'
-                          ? t('ui:deals.termImproved', { defaultValue: 'TERM IMPROVED' })
+                          ? t('ui:deals.termImproved', {
+                              defaultValue: 'TERM IMPROVED'
+                            })
                           : negotiationState.status === 'WORSENED'
-                            ? t('ui:deals.termsWorsened', { defaultValue: 'TERMS WORSENED' })
-                            : t('ui:deals.negotiationFailed', { defaultValue: 'NEGOTIATION FAILED' })}
+                            ? t('ui:deals.termsWorsened', {
+                                defaultValue: 'TERMS WORSENED'
+                              })
+                            : t('ui:deals.negotiationFailed', {
+                                defaultValue: 'NEGOTIATION FAILED'
+                              })}
                       </div>
                     )}
                   </>
@@ -234,7 +286,9 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
           onClick={onSkip}
           className='text-sm text-ash-gray hover:text-star-white underline decoration-dotted'
         >
-          {t('ui:deals.rejectAll', { defaultValue: 'Reject All Offers & Continue >' })}
+          {t('ui:deals.rejectAll', {
+            defaultValue: 'Reject All Offers & Continue >'
+          })}
         </button>
       </div>
 
@@ -242,12 +296,17 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
       <Modal
         isOpen={negotiationModalOpen}
         onClose={() => !negotiationResult && setNegotiationModalOpen(false)} // Prevent closing if showing result
-        title={t('ui:deals.negotiationTactics', { defaultValue: 'NEGOTIATION TACTICS' })}
+        title={t('ui:deals.negotiationTactics', {
+          defaultValue: 'NEGOTIATION TACTICS'
+        })}
       >
         {!negotiationResult ? (
           <div className='space-y-4'>
             <p className='text-sm text-ash-gray text-center mb-4'>
-              {t('ui:deals.chooseApproach', { defaultValue: 'Choose your approach. Your fame and traits affect the outcome.' })}
+              {t('ui:deals.chooseApproach', {
+                defaultValue:
+                  'Choose your approach. Your fame and traits affect the outcome.'
+              })}
             </p>
 
             <button
@@ -259,7 +318,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                 {t('ui:deals.safe', { defaultValue: 'SAFE (Low Risk)' })}
               </div>
               <div className='text-xs text-ash-gray group-hover:text-star-white'>
-                {t('ui:deals.safeDesc', { defaultValue: 'Attempt to get +10% upfront. High chance of success.' })}
+                {t('ui:deals.safeDesc', {
+                  defaultValue:
+                    'Attempt to get +10% upfront. High chance of success.'
+                })}
               </div>
             </button>
 
@@ -269,10 +331,15 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
               className='w-full p-3 border border-electric-blue hover:bg-electric-blue/20 text-left group transition-all'
             >
               <div className='text-electric-blue font-bold mb-1'>
-                {t('ui:deals.persuasive', { defaultValue: 'PERSUASIVE (Medium Risk)' })}
+                {t('ui:deals.persuasive', {
+                  defaultValue: 'PERSUASIVE (Medium Risk)'
+                })}
               </div>
               <div className='text-xs text-ash-gray group-hover:text-star-white'>
-                {t('ui:deals.persuasiveDesc', { defaultValue: 'Try for +20% upfront & +10% per gig. Failure worsens terms (-10%).' })}
+                {t('ui:deals.persuasiveDesc', {
+                  defaultValue:
+                    'Try for +20% upfront & +10% per gig. Failure worsens terms (-10%).'
+                })}
               </div>
             </button>
 
@@ -282,10 +349,15 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
               className='w-full p-3 border border-blood-red hover:bg-blood-red/20 text-left group transition-all'
             >
               <div className='text-blood-red font-bold mb-1'>
-                {t('ui:deals.aggressive', { defaultValue: 'AGGRESSIVE (High Risk)' })}
+                {t('ui:deals.aggressive', {
+                  defaultValue: 'AGGRESSIVE (High Risk)'
+                })}
               </div>
               <div className='text-xs text-ash-gray group-hover:text-star-white'>
-                {t('ui:deals.aggressiveDesc', { defaultValue: 'Demand +50% upfront. Failure loses the deal completely.' })}
+                {t('ui:deals.aggressiveDesc', {
+                  defaultValue:
+                    'Demand +50% upfront. Failure loses the deal completely.'
+                })}
               </div>
             </button>
           </div>
@@ -341,22 +413,7 @@ const getAlignmentBadge = alignment => {
   }
 }
 
-const getAlignmentImagePrompt = alignment => {
-    switch (alignment) {
-      case BRAND_ALIGNMENTS.EVIL:
-        return IMG_PROMPTS.BRAND_DEAL_EVIL
-      case BRAND_ALIGNMENTS.CORPORATE:
-        return IMG_PROMPTS.BRAND_DEAL_CORPORATE
-      case BRAND_ALIGNMENTS.INDIE:
-        return IMG_PROMPTS.BRAND_DEAL_INDIE
-      case BRAND_ALIGNMENTS.SUSTAINABLE:
-        return IMG_PROMPTS.BRAND_DEAL_SUSTAINABLE
-      default:
-        return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
-    }
-  }
-
-  const getAlignmentColor = alignment => {
+const getAlignmentColor = alignment => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
       return 'text-toxic-green'

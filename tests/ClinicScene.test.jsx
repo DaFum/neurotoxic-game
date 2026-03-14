@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { ClinicScene } from '../src/scenes/ClinicScene.jsx'
 import { useClinicLogic } from '../src/hooks/useClinicLogic.js'
 
-vi.mock('../src/context/gameConstants', async (importOriginal) => {
+vi.mock('../src/context/gameConstants', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
@@ -14,11 +14,13 @@ vi.mock('../src/context/gameConstants', async (importOriginal) => {
   }
 })
 
-vi.mock('react-i18next', async (importOriginal) => {
+vi.mock('react-i18next', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
-    useTranslation: () => ({ t: (key, options) => options?.defaultValue || key })
+    useTranslation: () => ({
+      t: (key, options) => options?.defaultValue || key
+    })
   }
 })
 
@@ -31,7 +33,13 @@ const mockState = {
   band: {
     members: [
       { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: [] },
-      { id: 'm2', name: 'M2', stamina: 100, mood: 100, traits: [{ id: 'cyber_lungs' }] }
+      {
+        id: 'm2',
+        name: 'M2',
+        stamina: 100,
+        mood: 100,
+        traits: [{ id: 'cyber_lungs' }]
+      }
     ]
   },
   healCostMoney: 150,
@@ -73,7 +81,9 @@ describe('ClinicScene', () => {
   it('calls enhanceMember on valid member', () => {
     renderComponent()
 
-    const enhanceButtons = screen.getAllByRole('button', { name: /GRAFT: CYBER LUNGS/i })
+    const enhanceButtons = screen.getAllByRole('button', {
+      name: /GRAFT: CYBER LUNGS/i
+    })
     fireEvent.click(enhanceButtons[0]) // M1
 
     expect(mockState.enhanceMember).toHaveBeenCalledWith('m1', 'cyber_lungs')
@@ -85,7 +95,9 @@ describe('ClinicScene', () => {
     renderComponent()
 
     const healButtons = screen.getAllByRole('button', { name: /HEAL/i })
-    const enhanceButtons = screen.getAllByRole('button', { name: /GRAFT: CYBER LUNGS/i })
+    const enhanceButtons = screen.getAllByRole('button', {
+      name: /GRAFT: CYBER LUNGS/i
+    })
 
     // First member is active
     expect(healButtons[0]).not.toBeDisabled()

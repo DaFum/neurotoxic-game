@@ -6,7 +6,11 @@
 
 import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 import { StateError } from './errorHandler.js'
-import { clampBandHarmony, clampPlayerMoney, clampNonNegative } from './gameStateUtils.js'
+import {
+  clampBandHarmony,
+  clampPlayerMoney,
+  clampNonNegative
+} from './gameStateUtils.js'
 
 const isPlainObject = value =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -59,7 +63,10 @@ const validatePlayer = player => {
     if (player[field] !== undefined && typeof player[field] !== 'number') {
       throw new StateError(`player.${field} must be a number`)
     }
-    if ((field === 'fame' || field === 'score') && player[field] !== undefined) {
+    if (
+      (field === 'fame' || field === 'score') &&
+      player[field] !== undefined
+    ) {
       player[field] = clampNonNegative(player[field])
     }
   }
@@ -76,7 +83,11 @@ const validatePlayer = player => {
   }
 
   // Backfill/Validate clinicVisits
-  if (player.clinicVisits === undefined || typeof player.clinicVisits !== 'number' || !Number.isFinite(player.clinicVisits)) {
+  if (
+    player.clinicVisits === undefined ||
+    typeof player.clinicVisits !== 'number' ||
+    !Number.isFinite(player.clinicVisits)
+  ) {
     player.clinicVisits = 0
   } else {
     player.clinicVisits = clampNonNegative(Math.floor(player.clinicVisits))
@@ -98,7 +109,6 @@ const validatePlayer = player => {
   }
 }
 
-
 const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
 const checkPrototypePollution = obj => {
@@ -115,7 +125,6 @@ const checkPrototypePollution = obj => {
     }
   }
 }
-
 
 const validateBand = band => {
   if (!isPlainObject(band)) throw new StateError('band must be an object')
@@ -134,8 +143,13 @@ const validateBand = band => {
       }
       for (const stat of ['mood', 'stamina']) {
         if (member[stat] !== undefined) {
-          if (typeof member[stat] !== 'number' || !Number.isFinite(member[stat])) {
-            throw new StateError(`band.members[${index}].${stat} must be a finite number`)
+          if (
+            typeof member[stat] !== 'number' ||
+            !Number.isFinite(member[stat])
+          ) {
+            throw new StateError(
+              `band.members[${index}].${stat} must be a finite number`
+            )
           }
           member[stat] = Math.min(100, clampNonNegative(member[stat]))
         }

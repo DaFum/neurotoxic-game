@@ -19,7 +19,9 @@ for (const charKey in CHARACTERS) {
     for (const trait of traits) {
       TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
       if (TRAIT_DEFS_BY_ID.has(trait.id)) {
-        console.warn(`Duplicate trait ID found during initialization: ${trait.id}`)
+        console.warn(
+          `Duplicate trait ID found during initialization: ${trait.id}`
+        )
       }
       TRAIT_DEFS_BY_ID.set(trait.id, trait)
     }
@@ -31,7 +33,7 @@ for (const charKey in CHARACTERS) {
  * @param {string} traitId
  * @returns {object|null}
  */
-export const getTraitById = (traitId) => {
+export const getTraitById = traitId => {
   return TRAIT_DEFS_BY_ID.get(traitId) || null
 }
 

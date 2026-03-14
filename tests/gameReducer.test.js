@@ -37,7 +37,10 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 })
 
 mock.module('../src/utils/traitUtils.js', {
-  namedExports: { applyTraitUnlocks: mockApplyTraitUnlocks }
+  namedExports: {
+    applyTraitUnlocks: mockApplyTraitUnlocks,
+    getTraitById: mock.fn(() => ({ id: 'dummy_trait', name: 'Dummy Trait' }))
+  }
 })
 
 // Import SUT after mocking

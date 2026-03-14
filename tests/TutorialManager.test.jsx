@@ -100,7 +100,9 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    const skipButton = screen.getByRole('button', { name: /ui:tutorial.skipAll/i })
+    const skipButton = screen.getByRole('button', {
+      name: /ui:tutorial.skipAll/i
+    })
     await user.click(skipButton)
 
     expect(mockUpdatePlayer).toHaveBeenCalledWith({ tutorialStep: -1 })

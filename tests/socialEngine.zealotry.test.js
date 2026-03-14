@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { calculateZealotryEffects, generateBrandOffers } from '../src/utils/socialEngine.js'
+import {
+  calculateZealotryEffects,
+  generateBrandOffers
+} from '../src/utils/socialEngine.js'
 
 describe('calculateZealotryEffects', () => {
   it('should calculate passive income properly', () => {
@@ -48,6 +51,10 @@ describe('generateBrandOffers with Zealotry', () => {
     const offersHigh = generateBrandOffers(gameStateHighZealotry, () => 0.01)
 
     const shredDealHigh = offersHigh.find(o => o.id === 'guitar_brand_shred')
-    assert.strictEqual(shredDealHigh, undefined, 'Should NOT find ShredMaster deal when zealotry is high (>= 20)')
+    assert.strictEqual(
+      shredDealHigh,
+      undefined,
+      'Should NOT find ShredMaster deal when zealotry is high (>= 20)'
+    )
   })
 })

@@ -262,20 +262,25 @@ export const Overworld = () => {
       className={`w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
       <h2 className='absolute top-20 text-4xl text-toxic-green font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--color-toxic-green)] pointer-events-none'>
-        {t('ui:overworld.header.tourPlan', { defaultValue: 'TOUR PLAN' })}: {locationName}
+        {t('ui:overworld.header.tourPlan', { defaultValue: 'TOUR PLAN' })}:{' '}
+        {locationName}
       </h2>
 
       {/* Instructions / Status */}
       <div className='absolute top-32 z-20 bg-void-black/80 border border-toxic-green p-2 text-center pointer-events-none'>
         <div className='text-toxic-green font-bold text-sm uppercase'>
           {isTraveling
-            ? t('ui:overworld.status.traveling', { defaultValue: 'TRAVELING...' })
+            ? t('ui:overworld.status.traveling', {
+                defaultValue: 'TRAVELING...'
+              })
             : t('ui:overworld.status.nextStop', { defaultValue: 'Next Stop' })}
         </div>
         <div className='text-star-white text-xs'>
           {isTraveling
             ? t('ui:overworld.status.onRoad', { defaultValue: 'On the road' })
-            : t('ui:overworld.status.selectLocation', { defaultValue: 'Select a highlighted location' })}
+            : t('ui:overworld.status.selectLocation', {
+                defaultValue: 'Select a highlighted location'
+              })}
         </div>
       </div>
 
@@ -330,7 +335,11 @@ export const Overworld = () => {
           variant='warning'
           size='sm'
         >
-          [{t('ui:overworld.void_clinic_button', { defaultValue: 'VOID CLINIC' })}]
+          [
+          {t('ui:overworld.void_clinic_button', {
+            defaultValue: 'VOID CLINIC'
+          })}
+          ]
         </GlitchButton>
         <GlitchButton
           onClick={handleRepair}
