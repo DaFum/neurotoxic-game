@@ -139,10 +139,6 @@ describe('Contraband Integration Tests', () => {
     })
 
     it('should have consistent item structure for all items', () => {
-      // Get the first item's keys as reference
-      const referenceItem = CONTRABAND_DB[0]
-      const baseKeys = Object.keys(referenceItem).sort()
-
       // All items should have similar structure (allowing for optional fields)
       for (const item of CONTRABAND_DB) {
         const itemKeys = Object.keys(item)

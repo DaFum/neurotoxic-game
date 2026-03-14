@@ -70,7 +70,7 @@ export const useGigEffects = stats => {
         } else if (chaosContainerRef.current) {
           chaosContainerRef.current.style.transform = 'none'
         }
-      } catch (e) {
+      } catch (_e) {
         cancelAnimationFrame(rAF)
         if (chaosContainerRef.current) {
           const fallbackX = Math.random() * 4 - 2

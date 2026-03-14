@@ -49,7 +49,9 @@ test('SocialPhase renders correctly and calls onSelect', async () => {
   const panelContent = screen.getByTestId('panel-content')
   expect(panelContent).toHaveClass('space-y-6')
 
-  const button = screen.getByRole('button', { name: /ui:postOptions.insta.name/i })
+  const button = screen.getByRole('button', {
+    name: /ui:postOptions.insta.name/i
+  })
   await user.click(button)
 
   expect(handleSelect).toHaveBeenCalledWith(mockOptions[0])

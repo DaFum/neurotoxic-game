@@ -486,7 +486,7 @@ export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
  * @param {Function} rng - Random number generator.
  * @returns {Array} List of offer objects.
  */
-export const calculateZealotryEffects = (zealotry) => {
+export const calculateZealotryEffects = zealotry => {
   const z = Math.max(0, Math.min(100, Number(zealotry) || 0))
   return {
     passiveIncome: Math.floor(z * 1.2),

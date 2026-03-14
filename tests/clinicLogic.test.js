@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { handleClinicHeal, handleClinicEnhance } from '../src/context/reducers/clinicReducer.js'
+import {
+  handleClinicHeal,
+  handleClinicEnhance
+} from '../src/context/reducers/clinicReducer.js'
 import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 
 // The reducer computes costs internally from CLINIC_CONFIG and clinicVisits.
@@ -40,9 +43,7 @@ test('clinicReducer', async t => {
       const state = {
         player: { money: 500, fame: 100, clinicVisits: 0 },
         band: {
-          members: [
-            { id: 'm1', name: 'M1', stamina: 50, mood: 50 }
-          ]
+          members: [{ id: 'm1', name: 'M1', stamina: 50, mood: 50 }]
         },
         toasts: []
       }
@@ -103,9 +104,7 @@ test('clinicReducer', async t => {
       const state = {
         player: { money: 1000, fame: 500, clinicVisits: 0 },
         band: {
-          members: [
-            { id: 'm1', traits: [{ id: 'existing_trait' }] }
-          ]
+          members: [{ id: 'm1', traits: [{ id: 'existing_trait' }] }]
         }
       }
 
@@ -140,9 +139,7 @@ test('clinicReducer', async t => {
       const state = {
         player: { money: 1000, fame: 0, clinicVisits: 0 },
         band: {
-          members: [
-            { id: 'm1', traits: [] }
-          ]
+          members: [{ id: 'm1', traits: [] }]
         }
       }
 
@@ -168,7 +165,12 @@ test('clinicReducer', async t => {
       },
       band: {
         members: [
-          { name: 'Matze', mood: 50, stamina: 50, traits: [{ id: 'cyber_lungs' }] },
+          {
+            name: 'Matze',
+            mood: 50,
+            stamina: 50,
+            traits: [{ id: 'cyber_lungs' }]
+          },
           { name: 'Marius', mood: 50, stamina: 50, traits: [] }
         ],
         harmony: 50
