@@ -636,6 +636,7 @@ export const BrutalToggle = memo(({ label, initialState = false }) => {
   const [isOn, setIsOn] = useState(initialState)
   const [isGlitching, setIsGlitching] = useState(false)
   const glitchTimerRef = useRef(null)
+  const labelId = useId()
 
   const toggle = () => {
     setIsGlitching(true)
@@ -652,12 +653,13 @@ export const BrutalToggle = memo(({ label, initialState = false }) => {
 
   return (
     <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
-      <span className='text-sm font-bold tracking-widest uppercase'>
+      <span id={labelId} className='text-sm font-bold tracking-widest uppercase'>
         {label}
       </span>
       <button
         type='button'
         onClick={toggle}
+        aria-labelledby={labelId}
         className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-pressed={isOn}
       >
