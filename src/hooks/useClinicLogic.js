@@ -7,23 +7,21 @@ import {
   createChangeSceneAction,
   createAddToastAction
 } from '../context/actionCreators'
-import { GAME_PHASES } from '../context/gameConstants'
+import { GAME_PHASES, CLINIC_CONFIG } from '../context/gameConstants'
 
 export const useClinicLogic = () => {
   const { t } = useTranslation(['ui'])
   const { player, band, dispatch } = useGameState()
 
-  // Base costs that scale with visits
-  const visitMultiplier = 1.2
   const currentVisits = player?.clinicVisits || 0
 
   const calculateCost = useCallback(
-    baseCost => Math.floor(baseCost * Math.pow(visitMultiplier, currentVisits)),
+    baseCost => Math.floor(baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)),
     [currentVisits]
   )
 
-  const healCostMoney = calculateCost(150)
-  const enhanceCostFame = calculateCost(500)
+  const healCostMoney = calculateCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY)
+  const enhanceCostFame = calculateCost(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME)
 
   const healMember = useCallback(
     memberId => {
@@ -42,19 +40,23 @@ export const useClinicLogic = () => {
         return
       }
 
+      const currentStamina = member.stamina || 0
+      const healAmountApplied = Math.min(CLINIC_CONFIG.HEAL_STAMINA_GAIN, 100 - currentStamina)
+
       dispatch(
         createClinicHealAction({
           memberId,
           cost: healCostMoney,
           fameCost: 0,
-          staminaGain: 30, // Heals 30 stamina
-          moodGain: 10 // Bonus 10 mood
+          staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
+          moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN
         })
       )
       dispatch(
         createAddToastAction({
           message: t('ui:clinic.heal_success', {
-            defaultValue: 'Stamina restored. The void embraces you.'
+            defaultValue: `Stamina restored by ${healAmountApplied}. The void embraces you.`,
+            healAmountApplied
           }),
           type: 'success'
         })

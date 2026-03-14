@@ -21,6 +21,7 @@ import {
 } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { translateLocation } from '../utils/locationI18n'
+import { GAME_PHASES } from '../context/gameConstants'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -324,12 +325,12 @@ export const Overworld = () => {
           [REFUEL]
         </GlitchButton>
         <GlitchButton
-          onClick={() => changeScene('CLINIC')}
+          onClick={() => changeScene(GAME_PHASES.CLINIC)}
           disabled={isTraveling}
           variant='warning'
           size='sm'
         >
-          [VOID CLINIC]
+          [{t('ui:overworld.void_clinic_button', { defaultValue: 'VOID CLINIC' })}]
         </GlitchButton>
         <GlitchButton
           onClick={handleRepair}

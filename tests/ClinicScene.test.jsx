@@ -2,8 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ClinicScene } from '../src/scenes/ClinicScene.jsx'
 import { useClinicLogic } from '../src/hooks/useClinicLogic.js'
-import { I18nextProvider } from 'react-i18next'
-import i18n from '../src/i18n.js'
+
+vi.mock('../src/context/gameConstants', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    CLINIC_CONFIG: {
+      CYBER_LUNGS_TRAIT_ID: 'cyber_lungs'
+    }
+  }
+})
 
 vi.mock('react-i18next', async (importOriginal) => {
   const actual = await importOriginal()
@@ -22,7 +30,7 @@ const mockState = {
   band: {
     members: [
       { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: [] },
-      { id: 'm2', name: 'M2', stamina: 100, mood: 100, traits: ['cyber_lungs'] }
+      { id: 'm2', name: 'M2', stamina: 100, mood: 100, traits: [{ id: 'cyber_lungs' }] }
     ]
   },
   healCostMoney: 150,
@@ -38,12 +46,7 @@ describe('ClinicScene', () => {
     useClinicLogic.mockReturnValue(mockState)
   })
 
-  const renderComponent = () =>
-    render(
-      <I18nextProvider i18n={i18n}>
-        <ClinicScene />
-      </I18nextProvider>
-    )
+  const renderComponent = () => render(<ClinicScene />)
 
   it('renders clinic title and member data', () => {
     renderComponent()

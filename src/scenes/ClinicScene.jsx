@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { GlitchButton } from '../ui/GlitchButton'
 import { useClinicLogic } from '../hooks/useClinicLogic'
+import { CLINIC_CONFIG } from '../context/gameConstants'
 
 export const ClinicScene = () => {
   const { t } = useTranslation(['ui'])
@@ -18,7 +19,7 @@ export const ClinicScene = () => {
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8'>
       {/* Background Ambience */}
-      <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,100,0.05)_0%,rgba(0,0,0,0.9)_100%)] pointer-events-none' />
+      <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-toxic-green-5)_0%,var(--color-void-black-90)_100%)] pointer-events-none' />
 
       <div className='z-10 w-full max-w-4xl bg-void-black border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green-20)] flex flex-col gap-6'>
 
@@ -30,7 +31,7 @@ export const ClinicScene = () => {
             {t('ui:clinic.lore', { defaultValue: 'Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.' })}
           </p>
           <div className='flex gap-4 mt-4 text-xs font-mono text-star-white'>
-            <span>{t('ui:clinic.funds', { defaultValue: 'FUNDS:' })} ${player.money}</span>
+            <span>{t('ui:clinic.funds', { defaultValue: 'FUNDS:' })} {player.money}€</span>
             <span>{t('ui:clinic.fame', { defaultValue: 'FAME:' })} {player.fame}</span>
           </div>
         </header>
@@ -60,12 +61,12 @@ export const ClinicScene = () => {
                   size='sm'
                   className='w-full text-xs py-1'
                 >
-                  {t('ui:clinic.heal_button', { defaultValue: 'HEAL' })} (${healCostMoney})
+                  {t('ui:clinic.heal_button', { defaultValue: 'HEAL' })} ({healCostMoney}€)
                 </GlitchButton>
 
                 <GlitchButton
-                  onClick={() => enhanceMember(member.id, 'cyber_lungs')}
-                  disabled={player.fame < enhanceCostFame || (member.traits && member.traits.includes('cyber_lungs'))}
+                  onClick={() => enhanceMember(member.id, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)}
+                  disabled={player.fame < enhanceCostFame || (member.traits && member.traits.some(t => t.id === CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID))}
                   variant='warning'
                   size='sm'
                   className='w-full text-xs py-1'

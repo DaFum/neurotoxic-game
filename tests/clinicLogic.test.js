@@ -35,7 +35,7 @@ test('clinicReducer', async t => {
     await t2.test('fails if not enough money', () => {
       const state = {
         player: { money: 50, fame: 100, clinicVisits: 0 },
-        band: { members: [{ id: 'm1', stamina: 50 }] }
+        band: { members: [{ id: 'm1', stamina: 50, mood: 50 }] }
       }
 
       const payload = { memberId: 'm1', cost: 100 }
@@ -51,7 +51,7 @@ test('clinicReducer', async t => {
         player: { money: 1000, fame: 500, clinicVisits: 0 },
         band: {
           members: [
-            { id: 'm1', traits: ['existing_trait'] }
+            { id: 'm1', traits: [{ id: 'existing_trait' }] }
           ]
         }
       }
@@ -67,16 +67,39 @@ test('clinicReducer', async t => {
 
       assert.equal(nextState.player.fame, 0)
       assert.equal(nextState.player.clinicVisits, 1)
-      assert.deepEqual(nextState.band.members[0].traits, ['existing_trait', 'cyber_lungs'])
+      assert.equal(nextState.band.members[0].traits.length, 2)
+      assert.equal(nextState.band.members[0].traits[1].id, 'cyber_lungs')
     })
 
-    await t2.test('fails if missing trait', () => {
+    await t2.test('fails if missing trait string', () => {
       const state = {
         player: { money: 1000, fame: 500 },
         band: { members: [{ id: 'm1', traits: [] }] }
       }
 
       const payload = { memberId: 'm1', cost: 0, fameCost: 100 }
+      const nextState = handleClinicEnhance(state, payload)
+
+      assert.equal(nextState, state)
+    })
+
+    await t2.test('fails if insufficient fame', () => {
+      const state = {
+        player: { money: 1000, fame: 0, clinicVisits: 0 },
+        band: {
+          members: [
+            { id: 'm1', traits: [] }
+          ]
+        }
+      }
+
+      const payload = {
+        memberId: 'm1',
+        cost: 0,
+        fameCost: 500,
+        trait: 'cyber_lungs'
+      }
+
       const nextState = handleClinicEnhance(state, payload)
 
       assert.equal(nextState, state)

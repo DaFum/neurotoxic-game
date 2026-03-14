@@ -75,6 +75,13 @@ const validatePlayer = player => {
     throw new StateError('player.van must be an object')
   }
 
+  // Backfill/Validate clinicVisits
+  if (player.clinicVisits === undefined || typeof player.clinicVisits !== 'number' || !Number.isFinite(player.clinicVisits)) {
+    player.clinicVisits = 0
+  } else {
+    player.clinicVisits = clampNonNegative(Math.floor(player.clinicVisits))
+  }
+
   if (
     player.playerId !== undefined &&
     player.playerId !== null &&

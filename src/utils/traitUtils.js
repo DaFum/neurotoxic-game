@@ -17,6 +17,20 @@ for (const charKey in CHARACTERS) {
 }
 
 /**
+ * Helper to fetch a generic trait (e.g., from CLINIC definitions)
+ * @param {string} traitId
+ * @returns {object|null}
+ */
+export const getTraitById = (traitId) => {
+  for (const charKey in TRAIT_DEFS_BY_CHAR) {
+    if (TRAIT_DEFS_BY_CHAR[charKey][traitId]) {
+      return TRAIT_DEFS_BY_CHAR[charKey][traitId]
+    }
+  }
+  return null
+}
+
+/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *

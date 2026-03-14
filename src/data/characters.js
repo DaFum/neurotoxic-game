@@ -149,5 +149,16 @@ export const CHARACTERS = {
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }
+  },
+  CLINIC: {
+    traits: [
+      {
+        id: 'cyber_lungs',
+        name: 'Cyber Lungs',
+        desc: 'Significantly increased stamina regeneration.',
+        effect: 'stamina_regen_bonus',
+        unlockHint: 'Sacrifice fame in the Void Clinic.'
+      }
+    ]
   }
 }
