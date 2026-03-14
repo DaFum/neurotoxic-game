@@ -12,6 +12,7 @@ import {
   TIME_LIMIT
 } from './constants.js'
 import { generateLightningSeeds } from './utils.js'
+import { shuffleArray } from '../../utils/randomUtils.js'
 
 export const useKabelsalatState = () => {
   const { t } = useTranslation(['ui'])
@@ -142,7 +143,7 @@ export const useKabelsalatState = () => {
         const unconnected = prevOrder.filter(id => !connections[id])
         if (unconnected.length <= 1) return prevOrder
 
-        const shuffled = [...unconnected].sort(() => Math.random() - 0.5)
+        const shuffled = shuffleArray([...unconnected])
 
         let shuffleIndex = 0
         return prevOrder.map(id => {

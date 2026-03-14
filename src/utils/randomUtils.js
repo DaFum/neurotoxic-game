@@ -29,3 +29,17 @@ export const pickRandomSubset = (arr, count, rng = secureRandom) => {
   // The selected elements are at the end of the array
   return shuffled.slice(n - k)
 }
+
+/**
+ * Shuffles an array in place using the Fisher-Yates algorithm.
+ * @param {Array} array - The array to shuffle.
+ * @param {Function} [rng=secureRandom] - A random number generator function.
+ * @returns {Array} The shuffled array.
+ */
+export const shuffleArray = (array, rng = secureRandom) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[array[i], array[j]] = [array[j], array[i]]
+  }
+  return array
+}
