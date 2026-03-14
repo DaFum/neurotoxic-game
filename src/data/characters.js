@@ -151,6 +151,10 @@ export const CHARACTERS = {
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }
   },
   CLINIC: {
+    name: 'Clinic',
+    role: 'NPC',
+    baseStats: { skill: 0, stamina: 0, charisma: 0, technical: 0, improv: 0 },
+    relationships: {},
     traits: [
       {
         id: 'cyber_lungs',
@@ -159,6 +163,7 @@ export const CHARACTERS = {
         effect: 'stamina_regen_bonus',
         unlockHint: 'traits:cyberLungs.unlockHint'
       }
-    ]
+    ],
+    equipment: {}
   }
 }
