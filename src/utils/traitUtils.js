@@ -6,14 +6,33 @@ import { CHARACTERS } from '../data/characters.js'
  * Provides O(1) lookup for trait definitions instead of O(N) searching.
  */
 const TRAIT_DEFS_BY_CHAR = Object.create(null)
+/**
+ * Flat lookup for all trait definitions by traitId.
+ * Maps: traitId -> traitDef
+ */
+const TRAIT_DEFS_BY_ID = new Map()
+
 for (const charKey in CHARACTERS) {
   if (Object.hasOwn(CHARACTERS, charKey)) {
     const traits = CHARACTERS[charKey].traits || []
     TRAIT_DEFS_BY_CHAR[charKey] = Object.create(null)
     for (const trait of traits) {
       TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
+      if (TRAIT_DEFS_BY_ID.has(trait.id)) {
+        console.warn(`Duplicate trait ID found during initialization: ${trait.id}`)
+      }
+      TRAIT_DEFS_BY_ID.set(trait.id, trait)
     }
   }
+}
+
+/**
+ * Helper to fetch a generic trait (e.g., from CLINIC definitions)
+ * @param {string} traitId
+ * @returns {object|null}
+ */
+export const getTraitById = (traitId) => {
+  return TRAIT_DEFS_BY_ID.get(traitId) || null
 }
 
 /**

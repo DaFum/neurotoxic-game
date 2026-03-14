@@ -80,6 +80,11 @@ const SCENE_STYLES = {
   [GAME_PHASES.PRE_GIG_MINIGAME]: {
     ...PRE_GIG_BASE_STYLE,
     icon: '\uD83D\uDCE6'
+  },
+  [GAME_PHASES.CLINIC]: {
+    ...TOXIC_GREEN_BASE,
+    speakerColor: 'text-blood-red',
+    icon: '\uD83E\uDE78'
   }
 }
 

@@ -276,6 +276,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     // Instagram Gear Endorsement Perk (Free stamina recovery)
     if ((nextSocial.instagram || 0) >= 10000) stamina += 2
 
+    // Cyber Lungs Trait: Bonus stamina regen from clinic graft
+    if (hasTrait(m, 'cyber_lungs')) stamina += 3
+
     return { ...m, mood, stamina: Math.min(100, stamina) }
   })
 

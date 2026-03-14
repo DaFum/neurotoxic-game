@@ -10,7 +10,8 @@ export const GAME_PHASES = Object.freeze({
   SETTINGS: 'SETTINGS',
   CREDITS: 'CREDITS',
   GAMEOVER: 'GAMEOVER',
-  INTRO: 'INTRO'
+  INTRO: 'INTRO',
+  CLINIC: 'CLINIC'
 })
 
 export const MINIGAME_TYPES = {
@@ -30,3 +31,16 @@ export const DEFAULT_MINIGAME_STATE = {
 }
 
 export const DEFAULT_EQUIPMENT_COUNT = 10
+
+export const CLINIC_CONFIG = Object.freeze({
+  VISIT_MULTIPLIER: 1.2,
+  HEAL_BASE_COST_MONEY: 150,
+  ENHANCE_BASE_COST_FAME: 500,
+  HEAL_STAMINA_GAIN: 30,
+  HEAL_MOOD_GAIN: 10,
+  CYBER_LUNGS_TRAIT_ID: 'cyber_lungs'
+})
+
+export const calculateClinicCost = (baseCost, currentVisits) => {
+  return Math.floor(baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits))
+}

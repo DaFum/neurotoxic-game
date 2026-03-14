@@ -27,7 +27,8 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.POST_GIG,
   GAME_PHASES.TRAVEL_MINIGAME,
   GAME_PHASES.PRE_GIG_MINIGAME,
-  GAME_PHASES.GAMEOVER
+  GAME_PHASES.GAMEOVER,
+  GAME_PHASES.CLINIC
 ])
 
 /**
@@ -118,6 +119,9 @@ export const handleLoadGame = (state, payload) => {
   const validatedMembers = Array.isArray(rawBand.members)
     ? rawBand.members.map(m => ({
         ...m,
+        // Backfill id from name for saves created before id fields were added
+        id: typeof m.id === 'string' ? m.id
+          : (typeof m.name === 'string' ? m.name.toLowerCase() : m.id),
         traits: Array.isArray(m.traits) ? m.traits : [],
         mood: Math.max(
           0,

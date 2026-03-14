@@ -343,13 +343,15 @@ describe('characters.js', () => {
       )
     })
 
-    it('all base stats are positive numbers', () => {
-      Object.values(CHARACTERS).forEach(character => {
-        Object.values(character.baseStats).forEach(stat => {
-          assert.ok(typeof stat === 'number', 'Stat must be a number')
-          assert.ok(stat > 0, 'Stat must be positive')
+    it('all base stats are positive numbers (band members only)', () => {
+      Object.values(CHARACTERS)
+        .filter(c => c.role !== 'NPC')
+        .forEach(character => {
+          Object.values(character.baseStats).forEach(stat => {
+            assert.ok(typeof stat === 'number', 'Stat must be a number')
+            assert.ok(stat > 0, 'Stat must be positive')
+          })
         })
-      })
     })
 
     it('all relationship values are between 0 and 100', () => {

@@ -38,6 +38,7 @@ export const DEFAULT_PLAYER_STATE = {
   eventsTriggeredToday: 0,
   totalTravels: 0,
   hqUpgrades: [],
+  clinicVisits: 0,
   van: {
     fuel: 100,
     condition: 100,

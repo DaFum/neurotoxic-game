@@ -15,6 +15,16 @@ After travel the band can get an item with specials to use.
     socialEngine.js: Pure mathematical utilities calculating passive income vs. raid probability.
     data/brandDeals.js: O(1) Map lookups enforcing requiresZealotry < 20 to filter available deals.
 
+## 2026-03-14 - The Underground Void Clinic
+**Feature:** The Underground Void Clinic
+
+**Description:**
+  - Lore Integration:
+    As the band travels, their stress and damage levels go up. They sometimes need special body-modifications and illegal stim-enhancements to keep shredding.
+  - State Impact:
+    clinicReducer.js: Added `handleClinicHeal` and `handleClinicEnhance` to strictly enforce stat bounds.
+    initialState.js: Tracking `clinicVisits` to exponentially increase cost over time.
+    actionTypes.js: Added `CLINIC_HEAL` and `CLINIC_ENHANCE`.
 ## 2026-03-13 - SOCIAL AND BRAND DEAL IMAGES
 **Feature:** Social & Brand Deal Image Integration
 
