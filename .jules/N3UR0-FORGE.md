@@ -36,3 +36,14 @@ After travel the band can get an item with specials to use.
     src/components/postGig/SocialPhase.jsx: Integrates image generation into the background of post option buttons (opacity 10, screen blend mode).
     src/components/postGig/DealsPhase.jsx: Displays the generated brand alignment image side-by-side with the deal text.
     src/components/postGig/CompletePhase.jsx: Added full background outcome images for the gig success/failure screens.
+
+## 2026-03-15 - PIRATE RADIO BROADCAST
+**Feature:** Pirate Radio Broadcast System
+
+**Description:**
+  - Lore Integration:
+    The band hacks into local frequencies to broadcast their raw tracks, directly boosting Fame and feeding their cult (Zealotry). However, this incurs a financial cost (bribes/tech), drains Band Harmony due to the stress of illegal activity, and increases Controversy and the risk of police raids.
+  - State Impact:
+    actionTypes.js: Added `PIRATE_BROADCAST`.
+    socialReducer.js: Added `handlePirateBroadcast` to apply bounds-clamped updates to player money, fame, band harmony, zealotry, and controversy.
+    PirateRadioModal.jsx: A new Brutalist UI component added to the Overworld scene, allowing players to view the costs and gains and trigger the broadcast.

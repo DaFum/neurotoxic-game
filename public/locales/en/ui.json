@@ -24,6 +24,9 @@
   "button.mute": "Mute (M)",
   "button.shortcuts": "Shortcuts (?, h)",
   "button.unmute": "Unmute (M)",
+  "button.close": "Close",
+  "button.cancel": "CANCEL",
+  "button.transmit": "TRANSMIT",
   "cancel": "CANCEL",
   "chatter.header": "LIVE_CHATTER_FEED",
   "chatter.msg1": "this band is dead lol",
@@ -844,5 +847,14 @@
   "clinic.not_enough_money": "Not enough money.",
   "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
   "clinic.not_enough_fame": "Not enough fame. The void demands sacrifice.",
-  "clinic.enhance_success": "Flesh upgraded."
+  "clinic.enhance_success": "Flesh upgraded.",
+  "pirate_radio.title": "PIRATE RADIO BROADCAST",
+  "pirate_radio.description": "Hack local frequencies and broadcast your rawest tracks. The signal will reach the desperate and the disillusioned, boosting your fame and feeding the cult.",
+  "pirate_radio.fame_gain": "FAME GAIN",
+  "pirate_radio.zealotry_gain": "ZEALOTRY GAIN",
+  "pirate_radio.controversy_gain": "CONTROVERSY",
+  "pirate_radio.cost": "COST (BRIBES/TECH)",
+  "pirate_radio.harmony_cost": "HARMONY DRAIN",
+  "pirate_radio.button": "PIRATE RADIO",
+  "pirate_radio.success": "Broadcast complete. The signal lives."
 }

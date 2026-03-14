@@ -1,5 +1,6 @@
 import { logger } from '../../utils/logger.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
+import { clampPlayerMoney, clampBandHarmony } from '../../utils/gameStateUtils.js'
 
 /**
  * Handles social update actions
@@ -93,5 +94,45 @@ export const handleAddVenueBlacklist = (state, venueId) => {
       }
     ]
   }
+  return nextState
+}
+
+export const handlePirateBroadcast = (state, payload) => {
+  const { cost, fameGain, zealotryGain, controversyGain, harmonyCost, successToast } = payload
+
+  const nextMoney = clampPlayerMoney(state.player.money - cost)
+  const nextHarmony = clampBandHarmony(state.band.harmony - harmonyCost)
+
+  const currentFame = state.player.fame || 0
+  const nextFame = currentFame + fameGain
+
+  const currentZealotry = state.social.zealotry || 0
+  const nextZealotry = Math.max(0, Math.min(100, currentZealotry + zealotryGain))
+
+  const currentControversy = state.social.controversyLevel || 0
+  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+
+  const nextState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney,
+      fame: nextFame
+    },
+    band: {
+      ...state.band,
+      harmony: nextHarmony
+    },
+    social: {
+      ...state.social,
+      zealotry: nextZealotry,
+      controversyLevel: nextControversy
+    }
+  }
+
+  if (successToast) {
+    nextState.toasts = [...(state.toasts || []), { id: crypto.randomUUID(), ...successToast }]
+  }
+
   return nextState
 }
