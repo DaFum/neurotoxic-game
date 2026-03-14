@@ -321,7 +321,7 @@ export const Overworld = () => {
           variant='warning'
           size='sm'
         >
-          [REFUEL]
+          [{t('ui:overworld.refuel_button', { defaultValue: 'REFUEL' })}]
         </GlitchButton>
         <GlitchButton
           onClick={handleRepair}
@@ -329,7 +329,7 @@ export const Overworld = () => {
           variant='primary'
           size='sm'
         >
-          [REPAIR]
+          [{t('ui:overworld.repair_button', { defaultValue: 'REPAIR' })}]
         </GlitchButton>
         <GlitchButton
           onClick={handleSaveWithDelay}
@@ -338,7 +338,7 @@ export const Overworld = () => {
           variant='primary'
           size='sm'
         >
-          [SAVE GAME]
+          [{t('ui:overworld.save_button', { defaultValue: 'SAVE GAME' })}]
         </GlitchButton>
       </div>
 

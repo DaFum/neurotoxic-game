@@ -9,6 +9,6 @@ test('GameOverOverlay renders nothing when isGameOver is false', () => {
 
 test('GameOverOverlay renders overlay when isGameOver is true', () => {
   render(<GameOverOverlay isGameOver={true} />)
-  expect(screen.getByText('BOOED OFF STAGE')).toBeInTheDocument()
-  expect(screen.getByText('THE CROWD HAS SPOKEN')).toBeInTheDocument()
+  expect(screen.getByText(/ui:game-over.booed-off-stage/i)).toBeInTheDocument()
+  expect(screen.getByText(/ui:game-over.crowd-spoken/i)).toBeInTheDocument()
 })

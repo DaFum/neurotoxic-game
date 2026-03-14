@@ -76,14 +76,14 @@ describe('Overworld Component', () => {
     )
 
     // Check for standard UI elements
-    expect(screen.getByText(/TOUR PLAN:/i)).toBeInTheDocument()
+    expect(screen.getByText(/ui:overworld.header.tourPlan/i)).toBeInTheDocument()
     expect(screen.getByTestId('toggle-radio')).toBeInTheDocument()
 
     // Check buttons
     expect(screen.getByText(/\[ui:quests\.button\]/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[REFUEL\]/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[REPAIR\]/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[SAVE GAME\]/i)).toBeInTheDocument()
+    expect(screen.getByText(/\[ui:overworld.refuel_button\]/i)).toBeInTheDocument()
+    expect(screen.getByText(/\[ui:overworld.repair_button\]/i)).toBeInTheDocument()
+    expect(screen.getByText(/\[ui:overworld.save_button\]/i)).toBeInTheDocument()
   })
 
   it('triggers save game action when save button is clicked', async () => {
@@ -97,7 +97,7 @@ describe('Overworld Component', () => {
         </GameStateProvider>
       )
 
-      const saveButton = screen.getByText(/\[SAVE GAME\]/i)
+      const saveButton = screen.getByText(/\[ui:overworld.save_button\]/i)
 
       await act(async () => {
         fireEvent.click(saveButton)

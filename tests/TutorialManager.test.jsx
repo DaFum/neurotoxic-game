@@ -45,7 +45,7 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('TUTORIAL 1/4')).toBeTruthy()
+    expect(screen.getByText(/ui:tutorial.header/)).toBeTruthy()
   })
 
   test('calls updatePlayer when NEXT button is clicked', async () => {
@@ -55,7 +55,7 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    const nextButton = screen.getByRole('button', { name: /next/i })
+    const nextButton = screen.getByRole('button', { name: /ui:tutorial.next/i })
     await user.click(nextButton)
 
     expect(mockUpdatePlayer).toHaveBeenCalledWith({ tutorialStep: 1 })
@@ -70,7 +70,7 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByRole('button', { name: /done/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /ui:tutorial.done/i })).toBeTruthy()
   })
 
   test('marks tutorial as seen when completing last step', async () => {
@@ -83,7 +83,7 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    const doneButton = screen.getByRole('button', { name: /done/i })
+    const doneButton = screen.getByRole('button', { name: /ui:tutorial.done/i })
     await user.click(doneButton)
 
     expect(mockUpdatePlayer).toHaveBeenCalledWith({ tutorialStep: 4 })
@@ -100,7 +100,7 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    const skipButton = screen.getByRole('button', { name: /skip all/i })
+    const skipButton = screen.getByRole('button', { name: /ui:tutorial.skipAll/i })
     await user.click(skipButton)
 
     expect(mockUpdatePlayer).toHaveBeenCalledWith({ tutorialStep: -1 })
@@ -235,8 +235,7 @@ describe('TutorialManager', () => {
 
     const dialog = container.querySelector('[role="dialog"]')
     expect(dialog).toBeTruthy()
-    expect(dialog?.getAttribute('aria-label')).toBe('Tutorial')
-    expect(dialog?.getAttribute('aria-label')).toBe('Tutorial')
+    expect(dialog?.getAttribute('aria-label')).toBe('ui:tutorial.ariaLabel')
   })
 
   test('handles missing player.tutorialStep gracefully', async () => {
