@@ -442,12 +442,14 @@ const MemberTraits = ({ member, t }) => {
 
   // Build a unique list of traits to display
   const allTraitsMap = new Map()
-  baseTraits.forEach(bt => allTraitsMap.set(bt.id, bt))
-  runtimeTraits.forEach(rt => {
+  for (const bt of baseTraits) {
+    allTraitsMap.set(bt.id, bt)
+  }
+  for (const rt of runtimeTraits) {
     if (!allTraitsMap.has(rt.id)) {
       allTraitsMap.set(rt.id, rt)
     }
-  })
+  }
 
   const potentialTraits = Array.from(allTraitsMap.values())
   if (potentialTraits.length === 0)

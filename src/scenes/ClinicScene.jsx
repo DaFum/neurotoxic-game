@@ -56,7 +56,7 @@ export const ClinicScene = () => {
               <div className='flex flex-col gap-2 mt-auto'>
                 <GlitchButton
                   onClick={() => healMember(member.id)}
-                  disabled={player.money < healCostMoney || member.stamina >= 100}
+                  disabled={player.money < healCostMoney || (member.stamina >= 100 && (CLINIC_CONFIG.HEAL_MOOD_GAIN === 0 || member.mood >= 100))}
                   variant='primary'
                   size='sm'
                   className='w-full text-xs py-1'

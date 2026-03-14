@@ -7,11 +7,12 @@ import { getTraitById } from '../../utils/traitUtils.js'
  * Common logic for clinic actions.
  * @param {Object} state - The current game state.
  * @param {Object} payload - The action payload.
+ * @param {Object} [payload.successToast] - Optional toast appended to state.toasts on success.
  * @param {Function} memberUpdater - A function to apply updates to the target member.
  * @returns {Object} The updated state or the original state if validation fails.
  */
 const executeClinicAction = (state, payload, memberUpdater) => {
-  const { memberId, type } = payload
+  const { memberId, type, successToast } = payload
   const currentVisits = state.player?.clinicVisits || 0
   // Calculate costs directly from state
   const cost = type === 'heal' ? calculateClinicCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY, currentVisits) : 0
@@ -48,7 +49,7 @@ const executeClinicAction = (state, payload, memberUpdater) => {
     return memberUpdater(member)
   })
 
-  return {
+  const nextState = {
     ...state,
     player: {
       ...state.player,
@@ -61,6 +62,13 @@ const executeClinicAction = (state, payload, memberUpdater) => {
       members: updatedMembers
     }
   }
+
+  // Append success toast atomically so it only appears when the action succeeds
+  if (successToast) {
+    nextState.toasts = [...(state.toasts || []), successToast]
+  }
+
+  return nextState
 }
 
 /**

@@ -43,16 +43,15 @@ export const useClinicLogic = () => {
           memberId,
           type: 'heal',
           staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
-          moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN
-        })
-      )
-      dispatch(
-        createAddToastAction({
-          message: t('ui:clinic.heal_success', {
-            defaultValue: 'Stamina restored by {{healAmountApplied}}. The void embraces you.',
-            healAmountApplied
-          }),
-          type: 'success'
+          moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN,
+          successToast: {
+            id: crypto.randomUUID(),
+            message: t('ui:clinic.heal_success', {
+              defaultValue: 'Stamina restored by {{healAmountApplied}}. The void embraces you.',
+              healAmountApplied
+            }),
+            type: 'success'
+          }
         })
       )
     },
@@ -82,15 +81,14 @@ export const useClinicLogic = () => {
         createClinicEnhanceAction({
           memberId,
           type: 'enhance',
-          trait
-        })
-      )
-      dispatch(
-        createAddToastAction({
-          message: t('ui:clinic.enhance_success', {
-            defaultValue: 'Flesh upgraded.'
-          }),
-          type: 'success'
+          trait,
+          successToast: {
+            id: crypto.randomUUID(),
+            message: t('ui:clinic.enhance_success', {
+              defaultValue: 'Flesh upgraded.'
+            }),
+            type: 'success'
+          }
         })
       )
     },

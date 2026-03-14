@@ -35,6 +35,54 @@ test('clinicReducer', async t => {
       assert.equal(nextState.band.members[1].stamina, 100)
     })
 
+    await t2.test('appends successToast to state.toasts on success', () => {
+      const state = {
+        player: { money: 500, fame: 100, clinicVisits: 0 },
+        band: {
+          members: [
+            { id: 'm1', name: 'M1', stamina: 50, mood: 50 }
+          ]
+        },
+        toasts: []
+      }
+
+      const toast = { id: 'toast-1', message: 'Healed!', type: 'success' }
+      const payload = {
+        memberId: 'm1',
+        type: 'heal',
+        staminaGain: 30,
+        moodGain: 10,
+        successToast: toast
+      }
+
+      const nextState = handleClinicHeal(state, payload)
+
+      assert.equal(nextState.toasts.length, 1)
+      assert.equal(nextState.toasts[0].id, 'toast-1')
+      assert.equal(nextState.toasts[0].message, 'Healed!')
+    })
+
+    await t2.test('does not append toast when action is rejected', () => {
+      const state = {
+        player: { money: 50, fame: 100, clinicVisits: 0 },
+        band: { members: [{ id: 'm1', stamina: 50, mood: 50 }] },
+        toasts: []
+      }
+
+      const toast = { id: 'toast-2', message: 'Healed!', type: 'success' }
+      const payload = {
+        memberId: 'm1',
+        type: 'heal',
+        staminaGain: 30,
+        moodGain: 10,
+        successToast: toast
+      }
+
+      const nextState = handleClinicHeal(state, payload)
+
+      assert.equal(nextState, state) // Rejected, no toast
+    })
+
     await t2.test('fails if not enough money', () => {
       const state = {
         player: { money: 50, fame: 100, clinicVisits: 0 },

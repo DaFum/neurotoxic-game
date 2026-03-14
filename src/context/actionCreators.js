@@ -391,6 +391,7 @@ export const createUseContrabandAction = (instanceId, memberId) => ({
  * @param {string} payload.type - Must be 'heal'. Used by the reducer to compute cost.
  * @param {number} payload.staminaGain - The amount of stamina to restore.
  * @param {number} payload.moodGain - The amount of mood to restore.
+ * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
 export const createClinicHealAction = payload => ({
@@ -405,6 +406,7 @@ export const createClinicHealAction = payload => ({
  * @param {string} payload.memberId - The ID of the band member.
  * @param {string} payload.type - Must be 'enhance'. Used by the reducer to compute cost.
  * @param {string} payload.trait - The ID of the trait to graft.
+ * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
 export const createClinicEnhanceAction = payload => ({

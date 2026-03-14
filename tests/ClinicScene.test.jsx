@@ -8,7 +8,8 @@ vi.mock('../src/context/gameConstants', async (importOriginal) => {
   return {
     ...actual,
     CLINIC_CONFIG: {
-      CYBER_LUNGS_TRAIT_ID: 'cyber_lungs'
+      CYBER_LUNGS_TRAIT_ID: 'cyber_lungs',
+      HEAL_MOOD_GAIN: 10
     }
   }
 })
@@ -79,7 +80,7 @@ describe('ClinicScene', () => {
   })
 
   it('disables buttons correctly based on state', () => {
-    // M2 has 100 stamina, so their heal button should be disabled
+    // M2 has 100 stamina AND 100 mood, so their heal button should be disabled
     // M2 has 'cyber_lungs', so their enhance button should be disabled
     renderComponent()
 
