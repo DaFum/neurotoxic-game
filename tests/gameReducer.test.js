@@ -39,7 +39,7 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 mock.module('../src/utils/traitUtils.js', {
   namedExports: {
     applyTraitUnlocks: mockApplyTraitUnlocks,
-    getTraitById: mock.fn(() => ({ id: 'mock_trait' }))
+    getTraitById: mock.fn((traitId) => ({ id: traitId }))
   }
 })
 

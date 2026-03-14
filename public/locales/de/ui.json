@@ -856,5 +856,6 @@
   "pirate_radio.cost": "KOSTEN (BESTECHUNG/TECH)",
   "pirate_radio.harmony_cost": "HARMONIE VERLUST",
   "pirate_radio.button": "PIRATENSENDER",
-  "pirate_radio.success": "Übertragung beendet. Das Signal lebt."
+  "pirate_radio.success": "Übertragung beendet. Das Signal lebt. Fame +{{deltaFame}}, Zealotry +{{deltaZealotry}}, Kontroverse +{{deltaControversy}}, Harmonie {{deltaHarmony}}, Kosten {{cost}}€.",
+  "pirate_radio.required_offering": "[ BENÖTIGTES OPFER ]"
 }

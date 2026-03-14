@@ -37,7 +37,7 @@ After travel the band can get an item with specials to use.
     src/components/postGig/DealsPhase.jsx: Displays the generated brand alignment image side-by-side with the deal text.
     src/components/postGig/CompletePhase.jsx: Added full background outcome images for the gig success/failure screens.
 
-## 2026-03-15 - PIRATE RADIO BROADCAST
+## 2026-03-14 - PIRATE RADIO BROADCAST
 **Feature:** Pirate Radio Broadcast System
 
 **Description:**

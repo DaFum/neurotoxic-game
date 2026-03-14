@@ -856,5 +856,6 @@
   "pirate_radio.cost": "COST (BRIBES/TECH)",
   "pirate_radio.harmony_cost": "HARMONY DRAIN",
   "pirate_radio.button": "PIRATE RADIO",
-  "pirate_radio.success": "Broadcast complete. The signal lives."
+  "pirate_radio.success": "Broadcast complete. The signal lives. Fame +{{deltaFame}}, Zealotry +{{deltaZealotry}}, Controversy +{{deltaControversy}}, Harmony {{deltaHarmony}}, Cost {{cost}}€.",
+  "pirate_radio.required_offering": "[ REQUIRED OFFERING ]"
 }

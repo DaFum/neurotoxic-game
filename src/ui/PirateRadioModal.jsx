@@ -31,9 +31,11 @@ export const PirateRadioModal = ({
             {t('ui:pirate_radio.title', { defaultValue: 'PIRATE RADIO BROADCAST' })}
           </h2>
           <button
+            type='button'
             onClick={onClose}
-            className='text-toxic-green hover:text-white hover:bg-toxic-green px-2 border border-transparent hover:border-toxic-green transition-colors font-mono'
+            className='text-toxic-green hover:text-star-white hover:bg-toxic-green px-2 border border-transparent hover:border-toxic-green transition-colors font-mono'
             title={t('ui:button.close', { defaultValue: 'Close' })}
+            aria-label={t('ui:button.close', { defaultValue: 'Close' })}
           >
             [X]
           </button>
@@ -60,7 +62,7 @@ export const PirateRadioModal = ({
           </div>
 
           <div className='bg-void-black/50 border border-blood-red/30 p-4 space-y-2'>
-            <h3 className='text-blood-red font-bold mb-2'>[ REQUIRED OFFERING ]</h3>
+            <h3 className='text-blood-red font-bold mb-2'>{t('ui:pirate_radio.required_offering', { defaultValue: '[ REQUIRED OFFERING ]' })}</h3>
             <div className='flex justify-between'>
               <span>{t('ui:pirate_radio.cost', { defaultValue: 'COST (BRIBES/TECH)' })}</span>
               <span className={player.money >= config.COST ? 'text-ash-gray' : 'text-blood-red'}>

@@ -96,4 +96,36 @@ describe('Pirate Radio Logic', () => {
     assert.equal(result.player.money, 0, 'Money should not drop below 0')
     assert.equal(result.band.harmony, 1, 'Harmony should clamp to 1 instead of 0 based on clampBandHarmony logic')
   })
+
+  it('should handle undefined and non-numeric payload fields gracefully without NaN', () => {
+    const initialState = {
+      player: {
+        money: 50,
+        fame: 10
+      },
+      band: {
+        harmony: 50
+      },
+      social: {
+        zealotry: 10,
+        controversyLevel: 10
+      }
+    }
+
+    const payload = {
+      cost: undefined,
+      fameGain: 'invalid',
+      zealotryGain: NaN,
+      controversyGain: null,
+      harmonyCost: undefined
+    }
+
+    const result = handlePirateBroadcast(initialState, payload)
+
+    assert.equal(result.player.money, 50, 'Money should remain numeric')
+    assert.equal(result.player.fame, 10, 'Fame should remain numeric')
+    assert.equal(result.band.harmony, 50, 'Harmony should remain numeric')
+    assert.equal(result.social.zealotry, 10, 'Zealotry should remain numeric')
+    assert.equal(result.social.controversyLevel, 10, 'Controversy should remain numeric')
+  })
 })
