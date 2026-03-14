@@ -26,7 +26,7 @@ export const CompletePhase = ({
   }
 
   return (
-    <>
+    <div className='relative min-h-[400px] flex flex-col items-center justify-center p-8 border border-ash-gray/20 rounded overflow-hidden'>
      {/* Background Image Watermark */}
     <div
       className='absolute inset-0 opacity-20 bg-cover bg-center mix-blend-screen pointer-events-none z-0'
@@ -175,7 +175,7 @@ export const CompletePhase = ({
         </ActionButton>
       </motion.div>
     </motion.div>
-    </>
+    </div>
   )
 }
 
