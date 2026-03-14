@@ -77,8 +77,6 @@ export const BandHQ = ({
     if (processingItemId) return
     setProcessingItemId(item.id)
     try {
-      // Artificial delay for UX lifted from ShopItem
-      await new Promise(resolve => setTimeout(resolve, 500))
       await handleBuy(item)
     } catch (err) {
       if (err instanceof GameError || err instanceof StateError) {
