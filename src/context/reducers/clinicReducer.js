@@ -54,7 +54,7 @@ const executeClinicAction = (state, payload, memberUpdater) => {
     player: {
       ...state.player,
       money: clampPlayerMoney(playerMoney - cost),
-      fame: Math.max(0, playerFame - fameCost),
+      fame: Math.max(0, Math.floor(playerFame - fameCost)),
       clinicVisits: (state.player.clinicVisits || 0) + 1
     },
     band: {

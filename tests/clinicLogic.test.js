@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleClinicHeal, handleClinicEnhance } from '../src/context/reducers/clinicReducer.js'
+import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 
 // The reducer computes costs internally from CLINIC_CONFIG and clinicVisits.
 // At 0 visits: heal cost = 150 money, enhance cost = 500 fame.
@@ -155,5 +156,31 @@ test('clinicReducer', async t => {
 
       assert.equal(nextState, state)
     })
+  })
+
+  await t.test('cyber_lungs trait grants daily stamina regen bonus', () => {
+    const currentState = {
+      player: {
+        day: 1,
+        money: 1000,
+        hqUpgrades: [],
+        van: { condition: 100 }
+      },
+      band: {
+        members: [
+          { name: 'Matze', mood: 50, stamina: 50, traits: [{ id: 'cyber_lungs' }] },
+          { name: 'Marius', mood: 50, stamina: 50, traits: [] }
+        ],
+        harmony: 50
+      },
+      social: { instagram: 100 }
+    }
+
+    const { band } = calculateDailyUpdates(currentState)
+
+    // Member with cyber_lungs: 50 - 5 (decay) + 3 (cyber_lungs) = 48
+    // Member without:          50 - 5 (decay) = 45
+    assert.equal(band.members[0].stamina, 48)
+    assert.equal(band.members[1].stamina, 45)
   })
 })

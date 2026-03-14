@@ -14,6 +14,7 @@
 // - melodic_genius (Lars): Implemented
 // - grudge_holder (Matze): Implemented
 // - peacemaker (Lars): Implemented
+// - cyber_lungs (Clinic NPC): Implemented (Stamina regen bonus)
 //
 export const CHARACTERS = {
   MATZE: {
