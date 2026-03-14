@@ -166,7 +166,7 @@ describe('Contraband Integration Tests', () => {
         }
 
         assert.ok(
-          itemKeys.includes('imagePrompt'),
+          Object.hasOwn(item, 'imagePrompt'),
           `Item ${item.id} should have imagePrompt`
         )
       }
