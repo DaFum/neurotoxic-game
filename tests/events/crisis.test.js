@@ -3,6 +3,12 @@ import assert from 'node:assert'
 import { CRISIS_EVENTS } from '../../src/data/events/crisis.js'
 
 describe('CRISIS_EVENTS', () => {
+  const getCrisisEvent = id => {
+    const evt = CRISIS_EVENTS.find(e => e.id === id)
+    assert.ok(evt, `event not found: ${id}`)
+    return evt
+  }
+
   test('all crisis events have required fields', () => {
     assert.ok(CRISIS_EVENTS.length > 0)
     for (const evt of CRISIS_EVENTS) {
@@ -33,8 +39,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_redemption_charity conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_redemption_charity')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_redemption_charity')
     assert.strictEqual(
       evt.condition({ social: { controversyLevel: 40 } }),
       true
@@ -47,8 +52,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_sponsor_ultimatum conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_sponsor_ultimatum')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_sponsor_ultimatum')
     assert.strictEqual(
       evt.condition({
         social: { controversyLevel: 80, activeDeals: ['deal1'] }
@@ -69,8 +73,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_poor_performance conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_poor_performance')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_poor_performance')
     assert.strictEqual(
       evt.condition({ lastGigStats: { score: 29 }, eventCooldowns: [] }),
       true
@@ -90,8 +93,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_leaked_story conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_leaked_story')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_leaked_story')
     assert.strictEqual(
       evt.condition({ social: { controversyLevel: 60 } }),
       true
@@ -104,8 +106,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_mass_unfollow conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_mass_unfollow')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_mass_unfollow')
     assert.strictEqual(
       evt.condition({ social: { controversyLevel: 75 }, eventCooldowns: [] }),
       true
@@ -125,8 +126,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_ego_clash conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_ego_clash')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_ego_clash')
     assert.strictEqual(
       evt.condition({ social: { egoFocus: 'member' }, band: { harmony: 39 } }),
       true
@@ -141,8 +141,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_notice_50 conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_notice_50')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_notice_50')
     assert.strictEqual(
       evt.condition({ social: { controversyLevel: 50 }, activeStoryFlags: [] }),
       true
@@ -162,8 +161,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_notice_80 conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_notice_80')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_notice_80')
     assert.strictEqual(
       evt.condition({ social: { controversyLevel: 80 }, activeStoryFlags: [] }),
       true
@@ -183,8 +181,7 @@ describe('CRISIS_EVENTS', () => {
   })
 
   test('crisis_notice_100 conditions logic', () => {
-    const evt = CRISIS_EVENTS.find(e => e.id === 'crisis_notice_100')
-    assert.ok(evt, 'event not found')
+    const evt = getCrisisEvent('crisis_notice_100')
     assert.strictEqual(
       evt.condition({
         social: { controversyLevel: 100 },

@@ -11,7 +11,7 @@ export const CompletePhase = ({
   player,
   social
 }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
@@ -92,8 +92,12 @@ export const CompletePhase = ({
                 result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
               }
             >
-              💰 {result.moneyChange > 0 ? '+' : ''}
-              {result.moneyChange}€
+              💰{' '}
+              {new Intl.NumberFormat(i18n.language || 'en', {
+                style: 'currency',
+                currency: 'EUR',
+                signDisplay: 'always'
+              }).format(result.moneyChange)}
             </div>
           ) : null}
 
