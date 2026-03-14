@@ -115,7 +115,9 @@ export const SocialPhase = ({
           <div className='w-12 h-12 shrink-0 border border-blood-red/50 rounded overflow-hidden'>
             <img
               src={getGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)}
-              alt='Zealotry Cult'
+              alt={t('ui:postGig.socialPhase.altZealotryCult', {
+                defaultValue: 'Zealotry Cult'
+              })}
               className='w-full h-full object-cover mix-blend-screen opacity-80'
             />
           </div>

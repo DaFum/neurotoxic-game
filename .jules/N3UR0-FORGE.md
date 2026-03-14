@@ -40,7 +40,7 @@ After travel the band can get an item with specials to use.
 - Lore Integration:
   The Kranker Schrank aesthetic needs to bleed into every interaction. By dynamically generating imagery tailored to specific social media categories (like Viral, Drama, or Tech) and corporate brand alignments (Evil, Corporate, Indie, Sustainable), players receive a more visceral, procedurally generated visual representation of their actions and deals.
 - State Impact:
-  src/utils/imageGen.js: Added new specific IMG_PROMPTS for social categories and brand alignments.
+  src/utils/imageGen.js: Introduced new specific IMG_PROMPTS for social categories and brand alignments.
   src/components/postGig/SocialPhase.jsx: Integrates image generation into the background of post option buttons (opacity 10, screen blend mode).
   src/components/postGig/DealsPhase.jsx: Displays the generated brand alignment image side-by-side with the deal text.
-  src/components/postGig/CompletePhase.jsx: Added full background outcome images for the gig success/failure screens.
+  src/components/postGig/CompletePhase.jsx: Includes full background outcome images for the gig success/failure screens.

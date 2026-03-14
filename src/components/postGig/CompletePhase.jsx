@@ -73,7 +73,9 @@ export const CompletePhase = ({
           {result.totalFollowers}{' '}
           {t('ui:postGig.followers', { defaultValue: 'Followers' })}
           <div className='text-sm text-ash-gray/60 mt-1 font-normal tracking-wider'>
-            {result.platform}
+            {t(`ui:postGig.platforms.${result.platform}`, {
+              defaultValue: result.platform
+            })}
           </div>
         </motion.div>
 
@@ -145,6 +147,32 @@ export const CompletePhase = ({
                 : t('ui:postGig.bandAffected', {
                     defaultValue: 'Band Affected'
                   })}
+              {result.staminaChange ? (
+                <span
+                  className={
+                    result.staminaChange > 0
+                      ? 'text-toxic-green ml-2'
+                      : 'text-blood-red ml-2'
+                  }
+                >
+                  {result.staminaChange > 0 ? '+' : ''}
+                  {result.staminaChange}{' '}
+                  {t('ui:postGig.stamina', { defaultValue: 'Stamina' })}
+                </span>
+              ) : null}
+              {result.moodChange ? (
+                <span
+                  className={
+                    result.moodChange > 0
+                      ? 'text-toxic-green ml-2'
+                      : 'text-blood-red ml-2'
+                  }
+                >
+                  {result.moodChange > 0 ? '+' : ''}
+                  {result.moodChange}{' '}
+                  {t('ui:postGig.mood', { defaultValue: 'Mood' })}
+                </span>
+              ) : null}
             </div>
           ) : null}
         </motion.div>

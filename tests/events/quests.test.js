@@ -34,6 +34,7 @@ describe('QUEST_EVENTS', () => {
 
   test('quest_trigger_pick_of_destiny conditions logic', () => {
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_pick_of_destiny')
+    assert.ok(evt, 'quest event not found')
     assert.strictEqual(evt.condition({ activeQuests: [] }), true)
     assert.strictEqual(evt.condition({ activeQuests: [{ id: 'some' }] }), false)
     assert.strictEqual(evt.condition({}), true)
@@ -41,6 +42,7 @@ describe('QUEST_EVENTS', () => {
 
   test('quest_trigger_viral_dance conditions logic', () => {
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_viral_dance')
+    assert.ok(evt, 'quest event not found')
     assert.strictEqual(
       evt.condition({ activeQuests: [], social: { tiktok: 4999 } }),
       true
@@ -61,6 +63,7 @@ describe('QUEST_EVENTS', () => {
 
   test('quest_trigger_sponsor_demand conditions logic', () => {
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_sponsor_demand')
+    assert.ok(evt, 'quest event not found')
     assert.strictEqual(evt.condition({ activeQuests: [] }), true)
     assert.strictEqual(evt.condition({ activeQuests: [{ id: 'some' }] }), false)
     assert.strictEqual(evt.condition({}), true)
@@ -68,6 +71,7 @@ describe('QUEST_EVENTS', () => {
 
   test('quest_trigger_harmony_project conditions logic', () => {
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_harmony_project')
+    assert.ok(evt, 'quest event not found')
     assert.strictEqual(
       evt.condition({ activeQuests: [], band: { harmony: 59 } }),
       true
@@ -85,6 +89,7 @@ describe('QUEST_EVENTS', () => {
 
   test('quest_trigger_local_legend conditions logic', () => {
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_local_legend')
+    assert.ok(evt, 'quest event not found')
     assert.strictEqual(evt.condition({ activeQuests: [] }), true)
     assert.strictEqual(evt.condition({ activeQuests: [{ id: 'some' }] }), false)
     assert.strictEqual(evt.condition({}), true)

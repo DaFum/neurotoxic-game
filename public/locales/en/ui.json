@@ -34,6 +34,7 @@
   "chatter.random3": "BOOOOOOOOO",
   "chatter.random4": "my ears are bleeding (in a bad way)",
   "chatter.random5": "refund immediately",
+  "chatter_labels.CLINIC": "Clinic Feed",
   "chatter_labels.CREDITS": "Crew Feed",
   "chatter_labels.GAMEOVER": "Last Broadcast",
   "chatter_labels.GIG": "Live Feed",
@@ -45,7 +46,6 @@
   "chatter_labels.PRE_GIG_MINIGAME": "Roadie Feed",
   "chatter_labels.SETTINGS": "System Feed",
   "chatter_labels.TRAVEL_MINIGAME": "Travel Feed",
-  "chatter_labels.CLINIC": "Clinic Feed",
   "chatter_labels.default_fallback": "Unknown",
   "chatter_labels.default_speaker": "Band",
   "checklist.done": "INITIATE GIG",
@@ -55,6 +55,19 @@
   "checklist.task3": "BRIBE VENUE BOUNCER",
   "checklist.task4": "CALIBRATE AMPS",
   "checklist.waiting": "AWAITING SEQUENCE",
+  "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
+  "clinic.enhance_success": "Flesh upgraded.",
+  "clinic.fame": "FAME:",
+  "clinic.funds": "FUNDS:",
+  "clinic.heal_button": "HEAL ({{cost}}\u20ac)",
+  "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
+  "clinic.leave": "LEAVE CLINIC",
+  "clinic.lore": "Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.",
+  "clinic.mood": "Mood:",
+  "clinic.not_enough_fame": "Not enough fame. The void demands sacrifice.",
+  "clinic.not_enough_money": "Not enough money.",
+  "clinic.stamina": "Stamina:",
+  "clinic.title": "THE VOID CLINIC",
   "closeModal": "Close modal",
   "confirm": "CONFIRM",
   "confirm_delete": "CONFIRM DELETE",
@@ -62,18 +75,18 @@
   "confirm_identity": "CONFIRM IDENTITY",
   "continue": "CONTINUE",
   "contraband": {
-    "title": "CONTRABAND STASH",
-    "description": "Artifacts and strange detritus gathered from the void. Use with caution.",
-    "targetMemberLabel": "Target Member:",
-    "noItems": "No contraband collected yet.",
-    "useItem": "USE ITEM",
-    "passiveActive": "PASSIVE EFFECT ACTIVE",
-    "close": "CLOSE STASH",
-    "button": "STASH",
-    "requiresTarget": "Requires target member.",
-    "gigs": "GIGS",
     "applied": "APPLIED",
-    "applyItem": "APPLY EFFECT"
+    "applyItem": "APPLY EFFECT",
+    "button": "STASH",
+    "close": "CLOSE STASH",
+    "description": "Artifacts and strange detritus gathered from the void. Use with caution.",
+    "gigs": "GIGS",
+    "noItems": "No contraband collected yet.",
+    "passiveActive": "PASSIVE EFFECT ACTIVE",
+    "requiresTarget": "Requires target member.",
+    "targetMemberLabel": "Target Member:",
+    "title": "CONTRABAND STASH",
+    "useItem": "USE ITEM"
   },
   "contraband.dropped": "Found contraband!",
   "contract.confidential": "DOCUMENT: CONFIDENTIAL",
@@ -84,7 +97,7 @@
   "contract.sign_aria": "Sign Contract",
   "contract.title": "Binding Agreement",
   "contract.warning": "Failure to comply will result in <0>immediate termination of organic functions</0>.",
-  "cost": "€{{cost}}",
+  "cost": "\u20ac{{cost}}",
   "crash.message": "The simulation has crashed. Reboot required.",
   "crash.rebootButton": "REBOOT SYSTEM",
   "crash.title": "SYSTEM FAILURE",
@@ -100,8 +113,8 @@
   "crisis.title": "VAN BREAKDOWN",
   "crowdEnergy": "CROWD ENERGY",
   "crt_effect": "CRT EFFECT",
-  "currency": "€{{value}}",
-  "currencyNegative": "-€{{value}}",
+  "currency": "\u20ac{{value}}",
+  "currencyNegative": "-\u20ac{{value}}",
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "deals.accept": "ACCEPT",
@@ -229,10 +242,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -255,10 +280,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -368,12 +405,12 @@
   "inventory.emptySlot": "Empty inventory slot: {{label}}",
   "inventory.slot": "Inventory slot: {{name}}",
   "item": {
-    "unknown": "Unknown Item",
-    "typeUnknown": "Unknown Type",
     "descriptionUnknown": "Unknown Description",
+    "typeUnknown": "Unknown Type",
     "type_consumable": "consumable",
     "type_equipment": "equipment",
-    "type_relic": "Relic"
+    "type_relic": "Relic",
+    "unknown": "Unknown Item"
   },
   "keyboardHint": "Press [1-{{count}}] or click to choose",
   "keyboardHint_one": "Press [1] or click to choose",
@@ -421,15 +458,15 @@
   "map.current_location": "[CURRENT LOCATION]",
   "map.diff": "Diff",
   "map.festival": "FESTIVAL",
-  "map.finale_desc": "★ FINALE — The Final Show ★",
-  "map.mystery_desc": "MYSTERY — Unknown Encounter",
+  "map.finale_desc": "\u2605 FINALE \u2014 The Final Show \u2605",
+  "map.mystery_desc": "MYSTERY \u2014 Unknown Encounter",
   "map.nodeType.fallback": "{{type}}",
   "map.nodeType.gig": "GIG",
   "map.nodeType.rest": "REST",
   "map.pay": "Pay",
   "map.pinAlt": "Pin",
   "map.pinTypeAlt": "Map marker: {{type}}",
-  "map.rest_stop_desc": "REST STOP — Recover Stamina & Mood",
+  "map.rest_stop_desc": "REST STOP \u2014 Recover Stamina & Mood",
   "map.ticket": "Ticket",
   "map.travel_to": "Travel to {{name}}",
   "map.unknown": "Unknown",
@@ -500,7 +537,12 @@
   "overworld.void_clinic_button": "VOID CLINIC",
   "postGig": {
     "harmony": "Harmony",
-    "money": "Money"
+    "money": "Money",
+    "mood": "Mood",
+    "socialPhase": {
+      "altZealotryCult": "Zealotry Cult"
+    },
+    "stamina": "Stamina"
   },
   "postGig.acceptedDeal": "Accepted deal: {{dealName}}",
   "postGig.backToTour": "Back to Tour >",
@@ -520,12 +562,12 @@
   "postGig.postResolutionFailed": "Post failed. Try another option.",
   "postGig.skippedBrandDeals": "Skipped brand deals.",
   "postGig.socialOptionsUnavailable": "Social options are unavailable right now.",
-  "postGig.spinStory": "Spin Story (-200€, -25 Controversy)",
+  "postGig.spinStory": "Spin Story (-200\u20ac, -25 Controversy)",
   "postGig.storySpunControversyReduced": "Story Spun. Controversy reduced.",
   "postGig.tallyingReceipts": "TALLYING RECEIPTS...",
   "postGig.traitUnlocked": "Trait Unlocked: {{traitName}}",
   "postGig.viralHit": "VIRAL HIT!",
-  "postOptions.influencerSuccess": "Collaborated with {{selectedId}}. Cost {{cost}}€{{traitBonusText}}",
+  "postOptions.influencerSuccess": "Collaborated with {{selectedId}}. Cost {{cost}}\u20ac{{traitBonusText}}",
   "postOptions.influencerTraitDramaMagnet": "Massive reach, but it came with some toxic drama.",
   "postOptions.influencerTraitTechSavvy": "The gear nerds loved the technical breakdown.",
   "postOptions.noAffordableInfluencers": "You cannot afford any available influencers right now.",
@@ -575,7 +617,7 @@
   "quests.days.plural": "Days Left",
   "quests.days.singular": "Day Left",
   "quests.empty": "No active quests. Hit the road to find some!",
-  "quests.moneyReward": "+€{{amount}}",
+  "quests.moneyReward": "+\u20ac{{amount}}",
   "quests.postgig.apologyTour.description": "Play 3 gigs to repair your image after the cancellation backlash.",
   "quests.postgig.apologyTour.title": "APOLOGY TOUR",
   "quests.postgig.saveTheBand.description": "Keep the band together by surviving the current ego crisis.",
@@ -587,9 +629,9 @@
   "radio.stop": "Stop Radio",
   "rarity": {
     "common": "COMMON",
-    "uncommon": "UNCOMMON",
+    "epic": "EPIC",
     "rare": "RARE",
-    "epic": "EPIC"
+    "uncommon": "UNCOMMON"
   },
   "rewards.fameWithAmount": "+{{count}} Fame",
   "rewards.fameWithAmount_one": "+{{count}} Fame",
@@ -653,7 +695,7 @@
   "shop.messages.alreadyOwned": "Already owned {{itemName}}!",
   "shop.messages.fame": "Fame",
   "shop.messages.invalidData": "Purchase failed: Invalid upgrade data.",
-  "shop.messages.labelSigned": "Signed! +500€ Advance.",
+  "shop.messages.labelSigned": "Signed! +500\u20ac Advance.",
   "shop.messages.money": "Money",
   "shop.messages.notEnough": "Not enough {{currency}} for {{itemName}}",
   "shop.messages.posterWall": "Looks cool. Fame +10",
@@ -693,8 +735,8 @@
   "socials": "SOCIALS",
   "start_game": "Start Tour",
   "stash": {
-    "selectMemberFirst": "Select a band member first!",
-    "itemUsed": "{{action}} {{itemName}}!"
+    "itemUsed": "{{action}} {{itemName}}!",
+    "selectMemberFirst": "Select a band member first!"
   },
   "stash.actionApplied": "Applied",
   "stash.actionUsed": "Used",
@@ -757,21 +799,21 @@
   "terminal.log7": "[ERROR] BAND HARMONY CRITICAL.",
   "terminal.log8": "> AWAITING INPUT_",
   "toast.blacklisted": "BLACKLISTED: {{venueLabel}}",
-  "toast.fans_defended": "Loyal fans defended you — venue gave one more chance!",
+  "toast.fans_defended": "Loyal fans defended you \u2014 venue gave one more chance!",
   "toast.gameSaved": "Game saved!",
   "toast.quest_complete": "[{{name}}]: COMPLETE",
   "toast.quest_complete_fame": "[{{name}}]: COMPLETE +{{amount}} Fame",
   "toast.quest_complete_harmony": "[{{name}}]: COMPLETE +{{amount}} Harmony",
   "toast.quest_complete_item": "[{{name}}]: COMPLETE +Item",
-  "toast.quest_complete_money": "[{{name}}]: COMPLETE +{{amount}}€",
+  "toast.quest_complete_money": "[{{name}}]: COMPLETE +{{amount}}\u20ac",
   "toast.quest_complete_skill": "[{{name}}]: COMPLETE +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FAILED",
-  "toast.three_disasters": "3 DISASTERS IN A ROW — Prove yourself in small venues first.",
+  "toast.three_disasters": "3 DISASTERS IN A ROW \u2014 Prove yourself in small venues first.",
   "toggle.off": "OFF",
   "toggle.on": "ON",
   "tour.endedPrematurely": "The tour has ended prematurely.",
   "toxicModeActive": "TOXIC MODE ACTIVE",
-  "travel.confirmTravelPrompt": "{{location}} ({{distance}}km) | Food: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm",
+  "travel.confirmTravelPrompt": "{{location}} ({{distance}}km) | Food: {{totalCost}}\u20ac | Fuel: {{fuelLiters}}L \u2014 Click again to confirm",
   "travel.currentLocation": "You are at {{location}}.",
   "travel.errors.alreadyPlayedHere": "You just played a gig here! Hit the road and find a new crowd.",
   "travel.errors.bookingRefusedBlacklisted": "Booking refused: {{location}} has permanently blacklisted you!",
@@ -787,11 +829,11 @@
   "travel.errors.notEnoughFuel": "Not enough fuel in the tank!",
   "travel.errors.notEnoughMoneyForTravel": "Not enough money for gas and food!",
   "travel.errors.proveYourselfVenueTooBig": "PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). {{location}} is too big!",
-  "travel.refuel.notEnoughMoney": "Not enough money! Need {{cost}}€ to fill up.",
-  "travel.refuel.refueled": "Refueled: -{{cost}}€",
+  "travel.refuel.notEnoughMoney": "Not enough money! Need {{cost}}\u20ac to fill up.",
+  "travel.refuel.refueled": "Refueled: -{{cost}}\u20ac",
   "travel.refuel.tankAlreadyFull": "Tank is already full!",
-  "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}€ to repair.",
-  "travel.repair.repaired": "Repaired: -{{cost}}€",
+  "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}\u20ac to repair.",
+  "travel.repair.repaired": "Repaired: -{{cost}}\u20ac",
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
   "tutorial.ariaLabel": "Tutorial",
   "tutorial.done": "DONE",
@@ -807,18 +849,5 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%",
-  "clinic.title": "THE VOID CLINIC",
-  "clinic.lore": "Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.",
-  "clinic.funds": "FUNDS:",
-  "clinic.fame": "FAME:",
-  "clinic.stamina": "Stamina:",
-  "clinic.mood": "Mood:",
-  "clinic.heal_button": "HEAL ({{cost}}€)",
-  "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
-  "clinic.leave": "LEAVE CLINIC",
-  "clinic.not_enough_money": "Not enough money.",
-  "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
-  "clinic.not_enough_fame": "Not enough fame. The void demands sacrifice.",
-  "clinic.enhance_success": "Flesh upgraded."
+  "volume.set": "Set volume to {{pct}}%"
 }

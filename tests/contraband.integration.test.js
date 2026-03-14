@@ -151,7 +151,9 @@ describe('Contraband Integration Tests', () => {
           'effectType',
           'description',
           'rarity',
-          'icon'
+          'icon',
+          'value',
+          'stackable'
         ]
 
         for (const key of requiredKeys) {
