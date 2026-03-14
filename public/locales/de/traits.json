@@ -8,5 +8,10 @@
     "name": "Friedensstifter",
     "desc": "Verstärkt positive und dämpft negative Beziehungsänderungen",
     "unlockHint": "Halte die Bandharmonie konstant hoch."
+  },
+  "cyberLungs": {
+    "name": "Cyber-Lunge",
+    "desc": "Deutlich erhöhte Ausdauerregeneration.",
+    "unlockHint": "Opfere Ruhm in der Leeren-Klinik."
   }
 }

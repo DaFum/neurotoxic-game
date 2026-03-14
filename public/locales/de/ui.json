@@ -882,7 +882,7 @@
   "clinic.stamina": "Ausdauer:",
   "clinic.mood": "Stimmung:",
   "clinic.heal_button": "HEILEN",
-  "clinic.enhance_button": "IMPLANTAT: CYBERLUNGE",
+  "clinic.enhance_button": "GRAFT: CYBER-LUNGE ({{fame}} Ruhm)",
   "clinic.leave": "KLINIK VERLASSEN",
   "clinic.not_enough_money": "Nicht genug Geld.",
   "clinic.heal_success": "Ausdauer wiederhergestellt. Die Leere umarmt dich.",

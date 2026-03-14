@@ -10,15 +10,29 @@ import { getTraitById } from '../../utils/traitUtils.js'
  * @returns {Object} The updated state or the original state if validation fails.
  */
 const executeClinicAction = (state, payload, memberUpdater) => {
-  const { memberId, cost = 0, fameCost = 0 } = payload
+  const { memberId } = payload
+
+  // Normalize and validate costs
+  const cost = Number.isFinite(payload.cost) ? Math.max(0, payload.cost) : 0
+  const fameCost = Number.isFinite(payload.fameCost) ? Math.max(0, payload.fameCost) : 0
 
   if (!state.player || !state.band) {
     logger.warn('ClinicReducer', 'Missing player or band state')
     return state
   }
 
-  if (state.player.money < cost || state.player.fame < fameCost) {
+  // Ensure player stats are valid before comparison
+  const playerMoney = Number.isFinite(state.player.money) ? Math.max(0, state.player.money) : 0
+  const playerFame = Number.isFinite(state.player.fame) ? Math.max(0, state.player.fame) : 0
+
+  if (playerMoney < cost || playerFame < fameCost) {
     logger.warn('ClinicReducer', 'Not enough money or fame')
+    return state
+  }
+
+  // Validate members array
+  if (!Array.isArray(state.band.members)) {
+    logger.warn('ClinicReducer', 'band.members is missing or not an array')
     return state
   }
 
@@ -37,8 +51,8 @@ const executeClinicAction = (state, payload, memberUpdater) => {
     ...state,
     player: {
       ...state.player,
-      money: clampPlayerMoney(state.player.money - cost),
-      fame: Math.max(0, state.player.fame - fameCost),
+      money: clampPlayerMoney(playerMoney - cost),
+      fame: Math.max(0, playerFame - fameCost),
       clinicVisits: (state.player.clinicVisits || 0) + 1
     },
     band: {
@@ -80,7 +94,7 @@ export const handleClinicHeal = (state, payload) => {
  * @returns {Object} The updated game state.
  */
 export const handleClinicEnhance = (state, payload) => {
-  const { trait } = payload
+  const { trait, memberId } = payload
 
   if (!trait) {
     logger.warn('ClinicReducer', 'Missing trait')
@@ -93,13 +107,19 @@ export const handleClinicEnhance = (state, payload) => {
     return state
   }
 
+  // Early return if member already has trait to prevent charging cost
+  if (state.band && Array.isArray(state.band.members)) {
+    const targetMember = state.band.members.find(m => m.id === memberId)
+    if (targetMember && Array.isArray(targetMember.traits)) {
+      if (targetMember.traits.some(t => t.id === resolvedTrait.id)) {
+        return state
+      }
+    }
+  }
+
   return executeClinicAction(state, payload, (member) => {
     const updatedTraits = Array.isArray(member.traits) ? [...member.traits] : []
-    const alreadyHasTrait = updatedTraits.some(t => t.id === resolvedTrait.id)
-
-    if (!alreadyHasTrait) {
-      updatedTraits.push(resolvedTrait)
-    }
+    updatedTraits.push(resolvedTrait)
 
     return {
       ...member,

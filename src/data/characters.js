@@ -154,10 +154,10 @@ export const CHARACTERS = {
     traits: [
       {
         id: 'cyber_lungs',
-        name: 'Cyber Lungs',
-        desc: 'Significantly increased stamina regeneration.',
+        name: 'traits:cyberLungs.name',
+        desc: 'traits:cyberLungs.desc',
         effect: 'stamina_regen_bonus',
-        unlockHint: 'Sacrifice fame in the Void Clinic.'
+        unlockHint: 'traits:cyberLungs.unlockHint'
       }
     ]
   }

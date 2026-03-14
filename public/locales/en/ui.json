@@ -882,7 +882,7 @@
   "clinic.stamina": "Stamina:",
   "clinic.mood": "Mood:",
   "clinic.heal_button": "HEAL",
-  "clinic.enhance_button": "GRAFT: CYBER LUNGS",
+  "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
   "clinic.leave": "LEAVE CLINIC",
   "clinic.not_enough_money": "Not enough money.",
   "clinic.heal_success": "Stamina restored. The void embraces you.",

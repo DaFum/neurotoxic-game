@@ -71,7 +71,7 @@ export const ClinicScene = () => {
                   size='sm'
                   className='w-full text-xs py-1'
                 >
-                  {t('ui:clinic.enhance_button', { defaultValue: 'GRAFT: CYBER LUNGS' })} ({enhanceCostFame} Fame)
+                  {t('ui:clinic.enhance_button', { defaultValue: `GRAFT: CYBER LUNGS (${enhanceCostFame} Fame)`, fame: enhanceCostFame })}
                 </GlitchButton>
               </div>
             </motion.div>
