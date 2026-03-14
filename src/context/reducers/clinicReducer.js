@@ -82,7 +82,10 @@ const executeClinicAction = (state, payload, memberUpdater) => {
  * @returns {Object} The updated game state.
  */
 export const handleClinicHeal = (state, payload) => {
-  const { staminaGain = 0, moodGain = 0 } = payload
+  const rawStamina = payload.staminaGain
+  const rawMood = payload.moodGain
+  const staminaGain = Number.isFinite(rawStamina) ? rawStamina : 0
+  const moodGain = Number.isFinite(rawMood) ? rawMood : 0
 
   return executeClinicAction(state, payload, (member) => ({
     ...member,
@@ -119,6 +122,7 @@ export const handleClinicEnhance = (state, payload) => {
     const targetMember = state.band.members.find(m => m.id === memberId)
     if (targetMember && Array.isArray(targetMember.traits)) {
       if (targetMember.traits.some(tr => tr.id === resolvedTrait.id)) {
+        logger.debug('ClinicReducer', `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`)
         return state
       }
     }
