@@ -14,7 +14,9 @@ const isUnlocked = val => {
 }
 
 const CHAR_MAP = Object.fromEntries(
-  Object.values(CHARACTERS).filter(c => c.role !== 'NPC').map(c => [c.name, c])
+  Object.values(CHARACTERS)
+    .filter(c => c.role !== 'NPC')
+    .map(c => [c.name, c])
 )
 
 const DetailRow = ({ label, value, subtext, locked, className = '' }) => (

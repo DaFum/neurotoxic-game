@@ -86,7 +86,11 @@ export const TutorialManager = () => {
         >
           <div className='bg-void-black/95 border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'>
             <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>
-              {t('ui:tutorial.header', { current: step + 1, total: TOTAL_STEPS, defaultValue: `TUTORIAL ${step + 1}/${TOTAL_STEPS}` })}
+              {t('ui:tutorial.header', {
+                current: step + 1,
+                total: TOTAL_STEPS,
+                defaultValue: `TUTORIAL ${step + 1}/${TOTAL_STEPS}`
+              })}
             </div>
 
             <h3 className='text-xl text-star-white font-[Metal_Mania] mb-2'>
@@ -125,7 +129,9 @@ export const TutorialManager = () => {
                 onClick={completeStep}
                 className='bg-toxic-green text-void-black px-6 py-1.5 font-bold hover:bg-star-white transition-colors'
               >
-                {step < TOTAL_STEPS - 1 ? t('ui:tutorial.next', { defaultValue: 'NEXT' }) : t('ui:tutorial.done', { defaultValue: 'DONE' })}
+                {step < TOTAL_STEPS - 1
+                  ? t('ui:tutorial.next', { defaultValue: 'NEXT' })
+                  : t('ui:tutorial.done', { defaultValue: 'DONE' })}
               </button>
             </div>
           </div>

@@ -314,7 +314,10 @@ export const usePostGigLogic = () => {
         )
       }
 
-      const boundedZealotry = Math.max(0, Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0)))
+      const boundedZealotry = Math.max(
+        0,
+        Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
+      )
 
       const updatedSocial = {
         [result.platform]: Math.max(

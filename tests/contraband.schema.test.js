@@ -191,10 +191,7 @@ describe('Contraband Schema (with imagePrompt)', () => {
 
     it('should have at least one item per rarity level', () => {
       for (const [rarity, items] of Object.entries(CONTRABAND_BY_RARITY)) {
-        assert.ok(
-          items.length > 0,
-          `No items found for rarity: ${rarity}`
-        )
+        assert.ok(items.length > 0, `No items found for rarity: ${rarity}`)
       }
     })
   })

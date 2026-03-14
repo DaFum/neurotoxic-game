@@ -120,8 +120,12 @@ export const handleLoadGame = (state, payload) => {
     ? rawBand.members.map(m => ({
         ...m,
         // Backfill id from name for saves created before id fields were added
-        id: typeof m.id === 'string' ? m.id
-          : (typeof m.name === 'string' ? m.name.toLowerCase() : m.id),
+        id:
+          typeof m.id === 'string'
+            ? m.id
+            : typeof m.name === 'string'
+              ? m.name.toLowerCase()
+              : m.id,
         traits: Array.isArray(m.traits) ? m.traits : [],
         mood: Math.max(
           0,

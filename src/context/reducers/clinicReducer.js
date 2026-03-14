@@ -15,8 +15,14 @@ const executeClinicAction = (state, payload, memberUpdater) => {
   const { memberId, type, successToast } = payload
   const currentVisits = state.player?.clinicVisits || 0
   // Calculate costs directly from state
-  const cost = type === 'heal' ? calculateClinicCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY, currentVisits) : 0
-  const fameCost = type === 'enhance' ? calculateClinicCost(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME, currentVisits) : 0
+  const cost =
+    type === 'heal'
+      ? calculateClinicCost(CLINIC_CONFIG.HEAL_BASE_COST_MONEY, currentVisits)
+      : 0
+  const fameCost =
+    type === 'enhance'
+      ? calculateClinicCost(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME, currentVisits)
+      : 0
 
   if (!state.player || !state.band) {
     logger.warn('ClinicReducer', 'Missing player or band state')
@@ -24,8 +30,12 @@ const executeClinicAction = (state, payload, memberUpdater) => {
   }
 
   // Ensure player stats are valid before comparison
-  const playerMoney = Number.isFinite(state.player.money) ? Math.max(0, state.player.money) : 0
-  const playerFame = Number.isFinite(state.player.fame) ? Math.max(0, state.player.fame) : 0
+  const playerMoney = Number.isFinite(state.player.money)
+    ? Math.max(0, state.player.money)
+    : 0
+  const playerFame = Number.isFinite(state.player.fame)
+    ? Math.max(0, state.player.fame)
+    : 0
 
   if (playerMoney < cost || playerFame < fameCost) {
     logger.warn('ClinicReducer', 'Not enough money or fame')
@@ -87,7 +97,7 @@ export const handleClinicHeal = (state, payload) => {
   const staminaGain = Number.isFinite(rawStamina) ? rawStamina : 0
   const moodGain = Number.isFinite(rawMood) ? rawMood : 0
 
-  return executeClinicAction(state, payload, (member) => ({
+  return executeClinicAction(state, payload, member => ({
     ...member,
     stamina: Math.min(100, Math.max(0, (member.stamina || 0) + staminaGain)),
     mood: Math.min(100, Math.max(0, (member.mood || 0) + moodGain))
@@ -113,7 +123,10 @@ export const handleClinicEnhance = (state, payload) => {
 
   const resolvedTrait = getTraitById(trait)
   if (!resolvedTrait) {
-    logger.warn('ClinicReducer', `Could not resolve trait definition for: ${trait}`)
+    logger.warn(
+      'ClinicReducer',
+      `Could not resolve trait definition for: ${trait}`
+    )
     return state
   }
 
@@ -122,13 +135,16 @@ export const handleClinicEnhance = (state, payload) => {
     const targetMember = state.band.members.find(m => m.id === memberId)
     if (targetMember && Array.isArray(targetMember.traits)) {
       if (targetMember.traits.some(tr => tr.id === resolvedTrait.id)) {
-        logger.debug('ClinicReducer', `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`)
+        logger.debug(
+          'ClinicReducer',
+          `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`
+        )
         return state
       }
     }
   }
 
-  return executeClinicAction(state, payload, (member) => {
+  return executeClinicAction(state, payload, member => {
     const updatedTraits = Array.isArray(member.traits) ? [...member.traits] : []
     updatedTraits.push(resolvedTrait)
 
