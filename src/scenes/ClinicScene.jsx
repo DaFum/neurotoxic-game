@@ -66,12 +66,12 @@ export const ClinicScene = () => {
 
                 <GlitchButton
                   onClick={() => enhanceMember(member.id, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)}
-                  disabled={player.fame < enhanceCostFame || (member.traits && member.traits.some(t => t.id === CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID))}
+                  disabled={player.fame < enhanceCostFame || (member.traits && member.traits.some(tr => tr.id === CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID))}
                   variant='warning'
                   size='sm'
                   className='w-full text-xs py-1'
                 >
-                  {t('ui:clinic.enhance_button', { defaultValue: `GRAFT: CYBER LUNGS (${enhanceCostFame} Fame)`, fame: enhanceCostFame })}
+                  {t('ui:clinic.enhance_button', { defaultValue: 'GRAFT: CYBER LUNGS ({{fame}} Fame)', fame: enhanceCostFame })}
                 </GlitchButton>
               </div>
             </motion.div>

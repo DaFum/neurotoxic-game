@@ -45,6 +45,7 @@
   "chatter_labels.PRE_GIG_MINIGAME": "Roadie Feed",
   "chatter_labels.SETTINGS": "System Feed",
   "chatter_labels.TRAVEL_MINIGAME": "Travel Feed",
+  "chatter_labels.CLINIC": "Clinic Feed",
   "chatter_labels.default_fallback": "Unknown",
   "chatter_labels.default_speaker": "Band",
   "checklist.done": "INITIATE GIG",
@@ -520,6 +521,7 @@
   "overworld.status.selectLocation": "Select a highlighted location",
   "overworld.status.traveling": "TRAVELING...",
   "overworld.tour_active": "{{date}}: Tour active.",
+  "overworld.void_clinic_button": "VOID CLINIC",
   "postGig": {
     "harmony": "Harmony",
     "money": "Money"
@@ -830,7 +832,6 @@
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
   "volume.set": "Set volume to {{pct}}%",
-  "save.corruptFailed": "Save file is corrupt or invalid.",
   "clinic.title": "THE VOID CLINIC",
   "clinic.lore": "Sacrifice money and fame for immediate cybernetic enhancement or synthetic healing.",
   "clinic.funds": "FUNDS:",

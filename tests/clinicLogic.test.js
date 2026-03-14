@@ -2,6 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleClinicHeal, handleClinicEnhance } from '../src/context/reducers/clinicReducer.js'
 
+// The reducer computes costs internally from CLINIC_CONFIG and clinicVisits.
+// At 0 visits: heal cost = 150 money, enhance cost = 500 fame.
+
 test('clinicReducer', async t => {
   await t.test('handleClinicHeal', async t2 => {
     await t2.test('heals member and deducts cost, clamps bounds', () => {
@@ -18,14 +21,13 @@ test('clinicReducer', async t => {
       const payload = {
         memberId: 'm1',
         type: 'heal',
-        cost: 100,
-        fameCost: 0,
         staminaGain: 60, // Should clamp to 100
         moodGain: 10
       }
 
       const nextState = handleClinicHeal(state, payload)
 
+      // Cost at 0 visits = 150 money
       assert.equal(nextState.player.money, 350)
       assert.equal(nextState.player.clinicVisits, 1)
       assert.equal(nextState.band.members[0].stamina, 100)
@@ -39,8 +41,8 @@ test('clinicReducer', async t => {
         band: { members: [{ id: 'm1', stamina: 50, mood: 50 }] }
       }
 
-      const payload = { memberId: 'm1', type: 'heal',
-        cost: 100 }
+      // Heal base cost is 150 at 0 visits, player only has 50
+      const payload = { memberId: 'm1', type: 'heal' }
       const nextState = handleClinicHeal(state, payload)
 
       assert.equal(nextState, state) // Returns original state
@@ -61,13 +63,12 @@ test('clinicReducer', async t => {
       const payload = {
         memberId: 'm1',
         type: 'enhance',
-        cost: 0,
-        fameCost: 500,
         trait: 'cyber_lungs'
       }
 
       const nextState = handleClinicEnhance(state, payload)
 
+      // Enhance base cost is 500 fame at 0 visits
       assert.equal(nextState.player.fame, 0)
       assert.equal(nextState.player.clinicVisits, 1)
       assert.equal(nextState.band.members[0].traits.length, 2)
@@ -80,9 +81,7 @@ test('clinicReducer', async t => {
         band: { members: [{ id: 'm1', traits: [] }] }
       }
 
-      const payload = { memberId: 'm1', type: 'enhance',
-        cost: 0,
-        fameCost: 100 }
+      const payload = { memberId: 'm1', type: 'enhance' }
       const nextState = handleClinicEnhance(state, payload)
 
       assert.equal(nextState, state)
@@ -101,8 +100,6 @@ test('clinicReducer', async t => {
       const payload = {
         memberId: 'm1',
         type: 'enhance',
-        cost: 0,
-        fameCost: 500,
         trait: 'cyber_lungs'
       }
 

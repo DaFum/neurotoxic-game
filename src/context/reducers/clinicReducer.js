@@ -10,8 +10,6 @@ import { getTraitById } from '../../utils/traitUtils.js'
  * @param {Function} memberUpdater - A function to apply updates to the target member.
  * @returns {Object} The updated state or the original state if validation fails.
  */
-
-
 const executeClinicAction = (state, payload, memberUpdater) => {
   const { memberId, type } = payload
   const currentVisits = state.player?.clinicVisits || 0
@@ -112,7 +110,7 @@ export const handleClinicEnhance = (state, payload) => {
   if (state.band && Array.isArray(state.band.members)) {
     const targetMember = state.band.members.find(m => m.id === memberId)
     if (targetMember && Array.isArray(targetMember.traits)) {
-      if (targetMember.traits.some(t => t.id === resolvedTrait.id)) {
+      if (targetMember.traits.some(tr => tr.id === resolvedTrait.id)) {
         return state
       }
     }

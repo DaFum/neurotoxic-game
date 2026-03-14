@@ -45,6 +45,7 @@
   "chatter_labels.PRE_GIG_MINIGAME": "Roadie-Feed",
   "chatter_labels.SETTINGS": "System-Feed",
   "chatter_labels.TRAVEL_MINIGAME": "Reise-Feed",
+  "chatter_labels.CLINIC": "Klinik-Feed",
   "chatter_labels.default_fallback": "Unbekannt",
   "chatter_labels.default_speaker": "Band",
   "checklist.done": "GIG STARTEN",
@@ -520,6 +521,7 @@
   "overworld.status.selectLocation": "Markierte Location auswählen",
   "overworld.status.traveling": "UNTERWEGS...",
   "overworld.tour_active": "{{date}}: Tour aktiv.",
+  "overworld.void_clinic_button": "LEEREN-KLINIK",
   "postGig": {
     "harmony": "Harmonie",
     "money": "Geld"
@@ -830,7 +832,6 @@
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
-  "save.corruptFailed": "Spielstand ist beschädigt oder ungültig.",
   "clinic.title": "DIE LEEREN-KLINIK",
   "clinic.lore": "Opfere Geld und Ruhm für sofortige kybernetische Verbesserungen oder synthetische Heilung.",
   "clinic.funds": "GELD:",

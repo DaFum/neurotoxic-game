@@ -385,11 +385,12 @@ export const createUseContrabandAction = (instanceId, memberId) => ({
 
 /**
  * Creates an action to heal a band member in the Void Clinic.
+ * Cost is computed by the reducer from CLINIC_CONFIG and clinicVisits.
  * @param {Object} payload
  * @param {string} payload.memberId - The ID of the band member.
- * @param {string} payload.type - Action type ('heal' or 'enhance') used to compute cost.
- * @param {number} payload.staminaGain - The amount of stamina gained.
- * @param {number} payload.moodGain - The amount of mood gained.
+ * @param {string} payload.type - Must be 'heal'. Used by the reducer to compute cost.
+ * @param {number} payload.staminaGain - The amount of stamina to restore.
+ * @param {number} payload.moodGain - The amount of mood to restore.
  * @returns {Object} Action object
  */
 export const createClinicHealAction = payload => ({
@@ -399,9 +400,10 @@ export const createClinicHealAction = payload => ({
 
 /**
  * Creates an action to enhance a band member in the Void Clinic.
+ * Cost is computed by the reducer from CLINIC_CONFIG and clinicVisits.
  * @param {Object} payload
  * @param {string} payload.memberId - The ID of the band member.
- * @param {string} payload.type - Action type ('heal' or 'enhance') used to compute cost.
+ * @param {string} payload.type - Must be 'enhance'. Used by the reducer to compute cost.
  * @param {string} payload.trait - The ID of the trait to graft.
  * @returns {Object} Action object
  */

@@ -49,7 +49,7 @@ export const useClinicLogic = () => {
       dispatch(
         createAddToastAction({
           message: t('ui:clinic.heal_success', {
-            defaultValue: `Stamina restored by ${healAmountApplied}. The void embraces you.`,
+            defaultValue: 'Stamina restored by {{healAmountApplied}}. The void embraces you.',
             healAmountApplied
           }),
           type: 'success'
@@ -64,7 +64,7 @@ export const useClinicLogic = () => {
       const member = band?.members?.find(m => m.id === memberId)
       if (!member) return
 
-      if (member.traits && member.traits.some(t => t.id === trait)) return
+      if (member.traits && member.traits.some(tr => tr.id === trait)) return
 
       if (player.fame < enhanceCostFame) {
         dispatch(
