@@ -9,7 +9,7 @@
 
 ## Architecture Constraints
 
-- **Version Pinning**: Pinned to exact versions: React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.35.1, Tone.js 15.5.6. Node.js 22.13+ required. Do NOT introduce Howler.js.
+- **Version Pinning**: Pinned to exact versions: React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.36.0, Tone.js 15.5.6. Node.js 22.13+ required. Do NOT introduce Howler.js.
 - **Tailwind v4**: Colors are registered in `@theme` with `--color-` prefix (e.g., `--color-toxic-green`) and consumed as native utilities (`bg-void-black`, `text-toxic-green`, `border-blood-red/60`). Use `@import "tailwindcss"` NOT `@tailwind base`. For non-color tokens that don't match a Tailwind namespace (z-index `--z-*`, etc.), use the arbitrary value syntax `z-(--z-crt)` or inline `style={{ zIndex: 'var(--z-crt)' }}`.
 - **Colors**: Never hardcode colors. Use CSS vars (e.g., `var(--color-toxic-green)`). In PixiJS, use `getPixiColorFromToken('--token-name')` (e.g., `getPixiColorFromToken('--toxic-green')`). The utility auto-maps `--token-name` → `--color-token-name` internally; do NOT pass the `--color-` prefix.
 - **State Updates**: Adding actions requires updating `ActionTypes`, the reducer case, and `actionCreators.js` together.
@@ -83,7 +83,7 @@
 ### 🌍 Environment, Setup, & Tooling
 
 - **Package Management:** Use `pnpm` exclusively (`dev`, `build`, `test`, `test:ui`, `test:all`, `lint`, `format`).
-- **Dependencies (LOCKED):** React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.35.1, Tone.js 15.5.6. Node.js 22.13+. Do NOT use Howler.js.
+- **Dependencies (LOCKED):** React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.36.0, Tone.js 15.5.6. Node.js 22.13+. Do NOT use Howler.js.
 - **Node.js Scripts:** Ad-hoc scripts using `require()` must end in `.cjs`. Use CLI tools (`sed`, `awk`) for JSX refactoring instead of `@babel/core`.
 - **Environment Variables:** Maintain `.env.example`. Use `process.env.VITE_VAR` for Vite/node:test dual compatibility.
 - **Linting / Coverage:** Use `@eslint-react/eslint-plugin`. Ignore `Songs.js` in ESLint. Add `coverage/` to `.gitignore`.
