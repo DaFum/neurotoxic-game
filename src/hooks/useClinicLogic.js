@@ -1,17 +1,11 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
-import {
-  createClinicHealAction,
-  createClinicEnhanceAction,
-  createChangeSceneAction,
-  createAddToastAction
-} from '../context/actionCreators'
 import { GAME_PHASES, CLINIC_CONFIG, calculateClinicCost } from '../context/gameConstants'
 
 export const useClinicLogic = () => {
   const { t } = useTranslation(['ui'])
-  const { player, band, dispatch } = useGameState()
+  const { player, band, changeScene, addToast, clinicHeal, clinicEnhance } = useGameState()
 
   const currentVisits = player?.clinicVisits || 0
 
@@ -24,38 +18,37 @@ export const useClinicLogic = () => {
       if (!member) return
 
       if (player.money < healCostMoney) {
-        dispatch(
-          createAddToastAction({
-            message: t('ui:clinic.not_enough_money', {
-              defaultValue: 'Not enough money.'
-            }),
-            type: 'error'
-          })
+        addToast(
+          t('ui:clinic.not_enough_money', {
+            defaultValue: 'Not enough money.'
+          }),
+          'error'
         )
         return
       }
 
       const currentStamina = member.stamina || 0
       const healAmountApplied = Math.min(CLINIC_CONFIG.HEAL_STAMINA_GAIN, 100 - currentStamina)
+      const currentMood = member.mood || 0
+      const moodAmountApplied = Math.min(CLINIC_CONFIG.HEAL_MOOD_GAIN, 100 - currentMood)
 
-      dispatch(
-        createClinicHealAction({
-          memberId,
-          type: 'heal',
-          staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
-          moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN,
-          successToast: {
-            id: crypto.randomUUID(),
-            message: t('ui:clinic.heal_success', {
-              defaultValue: 'Stamina restored by {{healAmountApplied}}. The void embraces you.',
-              healAmountApplied
-            }),
-            type: 'success'
-          }
-        })
-      )
+      clinicHeal({
+        memberId,
+        type: 'heal',
+        staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
+        moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN,
+        successToast: {
+          id: crypto.randomUUID(),
+          message: t('ui:clinic.heal_success', {
+            defaultValue: '+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.',
+            stamina: healAmountApplied,
+            mood: moodAmountApplied
+          }),
+          type: 'success'
+        }
+      })
     },
-    [player.money, healCostMoney, band, dispatch, t]
+    [player.money, healCostMoney, band, clinicHeal, addToast, t]
   )
 
   const enhanceMember = useCallback(
@@ -66,38 +59,34 @@ export const useClinicLogic = () => {
       if (member.traits && member.traits.some(tr => tr.id === trait)) return
 
       if (player.fame < enhanceCostFame) {
-        dispatch(
-          createAddToastAction({
-            message: t('ui:clinic.not_enough_fame', {
-              defaultValue: 'Not enough fame. The void demands sacrifice.'
-            }),
-            type: 'error'
-          })
+        addToast(
+          t('ui:clinic.not_enough_fame', {
+            defaultValue: 'Not enough fame. The void demands sacrifice.'
+          }),
+          'error'
         )
         return
       }
 
-      dispatch(
-        createClinicEnhanceAction({
-          memberId,
-          type: 'enhance',
-          trait,
-          successToast: {
-            id: crypto.randomUUID(),
-            message: t('ui:clinic.enhance_success', {
-              defaultValue: 'Flesh upgraded.'
-            }),
-            type: 'success'
-          }
-        })
-      )
+      clinicEnhance({
+        memberId,
+        type: 'enhance',
+        trait,
+        successToast: {
+          id: crypto.randomUUID(),
+          message: t('ui:clinic.enhance_success', {
+            defaultValue: 'Flesh upgraded.'
+          }),
+          type: 'success'
+        }
+      })
     },
-    [player.fame, enhanceCostFame, band, dispatch, t]
+    [player.fame, enhanceCostFame, band, clinicEnhance, addToast, t]
   )
 
   const leaveClinic = useCallback(() => {
-    dispatch(createChangeSceneAction(GAME_PHASES.OVERWORLD))
-  }, [dispatch])
+    changeScene(GAME_PHASES.OVERWORLD)
+  }, [changeScene])
 
   return {
     player,

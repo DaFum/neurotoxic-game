@@ -61,7 +61,9 @@ import {
   createAddQuestAction,
   createAdvanceQuestAction,
   createAddUnlockAction,
-  createUseContrabandAction
+  createUseContrabandAction,
+  createClinicHealAction,
+  createClinicEnhanceAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -431,6 +433,24 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  /**
+   * Dispatches a clinic heal action.
+   * @param {object} payload - The heal action payload.
+   */
+  const clinicHeal = useCallback(
+    payload => dispatch(createClinicHealAction(payload)),
+    []
+  )
+
+  /**
+   * Dispatches a clinic enhance action.
+   * @param {object} payload - The enhance action payload.
+   */
+  const clinicEnhance = useCallback(
+    payload => dispatch(createClinicEnhanceAction(payload)),
+    []
+  )
+
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -762,7 +782,9 @@ export const GameStateProvider = ({ children }) => {
       endGig,
       addQuest,
       advanceQuest,
-      useContraband
+      useContraband,
+      clinicHeal,
+      clinicEnhance
     }),
     [
       changeScene,
@@ -796,7 +818,9 @@ export const GameStateProvider = ({ children }) => {
       endGig,
       addQuest,
       advanceQuest,
-      useContraband
+      useContraband,
+      clinicHeal,
+      clinicEnhance
     ]
   )
 

@@ -842,7 +842,7 @@
   "clinic.enhance_button": "GRAFT: CYBER-LUNGE ({{fame}} Ruhm)",
   "clinic.leave": "KLINIK VERLASSEN",
   "clinic.not_enough_money": "Nicht genug Geld.",
-  "clinic.heal_success": "Ausdauer um {{healAmountApplied}} wiederhergestellt. Die Leere umarmt dich.",
+  "clinic.heal_success": "+{{stamina}} Ausdauer, +{{mood}} Stimmung. Die Leere umarmt dich.",
   "clinic.not_enough_fame": "Nicht genug Ruhm. Die Leere fordert ein Opfer.",
   "clinic.enhance_success": "Fleisch verbessert."
 }

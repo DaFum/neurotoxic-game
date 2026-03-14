@@ -842,7 +842,7 @@
   "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
   "clinic.leave": "LEAVE CLINIC",
   "clinic.not_enough_money": "Not enough money.",
-  "clinic.heal_success": "Stamina restored by {{healAmountApplied}}. The void embraces you.",
+  "clinic.heal_success": "+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.",
   "clinic.not_enough_fame": "Not enough fame. The void demands sacrifice.",
   "clinic.enhance_success": "Flesh upgraded."
 }
