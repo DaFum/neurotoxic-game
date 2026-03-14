@@ -714,8 +714,8 @@
   "socials": "SOCIALS",
   "start_game": "Tour Starten",
   "stash": {
-    "itemUsed": "{{action}} {{itemName}}!",
-    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!"
+    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
+    "itemUsed": "{{itemName}} {{action}}!"
   },
   "stash.actionApplied": "Angewendet",
   "stash.actionUsed": "Benutzt",
@@ -829,51 +829,6 @@
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
-  "travel.errors.alreadyPlayedHere": "Du hast hier gerade erst gespielt! Fahr weiter und finde neues Publikum.",
-  "overworld.band_hq_button": "BAND HQ",
-  "stash": {
-    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
-    "itemUsed": "{{itemName}} {{action}}!"
-  },
-  "contraband": {
-    "title": "SCHMUGGELWAREN VERSTECK",
-    "description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
-    "targetMemberLabel": "Zielmitglied:",
-    "noItems": "Noch keine Schmuggelware gesammelt.",
-    "useItem": "GEGENSTAND VERWENDEN",
-    "passiveActive": "PASSIVER EFFEKT AKTIV",
-    "close": "VERSTECK SCHLIESSEN",
-    "button": "VERSTECK",
-    "requiresTarget": "Erfordert Ziel-Mitglied.",
-    "gigs": "GIGS",
-    "applied": "ANGEWENDET",
-    "applyItem": "EFFEKT ANWENDEN"
-  },
-  "member": {
-    "unknown": "Unbekannt"
-  },
-  "item": {
-    "unknown": "Unbekannter Gegenstand",
-    "typeUnknown": "Unbekannter Typ",
-    "descriptionUnknown": "Unbekannte Beschreibung",
-    "type_consumable": "Verbrauchsmaterial",
-    "type_equipment": "Ausrüstung",
-    "type_relic": "Relikt"
-  },
-  "postGig": {
-    "harmony": "Harmonie",
-    "money": "Geld"
-  },
-  "rarity": {
-    "common": "GEWÖHNLICH",
-    "uncommon": "UNGEWÖHNLICH",
-    "rare": "SELTEN",
-    "epic": "EPISCH"
-  },
-  "stash.actionUsed": "Benutzt",
-  "stash.actionApplied": "Angewendet",
-  "contraband.dropped": "Schmuggelware gefunden!",
-  "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "save.corruptFailed": "Spielstand ist beschädigt oder ungültig.",
   "clinic.title": "DIE LEEREN-KLINIK",
   "clinic.lore": "Opfere Geld und Ruhm für sofortige kybernetische Verbesserungen oder synthetische Heilung.",
@@ -881,7 +836,7 @@
   "clinic.fame": "RUHM:",
   "clinic.stamina": "Ausdauer:",
   "clinic.mood": "Stimmung:",
-  "clinic.heal_button": "HEILEN",
+  "clinic.heal_button": "HEILEN ({{cost}}€)",
   "clinic.enhance_button": "GRAFT: CYBER-LUNGE ({{fame}} Ruhm)",
   "clinic.leave": "KLINIK VERLASSEN",
   "clinic.not_enough_money": "Nicht genug Geld.",

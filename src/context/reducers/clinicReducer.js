@@ -9,12 +9,16 @@ import { getTraitById } from '../../utils/traitUtils.js'
  * @param {Function} memberUpdater - A function to apply updates to the target member.
  * @returns {Object} The updated state or the original state if validation fails.
  */
-const executeClinicAction = (state, payload, memberUpdater) => {
-  const { memberId } = payload
+import { CLINIC_CONFIG } from '../gameConstants.js'
 
-  // Normalize and validate costs
-  const cost = Number.isFinite(payload.cost) ? Math.max(0, payload.cost) : 0
-  const fameCost = Number.isFinite(payload.fameCost) ? Math.max(0, payload.fameCost) : 0
+const executeClinicAction = (state, payload, memberUpdater) => {
+  const { memberId, type } = payload
+  const currentVisits = state.player?.clinicVisits || 0
+  const costMultiplier = Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)
+
+  // Calculate costs directly from state
+  const cost = type === 'heal' ? Math.floor(CLINIC_CONFIG.HEAL_BASE_COST_MONEY * costMultiplier) : 0
+  const fameCost = type === 'enhance' ? Math.floor(CLINIC_CONFIG.ENHANCE_BASE_COST_FAME * costMultiplier) : 0
 
   if (!state.player || !state.band) {
     logger.warn('ClinicReducer', 'Missing player or band state')

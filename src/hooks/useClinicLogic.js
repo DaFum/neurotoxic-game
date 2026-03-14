@@ -46,8 +46,7 @@ export const useClinicLogic = () => {
       dispatch(
         createClinicHealAction({
           memberId,
-          cost: healCostMoney,
-          fameCost: 0,
+          type: 'heal',
           staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
           moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN
         })
@@ -87,8 +86,7 @@ export const useClinicLogic = () => {
       dispatch(
         createClinicEnhanceAction({
           memberId,
-          cost: 0,
-          fameCost: enhanceCostFame,
+          type: 'enhance',
           trait
         })
       )

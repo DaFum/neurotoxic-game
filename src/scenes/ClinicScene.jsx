@@ -61,7 +61,7 @@ export const ClinicScene = () => {
                   size='sm'
                   className='w-full text-xs py-1'
                 >
-                  {t('ui:clinic.heal_button', { defaultValue: 'HEAL' })} ({healCostMoney}€)
+                  {t('ui:clinic.heal_button', { defaultValue: 'HEAL ({{cost}}€)', cost: healCostMoney })}
                 </GlitchButton>
 
                 <GlitchButton

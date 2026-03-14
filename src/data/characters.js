@@ -17,6 +17,7 @@
 //
 export const CHARACTERS = {
   MATZE: {
+    id: 'matze',
     name: 'Matze',
     role: 'Guitar',
     baseStats: { skill: 8, stamina: 7, charisma: 5, technical: 9, improv: 6 },
@@ -64,6 +65,7 @@ export const CHARACTERS = {
     }
   },
   MARIUS: {
+    id: 'marius',
     name: 'Marius',
     role: 'Drums',
     baseStats: { skill: 9, stamina: 8, charisma: 7, technical: 7, improv: 9 },
@@ -101,6 +103,7 @@ export const CHARACTERS = {
     equipment: { set: 'Pearl Export', cymbals: 'Zildjian/Sabian Mix' }
   },
   LARS: {
+    id: 'lars',
     name: 'Lars',
     role: 'Bass/Vocals',
     baseStats: {
@@ -151,6 +154,7 @@ export const CHARACTERS = {
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }
   },
   CLINIC: {
+    id: 'clinic',
     name: 'Clinic',
     role: 'NPC',
     baseStats: { skill: 0, stamina: 0, charisma: 0, technical: 0, improv: 0 },
