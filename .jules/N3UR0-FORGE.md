@@ -1,13 +1,13 @@
 ## 2026-03-12 - contraband
-**Feature:** contraband ui, logic and items 
+**Feature:** contraband ui, logic and items
 
-**Description:** 
-After travel the band can get an item with specials to use. 
+**Description:**
+After travel the band can get an item with specials to use.
 
 ## 2026-03-14 - THE CULT OF THE SCHRANK
-**Feature:** "Ego Death" Zealotry System (Social Expansion) 
+**Feature:** "Ego Death" Zealotry System (Social Expansion)
 
-**Description:** 
+**Description:**
   - Lore Integration:
     Fame is fleeting; cults are forever. As your social following grows, you can choose to radicalize your fans. This generates a new resource: "Zealotry". High Zealotry automates gig promotion and generates passive income via "donations", but it permanently locks you out of mainstream Corporate Brand Deals and drastically increases the chance of Police Raids.
   - State Impact:
@@ -25,3 +25,14 @@ After travel the band can get an item with specials to use.
     clinicReducer.js: Added `handleClinicHeal` and `handleClinicEnhance` to strictly enforce stat bounds.
     initialState.js: Tracking `clinicVisits` to exponentially increase cost over time.
     actionTypes.js: Added `CLINIC_HEAL` and `CLINIC_ENHANCE`.
+## 2026-03-13 - SOCIAL AND BRAND DEAL IMAGES
+**Feature:** Social & Brand Deal Image Integration
+
+**Description:**
+  - Lore Integration:
+    The Kranker Schrank aesthetic needs to bleed into every interaction. By dynamically generating imagery tailored to specific social media categories (like Viral, Drama, or Tech) and corporate brand alignments (Evil, Corporate, Indie, Sustainable), players receive a more visceral, procedurally generated visual representation of their actions and deals.
+  - State Impact:
+    src/utils/imageGen.js: Added new specific IMG_PROMPTS for social categories and brand alignments.
+    src/components/postGig/SocialPhase.jsx: Integrates image generation into the background of post option buttons (opacity 10, screen blend mode).
+    src/components/postGig/DealsPhase.jsx: Displays the generated brand alignment image side-by-side with the deal text.
+    src/components/postGig/CompletePhase.jsx: Added full background outcome images for the gig success/failure screens.

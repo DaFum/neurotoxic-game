@@ -51,28 +51,28 @@ test('Minigame Economy Calculations', async t => {
       { isPoweredOn: false, timeLeft: 0 },
       { members: [] }
     )
-    assert.strictEqual(resultFail.stress, 10)
+    assert.strictEqual(resultFail.stress, 15)
     assert.strictEqual(resultFail.reward, 0)
 
     // Powered on, fast clear (25 seconds left)
-    // timeBonus = 25 / 5 = 5. reward = 50 + 5 * 10 = 100
+    // timeBonus = 25 / 5 = 5. reward = 60 + 5 * 15 = 135
     const resultFast = calculateKabelsalatMinigameResult(
       { isPoweredOn: true, timeLeft: 25 },
       { members: [] }
     )
     assert.strictEqual(resultFast.stress, 0)
-    assert.strictEqual(resultFast.reward, 100)
+    assert.strictEqual(resultFast.reward, 135)
   })
 
   await t.test('Kabelsalat Minigame Edge Cases', () => {
     // With Matze's Tech Wizard trait -> reward multiplied by 1.5
     const resultTrait = calculateKabelsalatMinigameResult(
-      { isPoweredOn: true, timeLeft: 25 }, // Base 100 reward
+      { isPoweredOn: true, timeLeft: 25 }, // Base 135 reward
       {
         members: [{ name: 'Matze', traits: [{ id: 'tech_wizard' }] }]
       }
     )
     assert.strictEqual(resultTrait.stress, 0)
-    assert.strictEqual(resultTrait.reward, 150) // 100 * 1.5
+    assert.strictEqual(resultTrait.reward, 202) // 135 * 1.5 = 202.5 -> floor -> 202
   })
 })

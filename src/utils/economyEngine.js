@@ -55,8 +55,8 @@ export const EXPENSE_CONSTANTS = {
 
 const TICKET_SALES_CONSTANTS = {
   BASE_DRAW_RATIO: 0.3,
-  FAME_CAPACITY_SCALER: 10,
-  FAME_FILL_WEIGHT: 0.7
+  FAME_CAPACITY_SCALER: 8,
+  FAME_FILL_WEIGHT: 0.8
 }
 
 /**
@@ -70,7 +70,7 @@ const calculateTicketIncome = (
 ) => {
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
-  // Fame needs to be ~10x capacity to fill it easily
+  // Fame needs to be ~8x capacity to fill it easily
   const fameRatio = Math.min(
     1.0,
     playerFame /
@@ -687,11 +687,12 @@ export const calculateKabelsalatMinigameResult = (results, bandState) => {
 
   if (!results.isPoweredOn) {
     // Failure! Stress for everyone.
-    stress = 10
+    stress = 15
   } else {
     // Success! Reward based on time remaining
-    const timeBonus = Math.floor(results.timeLeft / 5)
-    reward = 50 + timeBonus * 10 // Base 50, up to +50 for speed
+    const validTimeLeft = Number.isFinite(results.timeLeft) ? results.timeLeft : 0
+    const timeBonus = Math.max(0, Math.floor(validTimeLeft / 5))
+    reward = Math.max(0, 60 + timeBonus * 15) // Base 60, scaling better for quick completion
 
     // Tech Wizard trait increases rewards
     if (bandHasTrait(bandState, 'tech_wizard')) {

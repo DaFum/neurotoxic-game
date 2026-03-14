@@ -341,7 +341,22 @@ const getAlignmentBadge = alignment => {
   }
 }
 
-const getAlignmentColor = alignment => {
+const getAlignmentImagePrompt = alignment => {
+    switch (alignment) {
+      case BRAND_ALIGNMENTS.EVIL:
+        return IMG_PROMPTS.BRAND_DEAL_EVIL
+      case BRAND_ALIGNMENTS.CORPORATE:
+        return IMG_PROMPTS.BRAND_DEAL_CORPORATE
+      case BRAND_ALIGNMENTS.INDIE:
+        return IMG_PROMPTS.BRAND_DEAL_INDIE
+      case BRAND_ALIGNMENTS.SUSTAINABLE:
+        return IMG_PROMPTS.BRAND_DEAL_SUSTAINABLE
+      default:
+        return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
+    }
+  }
+
+  const getAlignmentColor = alignment => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
       return 'text-toxic-green'

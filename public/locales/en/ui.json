@@ -652,6 +652,7 @@
   "roadieRun.itemTypes.DRUMS": "Drums",
   "roadieRun.itemTypes.GUITAR": "Guitar",
   "roadieRun.itemTypes.unknown": "Unknown item",
+  "save.corruptFailed": "Save file is corrupt or invalid.",
   "save.parseFailed": "Save file parsing failed. Falling back to initial state.",
   "scene.loading": "Loading Scene...",
   "seconds": "{{count}}s",

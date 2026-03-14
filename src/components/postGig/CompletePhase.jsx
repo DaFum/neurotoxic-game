@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 
 export const CompletePhase = ({
   result,
@@ -14,11 +15,29 @@ export const CompletePhase = ({
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
+  const getOutcomeImagePrompt = () => {
+    if (result.success) {
+      return IMG_PROMPTS.GIG_SUCCESS || IMG_PROMPTS.SOCIAL_POST_VIRAL
+    } else if (result.platform === 'tiktok') {
+       return IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
+    } else {
+      return IMG_PROMPTS.GIG_FAILURE || IMG_PROMPTS.SOCIAL_POST_DRAMA
+    }
+  }
+
   return (
+    <div className='relative min-h-[400px] flex flex-col items-center justify-center p-8 border border-ash-gray/20 rounded overflow-hidden'>
+     {/* Background Image Watermark */}
+    <div
+      className='absolute inset-0 opacity-20 bg-cover bg-center mix-blend-screen pointer-events-none z-0'
+      style={{
+        backgroundImage: `url("${getGenImageUrl(getOutcomeImagePrompt())}")`
+      }}
+    />
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='text-center py-4'
+      className='text-center py-4 relative z-10'
     >
       <motion.h3
         initial={{ scale: 0.5, opacity: 0 }}
@@ -156,6 +175,7 @@ export const CompletePhase = ({
         </ActionButton>
       </motion.div>
     </motion.div>
+    </div>
   )
 }
 

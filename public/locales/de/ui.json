@@ -652,6 +652,7 @@
   "roadieRun.itemTypes.DRUMS": "Schlagzeug",
   "roadieRun.itemTypes.GUITAR": "Gitarre",
   "roadieRun.itemTypes.unknown": "Unbekannt",
+  "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "scene.loading": "Szene wird geladen...",
   "seconds": "{{count}} Sek.",
