@@ -10,7 +10,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:unexpected_bill.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -50 },
+        effect: { type: 'resource', resource: 'money', value: -80 },
         outcomeText: 'events:unexpected_bill.opt1.outcome'
       }
     ]
@@ -31,7 +31,7 @@ export const FINANCIAL_EVENTS = [
             {
               type: 'resource',
               resource: 'money',
-              value: -300,
+              value: -480,
               description: 'events:gear_theft.opt1.d_8026'
             },
             { type: 'stat', stat: 'mood', value: -10 }
@@ -64,7 +64,7 @@ export const FINANCIAL_EVENTS = [
         effect: {
           type: 'resource',
           resource: 'money',
-          value: -35,
+          value: -55,
           description: 'events:parking_fine.opt1.d_0a11'
         },
         outcomeText: 'events:parking_fine.opt1.outcome'
@@ -84,7 +84,7 @@ export const FINANCIAL_EVENTS = [
         effect: {
           type: 'resource',
           resource: 'money',
-          value: -150,
+          value: -240,
           description: 'events:tax_audit.opt1.d_ca82'
         },
         outcomeText: 'events:tax_audit.opt1.outcome'
@@ -192,7 +192,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:broken_cable_bulk.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -60 },
+        effect: { type: 'resource', resource: 'money', value: -100 },
         outcomeText: 'events:broken_cable_bulk.opt1.outcome'
       },
       {
@@ -278,7 +278,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:towed_van.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -220 },
+        effect: { type: 'resource', resource: 'money', value: -350 },
         outcomeText: 'events:towed_van.opt1.outcome'
       },
       {
