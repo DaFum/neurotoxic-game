@@ -21,13 +21,13 @@ export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
-    BASE_COST: 25
+    BASE_COST: 40
   },
   TRANSPORT: {
     FUEL_PER_100KM: 12, // Liters
     FUEL_PRICE: 1.75, // Euro per Liter
     MAX_FUEL: 100, // Liters
-    REPAIR_COST_PER_UNIT: 3, // Per 1% condition
+    REPAIR_COST_PER_UNIT: 6, // Per 1% condition
     INSURANCE_MONTHLY: 80,
     MAINTENANCE_30DAYS: 200
   },
@@ -552,7 +552,10 @@ export const calculateGigFinancials = ({
   // 3. Cult Donations (Zealotry)
   const { passiveIncome } = calculateZealotryEffects(zealotry)
   if (passiveIncome > 0) {
-    report.income.breakdown.push({ labelKey: 'economy:cultDonations', value: passiveIncome })
+    report.income.breakdown.push({
+      labelKey: 'economy:cultDonations',
+      value: passiveIncome
+    })
     report.income.total += passiveIncome
   }
 
@@ -690,7 +693,9 @@ export const calculateKabelsalatMinigameResult = (results, bandState) => {
     stress = 15
   } else {
     // Success! Reward based on time remaining
-    const validTimeLeft = Number.isFinite(results.timeLeft) ? results.timeLeft : 0
+    const validTimeLeft = Number.isFinite(results.timeLeft)
+      ? results.timeLeft
+      : 0
     const timeBonus = Math.max(0, Math.floor(validTimeLeft / 5))
     reward = Math.max(0, 60 + timeBonus * 15) // Base 60, scaling better for quick completion
 

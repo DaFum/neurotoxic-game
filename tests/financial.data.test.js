@@ -29,6 +29,6 @@ describe('Financial Events', () => {
       e => e.id === 'unexpected_bill'
     )
     assert.ok(unexpectedBill)
-    assert.strictEqual(unexpectedBill.options[0].effect.value, -50)
+    assert.strictEqual(unexpectedBill.options[0].effect.value, -80)
   })
 })

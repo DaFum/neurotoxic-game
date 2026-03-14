@@ -11,12 +11,12 @@ export const BAND_EVENTS = [
     options: [
       {
         label: 'events:internal_dispute.option_slow',
-        effect: { type: 'stat', stat: 'harmony', value: -5 },
+        effect: { type: 'stat', stat: 'harmony', value: -8 },
         outcomeText: 'events:internal_dispute.outcome_slow'
       },
       {
         label: 'events:internal_dispute.option_fast',
-        effect: { type: 'stat', stat: 'harmony', value: -5 },
+        effect: { type: 'stat', stat: 'harmony', value: -8 },
         outcomeText: 'events:internal_dispute.outcome_fast'
       },
       {
@@ -157,7 +157,7 @@ export const BAND_EVENTS = [
       },
       {
         label: 'events:ego_clash.opt2.label',
-        effect: { type: 'stat', stat: 'harmony', value: -10 },
+        effect: { type: 'stat', stat: 'harmony', value: -16 },
         outcomeText: 'events:ego_clash.opt2.outcome'
       }
     ]
@@ -199,12 +199,12 @@ export const BAND_EVENTS = [
     options: [
       {
         label: 'events:setlist_argument.opt1.label',
-        effect: { type: 'stat', stat: 'harmony', value: -5 },
+        effect: { type: 'stat', stat: 'harmony', value: -8 },
         outcomeText: 'events:setlist_argument.opt1.outcome'
       },
       {
         label: 'events:setlist_argument.opt2.label',
-        effect: { type: 'stat', stat: 'harmony', value: -5 },
+        effect: { type: 'stat', stat: 'harmony', value: -8 },
         outcomeText: 'events:setlist_argument.opt2.outcome'
       },
       {
@@ -267,7 +267,7 @@ export const BAND_EVENTS = [
       },
       {
         label: 'events:late_soundcheck_blame.opt2.label',
-        effect: { type: 'stat', stat: 'harmony', value: -8 },
+        effect: { type: 'stat', stat: 'harmony', value: -12 },
         outcomeText: 'events:late_soundcheck_blame.opt2.outcome'
       }
     ]

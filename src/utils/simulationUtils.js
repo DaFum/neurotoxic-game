@@ -31,11 +31,11 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
       key: 'ui:pregig.effects.telepathy',
       fallback: 'TELEPATHY (Harmony > 80): Easier Hits'
     })
-  } else if (bandState.harmony < 30) {
+  } else if (bandState.harmony < 40) {
     modifiers.noteJitter = true
     modifiers.activeEffects.push({
       key: 'ui:pregig.effects.disconnect',
-      fallback: 'DISCONNECT (Harmony < 30): Notes Jitter'
+      fallback: 'DISCONNECT (Harmony < 40): Notes Jitter'
     })
   }
 
@@ -48,7 +48,7 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   }
 
   // Matze (Guitar)
-  if (matze && matze.mood < 20) {
+  if (matze && matze.mood < 30) {
     modifiers.guitarScoreMult = 0.5
     modifiers.activeEffects.push({
       key: 'ui:pregig.effects.grumpy',
@@ -58,7 +58,7 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   }
 
   // Marius (Drums)
-  if (Marius && Marius.stamina < 20) {
+  if (Marius && Marius.stamina < 30) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
     modifiers.activeEffects.push({
       key: 'ui:pregig.effects.tired',
@@ -115,9 +115,9 @@ export const calculateGigPhysics = (bandState, song) => {
   const avgStamina = members.length ? totalStamina / members.length : 0
 
   // Normal Speed = 500 (pixels per second approx or whatever engine uses)
-  // If Stamina < 30, slow down draggingly
+  // If Stamina < 40, slow down draggingly
   let speedModifier = 1.0
-  if (avgStamina < 30) {
+  if (avgStamina < 40) {
     speedModifier = 0.8 // "Drag" effect
   }
 
@@ -202,7 +202,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // 1. Costs
   // Rent/Food scaled by band size
   const bandSize = Array.isArray(nextBand.members) ? nextBand.members.length : 3
-  let dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 5
+  let dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8
 
   // YouTube Passive Ad Revenue Perk (per 10k subscribers)
   if ((nextSocial.youtube || 0) >= 10000) {

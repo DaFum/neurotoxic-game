@@ -76,8 +76,8 @@ test('calculateDailyUpdates: daily cost includes band size scaling', () => {
   const state = buildFullState()
   const result = calculateDailyUpdates(state)
 
-  // Base cost is 25, plus 3 members * 5 = 15, total = 40
-  const expectedCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 5
+  // Base cost is 40, plus 3 members * 8 = 24, total = 64
+  const expectedCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
   assert.equal(
     result.player.money,
     500 - expectedCost,

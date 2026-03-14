@@ -585,8 +585,8 @@ test('Golden Path: Daily cost scaling with band size', async t => {
     let state = createInitialState()
     const moneyBefore = state.player.money
     state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
-    // BASE_COST (25) + bandSize (3) * 5 = 40
-    const expectedCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 5
+    // BASE_COST (40) + bandSize (3) * 8 = 64
+    const expectedCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
     assert.equal(
       state.player.money,
       moneyBefore - expectedCost,
