@@ -133,7 +133,7 @@ test('Minigame State Transitions', async t => {
       const action = {
         type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
         payload: {
-          results: { isPoweredOn: true, timeLeft: 15 } // Base 50 + (15/5)*10 = 80 reward
+          results: { isPoweredOn: true, timeLeft: 15 } // Base 60 + (15/5)*15 = 105 reward
         }
       }
       const newState = gameReducer(activeState, action)
@@ -141,7 +141,7 @@ test('Minigame State Transitions', async t => {
       assert.deepStrictEqual(newState.minigame, initialState.minigame)
 
       // Verify Economy Result applied correctly
-      assert.strictEqual(newState.player.money, 1080)
+      assert.strictEqual(newState.player.money, 1105)
       assert.strictEqual(newState.band.harmony, 50) // stress is 0
     }
   )

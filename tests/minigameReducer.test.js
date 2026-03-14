@@ -104,7 +104,7 @@ describe('minigameReducer', () => {
       const payload = { results: { isPoweredOn: false } }
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
-      assert.strictEqual(nextState.band.harmony, 40) // 50 - 10 stress
+      assert.strictEqual(nextState.band.harmony, 35) // 50 - 15 stress (updated to 15)
       assert.strictEqual(nextState.player.money, 1000) // No reward on failure
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
@@ -115,7 +115,7 @@ describe('minigameReducer', () => {
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
       assert.strictEqual(nextState.band.harmony, 50) // No stress on success
-      assert.strictEqual(nextState.player.money, 1110) // 50 base + (30/5)*10 = 110 reward
+      assert.strictEqual(nextState.player.money, 1150) // 60 base + (30/5)*15 = 150 reward
       assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
     })
   })

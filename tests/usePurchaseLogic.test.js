@@ -2,6 +2,20 @@ import { describe, test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
+// Initialize i18n to prevent Suspense fallback from returning null
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+i18n.use(initReactI18next).init({
+  lng: 'en',
+  fallbackLng: 'en',
+  resources: {
+    en: { ui: {}, items: {} }
+  },
+  react: { useSuspense: false }
+})
+
 import { usePurchaseLogic } from '../src/hooks/usePurchaseLogic.js'
 
 describe('usePurchaseLogic', () => {
