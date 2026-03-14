@@ -652,6 +652,7 @@
   "roadieRun.itemTypes.DRUMS": "Schlagzeug",
   "roadieRun.itemTypes.GUITAR": "Gitarre",
   "roadieRun.itemTypes.unknown": "Unbekannt",
+  "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "scene.loading": "Szene wird geladen...",
   "seconds": "{{count}} Sek.",
@@ -828,51 +829,5 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen",
-  "travel.errors.alreadyPlayedHere": "Du hast hier gerade erst gespielt! Fahr weiter und finde neues Publikum.",
-  "overworld.band_hq_button": "BAND HQ",
-  "stash": {
-    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
-    "itemUsed": "{{itemName}} {{action}}!"
-  },
-  "contraband": {
-    "title": "SCHMUGGELWAREN VERSTECK",
-    "description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
-    "targetMemberLabel": "Zielmitglied:",
-    "noItems": "Noch keine Schmuggelware gesammelt.",
-    "useItem": "GEGENSTAND VERWENDEN",
-    "passiveActive": "PASSIVER EFFEKT AKTIV",
-    "close": "VERSTECK SCHLIESSEN",
-    "button": "VERSTECK",
-    "requiresTarget": "Erfordert Ziel-Mitglied.",
-    "gigs": "GIGS",
-    "applied": "ANGEWENDET",
-    "applyItem": "EFFEKT ANWENDEN"
-  },
-  "member": {
-    "unknown": "Unbekannt"
-  },
-  "item": {
-    "unknown": "Unbekannter Gegenstand",
-    "typeUnknown": "Unbekannter Typ",
-    "descriptionUnknown": "Unbekannte Beschreibung",
-    "type_consumable": "Verbrauchsmaterial",
-    "type_equipment": "Ausrüstung",
-    "type_relic": "Relikt"
-  },
-  "postGig": {
-    "harmony": "Harmonie",
-    "money": "Geld"
-  },
-  "rarity": {
-    "common": "GEWÖHNLICH",
-    "uncommon": "UNGEWÖHNLICH",
-    "rare": "SELTEN",
-    "epic": "EPISCH"
-  },
-  "stash.actionUsed": "Benutzt",
-  "stash.actionApplied": "Angewendet",
-  "contraband.dropped": "Schmuggelware gefunden!",
-  "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
-  "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig."
+  "volume.set": "Lautstärke auf {{pct}}% setzen"
 }
