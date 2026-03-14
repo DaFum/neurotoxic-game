@@ -84,7 +84,6 @@
   "contract.p2": "The Artist agrees to <0>subliminally insert corporate messaging</0> during all live performances in sector 4.",
   "contract.sealed": "SEALED",
   "contract.sig": "SIGNATURE (BLOOD/VOID):",
-  "contract.sign_aria": "Sign Contract",
   "contract.title": "Binding Agreement",
   "contract.warning": "Failure to comply will result in <0>immediate termination of organic functions</0>.",
   "cost": "€{{cost}}",
@@ -857,5 +856,7 @@
   "pirate_radio.harmony_cost": "HARMONY DRAIN",
   "pirate_radio.button": "PIRATE RADIO",
   "pirate_radio.success": "Broadcast complete. The signal lives. Fame +{{deltaFame}}, Zealotry +{{deltaZealotry}}, Controversy +{{deltaControversy}}, Harmony {{deltaHarmony}}, Cost {{cost}}€.",
-  "pirate_radio.required_offering": "[ REQUIRED OFFERING ]"
+  "pirate_radio.required_offering": "[ REQUIRED OFFERING ]",
+  "contract.sign_aria": "Sign contract",
+  "button.sign": "SIGN"
 }
