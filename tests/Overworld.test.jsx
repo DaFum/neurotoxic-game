@@ -68,7 +68,7 @@ vi.mock('../src/components/MapNode', () => ({
 }))
 
 describe('Overworld Component', () => {
-  it('renders the Overworld and its UI elements correctly', () => {
+  it('renders the Overworld and its UI elements correctly', async () => {
     render(
       <GameStateProvider>
         <Overworld />
@@ -80,6 +80,12 @@ describe('Overworld Component', () => {
       screen.getByText(/ui:overworld.header.tourPlan/i)
     ).toBeInTheDocument()
     expect(screen.getByTestId('toggle-radio')).toBeInTheDocument()
+
+    // Open the menu first
+    const menuButton = screen.getByText(/ui:actions.menu/i)
+    await act(async () => {
+      fireEvent.click(menuButton)
+    })
 
     // Check buttons
     expect(screen.getByText(/\[ui:quests\.button\]/i)).toBeInTheDocument()
@@ -98,6 +104,12 @@ describe('Overworld Component', () => {
           <Overworld />
         </GameStateProvider>
       )
+
+      // Open the menu first
+      const menuButton = screen.getByText(/ui:actions.menu/i)
+      await act(async () => {
+        fireEvent.click(menuButton)
+      })
 
       const saveButton = screen.getByText(/\[SAVE GAME\]/i)
 

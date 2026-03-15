@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
@@ -94,6 +94,7 @@ export const Overworld = () => {
   })
 
   const [isSaving, setIsSaving] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const locationName = translateLocation(t, player.location, player.location)
   const isMountedRef = useRef(true)
 
@@ -305,77 +306,98 @@ export const Overworld = () => {
       </div>
 
       <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-2 items-end mb-2"
+            >
+              <GlitchButton
+                onClick={openStash}
+                disabled={isTraveling}
+                variant='primary'
+                size='sm'
+              >
+                [{t('ui:contraband.button', { defaultValue: 'STASH' })}]
+              </GlitchButton>
+              <GlitchButton
+                onClick={openQuests}
+                disabled={isTraveling}
+                variant='primary'
+                size='sm'
+              >
+                [{t('ui:quests.button')}]
+              </GlitchButton>
+              <GlitchButton
+                onClick={openPirateRadio}
+                disabled={isTraveling}
+                variant='warning'
+                size='sm'
+              >
+                [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}]
+              </GlitchButton>
+              <GlitchButton
+                onClick={openHQ}
+                disabled={isTraveling}
+                variant='primary'
+                size='sm'
+              >
+                [{t('ui:overworld.band_hq_button', { defaultValue: 'BAND HQ' })}]
+              </GlitchButton>
+              <GlitchButton
+                onClick={handleRefuel}
+                disabled={
+                  isTraveling ||
+                  (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+                }
+                variant='warning'
+                size='sm'
+              >
+                [REFUEL]
+              </GlitchButton>
+              <GlitchButton
+                onClick={() => changeScene(GAME_PHASES.CLINIC)}
+                disabled={isTraveling}
+                variant='warning'
+                size='sm'
+              >
+                [
+                {t('ui:overworld.void_clinic_button', {
+                  defaultValue: 'VOID CLINIC'
+                })}
+                ]
+              </GlitchButton>
+              <GlitchButton
+                onClick={handleRepair}
+                disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
+                variant='primary'
+                size='sm'
+              >
+                [REPAIR]
+              </GlitchButton>
+              <GlitchButton
+                onClick={handleSaveWithDelay}
+                disabled={isTraveling}
+                isLoading={isSaving}
+                variant='primary'
+                size='sm'
+              >
+                [SAVE GAME]
+              </GlitchButton>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <GlitchButton
-          onClick={openStash}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
           disabled={isTraveling}
           variant='primary'
           size='sm'
         >
-          [{t('ui:contraband.button', { defaultValue: 'STASH' })}]
-        </GlitchButton>
-        <GlitchButton
-          onClick={openQuests}
-          disabled={isTraveling}
-          variant='primary'
-          size='sm'
-        >
-          [{t('ui:quests.button')}]
-        </GlitchButton>
-        <GlitchButton
-          onClick={openPirateRadio}
-          disabled={isTraveling}
-          variant='warning'
-          size='sm'
-        >
-          [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}]
-        </GlitchButton>
-        <GlitchButton
-          onClick={openHQ}
-          disabled={isTraveling}
-          variant='primary'
-          size='sm'
-        >
-          [{t('ui:overworld.band_hq_button', { defaultValue: 'BAND HQ' })}]
-        </GlitchButton>
-        <GlitchButton
-          onClick={handleRefuel}
-          disabled={
-            isTraveling ||
-            (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
-          }
-          variant='warning'
-          size='sm'
-        >
-          [REFUEL]
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => changeScene(GAME_PHASES.CLINIC)}
-          disabled={isTraveling}
-          variant='warning'
-          size='sm'
-        >
-          [
-          {t('ui:overworld.void_clinic_button', {
-            defaultValue: 'VOID CLINIC'
-          })}
-          ]
-        </GlitchButton>
-        <GlitchButton
-          onClick={handleRepair}
-          disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
-          variant='primary'
-          size='sm'
-        >
-          [REPAIR]
-        </GlitchButton>
-        <GlitchButton
-          onClick={handleSaveWithDelay}
-          disabled={isTraveling}
-          isLoading={isSaving}
-          variant='primary'
-          size='sm'
-        >
-          [SAVE GAME]
+          {isMenuOpen ? t('ui:actions.close_menu', '[CLOSE MENU]') : t('ui:actions.menu', '[MENU]')}
         </GlitchButton>
       </div>
 
