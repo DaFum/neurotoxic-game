@@ -18,6 +18,43 @@ const getImagePromptForCategory = (category, badges) => {
   return CATEGORY_PROMPTS[category] || IMG_PROMPTS.SOCIAL_POST_TECH
 }
 
+const SideEffectsPreview = memo(({ badges }) => {
+  const { t } = useTranslation()
+
+  if (!badges || badges.length === 0) return null
+
+  const hasHighVariance = badges.includes('⚠️')
+  const hasConsistentGrowth = badges.includes('🛡️')
+
+  if (!hasHighVariance && !hasConsistentGrowth) return null
+
+  return (
+    <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
+      <div className='flex flex-wrap gap-2'>
+        {hasHighVariance && (
+          <span className='text-blood-red'>
+            {t('economy:social.highVariance', {
+              defaultValue: 'High Variance Risk'
+            })}
+          </span>
+        )}
+        {hasConsistentGrowth && (
+          <span className='text-toxic-green'>
+            {t('economy:social.consistentGrowth', {
+              defaultValue: 'Consistent Growth'
+            })}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+})
+
+SideEffectsPreview.displayName = 'SideEffectsPreview'
+SideEffectsPreview.propTypes = {
+  badges: PropTypes.arrayOf(PropTypes.string)
+}
+
 const SocialOptionButton = memo(({ opt, index, onSelect }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
@@ -67,24 +104,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         </div>
 
         {/* Side Effects Preview */}
-        <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
-          <div className='flex flex-wrap gap-2'>
-            {opt.badges?.includes('⚠️') && (
-              <span className='text-blood-red'>
-                {t('economy:social.highVariance', {
-                  defaultValue: 'High Variance Risk'
-                })}
-              </span>
-            )}
-            {opt.badges?.includes('🛡️') && (
-              <span className='text-toxic-green'>
-                {t('economy:social.consistentGrowth', {
-                  defaultValue: 'Consistent Growth'
-                })}
-              </span>
-            )}
-          </div>
-        </div>
+        <SideEffectsPreview badges={opt.badges} />
       </ActionButton>
     </motion.div>
   )
@@ -103,6 +123,59 @@ SocialOptionButton.propTypes = {
   onSelect: PropTypes.func.isRequired
 }
 
+const ZealotryGauge = memo(({ zealotryLevel }) => {
+  const { t } = useTranslation()
+
+  if (zealotryLevel <= 0) return null
+
+  return (
+    <div className='flex flex-row items-center gap-4 mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded relative overflow-hidden'>
+      <div className='w-12 h-12 shrink-0 border border-blood-red/50 rounded overflow-hidden'>
+        <img
+          src={getGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)}
+          alt={t('ui:postGig.socialPhase.altZealotryCult', {
+            defaultValue: 'Zealotry Cult'
+          })}
+          className='w-full h-full object-cover mix-blend-screen opacity-80'
+        />
+      </div>
+      <div className='flex-1 flex flex-col'>
+        <div className='flex justify-between items-center mb-1'>
+          <span className='text-xs font-bold text-blood-red uppercase tracking-widest'>
+            {t('economy:social.cultZealotry', {
+              defaultValue: 'CULT ZEALOTRY'
+            })}
+          </span>
+          <span className='text-xs font-mono text-blood-red/80'>
+            {zealotryLevel}%
+          </span>
+        </div>
+        <div className='w-full bg-void-black/50 h-2 rounded overflow-hidden'>
+          <div
+            className='bg-blood-red h-full transition-all duration-500'
+            style={{
+              width: `${Math.min(100, Math.max(0, zealotryLevel))}%`
+            }}
+          />
+        </div>
+        {zealotryLevel >= ZEALOTRY_PROMO_THRESHOLD && (
+          <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse'>
+            {t('economy:social.zealotryWarning', {
+              defaultValue:
+                'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.'
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+})
+
+ZealotryGauge.displayName = 'ZealotryGauge'
+ZealotryGauge.propTypes = {
+  zealotryLevel: PropTypes.number
+}
+
 export const SocialPhase = ({
   options,
   onSelect,
@@ -113,47 +186,7 @@ export const SocialPhase = ({
   return (
     <Panel contentClassName='space-y-6'>
       {/* Zealotry Gauge UI */}
-      {zealotryLevel > 0 && (
-        <div className='flex flex-row items-center gap-4 mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded relative overflow-hidden'>
-          <div className='w-12 h-12 shrink-0 border border-blood-red/50 rounded overflow-hidden'>
-            <img
-              src={getGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)}
-              alt={t('ui:postGig.socialPhase.altZealotryCult', {
-                defaultValue: 'Zealotry Cult'
-              })}
-              className='w-full h-full object-cover mix-blend-screen opacity-80'
-            />
-          </div>
-          <div className='flex-1 flex flex-col'>
-            <div className='flex justify-between items-center mb-1'>
-              <span className='text-xs font-bold text-blood-red uppercase tracking-widest'>
-                {t('economy:social.cultZealotry', {
-                  defaultValue: 'CULT ZEALOTRY'
-                })}
-              </span>
-              <span className='text-xs font-mono text-blood-red/80'>
-                {zealotryLevel}%
-              </span>
-            </div>
-            <div className='w-full bg-void-black/50 h-2 rounded overflow-hidden'>
-              <div
-                className='bg-blood-red h-full transition-all duration-500'
-                style={{
-                  width: `${Math.min(100, Math.max(0, zealotryLevel))}%`
-                }}
-              />
-            </div>
-            {zealotryLevel >= ZEALOTRY_PROMO_THRESHOLD && (
-              <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse'>
-                {t('economy:social.zealotryWarning', {
-                  defaultValue:
-                    'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.'
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ZealotryGauge zealotryLevel={zealotryLevel} />
 
       <div className='text-center mb-2'>
         <h3 className='text-xl font-mono tracking-widest'>
