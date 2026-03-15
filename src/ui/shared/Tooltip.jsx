@@ -105,7 +105,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
   )
 
   return (
-    <div className={`inline-block relative ${className}`}>
+    <div className={`inline-block ${className.includes('absolute') ? '' : 'relative'} ${className}`}>
       {trigger}
       {isVisible && (
         <div
