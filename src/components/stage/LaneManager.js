@@ -29,7 +29,7 @@ export class LaneManager {
     this.lastScreenHeight = -1
   }
 
-  init() {
+  _initContainerAndLayout() {
     this.rhythmContainer = new PIXI.Container()
     const width = this.app.screen.width
     const height = this.app.screen.height
@@ -43,6 +43,10 @@ export class LaneManager {
 
     this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     this.stageContainer.addChild(this.rhythmContainer)
+  }
+
+  init() {
+    this._initContainerAndLayout()
 
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
@@ -59,67 +63,91 @@ export class LaneManager {
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
 
-      // Create separate graphics for static background and dynamic elements
-      const staticGraphics = new PIXI.Graphics()
-      staticGraphics.__laneIndex = index
-      staticGraphics.__layer = 'static'
-
-      const activeGraphics = new PIXI.Graphics()
-      activeGraphics.__laneIndex = index
-      activeGraphics.__layer = 'active'
-      activeGraphics.visible = false
-
-      const inactiveGraphics = new PIXI.Graphics()
-      inactiveGraphics.__laneIndex = index
-      inactiveGraphics.__layer = 'inactive'
-      inactiveGraphics.visible = true
-
-      // Draw static background once
-      staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
-      staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
-
-      staticGraphics.rect(
-        laneX + laneWidth * 0.35,
-        0,
-        laneWidth * 0.3,
-        laneHeight
+      this._createLaneGraphics(
+        lane,
+        index,
+        laneX,
+        laneWidth,
+        laneHeight,
+        laneStrokeWidth,
+        hitLineY,
+        hitLineHeight,
+        hitLineStrokeWidth
       )
-      staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
-
-      staticGraphics.stroke({
-        width: laneStrokeWidth,
-        color: LANE_BORDER_COLOR,
-        alpha: LANE_BORDER_ALPHA
-      })
-
-      // Draw active/inactive states initially
-      activeGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
-      activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
-      activeGraphics.stroke({
-        width: hitLineStrokeWidth,
-        color: HIT_BAR_BORDER_COLOR
-      })
-
-      inactiveGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
-      inactiveGraphics.fill({
-        color: lane.color,
-        alpha: HIT_BAR_INACTIVE_ALPHA
-      })
-      inactiveGraphics.stroke({
-        width: hitLineStrokeWidth,
-        color: lane.color
-      })
-
-      this.rhythmContainer.addChild(staticGraphics)
-      this.rhythmContainer.addChild(inactiveGraphics)
-      this.rhythmContainer.addChild(activeGraphics)
-
-      this.laneGraphics[index] = {
-        static: staticGraphics,
-        active: activeGraphics,
-        inactive: inactiveGraphics
-      }
     })
+  }
+
+  _createLaneGraphics(
+    lane,
+    index,
+    laneX,
+    laneWidth,
+    laneHeight,
+    laneStrokeWidth,
+    hitLineY,
+    hitLineHeight,
+    hitLineStrokeWidth
+  ) {
+    // Create separate graphics for static background and dynamic elements
+    const staticGraphics = new PIXI.Graphics()
+    staticGraphics.__laneIndex = index
+    staticGraphics.__layer = 'static'
+
+    const activeGraphics = new PIXI.Graphics()
+    activeGraphics.__laneIndex = index
+    activeGraphics.__layer = 'active'
+    activeGraphics.visible = false
+
+    const inactiveGraphics = new PIXI.Graphics()
+    inactiveGraphics.__laneIndex = index
+    inactiveGraphics.__layer = 'inactive'
+    inactiveGraphics.visible = true
+
+    // Draw static background once
+    staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
+    staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+    staticGraphics.rect(
+      laneX + laneWidth * 0.35,
+      0,
+      laneWidth * 0.3,
+      laneHeight
+    )
+    staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
+    staticGraphics.stroke({
+      width: laneStrokeWidth,
+      color: LANE_BORDER_COLOR,
+      alpha: LANE_BORDER_ALPHA
+    })
+
+    // Draw active/inactive states initially
+    activeGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
+    activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
+    activeGraphics.stroke({
+      width: hitLineStrokeWidth,
+      color: HIT_BAR_BORDER_COLOR
+    })
+
+    inactiveGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
+    inactiveGraphics.fill({
+      color: lane.color,
+      alpha: HIT_BAR_INACTIVE_ALPHA
+    })
+    inactiveGraphics.stroke({
+      width: hitLineStrokeWidth,
+      color: lane.color
+    })
+
+    this.rhythmContainer.addChild(staticGraphics)
+    this.rhythmContainer.addChild(inactiveGraphics)
+    this.rhythmContainer.addChild(activeGraphics)
+
+    this.laneGraphics[index] = {
+      static: staticGraphics,
+      active: activeGraphics,
+      inactive: inactiveGraphics
+    }
   }
 
   update(state) {
