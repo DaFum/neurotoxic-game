@@ -8,6 +8,28 @@ import { ensureAudioContext } from './setup.js'
 import { playMidiFileInternal } from './midiPlayback.js'
 import { SONGS_DB, SONGS_BY_MID } from '../../data/songs.js'
 
+const customSongsMapCache = new WeakMap()
+
+/**
+ * Memoizes metadata lookup for custom songs arrays to O(1).
+ * @param {Array} songs
+ * @returns {Map}
+ */
+function getCustomSongsMap(songs) {
+  let map = customSongsMapCache.get(songs)
+  if (!map) {
+    map = new Map()
+    for (let i = 0; i < songs.length; i++) {
+      const song = songs[i]
+      if (song.sourceMid) {
+        map.set(song.sourceMid, song)
+      }
+    }
+    customSongsMapCache.set(songs, map)
+  }
+  return map
+}
+
 /**
  * Plays a random MIDI file from the available set for ambient music.
  * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
@@ -40,7 +62,7 @@ export async function playRandomAmbientMidi(
   const meta =
     songs === SONGS_DB
       ? SONGS_BY_MID.get(filename)
-      : songs.find(s => s.sourceMid === filename)
+      : getCustomSongsMap(songs).get(filename)
   // Requirement: Ambient always plays from the beginning (0s)
   const offsetSeconds = 0
 
