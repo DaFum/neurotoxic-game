@@ -1,6 +1,9 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { usePirateRadio, PIRATE_RADIO_CONFIG } from '../../src/hooks/usePirateRadio.js'
+import {
+  usePirateRadio,
+  PIRATE_RADIO_CONFIG
+} from '../../src/hooks/usePirateRadio.js'
 
 vi.mock('../../src/utils/AudioManager.js', () => ({
   audioManager: { playSFX: vi.fn() }

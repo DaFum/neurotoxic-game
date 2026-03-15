@@ -198,7 +198,8 @@ export class MapGenerator {
         } else {
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
-          let fallbackArray = i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
+          let fallbackArray =
+            i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
           let fallbackLength = 0
           for (let k = 0; k < fallbackArray.length; k++) {
             const v = fallbackArray[k]

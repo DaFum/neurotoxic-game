@@ -25,8 +25,12 @@ test('ReportPhase renders financials and calls onNext', () => {
 
   expect(screen.getByText('economy:postGig.ticketSales')).toBeInTheDocument()
   expect(screen.getByText('economy:postGig.gearRepair')).toBeInTheDocument()
-  expect(screen.getAllByText('economy:report.amount_positive').length).toBeGreaterThan(0)
-  expect(screen.getAllByText('economy:report.amount_negative').length).toBeGreaterThan(0)
+  expect(
+    screen.getAllByText('economy:report.amount_positive').length
+  ).toBeGreaterThan(0)
+  expect(
+    screen.getAllByText('economy:report.amount_negative').length
+  ).toBeGreaterThan(0)
 
   const button = screen.getByRole('button')
   fireEvent.click(button)

@@ -427,10 +427,13 @@ export const createClinicEnhanceAction = payload => ({
  */
 export const createPirateBroadcastAction = payload => ({
   type: ActionTypes.PIRATE_BROADCAST,
-  payload: (payload && typeof payload === 'object') ? {
-    ...payload,
-    successToast: payload.successToast
-      ? { ...payload.successToast, id: crypto.randomUUID() }
-      : undefined
-  } : payload
+  payload:
+    payload && typeof payload === 'object'
+      ? {
+          ...payload,
+          successToast: payload.successToast
+            ? { ...payload.successToast, id: crypto.randomUUID() }
+            : undefined
+        }
+      : payload
 })

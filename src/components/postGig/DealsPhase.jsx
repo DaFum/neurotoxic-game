@@ -53,152 +53,156 @@ const getAlignmentColor = alignment => {
   }
 }
 
-const DealCard = memo(({
-  deal,
-  negotiationState,
-  brandReputation,
-  handleAcceptDeal,
-  handleNegotiationStart
-}) => {
-  const { t } = useTranslation()
-  const isRevoked = negotiationState?.status === 'REVOKED'
-  const displayDeal = negotiationState?.deal || deal
-  const hasNegotiated = !!negotiationState
+const DealCard = memo(
+  ({
+    deal,
+    negotiationState,
+    brandReputation,
+    handleAcceptDeal,
+    handleNegotiationStart
+  }) => {
+    const { t } = useTranslation()
+    const isRevoked = negotiationState?.status === 'REVOKED'
+    const displayDeal = negotiationState?.deal || deal
+    const hasNegotiated = !!negotiationState
 
-  return (
-    <div
-      className={`border-2 border-toxic-green p-4 flex justify-between items-center group transition-colors relative overflow-hidden ${isRevoked ? 'bg-blood-red/20 border-blood-red grayscale opacity-50' : 'bg-void-black/80 hover:bg-toxic-green/10'}`}
-    >
-      {/* Background Alignment Watermark */}
+    return (
       <div
-        className={`absolute -right-4 -bottom-4 text-9xl opacity-5 font-black pointer-events-none select-none ${getAlignmentColor(displayDeal.alignment)}`}
+        className={`border-2 border-toxic-green p-4 flex justify-between items-center group transition-colors relative overflow-hidden ${isRevoked ? 'bg-blood-red/20 border-blood-red grayscale opacity-50' : 'bg-void-black/80 hover:bg-toxic-green/10'}`}
       >
-        {displayDeal.alignment?.[0]}
-      </div>
-
-      <div className='flex-1 z-10 flex gap-4 items-start'>
-        <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
-          <img
-            src={getGenImageUrl(getAlignmentImagePrompt(displayDeal.alignment))}
-            alt={displayDeal.name}
-            className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
-            loading='lazy'
-          />
+        {/* Background Alignment Watermark */}
+        <div
+          className={`absolute -right-4 -bottom-4 text-9xl opacity-5 font-black pointer-events-none select-none ${getAlignmentColor(displayDeal.alignment)}`}
+        >
+          {displayDeal.alignment?.[0]}
         </div>
-        <div className='flex-1'>
-          <div className='flex items-baseline gap-3'>
-            <div
-              className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
-            >
-              {displayDeal.name}
-            </div>
-            {displayDeal.alignment && (
-              <span
-                className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
-              >
-                {getAlignmentBadge(displayDeal.alignment)}
-              </span>
-            )}
-          </div>
 
-          <div className='text-xs text-ash-gray italic mb-2'>
-            {displayDeal.description}
+        <div className='flex-1 z-10 flex gap-4 items-start'>
+          <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
+            <img
+              src={getGenImageUrl(
+                getAlignmentImagePrompt(displayDeal.alignment)
+              )}
+              alt={displayDeal.name}
+              className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
+              loading='lazy'
+            />
           </div>
-          <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
-            <div>
-              💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
-              {displayDeal.offer.upfront}€
-            </div>
-            <div>
-              📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
-              {displayDeal.offer.duration}{' '}
-              {t('ui:deals.gigs', { defaultValue: 'Gigs' })}
-            </div>
-            {displayDeal.offer.perGig && (
-              <div>
-                💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
-                {displayDeal.offer.perGig}€
-              </div>
-            )}
-            {displayDeal.offer.item && (
-              <div>
-                🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
-                {displayDeal.offer.item}
-              </div>
-            )}
-            {displayDeal.penalty && (
-              <div className='text-blood-red'>
-                ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
-                {Object.entries(displayDeal.penalty)
-                  .map(([k, v]) => `${k}: ${v}`)
-                  .join(', ')}
-              </div>
-            )}
-          </div>
-
-          {/* Reputation Status */}
-          {brandReputation?.[displayDeal.alignment] !== undefined && (
-            <div className='mt-2 text-[10px] text-ash-gray'>
-              {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
-              <span
-                className={
-                  brandReputation[displayDeal.alignment] > 0
-                    ? 'text-toxic-green'
-                    : 'text-blood-red'
-                }
+          <div className='flex-1'>
+            <div className='flex items-baseline gap-3'>
+              <div
+                className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
               >
-                {brandReputation[displayDeal.alignment]}
-              </span>
+                {displayDeal.name}
+              </div>
+              {displayDeal.alignment && (
+                <span
+                  className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+                >
+                  {getAlignmentBadge(displayDeal.alignment)}
+                </span>
+              )}
+            </div>
+
+            <div className='text-xs text-ash-gray italic mb-2'>
+              {displayDeal.description}
+            </div>
+            <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
+              <div>
+                💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
+                {displayDeal.offer.upfront}€
+              </div>
+              <div>
+                📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
+                {displayDeal.offer.duration}{' '}
+                {t('ui:deals.gigs', { defaultValue: 'Gigs' })}
+              </div>
+              {displayDeal.offer.perGig && (
+                <div>
+                  💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
+                  {displayDeal.offer.perGig}€
+                </div>
+              )}
+              {displayDeal.offer.item && (
+                <div>
+                  🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
+                  {displayDeal.offer.item}
+                </div>
+              )}
+              {displayDeal.penalty && (
+                <div className='text-blood-red'>
+                  ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
+                  {Object.entries(displayDeal.penalty)
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ')}
+                </div>
+              )}
+            </div>
+
+            {/* Reputation Status */}
+            {brandReputation?.[displayDeal.alignment] !== undefined && (
+              <div className='mt-2 text-[10px] text-ash-gray'>
+                {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
+                <span
+                  className={
+                    brandReputation[displayDeal.alignment] > 0
+                      ? 'text-toxic-green'
+                      : 'text-blood-red'
+                  }
+                >
+                  {brandReputation[displayDeal.alignment]}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className='flex flex-col gap-2 ml-4 z-10 min-w-[140px]'>
+          {!isRevoked ? (
+            <>
+              <ActionButton
+                onClick={() => handleAcceptDeal(displayDeal)}
+                className='bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
+              >
+                {t('ui:deals.accept', { defaultValue: 'ACCEPT' })}
+              </ActionButton>
+              {!hasNegotiated && (
+                <button
+                  type='button'
+                  onClick={() => handleNegotiationStart(deal)}
+                  className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
+                >
+                  {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
+                </button>
+              )}
+              {hasNegotiated && (
+                <div
+                  className={`text-center text-[10px] font-mono tracking-wider ${negotiationState.status === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
+                >
+                  {negotiationState.status === 'SUCCESS'
+                    ? t('ui:deals.termImproved', {
+                        defaultValue: 'TERM IMPROVED'
+                      })
+                    : negotiationState.status === 'WORSENED'
+                      ? t('ui:deals.termsWorsened', {
+                          defaultValue: 'TERMS WORSENED'
+                        })
+                      : t('ui:deals.negotiationFailed', {
+                          defaultValue: 'NEGOTIATION FAILED'
+                        })}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className='text-blood-red font-bold font-mono text-center tracking-widest'>
+              {t('ui:deals.revoked', { defaultValue: 'REVOKED' })}
             </div>
           )}
         </div>
       </div>
-
-      <div className='flex flex-col gap-2 ml-4 z-10 min-w-[140px]'>
-        {!isRevoked ? (
-          <>
-            <ActionButton
-              onClick={() => handleAcceptDeal(displayDeal)}
-              className='bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
-            >
-              {t('ui:deals.accept', { defaultValue: 'ACCEPT' })}
-            </ActionButton>
-            {!hasNegotiated && (
-              <button
-                type='button'
-                onClick={() => handleNegotiationStart(deal)}
-                className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
-              >
-                {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
-              </button>
-            )}
-            {hasNegotiated && (
-              <div
-                className={`text-center text-[10px] font-mono tracking-wider ${negotiationState.status === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
-              >
-                {negotiationState.status === 'SUCCESS'
-                  ? t('ui:deals.termImproved', {
-                      defaultValue: 'TERM IMPROVED'
-                    })
-                  : negotiationState.status === 'WORSENED'
-                    ? t('ui:deals.termsWorsened', {
-                        defaultValue: 'TERMS WORSENED'
-                      })
-                    : t('ui:deals.negotiationFailed', {
-                        defaultValue: 'NEGOTIATION FAILED'
-                      })}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className='text-blood-red font-bold font-mono text-center tracking-widest'>
-            {t('ui:deals.revoked', { defaultValue: 'REVOKED' })}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-})
+    )
+  }
+)
 
 DealCard.propTypes = {
   deal: PropTypes.object.isRequired,
@@ -233,16 +237,19 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     setNegotiationModalOpen(true)
   }, [])
 
-  const handleAcceptDeal = useCallback(async deal => {
-    try {
-      await onAccept(deal)
-    } catch (error) {
-      handleError(error, {
-        addToast,
-        fallbackMessage: t('ui:postGig.dealFailed')
-      })
-    }
-  }, [onAccept, addToast])
+  const handleAcceptDeal = useCallback(
+    async deal => {
+      try {
+        await onAccept(deal)
+      } catch (error) {
+        handleError(error, {
+          addToast,
+          fallbackMessage: t('ui:postGig.dealFailed')
+        })
+      }
+    },
+    [onAccept, addToast]
+  )
 
   const handleNegotiationSubmit = strategy => {
     if (!selectedDeal) return
