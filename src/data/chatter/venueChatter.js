@@ -1480,3 +1480,7 @@ export const VENUE_CHATTER_DB = [
     }
   }
 ]
+
+export const VENUE_CHATTER_LOOKUP = Object.fromEntries(
+  VENUE_CHATTER_DB.map(v => [v.venueId, v])
+)
