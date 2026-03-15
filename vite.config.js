@@ -12,6 +12,8 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       output: {
+        // TODO: Reintroduce code-splitting optimization using Rolldown's codeSplitting API
+        // Previous manualChunks logic for vendor/scene chunks was removed due to Rolldown API changes
       }
     }
   }
