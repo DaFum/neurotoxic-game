@@ -29,6 +29,12 @@ import { normalizeVenueId } from '../utils/mapUtils.js'
 import { ALL_VENUES } from '../data/venues.js'
 
 /**
+ * Pre-computed map of venues for O(1) lookups during travel logic
+ * @constant {Map<string, Object>}
+ */
+const VENUES_MAP = new Map(ALL_VENUES.map(v => [v.id, v]))
+
+/**
  * Failsafe timeout duration in milliseconds
  * Travel animation duration (1500ms) + buffer (10ms)
  * @constant {number}
@@ -103,13 +109,13 @@ export const useTravelLogic = ({
     return translateLocation(i18n.t.bind(i18n), key, key)
   }, [])
 
-  // Resolves full venue for capacity checks or fallback naming from ALL_VENUES list
+  // Resolves full venue for capacity checks or fallback naming from VENUES_MAP list
   const resolveVenue = useCallback((venue, id) => {
     if (typeof venue === 'string') {
-      return ALL_VENUES.find(v => v.id === id) || null
+      return VENUES_MAP.get(id) || null
     }
     if (!('capacity' in venue)) {
-      return ALL_VENUES.find(v => v.id === id) || venue
+      return VENUES_MAP.get(id) || venue
     }
     return venue
   }, [])
