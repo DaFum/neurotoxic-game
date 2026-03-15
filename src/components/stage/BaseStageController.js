@@ -38,6 +38,75 @@ export class BaseStageController {
     )
   }
 
+  _teardownResizePlugin(app) {
+    try {
+      if (typeof app._cancelResize === 'function') {
+        app._cancelResize()
+      }
+    } catch (_e) {
+      // Ignore plugin teardown races
+    }
+
+    try {
+      if ('resizeTo' in app) {
+        app.resizeTo = null
+      }
+    } catch (_e) {
+      // Ignore plugin teardown races
+    }
+
+    try {
+      if (
+        typeof globalThis?.removeEventListener === 'function' &&
+        typeof app.queueResize === 'function'
+      ) {
+        globalThis.removeEventListener('resize', app.queueResize)
+      }
+    } catch (_e) {
+      // Ignore plugin teardown races
+    }
+
+    if (typeof app._cancelResize !== 'function') {
+      app._cancelResize = () => {}
+    }
+  }
+
+  _destroyApp(app) {
+    if (typeof app.destroy !== 'function') return false
+
+    try {
+      app.destroy(
+        { removeView: true },
+        { children: true, texture: true, textureSource: true }
+      )
+      return true
+    } catch (destroyError) {
+      if (!this.isBenignDestroyError(destroyError)) {
+        throw destroyError
+      }
+      // Fall through to partial-init fallback for known races.
+      return false
+    }
+  }
+
+  _fallbackDestroy(app) {
+    app.stage?.destroy?.({
+      children: true,
+      texture: true,
+      textureSource: true
+    })
+    app.renderer?.destroy?.({ removeView: true })
+    let canvas = null
+    try {
+      canvas = app.canvas
+    } catch (_e) {
+      // Ignore - app getter can throw after failed/partial teardown.
+    }
+    if (canvas?.parentNode) {
+      canvas.parentNode.removeChild(canvas)
+    }
+  }
+
   destroyPixiApp(app) {
     if (!app) return
 
@@ -45,69 +114,14 @@ export class BaseStageController {
       app.ticker?.remove?.(this.handleTicker)
 
       // Stop ResizePlugin loops before app teardown to prevent resize-on-destroy races.
-      try {
-        if (typeof app._cancelResize === 'function') {
-          app._cancelResize()
-        }
-      } catch (_e) {
-        // Ignore plugin teardown races
-      }
-
-      try {
-        if ('resizeTo' in app) {
-          app.resizeTo = null
-        }
-      } catch (_e) {
-        // Ignore plugin teardown races
-      }
-
-      try {
-        if (
-          typeof globalThis?.removeEventListener === 'function' &&
-          typeof app.queueResize === 'function'
-        ) {
-          globalThis.removeEventListener('resize', app.queueResize)
-        }
-      } catch (_e) {
-        // Ignore plugin teardown races
-      }
-
-      if (typeof app._cancelResize !== 'function') {
-        app._cancelResize = () => {}
-      }
+      this._teardownResizePlugin(app)
 
       // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
-      if (typeof app.destroy === 'function') {
-        try {
-          app.destroy(
-            { removeView: true },
-            { children: true, texture: true, textureSource: true }
-          )
-          return
-        } catch (destroyError) {
-          if (!this.isBenignDestroyError(destroyError)) {
-            throw destroyError
-          }
-          // Fall through to partial-init fallback for known races.
-        }
-      }
+      const destroyed = this._destroyApp(app)
+      if (destroyed) return
 
       // Fallback for partially initialized apps.
-      app.stage?.destroy?.({
-        children: true,
-        texture: true,
-        textureSource: true
-      })
-      app.renderer?.destroy?.({ removeView: true })
-      let canvas = null
-      try {
-        canvas = app.canvas
-      } catch (_e) {
-        // Ignore - app getter can throw after failed/partial teardown.
-      }
-      if (canvas?.parentNode) {
-        canvas.parentNode.removeChild(canvas)
-      }
+      this._fallbackDestroy(app)
     } catch (error) {
       if (!this.isBenignDestroyError(error)) {
         logger.warn(this.constructor.name, 'Destroy failed', error)
