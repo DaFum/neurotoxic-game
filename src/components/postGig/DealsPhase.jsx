@@ -56,7 +56,7 @@ const getAlignmentColor = alignment => {
 const DealCard = memo(({
   deal,
   negotiationState,
-  social,
+  brandReputation,
   handleAcceptDeal,
   handleNegotiationStart
 }) => {
@@ -137,17 +137,17 @@ const DealCard = memo(({
           </div>
 
           {/* Reputation Status */}
-          {social.brandReputation?.[displayDeal.alignment] !== undefined && (
+          {brandReputation?.[displayDeal.alignment] !== undefined && (
             <div className='mt-2 text-[10px] text-ash-gray'>
               {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
               <span
                 className={
-                  social.brandReputation[displayDeal.alignment] > 0
+                  brandReputation[displayDeal.alignment] > 0
                     ? 'text-toxic-green'
                     : 'text-blood-red'
                 }
               >
-                {social.brandReputation[displayDeal.alignment]}
+                {brandReputation[displayDeal.alignment]}
               </span>
             </div>
           )}
@@ -203,7 +203,7 @@ const DealCard = memo(({
 DealCard.propTypes = {
   deal: PropTypes.object.isRequired,
   negotiationState: PropTypes.object,
-  social: PropTypes.object.isRequired,
+  brandReputation: PropTypes.object,
   handleAcceptDeal: PropTypes.func.isRequired,
   handleNegotiationStart: PropTypes.func.isRequired
 }
@@ -239,7 +239,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     } catch (error) {
       handleError(error, {
         addToast,
-        fallbackMessage: 'Deal failed'
+        fallbackMessage: t('ui:postGig.dealFailed')
       })
     }
   }, [onAccept, addToast])
@@ -294,7 +294,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     } catch (error) {
       handleError(error, {
         addToast,
-        fallbackMessage: 'Negotiation failed unexpectedly.'
+        fallbackMessage: t('ui:postGig.negotiationFailed')
       })
       // Close modal on error to prevent stuck state
       setNegotiationModalOpen(false)
@@ -323,7 +323,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
             key={deal.id}
             deal={deal}
             negotiationState={negotiatedDeals[deal.id]}
-            social={social}
+            brandReputation={social?.brandReputation}
             handleAcceptDeal={handleAcceptDeal}
             handleNegotiationStart={handleNegotiationStart}
           />

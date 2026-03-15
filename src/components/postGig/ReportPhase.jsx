@@ -3,16 +3,10 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
+import { formatNumber } from '../../utils/numberUtils'
 
 const FinancialList = ({ items, type }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
-
-  const formatNumber = (value) => {
-    return new Intl.NumberFormat(i18n?.language || 'en', {
-      style: 'decimal',
-      maximumFractionDigits: 0
-    }).format(value)
-  }
 
   return (
     <ul className='space-y-2.5 text-sm font-mono'>
@@ -31,8 +25,8 @@ const FinancialList = ({ items, type }) => {
               className={`${type === 'income' ? 'text-toxic-green' : 'text-blood-red'} font-bold tabular-nums`}
             >
               {type === 'income'
-                ? t('report.amount_positive', { amount: formatNumber(item.value) })
-                : t('report.amount_negative', { amount: formatNumber(item.value) })}
+                ? t('report.amount_positive', { amount: formatNumber(item.value, i18n?.language) })
+                : t('report.amount_negative', { amount: formatNumber(Math.abs(item.value), i18n?.language) })}
             </span>
           </motion.li>
         )
@@ -46,8 +40,7 @@ FinancialList.propTypes = {
     PropTypes.shape({
       label: PropTypes.string,
       labelKey: PropTypes.string.isRequired,
-      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
-        .isRequired,
+      value: PropTypes.number.isRequired,
       detail: PropTypes.string,
       detailKey: PropTypes.string,
       detailParams: PropTypes.object
@@ -59,12 +52,6 @@ FinancialList.propTypes = {
 const FinancialColumn = React.memo(({ titleKey, type, items, total, delay, initialX }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
-  const formatNumber = (value) => {
-    return new Intl.NumberFormat(i18n?.language || 'en', {
-      style: 'decimal',
-      maximumFractionDigits: 0
-    }).format(value)
-  }
   const isIncome = type === 'income'
   const colorClass = isIncome ? 'text-toxic-green' : 'text-blood-red'
   const borderClass = isIncome ? 'border-toxic-green' : 'border-blood-red'
@@ -91,27 +78,24 @@ const FinancialColumn = React.memo(({ titleKey, type, items, total, delay, initi
           {t('economy:postGig.total')}
         </span>
         <span className='tabular-nums'>
-          {t('report.amount_with_currency', { amount: formatNumber(total) })}
+          {type === 'income'
+                ? t('report.amount_positive', { amount: formatNumber(total, i18n?.language) })
+                : t('report.amount_negative', { amount: formatNumber(Math.abs(total), i18n?.language) })}
         </span>
       </div>
     </motion.div>
   )
 })
 
+FinancialColumn.displayName = 'FinancialColumn'
+
 const NetResult = React.memo(({ net }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
-  const formatNumber = (value) => {
-    return new Intl.NumberFormat(i18n?.language || 'en', {
-      style: 'decimal',
-      maximumFractionDigits: 0
-    }).format(Math.abs(value))
-  }
-
   const getNetString = () => {
-    if (net > 0) return t('report.amount_positive', { amount: formatNumber(net) })
-    if (net < 0) return t('report.amount_negative', { amount: formatNumber(net) })
-    return t('report.amount_with_currency', { amount: formatNumber(0) })
+    if (net > 0) return t('report.amount_positive', { amount: formatNumber(net, i18n?.language) })
+    if (net < 0) return t('report.amount_negative', { amount: formatNumber(Math.abs(net), i18n?.language) })
+    return t('report.amount_with_currency', { amount: formatNumber(0, i18n?.language) })
   }
 
   return (
@@ -136,6 +120,8 @@ const NetResult = React.memo(({ net }) => {
     </motion.div>
   )
 })
+
+NetResult.displayName = 'NetResult'
 
 export const ReportPhase = ({ financials, onNext }) => {
   const { t } = useTranslation('economy')

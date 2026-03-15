@@ -52,5 +52,7 @@
   "social.influence": "Influence",
   "social.platform": "Platform",
   "social.postToSocial": "POST TO SOCIAL MEDIA",
-  "social.zealotryWarning": "WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED."
+  "social.zealotryWarning": "WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.",
+  "ui:postGig.dealFailed": "Deal failed",
+  "ui:postGig.negotiationFailed": "Negotiation failed unexpectedly"
 }

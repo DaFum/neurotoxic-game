@@ -246,10 +246,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -272,10 +284,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -517,6 +541,7 @@
   "overworld.void_clinic_button": "LEEREN-KLINIK",
   "pirate_radio.button": "PIRATENSENDER",
   "pirate_radio.controversy_gain": "KONTROVERSE",
+  "pirate_radio.cooldown": "IM ABKLINGEN",
   "pirate_radio.cost": "KOSTEN (BESTECHUNG/TECH)",
   "pirate_radio.description": "Hack lokale Frequenzen und sende eure rohsten Tracks. Das Signal erreicht die Verzweifelten, pusht euren Fame und nährt den Kult.",
   "pirate_radio.fame_gain": "FAME ZUWACHS",
@@ -543,12 +568,13 @@
   "postGig.backToTour": "Zurück zur Tour >",
   "postGig.bandAffected": "Band betroffen",
   "postGig.controversy": "Kontroverse",
-  "postGig.dealFailed": "Deal abgelehnt.",
+  "postGig.dealFailed": "Deal fehlgeschlagen",
   "postGig.flop": "FLOPOKALYPSE",
   "postGig.followers": "Follower",
   "postGig.gameOverBankrupt": "GAME OVER: BANKROTT! Die Tour ist vorbei.",
   "postGig.loyalty": "Loyalität",
   "postGig.memberAffected": "{{member}} betroffen",
+  "postGig.negotiationFailed": "Verhandlung unerwartet fehlgeschlagen",
   "postGig.notEnoughCashForPr": "Nicht genug Geld für PR!",
   "postGig.phaseBrandOffers": "MARKENANGEBOTE",
   "postGig.phaseReport": "GIG-BERICHT",
@@ -862,6 +888,5 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen",
-  "pirate_radio.cooldown": "IM ABKLINGEN"
+  "volume.set": "Lautstärke auf {{pct}}% setzen"
 }
