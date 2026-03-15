@@ -133,76 +133,84 @@ export class LaneManager {
         continue
       }
 
-      const {
-        static: staticGraphics,
-        active: activeGraphics,
-        inactive: inactiveGraphics
-      } = graphicsSet
-
-      // Redraw graphics only if layout updated
       if (layoutUpdated) {
-        staticGraphics.clear()
-        staticGraphics.rect(
-          lane.renderX,
-          0,
-          layout.laneWidth,
-          layout.laneHeight
-        )
-        staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
-
-        staticGraphics.rect(
-          lane.renderX + layout.laneWidth * 0.35,
-          0,
-          layout.laneWidth * 0.3,
-          layout.laneHeight
-        )
-        staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
-
-        staticGraphics.stroke({
-          width: layout.laneStrokeWidth,
-          color: LANE_BORDER_COLOR,
-          alpha: LANE_BORDER_ALPHA
-        })
-
-        activeGraphics.clear()
-        activeGraphics.rect(
-          lane.renderX,
-          layout.hitLineY,
-          layout.laneWidth,
-          layout.hitLineHeight
-        )
-        activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
-        activeGraphics.stroke({
-          width: layout.hitLineStrokeWidth,
-          color: HIT_BAR_BORDER_COLOR
-        })
-
-        inactiveGraphics.clear()
-        inactiveGraphics.rect(
-          lane.renderX,
-          layout.hitLineY,
-          layout.laneWidth,
-          layout.hitLineHeight
-        )
-        inactiveGraphics.fill({
-          color: lane.color,
-          alpha: HIT_BAR_INACTIVE_ALPHA
-        })
-        inactiveGraphics.stroke({
-          width: layout.hitLineStrokeWidth,
-          color: lane.color
-        })
+        this.redrawLaneGraphics(lane, layout, graphicsSet)
       }
 
-      const wasActive = this.lastLaneActive[index]
+      this.updateLaneVisibility(lane, index, layoutUpdated, graphicsSet)
+    }
+  }
 
-      // Update visibility if layout changed OR activity changed
-      if (layoutUpdated || wasActive !== lane.active) {
-        this.lastLaneActive[index] = lane.active
+  redrawLaneGraphics(lane, layout, graphicsSet) {
+    const {
+      static: staticGraphics,
+      active: activeGraphics,
+      inactive: inactiveGraphics
+    } = graphicsSet
 
-        activeGraphics.visible = !!lane.active
-        inactiveGraphics.visible = !lane.active
-      }
+    staticGraphics.clear()
+    staticGraphics.rect(
+      lane.renderX,
+      0,
+      layout.laneWidth,
+      layout.laneHeight
+    )
+    staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+    staticGraphics.rect(
+      lane.renderX + layout.laneWidth * 0.35,
+      0,
+      layout.laneWidth * 0.3,
+      layout.laneHeight
+    )
+    staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
+    staticGraphics.stroke({
+      width: layout.laneStrokeWidth,
+      color: LANE_BORDER_COLOR,
+      alpha: LANE_BORDER_ALPHA
+    })
+
+    activeGraphics.clear()
+    activeGraphics.rect(
+      lane.renderX,
+      layout.hitLineY,
+      layout.laneWidth,
+      layout.hitLineHeight
+    )
+    activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
+    activeGraphics.stroke({
+      width: layout.hitLineStrokeWidth,
+      color: HIT_BAR_BORDER_COLOR
+    })
+
+    inactiveGraphics.clear()
+    inactiveGraphics.rect(
+      lane.renderX,
+      layout.hitLineY,
+      layout.laneWidth,
+      layout.hitLineHeight
+    )
+    inactiveGraphics.fill({
+      color: lane.color,
+      alpha: HIT_BAR_INACTIVE_ALPHA
+    })
+    inactiveGraphics.stroke({
+      width: layout.hitLineStrokeWidth,
+      color: lane.color
+    })
+  }
+
+  updateLaneVisibility(lane, index, layoutUpdated, graphicsSet) {
+    const { active: activeGraphics, inactive: inactiveGraphics } = graphicsSet
+    const wasActive = this.lastLaneActive[index]
+
+    // Update visibility if layout changed OR activity changed
+    if (layoutUpdated || wasActive !== lane.active) {
+      this.lastLaneActive[index] = lane.active
+
+      activeGraphics.visible = !!lane.active
+      inactiveGraphics.visible = !lane.active
     }
   }
 
