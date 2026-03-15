@@ -115,6 +115,12 @@ export const handlePirateBroadcast = (state, payload) => {
 
   const currentMoney = Number(state.player.money) || 0
   const currentHarmony = Number(state.band.harmony) || 0
+
+  if (currentMoney < cost || currentHarmony < harmonyCost) {
+    logger.warn('GameState', 'Insufficient funds or harmony for broadcast')
+    return state
+  }
+
   const currentFame = Number(state.player.fame) || 0
   const currentZealotry = Number(state.social.zealotry) || 0
   const currentControversy = Number(state.social.controversyLevel) || 0
@@ -160,7 +166,6 @@ export const handlePirateBroadcast = (state, payload) => {
     nextState.toasts = [
       ...(state.toasts || []),
       {
-        id: crypto.randomUUID(),
         ...successToast,
         options: {
           ...successToast.options,

@@ -89,8 +89,23 @@ export const useKabelsalatState = () => {
     if (isPoweredOn && !transitionedRef.current) {
       transitionedRef.current = true
       const timer = setTimeout(() => {
-        completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
-        changeScene(GAME_PHASES.GIG)
+        try {
+          completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
+          changeScene(GAME_PHASES.GIG)
+        } catch (error) {
+          import('../../utils/errorHandler.js').then(
+            ({ handleError, StateError }) => {
+              const wrappedError =
+                error instanceof Error ? error : new Error(String(error))
+              handleError(
+                new StateError('Failed to complete minigame', {
+                  originalError: wrappedError
+                })
+              )
+              changeScene(GAME_PHASES.GIG)
+            }
+          )
+        }
       }, 2500)
       return () => clearTimeout(timer)
     }
@@ -113,6 +128,7 @@ export const useKabelsalatState = () => {
                   originalError: wrappedError
                 })
               )
+              changeScene(GAME_PHASES.GIG)
             }
           )
         }

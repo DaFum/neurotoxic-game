@@ -143,7 +143,6 @@ const TOAST_STYLE_MAP = {
  */
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
-  const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
 
   return (
     <div
@@ -156,13 +155,7 @@ export const ToastOverlay = () => {
       <AnimatePresence>
         {toasts.map(toast => {
           const style = TOAST_STYLE_MAP[toast.type] || TOAST_STYLE_MAP.info
-          return (
-            <ToastItem
-              key={toast.id}
-              toast={toast}
-              style={style}
-            />
-          )
+          return <ToastItem key={toast.id} toast={toast} style={style} />
         })}
       </AnimatePresence>
     </div>

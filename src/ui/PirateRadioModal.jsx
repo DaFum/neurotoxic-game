@@ -143,7 +143,9 @@ export const PirateRadioModal = ({
             disabled={!canBroadcast}
             className='flex-1'
           >
-            {hasBroadcastedToday ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]` : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
+            {hasBroadcastedToday
+              ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]`
+              : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
           </GlitchButton>
         </div>
       </motion.div>

@@ -79,33 +79,35 @@ describe('Pirate Radio Logic', () => {
   it('should clamp bounds correctly at lower limits', () => {
     const initialState = {
       player: {
-        money: 50,
-        fame: 0
+        money: 150,
+        fame: 0,
+        day: 5
       },
       band: {
-        harmony: 5
+        harmony: 15
       },
       social: {
         zealotry: 0,
-        controversyLevel: 0
+        controversyLevel: 0,
+        lastPirateBroadcastDay: 1
       }
     }
 
     const payload = {
-      cost: 100, // costs more than we have
+      cost: 200, // costs more than we have
       fameGain: 0,
       zealotryGain: 0,
       controversyGain: 0,
-      harmonyCost: 10 // costs more harmony than we have
+      harmonyCost: 20 // costs more harmony than we have
     }
 
     const result = handlePirateBroadcast(initialState, payload)
 
-    assert.equal(result.player.money, 0, 'Money should not drop below 0')
+    assert.equal(result.player.money, 150, 'Action should abort, leaving money unchanged')
     assert.equal(
       result.band.harmony,
-      1,
-      'Harmony should clamp to 1 instead of 0 based on clampBandHarmony logic'
+      15,
+      'Action should abort, leaving harmony unchanged'
     )
   })
 
