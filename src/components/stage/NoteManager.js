@@ -78,8 +78,13 @@ export class NoteManager {
 
   update(state, elapsed, laneLayout) {
     const targetY = laneLayout?.hitLineY ?? 0
-    const notes = state.notes
 
+    this._handleSongTransitions(state)
+    this._spawnNewNotes(state, elapsed)
+    this._updateActiveNotes(state, elapsed, targetY)
+  }
+
+  _handleSongTransitions(state) {
     // Detect song transitions via the notesVersion counter that the audio hook
     // increments every time it replaces the notes array. This is more reliable
     // than the old elapsed < 100 heuristic which only worked for full restarts.
@@ -92,7 +97,10 @@ export class NoteManager {
       }
       this.activeEntities.length = 0
     }
+  }
 
+  _spawnNewNotes(state, elapsed) {
+    const notes = state.notes
     while (this.nextRenderIndex < notes.length) {
       const note = notes[this.nextRenderIndex]
 
@@ -108,7 +116,9 @@ export class NoteManager {
         break
       }
     }
+  }
 
+  _updateActiveNotes(state, elapsed, targetY) {
     let writeIdx = 0
     for (let i = 0; i < this.activeEntities.length; i++) {
       const entity = this.activeEntities[i]
