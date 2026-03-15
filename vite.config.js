@@ -12,8 +12,40 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       output: {
-        // TODO: Reintroduce code-splitting optimization using Rolldown's codeSplitting API
-        // Previous manualChunks logic for vendor/scene chunks was removed due to Rolldown API changes
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-react',
+              test: /node_modules[\\/](react|react-dom)[\\/]/,
+              priority: 20
+            },
+            {
+              name: 'vendor-pixi',
+              test: /node_modules[\\/](pixi\.js|@pixi)[\\/]/,
+              priority: 20
+            },
+            {
+              name: 'vendor-motion',
+              test: /node_modules[\\/]framer-motion[\\/]/,
+              priority: 20
+            },
+            {
+              name: 'vendor-tone',
+              test: /node_modules[\\/]tone[\\/]/,
+              priority: 20
+            },
+            {
+              name: 'scene-gig',
+              test: /src[\\/](scenes[\\/]Gig\.jsx|components[\\/]stage[\\/])/,
+              priority: 15
+            },
+            {
+              name: 'scene-overworld',
+              test: /src[\\/]scenes[\\/]Overworld\.jsx/,
+              priority: 15
+            }
+          ]
+        }
       }
     }
   }
