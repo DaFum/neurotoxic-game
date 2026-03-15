@@ -18,6 +18,40 @@ const getImagePromptForCategory = (category, badges) => {
   return CATEGORY_PROMPTS[category] || IMG_PROMPTS.SOCIAL_POST_TECH
 }
 
+const SideEffectsPreview = memo(({ badges }) => {
+  const { t } = useTranslation()
+
+  if (!badges || (!badges.includes('⚠️') && !badges.includes('🛡️'))) {
+    return null
+  }
+
+  return (
+    <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
+      <div className='flex flex-wrap gap-2'>
+        {badges.includes('⚠️') && (
+          <span className='text-blood-red'>
+            {t('economy:social.highVariance', {
+              defaultValue: 'High Variance Risk'
+            })}
+          </span>
+        )}
+        {badges.includes('🛡️') && (
+          <span className='text-toxic-green'>
+            {t('economy:social.consistentGrowth', {
+              defaultValue: 'Consistent Growth'
+            })}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+})
+
+SideEffectsPreview.displayName = 'SideEffectsPreview'
+SideEffectsPreview.propTypes = {
+  badges: PropTypes.arrayOf(PropTypes.string)
+}
+
 const SocialOptionButton = memo(({ opt, index, onSelect }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
@@ -67,24 +101,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         </div>
 
         {/* Side Effects Preview */}
-        <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
-          <div className='flex flex-wrap gap-2'>
-            {opt.badges?.includes('⚠️') && (
-              <span className='text-blood-red'>
-                {t('economy:social.highVariance', {
-                  defaultValue: 'High Variance Risk'
-                })}
-              </span>
-            )}
-            {opt.badges?.includes('🛡️') && (
-              <span className='text-toxic-green'>
-                {t('economy:social.consistentGrowth', {
-                  defaultValue: 'Consistent Growth'
-                })}
-              </span>
-            )}
-          </div>
-        </div>
+        <SideEffectsPreview badges={opt.badges} />
       </ActionButton>
     </motion.div>
   )
