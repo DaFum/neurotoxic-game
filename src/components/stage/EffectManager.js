@@ -92,47 +92,57 @@ export class EffectManager {
     }
   }
 
-  spawnHitEffect(x, y, color) {
-    if (!this.container) return
+  _evictOldestEffect() {
+    // O(1) removal of the oldest effect (which is always at headIndex)
+    const oldest = this.activeEffects[this.headIndex]
+    this.releaseEffectToPool(oldest)
+    this.activeEffects[this.headIndex] = null
 
-    // Cap active effects using MAX_ACTIVE_EFFECTS
-    if (this.effectCount >= EffectManager.MAX_ACTIVE_EFFECTS) {
-      // O(1) removal of the oldest effect (which is always at headIndex)
-      const oldest = this.activeEffects[this.headIndex]
-      this.releaseEffectToPool(oldest)
-      this.activeEffects[this.headIndex] = null
+    this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
+    this.effectCount--
+  }
 
-      this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
-      this.effectCount--
-    }
-
+  _resolveHitTexture(color) {
     // Determine texture based on color (Red component dominance)
     const r = (color >> 16) & 0xff
     const g = (color >> 8) & 0xff
     const b = color & 0xff
 
-    let texture
     if (r > g && r > b && this.textures.blood) {
-      texture = this.textures.blood
+      return this.textures.blood
     } else if (this.textures.toxic) {
-      texture = this.textures.toxic
-    } else {
-      // Use generic texture for fallback
-      if (!this.genericHitTexture) {
-        this.createGenericHitTexture()
-      }
-      texture = this.genericHitTexture
+      return this.textures.toxic
     }
 
-    let effect
-    if (this.spritePool.length > 0) {
-      effect = this.spritePool.pop()
-    } else {
-      // Create sprite, using generic texture if specific one is missing/not loaded
-      // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
-      effect = new PIXI.Sprite(texture || PIXI.Texture.WHITE)
-      effect.anchor.set(0.5)
+    // Use generic texture for fallback
+    if (!this.genericHitTexture) {
+      this.createGenericHitTexture()
     }
+    return this.genericHitTexture
+  }
+
+  _getSpriteFromPool(texture) {
+    if (this.spritePool.length > 0) {
+      return this.spritePool.pop()
+    }
+
+    // Create sprite, using generic texture if specific one is missing/not loaded
+    // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
+    const effect = new PIXI.Sprite(texture || PIXI.Texture.WHITE)
+    effect.anchor.set(0.5)
+    return effect
+  }
+
+  spawnHitEffect(x, y, color) {
+    if (!this.container) return
+
+    // Cap active effects using MAX_ACTIVE_EFFECTS
+    if (this.effectCount >= EffectManager.MAX_ACTIVE_EFFECTS) {
+      this._evictOldestEffect()
+    }
+
+    const texture = this._resolveHitTexture(color)
+    const effect = this._getSpriteFromPool(texture)
 
     // Ensure texture is correct
     if (effect.texture !== texture && texture) {
@@ -157,6 +167,33 @@ export class EffectManager {
     this.effectCount++
   }
 
+  _handleDeadEffect(idx, i, count) {
+    // If it's the head (oldest), we can easily advance head
+    if (i === 0) {
+      this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
+      this.effectCount--
+      return count - 1
+      // Don't increment i because the new head is now at "relative index 0"
+    } else {
+      // It died naturally but isn't the head. This shouldn't happen
+      // because they decay uniformly, but if it does (e.g. edge case),
+      // use swap-and-pop with the tail element to maintain density.
+
+      // The actual tail index of the last valid element:
+      const lastValidIdx =
+        (this.headIndex + count - 1) % EffectManager.MAX_ACTIVE_EFFECTS
+      const lastEffect = this.activeEffects[lastValidIdx]
+
+      this.activeEffects[idx] = lastEffect
+      this.activeEffects[lastValidIdx] = null
+
+      this.tailIndex = lastValidIdx
+      this.effectCount--
+      return count - 1
+      // Don't increment i, we need to process the swapped element
+    }
+  }
+
   update(deltaMS) {
     const deltaSec = deltaMS / 1000
     const decay = deltaSec * 3
@@ -177,31 +214,7 @@ export class EffectManager {
         this.releaseEffectToPool(effect)
         this.activeEffects[idx] = null
 
-        // If it's the head (oldest), we can easily advance head
-        if (i === 0) {
-          this.headIndex =
-            (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
-          this.effectCount--
-          count--
-          // Don't increment i because the new head is now at "relative index 0"
-        } else {
-          // It died naturally but isn't the head. This shouldn't happen
-          // because they decay uniformly, but if it does (e.g. edge case),
-          // use swap-and-pop with the tail element to maintain density.
-
-          // The actual tail index of the last valid element:
-          const lastValidIdx =
-            (this.headIndex + count - 1) % EffectManager.MAX_ACTIVE_EFFECTS
-          const lastEffect = this.activeEffects[lastValidIdx]
-
-          this.activeEffects[idx] = lastEffect
-          this.activeEffects[lastValidIdx] = null
-
-          this.tailIndex = lastValidIdx
-          this.effectCount--
-          count--
-          // Don't increment i, we need to process the swapped element
-        }
+        count = this._handleDeadEffect(idx, i, count)
       } else {
         effect.alpha = newLife
         effect.scale.set(0.5 + (1.0 - newLife) * 1.5) // Expand from 0.5 to 2.0
