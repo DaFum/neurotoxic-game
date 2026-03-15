@@ -51,14 +51,14 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-4'
+      className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-2 sm:p-4'
       onClick={e => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
       <div
         ref={dialogRef}
-        className='relative w-full max-w-md border-2 border-toxic-green/50 p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group'
+        className='relative w-full max-w-md border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group max-h-[90vh] overflow-y-auto'
         role='dialog'
         aria-modal='true'
         tabIndex={-1}
@@ -73,7 +73,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
           type='button'
           onClick={onClose}
           aria-label={t('ui:closeModal')}
-          className='absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green z-20 group-hover:shadow-[0_0_10px_var(--color-toxic-green-glow)]'
+          className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green z-20 group-hover:shadow-[0_0_10px_var(--color-toxic-green-glow)]'
         >
           <span
             aria-hidden='true'

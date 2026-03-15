@@ -17,13 +17,13 @@ export const ClinicScene = () => {
   } = useClinicLogic()
 
   return (
-    <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8'>
+    <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-4 sm:p-8'>
       {/* Background Ambience */}
       <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-toxic-green-5)_0%,var(--color-void-black-90)_100%)] pointer-events-none' />
 
-      <div className='z-10 w-full max-w-4xl bg-void-black border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green-20)] flex flex-col gap-6'>
+      <div className='z-10 w-full max-w-4xl bg-void-black border-2 border-toxic-green p-4 sm:p-6 shadow-[0_0_20px_var(--color-toxic-green-20)] flex flex-col gap-4 sm:gap-6'>
         <header className='border-b border-toxic-green/50 pb-4'>
-          <h2 className='text-3xl text-toxic-green font-[Metal_Mania] tracking-widest uppercase'>
+          <h2 className='text-2xl sm:text-3xl text-toxic-green font-[Metal_Mania] tracking-widest uppercase'>
             {t('ui:clinic.title', { defaultValue: 'THE VOID CLINIC' })}
           </h2>
           <p className='text-sm text-ash-gray mt-2 font-mono'>
@@ -42,7 +42,7 @@ export const ClinicScene = () => {
           </div>
         </header>
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 min-h-0 overflow-y-auto'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 flex-1 min-h-0 overflow-y-auto'>
           {band.members.map(member => (
             <motion.div
               key={member.id}
