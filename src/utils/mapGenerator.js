@@ -33,7 +33,7 @@ export class MapGenerator {
   generateMap(depth = 10) {
     const validDepth = Math.floor(depth)
     if (!Number.isFinite(validDepth) || validDepth < 1) {
-      return { layers: [], nodes: {}, connections: [] }
+      return { layers: [], nodes: {}, nodeList: [], connections: [] }
     }
 
     const map = {
@@ -116,7 +116,7 @@ export class MapGenerator {
 
     // To ensure purity, we clone the nodes before resolving overlaps if possible,
     // but here we are mutating the map object we just created, which is local to this function.
-    // However, the resolveOverlaps method signature implies it works on an object.
+    // However, the resolveOverlaps method signature implies it works on an array.
     // Given the context of "generating" a map, mutating the *newly created* nodes is acceptable locally,
     // but technically the method `resolveOverlaps` mutates its input.
     // For strict purity, we'd return new nodes, but `generateMap` owns `map`.

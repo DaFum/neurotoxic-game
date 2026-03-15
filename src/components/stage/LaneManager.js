@@ -137,7 +137,7 @@ export class LaneManager {
         this.redrawLaneGraphics(lane, layout, graphicsSet)
       }
 
-      this.updateLaneVisibility(lane, index, layoutUpdated, graphicsSet)
+      this.updateLaneVisibility(lane, index, graphicsSet)
     }
   }
 
@@ -201,12 +201,12 @@ export class LaneManager {
     })
   }
 
-  updateLaneVisibility(lane, index, layoutUpdated, graphicsSet) {
+  updateLaneVisibility(lane, index, graphicsSet) {
     const { active: activeGraphics, inactive: inactiveGraphics } = graphicsSet
     const wasActive = this.lastLaneActive[index]
 
-    // Update visibility if layout changed OR activity changed
-    if (layoutUpdated || wasActive !== lane.active) {
+    // Update visibility only when activity state changes
+    if (wasActive !== lane.active) {
       this.lastLaneActive[index] = lane.active
 
       activeGraphics.visible = !!lane.active

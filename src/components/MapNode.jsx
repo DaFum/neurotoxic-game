@@ -38,6 +38,32 @@ export const MapNode = memo(
       [handleTravel, node]
     )
 
+    const handleClick = useCallback(() => handleTravel(node), [handleTravel, node])
+
+    const handleMouseEnter = useCallback(() => {
+      setHoveredNode(node)
+      setIsHoveredLocal(true)
+    }, [setHoveredNode, node])
+
+    const handleMouseLeave = useCallback(() => {
+      setHoveredNode(null)
+      setIsHoveredLocal(false)
+    }, [setHoveredNode])
+
+    const handleFocus = useCallback(() => {
+      if (isReachable) {
+        setHoveredNode(node)
+        setIsHoveredLocal(true)
+      }
+    }, [isReachable, setHoveredNode, node])
+
+    const handleBlur = useCallback(() => {
+      if (isReachable) {
+        setHoveredNode(null)
+      }
+      setIsHoveredLocal(false)
+    }, [isReachable, setHoveredNode])
+
     const nodeLocationName = translateLocation(
       t,
       node.venue?.name,
@@ -69,27 +95,11 @@ export const MapNode = memo(
           ${isReachable ? 'cursor-pointer' : ''}
       `}
         style={positionStyle}
-        onClick={() => handleTravel(node)}
-        onMouseEnter={() => {
-          setHoveredNode(node)
-          setIsHoveredLocal(true)
-        }}
-        onMouseLeave={() => {
-          setHoveredNode(null)
-          setIsHoveredLocal(false)
-        }}
-        onFocus={() => {
-          if (isReachable) {
-            setHoveredNode(node)
-            setIsHoveredLocal(true)
-          }
-        }}
-        onBlur={() => {
-          if (isReachable) {
-            setHoveredNode(null)
-          }
-          setIsHoveredLocal(false)
-        }}
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         role={isReachable ? 'button' : undefined}
         aria-label={
           isReachable
