@@ -36,7 +36,8 @@ mock.module('react-i18next', {
   namedExports: {
     useTranslation: mock.fn(() => ({
       t: (key, options) => options?.defaultValue || key
-    }))
+    })),
+    initReactI18next: { type: '3rdParty', init: () => {} }
   }
 })
 

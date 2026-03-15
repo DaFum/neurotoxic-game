@@ -23,7 +23,7 @@ describe('usePirateRadio', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Reset default mock state before each test
-    mockGameState.player = { day: 5, money: 500 }
+    mockGameState.player = { day: 5, money: 500, van: { upgrades: [] } }
     mockGameState.band = { harmony: 50 }
     mockGameState.social = { lastPirateBroadcastDay: 0 }
   })

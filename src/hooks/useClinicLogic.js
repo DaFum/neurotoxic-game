@@ -79,6 +79,8 @@ export const useClinicLogic = () => {
       const member = membersMap.get(memberId)
       if (!member) return
 
+      // Intentional silent return: If the member already has the trait,
+      // do nothing (no clinicEnhance or toast).
       if (member.traits && member.traits.some(tr => tr.id === trait)) return
 
       if (player.fame < enhanceCostFame) {
