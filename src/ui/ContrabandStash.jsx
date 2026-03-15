@@ -36,11 +36,11 @@ export const ContrabandStash = ({
   )
 
   return (
-    <Modal onClose={onClose}>
+    <Modal isOpen={true} onClose={onClose} className="max-w-4xl" contentClassName="flex-1 min-h-0 flex flex-col max-h-[90vh]">
       <Panel
         title={t('ui:contraband.title', { defaultValue: 'CONTRABAND STASH' })}
-        className='max-w-4xl max-h-[90vh] flex flex-col'
-        contentClassName='flex-1 min-h-0 flex flex-col p-6 overflow-y-auto'
+        className='w-full max-w-4xl max-h-[85vh] flex flex-col'
+        contentClassName='flex-1 min-h-0 flex flex-col p-4 sm:p-6 overflow-y-auto'
       >
         <p className='text-ash-gray text-sm mb-4'>
           {t('ui:contraband.description', {
@@ -76,7 +76,7 @@ export const ContrabandStash = ({
         </div>
 
         {/* Stash Grid */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {stash.length === 0 ? (
             <div className='col-span-full text-center py-10 text-ash-gray italic border border-dashed border-toxic-green-20'>
               {t('ui:contraband.noItems', {

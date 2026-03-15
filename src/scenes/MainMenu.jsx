@@ -413,6 +413,7 @@ export const MainMenu = () => {
           isOpen={true}
           onClose={() => setShowFeatures(false)}
           title={t('ui:features.title')}
+          contentClassName=''
         >
           <div className='flex flex-col gap-6 w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
             {t('ui:featureList', { returnObjects: true }).map(section => (
@@ -502,6 +503,7 @@ export const MainMenu = () => {
           isOpen={true}
           onClose={() => setShowSocials(false)}
           title={t('ui:socials')}
+          contentClassName=''
         >
           <div className='flex flex-col gap-3 sm:gap-4 max-w-md w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2 pb-1'>
             <UplinkButton

@@ -36,11 +36,11 @@ export const PirateRadioModal = ({
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className={`bg-void-black border-2 border-toxic-green p-6 max-w-lg w-full shadow-[0_0_30px_var(--color-toxic-green-20)] flex flex-col gap-6 ${contentClassName}`}
+        className={`bg-void-black border-2 border-toxic-green p-4 sm:p-6 max-w-lg w-full max-h-[85vh] shadow-[0_0_30px_var(--color-toxic-green-20)] flex flex-col ${contentClassName}`}
       >
-        <div className='flex justify-between items-start border-b-2 border-toxic-green/50 pb-4'>
+        <div className='flex justify-between items-start border-b-2 border-toxic-green/50 pb-4 shrink-0'>
           <h2
-            className='text-3xl font-[Metal_Mania] text-toxic-green glitch-text'
+            className='text-2xl sm:text-3xl font-[Metal_Mania] text-toxic-green glitch-text'
             data-text={t('ui:pirate_radio.title', {
               defaultValue: 'PIRATE RADIO BROADCAST'
             })}
@@ -60,7 +60,7 @@ export const PirateRadioModal = ({
           </button>
         </div>
 
-        <div className='text-ash-gray font-mono text-sm leading-relaxed space-y-4 flex-1 min-h-0 overflow-y-auto'>
+        <div className='text-ash-gray font-mono text-sm leading-relaxed space-y-4 flex-1 min-h-0 overflow-y-auto py-4 sm:py-6 pr-2'>
           <p>
             {t('ui:pirate_radio.description', {
               defaultValue:
@@ -136,7 +136,7 @@ export const PirateRadioModal = ({
           </div>
         </div>
 
-        <div className='flex gap-4 pt-4 border-t-2 border-toxic-green/50'>
+        <div className='flex flex-col sm:flex-row gap-4 pt-4 border-t-2 border-toxic-green/50 shrink-0'>
           <GlitchButton
             variant='secondary'
             onClick={onClose}
