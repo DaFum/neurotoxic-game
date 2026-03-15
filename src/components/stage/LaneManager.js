@@ -177,12 +177,7 @@ export class LaneManager {
     } = graphicsSet
 
     staticGraphics.clear()
-    staticGraphics.rect(
-      lane.renderX,
-      0,
-      layout.laneWidth,
-      layout.laneHeight
-    )
+    staticGraphics.rect(lane.renderX, 0, layout.laneWidth, layout.laneHeight)
     staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
 
     staticGraphics.rect(

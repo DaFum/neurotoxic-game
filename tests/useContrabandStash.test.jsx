@@ -11,7 +11,8 @@ vi.mock('react-i18next', () => ({
       if (options?.defaultValue) {
         let text = options.defaultValue
         if (options.action) text = text.replace('{action}', options.action)
-        if (options.itemName) text = text.replace('{itemName}', options.itemName)
+        if (options.itemName)
+          text = text.replace('{itemName}', options.itemName)
         return text
       }
       return key
@@ -25,8 +26,18 @@ describe('useContrabandStash', () => {
   const mockAddToast = vi.fn()
 
   const defaultBand = {
-    members: [{ id: 'member1', name: 'Member One' }, { id: 'member2', name: 'Member Two' }],
-    stash: [{ instanceId: 'item1', type: 'consumable', effectType: 'stamina', name: 'Energy Drink' }]
+    members: [
+      { id: 'member1', name: 'Member One' },
+      { id: 'member2', name: 'Member Two' }
+    ],
+    stash: [
+      {
+        instanceId: 'item1',
+        type: 'consumable',
+        effectType: 'stamina',
+        name: 'Energy Drink'
+      }
+    ]
   }
 
   beforeEach(() => {
@@ -91,7 +102,10 @@ describe('useContrabandStash', () => {
     })
 
     expect(mockUseContraband).not.toHaveBeenCalled()
-    expect(mockAddToast).toHaveBeenCalledWith('Select a band member first!', 'warning')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'Select a band member first!',
+      'warning'
+    )
   })
 
   it('errors when using mood item without a selected member', () => {
@@ -106,14 +120,20 @@ describe('useContrabandStash', () => {
     })
 
     expect(mockUseContraband).not.toHaveBeenCalled()
-    expect(mockAddToast).toHaveBeenCalledWith('Select a band member first!', 'warning')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'Select a band member first!',
+      'warning'
+    )
   })
 
   it('uses consumable item and shows success toast', () => {
     const { result } = renderHook(() => useContrabandStash())
 
     act(() => {
-      result.current.stashProps.useItem('item1', { type: 'consumable', name: 'Energy Drink' })
+      result.current.stashProps.useItem('item1', {
+        type: 'consumable',
+        name: 'Energy Drink'
+      })
     })
 
     expect(mockUseContraband).toHaveBeenCalledWith('item1', 'member1')
@@ -124,11 +144,17 @@ describe('useContrabandStash', () => {
     const { result } = renderHook(() => useContrabandStash())
 
     act(() => {
-      result.current.stashProps.useItem('item2', { type: 'equipment', name: 'Guitar Strings' })
+      result.current.stashProps.useItem('item2', {
+        type: 'equipment',
+        name: 'Guitar Strings'
+      })
     })
 
     expect(mockUseContraband).toHaveBeenCalledWith('item2', 'member1')
-    expect(mockAddToast).toHaveBeenCalledWith('Applied Guitar Strings!', 'success')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'Applied Guitar Strings!',
+      'success'
+    )
   })
 
   it('handles empty stash gracefully', () => {

@@ -313,7 +313,7 @@ export const Overworld = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="flex flex-col gap-2 items-end mb-2"
+              className='flex flex-col gap-2 items-end mb-2'
             >
               <GlitchButton
                 onClick={openStash}
@@ -337,7 +337,8 @@ export const Overworld = () => {
                 variant='warning'
                 size='sm'
               >
-                [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}]
+                [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}
+                ]
               </GlitchButton>
               <GlitchButton
                 onClick={openHQ}
@@ -345,13 +346,15 @@ export const Overworld = () => {
                 variant='primary'
                 size='sm'
               >
-                [{t('ui:overworld.band_hq_button', { defaultValue: 'BAND HQ' })}]
+                [{t('ui:overworld.band_hq_button', { defaultValue: 'BAND HQ' })}
+                ]
               </GlitchButton>
               <GlitchButton
                 onClick={handleRefuel}
                 disabled={
                   isTraveling ||
-                  (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+                  (player.van?.fuel ?? 0) >=
+                    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
                 }
                 variant='warning'
                 size='sm'

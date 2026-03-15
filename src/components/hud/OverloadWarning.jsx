@@ -2,7 +2,10 @@ import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
-export const OverloadWarning = memo(function OverloadWarning({ overload, isToxicMode }) {
+export const OverloadWarning = memo(function OverloadWarning({
+  overload,
+  isToxicMode
+}) {
   if (overload <= 90 && !isToxicMode) return null
 
   return (

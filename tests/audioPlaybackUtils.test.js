@@ -355,7 +355,7 @@ test('buildAssetUrlMap OGG key filtering', async t => {
 })
 
 test('buildAssetUrlMap supports MIDI labeling', async t => {
-  await t.test('stores relative paths and basenames', () => {
+  await t.test('stores relative paths and basenames for MIDI', () => {
     const midiUrlMap = buildAssetUrlMap(
       {
         '../assets/set1/track.mid': '/assets/set1/track.mid'
@@ -367,21 +367,24 @@ test('buildAssetUrlMap supports MIDI labeling', async t => {
     assert.strictEqual(midiUrlMap['track.mid'], '/assets/set1/track.mid')
   })
 
-  await t.test('warns on basename conflicts and keeps first entry', () => {
-    const warnings = []
-    const midiUrlMap = buildAssetUrlMap(
-      {
-        '../assets/set1/track.mid': '/assets/set1/track.mid',
-        '../assets/set2/track.mid': '/assets/set2/track.mid'
-      },
-      message => warnings.push(message),
-      'MIDI'
-    )
+  await t.test(
+    'warns on basename conflicts and keeps first entry for MIDI',
+    () => {
+      const warnings = []
+      const midiUrlMap = buildAssetUrlMap(
+        {
+          '../assets/set1/track.mid': '/assets/set1/track.mid',
+          '../assets/set2/track.mid': '/assets/set2/track.mid'
+        },
+        message => warnings.push(message),
+        'MIDI'
+      )
 
-    assert.strictEqual(midiUrlMap['set1/track.mid'], '/assets/set1/track.mid')
-    assert.strictEqual(midiUrlMap['set2/track.mid'], '/assets/set2/track.mid')
-    assert.strictEqual(midiUrlMap['track.mid'], '/assets/set1/track.mid')
-    assert.strictEqual(warnings.length, 1)
-    assert.match(warnings[0], /midi basename conflict/i)
-  })
+      assert.strictEqual(midiUrlMap['set1/track.mid'], '/assets/set1/track.mid')
+      assert.strictEqual(midiUrlMap['set2/track.mid'], '/assets/set2/track.mid')
+      assert.strictEqual(midiUrlMap['track.mid'], '/assets/set1/track.mid')
+      assert.strictEqual(warnings.length, 1)
+      assert.match(warnings[0], /midi basename conflict/i)
+    }
+  )
 })

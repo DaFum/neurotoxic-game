@@ -46,12 +46,15 @@ test('normalizeMidiPitch', async t => {
     assert.strictEqual(normalizeMidiPitch({ midi: '127' }), 127)
   })
 
-  await t.test('returns null for invalid MIDI pitches', () => {
-    assert.strictEqual(normalizeMidiPitch({ midi: -1 }), null)
-    assert.strictEqual(normalizeMidiPitch({ midi: 200 }), null)
-    assert.strictEqual(normalizeMidiPitch({ midi: Number.NaN }), null)
-    assert.strictEqual(normalizeMidiPitch({}), null)
-  })
+  await t.test(
+    'normalizeMidiPitch returns null for invalid MIDI pitches',
+    () => {
+      assert.strictEqual(normalizeMidiPitch({ midi: -1 }), null)
+      assert.strictEqual(normalizeMidiPitch({ midi: 200 }), null)
+      assert.strictEqual(normalizeMidiPitch({ midi: Number.NaN }), null)
+      assert.strictEqual(normalizeMidiPitch({}), null)
+    }
+  )
 })
 
 test('buildMidiTrackEvents', async t => {
@@ -90,7 +93,7 @@ test('getNoteName', async t => {
     assert.strictEqual(getNoteName(127), 'G9')
   })
 
-  await t.test('returns null for invalid MIDI pitches', () => {
+  await t.test('getNoteName returns null for invalid MIDI pitches', () => {
     assert.strictEqual(getNoteName(-1), null)
     assert.strictEqual(getNoteName(128), null)
     assert.strictEqual(getNoteName(Number.NaN), null)

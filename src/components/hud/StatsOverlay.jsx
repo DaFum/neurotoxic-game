@@ -5,7 +5,12 @@ import { ComboDisplay } from './ComboDisplay'
 import { OverloadMeter } from './OverloadMeter'
 import { UIFrameCorner } from '../../ui/shared/Icons'
 
-export const StatsOverlay = memo(function StatsOverlay({ score, combo, accuracy, overload }) {
+export const StatsOverlay = memo(function StatsOverlay({
+  score,
+  combo,
+  accuracy,
+  overload
+}) {
   return (
     <div className='absolute top-32 left-4 z-10 text-star-white font-mono pointer-events-none p-4 relative group'>
       <UIFrameCorner className='absolute top-0 left-0 w-4 h-4 text-ash-gray opacity-50' />

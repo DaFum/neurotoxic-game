@@ -107,7 +107,11 @@ describe('Pirate Radio Logic', () => {
 
     const result = handlePirateBroadcast(initialState, payload)
 
-    assert.equal(result.player.money, 150, 'Action should abort, leaving money unchanged')
+    assert.equal(
+      result.player.money,
+      150,
+      'Action should abort, leaving money unchanged'
+    )
     assert.equal(
       result.band.harmony,
       15,

@@ -338,7 +338,11 @@ describe('socialReducer', () => {
       mockState = {
         player: { money: 1000, fame: 50, day: 42 },
         band: { harmony: 100 },
-        social: { zealotry: 20, controversyLevel: 10, lastPirateBroadcastDay: null },
+        social: {
+          zealotry: 20,
+          controversyLevel: 10,
+          lastPirateBroadcastDay: null
+        },
         toasts: []
       }
     })

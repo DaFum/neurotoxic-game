@@ -3,7 +3,9 @@ import PropTypes from 'prop-types'
 import { HazardTicker } from '../../ui/shared'
 import { useTranslation } from 'react-i18next'
 
-export const ToxicHazardTicker = memo(function ToxicHazardTicker({ isToxicMode }) {
+export const ToxicHazardTicker = memo(function ToxicHazardTicker({
+  isToxicMode
+}) {
   const { t } = useTranslation()
 
   if (!isToxicMode) return null

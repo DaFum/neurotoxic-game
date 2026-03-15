@@ -296,10 +296,22 @@ describe('Action Creators', () => {
 
   describe('createCompleteTravelMinigameAction', () => {
     it('creates correct action with all params', () => {
-      const action = createCompleteTravelMinigameAction(10, ['item1'], 0.5, 'contra1', 'inst1')
+      const action = createCompleteTravelMinigameAction(
+        10,
+        ['item1'],
+        0.5,
+        'contra1',
+        'inst1'
+      )
       assert.deepStrictEqual(action, {
         type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-        payload: { damageTaken: 10, itemsCollected: ['item1'], rngValue: 0.5, contrabandId: 'contra1', instanceId: 'inst1' }
+        payload: {
+          damageTaken: 10,
+          itemsCollected: ['item1'],
+          rngValue: 0.5,
+          contrabandId: 'contra1',
+          instanceId: 'inst1'
+        }
       })
     })
   })
@@ -434,7 +446,12 @@ describe('Action Creators', () => {
 
   describe('createClinicHealAction', () => {
     it('creates correct action', () => {
-      const payload = { memberId: 'matze', type: 'heal', staminaGain: 50, moodGain: 20 }
+      const payload = {
+        memberId: 'matze',
+        type: 'heal',
+        staminaGain: 50,
+        moodGain: 20
+      }
       const action = createClinicHealAction(payload)
       assert.deepStrictEqual(action, {
         type: ActionTypes.CLINIC_HEAL,
@@ -456,7 +473,13 @@ describe('Action Creators', () => {
 
   describe('createPirateBroadcastAction', () => {
     it('creates correct action', () => {
-      const payload = { cost: 100, fameGain: 50, zealotryGain: 20, controversyGain: 10, harmonyCost: 5 }
+      const payload = {
+        cost: 100,
+        fameGain: 50,
+        zealotryGain: 20,
+        controversyGain: 10,
+        harmonyCost: 5
+      }
       const action = createPirateBroadcastAction(payload)
       assert.deepStrictEqual(action, {
         type: ActionTypes.PIRATE_BROADCAST,
@@ -465,7 +488,14 @@ describe('Action Creators', () => {
     })
 
     it('creates correct action with successToast', () => {
-      const payload = { cost: 100, fameGain: 50, zealotryGain: 20, controversyGain: 10, harmonyCost: 5, successToast: { message: 'Success', type: 'success' } }
+      const payload = {
+        cost: 100,
+        fameGain: 50,
+        zealotryGain: 20,
+        controversyGain: 10,
+        harmonyCost: 5,
+        successToast: { message: 'Success', type: 'success' }
+      }
       const action = createPirateBroadcastAction(payload)
       assert.strictEqual(action.type, ActionTypes.PIRATE_BROADCAST)
       assert.strictEqual(action.payload.cost, 100)

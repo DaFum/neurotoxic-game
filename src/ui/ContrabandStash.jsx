@@ -36,7 +36,12 @@ export const ContrabandStash = ({
   )
 
   return (
-    <Modal isOpen={true} onClose={onClose} className="max-w-4xl" contentClassName="flex-1 min-h-0 flex flex-col max-h-[90vh]">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      className='max-w-4xl'
+      contentClassName='flex-1 min-h-0 flex flex-col max-h-[90vh]'
+    >
       <Panel
         title={t('ui:contraband.title', { defaultValue: 'CONTRABAND STASH' })}
         className='w-full max-w-4xl max-h-[85vh] flex flex-col'

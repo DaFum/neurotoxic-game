@@ -31,7 +31,8 @@ vi.mock('react-i18next', () => ({
       }
       if (key === 'report.amount_positive') return `+€${options?.amount ?? 0}`
       if (key === 'report.amount_negative') return `-€${options?.amount ?? 0}`
-      if (key === 'report.amount_with_currency') return `€${options?.amount ?? 0}`
+      if (key === 'report.amount_with_currency')
+        return `€${options?.amount ?? 0}`
       return key
     },
     i18n: {

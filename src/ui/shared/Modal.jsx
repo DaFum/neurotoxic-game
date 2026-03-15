@@ -19,7 +19,14 @@ import { Tooltip } from './Tooltip'
  * @param {string} [props.contentClassName] - Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto).
  * @param {string} [props.className] - Additional CSS classes for the dialog wrapper (defaults to max-w-md).
  */
-export const Modal = ({ isOpen, onClose, title, children, contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto', className = 'max-w-md' }) => {
+export const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto',
+  className = 'max-w-md'
+}) => {
   const dialogRef = useRef(null)
   const { t } = useTranslation(['ui'])
 
@@ -72,7 +79,10 @@ export const Modal = ({ isOpen, onClose, title, children, contentClassName = 'fl
         <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-toxic-green rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
         <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-toxic-green -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
 
-        <Tooltip content={t('ui:closeModal')} className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 z-20'>
+        <Tooltip
+          content={t('ui:closeModal')}
+          className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 z-20'
+        >
           <button
             type='button'
             onClick={onClose}

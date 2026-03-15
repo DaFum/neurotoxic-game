@@ -103,14 +103,17 @@ export const useKabelsalatState = () => {
               )
             })
             .catch(err => {
-              const fallback = err instanceof Error ? err : new Error(String(err))
+              const fallback =
+                err instanceof Error ? err : new Error(String(err))
               try {
                 changeScene(GAME_PHASES.GIG)
               } catch (_e) {
                 // Ignore fallback error
               }
               try {
-                const fallbackStateError = new Error('Failed to complete minigame (import error)')
+                const fallbackStateError = new Error(
+                  'Failed to complete minigame (import error)'
+                )
                 console.error(fallback, fallbackStateError)
               } catch (_e) {
                 // Ignore fallback error
@@ -142,14 +145,17 @@ export const useKabelsalatState = () => {
               )
             })
             .catch(err => {
-              const fallback = err instanceof Error ? err : new Error(String(err))
+              const fallback =
+                err instanceof Error ? err : new Error(String(err))
               try {
                 changeScene(GAME_PHASES.GIG)
               } catch (_e) {
                 // Ignore fallback error
               }
               try {
-                const fallbackStateError = new Error('Failed to complete minigame (import error)')
+                const fallbackStateError = new Error(
+                  'Failed to complete minigame (import error)'
+                )
                 console.error(fallback, fallbackStateError)
               } catch (_e) {
                 // Ignore fallback error

@@ -15,7 +15,13 @@ let mockGameState = {
   band: {
     members: [
       { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: [] },
-      { id: 'm2', name: 'M2', stamina: 100, mood: 100, traits: [{ id: 'cyber_lungs' }] }
+      {
+        id: 'm2',
+        name: 'M2',
+        stamina: 100,
+        mood: 100,
+        traits: [{ id: 'cyber_lungs' }]
+      }
     ]
   },
   changeScene: mockChangeScene,
@@ -59,7 +65,13 @@ describe('useClinicLogic', () => {
       band: {
         members: [
           { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: [] },
-          { id: 'm2', name: 'M2', stamina: 100, mood: 100, traits: [{ id: 'cyber_lungs' }] }
+          {
+            id: 'm2',
+            name: 'M2',
+            stamina: 100,
+            mood: 100,
+            traits: [{ id: 'cyber_lungs' }]
+          }
         ]
       },
       changeScene: mockChangeScene,
@@ -88,8 +100,14 @@ describe('useClinicLogic', () => {
   test('initializes with correct costs', () => {
     const { result } = renderHook(() => useClinicLogic())
 
-    assert.equal(result.current.healCostMoney, CLINIC_CONFIG.HEAL_BASE_COST_MONEY)
-    assert.equal(result.current.enhanceCostFame, CLINIC_CONFIG.ENHANCE_BASE_COST_FAME)
+    assert.equal(
+      result.current.healCostMoney,
+      CLINIC_CONFIG.HEAL_BASE_COST_MONEY
+    )
+    assert.equal(
+      result.current.enhanceCostFame,
+      CLINIC_CONFIG.ENHANCE_BASE_COST_FAME
+    )
   })
 
   test('healMember successful', () => {
@@ -155,7 +173,10 @@ describe('useClinicLogic', () => {
 
     assert.equal(mockClinicEnhance.mock.calls.length, 0)
     assert.equal(mockAddToast.mock.calls.length, 1)
-    assert.equal(mockAddToast.mock.calls[0].arguments[0], 'Not enough fame. The void demands sacrifice.')
+    assert.equal(
+      mockAddToast.mock.calls[0].arguments[0],
+      'Not enough fame. The void demands sacrifice.'
+    )
     assert.equal(mockAddToast.mock.calls[0].arguments[1], 'error')
   })
 
@@ -178,7 +199,10 @@ describe('useClinicLogic', () => {
     })
 
     assert.equal(mockChangeScene.mock.calls.length, 1)
-    assert.equal(mockChangeScene.mock.calls[0].arguments[0], GAME_PHASES.OVERWORLD)
+    assert.equal(
+      mockChangeScene.mock.calls[0].arguments[0],
+      GAME_PHASES.OVERWORLD
+    )
   })
 
   test('does nothing for invalid memberId', () => {

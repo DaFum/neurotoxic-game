@@ -2,11 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { pickRandomSubset } from '../src/utils/randomUtils.js'
 
-test('pickRandomSubset', async (t) => {
-  await t.test('returns an empty array if input array is null or undefined', () => {
-    assert.deepStrictEqual(pickRandomSubset(null, 1), [])
-    assert.deepStrictEqual(pickRandomSubset(undefined, 1), [])
-  })
+test('pickRandomSubset', async t => {
+  await t.test(
+    'returns an empty array if input array is null or undefined',
+    () => {
+      assert.deepStrictEqual(pickRandomSubset(null, 1), [])
+      assert.deepStrictEqual(pickRandomSubset(undefined, 1), [])
+    }
+  )
 
   await t.test('returns an empty array if input array is empty', () => {
     assert.deepStrictEqual(pickRandomSubset([], 1), [])
