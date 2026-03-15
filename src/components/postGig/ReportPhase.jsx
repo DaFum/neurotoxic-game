@@ -44,6 +44,65 @@ FinancialList.propTypes = {
   type: PropTypes.oneOf(['income', 'expense']).isRequired
 }
 
+const FinancialColumn = ({ titleKey, type, items, total, delay, initialX }) => {
+  const { t } = useTranslation('economy')
+  const isIncome = type === 'income'
+  const colorClass = isIncome ? 'text-toxic-green' : 'text-blood-red'
+  const borderClass = isIncome ? 'border-toxic-green' : 'border-blood-red'
+  const borderLightClass = isIncome
+    ? 'border-toxic-green/40'
+    : 'border-blood-red/40'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: initialX }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay }}
+    >
+      <h3
+        className={`text-lg border-b-2 ${borderClass} mb-4 pb-2 tracking-widest font-mono ${colorClass}`}
+      >
+        {t(titleKey)}
+      </h3>
+      <FinancialList items={items} type={type} />
+      <div
+        className={`mt-4 pt-2 border-t ${borderLightClass} flex justify-between font-bold ${colorClass}`}
+      >
+        <span className='text-sm tracking-wider'>
+          {t('economy:postGig.total')}
+        </span>
+        <span className='tabular-nums'>{total}€</span>
+      </div>
+    </motion.div>
+  )
+}
+
+const NetResult = ({ net }) => {
+  const { t } = useTranslation('economy')
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.8, type: 'spring' }}
+      className='text-center py-6 border-y-2 border-ash-gray/30'
+    >
+      <div className='text-[10px] text-ash-gray tracking-widest mb-2'>
+        {t('economy:postGig.netProfit')}
+      </div>
+      <div
+        className={`text-5xl font-bold font-display tabular-nums ${
+          net >= 0
+            ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]'
+            : 'text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]'
+        }`}
+      >
+        {net > 0 ? '+' : ''}
+        {net}€
+      </div>
+    </motion.div>
+  )
+}
+
 export const ReportPhase = ({ financials, onNext }) => {
   const { t } = useTranslation('economy')
 
@@ -64,63 +123,28 @@ export const ReportPhase = ({ financials, onNext }) => {
     <div className='space-y-6'>
       <div className='grid grid-cols-2 gap-8'>
         {/* Income Column */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className='text-lg border-b-2 border-toxic-green mb-4 pb-2 tracking-widest font-mono text-toxic-green'>
-            {t('economy:postGig.income')}
-          </h3>
-          <FinancialList items={financials.income.breakdown} type='income' />
-          <div className='mt-4 pt-2 border-t border-toxic-green/40 flex justify-between font-bold text-toxic-green'>
-            <span className='text-sm tracking-wider'>
-              {t('economy:postGig.total')}
-            </span>
-            <span className='tabular-nums'>{financials.income.total}€</span>
-          </div>
-        </motion.div>
+        <FinancialColumn
+          titleKey='economy:postGig.income'
+          type='income'
+          items={financials.income.breakdown}
+          total={financials.income.total}
+          delay={0.2}
+          initialX={-20}
+        />
 
         {/* Expenses Column */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className='text-lg border-b-2 border-blood-red text-blood-red mb-4 pb-2 tracking-widest font-mono'>
-            {t('economy:postGig.expenses')}
-          </h3>
-          <FinancialList items={financials.expenses.breakdown} type='expense' />
-          <div className='mt-4 pt-2 border-t border-blood-red/40 flex justify-between font-bold text-blood-red'>
-            <span className='text-sm tracking-wider'>
-              {t('economy:postGig.total')}
-            </span>
-            <span className='tabular-nums'>{financials.expenses.total}€</span>
-          </div>
-        </motion.div>
+        <FinancialColumn
+          titleKey='economy:postGig.expenses'
+          type='expense'
+          items={financials.expenses.breakdown}
+          total={financials.expenses.total}
+          delay={0.2}
+          initialX={20}
+        />
       </div>
 
       {/* Net Result */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.8, type: 'spring' }}
-        className='text-center py-6 border-y-2 border-ash-gray/30'
-      >
-        <div className='text-[10px] text-ash-gray tracking-widest mb-2'>
-          {t('economy:postGig.netProfit')}
-        </div>
-        <div
-          className={`text-5xl font-bold font-display tabular-nums ${
-            financials.net >= 0
-              ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]'
-              : 'text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]'
-          }`}
-        >
-          {financials.net > 0 ? '+' : ''}
-          {financials.net}€
-        </div>
-      </motion.div>
+      <NetResult net={financials.net} />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -153,6 +177,28 @@ const FINANCIAL_CATEGORY_SHAPE = PropTypes.shape({
     })
   ).isRequired
 })
+
+FinancialColumn.propTypes = {
+  titleKey: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['income', 'expense']).isRequired,
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string,
+      labelKey: PropTypes.string.isRequired,
+      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+      detail: PropTypes.string,
+      detailKey: PropTypes.string,
+      detailParams: PropTypes.object
+    })
+  ).isRequired,
+  total: PropTypes.number.isRequired,
+  delay: PropTypes.number.isRequired,
+  initialX: PropTypes.number.isRequired
+}
+
+NetResult.propTypes = {
+  net: PropTypes.number.isRequired
+}
 
 ReportPhase.propTypes = {
   financials: PropTypes.shape({
