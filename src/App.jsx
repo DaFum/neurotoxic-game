@@ -10,6 +10,7 @@ import { TutorialManager } from './components/TutorialManager'
 import { ChatterOverlay } from './components/ChatterOverlay'
 import { GameStateProvider, useGameState } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
+import { VoidTerminal } from './ui/VoidTerminal'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { createNamedLazyLoader } from './utils/lazySceneLoader'
@@ -190,6 +191,7 @@ function GameContent() {
       </ErrorBoundary>
       <Analytics />
       <SpeedInsights />
+      <VoidTerminal />
     </div>
   )
 }

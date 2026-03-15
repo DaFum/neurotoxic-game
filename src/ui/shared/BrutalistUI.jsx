@@ -1075,6 +1075,16 @@ export const DeadmanButton = memo(({ label, onConfirm }) => {
         onBlur={stopHold}
         className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
           ${isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
+        style={
+          isHolding && !isComplete
+            ? {
+                transform: `translate(${(Math.random() - 0.5) * (progress / 10)}px, ${(Math.random() - 0.5) * (progress / 10)}px)`,
+                filter: `drop-shadow(0 0 ${progress / 5}px var(--color-toxic-green))`
+              }
+            : isComplete
+            ? { transform: 'scale(0.95)', transition: 'transform 0.1s' }
+            : {}
+        }
       >
         {/* Progress Fill Background */}
         <div
