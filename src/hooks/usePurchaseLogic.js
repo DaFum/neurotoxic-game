@@ -260,13 +260,15 @@ export const usePurchaseLogic = ({
         // Count ONLY gear items for gear_nerd check
         // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
         let gearCount = 0
-        const inventoryEntries = Object.entries(nextBand.inventory || {})
-        for (let i = 0; i < inventoryEntries.length; i++) {
-          const [key, value] = inventoryEntries[i]
-          const isOwned =
-            value === true || (typeof value === 'number' && value > 0)
-          if (isOwned && GEAR_LOOKUP.has(key)) {
-            gearCount++
+        const inv = nextBand.inventory || {}
+        for (const key in inv) {
+          if (Object.prototype.hasOwnProperty.call(inv, key)) {
+            const value = inv[key]
+            const isOwned =
+              value === true || (typeof value === 'number' && value > 0)
+            if (isOwned && GEAR_LOOKUP.has(key)) {
+              gearCount++
+            }
           }
         }
 
