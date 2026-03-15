@@ -1,5 +1,5 @@
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter.js'
-import { VENUE_CHATTER_DB } from './venueChatter.js'
+import { VENUE_CHATTER_LOOKUP } from './venueChatter.js'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
@@ -11,7 +11,7 @@ export const getRandomChatter = state => {
   const venueId = currentNode?.venue?.id
 
   if (venueId) {
-    const venueEntry = VENUE_CHATTER_DB.find(v => v.venueId === venueId)
+    const venueEntry = VENUE_CHATTER_LOOKUP[venueId]
 
     if (venueEntry?.linesByScene) {
       const scene = state.currentScene

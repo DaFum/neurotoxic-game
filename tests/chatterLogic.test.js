@@ -34,7 +34,20 @@ mock.module('../src/data/chatter/venueChatter.js', {
         venueId: 'v_legacy',
         lines: ['Legacy 1', 'Legacy 2']
       }
-    ]
+    ],
+    VENUE_CHATTER_LOOKUP: {
+      v1: {
+        venueId: 'v1',
+        linesByScene: {
+          ANY: ['Venue Any'],
+          SPECIAL: ['Venue Special']
+        }
+      },
+      v_legacy: {
+        venueId: 'v_legacy',
+        lines: ['Legacy 1', 'Legacy 2']
+      }
+    }
   }
 })
 
