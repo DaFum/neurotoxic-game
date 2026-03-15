@@ -15,7 +15,7 @@ export const pickRandomSubset = (arr, count, rng = secureRandom) => {
   const n = arr.length
   const k = Math.min(count, n)
 
-  if (k === 0) return []
+  if (k <= 0) return []
 
   // Create a copy so we don't mutate the original array
   const shuffled = [...arr]

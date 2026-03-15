@@ -130,7 +130,7 @@ test('DealsPhase handles negotiation error gracefully', async () => {
   expect(handleError).toHaveBeenCalledWith(
     mockError,
     expect.objectContaining({
-      fallbackMessage: 'Negotiation failed unexpectedly.'
+      fallbackMessage: 'ui:postGig.negotiationFailed'
     })
   )
 
@@ -164,7 +164,7 @@ test('DealsPhase handles accept deal error gracefully', async () => {
     expect(handleError).toHaveBeenCalledWith(
       mockError,
       expect.objectContaining({
-        fallbackMessage: 'Deal failed'
+        fallbackMessage: 'ui:postGig.dealFailed'
       })
     )
   })

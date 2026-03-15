@@ -1,30 +1,36 @@
+import React from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
+import { formatNumber } from '../../utils/numberUtils'
 
 const FinancialList = ({ items, type }) => {
-  const { t } = useTranslation('economy')
+  const { t, i18n } = useTranslation(['economy', 'ui'])
+
   return (
     <ul className='space-y-2.5 text-sm font-mono'>
-      {items.map((item, i) => (
-        <motion.li
-          // eslint-disable-next-line @eslint-react/no-array-index-key
-          key={`${item.labelKey}-${i}`}
-          initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 + i * 0.1 }}
-          className='flex justify-between items-center'
-        >
-          <span className='text-star-white/70'>{t(item.labelKey)}</span>
-          <span
-            className={`${type === 'income' ? 'text-toxic-green' : 'text-blood-red'} font-bold tabular-nums`}
+      {items.map((item, i) => {
+        return (
+          <motion.li
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            key={`${item.labelKey}-${i}`}
+            initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.1 }}
+            className='flex justify-between items-center'
           >
-            {type === 'income' ? '+' : '-'}
-            {item.value}€
-          </span>
-        </motion.li>
-      ))}
+            <span className='text-star-white/70'>{t(item.labelKey)}</span>
+            <span
+              className={`${type === 'income' ? 'text-toxic-green' : 'text-blood-red'} font-bold tabular-nums`}
+            >
+              {type === 'income'
+                ? t('report.amount_positive', { amount: formatNumber(item.value, i18n?.language) })
+                : t('report.amount_negative', { amount: formatNumber(Math.abs(item.value), i18n?.language) })}
+            </span>
+          </motion.li>
+        )
+      })}
     </ul>
   )
 }
@@ -34,8 +40,7 @@ FinancialList.propTypes = {
     PropTypes.shape({
       label: PropTypes.string,
       labelKey: PropTypes.string.isRequired,
-      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
-        .isRequired,
+      value: PropTypes.number.isRequired,
       detail: PropTypes.string,
       detailKey: PropTypes.string,
       detailParams: PropTypes.object
@@ -44,8 +49,9 @@ FinancialList.propTypes = {
   type: PropTypes.oneOf(['income', 'expense']).isRequired
 }
 
-const FinancialColumn = ({ titleKey, type, items, total, delay, initialX }) => {
-  const { t } = useTranslation('economy')
+const FinancialColumn = React.memo(({ titleKey, type, items, total, delay, initialX }) => {
+  const { t, i18n } = useTranslation(['economy', 'ui'])
+
   const isIncome = type === 'income'
   const colorClass = isIncome ? 'text-toxic-green' : 'text-blood-red'
   const borderClass = isIncome ? 'border-toxic-green' : 'border-blood-red'
@@ -71,14 +77,27 @@ const FinancialColumn = ({ titleKey, type, items, total, delay, initialX }) => {
         <span className='text-sm tracking-wider'>
           {t('economy:postGig.total')}
         </span>
-        <span className='tabular-nums'>{total}€</span>
+        <span className='tabular-nums'>
+          {type === 'income'
+                ? t('report.amount_positive', { amount: formatNumber(total, i18n?.language) })
+                : t('report.amount_negative', { amount: formatNumber(Math.abs(total), i18n?.language) })}
+        </span>
       </div>
     </motion.div>
   )
-}
+})
 
-const NetResult = ({ net }) => {
-  const { t } = useTranslation('economy')
+FinancialColumn.displayName = 'FinancialColumn'
+
+const NetResult = React.memo(({ net }) => {
+  const { t, i18n } = useTranslation(['economy', 'ui'])
+
+  const getNetString = () => {
+    if (net > 0) return t('report.amount_positive', { amount: formatNumber(net, i18n?.language) })
+    if (net < 0) return t('report.amount_negative', { amount: formatNumber(Math.abs(net), i18n?.language) })
+    return t('report.amount_with_currency', { amount: formatNumber(0, i18n?.language) })
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -96,12 +115,13 @@ const NetResult = ({ net }) => {
             : 'text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]'
         }`}
       >
-        {net > 0 ? '+' : ''}
-        {net}€
+        {getNetString()}
       </div>
     </motion.div>
   )
-}
+})
+
+NetResult.displayName = 'NetResult'
 
 export const ReportPhase = ({ financials, onNext }) => {
   const { t } = useTranslation('economy')
@@ -185,7 +205,7 @@ FinancialColumn.propTypes = {
     PropTypes.shape({
       label: PropTypes.string,
       labelKey: PropTypes.string.isRequired,
-      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+      value: PropTypes.number.isRequired,
       detail: PropTypes.string,
       detailKey: PropTypes.string,
       detailParams: PropTypes.object

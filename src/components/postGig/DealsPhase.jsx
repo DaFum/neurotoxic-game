@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useState, useEffect, useRef, memo } from 'react'
+import { useState, useEffect, useRef, memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
 import { negotiateDeal } from '../../utils/socialEngine'
@@ -23,11 +23,6 @@ const getAlignmentImagePrompt = alignment => {
   }
 }
 
-// Note: alignment badges are not localized via t() here because
-// getAlignmentBadge is defined outside the component scope and has no
-// access to the hook. The emoji prefixes keep them recognisable across
-// locales; full localisation can be added by converting to a component
-// or accepting t as a parameter in a follow-up.
 const getAlignmentBadge = alignment => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
@@ -58,15 +53,14 @@ const getAlignmentColor = alignment => {
   }
 }
 
-const DealCard = ({
+const DealCard = memo(({
   deal,
-  negotiatedDeals,
-  social,
+  negotiationState,
+  brandReputation,
   handleAcceptDeal,
   handleNegotiationStart
 }) => {
   const { t } = useTranslation()
-  const negotiationState = negotiatedDeals[deal.id]
   const isRevoked = negotiationState?.status === 'REVOKED'
   const displayDeal = negotiationState?.deal || deal
   const hasNegotiated = !!negotiationState
@@ -143,17 +137,17 @@ const DealCard = ({
           </div>
 
           {/* Reputation Status */}
-          {social.brandReputation?.[displayDeal.alignment] !== undefined && (
+          {brandReputation?.[displayDeal.alignment] !== undefined && (
             <div className='mt-2 text-[10px] text-ash-gray'>
               {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
               <span
                 className={
-                  social.brandReputation[displayDeal.alignment] > 0
+                  brandReputation[displayDeal.alignment] > 0
                     ? 'text-toxic-green'
                     : 'text-blood-red'
                 }
               >
-                {social.brandReputation[displayDeal.alignment]}
+                {brandReputation[displayDeal.alignment]}
               </span>
             </div>
           )}
@@ -204,12 +198,12 @@ const DealCard = ({
       </div>
     </div>
   )
-}
+})
 
 DealCard.propTypes = {
   deal: PropTypes.object.isRequired,
-  negotiatedDeals: PropTypes.object.isRequired,
-  social: PropTypes.object.isRequired,
+  negotiationState: PropTypes.object,
+  brandReputation: PropTypes.object,
   handleAcceptDeal: PropTypes.func.isRequired,
   handleNegotiationStart: PropTypes.func.isRequired
 }
@@ -233,22 +227,22 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     }
   }, [])
 
-  const handleNegotiationStart = deal => {
+  const handleNegotiationStart = useCallback(deal => {
     setSelectedDeal(deal)
     setNegotiationResult(null)
     setNegotiationModalOpen(true)
-  }
+  }, [])
 
-  const handleAcceptDeal = async deal => {
+  const handleAcceptDeal = useCallback(async deal => {
     try {
       await onAccept(deal)
     } catch (error) {
       handleError(error, {
         addToast,
-        fallbackMessage: 'Deal failed'
+        fallbackMessage: t('ui:postGig.dealFailed')
       })
     }
-  }
+  }, [onAccept, addToast])
 
   const handleNegotiationSubmit = strategy => {
     if (!selectedDeal) return
@@ -300,7 +294,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     } catch (error) {
       handleError(error, {
         addToast,
-        fallbackMessage: 'Negotiation failed unexpectedly.'
+        fallbackMessage: t('ui:postGig.negotiationFailed')
       })
       // Close modal on error to prevent stuck state
       setNegotiationModalOpen(false)
@@ -328,8 +322,8 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
           <DealCard
             key={deal.id}
             deal={deal}
-            negotiatedDeals={negotiatedDeals}
-            social={social}
+            negotiationState={negotiatedDeals[deal.id]}
+            brandReputation={social?.brandReputation}
             handleAcceptDeal={handleAcceptDeal}
             handleNegotiationStart={handleNegotiationStart}
           />

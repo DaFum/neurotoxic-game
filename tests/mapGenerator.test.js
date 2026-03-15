@@ -57,6 +57,7 @@ test('MapGenerator handles invalid parameters gracefully', () => {
     0,
     'Should not generate layers for negative depth'
   )
+  assert.ok(Array.isArray(mapNegative.nodeList), 'Should return empty nodeList on invalid depth')
 
   // Zero depth
   const mapZero = generator.generateMap(0)
@@ -65,6 +66,28 @@ test('MapGenerator handles invalid parameters gracefully', () => {
     0,
     'Should not generate layers for zero depth'
   )
+  assert.ok(Array.isArray(mapZero.nodeList), 'Should return empty nodeList on zero depth')
+})
+
+test('MapGenerator ensures nodeList mirrors nodes exactly', () => {
+  const generator = new MapGenerator(42)
+  const map = generator.generateMap(5)
+
+  const nodeKeys = Object.keys(map.nodes)
+
+  // 1. Length must be identical
+  assert.equal(
+    map.nodeList.length,
+    nodeKeys.length,
+    'nodeList length must equal the number of keys in nodes'
+  )
+
+  // 2. Every ID in nodeList must exist in nodes with the exact same reference
+  map.nodeList.forEach((node, idx) => {
+    const nodeFromMap = map.nodes[node.id]
+    assert.ok(nodeFromMap, `Node ID ${node.id} from nodeList missing in nodes object`)
+    assert.strictEqual(node, nodeFromMap, `Node reference mismatch at index ${idx}`)
+  })
 })
 
 test('MapGenerator handles empty venues array by throwing StateError', async () => {
