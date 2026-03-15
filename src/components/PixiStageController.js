@@ -35,12 +35,29 @@ class PixiStageController extends BaseStageController {
    * Called by BaseStageController.init().
    */
   async setup() {
-    this.isToxicActive = false
+    this._initFilters()
+    const loadPromises = this._initManagersAndStartLoading()
+    await Promise.all(loadPromises)
+    this._finalizeInit()
+  }
 
+  /**
+   * Initializes filters and stage containers.
+   * @private
+   */
+  _initFilters() {
+    this.isToxicActive = false
     this.colorMatrix = new PIXI.ColorMatrixFilter()
     this.toxicFilters = [this.colorMatrix]
     this.stageContainer = this.container
+  }
 
+  /**
+   * Initializes managers and starts asset loading.
+   * @returns {Promise[]} Array of asset loading promises.
+   * @private
+   */
+  _initManagersAndStartLoading() {
     // Initialize Managers and start loading assets in parallel
     this.crowdManager = new CrowdManager(this.app, this.stageContainer)
     const crowdLoad = this.withTimeout(
@@ -76,9 +93,14 @@ class PixiStageController extends BaseStageController {
       'Note Assets'
     )
 
-    // Await all loads in parallel
-    await Promise.all([crowdLoad, effectLoad, noteLoad])
+    return [crowdLoad, effectLoad, noteLoad]
+  }
 
+  /**
+   * Finalizes manager initialization after assets are loaded.
+   * @private
+   */
+  _finalizeInit() {
     if (this.isDisposed) return
 
     // Initialize managers now that assets are loaded
@@ -139,17 +161,7 @@ class PixiStageController extends BaseStageController {
    * @param {number} deltaMS - Time delta.
    */
   update(deltaMS) {
-    // Defensive guards for async init or disposal race conditions
-    if (
-      !this.app ||
-      this.isDisposed ||
-      !this.stageContainer ||
-      !this.laneManager ||
-      !this.crowdManager ||
-      !this.noteManager ||
-      !this.effectManager ||
-      !this.toxicFilters
-    ) {
+    if (!this._canUpdate()) {
       return
     }
 
@@ -161,6 +173,43 @@ class PixiStageController extends BaseStageController {
 
     const elapsed = getGigTimeMs()
 
+    this._updateToxicMode(state, elapsed)
+
+    this.laneManager.update(state)
+    this.crowdManager.update(
+      state.combo ?? 0,
+      state.isToxicMode ?? false,
+      elapsed
+    )
+    this.noteManager.update(state, elapsed, this.laneManager.layout)
+    this.effectManager.update(deltaMS)
+  }
+
+  /**
+   * Checks if the controller is ready to update.
+   * @returns {boolean} True if ready to update.
+   * @private
+   */
+  _canUpdate() {
+    return !!(
+      this.app &&
+      !this.isDisposed &&
+      this.stageContainer &&
+      this.laneManager &&
+      this.crowdManager &&
+      this.noteManager &&
+      this.effectManager &&
+      this.toxicFilters
+    )
+  }
+
+  /**
+   * Updates toxic mode filter effects based on game state.
+   * @param {object} state - The game state.
+   * @param {number} elapsed - The elapsed gig time.
+   * @private
+   */
+  _updateToxicMode(state, elapsed) {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
@@ -175,15 +224,6 @@ class PixiStageController extends BaseStageController {
         this.isToxicActive = false
       }
     }
-
-    this.laneManager.update(state)
-    this.crowdManager.update(
-      state.combo ?? 0,
-      state.isToxicMode ?? false,
-      elapsed
-    )
-    this.noteManager.update(state, elapsed, this.laneManager.layout)
-    this.effectManager.update(deltaMS)
   }
 
   /**
