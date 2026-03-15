@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
@@ -27,6 +27,17 @@ export const MapNode = memo(
   }) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
+
+    const handleKeyDown = useCallback(
+      e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleTravel(node)
+        }
+      },
+      [handleTravel, node]
+    )
+
     const nodeLocationName = translateLocation(
       t,
       node.venue?.name,
@@ -88,16 +99,7 @@ export const MapNode = memo(
             : undefined
         }
         tabIndex={isReachable ? 0 : undefined}
-        onKeyDown={
-          isReachable
-            ? e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleTravel(node)
-                }
-              }
-            : undefined
-        }
+        onKeyDown={isReachable ? handleKeyDown : undefined}
       >
         {/* Target Crosshairs (appear on hover/focus) */}
         <div
