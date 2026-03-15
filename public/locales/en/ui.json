@@ -478,6 +478,8 @@
   "member": {
     "unknown": "Unknown"
   },
+  "menu.close": "CLOSE MENU",
+  "menu.open": "MENU",
   "menu.inventory": "INVENTORY",
   "menu.upgrades": "UPGRADES",
   "min_log_level": "MINIMUM LOG LEVEL",

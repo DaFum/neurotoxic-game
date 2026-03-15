@@ -82,7 +82,7 @@ describe('Overworld Component', () => {
     expect(screen.getByTestId('toggle-radio')).toBeInTheDocument()
 
     // Open the menu first
-    const menuButton = screen.getByText(/ui:actions.menu/i)
+    const menuButton = screen.getByText(/\[ui:menu.open\]/i)
     await act(async () => {
       fireEvent.click(menuButton)
     })
@@ -106,7 +106,7 @@ describe('Overworld Component', () => {
       )
 
       // Open the menu first
-      const menuButton = screen.getByText(/ui:actions.menu/i)
+      const menuButton = screen.getByText(/\[ui:menu.open\]/i)
       await act(async () => {
         fireEvent.click(menuButton)
       })
