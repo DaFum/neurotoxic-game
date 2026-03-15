@@ -79,18 +79,18 @@
   "confirm_identity": "IDENTITÄT BESTÄTIGEN",
   "continue": "WEITER",
   "contraband": {
-    "title": "SCHMUGGELWAREN VERSTECK",
-    "description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
-    "targetMemberLabel": "Zielmitglied:",
-    "noItems": "Noch keine Schmuggelware gesammelt.",
-    "useItem": "GEGENSTAND VERWENDEN",
-    "passiveActive": "PASSIVER EFFEKT AKTIV",
-    "close": "VERSTECK SCHLIESSEN",
-    "button": "VERSTECK",
-    "requiresTarget": "Erfordert Ziel-Mitglied.",
-    "gigs": "GIGS",
     "applied": "ANGEWENDET",
-    "applyItem": "EFFEKT ANWENDEN"
+    "applyItem": "EFFEKT ANWENDEN",
+    "button": "VERSTECK",
+    "close": "VERSTECK SCHLIESSEN",
+    "description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
+    "gigs": "GIGS",
+    "noItems": "Noch keine Schmuggelware gesammelt.",
+    "passiveActive": "PASSIVER EFFEKT AKTIV",
+    "requiresTarget": "Erfordert Ziel-Mitglied.",
+    "targetMemberLabel": "Zielmitglied:",
+    "title": "SCHMUGGELWAREN VERSTECK",
+    "useItem": "GEGENSTAND VERWENDEN"
   },
   "contraband.dropped": "Schmuggelware gefunden!",
   "contract.confidential": "DOKUMENT: VERTRAULICH",
@@ -246,22 +246,10 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        [
-          "ui:featureList.sec2.rows.0.0",
-          "ui:featureList.sec2.rows.0.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.1.0",
-          "ui:featureList.sec2.rows.1.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.2.0",
-          "ui:featureList.sec2.rows.2.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.3.0",
-          "ui:featureList.sec2.rows.3.1"
-        ]
+        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
+        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
+        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
+        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -284,22 +272,10 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        [
-          "ui:featureList.sec4.rows.0.0",
-          "ui:featureList.sec4.rows.0.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.1.0",
-          "ui:featureList.sec4.rows.1.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.2.0",
-          "ui:featureList.sec4.rows.2.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.3.0",
-          "ui:featureList.sec4.rows.3.1"
-        ]
+        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
+        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
+        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
+        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -409,12 +385,12 @@
   "inventory.emptySlot": "Leerer Inventarplatz: {{label}}",
   "inventory.slot": "Inventarplatz: {{name}}",
   "item": {
-    "unknown": "Unbekannter Gegenstand",
-    "typeUnknown": "Unbekannter Typ",
     "descriptionUnknown": "Unbekannte Beschreibung",
+    "typeUnknown": "Unbekannter Typ",
     "type_consumable": "Verbrauchsmaterial",
     "type_equipment": "Ausrüstung",
-    "type_relic": "Relikt"
+    "type_relic": "Relikt",
+    "unknown": "Unbekannter Gegenstand"
   },
   "keyboardHint": "Drücke [1-{{count}}] oder klicke zur Auswahl",
   "keyboardHint_one": "Drücke [1] oder klicke zur Auswahl",
@@ -551,7 +527,17 @@
   "pirate_radio.zealotry_gain": "ZEALOTRY ZUWACHS",
   "postGig": {
     "harmony": "Harmonie",
-    "money": "Geld"
+    "money": "Geld",
+    "mood": "Stimmung",
+    "platforms": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube"
+    },
+    "socialPhase": {
+      "altZealotryCult": "Zealot-Kult"
+    },
+    "stamina": "Ausdauer"
   },
   "postGig.acceptedDeal": "Deal angenommen: {{dealName}}",
   "postGig.backToTour": "Zurück zur Tour >",
@@ -638,9 +624,9 @@
   "radio.stop": "Radio stoppen",
   "rarity": {
     "common": "GEWÖHNLICH",
-    "uncommon": "UNGEWÖHNLICH",
+    "epic": "EPISCH",
     "rare": "SELTEN",
-    "epic": "EPISCH"
+    "uncommon": "UNGEWÖHNLICH"
   },
   "rewards.fameWithAmount": "+{{count}} Ruhm",
   "rewards.fameWithAmount_one": "+{{count}} Ruhm",
@@ -744,8 +730,8 @@
   "socials": "SOCIALS",
   "start_game": "Tour Starten",
   "stash": {
-    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
-    "itemUsed": "{{itemName}} {{action}}!"
+    "itemUsed": "{{itemName}} {{action}}!",
+    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!"
   },
   "stash.actionApplied": "Angewendet",
   "stash.actionUsed": "Benutzt",
@@ -844,6 +830,24 @@
   "travel.repair.notEnoughMoney": "Nicht genug Geld! Du brauchst {{cost}}€ für die Reparatur.",
   "travel.repair.repaired": "Repariert: -{{cost}}€",
   "travel.repair.vanAlreadyPerfect": "Der Van ist bereits in perfektem Zustand!",
+  "tutorial": {
+    "map": {
+      "text": "Reise zwischen Städten, um Gigs zu spielen. Reisen kostet Treibstoff und Zeit. Achte auf deine Vorräte.",
+      "title": "DIE KARTE"
+    },
+    "perform": {
+      "text": "Triff die Noten, wenn sie unten ankommen. Pfeiltasten oder klicke auf die Spuren. Hohe Combo = Mehr Ruhm.",
+      "title": "AUFTRITT"
+    },
+    "stats": {
+      "text": "Behalte die Gesundheit (Stimmung) und das Geld im Auge. Wenn das Geld auf 0 fällt, ist das Spiel vorbei. Wenn die Stimmung auf 0 fällt, löst sich die Band auf.",
+      "title": "WERTE"
+    },
+    "welcome": {
+      "text": "Du bist der Manager von NEUROTOXIC. Dein Ziel: Überlebe die Tour, erlange Ruhm und geh nicht pleite.",
+      "title": "WILLKOMMEN IM GRIND"
+    }
+  },
   "tutorial.ariaLabel": "Tutorial",
   "tutorial.done": "FERTIG",
   "tutorial.header": "TUTORIAL {{current}}/{{total}}",

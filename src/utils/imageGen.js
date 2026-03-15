@@ -290,6 +290,8 @@ export const IMG_PROMPTS = {
     'pixel art recycled paper contract with leaf stamp green icon',
   ZEALOTRY_CULT:
     'pixel art hooded cultist playing guitar toxic green fire dark ritual icon',
-  GIG_SUCCESS: 'pixel art roaring crowd heavy metal concert toxic green lights success',
-  GIG_FAILURE: 'pixel art empty stage broken instruments blood red lighting failure'
+  GIG_SUCCESS:
+    'pixel art roaring crowd heavy metal concert toxic green lights success',
+  GIG_FAILURE:
+    'pixel art empty stage broken instruments blood red lighting failure'
 }

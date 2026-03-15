@@ -534,11 +534,12 @@ export const GameStateProvider = ({ children }) => {
           const saved = localStorage.getItem(SAVE_KEY)
           if (!saved) return false
           parsed = JSON.parse(saved)
-        } catch (error) {
+        } catch (_error) {
           handleError(
             new StateError(
               tRef.current('ui:save.parseFailed', {
-                defaultValue: 'Save file parsing failed. Falling back to initial state.'
+                defaultValue:
+                  'Save file parsing failed. Falling back to initial state.'
               })
             ),
             { addToast }
@@ -547,13 +548,16 @@ export const GameStateProvider = ({ children }) => {
         }
 
         if (!isPlainObject(parsed)) {
-          handleError(new StateError(
-            tRef.current('ui:save.corruptFailed', {
-              defaultValue: 'Save file is corrupt or invalid.'
-            })
-          ), {
-            addToast
-          })
+          handleError(
+            new StateError(
+              tRef.current('ui:save.corruptFailed', {
+                defaultValue: 'Save file is corrupt or invalid.'
+              })
+            ),
+            {
+              addToast
+            }
+          )
           return false
         }
 
@@ -565,9 +569,11 @@ export const GameStateProvider = ({ children }) => {
             new StateError(
               tRef.current('ui:save.corruptFailed', {
                 defaultValue: 'Save file is corrupt or invalid.'
-              }), {
-              reason: error.message
-            }),
+              }),
+              {
+                reason: error.message
+              }
+            ),
             { addToast }
           )
           return false
