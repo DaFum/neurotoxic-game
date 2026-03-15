@@ -92,6 +92,82 @@ const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
 
 const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
 
+const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
+  if (fixedSpeaker) return fixedSpeaker
+  const memberNames = (bandMembers ?? [])
+    .map(member => member.name)
+    .filter(memberName => typeof memberName === 'string')
+  if (memberNames.length > 0) {
+    return memberNames[Math.floor(Math.random() * memberNames.length)]
+  }
+  return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
+}
+
+const resolveMessageTextColor = (msgType, currentScene) => {
+  if (msgType === 'hate' || currentScene === GAME_PHASES.GAMEOVER) {
+    return 'text-star-white chromatic-text'
+  }
+  return 'text-star-white'
+}
+
+const ChatterMessageHeader = memo(({ sceneStyle, sceneLabel, speaker }) => (
+  <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
+    <div className='flex items-center gap-1.5'>
+      <span className='text-[10px]'>{sceneStyle.icon}</span>
+      <p
+        className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
+      >
+        {sceneLabel}
+      </p>
+    </div>
+    <p
+      className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
+    >
+      {speaker}
+    </p>
+  </div>
+))
+
+ChatterMessageHeader.displayName = 'ChatterMessageHeader'
+ChatterMessageHeader.propTypes = {
+  sceneStyle: PropTypes.object.isRequired,
+  sceneLabel: PropTypes.string.isRequired,
+  speaker: PropTypes.string.isRequired
+}
+
+const ChatterMessageBody = memo(({ text, textColorClass }) => (
+  <div className='pl-3 pr-2 py-2.5'>
+    <p className={`text-xs leading-snug ${FONT_UI_CLASS} ${textColorClass}`}>
+      {text}
+    </p>
+  </div>
+))
+
+ChatterMessageBody.displayName = 'ChatterMessageBody'
+ChatterMessageBody.propTypes = {
+  text: PropTypes.string.isRequired,
+  textColorClass: PropTypes.string.isRequired
+}
+
+const ChatterMessageLifetimeBar = memo(({ barColorClass }) => (
+  <div className='h-[2px] w-full bg-ash-gray/10'>
+    <motion.div
+      className={`h-full ${barColorClass} opacity-40`}
+      initial={{ width: '100%' }}
+      animate={{ width: '0%' }}
+      transition={{
+        duration: MESSAGE_LIFETIME_MS / 1000,
+        ease: 'linear'
+      }}
+    />
+  </div>
+))
+
+ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
+ChatterMessageLifetimeBar.propTypes = {
+  barColorClass: PropTypes.string.isRequired
+}
+
 const ChatterMessage = memo(
   ({ msg, sceneStyle, currentScene, onRemove, t }) => {
     useEffect(() => {
@@ -110,6 +186,8 @@ const ChatterMessage = memo(
         }),
       [currentScene, t]
     )
+
+    const textColorClass = resolveMessageTextColor(msg.type, currentScene)
 
     return (
       <motion.div
@@ -131,44 +209,18 @@ const ChatterMessage = memo(
             className={`absolute inset-y-0 left-0 w-1 ${sceneStyle.barColor}`}
           />
 
-          {/* Header: scene label + speaker */}
-          <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
-            <div className='flex items-center gap-1.5'>
-              <span className='text-[10px]'>{sceneStyle.icon}</span>
-              <p
-                className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
-              >
-                {sceneLabel}
-              </p>
-            </div>
-            <p
-              className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
-            >
-              {msg.speaker}
-            </p>
-          </div>
+          <ChatterMessageHeader
+            sceneStyle={sceneStyle}
+            sceneLabel={sceneLabel}
+            speaker={msg.speaker}
+          />
 
-          {/* Message body */}
-          <div className='pl-3 pr-2 py-2.5'>
-            <p
-              className={`text-xs leading-snug ${FONT_UI_CLASS} ${msg.type === 'hate' || currentScene === GAME_PHASES.GAMEOVER ? 'text-star-white chromatic-text' : 'text-star-white'}`}
-            >
-              {t(msg.text)}
-            </p>
-          </div>
+          <ChatterMessageBody
+            text={t(msg.text)}
+            textColorClass={textColorClass}
+          />
 
-          {/* Lifetime countdown bar */}
-          <div className='h-[2px] w-full bg-ash-gray/10'>
-            <motion.div
-              className={`h-full ${sceneStyle.barColor} opacity-40`}
-              initial={{ width: '100%' }}
-              animate={{ width: '0%' }}
-              transition={{
-                duration: MESSAGE_LIFETIME_MS / 1000,
-                ease: 'linear'
-              }}
-            />
-          </div>
+          <ChatterMessageLifetimeBar barColorClass={sceneStyle.barColor} />
         </div>
       </motion.div>
     )
@@ -238,17 +290,8 @@ export const ChatterOverlay = memo(({ gameState }) => {
 
         if (result) {
           const { text, speaker: fixedSpeaker, type } = result
-          const members = currentState.band?.members ?? []
-          const memberNames = members
-            .map(member => member.name)
-            .filter(memberName => typeof memberName === 'string')
-
-          const speaker = fixedSpeaker
-            ? fixedSpeaker
-            : memberNames.length > 0
-              ? memberNames[Math.floor(Math.random() * memberNames.length)]
-              : t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
-
+          const members = currentState.band?.members
+          const speaker = resolveSpeaker(fixedSpeaker, members, t)
           const newMessage = { id: crypto.randomUUID(), text, speaker, type }
 
           setMessages(prev => [
