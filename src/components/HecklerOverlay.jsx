@@ -1,6 +1,47 @@
 import { useEffect, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 
+// Helper to populate seen IDs for O(1) lookups
+function populateSeenIds(seenIds, projectiles) {
+  seenIds.clear()
+  for (let i = 0; i < projectiles.length; i++) {
+    seenIds.add(projectiles[i].id)
+  }
+}
+
+// Helper to remove old nodes that are no longer in the state
+function removeStaleNodes(nodeCache, seenIds, container) {
+  // Optimization: Use forEach to avoid iterator allocation and GC churn in hot loop
+  nodeCache.forEach((node, id) => {
+    if (!seenIds.has(id)) {
+      container.removeChild(node)
+      nodeCache.delete(id)
+    }
+  })
+}
+
+// Helper to add new nodes and update existing ones
+function updateOrAddNodes(projectiles, nodeCache, container) {
+  for (let i = 0; i < projectiles.length; i++) {
+    const p = projectiles[i]
+    let node = nodeCache.get(p.id)
+
+    if (!node) {
+      // Create element if it doesn't exist
+      node = document.createElement('div')
+      node.className = 'absolute text-4xl drop-shadow-lg'
+      node.textContent = p.type === 'bottle' ? '🍾' : '🍅'
+      container.appendChild(node)
+      nodeCache.set(p.id, node)
+    }
+
+    // Update position and rotation directly bypassing React render
+    node.style.left = `${p.x}px`
+    node.style.top = `${p.y}px`
+    node.style.transform = `rotate(${p.rotation * 57.29}deg)`
+  }
+}
+
 /**
  * Overlay component that renders projectiles (heckler items).
  * Optimized to bypass React renders during animation.
@@ -23,40 +64,9 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
         const nodeCache = nodeCacheRef.current
         const seenIds = seenIdsRef.current
 
-        // Populate seen IDs for O(1) lookups
-        seenIds.clear()
-        for (let i = 0; i < projectiles.length; i++) {
-          seenIds.add(projectiles[i].id)
-        }
-
-        // Remove old nodes that are no longer in the state
-        // Optimization: Use forEach to avoid iterator allocation and GC churn in hot loop
-        nodeCache.forEach((node, id) => {
-          if (!seenIds.has(id)) {
-            container.removeChild(node)
-            nodeCache.delete(id)
-          }
-        })
-
-        // Add new nodes and update existing ones
-        for (let i = 0; i < projectiles.length; i++) {
-          const p = projectiles[i]
-          let node = nodeCache.get(p.id)
-
-          if (!node) {
-            // Create element if it doesn't exist
-            node = document.createElement('div')
-            node.className = 'absolute text-4xl drop-shadow-lg'
-            node.textContent = p.type === 'bottle' ? '🍾' : '🍅'
-            container.appendChild(node)
-            nodeCache.set(p.id, node)
-          }
-
-          // Update position and rotation directly bypassing React render
-          node.style.left = `${p.x}px`
-          node.style.top = `${p.y}px`
-          node.style.transform = `rotate(${p.rotation * 57.29}deg)`
-        }
+        populateSeenIds(seenIds, projectiles)
+        removeStaleNodes(nodeCache, seenIds, container)
+        updateOrAddNodes(projectiles, nodeCache, container)
       }
       rAF = requestAnimationFrame(loop)
     }
