@@ -80,33 +80,33 @@ export class MapGenerator {
     const usedVenueIds = new Set()
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
-    // Pre-reserve Finale Venue (Leipzig Arena) so it's not picked randomly
+    // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     const preFinale = ALL_VENUES.find(v => v.id === 'leipzig_arena')
     if (preFinale) usedVenueIds.add(preFinale.id)
 
-    // Optimization: Maintain dynamic available pools to avoid .filter() in loops
-    const availableEasy = easyVenues.filter(v => !usedVenueIds.has(v.id))
-    const availableMedium = mediumVenues.filter(v => !usedVenueIds.has(v.id))
-    const availableHard = hardVenues.filter(v => !usedVenueIds.has(v.id))
+    // Optimization: Maintain dynamic available lengths to avoid .filter() in loops
+    let availableEasyLength = 0
+    let availableMediumLength = 0
+    let availableHardLength = 0
 
-    // Pre-filtered static fallback pools to avoid filtering inside the loop
-    const fallbackEasy = easyVenues.filter(
-      v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
-    )
-    const fallbackMedium = mediumVenues.filter(
-      v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
-    )
-    const fallbackHard = hardVenues.filter(
-      v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
-    )
+    for (let i = 0; i < easyVenues.length; i++) {
+      if (!usedVenueIds.has(easyVenues[i].id)) availableEasyLength++
+    }
+    for (let i = 0; i < mediumVenues.length; i++) {
+      if (!usedVenueIds.has(mediumVenues[i].id)) availableMediumLength++
+    }
+    for (let i = 0; i < hardVenues.length; i++) {
+      if (!usedVenueIds.has(hardVenues[i].id)) availableHardLength++
+    }
 
     const pools = {
-      availableEasy,
-      availableMedium,
-      availableHard,
-      fallbackEasy,
-      fallbackMedium,
-      fallbackHard
+      easyVenues,
+      mediumVenues,
+      hardVenues,
+      usedVenueIds,
+      availableEasyLength,
+      availableMediumLength,
+      availableHardLength
     }
 
     this._generateIntermediateLayers(map, validDepth, pools)
@@ -133,13 +133,14 @@ export class MapGenerator {
    * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
    */
   _generateIntermediateLayers(map, depth, pools) {
-    const {
-      availableEasy,
-      availableMedium,
-      availableHard,
-      fallbackEasy,
-      fallbackMedium,
-      fallbackHard
+    let {
+      easyVenues,
+      mediumVenues,
+      hardVenues,
+      usedVenueIds,
+      availableEasyLength,
+      availableMediumLength,
+      availableHardLength
     } = pools
 
     for (let i = 1; i < depth; i++) {
@@ -148,51 +149,78 @@ export class MapGenerator {
       const nodeCount = Math.floor(this.random() * 3) + 2
 
       for (let j = 0; j < nodeCount; j++) {
-        let candidates
-        let currentAvailablePool
+        let poolArray
+        let poolLength
 
         if (i < 3) {
-          candidates = availableEasy
-          currentAvailablePool = availableEasy
+          poolArray = easyVenues
+          poolLength = availableEasyLength
         } else if (i < 7) {
-          candidates = availableMedium
-          currentAvailablePool = availableMedium
+          poolArray = mediumVenues
+          poolLength = availableMediumLength
         } else {
-          candidates = availableHard
-          currentAvailablePool = availableHard
+          poolArray = hardVenues
+          poolLength = availableHardLength
         }
 
         // Fallback to harder pools if the current pool is exhausted
-        if (candidates.length === 0) {
+        if (poolLength === 0) {
           if (i < 3) {
-            candidates = availableMedium
-            currentAvailablePool = availableMedium
+            poolArray = mediumVenues
+            poolLength = availableMediumLength
           }
-          if (candidates.length === 0 && i < 7) {
-            candidates = availableHard
-            currentAvailablePool = availableHard
-          }
-
-          // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
-          // but exclude specialized venues.
-          if (candidates.length === 0) {
-            // Re-assign candidates to the pre-filtered static fallback pool
-            candidates =
-              i < 3 ? fallbackEasy : i < 7 ? fallbackMedium : fallbackHard
-            if (candidates == null || candidates.length === 0) {
-              throw new StateError(`Empty fallback pool for difficulty ${i}`)
-            }
-            currentAvailablePool = null // We are now picking from a pool that allows duplicates
+          if (poolLength === 0 && i < 7) {
+            poolArray = hardVenues
+            poolLength = availableHardLength
           }
         }
 
-        // Pick random venue
-        const candidateIdx = Math.floor(this.random() * candidates.length)
-        const venue = candidates[candidateIdx]
+        let venue = null
 
-        // Only remove if we picked from an available (non-exhausted) pool
-        if (currentAvailablePool) {
-          currentAvailablePool.splice(candidateIdx, 1)
+        if (poolLength > 0) {
+          // Dynamic subset selection with single pass filtering
+          let targetIndex = Math.floor(this.random() * poolLength)
+          for (let k = 0; k < poolArray.length; k++) {
+            const v = poolArray[k]
+            if (!usedVenueIds.has(v.id)) {
+              if (targetIndex === 0) {
+                venue = v
+                break
+              }
+              targetIndex--
+            }
+          }
+
+          usedVenueIds.add(venue.id)
+          if (poolArray === easyVenues) availableEasyLength--
+          else if (poolArray === mediumVenues) availableMediumLength--
+          else if (poolArray === hardVenues) availableHardLength--
+        } else {
+          // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
+          // but exclude specialized venues.
+          let fallbackArray = i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
+          let fallbackLength = 0
+          for (let k = 0; k < fallbackArray.length; k++) {
+            const v = fallbackArray[k]
+            if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
+              fallbackLength++
+            }
+          }
+          if (fallbackLength === 0) {
+            throw new StateError(`Empty fallback pool for difficulty ${i}`)
+          }
+
+          let targetIndex = Math.floor(this.random() * fallbackLength)
+          for (let k = 0; k < fallbackArray.length; k++) {
+            const v = fallbackArray[k]
+            if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
+              if (targetIndex === 0) {
+                venue = v
+                break
+              }
+              targetIndex--
+            }
+          }
         }
 
         // Determine Node Type based on probability and venue
