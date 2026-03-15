@@ -11,6 +11,22 @@ const MOTION_ANIMATE = { scale: 1 }
 const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
 const MOTION_NO_HOVER = {}
 
+const getPinAltText = (t, type) => {
+  return t('ui:map.pinTypeAlt', {
+    type: t('ui:map.nodeType.fallback', {
+      type: type.replace('_', ' ')
+    })
+  })
+}
+
+const getNodeTypeLabel = (t, type) => {
+  if (type === 'GIG') return t('ui:map.nodeType.gig')
+  if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
+  return t('ui:map.nodeType.fallback', {
+    type: type.substring(0, 3)
+  })
+}
+
 export const MapNode = memo(
   ({
     node,
@@ -38,7 +54,10 @@ export const MapNode = memo(
       [handleTravel, node]
     )
 
-    const handleClick = useCallback(() => handleTravel(node), [handleTravel, node])
+    const handleClick = useCallback(
+      () => handleTravel(node),
+      [handleTravel, node]
+    )
 
     const handleMouseEnter = useCallback(() => {
       setHoveredNode(node)
@@ -145,24 +164,14 @@ export const MapNode = memo(
           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
             <img
               src={iconUrl}
-              alt={t('ui:map.pinTypeAlt', {
-                type: t('ui:map.nodeType.fallback', {
-                  type: node.type.replace('_', ' ')
-                })
-              })}
+              alt={getPinAltText(t, node.type)}
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>
         </motion.div>
 
         <div className='text-[9px] font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none'>
-          {node.type === 'GIG'
-            ? t('ui:map.nodeType.gig')
-            : node.type === 'REST_STOP'
-              ? t('ui:map.nodeType.rest')
-              : t('ui:map.nodeType.fallback', {
-                  type: node.type.substring(0, 3)
-                })}
+          {getNodeTypeLabel(t, node.type)}
         </div>
 
         {/* Pending confirmation label */}
