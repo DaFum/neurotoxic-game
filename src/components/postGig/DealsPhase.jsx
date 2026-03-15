@@ -248,7 +248,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
         })
       }
     },
-    [onAccept, addToast]
+    [onAccept, addToast, t]
   )
 
   const handleNegotiationSubmit = strategy => {
