@@ -34,11 +34,8 @@ class RoadieStageController extends BaseStageController {
     this.effectManager = new EffectManager(this.app, this.container)
     this.effectManager.init()
 
-    // Load Assets
-    await this.loadAssets()
-    if (this.isDisposed) return
-
-    await this.effectManager.loadAssets()
+    // Load Assets concurrently
+    await Promise.all([this.loadAssets(), this.effectManager.loadAssets()])
     if (this.isDisposed) return
 
     // Player Container (Groups body + item)

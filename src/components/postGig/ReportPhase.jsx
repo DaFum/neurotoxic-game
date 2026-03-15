@@ -25,8 +25,8 @@ const FinancialList = ({ items, type }) => {
               className={`${type === 'income' ? 'text-toxic-green' : 'text-blood-red'} font-bold tabular-nums`}
             >
               {type === 'income'
-                ? t('report.amount_positive', { amount: formatNumber(item.value, i18n?.language) })
-                : t('report.amount_negative', { amount: formatNumber(Math.abs(item.value), i18n?.language) })}
+                ? t('economy:report.amount_positive', { amount: formatNumber(item.value, i18n?.language) })
+                : t('economy:report.amount_negative', { amount: formatNumber(Math.abs(item.value), i18n?.language) })}
             </span>
           </motion.li>
         )
@@ -79,8 +79,8 @@ const FinancialColumn = React.memo(({ titleKey, type, items, total, delay, initi
         </span>
         <span className='tabular-nums'>
           {type === 'income'
-                ? t('report.amount_positive', { amount: formatNumber(total, i18n?.language) })
-                : t('report.amount_negative', { amount: formatNumber(Math.abs(total), i18n?.language) })}
+                ? t('economy:report.amount_positive', { amount: formatNumber(total, i18n?.language) })
+                : t('economy:report.amount_negative', { amount: formatNumber(Math.abs(total), i18n?.language) })}
         </span>
       </div>
     </motion.div>
@@ -93,9 +93,9 @@ const NetResult = React.memo(({ net }) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const getNetString = () => {
-    if (net > 0) return t('report.amount_positive', { amount: formatNumber(net, i18n?.language) })
-    if (net < 0) return t('report.amount_negative', { amount: formatNumber(Math.abs(net), i18n?.language) })
-    return t('report.amount_with_currency', { amount: formatNumber(0, i18n?.language) })
+    if (net > 0) return t('economy:report.amount_positive', { amount: formatNumber(net, i18n?.language) })
+    if (net < 0) return t('economy:report.amount_negative', { amount: formatNumber(Math.abs(net), i18n?.language) })
+    return t('economy:report.amount_with_currency', { amount: formatNumber(0, i18n?.language) })
   }
 
   return (

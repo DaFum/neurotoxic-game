@@ -397,7 +397,7 @@ export const Overworld = () => {
           variant='primary'
           size='sm'
         >
-          {isMenuOpen ? t('ui:actions.close_menu', '[CLOSE MENU]') : t('ui:actions.menu', '[MENU]')}
+          {isMenuOpen ? `[${t('ui:menu.close')}]` : `[${t('ui:menu.open')}]`}
         </GlitchButton>
       </div>
 
