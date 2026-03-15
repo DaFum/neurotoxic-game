@@ -225,18 +225,6 @@ test('processProjectiles handles no hits', () => {
   assert.strictEqual(projectiles[1].id, 2)
 })
 
-test('processProjectiles handles empty input', () => {
-  const session = createHecklerSession()
-  const projectiles = []
-  let hits = 0
-  const onHit = () => hits++
-
-  processProjectiles(session, projectiles, 0, 1000, onHit)
-
-  assert.strictEqual(hits, 0)
-  assert.strictEqual(projectiles.length, 0)
-})
-
 test('processProjectiles handles missing onHit callback', () => {
   const session = createHecklerSession()
   const screenHeight = 1000

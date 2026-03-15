@@ -141,7 +141,7 @@ describe('Leaderboard API - Song', () => {
       })
     })
 
-    test('invalid songId format returns 400', async () => {
+    test('invalid songId format returns 400 for POST', async () => {
       const req = {
         method: 'POST',
         body: {
@@ -194,7 +194,7 @@ describe('Leaderboard API - Song', () => {
       })
     })
 
-    test('internal server error returns 500', async () => {
+    test('internal server error returns 500 for POST', async () => {
       mockClient.hSet.mock.mockImplementationOnce(() => {
         throw new Error('Redis down')
       })
@@ -243,7 +243,7 @@ describe('Leaderboard API - Song', () => {
       })
     })
 
-    test('invalid songId format returns 400', async () => {
+    test('invalid songId format returns 400 for GET', async () => {
       const req = {
         method: 'GET',
         query: { songId: 'invalid song id!' }
@@ -333,7 +333,7 @@ describe('Leaderboard API - Song', () => {
       ])
     })
 
-    test('internal server error returns 500', async () => {
+    test('internal server error returns 500 for GET', async () => {
       mockClient.zRangeWithScores.mock.mockImplementationOnce(() => {
         throw new Error('Redis down')
       })

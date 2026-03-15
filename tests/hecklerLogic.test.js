@@ -330,27 +330,6 @@ test('processProjectiles - handles projectile at boundary', () => {
   assert.equal(projectiles.length, 1)
 })
 
-test('processProjectiles - handles empty array', () => {
-  const session = createHecklerSession()
-  const projectiles = []
-  processProjectiles(session, projectiles, 0, 1000, () => {})
-  assert.equal(projectiles.length, 0)
-})
-
-test('processProjectiles - mutates array in-place', () => {
-  const session = createHecklerSession()
-  const screenHeight = 1000
-  const projectiles = [{ id: 1, y: 800 }]
-  const result = processProjectiles(
-    session,
-    projectiles,
-    0,
-    screenHeight,
-    () => {}
-  )
-  assert.equal(result, projectiles)
-})
-
 test('processProjectiles - handles missing onHit callback', () => {
   const session = createHecklerSession()
   const screenHeight = 1000

@@ -420,27 +420,27 @@ describe('rhythmUtils', () => {
       assert.strictEqual(typeof tempoMap[0]._accumulatedMicros, 'number')
     })
 
-    test('should calculate time for initial segment (ms)', () => {
+    test('should calculate time for initial segment (ms) (Optimized)', () => {
       const time = calculateTimeFromTicks(240, tpb, tempoMap, 'ms')
       assert.ok(Math.abs(time - 250) < 0.0001, `Expected 250, got ${time}`)
     })
 
-    test('should calculate time crossing segments (ms)', () => {
+    test('should calculate time crossing segments (ms) (Optimized)', () => {
       const time = calculateTimeFromTicks(720, tpb, tempoMap, 'ms')
       assert.ok(Math.abs(time - 625) < 0.0001, `Expected 625, got ${time}`)
     })
 
-    test('should calculate time crossing segments (seconds)', () => {
+    test('should calculate time crossing segments (seconds) (Optimized)', () => {
       const time = calculateTimeFromTicks(720, tpb, tempoMap, 's')
       assert.ok(Math.abs(time - 0.625) < 0.0001, `Expected 0.625, got ${time}`)
     })
 
-    test('should handle ticks exactly on segment boundary', () => {
+    test('should handle ticks exactly on segment boundary (Optimized)', () => {
       const time = calculateTimeFromTicks(480, tpb, tempoMap, 'ms')
       assert.ok(Math.abs(time - 500) < 0.0001, `Expected 500, got ${time}`)
     })
 
-    test('should handle ticks beyond last segment', () => {
+    test('should handle ticks beyond last segment (Optimized)', () => {
       const time = calculateTimeFromTicks(960, tpb, tempoMap, 'ms')
       assert.ok(Math.abs(time - 750) < 0.0001, `Expected 750, got ${time}`)
     })

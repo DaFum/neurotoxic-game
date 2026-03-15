@@ -158,7 +158,7 @@ describe('ambient.js', () => {
       )
     })
 
-    test('warns and returns false if selection fails', async () => {
+    test('warns and returns false if MIDI selection fails', async () => {
       currentMockSelectRandomItem = () => null
       const result = await playRandomAmbientMidi([], () => 0)
 
@@ -254,7 +254,7 @@ describe('ambient.js', () => {
       )
     })
 
-    test('warns and returns false if selection fails', async () => {
+    test('warns and returns false if OGG selection fails', async () => {
       currentMockSelectRandomItem = () => null
       const result = await playRandomAmbientOgg()
 
