@@ -6,18 +6,21 @@ import { Panel, ActionButton } from '../../ui/shared'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 
+const CATEGORY_PROMPTS = {
+  Drama: IMG_PROMPTS.SOCIAL_POST_DRAMA,
+  Performance: IMG_PROMPTS.SOCIAL_POST_MUSIC,
+  Commercial: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
+  Lifestyle: IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
+}
+
+const getImagePromptForCategory = (category, badges) => {
+  if (badges?.includes('🔥')) return IMG_PROMPTS.SOCIAL_POST_VIRAL
+  return CATEGORY_PROMPTS[category] || IMG_PROMPTS.SOCIAL_POST_TECH
+}
+
 const SocialOptionButton = memo(({ opt, index, onSelect }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
-
-  const getImagePromptForCategory = (category, badges) => {
-    if (badges?.includes('🔥')) return IMG_PROMPTS.SOCIAL_POST_VIRAL
-    if (category === 'Drama') return IMG_PROMPTS.SOCIAL_POST_DRAMA
-    if (category === 'Performance') return IMG_PROMPTS.SOCIAL_POST_MUSIC
-    if (category === 'Commercial') return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
-    if (category === 'Lifestyle') return IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
-    return IMG_PROMPTS.SOCIAL_POST_TECH
-  }
 
   return (
     <motion.div
