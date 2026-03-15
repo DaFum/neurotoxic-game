@@ -12,6 +12,7 @@ import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
 import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
+import { formatNumber } from '../utils/numberUtils'
 
 let lastMinigameFallback = null
 
@@ -26,10 +27,6 @@ const SONGS_DICT = Object.create(null)
 for (let i = 0; i < SONGS_DB.length; i++) {
   const song = SONGS_DB[i]
   SONGS_DICT[song.id] = song
-}
-
-const formatLocalizedNumber = (value, locale) => {
-  return new Intl.NumberFormat(locale).format(value)
 }
 
 /**
@@ -230,7 +227,7 @@ export const PreGig = () => {
             {t('ui:pregig.budget')}{' '}
             <span className='text-toxic-green font-bold tabular-nums'>
               {t('ui:currency', {
-                value: formatLocalizedNumber(player.money, i18n.language)
+                value: formatNumber(player.money, i18n?.language)
               })}
             </span>
           </span>
@@ -239,7 +236,7 @@ export const PreGig = () => {
             {t('ui:pregig.costs')}{' '}
             <span className='text-blood-red font-bold tabular-nums'>
               {t('ui:currencyNegative', {
-                value: formatLocalizedNumber(calculatedBudget, i18n.language)
+                value: formatNumber(calculatedBudget, i18n?.language)
               })}
             </span>
           </span>
