@@ -255,6 +255,8 @@ export class MapGenerator {
     // Generate Connections
     // Ensure every node in layer I connects to at least one in I+1
     // Ensure every node in layer I+1 has at least one parent in I
+    const connectedToIds = new Set()
+
     for (let i = 0; i < depth - 1; i++) {
       const currentLayer = map.layers[i]
       const nextLayer = map.layers[i + 1]
@@ -268,17 +270,19 @@ export class MapGenerator {
         )
         targets.forEach(target => {
           map.connections.push({ from: node.id, to: target.id })
+          connectedToIds.add(target.id)
         })
       })
 
       // Backward pass check: ensure everyone has a parent
       // (Simplified: Just ensure nextLayer nodes are reachable. If not, force connect from random parent)
       nextLayer.forEach(node => {
-        const hasParent = map.connections.some(c => c.to === node.id)
+        const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
           const randomParent =
             currentLayer[Math.floor(this.random() * currentLayer.length)]
           map.connections.push({ from: randomParent.id, to: node.id })
+          connectedToIds.add(node.id)
         }
       })
     }
