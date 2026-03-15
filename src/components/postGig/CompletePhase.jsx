@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
+import { formatCurrency } from '../../utils/numberUtils'
 
 export const CompletePhase = ({
   result,
@@ -15,15 +15,6 @@ export const CompletePhase = ({
   const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
-
-  const currencyFormatter = useMemo(() => {
-    return new Intl.NumberFormat(i18n?.language || 'en', {
-      style: 'currency',
-      currency: 'EUR',
-      signDisplay: 'always',
-      maximumFractionDigits: 0
-    })
-  }, [i18n?.language])
 
   const getOutcomeImagePrompt = () => {
     if (result.success) {
@@ -102,7 +93,7 @@ export const CompletePhase = ({
                 result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
               }
             >
-              💰 {currencyFormatter.format(result.moneyChange)}
+              💰 {formatCurrency(result.moneyChange, i18n?.language, 'always')}
             </div>
           ) : null}
 

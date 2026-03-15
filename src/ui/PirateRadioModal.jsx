@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameState } from '../context/GameState'
+import { formatCurrency } from '../utils/numberUtils'
 
 /**
  * Pirate Radio Broadcast Interface
@@ -19,16 +19,6 @@ export const PirateRadioModal = ({
 }) => {
   const { t, i18n } = useTranslation(['ui'])
   const { player, band } = useGameState()
-
-  const currencyFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(i18n.language || 'en', {
-        style: 'currency',
-        currency: 'EUR',
-        maximumFractionDigits: 0
-      }),
-    [i18n.language]
-  )
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'>
@@ -114,7 +104,7 @@ export const PirateRadioModal = ({
                     : 'text-blood-red'
                 }
               >
-                {currencyFormatter.format(config.COST)}
+                {formatCurrency(config.COST, i18n?.language)}
               </span>
             </div>
             <div className='flex justify-between'>
