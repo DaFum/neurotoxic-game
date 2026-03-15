@@ -757,12 +757,10 @@
   "social_links.type_visual_feed": "VISUAL_FEED",
   "socials": "SOCIALS",
   "start_game": "Tour Starten",
-  "stash": {
-    "itemUsed": "{{itemName}} {{action}}!",
-    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!"
-  },
   "stash.actionApplied": "Angewendet",
   "stash.actionUsed": "Benutzt",
+  "stash.itemUsed": "{{itemName}} {{action}}!",
+  "stash.selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
   "stats.active_quests": "Aktive Quests",
   "stats.advancedMetrics": "Erweiterte Metriken",
   "stats.band_metrics": "Band-Metriken",
