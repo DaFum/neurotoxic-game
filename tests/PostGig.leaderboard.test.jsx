@@ -44,6 +44,7 @@ vi.mock('../src/data/songs', () => {
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
+    i18n: { language: 'en' },
     t: (key, options) => {
       const template = options?.defaultValue || key
       if (!options) return template

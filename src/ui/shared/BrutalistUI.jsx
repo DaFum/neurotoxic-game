@@ -653,7 +653,10 @@ export const BrutalToggle = memo(({ label, initialState = false }) => {
 
   return (
     <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
-      <span id={labelId} className='text-sm font-bold tracking-widest uppercase'>
+      <span
+        id={labelId}
+        className='text-sm font-bold tracking-widest uppercase'
+      >
         {label}
       </span>
       <button

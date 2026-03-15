@@ -52,26 +52,36 @@ const { midiUrlMap } = await import('../src/utils/audio/assets.js')
 test('midiUrlMap in assets.js', async t => {
   await t.test('midiUrlMap is exported and populated', () => {
     assert.ok(midiUrlMap, 'midiUrlMap should be exported')
-    assert.strictEqual(typeof midiUrlMap, 'object', 'midiUrlMap should be an object')
-  })
-
-  await t.test('midiUrlMap construction called buildAssetUrlMap with correct arguments', () => {
-    // Check if buildAssetUrlMap was called with 'MIDI' label
-    const midiCall = mockBuildAssetUrlMap.mock.calls.find(
-      call => call.arguments[2] === 'MIDI'
+    assert.strictEqual(
+      typeof midiUrlMap,
+      'object',
+      'midiUrlMap should be an object'
     )
-    assert.ok(midiCall, 'buildAssetUrlMap should be called for MIDI')
-
-    // The first argument is the glob, which should be an object (empty in tests due to loader)
-    assert.strictEqual(typeof midiCall.arguments[0], 'object')
-
-    // The second argument is the warning callback
-    assert.strictEqual(typeof midiCall.arguments[1], 'function')
   })
+
+  await t.test(
+    'midiUrlMap construction called buildAssetUrlMap with correct arguments',
+    () => {
+      // Check if buildAssetUrlMap was called with 'MIDI' label
+      const midiCall = mockBuildAssetUrlMap.mock.calls.find(
+        call => call.arguments[2] === 'MIDI'
+      )
+      assert.ok(midiCall, 'buildAssetUrlMap should be called for MIDI')
+
+      // The first argument is the glob, which should be an object (empty in tests due to loader)
+      assert.strictEqual(typeof midiCall.arguments[0], 'object')
+
+      // The second argument is the warning callback
+      assert.strictEqual(typeof midiCall.arguments[1], 'function')
+    }
+  )
 
   await t.test('midiUrlMap contains expected keys from mock', () => {
     assert.strictEqual(midiUrlMap['test.mid'], 'assets/test.mid')
-    assert.strictEqual(midiUrlMap['nested/track.mid'], 'assets/nested/track.mid')
+    assert.strictEqual(
+      midiUrlMap['nested/track.mid'],
+      'assets/nested/track.mid'
+    )
     assert.strictEqual(midiUrlMap['track.mid'], 'assets/nested/track.mid')
   })
 
@@ -86,25 +96,38 @@ test('midiUrlMap in assets.js', async t => {
     warnCallback('test warning')
 
     assert.strictEqual(mockLogger.warn.mock.calls.length, 1)
-    assert.strictEqual(mockLogger.warn.mock.calls[0].arguments[0], 'AudioEngine')
-    assert.strictEqual(mockLogger.warn.mock.calls[0].arguments[1], 'test warning')
+    assert.strictEqual(
+      mockLogger.warn.mock.calls[0].arguments[0],
+      'AudioEngine'
+    )
+    assert.strictEqual(
+      mockLogger.warn.mock.calls[0].arguments[1],
+      'test warning'
+    )
   })
 
-  await t.test('midiUrlMap conflict handling (integration with buildAssetUrlMap)', () => {
-    const warnings = []
-    const warn = msg => warnings.push(msg)
+  await t.test(
+    'midiUrlMap conflict handling (integration with buildAssetUrlMap)',
+    () => {
+      const warnings = []
+      const warn = msg => warnings.push(msg)
 
-    const fakeGlob = {
-      '../assets/set1/track.mid': 'url1',
-      '../assets/set2/track.mid': 'url2'
+      const fakeGlob = {
+        '../assets/set1/track.mid': 'url1',
+        '../assets/set2/track.mid': 'url2'
+      }
+
+      const resultMap = buildAssetUrlMap(fakeGlob, warn, 'MIDI')
+
+      assert.strictEqual(resultMap['set1/track.mid'], 'url1')
+      assert.strictEqual(resultMap['set2/track.mid'], 'url2')
+      assert.strictEqual(
+        resultMap['track.mid'],
+        'url1',
+        'Should keep first entry for basename'
+      )
+      assert.strictEqual(warnings.length, 1)
+      assert.match(warnings[0], /MIDI basename conflict/i)
     }
-
-    const resultMap = buildAssetUrlMap(fakeGlob, warn, 'MIDI')
-
-    assert.strictEqual(resultMap['set1/track.mid'], 'url1')
-    assert.strictEqual(resultMap['set2/track.mid'], 'url2')
-    assert.strictEqual(resultMap['track.mid'], 'url1', 'Should keep first entry for basename')
-    assert.strictEqual(warnings.length, 1)
-    assert.match(warnings[0], /MIDI basename conflict/i)
-  })
+  )
 })

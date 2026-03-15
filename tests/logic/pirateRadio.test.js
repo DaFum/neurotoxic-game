@@ -7,14 +7,16 @@ describe('Pirate Radio Logic', () => {
     const initialState = {
       player: {
         money: 1000,
-        fame: 50
+        fame: 50,
+        day: 5
       },
       band: {
         harmony: 80
       },
       social: {
         zealotry: 10,
-        controversyLevel: 20
+        controversyLevel: 20,
+        lastPirateBroadcastDay: 1
       },
       toasts: []
     }
@@ -43,14 +45,16 @@ describe('Pirate Radio Logic', () => {
     const initialState = {
       player: {
         money: 100,
-        fame: 0
+        fame: 0,
+        day: 5
       },
       band: {
         harmony: 100
       },
       social: {
         zealotry: 95,
-        controversyLevel: 90
+        controversyLevel: 90,
+        lastPirateBroadcastDay: 1
       }
     }
 
@@ -64,51 +68,67 @@ describe('Pirate Radio Logic', () => {
 
     const result = handlePirateBroadcast(initialState, payload)
 
-    assert.equal(result.social.zealotry, 100, 'Zealotry should be clamped to 100')
-    assert.equal(result.social.controversyLevel, 100, 'Controversy should be clamped to 100')
+    assert.equal(
+      result.social.zealotry,
+      100,
+      'Zealotry should be clamped to 100'
+    )
+    assert.equal(
+      result.social.controversyLevel,
+      100,
+      'Controversy should be clamped to 100'
+    )
   })
 
   it('should clamp bounds correctly at lower limits', () => {
     const initialState = {
       player: {
-        money: 50,
-        fame: 0
+        money: 150,
+        fame: 0,
+        day: 5
       },
       band: {
-        harmony: 5
+        harmony: 15
       },
       social: {
         zealotry: 0,
-        controversyLevel: 0
+        controversyLevel: 0,
+        lastPirateBroadcastDay: 1
       }
     }
 
     const payload = {
-      cost: 100, // costs more than we have
+      cost: 200, // costs more than we have
       fameGain: 0,
       zealotryGain: 0,
       controversyGain: 0,
-      harmonyCost: 10 // costs more harmony than we have
+      harmonyCost: 20 // costs more harmony than we have
     }
 
     const result = handlePirateBroadcast(initialState, payload)
 
-    assert.equal(result.player.money, 0, 'Money should not drop below 0')
-    assert.equal(result.band.harmony, 1, 'Harmony should clamp to 1 instead of 0 based on clampBandHarmony logic')
+    assert.equal(result.player.money, 150, 'Action should abort, leaving money unchanged')
+    assert.equal(
+      result.band.harmony,
+      15,
+      'Action should abort, leaving harmony unchanged'
+    )
   })
 
   it('should handle undefined and non-numeric payload fields gracefully without NaN', () => {
     const initialState = {
       player: {
         money: 50,
-        fame: 10
+        fame: 10,
+        day: 5
       },
       band: {
         harmony: 50
       },
       social: {
         zealotry: 10,
-        controversyLevel: 10
+        controversyLevel: 10,
+        lastPirateBroadcastDay: 1
       }
     }
 
@@ -126,6 +146,10 @@ describe('Pirate Radio Logic', () => {
     assert.equal(result.player.fame, 10, 'Fame should remain numeric')
     assert.equal(result.band.harmony, 50, 'Harmony should remain numeric')
     assert.equal(result.social.zealotry, 10, 'Zealotry should remain numeric')
-    assert.equal(result.social.controversyLevel, 10, 'Controversy should remain numeric')
+    assert.equal(
+      result.social.controversyLevel,
+      10,
+      'Controversy should remain numeric'
+    )
   })
 })

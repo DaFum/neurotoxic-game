@@ -5,6 +5,45 @@ import { logger } from '../utils/logger.js'
 import { isForbiddenKey } from '../utils/gameStateUtils.js'
 import { useEffect, memo } from 'react'
 
+const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
+
+/**
+ * Recursively translates translation keys within a context object and filters forbidden keys.
+ * @param {any} context - The context object to translate and sanitize.
+ * @param {Function} t - The translation function.
+ * @returns {any} The sanitized and translated context.
+ */
+export const translateContextKeys = (context, t) => {
+  // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
+  if (
+    context === null ||
+    typeof context !== 'object' ||
+    Array.isArray(context)
+  ) {
+    return context
+  }
+
+  const translatedContext = {}
+  for (const prop in context) {
+    if (!Object.hasOwn(context, prop)) continue
+    // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection
+    if (isForbiddenKey(prop)) continue
+
+    const value = context[prop]
+
+    if (typeof value === 'string') {
+      const isTranslationKey = VALID_NAMESPACES.some(ns => value.startsWith(ns))
+      translatedContext[prop] = isTranslationKey ? t(value) : value
+    } else if (typeof value === 'object' && value !== null) {
+      // SECURITY: Recurse into nested objects to sanitize and translate
+      translatedContext[prop] = translateContextKeys(value, t)
+    } else {
+      translatedContext[prop] = value
+    }
+  }
+  return translatedContext
+}
+
 const renderToastMessage = (toast, t) => {
   if (toast.messageKey) {
     return t(toast.messageKey, {
@@ -24,21 +63,23 @@ const renderToastMessage = (toast, t) => {
     try {
       const rawContext = JSON.parse(contextStr)
       const context = translateContextKeys(rawContext, t)
-      return t(key, context)
+      return t(key, { ...context, ...(toast.options || {}) })
     } catch (_e) {
       logger.error('UI', 'Toast message JSON parse error', {
         error: _e,
         contextStr,
         toastMessage: toast.message
       })
-      return t(key)
+      return t(key, toast.options || {})
     }
   }
 
-  return t(toast.message)
+  return t(toast.message, toast.options || {})
 }
 
-const ToastItem = memo(({ toast, t, removeToast, style }) => {
+const ToastItem = memo(({ toast, removeToast, style }) => {
+  const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
+
   useEffect(() => {
     const timer = setTimeout(() => {
       removeToast(toast.id)
@@ -65,9 +106,7 @@ const ToastItem = memo(({ toast, t, removeToast, style }) => {
         >
           {style.icon}
         </span>
-        <p
-          className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
-        >
+        <p className={`font-[Courier_New] text-sm leading-snug ${style.text}`}>
           {renderToastMessage(toast, t)}
         </p>
       </div>
@@ -76,7 +115,6 @@ const ToastItem = memo(({ toast, t, removeToast, style }) => {
   )
 })
 ToastItem.displayName = 'ToastItem'
-
 
 const TOAST_STYLE_MAP = {
   success: {
@@ -101,44 +139,6 @@ const TOAST_STYLE_MAP = {
   }
 }
 
-const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
-
-/**
- * Recursively translates translation keys within a context object and filters forbidden keys.
- * @param {any} context - The context object to translate and sanitize.
- * @param {Function} t - The translation function.
- * @returns {any} The sanitized and translated context.
- */
-export const translateContextKeys = (context, t) => {
-  // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
-  if (
-    context === null ||
-    typeof context !== 'object' ||
-    Array.isArray(context)
-  ) {
-    return context
-  }
-
-  const translatedContext = {}
-  for (const prop of Object.keys(context)) {
-    // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection
-    if (isForbiddenKey(prop)) continue
-
-    const value = context[prop]
-
-    if (typeof value === 'string') {
-      const isTranslationKey = VALID_NAMESPACES.some(ns => value.startsWith(ns))
-      translatedContext[prop] = isTranslationKey ? t(value) : value
-    } else if (typeof value === 'object' && value !== null) {
-      // SECURITY: Recurse into nested objects to sanitize and translate
-      translatedContext[prop] = translateContextKeys(value, t)
-    } else {
-      translatedContext[prop] = value
-    }
-  }
-  return translatedContext
-}
-
 /**
  * Renders global toast notifications with consistent visual taxonomy.
  * Supports pipe-separated translation payload format (e.g. `ui:key|{"context":"value"}`)
@@ -150,7 +150,6 @@ export const translateContextKeys = (context, t) => {
  */
 export const ToastOverlay = () => {
   const { toasts, removeToast } = useGameState()
-  const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
 
   return (
     <div
@@ -163,7 +162,14 @@ export const ToastOverlay = () => {
       <AnimatePresence>
         {toasts.map(toast => {
           const style = TOAST_STYLE_MAP[toast.type] || TOAST_STYLE_MAP.info
-          return <ToastItem key={toast.id} toast={toast} t={t} removeToast={removeToast} style={style} />
+          return (
+            <ToastItem
+              key={toast.id}
+              toast={toast}
+              removeToast={removeToast}
+              style={style}
+            />
+          )
         })}
       </AnimatePresence>
     </div>

@@ -63,7 +63,8 @@ import {
   createAddUnlockAction,
   createUseContrabandAction,
   createClinicHealAction,
-  createClinicEnhanceAction
+  createClinicEnhanceAction,
+  createPirateBroadcastAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -452,6 +453,15 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  /**
+   * Dispatches a pirate broadcast action.
+   * @param {object} payload - The broadcast payload.
+   */
+  const pirateBroadcast = useCallback(
+    payload => dispatch(createPirateBroadcastAction(payload)),
+    []
+  )
+
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -792,7 +802,8 @@ export const GameStateProvider = ({ children }) => {
       advanceQuest,
       useContraband,
       clinicHeal,
-      clinicEnhance
+      clinicEnhance,
+      pirateBroadcast
     }),
     [
       changeScene,
@@ -829,7 +840,8 @@ export const GameStateProvider = ({ children }) => {
       advanceQuest,
       useContraband,
       clinicHeal,
-      clinicEnhance
+      clinicEnhance,
+      pirateBroadcast
     ]
   )
 

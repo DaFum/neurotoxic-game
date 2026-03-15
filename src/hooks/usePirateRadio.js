@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { createPirateBroadcastAction } from '../context/actionCreators'
 import { audioManager } from '../utils/AudioManager'
 
 export const PIRATE_RADIO_CONFIG = {
@@ -13,37 +12,41 @@ export const PIRATE_RADIO_CONFIG = {
 
 export const usePirateRadio = () => {
   const [showPirateRadio, setShowPirateRadio] = useState(false)
-  const { player, band, dispatch } = useGameState()
+  const { player, band, social, pirateBroadcast } = useGameState()
 
   const openPirateRadio = useCallback(() => setShowPirateRadio(true), [])
   const closePirateRadio = useCallback(() => setShowPirateRadio(false), [])
 
-  const canBroadcast = player.money >= PIRATE_RADIO_CONFIG.COST && band.harmony >= PIRATE_RADIO_CONFIG.HARMONY_COST
+  const hasBroadcastedToday = social.lastPirateBroadcastDay === player.day
+
+  const canBroadcast =
+    !hasBroadcastedToday &&
+    player.money >= PIRATE_RADIO_CONFIG.COST &&
+    band.harmony >= PIRATE_RADIO_CONFIG.HARMONY_COST
 
   const triggerBroadcast = useCallback(() => {
     if (!canBroadcast) return
 
     audioManager.playSound('ui_buy')
 
-    dispatch(
-      createPirateBroadcastAction({
-        cost: PIRATE_RADIO_CONFIG.COST,
-        fameGain: PIRATE_RADIO_CONFIG.FAME_GAIN,
-        zealotryGain: PIRATE_RADIO_CONFIG.ZEALOTRY_GAIN,
-        controversyGain: PIRATE_RADIO_CONFIG.CONTROVERSY_GAIN,
-        harmonyCost: PIRATE_RADIO_CONFIG.HARMONY_COST,
-        successToast: {
-          message: 'ui:pirate_radio.success',
-          type: 'success'
-        }
-      })
-    )
+    pirateBroadcast({
+      cost: PIRATE_RADIO_CONFIG.COST,
+      fameGain: PIRATE_RADIO_CONFIG.FAME_GAIN,
+      zealotryGain: PIRATE_RADIO_CONFIG.ZEALOTRY_GAIN,
+      controversyGain: PIRATE_RADIO_CONFIG.CONTROVERSY_GAIN,
+      harmonyCost: PIRATE_RADIO_CONFIG.HARMONY_COST,
+      successToast: {
+        message: 'ui:pirate_radio.success',
+        type: 'success'
+      }
+    })
 
     closePirateRadio()
-  }, [canBroadcast, dispatch, closePirateRadio])
+  }, [canBroadcast, pirateBroadcast, closePirateRadio])
 
   return {
     showPirateRadio,
+    hasBroadcastedToday,
     openPirateRadio,
     closePirateRadio,
     triggerBroadcast,

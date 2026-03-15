@@ -862,5 +862,6 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen"
+  "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "pirate_radio.cooldown": "IM ABKLINGEN"
 }

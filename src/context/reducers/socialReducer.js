@@ -1,6 +1,9 @@
 import { logger } from '../../utils/logger.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
-import { clampPlayerMoney, clampBandHarmony } from '../../utils/gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampBandHarmony
+} from '../../utils/gameStateUtils.js'
 
 /**
  * Handles social update actions
@@ -112,6 +115,17 @@ export const handlePirateBroadcast = (state, payload) => {
 
   const currentMoney = Number(state.player.money) || 0
   const currentHarmony = Number(state.band.harmony) || 0
+
+  if (state.social.lastPirateBroadcastDay === state.player.day) {
+    logger.warn('GameState', 'Pirate broadcast already triggered today')
+    return state
+  }
+
+  if (currentMoney < cost || currentHarmony < harmonyCost) {
+    logger.warn('GameState', 'Insufficient funds or harmony for broadcast')
+    return state
+  }
+
   const currentFame = Number(state.player.fame) || 0
   const currentZealotry = Number(state.social.zealotry) || 0
   const currentControversy = Number(state.social.controversyLevel) || 0
@@ -119,8 +133,14 @@ export const handlePirateBroadcast = (state, payload) => {
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextFame = Math.max(0, currentFame + fameGain)
-  const nextZealotry = Math.max(0, Math.min(100, currentZealotry + zealotryGain))
-  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+  const nextZealotry = Math.max(
+    0,
+    Math.min(100, currentZealotry + zealotryGain)
+  )
+  const nextControversy = Math.max(
+    0,
+    Math.min(100, currentControversy + controversyGain)
+  )
 
   const nextState = {
     ...state,
@@ -136,7 +156,8 @@ export const handlePirateBroadcast = (state, payload) => {
     social: {
       ...state.social,
       zealotry: nextZealotry,
-      controversyLevel: nextControversy
+      controversyLevel: nextControversy,
+      lastPirateBroadcastDay: state.player.day
     }
   }
 
@@ -150,7 +171,6 @@ export const handlePirateBroadcast = (state, payload) => {
     nextState.toasts = [
       ...(state.toasts || []),
       {
-        id: crypto.randomUUID(),
         ...successToast,
         options: {
           ...successToast.options,
