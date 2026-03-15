@@ -27,7 +27,7 @@ export const usePirateRadio = () => {
   const triggerBroadcast = useCallback(() => {
     if (!canBroadcast) return
 
-    audioManager.playSound('ui_buy')
+    audioManager.playSFX('ui_buy')
 
     pirateBroadcast({
       cost: PIRATE_RADIO_CONFIG.COST,
