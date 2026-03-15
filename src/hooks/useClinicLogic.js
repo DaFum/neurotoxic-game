@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import {
@@ -14,6 +14,11 @@ export const useClinicLogic = () => {
 
   const currentVisits = player?.clinicVisits || 0
 
+  const membersMap = useMemo(
+    () => new Map(band?.members?.map(m => [m.id, m]) || []),
+    [band?.members]
+  )
+
   const healCostMoney = calculateClinicCost(
     CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
     currentVisits
@@ -25,7 +30,7 @@ export const useClinicLogic = () => {
 
   const healMember = useCallback(
     memberId => {
-      const member = band?.members?.find(m => m.id === memberId)
+      const member = membersMap.get(memberId)
       if (!member) return
 
       if (player.money < healCostMoney) {
@@ -66,12 +71,12 @@ export const useClinicLogic = () => {
         }
       })
     },
-    [player.money, healCostMoney, band, clinicHeal, addToast, t]
+    [player.money, healCostMoney, membersMap, clinicHeal, addToast, t]
   )
 
   const enhanceMember = useCallback(
     (memberId, trait) => {
-      const member = band?.members?.find(m => m.id === memberId)
+      const member = membersMap.get(memberId)
       if (!member) return
 
       if (member.traits && member.traits.some(tr => tr.id === trait)) return
@@ -99,7 +104,7 @@ export const useClinicLogic = () => {
         }
       })
     },
-    [player.fame, enhanceCostFame, band, clinicEnhance, addToast, t]
+    [player.fame, enhanceCostFame, membersMap, clinicEnhance, addToast, t]
   )
 
   const leaveClinic = useCallback(() => {
