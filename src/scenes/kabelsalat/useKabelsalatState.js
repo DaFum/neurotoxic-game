@@ -102,10 +102,19 @@ export const useKabelsalatState = () => {
       const timer = setTimeout(() => {
         try {
           completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
-        } catch (error) {
-          logger.error('Kabelsalat', 'Failed to complete minigame', error)
-        } finally {
           changeScene(GAME_PHASES.GIG)
+        } catch (error) {
+          import('../../utils/errorHandler.js').then(
+            ({ handleError, StateError }) => {
+              const wrappedError =
+                error instanceof Error ? error : new Error(String(error))
+              handleError(
+                new StateError('Failed to complete minigame', {
+                  originalError: wrappedError
+                })
+              )
+            }
+          )
         }
       }, 3500)
       return () => clearTimeout(timer)

@@ -36,21 +36,24 @@ After travel the band can get an item with specials to use.
 **Feature:** Social & Brand Deal Image Integration
 
 **Description:**
-  - Lore Integration:
-    The Kranker Schrank aesthetic needs to bleed into every interaction. By dynamically generating imagery tailored to specific social media categories (like Viral, Drama, or Tech) and corporate brand alignments (Evil, Corporate, Indie, Sustainable), players receive a more visceral, procedurally generated visual representation of their actions and deals.
-  - State Impact:
-    src/utils/imageGen.js: Added new specific IMG_PROMPTS for social categories and brand alignments.
-    src/components/postGig/SocialPhase.jsx: Integrates image generation into the background of post option buttons (opacity 10, screen blend mode).
-    src/components/postGig/DealsPhase.jsx: Displays the generated brand alignment image side-by-side with the deal text.
-    src/components/postGig/CompletePhase.jsx: Added full background outcome images for the gig success/failure screens.
+
+- Lore Integration:
+  The Kranker Schrank aesthetic needs to bleed into every interaction. By dynamically generating imagery tailored to specific social media categories (like Viral, Drama, or Tech) and corporate brand alignments (Evil, Corporate, Indie, Sustainable), players receive a more visceral, procedurally generated visual representation of their actions and deals.
+- State Impact:
+  src/utils/imageGen.js: Added new specific IMG_PROMPTS for social categories and brand alignments.
+  src/components/postGig/SocialPhase.jsx: Integrates image generation into the background of post option buttons (opacity 10, screen blend mode).
+  src/components/postGig/DealsPhase.jsx: Displays the generated brand alignment image side-by-side with the deal text.
+  src/components/postGig/CompletePhase.jsx: Added full background outcome images for the gig success/failure screens.
 
 ## 2026-03-14 - PIRATE RADIO BROADCAST
+
 **Feature:** Pirate Radio Broadcast System
 
 **Description:**
-  - Lore Integration:
-    The band hacks into local frequencies to broadcast their raw tracks, directly boosting Fame and feeding their cult (Zealotry). However, this incurs a financial cost (bribes/tech), drains Band Harmony due to the stress of illegal activity, and increases Controversy and the risk of police raids.
-  - State Impact:
-    actionTypes.js: Added `PIRATE_BROADCAST`.
-    socialReducer.js: Added `handlePirateBroadcast` to apply bounds-clamped updates to player money, fame, band harmony, zealotry, and controversy.
-    PirateRadioModal.jsx: A new Brutalist UI component added to the Overworld scene, allowing players to view the costs and gains and trigger the broadcast.
+
+- Lore Integration:
+  The band hacks into local frequencies to broadcast their raw tracks, directly boosting Fame and feeding their cult (Zealotry). However, this incurs a financial cost (bribes/tech), drains Band Harmony due to the stress of illegal activity, and increases Controversy and the risk of police raids.
+- State Impact:
+  actionTypes.js: Added `PIRATE_BROADCAST`.
+  socialReducer.js: Added `handlePirateBroadcast` to apply bounds-clamped updates to player money, fame, band harmony, zealotry, and controversy.
+  PirateRadioModal.jsx: A new Brutalist UI component added to the Overworld scene, allowing players to view the costs and gains and trigger the broadcast.

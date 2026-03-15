@@ -64,8 +64,16 @@ describe('Pirate Radio Logic', () => {
 
     const result = handlePirateBroadcast(initialState, payload)
 
-    assert.equal(result.social.zealotry, 100, 'Zealotry should be clamped to 100')
-    assert.equal(result.social.controversyLevel, 100, 'Controversy should be clamped to 100')
+    assert.equal(
+      result.social.zealotry,
+      100,
+      'Zealotry should be clamped to 100'
+    )
+    assert.equal(
+      result.social.controversyLevel,
+      100,
+      'Controversy should be clamped to 100'
+    )
   })
 
   it('should clamp bounds correctly at lower limits', () => {
@@ -94,7 +102,11 @@ describe('Pirate Radio Logic', () => {
     const result = handlePirateBroadcast(initialState, payload)
 
     assert.equal(result.player.money, 0, 'Money should not drop below 0')
-    assert.equal(result.band.harmony, 1, 'Harmony should clamp to 1 instead of 0 based on clampBandHarmony logic')
+    assert.equal(
+      result.band.harmony,
+      1,
+      'Harmony should clamp to 1 instead of 0 based on clampBandHarmony logic'
+    )
   })
 
   it('should handle undefined and non-numeric payload fields gracefully without NaN', () => {
@@ -126,6 +138,10 @@ describe('Pirate Radio Logic', () => {
     assert.equal(result.player.fame, 10, 'Fame should remain numeric')
     assert.equal(result.band.harmony, 50, 'Harmony should remain numeric')
     assert.equal(result.social.zealotry, 10, 'Zealotry should remain numeric')
-    assert.equal(result.social.controversyLevel, 10, 'Controversy should remain numeric')
+    assert.equal(
+      result.social.controversyLevel,
+      10,
+      'Controversy should remain numeric'
+    )
   })
 })

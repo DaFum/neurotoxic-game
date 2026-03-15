@@ -12,10 +12,11 @@ export const PirateRadioModal = ({
   onClose,
   onBroadcast,
   canBroadcast,
+  hasBroadcastedToday,
   config,
   contentClassName = ''
 }) => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
   const { player, band } = useGameState()
 
   return (
@@ -27,8 +28,15 @@ export const PirateRadioModal = ({
         className={`bg-void-black border-2 border-toxic-green p-6 max-w-lg w-full shadow-[0_0_30px_var(--color-toxic-green-20)] flex flex-col gap-6 ${contentClassName}`}
       >
         <div className='flex justify-between items-start border-b-2 border-toxic-green/50 pb-4'>
-          <h2 className='text-3xl font-[Metal_Mania] text-toxic-green glitch-text' data-text={t('ui:pirate_radio.title', { defaultValue: 'PIRATE RADIO BROADCAST' })}>
-            {t('ui:pirate_radio.title', { defaultValue: 'PIRATE RADIO BROADCAST' })}
+          <h2
+            className='text-3xl font-[Metal_Mania] text-toxic-green glitch-text'
+            data-text={t('ui:pirate_radio.title', {
+              defaultValue: 'PIRATE RADIO BROADCAST'
+            })}
+          >
+            {t('ui:pirate_radio.title', {
+              defaultValue: 'PIRATE RADIO BROADCAST'
+            })}
           </h2>
           <button
             type='button'
@@ -43,35 +51,78 @@ export const PirateRadioModal = ({
 
         <div className='text-ash-gray font-mono text-sm leading-relaxed space-y-4 flex-1 min-h-0 overflow-y-auto'>
           <p>
-            {t('ui:pirate_radio.description', { defaultValue: 'Hack local frequencies and broadcast your rawest tracks. The signal will reach the desperate and the disillusioned, boosting your fame and feeding the cult.' })}
+            {t('ui:pirate_radio.description', {
+              defaultValue:
+                'Hack local frequencies and broadcast your rawest tracks. The signal will reach the desperate and the disillusioned, boosting your fame and feeding the cult.'
+            })}
           </p>
 
           <div className='bg-void-black/50 border border-toxic-green/30 p-4 space-y-2'>
             <div className='flex justify-between'>
-              <span>{t('ui:pirate_radio.fame_gain', { defaultValue: 'FAME GAIN' })}</span>
+              <span>
+                {t('ui:pirate_radio.fame_gain', { defaultValue: 'FAME GAIN' })}
+              </span>
               <span className='text-toxic-green'>+{config.FAME_GAIN}</span>
             </div>
             <div className='flex justify-between'>
-              <span>{t('ui:pirate_radio.zealotry_gain', { defaultValue: 'ZEALOTRY GAIN' })}</span>
-              <span className='text-warning-yellow'>+{config.ZEALOTRY_GAIN}</span>
+              <span>
+                {t('ui:pirate_radio.zealotry_gain', {
+                  defaultValue: 'ZEALOTRY GAIN'
+                })}
+              </span>
+              <span className='text-warning-yellow'>
+                +{config.ZEALOTRY_GAIN}
+              </span>
             </div>
             <div className='flex justify-between'>
-              <span>{t('ui:pirate_radio.controversy_gain', { defaultValue: 'CONTROVERSY' })}</span>
+              <span>
+                {t('ui:pirate_radio.controversy_gain', {
+                  defaultValue: 'CONTROVERSY'
+                })}
+              </span>
               <span className='text-blood-red'>+{config.CONTROVERSY_GAIN}</span>
             </div>
           </div>
 
           <div className='bg-void-black/50 border border-blood-red/30 p-4 space-y-2'>
-            <h3 className='text-blood-red font-bold mb-2'>{t('ui:pirate_radio.required_offering', { defaultValue: '[ REQUIRED OFFERING ]' })}</h3>
+            <h3 className='text-blood-red font-bold mb-2'>
+              {t('ui:pirate_radio.required_offering', {
+                defaultValue: '[ REQUIRED OFFERING ]'
+              })}
+            </h3>
             <div className='flex justify-between'>
-              <span>{t('ui:pirate_radio.cost', { defaultValue: 'COST (BRIBES/TECH)' })}</span>
-              <span className={player.money >= config.COST ? 'text-ash-gray' : 'text-blood-red'}>
-                {config.COST} €
+              <span>
+                {t('ui:pirate_radio.cost', {
+                  defaultValue: 'COST (BRIBES/TECH)'
+                })}
+              </span>
+              <span
+                className={
+                  player.money >= config.COST
+                    ? 'text-ash-gray'
+                    : 'text-blood-red'
+                }
+              >
+                {new Intl.NumberFormat(i18n.language || 'en', {
+                  style: 'currency',
+                  currency: 'EUR',
+                  maximumFractionDigits: 0
+                }).format(config.COST)}
               </span>
             </div>
             <div className='flex justify-between'>
-              <span>{t('ui:pirate_radio.harmony_cost', { defaultValue: 'HARMONY DRAIN' })}</span>
-              <span className={band.harmony >= config.HARMONY_COST ? 'text-ash-gray' : 'text-blood-red'}>
+              <span>
+                {t('ui:pirate_radio.harmony_cost', {
+                  defaultValue: 'HARMONY DRAIN'
+                })}
+              </span>
+              <span
+                className={
+                  band.harmony >= config.HARMONY_COST
+                    ? 'text-ash-gray'
+                    : 'text-blood-red'
+                }
+              >
                 -{config.HARMONY_COST}
               </span>
             </div>
@@ -92,7 +143,7 @@ export const PirateRadioModal = ({
             disabled={!canBroadcast}
             className='flex-1'
           >
-            [ {t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]
+            {hasBroadcastedToday ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]` : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
           </GlitchButton>
         </div>
       </motion.div>

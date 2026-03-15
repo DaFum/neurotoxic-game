@@ -1,6 +1,9 @@
 import { logger } from '../../utils/logger.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
-import { clampPlayerMoney, clampBandHarmony } from '../../utils/gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampBandHarmony
+} from '../../utils/gameStateUtils.js'
 
 /**
  * Handles social update actions
@@ -119,8 +122,14 @@ export const handlePirateBroadcast = (state, payload) => {
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextFame = Math.max(0, currentFame + fameGain)
-  const nextZealotry = Math.max(0, Math.min(100, currentZealotry + zealotryGain))
-  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+  const nextZealotry = Math.max(
+    0,
+    Math.min(100, currentZealotry + zealotryGain)
+  )
+  const nextControversy = Math.max(
+    0,
+    Math.min(100, currentControversy + controversyGain)
+  )
 
   const nextState = {
     ...state,
@@ -136,7 +145,8 @@ export const handlePirateBroadcast = (state, payload) => {
     social: {
       ...state.social,
       zealotry: nextZealotry,
-      controversyLevel: nextControversy
+      controversyLevel: nextControversy,
+      lastPirateBroadcastDay: state.player.day
     }
   }
 

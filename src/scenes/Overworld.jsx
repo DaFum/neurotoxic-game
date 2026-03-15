@@ -53,7 +53,15 @@ export const Overworld = () => {
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const { showQuests, openQuests, questsProps } = useQuestsModal()
   const { showStash, openStash, stashProps } = useContrabandStash()
-  const { showPirateRadio, openPirateRadio, closePirateRadio, triggerBroadcast, canBroadcast, PIRATE_RADIO_CONFIG } = usePirateRadio()
+  const {
+    showPirateRadio,
+    openPirateRadio,
+    closePirateRadio,
+    triggerBroadcast,
+    canBroadcast,
+    hasBroadcastedToday,
+    PIRATE_RADIO_CONFIG
+  } = usePirateRadio()
 
   const {
     isTraveling,
@@ -449,6 +457,7 @@ export const Overworld = () => {
           onClose={closePirateRadio}
           onBroadcast={triggerBroadcast}
           canBroadcast={canBroadcast}
+          hasBroadcastedToday={hasBroadcastedToday}
           config={PIRATE_RADIO_CONFIG}
         />
       )}

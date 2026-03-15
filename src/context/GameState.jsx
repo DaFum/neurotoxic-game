@@ -63,7 +63,8 @@ import {
   createAddUnlockAction,
   createUseContrabandAction,
   createClinicHealAction,
-  createClinicEnhanceAction
+  createClinicEnhanceAction,
+  createPirateBroadcastAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -323,6 +324,11 @@ export const GameStateProvider = ({ children }) => {
   const addToast = useCallback((message, type = 'info') => {
     const action = createAddToastAction(message, type)
     dispatch(action)
+
+    // Auto-remove toast after 3 seconds, regardless of UI mounting
+    setTimeout(() => {
+      dispatch(createRemoveToastAction(action.payload.id))
+    }, 3000)
   }, [])
 
   const removeToast = useCallback(id => {
@@ -449,6 +455,15 @@ export const GameStateProvider = ({ children }) => {
    */
   const clinicEnhance = useCallback(
     payload => dispatch(createClinicEnhanceAction(payload)),
+    []
+  )
+
+  /**
+   * Dispatches a pirate broadcast action.
+   * @param {object} payload - The broadcast payload.
+   */
+  const pirateBroadcast = useCallback(
+    payload => dispatch(createPirateBroadcastAction(payload)),
     []
   )
 
@@ -792,7 +807,8 @@ export const GameStateProvider = ({ children }) => {
       advanceQuest,
       useContraband,
       clinicHeal,
-      clinicEnhance
+      clinicEnhance,
+      pirateBroadcast
     }),
     [
       changeScene,
@@ -829,7 +845,8 @@ export const GameStateProvider = ({ children }) => {
       advanceQuest,
       useContraband,
       clinicHeal,
-      clinicEnhance
+      clinicEnhance,
+      pirateBroadcast
     ]
   )
 
