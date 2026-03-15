@@ -76,7 +76,7 @@ describe('CompletePhase', () => {
     )
 
     expect(screen.getByText('+1000 ui:postGig.followers')).toBeTruthy()
-    expect(screen.getByText('Instagram')).toBeTruthy()
+    expect(screen.getByText('ui:postGig.platforms.Instagram')).toBeTruthy()
   })
 
   test('displays negative follower count without plus sign', async () => {
@@ -112,7 +112,7 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(container.textContent).toContain('+500€')
+    expect(container.textContent).toContain('+€500')
   })
 
   test('shows harmony change when present', async () => {

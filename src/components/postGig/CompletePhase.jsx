@@ -17,13 +17,13 @@ export const CompletePhase = ({
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
   const currencyFormatter = useMemo(() => {
-    return new Intl.NumberFormat(i18n.language || 'en', {
+    return new Intl.NumberFormat(i18n?.language || 'en', {
       style: 'currency',
       currency: 'EUR',
       signDisplay: 'always',
       maximumFractionDigits: 0
     })
-  }, [i18n.language])
+  }, [i18n?.language])
 
   const getOutcomeImagePrompt = () => {
     if (result.success) {
