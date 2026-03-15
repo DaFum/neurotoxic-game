@@ -10,14 +10,15 @@ export const handleAddQuest = (state, quest) => {
 }
 
 export const handleCompleteQuest = (state, { questId, randomIdx }) => {
-  const quest = state.activeQuests?.find(q => q.id === questId)
-  if (!quest) return state
+  if (!state.activeQuests) return state
+  const questIndex = state.activeQuests.findIndex(q => q.id === questId)
+  if (questIndex === -1) return state
+
+  const quest = state.activeQuests[questIndex]
   let nextState = { ...state }
 
-  // Remove from activeQuests
-  nextState.activeQuests = (nextState.activeQuests || []).filter(
-    q => q.id !== questId
-  )
+  // Remove from activeQuests using toSpliced
+  nextState.activeQuests = nextState.activeQuests.toSpliced(questIndex, 1)
 
   // Apply generic quest rewards
   let generatedToasts = []
