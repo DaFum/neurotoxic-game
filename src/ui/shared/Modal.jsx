@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
+import { Tooltip } from './Tooltip'
 
 /**
  * Modal - A shared overlay component.
@@ -16,7 +17,7 @@ import { UIFrameCorner } from './Icons'
  * @param {string} [props.title] - Optional title.
  * @param {React.ReactNode} props.children - Content.
  */
-export const Modal = ({ isOpen, onClose, title, children }) => {
+export const Modal = ({ isOpen, onClose, title, children, contentClassName = 'max-h-[90vh] overflow-y-auto' }) => {
   const dialogRef = useRef(null)
   const { t } = useTranslation(['ui'])
 
@@ -58,7 +59,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     >
       <div
         ref={dialogRef}
-        className='relative w-full max-w-md border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group max-h-[90vh] overflow-y-auto'
+        className='relative w-full max-w-md border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group'
         role='dialog'
         aria-modal='true'
         tabIndex={-1}
@@ -69,21 +70,23 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-toxic-green rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
         <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-toxic-green -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
 
-        <button
-          type='button'
-          onClick={onClose}
-          aria-label={t('ui:closeModal')}
-          className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green z-20 group-hover:shadow-[0_0_10px_var(--color-toxic-green-glow)]'
-        >
-          <span
-            aria-hidden='true'
-            className='font-mono text-lg font-bold leading-none select-none'
+        <Tooltip content={t('ui:closeModal')} className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 z-20'>
+          <button
+            type='button'
+            onClick={onClose}
+            aria-label={t('ui:closeModal')}
+            className='w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green group-hover:shadow-[0_0_10px_var(--color-toxic-green-glow)]'
           >
-            ×
-          </span>
-        </button>
+            <span
+              aria-hidden='true'
+              className='font-mono text-lg font-bold leading-none select-none'
+            >
+              ×
+            </span>
+          </button>
+        </Tooltip>
 
-        <div className='relative z-10'>
+        <div className={`relative z-10 ${contentClassName}`}>
           {title && (
             <h2 className='text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center'>
               {title}
@@ -100,5 +103,6 @@ Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string,
-  children: PropTypes.node
+  children: PropTypes.node,
+  contentClassName: PropTypes.string
 }

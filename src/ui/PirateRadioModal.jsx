@@ -36,7 +36,7 @@ export const PirateRadioModal = ({
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className={`bg-void-black border-2 border-toxic-green p-4 sm:p-6 max-w-lg w-[calc(100vw-2rem)] sm:w-full max-h-[85vh] shadow-[0_0_30px_var(--color-toxic-green-20)] flex flex-col gap-4 sm:gap-6 ${contentClassName}`}
+        className={`bg-void-black border-2 border-toxic-green p-4 sm:p-6 max-w-lg w-full max-h-[85vh] shadow-[0_0_30px_var(--color-toxic-green-20)] flex flex-col gap-4 sm:gap-6 ${contentClassName}`}
       >
         <div className='flex justify-between items-start border-b-2 border-toxic-green/50 pb-4'>
           <h2
