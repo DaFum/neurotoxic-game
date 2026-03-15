@@ -622,18 +622,15 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
   // If player has money left, they are not bankrupt.
   if (val > 0) return false
 
-  // If negative balance, instant bankruptcy (debt is fatal)
-  // Note: Current callers clamp to >= 0, but this branch protects against
-  // future callers that may not clamp.
+  // If negative balance, instant bankruptcy (debt is fatal).
+  // This explicitly catches un-clamped inputs.
   if (val < 0) return true
 
-  // If exactly 0, check if we are bleeding money (netIncome < 0)
-  // If netIncome is undefined (legacy), default to 0 (assume break-even/safe)
-  // This restores the "survive at 0 if not losing money" behavior
+  // If exactly 0, check if we are bleeding money (netIncome < 0).
+  // If netIncome is undefined, default to 0 (assume break-even/safe).
   const income = netIncome ?? 0
 
-  // To avoid unfair bankruptcy when breaking even but landing exactly at 0 money,
-  // we check if netIncome strictly implies loss.
+  // Bankrupt if at 0 money and net income was strictly negative.
   return income < 0
 }
 

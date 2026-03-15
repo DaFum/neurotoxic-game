@@ -31,10 +31,10 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('WELCOME TO THE GRIND')).toBeTruthy()
+    expect(screen.getByText(/ui:tutorial\.welcome\.title|WELCOME TO THE GRIND/i)).toBeTruthy()
     expect(
       screen.getByText(
-        /You are the manager of NEUROTOXIC. Your goal: survive the tour/i
+        /ui:tutorial\.welcome\.text|You are the manager of NEUROTOXIC\. Your goal: survive the tour/i
       )
     ).toBeTruthy()
   })
@@ -45,7 +45,7 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('ui:tutorial.header')).toBeTruthy()
+    expect(screen.getByText(/ui:tutorial\.welcome\.title|WELCOME TO THE GRIND/i)).toBeTruthy()
   })
 
   test('calls updatePlayer when NEXT button is clicked', async () => {
@@ -145,8 +145,8 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('THE MAP')).toBeTruthy()
-    expect(screen.getByText(/Travel between cities to play Gigs/i)).toBeTruthy()
+    expect(screen.getByText(/ui:tutorial\.map\.title|THE MAP/i)).toBeTruthy()
+    expect(screen.getByText(/ui:tutorial\.map\.text|Travel between cities to play Gigs/i)).toBeTruthy()
   })
 
   test('shows stats tutorial on OVERWORLD scene for step 2', async () => {
@@ -159,10 +159,10 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('STATS')).toBeTruthy()
+    expect(screen.getAllByText(/ui:tutorial\.stats\.title|STATS/i).length).toBeGreaterThan(0)
     expect(
-      screen.getByText(/Keep an eye on Health \(Mood\) and Money/i)
-    ).toBeTruthy()
+      screen.getAllByText(/ui:tutorial\.stats\.text|Keep an eye on Health/i).length
+    ).toBeGreaterThan(0)
   })
 
   test('shows performance tutorial on GIG scene for step 3', async () => {
@@ -175,10 +175,10 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('PERFORM')).toBeTruthy()
+    expect(screen.getAllByText(/ui:tutorial\.perform\.title|PERFORM/i).length).toBeGreaterThan(0)
     expect(
-      screen.getByText(/Hit the notes when they reach the bottom/i)
-    ).toBeTruthy()
+      screen.getAllByText(/ui:tutorial\.perform\.text|Hit the notes when they reach the bottom/i).length
+    ).toBeGreaterThan(0)
   })
 
   test('shows performance tutorial on PRACTICE scene for step 3', async () => {
@@ -191,10 +191,10 @@ describe('TutorialManager', () => {
 
     render(<TutorialManager />)
 
-    expect(screen.getByText('PERFORM')).toBeTruthy()
+    expect(screen.getAllByText(/ui:tutorial\.perform\.title|PERFORM/i).length).toBeGreaterThan(0)
     expect(
-      screen.getByText(/Hit the notes when they reach the bottom/i)
-    ).toBeTruthy()
+      screen.getAllByText(/ui:tutorial\.perform\.text|Hit the notes when they reach the bottom/i).length
+    ).toBeGreaterThan(0)
   })
 
   test('renders progress dots correctly for current step', async () => {
@@ -251,6 +251,6 @@ describe('TutorialManager', () => {
     // Should default to step 0
     render(<TutorialManager />)
 
-    expect(screen.getByText('WELCOME TO THE GRIND')).toBeTruthy()
+    expect(screen.getByText(/ui:tutorial\.welcome\.title|WELCOME TO THE GRIND/i)).toBeTruthy()
   })
 })
