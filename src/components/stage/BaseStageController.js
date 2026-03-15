@@ -30,15 +30,16 @@ export class BaseStageController {
 
   isBenignDestroyError(error) {
     const message = String(error?.message || error || '')
-    return (
-      message.includes("reading '_cancelResize'") ||
-      message.includes("reading 'destroy'") ||
-      message.includes("reading 'canvas'") ||
-      message.includes('updateLocalTransform')
-    )
+    const benignPhrases = [
+      "reading '_cancelResize'",
+      "reading 'destroy'",
+      "reading 'canvas'",
+      'updateLocalTransform'
+    ]
+    return benignPhrases.some(phrase => message.includes(phrase))
   }
 
-  _teardownResizePlugin(app) {
+  _teardownCancelResize(app) {
     try {
       if (typeof app._cancelResize === 'function') {
         app._cancelResize()
@@ -46,7 +47,9 @@ export class BaseStageController {
     } catch (_e) {
       // Ignore plugin teardown races
     }
+  }
 
+  _teardownResizeTo(app) {
     try {
       if ('resizeTo' in app) {
         app.resizeTo = null
@@ -54,7 +57,9 @@ export class BaseStageController {
     } catch (_e) {
       // Ignore plugin teardown races
     }
+  }
 
+  _teardownQueueResize(app) {
     try {
       if (
         typeof globalThis?.removeEventListener === 'function' &&
@@ -65,6 +70,12 @@ export class BaseStageController {
     } catch (_e) {
       // Ignore plugin teardown races
     }
+  }
+
+  _teardownResizePlugin(app) {
+    this._teardownCancelResize(app)
+    this._teardownResizeTo(app)
+    this._teardownQueueResize(app)
 
     if (typeof app._cancelResize !== 'function') {
       app._cancelResize = () => {}
@@ -89,13 +100,19 @@ export class BaseStageController {
     }
   }
 
-  _fallbackDestroy(app) {
+  _fallbackDestroyStage(app) {
     app.stage?.destroy?.({
       children: true,
       texture: true,
       textureSource: true
     })
+  }
+
+  _fallbackDestroyRenderer(app) {
     app.renderer?.destroy?.({ removeView: true })
+  }
+
+  _fallbackRemoveCanvas(app) {
     let canvas = null
     try {
       canvas = app.canvas
@@ -107,25 +124,138 @@ export class BaseStageController {
     }
   }
 
+  _fallbackDestroy(app) {
+    this._fallbackDestroyStage(app)
+    this._fallbackDestroyRenderer(app)
+    this._fallbackRemoveCanvas(app)
+  }
+
+  _removeAppTicker(app) {
+    app.ticker?.remove?.(this.handleTicker)
+  }
+
+  _handleDestroyError(error) {
+    if (!this.isBenignDestroyError(error)) {
+      logger.warn(this.constructor.name, 'Destroy failed', error)
+    }
+  }
+
   destroyPixiApp(app) {
     if (!app) return
 
     try {
-      app.ticker?.remove?.(this.handleTicker)
+      this._removeAppTicker(app)
 
       // Stop ResizePlugin loops before app teardown to prevent resize-on-destroy races.
       this._teardownResizePlugin(app)
 
       // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
-      const destroyed = this._destroyApp(app)
-      if (destroyed) return
+      if (this._destroyApp(app)) return
 
       // Fallback for partially initialized apps.
       this._fallbackDestroy(app)
     } catch (error) {
-      if (!this.isBenignDestroyError(error)) {
-        logger.warn(this.constructor.name, 'Destroy failed', error)
+      this._handleDestroyError(error)
+    }
+  }
+
+  _checkLifecycleRace(app) {
+    if (this.isDisposed || this.app !== app) {
+      if (this.app === app) this.app = null
+      this.destroyPixiApp(app)
+      return true
+    }
+    return false
+  }
+
+  _setupResizeListeners(container) {
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.handleResize())
+      this.resizeObserver.observe(container)
+    } else {
+      window.addEventListener('resize', this.handleResize)
+      this._usingWindowResize = true
+    }
+  }
+
+  _isLifecycleRaceError(e, app) {
+    if (this.isDisposed || this.app !== app) return true
+    const message = e ? String(e.message || e) : ''
+    return message.includes('updateLocalTransform')
+  }
+
+  _executeDisposeWithFallback(app) {
+    try {
+      this.dispose()
+    } catch (disposeError) {
+      logger.warn(
+        this.constructor.name,
+        'Dispose failed during init',
+        disposeError
+      )
+      this.cleanupHostResizeListeners()
+      if (this.app === app) this.app = null
+      this.destroyPixiApp(app)
+    }
+  }
+
+  _handleInitError(e, app) {
+    const isLifecycleRace = this._isLifecycleRaceError(e, app)
+    const shouldRethrow = !isLifecycleRace
+
+    if (shouldRethrow) {
+      logger.error(this.constructor.name, 'Init Failed', e)
+    }
+
+    // Ensure callers can retry init() after a failed attempt.
+    this.initPromise = null
+    this.isDisposed = true
+
+    // Route teardown through dispose() so subclass cleanup always runs.
+    // This restores the previous contract where init failures trigger full disposal.
+    this._executeDisposeWithFallback(app)
+    this.initPromise = null
+
+    if (shouldRethrow) {
+      throw e
+    }
+  }
+
+  async _performInit(options) {
+    let app = null
+    try {
+      const container = this.containerRef.current
+      if (!container) {
+        this.initPromise = null
+        return
       }
+
+      app = new PIXI.Application()
+      this.app = app
+      await app.init({
+        backgroundAlpha: 0,
+        resizeTo: container,
+        antialias: true,
+        resolution: getOptimalResolution(),
+        autoDensity: true,
+        ...options
+      })
+
+      if (this._checkLifecycleRace(app)) return
+
+      container.appendChild(app.canvas)
+      this.container = new PIXI.Container()
+      app.stage.addChild(this.container)
+
+      // Subclass logic goes here
+      await this.setup()
+
+      if (this._checkLifecycleRace(app)) return
+
+      this._setupResizeListeners(container)
+      app.ticker.add(this.handleTicker)
+    } catch (e) {
+      this._handleInitError(e, app)
     }
   }
 
@@ -133,91 +263,7 @@ export class BaseStageController {
     this.isDisposed = false
     if (this.initPromise) return this.initPromise
 
-    this.initPromise = (async () => {
-      let app = null
-      try {
-        const container = this.containerRef.current
-        if (!container) {
-          this.initPromise = null
-          return
-        }
-
-        app = new PIXI.Application()
-        this.app = app
-        await app.init({
-          backgroundAlpha: 0,
-          resizeTo: container,
-          antialias: true,
-          resolution: getOptimalResolution(),
-          autoDensity: true,
-          ...options
-        })
-
-        if (this.isDisposed || this.app !== app) {
-          if (this.app === app) this.app = null
-          this.destroyPixiApp(app)
-          return
-        }
-
-        container.appendChild(app.canvas)
-        this.container = new PIXI.Container()
-        app.stage.addChild(this.container)
-
-        // Subclass logic goes here
-        await this.setup()
-
-        if (this.isDisposed || this.app !== app) {
-          if (this.app === app) this.app = null
-          this.destroyPixiApp(app)
-          return
-        }
-
-        if (typeof ResizeObserver !== 'undefined') {
-          this.resizeObserver = new ResizeObserver(() => this.handleResize())
-          this.resizeObserver.observe(container)
-        } else {
-          window.addEventListener('resize', this.handleResize)
-          this._usingWindowResize = true
-        }
-        app.ticker.add(this.handleTicker)
-      } catch (e) {
-        const message = String(e?.message || e || '')
-        const isLifecycleRace =
-          this.isDisposed ||
-          this.app !== app ||
-          message.includes('updateLocalTransform')
-        const shouldRethrow = !isLifecycleRace
-
-        if (shouldRethrow) {
-          logger.error(this.constructor.name, 'Init Failed', e)
-        }
-
-        // Ensure callers can retry init() after a failed attempt.
-        this.initPromise = null
-        this.isDisposed = true
-
-        // Route teardown through dispose() so subclass cleanup always runs.
-        // This restores the previous contract where init failures trigger full disposal.
-        try {
-          this.dispose()
-        } catch (disposeError) {
-          logger.warn(
-            this.constructor.name,
-            'Dispose failed during init',
-            disposeError
-          )
-          this.cleanupHostResizeListeners()
-          if (this.app === app) this.app = null
-          this.destroyPixiApp(app)
-        } finally {
-          this.initPromise = null
-        }
-
-        if (shouldRethrow) {
-          throw e
-        }
-      }
-    })()
+    this.initPromise = this._performInit(options)
     return this.initPromise
   }
 
