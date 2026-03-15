@@ -26,8 +26,25 @@ import {
   createPopPendingEventAction,
   createConsumeItemAction,
   createAdvanceDayAction,
+  createAddCooldownAction,
+  createStartTravelMinigameAction,
+  createCompleteTravelMinigameAction,
+  createStartRoadieMinigameAction,
+  createCompleteRoadieMinigameAction,
+  createStartKabelsalatMinigameAction,
+  createCompleteKabelsalatMinigameAction,
   createUnlockTraitAction,
-  createAddUnlockAction
+  createAddVenueBlacklistAction,
+  createAddQuestAction,
+  createAdvanceQuestAction,
+  createCompleteQuestAction,
+  createFailQuestsAction,
+  createAddUnlockAction,
+  createAddContrabandAction,
+  createUseContrabandAction,
+  createClinicHealAction,
+  createClinicEnhanceAction,
+  createPirateBroadcastAction
 } from '../src/context/actionCreators.js'
 import { ActionTypes } from '../src/context/gameReducer.js'
 
@@ -257,6 +274,135 @@ describe('Action Creators', () => {
     })
   })
 
+  describe('createAddCooldownAction', () => {
+    it('creates correct action', () => {
+      const action = createAddCooldownAction('test_event')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.ADD_COOLDOWN,
+        payload: 'test_event'
+      })
+    })
+  })
+
+  describe('createStartTravelMinigameAction', () => {
+    it('creates correct action', () => {
+      const action = createStartTravelMinigameAction('node_1')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.START_TRAVEL_MINIGAME,
+        payload: { targetNodeId: 'node_1' }
+      })
+    })
+  })
+
+  describe('createCompleteTravelMinigameAction', () => {
+    it('creates correct action with all params', () => {
+      const action = createCompleteTravelMinigameAction(10, ['item1'], 0.5, 'contra1', 'inst1')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+        payload: { damageTaken: 10, itemsCollected: ['item1'], rngValue: 0.5, contrabandId: 'contra1', instanceId: 'inst1' }
+      })
+    })
+  })
+
+  describe('createStartRoadieMinigameAction', () => {
+    it('creates correct action', () => {
+      const action = createStartRoadieMinigameAction('gig_1')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.START_ROADIE_MINIGAME,
+        payload: { gigId: 'gig_1' }
+      })
+    })
+  })
+
+  describe('createCompleteRoadieMinigameAction', () => {
+    it('creates correct action', () => {
+      const action = createCompleteRoadieMinigameAction(5)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
+        payload: { equipmentDamage: 5 }
+      })
+    })
+  })
+
+  describe('createStartKabelsalatMinigameAction', () => {
+    it('creates correct action', () => {
+      const action = createStartKabelsalatMinigameAction('gig_1')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.START_KABELSALAT_MINIGAME,
+        payload: { gigId: 'gig_1' }
+      })
+    })
+  })
+
+  describe('createCompleteKabelsalatMinigameAction', () => {
+    it('creates correct action', () => {
+      const results = { score: 100 }
+      const action = createCompleteKabelsalatMinigameAction(results)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
+        payload: { results }
+      })
+    })
+  })
+
+  describe('createAddVenueBlacklistAction', () => {
+    it('creates correct action', () => {
+      const action = createAddVenueBlacklistAction('venue_1')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.ADD_VENUE_BLACKLIST,
+        payload: 'venue_1'
+      })
+    })
+  })
+
+  describe('createAddQuestAction', () => {
+    it('creates correct action', () => {
+      const quest = { id: 'quest_1' }
+      const action = createAddQuestAction(quest)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.ADD_QUEST,
+        payload: quest
+      })
+    })
+  })
+
+  describe('createAdvanceQuestAction', () => {
+    it('creates correct action with defaults', () => {
+      const action = createAdvanceQuestAction('quest_1')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.ADVANCE_QUEST,
+        payload: { questId: 'quest_1', amount: 1, randomIdx: undefined }
+      })
+    })
+
+    it('creates correct action with params', () => {
+      const action = createAdvanceQuestAction('quest_1', 2, 5)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.ADVANCE_QUEST,
+        payload: { questId: 'quest_1', amount: 2, randomIdx: 5 }
+      })
+    })
+  })
+
+  describe('createCompleteQuestAction', () => {
+    it('creates correct action', () => {
+      const action = createCompleteQuestAction('quest_1', 2)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.COMPLETE_QUEST,
+        payload: { questId: 'quest_1', randomIdx: 2 }
+      })
+    })
+  })
+
+  describe('createFailQuestsAction', () => {
+    it('creates correct action', () => {
+      const action = createFailQuestsAction()
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.FAIL_QUESTS
+      })
+    })
+  })
+
   describe('createAddUnlockAction', () => {
     it('creates correct action', () => {
       const action = createAddUnlockAction('test_unlock')
@@ -264,6 +410,69 @@ describe('Action Creators', () => {
         type: ActionTypes.ADD_UNLOCK,
         payload: 'test_unlock'
       })
+    })
+  })
+
+  describe('createAddContrabandAction', () => {
+    it('creates correct action', () => {
+      const action = createAddContrabandAction('smoke')
+      assert.strictEqual(action.type, ActionTypes.ADD_CONTRABAND)
+      assert.strictEqual(action.payload.contrabandId, 'smoke')
+      assert.ok(action.payload.instanceId.length > 0)
+    })
+  })
+
+  describe('createUseContrabandAction', () => {
+    it('creates correct action', () => {
+      const action = createUseContrabandAction('inst1', 'matze')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.USE_CONTRABAND,
+        payload: { instanceId: 'inst1', memberId: 'matze' }
+      })
+    })
+  })
+
+  describe('createClinicHealAction', () => {
+    it('creates correct action', () => {
+      const payload = { memberId: 'matze', type: 'heal', staminaGain: 50, moodGain: 20 }
+      const action = createClinicHealAction(payload)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.CLINIC_HEAL,
+        payload
+      })
+    })
+  })
+
+  describe('createClinicEnhanceAction', () => {
+    it('creates correct action', () => {
+      const payload = { memberId: 'matze', type: 'enhance', trait: 'gear_nerd' }
+      const action = createClinicEnhanceAction(payload)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.CLINIC_ENHANCE,
+        payload
+      })
+    })
+  })
+
+  describe('createPirateBroadcastAction', () => {
+    it('creates correct action', () => {
+      const payload = { cost: 100, fameGain: 50, zealotryGain: 20, controversyGain: 10, harmonyCost: 5 }
+      const action = createPirateBroadcastAction(payload)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.PIRATE_BROADCAST,
+        payload: { ...payload, successToast: undefined }
+      })
+    })
+
+    it('creates correct action with successToast', () => {
+      const payload = { cost: 100, fameGain: 50, zealotryGain: 20, controversyGain: 10, harmonyCost: 5, successToast: { message: 'Success', type: 'success' } }
+      const action = createPirateBroadcastAction(payload)
+      assert.strictEqual(action.type, ActionTypes.PIRATE_BROADCAST)
+      assert.strictEqual(action.payload.cost, 100)
+      assert.strictEqual(action.payload.fameGain, 50)
+      assert.strictEqual(action.payload.successToast.message, 'Success')
+      assert.strictEqual(action.payload.successToast.type, 'success')
+      assert.ok(action.payload.successToast.id.length > 0)
     })
   })
 })
