@@ -324,11 +324,6 @@ export const GameStateProvider = ({ children }) => {
   const addToast = useCallback((message, type = 'info') => {
     const action = createAddToastAction(message, type)
     dispatch(action)
-
-    // Auto-remove toast after 3 seconds, regardless of UI mounting
-    setTimeout(() => {
-      dispatch(createRemoveToastAction(action.payload.id))
-    }, 3000)
   }, [])
 
   const removeToast = useCallback(id => {

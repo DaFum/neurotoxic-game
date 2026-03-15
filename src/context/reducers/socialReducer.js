@@ -116,6 +116,11 @@ export const handlePirateBroadcast = (state, payload) => {
   const currentMoney = Number(state.player.money) || 0
   const currentHarmony = Number(state.band.harmony) || 0
 
+  if (state.social.lastPirateBroadcastDay === state.player.day) {
+    logger.warn('GameState', 'Pirate broadcast already triggered today')
+    return state
+  }
+
   if (currentMoney < cost || currentHarmony < harmonyCost) {
     logger.warn('GameState', 'Insufficient funds or harmony for broadcast')
     return state

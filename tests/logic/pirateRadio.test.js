@@ -7,14 +7,16 @@ describe('Pirate Radio Logic', () => {
     const initialState = {
       player: {
         money: 1000,
-        fame: 50
+        fame: 50,
+        day: 5
       },
       band: {
         harmony: 80
       },
       social: {
         zealotry: 10,
-        controversyLevel: 20
+        controversyLevel: 20,
+        lastPirateBroadcastDay: 1
       },
       toasts: []
     }
@@ -43,14 +45,16 @@ describe('Pirate Radio Logic', () => {
     const initialState = {
       player: {
         money: 100,
-        fame: 0
+        fame: 0,
+        day: 5
       },
       band: {
         harmony: 100
       },
       social: {
         zealotry: 95,
-        controversyLevel: 90
+        controversyLevel: 90,
+        lastPirateBroadcastDay: 1
       }
     }
 

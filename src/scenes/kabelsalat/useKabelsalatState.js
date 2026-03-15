@@ -91,10 +91,9 @@ export const useKabelsalatState = () => {
       const timer = setTimeout(() => {
         try {
           completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
-          changeScene(GAME_PHASES.GIG)
         } catch (error) {
-          import('../../utils/errorHandler.js').then(
-            ({ handleError, StateError }) => {
+          import('../../utils/errorHandler.js')
+            .then(({ handleError, StateError }) => {
               const wrappedError =
                 error instanceof Error ? error : new Error(String(error))
               handleError(
@@ -102,9 +101,19 @@ export const useKabelsalatState = () => {
                   originalError: wrappedError
                 })
               )
-              changeScene(GAME_PHASES.GIG)
-            }
-          )
+            })
+            .catch(err => {
+              const fallback = err instanceof Error ? err : new Error(String(err))
+              try {
+                changeScene(GAME_PHASES.GIG)
+              } catch (_) {}
+              try {
+                const fallbackStateError = new Error('Failed to complete minigame (import error)')
+                console.error(fallback, fallbackStateError)
+              } catch (_) {}
+            })
+        } finally {
+          changeScene(GAME_PHASES.GIG)
         }
       }, 2500)
       return () => clearTimeout(timer)
@@ -117,10 +126,9 @@ export const useKabelsalatState = () => {
       const timer = setTimeout(() => {
         try {
           completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
-          changeScene(GAME_PHASES.GIG)
         } catch (error) {
-          import('../../utils/errorHandler.js').then(
-            ({ handleError, StateError }) => {
+          import('../../utils/errorHandler.js')
+            .then(({ handleError, StateError }) => {
               const wrappedError =
                 error instanceof Error ? error : new Error(String(error))
               handleError(
@@ -128,9 +136,19 @@ export const useKabelsalatState = () => {
                   originalError: wrappedError
                 })
               )
-              changeScene(GAME_PHASES.GIG)
-            }
-          )
+            })
+            .catch(err => {
+              const fallback = err instanceof Error ? err : new Error(String(err))
+              try {
+                changeScene(GAME_PHASES.GIG)
+              } catch (_) {}
+              try {
+                const fallbackStateError = new Error('Failed to complete minigame (import error)')
+                console.error(fallback, fallbackStateError)
+              } catch (_) {}
+            })
+        } finally {
+          changeScene(GAME_PHASES.GIG)
         }
       }, 3500)
       return () => clearTimeout(timer)

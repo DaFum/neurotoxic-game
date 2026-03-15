@@ -77,8 +77,15 @@ const renderToastMessage = (toast, t) => {
   return t(toast.message, toast.options || {})
 }
 
-const ToastItem = memo(({ toast, style }) => {
+const ToastItem = memo(({ toast, removeToast, style }) => {
   const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      removeToast(toast.id)
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [toast.id, removeToast])
 
   return (
     <motion.div
@@ -142,7 +149,7 @@ const TOAST_STYLE_MAP = {
  * @returns {JSX.Element} Toast stack overlay.
  */
 export const ToastOverlay = () => {
-  const { toasts } = useGameState()
+  const { toasts, removeToast } = useGameState()
 
   return (
     <div
@@ -155,7 +162,14 @@ export const ToastOverlay = () => {
       <AnimatePresence>
         {toasts.map(toast => {
           const style = TOAST_STYLE_MAP[toast.type] || TOAST_STYLE_MAP.info
-          return <ToastItem key={toast.id} toast={toast} style={style} />
+          return (
+            <ToastItem
+              key={toast.id}
+              toast={toast}
+              removeToast={removeToast}
+              style={style}
+            />
+          )
         })}
       </AnimatePresence>
     </div>
