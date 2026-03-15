@@ -20,7 +20,8 @@ const mockLogger = {
 }
 
 vi.mock('../src/utils/logger.js', () => ({
-  logger: mockLogger
+  logger: mockLogger,
+  LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
 
 const { ToastOverlay, translateContextKeys } =

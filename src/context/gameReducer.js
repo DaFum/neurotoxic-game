@@ -16,7 +16,8 @@ import {
 } from './reducers/bandReducer.js'
 import {
   handleUpdateSocial,
-  handleAddVenueBlacklist
+  handleAddVenueBlacklist,
+  handlePirateBroadcast
 } from './reducers/socialReducer.js'
 import {
   handleSetGig,
@@ -159,6 +160,9 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.UNLOCK_TRAIT:
       return handleUnlockTrait(state, action.payload)
+
+    case ActionTypes.PIRATE_BROADCAST:
+      return handlePirateBroadcast(state, action.payload)
 
     case ActionTypes.ADD_VENUE_BLACKLIST:
       return handleAddVenueBlacklist(state, action.payload)

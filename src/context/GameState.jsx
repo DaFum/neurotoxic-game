@@ -323,9 +323,10 @@ export const GameStateProvider = ({ children }) => {
   const addToast = useCallback((message, type = 'info') => {
     const action = createAddToastAction(message, type)
     dispatch(action)
-    setTimeout(() => {
-      dispatch(createRemoveToastAction(action.payload.id))
-    }, 3000)
+  }, [])
+
+  const removeToast = useCallback(id => {
+    dispatch(createRemoveToastAction(id))
   }, [])
 
   /**
@@ -769,6 +770,7 @@ export const GameStateProvider = ({ children }) => {
       triggerEvent,
       resolveEvent,
       addToast,
+      removeToast,
       setGigModifiers,
       // hasUpgrade is intentionally removed from dispatchValue to avoid stale reads
       consumeItem,
@@ -806,6 +808,7 @@ export const GameStateProvider = ({ children }) => {
       triggerEvent,
       resolveEvent,
       addToast,
+      removeToast,
       setGigModifiers,
       consumeItem,
       advanceDay,

@@ -6,12 +6,14 @@ import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useBandHQModal } from '../hooks/useBandHQModal'
 import { useQuestsModal } from '../hooks/useQuestsModal'
 import { useContrabandStash } from '../hooks/useContrabandStash'
+import { usePirateRadio } from '../hooks/usePirateRadio'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
 import { BandHQ } from '../ui/BandHQ'
 import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'
+import { PirateRadioModal } from '../ui/PirateRadioModal'
 import { GlitchButton } from '../ui/GlitchButton'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
@@ -51,6 +53,7 @@ export const Overworld = () => {
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const { showQuests, openQuests, questsProps } = useQuestsModal()
   const { showStash, openStash, stashProps } = useContrabandStash()
+  const { showPirateRadio, openPirateRadio, closePirateRadio, triggerBroadcast, canBroadcast, PIRATE_RADIO_CONFIG } = usePirateRadio()
 
   const {
     isTraveling,
@@ -311,6 +314,14 @@ export const Overworld = () => {
           [{t('ui:quests.button')}]
         </GlitchButton>
         <GlitchButton
+          onClick={openPirateRadio}
+          disabled={isTraveling}
+          variant='warning'
+          size='sm'
+        >
+          [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}]
+        </GlitchButton>
+        <GlitchButton
           onClick={openHQ}
           disabled={isTraveling}
           variant='primary'
@@ -433,6 +444,14 @@ export const Overworld = () => {
       {showHQ && <BandHQ {...bandHQProps} />}
       {showQuests && <QuestsModal {...questsProps} />}
       {showStash && <ContrabandStash {...stashProps} />}
+      {showPirateRadio && (
+        <PirateRadioModal
+          onClose={closePirateRadio}
+          onBroadcast={triggerBroadcast}
+          canBroadcast={canBroadcast}
+          config={PIRATE_RADIO_CONFIG}
+        />
+      )}
     </div>
   )
 }

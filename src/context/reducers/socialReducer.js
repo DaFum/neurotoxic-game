@@ -1,5 +1,6 @@
 import { logger } from '../../utils/logger.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
+import { clampPlayerMoney, clampBandHarmony } from '../../utils/gameStateUtils.js'
 
 /**
  * Handles social update actions
@@ -93,5 +94,75 @@ export const handleAddVenueBlacklist = (state, venueId) => {
       }
     ]
   }
+  return nextState
+}
+
+export const handlePirateBroadcast = (state, payload) => {
+  if (!payload || typeof payload !== 'object') {
+    logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')
+    return state
+  }
+
+  const cost = Number(payload.cost) || 0
+  const fameGain = Number(payload.fameGain) || 0
+  const zealotryGain = Number(payload.zealotryGain) || 0
+  const controversyGain = Number(payload.controversyGain) || 0
+  const harmonyCost = Number(payload.harmonyCost) || 0
+  const successToast = payload.successToast
+
+  const currentMoney = Number(state.player.money) || 0
+  const currentHarmony = Number(state.band.harmony) || 0
+  const currentFame = Number(state.player.fame) || 0
+  const currentZealotry = Number(state.social.zealotry) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
+
+  const nextMoney = clampPlayerMoney(currentMoney - cost)
+  const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
+  const nextFame = Math.max(0, currentFame + fameGain)
+  const nextZealotry = Math.max(0, Math.min(100, currentZealotry + zealotryGain))
+  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+
+  const nextState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney,
+      fame: nextFame
+    },
+    band: {
+      ...state.band,
+      harmony: nextHarmony
+    },
+    social: {
+      ...state.social,
+      zealotry: nextZealotry,
+      controversyLevel: nextControversy
+    }
+  }
+
+  if (successToast) {
+    const deltaFame = nextFame - currentFame
+    const deltaZealotry = nextZealotry - currentZealotry
+    const deltaControversy = nextControversy - currentControversy
+    const deltaHarmony = nextHarmony - currentHarmony
+    const actualCost = currentMoney - nextMoney
+
+    nextState.toasts = [
+      ...(state.toasts || []),
+      {
+        id: crypto.randomUUID(),
+        ...successToast,
+        options: {
+          ...successToast.options,
+          deltaFame,
+          deltaZealotry,
+          deltaControversy,
+          deltaHarmony,
+          cost: actualCost
+        }
+      }
+    ]
+  }
+
   return nextState
 }
