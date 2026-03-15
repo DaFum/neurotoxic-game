@@ -289,10 +289,14 @@ export const MainMenu = () => {
           aria-label={t('ui:identity_required')}
         >
           <div className='flex flex-col gap-4'>
-            <p className='text-ash-gray font-mono text-sm'>
+            <label
+              htmlFor='playerName'
+              className='text-ash-gray font-mono text-sm cursor-pointer'
+            >
               {t('ui:enter_alias_desc')}
-            </p>
+            </label>
             <input
+              id='playerName'
               ref={inputRef}
               type='text'
               value={playerNameInput}
