@@ -39,6 +39,7 @@ export class MapGenerator {
     const map = {
       layers: [],
       nodes: {}, // Map ID to Node Object
+      nodeList: [], // Pre-allocated list for performance and GC reduction
       connections: [] // List of [fromId, toId]
     }
 
@@ -58,6 +59,7 @@ export class MapGenerator {
     }
     map.layers.push([startNode])
     map.nodes[startNode.id] = startNode
+    map.nodeList.push(startNode)
 
     // Filter venues by difficulty for progression
     const easyVenues = []
@@ -119,14 +121,14 @@ export class MapGenerator {
     // but technically the method `resolveOverlaps` mutates its input.
     // For strict purity, we'd return new nodes, but `generateMap` owns `map`.
     // We will keep it mutating the *internal* map structure being built.
-    this.resolveOverlaps(map.nodes)
+    this.resolveOverlaps(map.nodeList)
 
     return map
   }
 
   /**
    * Generates intermediate layers of the map.
-   * @param {{layers: object[][], nodes: Object<string, object>, connections: object[]}} map - The map object.
+   * @param {{layers: object[][], nodes: Object<string, object>, nodeList: object[], connections: object[]}} map - The map object.
    * @param {number} depth - The total depth of the map.
    * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
    */
@@ -210,6 +212,7 @@ export class MapGenerator {
         }
         layerNodes.push(node)
         map.nodes[node.id] = node
+        map.nodeList.push(node)
       }
       map.layers.push(layerNodes)
     }
@@ -263,7 +266,6 @@ export class MapGenerator {
     // Finale Layer
     const finaleVenue =
       ALL_VENUES.find(v => v.id === 'leipzig_arena') || hardVenues[0]
-    // If we fell back to hardVenues[0], ensure it's recorded (though map is done)
 
     const endNode = {
       id: `node_${depth}_0`,
@@ -274,6 +276,7 @@ export class MapGenerator {
     }
     map.layers.push([endNode])
     map.nodes[endNode.id] = endNode
+    map.nodeList.push(endNode)
 
     // Connect last layer to finale
     map.layers[depth - 1].forEach(node => {
@@ -288,7 +291,7 @@ export class MapGenerator {
   _assignInitialCoordinates(map) {
     // Assign initial coordinates with jitter and resolve overlaps
     // Increased jitter to +/- 5 to help initial separation
-    Object.values(map.nodes).forEach(node => {
+    map.nodeList.forEach(node => {
       const baseX = node.venue?.x ?? 50
       const baseY = node.venue?.y ?? 50
       node.x = baseX + (this.random() * 10 - 5)
@@ -329,14 +332,13 @@ export class MapGenerator {
 
   /**
    * Iteratively pushes overlapping nodes apart to ensure visibility.
-   * Note: This method mutates the node objects in the provided map.
-   * @param {object} nodes - The nodes map.
+   * Note: This method mutates the node objects in the provided list.
+   * @param {object[]} nodeList - The list of nodes.
    */
-  resolveOverlaps(nodes) {
+  resolveOverlaps(nodeList) {
     const iterations = 150 // Increased iterations
     const minDistance = 6 // % of map width/height (approx 2x pin size)
     const minDistanceSq = minDistance * minDistance
-    const nodeList = Object.values(nodes)
     // Reduce movement strength over time to stabilize
     let strength = 0.5
 
