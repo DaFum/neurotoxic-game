@@ -6,6 +6,12 @@ import { GAME_PHASES } from '../context/gameConstants'
 const TUTORIAL_STEPS = [0, 1, 2, 3]
 const TOTAL_STEPS = TUTORIAL_STEPS.length
 
+const getStepColorClass = (stepId, currentStep) => {
+  if (stepId === currentStep) return 'bg-toxic-green'
+  if (stepId < currentStep) return 'bg-toxic-green/40'
+  return 'bg-ash-gray/30'
+}
+
 export const TutorialManager = () => {
   const { t } = useTranslation()
   const { player, updatePlayer, currentScene, settings, updateSettings } =
@@ -119,13 +125,7 @@ export const TutorialManager = () => {
               {TUTORIAL_STEPS.map(stepId => (
                 <div
                   key={stepId}
-                  className={`w-2 h-2 transition-colors ${
-                    stepId === step
-                      ? 'bg-toxic-green'
-                      : stepId < step
-                        ? 'bg-toxic-green/40'
-                        : 'bg-ash-gray/30'
-                  }`}
+                  className={`w-2 h-2 transition-colors ${getStepColorClass(stepId, step)}`}
                 />
               ))}
             </div>
