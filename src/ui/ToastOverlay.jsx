@@ -3,9 +3,42 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../utils/logger.js'
 import { isForbiddenKey } from '../utils/gameStateUtils.js'
-import { useEffect } from 'react'
+import { useEffect, memo } from 'react'
 
-const ToastItem = ({ toast, t, removeToast, style }) => {
+const renderToastMessage = (toast, t) => {
+  if (toast.messageKey) {
+    return t(toast.messageKey, {
+      ...(toast.options || {}),
+      defaultValue: toast.message
+    })
+  }
+
+  if (!toast.message || !toast.message.startsWith('ui:')) {
+    return toast.message
+  }
+
+  if (toast.message.includes('|')) {
+    const firstPipeIdx = toast.message.indexOf('|')
+    const key = toast.message.slice(0, firstPipeIdx)
+    const contextStr = toast.message.slice(firstPipeIdx + 1)
+    try {
+      const rawContext = JSON.parse(contextStr)
+      const context = translateContextKeys(rawContext, t)
+      return t(key, context)
+    } catch (_e) {
+      logger.error('UI', 'Toast message JSON parse error', {
+        error: _e,
+        contextStr,
+        toastMessage: toast.message
+      })
+      return t(key)
+    }
+  }
+
+  return t(toast.message)
+}
+
+const ToastItem = memo(({ toast, t, removeToast, style }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       removeToast(toast.id)
@@ -35,49 +68,14 @@ const ToastItem = ({ toast, t, removeToast, style }) => {
         <p
           className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
         >
-          {toast.messageKey
-            ? t(toast.messageKey, {
-                ...(toast.options || {}),
-                defaultValue: toast.message
-              })
-            : toast.message && toast.message.startsWith('ui:')
-              ? (() => {
-                  if (toast.message.includes('|')) {
-                    const firstPipeIdx = toast.message.indexOf('|')
-                    const key = toast.message.slice(0, firstPipeIdx)
-                    const contextStr = toast.message.slice(
-                      firstPipeIdx + 1
-                    )
-                    try {
-                      const rawContext = JSON.parse(contextStr)
-                      const context = translateContextKeys(
-                        rawContext,
-                        t
-                      )
-                      return t(key, context)
-                    } catch (_e) {
-                      logger.error(
-                        'UI',
-                        'Toast message JSON parse error',
-                        {
-                          error: _e,
-                          contextStr,
-                          toastMessage: toast.message
-                        }
-                      )
-                      return t(key)
-                    }
-                  } else {
-                    return t(toast.message)
-                  }
-                })()
-              : toast.message}
+          {renderToastMessage(toast, t)}
         </p>
       </div>
       <div className={`h-[2px] w-full ${style.border} border-t`} />
     </motion.div>
   )
-}
+})
+ToastItem.displayName = 'ToastItem'
 
 
 const TOAST_STYLE_MAP = {

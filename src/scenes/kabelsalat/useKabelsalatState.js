@@ -102,9 +102,9 @@ export const useKabelsalatState = () => {
       const timer = setTimeout(() => {
         try {
           completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
-          changeScene(GAME_PHASES.GIG)
         } catch (error) {
           logger.error('Kabelsalat', 'Failed to complete minigame', error)
+        } finally {
           changeScene(GAME_PHASES.GIG)
         }
       }, 3500)
