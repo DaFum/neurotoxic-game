@@ -2,51 +2,41 @@ export const generateEffectText = (delta, t) => {
   if (!delta) return ''
   const lines = []
 
+  const addStatLine = (value, tKey, defaultValue, unit = '') => {
+    if (typeof value === 'number' && value !== 0) {
+      lines.push(
+        `${t(tKey, { defaultValue })}: ${value > 0 ? '+' : ''}${value}${unit}`
+      )
+    }
+  }
+
   // Player
   if (delta.player) {
-    if (typeof delta.player.money === 'number' && delta.player.money !== 0) {
-      lines.push(
-        `${t('ui:stats.money', { defaultValue: 'Money' })}: ${
-          delta.player.money > 0 ? '+' : ''
-        }${delta.player.money}€`
-      )
-    }
-    if (typeof delta.player.fame === 'number' && delta.player.fame !== 0) {
-      lines.push(
-        `${t('ui:stats.fame', { defaultValue: 'Fame' })}: ${
-          delta.player.fame > 0 ? '+' : ''
-        }${delta.player.fame}`
-      )
-    }
-    if (typeof delta.player.time === 'number' && delta.player.time !== 0) {
-      lines.push(
-        `${t('ui:stats.time', { defaultValue: 'Time' })}: ${
-          delta.player.time > 0 ? '+' : ''
-        }${delta.player.time}h`
-      )
+    addStatLine(delta.player.money, 'ui:stats.money', 'Money', '€')
+    addStatLine(delta.player.fame, 'ui:stats.fame', 'Fame')
+    addStatLine(delta.player.time, 'ui:stats.time', 'Time', 'h')
+
+    if (delta.player.van) {
+      addStatLine(delta.player.van.fuel, 'ui:stats.fuel', 'Fuel')
+      addStatLine(delta.player.van.condition, 'ui:stats.van_condition', 'Van Condition')
     }
   }
 
   // Social
   if (delta.social) {
-    if (typeof delta.social.controversyLevel === 'number' && delta.social.controversyLevel !== 0) {
-      lines.push(
-        `${t('ui:stats.controversy', { defaultValue: 'Controversy' })}: ${
-          delta.social.controversyLevel > 0 ? '+' : ''
-        }${delta.social.controversyLevel}`
-      )
-    }
+    addStatLine(delta.social.controversyLevel, 'ui:stats.controversy', 'Controversy')
+    addStatLine(delta.social.viral, 'ui:stats.viral', 'Viral')
+    addStatLine(delta.social.loyalty, 'ui:stats.loyalty', 'Loyalty')
   }
+
+  // Score
+  addStatLine(delta.score, 'ui:stats.score', 'Score')
 
   // Band
   if (delta.band) {
-    if (typeof delta.band.harmony === 'number' && delta.band.harmony !== 0) {
-      lines.push(
-        `${t('ui:stats.harmony', { defaultValue: 'Harmony' })}: ${
-          delta.band.harmony > 0 ? '+' : ''
-        }${delta.band.harmony}`
-      )
-    }
+    addStatLine(delta.band.harmony, 'ui:stats.harmony', 'Harmony')
+    addStatLine(delta.band.luck, 'ui:stats.luck', 'Luck')
+    addStatLine(delta.band.skill, 'ui:stats.skill', 'Skill')
 
     if (delta.band.membersDelta) {
       let totalMoodChange = 0
@@ -70,20 +60,8 @@ export const generateEffectText = (delta, t) => {
         }
       }
 
-      if (totalMoodChange !== 0) {
-        lines.push(
-          `${t('ui:stats.mood', { defaultValue: 'Mood' })}: ${
-            totalMoodChange > 0 ? '+' : ''
-          }${totalMoodChange}`
-        )
-      }
-      if (totalStaminaChange !== 0) {
-        lines.push(
-          `${t('ui:stats.stamina', { defaultValue: 'Stamina' })}: ${
-            totalStaminaChange > 0 ? '+' : ''
-          }${totalStaminaChange}`
-        )
-      }
+      addStatLine(totalMoodChange, 'ui:stats.mood', 'Mood')
+      addStatLine(totalStaminaChange, 'ui:stats.stamina', 'Stamina')
     }
   }
 
