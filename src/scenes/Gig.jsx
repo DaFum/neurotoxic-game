@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspense } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  lazy,
+  Suspense
+} from 'react'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
@@ -6,7 +14,9 @@ import { useGigEffects } from '../hooks/useGigEffects'
 import { useGigInput } from '../hooks/useGigInput'
 import { GigHUD } from '../components/GigHUD'
 
-const PixiStage = lazy(() => import('../components/PixiStage').then(m => ({ default: m.PixiStage })))
+const PixiStage = lazy(() =>
+  import('../components/PixiStage').then(m => ({ default: m.PixiStage }))
+)
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen.js'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -279,7 +289,13 @@ export const Gig = () => {
       </div>
 
       {/* Layer 2: Pixi Canvas (Notes) */}
-      <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-void-black text-ash-gray text-xl">{t('ui:loading_stage', { defaultValue: 'Loading Stage...' })}</div>}>
+      <Suspense
+        fallback={
+          <div className='w-full h-full flex items-center justify-center bg-void-black text-ash-gray text-xl'>
+            {t('ui:loading_stage', { defaultValue: 'Loading Stage...' })}
+          </div>
+        }
+      >
         <PixiStage gameStateRef={gameStateRef} update={update} />
       </Suspense>
 

@@ -379,7 +379,11 @@ export const createAddContrabandAction = contrabandId => ({
  * @param {string} [memberId] - Optional. The ID of the band member to apply the effect to.
  * @returns {Object} Action object
  */
-export const createUseContrabandAction = (instanceId, contrabandId, memberId) => ({
+export const createUseContrabandAction = (
+  instanceId,
+  contrabandId,
+  memberId
+) => ({
   type: ActionTypes.USE_CONTRABAND,
   payload: { instanceId, contrabandId, memberId }
 })
