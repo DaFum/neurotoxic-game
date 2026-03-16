@@ -13,5 +13,65 @@
     "name": "Cyber-Lunge",
     "desc": "Deutlich erhöhte Ausdauerregeneration.",
     "unlockHint": "Opfere Ruhm in der Leeren-Klinik."
+  },
+  "perfektionist": {
+    "name": "Perfektionist",
+    "desc": "+15% Score if >85% Hit Rate",
+    "unlockHint": "Hit 100% Accuracy in a single gig."
+  },
+  "gearNerd": {
+    "name": "Gear Nerd",
+    "desc": "-20% Equipment Costs",
+    "unlockHint": "Purchase 5 different gear items."
+  },
+  "virtuoso": {
+    "name": "Virtuoso",
+    "desc": "+10% Hit Window",
+    "unlockHint": "Complete a solo without missing a note."
+  },
+  "techWizard": {
+    "name": "Tech Wizard",
+    "desc": "+10% Score on Technical Songs",
+    "unlockHint": "Get 100% Accuracy on a Technical song."
+  },
+  "partyAnimal": {
+    "name": "Party Animal",
+    "desc": "Random hangover (-Stamina) but +Mood when drinking",
+    "unlockHint": "Buy the beer fridge and drain it."
+  },
+  "blastMachine": {
+    "name": "Blast Beat Machine",
+    "desc": "+25% Score on fast sections",
+    "unlockHint": "Maintain a 50+ combo during a fast section (>160 BPM)."
+  },
+  "showman": {
+    "name": "Showman",
+    "desc": "+20% Virality Bonus",
+    "unlockHint": "Perform 3 Stage Dives successfully."
+  },
+  "clumsy": {
+    "name": "Clumsy",
+    "desc": "Increased failure chance on physical stunts",
+    "unlockHint": "Requires 2 failed stage dives."
+  },
+  "bandleader": {
+    "name": "Bandleader",
+    "desc": "+50% chance to solve conflicts",
+    "unlockHint": "Successfully resolve 3 band conflicts."
+  },
+  "socialManager": {
+    "name": "Social Nerd",
+    "desc": "+15% Viral Chance",
+    "unlockHint": "Reach 1000 followers on any platform."
+  },
+  "roadWarrior": {
+    "name": "Road Warrior",
+    "desc": "-15% Fuel Consumption",
+    "unlockHint": "Travel 5000km in total."
+  },
+  "melodicGenius": {
+    "name": "Melodic Genius",
+    "desc": "+10% Max Combo on Slow Songs",
+    "unlockHint": "Maintain a 30+ combo in a slow song (<120 BPM)."
   }
 }
