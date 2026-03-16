@@ -11,7 +11,11 @@ vi.mock('../src/ui/shared/Icons', () => ({
 }))
 
 vi.mock('../src/context/GameState', () => ({
-  useGameState: () => ({ player: { money: 100 }, band: {} }),
+  useGameState: () => ({
+    player: { money: 100 },
+    band: { members: [{ id: 'm1', skills: {}, traits: [] }] },
+    activeEvent: { id: 'test_event', context: {} }
+  }),
   GameStateProvider: ({ children }) => <div>{children}</div>
 }))
 
@@ -38,24 +42,42 @@ test('EventModal renders event details and handles click flow', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
-    label: 'Option 1'
-  }))
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option 1',
+      _precomputedResult: expect.any(Object)
+    })
+  )
 })
 
-test('EventModal handles keyboard selection', () => {
+test('EventModal handles keyboard selection', async () => {
   const mockEvent = {
     title: 'Test Event',
     description: 'This is a test event.',
-    options: [{ label: 'Option 1' }, { label: 'Option 2' }]
+    options: [
+      { label: 'Option 1' },
+      { label: 'Option 2', outcomeText: 'Option 2 Outcome' }
+    ]
   }
   const handleSelect = vi.fn()
 
   render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
 
   fireEvent.keyDown(window, { key: '2' })
-  // In the keyboard listener it doesn't set outcome but rather calls onOptionSelect immediately or action
-  expect(handleSelect).toHaveBeenCalledWith(mockEvent.options[1])
+
+  await waitFor(() => {
+    expect(screen.getByText('Option 2 Outcome')).toBeInTheDocument()
+  })
+
+  const continueButton = screen.getByText(/CONTINUE/i)
+  fireEvent.click(continueButton)
+
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option 2',
+      _precomputedResult: expect.any(Object)
+    })
+  )
 })
 
 test('EventModal handles option with direct action callback', () => {

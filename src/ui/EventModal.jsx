@@ -21,9 +21,32 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
 
-  const gameState = useGameState() || {}
+  const gameState = useGameState()
+  if (!gameState) {
+    throw new Error('EventModal must be used within GameStateProvider')
+  }
 
   const [outcome, setOutcome] = useState(null)
+
+  const handleOptionSelect = option => {
+    if (option.action) {
+      option.action()
+    } else {
+      const { result, delta, outcomeText, description } = resolveEventChoice(
+        option,
+        gameState
+      )
+      setOutcome({
+        option,
+        _precomputedResult: {
+          result,
+          delta,
+          outcomeText,
+          description
+        }
+      })
+    }
+  }
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -33,14 +56,13 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= event.options.length) {
         const option = event.options[num - 1]
-        if (option.action) option.action()
-        else onOptionSelect(option)
+        handleOptionSelect(option)
       }
     }
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [event, onOptionSelect, outcome])
+  }, [event, outcome, gameState])
 
   // Auto-focus container for screen readers
   useEffect(() => {
@@ -110,17 +132,24 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
                   {t(
-                    outcome.outcomeText ||
-                      outcome.description ||
+                    outcome._precomputedResult.outcomeText ||
+                      outcome._precomputedResult.description ||
                       'ui:event.resolved',
                     event.context
                   )}
                 </p>
-                {outcome.delta && generateEffectText(outcome.delta, t) && (
-                  <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
-                    {generateEffectText(outcome.delta, t)}
-                  </p>
-                )}
+                {(() => {
+                  const effectText = outcome._precomputedResult.delta
+                    ? generateEffectText(outcome._precomputedResult.delta, t)
+                    : ''
+                  return (
+                    effectText && (
+                      <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
+                        {effectText}
+                      </p>
+                    )
+                  )
+                })()}
               </div>
               <button
                 type='button'
@@ -162,33 +191,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                       option.nextEventId ||
                       `${option.label}-${index}`
                     }
-                    onClick={() => {
-                      if (option.action) {
-                        option.action()
-                      } else {
-                        // Pre-calculate the result so we can show the actual outcome text and effects.
-                        // We pass the option down, and the result up.
-                        const {
-                          result,
-                          delta,
-                          outcomeText,
-                          description
-                        } = resolveEventChoice(option, gameState)
-
-                        setOutcome({
-                          option,
-                          _precomputedResult: {
-                            result,
-                            delta,
-                            outcomeText,
-                            description
-                          },
-                          outcomeText,
-                          description,
-                          delta
-                        })
-                      }
-                    }}
+                    onClick={() => handleOptionSelect(option)}
                     className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
                       ${index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
                     `}

@@ -6,7 +6,7 @@ export const generateEffectText = (delta, t) => {
   if (delta.player) {
     if (delta.player.money) {
       lines.push(
-        `${t('ui:stats.money', { defaultValue: 'Geld' })}: ${
+        `${t('ui:stats.money', { defaultValue: 'Money' })}: ${
           delta.player.money > 0 ? '+' : ''
         }${delta.player.money}€`
       )
@@ -15,69 +15,66 @@ export const generateEffectText = (delta, t) => {
 
   // Band
   if (delta.band) {
-    if (delta.band.hype) {
-      lines.push(
-        `${t('ui:stats.hype', { defaultValue: 'Hype' })}: ${
-          delta.band.hype > 0 ? '+' : ''
-        }${delta.band.hype}`
-      )
-    }
-    if (delta.band.health) {
-      lines.push(
-        `${t('ui:stats.health', { defaultValue: 'Gesundheit' })}: ${
-          delta.band.health > 0 ? '+' : ''
-        }${delta.band.health}`
-      )
-    }
-    if (delta.band.mood) {
-      lines.push(
-        `${t('ui:stats.mood', { defaultValue: 'Stimmung' })}: ${
-          delta.band.mood > 0 ? '+' : ''
-        }${delta.band.mood}`
-      )
-    }
-    if (delta.band.energy) {
-      lines.push(
-        `${t('ui:stats.energy', { defaultValue: 'Energie' })}: ${
-          delta.band.energy > 0 ? '+' : ''
-        }${delta.band.energy}`
-      )
-    }
-    if (delta.band.time) {
-      lines.push(
-        `${t('ui:stats.time', { defaultValue: 'Zeit' })}: ${
-          delta.band.time > 0 ? '+' : ''
-        }${delta.band.time}h`
-      )
-    }
-    if (delta.band.controversyLevel) {
-      lines.push(
-        `${t('ui:stats.controversy', { defaultValue: 'Kontroverse' })}: ${
-          delta.band.controversyLevel > 0 ? '+' : ''
-        }${delta.band.controversyLevel}`
-      )
-    }
-    if (delta.band.harmony) {
-      lines.push(
-        `${t('ui:stats.harmony', { defaultValue: 'Harmonie' })}: ${
-          delta.band.harmony > 0 ? '+' : ''
-        }${delta.band.harmony}`
-      )
-    }
-  }
+    const bandStats = [
+      { key: 'hype', tKey: 'ui:stats.hype', defaultValue: 'Hype', unit: '' },
+      {
+        key: 'health',
+        tKey: 'ui:stats.health',
+        defaultValue: 'Health',
+        unit: ''
+      },
+      { key: 'mood', tKey: 'ui:stats.mood', defaultValue: 'Mood', unit: '' },
+      {
+        key: 'energy',
+        tKey: 'ui:stats.energy',
+        defaultValue: 'Energy',
+        unit: ''
+      },
+      { key: 'time', tKey: 'ui:stats.time', defaultValue: 'Time', unit: 'h' },
+      {
+        key: 'controversyLevel',
+        tKey: 'ui:stats.controversy',
+        defaultValue: 'Controversy',
+        unit: ''
+      },
+      {
+        key: 'harmony',
+        tKey: 'ui:stats.harmony',
+        defaultValue: 'Harmony',
+        unit: ''
+      }
+    ]
 
-  // Inventory/Items
-  if (delta.band?.inventory) {
-    for (const [item, qty] of Object.entries(delta.band.inventory)) {
-      if (typeof qty === 'number' && qty !== 0) {
+    for (const { key, tKey, defaultValue, unit } of bandStats) {
+      if (delta.band[key]) {
         lines.push(
-          `${t(`items:${item}`, { defaultValue: item })}: ${
-            qty > 0 ? '+' : ''
-          }${qty}`
+          `${t(tKey, { defaultValue })}: ${
+            delta.band[key] > 0 ? '+' : ''
+          }${delta.band[key]}${unit}`
         )
       }
     }
   }
 
-  return lines.length > 0 ? `Effekte: ${lines.join(', ')}` : ''
+  // Inventory/Items
+  if (delta.band?.inventory) {
+    for (const key in delta.band.inventory) {
+      if (Object.hasOwn(delta.band.inventory, key)) {
+        const qty = delta.band.inventory[key]
+        if (typeof qty === 'number' && qty !== 0) {
+          lines.push(
+            `${t(`items:${key}`, { defaultValue: key })}: ${
+              qty > 0 ? '+' : ''
+            }${qty}`
+          )
+        }
+      }
+    }
+  }
+
+  if (lines.length > 0) {
+    const label = t('ui:event.effects_label', { defaultValue: 'Effects:' })
+    return `${label} ${lines.join(', ')}`
+  }
+  return ''
 }
