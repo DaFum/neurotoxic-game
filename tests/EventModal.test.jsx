@@ -4,19 +4,20 @@ import { EventModal } from '../src/ui/EventModal.jsx'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => key,
+    t: key => key,
     i18n: { changeLanguage: () => new Promise(() => {}) }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
 
 vi.mock('../src/utils/eventEngine', () => ({
-  resolveEventChoice: (option) => ({
+  resolveEventChoice: option => ({
     result: {},
     delta: { player: { money: 20 } },
     appliedDelta: { player: { money: 10 } },
     outcomeText: option.outcomeText || '',
-    description: option.description !== undefined ? option.description : 'Description'
+    description:
+      option.description !== undefined ? option.description : 'Description'
   })
 }))
 
@@ -50,7 +51,13 @@ test('EventModal renders event details and handles click flow', async () => {
   const handleSelect = vi.fn()
   const handleClose = vi.fn()
 
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} onClose={handleClose} />)
+  render(
+    <EventModal
+      event={mockEvent}
+      onOptionSelect={handleSelect}
+      onClose={handleClose}
+    />
+  )
 
   const option1 = screen.getByText('Option 1')
   fireEvent.click(option1)
@@ -66,12 +73,14 @@ test('EventModal renders event details and handles click flow', async () => {
   fireEvent.click(continueButton)
 
   // Now it should call handleSelect with the precomputed result
-  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
-    label: 'Option 1',
-    _precomputedResult: expect.objectContaining({
-      outcomeText: 'Good Outcome'
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option 1',
+      _precomputedResult: expect.objectContaining({
+        outcomeText: 'Good Outcome'
+      })
     })
-  }))
+  )
 })
 
 test('EventModal handles keyboard selection', async () => {
@@ -100,12 +109,14 @@ test('EventModal handles keyboard selection', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
-    label: 'Option 2',
-    _precomputedResult: expect.objectContaining({
-      outcomeText: 'Option 2 Outcome'
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option 2',
+      _precomputedResult: expect.objectContaining({
+        outcomeText: 'Option 2 Outcome'
+      })
     })
-  }))
+  )
 })
 
 test('EventModal keyboard selection blocks disabled options', async () => {
@@ -113,10 +124,7 @@ test('EventModal keyboard selection blocks disabled options', async () => {
     id: 'test_event_3',
     title: 'Test Event',
     description: 'This is a test event.',
-    options: [
-      { label: 'Option 1', disabled: true },
-      { label: 'Option 2' }
-    ]
+    options: [{ label: 'Option 1', disabled: true }, { label: 'Option 2' }]
   }
   const handleSelect = vi.fn()
 
@@ -136,9 +144,7 @@ test('EventModal uses fallback text when both outcomeText and description are em
     id: 'test_event_empty',
     title: 'Test Event',
     description: 'This is a test event.',
-    options: [
-      { label: 'Option 1', outcomeText: '', description: '' }
-    ]
+    options: [{ label: 'Option 1', outcomeText: '', description: '' }]
   }
   const handleSelect = vi.fn()
 
