@@ -147,10 +147,7 @@ export const calculateAppliedDelta = (state, delta) => {
     if (typeof delta.social.controversyLevel === 'number') {
       const nextControversy = Math.max(
         0,
-        Math.min(
-          100,
-          (state.social?.controversyLevel || 0) + delta.social.controversyLevel
-        )
+        (state.social?.controversyLevel || 0) + delta.social.controversyLevel
       )
       applied.social.controversyLevel =
         nextControversy - (state.social?.controversyLevel || 0)
@@ -182,13 +179,10 @@ export const calculateAppliedDelta = (state, delta) => {
     }
 
     if (typeof delta.band.luck === 'number') {
-      const nextLuck = Math.max(0, Math.min(10, (state.band?.luck || 0) + delta.band.luck))
+      const nextLuck = Math.max(0, (state.band?.luck || 0) + delta.band.luck)
       applied.band.luck = nextLuck - (state.band?.luck || 0)
     }
-    if (typeof delta.band.skill === 'number') {
-      const nextSkill = Math.max(0, Math.min(100, (state.band?.skill || 0) + delta.band.skill))
-      applied.band.skill = nextSkill - (state.band?.skill || 0)
-    }
+    // Skill operates on individual members, so there is no global band.skill delta.
     if (delta.band.relationshipChange) {
       applied.band.relationshipChange = { ...delta.band.relationshipChange }
     }

@@ -98,6 +98,10 @@ export const generateEffectText = (delta, t) => {
               qty > 0 ? '+' : ''
             }${qty}`
           )
+        } else if (qty === true) {
+          lines.push(`+${t(`items:${key}`, { defaultValue: key })}`)
+        } else if (qty === false) {
+          lines.push(`-${t(`items:${key}`, { defaultValue: key })}`)
         }
       }
     }

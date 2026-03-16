@@ -50,8 +50,8 @@ test('generateEffectText formats valid delta inputs properly', () => {
   expect(result).toContain('Stamina: -4')
   expect(result).toContain('guitar_strings: -2')
 
-  // Boolean true should not render as text
-  expect(result).not.toContain('golden_pick')
+  // Boolean true should render with a plus sign
+  expect(result).toContain('+golden_pick')
 })
 
 test('generateEffectText skips exact zero values to prevent redundant logs', () => {
