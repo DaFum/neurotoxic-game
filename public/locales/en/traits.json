@@ -1,77 +1,47 @@
 {
-  "grudgeHolder": {
-    "name": "Grudge Holder",
-    "desc": "Amplifies negative relationship changes",
-    "unlockHint": "Have a relationship score drop below 30."
-  },
-  "peacemaker": {
-    "name": "Peacemaker",
-    "desc": "Amplifies positive and dampens negative relationship changes",
-    "unlockHint": "Consistently maintain high band harmony."
-  },
-  "cyberLungs": {
-    "name": "Cyber Lungs",
-    "desc": "Significantly increased stamina regeneration.",
-    "unlockHint": "Sacrifice fame in the Void Clinic."
-  },
-  "perfektionist": {
-    "name": "Perfectionist",
-    "desc": "+15% Score if >85% Hit Rate",
-    "unlockHint": "Hit 100% Accuracy in a single gig."
-  },
-  "gearNerd": {
-    "name": "Gear Nerd",
-    "desc": "-20% Equipment Costs",
-    "unlockHint": "Purchase 5 different gear items."
-  },
-  "virtuoso": {
-    "name": "Virtuoso",
-    "desc": "+10% Hit Window",
-    "unlockHint": "Complete a solo without missing a note."
-  },
-  "techWizard": {
-    "name": "Tech Wizard",
-    "desc": "+10% Score on Technical Songs",
-    "unlockHint": "Get 100% Accuracy on a Technical song."
-  },
-  "partyAnimal": {
-    "name": "Party Animal",
-    "desc": "Random hangover (-Stamina) but +Mood when drinking",
-    "unlockHint": "Buy the beer fridge and drain it."
-  },
-  "blastMachine": {
-    "name": "Blast Beat Machine",
-    "desc": "+25% Score on fast sections",
-    "unlockHint": "Maintain a 50+ combo during a fast section (>160 BPM)."
-  },
-  "showman": {
-    "name": "Showman",
-    "desc": "+20% Virality Bonus",
-    "unlockHint": "Perform 3 Stage Dives successfully."
-  },
-  "clumsy": {
-    "name": "Clumsy",
-    "desc": "Increased failure chance on physical stunts",
-    "unlockHint": "Requires 2 failed stage dives."
-  },
-  "bandleader": {
-    "name": "Bandleader",
-    "desc": "+50% chance to solve conflicts",
-    "unlockHint": "Successfully resolve 3 band conflicts."
-  },
-  "socialManager": {
-    "name": "Social Nerd",
-    "desc": "+15% Viral Chance",
-    "unlockHint": "Reach 1000 followers on any platform."
-  },
-  "roadWarrior": {
-    "name": "Road Warrior",
-    "desc": "-15% Fuel Consumption",
-    "unlockHint": "Travel 5000km in total."
-  },
-  "melodicGenius": {
-    "name": "Melodic Genius",
-    "desc": "+10% Max Combo on Slow Songs",
-    "unlockHint": "Maintain a 30+ combo in a slow song (<120 BPM)."
-  }
+  "grudgeHolder.name": "Grudge Holder",
+  "grudgeHolder.desc": "Amplifies negative relationship changes",
+  "grudgeHolder.unlockHint": "Have a relationship score drop below 30.",
+  "peacemaker.name": "Peacemaker",
+  "peacemaker.desc": "Amplifies positive and dampens negative relationship changes",
+  "peacemaker.unlockHint": "Consistently maintain high band harmony.",
+  "cyberLungs.name": "Cyber Lungs",
+  "cyberLungs.desc": "Significantly increased stamina regeneration.",
+  "cyberLungs.unlockHint": "Sacrifice fame in the Void Clinic.",
+  "perfektionist.name": "Perfectionist",
+  "perfektionist.desc": "+15% Score if >85% Hit Rate",
+  "perfektionist.unlockHint": "Hit 100% Accuracy in a single gig.",
+  "gearNerd.name": "Gear Nerd",
+  "gearNerd.desc": "-20% Equipment Costs",
+  "gearNerd.unlockHint": "Purchase 5 different gear items.",
+  "virtuoso.name": "Virtuoso",
+  "virtuoso.desc": "+10% Hit Window",
+  "virtuoso.unlockHint": "Complete a solo without missing a note.",
+  "techWizard.name": "Tech Wizard",
+  "techWizard.desc": "+10% Score on Technical Songs",
+  "techWizard.unlockHint": "Get 100% Accuracy on a Technical song.",
+  "partyAnimal.name": "Party Animal",
+  "partyAnimal.desc": "Random hangover (-Stamina) but +Mood when drinking",
+  "partyAnimal.unlockHint": "Buy the beer fridge and drain it.",
+  "blastMachine.name": "Blast Beat Machine",
+  "blastMachine.desc": "+25% Score on fast sections",
+  "blastMachine.unlockHint": "Maintain a 50+ combo during a fast section (>160 BPM).",
+  "showman.name": "Showman",
+  "showman.desc": "+20% Virality Bonus",
+  "showman.unlockHint": "Perform 3 Stage Dives successfully.",
+  "clumsy.name": "Clumsy",
+  "clumsy.desc": "Increased failure chance on physical stunts",
+  "clumsy.unlockHint": "Requires 2 failed stage dives.",
+  "bandleader.name": "Bandleader",
+  "bandleader.desc": "+50% chance to solve conflicts",
+  "bandleader.unlockHint": "Successfully resolve 3 band conflicts.",
+  "socialManager.name": "Social Nerd",
+  "socialManager.desc": "+15% Viral Chance",
+  "socialManager.unlockHint": "Reach 1000 followers on any platform.",
+  "roadWarrior.name": "Road Warrior",
+  "roadWarrior.desc": "-15% Fuel Consumption",
+  "roadWarrior.unlockHint": "Travel 5000km in total.",
+  "melodicGenius.name": "Melodic Genius",
+  "melodicGenius.desc": "+10% Max Combo on Slow Songs",
+  "melodicGenius.unlockHint": "Maintain a 30+ combo in a slow song (<120 BPM)."
 }
