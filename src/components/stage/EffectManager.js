@@ -147,11 +147,6 @@ export class EffectManager {
     const texture = this._resolveHitTexture(color)
     const effect = this._getSpriteFromPool(texture)
 
-    // Ensure texture is correct
-    if (effect.texture !== texture) {
-      effect.texture = texture || Texture.WHITE
-    }
-
     effect.tint = color
     effect.x = x
     effect.y = y

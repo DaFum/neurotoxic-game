@@ -9,6 +9,7 @@ import { generateDailyTrend } from '../../utils/socialEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { normalizeVenueId } from '../../utils/mapUtils.js'
+import { CONTRABAND_BY_ID } from '../../data/contraband.js'
 import {
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
@@ -97,6 +98,7 @@ export const handleLoadGame = (state, payload) => {
       if (Array.isArray(loadedState.band?.stash)) {
         return loadedState.band.stash.reduce((acc, item) => {
           if (!item || typeof item !== 'object' || Array.isArray(item)) return acc
+          if (!CONTRABAND_BY_ID.has(item.id)) return acc
           if (Object.hasOwn(item, '__proto__')) return acc
           const copy = { ...item }
           copy.remainingDuration =
@@ -109,6 +111,7 @@ export const handleLoadGame = (state, payload) => {
       } else if (loadedState.band?.stash && typeof loadedState.band.stash === 'object') {
         const migrated = Object.create(null)
         for (const [id, item] of Object.entries(loadedState.band.stash)) {
+          if (!CONTRABAND_BY_ID.has(id)) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           if (Object.hasOwn(item, '__proto__')) continue
           const copy = { ...item }
@@ -448,7 +451,7 @@ export const handleAdvanceDay = (state, payload) => {
     // Unmark applied status in stash so relics can be used again
     if (traitResult.band.stash) {
       if (!stashCloned) {
-        traitResult.band.stash = { ...traitResult.band.stash }
+        traitResult.band.stash = Object.assign(Object.create(null), traitResult.band.stash)
         stashCloned = true
       }
       for (const itemKey in traitResult.band.stash) {
