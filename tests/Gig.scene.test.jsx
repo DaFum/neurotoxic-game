@@ -80,7 +80,8 @@ vi.mock('../src/hooks/useGigInput', () => ({
   }))
 }))
 vi.mock('../src/components/PixiStage', () => ({
-  PixiStage: () => <div data-testid='pixi-stage'>Pixi Stage</div>
+  PixiStage: () => <div data-testid='pixi-stage'>Pixi Stage</div>,
+  default: () => <div data-testid='pixi-stage'>Pixi Stage</div>
 }))
 vi.mock('../src/components/GigHUD', () => ({
   GigHUD: ({ onTogglePause }) => (
@@ -119,10 +120,12 @@ describe('Gig Scene Component', () => {
   })
 
   describe('Initial Rendering', () => {
-    test('renders gig scene when currentGig exists', () => {
+    test('renders gig scene when currentGig exists', async () => {
       render(<Gig />)
 
-      expect(screen.getByTestId('pixi-stage')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId('pixi-stage')).toBeInTheDocument()
+      })
       expect(screen.getByTestId('gig-hud')).toBeInTheDocument()
     })
 
