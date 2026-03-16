@@ -21,7 +21,6 @@ import { useGameState } from '../context/GameState'
 export const EventModal = ({
   event,
   onOptionSelect,
-  onClose,
   className = ''
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
@@ -49,22 +48,28 @@ export const EventModal = ({
     if (option.action) {
       option.action()
     } else {
-      // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
-      const { result, appliedDelta, delta, outcomeText, description } =
-        resolveEventChoice(option, gameStateRef.current)
+      try {
+        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
+        const { result, appliedDelta, delta, outcomeText, description } =
+          resolveEventChoice(option, gameStateRef.current)
 
-      setOutcome({
-        option,
-        _precomputedResult: {
-          result,
-          delta,
-          appliedDelta: appliedDelta || delta,
-          outcomeText,
-          description
-        }
-      })
+        setOutcome({
+          option,
+          _precomputedResult: {
+            result,
+            delta,
+            appliedDelta: appliedDelta || delta,
+            outcomeText,
+            description
+          }
+        })
+      } catch (error) {
+        console.error('Failed to preview event outcome:', error)
+        // If preview calculation fails, defer the actual dispatch directly to the provider's fallback path
+        onOptionSelect(option)
+      }
     }
-  }, [])
+  }, [onOptionSelect])
 
   const handleContinue = useCallback(() => {
     if (outcome) {
@@ -72,11 +77,8 @@ export const EventModal = ({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
       })
-      if (onClose) {
-        onClose()
-      }
     }
-  }, [onOptionSelect, onClose, outcome])
+  }, [onOptionSelect, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -276,6 +278,5 @@ EventModal.propTypes = {
     ).isRequired
   }),
   onOptionSelect: PropTypes.func.isRequired,
-  onClose: PropTypes.func,
   className: PropTypes.string
 }

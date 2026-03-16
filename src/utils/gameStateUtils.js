@@ -114,6 +114,33 @@ export const calculateAppliedDelta = (state, delta) => {
       )
       applied.player.fame = nextFame - (state.player?.fame || 0)
     }
+    const scoreDelta =
+      typeof delta.player.score === 'number'
+        ? delta.player.score
+        : typeof delta.score === 'number'
+          ? delta.score
+          : 0
+    if (scoreDelta !== 0) {
+      const nextScore = Math.max(0, (state.player?.score || 0) + scoreDelta)
+      applied.player.score = nextScore - (state.player?.score || 0)
+    }
+    if (delta.player.van) {
+      applied.player.van = {}
+      if (typeof delta.player.van.fuel === 'number') {
+        const nextFuel = clampVanFuel((state.player?.van?.fuel || 0) + delta.player.van.fuel)
+        applied.player.van.fuel = nextFuel - (state.player?.van?.fuel || 0)
+      }
+      if (typeof delta.player.van.condition === 'number') {
+        const nextCondition = Math.max(0, Math.min(100, (state.player?.van?.condition || 0) + delta.player.van.condition))
+        applied.player.van.condition = nextCondition - (state.player?.van?.condition || 0)
+      }
+    }
+    if (typeof delta.player.day === 'number') {
+      applied.player.day = delta.player.day
+    }
+    if (delta.player.stats) {
+      applied.player.stats = { ...delta.player.stats }
+    }
   }
 
   if (delta.social) {
@@ -152,6 +179,18 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.band.membersDelta = { ...membersDelta }
     } else if (membersDelta && Array.isArray(membersDelta)) {
       applied.band.membersDelta = membersDelta
+    }
+
+    if (typeof delta.band.luck === 'number') {
+      const nextLuck = Math.max(0, Math.min(10, (state.band?.luck || 0) + delta.band.luck))
+      applied.band.luck = nextLuck - (state.band?.luck || 0)
+    }
+    if (typeof delta.band.skill === 'number') {
+      const nextSkill = Math.max(0, Math.min(100, (state.band?.skill || 0) + delta.band.skill))
+      applied.band.skill = nextSkill - (state.band?.skill || 0)
+    }
+    if (delta.band.relationshipChange) {
+      applied.band.relationshipChange = { ...delta.band.relationshipChange }
     }
   }
 

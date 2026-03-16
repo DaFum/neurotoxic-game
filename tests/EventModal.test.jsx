@@ -72,7 +72,6 @@ test('EventModal renders event details and handles click flow', async () => {
       outcomeText: 'Good Outcome'
     })
   }))
-  expect(handleClose).toHaveBeenCalled()
 })
 
 test('EventModal handles keyboard selection', async () => {
