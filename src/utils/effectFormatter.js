@@ -4,21 +4,21 @@ export const generateEffectText = (delta, t) => {
 
   // Player
   if (delta.player) {
-    if (delta.player.money) {
+    if (typeof delta.player.money === 'number' && delta.player.money !== 0) {
       lines.push(
         `${t('ui:stats.money', { defaultValue: 'Money' })}: ${
           delta.player.money > 0 ? '+' : ''
         }${delta.player.money}€`
       )
     }
-    if (delta.player.fame) {
+    if (typeof delta.player.fame === 'number' && delta.player.fame !== 0) {
       lines.push(
         `${t('ui:stats.fame', { defaultValue: 'Fame' })}: ${
           delta.player.fame > 0 ? '+' : ''
         }${delta.player.fame}`
       )
     }
-    if (delta.player.time) {
+    if (typeof delta.player.time === 'number' && delta.player.time !== 0) {
       lines.push(
         `${t('ui:stats.time', { defaultValue: 'Time' })}: ${
           delta.player.time > 0 ? '+' : ''
@@ -29,7 +29,7 @@ export const generateEffectText = (delta, t) => {
 
   // Social
   if (delta.social) {
-    if (delta.social.controversyLevel) {
+    if (typeof delta.social.controversyLevel === 'number' && delta.social.controversyLevel !== 0) {
       lines.push(
         `${t('ui:stats.controversy', { defaultValue: 'Controversy' })}: ${
           delta.social.controversyLevel > 0 ? '+' : ''
@@ -40,7 +40,7 @@ export const generateEffectText = (delta, t) => {
 
   // Band
   if (delta.band) {
-    if (delta.band.harmony) {
+    if (typeof delta.band.harmony === 'number' && delta.band.harmony !== 0) {
       lines.push(
         `${t('ui:stats.harmony', { defaultValue: 'Harmony' })}: ${
           delta.band.harmony > 0 ? '+' : ''
@@ -54,18 +54,18 @@ export const generateEffectText = (delta, t) => {
 
       if (Array.isArray(delta.band.membersDelta)) {
         for (let i = 0; i < delta.band.membersDelta.length; i++) {
-          if (delta.band.membersDelta[i]?.moodChange) {
+          if (typeof delta.band.membersDelta[i]?.moodChange === 'number') {
             totalMoodChange += delta.band.membersDelta[i].moodChange
           }
-          if (delta.band.membersDelta[i]?.staminaChange) {
+          if (typeof delta.band.membersDelta[i]?.staminaChange === 'number') {
             totalStaminaChange += delta.band.membersDelta[i].staminaChange
           }
         }
       } else {
-        if (delta.band.membersDelta.moodChange) {
+        if (typeof delta.band.membersDelta.moodChange === 'number') {
           totalMoodChange = delta.band.membersDelta.moodChange
         }
-        if (delta.band.membersDelta.staminaChange) {
+        if (typeof delta.band.membersDelta.staminaChange === 'number') {
           totalStaminaChange = delta.band.membersDelta.staminaChange
         }
       }

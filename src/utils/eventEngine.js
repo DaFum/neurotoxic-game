@@ -3,7 +3,7 @@ import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
 import { bandHasTrait } from './traitLogic.js'
-import { clampVanFuel, applyEventDelta } from './gameStateUtils.js'
+import { clampVanFuel, calculateAppliedDelta } from './gameStateUtils.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -577,91 +577,9 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   let appliedDelta = null
   if (delta) {
     try {
-      // Preview the clamped application of this delta on the current state.
-      const nextState = applyEventDelta(gameState, delta)
-      appliedDelta = {
-        player: { ...delta.player },
-        band: { ...delta.band },
-        social: { ...delta.social },
-        flags: { ...delta.flags }
-      }
-
-      if (delta.player) {
-        if (typeof delta.player.money === 'number') {
-          appliedDelta.player.money =
-            (nextState.player?.money || 0) - (gameState.player?.money || 0)
-        }
-        if (typeof delta.player.fame === 'number') {
-          appliedDelta.player.fame =
-            (nextState.player?.fame || 0) - (gameState.player?.fame || 0)
-        }
-        if (typeof delta.player.time === 'number') {
-          appliedDelta.player.time = delta.player.time // time unbounded
-        }
-      }
-
-      if (delta.band) {
-        if (typeof delta.band.harmony === 'number') {
-          appliedDelta.band.harmony =
-            (nextState.band?.harmony || 0) - (gameState.band?.harmony || 0)
-        }
-        if (delta.band.membersDelta) {
-          appliedDelta.band.membersDelta = []
-
-          if (Array.isArray(delta.band.membersDelta)) {
-            const membersCount = nextState.band?.members?.length || 0
-            for (let i = 0; i < membersCount; i++) {
-              const curM = gameState.band?.members?.[i]
-              const nextM = nextState.band?.members?.[i]
-              if (curM && nextM) {
-                appliedDelta.band.membersDelta.push({
-                  moodChange: nextM.mood - curM.mood,
-                  staminaChange: nextM.stamina - curM.stamina
-                })
-              }
-            }
-          } else {
-            // For global object membersDelta
-            if (
-              nextState.band?.members?.length > 0 &&
-              gameState.band?.members?.length > 0
-            ) {
-              // We just calculate the delta from the first member as representative of the global change
-              // since the global object applied it to all equally.
-              const curM = gameState.band.members[0]
-              const nextM = nextState.band.members[0]
-              appliedDelta.band.membersDelta = {
-                moodChange: nextM.mood - curM.mood,
-                staminaChange: nextM.stamina - curM.stamina
-              }
-            }
-          }
-        }
-
-        if (delta.band.inventory) {
-          appliedDelta.band.inventory = {}
-          for (const key in delta.band.inventory) {
-            if (Object.hasOwn(delta.band.inventory, key)) {
-              const rawVal = delta.band.inventory[key]
-              if (typeof rawVal === 'boolean') {
-                appliedDelta.band.inventory[key] = rawVal
-              } else {
-                appliedDelta.band.inventory[key] =
-                  (nextState.band.inventory?.[key] || 0) -
-                  (gameState.band.inventory?.[key] || 0)
-              }
-            }
-          }
-        }
-      }
-
-      if (delta.social) {
-        if (typeof delta.social.controversyLevel === 'number') {
-          appliedDelta.social.controversyLevel =
-            (nextState.social?.controversyLevel || 0) -
-            (gameState.social?.controversyLevel || 0)
-        }
-      }
+      // Calculate appliedDelta via calculateAppliedDelta which only computes the
+      // effective change (clamped) without mutating state.
+      appliedDelta = calculateAppliedDelta(gameState, delta)
     } catch (e) {
       logger.error('EventEngine', 'Failed to preview applied delta', e)
     }

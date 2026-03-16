@@ -274,5 +274,6 @@ EventModal.propTypes = {
     ).isRequired
   }),
   onOptionSelect: PropTypes.func.isRequired,
+  onClose: PropTypes.func,
   className: PropTypes.string
 }
