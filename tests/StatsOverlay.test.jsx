@@ -48,6 +48,30 @@ test('StatsOverlay renders all child components with correct props', () => {
   expect(overloadMeter).toHaveTextContent('Overload: 15')
 })
 
+test('StatsOverlay handles accuracy edge cases', () => {
+  const propsZero = {
+    score: 0,
+    combo: 0,
+    accuracy: 0,
+    overload: 0
+  }
+
+  const { rerender } = render(<StatsOverlay {...propsZero} />)
+  let comboDisplay = screen.getByTestId('combo-display')
+  expect(comboDisplay).toHaveTextContent('Combo: 0, Acc: 0')
+
+  const propsHundred = {
+    score: 0,
+    combo: 0,
+    accuracy: 100,
+    overload: 0
+  }
+
+  rerender(<StatsOverlay {...propsHundred} />)
+  comboDisplay = screen.getByTestId('combo-display')
+  expect(comboDisplay).toHaveTextContent('Combo: 0, Acc: 100')
+})
+
 test('StatsOverlay renders four UIFrameCorner icons with correct classes', () => {
   const props = {
     score: 0,

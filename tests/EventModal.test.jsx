@@ -11,14 +11,14 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('../src/utils/eventEngine', () => ({
-  resolveEventChoice: option => ({
+  resolveEventChoice: vi.fn(option => ({
     result: {},
     delta: { player: { money: 20 } },
     appliedDelta: { player: { money: 10 } },
     outcomeText: option.outcomeText || '',
     description:
       option.description !== undefined ? option.description : 'Description'
-  })
+  }))
 }))
 
 vi.mock('../src/ui/shared/BrutalistUI', () => ({
@@ -80,9 +80,7 @@ test('EventModal renders event details and handles click flow', async () => {
         outcomeText: 'Good Outcome'
       })
     })
-  }))
-
-  expect(handleClose).toHaveBeenCalled()
+  )
 })
 
 test('EventModal handles resolveEventChoice error by showing fallback preview', async () => {

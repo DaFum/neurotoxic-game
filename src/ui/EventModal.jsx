@@ -62,23 +62,24 @@ export const EventModal = ({
           const { result, appliedDelta, delta, outcomeText, description } =
             resolveEventChoice(option, gameStateRef.current)
 
-        setOutcome({
-          option,
-          _precomputedResult: {
-            result,
-            delta,
-            appliedDelta: appliedDelta || delta,
-            outcomeText,
-            description
-          }
-        })
-      } catch (error) {
-        console.error('Failed to preview event outcome:', error)
-        setPreviewError(true)
-        setOutcome({ option })
+          setOutcome({
+            option,
+            _precomputedResult: {
+              result,
+              delta,
+              appliedDelta: appliedDelta || delta,
+              outcomeText,
+              description
+            }
+          })
+        } catch (error) {
+          console.error('Failed to preview event outcome:', error)
+          setPreviewError(true)
+          setOutcome({ option })
+        }
       }
     },
-    [onOptionSelect]
+    []
   )
 
   const handleContinue = useCallback(() => {
@@ -87,9 +88,8 @@ export const EventModal = ({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
       })
-      onClose?.()
     }
-  }, [onClose, onOptionSelect, outcome])
+  }, [onOptionSelect, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -123,7 +123,11 @@ export const EventModal = ({
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''
-    if (previewError) return t('ui:event_error', event.context)
+    if (previewError)
+      return t('ui:event_error', {
+        defaultValue: 'An error occurred loading this event.',
+        ...event.context
+      })
 
     const texts = [
       outcome._precomputedResult?.outcomeText &&

@@ -1,5 +1,6 @@
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter.js'
 import { VENUE_CHATTER_LOOKUP } from './venueChatter.js'
+import { secureRandom } from '../../utils/crypto.js'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
@@ -43,9 +44,10 @@ export const getRandomChatter = state => {
   // 2) Standard chatter
   for (let i = 0; i < CHATTER_DB.length; i++) {
     const c = CHATTER_DB[i]
-    if (c.condition && c.condition(state)) {
-      pool.push(c)
-    } else if (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
+    if (
+      (c.condition && c.condition(state)) ||
+      (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene))
+    ) {
       pool.push(c)
     }
   }
@@ -57,7 +59,15 @@ export const getRandomChatter = state => {
   for (let i = 0; i < pool.length; i++) {
     totalWeight += pool[i].weight || 1
   }
-  let roll = Math.random() * totalWeight
+
+  let roll
+  try {
+    roll = secureRandom() * totalWeight
+  } catch (error) {
+    console.warn('Crypto API not available, falling back to Math.random', error)
+    roll = Math.random() * totalWeight
+  }
+
   let item = pool[pool.length - 1]
 
   for (const entry of pool) {
