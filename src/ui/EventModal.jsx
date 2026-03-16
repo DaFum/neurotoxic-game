@@ -64,7 +64,11 @@ export const EventModal = ({
       option.action()
     } else {
       try {
-        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
+        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
+        // Snapshot vs Latest State Decision:
+        // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
+        // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
+        // preventing any background state mutations from altering the event outcome between preview and confirmation.
         const { result, appliedDelta, delta, outcomeText, description } =
           resolveEventChoice(option, gameStateRef.current)
 
