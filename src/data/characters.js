@@ -1,3 +1,4 @@
+// TODO: Implement this
 // Detailed Character Definitions and Traits
 //
 // Trait Implementation Status:

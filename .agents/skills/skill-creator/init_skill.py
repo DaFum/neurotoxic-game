@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# TODO: Implement this
 """
 Skill Initializer - Creates a new skill from template
 

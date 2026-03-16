@@ -1,3 +1,4 @@
+// TODO: Implement this
 /**
  * Attempts to skip the intro video/scene to reach the main menu.
  * Handles potential race conditions between the skip button appearing and the menu loading.

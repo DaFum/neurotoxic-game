@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: dependency-pin-upgrade-blocker
 description: enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes.

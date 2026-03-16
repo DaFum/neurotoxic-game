@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: asset-pipeline-verifier
 description: diagnose and fix asset loading issues. Trigger when assets fail to load (404), have incorrect MIME types, or when paths are undefined. Checks import.meta.glob, new URL(), and public folder references.

@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Common Performance Pitfalls
 
 ## 1. Inline Object/Array Props

@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ### 1. FULL EVENT OBJECT STRUCTURE
 
 All events follow this schema (defined across multiple event files):

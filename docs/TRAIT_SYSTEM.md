@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ## TRAIT SYSTEM EXPLORATION REPORT
 
 Based on my thorough analysis of the trait system across the codebase, here are the complete findings:

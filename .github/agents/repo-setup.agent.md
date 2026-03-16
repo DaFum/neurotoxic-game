@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: repo-setup
 description: Autonomer Setup-Agent. Entpackt Daten, führt eine tiefe Code-Analyse durch und generiert basierend darauf maßgeschneiderte Copilot-Instruktionen und eine Agenten-Hierarchie.

@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Benchmark Mode Reference
 
 **Requires subagents.** Benchmark mode relies on parallel execution of many independent runs. Without subagents, use Eval mode for individual eval testing instead.

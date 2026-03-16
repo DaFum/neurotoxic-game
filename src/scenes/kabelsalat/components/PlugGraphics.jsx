@@ -1,3 +1,4 @@
+// TODO: Implement this
 export const PlugGraphics = ({ type }) => {
   switch (type) {
     case 'xlr':

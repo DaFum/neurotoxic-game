@@ -1,3 +1,4 @@
+// TODO: Implement this
 export default {
   locales: ['en', 'de'],
   defaultNamespace: 'ui',

@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: agents-md-writer
 description: Write high-quality AGENTS.md, CLAUDE.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents — including any mention of "AGENTS.md", "CLAUDE.md", "CODEX.md", "context file for agents", "agent instructions", "coding agent setup", or requests like "help my AI agent understand this repo". Also trigger when users say things like "initialize agent config", "set up Claude Code for my project", "write instructions for Codex/Copilot", or "make my repo AI-friendly". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, so it avoids the common pitfalls that make auto-generated context files harmful.

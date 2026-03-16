@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Memoization Patterns
 
 ## React.memo for Component Memoization

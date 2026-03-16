@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# TODO: Implement this
 set -euo pipefail
 
 echo "Scanning for import.meta.glob usage..."

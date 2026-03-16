@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Coding Standards
 
 This document outlines the coding standards and best practices for the Neurotoxic game project. The architecture is brutalist, strictly enforced, and unforgiving. Read it. Obey it.

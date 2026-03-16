@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: release-notes-synthesizer
 description: create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits.

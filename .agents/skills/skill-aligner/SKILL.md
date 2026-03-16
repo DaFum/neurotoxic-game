@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: skill-aligner
 description: align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands.

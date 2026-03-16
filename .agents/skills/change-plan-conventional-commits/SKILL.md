@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: change-plan-conventional-commits
 description: plan code changes and draft commit messages. Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard.

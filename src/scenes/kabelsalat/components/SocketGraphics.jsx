@@ -1,3 +1,4 @@
+// TODO: Implement this
 export const SocketGraphics = ({ type }) => {
   switch (type) {
     case 'xlr':

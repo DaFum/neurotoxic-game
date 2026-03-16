@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: golden-path-test-author
 description: write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths.

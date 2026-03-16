@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# TODO: Implement this
 """
 Validate JSON files produced by skill-creator-edge.
 

@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: one-command-quality-gate
 description: run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order.

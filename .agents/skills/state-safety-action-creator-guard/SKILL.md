@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: state-safety-action-creator-guard
 description: enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs.

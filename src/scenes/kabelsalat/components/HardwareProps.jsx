@@ -1,3 +1,4 @@
+// TODO: Implement this
 export const RackScrew = ({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
     <circle

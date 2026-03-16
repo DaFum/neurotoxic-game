@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Palette's Journal
 
 ## 2025-05-18 - Adding Weight to Instant Actions

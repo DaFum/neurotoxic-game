@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: pixi-lifecycle-memory-leak-sentinel
 description: detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time.

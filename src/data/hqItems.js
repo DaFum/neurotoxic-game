@@ -1,3 +1,4 @@
+// TODO: Implement this
 export const HQ_ITEMS = {
   gear: [
     // Standard Consumables

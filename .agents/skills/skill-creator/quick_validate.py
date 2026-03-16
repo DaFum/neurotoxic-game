@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# TODO: Implement this
 """
 Quick validation script for skills - minimal version
 """

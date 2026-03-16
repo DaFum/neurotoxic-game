@@ -1,3 +1,4 @@
+// TODO: Implement this
 /**
  * Calculates a 32-bit integer hash from a string.
  * Uses a common simple hash algorithm: `hash = (hash * 31) + charCode`.

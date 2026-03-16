@@ -1,3 +1,4 @@
+// TODO: Implement this
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, fireEvent } from '@testing-library/react'
 import { ShopItem } from '../src/ui/bandhq/ShopItem.jsx'

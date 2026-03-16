@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # JSON Schemas
 
 This document defines the JSON schemas used by skill-creator-edge.

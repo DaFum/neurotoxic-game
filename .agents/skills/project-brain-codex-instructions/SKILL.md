@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: project-brain-codex-instructions
 description: generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture.

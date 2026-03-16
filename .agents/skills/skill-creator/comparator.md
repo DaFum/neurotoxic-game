@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Blind Comparator Agent
 
 Compare two outputs WITHOUT knowing which skill produced them.

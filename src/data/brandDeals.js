@@ -1,3 +1,4 @@
+// TODO: Implement this
 // Brand Deal Templates and Logic
 // This file defines the potential brand partnerships a band can attract.
 

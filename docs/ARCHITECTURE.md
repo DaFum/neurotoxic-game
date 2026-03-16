@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 # Neurotoxic Game Architecture
 
 This document is a code-aligned architecture snapshot for the current `main` app runtime.

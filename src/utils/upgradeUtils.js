@@ -1,3 +1,4 @@
+// TODO: Implement this
 /**
  * Checks whether a specific upgrade is owned.
  * Pure function extracted from useGameState to allow direct testing

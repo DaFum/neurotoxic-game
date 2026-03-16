@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# TODO: Implement this
 """
 Initialize JSON files with the correct structure for skill-creator-edge.
 

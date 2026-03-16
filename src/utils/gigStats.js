@@ -1,3 +1,4 @@
+// TODO: Implement this
 /**
  * @typedef {object} GigPerformanceStats
  * @property {number} perfectHits

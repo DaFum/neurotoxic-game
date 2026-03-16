@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ### 1. FULL ECONOMY CALCULATION CHAIN (Input → Output)
 
 **File:** `src/utils/economyEngine.js`

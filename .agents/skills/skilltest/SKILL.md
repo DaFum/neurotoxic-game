@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: skilltest
 description: validate skill structure and metadata. Trigger when developing skills, checking CI, or debugging skill loading issues.

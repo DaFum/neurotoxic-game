@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ## 2025-05-20 - E2E Reliability vs Unit Tests for Rendering Logic
 
 **Learning:** E2E tests (`playwright`) are unreliable for verifying rendering logic (like lane visibility) in this codebase due to frequent audio context crashes/timeouts in the headless environment.

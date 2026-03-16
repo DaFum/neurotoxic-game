@@ -1,3 +1,4 @@
+<!-- TODO: Implement this -->
 ---
 name: one-command-doctor
 description: diagnose environmental and build issues. Trigger when the repo is broken, tests fail mysteriously, or setup is needed. Checks Node version, dependencies, and build status.

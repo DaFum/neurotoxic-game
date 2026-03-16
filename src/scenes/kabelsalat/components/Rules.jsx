@@ -1,3 +1,4 @@
+// TODO: Implement this
 export const Rules = ({ t }) => (
   <div className='mt-6 border border-warning-yellow bg-warning-yellow/10 p-4 text-sm text-warning-yellow max-w-4xl w-full'>
     <h4 className='font-bold tracking-widest mb-2 border-b border-warning-yellow/30 pb-1'>
