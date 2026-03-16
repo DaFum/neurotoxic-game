@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
+import { secureRandom } from '../utils/crypto.js'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -98,7 +99,7 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
     .map(member => member.name)
     .filter(memberName => typeof memberName === 'string')
   if (memberNames.length > 0) {
-    return memberNames[Math.floor(Math.random() * memberNames.length)]
+    return memberNames[Math.floor(secureRandom() * memberNames.length)]
   }
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
@@ -280,7 +281,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
     const scheduleNext = () => {
       if (!active) return
       const delay =
-        Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
+        secureRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
 
       timeoutId = setTimeout(() => {
         if (!active) return
