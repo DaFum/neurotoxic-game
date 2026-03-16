@@ -666,7 +666,7 @@ export const GameStateProvider = ({ children }) => {
 
       try {
         // 2. Logic Execution
-        const { result, delta, outcomeText, description } = resolveEventChoice(
+        const { result, delta, outcomeText, description } = choice._precomputedResult || resolveEventChoice(
           choice,
           currentState
         )

@@ -10,6 +10,11 @@ vi.mock('../src/ui/shared/Icons', () => ({
   VoidSkullIcon: () => <svg data-testid='void-skull-icon' />
 }))
 
+vi.mock('../src/context/GameState', () => ({
+  useGameState: () => ({ player: { money: 100 }, band: {} }),
+  GameStateProvider: ({ children }) => <div>{children}</div>
+}))
+
 test('EventModal renders event details and handles click flow', async () => {
   const mockEvent = {
     title: 'Test Event',
@@ -33,7 +38,9 @@ test('EventModal renders event details and handles click flow', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(mockEvent.options[0])
+  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
+    label: 'Option 1'
+  }))
 })
 
 test('EventModal handles keyboard selection', () => {

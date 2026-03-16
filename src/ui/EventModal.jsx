@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
+import { generateEffectText } from '../utils/effectFormatter'
+import { useGameState } from '../context/GameState'
+import { resolveEventChoice } from '../utils/eventEngine'
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -15,8 +18,10 @@ import { VoidSkullIcon } from './shared/Icons'
  */
 
 export const EventModal = ({ event, onOptionSelect, className = '' }) => {
-  const { t } = useTranslation(['ui', 'events'])
+  const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
+
+  const gameState = useGameState() || {}
 
   const [outcome, setOutcome] = useState(null)
 
@@ -105,16 +110,26 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
                   {t(
-                    outcome.description ||
-                      outcome.outcomeText ||
+                    outcome.outcomeText ||
+                      outcome.description ||
                       'ui:event.resolved',
                     event.context
                   )}
                 </p>
+                {outcome.delta && generateEffectText(outcome.delta, t) && (
+                  <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
+                    {generateEffectText(outcome.delta, t)}
+                  </p>
+                )}
               </div>
               <button
                 type='button'
-                onClick={() => onOptionSelect(outcome.option)}
+                onClick={() =>
+                  onOptionSelect({
+                    ...outcome.option,
+                    _precomputedResult: outcome._precomputedResult
+                  })
+                }
                 className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
@@ -151,11 +166,26 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                       if (option.action) {
                         option.action()
                       } else {
-                        // We set the outcome first so the user can read what happened before moving on
+                        // Pre-calculate the result so we can show the actual outcome text and effects.
+                        // We pass the option down, and the result up.
+                        const {
+                          result,
+                          delta,
+                          outcomeText,
+                          description
+                        } = resolveEventChoice(option, gameState)
+
                         setOutcome({
                           option,
-                          outcomeText: option.outcomeText,
-                          description: option.description // We might not have full effect resolution description here yet, but outcomeText is good
+                          _precomputedResult: {
+                            result,
+                            delta,
+                            outcomeText,
+                            description
+                          },
+                          outcomeText,
+                          description,
+                          delta
                         })
                       }
                     }}
