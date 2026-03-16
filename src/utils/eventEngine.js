@@ -3,7 +3,7 @@ import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
 import { bandHasTrait } from './traitLogic.js'
-import { clampVanFuel } from './gameStateUtils.js'
+import { clampVanFuel, calculateAppliedDelta } from './gameStateUtils.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -574,9 +574,21 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   const result = eventEngine.resolveChoice(choice, gameState, rng)
   const delta = eventEngine.applyResult(result, gameState.activeEvent?.context)
 
+  let appliedDelta = null
+  if (delta) {
+    try {
+      // Calculate appliedDelta via calculateAppliedDelta which only computes the
+      // effective change (clamped) without mutating state.
+      appliedDelta = calculateAppliedDelta(gameState, delta)
+    } catch (e) {
+      logger.error('EventEngine', 'Failed to preview applied delta', e)
+    }
+  }
+
   return {
     result,
     delta,
+    appliedDelta,
     outcomeText: choice.outcomeText ?? '',
     description: result.description ?? ''
   }
