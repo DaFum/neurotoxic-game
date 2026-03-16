@@ -82,24 +82,24 @@ export const addContrabandHelper = (state, payload) => {
   if (!item) return state
 
   const newBand = { ...state.band }
-  const currentStash = newBand.stash || []
+  const currentStash = newBand.stash || {}
 
   // Handle stackable logic and uniqueness
-  const existingIndex = currentStash.findIndex(i => i.id === item.id)
-  if (existingIndex !== -1) {
-    const existingItem = currentStash[existingIndex]
+  const existingItem = currentStash[item.id]
+  if (existingItem) {
     if (!item.stackable) {
       return state // Don't add duplicate non-stackable items
     } else {
       const currentStacks = existingItem.stacks || 1
       const max = item.maxStacks || Infinity
       if (currentStacks < max) {
-        const updatedStash = [...currentStash]
-        updatedStash[existingIndex] = {
-          ...existingItem,
-          stacks: currentStacks + 1
+        newBand.stash = {
+          ...currentStash,
+          [item.id]: {
+            ...existingItem,
+            stacks: currentStacks + 1
+          }
         }
-        newBand.stash = updatedStash
         return { ...state, band: newBand }
       } else {
         return state // Reached max stacks
@@ -115,7 +115,10 @@ export const addContrabandHelper = (state, payload) => {
     stacks: item.stackable ? 1 : undefined
   }
 
-  newBand.stash = [...currentStash, newInstance]
+  newBand.stash = {
+    ...currentStash,
+    [item.id]: newInstance
+  }
 
   if (item.applyOnAdd && item.type === 'equipment') {
     if (item.effectType === 'luck') {
@@ -170,16 +173,18 @@ export const handleAddContraband = (state, payload) => {
  */
 export const handleUseContraband = (state, payload) => {
   const { instanceId, memberId } = payload
-  const stash = state.band.stash || []
-  const itemIndex = stash.findIndex(i => i.instanceId === instanceId)
+  const stash = state.band.stash || {}
 
-  if (itemIndex === -1) return state
+  const targetEntry = Object.entries(stash).find(
+    ([_, i]) => i.instanceId === instanceId
+  )
+  if (!targetEntry) return state
 
-  const item = stash[itemIndex]
+  const [itemKey, item] = targetEntry
   if (item.applied === true) return state
 
   let newBand = { ...state.band }
-  let newStash = [...stash]
+  let newStash = { ...stash }
 
   // Apply effect
   if (item.effectType === 'stamina' || item.effectType === 'mood') {
@@ -293,12 +298,12 @@ export const handleUseContraband = (state, payload) => {
 
   if (item.type === 'consumable') {
     if (item.stacks > 1) {
-      newStash[itemIndex] = { ...item, stacks: item.stacks - 1 }
+      newStash[itemKey] = { ...item, stacks: item.stacks - 1 }
     } else {
-      newStash.splice(itemIndex, 1)
+      delete newStash[itemKey]
     }
   } else {
-    newStash[itemIndex] = { ...newStash[itemIndex], applied: true }
+    newStash[itemKey] = { ...newStash[itemKey], applied: true }
   }
 
   newBand.stash = newStash

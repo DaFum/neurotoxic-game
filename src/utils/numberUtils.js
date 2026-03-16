@@ -20,7 +20,11 @@ export const formatNumber = (value, language = 'en') => {
   return formatter.format(value)
 }
 
-export const formatCurrency = (value, language = 'en', signDisplay = 'auto') => {
+export const formatCurrency = (
+  value,
+  language = 'en',
+  signDisplay = 'auto'
+) => {
   const formatter = getFormatter(language, `currency-EUR-0-${signDisplay}`, {
     style: 'currency',
     currency: 'EUR',

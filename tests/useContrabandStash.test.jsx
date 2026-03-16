@@ -30,14 +30,15 @@ describe('useContrabandStash', () => {
       { id: 'member1', name: 'Member One' },
       { id: 'member2', name: 'Member Two' }
     ],
-    stash: [
-      {
+    stash: {
+      c_energy_drink: {
+        id: 'c_energy_drink',
         instanceId: 'item1',
         type: 'consumable',
         effectType: 'stamina',
         name: 'Energy Drink'
       }
-    ]
+    }
   }
 
   beforeEach(() => {
@@ -54,7 +55,9 @@ describe('useContrabandStash', () => {
 
     expect(result.current.showStash).toBe(false)
     expect(result.current.stashProps.selectedMember).toBe('member1')
-    expect(result.current.stashProps.stash).toEqual(defaultBand.stash)
+    expect(result.current.stashProps.stash).toEqual(
+      Object.values(defaultBand.stash)
+    )
     expect(result.current.stashProps.members).toEqual(defaultBand.members)
   })
 

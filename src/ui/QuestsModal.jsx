@@ -286,7 +286,10 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                         <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
                           <IconCoin className='w-3 h-3' />{' '}
                           {t('ui:quests.moneyReward', {
-                            amount: formatNumber(quest.moneyReward, i18n?.language)
+                            amount: formatNumber(
+                              quest.moneyReward,
+                              i18n?.language
+                            )
                           })}
                         </span>
                       )}

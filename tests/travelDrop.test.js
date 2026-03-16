@@ -15,7 +15,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
         money: 1000,
         van: { fuel: 100, condition: 100 }
       },
-      band: { ...DEFAULT_BAND_STATE, stash: [], luck: 0 },
+      band: { ...DEFAULT_BAND_STATE, stash: {}, luck: 0 },
       minigame: { targetDestination: 'node_2' },
       gameMap: {
         nodes: {
@@ -34,7 +34,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
     } // High roll, no drop
     const newState = handleCompleteTravelMinigame(state, payload)
 
-    assert.equal(newState.band.stash.length, 0)
+    assert.equal(Object.keys(newState.band.stash).length, 0)
     assert.equal(newState.toasts.length, 0)
   })
 
@@ -46,7 +46,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
         money: 1000,
         van: { fuel: 100, condition: 100 }
       },
-      band: { ...DEFAULT_BAND_STATE, stash: [], luck: 0 },
+      band: { ...DEFAULT_BAND_STATE, stash: {}, luck: 0 },
       minigame: { targetDestination: 'node_2' },
       gameMap: {
         nodes: {
@@ -65,7 +65,7 @@ describe('minigameReducer - Travel Complete Drops', () => {
     } // Low roll, drop
     const newState = handleCompleteTravelMinigame(state, payload)
 
-    assert.equal(newState.band.stash.length, 1)
+    assert.equal(Object.keys(newState.band.stash).length, 1)
     assert.equal(newState.toasts.length, 1)
     assert.equal(newState.toasts[0].message, 'ui:contraband.dropped')
   })

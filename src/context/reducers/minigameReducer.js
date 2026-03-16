@@ -116,17 +116,19 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     instanceId
   ) {
     // Call addContrabandHelper directly to leverage its logic
-    const preStashLength = newState.band.stash ? newState.band.stash.length : 0
+    const preStashLength = newState.band.stash
+      ? Object.keys(newState.band.stash).length
+      : 0
     const preStacks = newState.band.stash
-      ? newState.band.stash.find(i => i.id === contrabandId)?.stacks || 0
+      ? newState.band.stash[contrabandId]?.stacks || 0
       : 0
 
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band.stash.find(i => i.id === contrabandId)
+    const postItem = newState.band.stash[contrabandId]
     const postStacks = postItem ? postItem.stacks || 0 : 0
-    const postStashLength = newState.band.stash.length
+    const postStashLength = Object.keys(newState.band.stash).length
 
     const wasAdded = postStashLength > preStashLength || postStacks > preStacks
 
