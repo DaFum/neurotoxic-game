@@ -19,33 +19,36 @@ export const getRandomChatter = state => {
         venueEntry.linesByScene[scene] || venueEntry.linesByScene.ANY || []
 
       // Give venue lines higher priority, but not always dominating
-      const venueWeighted = venueLines.map(text => ({
-        text,
-        weight: 8,
-        condition: null,
-        speaker: null
-      }))
-
-      pool = pool.concat(venueWeighted)
+      for (let i = 0; i < venueLines.length; i++) {
+        pool.push({
+          text: venueLines[i],
+          weight: 8,
+          condition: null,
+          speaker: null
+        })
+      }
     } else if (venueEntry?.lines) {
       // Backwards compatibility: old "lines" array
-      const venueWeighted = venueEntry.lines.map(text => ({
-        text,
-        weight: 8,
-        condition: null,
-        speaker: null
-      }))
-      pool = pool.concat(venueWeighted)
+      for (let i = 0; i < venueEntry.lines.length; i++) {
+        pool.push({
+          text: venueEntry.lines[i],
+          weight: 8,
+          condition: null,
+          speaker: null
+        })
+      }
     }
   }
 
   // 2) Standard chatter
-  const standardChatter = CHATTER_DB.filter(c => {
-    if (c.condition) return c.condition(state)
-    return ALLOWED_DEFAULT_SCENES.includes(state.currentScene)
-  })
-
-  pool = pool.concat(standardChatter)
+  for (let i = 0; i < CHATTER_DB.length; i++) {
+    const c = CHATTER_DB[i]
+    if (c.condition) {
+      if (c.condition(state)) pool.push(c)
+    } else if (ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
+      pool.push(c)
+    }
+  }
 
   if (pool.length === 0) return null
 
