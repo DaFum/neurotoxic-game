@@ -41,7 +41,20 @@ const MockPIXI = {
 // Mock PIXI module
 mock.module('pixi.js', {
   defaultExport: MockPIXI,
-  namedExports: MockPIXI
+  namedExports: {
+    ...MockPIXI,
+    Assets: {
+      load: () => Promise.resolve(),
+      unload: () => Promise.resolve()
+    },
+    ImageSource: class {
+      constructor() {}
+    },
+    Texture: {
+      WHITE: {},
+      EMPTY: {}
+    }
+  }
 })
 
 // Mock Managers (factory approach for fresh instances)
