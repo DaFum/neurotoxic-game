@@ -29,11 +29,23 @@ test('EventModal renders event details and handles click flow', async () => {
     ]
   }
   const handleSelect = vi.fn()
+  const handleClose = vi.fn()
 
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+  const resolvedEvent = {
+    ...mockEvent,
+    resolvedOutcome: { option: mockEvent.options[0], outcomeText: 'Good Outcome' }
+  }
+
+  const { rerender } = render(
+    <EventModal event={mockEvent} onOptionSelect={handleSelect} onClose={handleClose} />
+  )
 
   const option1 = screen.getByText('Option 1')
   fireEvent.click(option1)
+
+  expect(handleSelect).toHaveBeenCalledWith(mockEvent.options[0])
+
+  rerender(<EventModal event={resolvedEvent} onOptionSelect={handleSelect} onClose={handleClose} />)
 
   await waitFor(() => {
     expect(screen.getByText('Good Outcome')).toBeInTheDocument()
@@ -42,12 +54,7 @@ test('EventModal renders event details and handles click flow', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(
-    expect.objectContaining({
-      label: 'Option 1',
-      _precomputedResult: expect.any(Object)
-    })
-  )
+  expect(handleClose).toHaveBeenCalled()
 })
 
 test('EventModal handles keyboard selection', async () => {
@@ -60,10 +67,22 @@ test('EventModal handles keyboard selection', async () => {
     ]
   }
   const handleSelect = vi.fn()
+  const handleClose = vi.fn()
 
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+  const resolvedEvent = {
+    ...mockEvent,
+    resolvedOutcome: { option: mockEvent.options[1], outcomeText: 'Option 2 Outcome' }
+  }
+
+  const { rerender } = render(
+    <EventModal event={mockEvent} onOptionSelect={handleSelect} onClose={handleClose} />
+  )
 
   fireEvent.keyDown(window, { key: '2' })
+
+  expect(handleSelect).toHaveBeenCalledWith(mockEvent.options[1])
+
+  rerender(<EventModal event={resolvedEvent} onOptionSelect={handleSelect} onClose={handleClose} />)
 
   await waitFor(() => {
     expect(screen.getByText('Option 2 Outcome')).toBeInTheDocument()
@@ -72,12 +91,7 @@ test('EventModal handles keyboard selection', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(
-    expect.objectContaining({
-      label: 'Option 2',
-      _precomputedResult: expect.any(Object)
-    })
-  )
+  expect(handleClose).toHaveBeenCalled()
 })
 
 test('EventModal handles option with direct action callback', () => {

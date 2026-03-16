@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
-import { useGameState } from '../context/GameState'
-import { resolveEventChoice } from '../utils/eventEngine'
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -15,40 +13,29 @@ import { resolveEventChoice } from '../utils/eventEngine'
  * @param {object} props
  * @param {object} props.event - The active event object.
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
+ * @param {Function} props.onClose - Callback when modal should be closed.
  */
 
-export const EventModal = ({ event, onOptionSelect, className = '' }) => {
+export const EventModal = ({
+  event,
+  onOptionSelect,
+  onClose,
+  className = ''
+}) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
 
-  const gameState = useGameState()
-  if (!gameState) {
-    throw new Error('EventModal must be used within GameStateProvider')
-  }
-
-  const [outcome, setOutcome] = useState(null)
+  const outcome = event?.resolvedOutcome
 
   const handleOptionSelect = useCallback(
     option => {
       if (option.action) {
         option.action()
       } else {
-        const { result, delta, outcomeText, description } = resolveEventChoice(
-          option,
-          gameState
-        )
-        setOutcome({
-          option,
-          _precomputedResult: {
-            result,
-            delta,
-            outcomeText,
-            description
-          }
-        })
+        onOptionSelect(option)
       }
     },
-    [gameState]
+    [onOptionSelect]
   )
 
   // Keyboard shortcut: press 1-4 to select options
@@ -135,15 +122,15 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
                   {t(
-                    outcome._precomputedResult.outcomeText ||
-                      outcome._precomputedResult.description ||
+                    outcome.outcomeText ||
+                      outcome.description ||
                       'ui:event.resolved',
                     event.context
                   )}
                 </p>
                 {(() => {
-                  const effectText = outcome._precomputedResult.delta
-                    ? generateEffectText(outcome._precomputedResult.delta, t)
+                  const effectText = outcome.delta
+                    ? generateEffectText(outcome.delta, t)
                     : ''
                   return (
                     effectText && (
@@ -156,12 +143,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               </div>
               <button
                 type='button'
-                onClick={() =>
-                  onOptionSelect({
-                    ...outcome.option,
-                    _precomputedResult: outcome._precomputedResult
-                  })
-                }
+                onClick={() => onClose()}
                 className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]

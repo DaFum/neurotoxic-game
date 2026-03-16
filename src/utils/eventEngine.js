@@ -3,7 +3,7 @@ import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
 import { bandHasTrait } from './traitLogic.js'
-import { clampVanFuel } from './gameStateUtils.js'
+import { clampVanFuel, applyEventDelta } from './gameStateUtils.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -574,9 +574,60 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   const result = eventEngine.resolveChoice(choice, gameState, rng)
   const delta = eventEngine.applyResult(result, gameState.activeEvent?.context)
 
+  let appliedDelta = null
+  if (delta) {
+    try {
+      // Preview the clamped application of this delta on the current state.
+      const nextState = applyEventDelta(gameState, delta)
+      appliedDelta = {
+        player: { ...delta.player },
+        band: { ...delta.band },
+        social: { ...delta.social },
+        flags: { ...delta.flags }
+      }
+
+      if (delta.player) {
+        if (typeof delta.player.money === 'number') {
+          appliedDelta.player.money =
+            (nextState.player?.money || 0) - (gameState.player?.money || 0)
+        }
+        if (typeof delta.player.fame === 'number') {
+          appliedDelta.player.fame =
+            (nextState.player?.fame || 0) - (gameState.player?.fame || 0)
+        }
+        if (typeof delta.player.time === 'number') {
+          appliedDelta.player.time = delta.player.time // time unbounded
+        }
+      }
+
+      if (delta.band) {
+        if (typeof delta.band.harmony === 'number') {
+          appliedDelta.band.harmony =
+            (nextState.band?.harmony || 0) - (gameState.band?.harmony || 0)
+        }
+        if (delta.band.membersDelta) {
+          // Simply pass through since there is no strict cap limits dynamically tracked easily per user without complex diffing,
+          // though we can improve if stamina/mood hits exactly 100/0 bounds.
+          appliedDelta.band.membersDelta = delta.band.membersDelta
+        }
+      }
+
+      if (delta.social) {
+        if (typeof delta.social.controversyLevel === 'number') {
+          appliedDelta.social.controversyLevel =
+            (nextState.social?.controversyLevel || 0) -
+            (gameState.social?.controversyLevel || 0)
+        }
+      }
+    } catch (e) {
+      logger.error('EventEngine', 'Failed to preview applied delta', e)
+    }
+  }
+
   return {
     result,
     delta,
+    appliedDelta,
     outcomeText: choice.outcomeText ?? '',
     description: result.description ?? ''
   }

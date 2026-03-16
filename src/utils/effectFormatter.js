@@ -11,46 +11,77 @@ export const generateEffectText = (delta, t) => {
         }${delta.player.money}€`
       )
     }
+    if (delta.player.fame) {
+      lines.push(
+        `${t('ui:stats.fame', { defaultValue: 'Fame' })}: ${
+          delta.player.fame > 0 ? '+' : ''
+        }${delta.player.fame}`
+      )
+    }
+    if (delta.player.time) {
+      lines.push(
+        `${t('ui:stats.time', { defaultValue: 'Time' })}: ${
+          delta.player.time > 0 ? '+' : ''
+        }${delta.player.time}h`
+      )
+    }
+  }
+
+  // Social
+  if (delta.social) {
+    if (delta.social.controversyLevel) {
+      lines.push(
+        `${t('ui:stats.controversy', { defaultValue: 'Controversy' })}: ${
+          delta.social.controversyLevel > 0 ? '+' : ''
+        }${delta.social.controversyLevel}`
+      )
+    }
   }
 
   // Band
   if (delta.band) {
-    const bandStats = [
-      { key: 'hype', tKey: 'ui:stats.hype', defaultValue: 'Hype', unit: '' },
-      {
-        key: 'health',
-        tKey: 'ui:stats.health',
-        defaultValue: 'Health',
-        unit: ''
-      },
-      { key: 'mood', tKey: 'ui:stats.mood', defaultValue: 'Mood', unit: '' },
-      {
-        key: 'energy',
-        tKey: 'ui:stats.energy',
-        defaultValue: 'Energy',
-        unit: ''
-      },
-      { key: 'time', tKey: 'ui:stats.time', defaultValue: 'Time', unit: 'h' },
-      {
-        key: 'controversyLevel',
-        tKey: 'ui:stats.controversy',
-        defaultValue: 'Controversy',
-        unit: ''
-      },
-      {
-        key: 'harmony',
-        tKey: 'ui:stats.harmony',
-        defaultValue: 'Harmony',
-        unit: ''
-      }
-    ]
+    if (delta.band.harmony) {
+      lines.push(
+        `${t('ui:stats.harmony', { defaultValue: 'Harmony' })}: ${
+          delta.band.harmony > 0 ? '+' : ''
+        }${delta.band.harmony}`
+      )
+    }
 
-    for (const { key, tKey, defaultValue, unit } of bandStats) {
-      if (delta.band[key]) {
+    if (delta.band.membersDelta) {
+      let totalMoodChange = 0
+      let totalStaminaChange = 0
+
+      if (Array.isArray(delta.band.membersDelta)) {
+        for (let i = 0; i < delta.band.membersDelta.length; i++) {
+          if (delta.band.membersDelta[i]?.moodChange) {
+            totalMoodChange += delta.band.membersDelta[i].moodChange
+          }
+          if (delta.band.membersDelta[i]?.staminaChange) {
+            totalStaminaChange += delta.band.membersDelta[i].staminaChange
+          }
+        }
+      } else {
+        if (delta.band.membersDelta.moodChange) {
+          totalMoodChange = delta.band.membersDelta.moodChange
+        }
+        if (delta.band.membersDelta.staminaChange) {
+          totalStaminaChange = delta.band.membersDelta.staminaChange
+        }
+      }
+
+      if (totalMoodChange !== 0) {
         lines.push(
-          `${t(tKey, { defaultValue })}: ${
-            delta.band[key] > 0 ? '+' : ''
-          }${delta.band[key]}${unit}`
+          `${t('ui:stats.mood', { defaultValue: 'Mood' })}: ${
+            totalMoodChange > 0 ? '+' : ''
+          }${totalMoodChange}`
+        )
+      }
+      if (totalStaminaChange !== 0) {
+        lines.push(
+          `${t('ui:stats.stamina', { defaultValue: 'Stamina' })}: ${
+            totalStaminaChange > 0 ? '+' : ''
+          }${totalStaminaChange}`
         )
       }
     }

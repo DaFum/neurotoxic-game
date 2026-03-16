@@ -93,6 +93,57 @@ export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  * @param {object} delta - Event delta payload.
  * @returns {object} Updated game state.
  */
+
+export const calculateAppliedDelta = (state, delta) => {
+  const applied = { player: {}, band: {}, social: {}, flags: {} }
+
+  if (delta.player) {
+    if (typeof delta.player.money === 'number') {
+      const nextMoney = clampPlayerMoney((state.player?.money || 0) + delta.player.money)
+      applied.player.money = nextMoney - (state.player?.money || 0)
+    }
+    if (typeof delta.player.time === 'number') {
+      applied.player.time = delta.player.time // time is unbounded
+    }
+    if (typeof delta.player.fame === 'number') {
+      const nextFame = Math.max(0, (state.player?.fame || 0) + delta.player.fame)
+      applied.player.fame = nextFame - (state.player?.fame || 0)
+    }
+  }
+
+  if (delta.social) {
+    if (typeof delta.social.controversyLevel === 'number') {
+      const nextControversy = Math.max(0, Math.min(100, (state.social?.controversyLevel || 0) + delta.social.controversyLevel))
+      applied.social.controversyLevel = nextControversy - (state.social?.controversyLevel || 0)
+    }
+  }
+
+  if (delta.band) {
+    if (typeof delta.band.harmony === 'number') {
+      const nextHarmony = clampBandHarmony((state.band?.harmony || 0) + delta.band.harmony)
+      applied.band.harmony = nextHarmony - (state.band?.harmony || 0)
+    }
+
+    // Inventory
+    if (delta.band.inventory) {
+      applied.band.inventory = { ...delta.band.inventory } // we don't clamp inventory right now
+    }
+
+    const membersDelta =
+      delta.band.membersDelta !== undefined
+        ? delta.band.membersDelta
+        : delta.band.members
+
+    if (membersDelta && !Array.isArray(membersDelta)) {
+       applied.band.membersDelta = { ...membersDelta }
+    } else if (membersDelta && Array.isArray(membersDelta)) {
+       applied.band.membersDelta = membersDelta
+    }
+  }
+
+  return applied
+}
+
 export const applyEventDelta = (state, delta) => {
   const nextState = { ...state }
 
