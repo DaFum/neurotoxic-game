@@ -43,9 +43,9 @@ export const getRandomChatter = state => {
   // 2) Standard chatter
   for (let i = 0; i < CHATTER_DB.length; i++) {
     const c = CHATTER_DB[i]
-    if (c.condition) {
-      if (c.condition(state)) pool.push(c)
-    } else if (ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
+    if (c.condition && c.condition(state)) {
+      pool.push(c)
+    } else if (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
       pool.push(c)
     }
   }

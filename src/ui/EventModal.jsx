@@ -18,7 +18,12 @@ import { useGameState } from '../context/GameState'
  * @param {Function} props.onClose - Callback when modal should be closed.
  */
 
-export const EventModal = ({ event, onOptionSelect, className = '' }) => {
+export const EventModal = ({
+  event,
+  onOptionSelect,
+  onClose,
+  className = ''
+}) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
 
@@ -26,6 +31,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState(null)
+  const [previewError, setPreviewError] = useState(false)
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
   const gameStateRef = useRef(gameState)
@@ -38,6 +44,8 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   useEffect(() => {
     // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setOutcome(null)
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    setPreviewError(false)
   }, [eventId])
 
   const handleOptionSelect = useCallback(
@@ -54,21 +62,20 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           const { result, appliedDelta, delta, outcomeText, description } =
             resolveEventChoice(option, gameStateRef.current)
 
-          setOutcome({
-            option,
-            _precomputedResult: {
-              result,
-              delta,
-              appliedDelta: appliedDelta || delta,
-              outcomeText,
-              description
-            }
-          })
-        } catch (error) {
-          console.error('Failed to preview event outcome:', error)
-          // If preview calculation fails, defer the actual dispatch directly to the provider's fallback path
-          onOptionSelect(option)
-        }
+        setOutcome({
+          option,
+          _precomputedResult: {
+            result,
+            delta,
+            appliedDelta: appliedDelta || delta,
+            outcomeText,
+            description
+          }
+        })
+      } catch (error) {
+        console.error('Failed to preview event outcome:', error)
+        setPreviewError(true)
+        setOutcome({ option })
       }
     },
     [onOptionSelect]
@@ -80,8 +87,9 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
       })
+      onClose?.()
     }
-  }, [onOptionSelect, outcome])
+  }, [onClose, onOptionSelect, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -115,15 +123,17 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''
+    if (previewError) return t('ui:event_error', event.context)
+
     const texts = [
-      outcome._precomputedResult.outcomeText &&
+      outcome._precomputedResult?.outcomeText &&
         t(outcome._precomputedResult.outcomeText, event.context),
-      outcome._precomputedResult.description &&
+      outcome._precomputedResult?.description &&
         t(outcome._precomputedResult.description, event.context)
     ].filter(Boolean)
 
     return texts.join(' ') || t('ui:event.resolved', event.context)
-  }, [outcome, t, event?.context])
+  }, [outcome, t, event?.context, previewError])
 
   if (!event) return null
 
@@ -288,5 +298,6 @@ EventModal.propTypes = {
     ).isRequired
   }),
   onOptionSelect: PropTypes.func.isRequired,
+  onClose: PropTypes.func,
   className: PropTypes.string
 }

@@ -5,6 +5,24 @@ import { userEvent } from '@testing-library/user-event'
 afterEach(cleanup)
 
 describe('PauseButton', () => {
+  test('renders pause button with correct accessibility and focus classes', async () => {
+    const { PauseButton } =
+      await import('../src/components/hud/PauseButton.jsx')
+    const mockToggle = vi.fn()
+
+    const { rerender } = render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
+
+    const button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    expect(button).toBeTruthy()
+    expect(button.className).toContain('focus-visible:outline-none')
+    expect(button.className).toContain('focus-visible:ring-2')
+    expect(button.className).toContain('focus-visible:ring-toxic-green')
+    expect(button.disabled).toBe(false)
+
+    rerender(<PauseButton onTogglePause={mockToggle} isGameOver={true} />)
+    expect(button.disabled).toBe(true)
+  })
+
   test('renders pause button with correct icon', async () => {
     const { PauseButton } =
       await import('../src/components/hud/PauseButton.jsx')
