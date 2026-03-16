@@ -137,12 +137,21 @@ export const calculateAppliedDelta = (state, delta) => {
     if (delta.player.van) {
       applied.player.van = {}
       if (typeof delta.player.van.fuel === 'number') {
-        const nextFuel = clampVanFuel((state.player?.van?.fuel || 0) + delta.player.van.fuel)
+        const nextFuel = clampVanFuel(
+          (state.player?.van?.fuel || 0) + delta.player.van.fuel
+        )
         applied.player.van.fuel = nextFuel - (state.player?.van?.fuel || 0)
       }
       if (typeof delta.player.van.condition === 'number') {
-        const nextCondition = Math.max(0, Math.min(100, (state.player?.van?.condition || 0) + delta.player.van.condition))
-        applied.player.van.condition = nextCondition - (state.player?.van?.condition || 0)
+        const nextCondition = Math.max(
+          0,
+          Math.min(
+            100,
+            (state.player?.van?.condition || 0) + delta.player.van.condition
+          )
+        )
+        applied.player.van.condition =
+          nextCondition - (state.player?.van?.condition || 0)
       }
     }
     if (typeof delta.player.day === 'number') {
@@ -203,7 +212,10 @@ export const calculateAppliedDelta = (state, delta) => {
         } else if (qty === true) {
           applied.band.inventory[itemId] = true
         } else if (qty === false) {
-          const current = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
+          const current =
+            typeof state.band?.inventory?.[itemId] === 'number'
+              ? state.band.inventory[itemId]
+              : 0
           if (current > 0) {
             applied.band.inventory[itemId] = -1
           } else {
@@ -234,7 +246,9 @@ export const calculateAppliedDelta = (state, delta) => {
     }
 
     if (typeof delta.band.skill === 'number') {
-      const members = Array.isArray(state.band?.members) ? state.band.members : []
+      const members = Array.isArray(state.band?.members)
+        ? state.band.members
+        : []
       let totalSkillDelta = 0
       applied.band.members = []
       for (let i = 0; i < members.length; i++) {
@@ -242,7 +256,10 @@ export const calculateAppliedDelta = (state, delta) => {
           members[i].baseStats && typeof members[i].baseStats.skill === 'number'
             ? members[i].baseStats.skill
             : 5
-        const nextSkill = Math.max(1, Math.min(10, currentSkill + delta.band.skill))
+        const nextSkill = Math.max(
+          1,
+          Math.min(10, currentSkill + delta.band.skill)
+        )
         const memberDelta = nextSkill - currentSkill
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
@@ -259,7 +276,8 @@ export const calculateAppliedDelta = (state, delta) => {
         applied.band.relationshipChange = {}
         for (const key of Object.keys(delta.band.relationshipChange)) {
           if (isForbiddenKey(key)) continue
-          applied.band.relationshipChange[key] = delta.band.relationshipChange[key]
+          applied.band.relationshipChange[key] =
+            delta.band.relationshipChange[key]
         }
       }
     }

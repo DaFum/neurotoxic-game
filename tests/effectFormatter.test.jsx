@@ -1,8 +1,8 @@
-import { expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest'
 import { generateEffectText } from '../src/utils/effectFormatter.js'
 
 test('generateEffectText formats valid delta inputs properly', () => {
-  const mockT = vi.fn((key) => {
+  const mockT = vi.fn(key => {
     const defaultLabels = {
       'ui:stats.money': 'Money',
       'ui:stats.fame': 'Fame',
@@ -44,8 +44,8 @@ test('generateEffectText formats valid delta inputs properly', () => {
       luck: 1,
       skill: 2,
       inventory: {
-        'golden_pick': true,
-        'guitar_strings': -2
+        golden_pick: true,
+        guitar_strings: -2
       },
       membersDelta: [
         { moodChange: 5, staminaChange: -2 },
@@ -78,7 +78,7 @@ test('generateEffectText formats valid delta inputs properly', () => {
 })
 
 test('generateEffectText skips exact zero values to prevent redundant logs', () => {
-  const mockT = vi.fn((key) => key)
+  const mockT = vi.fn(key => key)
 
   const delta = {
     player: {
@@ -92,7 +92,7 @@ test('generateEffectText skips exact zero values to prevent redundant logs', () 
     band: {
       harmony: 0,
       inventory: {
-        'guitar_strings': 0
+        guitar_strings: 0
       },
       membersDelta: { moodChange: 0, staminaChange: 0 }
     }
@@ -105,7 +105,7 @@ test('generateEffectText skips exact zero values to prevent redundant logs', () 
 })
 
 test('generateEffectText handles empty or null deltas safely', () => {
-  const mockT = vi.fn((key) => key)
+  const mockT = vi.fn(key => key)
 
   expect(generateEffectText(null, mockT)).toBe('')
   expect(generateEffectText({}, mockT)).toBe('')
