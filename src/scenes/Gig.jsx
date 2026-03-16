@@ -279,7 +279,7 @@ export const Gig = () => {
       </div>
 
       {/* Layer 2: Pixi Canvas (Notes) */}
-      <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-black text-white text-xl">Loading Stage...</div>}>
+      <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-void-black text-ash-gray text-xl">{t('ui:loading_stage', { defaultValue: 'Loading Stage...' })}</div>}>
         <PixiStage gameStateRef={gameStateRef} update={update} />
       </Suspense>
 

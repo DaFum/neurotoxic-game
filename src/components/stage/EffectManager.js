@@ -123,7 +123,10 @@ export class EffectManager {
 
   _getSpriteFromPool(texture) {
     if (this.spritePool.length > 0) {
-      return this.spritePool.pop()
+      const sprite = this.spritePool.pop()
+      sprite.texture = texture || Texture.WHITE
+      sprite.anchor.set(0.5)
+      return sprite
     }
 
     // Create sprite, using generic texture if specific one is missing/not loaded
@@ -145,8 +148,8 @@ export class EffectManager {
     const effect = this._getSpriteFromPool(texture)
 
     // Ensure texture is correct
-    if (effect.texture !== texture && texture) {
-      effect.texture = texture
+    if (effect.texture !== texture) {
+      effect.texture = texture || Texture.WHITE
     }
 
     effect.tint = color

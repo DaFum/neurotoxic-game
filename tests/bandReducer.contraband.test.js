@@ -63,7 +63,7 @@ describe('bandReducer - Contraband', () => {
           members: [{ id: 'm1', stamina: 20 }]
         }
       }
-      const payload = { instanceId: 'test-123', memberId: 'm1' }
+      const payload = { instanceId: 'test-123', contrabandId: 'c_void_energy', memberId: 'm1' }
       const newState = handleUseContraband(state, payload)
 
       assert.equal(Object.keys(newState.band.stash).length, 0) // Item consumed
