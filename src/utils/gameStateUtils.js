@@ -167,10 +167,18 @@ export const calculateAppliedDelta = (state, delta) => {
         nextControversy - (state.social?.controversyLevel || 0)
     }
     if (typeof delta.social.viral === 'number') {
-      applied.social.viral = delta.social.viral
+      const nextViral = Math.max(
+        0,
+        (state.social?.viral || 0) + delta.social.viral
+      )
+      applied.social.viral = nextViral - (state.social?.viral || 0)
     }
     if (typeof delta.social.loyalty === 'number') {
-      applied.social.loyalty = delta.social.loyalty
+      const nextLoyalty = Math.max(
+        0,
+        (state.social?.loyalty || 0) + delta.social.loyalty
+      )
+      applied.social.loyalty = nextLoyalty - (state.social?.loyalty || 0)
     }
   }
 

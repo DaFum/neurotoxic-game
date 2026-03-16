@@ -21,6 +21,7 @@ import { useGameState } from '../context/GameState'
 export const EventModal = ({
   event,
   onOptionSelect,
+  onClose,
   className = ''
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
@@ -30,6 +31,7 @@ export const EventModal = ({
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState(null)
+  const [previewError, setPreviewError] = useState(false)
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
   const gameStateRef = useRef(gameState)
@@ -42,6 +44,8 @@ export const EventModal = ({
   useEffect(() => {
     // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setOutcome(null)
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    setPreviewError(false)
   }, [eventId])
 
   const handleOptionSelect = useCallback(option => {
@@ -69,8 +73,8 @@ export const EventModal = ({
         })
       } catch (error) {
         console.error('Failed to preview event outcome:', error)
-        // If preview calculation fails, defer the actual dispatch directly to the provider's fallback path
-        onOptionSelect(option)
+        setPreviewError(true)
+        setOutcome({ option })
       }
     }
   }, [onOptionSelect])
@@ -81,8 +85,9 @@ export const EventModal = ({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
       })
+      onClose?.()
     }
-  }, [onOptionSelect, outcome])
+  }, [onClose, onOptionSelect, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -116,15 +121,17 @@ export const EventModal = ({
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''
+    if (previewError) return t('ui:event_error', event.context)
+
     const texts = [
-      outcome._precomputedResult.outcomeText &&
+      outcome._precomputedResult?.outcomeText &&
         t(outcome._precomputedResult.outcomeText, event.context),
-      outcome._precomputedResult.description &&
+      outcome._precomputedResult?.description &&
         t(outcome._precomputedResult.description, event.context)
     ].filter(Boolean)
 
     return texts.join(' ') || t('ui:event.resolved', event.context)
-  }, [outcome, t, event?.context])
+  }, [outcome, t, event?.context, previewError])
 
   if (!event) return null
 
@@ -289,5 +296,6 @@ EventModal.propTypes = {
     ).isRequired
   }),
   onOptionSelect: PropTypes.func.isRequired,
+  onClose: PropTypes.func,
   className: PropTypes.string
 }

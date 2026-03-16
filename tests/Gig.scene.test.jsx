@@ -80,8 +80,8 @@ vi.mock('../src/hooks/useGigInput', () => ({
   }))
 }))
 vi.mock('../src/components/PixiStage', () => ({
-  PixiStage: () => <div data-testid='pixi-stage'>Pixi Stage</div>,
-  default: () => <div data-testid='pixi-stage'>Pixi Stage</div>
+  PixiStage: (props) => <div data-testid='pixi-stage' {...props}>Pixi Stage</div>,
+  default: (props) => <div data-testid='pixi-stage' {...props}>Pixi Stage</div>
 }))
 vi.mock('../src/components/GigHUD', () => ({
   GigHUD: ({ onTogglePause }) => (
