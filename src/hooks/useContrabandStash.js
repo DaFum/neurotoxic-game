@@ -36,7 +36,7 @@ export const useContrabandStash = () => {
         return
       }
 
-      useContraband(instanceId, selectedMember)
+      useContraband(instanceId, item.id, selectedMember)
 
       const translatedName = t(item.name, { defaultValue: item.name })
       const messageAction =

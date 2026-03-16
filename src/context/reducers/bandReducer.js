@@ -168,20 +168,18 @@ export const handleAddContraband = (state, payload) => {
 /**
  * Handles using a contraband item.
  * @param {Object} state - Current state
- * @param {Object} payload - { instanceId, memberId }
+ * @param {Object} payload - { instanceId, contrabandId, memberId }
  * @returns {Object} Updated state
  */
 export const handleUseContraband = (state, payload) => {
-  const { instanceId, memberId } = payload
+  const { instanceId, contrabandId, memberId } = payload
   const stash = state.band.stash || {}
 
-  const targetEntry = Object.entries(stash).find(
-    ([_, i]) => i.instanceId === instanceId
-  )
-  if (!targetEntry) return state
+  const item = stash[contrabandId]
+  if (!item || item.instanceId !== instanceId) return state
 
-  const [itemKey, item] = targetEntry
   if (item.applied === true) return state
+  const itemKey = contrabandId
 
   let newBand = { ...state.band }
   let newStash = { ...stash }

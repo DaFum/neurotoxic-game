@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspense } from 'react'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
 import { useGigInput } from '../hooks/useGigInput'
-import { PixiStage } from '../components/PixiStage'
 import { GigHUD } from '../components/GigHUD'
+
+const PixiStage = lazy(() => import('../components/PixiStage').then(m => ({ default: m.PixiStage })))
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen.js'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -278,7 +279,9 @@ export const Gig = () => {
       </div>
 
       {/* Layer 2: Pixi Canvas (Notes) */}
-      <PixiStage gameStateRef={gameStateRef} update={update} />
+      <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-black text-white text-xl">Loading Stage...</div>}>
+        <PixiStage gameStateRef={gameStateRef} update={update} />
+      </Suspense>
 
       {/* Layer 3 & 4: HUD & Inputs */}
       <GigHUD

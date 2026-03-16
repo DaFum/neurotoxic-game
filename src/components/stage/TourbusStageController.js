@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Container, Graphics, Sprite, TilingSprite } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTexture } from './utils'
@@ -39,8 +39,8 @@ class TourbusStageController extends BaseStageController {
 
   async setup() {
     // Setup Layers
-    this.roadContainer = new PIXI.Container()
-    this.obstacleContainer = new PIXI.Container()
+    this.roadContainer = new Container()
+    this.obstacleContainer = new Container()
     this.container.addChild(this.roadContainer)
     this.container.addChild(this.obstacleContainer)
 
@@ -99,7 +99,7 @@ class TourbusStageController extends BaseStageController {
     const isRoadTexValid = roadTex?.source && !roadTex.source.destroyed
 
     if (isRoadTexValid) {
-      this.roadStripes = new PIXI.TilingSprite({
+      this.roadStripes = new TilingSprite({
         texture: roadTex,
         width,
         height
@@ -107,14 +107,14 @@ class TourbusStageController extends BaseStageController {
       this.roadContainer.addChild(this.roadStripes)
     } else {
       this.roadStripes = null
-      const bg = new PIXI.Graphics()
+      const bg = new Graphics()
       bg.rect(0, 0, width, height)
       bg.fill(getPixiColorFromToken('--void-black'))
       this.roadContainer.addChild(bg)
 
       // Draw lane dividers
       for (let i = 1; i < LANE_COUNT; i++) {
-        const line = new PIXI.Graphics()
+        const line = new Graphics()
         line.rect(i * this.laneWidth - 2, 0, 4, height)
         line.fill({ color: getPixiColorFromToken('--ash-gray'), alpha: 0.3 })
         this.roadContainer.addChild(line)
@@ -126,11 +126,11 @@ class TourbusStageController extends BaseStageController {
     const height = this.app.screen.height
 
     if (this.textures.bus) {
-      this.busSprite = new PIXI.Sprite(this.textures.bus)
+      this.busSprite = new Sprite(this.textures.bus)
       this.busSprite.anchor.set(0.5, 1)
     } else {
       // Fallback
-      const g = new PIXI.Graphics()
+      const g = new Graphics()
       g.rect(-25, -80, 50, 80)
       g.fill(getPixiColorFromToken('--toxic-green'))
       this.busSprite = g
@@ -199,7 +199,7 @@ class TourbusStageController extends BaseStageController {
         else if (obs.type === 'OBSTACLE') tex = this.textures.rock // Randomize?
 
         if (tex) {
-          sprite = new PIXI.Sprite(tex)
+          sprite = new Sprite(tex)
           sprite.anchor.set(0.5)
           // Scale to fit lane width AND a max height
           const targetW = this.laneWidth * 0.4
@@ -207,7 +207,7 @@ class TourbusStageController extends BaseStageController {
           const scale = Math.min(targetW / tex.width, targetH / tex.height)
           sprite.scale.set(scale)
         } else {
-          sprite = new PIXI.Graphics()
+          sprite = new Graphics()
           if (obs.type === 'FUEL') {
             sprite.circle(0, 0, 20)
             sprite.fill(getPixiColorFromToken('--warning-yellow'))

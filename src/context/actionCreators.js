@@ -375,12 +375,13 @@ export const createAddContrabandAction = contrabandId => ({
 /**
  * Creates an action to use a contraband item from the stash.
  * @param {string} instanceId - The unique instance ID of the contraband item in the stash.
+ * @param {string} contrabandId - The ID of the contraband item.
  * @param {string} [memberId] - Optional. The ID of the band member to apply the effect to.
  * @returns {Object} Action object
  */
-export const createUseContrabandAction = (instanceId, memberId) => ({
+export const createUseContrabandAction = (instanceId, contrabandId, memberId) => ({
   type: ActionTypes.USE_CONTRABAND,
-  payload: { instanceId, memberId }
+  payload: { instanceId, contrabandId, memberId }
 })
 
 /**

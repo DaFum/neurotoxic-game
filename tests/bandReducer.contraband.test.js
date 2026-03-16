@@ -88,7 +88,7 @@ describe('bandReducer - Contraband', () => {
           performance: { guitarDifficulty: 1.0 }
         }
       }
-      const payload = { instanceId: 'test-789' }
+      const payload = { instanceId: 'test-789', contrabandId: 'c_cursed_pick' }
       const newState = handleUseContraband(state, payload)
 
       assert.equal(Object.keys(newState.band.stash).length, 0)
@@ -108,8 +108,8 @@ describe('bandReducer - Contraband', () => {
         band: {
           ...DEFAULT_BAND_STATE,
           stash: {
-            c_neon_patch: {
-              id: 'c_neon_patch',
+            c_leather_jacket: {
+              id: 'c_leather_jacket',
               instanceId: 'test-patch',
               type: 'equipment',
               effectType: 'style',
@@ -119,7 +119,7 @@ describe('bandReducer - Contraband', () => {
           style: 0
         }
       }
-      const payload = { instanceId: 'test-patch' }
+      const payload = { instanceId: 'test-patch', contrabandId: 'c_leather_jacket' }
       const newState = handleUseContraband(state, payload)
 
       assert.equal(Object.keys(newState.band.stash).length, 1) // Equipment not removed

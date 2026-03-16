@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Application, Container } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 
@@ -230,7 +230,7 @@ export class BaseStageController {
         return
       }
 
-      app = new PIXI.Application()
+      app = new Application()
       this.app = app
       await app.init({
         backgroundAlpha: 0,
@@ -244,7 +244,7 @@ export class BaseStageController {
       if (this._checkLifecycleRace(app)) return
 
       container.appendChild(app.canvas)
-      this.container = new PIXI.Container()
+      this.container = new Container()
       app.stage.addChild(this.container)
 
       // Subclass logic goes here

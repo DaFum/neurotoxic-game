@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
 
 const PIXI_TOKEN_FALLBACKS = Object.freeze({
@@ -163,20 +163,20 @@ export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
 
 /**
  * Simple cache for textures loaded via the Image element fallback.
- * Separate from PIXI.Assets.cache to avoid issues with TilingSprite
+ * Separate from Assets.cache to avoid issues with TilingSprite
  * (Image-based textures lack proper source metadata for tiling).
- * @type {Map<string, PIXI.Texture>}
+ * @type {Map<string, Texture>}
  */
 const _imageTextureCache = new Map()
 
 /**
  * Checks existing caches for a valid texture.
  * @param {string} url - The URL of the texture.
- * @returns {PIXI.Texture|null} The cached texture or null.
+ * @returns {Texture|null} The cached texture or null.
  */
 const _getCachedTexture = url => {
-  if (PIXI.Assets.cache.has(url)) {
-    const cached = PIXI.Assets.cache.get(url)
+  if (Assets.cache.has(url)) {
+    const cached = Assets.cache.get(url)
     if (cached?.source && !cached.source.destroyed) return cached
   }
 
@@ -204,15 +204,15 @@ const _hasFileExtension = url => {
 /**
  * Loads a texture using an Image element fallback.
  * @param {string} url - The URL to load.
- * @returns {Promise<PIXI.Texture|null>} The loaded texture or null.
+ * @returns {Promise<Texture|null>} The loaded texture or null.
  */
 const _loadWithImageFallback = url => {
   return new Promise(resolve => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
-      const source = new PIXI.ImageSource({ resource: img })
-      const texture = new PIXI.Texture({ source })
+      const source = new ImageSource({ resource: img })
+      const texture = new Texture({ source })
       _imageTextureCache.set(url, texture)
       resolve(texture)
     }
@@ -228,7 +228,7 @@ const _loadWithImageFallback = url => {
  * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
  * Useful for generated URLs without extensions or with query parameters.
  * @param {string} url - The URL to load.
- * @returns {Promise<PIXI.Texture|null>} The loaded texture or null.
+ * @returns {Promise<Texture|null>} The loaded texture or null.
  */
 export const loadTexture = async url => {
   const cached = _getCachedTexture(url)
@@ -236,7 +236,7 @@ export const loadTexture = async url => {
 
   if (_hasFileExtension(url)) {
     try {
-      return await PIXI.Assets.load(url)
+      return await Assets.load(url)
     } catch (err) {
       logger.warn(
         'loadTexture',

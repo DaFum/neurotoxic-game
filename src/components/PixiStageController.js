@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { ColorMatrixFilter } from 'pixi.js'
 import { BaseStageController } from './stage/BaseStageController.js'
 import { CrowdManager } from './stage/CrowdManager.js'
 import { LaneManager } from './stage/LaneManager.js'
@@ -47,7 +47,7 @@ class PixiStageController extends BaseStageController {
    */
   _initFilters() {
     this.isToxicActive = false
-    this.colorMatrix = new PIXI.ColorMatrixFilter()
+    this.colorMatrix = new ColorMatrixFilter()
     this.toxicFilters = [this.colorMatrix]
     this.stageContainer = this.container
   }

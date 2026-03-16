@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
@@ -39,7 +39,7 @@ class RoadieStageController extends BaseStageController {
     if (this.isDisposed) return
 
     // Player Container (Groups body + item)
-    this.playerContainer = new PIXI.Container()
+    this.playerContainer = new Container()
     this.container.addChild(this.playerContainer)
 
     // Compute cell dimensions for sprite sizing
@@ -50,7 +50,7 @@ class RoadieStageController extends BaseStageController {
 
     // Player Sprite
     if (this.textures.roadie) {
-      this.playerSprite = new PIXI.Sprite(this.textures.roadie)
+      this.playerSprite = new Sprite(this.textures.roadie)
       this.playerSprite.anchor.set(0.5)
       // Scale to fit ~1 cell
       const playerScale =
@@ -60,7 +60,7 @@ class RoadieStageController extends BaseStageController {
         ) * 0.8
       this.playerSprite.scale.set(playerScale)
     } else {
-      this.playerSprite = new PIXI.Graphics()
+      this.playerSprite = new Graphics()
       this.playerSprite.circle(0, 0, 20)
       const toxicGreen = getPixiColorFromToken('--toxic-green')
       this.playerSprite.fill(toxicGreen)
@@ -68,7 +68,7 @@ class RoadieStageController extends BaseStageController {
     this.playerContainer.addChild(this.playerSprite)
 
     // Item Sprite (Placeholder for now, visible only when carrying)
-    this.itemSprite = new PIXI.Sprite()
+    this.itemSprite = new Sprite()
     this.itemSprite.anchor.set(0.5)
     this.itemSprite.y = -(cellH * 0.3) // Above head
     this.itemSprite.visible = false
@@ -126,7 +126,7 @@ class RoadieStageController extends BaseStageController {
       this.bgGraphics.destroy()
     }
 
-    const g = new PIXI.Graphics()
+    const g = new Graphics()
     this.bgGraphics = g
     const roadColor = getPixiColorFromToken('--void-black')
     const grassColor =
@@ -200,7 +200,7 @@ class RoadieStageController extends BaseStageController {
             Math.min(cellW / tex.width, cellH / tex.height) * 0.6
           this.itemSprite.scale.set(itemScale)
         } else {
-          this.itemSprite.texture = PIXI.Texture.WHITE
+          this.itemSprite.texture = Texture.WHITE
           this.itemSprite.scale.set(0.3)
         }
       } else {
@@ -248,10 +248,10 @@ class RoadieStageController extends BaseStageController {
             }
             const texIndex =
               Math.floor(Math.abs(textureHash)) % this.textures.cars.length
-            sprite = new PIXI.Sprite(this.textures.cars[texIndex])
+            sprite = new Sprite(this.textures.cars[texIndex])
             sprite.anchor.set(0.5)
           } else {
-            sprite = new PIXI.Graphics()
+            sprite = new Graphics()
             sprite.rect(-30, -20, 60, 40)
             sprite.fill(getPixiColorFromToken('--blood-red'))
           }
@@ -270,7 +270,7 @@ class RoadieStageController extends BaseStageController {
         }
 
         // Adjust Scale if texture — constrain both width AND height
-        if (sprite instanceof PIXI.Sprite && sprite.texture?.width > 0) {
+        if (sprite instanceof Sprite && sprite.texture?.width > 0) {
           const targetW = car.width * cellW
           const targetH = cellH * 0.7
           const scale = Math.min(

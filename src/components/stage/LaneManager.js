@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
 import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
 
 const LANE_GAP = 20
@@ -13,8 +13,8 @@ const LANE_GUIDE_ALPHA = 0.16
 
 export class LaneManager {
   /**
-   * @param {PIXI.Application} app
-   * @param {PIXI.Container} stageContainer
+   * @param {Application} app
+   * @param {Container} stageContainer
    * @param {object} gameStateRef
    */
   constructor(app, stageContainer, gameStateRef) {
@@ -30,7 +30,7 @@ export class LaneManager {
   }
 
   _initContainerAndLayout() {
-    this.rhythmContainer = new PIXI.Container()
+    this.rhythmContainer = new Container()
     const width = this.app.screen.width
     const height = this.app.screen.height
 
@@ -89,16 +89,16 @@ export class LaneManager {
     hitLineStrokeWidth
   ) {
     // Create separate graphics for static background and dynamic elements
-    const staticGraphics = new PIXI.Graphics()
+    const staticGraphics = new Graphics()
     staticGraphics.__laneIndex = index
     staticGraphics.__layer = 'static'
 
-    const activeGraphics = new PIXI.Graphics()
+    const activeGraphics = new Graphics()
     activeGraphics.__laneIndex = index
     activeGraphics.__layer = 'active'
     activeGraphics.visible = false
 
-    const inactiveGraphics = new PIXI.Graphics()
+    const inactiveGraphics = new Graphics()
     inactiveGraphics.__laneIndex = index
     inactiveGraphics.__layer = 'inactive'
     inactiveGraphics.visible = true

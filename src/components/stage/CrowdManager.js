@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Container, Graphics, Sprite } from 'pixi.js'
 import {
   calculateCrowdOffset,
   CROWD_LAYOUT,
@@ -10,8 +10,8 @@ import { handleError } from '../../utils/errorHandler.js'
 
 export class CrowdManager {
   /**
-   * @param {PIXI.Application} app
-   * @param {PIXI.Container} stageContainer
+   * @param {Application} app
+   * @param {Container} stageContainer
    */
   constructor(app, stageContainer) {
     this.app = app
@@ -61,7 +61,7 @@ export class CrowdManager {
   }
 
   init() {
-    this.container = new PIXI.Container()
+    this.container = new Container()
     this.container.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio
     this.stageContainer.addChild(this.container)
 
@@ -74,12 +74,12 @@ export class CrowdManager {
 
       let crowd
       if (this.textures.idle) {
-        crowd = new PIXI.Sprite(this.textures.idle)
+        crowd = new Sprite(this.textures.idle)
         crowd.anchor.set(0.5)
         crowd.width = radius * 2.5 // Adjust scale to match circle size approx
         crowd.height = radius * 2.5
       } else {
-        crowd = new PIXI.Graphics()
+        crowd = new Graphics()
         crowd.circle(0, 0, radius)
         crowd.fill(fallbackColor)
       }
@@ -113,7 +113,7 @@ export class CrowdManager {
       member.y = member.baseY - yOffset
 
       // Texture swapping logic
-      if (member instanceof PIXI.Sprite) {
+      if (member instanceof Sprite) {
         if (targetTexture && member.texture !== targetTexture) {
           member.texture = targetTexture
         }

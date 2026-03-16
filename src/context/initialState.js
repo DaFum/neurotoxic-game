@@ -87,7 +87,7 @@ export const DEFAULT_BAND_STATE = {
   harmonyRegenTravel: false,
   inventorySlots: 0,
   luck: 0,
-  stash: {},
+  stash: Object.create(null),
   activeContrabandEffects: [],
   performance: {
     guitarDifficulty: 1.0,
@@ -216,7 +216,7 @@ export const createInitialState = (persistedData = {}) => ({
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory },
-    stash: { ...DEFAULT_BAND_STATE.stash },
+    stash: Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash),
     activeContrabandEffects: [...DEFAULT_BAND_STATE.activeContrabandEffects]
   },
   social: {
