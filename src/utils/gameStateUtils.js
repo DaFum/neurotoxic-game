@@ -95,7 +95,13 @@ export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  */
 
 export const calculateAppliedDelta = (state, delta) => {
-  const applied = { player: {}, band: {}, social: {}, flags: {} }
+  const applied = { player: {}, band: {}, social: {} }
+
+  if (delta.flags) {
+    applied.flags = { ...delta.flags }
+  } else {
+    applied.flags = {}
+  }
 
   if (delta.player) {
     if (typeof delta.player.money === 'number') {
@@ -139,7 +145,11 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.player.day = delta.player.day
     }
     if (delta.player.stats) {
-      applied.player.stats = { ...delta.player.stats }
+      applied.player.stats = {}
+      for (const key of Object.keys(delta.player.stats)) {
+        if (isForbiddenKey(key)) continue
+        applied.player.stats[key] = delta.player.stats[key]
+      }
     }
   }
 
@@ -157,14 +167,31 @@ export const calculateAppliedDelta = (state, delta) => {
   if (delta.band) {
     if (typeof delta.band.harmony === 'number') {
       const nextHarmony = clampBandHarmony(
-        (state.band?.harmony || 0) + delta.band.harmony
+        (state.band?.harmony ?? 1) + delta.band.harmony
       )
-      applied.band.harmony = nextHarmony - (state.band?.harmony || 0)
+      applied.band.harmony = nextHarmony - (state.band?.harmony ?? 1)
     }
 
     // Inventory
     if (delta.band.inventory) {
-      applied.band.inventory = { ...delta.band.inventory } // we don't clamp inventory right now
+      applied.band.inventory = {}
+      for (const [itemId, qty] of Object.entries(delta.band.inventory)) {
+        if (isForbiddenKey(itemId)) continue
+        let val
+        if (typeof qty === 'number') {
+           val = qty
+        } else if (qty === true) {
+           val = 1
+        } else if (qty === false) {
+           const current = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
+           val = current > 0 ? -1 : 0
+        }
+        if (val !== undefined && val !== 0) {
+          applied.band.inventory[itemId] = val
+        } else if (qty === true || qty === false) {
+          applied.band.inventory[itemId] = qty
+        }
+      }
     }
 
     const membersDelta =
@@ -173,7 +200,11 @@ export const calculateAppliedDelta = (state, delta) => {
         : delta.band.members
 
     if (membersDelta && !Array.isArray(membersDelta)) {
-      applied.band.membersDelta = { ...membersDelta }
+      applied.band.membersDelta = {}
+      for (const key of Object.keys(membersDelta)) {
+        if (isForbiddenKey(key)) continue
+        applied.band.membersDelta[key] = membersDelta[key]
+      }
     } else if (membersDelta && Array.isArray(membersDelta)) {
       applied.band.membersDelta = membersDelta
     }
@@ -182,9 +213,26 @@ export const calculateAppliedDelta = (state, delta) => {
       const nextLuck = Math.max(0, (state.band?.luck || 0) + delta.band.luck)
       applied.band.luck = nextLuck - (state.band?.luck || 0)
     }
-    // Skill operates on individual members, so there is no global band.skill delta.
+
+    if (typeof delta.band.skill === 'number') {
+      applied.band.members = []
+      const members = Array.isArray(state.band?.members) ? state.band.members : []
+      for (let i = 0; i < members.length; i++) {
+        const nextSkill = Math.max(0, (members[i].skill || 0) + delta.band.skill)
+        applied.band.members.push({ skill: nextSkill - (members[i].skill || 0) })
+      }
+    }
+
     if (delta.band.relationshipChange) {
-      applied.band.relationshipChange = { ...delta.band.relationshipChange }
+      if (Array.isArray(delta.band.relationshipChange)) {
+        applied.band.relationshipChange = [...delta.band.relationshipChange]
+      } else {
+        applied.band.relationshipChange = {}
+        for (const key of Object.keys(delta.band.relationshipChange)) {
+          if (isForbiddenKey(key)) continue
+          applied.band.relationshipChange[key] = delta.band.relationshipChange[key]
+        }
+      }
     }
   }
 

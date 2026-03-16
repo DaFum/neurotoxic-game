@@ -25,6 +25,22 @@ export const generateEffectText = (delta, t) => {
         }${delta.player.time}h`
       )
     }
+    if (delta.player.van) {
+      if (typeof delta.player.van.fuel === 'number' && delta.player.van.fuel !== 0) {
+        lines.push(
+          `${t('ui:stats.fuel', { defaultValue: 'Fuel' })}: ${
+            delta.player.van.fuel > 0 ? '+' : ''
+          }${delta.player.van.fuel}`
+        )
+      }
+      if (typeof delta.player.van.condition === 'number' && delta.player.van.condition !== 0) {
+        lines.push(
+          `${t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}: ${
+            delta.player.van.condition > 0 ? '+' : ''
+          }${delta.player.van.condition}`
+        )
+      }
+    }
   }
 
   // Social
@@ -36,6 +52,29 @@ export const generateEffectText = (delta, t) => {
         }${delta.social.controversyLevel}`
       )
     }
+    if (typeof delta.social.viral === 'number' && delta.social.viral !== 0) {
+      lines.push(
+        `${t('ui:stats.viral', { defaultValue: 'Viral' })}: ${
+          delta.social.viral > 0 ? '+' : ''
+        }${delta.social.viral}`
+      )
+    }
+    if (typeof delta.social.loyalty === 'number' && delta.social.loyalty !== 0) {
+      lines.push(
+        `${t('ui:stats.loyalty', { defaultValue: 'Loyalty' })}: ${
+          delta.social.loyalty > 0 ? '+' : ''
+        }${delta.social.loyalty}`
+      )
+    }
+  }
+
+  // Score
+  if (typeof delta.score === 'number' && delta.score !== 0) {
+    lines.push(
+      `${t('ui:stats.score', { defaultValue: 'Score' })}: ${
+        delta.score > 0 ? '+' : ''
+      }${delta.score}`
+    )
   }
 
   // Band
@@ -45,6 +84,20 @@ export const generateEffectText = (delta, t) => {
         `${t('ui:stats.harmony', { defaultValue: 'Harmony' })}: ${
           delta.band.harmony > 0 ? '+' : ''
         }${delta.band.harmony}`
+      )
+    }
+    if (typeof delta.band.luck === 'number' && delta.band.luck !== 0) {
+      lines.push(
+        `${t('ui:stats.luck', { defaultValue: 'Luck' })}: ${
+          delta.band.luck > 0 ? '+' : ''
+        }${delta.band.luck}`
+      )
+    }
+    if (typeof delta.band.skill === 'number' && delta.band.skill !== 0) {
+      lines.push(
+        `${t('ui:stats.skill', { defaultValue: 'Skill' })}: ${
+          delta.band.skill > 0 ? '+' : ''
+        }${delta.band.skill}`
       )
     }
 

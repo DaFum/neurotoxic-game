@@ -5,7 +5,8 @@ import {
   applyInventoryItemDelta,
   clampBandHarmony,
   clampPlayerMoney,
-  calculateFameLevel
+  calculateFameLevel,
+  calculateAppliedDelta
 } from '../src/utils/gameStateUtils.js'
 
 test('calculateFameLevel', () => {
@@ -142,4 +143,65 @@ test('applyInventoryItemDelta handles numeric and boolean deltas', () => {
   assert.equal(applyInventoryItemDelta(0, -5), 0)
   assert.equal(applyInventoryItemDelta(undefined, 3), 3)
   assert.equal(applyInventoryItemDelta(true, false), false)
+})
+
+test('calculateAppliedDelta calculates correctly with limits and forbidden keys', () => {
+  const state = {
+    player: {
+      money: 10,
+      van: { fuel: 90, condition: 10 },
+      stats: { someStat: 5 }
+    },
+    band: {
+      harmony: 100,
+      luck: 0,
+      members: [{ skill: 10, mood: 10, stamina: 10 }],
+      inventory: { someItem: 1 }
+    },
+    social: { controversyLevel: 5 },
+    flags: {}
+  }
+
+  const delta = {
+    player: {
+      money: -20, // clamps to 0 (applied -10)
+      van: { fuel: 20, condition: -20 }, // fuel clamps to 100 (applied 10), condition clamps to 0 (applied -10)
+      stats: { someNewStat: 2, __proto__: { evil: 1 } }
+    },
+    band: {
+      harmony: 10, // clamps to 100 (applied 0)
+      luck: 10,
+      skill: 5,
+      inventory: {
+        someItem: false, // will subtract 1
+        newItem: true,   // will add 1
+        constructor: { evil: 2 }
+      },
+      membersDelta: {
+        moodChange: -5,
+        staminaChange: 2,
+        prototype: { evil: 3 }
+      }
+    },
+    flags: {
+      someFlag: true
+    }
+  }
+
+  const applied = calculateAppliedDelta(state, delta)
+
+  assert.equal(applied.player.money, -10)
+  assert.equal(applied.player.van.fuel, 10)
+  assert.equal(applied.player.van.condition, -10)
+  assert.equal(applied.band.harmony, 0)
+  assert.equal(applied.band.luck, 10)
+  assert.deepEqual(applied.band.members, [{ skill: 5 }])
+  assert.equal(applied.band.inventory.someItem, -1)
+  assert.equal(applied.band.inventory.newItem, 1)
+  assert.equal(applied.flags.someFlag, true)
+
+  // Checking forbidden keys are absent (by checking if the properties were copied)
+  assert.equal(Object.hasOwn(applied.player.stats, '__proto__'), false)
+  assert.equal(Object.hasOwn(applied.band.inventory, 'constructor'), false)
+  assert.equal(Object.hasOwn(applied.band.membersDelta, 'prototype'), false)
 })

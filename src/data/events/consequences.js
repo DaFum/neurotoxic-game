@@ -66,7 +66,8 @@ export const CONSEQUENCE_EVENTS = [
             ],
             description: 'events:consequences_venue_complaint.opt3.d_d21d'
           }
-        }
+        },
+        outcomeText: 'events:consequences_venue_complaint.opt3.outcome'
       }
     ]
   },
@@ -183,7 +184,8 @@ export const CONSEQUENCE_EVENTS = [
             ],
             description: 'events:consequences_bandmate_scandal.opt3.d_133d'
           }
-        }
+        },
+        outcomeText: 'events:consequences_bandmate_scandal.opt3.outcome'
       }
     ]
   },
