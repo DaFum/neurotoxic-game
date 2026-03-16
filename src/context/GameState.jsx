@@ -739,7 +739,7 @@ export const GameStateProvider = ({ children }) => {
 
           const message =
             msgOutcome && msgDesc
-              ? `${msgOutcome} — ${msgDesc}`
+              ? `${msgOutcome} ${msgDesc}`
               : msgOutcome || msgDesc
           addToast(message, 'info')
         }

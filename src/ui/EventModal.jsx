@@ -49,7 +49,11 @@ export const EventModal = ({
       option.action()
     } else {
       try {
-        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
+        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
+        // Snapshot vs Latest State Decision:
+        // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
+        // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
+        // preventing any background state mutations from altering the event outcome between preview and confirmation.
         const { result, appliedDelta, delta, outcomeText, description } =
           resolveEventChoice(option, gameStateRef.current)
 
@@ -109,6 +113,18 @@ export const EventModal = ({
   const memoizedEffectText = useMemo(() => {
     return precomputedDelta ? generateEffectText(precomputedDelta, t) : ''
   }, [precomputedDelta, t])
+
+  const outcomeMessage = useMemo(() => {
+    if (!outcome || !event) return ''
+    const texts = [
+      outcome._precomputedResult.outcomeText &&
+        t(outcome._precomputedResult.outcomeText, event.context),
+      outcome._precomputedResult.description &&
+        t(outcome._precomputedResult.description, event.context)
+    ].filter(Boolean)
+
+    return texts.join(' ') || t('ui:event.resolved', event.context)
+  }, [outcome, t, event?.context])
 
   if (!event) return null
 
@@ -172,12 +188,7 @@ export const EventModal = ({
             >
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
-                  {t(
-                    outcome._precomputedResult.outcomeText ||
-                      outcome._precomputedResult.description ||
-                      'ui:event.resolved',
-                    event.context
-                  )}
+                  {outcomeMessage}
                 </p>
                 {memoizedEffectText && (
                   <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>

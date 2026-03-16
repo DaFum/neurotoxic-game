@@ -15,8 +15,8 @@ vi.mock('../src/utils/eventEngine', () => ({
     result: {},
     delta: { player: { money: 20 } },
     appliedDelta: { player: { money: 10 } },
-    outcomeText: option.outcomeText || 'Default outcome',
-    description: 'Description'
+    outcomeText: option.outcomeText || '',
+    description: option.description !== undefined ? option.description : 'Description'
   })
 }))
 
@@ -59,7 +59,7 @@ test('EventModal renders event details and handles click flow', async () => {
   expect(handleSelect).not.toHaveBeenCalled()
 
   await waitFor(() => {
-    expect(screen.getByText('Good Outcome')).toBeInTheDocument()
+    expect(screen.getByText('Good Outcome Description')).toBeInTheDocument()
   })
 
   const continueButton = screen.getByText(/CONTINUE/i)
@@ -94,7 +94,7 @@ test('EventModal handles keyboard selection', async () => {
   expect(handleSelect).not.toHaveBeenCalled()
 
   await waitFor(() => {
-    expect(screen.getByText('Option 2 Outcome')).toBeInTheDocument()
+    expect(screen.getByText('Option 2 Outcome Description')).toBeInTheDocument()
   })
 
   const continueButton = screen.getByText(/CONTINUE/i)
@@ -129,6 +129,26 @@ test('EventModal keyboard selection blocks disabled options', async () => {
 
   // No CONTINUE button should appear
   expect(screen.queryByText(/CONTINUE/i)).not.toBeInTheDocument()
+})
+
+test('EventModal uses fallback text when both outcomeText and description are empty', async () => {
+  const mockEvent = {
+    id: 'test_event_empty',
+    title: 'Test Event',
+    description: 'This is a test event.',
+    options: [
+      { label: 'Option 1', outcomeText: '', description: '' }
+    ]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  fireEvent.click(screen.getByText('Option 1'))
+
+  await waitFor(() => {
+    expect(screen.getByText('ui:event.resolved')).toBeInTheDocument()
+  })
 })
 
 test('EventModal handles option with direct action callback', () => {
