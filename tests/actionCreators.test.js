@@ -436,10 +436,18 @@ describe('Action Creators', () => {
 
   describe('createUseContrabandAction', () => {
     it('creates correct action', () => {
-      const action = createUseContrabandAction('inst_1', 'c_void_energy', 'matze')
+      const action = createUseContrabandAction(
+        'inst_1',
+        'c_void_energy',
+        'matze'
+      )
       assert.deepStrictEqual(action, {
         type: ActionTypes.USE_CONTRABAND,
-        payload: { instanceId: 'inst_1', contrabandId: 'c_void_energy', memberId: 'matze' }
+        payload: {
+          instanceId: 'inst_1',
+          contrabandId: 'c_void_energy',
+          memberId: 'matze'
+        }
       })
     })
   })

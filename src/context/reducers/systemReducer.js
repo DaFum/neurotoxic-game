@@ -94,21 +94,29 @@ export const handleLoadGame = (state, payload) => {
       ...(loadedState.band?.inventory || {})
     },
     stash: (() => {
-      const defaultStash = Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash)
+      const defaultStash = Object.assign(
+        Object.create(null),
+        DEFAULT_BAND_STATE.stash
+      )
       if (Array.isArray(loadedState.band?.stash)) {
         return loadedState.band.stash.reduce((acc, item) => {
-          if (!item || typeof item !== 'object' || Array.isArray(item)) return acc
+          if (!item || typeof item !== 'object' || Array.isArray(item))
+            return acc
           if (!CONTRABAND_BY_ID.has(item.id)) return acc
           if (Object.hasOwn(item, '__proto__')) return acc
           const copy = { ...item }
           copy.remainingDuration =
-            Number.isFinite(item.remainingDuration) && item.remainingDuration > 0
+            Number.isFinite(item.remainingDuration) &&
+            item.remainingDuration > 0
               ? item.remainingDuration
               : item.duration || null
           acc[item.id] = copy
           return acc
         }, defaultStash)
-      } else if (loadedState.band?.stash && typeof loadedState.band.stash === 'object') {
+      } else if (
+        loadedState.band?.stash &&
+        typeof loadedState.band.stash === 'object'
+      ) {
         const migrated = Object.create(null)
         for (const [id, item] of Object.entries(loadedState.band.stash)) {
           if (!CONTRABAND_BY_ID.has(id)) continue
@@ -116,7 +124,8 @@ export const handleLoadGame = (state, payload) => {
           if (Object.hasOwn(item, '__proto__')) continue
           const copy = { ...item }
           copy.remainingDuration =
-            Number.isFinite(item.remainingDuration) && item.remainingDuration > 0
+            Number.isFinite(item.remainingDuration) &&
+            item.remainingDuration > 0
               ? item.remainingDuration
               : item.duration || null
           migrated[id] = copy
@@ -451,7 +460,10 @@ export const handleAdvanceDay = (state, payload) => {
     // Unmark applied status in stash so relics can be used again
     if (traitResult.band.stash) {
       if (!stashCloned) {
-        traitResult.band.stash = Object.assign(Object.create(null), traitResult.band.stash)
+        traitResult.band.stash = Object.assign(
+          Object.create(null),
+          traitResult.band.stash
+        )
         stashCloned = true
       }
       for (const itemKey in traitResult.band.stash) {
