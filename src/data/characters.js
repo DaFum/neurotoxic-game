@@ -26,31 +26,31 @@ export const CHARACTERS = {
     traits: [
       {
         id: 'perfektionist',
-        name: 'Perfektionist',
-        desc: '+15% Score if >85% Hit Rate',
+        name: 'traits:perfektionist.name',
+        desc: 'traits:perfektionist.desc',
         effect: 'score_bonus_high_acc',
-        unlockHint: 'Hit 100% Accuracy in a single gig.'
+        unlockHint: 'traits:perfektionist.unlockHint'
       },
       {
         id: 'gear_nerd',
-        name: 'Gear Nerd',
-        desc: '-20% Equipment Costs',
+        name: 'traits:gearNerd.name',
+        desc: 'traits:gearNerd.desc',
         effect: 'discount_equip',
-        unlockHint: 'Purchase 5 different gear items.'
+        unlockHint: 'traits:gearNerd.unlockHint'
       },
       {
         id: 'virtuoso',
-        name: 'Virtuoso',
-        desc: '+10% Hit Window',
+        name: 'traits:virtuoso.name',
+        desc: 'traits:virtuoso.desc',
         effect: 'hit_window_bonus',
-        unlockHint: 'Complete a solo without missing a note.'
+        unlockHint: 'traits:virtuoso.unlockHint'
       },
       {
         id: 'tech_wizard',
-        name: 'Tech Wizard',
-        desc: '+10% Score on Technical Songs',
+        name: 'traits:techWizard.name',
+        desc: 'traits:techWizard.desc',
         effect: 'score_bonus_tech',
-        unlockHint: 'Get 100% Accuracy on a Technical song.'
+        unlockHint: 'traits:techWizard.unlockHint'
       },
       {
         id: 'grudge_holder',
@@ -74,31 +74,31 @@ export const CHARACTERS = {
     traits: [
       {
         id: 'party_animal',
-        name: 'Party Animal',
-        desc: 'Random hangover (-Stamina) but +Mood when drinking',
+        name: 'traits:partyAnimal.name',
+        desc: 'traits:partyAnimal.desc',
         effect: 'hangover_risk',
-        unlockHint: 'Buy the beer fridge and drain it.'
+        unlockHint: 'traits:partyAnimal.unlockHint'
       },
       {
         id: 'blast_machine',
-        name: 'Blast Beat Machine',
-        desc: '+25% Score on fast sections',
+        name: 'traits:blastMachine.name',
+        desc: 'traits:blastMachine.desc',
         effect: 'score_bonus_fast',
-        unlockHint: 'Maintain a 50+ combo during a fast section (>160 BPM).'
+        unlockHint: 'traits:blastMachine.unlockHint'
       },
       {
         id: 'showman',
-        name: 'Showman',
-        desc: '+20% Virality Bonus',
+        name: 'traits:showman.name',
+        desc: 'traits:showman.desc',
         effect: 'viral_bonus_show',
-        unlockHint: 'Perform 3 Stage Dives successfully.'
+        unlockHint: 'traits:showman.unlockHint'
       },
       {
         id: 'clumsy',
-        name: 'Clumsy',
-        desc: 'Increased failure chance on physical stunts',
+        name: 'traits:clumsy.name',
+        desc: 'traits:clumsy.desc',
         effect: 'stunt_fail_risk',
-        unlockHint: 'Requires 2 failed stage dives.'
+        unlockHint: 'traits:clumsy.unlockHint'
       }
     ],
     equipment: { set: 'Pearl Export', cymbals: 'Zildjian/Sabian Mix' }
@@ -118,31 +118,31 @@ export const CHARACTERS = {
     traits: [
       {
         id: 'bandleader',
-        name: 'Bandleader',
-        desc: '+50% chance to solve conflicts',
+        name: 'traits:bandleader.name',
+        desc: 'traits:bandleader.desc',
         effect: 'conflict_solver',
-        unlockHint: 'Successfully resolve 3 band conflicts.'
+        unlockHint: 'traits:bandleader.unlockHint'
       },
       {
         id: 'social_manager',
-        name: 'Social Nerd',
-        desc: '+15% Viral Chance',
+        name: 'traits:socialManager.name',
+        desc: 'traits:socialManager.desc',
         effect: 'viral_bonus',
-        unlockHint: 'Reach 1000 followers on any platform.'
+        unlockHint: 'traits:socialManager.unlockHint'
       },
       {
         id: 'road_warrior',
-        name: 'Road Warrior',
-        desc: '-15% Fuel Consumption',
+        name: 'traits:roadWarrior.name',
+        desc: 'traits:roadWarrior.desc',
         effect: 'fuel_discount',
-        unlockHint: 'Travel 5000km in total.'
+        unlockHint: 'traits:roadWarrior.unlockHint'
       },
       {
         id: 'melodic_genius',
-        name: 'Melodic Genius',
-        desc: '+10% Max Combo on Slow Songs',
+        name: 'traits:melodicGenius.name',
+        desc: 'traits:melodicGenius.desc',
         effect: 'combo_bonus_slow',
-        unlockHint: 'Maintain a 30+ combo in a slow song (<120 BPM).'
+        unlockHint: 'traits:melodicGenius.unlockHint'
       },
       {
         id: 'peacemaker',

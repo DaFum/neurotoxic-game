@@ -72,16 +72,16 @@ describe('characters.js', () => {
 
     it('perfektionist trait has correct properties', () => {
       const trait = CHARACTERS.MATZE.traits.find(t => t.id === 'perfektionist')
-      assert.strictEqual(trait.name, 'Perfektionist')
+      assert.strictEqual(trait.name, 'traits:perfektionist.name')
       assert.strictEqual(trait.effect, 'score_bonus_high_acc')
-      assert.ok(trait.desc.includes('Score'))
+      assert.ok(trait.desc.includes('perfektionist.desc'))
     })
 
     it('gear_nerd trait has correct properties', () => {
       const trait = CHARACTERS.MATZE.traits.find(t => t.id === 'gear_nerd')
-      assert.strictEqual(trait.name, 'Gear Nerd')
+      assert.strictEqual(trait.name, 'traits:gearNerd.name')
       assert.strictEqual(trait.effect, 'discount_equip')
-      assert.ok(trait.desc.includes('Equipment'))
+      assert.ok(trait.desc.includes('gearNerd.desc'))
     })
   })
 
@@ -140,16 +140,16 @@ describe('characters.js', () => {
 
     it('blast_machine trait has correct properties', () => {
       const trait = CHARACTERS.MARIUS.traits.find(t => t.id === 'blast_machine')
-      assert.strictEqual(trait.name, 'Blast Beat Machine')
+      assert.strictEqual(trait.name, 'traits:blastMachine.name')
       assert.strictEqual(trait.effect, 'score_bonus_fast')
-      assert.ok(trait.desc.includes('fast'))
+      assert.ok(trait.desc.includes('blastMachine.desc'))
     })
 
     it('showman trait has correct properties', () => {
       const trait = CHARACTERS.MARIUS.traits.find(t => t.id === 'showman')
-      assert.strictEqual(trait.name, 'Showman')
+      assert.strictEqual(trait.name, 'traits:showman.name')
       assert.strictEqual(trait.effect, 'viral_bonus_show')
-      assert.ok(trait.desc.includes('Virality'))
+      assert.ok(trait.desc.includes('showman.desc'))
     })
   })
 
@@ -209,23 +209,23 @@ describe('characters.js', () => {
 
     it('bandleader trait has correct properties', () => {
       const trait = CHARACTERS.LARS.traits.find(t => t.id === 'bandleader')
-      assert.strictEqual(trait.name, 'Bandleader')
+      assert.strictEqual(trait.name, 'traits:bandleader.name')
       assert.strictEqual(trait.effect, 'conflict_solver')
-      assert.ok(trait.desc.includes('conflict'))
+      assert.ok(trait.desc.includes('bandleader.desc'))
     })
 
     it('social_manager trait has correct properties', () => {
       const trait = CHARACTERS.LARS.traits.find(t => t.id === 'social_manager')
-      assert.strictEqual(trait.name, 'Social Nerd')
+      assert.strictEqual(trait.name, 'traits:socialManager.name')
       assert.strictEqual(trait.effect, 'viral_bonus')
-      assert.ok(trait.desc.includes('Viral'))
+      assert.ok(trait.desc.includes('socialManager.desc'))
     })
 
     it('road_warrior trait has correct properties', () => {
       const trait = CHARACTERS.LARS.traits.find(t => t.id === 'road_warrior')
-      assert.strictEqual(trait.name, 'Road Warrior')
+      assert.strictEqual(trait.name, 'traits:roadWarrior.name')
       assert.strictEqual(trait.effect, 'fuel_discount')
-      assert.ok(trait.desc.includes('Fuel'))
+      assert.ok(trait.desc.includes('roadWarrior.desc'))
     })
   })
 

@@ -173,6 +173,8 @@ export const handleUseContraband = (state, payload) => {
   const { instanceId, contrabandId, memberId } = payload
   const stash = state.band.stash || {}
 
+  if (typeof contrabandId !== 'string' || contrabandId.length === 0) return state
+
   if (!Object.hasOwn(stash, contrabandId) ||
       contrabandId === '__proto__' ||
       contrabandId === 'prototype' ||
