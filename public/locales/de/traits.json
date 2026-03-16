@@ -16,62 +16,62 @@
   },
   "perfektionist": {
     "name": "Perfektionist",
-    "desc": "+15% Score if >85% Hit Rate",
-    "unlockHint": "Hit 100% Accuracy in a single gig."
+    "desc": "+15% Punktzahl bei >85% Trefferrate",
+    "unlockHint": "Erreiche 100% Trefferrate bei einem Auftritt."
   },
   "gearNerd": {
-    "name": "Gear Nerd",
-    "desc": "-20% Equipment Costs",
-    "unlockHint": "Purchase 5 different gear items."
+    "name": "Ausrüstungs-Nerd",
+    "desc": "-20% Ausrüstungskosten",
+    "unlockHint": "Kaufe 5 verschiedene Ausrüstungsgegenstände."
   },
   "virtuoso": {
-    "name": "Virtuoso",
-    "desc": "+10% Hit Window",
-    "unlockHint": "Complete a solo without missing a note."
+    "name": "Virtuose",
+    "desc": "+10% Trefferfenster",
+    "unlockHint": "Schließe ein Solo ab, ohne eine Note zu verfehlen."
   },
   "techWizard": {
-    "name": "Tech Wizard",
-    "desc": "+10% Score on Technical Songs",
-    "unlockHint": "Get 100% Accuracy on a Technical song."
+    "name": "Technik-Magier",
+    "desc": "+10% Punktzahl bei technischen Songs",
+    "unlockHint": "Erreiche 100% Trefferrate bei einem technischen Song."
   },
   "partyAnimal": {
-    "name": "Party Animal",
-    "desc": "Random hangover (-Stamina) but +Mood when drinking",
-    "unlockHint": "Buy the beer fridge and drain it."
+    "name": "Party-Tier",
+    "desc": "Zufälliger Kater (-Ausdauer) aber +Stimmung beim Trinken",
+    "unlockHint": "Kaufe den Bierkühlschrank und trinke ihn leer."
   },
   "blastMachine": {
-    "name": "Blast Beat Machine",
-    "desc": "+25% Score on fast sections",
-    "unlockHint": "Maintain a 50+ combo during a fast section (>160 BPM)."
+    "name": "Blastbeat-Maschine",
+    "desc": "+25% Punktzahl in schnellen Abschnitten",
+    "unlockHint": "Halte eine 50+ Kombo in einem schnellen Abschnitt (>160 BPM)."
   },
   "showman": {
     "name": "Showman",
-    "desc": "+20% Virality Bonus",
-    "unlockHint": "Perform 3 Stage Dives successfully."
+    "desc": "+20% Viralitätsbonus",
+    "unlockHint": "Führe 3 Stage Dives erfolgreich aus."
   },
   "clumsy": {
-    "name": "Clumsy",
-    "desc": "Increased failure chance on physical stunts",
-    "unlockHint": "Requires 2 failed stage dives."
+    "name": "Tollpatschig",
+    "desc": "Erhöhte Fehlschlagchance bei physischen Stunts",
+    "unlockHint": "Erfordert 2 fehlgeschlagene Stage Dives."
   },
   "bandleader": {
     "name": "Bandleader",
-    "desc": "+50% chance to solve conflicts",
-    "unlockHint": "Successfully resolve 3 band conflicts."
+    "desc": "+50% Chance, Konflikte zu lösen",
+    "unlockHint": "Löse 3 Bandkonflikte erfolgreich."
   },
   "socialManager": {
-    "name": "Social Nerd",
-    "desc": "+15% Viral Chance",
-    "unlockHint": "Reach 1000 followers on any platform."
+    "name": "Social-Nerd",
+    "desc": "+15% Viralitäts-Chance",
+    "unlockHint": "Erreiche 1000 Follower auf einer beliebigen Plattform."
   },
   "roadWarrior": {
     "name": "Road Warrior",
-    "desc": "-15% Fuel Consumption",
-    "unlockHint": "Travel 5000km in total."
+    "desc": "-15% Kraftstoffverbrauch",
+    "unlockHint": "Reise insgesamt 5000 km."
   },
   "melodicGenius": {
-    "name": "Melodic Genius",
-    "desc": "+10% Max Combo on Slow Songs",
-    "unlockHint": "Maintain a 30+ combo in a slow song (<120 BPM)."
+    "name": "Melodisches Genie",
+    "desc": "+10% Max. Kombo bei langsamen Songs",
+    "unlockHint": "Halte eine 30+ Kombo in einem langsamen Song (<120 BPM)."
   }
 }
