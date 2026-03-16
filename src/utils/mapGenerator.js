@@ -120,7 +120,7 @@ export class MapGenerator {
 
     this._generateIntermediateLayers(map, validDepth, pools)
     this._generateConnections(map, validDepth)
-    this._generateFinaleLayer(map, validDepth, hardVenues)
+    this._generateFinaleLayer(map, validDepth, hardVenues, pools)
     this._assignInitialCoordinates(map)
 
     // To ensure purity, we clone the nodes before resolving overlaps if possible,
@@ -303,10 +303,18 @@ export class MapGenerator {
    * @param {object} map - The map object.
    * @param {number} depth - The total depth of the map.
    * @param {Array} hardVenues - The hard venues array.
+   * @param {object} pools - The pools object.
    */
-  _generateFinaleLayer(map, depth, hardVenues) {
+  _generateFinaleLayer(map, depth, hardVenues, pools) {
     // Finale Layer
     const finaleVenue = cachedFinaleVenue || hardVenues[0]
+
+    if (!finaleVenue) {
+      throw new StateError('No hard venues available for the finale layer.')
+    }
+
+    const { usedVenueIds } = pools
+    usedVenueIds.add(finaleVenue.id)
 
     const endNode = {
       id: `node_${depth}_0`,

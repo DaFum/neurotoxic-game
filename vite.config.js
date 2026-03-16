@@ -10,6 +10,7 @@ export default defineConfig({
   ],
   base: './',
   build: {
+    // Keep temporarily for deployment, PixiJS imports have been refactored
     chunkSizeWarningLimit: 600,
     rolldownOptions: {
       output: {

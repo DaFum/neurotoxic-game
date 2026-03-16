@@ -126,9 +126,9 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band.stash[contrabandId]
+    const postItem = newState.band?.stash?.[contrabandId]
     const postStacks = postItem ? postItem.stacks || 0 : 0
-    const postStashLength = Object.keys(newState.band.stash).length
+    const postStashLength = Object.keys(newState.band?.stash || {}).length
 
     const wasAdded = postStashLength > preStashLength || postStacks > preStacks
 

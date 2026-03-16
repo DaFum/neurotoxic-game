@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
 import { loadTexture, getPixiColorFromToken } from './utils.js'
@@ -8,8 +8,8 @@ export class EffectManager {
   static MAX_ACTIVE_EFFECTS = 50
 
   /**
-   * @param {PIXI.Application} app
-   * @param {PIXI.Container} parentContainer
+   * @param {Application} app
+   * @param {Container} parentContainer
    */
   constructor(app, parentContainer) {
     this.app = app
@@ -31,7 +31,7 @@ export class EffectManager {
   }
 
   init() {
-    this.container = new PIXI.Container()
+    this.container = new Container()
     this.parentContainer.addChild(this.container)
   }
 
@@ -54,7 +54,7 @@ export class EffectManager {
   createGenericHitTexture() {
     if (this.genericHitTexture) return
 
-    const graphics = new PIXI.Graphics()
+    const graphics = new Graphics()
     const whiteColor = getPixiColorFromToken('--star-white')
 
     // Draw a white circle with white stroke to create a base texture
@@ -123,12 +123,15 @@ export class EffectManager {
 
   _getSpriteFromPool(texture) {
     if (this.spritePool.length > 0) {
-      return this.spritePool.pop()
+      const sprite = this.spritePool.pop()
+      sprite.texture = texture || Texture.WHITE
+      sprite.anchor.set(0.5)
+      return sprite
     }
 
     // Create sprite, using generic texture if specific one is missing/not loaded
     // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
-    const effect = new PIXI.Sprite(texture || PIXI.Texture.WHITE)
+    const effect = new Sprite(texture || Texture.WHITE)
     effect.anchor.set(0.5)
     return effect
   }
@@ -143,11 +146,6 @@ export class EffectManager {
 
     const texture = this._resolveHitTexture(color)
     const effect = this._getSpriteFromPool(texture)
-
-    // Ensure texture is correct
-    if (effect.texture !== texture && texture) {
-      effect.texture = texture
-    }
 
     effect.tint = color
     effect.x = x
@@ -233,7 +231,7 @@ export class EffectManager {
     effect.visible = false
 
     // Only pool Sprites (legacy graphics would be destroyed if they existed)
-    if (effect instanceof PIXI.Sprite) {
+    if (effect instanceof Sprite) {
       if (this.spritePool.length < EffectManager.MAX_POOL_SIZE) {
         this.spritePool.push(effect)
       } else {

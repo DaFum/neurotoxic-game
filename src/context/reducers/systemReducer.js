@@ -9,6 +9,7 @@ import { generateDailyTrend } from '../../utils/socialEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { normalizeVenueId } from '../../utils/mapUtils.js'
+import { CONTRABAND_BY_ID } from '../../data/contraband.js'
 import {
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
@@ -92,33 +93,38 @@ export const handleLoadGame = (state, payload) => {
       ...DEFAULT_BAND_STATE.inventory,
       ...(loadedState.band?.inventory || {})
     },
-    stash: Array.isArray(loadedState.band?.stash)
-      ? loadedState.band.stash.reduce((acc, item) => {
-          acc[item.id] = {
-            ...item,
-            remainingDuration:
-              Number.isFinite(item.remainingDuration) &&
-              item.remainingDuration > 0
-                ? item.remainingDuration
-                : item.duration || null
-          }
+    stash: (() => {
+      const defaultStash = Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash)
+      if (Array.isArray(loadedState.band?.stash)) {
+        return loadedState.band.stash.reduce((acc, item) => {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) return acc
+          if (!CONTRABAND_BY_ID.has(item.id)) return acc
+          if (Object.hasOwn(item, '__proto__')) return acc
+          const copy = { ...item }
+          copy.remainingDuration =
+            Number.isFinite(item.remainingDuration) && item.remainingDuration > 0
+              ? item.remainingDuration
+              : item.duration || null
+          acc[item.id] = copy
           return acc
-        }, {})
-      : loadedState.band?.stash && typeof loadedState.band.stash === 'object'
-        ? Object.fromEntries(
-            Object.entries(loadedState.band.stash).map(([id, item]) => [
-              id,
-              {
-                ...item,
-                remainingDuration:
-                  Number.isFinite(item.remainingDuration) &&
-                  item.remainingDuration > 0
-                    ? item.remainingDuration
-                    : item.duration || null
-              }
-            ])
-          )
-        : { ...DEFAULT_BAND_STATE.stash },
+        }, defaultStash)
+      } else if (loadedState.band?.stash && typeof loadedState.band.stash === 'object') {
+        const migrated = Object.create(null)
+        for (const [id, item] of Object.entries(loadedState.band.stash)) {
+          if (!CONTRABAND_BY_ID.has(id)) continue
+          if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+          if (Object.hasOwn(item, '__proto__')) continue
+          const copy = { ...item }
+          copy.remainingDuration =
+            Number.isFinite(item.remainingDuration) && item.remainingDuration > 0
+              ? item.remainingDuration
+              : item.duration || null
+          migrated[id] = copy
+        }
+        return migrated
+      }
+      return defaultStash
+    })(),
     activeContrabandEffects: Array.isArray(
       loadedState.band?.activeContrabandEffects
     )
@@ -445,17 +451,18 @@ export const handleAdvanceDay = (state, payload) => {
     // Unmark applied status in stash so relics can be used again
     if (traitResult.band.stash) {
       if (!stashCloned) {
-        traitResult.band.stash = { ...traitResult.band.stash }
+        traitResult.band.stash = Object.assign(Object.create(null), traitResult.band.stash)
         stashCloned = true
       }
-      const targetEntry = Object.entries(traitResult.band.stash).find(
-        ([_, i]) => i.instanceId === e.instanceId
-      )
-      if (targetEntry) {
-        const itemKey = targetEntry[0]
-        traitResult.band.stash[itemKey] = {
-          ...traitResult.band.stash[itemKey],
-          applied: false
+      for (const itemKey in traitResult.band.stash) {
+        if (!Object.hasOwn(traitResult.band.stash, itemKey)) continue
+        const i = traitResult.band.stash[itemKey]
+        if (i.instanceId === e.instanceId) {
+          traitResult.band.stash[itemKey] = {
+            ...i,
+            applied: false
+          }
+          break
         }
       }
     }

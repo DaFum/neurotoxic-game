@@ -93,13 +93,12 @@ export const addContrabandHelper = (state, payload) => {
       const currentStacks = existingItem.stacks || 1
       const max = item.maxStacks || Infinity
       if (currentStacks < max) {
-        newBand.stash = {
-          ...currentStash,
+        newBand.stash = Object.assign(Object.create(null), currentStash, {
           [item.id]: {
             ...existingItem,
             stacks: currentStacks + 1
           }
-        }
+        })
         return { ...state, band: newBand }
       } else {
         return state // Reached max stacks
@@ -115,10 +114,9 @@ export const addContrabandHelper = (state, payload) => {
     stacks: item.stackable ? 1 : undefined
   }
 
-  newBand.stash = {
-    ...currentStash,
+  newBand.stash = Object.assign(Object.create(null), currentStash, {
     [item.id]: newInstance
-  }
+  })
 
   if (item.applyOnAdd && item.type === 'equipment') {
     if (item.effectType === 'luck') {
@@ -168,23 +166,28 @@ export const handleAddContraband = (state, payload) => {
 /**
  * Handles using a contraband item.
  * @param {Object} state - Current state
- * @param {Object} payload - { instanceId, memberId }
+ * @param {Object} payload - { instanceId, contrabandId, memberId }
  * @returns {Object} Updated state
  */
 export const handleUseContraband = (state, payload) => {
-  const { instanceId, memberId } = payload
+  const { instanceId, contrabandId, memberId } = payload
   const stash = state.band.stash || {}
 
-  const targetEntry = Object.entries(stash).find(
-    ([_, i]) => i.instanceId === instanceId
-  )
-  if (!targetEntry) return state
+  if (!Object.hasOwn(stash, contrabandId) ||
+      contrabandId === '__proto__' ||
+      contrabandId === 'prototype' ||
+      contrabandId === 'constructor') {
+    return state
+  }
 
-  const [itemKey, item] = targetEntry
+  const item = stash[contrabandId]
+  if (!item || item.instanceId !== instanceId) return state
+
   if (item.applied === true) return state
+  const itemKey = contrabandId
 
   let newBand = { ...state.band }
-  let newStash = { ...stash }
+  let newStash = Object.assign(Object.create(null), stash)
 
   // Apply effect
   if (item.effectType === 'stamina' || item.effectType === 'mood') {

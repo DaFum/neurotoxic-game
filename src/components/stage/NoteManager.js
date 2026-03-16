@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import { Container, Sprite, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { calculateNoteY, loadTexture } from './utils.js'
@@ -16,8 +16,8 @@ export class NoteManager {
   static MAX_POOL_SIZE = 64
 
   /**
-   * @param {PIXI.Application} app
-   * @param {PIXI.Container} parentContainer
+   * @param {Application} app
+   * @param {Container} parentContainer
    * @param {object} gameStateRef
    * @param {Function} onHit - Callback when a note is hit (x, y, color)
    */
@@ -35,7 +35,7 @@ export class NoteManager {
   }
 
   init() {
-    this.container = new PIXI.Container()
+    this.container = new Container()
     this.parentContainer.addChild(this.container)
   }
 
@@ -183,14 +183,14 @@ export class NoteManager {
     const effectiveTexture = desiredTexture || fallbackTexture
 
     if (effectiveTexture) {
-      const sprite = new PIXI.Sprite(effectiveTexture)
+      const sprite = new Sprite(effectiveTexture)
       sprite.anchor.set(0.5)
       sprite.isFallback = false
       return sprite
     }
 
-    // Use PIXI.Texture.WHITE for fallback instead of PIXI.Graphics
-    const sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    // Use Texture.WHITE for fallback instead of Graphics
+    const sprite = new Sprite(Texture.WHITE)
     sprite.anchor.set(0.5)
     sprite.isFallback = true
     return sprite
@@ -218,8 +218,8 @@ export class NoteManager {
       sprite.isFallback = false
     } else {
       // Ensure we are using white texture for fallback
-      if (sprite.texture !== PIXI.Texture.WHITE) {
-        sprite.texture = PIXI.Texture.WHITE
+      if (sprite.texture !== Texture.WHITE) {
+        sprite.texture = Texture.WHITE
       }
       sprite.isFallback = true
     }

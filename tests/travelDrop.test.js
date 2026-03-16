@@ -65,7 +65,8 @@ describe('minigameReducer - Travel Complete Drops', () => {
     } // Low roll, drop
     const newState = handleCompleteTravelMinigame(state, payload)
 
-    assert.equal(Object.keys(newState.band.stash).length, 1)
+    assert.equal(Object.hasOwn(newState.band.stash, 'c_void_energy'), true)
+    assert.equal(newState.band.stash['c_void_energy'].instanceId, 'test_inst_2')
     assert.equal(newState.toasts.length, 1)
     assert.equal(newState.toasts[0].message, 'ui:contraband.dropped')
   })

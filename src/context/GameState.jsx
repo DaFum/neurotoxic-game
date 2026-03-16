@@ -342,11 +342,12 @@ export const GameStateProvider = ({ children }) => {
   /**
    * Uses a contraband item.
    * @param {string} instanceId - The unique instance ID of the contraband item.
+   * @param {string} contrabandId - The ID of the contraband item.
    * @param {string} [memberId] - Optional. The ID of the band member.
    */
   const useContraband = useCallback(
-    (instanceId, memberId) =>
-      dispatch(createUseContrabandAction(instanceId, memberId)),
+    (instanceId, contrabandId, memberId) =>
+      dispatch(createUseContrabandAction(instanceId, contrabandId, memberId)),
     []
   )
 
