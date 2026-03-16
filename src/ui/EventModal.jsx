@@ -1,10 +1,12 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
+import { resolveEventChoice } from '../utils/eventEngine'
+import { useGameState } from '../context/GameState'
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -19,24 +21,60 @@ import { generateEffectText } from '../utils/effectFormatter'
 export const EventModal = ({
   event,
   onOptionSelect,
-  onClose,
   className = ''
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
 
-  const outcome = event?.resolvedOutcome
+  const gameState = useGameState()
+
+  // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
+  const [outcome, setOutcome] = useState(null)
+
+  // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
+  const gameStateRef = useRef(gameState)
+  useEffect(() => {
+    gameStateRef.current = gameState
+  }, [gameState])
+
+  // Reset outcome on new events
+  const eventId = event?.id
+  useEffect(() => {
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    setOutcome(null)
+  }, [eventId])
 
   const handleOptionSelect = useCallback(
     option => {
       if (option.action) {
         option.action()
       } else {
-        onOptionSelect(option)
+        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
+        const { result, appliedDelta, delta, outcomeText, description } =
+          resolveEventChoice(option, gameStateRef.current)
+
+        setOutcome({
+          option,
+          _precomputedResult: {
+            result,
+            delta: appliedDelta || delta,
+            outcomeText,
+            description
+          }
+        })
       }
     },
-    [onOptionSelect]
+    []
   )
+
+  const handleContinue = useCallback(() => {
+    if (outcome) {
+      onOptionSelect({
+        ...outcome.option,
+        _precomputedResult: outcome._precomputedResult
+      })
+    }
+  }, [onOptionSelect, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -122,15 +160,15 @@ export const EventModal = ({
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
                   {t(
-                    outcome.outcomeText ||
-                      outcome.description ||
+                    outcome._precomputedResult.outcomeText ||
+                      outcome._precomputedResult.description ||
                       'ui:event.resolved',
                     event.context
                   )}
                 </p>
                 {(() => {
-                  const effectText = outcome.delta
-                    ? generateEffectText(outcome.delta, t)
+                  const effectText = outcome._precomputedResult.delta
+                    ? generateEffectText(outcome._precomputedResult.delta, t)
                     : ''
                   return (
                     effectText && (
@@ -143,7 +181,7 @@ export const EventModal = ({
               </div>
               <button
                 type='button'
-                onClick={() => onClose()}
+                onClick={handleContinue}
                 className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
@@ -164,38 +202,52 @@ export const EventModal = ({
                   visible: { transition: { staggerChildren: 0.08 } }
                 }}
               >
-                {event.options.map((option, index) => (
-                  <motion.button
-                    type='button'
-                    variants={{
-                      hidden: { opacity: 0, x: -20 },
-                      visible: { opacity: 1, x: 0 }
-                    }}
-                    key={
-                      option.id ||
-                      option.nextEventId ||
-                      `${option.label}-${index}`
-                    }
-                    onClick={() => handleOptionSelect(option)}
-                    className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                      ${index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
-                    `}
-                  >
-                    <span>
-                      <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                      {t(option.label, event.context)}
-                    </span>
+                {event.options.map((option, index) => {
+                  const isDisabled = option.disabled || false
+                  const buttonContent = (
+                    <motion.button
+                      type='button'
+                      disabled={isDisabled}
+                      variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0 }
+                      }}
+                      key={
+                        option.id ||
+                        option.nextEventId ||
+                        `${option.label}-${index}`
+                      }
+                      onClick={() => handleOptionSelect(option)}
+                      className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
+                        ${isDisabled ? 'border-ash-gray/20 text-ash-gray/20 cursor-not-allowed' : index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
+                      `}
+                    >
+                      <span>
+                        <span className='opacity-50 mr-2'>[{index + 1}]</span>
+                        {t(option.label, event.context)}
+                      </span>
 
-                    <div className='flex flex-col items-end text-right'>
-                      {/* Skill check indicator */}
-                      {option.skillCheck && (
-                        <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
-                          [{'\u2694'} {t('ui:skillCheck')}]
-                        </span>
-                      )}
-                    </div>
-                  </motion.button>
-                ))}
+                      <div className='flex flex-col items-end text-right'>
+                        {/* Skill check indicator */}
+                        {option.skillCheck && (
+                          <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
+                            [{'\u2694'} {t('ui:skillCheck')}]
+                          </span>
+                        )}
+                      </div>
+                    </motion.button>
+                  )
+
+                  if (isDisabled) {
+                    return (
+                      // eslint-disable-next-line @eslint-react/no-array-index-key
+                      <span key={`disabled-wrapper-${index}`} tabIndex={0}>
+                        {buttonContent}
+                      </span>
+                    )
+                  }
+                  return buttonContent
+                })}
               </motion.div>
             </>
           )}

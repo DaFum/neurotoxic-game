@@ -606,9 +606,41 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
             (nextState.band?.harmony || 0) - (gameState.band?.harmony || 0)
         }
         if (delta.band.membersDelta) {
-          // Simply pass through since there is no strict cap limits dynamically tracked easily per user without complex diffing,
-          // though we can improve if stamina/mood hits exactly 100/0 bounds.
-          appliedDelta.band.membersDelta = delta.band.membersDelta
+          appliedDelta.band.membersDelta = []
+
+          if (Array.isArray(delta.band.membersDelta)) {
+             for (let i = 0; i < nextState.band.members.length; i++) {
+                const curM = gameState.band?.members?.[i]
+                const nextM = nextState.band.members[i]
+                if (curM && nextM) {
+                   appliedDelta.band.membersDelta.push({
+                      moodChange: nextM.mood - curM.mood,
+                      staminaChange: nextM.stamina - curM.stamina
+                   })
+                }
+             }
+          } else {
+             // For global object membersDelta
+             if (nextState.band.members?.length > 0 && gameState.band.members?.length > 0) {
+               // We just calculate the delta from the first member as representative of the global change
+               // since the global object applied it to all equally.
+               const curM = gameState.band.members[0]
+               const nextM = nextState.band.members[0]
+               appliedDelta.band.membersDelta = {
+                  moodChange: nextM.mood - curM.mood,
+                  staminaChange: nextM.stamina - curM.stamina
+               }
+             }
+          }
+        }
+
+        if (delta.band.inventory) {
+          appliedDelta.band.inventory = {}
+          for (const key in delta.band.inventory) {
+             if (Object.hasOwn(delta.band.inventory, key)) {
+                appliedDelta.band.inventory[key] = (nextState.band.inventory?.[key] || 0) - (gameState.band.inventory?.[key] || 0)
+             }
+          }
         }
       }
 
