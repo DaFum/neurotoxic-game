@@ -99,28 +99,42 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.player) {
     if (typeof delta.player.money === 'number') {
-      const nextMoney = clampPlayerMoney((state.player?.money || 0) + delta.player.money)
+      const nextMoney = clampPlayerMoney(
+        (state.player?.money || 0) + delta.player.money
+      )
       applied.player.money = nextMoney - (state.player?.money || 0)
     }
     if (typeof delta.player.time === 'number') {
       applied.player.time = delta.player.time // time is unbounded
     }
     if (typeof delta.player.fame === 'number') {
-      const nextFame = Math.max(0, (state.player?.fame || 0) + delta.player.fame)
+      const nextFame = Math.max(
+        0,
+        (state.player?.fame || 0) + delta.player.fame
+      )
       applied.player.fame = nextFame - (state.player?.fame || 0)
     }
   }
 
   if (delta.social) {
     if (typeof delta.social.controversyLevel === 'number') {
-      const nextControversy = Math.max(0, Math.min(100, (state.social?.controversyLevel || 0) + delta.social.controversyLevel))
-      applied.social.controversyLevel = nextControversy - (state.social?.controversyLevel || 0)
+      const nextControversy = Math.max(
+        0,
+        Math.min(
+          100,
+          (state.social?.controversyLevel || 0) + delta.social.controversyLevel
+        )
+      )
+      applied.social.controversyLevel =
+        nextControversy - (state.social?.controversyLevel || 0)
     }
   }
 
   if (delta.band) {
     if (typeof delta.band.harmony === 'number') {
-      const nextHarmony = clampBandHarmony((state.band?.harmony || 0) + delta.band.harmony)
+      const nextHarmony = clampBandHarmony(
+        (state.band?.harmony || 0) + delta.band.harmony
+      )
       applied.band.harmony = nextHarmony - (state.band?.harmony || 0)
     }
 
@@ -135,9 +149,9 @@ export const calculateAppliedDelta = (state, delta) => {
         : delta.band.members
 
     if (membersDelta && !Array.isArray(membersDelta)) {
-       applied.band.membersDelta = { ...membersDelta }
+      applied.band.membersDelta = { ...membersDelta }
     } else if (membersDelta && Array.isArray(membersDelta)) {
-       applied.band.membersDelta = membersDelta
+      applied.band.membersDelta = membersDelta
     }
   }
 

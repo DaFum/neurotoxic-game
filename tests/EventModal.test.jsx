@@ -2,9 +2,18 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { EventModal } from '../src/ui/EventModal.jsx'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: key => key,
+    i18n: { changeLanguage: () => new Promise(() => {}) }
+  }),
+  initReactI18next: { type: '3rdParty', init: () => {} }
+}))
+
 vi.mock('../src/utils/eventEngine', () => ({
-  resolveEventChoice: (option) => ({
+  resolveEventChoice: option => ({
     result: {},
+    delta: { player: { money: 20 } },
     appliedDelta: { player: { money: 10 } },
     outcomeText: option.outcomeText || 'Default outcome',
     description: 'Description'
@@ -39,8 +48,15 @@ test('EventModal renders event details and handles click flow', async () => {
     ]
   }
   const handleSelect = vi.fn()
+  const handleClose = vi.fn()
 
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+  render(
+    <EventModal
+      event={mockEvent}
+      onOptionSelect={handleSelect}
+      onClose={handleClose}
+    />
+  )
 
   const option1 = screen.getByText('Option 1')
   fireEvent.click(option1)
@@ -56,12 +72,15 @@ test('EventModal renders event details and handles click flow', async () => {
   fireEvent.click(continueButton)
 
   // Now it should call handleSelect with the precomputed result
-  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
-    label: 'Option 1',
-    _precomputedResult: expect.objectContaining({
-      outcomeText: 'Good Outcome'
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option 1',
+      _precomputedResult: expect.objectContaining({
+        outcomeText: 'Good Outcome'
+      })
     })
-  }))
+  )
+  expect(handleClose).toHaveBeenCalled()
 })
 
 test('EventModal handles keyboard selection', async () => {
@@ -90,12 +109,14 @@ test('EventModal handles keyboard selection', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
-    label: 'Option 2',
-    _precomputedResult: expect.objectContaining({
-      outcomeText: 'Option 2 Outcome'
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option 2',
+      _precomputedResult: expect.objectContaining({
+        outcomeText: 'Option 2 Outcome'
+      })
     })
-  }))
+  )
 })
 
 test('EventModal handles option with direct action callback', () => {

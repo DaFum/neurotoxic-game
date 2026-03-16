@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
@@ -21,6 +21,7 @@ import { useGameState } from '../context/GameState'
 export const EventModal = ({
   event,
   onOptionSelect,
+  onClose,
   className = ''
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
@@ -44,28 +45,26 @@ export const EventModal = ({
     setOutcome(null)
   }, [eventId])
 
-  const handleOptionSelect = useCallback(
-    option => {
-      if (option.action) {
-        option.action()
-      } else {
-        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
-        const { result, appliedDelta, delta, outcomeText, description } =
-          resolveEventChoice(option, gameStateRef.current)
+  const handleOptionSelect = useCallback(option => {
+    if (option.action) {
+      option.action()
+    } else {
+      // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically
+      const { result, appliedDelta, delta, outcomeText, description } =
+        resolveEventChoice(option, gameStateRef.current)
 
-        setOutcome({
-          option,
-          _precomputedResult: {
-            result,
-            delta: appliedDelta || delta,
-            outcomeText,
-            description
-          }
-        })
-      }
-    },
-    []
-  )
+      setOutcome({
+        option,
+        _precomputedResult: {
+          result,
+          delta,
+          appliedDelta: appliedDelta || delta,
+          outcomeText,
+          description
+        }
+      })
+    }
+  }, [])
 
   const handleContinue = useCallback(() => {
     if (outcome) {
@@ -73,8 +72,11 @@ export const EventModal = ({
         ...outcome.option,
         _precomputedResult: outcome._precomputedResult
       })
+      if (onClose) {
+        onClose()
+      }
     }
-  }, [onOptionSelect, outcome])
+  }, [onOptionSelect, onClose, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -96,6 +98,13 @@ export const EventModal = ({
   useEffect(() => {
     containerRef.current?.focus()
   }, [event])
+
+  const precomputedDelta =
+    outcome?._precomputedResult?.appliedDelta ||
+    outcome?._precomputedResult?.delta
+  const memoizedEffectText = useMemo(() => {
+    return precomputedDelta ? generateEffectText(precomputedDelta, t) : ''
+  }, [precomputedDelta, t])
 
   if (!event) return null
 
@@ -166,18 +175,11 @@ export const EventModal = ({
                     event.context
                   )}
                 </p>
-                {(() => {
-                  const effectText = outcome._precomputedResult.delta
-                    ? generateEffectText(outcome._precomputedResult.delta, t)
-                    : ''
-                  return (
-                    effectText && (
-                      <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
-                        {effectText}
-                      </p>
-                    )
-                  )
-                })()}
+                {memoizedEffectText && (
+                  <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
+                    {memoizedEffectText}
+                  </p>
+                )}
               </div>
               <button
                 type='button'

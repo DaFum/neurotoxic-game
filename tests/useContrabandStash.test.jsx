@@ -140,7 +140,11 @@ describe('useContrabandStash', () => {
       })
     })
 
-    expect(mockUseContraband).toHaveBeenCalledWith('item1', 'energy_drink', 'member1')
+    expect(mockUseContraband).toHaveBeenCalledWith(
+      'item1',
+      'energy_drink',
+      'member1'
+    )
     expect(mockAddToast).toHaveBeenCalledWith('Used Energy Drink!', 'success')
   })
 
@@ -155,7 +159,11 @@ describe('useContrabandStash', () => {
       })
     })
 
-    expect(mockUseContraband).toHaveBeenCalledWith('item2', 'guitar_strings', 'member1')
+    expect(mockUseContraband).toHaveBeenCalledWith(
+      'item2',
+      'guitar_strings',
+      'member1'
+    )
     expect(mockAddToast).toHaveBeenCalledWith(
       'Applied Guitar Strings!',
       'success'
