@@ -86,7 +86,9 @@ export const EventModal = ({
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= event.options.length) {
         const option = event.options[num - 1]
-        handleOptionSelect(option)
+        if (!option.disabled) {
+          handleOptionSelect(option)
+        }
       }
     }
 
