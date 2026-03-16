@@ -59,7 +59,7 @@ test('EventModal renders event details and handles click flow', async () => {
   expect(handleSelect).not.toHaveBeenCalled()
 
   await waitFor(() => {
-    expect(screen.getByText('Good Outcome')).toBeInTheDocument()
+    expect(screen.getByText('Good Outcome Description')).toBeInTheDocument()
   })
 
   const continueButton = screen.getByText(/CONTINUE/i)
@@ -94,7 +94,7 @@ test('EventModal handles keyboard selection', async () => {
   expect(handleSelect).not.toHaveBeenCalled()
 
   await waitFor(() => {
-    expect(screen.getByText('Option 2 Outcome')).toBeInTheDocument()
+    expect(screen.getByText('Option 2 Outcome Description')).toBeInTheDocument()
   })
 
   const continueButton = screen.getByText(/CONTINUE/i)

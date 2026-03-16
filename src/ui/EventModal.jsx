@@ -44,6 +44,21 @@ export const EventModal = ({
     setOutcome(null)
   }, [eventId])
 
+  /*
+   * #1 Updates:
+   * - Concatenated outcomeText and description for skill checks to avoid text shadowing
+   * - Reset outcome local state when event id changes
+   * - Restored unit tests with precomputed result preview logic
+   *
+   * #2 Next Steps:
+   * - Enhance generic effect/skill descriptions if more depth is needed for future events
+   * - Consider moving precomputedResult directly to the Redux store or hook state fully if more complex branching occurs
+   *
+   * #3 Found errors & solutions:
+   * - outcomeText was replacing skill check text; Solution: concatenated both texts using filter(Boolean)
+   * - State was getting stale when event.id changed; Solution: reset outcome state with useEffect
+   */
+
   const handleOptionSelect = useCallback(option => {
     if (option.action) {
       option.action()
@@ -172,12 +187,14 @@ export const EventModal = ({
             >
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
-                  {t(
-                    outcome._precomputedResult.outcomeText ||
-                      outcome._precomputedResult.description ||
-                      'ui:event.resolved',
-                    event.context
-                  )}
+                  {[
+                    outcome._precomputedResult.outcomeText &&
+                      t(outcome._precomputedResult.outcomeText, event.context),
+                    outcome._precomputedResult.description &&
+                      t(outcome._precomputedResult.description, event.context)
+                  ]
+                    .filter(Boolean)
+                    .join(' ') || t('ui:event.resolved', event.context)}
                 </p>
                 {memoizedEffectText && (
                   <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
