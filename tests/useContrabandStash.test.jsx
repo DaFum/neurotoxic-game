@@ -134,7 +134,7 @@ describe('useContrabandStash', () => {
 
     act(() => {
       result.current.stashProps.useItem('item1', {
-        id: 'c_energy_drink',
+        id: 'energy_drink',
         type: 'consumable',
         name: 'Energy Drink'
       })
@@ -142,7 +142,7 @@ describe('useContrabandStash', () => {
 
     expect(mockUseContraband).toHaveBeenCalledWith(
       'item1',
-      'c_energy_drink',
+      'energy_drink',
       'member1'
     )
     expect(mockAddToast).toHaveBeenCalledWith('Used Energy Drink!', 'success')
@@ -153,7 +153,7 @@ describe('useContrabandStash', () => {
 
     act(() => {
       result.current.stashProps.useItem('item2', {
-        id: 'e_guitar_strings',
+        id: 'guitar_strings',
         type: 'equipment',
         name: 'Guitar Strings'
       })
@@ -161,7 +161,7 @@ describe('useContrabandStash', () => {
 
     expect(mockUseContraband).toHaveBeenCalledWith(
       'item2',
-      'e_guitar_strings',
+      'guitar_strings',
       'member1'
     )
     expect(mockAddToast).toHaveBeenCalledWith(

@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
+import { generateEffectText } from '../utils/effectFormatter'
+import { resolveEventChoice } from '../utils/eventEngine'
+import { useGameState } from '../context/GameState'
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -12,13 +15,74 @@ import { VoidSkullIcon } from './shared/Icons'
  * @param {object} props
  * @param {object} props.event - The active event object.
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
+ * @param {Function} props.onClose - Callback when modal should be closed.
  */
 
-export const EventModal = ({ event, onOptionSelect, className = '' }) => {
-  const { t } = useTranslation(['ui', 'events'])
+export const EventModal = ({
+  event,
+  onOptionSelect,
+  className = ''
+}) => {
+  const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
 
+  const gameState = useGameState()
+
+  // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState(null)
+
+  // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
+  const gameStateRef = useRef(gameState)
+  useEffect(() => {
+    gameStateRef.current = gameState
+  }, [gameState])
+
+  // Reset outcome on new events
+  const eventId = event?.id
+  useEffect(() => {
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    setOutcome(null)
+  }, [eventId])
+
+  const handleOptionSelect = useCallback(option => {
+    if (option.action) {
+      option.action()
+    } else {
+      try {
+        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
+        // Snapshot vs Latest State Decision:
+        // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
+        // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
+        // preventing any background state mutations from altering the event outcome between preview and confirmation.
+        const { result, appliedDelta, delta, outcomeText, description } =
+          resolveEventChoice(option, gameStateRef.current)
+
+        setOutcome({
+          option,
+          _precomputedResult: {
+            result,
+            delta,
+            appliedDelta: appliedDelta || delta,
+            outcomeText,
+            description
+          }
+        })
+      } catch (error) {
+        console.error('Failed to preview event outcome:', error)
+        // If preview calculation fails, defer the actual dispatch directly to the provider's fallback path
+        onOptionSelect(option)
+      }
+    }
+  }, [onOptionSelect])
+
+  const handleContinue = useCallback(() => {
+    if (outcome) {
+      onOptionSelect({
+        ...outcome.option,
+        _precomputedResult: outcome._precomputedResult
+      })
+    }
+  }, [onOptionSelect, outcome])
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -28,19 +92,39 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= event.options.length) {
         const option = event.options[num - 1]
-        if (option.action) option.action()
-        else onOptionSelect(option)
+        if (!option.disabled) {
+          handleOptionSelect(option)
+        }
       }
     }
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [event, onOptionSelect, outcome])
+  }, [event, outcome, handleOptionSelect])
 
   // Auto-focus container for screen readers
   useEffect(() => {
     containerRef.current?.focus()
   }, [event])
+
+  const precomputedDelta =
+    outcome?._precomputedResult?.appliedDelta ||
+    outcome?._precomputedResult?.delta
+  const memoizedEffectText = useMemo(() => {
+    return precomputedDelta ? generateEffectText(precomputedDelta, t) : ''
+  }, [precomputedDelta, t])
+
+  const outcomeMessage = useMemo(() => {
+    if (!outcome || !event) return ''
+    const texts = [
+      outcome._precomputedResult.outcomeText &&
+        t(outcome._precomputedResult.outcomeText, event.context),
+      outcome._precomputedResult.description &&
+        t(outcome._precomputedResult.description, event.context)
+    ].filter(Boolean)
+
+    return texts.join(' ') || t('ui:event.resolved', event.context)
+  }, [outcome, t, event?.context])
 
   if (!event) return null
 
@@ -104,17 +188,17 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
             >
               <div className='p-4 border border-toxic-green bg-toxic-green/5'>
                 <p className='text-star-white font-mono leading-relaxed'>
-                  {t(
-                    outcome.description ||
-                      outcome.outcomeText ||
-                      'ui:event.resolved',
-                    event.context
-                  )}
+                  {outcomeMessage}
                 </p>
+                {memoizedEffectText && (
+                  <p className='text-toxic-green font-mono mt-4 text-sm font-bold bg-toxic-green/10 inline-block p-2'>
+                    {memoizedEffectText}
+                  </p>
+                )}
               </div>
               <button
                 type='button'
-                onClick={() => onOptionSelect(outcome.option)}
+                onClick={handleContinue}
                 className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
@@ -135,49 +219,52 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                   visible: { transition: { staggerChildren: 0.08 } }
                 }}
               >
-                {event.options.map((option, index) => (
-                  <motion.button
-                    type='button'
-                    variants={{
-                      hidden: { opacity: 0, x: -20 },
-                      visible: { opacity: 1, x: 0 }
-                    }}
-                    key={
-                      option.id ||
-                      option.nextEventId ||
-                      `${option.label}-${index}`
-                    }
-                    onClick={() => {
-                      if (option.action) {
-                        option.action()
-                      } else {
-                        // We set the outcome first so the user can read what happened before moving on
-                        setOutcome({
-                          option,
-                          outcomeText: option.outcomeText,
-                          description: option.description // We might not have full effect resolution description here yet, but outcomeText is good
-                        })
+                {event.options.map((option, index) => {
+                  const isDisabled = option.disabled || false
+                  const buttonContent = (
+                    <motion.button
+                      type='button'
+                      disabled={isDisabled}
+                      variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0 }
+                      }}
+                      key={
+                        option.id ||
+                        option.nextEventId ||
+                        `${option.label}-${index}`
                       }
-                    }}
-                    className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                      ${index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
-                    `}
-                  >
-                    <span>
-                      <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                      {t(option.label, event.context)}
-                    </span>
+                      onClick={() => handleOptionSelect(option)}
+                      className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
+                        ${isDisabled ? 'border-ash-gray/20 text-ash-gray/20 cursor-not-allowed' : index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
+                      `}
+                    >
+                      <span>
+                        <span className='opacity-50 mr-2'>[{index + 1}]</span>
+                        {t(option.label, event.context)}
+                      </span>
 
-                    <div className='flex flex-col items-end text-right'>
-                      {/* Skill check indicator */}
-                      {option.skillCheck && (
-                        <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
-                          [{'\u2694'} {t('ui:skillCheck')}]
-                        </span>
-                      )}
-                    </div>
-                  </motion.button>
-                ))}
+                      <div className='flex flex-col items-end text-right'>
+                        {/* Skill check indicator */}
+                        {option.skillCheck && (
+                          <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
+                            [{'\u2694'} {t('ui:skillCheck')}]
+                          </span>
+                        )}
+                      </div>
+                    </motion.button>
+                  )
+
+                  if (isDisabled) {
+                    return (
+                      // eslint-disable-next-line @eslint-react/no-array-index-key
+                      <span key={`disabled-wrapper-${index}`} tabIndex={0}>
+                        {buttonContent}
+                      </span>
+                    )
+                  }
+                  return buttonContent
+                })}
               </motion.div>
             </>
           )}

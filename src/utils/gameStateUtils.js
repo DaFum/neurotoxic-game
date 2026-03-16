@@ -93,6 +93,173 @@ export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  * @param {object} delta - Event delta payload.
  * @returns {object} Updated game state.
  */
+
+export const calculateAppliedDelta = (state, delta) => {
+  const applied = { player: {}, band: {}, social: {} }
+
+  if (delta.flags) {
+    applied.flags = {}
+    for (const key of Object.keys(delta.flags)) {
+      if (isForbiddenKey(key)) continue
+      applied.flags[key] = delta.flags[key]
+    }
+  } else {
+    applied.flags = {}
+  }
+
+  if (delta.player) {
+    if (typeof delta.player.money === 'number') {
+      const nextMoney = clampPlayerMoney(
+        (state.player?.money || 0) + delta.player.money
+      )
+      applied.player.money = nextMoney - (state.player?.money || 0)
+    }
+    if (typeof delta.player.time === 'number') {
+      applied.player.time = delta.player.time // time is unbounded
+    }
+    if (typeof delta.player.fame === 'number') {
+      const nextFame = Math.max(
+        0,
+        (state.player?.fame || 0) + delta.player.fame
+      )
+      applied.player.fame = nextFame - (state.player?.fame || 0)
+    }
+    const scoreDelta =
+      typeof delta.player?.score === 'number'
+        ? delta.player.score
+        : typeof delta.score === 'number'
+          ? delta.score
+          : 0
+    if (scoreDelta !== 0) {
+      const nextScore = Math.max(0, (state.player?.score || 0) + scoreDelta)
+      applied.score = nextScore - (state.player?.score || 0)
+    }
+    if (delta.player.van) {
+      applied.player.van = {}
+      if (typeof delta.player.van.fuel === 'number') {
+        const nextFuel = clampVanFuel((state.player?.van?.fuel || 0) + delta.player.van.fuel)
+        applied.player.van.fuel = nextFuel - (state.player?.van?.fuel || 0)
+      }
+      if (typeof delta.player.van.condition === 'number') {
+        const nextCondition = Math.max(0, Math.min(100, (state.player?.van?.condition || 0) + delta.player.van.condition))
+        applied.player.van.condition = nextCondition - (state.player?.van?.condition || 0)
+      }
+    }
+    if (typeof delta.player.day === 'number') {
+      applied.player.day = delta.player.day
+    }
+    if (delta.player.stats) {
+      applied.player.stats = {}
+      for (const key of Object.keys(delta.player.stats)) {
+        if (isForbiddenKey(key)) continue
+        applied.player.stats[key] = delta.player.stats[key]
+      }
+    }
+  }
+
+  if (delta.social) {
+    if (typeof delta.social.controversyLevel === 'number') {
+      const nextControversy = Math.max(
+        0,
+        (state.social?.controversyLevel || 0) + delta.social.controversyLevel
+      )
+      applied.social.controversyLevel =
+        nextControversy - (state.social?.controversyLevel || 0)
+    }
+    if (typeof delta.social.viral === 'number') {
+      applied.social.viral = delta.social.viral
+    }
+    if (typeof delta.social.loyalty === 'number') {
+      applied.social.loyalty = delta.social.loyalty
+    }
+  }
+
+  if (delta.band) {
+    if (typeof delta.band.harmony === 'number') {
+      const nextHarmony = clampBandHarmony(
+        (state.band?.harmony ?? 1) + delta.band.harmony
+      )
+      applied.band.harmony = nextHarmony - (state.band?.harmony ?? 1)
+    }
+
+    // Inventory
+    if (delta.band.inventory) {
+      applied.band.inventory = {}
+      for (const [itemId, qty] of Object.entries(delta.band.inventory)) {
+        if (isForbiddenKey(itemId)) continue
+
+        if (typeof qty === 'number') {
+          if (qty !== 0) {
+            applied.band.inventory[itemId] = qty
+          }
+        } else if (qty === true) {
+          applied.band.inventory[itemId] = true
+        } else if (qty === false) {
+          const current = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
+          if (current > 0) {
+            applied.band.inventory[itemId] = -1
+          } else {
+            applied.band.inventory[itemId] = false
+          }
+        }
+      }
+    }
+
+    const membersDelta =
+      delta.band.membersDelta !== undefined
+        ? delta.band.membersDelta
+        : delta.band.members
+
+    if (membersDelta && !Array.isArray(membersDelta)) {
+      applied.band.membersDelta = {}
+      for (const key of Object.keys(membersDelta)) {
+        if (isForbiddenKey(key)) continue
+        applied.band.membersDelta[key] = membersDelta[key]
+      }
+    } else if (membersDelta && Array.isArray(membersDelta)) {
+      applied.band.membersDelta = membersDelta
+    }
+
+    if (typeof delta.band.luck === 'number') {
+      const nextLuck = Math.max(0, (state.band?.luck || 0) + delta.band.luck)
+      applied.band.luck = nextLuck - (state.band?.luck || 0)
+    }
+
+    if (typeof delta.band.skill === 'number') {
+      const members = Array.isArray(state.band?.members) ? state.band.members : []
+      let totalSkillDelta = 0
+      applied.band.members = []
+      for (let i = 0; i < members.length; i++) {
+        const currentSkill =
+          members[i].baseStats && typeof members[i].baseStats.skill === 'number'
+            ? members[i].baseStats.skill
+            : 5
+        const nextSkill = Math.max(1, Math.min(10, currentSkill + delta.band.skill))
+        const memberDelta = nextSkill - currentSkill
+        applied.band.members.push({ skill: memberDelta })
+        totalSkillDelta += memberDelta
+      }
+      if (members.length > 0) {
+        applied.band.skill = Math.round(totalSkillDelta / members.length)
+      }
+    }
+
+    if (delta.band.relationshipChange) {
+      if (Array.isArray(delta.band.relationshipChange)) {
+        applied.band.relationshipChange = [...delta.band.relationshipChange]
+      } else {
+        applied.band.relationshipChange = {}
+        for (const key of Object.keys(delta.band.relationshipChange)) {
+          if (isForbiddenKey(key)) continue
+          applied.band.relationshipChange[key] = delta.band.relationshipChange[key]
+        }
+      }
+    }
+  }
+
+  return applied
+}
+
 export const applyEventDelta = (state, delta) => {
   const nextState = { ...state }
 

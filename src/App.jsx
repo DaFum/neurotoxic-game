@@ -87,7 +87,8 @@ const SceneLoadingFallback = () => {
  */
 function GameContent() {
   const gameState = useGameState()
-  const { currentScene, activeEvent, resolveEvent, settings } = gameState
+  const { currentScene, activeEvent, resolveEvent, setActiveEvent, settings } =
+    gameState
 
   /**
    * Renders the component corresponding to the current scene state.
@@ -169,7 +170,11 @@ function GameContent() {
 
       {/* Global Event Modal Overlay */}
       {activeEvent && (
-        <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
+        <EventModal
+          event={activeEvent}
+          onOptionSelect={resolveEvent}
+          onClose={() => setActiveEvent(null)}
+        />
       )}
 
       <ErrorBoundary>

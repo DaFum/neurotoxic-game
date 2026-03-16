@@ -9,7 +9,8 @@ describe('EffectManager', () => {
 
   beforeEach(() => {
     container = new Container()
-    effectManager = new EffectManager({ containerRef: { current: container } })
+    effectManager = new EffectManager(null, container)
+    effectManager.init()
   })
 
   it('regression: _getSpriteFromPool handles null texture with Texture.WHITE fallback across reuse cycles', () => {
