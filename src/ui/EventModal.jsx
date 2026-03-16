@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
@@ -28,25 +28,28 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
   const [outcome, setOutcome] = useState(null)
 
-  const handleOptionSelect = option => {
-    if (option.action) {
-      option.action()
-    } else {
-      const { result, delta, outcomeText, description } = resolveEventChoice(
-        option,
-        gameState
-      )
-      setOutcome({
-        option,
-        _precomputedResult: {
-          result,
-          delta,
-          outcomeText,
-          description
-        }
-      })
-    }
-  }
+  const handleOptionSelect = useCallback(
+    option => {
+      if (option.action) {
+        option.action()
+      } else {
+        const { result, delta, outcomeText, description } = resolveEventChoice(
+          option,
+          gameState
+        )
+        setOutcome({
+          option,
+          _precomputedResult: {
+            result,
+            delta,
+            outcomeText,
+            description
+          }
+        })
+      }
+    },
+    [gameState]
+  )
 
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
@@ -62,7 +65,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [event, outcome, gameState])
+  }, [event, outcome, handleOptionSelect])
 
   // Auto-focus container for screen readers
   useEffect(() => {
