@@ -2,6 +2,10 @@
 import { ALL_VENUES } from '../data/venues.js'
 import { StateError } from './errorHandler.js'
 
+let cachedHomeVenue = null
+let cachedFinaleVenue = null
+let cachedVenuesLength = -1
+
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
  */
@@ -44,7 +48,13 @@ export class MapGenerator {
     }
 
     // Layer 0: Stendal (Home)
-    const homeVenue = ALL_VENUES.find(v => v.id === 'stendal_proberaum')
+    if (cachedVenuesLength !== ALL_VENUES.length) {
+      cachedHomeVenue = ALL_VENUES.find(v => v.id === 'stendal_proberaum')
+      cachedFinaleVenue = ALL_VENUES.find(v => v.id === 'leipzig_arena')
+      cachedVenuesLength = ALL_VENUES.length
+    }
+
+    const homeVenue = cachedHomeVenue
     if (!homeVenue) {
       throw new StateError(
         'Home venue "stendal_proberaum" not found in ALL_VENUES'
@@ -81,8 +91,7 @@ export class MapGenerator {
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
-    const preFinale = ALL_VENUES.find(v => v.id === 'leipzig_arena')
-    if (preFinale) usedVenueIds.add(preFinale.id)
+    if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
     // Optimization: Maintain dynamic available lengths to avoid .filter() in loops
     let availableEasyLength = 0
@@ -297,8 +306,7 @@ export class MapGenerator {
    */
   _generateFinaleLayer(map, depth, hardVenues) {
     // Finale Layer
-    const finaleVenue =
-      ALL_VENUES.find(v => v.id === 'leipzig_arena') || hardVenues[0]
+    const finaleVenue = cachedFinaleVenue || hardVenues[0]
 
     const endNode = {
       id: `node_${depth}_0`,

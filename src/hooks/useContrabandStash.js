@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
 import { useTranslation } from 'react-i18next'
 
@@ -14,6 +14,11 @@ export const useContrabandStash = () => {
 
   const openStash = useCallback(() => setShowStash(true), [])
   const closeStash = useCallback(() => setShowStash(false), [])
+
+  const stashArray = useMemo(
+    () => Object.values(band.stash || {}),
+    [band.stash]
+  )
 
   const useItem = useCallback(
     (instanceId, item) => {
@@ -55,7 +60,7 @@ export const useContrabandStash = () => {
     openStash,
     closeStash,
     stashProps: {
-      stash: band.stash || [],
+      stash: stashArray,
       members: band.members,
       selectedMember,
       setSelectedMember,

@@ -60,6 +60,22 @@ const resolveTemplateString = (str, context) => {
 export const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 
+const eventPoolMapCache = new WeakMap()
+
+const getEventMapForPool = pool => {
+  let map = eventPoolMapCache.get(pool)
+  if (!map) {
+    map = new Map()
+    for (let i = 0; i < pool.length; i++) {
+      if (pool[i].id) {
+        map.set(pool[i].id, pool[i])
+      }
+    }
+    eventPoolMapCache.set(pool, map)
+  }
+  return map
+}
+
 const selectEvent = (pool, gameState, triggerPoint) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
   // Monkey-patch .includes for compatibility with condition filters expecting arrays
@@ -82,7 +98,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   // 1. Pending Events (Highest Priority)
   if (gameState.pendingEvents && gameState.pendingEvents.length > 0) {
     const nextEventId = gameState.pendingEvents[0]
-    const pendingEvent = pool.find(e => e.id === nextEventId)
+    const pendingEvent = getEventMapForPool(pool).get(nextEventId)
     if (pendingEvent) {
       return pendingEvent
     }

@@ -93,15 +93,32 @@ export const handleLoadGame = (state, payload) => {
       ...(loadedState.band?.inventory || {})
     },
     stash: Array.isArray(loadedState.band?.stash)
-      ? loadedState.band.stash.map(item => ({
-          ...item,
-          remainingDuration:
-            Number.isFinite(item.remainingDuration) &&
-            item.remainingDuration >= 0
-              ? item.remainingDuration
-              : item.duration || null
-        }))
-      : [...DEFAULT_BAND_STATE.stash],
+      ? loadedState.band.stash.reduce((acc, item) => {
+          acc[item.id] = {
+            ...item,
+            remainingDuration:
+              Number.isFinite(item.remainingDuration) &&
+              item.remainingDuration > 0
+                ? item.remainingDuration
+                : item.duration || null
+          }
+          return acc
+        }, {})
+      : loadedState.band?.stash && typeof loadedState.band.stash === 'object'
+        ? Object.fromEntries(
+            Object.entries(loadedState.band.stash).map(([id, item]) => [
+              id,
+              {
+                ...item,
+                remainingDuration:
+                  Number.isFinite(item.remainingDuration) &&
+                  item.remainingDuration > 0
+                    ? item.remainingDuration
+                    : item.duration || null
+              }
+            ])
+          )
+        : { ...DEFAULT_BAND_STATE.stash },
     activeContrabandEffects: Array.isArray(
       loadedState.band?.activeContrabandEffects
     )
@@ -428,15 +445,16 @@ export const handleAdvanceDay = (state, payload) => {
     // Unmark applied status in stash so relics can be used again
     if (traitResult.band.stash) {
       if (!stashCloned) {
-        traitResult.band.stash = [...traitResult.band.stash]
+        traitResult.band.stash = { ...traitResult.band.stash }
         stashCloned = true
       }
-      const itemIndex = traitResult.band.stash.findIndex(
-        i => i.instanceId === e.instanceId
+      const targetEntry = Object.entries(traitResult.band.stash).find(
+        ([_, i]) => i.instanceId === e.instanceId
       )
-      if (itemIndex !== -1) {
-        traitResult.band.stash[itemIndex] = {
-          ...traitResult.band.stash[itemIndex],
+      if (targetEntry) {
+        const itemKey = targetEntry[0]
+        traitResult.band.stash[itemKey] = {
+          ...traitResult.band.stash[itemKey],
           applied: false
         }
       }

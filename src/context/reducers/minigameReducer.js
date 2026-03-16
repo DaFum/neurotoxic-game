@@ -116,21 +116,19 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     instanceId
   ) {
     // Call addContrabandHelper directly to leverage its logic
-    // Cache the index to avoid a redundant O(N) scan after the helper executes
-    const preStashLength = newState.band.stash ? newState.band.stash.length : 0
-    const existingIndex = newState.band.stash
-      ? newState.band.stash.findIndex(i => i.id === contrabandId)
-      : -1
-    const preStacks = existingIndex !== -1 ? (newState.band.stash[existingIndex].stacks || 0) : 0
+    const preStashLength = newState.band.stash
+      ? Object.keys(newState.band.stash).length
+      : 0
+    const preStacks = newState.band.stash
+      ? newState.band.stash[contrabandId]?.stacks || 0
+      : 0
 
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    // Avoid redundant find() by using the cached index
-    const postStacks = existingIndex !== -1 && newState.band.stash[existingIndex]
-      ? (newState.band.stash[existingIndex].stacks || 0)
-      : 0
-    const postStashLength = newState.band.stash.length
+    const postItem = newState.band.stash[contrabandId]
+    const postStacks = postItem ? postItem.stacks || 0 : 0
+    const postStashLength = Object.keys(newState.band.stash).length
 
     const wasAdded = postStashLength > preStashLength || postStacks > preStacks
 

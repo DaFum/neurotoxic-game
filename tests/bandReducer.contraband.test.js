@@ -9,30 +9,30 @@ import { DEFAULT_BAND_STATE } from '../src/context/initialState.js'
 describe('bandReducer - Contraband', () => {
   describe('handleAddContraband', () => {
     it('adds an item to the stash', () => {
-      const state = { band: { ...DEFAULT_BAND_STATE, stash: [] } }
+      const state = { band: { ...DEFAULT_BAND_STATE, stash: {} } }
       const payload = { contrabandId: 'c_void_energy', instanceId: 'test-123' }
       const newState = handleAddContraband(state, payload)
-      assert.equal(newState.band.stash.length, 1)
-      assert.equal(newState.band.stash[0].instanceId, 'test-123')
-      assert.equal(newState.band.stash[0].applied, false)
+      assert.equal(Object.keys(newState.band.stash).length, 1)
+      assert.equal(Object.values(newState.band.stash)[0].instanceId, 'test-123')
+      assert.equal(Object.values(newState.band.stash)[0].applied, false)
     })
 
     it('applies immediate effects for applyOnAdd equipment (luck)', () => {
-      const state = { band: { ...DEFAULT_BAND_STATE, stash: [], luck: 0 } }
+      const state = { band: { ...DEFAULT_BAND_STATE, stash: {}, luck: 0 } }
       const payload = {
         contrabandId: 'c_rusty_strings',
         instanceId: 'test-456'
       } // luck +5
       const newState = handleAddContraband(state, payload)
       assert.equal(newState.band.luck, 5)
-      assert.equal(newState.band.stash[0].applied, true)
+      assert.equal(Object.values(newState.band.stash)[0].applied, true)
     })
 
     it('applies immediate effects for applyOnAdd equipment (stamina_max)', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [],
+          stash: {},
           members: [{ id: 'm1', staminaMax: 100 }]
         }
       }
@@ -42,7 +42,7 @@ describe('bandReducer - Contraband', () => {
       } // staminaMax +10
       const newState = handleAddContraband(state, payload)
       assert.equal(newState.band.members[0].staminaMax, 110)
-      assert.equal(newState.band.stash[0].applied, true)
+      assert.equal(Object.values(newState.band.stash)[0].applied, true)
     })
   })
 
@@ -51,22 +51,22 @@ describe('bandReducer - Contraband', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [
-            {
+          stash: {
+            c_void_energy: {
               id: 'c_void_energy',
               instanceId: 'test-123',
               type: 'consumable',
               effectType: 'stamina',
               value: 50
             }
-          ],
+          },
           members: [{ id: 'm1', stamina: 20 }]
         }
       }
       const payload = { instanceId: 'test-123', memberId: 'm1' }
       const newState = handleUseContraband(state, payload)
 
-      assert.equal(newState.band.stash.length, 0) // Item consumed
+      assert.equal(Object.keys(newState.band.stash).length, 0) // Item consumed
       assert.equal(newState.band.members[0].stamina, 70) // 20 + 50
     })
 
@@ -74,8 +74,8 @@ describe('bandReducer - Contraband', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [
-            {
+          stash: {
+            c_cursed_pick: {
               id: 'c_cursed_pick',
               instanceId: 'test-789',
               type: 'consumable',
@@ -83,7 +83,7 @@ describe('bandReducer - Contraband', () => {
               value: -0.2,
               duration: 1
             }
-          ],
+          },
           activeContrabandEffects: [],
           performance: { guitarDifficulty: 1.0 }
         }
@@ -91,7 +91,7 @@ describe('bandReducer - Contraband', () => {
       const payload = { instanceId: 'test-789' }
       const newState = handleUseContraband(state, payload)
 
-      assert.equal(newState.band.stash.length, 0)
+      assert.equal(Object.keys(newState.band.stash).length, 0)
       assert.equal(newState.band.activeContrabandEffects.length, 1)
       assert.equal(
         newState.band.activeContrabandEffects[0].remainingDuration,
@@ -107,23 +107,23 @@ describe('bandReducer - Contraband', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [
-            {
+          stash: {
+            c_neon_patch: {
               id: 'c_neon_patch',
               instanceId: 'test-patch',
               type: 'equipment',
               effectType: 'style',
               value: 3
             }
-          ],
+          },
           style: 0
         }
       }
       const payload = { instanceId: 'test-patch' }
       const newState = handleUseContraband(state, payload)
 
-      assert.equal(newState.band.stash.length, 1) // Equipment not removed
-      assert.equal(newState.band.stash[0].applied, true)
+      assert.equal(Object.keys(newState.band.stash).length, 1) // Equipment not removed
+      assert.equal(Object.values(newState.band.stash)[0].applied, true)
       assert.equal(newState.band.style, 3)
     })
   })

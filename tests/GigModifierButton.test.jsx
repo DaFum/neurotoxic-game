@@ -11,11 +11,7 @@ const mockItem = {
 
 test('GigModifierButton renders item details correctly', () => {
   render(
-    <GigModifierButton
-      item={mockItem}
-      isActive={false}
-      onClick={() => {}}
-    />
+    <GigModifierButton item={mockItem} isActive={false} onClick={() => {}} />
   )
 
   expect(screen.getByText('Test Modifier')).toBeInTheDocument()
@@ -26,11 +22,7 @@ test('GigModifierButton renders item details correctly', () => {
 test('GigModifierButton calls onClick with correct key', () => {
   const handleClick = vi.fn()
   render(
-    <GigModifierButton
-      item={mockItem}
-      isActive={false}
-      onClick={handleClick}
-    />
+    <GigModifierButton item={mockItem} isActive={false} onClick={handleClick} />
   )
 
   const button = screen.getByRole('button')
@@ -41,11 +33,7 @@ test('GigModifierButton calls onClick with correct key', () => {
 
 test('GigModifierButton applies active states correctly', () => {
   const { container } = render(
-    <GigModifierButton
-      item={mockItem}
-      isActive={true}
-      onClick={() => {}}
-    />
+    <GigModifierButton item={mockItem} isActive={true} onClick={() => {}} />
   )
 
   const button = screen.getByRole('button')
@@ -53,17 +41,15 @@ test('GigModifierButton applies active states correctly', () => {
   expect(button).toHaveClass('bg-toxic-green')
 
   // Shimmer div should NOT be present when active
-  const shimmer = container.querySelector('.group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]')
+  const shimmer = container.querySelector(
+    '.group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]'
+  )
   expect(shimmer).toBeNull()
 })
 
 test('GigModifierButton applies inactive states correctly', () => {
   const { container } = render(
-    <GigModifierButton
-      item={mockItem}
-      isActive={false}
-      onClick={() => {}}
-    />
+    <GigModifierButton item={mockItem} isActive={false} onClick={() => {}} />
   )
 
   const button = screen.getByRole('button')
@@ -71,6 +57,8 @@ test('GigModifierButton applies inactive states correctly', () => {
   expect(button).toHaveClass('border-ash-gray/30')
 
   // Shimmer div SHOULD be present when inactive
-  const shimmer = container.querySelector('.group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]')
+  const shimmer = container.querySelector(
+    '.group-hover\\:animate-\\[shimmer_0\\.8s_ease-out\\]'
+  )
   expect(shimmer).toBeInTheDocument()
 })
