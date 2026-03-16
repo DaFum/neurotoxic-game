@@ -98,7 +98,11 @@ export const calculateAppliedDelta = (state, delta) => {
   const applied = { player: {}, band: {}, social: {} }
 
   if (delta.flags) {
-    applied.flags = { ...delta.flags }
+    applied.flags = {}
+    for (const key of Object.keys(delta.flags)) {
+      if (isForbiddenKey(key)) continue
+      applied.flags[key] = delta.flags[key]
+    }
   } else {
     applied.flags = {}
   }
@@ -121,14 +125,14 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.player.fame = nextFame - (state.player?.fame || 0)
     }
     const scoreDelta =
-      typeof delta.player.score === 'number'
+      typeof delta.player?.score === 'number'
         ? delta.player.score
         : typeof delta.score === 'number'
           ? delta.score
           : 0
     if (scoreDelta !== 0) {
       const nextScore = Math.max(0, (state.player?.score || 0) + scoreDelta)
-      applied.player.score = nextScore - (state.player?.score || 0)
+      applied.score = nextScore - (state.player?.score || 0)
     }
     if (delta.player.van) {
       applied.player.van = {}
@@ -162,6 +166,12 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.social.controversyLevel =
         nextControversy - (state.social?.controversyLevel || 0)
     }
+    if (typeof delta.social.viral === 'number') {
+      applied.social.viral = delta.social.viral
+    }
+    if (typeof delta.social.loyalty === 'number') {
+      applied.social.loyalty = delta.social.loyalty
+    }
   }
 
   if (delta.band) {
@@ -177,19 +187,20 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.band.inventory = {}
       for (const [itemId, qty] of Object.entries(delta.band.inventory)) {
         if (isForbiddenKey(itemId)) continue
-        let val
+
         if (typeof qty === 'number') {
-           val = qty
+          if (qty !== 0) {
+            applied.band.inventory[itemId] = qty
+          }
         } else if (qty === true) {
-           val = 1
+          applied.band.inventory[itemId] = true
         } else if (qty === false) {
-           const current = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
-           val = current > 0 ? -1 : 0
-        }
-        if (val !== undefined && val !== 0) {
-          applied.band.inventory[itemId] = val
-        } else if (qty === true || qty === false) {
-          applied.band.inventory[itemId] = qty
+          const current = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
+          if (current > 0) {
+            applied.band.inventory[itemId] = -1
+          } else {
+            applied.band.inventory[itemId] = false
+          }
         }
       }
     }
@@ -215,11 +226,21 @@ export const calculateAppliedDelta = (state, delta) => {
     }
 
     if (typeof delta.band.skill === 'number') {
-      applied.band.members = []
       const members = Array.isArray(state.band?.members) ? state.band.members : []
+      let totalSkillDelta = 0
+      applied.band.members = []
       for (let i = 0; i < members.length; i++) {
-        const nextSkill = Math.max(0, (members[i].skill || 0) + delta.band.skill)
-        applied.band.members.push({ skill: nextSkill - (members[i].skill || 0) })
+        const currentSkill =
+          members[i].baseStats && typeof members[i].baseStats.skill === 'number'
+            ? members[i].baseStats.skill
+            : 5
+        const nextSkill = Math.max(1, Math.min(10, currentSkill + delta.band.skill))
+        const memberDelta = nextSkill - currentSkill
+        applied.band.members.push({ skill: memberDelta })
+        totalSkillDelta += memberDelta
+      }
+      if (members.length > 0) {
+        applied.band.skill = Math.round(totalSkillDelta / members.length)
       }
     }
 
