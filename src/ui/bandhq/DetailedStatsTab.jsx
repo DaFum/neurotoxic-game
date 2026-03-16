@@ -461,10 +461,10 @@ const MemberTraits = ({ member, t }) => {
       </div>
     )
 
+  const activeTraitIds = new Set((member.traits || []).map(t => t.id))
+
   return potentialTraits.map(trait => {
-    const isTraitActive = member.traits?.some(
-      traitItem => traitItem.id === trait.id
-    )
+    const isTraitActive = activeTraitIds.has(trait.id)
     return (
       <Tooltip
         key={trait.id}
