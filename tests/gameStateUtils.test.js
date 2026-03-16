@@ -176,7 +176,7 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
       skill: 5, // starting at 7, clamps to 10 (applied 3)
       inventory: {
         someItem: false, // will subtract 1
-        newItem: true,   // will add true
+        newItem: true, // will add true
         constructor: { evil: 2 }
       },
       membersDelta: {

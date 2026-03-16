@@ -18,13 +18,21 @@ export const generateEffectText = (delta, t) => {
 
     if (delta.player.van) {
       addStatLine(delta.player.van.fuel, 'ui:stats.fuel', 'Fuel')
-      addStatLine(delta.player.van.condition, 'ui:stats.van_condition', 'Van Condition')
+      addStatLine(
+        delta.player.van.condition,
+        'ui:stats.van_condition',
+        'Van Condition'
+      )
     }
   }
 
   // Social
   if (delta.social) {
-    addStatLine(delta.social.controversyLevel, 'ui:stats.controversy', 'Controversy')
+    addStatLine(
+      delta.social.controversyLevel,
+      'ui:stats.controversy',
+      'Controversy'
+    )
     addStatLine(delta.social.viral, 'ui:stats.viral', 'Viral')
     addStatLine(delta.social.loyalty, 'ui:stats.loyalty', 'Loyalty')
   }
