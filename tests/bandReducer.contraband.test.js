@@ -63,7 +63,11 @@ describe('bandReducer - Contraband', () => {
           members: [{ id: 'm1', stamina: 20 }]
         }
       }
-      const payload = { instanceId: 'test-123', contrabandId: 'c_void_energy', memberId: 'm1' }
+      const payload = {
+        instanceId: 'test-123',
+        contrabandId: 'c_void_energy',
+        memberId: 'm1'
+      }
       const newState = handleUseContraband(state, payload)
 
       assert.equal(Object.keys(newState.band.stash).length, 0) // Item consumed
@@ -119,7 +123,10 @@ describe('bandReducer - Contraband', () => {
           style: 0
         }
       }
-      const payload = { instanceId: 'test-patch', contrabandId: 'c_leather_jacket' }
+      const payload = {
+        instanceId: 'test-patch',
+        contrabandId: 'c_leather_jacket'
+      }
       const newState = handleUseContraband(state, payload)
 
       assert.equal(Object.keys(newState.band.stash).length, 1) // Equipment not removed

@@ -26,6 +26,10 @@ describe('EffectManager', () => {
     const sprite2 = effectManager._getSpriteFromPool(null)
 
     assert.equal(sprite1, sprite2, 'Sprite should be reused from pool')
-    assert.equal(sprite2.texture, Texture.WHITE, 'Texture should remain Texture.WHITE fallback')
+    assert.equal(
+      sprite2.texture,
+      Texture.WHITE,
+      'Texture should remain Texture.WHITE fallback'
+    )
   })
 })
