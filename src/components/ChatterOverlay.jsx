@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
-import { secureRandom } from '../utils/crypto'
+import { secureRandom } from '../utils/crypto.js'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -311,8 +311,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
 
           const generators = [
             () => (globalThis.crypto || window?.crypto)?.randomUUID(),
-            () => secureRandom().toString(36).substring(2),
-            () => Math.random().toString(36).substring(2)
+            () => secureRandom().toString(36).substring(2)
           ]
           let id
           for (const gen of generators) {
@@ -325,7 +324,14 @@ export const ChatterOverlay = memo(({ gameState }) => {
           }
 
           if (!id) {
-            id = `fallback-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`
+            let roll
+            try {
+              roll = secureRandom()
+            } catch (error) {
+              console.warn('Crypto API not available, falling back to Math.random', error)
+              roll = Math.random()
+            }
+            id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
           }
 
           const newMessage = { id: String(id), text, speaker, type, scene: currentState.currentScene }
