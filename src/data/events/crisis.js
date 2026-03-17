@@ -5,6 +5,21 @@ import { secureRandom } from '../../utils/crypto.js'
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.
 // Triggers: 'post_gig' (band/financial pool), 'travel' (band/special pool via arrivalUtils)
+/**
+ * Helper to append a cooldown effect to an array of effects
+ * and optionally set a description for the resulting composite.
+ */
+function createCooldownComposite(eventId, effects, description) {
+  const composite = {
+    type: 'composite',
+    effects: [...effects, { type: 'cooldown', eventId }]
+  };
+  if (description) {
+    composite.description = description;
+  }
+  return composite;
+}
+
 export const CRISIS_EVENTS = [
   {
     id: 'crisis_bad_review',
@@ -21,13 +36,9 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_bad_review.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'controversyLevel', value: 15 },
-            { type: 'cooldown', eventId: 'crisis_bad_review' }
-          ]
-        },
+        effect: createCooldownComposite('crisis_bad_review', [
+          { type: 'stat', stat: 'controversyLevel', value: 15 }
+        ]),
         outcomeText: 'events:crisis_bad_review.opt1.outcome'
       },
       {
@@ -35,38 +46,24 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: -5 },
-              { type: 'stat', stat: 'loyalty', value: 10 },
-              { type: 'cooldown', eventId: 'crisis_bad_review' }
-            ],
-            description: 'events:crisis_bad_review.opt2.d_5509'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 25 },
-              { type: 'stat', stat: 'harmony', value: -5 },
-              { type: 'cooldown', eventId: 'crisis_bad_review' }
-            ],
-            description: 'events:crisis_bad_review.opt2.d_0f6b'
-          }
+          success: createCooldownComposite('crisis_bad_review', [
+            { type: 'stat', stat: 'controversyLevel', value: -5 },
+            { type: 'stat', stat: 'loyalty', value: 10 }
+          ], 'events:crisis_bad_review.opt2.d_5509'),
+          failure: createCooldownComposite('crisis_bad_review', [
+            { type: 'stat', stat: 'controversyLevel', value: 25 },
+            { type: 'stat', stat: 'harmony', value: -5 }
+          ], 'events:crisis_bad_review.opt2.d_0f6b')
         },
         outcomeText: 'events:crisis_bad_review.opt2.outcome'
       },
       {
         label: 'events:crisis_bad_review.opt3.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'controversyLevel', value: -10 },
-            { type: 'stat', stat: 'loyalty', value: 15 },
-            { type: 'stat', stat: 'harmony', value: 5 },
-            { type: 'cooldown', eventId: 'crisis_bad_review' }
-          ]
-        },
+        effect: createCooldownComposite('crisis_bad_review', [
+          { type: 'stat', stat: 'controversyLevel', value: -10 },
+          { type: 'stat', stat: 'loyalty', value: 15 },
+          { type: 'stat', stat: 'harmony', value: 5 }
+        ]),
         outcomeText: 'events:crisis_bad_review.opt3.outcome'
       }
     ]
@@ -85,26 +82,18 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_online_backlash.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_online_backlash', [
             { type: 'stat', stat: 'controversyLevel', value: 10 },
-            { type: 'stat', stat: 'harmony', value: -5 },
-            { type: 'cooldown', eventId: 'crisis_online_backlash' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: -5 }
+          ]),
         outcomeText: 'events:crisis_online_backlash.opt1.outcome'
       },
       {
         label: 'events:crisis_online_backlash.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_online_backlash', [
             { type: 'resource', resource: 'money', value: -250 },
-            { type: 'stat', stat: 'controversyLevel', value: -20 },
-            { type: 'cooldown', eventId: 'crisis_online_backlash' }
-          ]
-        },
+            { type: 'stat', stat: 'controversyLevel', value: -20 }
+          ]),
         outcomeText: 'events:crisis_online_backlash.opt2.outcome'
       },
       {
@@ -112,25 +101,15 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: -30 },
+          success: createCooldownComposite('crisis_online_backlash', [
+            { type: 'stat', stat: 'controversyLevel', value: -30 },
               { type: 'stat', stat: 'viral', value: 2 },
-              { type: 'stat', stat: 'loyalty', value: 20 },
-              { type: 'cooldown', eventId: 'crisis_online_backlash' }
-            ],
-            description: 'events:crisis_online_backlash.opt3.d_ab89'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 15 },
-              { type: 'stat', stat: 'harmony', value: -5 },
-              { type: 'cooldown', eventId: 'crisis_online_backlash' }
-            ],
-            description: 'events:crisis_online_backlash.opt3.d_34b9'
-          }
+              { type: 'stat', stat: 'loyalty', value: 20 }
+          ], 'events:crisis_online_backlash.opt3.d_ab89'),
+          failure: createCooldownComposite('crisis_online_backlash', [
+            { type: 'stat', stat: 'controversyLevel', value: 15 },
+              { type: 'stat', stat: 'harmony', value: -5 }
+          ], 'events:crisis_online_backlash.opt3.d_34b9')
         },
         outcomeText: 'events:crisis_online_backlash.opt3.outcome'
       }
@@ -150,15 +129,11 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_shadowban_scare.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_shadowban_scare', [
             { type: 'stat', stat: 'controversyLevel', value: -30 },
             { type: 'stat', stat: 'loyalty', value: -10 },
-            { type: 'stat', stat: 'harmony', value: -5 },
-            { type: 'cooldown', eventId: 'crisis_shadowban_scare' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: -5 }
+          ]),
         outcomeText: 'events:crisis_shadowban_scare.opt1.outcome'
       },
       {
@@ -166,38 +141,24 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 8,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: -25 },
-              { type: 'stat', stat: 'loyalty', value: 25 },
-              { type: 'cooldown', eventId: 'crisis_shadowban_scare' }
-            ],
-            description: 'events:crisis_shadowban_scare.opt2.d_06a9'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 15 },
-              { type: 'stat', stat: 'harmony', value: -10 },
-              { type: 'cooldown', eventId: 'crisis_shadowban_scare' }
-            ],
-            description: 'events:crisis_shadowban_scare.opt2.d_b90e'
-          }
+          success: createCooldownComposite('crisis_shadowban_scare', [
+            { type: 'stat', stat: 'controversyLevel', value: -25 },
+              { type: 'stat', stat: 'loyalty', value: 25 }
+          ], 'events:crisis_shadowban_scare.opt2.d_06a9'),
+          failure: createCooldownComposite('crisis_shadowban_scare', [
+            { type: 'stat', stat: 'controversyLevel', value: 15 },
+              { type: 'stat', stat: 'harmony', value: -10 }
+          ], 'events:crisis_shadowban_scare.opt2.d_b90e')
         },
         outcomeText: 'events:crisis_shadowban_scare.opt2.outcome'
       },
       {
         label: 'events:crisis_shadowban_scare.opt3.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_shadowban_scare', [
             { type: 'stat', stat: 'controversyLevel', value: 20 },
             { type: 'stat', stat: 'viral', value: 3 },
-            { type: 'stat', stat: 'harmony', value: -10 },
-            { type: 'cooldown', eventId: 'crisis_shadowban_scare' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: -10 }
+          ]),
         outcomeText: 'events:crisis_shadowban_scare.opt3.outcome'
       }
     ]
@@ -216,14 +177,10 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_venue_cancels.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_venue_cancels', [
             { type: 'resource', resource: 'money', value: -150 },
-            { type: 'stat', stat: 'harmony', value: -5 },
-            { type: 'cooldown', eventId: 'crisis_venue_cancels' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: -5 }
+          ]),
         outcomeText: 'events:crisis_venue_cancels.opt1.outcome'
       },
       {
@@ -231,38 +188,24 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: -5 },
-              { type: 'stat', stat: 'loyalty', value: 5 },
-              { type: 'cooldown', eventId: 'crisis_venue_cancels' }
-            ],
-            description: 'events:crisis_venue_cancels.opt2.d_c2c9'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'resource', resource: 'money', value: -300 },
-              { type: 'stat', stat: 'harmony', value: -10 },
-              { type: 'cooldown', eventId: 'crisis_venue_cancels' }
-            ],
-            description: 'events:crisis_venue_cancels.opt2.d_73a7'
-          }
+          success: createCooldownComposite('crisis_venue_cancels', [
+            { type: 'stat', stat: 'controversyLevel', value: -5 },
+              { type: 'stat', stat: 'loyalty', value: 5 }
+          ], 'events:crisis_venue_cancels.opt2.d_c2c9'),
+          failure: createCooldownComposite('crisis_venue_cancels', [
+            { type: 'resource', resource: 'money', value: -300 },
+              { type: 'stat', stat: 'harmony', value: -10 }
+          ], 'events:crisis_venue_cancels.opt2.d_73a7')
         },
         outcomeText: 'events:crisis_venue_cancels.opt2.outcome'
       },
       {
         label: 'events:crisis_venue_cancels.opt3.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_venue_cancels', [
             { type: 'resource', resource: 'money', value: -50 },
             { type: 'stat', stat: 'loyalty', value: 15 },
-            { type: 'stat', stat: 'controversyLevel', value: -5 },
-            { type: 'cooldown', eventId: 'crisis_venue_cancels' }
-          ]
-        },
+            { type: 'stat', stat: 'controversyLevel', value: -5 }
+          ]),
         outcomeText: 'events:crisis_venue_cancels.opt3.outcome'
       }
     ]
@@ -281,39 +224,27 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_redemption_charity.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_redemption_charity', [
             { type: 'stat', stat: 'controversyLevel', value: -25 },
             { type: 'stat', stat: 'loyalty', value: 20 },
-            { type: 'stat', stat: 'harmony', value: 10 },
-            { type: 'cooldown', eventId: 'crisis_redemption_charity' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: 10 }
+          ]),
         outcomeText: 'events:crisis_redemption_charity.opt1.outcome'
       },
       {
         label: 'events:crisis_redemption_charity.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_redemption_charity', [
             { type: 'resource', resource: 'money', value: -200 },
             { type: 'stat', stat: 'controversyLevel', value: -15 },
-            { type: 'stat', stat: 'loyalty', value: 15 },
-            { type: 'cooldown', eventId: 'crisis_redemption_charity' }
-          ]
-        },
+            { type: 'stat', stat: 'loyalty', value: 15 }
+          ]),
         outcomeText: 'events:crisis_redemption_charity.opt2.outcome'
       },
       {
         label: 'events:crisis_redemption_charity.opt3.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'harmony', value: -3 },
-            { type: 'cooldown', eventId: 'crisis_redemption_charity' }
-          ]
-        },
+        effect: createCooldownComposite('crisis_redemption_charity', [
+            { type: 'stat', stat: 'harmony', value: -3 }
+          ]),
         outcomeText: 'events:crisis_redemption_charity.opt3.outcome'
       }
     ]
@@ -333,14 +264,10 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_sponsor_ultimatum.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_sponsor_ultimatum', [
             { type: 'stat', stat: 'controversyLevel', value: -10 },
-            { type: 'stat', stat: 'harmony', value: -5 },
-            { type: 'cooldown', eventId: 'crisis_sponsor_ultimatum' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: -5 }
+          ]),
         outcomeText: 'events:crisis_sponsor_ultimatum.opt1.outcome'
       },
       {
@@ -348,38 +275,24 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 8,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'viral', value: 3 },
+          success: createCooldownComposite('crisis_sponsor_ultimatum', [
+            { type: 'stat', stat: 'viral', value: 3 },
               { type: 'stat', stat: 'loyalty', value: 30 },
-              { type: 'stat', stat: 'controversyLevel', value: -10 },
-              { type: 'cooldown', eventId: 'crisis_sponsor_ultimatum' }
-            ],
-            description: 'events:crisis_sponsor_ultimatum.opt2.d_0dd7'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'resource', resource: 'money', value: -500 },
-              { type: 'stat', stat: 'controversyLevel', value: 20 },
-              { type: 'cooldown', eventId: 'crisis_sponsor_ultimatum' }
-            ],
-            description: 'events:crisis_sponsor_ultimatum.opt2.d_cc26'
-          }
+              { type: 'stat', stat: 'controversyLevel', value: -10 }
+          ], 'events:crisis_sponsor_ultimatum.opt2.d_0dd7'),
+          failure: createCooldownComposite('crisis_sponsor_ultimatum', [
+            { type: 'resource', resource: 'money', value: -500 },
+              { type: 'stat', stat: 'controversyLevel', value: 20 }
+          ], 'events:crisis_sponsor_ultimatum.opt2.d_cc26')
         },
         outcomeText: 'events:crisis_sponsor_ultimatum.opt2.outcome'
       },
       {
         label: 'events:crisis_sponsor_ultimatum.opt3.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_sponsor_ultimatum', [
             { type: 'resource', resource: 'money', value: -100 },
-            { type: 'stat', stat: 'controversyLevel', value: -5 },
-            { type: 'cooldown', eventId: 'crisis_sponsor_ultimatum' }
-          ]
-        },
+            { type: 'stat', stat: 'controversyLevel', value: -5 }
+          ]),
         outcomeText: 'events:crisis_sponsor_ultimatum.opt3.outcome'
       }
     ]
@@ -401,34 +314,23 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 5 },
+          success: createCooldownComposite('crisis_poor_performance', [
+            { type: 'stat', stat: 'controversyLevel', value: 5 },
               { type: 'stat', stat: 'harmony', value: 5 }
-            ],
-            description: 'events:crisis_poor_performance.opt1.d_04df'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 20 },
-              { type: 'stat', stat: 'loyalty', value: -10 }
-            ],
-            description: 'events:crisis_poor_performance.opt1.d_b07b'
-          }
+          ], 'events:crisis_poor_performance.opt1.d_04df'),
+          failure: createCooldownComposite('crisis_poor_performance', [
+            { type: 'stat', stat: 'controversyLevel', value: 20 },
+            { type: 'stat', stat: 'loyalty', value: -10 }
+          ], 'events:crisis_poor_performance.opt1.d_b07b')
         },
         outcomeText: 'events:crisis_poor_performance.opt1.outcome'
       },
       {
         label: 'events:crisis_poor_performance.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'loyalty', value: 10 },
-            { type: 'stat', stat: 'controversyLevel', value: -5 }
-          ]
-        },
+        effect: createCooldownComposite('crisis_poor_performance', [
+          { type: 'stat', stat: 'loyalty', value: 10 },
+          { type: 'stat', stat: 'controversyLevel', value: -5 }
+        ]),
         outcomeText: 'events:crisis_poor_performance.opt2.outcome'
       }
     ]
@@ -447,26 +349,18 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_leaked_story.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_leaked_story', [
             { type: 'stat', stat: 'controversyLevel', value: -15 },
-            { type: 'stat', stat: 'loyalty', value: -20 },
-            { type: 'cooldown', eventId: 'crisis_leaked_story' }
-          ]
-        },
+            { type: 'stat', stat: 'loyalty', value: -20 }
+        ]),
         outcomeText: 'events:crisis_leaked_story.opt1.outcome'
       },
       {
         label: 'events:crisis_leaked_story.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_leaked_story', [
             { type: 'stat', stat: 'controversyLevel', value: 15 },
-            { type: 'stat', stat: 'harmony', value: -10 },
-            { type: 'cooldown', eventId: 'crisis_leaked_story' }
-          ]
-        },
+            { type: 'stat', stat: 'harmony', value: -10 }
+          ]),
         outcomeText: 'events:crisis_leaked_story.opt2.outcome'
       }
     ]
@@ -485,13 +379,10 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_mass_unfollow.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_mass_unfollow', [
             { type: 'stat', stat: 'loyalty', value: 5 },
             { type: 'stat', stat: 'harmony', value: -10 }
-          ]
-        },
+          ]),
         outcomeText: 'events:crisis_mass_unfollow.opt1.outcome'
       }
     ]
@@ -514,37 +405,23 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: {
-            type: 'composite',
-            effects: [
+          success: createCooldownComposite('crisis_ego_clash', [
               { type: 'stat', stat: 'harmony', value: 20 },
-              { type: 'stat', stat: 'controversyLevel', value: -5 },
-              { type: 'cooldown', eventId: 'crisis_ego_clash' }
-            ],
-            description: 'events:crisis_ego_clash.opt1.d_26fc'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'harmony', value: -15 },
-              { type: 'stat', stat: 'mood', value: -10 },
-              { type: 'cooldown', eventId: 'crisis_ego_clash' }
-            ],
-            description: 'events:crisis_ego_clash.opt1.d_7dcd'
-          }
+              { type: 'stat', stat: 'controversyLevel', value: -5 }
+          ], 'events:crisis_ego_clash.opt1.d_26fc'),
+          failure: createCooldownComposite('crisis_ego_clash', [
+            { type: 'stat', stat: 'harmony', value: -15 },
+              { type: 'stat', stat: 'mood', value: -10 }
+          ], 'events:crisis_ego_clash.opt1.d_7dcd')
         },
         outcomeText: 'events:crisis_ego_clash.opt1.outcome'
       },
       {
         label: 'events:crisis_ego_clash.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
+        effect: createCooldownComposite('crisis_ego_clash', [
             { type: 'stat', stat: 'harmony', value: -8 },
-            { type: 'stat', stat: 'controversyLevel', value: 10 },
-            { type: 'cooldown', eventId: 'crisis_ego_clash' }
-          ]
-        },
+            { type: 'stat', stat: 'controversyLevel', value: 10 }
+          ]),
         outcomeText: 'events:crisis_ego_clash.opt2.outcome'
       }
     ]
