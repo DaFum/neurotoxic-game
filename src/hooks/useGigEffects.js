@@ -74,8 +74,8 @@ export const useGigEffects = stats => {
       } catch (_e) {
         cancelAnimationFrame(rAF)
         if (chaosContainerRef.current) {
-          const fallbackX = Math.random() * 4 - 2
-          const fallbackY = Math.random() * 4 - 2
+          const fallbackX = secureRandom() * 4 - 2
+          const fallbackY = secureRandom() * 4 - 2
           chaosContainerRef.current.style.transform = `translate(${fallbackX}px, ${fallbackY}px)`
         }
         return // Cancel next frame request
