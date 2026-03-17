@@ -36,12 +36,19 @@ export const resetMockGameState = () => {
   mockUseGameState.mock.resetCalls()
 
   mockGameState.advanceDay.mock.resetCalls()
+  mockGameState.advanceDay.mock.restore()
   mockGameState.saveGame.mock.resetCalls()
+  mockGameState.saveGame.mock.restore()
   mockGameState.updateBand.mock.resetCalls()
+  mockGameState.updateBand.mock.restore()
   mockGameState.triggerEvent.mock.resetCalls()
+  mockGameState.triggerEvent.mock.restore()
   mockGameState.startGig.mock.resetCalls()
+  mockGameState.startGig.mock.restore()
   mockGameState.changeScene.mock.resetCalls()
+  mockGameState.changeScene.mock.restore()
   mockGameState.addToast.mock.resetCalls()
+  mockGameState.addToast.mock.restore()
 
   mockGameState.band = { harmony: 50, harmonyRegenTravel: false, members: [] }
   mockGameState.gameMap = { nodes: {} }
@@ -60,8 +67,20 @@ mock.module('../src/utils/gameStateUtils.js', {
   namedExports: {
     // Correct clamp: 1 to 100
     clampBandHarmony: val => Math.min(100, Math.max(1, val)),
+<<<<<<< jules/add-missing-arrival-logic-tests-14588888633433148622
+    clampMemberStamina: (stamina, staminaMax = 100) => {
+      if (!Number.isFinite(stamina)) return 0
+      const resolvedStaminaMax = Number.isFinite(staminaMax) ? staminaMax : 100
+      return Math.max(0, Math.min(resolvedStaminaMax, Math.floor(stamina)))
+    },
+    clampMemberMood: mood => {
+      if (!Number.isFinite(mood)) return 0
+      return Math.max(0, Math.min(100, Math.floor(mood)))
+    }
+=======
     clampMemberStamina: (val, max = 100) => Math.min(max, Math.max(0, val)),
     clampMemberMood: val => Math.min(100, Math.max(0, val))
+>>>>>>> main
   }
 })
 
