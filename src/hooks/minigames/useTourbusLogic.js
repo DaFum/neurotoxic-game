@@ -12,11 +12,15 @@ export const SPAWN_RATE_MS = 1500
 export const TARGET_DISTANCE = 2500
 
 
+let warnedInsecureRng = false
 const safeRandom = () => {
   try {
     return secureRandom()
   } catch (e) {
-    console.warn('secureRandom is not available, falling back to insecure Math.random().', e)
+    if (!warnedInsecureRng) {
+      warnedInsecureRng = true
+      console.warn('secureRandom is not available, falling back to insecure Math.random().', e)
+    }
     return Math.random()
   }
 }

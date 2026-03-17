@@ -70,11 +70,15 @@ export class CrowdManager {
     const fallbackColor = getPixiColorFromToken('--star-white')
     const mutedColor = getPixiColorFromToken('--ash-gray')
 
+    let secureRandomErrorReported = false
     const safeRandom = () => {
       try {
         return secureRandom()
       } catch (error) {
-        handleError(error, { silent: true, severity: 'medium' })
+        if (!secureRandomErrorReported) {
+          secureRandomErrorReported = true
+          handleError(error, { silent: true, severity: 'medium' })
+        }
         return Math.random()
       }
     }

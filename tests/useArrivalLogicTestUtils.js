@@ -59,9 +59,19 @@ mock.module('../src/context/GameState.jsx', {
 mock.module('../src/utils/gameStateUtils.js', {
   namedExports: {
     // Correct clamp: 1 to 100
-    clampBandHarmony: val => Math.min(100, Math.max(1, val)),
-    clampMemberStamina: (val, max = 100) => Math.min(max, Math.max(0, val)),
-    clampMemberMood: val => Math.min(100, Math.max(0, val))
+    clampBandHarmony: val => {
+      if (!Number.isFinite(val)) return 1
+      return Math.max(1, Math.min(100, Math.floor(val)))
+    },
+    clampMemberStamina: (val, max = 100) => {
+      if (!Number.isFinite(val)) return 0
+      const resolvedMax = Number.isFinite(max) ? max : 100
+      return Math.max(0, Math.min(resolvedMax, Math.floor(val)))
+    },
+    clampMemberMood: val => {
+      if (!Number.isFinite(val)) return 0
+      return Math.max(0, Math.min(100, Math.floor(val)))
+    }
   }
 })
 

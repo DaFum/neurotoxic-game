@@ -326,8 +326,13 @@ export const ChatterOverlay = memo(({ gameState }) => {
           if (!id) {
             // Using secureRandom unconditionally; if crypto is unavailable, it will throw.
             // This guarantees unpredictable IDs and avoids predictable fallbacks.
-            const roll = secureRandom()
-            id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
+            try {
+              const roll = secureRandom()
+              id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
+            } catch (error) {
+              const roll = Math.random()
+              id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
+            }
           }
 
           const newMessage = { id: String(id), text, speaker, type, scene: currentState.currentScene }

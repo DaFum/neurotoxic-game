@@ -100,7 +100,9 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
             <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.category', { defaultValue: 'Category' })}
             </span>
-            <span className='text-star-white drop-shadow-md'>{opt.category}</span>
+            <span className='text-star-white drop-shadow-md'>
+              {opt.category ? t(`economy:social.categories.${opt.category}`, { defaultValue: opt.category }) : ''}
+            </span>
           </div>
         </div>
 
