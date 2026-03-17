@@ -6,8 +6,12 @@ import { secureRandom } from '../../utils/crypto.js'
 // These fire when controversyLevel crosses key thresholds.
 // Triggers: 'post_gig' (band/financial pool), 'travel' (band/special pool via arrivalUtils)
 /**
- * Helper to append a cooldown effect to an array of effects
- * and optionally set a description for the resulting composite.
+ * Erstellt ein Composite-Effektobjekt und fügt diesem einen Cooldown für ein Ereignis hinzu.
+ *
+ * @param {string} eventId - Kennung des Ereignisses, für das der Cooldown gesetzt wird.
+ * @param {Array<object>} effects - Liste von Effekten, die im Composite enthalten sein sollen.
+ * @param {string} [description] - Optionale Beschreibung, die dem Composite hinzugefügt wird.
+ * @returns {object} Das erzeugte Composite-Objekt mit den kombinierten Effekten und einem angehängten Cooldown. 
  */
 function createCooldownComposite(eventId, effects, description) {
   const composite = {
