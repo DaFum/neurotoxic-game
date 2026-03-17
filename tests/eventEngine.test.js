@@ -723,3 +723,44 @@ test('eventEngine.processEvent processes valid events successfully', () => {
     'No errors should be logged'
   )
 })
+
+test('eventEngine.applyResult percentage_resource skips if no gameState', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: 10 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.player.money, undefined, 'Should skip without gameState')
+})
+
+test('eventEngine.applyResult percentage_resource handles positive gain with max cap', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: 50, max: 100 }
+  const gameState = { player: { money: 1000 } }
+  const delta = eventEngine.applyResult(result, {}, gameState)
+  assert.equal(delta.player.money, 100, 'Should cap positive gain at max')
+})
+
+test('eventEngine.applyResult percentage_resource handles positive gain with min cap', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: 5, min: 200 }
+  const gameState = { player: { money: 1000 } }
+  const delta = eventEngine.applyResult(result, {}, gameState)
+  assert.equal(delta.player.money, 200, 'Should elevate positive gain to min')
+})
+
+test('eventEngine.applyResult percentage_resource handles negative loss with min cap (lower bound)', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: -50, min: -100 }
+  const gameState = { player: { money: 1000 } }
+  const delta = eventEngine.applyResult(result, {}, gameState)
+  assert.equal(delta.player.money, -500, 'Should use Math.min for min cap when negative (amount=-500, min=-100 -> -500)')
+})
+
+test('eventEngine.applyResult percentage_resource handles negative loss with max cap (upper bound)', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: -5, max: -200 }
+  const gameState = { player: { money: 1000 } }
+  const delta = eventEngine.applyResult(result, {}, gameState)
+  assert.equal(delta.player.money, -50, 'Should use Math.max for max cap when negative (amount=-50, max=-200 -> -50)')
+})
+
+test('eventEngine.applyResult percentage_resource handles zero money correctly', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: 50 }
+  const gameState = { player: { money: 0 } }
+  const delta = eventEngine.applyResult(result, {}, gameState)
+  assert.equal(delta.player.money, 0, 'Zero money should yield zero gain')
+})

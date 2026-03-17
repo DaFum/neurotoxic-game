@@ -198,11 +198,20 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
     }
   },
   percentage_resource: (eff, delta, _context, gameState) => {
+    if (!gameState || !gameState.player) return
+
     if (eff.resource === 'money') {
-      const current = gameState?.player?.money || 0
+      const current = gameState.player.money || 0
       let amount = Math.round(current * (eff.percentage / 100))
-      if (eff.min !== undefined) amount = Math.max(eff.min, amount)
-      if (eff.max !== undefined) amount = Math.min(eff.max, amount)
+
+      if (eff.percentage < 0) {
+        if (eff.min !== undefined) amount = Math.min(eff.min, amount)
+        if (eff.max !== undefined) amount = Math.max(eff.max, amount)
+      } else {
+        if (eff.min !== undefined) amount = Math.max(eff.min, amount)
+        if (eff.max !== undefined) amount = Math.min(eff.max, amount)
+      }
+
       delta.player.money = (delta.player.money || 0) + amount
     }
   },
@@ -540,9 +549,9 @@ export const eventEngine = {
     const delta = { player: {}, band: {}, social: {}, flags: {} }
 
     if (result.type === 'composite') {
-      result.effects.forEach(eff =>
+      result.effects.forEach(eff => {
         processEffect(eff, delta, context, gameState)
-      )
+      })
     } else {
       processEffect(result, delta, context, gameState)
     }
