@@ -434,7 +434,7 @@ export const TRANSPORT_EVENTS = [
       },
       {
         label: 'events:scenic_route.opt2.label',
-        effect: { type: 'stat', stat: 'time', value: 0 },
+        effect: { type: 'stat', stat: 'mood', value: 5 },
         outcomeText: 'events:scenic_route.opt2.outcome'
       }
     ]
@@ -463,7 +463,7 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 5,
-          success: { type: 'stat', stat: 'time', value: 0 },
+          success: { type: 'stat', stat: 'mood', value: 5 },
           failure: { type: 'chain', eventId: 'van_critical_failure' }
         },
         outcomeText: 'events:fuel_leak.opt2.outcome'
@@ -675,7 +675,7 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 5,
-          success: { type: 'stat', stat: 'time', value: 0 },
+          success: { type: 'stat', stat: 'mood', value: 5 },
           failure: { type: 'chain', eventId: 'van_breakdown_tire' }
         },
         outcomeText: 'events:tire_pressure_warning.opt2.outcome'

@@ -264,7 +264,13 @@ export const CONSEQUENCE_EVENTS = [
       },
       {
         label: 'events:consequences_ego_breakup_threat.opt2.label',
-        effect: { type: 'game_over' },
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'score', value: -1000 },
+            { type: 'game_over' }
+          ]
+        },
         outcomeText: 'events:consequences_ego_breakup_threat.opt2.outcome'
       }
     ]

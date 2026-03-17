@@ -29,7 +29,7 @@ export const QUEST_EVENTS = [
       },
       {
         label: 'events:quest_trigger_pick_of_destiny.opt2.label',
-        effect: { type: 'none' },
+        effect: { type: 'stat', stat: 'luck', value: -1 },
         outcomeText: 'events:quest_trigger_pick_of_destiny.opt2.outcome'
       }
     ]
@@ -65,7 +65,7 @@ export const QUEST_EVENTS = [
       },
       {
         label: 'events:quest_trigger_viral_dance.opt2.label',
-        effect: { type: 'none' },
+        effect: { type: 'stat', stat: 'mood', value: -5 },
         outcomeText: 'events:quest_trigger_viral_dance.opt2.outcome'
       }
     ]
@@ -99,7 +99,7 @@ export const QUEST_EVENTS = [
       },
       {
         label: 'events:quest_trigger_sponsor_demand.opt2.label',
-        effect: { type: 'none' },
+        effect: { type: 'stat', stat: 'fame', value: -10 },
         outcomeText: 'events:quest_trigger_sponsor_demand.opt2.outcome'
       }
     ]
@@ -132,6 +132,11 @@ export const QUEST_EVENTS = [
           }
         },
         outcomeText: 'events:quest_trigger_harmony_project.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_harmony_project.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -5 },
+        outcomeText: 'events:quest_trigger_harmony_project.opt2.outcome'
       }
     ]
   },
@@ -164,7 +169,7 @@ export const QUEST_EVENTS = [
       },
       {
         label: 'events:quest_trigger_local_legend.opt2.label',
-        effect: { type: 'none' },
+        effect: { type: 'stat', stat: 'fame', value: -50 },
         outcomeText: 'events:quest_trigger_local_legend.opt2.outcome'
       }
     ]

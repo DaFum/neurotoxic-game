@@ -94,6 +94,26 @@ export const generateEffectText = (delta, t) => {
     }
   }
 
+  // Flags and invisible effects
+  if (delta.flags) {
+    if (delta.flags.addQuest) {
+      const quests = Array.isArray(delta.flags.addQuest) ? delta.flags.addQuest : [delta.flags.addQuest]
+      quests.forEach(q => {
+        const questId = typeof q === 'object' && q !== null ? q.id : q;
+        const questLabel = typeof q === 'object' && q !== null && q.title
+          ? q.title
+          : t(`events:${questId}.label`, { defaultValue: questId });
+        lines.push(`${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`)
+      })
+    }
+    if (delta.flags.queueEvent || delta.flags.addStoryFlag) {
+      lines.push(t('ui:event.story_updated', { defaultValue: 'Story Updated' }))
+    }
+    if (delta.flags.gameOver) {
+      lines.push(t('ui:event.game_over_effect', { defaultValue: 'GAME OVER' }))
+    }
+  }
+
   if (lines.length > 0) {
     const label = t('ui:event.effects_label', { defaultValue: 'Effects:' })
     return `${label} ${lines.join(', ')}`
