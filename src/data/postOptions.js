@@ -1,6 +1,23 @@
 // TODO: Review this file
 import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
+import { secureRandom } from '../utils/crypto.js'
+import { handleError } from '../utils/errorHandler.js'
+
+const getSecureRollOnce = (() => {
+  let errorReported = false
+  return () => {
+    try {
+      return secureRandom()
+    } catch (e) {
+      if (!errorReported) {
+        errorReported = true
+        handleError(e, { severity: 'medium', silent: true })
+      }
+      return Math.random()
+    }
+  }
+})()
 
 const POST_BADGES = {
   RISK: '⚠️',
@@ -743,7 +760,11 @@ export const POST_OPTIONS = [
       }
 
       // Pick one from affordable
-      const roll = diceRoll ?? Math.random()
+      let roll = diceRoll
+      if (roll == null) {
+        roll = getSecureRollOnce()
+      }
+
       const selectedId =
         affordableIds[
           Math.floor(roll * affordableIds.length) % affordableIds.length
