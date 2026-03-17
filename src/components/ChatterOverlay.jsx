@@ -201,7 +201,10 @@ const ChatterMessage = memo(
       [messageScene, t]
     )
 
-    const textColorClass = resolveMessageTextColor(msg.type, messageScene)
+    const textColorClass = useMemo(
+      () => resolveMessageTextColor(msg.type, messageScene),
+      [msg.type, messageScene]
+    )
 
     return (
       <motion.div
@@ -271,11 +274,6 @@ export const ChatterOverlay = memo(({ gameState }) => {
 
   const currentScene = gameState.currentScene
 
-  const sceneStyle = useMemo(
-    () => SCENE_STYLES[currentScene] || DEFAULT_STYLE,
-    [currentScene]
-  )
-
   const removeMessage = useCallback(id => {
     setMessages(prev => prev.filter(m => m.id !== id))
   }, [])
@@ -329,7 +327,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
             id = `fallback-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`
           }
 
-          const newMessage = { id: String(id), text, speaker, type, scene: currentScene }
+          const newMessage = { id: String(id), text, speaker, type, scene: currentState.currentScene }
 
           setMessages(prev => [
             ...prev.slice(-4), // Keep max 5 (4 old + 1 new)
