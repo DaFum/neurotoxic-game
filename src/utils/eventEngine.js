@@ -197,6 +197,15 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
       )
     }
   },
+  percentage_resource: (eff, delta, _context, gameState) => {
+    if (eff.resource === 'money') {
+      const current = gameState?.player?.money || 0
+      let amount = Math.round(current * (eff.percentage / 100))
+      if (eff.min !== undefined) amount = Math.max(eff.min, amount)
+      if (eff.max !== undefined) amount = Math.min(eff.max, amount)
+      delta.player.money = (delta.player.money || 0) + amount
+    }
+  },
   stat: (eff, delta) => {
     if (eff.stat === 'time')
       delta.player.time = (delta.player.time || 0) + eff.value
@@ -292,10 +301,10 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
 /**
  * Processes a single effect object into state delta modifications.
  */
-const processEffect = (eff, delta, context = {}) => {
+const processEffect = (eff, delta, context = {}, gameState = null) => {
   const handler = EFFECT_HANDLERS[eff.type]
   if (typeof handler === 'function') {
-    handler(eff, delta, context)
+    handler(eff, delta, context, gameState)
   }
 }
 
@@ -525,15 +534,17 @@ export const eventEngine = {
    * @param {object} context - Context variables from the event (e.g. member names).
    * @returns {object|null} A delta object representing state changes, or null.
    */
-  applyResult: (result, context = {}) => {
+  applyResult: (result, context = {}, gameState = null) => {
     if (!result) return null
 
     const delta = { player: {}, band: {}, social: {}, flags: {} }
 
     if (result.type === 'composite') {
-      result.effects.forEach(eff => processEffect(eff, delta, context))
+      result.effects.forEach(eff =>
+        processEffect(eff, delta, context, gameState)
+      )
     } else {
-      processEffect(result, delta, context)
+      processEffect(result, delta, context, gameState)
     }
 
     if (result.nextEventId) {
@@ -573,7 +584,11 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   }
 
   const result = eventEngine.resolveChoice(choice, gameState, rng)
-  const delta = eventEngine.applyResult(result, gameState.activeEvent?.context)
+  const delta = eventEngine.applyResult(
+    result,
+    gameState.activeEvent?.context,
+    gameState
+  )
 
   let appliedDelta = null
   if (delta) {

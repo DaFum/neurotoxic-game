@@ -22,7 +22,7 @@ export const FINANCIAL_EVENTS = [
     title: 'events:gear_theft.title',
     description: 'events:gear_theft.desc',
     trigger: 'random',
-    chance: 0.03,
+    chance: 0.02,
     options: [
       {
         label: 'events:gear_theft.opt1.label',
@@ -30,9 +30,10 @@ export const FINANCIAL_EVENTS = [
           type: 'composite',
           effects: [
             {
-              type: 'resource',
+              type: 'percentage_resource',
               resource: 'money',
-              value: -480,
+              percentage: -30,
+              min: -300,
               description: 'events:gear_theft.opt1.d_8026'
             },
             { type: 'stat', stat: 'mood', value: -10 }
@@ -45,7 +46,7 @@ export const FINANCIAL_EVENTS = [
         effect: {
           type: 'stat',
           stat: 'harmony',
-          value: -10,
+          value: -15,
           description: 'events:gear_theft.opt2.d_6b9d'
         },
         outcomeText: 'events:gear_theft.opt2.outcome'
@@ -83,9 +84,10 @@ export const FINANCIAL_EVENTS = [
       {
         label: 'events:tax_audit.opt1.label',
         effect: {
-          type: 'resource',
+          type: 'percentage_resource',
           resource: 'money',
-          value: -240,
+          percentage: -15,
+          min: -200,
           description: 'events:tax_audit.opt1.d_ca82'
         },
         outcomeText: 'events:tax_audit.opt1.outcome'
@@ -102,9 +104,10 @@ export const FINANCIAL_EVENTS = [
             description: 'events:tax_audit.opt2.d_6384'
           },
           failure: {
-            type: 'resource',
+            type: 'percentage_resource',
             resource: 'money',
-            value: -500,
+            percentage: -35,
+            min: -400,
             description: 'events:tax_audit.opt2.d_c7a0'
           }
         },
@@ -122,12 +125,12 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:broken_merch_box.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -100 },
+        effect: { type: 'resource', resource: 'money', value: -60 },
         outcomeText: 'events:broken_merch_box.opt1.outcome'
       },
       {
         label: 'events:broken_merch_box.opt2.label',
-        effect: { type: 'resource', resource: 'money', value: 50 },
+        effect: { type: 'resource', resource: 'money', value: 80 },
         outcomeText: 'events:broken_merch_box.opt2.outcome'
       }
     ]
@@ -138,14 +141,19 @@ export const FINANCIAL_EVENTS = [
     title: 'events:sponsor_offer.title',
     description: 'events:sponsor_offer.desc',
     trigger: 'random',
-    chance: 0.02,
+    chance: 0.04,
     options: [
       {
         label: 'events:sponsor_offer.opt1.label',
         effect: {
           type: 'composite',
           effects: [
-            { type: 'resource', resource: 'money', value: 300 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: 20,
+              max: 500
+            },
             { type: 'stat', stat: 'harmony', value: -5 }
           ]
         },
@@ -177,7 +185,7 @@ export const FINANCIAL_EVENTS = [
           stat: 'luck',
           threshold: 6,
           success: { type: 'resource', resource: 'money', value: -20 },
-          failure: { type: 'resource', resource: 'money', value: -60 }
+          failure: { type: 'resource', resource: 'money', value: -45 }
         },
         outcomeText: 'events:fuel_price_spike.opt2.outcome'
       }
@@ -193,7 +201,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:broken_cable_bulk.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -100 },
+        effect: { type: 'resource', resource: 'money', value: -60 },
         outcomeText: 'events:broken_cable_bulk.opt1.outcome'
       },
       {
@@ -224,7 +232,12 @@ export const FINANCIAL_EVENTS = [
           success: {
             type: 'composite',
             effects: [
-              { type: 'resource', resource: 'money', value: 80 },
+              {
+                type: 'percentage_resource',
+                resource: 'money',
+                percentage: 10,
+                max: 250
+              },
               { type: 'stat', stat: 'harmony', value: 3 }
             ]
           },
@@ -244,7 +257,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:merch_restock_opportunity.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -120 },
+        effect: { type: 'resource', resource: 'money', value: -80 },
         outcomeText: 'events:merch_restock_opportunity.opt1.outcome'
       },
       {
@@ -260,11 +273,16 @@ export const FINANCIAL_EVENTS = [
     title: 'events:merch_big_sale.title',
     description: 'events:merch_big_sale.desc',
     trigger: 'random',
-    chance: 0.03,
+    chance: 0.05,
     options: [
       {
         label: 'events:merch_big_sale.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: 180 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: 15,
+          max: 400
+        },
         outcomeText: 'events:merch_big_sale.opt1.outcome'
       }
     ]
@@ -279,7 +297,12 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:towed_van.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -350 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -20,
+          min: -250
+        },
         outcomeText: 'events:towed_van.opt1.outcome'
       },
       {
@@ -287,8 +310,18 @@ export const FINANCIAL_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 8,
-          success: { type: 'resource', resource: 'money', value: -120 },
-          failure: { type: 'resource', resource: 'money', value: -260 }
+          success: {
+            type: 'percentage_resource',
+            resource: 'money',
+            percentage: -8,
+            min: -80
+          },
+          failure: {
+            type: 'percentage_resource',
+            resource: 'money',
+            percentage: -20,
+            min: -250
+          }
         },
         outcomeText: 'events:towed_van.opt2.outcome'
       }
@@ -325,11 +358,16 @@ export const FINANCIAL_EVENTS = [
     title: 'events:random_refund.title',
     description: 'events:random_refund.desc',
     trigger: 'random',
-    chance: 0.02,
+    chance: 0.04,
     options: [
       {
         label: 'events:random_refund.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: 70 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: 10,
+          max: 250
+        },
         outcomeText: 'events:random_refund.opt1.outcome'
       }
     ]
@@ -344,7 +382,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:atm_fee_trap.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -10 },
+        effect: { type: 'resource', resource: 'money', value: -25 },
         outcomeText: 'events:atm_fee_trap.opt1.outcome'
       },
       {
@@ -364,7 +402,12 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:damaged_merch_print.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: 60 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: 8,
+          max: 200
+        },
         outcomeText: 'events:damaged_merch_print.opt1.outcome'
       },
       {
@@ -384,7 +427,18 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:hospitality_win.opt1.label',
-        effect: { type: 'stat', stat: 'mood', value: 10 },
+        effect: {
+          type: 'composite',
+          effects: [
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: 8,
+              max: 200
+            },
+            { type: 'stat', stat: 'mood', value: 5 }
+          ]
+        },
         outcomeText: 'events:hospitality_win.opt1.outcome'
       }
     ]
@@ -407,7 +461,7 @@ export const FINANCIAL_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: { type: 'resource', resource: 'money', value: 0 },
+          success: { type: 'stat', stat: 'mood', value: 5 },
           failure: { type: 'resource', resource: 'money', value: -60 }
         },
         outcomeText: 'events:van_cleaning_fee.opt2.outcome'
@@ -424,7 +478,7 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:broken_phone_screen.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -90 },
+        effect: { type: 'resource', resource: 'money', value: -60 },
         outcomeText: 'events:broken_phone_screen.opt1.outcome'
       },
       {
@@ -440,11 +494,16 @@ export const FINANCIAL_EVENTS = [
     title: 'events:unexpected_donation.title',
     description: 'events:unexpected_donation.desc',
     trigger: 'random',
-    chance: 0.02,
+    chance: 0.04,
     options: [
       {
         label: 'events:unexpected_donation.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: 50 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: 8,
+          max: 200
+        },
         outcomeText: 'events:unexpected_donation.opt1.outcome'
       },
       {
@@ -460,11 +519,16 @@ export const FINANCIAL_EVENTS = [
     title: 'events:rehearsal_room_discount.title',
     description: 'events:rehearsal_room_discount.desc',
     trigger: 'random',
-    chance: 0.02,
+    chance: 0.04,
     options: [
       {
         label: 'events:rehearsal_room_discount.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: 100 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: 10,
+          max: 300
+        },
         outcomeText: 'events:rehearsal_room_discount.opt1.outcome'
       },
       {
@@ -499,7 +563,7 @@ export const FINANCIAL_EVENTS = [
           stat: 'luck',
           threshold: 6,
           success: { type: 'stat', stat: 'mood', value: 2 },
-          failure: { type: 'resource', resource: 'money', value: -120 }
+          failure: { type: 'resource', resource: 'money', value: -70 }
         },
         outcomeText: 'events:insurance_forms.opt2.outcome'
       }

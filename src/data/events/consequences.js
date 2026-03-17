@@ -295,10 +295,10 @@ export const CONSEQUENCE_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'flag', flag: 'comeback_triggered' },
-            { type: 'resource', resource: 'money', value: 500 },
-            { type: 'stat', stat: 'fame', value: 200 },
-            { type: 'stat', stat: 'loyalty', value: 25 },
-            { type: 'stat', stat: 'controversyLevel', value: -20 }
+            { type: 'resource', resource: 'money', value: 300 },
+            { type: 'stat', stat: 'fame', value: 100 },
+            { type: 'stat', stat: 'loyalty', value: 20 },
+            { type: 'stat', stat: 'controversyLevel', value: -15 }
           ]
         },
         outcomeText: 'events:consequences_comeback_album.opt1.outcome'
@@ -309,7 +309,7 @@ export const CONSEQUENCE_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'flag', flag: 'comeback_triggered' },
-            { type: 'stat', stat: 'loyalty', value: 40 },
+            { type: 'stat', stat: 'loyalty', value: 25 },
             { type: 'stat', stat: 'viral', value: 2 }
           ]
         },

@@ -16,7 +16,7 @@ export const ALL_VENUES = [
     y: 39,
     type: 'VENUE',
     capacity: 300,
-    pay: 500,
+    pay: 200,
     diff: 2,
     price: 0
   },
@@ -27,7 +27,7 @@ export const ALL_VENUES = [
     y: 41,
     type: 'VENUE',
     capacity: 120,
-    pay: 300,
+    pay: 150,
     diff: 3,
     price: 8
   },
@@ -38,7 +38,7 @@ export const ALL_VENUES = [
     y: 38,
     type: 'VENUE',
     capacity: 100,
-    pay: 400,
+    pay: 150,
     diff: 3,
     price: 10
   },
@@ -49,7 +49,7 @@ export const ALL_VENUES = [
     y: 37,
     type: 'VENUE',
     capacity: 450,
-    pay: 1000,
+    pay: 650,
     diff: 4,
     price: 15
   },
@@ -60,7 +60,7 @@ export const ALL_VENUES = [
     y: 45,
     type: 'VENUE',
     capacity: 250,
-    pay: 650,
+    pay: 350,
     diff: 3,
     price: 12
   },
@@ -71,7 +71,7 @@ export const ALL_VENUES = [
     y: 46,
     type: 'VENUE',
     capacity: 600,
-    pay: 1250,
+    pay: 800,
     diff: 4,
     price: 18
   },
@@ -82,7 +82,7 @@ export const ALL_VENUES = [
     y: 44,
     type: 'FESTIVAL',
     capacity: 1200,
-    pay: 2500,
+    pay: 1800,
     diff: 5,
     price: 25
   },
@@ -95,7 +95,7 @@ export const ALL_VENUES = [
     y: 55,
     type: 'VENUE',
     capacity: 400,
-    pay: 1000,
+    pay: 650,
     diff: 4,
     price: 15
   },
@@ -106,7 +106,7 @@ export const ALL_VENUES = [
     y: 56,
     type: 'VENUE',
     capacity: 180,
-    pay: 550,
+    pay: 300,
     diff: 3,
     price: 12
   },
@@ -117,7 +117,7 @@ export const ALL_VENUES = [
     y: 54,
     type: 'VENUE',
     capacity: 90,
-    pay: 300,
+    pay: 80,
     diff: 2,
     price: 5
   },
@@ -128,7 +128,7 @@ export const ALL_VENUES = [
     y: 55,
     type: 'VENUE',
     capacity: 600,
-    pay: 1600,
+    pay: 1000,
     diff: 4,
     price: 20
   },
@@ -139,7 +139,7 @@ export const ALL_VENUES = [
     y: 57,
     type: 'VENUE',
     capacity: 850,
-    pay: 2000,
+    pay: 1300,
     diff: 4,
     price: 22
   },
@@ -150,7 +150,7 @@ export const ALL_VENUES = [
     y: 58,
     type: 'FESTIVAL',
     capacity: 2500,
-    pay: 6500,
+    pay: 4500,
     diff: 5,
     price: 35
   },
@@ -161,7 +161,7 @@ export const ALL_VENUES = [
     y: 55,
     type: 'FESTIVAL',
     capacity: 6500,
-    pay: 16000,
+    pay: 10000,
     diff: 5,
     price: 50
   },
@@ -172,7 +172,7 @@ export const ALL_VENUES = [
     y: 58,
     type: 'VENUE',
     capacity: 350,
-    pay: 800,
+    pay: 450,
     diff: 3,
     price: 15
   },
@@ -183,7 +183,7 @@ export const ALL_VENUES = [
     y: 57,
     type: 'VENUE',
     capacity: 800,
-    pay: 1800,
+    pay: 1200,
     diff: 4,
     price: 20
   },
@@ -196,7 +196,7 @@ export const ALL_VENUES = [
     y: 35,
     type: 'VENUE',
     capacity: 220,
-    pay: 600,
+    pay: 300,
     diff: 3,
     price: 10
   },
@@ -207,7 +207,7 @@ export const ALL_VENUES = [
     y: 36,
     type: 'FESTIVAL',
     capacity: 1500,
-    pay: 4000,
+    pay: 2800,
     diff: 5,
     price: 28
   },
@@ -220,7 +220,7 @@ export const ALL_VENUES = [
     y: 35,
     type: 'VENUE',
     capacity: 500,
-    pay: 1200,
+    pay: 750,
     diff: 4,
     price: 18
   },
@@ -231,7 +231,7 @@ export const ALL_VENUES = [
     y: 36,
     type: 'VENUE',
     capacity: 300,
-    pay: 700,
+    pay: 400,
     diff: 3,
     price: 12
   },
@@ -242,7 +242,7 @@ export const ALL_VENUES = [
     y: 37,
     type: 'VENUE',
     capacity: 600,
-    pay: 1500,
+    pay: 1000,
     diff: 4,
     price: 20
   },
@@ -253,7 +253,7 @@ export const ALL_VENUES = [
     y: 36,
     type: 'FESTIVAL',
     capacity: 1500,
-    pay: 3500,
+    pay: 2500,
     diff: 5,
     price: 25
   },
@@ -264,7 +264,7 @@ export const ALL_VENUES = [
     y: 34,
     type: 'VENUE',
     capacity: 400,
-    pay: 900,
+    pay: 550,
     diff: 3,
     price: 15
   },
@@ -275,7 +275,7 @@ export const ALL_VENUES = [
     y: 20,
     type: 'VENUE',
     capacity: 400,
-    pay: 1000,
+    pay: 550,
     diff: 3,
     price: 18
   },
@@ -286,7 +286,7 @@ export const ALL_VENUES = [
     y: 21,
     type: 'VENUE',
     capacity: 300,
-    pay: 800,
+    pay: 450,
     diff: 3,
     price: 15
   },
@@ -297,7 +297,7 @@ export const ALL_VENUES = [
     y: 20,
     type: 'FESTIVAL',
     capacity: 1000,
-    pay: 2500,
+    pay: 1600,
     diff: 4,
     price: 25
   },
@@ -308,7 +308,7 @@ export const ALL_VENUES = [
     y: 21,
     type: 'VENUE',
     capacity: 200,
-    pay: 500,
+    pay: 250,
     diff: 3,
     price: 12
   },
@@ -319,7 +319,7 @@ export const ALL_VENUES = [
     y: 55,
     type: 'VENUE',
     capacity: 300,
-    pay: 750,
+    pay: 400,
     diff: 3,
     price: 15
   },
@@ -330,7 +330,7 @@ export const ALL_VENUES = [
     y: 56,
     type: 'VENUE',
     capacity: 150,
-    pay: 400,
+    pay: 150,
     diff: 2,
     price: 10
   },
@@ -341,7 +341,7 @@ export const ALL_VENUES = [
     y: 57,
     type: 'VENUE',
     capacity: 400,
-    pay: 1000,
+    pay: 550,
     diff: 3,
     price: 18
   },
@@ -352,7 +352,7 @@ export const ALL_VENUES = [
     y: 85,
     type: 'FESTIVAL',
     capacity: 1000,
-    pay: 3000,
+    pay: 2000,
     diff: 5,
     price: 25
   },
@@ -363,7 +363,7 @@ export const ALL_VENUES = [
     y: 86,
     type: 'VENUE',
     capacity: 400,
-    pay: 1000,
+    pay: 550,
     diff: 3,
     price: 18
   },
@@ -374,7 +374,7 @@ export const ALL_VENUES = [
     y: 75,
     type: 'FESTIVAL',
     capacity: 1500,
-    pay: 4000,
+    pay: 2800,
     diff: 5,
     price: 28
   },
@@ -385,7 +385,7 @@ export const ALL_VENUES = [
     y: 45,
     type: 'VENUE',
     capacity: 800,
-    pay: 2000,
+    pay: 1300,
     diff: 4,
     price: 22
   },
@@ -396,7 +396,7 @@ export const ALL_VENUES = [
     y: 46,
     type: 'VENUE',
     capacity: 400,
-    pay: 900,
+    pay: 500,
     diff: 3,
     price: 15
   },
@@ -407,7 +407,7 @@ export const ALL_VENUES = [
     y: 25,
     type: 'VENUE',
     capacity: 300,
-    pay: 700,
+    pay: 400,
     diff: 3,
     price: 12
   },
@@ -418,7 +418,7 @@ export const ALL_VENUES = [
     y: 60,
     type: 'FESTIVAL',
     capacity: 1500,
-    pay: 3500,
+    pay: 2500,
     diff: 5,
     price: 25
   },
@@ -429,7 +429,7 @@ export const ALL_VENUES = [
     y: 50,
     type: 'VENUE',
     capacity: 200,
-    pay: 500,
+    pay: 180,
     diff: 2,
     price: 10
   },
@@ -440,7 +440,7 @@ export const ALL_VENUES = [
     y: 70,
     type: 'VENUE',
     capacity: 800,
-    pay: 1800,
+    pay: 1200,
     diff: 4,
     price: 20
   },
@@ -451,7 +451,7 @@ export const ALL_VENUES = [
     y: 15,
     type: 'VENUE',
     capacity: 600,
-    pay: 1400,
+    pay: 750,
     diff: 3,
     price: 18
   },
@@ -462,7 +462,7 @@ export const ALL_VENUES = [
     y: 55,
     type: 'VENUE',
     capacity: 500,
-    pay: 1100,
+    pay: 600,
     diff: 3,
     price: 15
   },
@@ -473,7 +473,7 @@ export const ALL_VENUES = [
     y: 70,
     type: 'FESTIVAL',
     capacity: 1000,
-    pay: 2500,
+    pay: 1600,
     diff: 4,
     price: 22
   },
@@ -484,7 +484,7 @@ export const ALL_VENUES = [
     y: 85,
     type: 'VENUE',
     capacity: 300,
-    pay: 800,
+    pay: 400,
     diff: 3,
     price: 15
   },
@@ -495,7 +495,7 @@ export const ALL_VENUES = [
     y: 10,
     type: 'VENUE',
     capacity: 400,
-    pay: 900,
+    pay: 500,
     diff: 3,
     price: 15
   }

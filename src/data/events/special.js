@@ -132,7 +132,7 @@ export const SPECIAL_EVENTS = [
       },
       {
         label: 'events:ghost_backstage.opt2.label',
-        effect: { type: 'stat', stat: 'harmony', value: 1 },
+        effect: { type: 'stat', stat: 'harmony', value: 5 },
         outcomeText: 'events:ghost_backstage.opt2.outcome'
       }
     ]

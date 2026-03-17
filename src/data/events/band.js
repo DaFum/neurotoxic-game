@@ -158,7 +158,7 @@ export const BAND_EVENTS = [
       },
       {
         label: 'events:ego_clash.opt2.label',
-        effect: { type: 'stat', stat: 'harmony', value: -16 },
+        effect: { type: 'stat', stat: 'harmony', value: -10 },
         outcomeText: 'events:ego_clash.opt2.outcome'
       }
     ]
@@ -174,7 +174,12 @@ export const BAND_EVENTS = [
     options: [
       {
         label: 'events:gear_upgrade_argument.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -200 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -15,
+          min: -250
+        },
         outcomeText: 'events:gear_upgrade_argument.opt1.outcome'
       },
       {
@@ -370,7 +375,12 @@ export const BAND_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'stat', stat: 'stamina', value: -5 },
-            { type: 'resource', resource: 'money', value: 10 }
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: 5,
+              max: 100
+            }
           ]
         },
         outcomeText: 'events:merch_table_duty.opt1.outcome'
@@ -582,7 +592,13 @@ export const BAND_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'stat', stat: 'mood', value: 10 },
-            { type: 'stat', stat: 'harmony', value: 5 }
+            { type: 'stat', stat: 'harmony', value: 5 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: 5,
+              max: 120
+            }
           ]
         },
         outcomeText: 'events:creative_high.opt1.outcome'
@@ -623,7 +639,13 @@ export const BAND_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'stat', stat: 'harmony', value: 8 },
-            { type: 'stat', stat: 'mood', value: 5 }
+            { type: 'stat', stat: 'mood', value: 5 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: 3,
+              max: 60
+            }
           ]
         },
         outcomeText: 'events:band_bonding_walk.opt1.outcome'
