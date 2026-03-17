@@ -4,11 +4,21 @@ import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
 import { hasUpgrade } from '../../utils/upgradeUtils'
 import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from './constants'
+import { secureRandom } from '../../utils/crypto.js'
 
 export const BASE_SPEED = 0.05 // relative units per ms
 export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
 export const TARGET_DISTANCE = 2500
+
+
+const safeRandom = () => {
+  try {
+    return secureRandom()
+  } catch (_e) {
+    return Math.random()
+  }
+}
 
 export const useTourbusLogic = () => {
   const { player, completeTravelMinigame } = useGameState()
@@ -86,10 +96,10 @@ export const useTourbusLogic = () => {
       game.lastSpawnTime += deltaMS
       while (game.lastSpawnTime >= currentSpawnRate) {
         const time = performance.now()
-        const lane = Math.floor(Math.random() * LANE_COUNT)
-        const type = Math.random() > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
+        const lane = Math.floor(safeRandom() * LANE_COUNT)
+        const type = safeRandom() > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
         game.obstacles.push({
-          id: `${time}-${Math.random()}`,
+          id: `${time}-${safeRandom()}`,
           lane,
           y: -10, // Start above screen (0 to 100 is visible area)
           type,
