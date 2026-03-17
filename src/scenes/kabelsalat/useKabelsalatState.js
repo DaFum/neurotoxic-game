@@ -6,6 +6,7 @@ import { GAME_PHASES } from '../../context/gameConstants.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { loadTexture } from '../../components/stage/utils.js'
 import { logger } from '../../utils/logger.js'
+import { secureRandom } from '../../utils/crypto.js'
 import {
   CABLE_MAP,
   SOCKET_DEFS,
@@ -205,7 +206,17 @@ export const useKabelsalatState = () => {
         const unconnected = prevOrder.filter(id => !connections[id])
         if (unconnected.length <= 1) return prevOrder
 
-        const shuffled = [...unconnected].sort(() => Math.random() - 0.5)
+        const shuffled = [...unconnected]
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          let r
+          try {
+            r = secureRandom()
+          } catch (_e) {
+            r = Math.random()
+          }
+          const j = Math.floor(r * (i + 1))
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        }
 
         let shuffleIndex = 0
         return prevOrder.map(id => {
