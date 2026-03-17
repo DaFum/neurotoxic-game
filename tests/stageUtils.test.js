@@ -18,6 +18,9 @@ test('stage utils', async t => {
     assert.equal(calculateNoteY(500, 1000, 500, 100), 450)
     assert.equal(calculateNoteY(1000, 1000, 500, 100), 500)
     assert.equal(calculateNoteY(1500, 1000, 500, 100), 550)
+
+    // Test behavior when note has passed (elapsed > noteTime)
+    assert.equal(calculateNoteY(1200, 1000, 500, 100), 520)
   })
 
   await t.test('calculateCrowdOffset', () => {
