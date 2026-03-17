@@ -407,7 +407,7 @@ export const FINANCIAL_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: { type: 'resource', resource: 'money', value: 0 },
+          success: { type: 'stat', stat: 'mood', value: 5 },
           failure: { type: 'resource', resource: 'money', value: -60 }
         },
         outcomeText: 'events:van_cleaning_fee.opt2.outcome'

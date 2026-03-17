@@ -169,7 +169,7 @@ export const QUEST_EVENTS = [
       },
       {
         label: 'events:quest_trigger_local_legend.opt2.label',
-        effect: { type: 'stat', stat: 'fame', value: -50 },
+        effect: { type: 'stat', stat: 'fame', value: -15 },
         outcomeText: 'events:quest_trigger_local_legend.opt2.outcome'
       }
     ]

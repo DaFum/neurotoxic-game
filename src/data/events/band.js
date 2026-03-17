@@ -158,7 +158,7 @@ export const BAND_EVENTS = [
       },
       {
         label: 'events:ego_clash.opt2.label',
-        effect: { type: 'stat', stat: 'harmony', value: -16 },
+        effect: { type: 'stat', stat: 'harmony', value: -10 },
         outcomeText: 'events:ego_clash.opt2.outcome'
       }
     ]

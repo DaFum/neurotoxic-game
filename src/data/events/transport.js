@@ -174,8 +174,8 @@ export const TRANSPORT_EVENTS = [
       {
         label: 'events:police_control.opt3.label',
         skillCheck: {
-          stat: 'stamina', // Placeholder for driving skill
-          threshold: 9,
+          stat: 'stamina',
+          threshold: 7,
           success: {
             type: 'stat',
             stat: 'mood',
@@ -183,7 +183,12 @@ export const TRANSPORT_EVENTS = [
             description: 'events:police_control.opt3.d_a844'
           },
           failure: {
-            type: 'game_over',
+            type: 'composite',
+            effects: [
+              { type: 'resource', resource: 'money', value: -300 },
+              { type: 'stat', stat: 'controversyLevel', value: 20 },
+              { type: 'stat', stat: 'time', value: -4 }
+            ],
             description: 'events:police_control.opt3.d_arrested'
           }
         },
