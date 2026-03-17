@@ -3,6 +3,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { UpgradesTab } from '../src/ui/bandhq/UpgradesTab.jsx'
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key, options) => options?.defaultValue || key
   })
@@ -14,8 +15,8 @@ vi.mock('../src/ui/bandhq/ShopItem', () => ({
       <span>{item.name}</span>
       <span data-testid={`is-owned-${item.id}`}>{isOwned ? 'Yes' : 'No'}</span>
       <span data-testid={`is-disabled-${item.id}`}>{isDisabled ? 'Yes' : 'No'}</span>
-      {adjustedCost && <span data-testid={`adjusted-cost-${item.id}`}>{adjustedCost}</span>}
-      <button onClick={() => onBuy(item)}>Buy</button>
+      {adjustedCost !== undefined && adjustedCost !== null && <span data-testid={`adjusted-cost-${item.id}`}>{adjustedCost}</span>}
+      <button type="button" onClick={() => onBuy(item)}>Buy</button>
       {processingItemId === item.id && <span data-testid="processing">Processing</span>}
     </div>
   )

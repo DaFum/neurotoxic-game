@@ -3,6 +3,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { DetailedStatsTab } from '../src/ui/bandhq/DetailedStatsTab.jsx'
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key, options) => options?.defaultValue || key
   })
