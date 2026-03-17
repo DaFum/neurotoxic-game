@@ -5,6 +5,7 @@ import { audioManager } from '../../utils/AudioManager'
 import { hasUpgrade } from '../../utils/upgradeUtils'
 import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from './constants'
 import { secureRandom } from '../../utils/crypto.js'
+import { handleError } from '../../utils/errorHandler.js'
 
 export const BASE_SPEED = 0.05 // relative units per ms
 export const MAX_SPEED = 0.12
@@ -19,7 +20,7 @@ const safeRandom = () => {
   } catch (e) {
     if (!warnedInsecureRng) {
       warnedInsecureRng = true
-      console.warn('secureRandom is not available, falling back to insecure Math.random().', e)
+      handleError(e, { severity: 'medium', silent: true })
     }
     return Math.random()
   }

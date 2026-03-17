@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
 import { secureRandom } from '../utils/crypto.js'
 
+let secureRandomFallbackWarned = false
+
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
 const MESSAGE_LIFETIME_MS = 10000
@@ -324,13 +326,15 @@ export const ChatterOverlay = memo(({ gameState }) => {
           }
 
           if (!id) {
-            // Using secureRandom unconditionally; if crypto is unavailable, it will throw.
-            // This guarantees unpredictable IDs and avoids predictable fallbacks.
+            // Fallback to Math.random() if secureRandom is unavailable
             let roll
             try {
               roll = secureRandom()
             } catch (error) {
-              console.warn('secureRandom() failed, falling back to Math.random().', error)
+              if (!secureRandomFallbackWarned) {
+                secureRandomFallbackWarned = true
+                console.warn('secureRandom() failed, falling back to Math.random().', error)
+              }
               roll = Math.random()
             }
             id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`

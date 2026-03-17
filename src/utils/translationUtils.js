@@ -36,7 +36,7 @@ export const translateContextKeys = (context, t) => {
     const value = context[prop]
     if (typeof value === 'string') {
       const isTranslationKey = VALID_NAMESPACES.some(ns => value.startsWith(ns))
-      translatedContext[prop] = isTranslationKey ? t(value) : value
+      translatedContext[prop] = isTranslationKey ? t(value, { defaultValue: value }) : value
     } else if (typeof value === 'object' && value !== null) {
       // SECURITY: Recurse into nested objects to sanitize and translate
       translatedContext[prop] = translateContextKeys(value, t)
