@@ -177,7 +177,13 @@ ChatterMessageLifetimeBar.propTypes = {
 }
 
 const ChatterMessage = memo(
-  ({ msg, sceneStyle, currentScene, onRemove, t }) => {
+  ({ msg, onRemove, t }) => {
+    const messageScene = msg.scene
+    const sceneStyle = useMemo(
+      () => SCENE_STYLES[messageScene] || DEFAULT_STYLE,
+      [messageScene]
+    )
+
     useEffect(() => {
       const timer = setTimeout(() => {
         onRemove(msg.id)
@@ -187,15 +193,15 @@ const ChatterMessage = memo(
 
     const sceneLabel = useMemo(
       () =>
-        t(`ui:chatter_labels.${currentScene}`, {
+        t(`ui:chatter_labels.${messageScene}`, {
           defaultValue: t('ui:chatter_labels.default_fallback', {
             defaultValue: 'Band Feed'
           })
         }),
-      [currentScene, t]
+      [messageScene, t]
     )
 
-    const textColorClass = resolveMessageTextColor(msg.type, currentScene)
+    const textColorClass = resolveMessageTextColor(msg.type, messageScene)
 
     return (
       <motion.div
@@ -239,8 +245,6 @@ ChatterMessage.displayName = 'ChatterMessage'
 
 ChatterMessage.propTypes = {
   msg: PropTypes.object.isRequired,
-  sceneStyle: PropTypes.object.isRequired,
-  currentScene: PropTypes.string.isRequired,
   onRemove: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired
 }
@@ -325,7 +329,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
             id = `fallback-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`
           }
 
-          const newMessage = { id: String(id), text, speaker, type }
+          const newMessage = { id: String(id), text, speaker, type, scene: currentScene }
 
           setMessages(prev => [
             ...prev.slice(-4), // Keep max 5 (4 old + 1 new)
@@ -379,8 +383,6 @@ export const ChatterOverlay = memo(({ gameState }) => {
           <ChatterMessage
             key={msg.id}
             msg={msg}
-            sceneStyle={sceneStyle}
-            currentScene={currentScene}
             onRemove={removeMessage}
             t={t}
           />
