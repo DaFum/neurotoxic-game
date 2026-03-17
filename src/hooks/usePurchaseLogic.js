@@ -144,9 +144,11 @@ export const usePurchaseLogic = ({
         }
 
         // Build patches
+        const newFame = clampPlayerFame(startingFame - finalCost)
+        const newMoney = clampPlayerMoney(startingMoney - finalCost)
         let playerPatch = payingWithFame
-          ? { fame: clampPlayerFame(startingFame - finalCost) }
-          : { money: clampPlayerMoney(startingMoney - finalCost) }
+          ? { fame: newFame }
+          : { money: newMoney }
 
         let bandPatch = null
 

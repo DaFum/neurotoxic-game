@@ -20,7 +20,8 @@ import {
   clampBandHarmony,
   clampMemberStamina,
   clampMemberMood,
-  clampPlayerFame
+  clampPlayerFame,
+  calculateFameLevel
 } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_BY_ID } from '../data/songs'
@@ -571,6 +572,7 @@ export const usePostGigLogic = () => {
     updatePlayer({
       money: newMoney,
       fame: newFame,
+      fameLevel: calculateFameLevel(newFame),
       lastGigNodeId: player.currentNodeId
     })
 

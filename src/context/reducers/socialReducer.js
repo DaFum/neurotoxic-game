@@ -4,7 +4,8 @@ import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
-  clampPlayerFame
+  clampPlayerFame,
+  calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 
 /**
@@ -149,7 +150,8 @@ export const handlePirateBroadcast = (state, payload) => {
     player: {
       ...state.player,
       money: nextMoney,
-      fame: nextFame
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame)
     },
     band: {
       ...state.band,
