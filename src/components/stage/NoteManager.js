@@ -5,6 +5,8 @@ import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { calculateNoteY, loadTexture } from './utils.js'
 import { secureRandom } from '../../utils/crypto.js'
 
+let rngErrorReported = false
+
 const NOTE_SPAWN_LEAD_MS = 2000
 const NOTE_JITTER_RANGE = 10
 const NOTE_SPRITE_SIZE = 80
@@ -206,7 +208,10 @@ export class NoteManager {
     try {
       randomVal = secureRandom()
     } catch (e) {
-      handleError(e, { severity: 'medium', silent: true })
+      if (!rngErrorReported) {
+        rngErrorReported = true
+        handleError(e, { severity: 'medium', silent: true })
+      }
       randomVal = Math.random()
     }
     sprite.jitterOffset = (randomVal - 0.5) * NOTE_JITTER_RANGE

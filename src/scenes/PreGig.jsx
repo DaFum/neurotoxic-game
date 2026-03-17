@@ -468,7 +468,8 @@ export const PreGig = () => {
             let randomVal
             try {
               randomVal = secureRandom()
-            } catch (_err) {
+            } catch (err) {
+              handleError(err, { silent: true, severity: 'medium' })
               // Fallback to Math.random()
               randomVal = Math.random()
             }

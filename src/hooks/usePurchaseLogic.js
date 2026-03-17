@@ -11,7 +11,7 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
 import { HQ_ITEMS } from '../data/hqItems.js'
-import { translateContextKeys } from '../ui/ToastOverlay.jsx'
+import { translateContextKeys } from '../utils/translationUtils.js'
 import {
   getPrimaryEffect,
   getAdjustedCost,

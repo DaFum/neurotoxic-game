@@ -10,6 +10,8 @@ import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { secureRandom } from '../../utils/crypto.js'
 
+let secureRandomErrorReported = false
+
 export class CrowdManager {
   /**
    * @param {Application} app
@@ -74,7 +76,10 @@ export class CrowdManager {
       try {
         return secureRandom()
       } catch (error) {
-        handleError(error, { silent: true, severity: 'medium' })
+        if (!secureRandomErrorReported) {
+          secureRandomErrorReported = true
+          handleError(error, { silent: true, severity: 'medium' })
+        }
         return Math.random()
       }
     }
