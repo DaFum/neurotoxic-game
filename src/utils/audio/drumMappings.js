@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { audioState } from './state.js'
 
 // ⚡ BOLT OPTIMIZATION: Direct handler dispatch avoids string comparisons and property lookups

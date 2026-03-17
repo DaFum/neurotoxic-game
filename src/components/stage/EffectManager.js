@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'

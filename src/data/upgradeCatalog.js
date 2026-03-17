@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { HQ_ITEMS } from './hqItems.js'
 
 /**

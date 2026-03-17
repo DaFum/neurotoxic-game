@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { motion } from 'framer-motion'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { usePostGigLogic } from '../hooks/usePostGigLogic.js'

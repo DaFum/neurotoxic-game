@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { VoidSkullIcon } from '../../ui/shared/Icons'

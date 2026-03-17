@@ -1,3 +1,4 @@
+// TODO: Review this file
 /**
  * Updates the state of active projectiles.
  * @param {Array} projectiles - Current list of projectiles.

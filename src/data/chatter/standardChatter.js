@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { GAME_PHASES } from '../../context/gameConstants.js'
 
 const isPlayerInCity = (state, citySlug) => {
