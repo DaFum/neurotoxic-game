@@ -2,6 +2,7 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
+import { clampMemberStamina, clampMemberMood } from './gameStateUtils.js'
 import i18n from '../i18n.js'
 
 /**
@@ -34,8 +35,8 @@ export const handleNodeArrival = ({
     case 'REST_STOP': {
       const newMembers = (band?.members ?? []).map(m => ({
         ...m,
-        stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-        mood: Math.min(100, Math.max(0, m.mood + 10))
+        stamina: clampMemberStamina(m.stamina + 20, m.staminaMax),
+        mood: clampMemberMood(m.mood + 10)
       }))
       updateBand({ members: newMembers })
       addToast(

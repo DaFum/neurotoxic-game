@@ -159,8 +159,9 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
       if (effect.stat === 'money') {
         nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
       } else if (effect.stat === 'fame') {
-        nextPlayerPatch.fame = clampPlayerFame(basePlayerStat + val)
-        nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
+        const clampedFame = clampPlayerFame(basePlayerStat + val)
+        nextPlayerPatch.fame = clampedFame
+        nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
       } else {
         nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
       }
@@ -234,17 +235,19 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
 
   // Special item effects
   switch (item.id) {
-    case 'hq_room_poster_wall':
-      nextPlayerPatch.fame = clampPlayerFame(
+    case 'hq_room_poster_wall': {
+      const clampedFame = clampPlayerFame(
         (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
       )
-      nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
+      nextPlayerPatch.fame = clampedFame
+      nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
       messages.push({
         messageKey: 'ui:shop.messages.posterWall',
         fallback: 'Looks cool. Fame +10',
         type: 'success'
       })
       break
+    }
 
     case 'hq_room_diy_soundproofing':
       nextBandPatch = {
