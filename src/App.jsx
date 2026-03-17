@@ -87,7 +87,7 @@ const SceneLoadingFallback = () => {
  */
 function GameContent() {
   const gameState = useGameState()
-  const { currentScene, activeEvent, resolveEvent, setActiveEvent, settings } =
+  const { currentScene, activeEvent, resolveEvent, settings } =
     gameState
 
   /**
@@ -173,7 +173,6 @@ function GameContent() {
         <EventModal
           event={activeEvent}
           onOptionSelect={resolveEvent}
-          onClose={() => setActiveEvent(null)}
         />
       )}
 

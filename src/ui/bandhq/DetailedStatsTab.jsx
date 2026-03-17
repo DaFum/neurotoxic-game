@@ -454,6 +454,11 @@ const MemberTraits = ({ member, t }) => {
     }
   }
 
+  const activeTraitIds = useMemo(
+    () => new Set((member.traits || []).map(tr => tr.id)),
+    [member.traits]
+  )
+
   const potentialTraits = Array.from(allTraitsMap.values())
   if (potentialTraits.length === 0)
     return (
@@ -461,11 +466,6 @@ const MemberTraits = ({ member, t }) => {
         {t('ui:detailedStats.none', { defaultValue: 'None' })}
       </div>
     )
-
-  const activeTraitIds = useMemo(
-    () => new Set((member.traits || []).map(tr => tr.id)),
-    [member.traits]
-  )
 
   return potentialTraits.map(trait => {
     const isTraitActive = activeTraitIds.has(trait.id)
