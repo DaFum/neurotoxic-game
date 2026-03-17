@@ -8,6 +8,7 @@ import {
 } from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
+import { secureRandom } from '../../utils/crypto.js'
 
 export class CrowdManager {
   /**
@@ -69,9 +70,17 @@ export class CrowdManager {
     const fallbackColor = getPixiColorFromToken('--star-white')
     const mutedColor = getPixiColorFromToken('--ash-gray')
 
+    const safeRandom = () => {
+      try {
+        return secureRandom()
+      } catch {
+        return Math.random()
+      }
+    }
+
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =
-        CROWD_LAYOUT.minRadius + Math.random() * CROWD_LAYOUT.radiusVariance
+        CROWD_LAYOUT.minRadius + safeRandom() * CROWD_LAYOUT.radiusVariance
 
       let crowd
       if (this.textures.idle) {
@@ -86,9 +95,9 @@ export class CrowdManager {
       }
 
       crowd.tint = mutedColor
-      crowd.x = Math.random() * this.app.screen.width
+      crowd.x = safeRandom() * this.app.screen.width
       crowd.y =
-        Math.random() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
+        safeRandom() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
       crowd.baseY = crowd.y
       crowd.radius = radius
       crowd.currentFillColor = mutedColor
