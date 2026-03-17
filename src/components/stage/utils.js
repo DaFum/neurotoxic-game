@@ -1,6 +1,6 @@
 // TODO: Review this file
 import { Assets, ImageSource, Texture } from 'pixi.js'
-import { logger } from '../../utils/logger'
+import { logger } from '../../utils/logger.js'
 
 const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--void-black': '#0a0a0a',
