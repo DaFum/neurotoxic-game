@@ -305,7 +305,19 @@ export const ChatterOverlay = memo(({ gameState }) => {
           const { text, speaker: fixedSpeaker, type } = result
           const members = currentState.band?.members
           const speaker = resolveSpeaker(fixedSpeaker, members, t)
-          const newMessage = { id: crypto.randomUUID(), text, speaker, type }
+
+          let id
+          try {
+            id = crypto.randomUUID()
+          } catch {
+            try {
+              id = secureRandom().toString(36).substring(2)
+            } catch {
+              id = Math.random().toString(36).substring(2)
+            }
+          }
+
+          const newMessage = { id, text, speaker, type }
 
           setMessages(prev => [
             ...prev.slice(-4), // Keep max 5 (4 old + 1 new)

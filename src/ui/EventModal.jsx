@@ -15,13 +15,11 @@ import { useGameState } from '../context/GameState'
  * @param {object} props
  * @param {object} props.event - The active event object.
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
- * @param {Function} props.onClose - Callback when modal should be closed.
  */
 
 export const EventModal = ({
   event,
   onOptionSelect,
-  onClose,
   className = ''
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
@@ -137,7 +135,7 @@ export const EventModal = ({
     ].filter(Boolean)
 
     return texts.join(' ') || t('ui:event.resolved', event.context)
-  }, [outcome, t, event?.context, previewError])
+  }, [outcome, t, event, previewError])
 
   if (!event) return null
 
@@ -302,6 +300,5 @@ EventModal.propTypes = {
     ).isRequired
   }),
   onOptionSelect: PropTypes.func.isRequired,
-  onClose: PropTypes.func,
   className: PropTypes.string
 }
