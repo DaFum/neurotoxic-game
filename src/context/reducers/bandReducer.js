@@ -2,6 +2,8 @@
 import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
+  clampMemberMood,
+  clampMemberStamina,
   applyInventoryItemDelta
 } from '../../utils/gameStateUtils.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
@@ -202,13 +204,12 @@ export const handleUseContraband = (state, payload) => {
     }
     newBand.members = newBand.members.map(m => {
       if (m.id === memberId) {
-        const maxVal = item.effectType === 'stamina' ? m.staminaMax || 100 : 100
         return {
           ...m,
-          [item.effectType]: Math.min(
-            maxVal,
-            Math.max(0, (m[item.effectType] || 0) + item.value)
-          )
+          [item.effectType]:
+            item.effectType === 'stamina'
+              ? clampMemberStamina((m[item.effectType] || 0) + item.value, m.staminaMax)
+              : clampMemberMood((m[item.effectType] || 0) + item.value)
         }
       }
       return m

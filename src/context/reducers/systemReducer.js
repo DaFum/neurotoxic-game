@@ -3,6 +3,9 @@ import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
   clampPlayerMoney,
+  clampPlayerFame,
+  clampMemberStamina,
+  clampMemberMood,
   calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 import { calculateDailyUpdates } from '../../utils/simulationUtils.js'
@@ -58,8 +61,7 @@ export const handleLoadGame = (state, payload) => {
     }
   }
 
-  const validatedFame = Math.max(
-    0,
+  const validatedFame = clampPlayerFame(
     typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0
   )
 
@@ -160,13 +162,10 @@ export const handleLoadGame = (state, payload) => {
               ? m.name.toLowerCase()
               : m.id,
         traits: Array.isArray(m.traits) ? m.traits : [],
-        mood: Math.max(
-          0,
-          Math.min(100, typeof m.mood === 'number' ? m.mood : 50)
-        ),
-        stamina: Math.max(
-          0,
-          Math.min(100, typeof m.stamina === 'number' ? m.stamina : 100)
+        mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
+        stamina: clampMemberStamina(
+          typeof m.stamina === 'number' ? m.stamina : 100,
+          m.staminaMax
         )
       }))
     : []

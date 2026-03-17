@@ -3,6 +3,9 @@ import { bandHasTrait } from './traitLogic.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
+  clampMemberStamina,
+  clampMemberMood,
+  clampPlayerFame,
   calculateFameLevel
 } from './gameStateUtils.js'
 
@@ -155,11 +158,12 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
 
       if (effect.stat === 'money') {
         nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
+      } else if (effect.stat === 'fame') {
+        const clampedFame = clampPlayerFame(basePlayerStat + val)
+        nextPlayerPatch.fame = clampedFame
+        nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
       } else {
         nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
-        if (effect.stat === 'fame') {
-          nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
-        }
       }
       break
     }
@@ -231,18 +235,19 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
 
   // Special item effects
   switch (item.id) {
-    case 'hq_room_poster_wall':
-      nextPlayerPatch.fame = Math.max(
-        0,
+    case 'hq_room_poster_wall': {
+      const clampedFame = clampPlayerFame(
         (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
       )
-      nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
+      nextPlayerPatch.fame = clampedFame
+      nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
       messages.push({
         messageKey: 'ui:shop.messages.posterWall',
         fallback: 'Looks cool. Fame +10',
         type: 'success'
       })
       break
+    }
 
     case 'hq_room_diy_soundproofing':
       nextBandPatch = {
@@ -275,22 +280,22 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
           case 'hq_room_coffee':
             return {
               ...m,
-              mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 20))
+              mood: clampMemberMood((m.mood ?? 0) + 20)
             }
           case 'hq_room_sofa':
             return {
               ...m,
-              stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 30))
+              stamina: clampMemberStamina((m.stamina ?? 0) + 30, m.staminaMax)
             }
           case 'hq_room_old_couch':
             return {
               ...m,
-              stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 10))
+              stamina: clampMemberStamina((m.stamina ?? 0) + 10, m.staminaMax)
             }
           default:
             return {
               ...m,
-              mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 5))
+              mood: clampMemberMood((m.mood ?? 0) + 5)
             }
         }
       })

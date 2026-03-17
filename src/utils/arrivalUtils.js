@@ -2,6 +2,7 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
+import { clampMemberStamina, clampMemberMood } from './gameStateUtils.js'
 import i18n from '../i18n.js'
 
 /**
@@ -32,11 +33,15 @@ export const handleNodeArrival = ({
 }) => {
   switch (node.type) {
     case 'REST_STOP': {
-      const newMembers = (band?.members ?? []).map(m => ({
-        ...m,
-        stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-        mood: Math.min(100, Math.max(0, m.mood + 10))
-      }))
+      const newMembers = (band?.members ?? []).map(m => {
+        const newStamina = clampMemberStamina(m.stamina + 20, m.staminaMax)
+        const newMood = clampMemberMood(m.mood + 10)
+        return {
+          ...m,
+          stamina: newStamina,
+          mood: newMood
+        }
+      })
       updateBand({ members: newMembers })
       addToast(
         i18n.t('ui:arrival.restedAtStop', {

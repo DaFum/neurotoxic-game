@@ -1,7 +1,13 @@
 // TODO: Review this file
 import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants.js'
 import { logger } from '../../utils/logger'
-import { clampPlayerMoney } from '../../utils/gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampPlayerFame,
+  clampMemberMood,
+  clampMemberStamina,
+  calculateFameLevel
+} from '../../utils/gameStateUtils.js'
 import { getTraitById } from '../../utils/traitUtils.js'
 
 /**
@@ -60,12 +66,14 @@ const executeClinicAction = (state, payload, memberUpdater) => {
     return memberUpdater(member)
   })
 
+  const nextFame = clampPlayerFame(playerFame - fameCost)
   const nextState = {
     ...state,
     player: {
       ...state.player,
       money: clampPlayerMoney(playerMoney - cost),
-      fame: Math.max(0, Math.floor(playerFame - fameCost)),
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame),
       clinicVisits: (state.player.clinicVisits || 0) + 1
     },
     band: {
@@ -100,8 +108,8 @@ export const handleClinicHeal = (state, payload) => {
 
   return executeClinicAction(state, payload, member => ({
     ...member,
-    stamina: Math.min(100, Math.max(0, (member.stamina || 0) + staminaGain)),
-    mood: Math.min(100, Math.max(0, (member.mood || 0) + moodGain))
+    stamina: clampMemberStamina((member.stamina || 0) + staminaGain, member.staminaMax),
+    mood: clampMemberMood((member.mood || 0) + moodGain)
   }))
 }
 

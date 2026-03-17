@@ -3,7 +3,9 @@ import { logger } from '../../utils/logger.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
 import {
   clampPlayerMoney,
-  clampBandHarmony
+  clampBandHarmony,
+  clampPlayerFame,
+  calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 
 /**
@@ -133,7 +135,7 @@ export const handlePirateBroadcast = (state, payload) => {
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
-  const nextFame = Math.max(0, currentFame + fameGain)
+  const nextFame = clampPlayerFame(currentFame + fameGain)
   const nextZealotry = Math.max(
     0,
     Math.min(100, currentZealotry + zealotryGain)
@@ -148,7 +150,8 @@ export const handlePirateBroadcast = (state, payload) => {
     player: {
       ...state.player,
       money: nextMoney,
-      fame: nextFame
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame)
     },
     band: {
       ...state.band,

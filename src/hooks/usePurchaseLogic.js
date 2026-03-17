@@ -24,7 +24,11 @@ import {
   applyUnlockHQ,
   applyPassive
 } from '../utils/purchaseLogicUtils.js'
-import { clampPlayerMoney } from '../utils/gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampPlayerFame,
+  calculateFameLevel
+} from '../utils/gameStateUtils.js'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
 
@@ -144,9 +148,14 @@ export const usePurchaseLogic = ({
         }
 
         // Build patches
-        let playerPatch = payingWithFame
-          ? { fame: Math.max(0, startingFame - finalCost) }
-          : { money: clampPlayerMoney(startingMoney - finalCost) }
+        let playerPatch
+        if (payingWithFame) {
+          const newFame = clampPlayerFame(startingFame - finalCost)
+          playerPatch = { fame: newFame, fameLevel: calculateFameLevel(newFame) }
+        } else {
+          const newMoney = clampPlayerMoney(startingMoney - finalCost)
+          playerPatch = { money: newMoney }
+        }
 
         let bandPatch = null
 

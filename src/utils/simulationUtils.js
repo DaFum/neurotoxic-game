@@ -5,7 +5,12 @@ import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
 import { hasTrait } from './traitLogic.js'
-import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampBandHarmony,
+  clampMemberStamina,
+  clampMemberMood
+} from './gameStateUtils.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -263,7 +268,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     let mood = m.mood
     if (mood > 50) mood -= 2
     else if (mood < 50) mood += 2
-    mood = Math.max(0, Math.min(100, mood))
+    mood = clampMemberMood(mood)
 
     // Stamina Decay (Life on the road is tiring)
     let stamina = typeof m.stamina === 'number' ? m.stamina : 100
@@ -271,7 +276,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
     // Partial stamina recovery when band harmony is high
     if (nextBand.harmony > 60) {
-      stamina = Math.min(100, stamina + 3)
+      stamina += 3
     }
 
     // Instagram Gear Endorsement Perk (Free stamina recovery)
@@ -280,7 +285,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     // Cyber Lungs Trait: Bonus stamina regen from clinic graft
     if (hasTrait(m, 'cyber_lungs')) stamina += 3
 
-    return { ...m, mood, stamina: Math.min(100, stamina) }
+    return { ...m, mood, stamina: clampMemberStamina(stamina, m.staminaMax) }
   })
 
   // Harmony Decay (Drifts towards 50 like mood)
@@ -324,7 +329,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     nextBand.harmony = nextHarmonyControversy
     nextBand.members = nextBand.members.map(m => ({
       ...m,
-      mood: Math.max(0, m.mood - 1)
+      mood: clampMemberMood(m.mood - 1)
     }))
   }
 
@@ -436,8 +441,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
       return {
         ...m,
-        mood: Math.min(100, mood),
-        stamina: Math.max(0, Math.min(100, stamina))
+        mood: clampMemberMood(mood),
+        stamina: clampMemberStamina(stamina, m.staminaMax)
       }
     })
   }
