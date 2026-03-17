@@ -748,14 +748,14 @@ test('eventEngine.applyResult percentage_resource handles negative loss with min
   const result = { type: 'percentage_resource', resource: 'money', percentage: -50, min: -100 }
   const gameState = { player: { money: 1000 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, -500, 'Should use Math.min for min cap when negative (amount=-500, min=-100 -> -500)')
+  assert.equal(delta.player.money, -100, 'The loss should be capped at 100, so the amount should be >= -100.')
 })
 
 test('eventEngine.applyResult percentage_resource handles negative loss with max cap (upper bound)', () => {
   const result = { type: 'percentage_resource', resource: 'money', percentage: -5, max: -200 }
   const gameState = { player: { money: 1000 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, -50, 'Should use Math.max for max cap when negative (amount=-50, max=-200 -> -50)')
+  assert.equal(delta.player.money, -200, 'Should enforce minimum loss via max (clamped to -200)')
 })
 
 test('eventEngine.applyResult percentage_resource handles zero money correctly', () => {
