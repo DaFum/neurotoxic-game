@@ -510,7 +510,14 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_notice_50.opt1.label',
-        effect: { type: 'flag', flag: 'saw_crisis_50' },
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'flag', flag: 'saw_crisis_50' },
+            { type: 'stat', stat: 'fame', value: -10 },
+            { type: 'stat', stat: 'mood', value: -5 }
+          ]
+        },
         outcomeText: 'events:crisis_notice_50.opt1.outcome'
       }
     ]
@@ -529,7 +536,14 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_notice_80.opt1.label',
-        effect: { type: 'flag', flag: 'saw_crisis_80' },
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'flag', flag: 'saw_crisis_80' },
+            { type: 'stat', stat: 'fame', value: -25 },
+            { type: 'stat', stat: 'stamina', value: -5 }
+          ]
+        },
         outcomeText: 'events:crisis_notice_80.opt1.outcome'
       }
     ]
@@ -548,7 +562,14 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_notice_100.opt1.label',
-        effect: { type: 'flag', flag: 'saw_crisis_100' },
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'flag', flag: 'saw_crisis_100' },
+            { type: 'stat', stat: 'fame', value: -50 },
+            { type: 'stat', stat: 'mood', value: -10 }
+          ]
+        },
         outcomeText: 'events:crisis_notice_100.opt1.outcome'
       }
     ]

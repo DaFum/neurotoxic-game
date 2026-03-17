@@ -469,7 +469,7 @@ export const FINANCIAL_EVENTS = [
       },
       {
         label: 'events:rehearsal_room_discount.opt2.label',
-        effect: { type: 'stat', stat: 'mood', value: 0 },
+        effect: { type: 'stat', stat: 'mood', value: -5 },
         outcomeText: 'events:rehearsal_room_discount.opt2.outcome'
       }
     ]

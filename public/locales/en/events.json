@@ -549,6 +549,8 @@
   "quest_trigger_harmony_project.desc": "The bassist and the singer are arguing about who ate the last vegan donut. Fix this before they break up the band.",
   "quest_trigger_harmony_project.opt1.label": "We need a killer show to bond.",
   "quest_trigger_harmony_project.opt1.outcome": "Quest added: Harmony Restoration Project.",
+  "quest_trigger_harmony_project.opt2.label": "Ignore them, they'll get over it.",
+  "quest_trigger_harmony_project.opt2.outcome": "The tension lingers.",
   "quest_trigger_harmony_project.title": "HARMONY RESTORATION",
   "quest_trigger_local_legend.desc": "A local radio DJ challenged us on air. Prove we're the loudest band in town!",
   "quest_trigger_local_legend.opt1.label": "Challenge accepted.",
