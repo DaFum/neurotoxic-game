@@ -4,7 +4,20 @@ import i18n from '../i18n.js'
 import { secureRandom } from '../utils/crypto.js'
 import { handleError } from '../utils/errorHandler.js'
 
-let secureRandomErrorReported = false
+const getSecureRollOnce = (() => {
+  let errorReported = false
+  return () => {
+    try {
+      return secureRandom()
+    } catch (e) {
+      if (!errorReported) {
+        errorReported = true
+        handleError(e, { severity: 'medium', silent: true })
+      }
+      return Math.random()
+    }
+  }
+})()
 
 const POST_BADGES = {
   RISK: '⚠️',
@@ -749,15 +762,7 @@ export const POST_OPTIONS = [
       // Pick one from affordable
       let roll = diceRoll
       if (roll == null) {
-        try {
-          roll = secureRandom()
-        } catch (e) {
-          roll = Math.random()
-          if (!secureRandomErrorReported) {
-            secureRandomErrorReported = true
-            handleError(e, { severity: 'medium', silent: true })
-          }
-        }
+        roll = getSecureRollOnce()
       }
 
       const selectedId =
