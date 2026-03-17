@@ -379,14 +379,21 @@ export const handleAdvanceDay = (state, payload) => {
   )
 
   // --- Contraband expiry ---
-  let activeEffects = traitResult.band.activeContrabandEffects || []
-  activeEffects = activeEffects.map(e => ({
-    ...e,
-    remainingDuration: e.remainingDuration - 1
-  }))
+  const activeEffects = traitResult.band.activeContrabandEffects || []
+  const stillActive = []
+  const expired = []
 
-  const stillActive = activeEffects.filter(e => e.remainingDuration > 0)
-  const expired = activeEffects.filter(e => e.remainingDuration <= 0)
+  for (let i = 0; i < activeEffects.length; i++) {
+    const updatedEffect = {
+      ...activeEffects[i],
+      remainingDuration: activeEffects[i].remainingDuration - 1
+    }
+    if (updatedEffect.remainingDuration > 0) {
+      stillActive.push(updatedEffect)
+    } else {
+      expired.push(updatedEffect)
+    }
+  }
 
   let stashCloned = false
 
