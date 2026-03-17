@@ -190,14 +190,17 @@ const validateBand = band => {
 const validateSocial = social => {
   if (!isPlainObject(social)) throw new StateError('social must be an object')
 
-  Object.entries(social).forEach(([key, val]) => {
-    if (key === 'lastGigDay' && val === null) return
-    if (key === 'lastPirateBroadcastDay' && val === null) return
-    if (key === 'egoFocus' && (val === null || typeof val === 'string')) return
-    if (key === 'sponsorActive' && typeof val === 'boolean') return
+  for (const key in social) {
+    if (!Object.hasOwn(social, key)) continue
+    const val = social[key]
+    if (key === 'lastGigDay' && val === null) continue
+    if (key === 'lastPirateBroadcastDay' && val === null) continue
+    if (key === 'egoFocus' && (val === null || typeof val === 'string'))
+      continue
+    if (key === 'sponsorActive' && typeof val === 'boolean') continue
 
     if (key === 'trend') {
-      if (typeof val === 'string' && ALLOWED_TRENDS.includes(val)) return
+      if (typeof val === 'string' && ALLOWED_TRENDS.includes(val)) continue
       throw new StateError(`Social trend "${val}" is invalid`)
     }
 
@@ -214,23 +217,27 @@ const validateSocial = social => {
             `activeDeals[${i}].remainingGigs must be a number`
           )
       })
-      return
+      continue
     }
 
     if (key === 'brandReputation') {
       if (!isPlainObject(val))
         throw new StateError('social.brandReputation must be an object')
-      Object.entries(val).forEach(([align, score]) => {
+      for (const align in val) {
+        if (!Object.hasOwn(val, align)) continue
+        const score = val[align]
         if (typeof score !== 'number')
           throw new StateError(`brandReputation.${align} must be a number`)
-      })
-      return
+      }
+      continue
     }
 
     if (key === 'influencers') {
       if (!isPlainObject(val))
         throw new StateError('social.influencers must be an object')
-      Object.entries(val).forEach(([id, influencer]) => {
+      for (const id in val) {
+        if (!Object.hasOwn(val, id)) continue
+        const influencer = val[id]
         if (!isPlainObject(influencer))
           throw new StateError(`social.influencers.${id} must be an object`)
         if (typeof influencer.tier !== 'string')
@@ -243,12 +250,12 @@ const validateSocial = social => {
           throw new StateError(
             `social.influencers.${id}.score must be a number`
           )
-      })
-      return
+      }
+      continue
     }
 
     if (typeof val !== 'number') {
       throw new StateError(`Social value "${key}" must be a number: ${val}`)
     }
-  })
+  }
 }
