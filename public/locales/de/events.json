@@ -549,6 +549,8 @@
   "quest_trigger_harmony_project.desc": "Der Bassist und der Sänger streiten sich darum, wer den letzten veganen Donut gegessen hat. Klär das, bevor sich die Band auflöst.",
   "quest_trigger_harmony_project.opt1.label": "Wir brauchen eine geile Show, um uns wieder zu binden.",
   "quest_trigger_harmony_project.opt1.outcome": "Quest hinzugefügt: Projekt Harmonie-Wiederherstellung.",
+  "quest_trigger_harmony_project.opt2.label": "Ignorier sie, sie kriegen sich schon wieder ein.",
+  "quest_trigger_harmony_project.opt2.outcome": "Die Spannung bleibt.",
   "quest_trigger_harmony_project.title": "HARMONIE WIEDERHERSTELLUNG",
   "quest_trigger_local_legend.desc": "Ein lokaler Radio-DJ hat uns live herausgefordert. Zeigt, dass wir die lauteste Band der Stadt sind!",
   "quest_trigger_local_legend.opt1.label": "Herausforderung angenommen.",

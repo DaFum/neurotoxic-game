@@ -100,9 +100,7 @@ export const generateEffectText = (delta, t) => {
       const quests = Array.isArray(delta.flags.addQuest) ? delta.flags.addQuest : [delta.flags.addQuest]
       quests.forEach(q => {
         const questId = typeof q === 'object' && q !== null ? q.id : q;
-        const questLabel = typeof q === 'object' && q !== null && q.title
-          ? q.title
-          : t(`events:${questId}.label`, { defaultValue: questId });
+        const questLabel = q.title ?? t(q.label, { defaultValue: q.id });
         lines.push(`${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`)
       })
     }
@@ -110,7 +108,7 @@ export const generateEffectText = (delta, t) => {
       lines.push(t('ui:event.story_updated', { defaultValue: 'Story Updated' }))
     }
     if (delta.flags.gameOver) {
-      lines.push(t('ui:event.game_over_effect', { defaultValue: 'GAME OVER' }))
+      lines.push(t('ui:event.game_over_effect', { defaultValue: 'Game Over' }))
     }
   }
 
