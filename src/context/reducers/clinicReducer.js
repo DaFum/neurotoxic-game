@@ -5,7 +5,8 @@ import {
   clampPlayerMoney,
   clampPlayerFame,
   clampMemberMood,
-  clampMemberStamina
+  clampMemberStamina,
+  calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 import { getTraitById } from '../../utils/traitUtils.js'
 
@@ -65,12 +66,14 @@ const executeClinicAction = (state, payload, memberUpdater) => {
     return memberUpdater(member)
   })
 
+  const nextFame = clampPlayerFame(playerFame - fameCost)
   const nextState = {
     ...state,
     player: {
       ...state.player,
       money: clampPlayerMoney(playerMoney - cost),
-      fame: clampPlayerFame(playerFame - fameCost),
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame),
       clinicVisits: (state.player.clinicVisits || 0) + 1
     },
     band: {
