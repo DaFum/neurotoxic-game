@@ -73,7 +73,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
       >
         {/* Background Image Watermark */}
         <div
-          className='absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity bg-cover bg-center mix-blend-screen pointer-events-none'
+          className='absolute inset-0 opacity-80 group-hover:opacity-20 transition-opacity bg-cover bg-center pointer-events-none'
           style={{
             backgroundImage: `url("${getGenImageUrl(getImagePromptForCategory(opt.category, opt.badges))}")`
           }}
