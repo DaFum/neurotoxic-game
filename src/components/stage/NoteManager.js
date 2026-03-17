@@ -205,7 +205,8 @@ export class NoteManager {
     let randomVal
     try {
       randomVal = secureRandom()
-    } catch (_e) {
+    } catch (e) {
+      handleError(e, { severity: 'medium', silent: true })
       randomVal = Math.random()
     }
     sprite.jitterOffset = (randomVal - 0.5) * NOTE_JITTER_RANGE

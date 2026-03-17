@@ -59,7 +59,9 @@ mock.module('../src/context/GameState.jsx', {
 mock.module('../src/utils/gameStateUtils.js', {
   namedExports: {
     // Correct clamp: 1 to 100
-    clampBandHarmony: val => Math.min(100, Math.max(1, val))
+    clampBandHarmony: val => Math.min(100, Math.max(1, val)),
+    clampMemberStamina: (val, max = 100) => Math.min(max, Math.max(0, val)),
+    clampMemberMood: val => Math.min(100, Math.max(0, val))
   }
 })
 

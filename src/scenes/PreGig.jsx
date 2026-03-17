@@ -465,11 +465,12 @@ export const PreGig = () => {
               roadieChance = 0.75 // Increase chance if Kabelsalat played last
             }
 
-            let randomVal = Math.random()
+            let randomVal
             try {
               randomVal = secureRandom()
-            } catch (err) {
+            } catch (_err) {
               // Fallback to Math.random()
+              randomVal = Math.random()
             }
 
             const chosenGame = randomVal < roadieChance ? 'roadie' : 'kabelsalat'

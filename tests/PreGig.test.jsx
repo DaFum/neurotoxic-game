@@ -38,7 +38,7 @@ vi.mock('../src/ui/GigModifierButton', () => ({
 
 // Mock utility functions
 vi.mock('../src/utils/crypto.js', () => ({
-  secureRandom: vi.fn(() => Math.random())
+  secureRandom: vi.fn(() => 0.5)
 }))
 vi.mock('../src/utils/simulationUtils', () => ({
   getGigModifiers: vi.fn(() => ({ activeEffects: [] }))

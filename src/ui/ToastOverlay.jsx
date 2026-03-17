@@ -18,10 +18,13 @@ export const translateContextKeys = (context, t) => {
   // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
   if (
     context === null ||
-    typeof context !== 'object' ||
-    Array.isArray(context)
+    typeof context !== 'object'
   ) {
     return context
+  }
+
+  if (Array.isArray(context)) {
+    return context.map(item => translateContextKeys(item, t))
   }
 
   const translatedContext = {}
