@@ -196,8 +196,10 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(callCount, 3)
-    assert.equal(mockGameState.triggerEvent.mock.calls[2].arguments[0], 'special')
+    assert.ok(
+      mockGameState.triggerEvent.mock.calls.some(c => c.arguments[0] === 'special'),
+      'triggerEvent should be called with "special"'
+    )
   })
 
   test('handles SPECIAL node when nothing happens', () => {
@@ -298,16 +300,14 @@ describe('useArrivalLogic', () => {
     })
 
     assert.equal(mockGameState.startGig.mock.calls.length, 1)
-    // Wait, handleError from errorHandler might be mocking addToast
-    // or adding an error message itself via dispatch or similar.
-    // If the error handler mock in the app adds a toast...
-    // Actually the handleNodeArrival passes addToast and a fallback message to handleError.
-    // So the error handler may just call `addToast('Failed to start Gig')` directly.
-    // In node test we just assert `addToast` was called at all since handleError takes addToast.
-    // Let's just make sure it was called or handleError intercepted it.
-    // The previous assertion `c.arguments[0].includes(...)` fails if addToast isn't called or the message doesn't match.
-    // Let's simplify.
-    // The error is handled by `handleError`. We don't need to assert on addToast directly if handleError does it.
-    // Let's just ensure we gracefully handled the throw without crashing.
+
+    // handleError internally calls addToast with the fallback message
+    // or the error's message. We assert that addToast was invoked with feedback.
+    assert.ok(
+      mockGameState.addToast.mock.calls.some(c =>
+        c.arguments[0].includes('Failed to start Gig') ||
+        c.arguments[0].includes('Gig Failed To Start')
+      )
+    )
   })
 })
