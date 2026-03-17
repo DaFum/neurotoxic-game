@@ -66,7 +66,12 @@ export const TRANSPORT_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'resource', resource: 'money', value: -200 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: -15,
+              min: -200
+            },
             { type: 'stat', stat: 'time', value: -4 }
           ]
         },
@@ -109,7 +114,12 @@ export const TRANSPORT_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'resource', resource: 'money', value: -100 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: -10,
+              min: -150
+            },
             {
               type: 'stat',
               stat: 'time',
@@ -125,7 +135,12 @@ export const TRANSPORT_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'resource', resource: 'money', value: -500 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: -40,
+              min: -500
+            },
             { type: 'flag', flag: 'RENTAL_VAN' }
           ]
         },
@@ -163,9 +178,10 @@ export const TRANSPORT_EVENTS = [
             description: 'events:police_control.opt2.d_6291'
           },
           failure: {
-            type: 'resource',
+            type: 'percentage_resource',
             resource: 'money',
-            value: -150,
+            percentage: -12,
+            min: -200,
             description: 'events:police_control.opt2.d_f065'
           }
         },
@@ -185,7 +201,12 @@ export const TRANSPORT_EVENTS = [
           failure: {
             type: 'composite',
             effects: [
-              { type: 'resource', resource: 'money', value: -300 },
+              {
+                type: 'percentage_resource',
+                resource: 'money',
+                percentage: -25,
+                min: -350
+              },
               { type: 'stat', stat: 'controversyLevel', value: 20 },
               { type: 'stat', stat: 'time', value: -4 }
             ],
@@ -297,9 +318,10 @@ export const TRANSPORT_EVENTS = [
             description: 'events:hitchhiker.opt1.d_7509'
           },
           failure: {
-            type: 'resource',
+            type: 'percentage_resource',
             resource: 'money',
-            value: -50,
+            percentage: -5,
+            min: -80,
             description: 'events:hitchhiker.opt1.d_9cfe'
           }
         },
@@ -340,9 +362,10 @@ export const TRANSPORT_EVENTS = [
             type: 'composite',
             effects: [
               {
-                type: 'resource',
+                type: 'percentage_resource',
                 resource: 'money',
-                value: -500,
+                percentage: -30,
+                min: -400,
                 description: 'events:wild_accident.opt1.d_7bd0'
               },
               { type: 'stat', stat: 'van_condition', value: -20 }
@@ -457,7 +480,12 @@ export const TRANSPORT_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'resource', resource: 'money', value: -150 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: -12,
+              min: -200
+            },
             { type: 'stat', stat: 'time', value: -2 }
           ]
         },
@@ -490,7 +518,12 @@ export const TRANSPORT_EVENTS = [
       },
       {
         label: 'events:flat_battery.opt2.label',
-        effect: { type: 'resource', resource: 'money', value: -80 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -8,
+          min: -100
+        },
         outcomeText: 'events:flat_battery.opt2.outcome'
       }
     ]
@@ -581,7 +614,12 @@ export const TRANSPORT_EVENTS = [
       },
       {
         label: 'events:lost_key.opt2.label',
-        effect: { type: 'resource', resource: 'money', value: -120 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -10,
+          min: -150
+        },
         outcomeText: 'events:lost_key.opt2.outcome'
       }
     ]
@@ -624,7 +662,12 @@ export const TRANSPORT_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'resource', resource: 'money', value: -120 },
+            {
+              type: 'percentage_resource',
+              resource: 'money',
+              percentage: -10,
+              min: -150
+            },
             { type: 'stat', stat: 'stamina', value: 15 }
           ]
         },
