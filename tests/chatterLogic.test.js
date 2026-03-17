@@ -1,5 +1,6 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
+import * as cryptoUtils from '../src/utils/crypto.js'
 
 // Mock the data modules before importing the logic
 mock.module('../src/data/chatter/standardChatter.js', {
@@ -113,6 +114,27 @@ test('getRandomChatter falls back to ANY venue chatter', t => {
   assert.strictEqual(result.text, 'Venue Any')
 })
 
+const withMockedCrypto = (getRandomValuesFn, callback) => {
+  const originalCrypto = globalThis.crypto
+  try {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {
+        ...originalCrypto,
+        getRandomValues: getRandomValuesFn
+      },
+      configurable: true
+    })
+    cryptoUtils.resetSecureRandomBatchForTesting()
+    callback()
+  } finally {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: originalCrypto,
+      configurable: true
+    })
+    cryptoUtils.resetSecureRandomBatchForTesting()
+  }
+}
+
 test('getRandomChatter supports legacy lines format', t => {
   const state = buildState({
     currentScene: 'OTHER',
@@ -124,22 +146,10 @@ test('getRandomChatter supports legacy lines format', t => {
   })
 
   t.mock.method(Math, 'random', () => 0)
-  const originalCrypto = globalThis.crypto
-  Object.defineProperty(globalThis, 'crypto', {
-    value: {
-      ...originalCrypto,
-      getRandomValues: (arr) => { arr.fill(0) }
-    },
-    configurable: true
-  })
-  cryptoUtils.resetSecureRandomBatchForTesting()
 
-  const result = getRandomChatter(state)
-  assert.strictEqual(result.text, 'Legacy 1')
-
-  Object.defineProperty(globalThis, 'crypto', {
-    value: originalCrypto,
-    configurable: true
+  withMockedCrypto((arr) => { arr.fill(0) }, () => {
+    const result = getRandomChatter(state)
+    assert.strictEqual(result.text, 'Legacy 1')
   })
 })
 
@@ -153,9 +163,6 @@ test('getRandomChatter includes standard chatter when conditions met', () => {
   assert.ok(['Standard 1', 'Standard 2'].includes(result.text))
 })
 
-import * as cryptoUtils from '../src/utils/crypto.js'
-import { vi } from 'vitest'
-
 test('getRandomChatter implements weighted random selection', async t => {
   const state = buildState({
     currentScene: 'ALLOWED',
@@ -164,46 +171,17 @@ test('getRandomChatter implements weighted random selection', async t => {
 
   // Pool: Standard 1 (weight 1), Standard 2 (weight 9). Total = 10.
 
-  // mock secureRandom globally using esm mock functionality for test-runner
+  // Mock for fallback path
   t.mock.method(Math, 'random', () => 0.05)
-
-  // It throws "Cannot redefine property: secureRandom" using node test runner because it's an ES module export
-  // Instead of redefining, we'll mock crypto.getRandomValues
-  const originalCrypto = globalThis.crypto
-  const mockGetRandomValues = (arr) => {
-    // Fill with values that will result in 0.05 when divided by 4294967296
-    arr.fill(Math.floor(0.05 * 4294967296))
-  }
-
-  Object.defineProperty(globalThis, 'crypto', {
-    value: {
-      ...originalCrypto,
-      getRandomValues: mockGetRandomValues
-    },
-    configurable: true
+  withMockedCrypto((arr) => { arr.fill(Math.floor(0.05 * 4294967296)) }, () => {
+    let result = getRandomChatter(state)
+    assert.strictEqual(result.text, 'Standard 1')
   })
-  cryptoUtils.resetSecureRandomBatchForTesting()
-
-  let result = getRandomChatter(state)
-  assert.strictEqual(result.text, 'Standard 1')
 
   // Change implementation to return 0.5
-  Object.defineProperty(globalThis, 'crypto', {
-    value: {
-      ...originalCrypto,
-      getRandomValues: (arr) => {
-        arr.fill(Math.floor(0.5 * 4294967296))
-      }
-    },
-    configurable: true
-  })
-  cryptoUtils.resetSecureRandomBatchForTesting()
-
-  result = getRandomChatter(state)
-  assert.strictEqual(result.text, 'Standard 2')
-
-  Object.defineProperty(globalThis, 'crypto', {
-    value: originalCrypto,
-    configurable: true
+  t.mock.method(Math, 'random', () => 0.5)
+  withMockedCrypto((arr) => { arr.fill(Math.floor(0.5 * 4294967296)) }, () => {
+    let result = getRandomChatter(state)
+    assert.strictEqual(result.text, 'Standard 2')
   })
 })
