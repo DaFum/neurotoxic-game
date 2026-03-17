@@ -17,6 +17,7 @@ describe('ToggleSwitch', () => {
     expect(switchButton).toBeTruthy()
     expect(switchButton.getAttribute('aria-checked')).toBe('true')
     expect(switchButton.getAttribute('aria-label')).toBe('Test Switch')
+    expect(switchButton.getAttribute('aria-labelledby')).toBeTruthy()
     expect(switchButton.type).toBe('button')
 
     // Check visual label
@@ -82,5 +83,6 @@ describe('ToggleSwitch', () => {
     const switchButton = getByRole('switch')
     expect(switchButton).toHaveProperty('type', 'button')
     expect(switchButton.getAttribute('aria-label')).toBe('Accessible Switch')
+    expect(switchButton.getAttribute('aria-labelledby')).toBeTruthy()
   })
 })

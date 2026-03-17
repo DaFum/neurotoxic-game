@@ -1,5 +1,5 @@
 // TODO: Review this file
-import { memo, useState, useRef, useEffect } from 'react'
+import { memo, useState, useRef, useEffect, useId } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
@@ -19,6 +19,7 @@ const ToggleSwitchComponent = ({
   className = ''
 }) => {
   const { t } = useTranslation()
+  const labelId = useId()
   const [isGlitching, setIsGlitching] = useState(false)
   const glitchTimerRef = useRef(null)
 
@@ -44,6 +45,7 @@ const ToggleSwitchComponent = ({
       className={`flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black ${className}`}
     >
       <span
+        id={labelId}
         className='text-sm font-bold tracking-widest uppercase'
         aria-hidden='true'
       >
@@ -56,6 +58,7 @@ const ToggleSwitchComponent = ({
         aria-checked={isOn}
         role='switch'
         aria-label={ariaLabel}
+        aria-labelledby={labelId}
       >
         <div
           className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
