@@ -514,7 +514,7 @@ export const CRISIS_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'flag', flag: 'saw_crisis_50' },
-            { type: 'stat', stat: 'harmony', value: -5 },
+            { type: 'stat', stat: 'fame', value: -10 },
             { type: 'stat', stat: 'mood', value: -5 }
           ]
         },
@@ -540,7 +540,7 @@ export const CRISIS_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'flag', flag: 'saw_crisis_80' },
-            { type: 'stat', stat: 'harmony', value: -10 },
+            { type: 'stat', stat: 'fame', value: -25 },
             { type: 'stat', stat: 'stamina', value: -5 }
           ]
         },
@@ -566,7 +566,7 @@ export const CRISIS_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'flag', flag: 'saw_crisis_100' },
-            { type: 'stat', stat: 'harmony', value: -15 },
+            { type: 'stat', stat: 'fame', value: -50 },
             { type: 'stat', stat: 'mood', value: -10 }
           ]
         },
