@@ -1,5 +1,6 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
+import * as cryptoUtils from '../src/utils/crypto.js'
 
 // Mock the data modules before importing the logic
 mock.module('../src/data/chatter/standardChatter.js', {
@@ -113,6 +114,27 @@ test('getRandomChatter falls back to ANY venue chatter', t => {
   assert.strictEqual(result.text, 'Venue Any')
 })
 
+const withMockedCrypto = (getRandomValuesFn, callback) => {
+  const originalCrypto = globalThis.crypto
+  try {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {
+        ...originalCrypto,
+        getRandomValues: getRandomValuesFn
+      },
+      configurable: true
+    })
+    cryptoUtils.resetSecureRandomBatchForTesting()
+    callback()
+  } finally {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: originalCrypto,
+      configurable: true
+    })
+    cryptoUtils.resetSecureRandomBatchForTesting()
+  }
+}
+
 test('getRandomChatter supports legacy lines format', t => {
   const state = buildState({
     currentScene: 'OTHER',
@@ -124,8 +146,11 @@ test('getRandomChatter supports legacy lines format', t => {
   })
 
   t.mock.method(Math, 'random', () => 0)
-  const result = getRandomChatter(state)
-  assert.strictEqual(result.text, 'Legacy 1')
+
+  withMockedCrypto((arr) => { arr.fill(0) }, () => {
+    const result = getRandomChatter(state)
+    assert.strictEqual(result.text, 'Legacy 1')
+  })
 })
 
 test('getRandomChatter includes standard chatter when conditions met', () => {
@@ -138,7 +163,7 @@ test('getRandomChatter includes standard chatter when conditions met', () => {
   assert.ok(['Standard 1', 'Standard 2'].includes(result.text))
 })
 
-test('getRandomChatter implements weighted random selection', t => {
+test('getRandomChatter implements weighted random selection', async t => {
   const state = buildState({
     currentScene: 'ALLOWED',
     gameMap: { nodes: { node1: { id: 'node1', type: 'CITY' } } } // No venue
@@ -146,13 +171,17 @@ test('getRandomChatter implements weighted random selection', t => {
 
   // Pool: Standard 1 (weight 1), Standard 2 (weight 9). Total = 10.
 
-  // Math.random() * 10 = 0.5 -> Should pick Standard 1
-  const m = t.mock.method(Math, 'random', () => 0.05)
-  let result = getRandomChatter(state)
-  assert.strictEqual(result.text, 'Standard 1')
+  // Mock for fallback path
+  t.mock.method(Math, 'random', () => 0.05)
+  withMockedCrypto((arr) => { arr.fill(Math.floor(0.05 * 4294967296)) }, () => {
+    let result = getRandomChatter(state)
+    assert.strictEqual(result.text, 'Standard 1')
+  })
 
-  // Change implementation for the same mock
-  m.mock.mockImplementation(() => 0.5)
-  result = getRandomChatter(state)
-  assert.strictEqual(result.text, 'Standard 2')
+  // Change implementation to return 0.5
+  t.mock.method(Math, 'random', () => 0.5)
+  withMockedCrypto((arr) => { arr.fill(Math.floor(0.5 * 4294967296)) }, () => {
+    let result = getRandomChatter(state)
+    assert.strictEqual(result.text, 'Standard 2')
+  })
 })

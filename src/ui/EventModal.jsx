@@ -49,33 +49,29 @@ export const EventModal = ({
 
   const handleOptionSelect = useCallback(
     option => {
-      if (option.action) {
-        option.action()
-      } else {
-        try {
-          // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
-          // Snapshot vs Latest State Decision:
-          // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
-          // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
-          // preventing any background state mutations from altering the event outcome between preview and confirmation.
-          const { result, appliedDelta, delta, outcomeText, description } =
-            resolveEventChoice(option, gameStateRef.current)
+      try {
+        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
+        // Snapshot vs Latest State Decision:
+        // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
+        // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
+        // preventing any background state mutations from altering the event outcome between preview and confirmation.
+        const { result, appliedDelta, delta, outcomeText, description } =
+          resolveEventChoice(option, gameStateRef.current)
 
-          setOutcome({
-            option,
-            _precomputedResult: {
-              result,
-              delta,
-              appliedDelta: appliedDelta || delta,
-              outcomeText,
-              description
-            }
-          })
-        } catch (error) {
-          console.error('Failed to preview event outcome:', error)
-          setPreviewError(true)
-          setOutcome({ option })
-        }
+        setOutcome({
+          option,
+          _precomputedResult: {
+            result,
+            delta,
+            appliedDelta: appliedDelta || delta,
+            outcomeText,
+            description
+          }
+        })
+      } catch (error) {
+        console.error('Failed to preview event outcome:', error)
+        setPreviewError(true)
+        setOutcome({ option })
       }
     },
     []
@@ -293,7 +289,6 @@ EventModal.propTypes = {
     options: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string.isRequired,
-        action: PropTypes.func,
         effect: PropTypes.object,
         skillCheck: PropTypes.object,
         outcomeText: PropTypes.string
