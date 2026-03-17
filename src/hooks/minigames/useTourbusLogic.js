@@ -1,17 +1,15 @@
-// TODO: Review this file
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
 import { hasUpgrade } from '../../utils/upgradeUtils'
 import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from './constants'
-import { secureRandom } from '../../utils/crypto.js' // using secureRandom instead of Math.random
+import { secureRandom } from '../../utils/crypto.js'
 import { handleError } from '../../utils/errorHandler.js'
 
 export const BASE_SPEED = 0.05 // relative units per ms
 export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
 export const TARGET_DISTANCE = 2500
-
 
 export const useTourbusLogic = () => {
   const { player, completeTravelMinigame } = useGameState()
@@ -88,11 +86,24 @@ export const useTourbusLogic = () => {
       // Spawn Obstacles
       game.lastSpawnTime += deltaMS
       while (game.lastSpawnTime >= currentSpawnRate) {
+        const getSafeRandom = () => {
+          try {
+            return secureRandom()
+          } catch (err) {
+            handleError(err, { severity: 'medium', silent: true })
+            return Math.random()
+          }
+        }
+
         const time = performance.now()
-        const lane = Math.floor(secureRandom() * LANE_COUNT)
-        const type = secureRandom() > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
+        const safeRandomLane = getSafeRandom()
+        const safeRandomType = getSafeRandom()
+        const safeRandomId = getSafeRandom()
+
+        const lane = Math.floor(safeRandomLane * LANE_COUNT)
+        const type = safeRandomType > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
         game.obstacles.push({
-          id: `${time}-${secureRandom()}`,
+          id: `${time}-${safeRandomId}`,
           lane,
           y: -10, // Start above screen (0 to 100 is visible area)
           type,
