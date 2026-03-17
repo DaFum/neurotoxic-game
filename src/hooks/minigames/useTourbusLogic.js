@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
@@ -11,20 +10,6 @@ export const BASE_SPEED = 0.05 // relative units per ms
 export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
 export const TARGET_DISTANCE = 2500
-
-
-let warnedInsecureRng = false
-const safeRandom = () => {
-  try {
-    return secureRandom()
-  } catch (e) {
-    if (!warnedInsecureRng) {
-      warnedInsecureRng = true
-      handleError(e, { severity: 'medium', silent: true })
-    }
-    return Math.random()
-  }
-}
 
 export const useTourbusLogic = () => {
   const { player, completeTravelMinigame } = useGameState()
@@ -101,11 +86,24 @@ export const useTourbusLogic = () => {
       // Spawn Obstacles
       game.lastSpawnTime += deltaMS
       while (game.lastSpawnTime >= currentSpawnRate) {
+        const getSafeRandom = () => {
+          try {
+            return secureRandom()
+          } catch (err) {
+            handleError(err, { severity: 'medium', silent: true })
+            return Math.random()
+          }
+        }
+
         const time = performance.now()
-        const lane = Math.floor(safeRandom() * LANE_COUNT)
-        const type = safeRandom() > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
+        const safeRandomLane = getSafeRandom()
+        const safeRandomType = getSafeRandom()
+        const safeRandomId = getSafeRandom()
+
+        const lane = Math.floor(safeRandomLane * LANE_COUNT)
+        const type = safeRandomType > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
         game.obstacles.push({
-          id: `${time}-${safeRandom()}`,
+          id: `${time}-${safeRandomId}`,
           lane,
           y: -10, // Start above screen (0 to 100 is visible area)
           type,
