@@ -1,6 +1,9 @@
 // TODO: Review this file
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { secureRandom } from '../utils/crypto.js'
+import { handleError } from '../utils/errorHandler.js'
+
+let secureRandomErrorReported = false
 
 /**
  * Manages visual effects for the Gig scene, including Chaos Mode jitter and band animations.
@@ -74,9 +77,11 @@ export const useGigEffects = stats => {
       } catch (_e) {
         cancelAnimationFrame(rAF)
         if (chaosContainerRef.current) {
-          const fallbackX = secureRandom() * 4 - 2
-          const fallbackY = secureRandom() * 4 - 2
-          chaosContainerRef.current.style.transform = `translate(${fallbackX}px, ${fallbackY}px)`
+          if (!secureRandomErrorReported) {
+            handleError(_e, { severity: 'medium', silent: true })
+            secureRandomErrorReported = true
+          }
+          chaosContainerRef.current.style.transform = 'none'
         }
         return // Cancel next frame request
       }
