@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { calculateZealotryEffects } from '../../utils/socialEngine.js'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout

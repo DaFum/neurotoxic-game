@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { CHARACTERS } from '../data/characters.js'
 
 /**

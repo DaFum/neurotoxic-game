@@ -1,3 +1,4 @@
+// TODO: Review this file
 /**
  * Determines if a MIDI track should be treated as percussion.
  * @param {object} track - Track metadata from the MIDI parser.

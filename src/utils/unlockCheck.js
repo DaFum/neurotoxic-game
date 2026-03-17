@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { hasTrait } from './traitLogic.js'
 import { CHARACTERS } from '../data/characters.js'
 

@@ -1,3 +1,4 @@
+// TODO: Review this file
 const getFlatRelationships = members => {
   const flat = []
   const len = members.length

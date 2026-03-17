@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { Application, Container } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
