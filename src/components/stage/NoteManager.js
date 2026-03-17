@@ -3,6 +3,7 @@ import { Container, Sprite, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { calculateNoteY, loadTexture } from './utils.js'
+import { secureRandom } from '../../utils/crypto.js'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 const NOTE_JITTER_RANGE = 10
@@ -200,7 +201,14 @@ export class NoteManager {
   initializeNoteSprite(sprite, lane, laneIndex) {
     sprite.visible = true
     sprite.alpha = 1
-    sprite.jitterOffset = (Math.random() - 0.5) * NOTE_JITTER_RANGE
+
+    let randomVal
+    try {
+      randomVal = secureRandom()
+    } catch (_e) {
+      randomVal = Math.random()
+    }
+    sprite.jitterOffset = (randomVal - 0.5) * NOTE_JITTER_RANGE
 
     const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
     const desiredTexture = useLightning
