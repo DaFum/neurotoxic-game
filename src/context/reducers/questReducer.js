@@ -204,7 +204,7 @@ export const handleFailQuests = state => {
           // Deep clone before mutating
           nextState.band = { ...nextState.band }
           nextState.band.harmony = clampBandHarmony(
-            (nextState.band.harmony || 0) + quest.failurePenalty.band.harmony
+            (nextState.band.harmony ?? 1) + quest.failurePenalty.band.harmony
           )
         }
       }

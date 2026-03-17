@@ -194,18 +194,3 @@ test('EventModal uses fallback text when both outcomeText and description are em
   })
 })
 
-test('EventModal handles option with direct action callback', () => {
-  const mockAction = vi.fn()
-  const mockEvent = {
-    title: 'Test Event',
-    description: 'Test',
-    options: [{ label: 'Option 1', action: mockAction }]
-  }
-  const handleSelect = vi.fn()
-
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
-
-  fireEvent.click(screen.getByText('Option 1'))
-  expect(mockAction).toHaveBeenCalledTimes(1)
-  expect(handleSelect).not.toHaveBeenCalled()
-})

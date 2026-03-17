@@ -306,14 +306,18 @@ export const ChatterOverlay = memo(({ gameState }) => {
           const members = currentState.band?.members
           const speaker = resolveSpeaker(fixedSpeaker, members, t)
 
+          const generators = [
+            () => crypto.randomUUID(),
+            () => secureRandom().toString(36).substring(2),
+            () => Math.random().toString(36).substring(2)
+          ]
           let id
-          try {
-            id = crypto.randomUUID()
-          } catch {
+          for (const gen of generators) {
             try {
-              id = secureRandom().toString(36).substring(2)
+              id = gen()
+              if (id) break
             } catch {
-              id = Math.random().toString(36).substring(2)
+              // Try the next generator
             }
           }
 
