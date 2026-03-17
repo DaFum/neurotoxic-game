@@ -46,9 +46,11 @@ export const translateContextKeys = (context, t) => {
 }
 
 const renderToastMessage = (toast, t) => {
+  const safeOptions = toast.options ? translateContextKeys(toast.options, t) : {}
+
   if (toast.messageKey) {
     return t(toast.messageKey, {
-      ...(toast.options || {}),
+      ...safeOptions,
       defaultValue: toast.message
     })
   }
@@ -64,18 +66,18 @@ const renderToastMessage = (toast, t) => {
     try {
       const rawContext = JSON.parse(contextStr)
       const context = translateContextKeys(rawContext, t)
-      return t(key, { ...context, ...(toast.options || {}) })
+      return t(key, { ...context, ...safeOptions })
     } catch (_e) {
       logger.error('UI', 'Toast message JSON parse error', {
         error: _e,
         contextStr,
         toastMessage: toast.message
       })
-      return t(key, toast.options || {})
+      return t(key, safeOptions)
     }
   }
 
-  return t(toast.message, toast.options || {})
+  return t(toast.message, safeOptions)
 }
 
 const ToastItem = memo(({ toast, removeToast, style }) => {
