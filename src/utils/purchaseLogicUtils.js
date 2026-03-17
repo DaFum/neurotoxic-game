@@ -3,6 +3,9 @@ import { bandHasTrait } from './traitLogic.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
+  clampMemberStamina,
+  clampMemberMood,
+  clampPlayerFame,
   calculateFameLevel
 } from './gameStateUtils.js'
 
@@ -232,8 +235,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
   // Special item effects
   switch (item.id) {
     case 'hq_room_poster_wall':
-      nextPlayerPatch.fame = Math.max(
-        0,
+      nextPlayerPatch.fame = clampPlayerFame(
         (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
       )
       nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
@@ -275,22 +277,22 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
           case 'hq_room_coffee':
             return {
               ...m,
-              mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 20))
+              mood: clampMemberMood((m.mood ?? 0) + 20)
             }
           case 'hq_room_sofa':
             return {
               ...m,
-              stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 30))
+              stamina: clampMemberStamina((m.stamina ?? 0) + 30, m.staminaMax)
             }
           case 'hq_room_old_couch':
             return {
               ...m,
-              stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 10))
+              stamina: clampMemberStamina((m.stamina ?? 0) + 10, m.staminaMax)
             }
           default:
             return {
               ...m,
-              mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 5))
+              mood: clampMemberMood((m.mood ?? 0) + 5)
             }
         }
       })

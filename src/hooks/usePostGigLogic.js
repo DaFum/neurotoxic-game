@@ -15,7 +15,13 @@ import {
   calculateSocialGrowth,
   generateBrandOffers
 } from '../utils/socialEngine'
-import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import {
+  clampPlayerMoney,
+  clampBandHarmony,
+  clampMemberStamina,
+  clampMemberMood,
+  clampPlayerFame
+} from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from '../utils/logger.js'
@@ -265,15 +271,12 @@ export const usePostGigLogic = () => {
 
           const updatedM = { ...m }
           if (needsMoodUpdate) {
-            updatedM.mood = Math.max(
-              0,
-              Math.min(100, updatedM.mood + result.moodChange)
-            )
+            updatedM.mood = clampMemberMood(updatedM.mood + result.moodChange)
           }
           if (needsStaminaUpdate) {
-            updatedM.stamina = Math.max(
-              0,
-              Math.min(100, updatedM.stamina + result.staminaChange)
+            updatedM.stamina = clampMemberStamina(
+              updatedM.stamina + result.staminaChange,
+              updatedM.staminaMax
             )
           }
           return updatedM
@@ -563,7 +566,7 @@ export const usePostGigLogic = () => {
     const newMoney = clampPlayerMoney(prevMoney + financials.net)
 
     const prevFame = player.fame ?? 0
-    const newFame = Math.max(0, prevFame + fameGain)
+    const newFame = clampPlayerFame(prevFame + fameGain)
 
     updatePlayer({
       money: newMoney,

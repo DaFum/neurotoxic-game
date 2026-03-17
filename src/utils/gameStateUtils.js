@@ -20,6 +20,41 @@ export const calculateFameLevel = fame => {
 }
 
 /**
+ * Clamps a band member's stamina to be between 0 and their staminaMax (default 100).
+ *
+ * @param {number} stamina - Candidate stamina value.
+ * @param {number} [staminaMax=100] - The member's maximum stamina.
+ * @returns {number} Clamped stamina value.
+ */
+export const clampMemberStamina = (stamina, staminaMax = 100) => {
+  if (!Number.isFinite(stamina)) return 0
+  if (!Number.isFinite(staminaMax)) staminaMax = 100
+  return Math.max(0, Math.min(staminaMax, Math.floor(stamina)))
+}
+
+/**
+ * Clamps a band member's mood to be between 0 and 100.
+ *
+ * @param {number} mood - Candidate mood value.
+ * @returns {number} Clamped mood value.
+ */
+export const clampMemberMood = mood => {
+  if (!Number.isFinite(mood)) return 0
+  return Math.max(0, Math.min(100, Math.floor(mood)))
+}
+
+/**
+ * Clamps player fame to be at least 0.
+ *
+ * @param {number} fame - Candidate fame value.
+ * @returns {number} Clamped non-negative fame value.
+ */
+export const clampPlayerFame = fame => {
+  if (!Number.isFinite(fame)) return 0
+  return Math.max(0, Math.floor(fame))
+}
+
+/**
  * Clamps player money to a safe, non-negative integer.
  * Prevents negative balances and ensures integer boundaries.
  *
@@ -301,7 +336,7 @@ export const applyEventDelta = (state, delta) => {
       nextPlayer.time = nextPlayer.time + delta.player.time
     }
     if (typeof delta.player.fame === 'number') {
-      nextPlayer.fame = Math.max(0, nextPlayer.fame + delta.player.fame)
+      nextPlayer.fame = clampPlayerFame(nextPlayer.fame + delta.player.fame)
       nextPlayer.fameLevel = calculateFameLevel(nextPlayer.fame)
     }
     const scoreDelta =
@@ -384,8 +419,11 @@ export const applyEventDelta = (state, delta) => {
               : 0
           return {
             ...member,
-            mood: Math.max(0, Math.min(100, member.mood + moodChange)),
-            stamina: Math.max(0, Math.min(100, member.stamina + staminaChange))
+            mood: clampMemberMood(member.mood + moodChange),
+            stamina: clampMemberStamina(
+              member.stamina + staminaChange,
+              member.staminaMax
+            )
           }
         })
       } else {
@@ -400,8 +438,8 @@ export const applyEventDelta = (state, delta) => {
           }
           return {
             ...member,
-            mood: Math.max(0, Math.min(100, newMood)),
-            stamina: Math.max(0, Math.min(100, newStamina))
+            mood: clampMemberMood(newMood),
+            stamina: clampMemberStamina(newStamina, member.staminaMax)
           }
         })
       }
