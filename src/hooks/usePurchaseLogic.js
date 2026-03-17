@@ -11,6 +11,7 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
 import { HQ_ITEMS } from '../data/hqItems.js'
+import { translateContextKeys } from '../ui/ToastOverlay.jsx'
 import {
   getPrimaryEffect,
   getAdjustedCost,
@@ -301,9 +302,10 @@ export const usePurchaseLogic = ({
 
           // Show generated toasts
           traitResult.toasts.forEach(toastItem => {
+            const safeOptions = toastItem.options ? translateContextKeys(toastItem.options, t) : {}
             const toastMsg = toastItem.messageKey
               ? t(toastItem.messageKey, {
-                  ...(toastItem.options || {}),
+                  ...safeOptions,
                   defaultValue: toastItem.message
                 })
               : toastItem.message

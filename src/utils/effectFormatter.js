@@ -99,8 +99,9 @@ export const generateEffectText = (delta, t) => {
     if (delta.flags.addQuest) {
       const quests = Array.isArray(delta.flags.addQuest) ? delta.flags.addQuest : [delta.flags.addQuest]
       quests.forEach(q => {
-        const questId = typeof q === 'object' && q !== null ? q.id : q;
-        const questLabel = q.title ?? t(q.label, { defaultValue: q.id });
+        const questLabel = typeof q === 'object' && q !== null
+          ? (q.title ?? t(q.label, { defaultValue: q.id }))
+          : t(q, { defaultValue: q })
         lines.push(`${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`)
       })
     }
