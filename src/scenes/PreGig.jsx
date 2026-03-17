@@ -11,6 +11,7 @@ import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
+import { secureRandom } from '../utils/crypto.js'
 import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 import { formatNumber } from '../utils/numberUtils'
@@ -464,8 +465,14 @@ export const PreGig = () => {
               roadieChance = 0.75 // Increase chance if Kabelsalat played last
             }
 
-            const chosenGame =
-              Math.random() < roadieChance ? 'roadie' : 'kabelsalat'
+            let randomVal = Math.random()
+            try {
+              randomVal = secureRandom()
+            } catch (err) {
+              // Fallback to Math.random()
+            }
+
+            const chosenGame = randomVal < roadieChance ? 'roadie' : 'kabelsalat'
 
             lastMinigameFallback = chosenGame
             try {
