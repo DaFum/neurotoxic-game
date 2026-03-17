@@ -3,6 +3,7 @@ import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
   clampPlayerMoney,
+  clampPlayerFame,
   clampMemberStamina,
   clampMemberMood,
   calculateFameLevel
@@ -60,8 +61,7 @@ export const handleLoadGame = (state, payload) => {
     }
   }
 
-  const validatedFame = Math.max(
-    0,
+  const validatedFame = clampPlayerFame(
     typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0
   )
 

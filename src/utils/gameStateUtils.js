@@ -28,8 +28,8 @@ export const calculateFameLevel = fame => {
  */
 export const clampMemberStamina = (stamina, staminaMax = 100) => {
   if (!Number.isFinite(stamina)) return 0
-  if (!Number.isFinite(staminaMax)) staminaMax = 100
-  return Math.max(0, Math.min(staminaMax, Math.floor(stamina)))
+  const resolvedStaminaMax = Number.isFinite(staminaMax) ? staminaMax : 100
+  return Math.max(0, Math.min(resolvedStaminaMax, Math.floor(stamina)))
 }
 
 /**
@@ -159,8 +159,7 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.player.time = delta.player.time // time is unbounded
     }
     if (typeof delta.player.fame === 'number') {
-      const nextFame = Math.max(
-        0,
+      const nextFame = clampPlayerFame(
         (state.player?.fame || 0) + delta.player.fame
       )
       applied.player.fame = nextFame - (state.player?.fame || 0)

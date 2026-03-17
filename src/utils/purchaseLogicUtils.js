@@ -158,11 +158,11 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
 
       if (effect.stat === 'money') {
         nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
+      } else if (effect.stat === 'fame') {
+        nextPlayerPatch[effect.stat] = clampPlayerFame(basePlayerStat + val)
+        nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
       } else {
         nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
-        if (effect.stat === 'fame') {
-          nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
-        }
       }
       break
     }
