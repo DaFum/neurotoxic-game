@@ -73,7 +73,8 @@ export class CrowdManager {
     const safeRandom = () => {
       try {
         return secureRandom()
-      } catch {
+      } catch (error) {
+        handleError(error, { silent: true, severity: 'medium' })
         return Math.random()
       }
     }

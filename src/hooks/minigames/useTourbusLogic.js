@@ -15,7 +15,8 @@ export const TARGET_DISTANCE = 2500
 const safeRandom = () => {
   try {
     return secureRandom()
-  } catch (_e) {
+  } catch (e) {
+    console.warn('secureRandom is not available, falling back to insecure Math.random().', e)
     return Math.random()
   }
 }

@@ -324,13 +324,9 @@ export const ChatterOverlay = memo(({ gameState }) => {
           }
 
           if (!id) {
-            let roll
-            try {
-              roll = secureRandom()
-            } catch (error) {
-              console.warn('Crypto API not available, falling back to Math.random', error)
-              roll = Math.random()
-            }
+            // Using secureRandom unconditionally; if crypto is unavailable, it will throw.
+            // This guarantees unpredictable IDs and avoids predictable fallbacks.
+            const roll = secureRandom()
             id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
           }
 

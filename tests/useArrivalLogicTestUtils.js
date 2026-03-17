@@ -67,6 +67,7 @@ mock.module('../src/utils/gameStateUtils.js', {
   namedExports: {
     // Correct clamp: 1 to 100
     clampBandHarmony: val => Math.min(100, Math.max(1, val)),
+<<<<<<< jules/add-missing-arrival-logic-tests-14588888633433148622
     clampMemberStamina: (stamina, staminaMax = 100) => {
       if (!Number.isFinite(stamina)) return 0
       const resolvedStaminaMax = Number.isFinite(staminaMax) ? staminaMax : 100
@@ -76,6 +77,10 @@ mock.module('../src/utils/gameStateUtils.js', {
       if (!Number.isFinite(mood)) return 0
       return Math.max(0, Math.min(100, Math.floor(mood)))
     }
+=======
+    clampMemberStamina: (val, max = 100) => Math.min(max, Math.max(0, val)),
+    clampMemberMood: val => Math.min(100, Math.max(0, val))
+>>>>>>> main
   }
 })
 

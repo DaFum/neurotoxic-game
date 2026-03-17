@@ -79,28 +79,28 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
           }}
         />
 
-        <div className='flex justify-between items-start mb-2 w-full z-10 relative'>
-          <div className='font-bold text-lg leading-tight pr-2 transition-colors'>
+        <div className='flex justify-between items-start mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
+          <div className='font-bold text-lg leading-tight pr-2 transition-colors text-star-white drop-shadow-md'>
             {t(`ui:postOptions.${opt.id}.name`, { defaultValue: opt.name })}
           </div>
-          <div className='flex gap-1 text-sm bg-void-black/50 px-1 rounded backdrop-blur-sm'>
+          <div className='flex gap-1 text-sm px-1 rounded backdrop-blur-sm'>
             {opt.badges?.map(b => (
               <span key={b}>{b}</span>
             ))}
           </div>
         </div>
-        <div className='text-xs text-ash-gray font-mono space-y-1 mb-2 w-full z-10 relative'>
+        <div className='text-xs text-star-white font-mono space-y-1 mb-2 w-full z-10 relative bg-void-black/80 p-1.5 rounded'>
           <div className='flex justify-between border-b border-ash-gray/20 pb-1'>
-            <span>
+            <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.platform', { defaultValue: 'Platform' })}
             </span>
-            <span className='text-star-white/60'>{opt.platform}</span>
+            <span className='text-star-white drop-shadow-md'>{opt.platform}</span>
           </div>
           <div className='flex justify-between pt-1'>
-            <span>
+            <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.category', { defaultValue: 'Category' })}
             </span>
-            <span className='text-star-white/60'>{opt.category}</span>
+            <span className='text-star-white drop-shadow-md'>{opt.category}</span>
           </div>
         </div>
 

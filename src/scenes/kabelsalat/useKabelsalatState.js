@@ -207,14 +207,18 @@ export const useKabelsalatState = () => {
         if (unconnected.length <= 1) return prevOrder
 
         const shuffled = [...unconnected]
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          let r
+        const randomFn = (() => {
           try {
-            r = secureRandom()
-          } catch (_e) {
-            r = Math.random()
+            secureRandom()
+            return secureRandom
+          } catch (e) {
+            console.warn('secureRandom unavailable, falling back to Math.random()', e)
+            return Math.random
           }
-          const j = Math.floor(r * (i + 1))
+        })()
+
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(randomFn() * (i + 1))
           ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
         }
 
