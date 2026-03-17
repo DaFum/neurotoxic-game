@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { calculateZealotryEffects } from '../../utils/socialEngine.js'
+import { secureRandom } from '../../utils/crypto.js'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.
@@ -586,9 +587,9 @@ export const CRISIS_EVENTS = [
     condition: gs => {
       if ((gs.social?.zealotry ?? 0) === 0) return false
       const { raidProbability } = calculateZealotryEffects(gs.social.zealotry)
-      // Return true only if Math.random() < raidProbability
+      // Return true only if secureRandom() < raidProbability
       // eventEngine checks `condition` before `chance`.
-      return Math.random() < raidProbability
+      return secureRandom() < raidProbability
     },
     options: [
       {
