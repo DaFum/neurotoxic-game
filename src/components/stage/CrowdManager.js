@@ -10,6 +10,8 @@ import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { secureRandom } from '../../utils/crypto.js'
 
+let secureRandomErrorReported = false
+
 export class CrowdManager {
   /**
    * @param {Application} app
@@ -70,7 +72,6 @@ export class CrowdManager {
     const fallbackColor = getPixiColorFromToken('--star-white')
     const mutedColor = getPixiColorFromToken('--ash-gray')
 
-    let secureRandomErrorReported = false
     const safeRandom = () => {
       try {
         return secureRandom()

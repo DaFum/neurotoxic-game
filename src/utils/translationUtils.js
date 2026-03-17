@@ -20,7 +20,8 @@ export const translateContextKeys = (context, t) => {
   if (Array.isArray(context)) {
     return context.map(item => {
       if (typeof item === 'string') {
-        return t(item, { defaultValue: item })
+        const isTranslationKey = VALID_NAMESPACES.some(ns => item.startsWith(ns))
+        return isTranslationKey ? t(item, { defaultValue: item }) : item
       }
       return translateContextKeys(item, t)
     })
