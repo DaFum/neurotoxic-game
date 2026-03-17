@@ -183,40 +183,47 @@ export const handleFailQuests = state => {
   let nextState = { ...state }
   if (!nextState.activeQuests) return state
 
-  const expiredQuests = nextState.activeQuests.filter(
-    q => q.deadline !== null && nextState.player.day > q.deadline
-  )
-  if (expiredQuests.length === 0) return state
+  let hasExpired = false
+  let newActiveQuests = []
+  let newToasts = []
 
-  expiredQuests.forEach(quest => {
-    if (quest.failurePenalty) {
-      if (quest.failurePenalty.social?.controversyLevel) {
-        // Deep clone before mutating
-        nextState.social = { ...nextState.social }
-        nextState.social.controversyLevel =
-          (nextState.social.controversyLevel || 0) +
-          quest.failurePenalty.social.controversyLevel
+  for (let i = 0; i < nextState.activeQuests.length; i++) {
+    const quest = nextState.activeQuests[i]
+
+    if (quest.deadline !== null && nextState.player.day > quest.deadline) {
+      hasExpired = true
+      if (quest.failurePenalty) {
+        if (quest.failurePenalty.social?.controversyLevel) {
+          // Deep clone before mutating
+          nextState.social = { ...nextState.social }
+          nextState.social.controversyLevel =
+            (nextState.social.controversyLevel || 0) +
+            quest.failurePenalty.social.controversyLevel
+        }
+        if (quest.failurePenalty.band?.harmony) {
+          // Deep clone before mutating
+          nextState.band = { ...nextState.band }
+          nextState.band.harmony = clampBandHarmony(
+            (nextState.band.harmony || 0) + quest.failurePenalty.band.harmony
+          )
+        }
       }
-      if (quest.failurePenalty.band?.harmony) {
-        // Deep clone before mutating
-        nextState.band = { ...nextState.band }
-        nextState.band.harmony = clampBandHarmony(
-          (nextState.band.harmony || 0) + quest.failurePenalty.band.harmony
-        )
-      }
-    }
-    nextState.toasts = [
-      ...(nextState.toasts || []),
-      {
+      newToasts.push({
         id: `${crypto.randomUUID()}-${quest.id}`,
         message: `ui:toast.quest_failed|${JSON.stringify({ name: quest.label })}`,
         type: 'error'
-      }
-    ]
-  })
+      })
+    } else {
+      newActiveQuests.push(quest)
+    }
+  }
 
-  nextState.activeQuests = nextState.activeQuests.filter(
-    q => q.deadline === null || nextState.player.day <= q.deadline
-  )
+  if (!hasExpired) return state
+
+  nextState.activeQuests = newActiveQuests
+  if (newToasts.length > 0) {
+    nextState.toasts = [...(nextState.toasts || []), ...newToasts]
+  }
+
   return nextState
 }
