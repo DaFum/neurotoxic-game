@@ -94,6 +94,11 @@ export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  * @returns {object} Updated game state.
  */
 
+const calculateClampedStatDelta = (currentValue, deltaValue) => {
+  const nextValue = Math.max(0, (currentValue || 0) + deltaValue)
+  return nextValue - (currentValue || 0)
+}
+
 export const calculateAppliedDelta = (state, delta) => {
   const applied = { player: {}, band: {}, social: {} }
 
@@ -168,26 +173,22 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.social) {
     if (typeof delta.social.controversyLevel === 'number') {
-      const nextControversy = Math.max(
-        0,
-        (state.social?.controversyLevel || 0) + delta.social.controversyLevel
+      applied.social.controversyLevel = calculateClampedStatDelta(
+        state.social?.controversyLevel,
+        delta.social.controversyLevel
       )
-      applied.social.controversyLevel =
-        nextControversy - (state.social?.controversyLevel || 0)
     }
     if (typeof delta.social.viral === 'number') {
-      const nextViral = Math.max(
-        0,
-        (state.social?.viral || 0) + delta.social.viral
+      applied.social.viral = calculateClampedStatDelta(
+        state.social?.viral,
+        delta.social.viral
       )
-      applied.social.viral = nextViral - (state.social?.viral || 0)
     }
     if (typeof delta.social.loyalty === 'number') {
-      const nextLoyalty = Math.max(
-        0,
-        (state.social?.loyalty || 0) + delta.social.loyalty
+      applied.social.loyalty = calculateClampedStatDelta(
+        state.social?.loyalty,
+        delta.social.loyalty
       )
-      applied.social.loyalty = nextLoyalty - (state.social?.loyalty || 0)
     }
   }
 

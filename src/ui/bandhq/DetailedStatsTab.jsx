@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar, Panel, Tooltip } from '../shared'
+import { useMemo } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
 
@@ -461,7 +462,10 @@ const MemberTraits = ({ member, t }) => {
       </div>
     )
 
-  const activeTraitIds = new Set((member.traits || []).map(t => t.id))
+  const activeTraitIds = useMemo(
+    () => new Set((member.traits || []).map(tr => tr.id)),
+    [member.traits]
+  )
 
   return potentialTraits.map(trait => {
     const isTraitActive = activeTraitIds.has(trait.id)
