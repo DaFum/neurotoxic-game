@@ -204,8 +204,16 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
       const current = gameState.player.money || 0
       let amount = Math.round(current * (eff.percentage / 100))
 
-      if (eff.min !== undefined) amount = Math.max(eff.min, amount)
-      if (eff.max !== undefined) amount = Math.min(eff.max, amount)
+      // Defensive guard: swap if min > max
+      let { min, max } = eff
+      if (min !== undefined && max !== undefined && min > max) {
+        ;[min, max] = [max, min]
+      }
+
+      // Note: for negative amounts, 'min' acts as the maximum *loss*
+      // (a floor for the value), and 'max' acts as the minimum *loss*.
+      if (min !== undefined) amount = Math.max(min, amount)
+      if (max !== undefined) amount = Math.min(max, amount)
 
       delta.player.money = (delta.player.money || 0) + amount
     }

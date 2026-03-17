@@ -5,7 +5,11 @@ import { secureRandom } from '../../utils/crypto.js'
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.
 // Triggers: 'post_gig' (band/financial pool), 'travel' (band/special pool via arrivalUtils)
-export function createCooldownComposite(eventId, effects, description) {
+/**
+ * Helper to append a cooldown effect to an array of effects
+ * and optionally set a description for the resulting composite.
+ */
+function createCooldownComposite(eventId, effects, description) {
   const composite = {
     type: 'composite',
     effects: [...effects, { type: 'cooldown', eventId }]
@@ -33,7 +37,7 @@ export const CRISIS_EVENTS = [
       {
         label: 'events:crisis_bad_review.opt1.label',
         effect: createCooldownComposite('crisis_bad_review', [
-            { type: 'stat', stat: 'controversyLevel', value: 15 }
+          { type: 'stat', stat: 'controversyLevel', value: 15 }
         ]),
         outcomeText: 'events:crisis_bad_review.opt1.outcome'
       },
@@ -44,11 +48,11 @@ export const CRISIS_EVENTS = [
           threshold: 6,
           success: createCooldownComposite('crisis_bad_review', [
             { type: 'stat', stat: 'controversyLevel', value: -5 },
-              { type: 'stat', stat: 'loyalty', value: 10 }
+            { type: 'stat', stat: 'loyalty', value: 10 }
           ], 'events:crisis_bad_review.opt2.d_5509'),
           failure: createCooldownComposite('crisis_bad_review', [
             { type: 'stat', stat: 'controversyLevel', value: 25 },
-              { type: 'stat', stat: 'harmony', value: -5 }
+            { type: 'stat', stat: 'harmony', value: -5 }
           ], 'events:crisis_bad_review.opt2.d_0f6b')
         },
         outcomeText: 'events:crisis_bad_review.opt2.outcome'
@@ -56,10 +60,10 @@ export const CRISIS_EVENTS = [
       {
         label: 'events:crisis_bad_review.opt3.label',
         effect: createCooldownComposite('crisis_bad_review', [
-            { type: 'stat', stat: 'controversyLevel', value: -10 },
-            { type: 'stat', stat: 'loyalty', value: 15 },
-            { type: 'stat', stat: 'harmony', value: 5 }
-          ]),
+          { type: 'stat', stat: 'controversyLevel', value: -10 },
+          { type: 'stat', stat: 'loyalty', value: 15 },
+          { type: 'stat', stat: 'harmony', value: 5 }
+        ]),
         outcomeText: 'events:crisis_bad_review.opt3.outcome'
       }
     ]
@@ -314,26 +318,19 @@ export const CRISIS_EVENTS = [
             { type: 'stat', stat: 'controversyLevel', value: 5 },
               { type: 'stat', stat: 'harmony', value: 5 }
           ], 'events:crisis_poor_performance.opt1.d_04df'),
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 20 },
-              { type: 'stat', stat: 'loyalty', value: -10 }
-            ],
-            description: 'events:crisis_poor_performance.opt1.d_b07b'
-          }
+          failure: createCooldownComposite('crisis_poor_performance', [
+            { type: 'stat', stat: 'controversyLevel', value: 20 },
+            { type: 'stat', stat: 'loyalty', value: -10 }
+          ], 'events:crisis_poor_performance.opt1.d_b07b')
         },
         outcomeText: 'events:crisis_poor_performance.opt1.outcome'
       },
       {
         label: 'events:crisis_poor_performance.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'loyalty', value: 10 },
-            { type: 'stat', stat: 'controversyLevel', value: -5 }
-          ]
-        },
+        effect: createCooldownComposite('crisis_poor_performance', [
+          { type: 'stat', stat: 'loyalty', value: 10 },
+          { type: 'stat', stat: 'controversyLevel', value: -5 }
+        ]),
         outcomeText: 'events:crisis_poor_performance.opt2.outcome'
       }
     ]

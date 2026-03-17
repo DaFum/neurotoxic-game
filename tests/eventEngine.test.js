@@ -764,3 +764,12 @@ test('eventEngine.applyResult percentage_resource handles zero money correctly',
   const delta = eventEngine.applyResult(result, {}, gameState)
   assert.equal(delta.player.money, 0, 'Zero money should yield zero gain')
 })
+
+test('eventEngine.applyResult percentage_resource gracefully handles min > max', () => {
+  const result = { type: 'percentage_resource', resource: 'money', percentage: 50, min: 200, max: 100 }
+  const gameState = { player: { money: 1000 } }
+  // Gain is 500. Correct max should cap it to 200 (if min=100 max=200).
+  // With inverted inputs, it should swap them, treating 100 as min and 200 as max.
+  const delta = eventEngine.applyResult(result, {}, gameState)
+  assert.equal(delta.player.money, 200, 'Should swap inverted min/max properties safely')
+})
