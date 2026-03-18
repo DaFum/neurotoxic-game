@@ -334,54 +334,68 @@ test('eventEngine.processOptions does not add spare tire option without inventor
   )
 })
 
-test('eventEngine.applyResult handles resource effects', () => {
-  const result = { type: 'resource', resource: 'money', value: -50 }
+// Parametrized: applyResult stat and resource effects
+const applyResultVariants = [
+  {
+    label: 'resource [money]',
+    result: { type: 'resource', resource: 'money', value: -50 },
+    validate: delta => {
+      assert.equal(delta.player.money, -50, 'Should apply money change')
+    }
+  },
+  {
+    label: 'stat [fame]',
+    result: { type: 'stat', stat: 'fame', value: 10 },
+    validate: delta => {
+      assert.equal(delta.player.fame, 10, 'Should apply fame change')
+    }
+  },
+  {
+    label: 'stat [harmony]',
+    result: { type: 'stat', stat: 'harmony', value: -15 },
+    validate: delta => {
+      assert.equal(delta.band.harmony, -15, 'Should apply harmony change')
+    }
+  },
+  {
+    label: 'stat [mood]',
+    result: { type: 'stat', stat: 'mood', value: 10 },
+    validate: delta => {
+      assert.ok(delta.band.membersDelta, 'Should have member changes')
+      assert.equal(
+        delta.band.membersDelta.moodChange,
+        10,
+        'Should set mood change'
+      )
+    }
+  },
+  {
+    label: 'stat [stamina]',
+    result: { type: 'stat', stat: 'stamina', value: -20 },
+    validate: delta => {
+      assert.equal(
+        delta.band.membersDelta.staminaChange,
+        -20,
+        'Should set stamina change'
+      )
+    }
+  },
+  {
+    label: 'resource [fuel]',
+    result: { type: 'resource', resource: 'fuel', value: 30 },
+    validate: delta => {
+      assert.ok(delta.player.van, 'Should have van changes')
+      assert.equal(delta.player.van.fuel, 30, 'Should set fuel value')
+    }
+  }
+]
 
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(delta.player.money, -50, 'Should apply money change')
-})
-
-test('eventEngine.applyResult handles stat effects', () => {
-  const result = { type: 'stat', stat: 'fame', value: 10 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(delta.player.fame, 10, 'Should apply fame change')
-})
-
-test('eventEngine.applyResult handles harmony stat', () => {
-  const result = { type: 'stat', stat: 'harmony', value: -15 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(delta.band.harmony, -15, 'Should apply harmony change')
-})
-
-test('eventEngine.applyResult handles mood changes', () => {
-  const result = { type: 'stat', stat: 'mood', value: 10 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.ok(delta.band.membersDelta, 'Should have member changes')
-  assert.equal(delta.band.membersDelta.moodChange, 10, 'Should set mood change')
-})
-
-test('eventEngine.applyResult handles stamina changes', () => {
-  const result = { type: 'stat', stat: 'stamina', value: -20 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(
-    delta.band.membersDelta.staminaChange,
-    -20,
-    'Should set stamina change'
-  )
+applyResultVariants.forEach(variant => {
+  test(`eventEngine.applyResult handles ${variant.label}`, () => {
+    const delta = eventEngine.applyResult(variant.result)
+    assert.ok(delta, 'Should return delta')
+    variant.validate(delta)
+  })
 })
 
 test('eventEngine.applyResult handles combined mood and stamina in composite', () => {
@@ -408,37 +422,31 @@ test('eventEngine.applyResult handles combined mood and stamina in composite', (
   )
 })
 
-test('eventEngine.applyResult handles van fuel', () => {
-  const result = { type: 'resource', resource: 'fuel', value: 30 }
+// Parametrized: van condition clamping
+const vanConditionVariants = [
+  {
+    label: 'clamp to minimum 0',
+    value: -10,
+    expected: 0
+  },
+  {
+    label: 'clamp to maximum 100',
+    value: 150,
+    expected: 100
+  }
+]
 
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.ok(delta.player.van, 'Should have van changes')
-  assert.equal(delta.player.van.fuel, 30, 'Should set fuel value')
-})
-
-test('eventEngine.applyResult handles van condition stat', () => {
-  const result = { type: 'stat', stat: 'van_condition', value: -10 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(
-    delta.player.van.condition,
-    0,
-    'Should clamp condition to minimum 0'
-  )
-})
-
-test('eventEngine.applyResult clamps van condition to 0-100 range', () => {
-  const overResult = { type: 'stat', stat: 'van_condition', value: 150 }
-  const overDelta = eventEngine.applyResult(overResult)
-  assert.equal(
-    overDelta.player.van.condition,
-    100,
-    'Should clamp condition to maximum 100'
-  )
+vanConditionVariants.forEach(variant => {
+  test(`eventEngine.applyResult handles van condition [${variant.label}]`, () => {
+    const result = { type: 'stat', stat: 'van_condition', value: variant.value }
+    const delta = eventEngine.applyResult(result)
+    assert.ok(delta, 'Should return delta')
+    assert.equal(
+      delta.player.van.condition,
+      variant.expected,
+      `Should ${variant.label}`
+    )
+  })
 })
 
 test('eventEngine.applyResult handles game over flag', () => {
@@ -542,94 +550,122 @@ test('eventEngine.applyResult preserves nextEventId from result', () => {
   )
 })
 
-test('eventEngine.applyResult handles time stat', () => {
-  const result = { type: 'stat', stat: 'time', value: -3 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(delta.player.time, -3, 'Should apply time change')
-})
-
-test('eventEngine.applyResult handles viral stat', () => {
-  const result = { type: 'stat', stat: 'viral', value: 15 }
-
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(delta.social.viral, 15, 'Should apply viral change')
-})
-
-test('eventEngine.applyResult handles inventory numeric increment', () => {
-  const result = { type: 'item', item: 'strings', value: 5 }
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(
-    delta.band.inventory.strings,
-    5,
-    'Should set initial increment value'
-  )
-})
-
-test('eventEngine.applyResult handles inventory non-numeric value', () => {
-  const result = { type: 'item', item: 'golden_pick', value: true }
-  const delta = eventEngine.applyResult(result)
-
-  assert.ok(delta, 'Should return delta')
-  assert.equal(delta.band.inventory.golden_pick, true, 'Should set value')
-})
-
-test('eventEngine.applyResult accumulates inventory values across composite effects', () => {
-  const result = {
-    type: 'composite',
-    effects: [
-      { type: 'item', item: 'strings', value: 5 },
-      { type: 'item', item: 'strings', value: 3 }
-    ]
+// Parametrized: time and viral stats
+const timeViralVariants = [
+  {
+    label: 'time',
+    result: { type: 'stat', stat: 'time', value: -3 },
+    validate: delta =>
+      assert.equal(delta.player.time, -3, 'Should apply time change')
+  },
+  {
+    label: 'viral',
+    result: { type: 'stat', stat: 'viral', value: 15 },
+    validate: delta =>
+      assert.equal(delta.social.viral, 15, 'Should apply viral change')
   }
+]
 
-  const delta = eventEngine.applyResult(result)
-  assert.equal(
-    delta.band.inventory.strings,
-    8,
-    'Should accumulate values in delta'
-  )
+timeViralVariants.forEach(variant => {
+  test(`eventEngine.applyResult handles ${variant.label} stat`, () => {
+    const delta = eventEngine.applyResult(variant.result)
+    assert.ok(delta, 'Should return delta')
+    variant.validate(delta)
+  })
 })
 
-test('eventEngine logic allows negative inventory in delta', () => {
-  const result = {
-    type: 'composite',
-    effects: [
-      { type: 'item', item: 'strings', value: 5 },
-      { type: 'item', item: 'strings', value: -10 }
-    ]
+// Parametrized: inventory handling
+const inventoryVariants = [
+  {
+    label: 'numeric increment',
+    result: { type: 'item', item: 'strings', value: 5 },
+    validate: delta =>
+      assert.equal(
+        delta.band.inventory.strings,
+        5,
+        'Should set initial increment value'
+      )
+  },
+  {
+    label: 'non-numeric value',
+    result: { type: 'item', item: 'golden_pick', value: true },
+    validate: delta =>
+      assert.equal(delta.band.inventory.golden_pick, true, 'Should set value')
+  },
+  {
+    label: 'accumulate across composite effects',
+    result: {
+      type: 'composite',
+      effects: [
+        { type: 'item', item: 'strings', value: 5 },
+        { type: 'item', item: 'strings', value: 3 }
+      ]
+    },
+    validate: delta =>
+      assert.equal(
+        delta.band.inventory.strings,
+        8,
+        'Should accumulate values in delta'
+      )
+  },
+  {
+    label: 'allow negative inventory in delta',
+    result: {
+      type: 'composite',
+      effects: [
+        { type: 'item', item: 'strings', value: 5 },
+        { type: 'item', item: 'strings', value: -10 }
+      ]
+    },
+    validate: delta =>
+      assert.equal(
+        delta.band.inventory.strings,
+        -5,
+        'Should allow negative inventory in delta for consumption'
+      )
   }
+]
 
-  const delta = eventEngine.applyResult(result)
-  assert.equal(
-    delta.band.inventory.strings,
-    -5,
-    'Should allow negative inventory in delta for consumption'
-  )
+inventoryVariants.forEach(variant => {
+  test(`eventEngine.applyResult inventory [${variant.label}]`, () => {
+    const delta = eventEngine.applyResult(variant.result)
+    assert.ok(delta, 'Should return delta')
+    variant.validate(delta)
+  })
 })
 
-test('eventEngine.applyResult handles hype stat as fame', () => {
-  const result = { type: 'stat', stat: 'hype', value: 10 }
-  const delta = eventEngine.applyResult(result)
-  assert.equal(delta.player.fame, 10, 'hype should map to fame')
-})
+// Parametrized: fame mapping and score
+const fameMappingVariants = [
+  {
+    label: 'hype → fame',
+    result: { type: 'stat', stat: 'hype', value: 10 },
+    validate: delta =>
+      assert.equal(delta.player.fame, 10, 'hype should map to fame')
+  },
+  {
+    label: 'crowd_energy → fame',
+    result: { type: 'stat', stat: 'crowd_energy', value: 5 },
+    validate: delta =>
+      assert.equal(delta.player.fame, 5, 'crowd_energy should map to fame')
+  },
+  {
+    label: 'score increment',
+    result: { type: 'stat', stat: 'score', value: 100 },
+    validate: delta =>
+      assert.equal(
+        delta.score,
+        100,
+        'score should increment in top-level score'
+      )
+  }
+]
 
-test('eventEngine.applyResult handles crowd_energy stat as fame', () => {
-  const result = { type: 'stat', stat: 'crowd_energy', value: 5 }
-  const delta = eventEngine.applyResult(result)
-  assert.equal(delta.player.fame, 5, 'crowd_energy should map to fame')
-})
-
-test('eventEngine.applyResult handles score stat increment', () => {
-  const result = { type: 'stat', stat: 'score', value: 100 }
-  const delta = eventEngine.applyResult(result)
-  assert.equal(delta.score, 100, 'score should increment in top-level score')
+fameMappingVariants.forEach(variant => {
+  test(`eventEngine.applyResult handles ${variant.label}`, () => {
+    const delta = eventEngine.applyResult(variant.result)
+    assert.ok(delta, 'Should return delta')
+    variant.validate(delta)
+  })
 })
 
 test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, crowd_energy)', () => {
@@ -725,51 +761,97 @@ test('eventEngine.processEvent processes valid events successfully', () => {
 })
 
 test('eventEngine.applyResult percentage_resource skips if no gameState', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: 10 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: 10
+  }
   const delta = eventEngine.applyResult(result)
   assert.equal(delta.player.money, undefined, 'Should skip without gameState')
 })
 
 test('eventEngine.applyResult percentage_resource handles positive gain with max cap', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: 50, max: 100 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: 50,
+    max: 100
+  }
   const gameState = { player: { money: 1000 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
   assert.equal(delta.player.money, 100, 'Should cap positive gain at max')
 })
 
 test('eventEngine.applyResult percentage_resource handles positive gain with min cap', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: 5, min: 200 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: 5,
+    min: 200
+  }
   const gameState = { player: { money: 1000 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
   assert.equal(delta.player.money, 200, 'Should elevate positive gain to min')
 })
 
 test('eventEngine.applyResult percentage_resource handles negative loss with min cap (lower bound)', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: -50, min: -100 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: -50,
+    min: -100
+  }
   const gameState = { player: { money: 1000 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, -100, 'The negative loss should be floor-capped at -100 (maximaler Verlust) using Math.max.')
+  assert.equal(
+    delta.player.money,
+    -100,
+    'The negative loss should be floor-capped at -100 (maximaler Verlust) using Math.max.'
+  )
 })
 
 test('eventEngine.applyResult percentage_resource handles negative loss with max cap (upper bound)', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: -5, max: -200 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: -5,
+    max: -200
+  }
   const gameState = { player: { money: 1000 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, -200, 'The negative loss should be ceiling-capped at -200 (minimaler Verlust) using Math.min.')
+  assert.equal(
+    delta.player.money,
+    -200,
+    'The negative loss should be ceiling-capped at -200 (minimaler Verlust) using Math.min.'
+  )
 })
 
 test('eventEngine.applyResult percentage_resource handles zero money correctly', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: 50 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: 50
+  }
   const gameState = { player: { money: 0 } }
   const delta = eventEngine.applyResult(result, {}, gameState)
   assert.equal(delta.player.money, 0, 'Zero money should yield zero gain')
 })
 
 test('eventEngine.applyResult percentage_resource gracefully handles min > max', () => {
-  const result = { type: 'percentage_resource', resource: 'money', percentage: 50, min: 200, max: 100 }
+  const result = {
+    type: 'percentage_resource',
+    resource: 'money',
+    percentage: 50,
+    min: 200,
+    max: 100
+  }
   const gameState = { player: { money: 1000 } }
   // Gain is 500. Correct max should cap it to 200 (if min=100 max=200).
   // With inverted inputs, it should swap them, treating 100 as min and 200 as max.
   const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, 200, 'Should swap inverted min/max properties safely')
+  assert.equal(
+    delta.player.money,
+    200,
+    'Should swap inverted min/max properties safely'
+  )
 })

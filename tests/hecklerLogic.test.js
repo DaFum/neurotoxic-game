@@ -56,49 +56,56 @@ test('processProjectiles - mutates array in-place', () => {
   assert.equal(result, projectiles)
 })
 
-test('trySpawnProjectile - spawns based on chance', () => {
-  const session = createHecklerSession()
-  const stats = { health: 100, combo: 0 }
-  // Default chance is 0.0005
-  // Mock random to return 0 (guaranteed spawn)
-  const mockRandomSpawn = () => 0
+// Parametrized: spawn chance variations
+const spawnChanceVariants = [
+  {
+    label: 'spawns based on chance [random < chance]',
+    stats: { health: 100, combo: 0 },
+    mockRandom: () => 0,
+    expectedSpawn: true,
+    validateProjectile: p => {
+      assert.equal(p.y, -100)
+      assert.ok(p.type === 'bottle' || p.type === 'tomato')
+    }
+  },
+  {
+    label: 'does not spawn if random > chance',
+    stats: { health: 100, combo: 0 },
+    mockRandom: () => 0.9,
+    expectedSpawn: false
+  },
+  {
+    label: 'higher chance on low health [health=40]',
+    stats: { health: 40, combo: 0 },
+    mockRandom: () => 0.001,
+    expectedSpawn: true
+  },
+  {
+    label: 'higher chance on high combo [combo=40]',
+    stats: { health: 100, combo: 40 },
+    mockRandom: () => 0.001,
+    expectedSpawn: true
+  }
+]
 
-  const projectile = trySpawnProjectile(session, stats, mockRandomSpawn)
-  assert.ok(projectile)
-  assert.equal(projectile.y, -100)
-  assert.ok(projectile.type === 'bottle' || projectile.type === 'tomato')
-})
+spawnChanceVariants.forEach(variant => {
+  test(`trySpawnProjectile - ${variant.label}`, () => {
+    const session = createHecklerSession()
+    const projectile = trySpawnProjectile(
+      session,
+      variant.stats,
+      variant.mockRandom
+    )
 
-test('trySpawnProjectile - does not spawn if random > chance', () => {
-  const session = createHecklerSession()
-  const stats = { health: 100, combo: 0 }
-  // Mock random to return 0.9 (guaranteed no spawn)
-  const mockRandomNoSpawn = () => 0.9
-
-  const projectile = trySpawnProjectile(session, stats, mockRandomNoSpawn)
-  assert.equal(projectile, null)
-})
-
-test('trySpawnProjectile - higher chance on low health', () => {
-  const session = createHecklerSession()
-  const stats = { health: 40, combo: 0 }
-  // Health < 60 branch gives 0.0005 + 0.001 = 0.0015
-  // We want to verify that 0.001 (which is > 0.0005) spawns
-  const mockRandom = () => 0.001
-
-  const projectile = trySpawnProjectile(session, stats, mockRandom)
-  assert.ok(projectile)
-})
-
-test('trySpawnProjectile - higher chance on high combo', () => {
-  const session = createHecklerSession()
-  const stats = { health: 100, combo: 40 }
-  // Base chance 0.0005 + 0.001 = 0.0015
-  // We want to verify that 0.001 spawns
-  const mockRandom = () => 0.001
-
-  const projectile = trySpawnProjectile(session, stats, mockRandom)
-  assert.ok(projectile)
+    if (variant.expectedSpawn) {
+      assert.ok(projectile)
+      if (variant.validateProjectile) {
+        variant.validateProjectile(projectile)
+      }
+    } else {
+      assert.equal(projectile, null)
+    }
+  })
 })
 
 test('trySpawnProjectile - verifies all spawned object properties', () => {

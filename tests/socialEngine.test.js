@@ -21,32 +21,46 @@ test('calculateViralityScore returns base chance for average performance', () =>
   assert.ok(score <= 0.9, 'Score should be capped at 90%')
 })
 
-test('calculateViralityScore increases with high performance', () => {
-  const venue = { name: 'Test Venue' }
-  const lowScore = calculateViralityScore(60, [], venue)
-  const highScore = calculateViralityScore(95, [], venue)
+// Parametrized: performance scaling tests
+const performanceVariants = [
+  {
+    label: 'increases with high performance [60 vs 95]',
+    scenarios: [
+      { performance: 60, label: 'low' },
+      { performance: 95, label: 'high' }
+    ],
+    assertion: (low, high) => high > low
+  },
+  {
+    label: 'applies performance multipliers [70, 80, 92]',
+    scenarios: [
+      { performance: 70, label: 'medium' },
+      { performance: 80, label: 'good' },
+      { performance: 92, label: 'great' }
+    ],
+    assertion: scores => scores[1] > scores[0] && scores[2] > scores[1]
+  }
+]
 
-  assert.ok(
-    highScore > lowScore,
-    'High performance should increase virality chance'
-  )
-})
+performanceVariants.forEach(variant => {
+  test(`calculateViralityScore ${variant.label}`, () => {
+    const venue = { name: 'Test Venue' }
+    const scores = variant.scenarios.map(s =>
+      calculateViralityScore(s.performance, [], venue)
+    )
 
-test('calculateViralityScore applies performance multipliers', () => {
-  const venue = { name: 'Test Venue' }
-
-  const mediumPerf = calculateViralityScore(70, [], venue)
-  const goodPerf = calculateViralityScore(80, [], venue)
-  const greatPerf = calculateViralityScore(92, [], venue)
-
-  assert.ok(
-    goodPerf > mediumPerf,
-    'Better performance should increase virality'
-  )
-  assert.ok(
-    greatPerf > goodPerf,
-    'Excellent performance should increase further'
-  )
+    if (variant.scenarios.length === 2) {
+      assert.ok(
+        variant.assertion(scores[0], scores[1]),
+        `${variant.scenarios[1].label} should have higher virality than ${variant.scenarios[0].label}`
+      )
+    } else {
+      assert.ok(
+        variant.assertion(scores),
+        `Performance multipliers should increase progressively`
+      )
+    }
+  })
 })
 
 test('calculateViralityScore boosts for Kaminstube venue', () => {
@@ -156,38 +170,55 @@ test('generatePostOptions all have required properties', () => {
   })
 })
 
-test('resolvePost handles RNG success', () => {
-  const postOption = {
-    id: 'test',
-    platform: 'tiktok',
-    resolve: ({ diceRoll }) => {
-      if (diceRoll <= 0.7) return { success: true, followers: 3000 }
-      return { success: false, followers: -2000 }
-    }
+// Parametrized: resolvePost RNG outcome tests
+const rngOutcomeVariants = [
+  {
+    label: 'handles RNG success [roll=0.5]',
+    diceRoll: 0.5,
+    expectedSuccess: true,
+    expectedFollowers: 3000
+  },
+  {
+    label: 'handles RNG failure [roll=0.9]',
+    diceRoll: 0.9,
+    expectedSuccess: false,
+    expectedFollowers: -2000,
+    expectedHarmonyChange: -20
   }
+]
 
-  const result = resolvePost(postOption, mockGameState, 0.5) // Roll below 0.7
-
-  assert.equal(result.success, true, 'Should be success')
-  assert.equal(result.followers, 3000, 'Should return success followers')
-  assert.equal(result.platform, 'tiktok', 'Should preserve platform')
-})
-
-test('resolvePost handles RNG failure', () => {
-  const postOption = {
-    id: 'test',
-    platform: 'tiktok',
-    resolve: ({ diceRoll }) => {
-      if (diceRoll <= 0.7) return { success: true, followers: 3000 }
-      return { success: false, followers: -2000, harmonyChange: -20 }
+rngOutcomeVariants.forEach(variant => {
+  test(`resolvePost ${variant.label}`, () => {
+    const postOption = {
+      id: 'test',
+      platform: 'tiktok',
+      resolve: ({ diceRoll }) => {
+        if (diceRoll <= 0.7) return { success: true, followers: 3000 }
+        return { success: false, followers: -2000, harmonyChange: -20 }
+      }
     }
-  }
 
-  const result = resolvePost(postOption, mockGameState, 0.9) // Roll above 0.7
+    const result = resolvePost(postOption, mockGameState, variant.diceRoll)
 
-  assert.equal(result.success, false, 'Should be failure')
-  assert.equal(result.followers, -2000, 'Should return failure followers')
-  assert.equal(result.harmonyChange, -20, 'Should process side effects')
+    assert.equal(
+      result.success,
+      variant.expectedSuccess,
+      `Should be ${variant.expectedSuccess ? 'success' : 'failure'}`
+    )
+    assert.equal(
+      result.followers,
+      variant.expectedFollowers,
+      'Should return correct followers'
+    )
+    assert.equal(result.platform, 'tiktok', 'Should preserve platform')
+    if (variant.expectedHarmonyChange !== undefined) {
+      assert.equal(
+        result.harmonyChange,
+        variant.expectedHarmonyChange,
+        'Should process side effects'
+      )
+    }
+  })
 })
 
 test('resolvePost returns consistent structure', () => {

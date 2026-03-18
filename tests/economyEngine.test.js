@@ -69,74 +69,72 @@ test('calculateGigFinancials handles base case with ticket sales and guarantee',
   )
 })
 
-test('calculateGigFinancials applies fame scaling to fill rate', () => {
-  const gigData = buildGigData({ capacity: 100, price: 10 })
+// Parametrized: fame and promo modifier comparisons
+const famePromoVariants = [
+  {
+    label: 'fame scaling [low vs high]',
+    gigData: { capacity: 100, price: 10 },
+    scenario1: {
+      label: 'low fame',
+      playerState: { fame: 10 }
+    },
+    scenario2: {
+      label: 'high fame',
+      playerState: { fame: 1000 }
+    },
+    expectedField: 'economy:gigIncome.ticketSales.label',
+    assertion: (val1, val2) => val2 > val1
+  },
+  {
+    label: 'promo boost [no promo vs with promo]',
+    gigData: { capacity: 200 },
+    scenario1: {
+      label: 'no promo',
+      modifiers: buildModifiers({ promo: false })
+    },
+    scenario2: {
+      label: 'with promo',
+      modifiers: buildModifiers({ promo: true })
+    },
+    expectedField: 'economy:gigIncome.ticketSales.label',
+    assertion: (val1, val2) => val2 > val1
+  }
+]
 
-  // Low fame scenario
-  const lowFameResult = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers(),
-    bandInventory: buildInventory(),
-    playerState: { fame: 10 },
-    gigStats: buildGigStats()
+famePromoVariants.forEach(variant => {
+  test(`calculateGigFinancials applies ${variant.label}`, () => {
+    const gigData = buildGigData(variant.gigData)
+
+    const result1 = calculateGigFinancials({
+      gigData: gigData,
+      performanceScore: 80,
+      modifiers: variant.scenario1.modifiers || buildModifiers(),
+      bandInventory: buildInventory(),
+      playerState: variant.scenario1.playerState || { fame: 50 },
+      gigStats: buildGigStats()
+    })
+
+    const result2 = calculateGigFinancials({
+      gigData: gigData,
+      performanceScore: 80,
+      modifiers: variant.scenario2.modifiers || buildModifiers(),
+      bandInventory: buildInventory(),
+      playerState: variant.scenario2.playerState || { fame: 50 },
+      gigStats: buildGigStats()
+    })
+
+    const item1 = result1.income.breakdown.find(
+      b => b.labelKey === variant.expectedField
+    )
+    const item2 = result2.income.breakdown.find(
+      b => b.labelKey === variant.expectedField
+    )
+
+    assert.ok(
+      variant.assertion(item1.value, item2.value),
+      `${variant.label}: scenario2 (${variant.scenario2.label}) should have higher value than scenario1 (${variant.scenario1.label})`
+    )
   })
-
-  // High fame scenario
-  const highFameResult = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers(),
-    bandInventory: buildInventory(),
-    playerState: { fame: 1000 },
-    gigStats: buildGigStats()
-  })
-
-  const lowFameTickets = lowFameResult.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
-  )
-  const highFameTickets = highFameResult.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
-  )
-
-  assert.ok(
-    highFameTickets.value > lowFameTickets.value,
-    'High fame should result in more ticket sales'
-  )
-})
-
-test('calculateGigFinancials applies promo boost to fill rate', () => {
-  const gigData = buildGigData({ capacity: 200 })
-
-  const noPromo = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers({ promo: false }),
-    bandInventory: buildInventory(),
-    playerState: { fame: 50 },
-    gigStats: buildGigStats()
-  })
-
-  const withPromo = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers({ promo: true }),
-    bandInventory: buildInventory(),
-    playerState: { fame: 50 },
-    gigStats: buildGigStats()
-  })
-
-  const noPromoTickets = noPromo.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
-  )
-  const promoTickets = withPromo.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
-  )
-
-  assert.ok(
-    promoTickets.value > noPromoTickets.value,
-    'Promo should increase ticket sales'
-  )
 })
 
 test('calculateGigFinancials applies price sensitivity penalty', () => {
@@ -163,38 +161,95 @@ test('calculateGigFinancials applies price sensitivity penalty', () => {
   )
 })
 
-test('calculateGigFinancials scales merch sales with performance', () => {
-  const gigData = buildGigData()
+// Parametrized: merch sales scaling and performance effects
+const merchVariants = [
+  {
+    label: 'merch scaling with performance [poor vs great]',
+    performanceVariants: [
+      { score: 40, label: 'poor' },
+      { score: 95, label: 'great' }
+    ],
+    expectedField: 'economy:gigIncome.merchSales.label',
+    assertion: (poorVal, greatVal) => greatVal > poorVal
+  },
+  {
+    label: 'merch penalties for misses [no misses vs many misses]',
+    gigStats: true,
+    gigStatsVariants: [
+      { misses: 0, label: 'no misses' },
+      { misses: 20, label: 'many misses' }
+    ],
+    expectedField: 'economy:gigIncome.merchSales.label',
+    assertion: (noMissVal, manyMissVal) => noMissVal > manyMissVal
+  }
+]
 
-  const poorPerformance = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 40,
-    modifiers: buildModifiers({ merch: true }),
-    bandInventory: buildInventory(),
-    playerState: { fame: 100 },
-    gigStats: buildGigStats()
+merchVariants.forEach(variant => {
+  test(`calculateGigFinancials ${variant.label}`, () => {
+    const gigData = buildGigData()
+
+    if (variant.performanceVariants) {
+      const result1 = calculateGigFinancials({
+        gigData: gigData,
+        performanceScore: variant.performanceVariants[0].score,
+        modifiers: buildModifiers({ merch: true }),
+        bandInventory: buildInventory(),
+        playerState: { fame: 100 },
+        gigStats: buildGigStats()
+      })
+
+      const result2 = calculateGigFinancials({
+        gigData: gigData,
+        performanceScore: variant.performanceVariants[1].score,
+        modifiers: buildModifiers({ merch: true }),
+        bandInventory: buildInventory(),
+        playerState: { fame: 100 },
+        gigStats: buildGigStats()
+      })
+
+      const item1 = result1.income.breakdown.find(
+        b => b.labelKey === variant.expectedField
+      )
+      const item2 = result2.income.breakdown.find(
+        b => b.labelKey === variant.expectedField
+      )
+
+      assert.ok(
+        variant.assertion(item1.value, item2.value),
+        `${variant.label}: ${variant.performanceVariants[1].label} should have higher value`
+      )
+    } else if (variant.gigStats) {
+      const result1 = calculateGigFinancials({
+        gigData: gigData,
+        performanceScore: 80,
+        modifiers: buildModifiers({ merch: true }),
+        bandInventory: buildInventory(),
+        playerState: { fame: 100 },
+        gigStats: buildGigStats(variant.gigStatsVariants[0])
+      })
+
+      const result2 = calculateGigFinancials({
+        gigData: gigData,
+        performanceScore: 80,
+        modifiers: buildModifiers({ merch: true }),
+        bandInventory: buildInventory(),
+        playerState: { fame: 100 },
+        gigStats: buildGigStats(variant.gigStatsVariants[1])
+      })
+
+      const item1 = result1.income.breakdown.find(
+        b => b.labelKey === variant.expectedField
+      )
+      const item2 = result2.income.breakdown.find(
+        b => b.labelKey === variant.expectedField
+      )
+
+      assert.ok(
+        variant.assertion(item1.value, item2.value),
+        `${variant.label}: ${variant.gigStatsVariants[0].label} should have higher value`
+      )
+    }
   })
-
-  const greatPerformance = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 95,
-    modifiers: buildModifiers({ merch: true }),
-    bandInventory: buildInventory(),
-    playerState: { fame: 100 },
-    gigStats: buildGigStats()
-  })
-
-  const poorMerch = poorPerformance.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.merchSales.label'
-  )
-  const greatMerch = greatPerformance.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.merchSales.label'
-  )
-
-  assert.ok(
-    greatMerch.value > poorMerch.value,
-    'Better performance should increase merch sales'
-  )
 })
 
 test('calculateGigFinancials applies S-rank merch bonus', () => {
@@ -213,40 +268,6 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
     b => b.labelKey === 'economy:gigIncome.hypeBonus.label'
   )
   assert.ok(bonusItem, 'S-rank should trigger hype bonus entry')
-})
-
-test('calculateGigFinancials penalizes merch sales for misses', () => {
-  const gigData = buildGigData()
-
-  const noMisses = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers({ merch: true }),
-    bandInventory: buildInventory(),
-    playerState: { fame: 100 },
-    gigStats: buildGigStats({ misses: 0 })
-  })
-
-  const manyMisses = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers({ merch: true }),
-    bandInventory: buildInventory(),
-    playerState: { fame: 100 },
-    gigStats: buildGigStats({ misses: 20 })
-  })
-
-  const noMissMerch = noMisses.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.merchSales.label'
-  )
-  const missMerch = manyMisses.income.breakdown.find(
-    b => b.labelKey === 'economy:gigIncome.merchSales.label'
-  )
-
-  assert.ok(
-    noMissMerch.value > missMerch.value,
-    'Misses should reduce merch sales'
-  )
 })
 
 test('calculateGigFinancials handles sold out merch gracefully', () => {
