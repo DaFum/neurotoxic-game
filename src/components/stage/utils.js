@@ -277,10 +277,8 @@ export const loadTextures = async (urlMap, onError) => {
   const settledResults = await Promise.allSettled(promises)
 
   const result = {}
-  for (const key in urlMap) {
-    if (!Object.hasOwn(urlMap, key)) continue
-
-    const index = keys.indexOf(key)
+  for (let index = 0; index < keys.length; index++) {
+    const key = keys[index]
     const res = settledResults[index]
 
     if (res.status === 'fulfilled' && res.value !== null) {

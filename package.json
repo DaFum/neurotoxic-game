@@ -10,7 +10,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "test": "node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs",
-    "test:ui": "vitest run",
+    "test:ui": "node ./scripts/run-vitest-ui.mjs",
     "test:all": "npm run test && npm run test:ui",
     "test:e2e": "playwright test",
     "format": "prettier --write .",

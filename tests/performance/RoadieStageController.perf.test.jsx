@@ -1,15 +1,19 @@
-import { describe, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createRoadieStageController } from '../../src/components/stage/RoadieStageController'
 
 // Mock utils
-vi.mock('../../src/components/stage/utils.js', async (importOriginal) => {
+vi.mock('../../src/components/stage/utils.js', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
-    loadTexture: vi.fn(async _url => {
-      // Simulate a 100ms network request
+    loadTextures: vi.fn(async urlMap => {
+      // Simulate one concurrent 100ms request wave
       await new Promise(resolve => setTimeout(resolve, 100))
-      return { width: 100, height: 100 }
+      const textures = {}
+      for (const key of Object.keys(urlMap)) {
+        textures[key] = { width: 100, height: 100 }
+      }
+      return textures
     }),
     getPixiColorFromToken: vi.fn(() => 0x000000)
   }
@@ -47,6 +51,7 @@ describe('RoadieStageController loadAssets performance', () => {
 
     // With sequential awaits, it takes > 200ms
     // With concurrent awaits, it takes ~ 100ms
+    expect(duration).toBeLessThan(200)
 
     // Cleanup
     controller.dispose()
