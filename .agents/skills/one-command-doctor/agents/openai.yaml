@@ -1,4 +1,4 @@
 interface:
   display_name: 'One-Command Doctor'
   short_description: 'Run a quick healthcheck and summarize likely fixes.'
-  default_prompt: 'Run the doctor healthcheck and diagnose any issues.'
+  default_prompt: 'Run environment diagnostics (tooling, deps, build) and identify the fastest path to a healthy setup. Return: concise diagnosis, concrete implementation steps, and verification commands.'

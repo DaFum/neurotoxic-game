@@ -45,6 +45,7 @@ mock.module('../../src/utils/logger.js', {
 mock.module('../../src/components/stage/utils.js', {
   namedExports: {
     loadTexture: async () => ({}),
+    loadTextures: async () => ({}),
     getPixiColorFromToken: () => 0
   }
 })

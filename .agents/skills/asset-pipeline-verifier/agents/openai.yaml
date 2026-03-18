@@ -1,4 +1,4 @@
 interface:
   display_name: 'Asset Pipeline Verifier'
   short_description: 'Verify asset paths and references for broken links or missing files.'
-  default_prompt: 'Scan for broken asset references and missing files.'
+  default_prompt: 'Diagnose broken asset loading (404s, MIME/path issues) and fix import paths or loader usage. Return: concise diagnosis, concrete implementation steps, and verification commands.'

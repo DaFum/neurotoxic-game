@@ -26,7 +26,7 @@ Create a structured plan for code changes and draft compliant commit messages.
 
 3.  **Identify Risks & Validations**
     - What could break?
-    - Which tests should run? (e.g., `npm run test:unit`, `npm run lint`)
+    - Which tests should run? (e.g., `pnpm run test`, `pnpm run lint`)
 
 4.  **Draft Commit Messages**
     Propose commit messages for the changes. Use the format:
@@ -59,4 +59,4 @@ Create a structured plan for code changes and draft compliant commit messages.
     The volume slider now saves its value to localStorage and restores it on page load.
     ```
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

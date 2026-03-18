@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Pixi Lifecycle Memory Leak Sentinel'
+  short_description: 'detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time.'
+  default_prompt: 'Inspect Pixi scene lifecycle for leaks and fix cleanup/destroy paths for textures, children, and app instances. Return: concise diagnosis, concrete implementation steps, and verification commands.'

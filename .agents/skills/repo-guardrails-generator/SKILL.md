@@ -14,7 +14,7 @@ Create concise, actionable rules for the repository.
     - What are the hard constraints? (e.g., "No `any` type").
 
 2.  **Draft the Rules**
-    - **MUST**: Non-negotiable. (e.g., "MUST use `npm run test`").
+    - **MUST**: Non-negotiable. (e.g., "MUST use `pnpm run test`").
     - **SHOULD**: Best practice. (e.g., "SHOULD use descriptive names").
     - **NEVER**: Forbidden. (e.g., "NEVER commit secrets").
 
@@ -41,4 +41,4 @@ Create concise, actionable rules for the repository.
 - [ ] **Accessibility**: `aria-label` on icon-only buttons.
 ```
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

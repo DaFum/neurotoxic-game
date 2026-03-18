@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Ci Hardener'
+  short_description: 'improve CI reliability, speed, and clarity. Trigger when CI is slow, flaky, fails silently, or needs optimization. focus on GitHub Actions workflows.'
+  default_prompt: 'Audit GitHub Actions workflows for reliability/speed issues and apply targeted CI hardening improvements. Return: concise diagnosis, concrete implementation steps, and verification commands.'

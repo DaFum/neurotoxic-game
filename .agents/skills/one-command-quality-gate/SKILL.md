@@ -12,16 +12,16 @@ Enforce code quality standards by running the canonical check suite.
 Run the bundled script:
 
 ```bash
-.Codex/skills/one-command-quality-gate/scripts/quality-gate.sh
+.agents/skills/one-command-quality-gate/scripts/quality-gate.sh
 ```
 
 ## Workflow
 
 The script executes these checks in order:
 
-1.  **Lint**: `npm run lint`. Checks code style and errors.
-2.  **Test**: `npm run test`. Runs the test suite.
-3.  **Build**: `npm run build`. Verifies production build.
+1.  **Lint**: `pnpm run lint`. Checks code style and errors.
+2.  **Test**: `pnpm run test`. Runs the test suite.
+3.  **Build**: `pnpm run build`. Verifies production build.
 
 ## Rules
 
@@ -33,7 +33,7 @@ The script executes these checks in order:
 **Input**: "I finished the feature. Is it ready?"
 
 **Action**:
-Run `.Codex/skills/one-command-quality-gate/scripts/quality-gate.sh`.
+Run `.agents/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 
 **Output**:
 (Note: "Running..." text denotes additional successful check output.)
@@ -46,4 +46,4 @@ Run `.Codex/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 
 "Quality gate failed at the Test step. Please fix the money initialization regression."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

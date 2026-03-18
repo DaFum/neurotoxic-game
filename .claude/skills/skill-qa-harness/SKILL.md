@@ -11,6 +11,7 @@ Ensure all skills in the library are valid and functional.
 
 1.  **Discovery**
     Scan `.claude/skills/` for all `SKILL.md` files.
+    - Validate skills inventory before deeper checks.
 
 2.  **Structural Validation**
     For each skill:
@@ -24,6 +25,12 @@ Ensure all skills in the library are valid and functional.
 
 4.  **Reporting**
     Generate a PASS/FAIL report.
+    - Run tests after structural validation to confirm behavior.
+
+## Quick Actions
+
+- **Validate skills** with the validator command.
+- **Run tests** for prompt cases and regression checks.
 
 ## Commands
 

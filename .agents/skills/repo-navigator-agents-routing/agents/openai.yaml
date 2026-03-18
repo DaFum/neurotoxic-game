@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Repo Navigator Agents Routing'
+  short_description: 'route requests to the correct domain and `AGENTS.md`. Trigger when asked where code lives, who owns a feature, or how the repo is organized.'
+  default_prompt: 'Locate where relevant code lives and route the task to the correct files and agent instructions. Return: concise diagnosis, concrete implementation steps, and verification commands.'

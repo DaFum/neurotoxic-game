@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Refactor With Safety'
+  short_description: 'refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates.'
+  default_prompt: 'Refactor the target module incrementally with guardrail tests to ensure behavior remains unchanged. Return: concise diagnosis, concrete implementation steps, and verification commands.'

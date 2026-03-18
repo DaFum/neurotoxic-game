@@ -177,11 +177,9 @@ describe('useArrivalLogic', () => {
     // 1. triggerEvent('transport', 'travel') -> returns false
     // 2. triggerEvent('band', 'travel') -> returns false
     // 3. handleNodeArrival -> triggerEvent('special') -> returns true
-    let callCount = 0;
-    mockGameState.triggerEvent.mock.mockImplementation((type) => {
-      callCount++;
-      if (type === 'special') return true;
-      return false; // Let the 'travel' events fail so it reaches 'special'
+    mockGameState.triggerEvent.mock.mockImplementation(type => {
+      if (type === 'special') return true
+      return false // Let the 'travel' events fail so it reaches 'special'
     })
 
     const { result } = setupArrivalScenario(useArrivalLogic, {
@@ -197,7 +195,9 @@ describe('useArrivalLogic', () => {
     })
 
     assert.ok(
-      mockGameState.triggerEvent.mock.calls.some(c => c.arguments[0] === 'special'),
+      mockGameState.triggerEvent.mock.calls.some(
+        c => c.arguments[0] === 'special'
+      ),
       'triggerEvent should be called with "special"'
     )
   })
@@ -304,9 +304,10 @@ describe('useArrivalLogic', () => {
     // handleError internally calls addToast with the fallback message
     // or the error's message. We assert that addToast was invoked with feedback.
     assert.ok(
-      mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('Failed to start Gig') ||
-        c.arguments[0].includes('Gig Failed To Start')
+      mockGameState.addToast.mock.calls.some(
+        c =>
+          c.arguments[0].includes('Failed to start Gig') ||
+          c.arguments[0].includes('Gig Failed To Start')
       )
     )
   })

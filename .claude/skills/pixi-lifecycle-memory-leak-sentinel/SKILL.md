@@ -6,6 +6,7 @@ description: detect and fix memory leaks in Pixi.js components. Trigger when rev
 # Pixi Lifecycle Sentinel
 
 Ensure strict lifecycle management for Pixi.js instances to prevent memory leaks.
+Prioritize audits in `PixiStage.jsx` and `PixiStageController.js` when present.
 
 ## Workflow
 

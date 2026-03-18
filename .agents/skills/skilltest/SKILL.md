@@ -10,7 +10,7 @@ Discover, validate, and test skills against the Open Agent Skills standard.
 ## Workflow
 
 1.  **Discovery**
-    - Search `.Codex/skills/` recursively.
+    - Search `.agents/skills/` recursively.
     - Find `SKILL.md` files.
 
 2.  **Validation**
@@ -28,13 +28,13 @@ Discover, validate, and test skills against the Open Agent Skills standard.
 Use the bundled validator:
 
 ```bash
-node .Codex/skills/skilltest/scripts/validate-skills.mjs
+node .agents/skills/skilltest/scripts/validate-skills.mjs
 ```
 
 Use the test runner:
 
 ```bash
-node .Codex/skills/skilltest/scripts/skilltest.mjs
+node .agents/skills/skilltest/scripts/skilltest.mjs
 ```
 
 ## Example
@@ -52,4 +52,4 @@ Run validator.
 
 "The frontmatter in `myskill/SKILL.md` is invalid. Fix the YAML syntax."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

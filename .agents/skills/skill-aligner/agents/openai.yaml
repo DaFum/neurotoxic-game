@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Skill Aligner'
+  short_description: 'align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands.'
+  default_prompt: 'Align skill docs with current repo commands, paths, and terminology by reconciling against AGENTS.md and package scripts. Return: concise diagnosis, concrete implementation steps, and verification commands.'

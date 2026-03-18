@@ -22,7 +22,7 @@ Optimize and harden Continuous Integration (CI) workflows.
     - **Permissions**: Use least-privilege `permissions` blocks.
 
 3.  **Optimize Speed**
-    - Run independent jobs (Lint, Test) in parallel.
+    - Run independent jobs (`lint`, Test) in parallel.
     - Make `Build` depend on `Test` and `Lint`.
     - Use `npm ci` instead of `npm install` for deterministic installs.
 

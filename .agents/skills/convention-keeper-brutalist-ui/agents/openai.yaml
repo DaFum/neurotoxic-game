@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Convention Keeper Brutalist Ui'
+  short_description: 'enforce brutalist UI design system. Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage.'
+  default_prompt: 'Review UI changes for brutalist design-system compliance and flag any token/style violations. Return: concise diagnosis, concrete implementation steps, and verification commands.'

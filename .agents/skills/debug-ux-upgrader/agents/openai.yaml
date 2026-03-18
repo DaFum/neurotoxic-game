@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Debug Ux Upgrader'
+  short_description: 'add debug tools, overlays, and logging. Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer.'
+  default_prompt: 'Add developer-facing diagnostics (logging, overlays, debug panels) for the reported UX issue. Return: concise diagnosis, concrete implementation steps, and verification commands.'

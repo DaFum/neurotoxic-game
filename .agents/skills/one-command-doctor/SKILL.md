@@ -12,19 +12,19 @@ Quickly diagnose the health of the repository and development environment.
 Run the bundled diagnostic script (using `bash` or `sh` to ensure execution):
 
 ```bash
-bash .Codex/skills/one-command-doctor/scripts/doctor.sh
+bash .agents/skills/one-command-doctor/scripts/doctor.sh
 ```
 
 ## Workflow
 
 1.  **Environment Check**
-    - Node version (>= 20).
-    - npm version.
+    - Node version (>= 22.13.0).
+    - pnpm version.
     - Lockfile sync status.
 
 2.  **Build Check**
-    - Does `npm install` work?
-    - Does `npm run build` succeed?
+    - Does `pnpm install --frozen-lockfile` work?
+    - Does `pnpm run build` succeed?
 
 3.  **Lint/Test Check**
     - Basic linting pass.
@@ -32,8 +32,8 @@ bash .Codex/skills/one-command-doctor/scripts/doctor.sh
 
 ## Diagnosis & Fixes
 
-- **Node Version Mismatch**: "Please use `nvm use` to switch to Node 20+."
-- **Lockfile Error**: "Run `npm ci` to restore clean state."
+- **Node Version Mismatch**: "Please use `nvm use` to switch to Node 22.13.0+."
+- **Lockfile Error**: "Run `pnpm install --frozen-lockfile` to restore clean state."
 - **Build Fail**: "Check `vite.config.js` or missing assets."
 
 ## Example
@@ -41,15 +41,15 @@ bash .Codex/skills/one-command-doctor/scripts/doctor.sh
 **Input**: "I can't start the dev server."
 
 **Action**:
-Run `.Codex/skills/one-command-doctor/scripts/doctor.sh`.
+Run `.agents/skills/one-command-doctor/scripts/doctor.sh`.
 
 **Output**:
 
 ```text
-[FAIL] Node version is v16.14.0. Required: >=20.
+[FAIL] Node version is v16.14.0. Required: >=22.13.0.
 [PASS] Lockfile is in sync.
 ```
 
-"Your Node version is too old. Run `nvm install 20 && nvm use 20`."
+"Your Node version is too old. Run `nvm install 22.13.0 && nvm use 22.13.0`."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

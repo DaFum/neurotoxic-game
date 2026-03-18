@@ -12,6 +12,7 @@ Ensure global state remains consistent, immutable, and valid.
 1.  **Use Action Creators**
     - **Rule**: Never dispatch raw objects (`dispatch({ type: 'FOO' })`).
     - **Fix**: Import from `src/context/actionCreators.js`.
+    - **Cross-check**: Verify reducer handling in `gameReducer.js`.
     - _Why_: Centralizes logic and ensures payload shape.
 
 2.  **Enforce Invariants**

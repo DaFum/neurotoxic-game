@@ -41,7 +41,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 **Action**:
 
-1.  Check `npm outdated`.
+1.  Check `pnpm outdated`.
 2.  See `react` wants to go to `20.0.0` (hypothetically).
 3.  **Block**: "React 20 is not supported yet. Keeping at 19.x."
 4.  See `lodash` wants to go to `4.17.21`.
@@ -50,4 +50,4 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 **Output**:
 "Upgraded minor dependencies. Held back React, Vite, and Pixi to pinned major versions to preserve stability."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-03-09._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

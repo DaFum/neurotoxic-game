@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Game Balancing Assistant'
+  short_description: 'analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects.'
+  default_prompt: 'Analyze economy/progression tuning and propose balanced parameter adjustments with rationale. Return: concise diagnosis, concrete implementation steps, and verification commands.'

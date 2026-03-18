@@ -47,4 +47,4 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 **Output**:
 "Created `tests/repro_travel_crash.test.js`. Run with `node --test tests/repro_travel_crash.test.js`. Confirmed it throws an error."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

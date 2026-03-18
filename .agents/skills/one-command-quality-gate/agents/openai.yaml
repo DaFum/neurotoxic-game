@@ -1,4 +1,4 @@
 interface:
   display_name: 'Quality Gate'
   short_description: 'Run lint, test, and build in order and summarize results.'
-  default_prompt: 'Run the quality gate and report any failures.'
+  default_prompt: 'Execute the quality gate (lint, test, build) and report the first failing step with actionable fixes. Return: concise diagnosis, concrete implementation steps, and verification commands.'
