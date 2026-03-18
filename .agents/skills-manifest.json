@@ -26,14 +26,19 @@
     {
       "name": "agents-md-writer",
       "directory": "agents-md-writer",
-      "description": "Write high-quality AGENTS.md, AGENTS.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents \u2014 including any mention of \"AGENTS.md\", \"AGENTS.md\", \"CODEX.md\", \"context file for agents\", \"agent instructions\", \"coding agent setup\", or requests like \"help my AI agent understand this repo\". Also trigger when users say things like \"initialize agent config\", \"set up Codex for my project\", \"write instructions for Codex/Copilot\", or \"make my repo AI-friendly\". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, so it avoids the common pitfalls that make auto-generated context files harmful. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize extracting non-obvious, repo-specific constraints and reject README paraphrase noise.",
+      "description": "Write high-quality AGENTS.md, AGENTS.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents — including any mention of \"AGENTS.md\", \"AGENTS.md\", \"CODEX.md\", \"context file for agents\", \"agent instructions\", \"coding agent setup\", or requests like \"help my AI agent understand this repo\". Also trigger when users say things like \"initialize agent config\", \"set up Codex for my project\", \"write instructions for Codex/Copilot\", or \"make my repo AI-friendly\". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, so it avoids the common pitfalls that make auto-generated context files harmful. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize extracting non-obvious, repo-specific constraints and reject README paraphrase noise.",
       "compatibility": "Node.js 22.13+, pnpm",
       "category": "documentation",
       "maturity": "stable",
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "documentation",
+        "context",
+        "instructions",
+        "agent-setup"
+      ]
     },
     {
       "name": "asset-pipeline-verifier",
@@ -45,7 +50,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 1,
-      "keywords": []
+      "keywords": [
+        "assets",
+        "images",
+        "optimization",
+        "cdn"
+      ]
     },
     {
       "name": "audio-debugger-ambient-vs-gig",
@@ -57,7 +67,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "audio",
+        "debug",
+        "tone.js",
+        "playback"
+      ]
     },
     {
       "name": "change-plan-conventional-commits",
@@ -69,7 +84,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "commits",
+        "planning",
+        "workflow"
+      ]
     },
     {
       "name": "ci-hardener",
@@ -81,7 +100,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "ci",
+        "github-actions",
+        "pipeline",
+        "safety"
+      ]
     },
     {
       "name": "convention-keeper-brutalist-ui",
@@ -93,7 +117,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "ui",
+        "tailwind",
+        "accessibility"
+      ]
     },
     {
       "name": "debug-ux-upgrader",
@@ -105,7 +133,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "ui",
+        "ux",
+        "debug",
+        "user-experience"
+      ]
     },
     {
       "name": "dependency-pin-upgrade-blocker",
@@ -117,7 +150,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "dependencies",
+        "versioning",
+        "pinning"
+      ]
     },
     {
       "name": "game-balancing-assistant",
@@ -129,7 +166,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "game",
+        "balance",
+        "economy",
+        "tuning"
+      ]
     },
     {
       "name": "game-improver",
@@ -141,7 +183,12 @@
       "version": "1.0.0",
       "references": 4,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "game",
+        "features",
+        "bugs",
+        "refactoring"
+      ]
     },
     {
       "name": "golden-path-test-author",
@@ -153,7 +200,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "testing",
+        "integration",
+        "game-loop",
+        "regression"
+      ]
     },
     {
       "name": "mega-lint-snapshot",
@@ -165,7 +217,11 @@
       "version": "1.0.0",
       "references": 1,
       "scripts": 2,
-      "keywords": []
+      "keywords": [
+        "linting",
+        "security",
+        "code-quality"
+      ]
     },
     {
       "name": "min-repro-builder",
@@ -177,7 +233,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "debugging",
+        "reproducible",
+        "minimal"
+      ]
     },
     {
       "name": "one-command-doctor",
@@ -189,7 +249,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 1,
-      "keywords": []
+      "keywords": [
+        "diagnostics",
+        "troubleshooting",
+        "setup"
+      ]
     },
     {
       "name": "one-command-quality-gate",
@@ -201,7 +265,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 1,
-      "keywords": []
+      "keywords": [
+        "ci",
+        "testing",
+        "quality-assurance"
+      ]
     },
     {
       "name": "perf-budget-enforcer",
@@ -213,7 +281,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "performance",
+        "bundle",
+        "optimization"
+      ]
     },
     {
       "name": "pixi-lifecycle-memory-leak-sentinel",
@@ -225,7 +297,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "performance",
+        "memory",
+        "pixi.js"
+      ]
     },
     {
       "name": "project-brain-codex-instructions",
@@ -237,7 +313,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "documentation",
+        "context",
+        "onboarding"
+      ]
     },
     {
       "name": "react-performance-optimization",
@@ -249,7 +329,11 @@
       "version": "1.0.0",
       "references": 7,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "react",
+        "performance",
+        "optimization"
+      ]
     },
     {
       "name": "refactor-with-safety",
@@ -261,7 +345,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "refactoring",
+        "safety",
+        "testing"
+      ]
     },
     {
       "name": "release-notes-synthesizer",
@@ -273,7 +361,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "documentation",
+        "release",
+        "changelog"
+      ]
     },
     {
       "name": "repo-guardrails-generator",
@@ -285,7 +377,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "guardrails",
+        "standards",
+        "automation"
+      ]
     },
     {
       "name": "repo-navigator-agents-routing",
@@ -297,7 +393,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "navigation",
+        "routing",
+        "architecture"
+      ]
     },
     {
       "name": "skill-aligner",
@@ -309,7 +409,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "skills",
+        "drift",
+        "version-mismatch"
+      ]
     },
     {
       "name": "skill-creator",
@@ -321,7 +425,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "skills",
+        "creation",
+        "improvement"
+      ]
     },
     {
       "name": "skill-qa-harness",
@@ -333,7 +441,12 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "skills",
+        "qa",
+        "validation",
+        "testing"
+      ]
     },
     {
       "name": "skilltest",
@@ -345,7 +458,11 @@
       "version": "1.0.0",
       "references": 1,
       "scripts": 4,
-      "keywords": []
+      "keywords": [
+        "skills",
+        "testing",
+        "validation"
+      ]
     },
     {
       "name": "state-safety-action-creator-guard",
@@ -357,7 +474,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "state",
+        "redux",
+        "immutability"
+      ]
     },
     {
       "name": "tailwind-v4-css-variables-enforcer",
@@ -369,7 +490,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 1,
-      "keywords": []
+      "keywords": [
+        "tailwind",
+        "css",
+        "design-tokens"
+      ]
     },
     {
       "name": "webaudio-reliability-fixer",
@@ -381,7 +506,11 @@
       "version": "1.0.0",
       "references": 0,
       "scripts": 0,
-      "keywords": []
+      "keywords": [
+        "audio",
+        "web-audio",
+        "tone.js"
+      ]
     }
   ]
 }

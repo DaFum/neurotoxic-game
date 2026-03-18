@@ -244,11 +244,11 @@ Total skills: 30
 3. **tailwind-v4-css-variables-enforcer/assets/tokens.json** (2.1 KB)
    - 46 color tokens from @theme block
 
-4. **state-safety-action-creator-guard/assets/action-types.json** (TBD)
-   - ActionTypes from game state reducer
+4. **state-safety-action-creator-guard/assets/action-types.json** (4.5 KB)
+   - Complete ActionTypes schema with payloads and state invariants
 
-5. **audio-debugger-ambient-vs-gig/assets/audio-config.json** (TBD)
-   - Audio engine configuration
+5. **audio-debugger-ambient-vs-gig/assets/audio-config.json** (2.3 KB)
+   - Audio engine configuration for ambient vs gig contexts
 
 ### Validation & CI
 6. **validate-skills.sh** (2.3 KB)

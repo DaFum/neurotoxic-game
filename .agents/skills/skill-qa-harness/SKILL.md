@@ -85,4 +85,4 @@ Recommended Fixes
 - [ ] Missing path findings include exact broken path strings.
 
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: validates skill structure, YAML frontmatter, metadata consistency, and trigger overlap as of 2026-03-18._

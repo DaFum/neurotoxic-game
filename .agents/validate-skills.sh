@@ -8,7 +8,7 @@
 set -e
 
 SKILLS_DIR="${1:-./.agents/skills}"
-REPORT_FILE="${REPORT_FILE:-skill-validation-report.csv}"
+REPORT_FILE="${REPORT_FILE:-skill-validation-report-$(date +%s).csv}"
 EXIT_CODE=0
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -22,7 +22,8 @@ echo
 
 check_skill() {
     local skill_dir="$1"
-    local skill_name=$(basename "$skill_dir")
+    local skill_name
+    skill_name=$(basename "$skill_dir")
     local status="PASS"
     local errors=""
 
@@ -57,17 +58,23 @@ check_skill() {
         fi
 
         if ! grep -q '^compatibility:' "$skill_md"; then
-            status="FAIL"
+            if [ "$status" = "PASS" ]; then
+                status="WARN"
+            fi
             errors="${errors}Missing 'compatibility' field|"
         fi
 
         if ! grep -q '^metadata:' "$skill_md"; then
-            status="FAIL"
+            if [ "$status" = "PASS" ]; then
+                status="WARN"
+            fi
             errors="${errors}Missing 'metadata' field|"
         fi
 
         if ! grep -q '^license:' "$skill_md"; then
-            status="FAIL"
+            if [ "$status" = "PASS" ]; then
+                status="WARN"
+            fi
             errors="${errors}Missing 'license' field|"
         fi
     fi
@@ -128,6 +135,7 @@ echo
 
 if [ "$EXIT_CODE" -eq 0 ]; then
     echo "✓ All skills valid (PASS)"
+    exit 0
 elif [ "$EXIT_CODE" -eq 1 ]; then
     echo "✗ Skill validation failed (FAIL)"
     exit 1

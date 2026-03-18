@@ -35,9 +35,9 @@ cat skill-validation-report.csv
 
 ### Meta (4 skills)
 - **skill-creator** — Create, improve, and evaluate skills
-- **skill-qa-harness** — Validate skill structure and metadata
+- **skill-qa-harness** — Run structural and logical validation gates for skills (YAML, references, trigger overlap)
 - **skill-aligner** — Align skills with repository conventions
-- **skilltest** — Validate skill structure and metadata
+- **skilltest** — Validate skill structure and test execution (integration-level validation)
 
 ### Game (2 skills)
 - **game-improver** — Implement gameplay improvements and bug fixes

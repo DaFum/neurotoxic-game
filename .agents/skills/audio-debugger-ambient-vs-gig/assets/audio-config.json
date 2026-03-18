@@ -50,16 +50,16 @@
     "ambientToGig": {
       "steps": [
         "Stop ambient fade-out",
-        "Await fade completion (1000ms)",
+        "Await fade completion (see contexts.ambient.fadeOutTime: 1000ms)",
         "Resume AudioContext if suspended",
-        "Start gig with fade-in (500ms)",
+        "Start gig with fade-in (see contexts.gig.fadeInTime: 500ms)",
         "Monitor for playback errors"
       ]
     },
     "gigToAmbient": {
       "steps": [
         "Stop gig playback immediately",
-        "Start ambient fade-in (2000ms)",
+        "Start ambient fade-in (see contexts.ambient.fadeInTime: 2000ms)",
         "Resume AudioContext if suspended"
       ]
     }
