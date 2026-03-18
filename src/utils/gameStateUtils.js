@@ -135,15 +135,27 @@ const calculateClampedStatDelta = (currentValue, deltaValue) => {
   return nextValue - (currentValue || 0)
 }
 
+/**
+ * Copies enumerable own properties from source to a new object, filtering out forbidden keys.
+ * @param {object} source - Source object to copy from.
+ * @returns {object} New object with filtered properties.
+ */
+const copyFilteredProperties = source => {
+  if (!source) return {}
+  const destination = {}
+  for (const key in source) {
+    if (Object.hasOwn(source, key) && !isForbiddenKey(key)) {
+      destination[key] = source[key]
+    }
+  }
+  return destination
+}
+
 export const calculateAppliedDelta = (state, delta) => {
   const applied = { player: {}, band: {}, social: {} }
 
   if (delta.flags) {
-    applied.flags = {}
-    for (const key in delta.flags) {
-      if (!Object.hasOwn(delta.flags, key) || isForbiddenKey(key)) continue
-      applied.flags[key] = delta.flags[key]
-    }
+    applied.flags = copyFilteredProperties(delta.flags)
   } else {
     applied.flags = {}
   }
@@ -198,12 +210,7 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.player.day = delta.player.day
     }
     if (delta.player.stats) {
-      applied.player.stats = {}
-      for (const key in delta.player.stats) {
-        if (!Object.hasOwn(delta.player.stats, key) || isForbiddenKey(key))
-          continue
-        applied.player.stats[key] = delta.player.stats[key]
-      }
+      applied.player.stats = copyFilteredProperties(delta.player.stats)
     }
   }
 
@@ -273,11 +280,7 @@ export const calculateAppliedDelta = (state, delta) => {
         : delta.band.members
 
     if (membersDelta && !Array.isArray(membersDelta)) {
-      applied.band.membersDelta = {}
-      for (const key in membersDelta) {
-        if (!Object.hasOwn(membersDelta, key) || isForbiddenKey(key)) continue
-        applied.band.membersDelta[key] = membersDelta[key]
-      }
+      applied.band.membersDelta = copyFilteredProperties(membersDelta)
     } else if (membersDelta && Array.isArray(membersDelta)) {
       applied.band.membersDelta = membersDelta
     }
@@ -315,16 +318,9 @@ export const calculateAppliedDelta = (state, delta) => {
       if (Array.isArray(delta.band.relationshipChange)) {
         applied.band.relationshipChange = [...delta.band.relationshipChange]
       } else {
-        applied.band.relationshipChange = {}
-        for (const key in delta.band.relationshipChange) {
-          if (
-            !Object.hasOwn(delta.band.relationshipChange, key) ||
-            isForbiddenKey(key)
-          )
-            continue
-          applied.band.relationshipChange[key] =
-            delta.band.relationshipChange[key]
-        }
+        applied.band.relationshipChange = copyFilteredProperties(
+          delta.band.relationshipChange
+        )
       }
     }
   }
@@ -545,16 +541,7 @@ export const applyEventDelta = (state, delta) => {
           value !== null &&
           !Array.isArray(value)
         ) {
-          const safeInfluencersUpdate = {}
-          for (const influencerId in value) {
-            if (
-              !Object.hasOwn(value, influencerId) ||
-              isForbiddenKey(influencerId)
-            )
-              continue
-            const influencerData = value[influencerId]
-            safeInfluencersUpdate[influencerId] = influencerData
-          }
+          const safeInfluencersUpdate = copyFilteredProperties(value)
           nextSocial[key] = {
             ...(nextSocial[key] || {}),
             ...safeInfluencersUpdate
