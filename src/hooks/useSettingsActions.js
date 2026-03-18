@@ -10,7 +10,7 @@
  * No errors found. The settings actions are purely state update functions interacting with `useGameState` context values.
  */
 
-import { useCallback } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 
 /**
  * Hook that provides shared settings action handlers.
@@ -19,9 +19,16 @@ import { useCallback } from 'react'
  * @returns {object} Object containing the handlers `handleToggleCRT` and `handleLogLevelChange`.
  */
 export const useSettingsActions = (settings, updateSettings) => {
+  // We use settings.crtEnabled in the closure but don't add it to the dependency array.
+  // We store the latest value in a ref so the callback identity remains stable.
+  const crtRef = useRef(settings.crtEnabled)
+  useEffect(() => {
+    crtRef.current = settings.crtEnabled
+  }, [settings.crtEnabled])
+
   const handleToggleCRT = useCallback(() => {
-    updateSettings({ crtEnabled: !settings.crtEnabled })
-  }, [updateSettings, settings.crtEnabled])
+    updateSettings({ crtEnabled: !crtRef.current })
+  }, [updateSettings])
 
   const handleLogLevelChange = useCallback(
     level => {

@@ -86,11 +86,16 @@ export const useKabelsalatState = () => {
     }
   }, [connections])
 
+  const timeLeftRef = useRef(timeLeft)
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
   const handleGameEnd = useCallback(
     (delay, isPowered) => {
       const timer = setTimeout(() => {
         try {
-          completeKabelsalatMinigame({ isPoweredOn: isPowered, timeLeft: isPowered ? timeLeft : 0 })
+          completeKabelsalatMinigame({ isPoweredOn: isPowered, timeLeft: isPowered ? timeLeftRef.current : 0 })
         } catch (error) {
           import('../../utils/errorHandler.js')
             .then(({ handleError, StateError }) => {
@@ -125,7 +130,7 @@ export const useKabelsalatState = () => {
       }, delay)
       return timer
     },
-    [completeKabelsalatMinigame, changeScene, timeLeft]
+    [completeKabelsalatMinigame, changeScene]
   )
 
   // End Game Effects
