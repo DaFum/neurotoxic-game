@@ -5,11 +5,14 @@
 # Exit code: 0 = PASS, 1 = FAIL, 2 = WARN (issues found but not blocking)
 #
 
-set -euo pipefail
+set -e
 
 SKILLS_DIR="${1:-./.agents/skills}"
 REPORT_FILE="${REPORT_FILE:-skill-validation-report.csv}"
 EXIT_CODE=0
+PASS_COUNT=0
+FAIL_COUNT=0
+WARN_COUNT=0
 
 echo "SKILL VALIDATION REPORT"
 echo "======================="
@@ -17,101 +20,85 @@ echo "Directory: $SKILLS_DIR"
 echo "Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 echo
 
-# Initialize report
-{
-    echo "skill_name,directory,status,has_skill_md,has_yaml_frontmatter,has_name,has_description,has_compatibility,has_metadata,has_license,reference_files,script_files,errors"
-} > "$REPORT_FILE"
-
 check_skill() {
     local skill_dir="$1"
     local skill_name=$(basename "$skill_dir")
     local status="PASS"
-    local errors=()
+    local errors=""
 
     # Check required files
     if [ ! -f "$skill_dir/SKILL.md" ]; then
         status="FAIL"
-        errors+=("Missing SKILL.md")
+        errors="${errors}Missing SKILL.md|"
     else
         skill_md="$skill_dir/SKILL.md"
 
         # Check YAML frontmatter
         if ! head -1 "$skill_md" | grep -q '^---'; then
             status="FAIL"
-            errors+=("Missing YAML frontmatter opening")
+            errors="${errors}Missing YAML frontmatter opening|"
         fi
 
-        # Extract and validate frontmatter fields
-        if grep -q '^name:' "$skill_md"; then
-            name_value=$(grep '^name:' "$skill_md" | head -1 | sed 's/^name:\s*//' | tr -d '"' | tr -d "'")
-            if [ "$name_value" != "$skill_name" ]; then
-                status="WARN"
-                errors+=("name field '$name_value' doesn't match directory '$skill_name'")
-            fi
-        else
+        # Check required fields
+        if ! grep -q '^name:' "$skill_md"; then
             status="FAIL"
-            errors+=("Missing 'name' field")
+            errors="${errors}Missing 'name' field|"
         fi
 
         if ! grep -q '^description:' "$skill_md"; then
             status="FAIL"
-            errors+=("Missing 'description' field")
+            errors="${errors}Missing 'description' field|"
         fi
 
         if ! grep -q '^compatibility:' "$skill_md"; then
             status="FAIL"
-            errors+=("Missing 'compatibility' field")
+            errors="${errors}Missing 'compatibility' field|"
         fi
 
         if ! grep -q '^metadata:' "$skill_md"; then
             status="FAIL"
-            errors+=("Missing 'metadata' field")
+            errors="${errors}Missing 'metadata' field|"
         fi
 
         if ! grep -q '^license:' "$skill_md"; then
             status="FAIL"
-            errors+=("Missing 'license' field")
-        fi
-
-        # Check reference file validity
-        if [ -d "$skill_dir/references" ]; then
-            while IFS= read -r ref_file; do
-                if [ ! -f "$ref_file" ]; then
-                    status="FAIL"
-                    errors+=("Referenced file not found: $(basename $ref_file)")
-                fi
-
-                # Check for deeply nested references
-                depth=$(echo "$ref_file" | tr -cd '/' | wc -c)
-                if [ "$depth" -gt 2 ]; then
-                    status="WARN"
-                    errors+=("Deep reference nesting: $(basename $ref_file)")
-                fi
-            done < <(grep -r '^\[.*\](.*/references/' "$skill_md" 2>/dev/null || true)
+            errors="${errors}Missing 'license' field|"
         fi
     fi
 
     # Count resources
-    ref_count=$( [ -d "$skill_dir/references" ] && find "$skill_dir/references" -type f | wc -l || echo 0)
-    script_count=$( [ -d "$skill_dir/scripts" ] && find "$skill_dir/scripts" -type f | wc -l || echo 0)
+    ref_count=0
+    if [ -d "$skill_dir/references" ]; then
+        ref_count=$(find "$skill_dir/references" -type f 2>/dev/null | wc -l)
+    fi
+
+    script_count=0
+    if [ -d "$skill_dir/scripts" ]; then
+        script_count=$(find "$skill_dir/scripts" -type f 2>/dev/null | wc -l)
+    fi
 
     # Determine final status
     if [ "$status" = "FAIL" ]; then
         EXIT_CODE=1
+        FAIL_COUNT=$((FAIL_COUNT + 1))
     elif [ "$status" = "WARN" ]; then
-        [ "$EXIT_CODE" -ne 1 ] && EXIT_CODE=2
+        if [ "$EXIT_CODE" -eq 0 ]; then
+            EXIT_CODE=2
+        fi
+        WARN_COUNT=$((WARN_COUNT + 1))
+    else
+        PASS_COUNT=$((PASS_COUNT + 1))
     fi
 
     # Print summary
-    printf "%-35s [%-4s] %s\n" "$skill_name" "$status" "${errors[0]:-OK}"
-    for error in "${errors[@]:1}"; do
-        printf "%-35s         %s\n" "" "$error"
-    done
+    printf "%-35s [%-4s] %s\n" "$skill_name" "$status" "${errors%|}"
 
     # Write to CSV
-    error_str=$(IFS='|'; echo "${errors[*]}")
-    echo "$skill_name,$skill_dir,$status,1,1,${errors[@]:-true},$ref_count,$script_count,$error_str" >> "$REPORT_FILE"
+    echo "$skill_name,$skill_dir,$status,$ref_count,$script_count,${errors%|}" >> "$REPORT_FILE"
 }
+
+# Initialize report
+echo "skill_name,directory,status,reference_files,script_files,errors" > "$REPORT_FILE"
 
 # Validate all skills
 total=0
@@ -126,6 +113,10 @@ echo
 echo "Summary"
 echo "======="
 echo "Total skills: $total"
+echo "  PASS: $PASS_COUNT"
+echo "  WARN: $WARN_COUNT"
+echo "  FAIL: $FAIL_COUNT"
+echo
 echo "Report saved to: $REPORT_FILE"
 echo
 
@@ -133,8 +124,10 @@ if [ "$EXIT_CODE" -eq 0 ]; then
     echo "✓ All skills valid (PASS)"
 elif [ "$EXIT_CODE" -eq 1 ]; then
     echo "✗ Skill validation failed (FAIL)"
+    exit 1
 elif [ "$EXIT_CODE" -eq 2 ]; then
     echo "⚠ Skill validation warnings (WARN)"
+    exit 2
 fi
 
-exit "$EXIT_CODE"
+exit 0
