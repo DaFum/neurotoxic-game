@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Change Plan Conventional Commits'
+  short_description: 'plan code changes and draft commit messages. Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard.'
+  default_prompt: 'Create an actionable implementation plan and propose Conventional Commit messages for the change set. Return: concise diagnosis, concrete implementation steps, and verification commands.'

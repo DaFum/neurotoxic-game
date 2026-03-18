@@ -1,4 +1,4 @@
 interface:
   display_name: 'Game Improver'
   short_description: 'Improve gameplay, audio, performance, and quality.'
-  default_prompt: 'Implement the requested game improvement with balanced mechanics, stable audio/rendering, and full quality checks.'
+  default_prompt: 'Implement and validate gameplay improvements or bug fixes while preserving project conventions. Return: concise diagnosis, concrete implementation steps, and verification commands.'

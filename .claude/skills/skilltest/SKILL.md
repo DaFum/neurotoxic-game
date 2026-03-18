@@ -37,6 +37,10 @@ Use the test runner:
 node .claude/skills/skilltest/scripts/skilltest.mjs
 ```
 
+Generated report path:
+
+`reports/skills/skilltest-report.json`
+
 ## Example
 
 **Input**: "Why isn't my skill showing up?"

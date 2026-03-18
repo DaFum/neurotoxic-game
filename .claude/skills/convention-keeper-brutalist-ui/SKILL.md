@@ -17,6 +17,7 @@ Enforce the strict "Brutalist" design system across the application.
     - `bg-void-black`
     - `text-toxic-green`
     - `border-blood-red` (for borders) or `var(--color-toxic-green)` (for inline shadows)
+    - Keep all color tokens in CSS variables / CSS Variables; never hardcode colors.
 
 ## Workflow
 

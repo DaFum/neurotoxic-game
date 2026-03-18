@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Dependency Pin Upgrade Blocker'
+  short_description: 'enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes.'
+  default_prompt: 'Review dependency changes and enforce the project’s pinned-version policy before merging. Return: concise diagnosis, concrete implementation steps, and verification commands.'

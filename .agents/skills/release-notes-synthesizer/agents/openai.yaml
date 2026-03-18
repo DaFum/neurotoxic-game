@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Release Notes Synthesizer'
+  short_description: 'create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits.'
+  default_prompt: 'Generate release notes from recent commits grouped by feature, fix, and breaking changes. Return: concise diagnosis, concrete implementation steps, and verification commands.'

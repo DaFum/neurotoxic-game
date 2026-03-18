@@ -1,4 +1,4 @@
 interface:
   display_name: 'Tailwind v4 Enforcer'
   short_description: 'Audit for Tailwind v4 syntax and CSS-variable color usage.'
-  default_prompt: 'Audit for hardcoded colors and Tailwind v3 syntax violations.'
+  default_prompt: 'Audit styling for Tailwind v4 and CSS variable token compliance; remove hardcoded colors/utilities. Return: concise diagnosis, concrete implementation steps, and verification commands.'

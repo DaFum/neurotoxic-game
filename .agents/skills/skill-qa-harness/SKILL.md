@@ -10,7 +10,7 @@ Ensure all skills in the library are valid and functional.
 ## Workflow
 
 1.  **Discovery**
-    Scan `.Codex/skills/` for all `SKILL.md` files.
+    Scan `.agents/skills/` for all `SKILL.md` files.
 
 2.  **Structural Validation**
     For each skill:
@@ -30,7 +30,7 @@ Ensure all skills in the library are valid and functional.
 Use the bundled validator (if available in `skilltest`):
 
 ```bash
-node .Codex/skills/skilltest/scripts/validate-skills.mjs
+node .agents/skills/skilltest/scripts/validate-skills.mjs
 ```
 
 ## Example
@@ -49,4 +49,4 @@ Run validation script.
 
 "The new skill is missing a description. Please add it to the YAML header."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

@@ -12,19 +12,19 @@ Generate a detailed quality report for the repository, covering linting, securit
 Run the bundled script to generate the report.
 
 ```bash
-.Codex/skills/mega-lint-snapshot/scripts/run-mega-lint.sh
+.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh
 ```
 
 To apply fixes (where available):
 
 ```bash
-.Codex/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix
+.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix
 ```
 
 ## Workflow
 
 1.  **Execute the Script**
-    The script runs configured linters defined in `.Codex/skills/mega-lint-snapshot/assets/mega-lint.config.json`.
+    The script runs configured linters defined in `.agents/skills/mega-lint-snapshot/assets/mega-lint.config.json`.
     - **ESLint**: JavaScript/React.
     - **Prettier**: Formatting.
     - **Gitleaks**: Secret detection.
@@ -44,7 +44,7 @@ To apply fixes (where available):
 **Input**: "Check the codebase for any linting errors."
 
 **Action**:
-Run `.Codex/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
+Run `.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
 
 **Output**:
 
@@ -58,4 +58,4 @@ Run `.Codex/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
 
 "Found a hardcoded secret in `api.js`. Please remove it."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

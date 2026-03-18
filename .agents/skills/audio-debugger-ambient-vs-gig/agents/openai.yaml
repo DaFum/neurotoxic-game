@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Audio Debugger Ambient Vs Gig'
+  short_description: 'debug audio playback issues. Trigger when music fails to start, plays the wrong track, stutters, or when ambient/gig transitions fail. Covers Tone.js, AudioContext, and asset loading.'
+  default_prompt: 'Debug ambient vs gig audio transitions and ensure the correct track lifecycle across scene changes. Return: concise diagnosis, concrete implementation steps, and verification commands.'

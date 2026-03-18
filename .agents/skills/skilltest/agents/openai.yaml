@@ -1,4 +1,4 @@
 interface:
   display_name: 'Skilltest Harness'
   short_description: 'Validate all repo skills against the Open Agent Skills standard.'
-  default_prompt: 'Run skilltest on this repo and show me failures first.'
+  default_prompt: 'Run skilltest, list failures first, and summarize missing snippets or structural issues per skill. Return: concise diagnosis, concrete implementation steps, and verification commands.'

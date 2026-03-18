@@ -13,6 +13,7 @@ Ensure stable audio playback across all browsers and devices.
     - **Rule**: `AudioContext` must start in `suspended` state.
     - **Resume**: Must call `Tone.start()` or `context.resume()` inside a `click` or `keydown` event.
     - **Diag**: Check `Tone.context.state` on load.
+    - **Relevant files**: `AudioManager.js`, `audioEngine.js`, `useAudioControl.js`.
 
 2.  **Inspect Scheduling**
     - **Lookahead**: Is `Tone.context.lookAhead` sufficient? (Default 0.1s).

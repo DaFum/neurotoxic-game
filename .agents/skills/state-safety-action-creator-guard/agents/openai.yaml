@@ -1,0 +1,4 @@
+interface:
+  display_name: 'State Safety Action Creator Guard'
+  short_description: 'enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs.'
+  default_prompt: 'Review reducers/actions for invariant safety and enforce action-creator-based state updates. Return: concise diagnosis, concrete implementation steps, and verification commands.'

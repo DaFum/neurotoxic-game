@@ -12,6 +12,7 @@ Perform structural changes while preserving behavior and stability.
 1.  **Preparation**
     - **Audit**: Read `AGENTS.md` for domain constraints.
     - **Baseline**: Run tests (`npm test`) to ensure everything passes _before_ you start.
+    - **Baseline (script form)**: Run `npm run test`.
     - **Coverage**: If tests are missing for the target, add them first (use `golden-path-test-author`).
 
 2.  **Execution**

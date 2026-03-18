@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Golden Path Test Author'
+  short_description: 'write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths.'
+  default_prompt: 'Author or update integration tests that cover the main player journey from menu to post-gig. Return: concise diagnosis, concrete implementation steps, and verification commands.'

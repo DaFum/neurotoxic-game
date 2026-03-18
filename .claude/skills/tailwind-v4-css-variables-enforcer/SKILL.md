@@ -6,6 +6,7 @@ description: enforce Tailwind CSS v4 syntax and project-specific CSS variables. 
 # Tailwind v4 Enforcer
 
 Ensure all styles use the correct Tailwind v4 syntax and design tokens.
+This skill enforces Tailwind v4 and CSS Variables usage across the repo.
 
 ## Rules
 

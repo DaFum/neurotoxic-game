@@ -11,17 +11,17 @@ Perform structural changes while preserving behavior and stability.
 
 1.  **Preparation**
     - **Audit**: Read `AGENTS.md` for domain constraints.
-    - **Baseline**: Run tests (`npm test`) to ensure everything passes _before_ you start.
+    - **Baseline**: Run tests (`pnpm run test`) to ensure everything passes _before_ you start.
     - **Coverage**: If tests are missing for the target, add them first (use `golden-path-test-author`).
 
 2.  **Execution**
     - **Small Steps**: Refactor one function/component at a time.
     - **Interface Preservation**: Keep function signatures stable if possible.
-    - **Linting**: Run `npm run lint` frequently to catch syntax errors.
+    - **Linting**: Run `pnpm run lint` frequently to catch syntax errors.
 
 3.  **Verification**
-    - **Test**: Run `npm test` after each change.
-    - **Build**: Run `npm run build` to ensure no circular dependencies or export errors.
+    - **Test**: Run `pnpm run test` after each change.
+    - **Build**: Run `pnpm run build` to ensure no circular dependencies or export errors.
     - **Review**: Check if the logic is actually simpler/better.
 
 ## Rules
@@ -39,9 +39,9 @@ Perform structural changes while preserving behavior and stability.
 1.  Run `tests/score.test.js`. (Passes).
 2.  Break `calculateScore` into `getBaseScore` and `getMultipliers`.
 3.  Run `tests/score.test.js`. (Passes).
-4.  Run `npm run lint`. (Passes).
+4.  Run `pnpm run lint`. (Passes).
 
 **Output**:
 "Extracted helper functions `getBaseScore` and `getMultipliers`. Tests pass. Logic is unchanged but clearer."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

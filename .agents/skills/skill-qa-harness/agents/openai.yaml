@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Skill Qa Harness'
+  short_description: 'Validate and test the skill library. Trigger when adding a new skill, modifying an existing one, or running the skill CI. Checks structure, YAML, and logic.'
+  default_prompt: 'Validate skill metadata/structure and run skill prompt-case tests to catch regressions. Return: concise diagnosis, concrete implementation steps, and verification commands.'

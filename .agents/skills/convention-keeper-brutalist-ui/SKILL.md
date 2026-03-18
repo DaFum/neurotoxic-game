@@ -60,4 +60,4 @@ Enforce the strict "Brutalist" design system across the application.
 </div>
 ```
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

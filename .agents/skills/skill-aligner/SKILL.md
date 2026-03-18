@@ -12,14 +12,14 @@ Synchronize skills with the current state of the repository.
 1.  **Audit the Skill**
     Read the `SKILL.md` file.
     - Does it reference files that exist?
-    - Are the commands (`npm run ...`) correct?
+    - Are the commands (`pnpm run ...`) correct?
     - Is the terminology ("Brutalist", "Tone.js") accurate?
 
 2.  **Cross-Reference**
     Check `AGENTS.md` and `package.json`.
-    - _Skill says_: `npm run test:unit`.
-    - _Repo says_: `npm run test`.
-    - _Action_: Update skill to use `npm run test`.
+    - _Skill says_: `pnpm run test`.
+    - _Repo says_: `pnpm run test`.
+    - _Action_: Update skill to use `pnpm run test`.
 
 3.  **Update Content**
     - **Paths**: Ensure file paths are relative to repo root.
@@ -33,10 +33,10 @@ Synchronize skills with the current state of the repository.
 **Action**:
 
 1.  Read `package.json`. See `"lint": "eslint ."`.
-2.  Read `ci-hardener/SKILL.md`. See `"npm run lint:fix"`.
-3.  **Update**: Change command to `npm run lint:fix` (or modify `lint` script to support `--fix`).
+2.  Read `ci-hardener/SKILL.md`. See `"pnpm run lint:fix"`.
+3.  **Update**: Change command to `pnpm run lint:fix` (or modify `lint` script to support `--fix`).
 
 **Output**:
 "Updated `ci-hardener` to reflect the consolidation of lint scripts in `package.json`."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
