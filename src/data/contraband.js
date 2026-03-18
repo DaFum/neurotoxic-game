@@ -6,7 +6,7 @@
  * @module contraband
  */
 
-export const CONTRABAND_DB = [
+const CONTRABAND_DB = [
   // ursprüngliche Items (bewahrt)
   {
     id: 'c_void_energy',
@@ -389,3 +389,10 @@ export const CONTRABAND_BY_RARITY = {
   rare: CONTRABAND_DB.filter(i => i.rarity === 'rare'),
   epic: CONTRABAND_DB.filter(i => i.rarity === 'epic')
 }
+
+/**
+ * Internal DB export for schema and integrity tests only.
+ * DO NOT USE in application logic. Use CONTRABAND_BY_ID or CONTRABAND_BY_RARITY instead.
+ * @internal
+ */
+export { CONTRABAND_DB as _CONTRABAND_DB_FOR_TESTING }

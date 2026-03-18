@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CONTRABAND_DB,
+  _CONTRABAND_DB_FOR_TESTING as CONTRABAND_DB,
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY
 } from '../src/data/contraband.js'
