@@ -39,6 +39,12 @@ check_skill() {
             errors="${errors}Missing YAML frontmatter opening|"
         fi
 
+        # Check for closing ---
+        if ! grep -q '^---$' "$skill_md"; then
+            status="FAIL"
+            errors="${errors}Missing YAML frontmatter closing|"
+        fi
+
         # Check required fields
         if ! grep -q '^name:' "$skill_md"; then
             status="FAIL"

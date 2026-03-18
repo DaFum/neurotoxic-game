@@ -23,7 +23,7 @@ Ensure strict lifecycle management for Pixi.js instances to prevent memory leaks
 
 2.  **Verify Cleanup**
     The `useEffect` return function **MUST**:
-    - Call `app.destroy(true, { children: true, texture: true, baseTexture: true })`.
+    - Call `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
     - Stop the ticker: `app.ticker.stop()`.
     - Remove event listeners: `window.removeEventListener(...)`.
 
@@ -61,7 +61,7 @@ useEffect(() => {
     // Explicitly stop ticker and remove listeners before destroy
     app.ticker.stop()
     // Remove any event listeners attached to window/document here if added
-    app.destroy(true, { children: true, texture: true, baseTexture: true })
+    app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
   }
 }, [])
 ```

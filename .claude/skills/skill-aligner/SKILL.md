@@ -10,7 +10,7 @@ Detect and fix drift between skills and the repository. Drift happens when the r
 ## When to Use This Skill
 
 **Single skill drift:**
-- A skill references `npm run lint:fix` but the repo only has `npm run lint`
+- A skill references `pnpm run lint:fix` but the repo only has `pnpm run lint`
 - A skill mentions "Vite 7" but you upgraded to "Vite 8.0.0"
 - A skill references `src/utils/` but you moved it to `packages/shared/src/utils/`
 
@@ -35,8 +35,8 @@ These are the most common drift types. Learn to spot them quickly.
 
 **How to detect:**
 ```bash
-# Extract all npm run commands from SKILL.md
-grep -o 'npm run [a-z:]*' SKILL.md | sort -u
+# Extract all pnpm run commands from SKILL.md
+grep -o 'pnpm run [a-z:]*' SKILL.md | sort -u
 
 # Compare to package.json scripts
 jq '.scripts | keys' package.json
@@ -204,7 +204,7 @@ Before making changes:
 **Step 3c: Verification**
 - Run the skill on a test prompt to confirm it still works
 - Check that referenced files exist and paths are correct
-- Verify commands actually run: `npm run <script>` without errors
+- Verify commands actually run: `pnpm run <script>` without errors
 - Re-read AGENTS.md/CLAUDE.md to confirm alignment
 
 **Step 3d: Document**
@@ -217,15 +217,15 @@ Before making changes:
 ## Common Scenarios
 
 ### Scenario 1: Single Skill, Simple Drift
-**Problem**: `ci-hardener` says `npm run lint:fix` but package.json only has `npm run lint`
+**Problem**: `ci-hardener` says `pnpm run lint:fix` but package.json only has `pnpm run lint`
 
 **Steps**:
-1. Audit: Extract commands from ci-hardener/SKILL.md → `["npm run lint:fix", "npm run test"]`
+1. Audit: Extract commands from ci-hardener/SKILL.md → `["pnpm run lint:fix", "pnpm run test"]`
 2. Cross-reference: Check package.json → `["lint": "...", "test": "...", "format": "..."]`
 3. Drift found: `lint:fix` doesn't exist, `format` is new
 4. Decision: Is `lint:fix` a mistake, or should we add it to package.json?
-   - If repo intended `npm run format`, update skill
-   - If skill intended `npm run lint --fix`, add the script to package.json
+   - If repo intended `pnpm run format`, update skill
+   - If skill intended `pnpm run lint --fix`, add the script to package.json
 5. Update: Choose one path, verify with test run
 
 ---
