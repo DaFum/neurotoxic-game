@@ -50,8 +50,19 @@ export class MapGenerator {
 
     // Layer 0: Stendal (Home)
     if (cachedVenuesLength !== ALL_VENUES.length) {
-      cachedHomeVenue = ALL_VENUES.find(v => v.id === 'stendal_proberaum')
-      cachedFinaleVenue = ALL_VENUES.find(v => v.id === 'leipzig_arena')
+      cachedHomeVenue = undefined
+      cachedFinaleVenue = undefined
+      for (const v of ALL_VENUES) {
+        if (v.id === 'stendal_proberaum') {
+          cachedHomeVenue = v
+        } else if (v.id === 'leipzig_arena') {
+          cachedFinaleVenue = v
+        }
+
+        if (cachedHomeVenue && cachedFinaleVenue) {
+          break
+        }
+      }
       cachedVenuesLength = ALL_VENUES.length
     }
 
