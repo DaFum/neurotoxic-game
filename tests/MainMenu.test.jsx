@@ -76,7 +76,7 @@ describe('MainMenu Component', () => {
     vi.unstubAllGlobals()
   })
 
-  describe('Load Game functionality', () => {
+  describe('Load Game and Navigation', () => {
     it('loads game successfully when save exists', async () => {
       mockLoadGame.mockReturnValue(true)
       render(<MainMenu />)
@@ -110,9 +110,7 @@ describe('MainMenu Component', () => {
 
       expect(container).toBeTruthy()
     })
-  })
 
-  describe('Credits navigation', () => {
     it('navigates to credits scene when credits button clicked', () => {
       render(<MainMenu />)
 
@@ -141,60 +139,6 @@ describe('MainMenu Component', () => {
       render(<MainMenu />)
 
       expect(screen.getByTestId('band-hq-modal')).toBeInTheDocument()
-    })
-  })
-
-  describe('Socials modal', () => {
-    it('opens, displays links, and closes socials modal', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:socials'))
-
-      expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
-      expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
-      expect(
-        screen.getByText('ui:social_links.bandcamp.title')
-      ).toBeInTheDocument()
-      expect(
-        screen.getByText('ui:social_links.instagram.title')
-      ).toBeInTheDocument()
-
-      const modalCloseButton = screen.getByRole('button', {
-        name: 'ui:closeModal'
-      })
-      expect(modalCloseButton).toBeInTheDocument()
-      fireEvent.click(modalCloseButton)
-      expect(
-        screen.queryByText('ui:social_links.game.title')
-      ).not.toBeInTheDocument()
-    })
-  })
-
-  describe('Features modal', () => {
-    it('opens, renders content, and closes features modal', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:features.button'))
-
-      const expectedItems = [
-        'ui:features.title',
-        'Feature Section 2',
-        'Header 1',
-        'Row1Col1',
-        'Feature Section 1',
-        'Description 1'
-      ]
-
-      expectedItems.forEach(item => {
-        expect(screen.getByText(item)).toBeInTheDocument()
-      })
-
-      const modalCloseButton = screen.getByRole('button', {
-        name: 'ui:closeModal'
-      })
-      expect(modalCloseButton).toBeInTheDocument()
-      fireEvent.click(modalCloseButton)
-      expect(screen.queryByText('ui:features.title')).not.toBeInTheDocument()
     })
   })
 
@@ -374,25 +318,6 @@ describe('MainMenu Component', () => {
     })
   })
 
-  describe('State persistence after reset', () => {
-    it('restores player identity after reset when starting new tour', async () => {
-      localStorage.setItem('neurotoxic_player_id', 'saved-id')
-      localStorage.setItem('neurotoxic_player_name', 'SavedPlayer')
-
-      render(<MainMenu />)
-
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:start_game'))
-      })
-
-      expect(mockResetState).toHaveBeenCalled()
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        playerId: 'saved-id',
-        playerName: 'SavedPlayer'
-      })
-    })
-  })
-
   describe('Component lifecycle', () => {
     it('sets mounted ref on mount and cleans up on unmount', () => {
       const { unmount } = render(<MainMenu />)
@@ -414,9 +339,26 @@ describe('MainMenu Component', () => {
 
       expect(true).toBe(true)
     })
+
+    it('restores player identity after reset when starting new tour', async () => {
+      localStorage.setItem('neurotoxic_player_id', 'saved-id')
+      localStorage.setItem('neurotoxic_player_name', 'SavedPlayer')
+
+      render(<MainMenu />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:start_game'))
+      })
+
+      expect(mockResetState).toHaveBeenCalled()
+      expect(mockUpdatePlayer).toHaveBeenCalledWith({
+        playerId: 'saved-id',
+        playerName: 'SavedPlayer'
+      })
+    })
   })
 
-  describe('Rendering and UI elements', () => {
+  describe('Modal interactions edge cases', () => {
     it('renders primary menu chrome and buttons', () => {
       const { container } = render(<MainMenu />)
 
@@ -438,9 +380,56 @@ describe('MainMenu Component', () => {
       expect(screen.getByText('ui:credits')).toBeInTheDocument()
       expect(screen.getByText('ui:features.button')).toBeInTheDocument()
     })
-  })
+    it('opens, displays links, and closes socials modal', () => {
+      render(<MainMenu />)
 
-  describe('Modal interactions edge cases', () => {
+      fireEvent.click(screen.getByText('ui:socials'))
+
+      expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
+      expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.bandcamp.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.instagram.title')
+      ).toBeInTheDocument()
+
+      const modalCloseButton = screen.getByRole('button', {
+        name: 'ui:closeModal'
+      })
+      expect(modalCloseButton).toBeInTheDocument()
+      fireEvent.click(modalCloseButton)
+      expect(
+        screen.queryByText('ui:social_links.game.title')
+      ).not.toBeInTheDocument()
+    })
+
+    it('opens, renders content, and closes features modal', () => {
+      render(<MainMenu />)
+
+      fireEvent.click(screen.getByText('ui:features.button'))
+
+      const expectedItems = [
+        'ui:features.title',
+        'Feature Section 2',
+        'Header 1',
+        'Row1Col1',
+        'Feature Section 1',
+        'Description 1'
+      ]
+
+      expectedItems.forEach(item => {
+        expect(screen.getByText(item)).toBeInTheDocument()
+      })
+
+      const modalCloseButton = screen.getByRole('button', {
+        name: 'ui:closeModal'
+      })
+      expect(modalCloseButton).toBeInTheDocument()
+      fireEvent.click(modalCloseButton)
+      expect(screen.queryByText('ui:features.title')).not.toBeInTheDocument()
+    })
+
     it('handles multiple modal opens and closes', () => {
       render(<MainMenu />)
 
@@ -464,40 +453,7 @@ describe('MainMenu Component', () => {
     })
   })
 
-  describe('Feature list rendering edge cases', () => {
-    it('handles feature content regardless of item formatting', () => {
-      render(<MainMenu />)
-      fireEvent.click(screen.getByText('ui:features.button'))
-
-      const featureContent = screen.getByText('ui:features.title').parentElement
-      expect(featureContent).toBeTruthy()
-      expect(featureContent).toHaveTextContent('ui:features.title')
-      // Verify at least one feature item is rendered
-      expect(featureContent.children.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('Audio error handling', () => {
-    it('continues scene transition even if audio fails', async () => {
-      const { audioManager } = await import('../src/utils/AudioManager')
-      audioManager.ensureAudioContext.mockRejectedValue(
-        new Error('Audio failed')
-      )
-
-      localStorage.setItem('neurotoxic_player_id', 'test-id')
-      localStorage.setItem('neurotoxic_player_name', 'TestPlayer')
-
-      render(<MainMenu />)
-
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:start_game'))
-      })
-
-      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
-    })
-  })
-
-  describe('Button layout regression tests', () => {
+  describe('Button layout and edge cases', () => {
     it('keeps action button order, grouping, and accessibility stable', () => {
       render(<MainMenu />)
 
@@ -543,6 +499,35 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(socialsButton)
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
+    })
+
+    it('handles feature content regardless of item formatting', () => {
+      render(<MainMenu />)
+      fireEvent.click(screen.getByText('ui:features.button'))
+
+      const featureContent = screen.getByText('ui:features.title').parentElement
+      expect(featureContent).toBeTruthy()
+      expect(featureContent).toHaveTextContent('ui:features.title')
+      // Verify at least one feature item is rendered
+      expect(featureContent.children.length).toBeGreaterThan(0)
+    })
+
+    it('continues scene transition even if audio fails', async () => {
+      const { audioManager } = await import('../src/utils/AudioManager')
+      audioManager.ensureAudioContext.mockRejectedValue(
+        new Error('Audio failed')
+      )
+
+      localStorage.setItem('neurotoxic_player_id', 'test-id')
+      localStorage.setItem('neurotoxic_player_name', 'TestPlayer')
+
+      render(<MainMenu />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:start_game'))
+      })
+
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
   })
 
