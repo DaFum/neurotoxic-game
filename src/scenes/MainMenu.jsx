@@ -10,16 +10,11 @@ import { BandHQ } from '../ui/BandHQ'
 import {
   Modal,
   AnimatedDivider,
-  AnimatedSubtitle,
-  UplinkButton,
-  BandcampIcon,
-  InstaIcon,
-  TikTokIcon,
-  YouTubeIcon,
-  BlogIcon,
-  GameIcon
+  AnimatedSubtitle
 } from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { MainMenuSocials } from './mainmenu/MainMenuSocials.jsx'
+import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.jsx'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
 
@@ -414,154 +409,11 @@ export const MainMenu = () => {
       </div>
 
       {showFeatures && (
-        <Modal
-          isOpen={true}
-          onClose={() => setShowFeatures(false)}
-          title={t('ui:features.title')}
-          contentClassName=''
-        >
-          <div className='flex flex-col gap-6 w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
-            {t('ui:featureList', { returnObjects: true }).map(section => (
-              <div key={section.title} className='flex flex-col gap-2'>
-                <h3 className='text-toxic-green font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-toxic-green/30 pb-1'>
-                  {t(section.title)}
-                </h3>
-                <p className='text-ash-gray font-mono text-sm md:text-base leading-relaxed mb-2'>
-                  {t(section.description)}
-                </p>
-
-                {section.type === 'bullets' && section.items && (
-                  <ul className='list-none flex flex-col gap-2 pl-2 border-l border-toxic-green/20'>
-                    {section.items.map(item => {
-                      const translatedItem = t(item)
-                      const splitIdx = translatedItem.indexOf(':')
-                      if (splitIdx > -1) {
-                        return (
-                          <li
-                            key={item}
-                            className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
-                          >
-                            <span className='text-toxic-green font-bold'>
-                              {translatedItem.substring(0, splitIdx + 1)}
-                            </span>
-                            {translatedItem.substring(splitIdx + 1)}
-                          </li>
-                        )
-                      }
-                      return (
-                        <li
-                          key={item}
-                          className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
-                        >
-                          {translatedItem}
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
-
-                {section.type === 'table' &&
-                  section.headers &&
-                  section.rows && (
-                    <div className='overflow-x-auto w-full border border-toxic-green/30 bg-void-black/50'>
-                      <table className='w-full text-left font-mono text-sm'>
-                        <thead className='bg-toxic-green/10 border-b border-toxic-green/30'>
-                          <tr>
-                            {section.headers.map(header => (
-                              <th
-                                key={header}
-                                className='p-2 text-toxic-green uppercase font-normal'
-                              >
-                                {t(header)}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {section.rows.map(row => (
-                            <tr
-                              key={row[0]}
-                              className='border-b border-toxic-green/10 last:border-0'
-                            >
-                              {row.map(cell => (
-                                <td
-                                  key={cell}
-                                  className={`p-2 ${cell === row[0] ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
-                                >
-                                  {t(cell)}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-              </div>
-            ))}
-          </div>
-        </Modal>
+        <MainMenuFeatures onClose={() => setShowFeatures(false)} />
       )}
 
       {showSocials && (
-        <Modal
-          isOpen={true}
-          onClose={() => setShowSocials(false)}
-          title={t('ui:socials')}
-          contentClassName=''
-        >
-          <div className='flex flex-col gap-3 sm:gap-4 max-w-md w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2 pb-1'>
-            <UplinkButton
-              title={t('ui:social_links.game.title')}
-              subtitle={t('ui:social_links.game.subtitle')}
-              type={t('ui:social_links.type_system_core')}
-              url='https://neurotoxic-game.vercel.app'
-              Icon={GameIcon}
-            />
-            <UplinkButton
-              title={t('ui:social_links.bandcamp.title')}
-              subtitle={t('ui:social_links.bandcamp.subtitle')}
-              type={t('ui:social_links.type_audio_vault')}
-              url='https://neurotoxic.bandcamp.com'
-              Icon={BandcampIcon}
-            />
-            <UplinkButton
-              title={t('ui:social_links.instagram.title')}
-              subtitle={t('ui:social_links.instagram.subtitle')}
-              type={t('ui:social_links.type_visual_feed')}
-              url='https://instagram.com/neurotoxicband'
-              Icon={InstaIcon}
-            />
-            <UplinkButton
-              title={t('ui:social_links.tiktok.title')}
-              subtitle={t('ui:social_links.tiktok.subtitle')}
-              type={t('ui:social_links.type_viral_stream')}
-              url='https://tiktok.com/@neurotoxicband'
-              Icon={TikTokIcon}
-            />
-            <UplinkButton
-              title={t('ui:social_links.neurotoxic_once.title')}
-              subtitle={t('ui:social_links.neurotoxic_once.subtitle')}
-              type={t('ui:social_links.type_broadcast_a')}
-              url='https://youtube.com/@neurotoxiconcechannel237'
-              Icon={YouTubeIcon}
-            />
-            <UplinkButton
-              title={t('ui:social_links.neurotoxic_3000.title')}
-              subtitle={t('ui:social_links.neurotoxic_3000.subtitle')}
-              type={t('ui:social_links.type_broadcast_b')}
-              url='https://youtube.com/@neurotoxic3000'
-              Icon={YouTubeIcon}
-            />
-            <UplinkButton
-              title={t('ui:social_links.blog.title')}
-              subtitle={t('ui:social_links.blog.subtitle')}
-              type={t('ui:social_links.type_data_log')}
-              url='https://neuroblogxic.blogspot.com'
-              Icon={BlogIcon}
-            />
-          </div>
-        </Modal>
+        <MainMenuSocials onClose={() => setShowSocials(false)} />
       )}
 
       <motion.div
