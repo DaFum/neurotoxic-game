@@ -289,82 +289,97 @@ describe('PixiStageController', () => {
     // Should not crash or call updates
   })
 
-  test('update does nothing when isDisposed is true', async () => {
-    await controller.init()
-    controller.isDisposed = true
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
+  // Parametrized: update guard conditions
+  const updateGuardVariants = [
+    {
+      label: 'isDisposed is true',
+      setup: () => {
+        controller.isDisposed = true
+      },
+      manager: 'laneManager'
+    },
+    {
+      label: 'app is null',
+      setup: () => {
+        controller.app = null
+      },
+      manager: 'laneManager'
+    },
+    {
+      label: 'managers not initialized',
+      setup: () => {
+        controller.laneManager = null
+      },
+      manager: 'crowdManager'
+    },
+    {
+      label: 'game state is null',
+      setup: () => {
+        gameStateRef.current = null
+      },
+      manager: 'laneManager'
+    },
+    {
+      label: 'isGameOver is true',
+      setup: () => {
+        gameStateRef.current.isGameOver = true
+      },
+      manager: 'laneManager'
+    }
+  ]
 
-    assert.equal(mockLaneManager.update.mock.calls.length, 0)
+  updateGuardVariants.forEach(variant => {
+    test(`update does nothing when ${variant.label}`, async () => {
+      await controller.init()
+      variant.setup()
+      const ticker = { deltaMS: 16 }
+      controller.handleTicker(ticker)
+
+      const mockManager =
+        variant.manager === 'laneManager' ? mockLaneManager : mockCrowdManager
+      assert.equal(mockManager.update.mock.calls.length, 0)
+    })
   })
 
-  test('update does nothing when app is null', async () => {
-    await controller.init()
-    controller.app = null
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
+  // Parametrized: toxic mode activation/deactivation
+  const toxicModeVariants = [
+    {
+      label: 'activates filters',
+      initialMode: true,
+      expectedActive: true,
+      expectedFilters: () => controller.toxicFilters
+    },
+    {
+      label: 'deactivates filters',
+      initialMode: true,
+      switchMode: false,
+      expectedActive: false,
+      expectedFilters: () => controller.emptyFilters
+    }
+  ]
 
-    assert.equal(mockLaneManager.update.mock.calls.length, 0)
-  })
+  toxicModeVariants.forEach(variant => {
+    test(`toxic mode ${variant.label}`, async () => {
+      await controller.init()
+      gameStateRef.current.isToxicMode = variant.initialMode
 
-  test('update does nothing when managers are not initialized', async () => {
-    await controller.init()
-    controller.laneManager = null
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
+      const ticker = { deltaMS: 16 }
+      controller.handleTicker(ticker)
 
-    assert.equal(mockCrowdManager.update.mock.calls.length, 0)
-  })
+      if (variant.switchMode !== undefined) {
+        gameStateRef.current.isToxicMode = variant.switchMode
+        controller.handleTicker(ticker)
+      }
 
-  test('update does nothing when game state is null', async () => {
-    await controller.init()
-    gameStateRef.current = null
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
-
-    assert.equal(mockLaneManager.update.mock.calls.length, 0)
-  })
-
-  test('update does nothing when isGameOver is true', async () => {
-    await controller.init()
-    gameStateRef.current.isGameOver = true
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
-
-    assert.equal(mockLaneManager.update.mock.calls.length, 0)
-  })
-
-  test('toxic mode activates filters when isToxicMode is true', async () => {
-    await controller.init()
-    gameStateRef.current.isToxicMode = true
-
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
-
-    assert.equal(controller.isToxicActive, true)
-    assert.equal(controller.stageContainer.filters, controller.toxicFilters)
-  })
-
-  test('toxic mode deactivates filters when isToxicMode becomes false', async () => {
-    await controller.init()
-    gameStateRef.current.isToxicMode = true
-    const ticker = { deltaMS: 16 }
-    controller.handleTicker(ticker)
-
-    assert.equal(controller.isToxicActive, true)
-
-    gameStateRef.current.isToxicMode = false
-    controller.handleTicker(ticker)
-
-    assert.equal(controller.isToxicActive, false)
-    assert.equal(controller.stageContainer.filters, controller.emptyFilters)
+      assert.equal(controller.isToxicActive, variant.expectedActive)
+      assert.equal(controller.stageContainer.filters, variant.expectedFilters())
+    })
   })
 
   test('toxic mode hue changes based on elapsed time', async () => {
     await controller.init()
     gameStateRef.current.isToxicMode = true
 
-    const _hueCallsBefore = controller.colorMatrix.hue.mock?.calls?.length || 0
     const ticker = { deltaMS: 16 }
     controller.handleTicker(ticker)
 
