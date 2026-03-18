@@ -113,6 +113,15 @@ mock.module('../src/components/stage/utils', {
   namedExports: {
     getPixiColorFromToken: mock.fn(() => 0xffffff),
     loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
+    loadTextures: mock.fn(async urlMap => {
+      const results = {}
+      for (const key in urlMap) {
+        if (Object.hasOwn(urlMap, key)) {
+          results[key] = { width: 100, height: 100 }
+        }
+      }
+      return results
+    }),
     getOptimalResolution: mock.fn(() => 1)
   }
 })

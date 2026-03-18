@@ -3,7 +3,7 @@ import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTexture } from './utils'
+import { getPixiColorFromToken, loadTextures } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import { handleError, GameError } from '../../utils/errorHandler'
 import { hashString } from '../../utils/stringUtils'
@@ -89,19 +89,9 @@ class RoadieStageController extends BaseStageController {
         guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
       }
 
-      const loaded = {}
-      const keys = Object.keys(urls)
-      const results = await Promise.allSettled(
-        keys.map(k => loadTexture(urls[k]).then(t => ({ key: k, texture: t })))
-      )
+      const loaded = await loadTextures(urls)
 
       if (this.isDisposed) return
-
-      results.forEach(res => {
-        if (res.status === 'fulfilled' && res.value && res.value.texture) {
-          loaded[res.value.key] = res.value.texture
-        }
-      })
 
       this.textures.roadie = loaded.roadie
       this.textures.cars = [loaded.carA, loaded.carB, loaded.carC].filter(

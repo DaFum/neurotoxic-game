@@ -24,11 +24,15 @@ vi.mock('../src/utils/imageGen.js', () => ({
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
 }))
 
-vi.mock('../src/components/stage/utils.js', () => ({
-  loadTexture: vi.fn(async () => ({
-    source: { resource: { src: 'mock://texture' } }
-  }))
-}))
+vi.mock('../src/components/stage/utils.js', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    loadTexture: vi.fn(async () => ({
+      source: { resource: { src: 'mock://texture' } }
+    }))
+  }
+})
 
 vi.mock('../src/utils/logger', () => ({
   logger: {

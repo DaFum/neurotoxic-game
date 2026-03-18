@@ -2,14 +2,18 @@ import { describe, test, vi } from 'vitest'
 import { createRoadieStageController } from '../../src/components/stage/RoadieStageController'
 
 // Mock utils
-vi.mock('../../src/components/stage/utils.js', () => ({
-  loadTexture: vi.fn(async _url => {
-    // Simulate a 100ms network request
-    await new Promise(resolve => setTimeout(resolve, 100))
-    return { width: 100, height: 100 }
-  }),
-  getPixiColorFromToken: vi.fn(() => 0x000000)
-}))
+vi.mock('../../src/components/stage/utils.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    loadTexture: vi.fn(async _url => {
+      // Simulate a 100ms network request
+      await new Promise(resolve => setTimeout(resolve, 100))
+      return { width: 100, height: 100 }
+    }),
+    getPixiColorFromToken: vi.fn(() => 0x000000)
+  }
+})
 
 describe('RoadieStageController loadAssets performance', () => {
   test('setup performance', async () => {

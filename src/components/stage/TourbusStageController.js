@@ -2,7 +2,7 @@
 import { Container, Graphics, Sprite, TilingSprite } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTexture } from './utils'
+import { getPixiColorFromToken, loadTextures } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import {
@@ -69,14 +69,11 @@ class TourbusStageController extends BaseStageController {
         fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
       }
 
-      // Load all concurrently
-      const bundles = Object.keys(urls).map(key =>
-        loadTexture(urls[key]).then(tex => {
-          if (tex) this.textures[key] = tex
-        })
-      )
+      const loaded = await loadTextures(urls)
 
-      await Promise.allSettled(bundles)
+      Object.keys(loaded).forEach(key => {
+        if (loaded[key]) this.textures[key] = loaded[key]
+      })
     } catch (e) {
       logger.warn('TourbusStageController', 'Failed to load assets', e)
     }

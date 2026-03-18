@@ -2,7 +2,7 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
-import { loadTexture, getPixiColorFromToken } from './utils.js'
+import { loadTextures, getPixiColorFromToken } from './utils.js'
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
@@ -38,15 +38,17 @@ export class EffectManager {
 
   async loadAssets() {
     try {
-      const results = await Promise.allSettled([
-        loadTexture(getGenImageUrl(IMG_PROMPTS.HIT_BLOOD)),
-        loadTexture(getGenImageUrl(IMG_PROMPTS.HIT_TOXIC))
-      ])
+      const urls = {
+        blood: getGenImageUrl(IMG_PROMPTS.HIT_BLOOD),
+        toxic: getGenImageUrl(IMG_PROMPTS.HIT_TOXIC)
+      }
 
-      if (results[0].status === 'fulfilled')
-        this.textures.blood = results[0].value
-      if (results[1].status === 'fulfilled')
-        this.textures.toxic = results[1].value
+      const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
+        logger.warn('EffectManager', fallbackMessage, error)
+      })
+
+      if (loadedTextures.blood) this.textures.blood = loadedTextures.blood
+      if (loadedTextures.toxic) this.textures.toxic = loadedTextures.toxic
     } catch (error) {
       logger.warn('EffectManager', 'Effect textures failed to load', error)
     }

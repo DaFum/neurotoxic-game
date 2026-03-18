@@ -2,7 +2,7 @@
 import { Container, Sprite, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
-import { calculateNoteY, loadTexture } from './utils.js'
+import { calculateNoteY, loadTextures } from './utils.js'
 import { secureRandom } from '../../utils/crypto.js'
 
 let rngErrorReported = false
@@ -45,34 +45,17 @@ export class NoteManager {
 
   async loadAssets() {
     try {
-      const results = await Promise.allSettled([
-        loadTexture(getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)),
-        loadTexture(getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING))
-      ])
-
-      if (results[0].status === 'fulfilled' && results[0].value !== null) {
-        this.noteTextures.skull = results[0].value
-      } else {
-        const error =
-          results[0].status === 'fulfilled'
-            ? new Error('Skull texture returned null')
-            : results[0].reason
-        handleError(error, {
-          fallbackMessage: 'Note Skull texture failed to load.'
-        })
+      const urls = {
+        skull: getGenImageUrl(IMG_PROMPTS.NOTE_SKULL),
+        lightning: getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING)
       }
 
-      if (results[1].status === 'fulfilled' && results[1].value !== null) {
-        this.noteTextures.lightning = results[1].value
-      } else {
-        const error =
-          results[1].status === 'fulfilled'
-            ? new Error('Lightning texture returned null')
-            : results[1].reason
-        handleError(error, {
-          fallbackMessage: 'Note Lightning texture failed to load.'
-        })
-      }
+      const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
+        handleError(error, { fallbackMessage })
+      })
+
+      if (loadedTextures.skull) this.noteTextures.skull = loadedTextures.skull
+      if (loadedTextures.lightning) this.noteTextures.lightning = loadedTextures.lightning
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'Critical error loading note textures.'

@@ -82,6 +82,23 @@ const mockPixiStageUtils = {
     if (url.includes('idle')) return mockTextureIdle
     if (url.includes('mosh')) return mockTextureMosh
     return null
+  }),
+  loadTextures: mock.fn(async (urlMap, onError) => {
+    const results = {}
+    for (const key in urlMap) {
+      if (Object.hasOwn(urlMap, key)) {
+        const url = urlMap[key]
+        if (url.includes('idle')) {
+          results[key] = mockTextureIdle
+        } else if (url.includes('mosh')) {
+          results[key] = mockTextureMosh
+        } else {
+          results[key] = null
+          if (onError) onError(new Error(`${key} texture returned null`), `Crowd ${key.toUpperCase()} texture failed to load.`)
+        }
+      }
+    }
+    return results
   })
 }
 
@@ -145,8 +162,17 @@ describe('CrowdManager', () => {
     assert.equal(crowdManager.textures.mosh, mockTextureMosh)
   })
 
-  test('loadAssets reports error when loadTexture returns null', async () => {
-    mockPixiStageUtils.loadTexture.mock.mockImplementation(async () => null)
+  test('loadAssets reports error when loadTextures returns null', async () => {
+    mockPixiStageUtils.loadTextures.mock.mockImplementation(async (urlMap, onError) => {
+      const results = {}
+      for (const key in urlMap) {
+        if (Object.hasOwn(urlMap, key)) {
+          results[key] = null
+          if (onError) onError(new Error(`${key} texture returned null`), `Crowd ${key.toUpperCase()} texture failed to load.`)
+        }
+      }
+      return results
+    })
 
     await crowdManager.loadAssets()
 
@@ -157,11 +183,11 @@ describe('CrowdManager', () => {
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
     assert.equal(
       mockHandleError.mock.calls[0].arguments[0].message,
-      'IDLE texture returned null'
+      'idle texture returned null'
     )
     assert.equal(
       mockHandleError.mock.calls[1].arguments[0].message,
-      'MOSH texture returned null'
+      'mosh texture returned null'
     )
   })
 
