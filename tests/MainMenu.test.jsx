@@ -43,6 +43,7 @@ describe('MainMenu Component', () => {
   const mockAddToast = vi.fn()
   const mockLoadGame = vi.fn()
   const mockOpenHQ = vi.fn()
+  const renderMainMenu = () => render(<MainMenu />)
 
   beforeEach(() => {
     vi.useFakeTimers()
@@ -141,20 +142,20 @@ describe('MainMenu Component', () => {
   })
 
   describe('Socials modal', () => {
-    it('opens socials modal when button clicked', () => {
-      render(<MainMenu />)
+    it('opens, displays links, and closes socials modal', () => {
+      renderMainMenu()
 
       fireEvent.click(screen.getByText('ui:socials'))
 
+      expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
-    })
-
-    it('closes socials modal when close button clicked', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:socials'))
-      expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
+      expect(
+        screen.getByText('ui:social_links.bandcamp.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.instagram.title')
+      ).toBeInTheDocument()
 
       const modalCloseButton = screen.getByRole('button', {
         name: 'ui:closeModal'
@@ -165,62 +166,29 @@ describe('MainMenu Component', () => {
         screen.queryByText('ui:social_links.game.title')
       ).not.toBeInTheDocument()
     })
-
-    it('displays social links in socials modal', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:socials'))
-
-      expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
-      expect(
-        screen.getByText('ui:social_links.bandcamp.title')
-      ).toBeInTheDocument()
-      expect(
-        screen.getByText('ui:social_links.instagram.title')
-      ).toBeInTheDocument()
-    })
   })
 
   describe('Features modal', () => {
-    it('opens features modal when button clicked', () => {
-      render(<MainMenu />)
+    it('opens, renders content, and closes features modal', () => {
+      renderMainMenu()
 
       fireEvent.click(screen.getByText('ui:features.button'))
 
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
-    })
-
-    it('closes features modal when close button clicked', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:features.button'))
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
+      expect(screen.getByText('Feature Section 2')).toBeInTheDocument()
+      expect(screen.getByText('Header 1')).toBeInTheDocument()
+      expect(screen.getByText('Row1Col1')).toBeInTheDocument()
+      expect(screen.getByText('Feature Section 1')).toBeInTheDocument()
+      expect(screen.getByText('Description 1')).toBeInTheDocument()
 
       const modalCloseButton = screen.getByRole('button', {
         name: 'ui:closeModal'
       })
       expect(modalCloseButton).toBeInTheDocument()
+      expect(screen.getByText('ui:features.title')).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
       expect(screen.queryByText('ui:features.title')).not.toBeInTheDocument()
-    })
-
-    it('renders bullet list features', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:features.button'))
-
-      expect(screen.getByText('Feature Section 1')).toBeInTheDocument()
-      expect(screen.getByText('Description 1')).toBeInTheDocument()
-    })
-
-    it('renders table features', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:features.button'))
-
-      expect(screen.getByText('Feature Section 2')).toBeInTheDocument()
-      expect(screen.getByText('Header 1')).toBeInTheDocument()
-      expect(screen.getByText('Row1Col1')).toBeInTheDocument()
     })
   })
 
@@ -443,45 +411,20 @@ describe('MainMenu Component', () => {
   })
 
   describe('Rendering and UI elements', () => {
-    it('renders main menu title', () => {
-      const { container } = render(<MainMenu />)
+    it('renders primary menu chrome and buttons', () => {
+      const { container } = renderMainMenu()
 
       const title = container.querySelector('h1')
       expect(title).toHaveTextContent('NEUROTOXIC')
-    })
-
-    it('renders version badge', () => {
-      const { container } = render(<MainMenu />)
-
       expect(container.textContent).toContain('v3.0 // EARLY ACCESS')
-    })
-
-    it('renders subtitle', () => {
-      render(<MainMenu />)
-
-      expect(
-        screen.getByText('ui:mainMenu.subtitle.grindTheVoid')
-      ).toBeInTheDocument()
-    })
-
-    it('renders copyright notice', () => {
-      const { container } = render(<MainMenu />)
-
       expect(container.textContent).toContain(
         '© 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL'
       )
-    })
-
-    it('renders background with image', () => {
-      const { container } = render(<MainMenu />)
-
+      expect(
+        screen.getByText('ui:mainMenu.subtitle.grindTheVoid')
+      ).toBeInTheDocument()
       const bgDiv = container.querySelector('[style*="background-image"]')
       expect(bgDiv).toBeTruthy()
-    })
-
-    it('renders all main menu buttons', () => {
-      render(<MainMenu />)
-
       expect(screen.getByText('ui:start_game')).toBeInTheDocument()
       expect(screen.getByText('ui:load_game')).toBeInTheDocument()
       expect(screen.getByText('ui:band_hq')).toBeInTheDocument()
@@ -516,21 +459,12 @@ describe('MainMenu Component', () => {
   })
 
   describe('Feature list rendering edge cases', () => {
-    it('handles feature items with colon splitting', () => {
-      render(<MainMenu />)
-
+    it('handles feature content regardless of item formatting', () => {
+      renderMainMenu()
       fireEvent.click(screen.getByText('ui:features.button'))
 
       const featureContent = screen.getByText('ui:features.title').parentElement
       expect(featureContent).toBeTruthy()
-    })
-
-    it('handles feature items without colon', () => {
-      render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:features.button'))
-
-      const featureContent = screen.getByText('ui:features.title').parentElement
       expect(featureContent).toBeTruthy()
     })
   })
@@ -556,8 +490,8 @@ describe('MainMenu Component', () => {
   })
 
   describe('Button layout regression tests', () => {
-    it('renders main action buttons in correct order', () => {
-      render(<MainMenu />)
+    it('keeps action button order, grouping, and accessibility stable', () => {
+      renderMainMenu()
 
       const buttons = screen.getAllByRole('button')
       const buttonTexts = buttons.map(btn => btn.textContent)
@@ -576,10 +510,6 @@ describe('MainMenu Component', () => {
       expect(startGameIndex).toBeLessThan(socialsIndex)
       expect(loadGameIndex).toBeLessThan(socialsIndex)
       expect(bandHQIndex).toBeLessThan(socialsIndex)
-    })
-
-    it('renders socials and credits buttons in the same group', () => {
-      render(<MainMenu />)
 
       const socialsButton = screen.getByText('ui:socials')
       const creditsButton = screen.getByText('ui:credits')
@@ -592,16 +522,10 @@ describe('MainMenu Component', () => {
 
       expect(socialsParent).toBeTruthy()
       expect(creditsParent).toBeTruthy()
-    })
-
-    it('maintains button accessibility after layout refactor', () => {
-      render(<MainMenu />)
 
       const startButton = screen.getByText('ui:start_game')
       const loadButton = screen.getByText('ui:load_game')
       const bandHQButton = screen.getByText('ui:band_hq')
-      const socialsButton = screen.getByText('ui:socials')
-      const creditsButton = screen.getByText('ui:credits')
 
       expect(startButton).toBeEnabled()
       expect(loadButton).toBeEnabled()
