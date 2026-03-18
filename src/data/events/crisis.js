@@ -1,4 +1,4 @@
-// TODO: verify event schema and add unit tests — issue #1234
+// TODO: 1) validate against schema X (src/schemas/crisis.json) using validateCrisisEvent(), 2) add unit tests in tests/events/crisis.test.js covering missing fields and invalid types, 3) link PR/issue #1234
 import { calculateZealotryEffects } from '../../utils/socialEngine.js'
 import { secureRandom } from '../../utils/crypto.js'
 
