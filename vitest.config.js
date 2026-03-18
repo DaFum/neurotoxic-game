@@ -13,14 +13,9 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html']
     },
-    // Optimize worker pool: use all available parallelism for UI tests
-    workers: {
-      isolate: true,
-      singleThread: false
-    },
-    // Reduce test timeout from default 10s to 5s (fail fast on slow tests)
+    // Keep test timeout at the vitest 5s default (fail fast on slow tests)
     testTimeout: 5000,
     // Isolate each test to prevent state pollution
-    isolation: true
+    isolate: true
   }
 })

@@ -971,7 +971,8 @@ test('multiple travel count thresholds work', () => {
 // --- ADDITIONAL STRUCTURE VALIDATION TESTS ---
 
 test('chatter.json structure is valid JSON', () => {
-  assert.doesNotThrow(() => translations.en, 'chatter.json must be valid JSON')
+  assert.ok(translations.en && typeof translations.en === 'object', 'chatter.json must parse to a valid object')
+  assert.ok(Object.keys(translations.en).length > 0, 'chatter.json must not be empty')
 })
 
 test('all chatter keys in en/chatter.json have non-empty string values', () => {
