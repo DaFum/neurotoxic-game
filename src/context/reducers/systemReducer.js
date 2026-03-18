@@ -107,7 +107,9 @@ const sanitizeBand = loadedBand => {
         }, defaultStash)
       } else if (loadedBand?.stash && typeof loadedBand.stash === 'object') {
         const migrated = Object.create(null)
-        for (const [id, item] of Object.entries(loadedBand.stash)) {
+        for (const id in loadedBand.stash) {
+          if (!Object.hasOwn(loadedBand.stash, id)) continue
+          const item = loadedBand.stash[id]
           if (!CONTRABAND_BY_ID.has(id)) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           if (Object.hasOwn(item, '__proto__')) continue
