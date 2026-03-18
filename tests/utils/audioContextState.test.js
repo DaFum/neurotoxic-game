@@ -1,6 +1,40 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { isClosedAudioContextState } from '../../src/utils/audioContextState.js'
+import { isClosedAudioContextState, getPreferredAudioContextState, canResumeAudioContextState } from '../../src/utils/audioContextState.js'
+
+describe('getPreferredAudioContextState', () => {
+  it('returns rawContextState when available', () => {
+    assert.strictEqual(getPreferredAudioContextState({ rawContextState: 'running', toneContextState: 'suspended' }), 'running')
+  })
+
+  it('returns toneContextState when rawContextState is unavailable', () => {
+    assert.strictEqual(getPreferredAudioContextState({ toneContextState: 'suspended' }), 'suspended')
+    assert.strictEqual(getPreferredAudioContextState({ rawContextState: null, toneContextState: 'suspended' }), 'suspended')
+  })
+
+  it('returns "unknown" when neither state is available', () => {
+    assert.strictEqual(getPreferredAudioContextState({}), 'unknown')
+    assert.strictEqual(getPreferredAudioContextState({ rawContextState: null, toneContextState: undefined }), 'unknown')
+  })
+})
+
+describe('canResumeAudioContextState', () => {
+  it('returns true when state is suspended', () => {
+    assert.strictEqual(canResumeAudioContextState('suspended'), true)
+  })
+
+  it('returns true when state is interrupted', () => {
+    assert.strictEqual(canResumeAudioContextState('interrupted'), true)
+  })
+
+  it('returns false when state is running', () => {
+    assert.strictEqual(canResumeAudioContextState('running'), false)
+  })
+
+  it('returns false when state is closed', () => {
+    assert.strictEqual(canResumeAudioContextState('closed'), false)
+  })
+})
 
 describe('isClosedAudioContextState', () => {
   it('returns true when state is closed', () => {
