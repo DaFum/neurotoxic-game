@@ -1,6 +1,14 @@
 ---
 name: one-command-quality-gate
 description: run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Run lint-test-build gating in order and stop at first blocker with reproducible failure output.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "code-quality"
+  keywords: ["testing","lint","build","quality-gate"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # One-Command Quality Gate
 

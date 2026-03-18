@@ -1,6 +1,14 @@
 ---
 name: skilltest
 description: validate skill structure and metadata. Trigger when developing skills, checking CI, or debugging skill loading issues. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Validate skill schema/metadata/tests and report failing IDs, cause category, and rerun command.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "meta"
+  keywords: ["meta","skills","testing","validation"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Skilltest Harness
 

@@ -1,0 +1,172 @@
+{
+  "meta": {
+    "total_skills": 30,
+    "skills_with_relationships": 4,
+    "notes": "Relationships documented in related_skills (0 hard dependencies, 4 skills have related skills)",
+    "generated_date": "2026-03-18"
+  },
+  "dependencies": {
+    "agents-md-writer": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "asset-pipeline-verifier": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "audio-debugger-ambient-vs-gig": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "change-plan-conventional-commits": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "ci-hardener": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "convention-keeper-brutalist-ui": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "debug-ux-upgrader": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "dependency-pin-upgrade-blocker": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "game-balancing-assistant": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "game-improver": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": [
+        "audio-debugger-ambient-vs-gig",
+        "convention-keeper-brutalist-ui",
+        "game-balancing-assistant",
+        "webaudio-reliability-fixer"
+      ]
+    },
+    "golden-path-test-author": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "mega-lint-snapshot": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "min-repro-builder": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "one-command-doctor": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "one-command-quality-gate": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "perf-budget-enforcer": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "pixi-lifecycle-memory-leak-sentinel": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "project-brain-codex-instructions": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "react-performance-optimization": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "refactor-with-safety": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": [
+        "change-plan-conventional-commits",
+        "golden-path-test-author"
+      ]
+    },
+    "release-notes-synthesizer": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "repo-guardrails-generator": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "repo-navigator-agents-routing": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "skill-aligner": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": [
+        "ci-hardener"
+      ]
+    },
+    "skill-creator": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "skill-qa-harness": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": [
+        "skilltest"
+      ]
+    },
+    "skilltest": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "state-safety-action-creator-guard": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "tailwind-v4-css-variables-enforcer": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    },
+    "webaudio-reliability-fixer": {
+      "depends_on": [],
+      "routing_triggers": {},
+      "related_skills": []
+    }
+  }
+}

@@ -1,6 +1,14 @@
 ---
 name: skill-creator
 description: Use this whenever users ask to create a skill, improve/refactor an existing skill, evaluate skill behavior, benchmark variance, or convert a repeatable workflow into a reusable agent instruction set. Trigger aggressively on phrases like "make a skill", "improve my SKILL.md", "benchmark/eval this skill", "turn this into a skill", references to `.skill`/`SKILL.md`, or requests for trigger tuning, edge-case handling, or instruction-following reliability. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Use mode-correct workflows (Create/Improve/Eval/Benchmark) and tie every improvement to measurable evidence.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "meta"
+  keywords: ["meta","skills","creation","evaluation"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Skill Creator
 

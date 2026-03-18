@@ -1,6 +1,14 @@
 ---
 name: perf-budget-enforcer
 description: optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce runtime/bundle budgets with concrete deltas and rollback-safe optimization suggestions.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "performance"
+  keywords: ["performance","budget","metrics"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Performance Budget Enforcer
 

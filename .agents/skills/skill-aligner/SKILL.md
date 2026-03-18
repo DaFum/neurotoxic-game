@@ -1,6 +1,14 @@
 ---
 name: skill-aligner
 description: align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Align skills with repository conventions and resolve stale/misaligned instructions precisely.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "meta"
+  keywords: ["meta","skills","alignment","consistency"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Skill Aligner
 

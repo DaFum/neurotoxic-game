@@ -1,6 +1,14 @@
 ---
 name: dependency-pin-upgrade-blocker
 description: enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prevent unpinned upgrades and verify version-lock integrity before accepting dependency changes.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "tooling"
+  keywords: ["dependencies","versioning","pinning"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Dependency Pin Guard
 
@@ -12,7 +20,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 | ------------- | ------------ | ------------------- |
 | React         | 19.x         | **BLOCK** v20+      |
 | React DOM     | 19.x         | **BLOCK** v20+      |
-| Vite          | 7.x          | **BLOCK** v8+       |
+| Vite          | 8.x          | **BLOCK** v9+       |
 | Tailwind CSS  | 4.x          | **BLOCK** v5+       |
 | Framer Motion | 12.x         | **BLOCK** v13+      |
 | Tone.js       | 15.x         | **BLOCK** v16+      |
@@ -28,7 +36,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 2.  **Verify Compatibility**
     - **Tailwind v4**: Must use `@import "tailwindcss"`. No `@tailwind` directives.
-    - **Vite v7**: Ensure config and plugins stay v7-compatible.
+    - **Vite v8**: Ensure config and plugins stay v8-compatible.
     - **Pixi v8**: Ensure code uses v8 API (no `PIXI.InteractionManager`, use `eventMode`).
 
 3.  **Validate Node Version**
@@ -41,13 +49,13 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 **Action**:
 
 1.  Check `pnpm outdated`.
-2.  See `react` wants to go to `20.0.0` (hypothetically).
-3.  **Block**: "React 20 is not supported yet. Keeping at 19.x."
+2.  See `vite` wants to go to `9.0.0` (hypothetically).
+3.  **Block**: "Vite 9 is not supported yet. Keeping at 8.x."
 4.  See `lodash` wants to go to `4.17.21`.
 5.  **Allow**: "Updating lodash."
 
 **Output**:
-"Upgraded minor dependencies. Held back React, Vite, and Pixi to pinned major versions to preserve stability."
+"Upgraded minor dependencies. Held back React (19.x), Vite (8.x), and Pixi (8.x) to pinned major versions to preserve stability."
 
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

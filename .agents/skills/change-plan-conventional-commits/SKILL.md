@@ -1,6 +1,14 @@
 ---
 name: change-plan-conventional-commits
 description: plan code changes and draft commit messages. Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Return an actionable plan plus Conventional Commit candidates aligned to scoped change intent.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "workflow"
+  keywords: ["commits","planning","workflow"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Change Plan & Conventional Commits
 

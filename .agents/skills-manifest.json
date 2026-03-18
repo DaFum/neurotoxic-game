@@ -1,0 +1,516 @@
+{
+  "meta": {
+    "total_skills": 30,
+    "categories": {
+      "assets": 1,
+      "audio": 2,
+      "ci": 1,
+      "code-quality": 2,
+      "debugging": 1,
+      "diagnostics": 1,
+      "documentation": 3,
+      "game": 2,
+      "infrastructure": 1,
+      "meta": 4,
+      "performance": 3,
+      "refactoring": 1,
+      "state-management": 1,
+      "testing": 1,
+      "tooling": 2,
+      "ui": 3,
+      "workflow": 1
+    },
+    "generated_date": "2026-03-18"
+  },
+  "skills": [
+    {
+      "name": "agents-md-writer",
+      "directory": "agents-md-writer",
+      "description": "Write high-quality AGENTS.md, AGENTS.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents — including any mention of \"AGENTS.md\", \"AGENTS.md\", \"CODEX.md\", \"context file for agents\", \"agent instructions\", \"coding agent setup\", or requests like \"help my AI agent understand this repo\". Also trigger when users say things like \"initialize agent config\", \"set up Codex for my project\", \"write instructions for Codex/Copilot\", or \"make my repo AI-friendly\". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, so it avoids the common pitfalls that make auto-generated context files harmful. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize extracting non-obvious, repo-specific constraints and reject README paraphrase noise.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "documentation",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "documentation",
+        "context",
+        "instructions",
+        "agent-setup"
+      ]
+    },
+    {
+      "name": "asset-pipeline-verifier",
+      "directory": "asset-pipeline-verifier",
+      "description": "diagnose and fix asset loading issues. Trigger when assets fail to load (404), have incorrect MIME types, or when paths are undefined. Checks import.meta.glob, new URL(), and public folder references. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Focus on undefined paths, MIME mismatches, and import strategy fixes with exact file-path remediation.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "assets",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 1,
+      "keywords": [
+        "assets",
+        "images",
+        "optimization",
+        "cdn"
+      ]
+    },
+    {
+      "name": "audio-debugger-ambient-vs-gig",
+      "directory": "audio-debugger-ambient-vs-gig",
+      "description": "debug audio playback issues. Trigger when music fails to start, plays the wrong track, stutters, or when ambient/gig transitions fail. Covers Tone.js, AudioContext, and asset loading. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize ambient/gig transition diagnostics, playback source correctness, and startup-unlock edge cases.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "audio",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "audio",
+        "debug",
+        "tone.js",
+        "playback"
+      ]
+    },
+    {
+      "name": "change-plan-conventional-commits",
+      "directory": "change-plan-conventional-commits",
+      "description": "plan code changes and draft commit messages. Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Return an actionable plan plus Conventional Commit candidates aligned to scoped change intent.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "workflow",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "commits",
+        "planning",
+        "workflow"
+      ]
+    },
+    {
+      "name": "ci-hardener",
+      "directory": "ci-hardener",
+      "description": "improve CI reliability, speed, and clarity. Trigger when CI is slow, flaky, fails silently, or needs optimization. focus on GitHub Actions workflows. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize flaky-failure root causes, workflow observability, cache strategy, and deterministic CI outcomes.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "ci",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "ci",
+        "github-actions",
+        "pipeline",
+        "safety"
+      ]
+    },
+    {
+      "name": "convention-keeper-brutalist-ui",
+      "directory": "convention-keeper-brutalist-ui",
+      "description": "enforce brutalist UI design system. Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce brutalist token usage, contrast/readability constraints, and component-level style consistency.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "ui",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "ui",
+        "tailwind",
+        "accessibility"
+      ]
+    },
+    {
+      "name": "debug-ux-upgrader",
+      "directory": "debug-ux-upgrader",
+      "description": "add debug tools, overlays, and logging. Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Add diagnostics that are visible, togglable, and low-noise in normal gameplay paths.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "ui",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "ui",
+        "ux",
+        "debug",
+        "user-experience"
+      ]
+    },
+    {
+      "name": "dependency-pin-upgrade-blocker",
+      "directory": "dependency-pin-upgrade-blocker",
+      "description": "enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prevent unpinned upgrades and verify version-lock integrity before accepting dependency changes.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "tooling",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "dependencies",
+        "versioning",
+        "pinning"
+      ]
+    },
+    {
+      "name": "game-balancing-assistant",
+      "directory": "game-balancing-assistant",
+      "description": "analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Optimize economy/progression tuning with explicit trade-offs and measurable balancing deltas.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "game",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "game",
+        "balance",
+        "economy",
+        "tuning"
+      ]
+    },
+    {
+      "name": "game-improver",
+      "directory": "game-improver",
+      "description": "improve gameplay, balance, and code quality. Trigger when asked to fix bugs, add features, optimize performance, or refactor code. Acts as a general-purpose game engineer. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prefer minimal, test-backed gameplay improvements with clear regression guards and state-safety checks.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "game",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 4,
+      "scripts": 0,
+      "keywords": [
+        "game",
+        "features",
+        "bugs",
+        "refactoring"
+      ]
+    },
+    {
+      "name": "golden-path-test-author",
+      "directory": "golden-path-test-author",
+      "description": "write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Author end-to-end regression coverage for the main game loop with realistic user-path assertions.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "testing",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "testing",
+        "integration",
+        "game-loop",
+        "regression"
+      ]
+    },
+    {
+      "name": "mega-lint-snapshot",
+      "directory": "mega-lint-snapshot",
+      "description": "run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Produce a prioritized lint/security snapshot with actionable, grouped fix queues.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "code-quality",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 1,
+      "scripts": 2,
+      "keywords": [
+        "linting",
+        "security",
+        "code-quality"
+      ]
+    },
+    {
+      "name": "min-repro-builder",
+      "directory": "min-repro-builder",
+      "description": "create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Create deterministic minimal repros that isolate root causes with the fewest moving parts.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "debugging",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "debugging",
+        "reproducible",
+        "minimal"
+      ]
+    },
+    {
+      "name": "one-command-doctor",
+      "directory": "one-command-doctor",
+      "description": "diagnose environmental and build issues. Trigger when the repo is broken, tests fail mysteriously, or setup is needed. Checks Node version, dependencies, and build status. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Diagnose environment/setup breakage quickly and return one-command recovery steps where possible.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "diagnostics",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 1,
+      "keywords": [
+        "diagnostics",
+        "troubleshooting",
+        "setup"
+      ]
+    },
+    {
+      "name": "one-command-quality-gate",
+      "directory": "one-command-quality-gate",
+      "description": "run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Run lint-test-build gating in order and stop at first blocker with reproducible failure output.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "code-quality",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 1,
+      "keywords": [
+        "ci",
+        "testing",
+        "quality-assurance"
+      ]
+    },
+    {
+      "name": "perf-budget-enforcer",
+      "directory": "perf-budget-enforcer",
+      "description": "optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce runtime/bundle budgets with concrete deltas and rollback-safe optimization suggestions.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "performance",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "performance",
+        "bundle",
+        "optimization"
+      ]
+    },
+    {
+      "name": "pixi-lifecycle-memory-leak-sentinel",
+      "directory": "pixi-lifecycle-memory-leak-sentinel",
+      "description": "detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Audit mount/unmount lifecycle, texture cleanup, and long-session memory stability in Pixi flows.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "performance",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "performance",
+        "memory",
+        "pixi.js"
+      ]
+    },
+    {
+      "name": "project-brain-codex-instructions",
+      "directory": "project-brain-codex-instructions",
+      "description": "generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Generate high-signal project context that improves agent decision quality without redundant prose.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "documentation",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "documentation",
+        "context",
+        "onboarding"
+      ]
+    },
+    {
+      "name": "react-performance-optimization",
+      "directory": "react-performance-optimization",
+      "description": "React performance optimization patterns using memoization, code splitting, and efficient rendering strategies. Use when optimizing slow React applications, reducing bundle size, or improving user experience with large datasets. Trigger this skill proactively when user phrasing matches its domain, keywords, or expected workflow outcomes;. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize profiling-backed React optimizations: render hotspots, memoization validity, and split strategies.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "performance",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 7,
+      "scripts": 0,
+      "keywords": [
+        "react",
+        "performance",
+        "optimization"
+      ]
+    },
+    {
+      "name": "refactor-with-safety",
+      "directory": "refactor-with-safety",
+      "description": "refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Refactor in small verified steps with preservation of behavior and explicit rollback points.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "refactoring",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "refactoring",
+        "safety",
+        "testing"
+      ]
+    },
+    {
+      "name": "release-notes-synthesizer",
+      "directory": "release-notes-synthesizer",
+      "description": "create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Synthesize release notes by commit intent, user impact, and migration/testing implications.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "documentation",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "documentation",
+        "release",
+        "changelog"
+      ]
+    },
+    {
+      "name": "repo-guardrails-generator",
+      "directory": "repo-guardrails-generator",
+      "description": "generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Generate enforceable guardrails that reduce ambiguity and prevent policy drift across contributors.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "tooling",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "guardrails",
+        "standards",
+        "automation"
+      ]
+    },
+    {
+      "name": "repo-navigator-agents-routing",
+      "directory": "repo-navigator-agents-routing",
+      "description": "route requests to the correct domain and `AGENTS.md`. Trigger when asked where code lives, who owns a feature, or how the repo is organized. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Route requests to the correct domain files/owners with minimal lookup ambiguity.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "infrastructure",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "navigation",
+        "routing",
+        "architecture"
+      ]
+    },
+    {
+      "name": "skill-aligner",
+      "directory": "skill-aligner",
+      "description": "align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Align skills with repository conventions and resolve stale/misaligned instructions precisely.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "meta",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "skills",
+        "drift",
+        "version-mismatch"
+      ]
+    },
+    {
+      "name": "skill-creator",
+      "directory": "skill-creator",
+      "description": "Use this whenever users ask to create a skill, improve/refactor an existing skill, evaluate skill behavior, benchmark variance, or convert a repeatable workflow into a reusable agent instruction set. Trigger aggressively on phrases like \"make a skill\", \"improve my SKILL.md\", \"benchmark/eval this skill\", \"turn this into a skill\", references to `.skill`/`SKILL.md`, or requests for trigger tuning, edge-case handling, or instruction-following reliability. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Use mode-correct workflows (Create/Improve/Eval/Benchmark) and tie every improvement to measurable evidence.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "meta",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "skills",
+        "creation",
+        "improvement"
+      ]
+    },
+    {
+      "name": "skill-qa-harness",
+      "directory": "skill-qa-harness",
+      "description": "Run this skill whenever work touches `.agents/skills/**` (new skills, edits, refactors, CI failures, trigger-quality tuning, or release prep). It should aggressively validate structure, frontmatter YAML, referenced-file paths, duplicate names, and trigger-description overlap risk, then output evidence-backed PASS/FAIL/WARN gate results with concrete fixes. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Gate skills with structural + logical checks and report PASS/WARN/FAIL plus exact remediation paths.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "meta",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "skills",
+        "qa",
+        "validation",
+        "testing"
+      ]
+    },
+    {
+      "name": "skilltest",
+      "directory": "skilltest",
+      "description": "validate skill structure and metadata. Trigger when developing skills, checking CI, or debugging skill loading issues. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Validate skill schema/metadata/tests and report failing IDs, cause category, and rerun command.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "meta",
+      "maturity": "beta",
+      "version": "1.0.0",
+      "references": 1,
+      "scripts": 4,
+      "keywords": [
+        "skills",
+        "testing",
+        "validation"
+      ]
+    },
+    {
+      "name": "state-safety-action-creator-guard",
+      "directory": "state-safety-action-creator-guard",
+      "description": "enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce reducer/action-creator coherence and bounded-state invariants under all update paths.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "state-management",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "state",
+        "redux",
+        "immutability"
+      ]
+    },
+    {
+      "name": "tailwind-v4-css-variables-enforcer",
+      "directory": "tailwind-v4-css-variables-enforcer",
+      "description": "enforce Tailwind CSS v4 syntax and project-specific CSS variables. Trigger when writing styles, reviewing UI code, or fixing design inconsistencies. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce Tailwind v4 token usage, variable correctness, and forbidden pattern detection.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "ui",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 1,
+      "keywords": [
+        "tailwind",
+        "css",
+        "design-tokens"
+      ]
+    },
+    {
+      "name": "webaudio-reliability-fixer",
+      "directory": "webaudio-reliability-fixer",
+      "description": "diagnose and fix Web Audio and Tone.js issues. Trigger when audio crackles, fails to start, or desyncs. Handles autoplay policies and context lifecycle. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Stabilize Web Audio startup, context lifecycle, and sync reliability under browser policy constraints.",
+      "compatibility": "Node.js 22.13+, pnpm",
+      "category": "audio",
+      "maturity": "stable",
+      "version": "1.0.0",
+      "references": 0,
+      "scripts": 0,
+      "keywords": [
+        "audio",
+        "web-audio",
+        "tone.js"
+      ]
+    }
+  ]
+}

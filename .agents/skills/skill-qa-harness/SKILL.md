@@ -1,6 +1,14 @@
 ---
 name: skill-qa-harness
 description: Run this skill whenever work touches `.agents/skills/**` (new skills, edits, refactors, CI failures, trigger-quality tuning, or release prep). It should aggressively validate structure, frontmatter YAML, referenced-file paths, duplicate names, and trigger-description overlap risk, then output evidence-backed PASS/FAIL/WARN gate results with concrete fixes. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Gate skills with structural + logical checks and report PASS/WARN/FAIL plus exact remediation paths.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "meta"
+  keywords: ["meta","skills","qa","testing"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Skill QA Harness
 
@@ -77,4 +85,4 @@ Recommended Fixes
 - [ ] Missing path findings include exact broken path strings.
 
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: validates skill structure, YAML frontmatter, metadata consistency, and trigger overlap as of 2026-03-18._

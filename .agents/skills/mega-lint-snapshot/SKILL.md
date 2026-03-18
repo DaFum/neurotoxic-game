@@ -1,6 +1,14 @@
 ---
 name: mega-lint-snapshot
 description: run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Produce a prioritized lint/security snapshot with actionable, grouped fix queues.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "code-quality"
+  keywords: ["linting","code-quality","snapshot"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Mega Lint Snapshot
 

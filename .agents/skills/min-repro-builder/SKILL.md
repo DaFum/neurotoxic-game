@@ -1,6 +1,14 @@
 ---
 name: min-repro-builder
 description: create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Create deterministic minimal repros that isolate root causes with the fewest moving parts.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "debugging"
+  keywords: ["debugging","reproduction","isolation"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Minimal Repro Builder
 

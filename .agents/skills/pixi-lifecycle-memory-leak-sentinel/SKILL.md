@@ -1,6 +1,14 @@
 ---
 name: pixi-lifecycle-memory-leak-sentinel
 description: detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Audit mount/unmount lifecycle, texture cleanup, and long-session memory stability in Pixi flows.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "performance"
+  keywords: ["performance","memory","pixi.js","cleanup"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Pixi Lifecycle Sentinel
 
@@ -15,7 +23,7 @@ Ensure strict lifecycle management for Pixi.js instances to prevent memory leaks
 
 2.  **Verify Cleanup**
     The `useEffect` return function **MUST**:
-    - Call `app.destroy(true, { children: true, texture: true, baseTexture: true })`.
+    - Call `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
     - Stop the ticker: `app.ticker.stop()`.
     - Remove event listeners: `window.removeEventListener(...)`.
 
@@ -53,7 +61,7 @@ useEffect(() => {
     // Explicitly stop ticker and remove listeners before destroy
     app.ticker.stop()
     // Remove any event listeners attached to window/document here if added
-    app.destroy(true, { children: true, texture: true, baseTexture: true })
+    app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
   }
 }, [])
 ```

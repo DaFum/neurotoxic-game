@@ -1,6 +1,14 @@
 ---
 name: one-command-doctor
 description: diagnose environmental and build issues. Trigger when the repo is broken, tests fail mysteriously, or setup is needed. Checks Node version, dependencies, and build status. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Diagnose environment/setup breakage quickly and return one-command recovery steps where possible.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "diagnostics"
+  keywords: ["diagnostics","health-check","troubleshooting"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # One-Command Doctor
 

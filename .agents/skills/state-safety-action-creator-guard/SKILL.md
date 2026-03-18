@@ -1,6 +1,14 @@
 ---
 name: state-safety-action-creator-guard
 description: enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce reducer/action-creator coherence and bounded-state invariants under all update paths.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "state-management"
+  keywords: ["state","redux","safety","actions"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # State Safety & Action Creator Guard
 
