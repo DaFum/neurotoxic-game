@@ -1,8 +1,7 @@
 // TODO: Review this file
-import { lazy, Suspense, useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { MainMenu } from './scenes/MainMenu'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
 import { ToastOverlay } from './ui/ToastOverlay'
@@ -13,8 +12,8 @@ import { GameStateProvider, useGameState } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
-import { createNamedLazyLoader } from './utils/lazySceneLoader'
-import { GAME_PHASES, MINIGAME_TYPES } from './context/gameConstants'
+import { GAME_PHASES } from './context/gameConstants'
+import { SceneRouter } from './components/SceneRouter.jsx'
 
 const SCENES_WITHOUT_HUD = [
   GAME_PHASES.INTRO,
@@ -26,91 +25,6 @@ const SCENES_WITHOUT_HUD = [
   GAME_PHASES.PRE_GIG_MINIGAME,
   GAME_PHASES.CLINIC
 ]
-
-const ClinicScene = lazy(
-  createNamedLazyLoader(() => import('./scenes/ClinicScene'), 'ClinicScene')
-)
-const Overworld = lazy(
-  createNamedLazyLoader(() => import('./scenes/Overworld'), 'Overworld')
-)
-const Gig = lazy(createNamedLazyLoader(() => import('./scenes/Gig'), 'Gig'))
-const PreGig = lazy(
-  createNamedLazyLoader(() => import('./scenes/PreGig'), 'PreGig')
-)
-const PostGig = lazy(
-  createNamedLazyLoader(() => import('./scenes/PostGig'), 'PostGig')
-)
-const TourbusScene = lazy(
-  createNamedLazyLoader(() => import('./scenes/TourbusScene'), 'TourbusScene')
-)
-const RoadieRunScene = lazy(
-  createNamedLazyLoader(
-    () => import('./scenes/RoadieRunScene'),
-    'RoadieRunScene'
-  )
-)
-const KabelsalatScene = lazy(
-  createNamedLazyLoader(
-    () => import('./scenes/KabelsalatScene'),
-    'KabelsalatScene'
-  )
-)
-const Settings = lazy(
-  createNamedLazyLoader(() => import('./scenes/Settings'), 'Settings')
-)
-const Credits = lazy(
-  createNamedLazyLoader(() => import('./scenes/Credits'), 'Credits')
-)
-const GameOver = lazy(
-  createNamedLazyLoader(() => import('./scenes/GameOver'), 'GameOver')
-)
-const IntroVideo = lazy(
-  createNamedLazyLoader(() => import('./scenes/IntroVideo'), 'IntroVideo')
-)
-
-/**
- * Routes the current scene state to the corresponding scene component.
- *
- * @param {Object} props - The component props.
- * @param {string} props.currentScene - The active scene identifier.
- * @param {string} [props.minigameType] - The type of minigame (if applicable).
- * @returns {JSX.Element} The active scene component.
- */
-function SceneRouter({ currentScene, minigameType }) {
-  switch (currentScene) {
-    case GAME_PHASES.INTRO:
-      return <IntroVideo />
-    case GAME_PHASES.MENU:
-      return <MainMenu />
-    case GAME_PHASES.SETTINGS:
-      return <Settings />
-    case GAME_PHASES.CREDITS:
-      return <Credits />
-    case GAME_PHASES.GAMEOVER:
-      return <GameOver />
-    case GAME_PHASES.OVERWORLD:
-      return <Overworld />
-    case GAME_PHASES.CLINIC:
-      return <ClinicScene />
-    case GAME_PHASES.TRAVEL_MINIGAME:
-      return <TourbusScene />
-    case GAME_PHASES.PRE_GIG:
-      return <PreGig />
-    case GAME_PHASES.PRE_GIG_MINIGAME:
-      return minigameType === MINIGAME_TYPES.KABELSALAT ? (
-        <KabelsalatScene />
-      ) : (
-        <RoadieRunScene />
-      )
-    case GAME_PHASES.GIG:
-    case GAME_PHASES.PRACTICE:
-      return <Gig />
-    case GAME_PHASES.POST_GIG:
-      return <PostGig />
-    default:
-      return <MainMenu />
-  }
-}
 
 const SceneLoadingFallback = () => {
   const { t } = useTranslation()
