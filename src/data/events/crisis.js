@@ -318,34 +318,23 @@ export const CRISIS_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 5 },
-              { type: 'stat', stat: 'harmony', value: 5 }
-            ],
-            description: 'events:crisis_poor_performance.opt1.d_04df'
-          },
-          failure: {
-            type: 'composite',
-            effects: [
-              { type: 'stat', stat: 'controversyLevel', value: 20 },
-              { type: 'stat', stat: 'loyalty', value: -10 }
-            ],
-            description: 'events:crisis_poor_performance.opt1.d_b07b'
-          }
+          success: createCooldownComposite('crisis_poor_performance', [
+            { type: 'stat', stat: 'controversyLevel', value: 5 },
+            { type: 'stat', stat: 'harmony', value: 5 }
+          ], 'events:crisis_poor_performance.opt1.d_04df'),
+          failure: createCooldownComposite('crisis_poor_performance', [
+            { type: 'stat', stat: 'controversyLevel', value: 20 },
+            { type: 'stat', stat: 'loyalty', value: -10 }
+          ], 'events:crisis_poor_performance.opt1.d_b07b')
         },
         outcomeText: 'events:crisis_poor_performance.opt1.outcome'
       },
       {
         label: 'events:crisis_poor_performance.opt2.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'loyalty', value: 10 },
-            { type: 'stat', stat: 'controversyLevel', value: -5 }
-          ]
-        },
+        effect: createCooldownComposite('crisis_poor_performance', [
+          { type: 'stat', stat: 'loyalty', value: 10 },
+          { type: 'stat', stat: 'controversyLevel', value: -5 }
+        ]),
         outcomeText: 'events:crisis_poor_performance.opt2.outcome'
       }
     ]
@@ -394,13 +383,10 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_mass_unfollow.opt1.label',
-        effect: {
-          type: 'composite',
-          effects: [
-            { type: 'stat', stat: 'loyalty', value: 5 },
-            { type: 'stat', stat: 'harmony', value: -10 }
-          ]
-        },
+        effect: createCooldownComposite('crisis_mass_unfollow', [
+          { type: 'stat', stat: 'loyalty', value: 5 },
+          { type: 'stat', stat: 'harmony', value: -10 }
+        ]),
         outcomeText: 'events:crisis_mass_unfollow.opt1.outcome'
       }
     ]

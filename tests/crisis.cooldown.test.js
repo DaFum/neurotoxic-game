@@ -23,7 +23,7 @@ test('crisis_police_raid_zealotry includes a cooldown effect', () => {
   })
 })
 
-test('crisis_poor_performance does NOT include a cooldown effect', () => {
+test('crisis_poor_performance includes a cooldown effect', () => {
   const event = CRISIS_EVENTS.find(e => e.id === 'crisis_poor_performance')
   assert.ok(event, 'crisis_poor_performance event should exist')
 
@@ -33,31 +33,31 @@ test('crisis_poor_performance does NOT include a cooldown effect', () => {
   const opt1FailureEffects = opt1.skillCheck.failure.effects || []
 
   assert.ok(
-    !opt1SuccessEffects.some(eff => eff.type === 'cooldown'),
-    'Option 1 success effect should NOT include a cooldown'
+    opt1SuccessEffects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'),
+    'Option 1 success effect should include a cooldown'
   )
   assert.ok(
-    !opt1FailureEffects.some(eff => eff.type === 'cooldown'),
-    'Option 1 failure effect should NOT include a cooldown'
+    opt1FailureEffects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'),
+    'Option 1 failure effect should include a cooldown'
   )
 
   // Option 2 has direct effect
   const opt2 = event.options[1]
   const opt2Effects = opt2.effect.effects || []
   assert.ok(
-    !opt2Effects.some(eff => eff.type === 'cooldown'),
-    'Option 2 effect should NOT include a cooldown'
+    opt2Effects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'),
+    'Option 2 effect should include a cooldown'
   )
 })
 
-test('crisis_mass_unfollow does NOT include a cooldown effect', () => {
+test('crisis_mass_unfollow includes a cooldown effect', () => {
   const event = CRISIS_EVENTS.find(e => e.id === 'crisis_mass_unfollow')
   assert.ok(event, 'crisis_mass_unfollow event should exist')
 
   const opt1 = event.options[0]
   const opt1Effects = opt1.effect.effects || []
   assert.ok(
-    !opt1Effects.some(eff => eff.type === 'cooldown'),
-    'Option 1 effect should NOT include a cooldown'
+    opt1Effects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_mass_unfollow'),
+    'Option 1 effect should include a cooldown'
   )
 })
