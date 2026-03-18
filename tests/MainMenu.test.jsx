@@ -33,7 +33,11 @@ vi.mock('../src/utils/errorHandler', () => ({
 
 // Mock BandHQ component to avoid deep dependencies
 vi.mock('../src/ui/BandHQ', () => ({
-  BandHQ: () => <div data-testid='band-hq-modal'>Band HQ Modal</div>
+  BandHQ: props => (
+    <div data-testid='band-hq-modal' {...props}>
+      Band HQ Modal
+    </div>
+  )
 }))
 
 describe('MainMenu Component', () => {
@@ -172,12 +176,18 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:features.button'))
 
-      expect(screen.getByText('ui:features.title')).toBeInTheDocument()
-      expect(screen.getByText('Feature Section 2')).toBeInTheDocument()
-      expect(screen.getByText('Header 1')).toBeInTheDocument()
-      expect(screen.getByText('Row1Col1')).toBeInTheDocument()
-      expect(screen.getByText('Feature Section 1')).toBeInTheDocument()
-      expect(screen.getByText('Description 1')).toBeInTheDocument()
+      const expectedItems = [
+        'ui:features.title',
+        'Feature Section 2',
+        'Header 1',
+        'Row1Col1',
+        'Feature Section 1',
+        'Description 1'
+      ]
+
+      expectedItems.forEach(item => {
+        expect(screen.getByText(item)).toBeInTheDocument()
+      })
 
       const modalCloseButton = screen.getByRole('button', {
         name: 'ui:closeModal'
@@ -461,6 +471,9 @@ describe('MainMenu Component', () => {
 
       const featureContent = screen.getByText('ui:features.title').parentElement
       expect(featureContent).toBeTruthy()
+      expect(featureContent).toHaveTextContent('ui:features.title')
+      // Verify at least one feature item is rendered
+      expect(featureContent.children.length).toBeGreaterThan(0)
     })
   })
 

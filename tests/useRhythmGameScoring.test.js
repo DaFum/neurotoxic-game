@@ -423,6 +423,16 @@ describe('useRhythmGameScoring', async () => {
       expectedScore: 114
     },
     {
+      label: 'does not apply bonus score at boundary (exclusive) [85%]',
+      accuracy: 85,
+      expectedScore: 100
+    },
+    {
+      label: 'applies bonus score just above boundary [86%]',
+      accuracy: 86,
+      expectedScore: 114
+    },
+    {
       label: 'does not apply bonus score at low accuracy [80%]',
       accuracy: 80,
       expectedScore: 100

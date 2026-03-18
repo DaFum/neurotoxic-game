@@ -139,6 +139,7 @@ describe('usePostGigLogic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    setupDefaultMocks()
   })
 
   const setupDefaultMocks = () => {
