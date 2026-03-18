@@ -40,9 +40,7 @@ const resolveTemplateString = (str, context) => {
         for (const k in context) {
           if (Object.hasOwn(context, k)) {
             const lk = k.toLowerCase()
-            if (lowerKeysMap[lk] === undefined) {
-              lowerKeysMap[lk] = k
-            }
+            lowerKeysMap[lk] ??= k
           }
         }
         contextMapCache.set(context, lowerKeysMap)
