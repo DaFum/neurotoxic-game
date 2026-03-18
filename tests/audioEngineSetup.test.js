@@ -18,7 +18,8 @@ mock.module('../src/utils/audio/cleanupUtils.js', { namedExports: mockCleanup })
 
 // Import SUT
 // We use dynamic import to ensure mocks are applied before module load
-const { setupAudio, disposeAudio, ensureAudioContext } = await import('../src/utils/audioEngine.js')
+const { setupAudio, disposeAudio, ensureAudioContext } =
+  await import('../src/utils/audioEngine.js')
 const { audioState } = await import('../src/utils/audio/state.js')
 
 import { importAudioEngine } from './audioTestUtils.js'
@@ -189,109 +190,201 @@ test('setupAudio and disposeAudio', async t => {
   })
 
   await t.test('disposeAudio cleans up resources', async () => {
-      await setupAudio()
-      assert.strictEqual(audioState.isSetup, true)
+    await setupAudio()
+    assert.strictEqual(audioState.isSetup, true)
+    const priorStopCalls = mockCleanup.stopTransportAndClear.mock.calls.length
 
-      disposeAudio()
+    disposeAudio()
 
-      assert.strictEqual(audioState.isSetup, false)
-      assert.strictEqual(audioState.guitar, null)
-      assert.strictEqual(audioState.bass, null)
-      assert.strictEqual(audioState.drumKit, null)
-      assert.strictEqual(mockCleanup.stopTransportAndClear.mock.calls.length >= 1, true)
+    assert.strictEqual(audioState.isSetup, false)
+    assert.strictEqual(audioState.guitar, null)
+    assert.strictEqual(audioState.bass, null)
+    assert.strictEqual(audioState.drumKit, null)
+    assert.strictEqual(
+      mockCleanup.stopTransportAndClear.mock.calls.length,
+      priorStopCalls + 1
+    )
+  })
+
+  await t.test('records setup error when setup fails', async () => {
+    MockGain.shouldFail = true
+    const expectedError = { message: 'Gain setup failed' }
+    await assert.rejects(setupAudio(), expectedError)
+    assert.ok(audioState.setupError)
+    assert.strictEqual(audioState.isSetup, false)
+    assert.strictEqual(audioState.setupLock, null)
+  })
+
+  await t.test('safeDispose swallows disposal errors', async () => {
+    const setupModule = await import('../src/utils/audio/setup.js')
+    const { safeDispose } = setupModule
+    const failingNode = {
+      dispose: () => {
+        throw new Error('dispose failed')
+      }
+    }
+    assert.doesNotThrow(() => safeDispose(failingNode))
+    assert.strictEqual(safeDispose(failingNode), null)
   })
 })
 
 test('ensureAudioContext', async t => {
-    t.beforeEach(() => {
-      const transport = mockTone.getTransport()
-      if (!transport.stop) transport.stop = () => {}
-      if (!transport.cancel) transport.cancel = () => {}
-      if (!transport.clear) transport.clear = () => {}
+  t.beforeEach(() => {
+    const transport = mockTone.getTransport()
+    if (!transport.stop) transport.stop = () => {}
+    if (!transport.cancel) transport.cancel = () => {}
+    if (!transport.clear) transport.clear = () => {}
 
-      audioState.isSetup = true
-      audioState.rebuildLock = null
-      mockTone.getContext().rawContext.state = 'running'
-      mockTone.getContext().state = 'running'
-      mockTone.start.mock.resetCalls()
-      mockTone.start.mock.mockImplementation(async () => {})
+    audioState.isSetup = true
+    audioState.rebuildLock = null
+    mockTone.getContext().rawContext.state = 'running'
+    mockTone.getContext().state = 'running'
+    mockTone.start.mock.resetCalls()
+    mockTone.start.mock.mockImplementation(async () => {})
+  })
+
+  await t.test('returns true if already running', async () => {
+    const result = await ensureAudioContext()
+    assert.strictEqual(result, true)
+  })
+
+  await t.test('attempts to resume if suspended', async () => {
+    let state = 'suspended'
+    const context = mockTone.getContext()
+
+    const originalStateDesc = Object.getOwnPropertyDescriptor(
+      context.rawContext,
+      'state'
+    )
+
+    Object.defineProperty(context.rawContext, 'state', {
+      get: () => state,
+      set: v => {
+        state = v
+      },
+      configurable: true
+    })
+    Object.defineProperty(context, 'state', {
+      get: () => state,
+      set: v => {
+        state = v
+      },
+      configurable: true
     })
 
-    await t.test('returns true if already running', async () => {
+    const resumeMock = mock.fn(async () => {
+      state = 'running'
+    })
+    context.resume = resumeMock
+
+    try {
       const result = await ensureAudioContext()
       assert.strictEqual(result, true)
-    })
-
-    await t.test('attempts to resume if suspended', async () => {
-      let state = 'suspended'
-      const context = mockTone.getContext()
-
-      const originalStateDesc = Object.getOwnPropertyDescriptor(context.rawContext, 'state')
-
-      Object.defineProperty(context.rawContext, 'state', {
-        get: () => state,
-        set: v => { state = v },
-        configurable: true
-      })
-      Object.defineProperty(context, 'state', {
-        get: () => state,
-        set: v => { state = v },
-        configurable: true
-      })
-
-      const resumeMock = mock.fn(async () => {
-        state = 'running'
-      })
-      context.resume = resumeMock
-
-      try {
-        const result = await ensureAudioContext()
-        assert.strictEqual(result, true)
-        assert.strictEqual(resumeMock.mock.calls.length, 1)
-      } finally {
-        if (originalStateDesc) {
-            Object.defineProperty(context.rawContext, 'state', originalStateDesc)
-            Object.defineProperty(context, 'state', originalStateDesc)
-        }
+      assert.strictEqual(resumeMock.mock.calls.length, 1)
+    } finally {
+      if (originalStateDesc) {
+        Object.defineProperty(context.rawContext, 'state', originalStateDesc)
+        Object.defineProperty(context, 'state', originalStateDesc)
       }
+    }
+  })
+
+  await t.test('rebuilds if context is closed', async () => {
+    let state = 'closed'
+    const context = mockTone.getContext()
+    const originalRawStateDesc = Object.getOwnPropertyDescriptor(
+      context.rawContext,
+      'state'
+    )
+    const originalToneStateDesc = Object.getOwnPropertyDescriptor(
+      context,
+      'state'
+    )
+
+    Object.defineProperty(context.rawContext, 'state', {
+      get: () => state,
+      set: v => {
+        state = v
+      },
+      configurable: true
+    })
+    Object.defineProperty(context, 'state', {
+      get: () => state,
+      set: v => {
+        state = v
+      },
+      configurable: true
     })
 
-    await t.test('rebuilds if context is closed', async () => {
-      let state = 'closed'
-      const context = mockTone.getContext()
+    mockTone.start.mock.mockImplementation(async () => {
+      state = 'running'
+    })
 
-      Object.defineProperty(context.rawContext, 'state', {
-        get: () => state,
-        set: v => { state = v },
-        configurable: true
-      })
-      Object.defineProperty(context, 'state', {
-        get: () => state,
-        set: v => { state = v },
-        configurable: true
-      })
-
-      mockTone.start.mock.mockImplementation(async () => {
-        state = 'running'
-      })
-
+    try {
       const result = await ensureAudioContext()
       assert.strictEqual(result, true)
       assert.strictEqual(mockTone.start.mock.calls.length >= 1, true)
+    } finally {
+      if (originalRawStateDesc) {
+        Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
+      }
+      if (originalToneStateDesc) {
+        Object.defineProperty(context, 'state', originalToneStateDesc)
+      }
+    }
+  })
+
+  await t.test('handles concurrent rebuild calls', async () => {
+    let state = 'closed'
+    const context = mockTone.getContext()
+    const originalRawStateDesc = Object.getOwnPropertyDescriptor(
+      context.rawContext,
+      'state'
+    )
+    const originalToneStateDesc = Object.getOwnPropertyDescriptor(
+      context,
+      'state'
+    )
+
+    Object.defineProperty(context.rawContext, 'state', {
+      get: () => state,
+      set: v => {
+        state = v
+      },
+      configurable: true
+    })
+    Object.defineProperty(context, 'state', {
+      get: () => state,
+      set: v => {
+        state = v
+      },
+      configurable: true
     })
 
-    await t.test('handles concurrent rebuild calls', async () => {
-        mockTone.getContext().rawContext.state = 'closed'
-        let resolveStart
-        const startPromise = new Promise(r => { resolveStart = r })
-        mockTone.start.mock.mockImplementation(() => startPromise)
-
-        const p1 = ensureAudioContext()
-        const p2 = ensureAudioContext()
-
-        assert.ok(audioState.rebuildLock)
-
-        resolveStart()
-        await Promise.all([p1, p2])
+    let resolveStart
+    const startPromise = new Promise(r => {
+      resolveStart = r
     })
+    mockTone.start.mock.mockImplementation(async () => {
+      await startPromise
+      state = 'running'
+    })
+
+    try {
+      const p1 = ensureAudioContext()
+      const p2 = ensureAudioContext()
+
+      assert.ok(audioState.rebuildLock)
+
+      resolveStart()
+      await Promise.all([p1, p2])
+    } finally {
+      if (originalRawStateDesc) {
+        Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
+      }
+      if (originalToneStateDesc) {
+        Object.defineProperty(context, 'state', originalToneStateDesc)
+      }
+    }
+  })
 })
