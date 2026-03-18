@@ -119,21 +119,22 @@ describe('gameReducer', () => {
       assert.strictEqual(newState.band.harmony, 50)
     })
 
-    it('should clamp band harmony above zero', () => {
-      const action = {
-        type: ActionTypes.UPDATE_BAND,
-        payload: { harmony: -20 }
-      }
-      const newState = gameReducer(testState, action)
+    // Parametrized: UPDATE_BAND harmony clamping
+    const harmonyclampVariants = [
+      { label: 'clamp band harmony above zero [-20 → 1]', input: -20 },
+      { label: 'clamp band harmony of zero to one [0 → 1]', input: 0 }
+    ]
 
-      assert.strictEqual(newState.band.harmony, 1)
-    })
+    harmonyclampVariants.forEach(variant => {
+      it(`should ${variant.label}`, () => {
+        const action = {
+          type: ActionTypes.UPDATE_BAND,
+          payload: { harmony: variant.input }
+        }
+        const newState = gameReducer(testState, action)
 
-    it('should clamp band harmony of zero to one', () => {
-      const action = { type: ActionTypes.UPDATE_BAND, payload: { harmony: 0 } }
-      const newState = gameReducer(testState, action)
-
-      assert.strictEqual(newState.band.harmony, 1)
+        assert.strictEqual(newState.band.harmony, 1)
+      })
     })
 
     it('should update band members', () => {
@@ -186,24 +187,36 @@ describe('gameReducer', () => {
   })
 
   describe('SET_GIG_MODIFIERS', () => {
-    it('should update gig modifiers with object payload', () => {
-      const action = {
-        type: ActionTypes.SET_GIG_MODIFIERS,
-        payload: { soundcheck: true }
+    // Parametrized: SET_GIG_MODIFIERS payload variations
+    const setModifiersVariants = [
+      {
+        label: 'update gig modifiers with object payload',
+        payloadFn: () => ({ soundcheck: true }),
+        expectedKey: 'soundcheck',
+        expectedValue: true
+      },
+      {
+        label: 'update gig modifiers with function payload',
+        payloadFn: () => prev => ({ ...prev, catering: true }),
+        expectedKey: 'catering',
+        expectedValue: true
       }
-      const newState = gameReducer(testState, action)
+    ]
 
-      assert.strictEqual(newState.gigModifiers.soundcheck, true)
-    })
+    setModifiersVariants.forEach(variant => {
+      it(`should ${variant.label}`, () => {
+        const action = {
+          type: ActionTypes.SET_GIG_MODIFIERS,
+          payload: variant.payloadFn()
+        }
+        const newState = gameReducer(testState, action)
 
-    it('should update gig modifiers with function payload', () => {
-      const action = {
-        type: ActionTypes.SET_GIG_MODIFIERS,
-        payload: prev => ({ ...prev, catering: true })
-      }
-      const newState = gameReducer(testState, action)
-
-      assert.strictEqual(newState.gigModifiers.catering, true)
+        assert.strictEqual(
+          newState.gigModifiers[variant.expectedKey],
+          variant.expectedValue,
+          `${variant.expectedKey} should be ${variant.expectedValue}`
+        )
+      })
     })
   })
 
@@ -237,46 +250,55 @@ describe('gameReducer', () => {
   })
 
   describe('CONSUME_ITEM', () => {
-    it('should decrement numeric inventory item', () => {
-      testState = {
-        ...testState,
-        band: {
-          ...testState.band,
-          inventory: { ...testState.band.inventory, shirts: 50 }
-        }
+    // Parametrized: CONSUME_ITEM inventory variants
+    const consumeItemVariants = [
+      {
+        label: 'decrement numeric inventory item [shirts: 50 → 49]',
+        itemKey: 'shirts',
+        initialValue: 50,
+        expectedValue: 49,
+        expectedType: 'numeric'
+      },
+      {
+        label: 'set boolean inventory item to false [strings: true → false]',
+        itemKey: 'strings',
+        initialValue: true,
+        expectedValue: false,
+        expectedType: 'boolean'
+      },
+      {
+        label: 'not go below zero [shirts: 0 → 0]',
+        itemKey: 'shirts',
+        initialValue: 0,
+        expectedValue: 0,
+        expectedType: 'numeric'
       }
-      const action = { type: ActionTypes.CONSUME_ITEM, payload: 'shirts' }
-      const newState = gameReducer(testState, action)
+    ]
 
-      assert.strictEqual(newState.band.inventory.shirts, 49)
-    })
-
-    it('should set boolean inventory item to false', () => {
-      testState = {
-        ...testState,
-        band: {
-          ...testState.band,
-          inventory: { ...testState.band.inventory, strings: true }
+    consumeItemVariants.forEach(variant => {
+      it(`should ${variant.label}`, () => {
+        testState = {
+          ...testState,
+          band: {
+            ...testState.band,
+            inventory: {
+              ...testState.band.inventory,
+              [variant.itemKey]: variant.initialValue
+            }
+          }
         }
-      }
-      const action = { type: ActionTypes.CONSUME_ITEM, payload: 'strings' }
-      const newState = gameReducer(testState, action)
-
-      assert.strictEqual(newState.band.inventory.strings, false)
-    })
-
-    it('should not go below zero', () => {
-      testState = {
-        ...testState,
-        band: {
-          ...testState.band,
-          inventory: { ...testState.band.inventory, shirts: 0 }
+        const action = {
+          type: ActionTypes.CONSUME_ITEM,
+          payload: variant.itemKey
         }
-      }
-      const action = { type: ActionTypes.CONSUME_ITEM, payload: 'shirts' }
-      const newState = gameReducer(testState, action)
+        const newState = gameReducer(testState, action)
 
-      assert.strictEqual(newState.band.inventory.shirts, 0)
+        assert.strictEqual(
+          newState.band.inventory[variant.itemKey],
+          variant.expectedValue,
+          `${variant.itemKey} should be ${variant.expectedValue}`
+        )
+      })
     })
   })
 
