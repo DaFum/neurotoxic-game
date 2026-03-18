@@ -30,6 +30,19 @@ People using this skill range from veteran developers to parents who just discov
 
 ---
 
+## Quick Mode Detector
+
+Identify the user's intent from their phrasing:
+
+| User Says | Mode | Next Step |
+|-----------|------|-----------|
+| "turn this into a skill" / "make a skill for X" / "capture this workflow" | **Create** | Jump to Creating a Skill (Interview) |
+| "make my skill better" / "improve this skill" / "this skill isn't working" | **Improve** | Jump to Improving a Skill |
+| "test my skill on this case" / "does this work?" | **Eval** | Jump to Eval Mode |
+| "how well does my skill work?" / "measure performance" | **Benchmark** | Jump to Benchmark Mode (requires subagents) |
+
+---
+
 ## Modes
 
 | Mode          | When to Use                       | Workflow                                                        |
@@ -65,7 +78,7 @@ Proactively ask about edge cases, formats, example files, success criteria, depe
 ### Initialize and Draft
 
 ```bash
-scripts/init_skill.py <skill-name> --path <output-directory>
+python scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
 Fill the YAML frontmatter based on the interview:
@@ -89,19 +102,19 @@ Then write the skill body following the **Skill Writing Guide** below.
 
 After the draft, create 2–3 realistic test prompts — what a real user would actually say. Share them: "Here are a few test cases I'd like to try. Do these look right?" Then run them.
 
-For formal evals, create `evals/evals.json` — initialize with `scripts/init_json.py evals evals/evals.json`. See `references/schemas.md` for the full schema.
+For formal evals, create `evals/evals.json` — initialize with `python scripts/init_json.py evals evals/evals.json`. See `references/schemas.md` for the full schema.
 
 Once gradable criteria exist, iterate more aggressively: run tests automatically, present results ("I tried X, it improved pass rate by Y%").
 
 ### Package and Present
 
-If `present_files` is available, package the skill:
+Once satisfied with the skill, package it for distribution:
 
 ```bash
-scripts/package_skill.py <path/to/skill-folder>
+python scripts/package_skill.py <path/to/skill-folder>
 ```
 
-Direct the user to the `.skill` file to install it.
+This generates a `.skill` file that users can install directly. Guide them to the file.
 
 ---
 
@@ -196,22 +209,105 @@ When writing or reviewing a skill, check for these failure modes:
 
 ---
 
+## Common Scenarios & Practical Tips
+
+### I want to improve a skill but don't have evals yet
+
+**Start here**: Create 2–3 test cases manually. Don't wait for a perfect eval suite.
+
+1. List what the skill *should* do in a few bullet points
+2. Come up with 2–3 realistic prompts users would actually say
+3. Run the skill on those prompts in the main agent loop (run in background so user sees the transcript)
+4. From the transcript, identify 1–2 concrete expectations (e.g., "should mention X", "should run tool Y", "should return JSON")
+5. Write those as informal evals in `evals/evals.json` using `python scripts/init_json.py evals evals/evals.json`
+6. Now you can iterate with structured feedback
+
+### The skill works on my test cases but fails on edge cases
+
+This is overfitting. The skill is too tailored to your specific examples.
+
+**Solution**:
+- Rewrite instructions to be more general (instead of "when the user says 'analyze my code'", say "when the user wants to understand code behavior, whether they ask to 'review', 'explain', 'analyze', or 'debug'")
+- Remove references to specific tool chains or frameworks (use "any build tool", "any test runner" instead of hardcoding)
+- Test on 3–5 additional prompts that are similar but not identical to your original cases
+- Look for the principle behind your examples, not the exact pattern
+
+### I'm not sure if the skill is actually better
+
+Use blind comparison. Create two versions, run them both on the same eval, then have me compare without knowing which is which. This removes confirmation bias.
+
+```
+Execute v0 on eval → save to v0/
+Execute v1 on eval → save to v1/
+Compare results → I pick the winner based only on quality, not lineage
+Explain why the winner is better
+```
+
+### The skill takes too long to load or trigger
+
+**Problem**: The SKILL.md is huge (600+ lines), has too many options, or references are loaded upfront.
+
+**Solution**:
+- Shrink SKILL.md to <500 lines
+- Move detailed workflows to `references/` (only loaded when skill triggers)
+- If there are multiple domains (e.g., "cloud-deploy-aws" vs "cloud-deploy-gcp"), split into separate skills or put domain selection logic upfront
+- Use scripts for deterministic work instead of inline explanations
+
+### I'm trying to create a skill but keep getting stuck in the interview phase
+
+**Shortcut**: You don't need perfect requirements. Start with a draft instead.
+
+1. Write a rough outline of what the skill should do (5–10 bullet points)
+2. Create a minimal SKILL.md with ~200 words
+3. Test it on 1–2 prompts you already have in mind
+4. Watch the transcript — you'll see what's missing or confusing
+5. Refine from there
+
+Iteration beats perfectionism. Ship early, improve based on real behavior.
+
+### Can I test my skill without creating evals?
+
+Yes. In Create mode, run the first few examples directly in the main agent loop. You'll see the transcript, can spot issues immediately, and iterate fast. This is the "Immediate Feedback Loop" mentioned in the Creating a Skill section.
+
+For formal evaluation (comparing with/without skill, measuring consistency), you need evals. But for drafting and early iteration, just run examples.
+
+---
+
 ## Improving a Skill
 
-When the user asks to improve an existing skill, establish: which skill, how much time, and what's the goal.
+When the user asks to improve an existing skill:
 
-**Read these before starting:**
+1. **Establish context**: Which skill? What's the goal (trigger rate, output quality, speed)? How much time?
+2. **Read reference docs**: `references/improve-workflow.md` and `references/schemas.md`
+3. **Run the core loop**: Copy to workspace → Execute on evals → Grade → Compare → Analyze → Apply
 
-```
-references/improve-workflow.md    # Complete iteration loop
-references/schemas.md             # JSON output structures
-```
+### Decision Tree: What's Wrong?
+
+**Symptom: Skill doesn't trigger when it should**
+→ **Root cause**: Description is too narrow, doesn't enumerate use cases
+→ **Fix**: Make description more pushy; add specific keywords, phrases, and contexts users actually say
+
+**Symptom: Skill produces correct output but takes too many steps**
+→ **Root cause**: Instructions are verbose, model wastes time on unproductive detours
+→ **Fix**: Trim instructions; remove explanations that don't inform decisions; consolidate related steps
+
+**Symptom: Skill works on test cases but fails on new inputs**
+→ **Root cause**: Overfitted to your 2–3 examples, doesn't generalize
+→ **Fix**: Broaden instructions; test on edge cases; try different metaphors or mental models
+
+**Symptom: Skill produces inconsistent results (same prompt, different outputs)**
+→ **Root cause**: Underspecified; ambiguous instructions leave too much to inference
+→ **Fix**: Add concrete examples; clarify when/why to choose between options; make trade-offs explicit
+
+**Symptom: Skill ignores key instructions**
+→ **Root cause**: Instructions are buried, contradicted later, or framed as commands instead of reasoning
+→ **Fix**: Move important things early and prominent; explain *why* instead of *what to do*; check for contradictions
 
 ### Philosophy
 
-1. **Generalize, don't overfit.** You're iterating on few examples to move fast, but the skill needs to work everywhere. Rather than narrow fixes, try different metaphors, patterns, or framings.
-2. **Keep it lean.** Remove what isn't pulling weight. Read transcripts — if the model wastes time on unproductive steps, trim the causing instructions.
-3. **Explain the why.** Understand what the user actually wants and transmit that understanding. Rigid MUST/NEVER rules → reframe as reasoning.
+1. **Generalize, don't overfit.** You're iterating on few examples, but the skill works everywhere. Try different metaphors, patterns, and framings — not narrow patches.
+2. **Keep it lean.** If the model wastes time on unproductive steps, trim the instructions causing them. Remove what isn't pulling weight.
+3. **Explain the why.** Understand what the user wants and transmit that understanding. Rigid MUST/NEVER rules are less effective than clear reasoning.
 
 ### Core Loop
 
@@ -229,6 +325,14 @@ Workflow: Setup → Check Dependencies → Prepare → Execute → Grade → Dis
 
 Without subagents, execute and grade sequentially — read `agents/executor.md` and `agents/grader.md` and follow procedures directly.
 
+Quick checklist:
+- Choose workspace location (suggest `<skill-name>-workspace/` sibling)
+- Scan skill for dependencies (check `compatibility` field in SKILL.md)
+- Run `python scripts/prepare_eval.py <skill> <eval-id> --output-dir <workspace>/`
+- Execute (with subagents: spawn executor; without: read agents/executor.md)
+- Grade (with subagents: spawn grader; without: read agents/grader.md)
+- Display pass/fail per expectation + overall metrics
+
 ---
 
 ## Benchmark Mode
@@ -237,18 +341,28 @@ Standardized performance measurement with variance analysis. **Requires subagent
 
 **Read:** `references/benchmark-mode.md` and `references/schemas.md` before running.
 
-Runs all evals, 3 times per configuration, always includes no-skill baseline, uses most capable model for analysis.
+Runs all evals 3 times per configuration, always includes no-skill baseline, uses most capable model for analysis.
+
+Quick checklist:
+- Read benchmark-mode.md for full procedure
+- Run `python scripts/prepare_eval.py` for each eval (parallel OK)
+- Spawn 3 executor subagents per eval (parallel execution)
+- Spawn grader subagent for each run (parallel grading)
+- Aggregate results with `python scripts/aggregate_benchmark.py`
+- Analyze via analyzer agent (read `agents/analyzer.md`)
 
 ---
 
 ## Building Blocks
 
-| Block                 | Input                         | Output                       | Agent                  |
-| --------------------- | ----------------------------- | ---------------------------- | ---------------------- |
-| **Eval Run**          | skill + prompt + files        | transcript, outputs, metrics | `agents/executor.md`   |
-| **Grade**             | outputs + expectations        | pass/fail per expectation    | `agents/grader.md`     |
-| **Blind Compare**     | output A, output B, prompt    | winner + reasoning           | `agents/comparator.md` |
-| **Post-hoc Analysis** | winner + skills + transcripts | improvement suggestions      | `agents/analyzer.md`   |
+| Block                 | Input                         | Output                       | Reference                   | Purpose                                                   |
+| --------------------- | ----------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------------- |
+| **Eval Run**          | skill + prompt + files        | transcript, outputs, metrics | `agents/executor.md`        | Execute skill on a single eval, capture output & timing   |
+| **Grade**             | outputs + expectations        | pass/fail per expectation    | `agents/grader.md`          | Evaluate outputs against success criteria                 |
+| **Blind Compare**     | output A, output B, prompt    | winner + reasoning           | `agents/comparator.md`      | Compare two outputs objectively (don't reveal lineage)    |
+| **Post-hoc Analysis** | winner + skills + transcripts | improvement suggestions      | `agents/analyzer.md`        | Analyze why one skill version beat another                |
+
+**How to use**: With subagents, spawn the subagent with a reference file path. Without subagents, read the reference file and follow procedures directly in the main coordinator loop.
 
 ---
 
