@@ -1,8 +1,7 @@
 ---
 name: audio-debugger-ambient-vs-gig
-description: debug audio playback issues. Trigger when music fails to start, plays the wrong track, stutters, or when ambient/gig transitions fail. Covers Tone.js, AudioContext, and asset loading.
+description: debug audio playback issues. Trigger when music fails to start, plays the wrong track, stutters, or when ambient/gig transitions fail. Covers Tone.js, AudioContext, and asset loading. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize ambient/gig transition diagnostics, playback source correctness, and startup-unlock edge cases.
 ---
-
 # Audio Debugger (Ambient vs Gig)
 
 Troubleshoot and resolve audio playback issues in the game, focusing on the distinction between ambient (background) music and gig (rhythm game) tracks.
@@ -61,5 +60,6 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 
 **Output**:
 "The MIDI file for 'Neon Highway' is missing from `src/assets/`, causing the synth to have no notes to play. Please add the file."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

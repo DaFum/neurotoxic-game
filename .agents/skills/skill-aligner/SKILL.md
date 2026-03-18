@@ -1,8 +1,7 @@
 ---
 name: skill-aligner
-description: align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands.
+description: align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Align skills with repository conventions and resolve stale/misaligned instructions precisely.
 ---
-
 # Skill Aligner
 
 Synchronize skills with the current state of the repository.
@@ -38,5 +37,6 @@ Synchronize skills with the current state of the repository.
 
 **Output**:
 "Updated `ci-hardener` to reflect the consolidation of lint scripts in `package.json`."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

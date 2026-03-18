@@ -1,8 +1,7 @@
 ---
 name: golden-path-test-author
-description: write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths.
+description: write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Author end-to-end regression coverage for the main game loop with realistic user-path assertions.
 ---
-
 # Golden Path Test Author
 
 Ensure the critical game flow (OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD) works without regression.
@@ -80,5 +79,6 @@ test('Travel fails with insufficient fuel', () => {
 
 **Output**:
 "Created `tests/unit/travel.test.js` verifying fuel deduction logic (Note: This is a unit test for `gameReducer`)."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

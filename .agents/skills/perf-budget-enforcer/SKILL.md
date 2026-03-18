@@ -1,8 +1,7 @@
 ---
 name: perf-budget-enforcer
-description: optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops.
+description: optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce runtime/bundle budgets with concrete deltas and rollback-safe optimization suggestions.
 ---
-
 # Performance Budget Enforcer
 
 Analyze and optimize application performance, focusing on bundle size and runtime efficiency.
@@ -48,5 +47,6 @@ Analyze and optimize application performance, focusing on bundle size and runtim
 
 **Output**:
 "Lazy-loaded Pixi and Tone. Main bundle size reduced by 80%. Initial load is now under 1s."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

@@ -1,8 +1,7 @@
 ---
 name: dependency-pin-upgrade-blocker
-description: enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes.
+description: enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prevent unpinned upgrades and verify version-lock integrity before accepting dependency changes.
 ---
-
 # Dependency Pin Guard
 
 Strictly enforce pinned versions for critical dependencies to ensure stability and compatibility.
@@ -49,5 +48,6 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 **Output**:
 "Upgraded minor dependencies. Held back React, Vite, and Pixi to pinned major versions to preserve stability."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

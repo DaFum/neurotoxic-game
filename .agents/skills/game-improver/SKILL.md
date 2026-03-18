@@ -1,8 +1,7 @@
 ---
 name: game-improver
-description: improve gameplay, balance, and code quality. Trigger when asked to fix bugs, add features, optimize performance, or refactor code. Acts as a general-purpose game engineer.
+description: improve gameplay, balance, and code quality. Trigger when asked to fix bugs, add features, optimize performance, or refactor code. Acts as a general-purpose game engineer. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prefer minimal, test-backed gameplay improvements with clear regression guards and state-safety checks.
 ---
-
 # Game Improver
 
 Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
@@ -49,5 +48,6 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 
 **Output**:
 "Implemented `meditation_pod` upgrade. Added logic to `useGameLoop` to regenerate +1 harmony per day."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

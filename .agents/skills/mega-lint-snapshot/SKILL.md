@@ -1,8 +1,7 @@
 ---
 name: mega-lint-snapshot
-description: run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages.
+description: run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Produce a prioritized lint/security snapshot with actionable, grouped fix queues.
 ---
-
 # Mega Lint Snapshot
 
 Generate a detailed quality report for the repository, covering linting, security, and formatting.
@@ -57,5 +56,6 @@ Run `.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
 ```
 
 "Found a hardcoded secret in `api.js`. Please remove it."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
