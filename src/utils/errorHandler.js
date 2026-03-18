@@ -181,7 +181,7 @@ const sanitizeContextObject = (context, visited) => {
   const sanitized = {}
 
   for (const key in context) {
-    if (!Object.hasOwn(context, key)) continue
+    if (!Object.hasOwn(context, key) || key === '__proto__' || key === 'constructor' || key === 'prototype') continue
     const value = context[key]
     const normalizedKey = key.toLowerCase()
     if (isSensitiveContextKey(normalizedKey)) {
