@@ -20,7 +20,7 @@ describe('ToggleSwitch', () => {
     const labelledById = switchButton.getAttribute('aria-labelledby')
     expect(labelledById).toBeTruthy()
 
-    const labelElement = container.querySelector(`#${labelledById}`)
+    const labelElement = container.querySelector(`[id="${labelledById}"]`)
     expect(labelElement).toBeTruthy()
     expect(labelElement.textContent).toBe('Test Switch')
 
@@ -41,7 +41,7 @@ describe('ToggleSwitch', () => {
     const labelledById = switchButton.getAttribute('aria-labelledby')
     expect(labelledById).toBeTruthy()
 
-    const labelElement = container.querySelector(`#${labelledById}`)
+    const labelElement = container.querySelector(`[id="${labelledById}"]`)
     expect(labelElement).toBeTruthy()
     expect(labelElement.textContent).toBe('Test Switch')
 
@@ -97,7 +97,7 @@ describe('ToggleSwitch', () => {
     expect(switchButton).toHaveProperty('type', 'button')
     const labelledById = switchButton.getAttribute('aria-labelledby')
     expect(labelledById).toBeTruthy()
-    const labelElement = container.querySelector(`#${labelledById}`)
+    const labelElement = container.querySelector(`[id="${labelledById}"]`)
     expect(labelElement).toBeTruthy()
     expect(labelElement.textContent).toBe('Accessible Switch')
   })

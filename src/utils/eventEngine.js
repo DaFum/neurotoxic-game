@@ -199,8 +199,8 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
   },
   /**
    * percentage_resource
-   * Note: for negative amounts, `min` acts as the maximum *loss* (a floor for the value),
-   * and `max` acts as the minimum *loss* (ceiling).
+   * Note: for negative amounts, `min` acts as the maximum *loss* (a floor for the value)
+   * enforced via Math.max, and `max` acts as the minimum *loss* (ceiling) enforced via Math.min.
    * Example: `min: -100` bedeutet "verliere maximal 100" bei negativen Prozentsätzen.
    */
   percentage_resource: (eff, delta, _context, gameState) => {
@@ -216,15 +216,10 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
         ;[min, max] = [max, min]
       }
 
-      // Note: for negative amounts, 'min' acts as the maximum *loss*
-      // (a floor for the value), and 'max' acts as the minimum *loss*.
-      if (amount < 0) {
-        if (min !== undefined) amount = Math.max(min, amount)
-        if (max !== undefined) amount = Math.max(max, amount)
-      } else {
-        if (min !== undefined) amount = Math.max(min, amount)
-        if (max !== undefined) amount = Math.min(max, amount)
-      }
+      // Note: for negative amounts, 'min' acts as the maximum *loss* (a floor for the value)
+      // using Math.max, and 'max' acts as the minimum *loss* (ceiling) using Math.min.
+      if (min !== undefined) amount = Math.max(min, amount)
+      if (max !== undefined) amount = Math.min(max, amount)
 
       delta.player.money = (delta.player.money || 0) + amount
     }
