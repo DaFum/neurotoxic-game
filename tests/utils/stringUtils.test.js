@@ -3,15 +3,15 @@ import assert from 'node:assert'
 import { hashString } from '../../src/utils/stringUtils.js'
 
 describe('hashString', () => {
-  it('returns a 32-bit integer hash from a string', () => {
-    assert.strictEqual(hashString('test'), 3556498)
-  })
+  const testCases = [
+    { input: 'test', expected: 3556498 },
+    { input: 'hello world', expected: 1794106052 },
+    { input: '', expected: 0 }
+  ]
 
-  it('returns a stable hash for a given string', () => {
-    assert.strictEqual(hashString('hello world'), 1794106052)
-  })
-
-  it('handles empty string', () => {
-    assert.strictEqual(hashString(''), 0)
-  })
+  for (const { input, expected } of testCases) {
+    it(`returns ${expected} for input string "${input}"`, () => {
+      assert.strictEqual(hashString(input), expected)
+    })
+  }
 })
