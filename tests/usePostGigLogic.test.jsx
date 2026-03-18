@@ -139,7 +139,9 @@ describe('usePostGigLogic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+  })
 
+  const setupDefaultMocks = () => {
     economyEngine.calculateGigFinancials.mockReturnValue({
       net: 200,
       income: {
@@ -178,40 +180,36 @@ describe('usePostGigLogic', () => {
     crypto.secureRandom.mockReturnValue(0.5)
 
     GameState.useGameState.mockReturnValue(getBaseState())
-  })
+  }
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
   describe('initialization', () => {
-    it('initializes in REPORT phase', () => {
+    it('initializes in REPORT phase with financials and post options', async () => {
+      setupDefaultMocks()
       const { result } = renderHook(() => usePostGigLogic())
+
       expect(result.current.phase).toBe('REPORT')
-    })
-
-    it('calculates financials on mount', async () => {
-      renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
-        expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
-          expect.objectContaining({
-            gigData: expect.objectContaining({ songId: 'test_song' }),
-            performanceScore: expect.any(Number)
-          })
-        )
+        expect(result.current.financials).toBeTruthy()
+        expect(result.current.postOptions).toHaveLength(1)
       })
-    })
 
-    it('generates post options on mount', async () => {
-      renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(socialEngine.generatePostOptions).toHaveBeenCalled()
-      })
+      // Verify both calculations were called
+      expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gigData: expect.objectContaining({ songId: 'test_song' }),
+          performanceScore: 100
+        })
+      )
+      expect(socialEngine.generatePostOptions).toHaveBeenCalled()
     })
 
     it('falls back gracefully when post options generation throws', async () => {
+      setupDefaultMocks()
       socialEngine.generatePostOptions.mockImplementation(() => {
         throw new Error('bad state')
       })
@@ -233,22 +231,8 @@ describe('usePostGigLogic', () => {
       )
     })
 
-    it('calculates performance score correctly', async () => {
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.financials).toBeTruthy()
-      })
-
-      // Score of 50000 / 500 = 100, clamped to max
-      expect(economyEngine.calculateGigFinancials).toHaveBeenCalledWith(
-        expect.objectContaining({
-          performanceScore: 100
-        })
-      )
-    })
-
-    it('clamps performance score to minimum', async () => {
+    it('clamps performance score to minimum when stats are low', async () => {
+      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           lastGigStats: { score: 1000, accuracy: 50, events: [] }
@@ -268,12 +252,25 @@ describe('usePostGigLogic', () => {
   })
 
   describe('event triggering', () => {
-    it('triggers financial event on mount when no active event', () => {
+    it('triggers event cascade on mount (financial → special → band)', () => {
+      setupDefaultMocks()
+      mockTriggerEvent
+        .mockReturnValueOnce({ id: 'fin_event' }) // First call (financial) succeeds
+        .mockReturnValueOnce(null) // Second call would be special
+        .mockReturnValueOnce(null) // Third would be band
+
       renderHook(() => usePostGigLogic())
+
       expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
+      expect(mockTriggerEvent).toHaveBeenNthCalledWith(
+        1,
+        'financial',
+        'post_gig'
+      )
     })
 
-    it('does not trigger events when an active event exists', () => {
+    it('skips event triggering when activeEvent already exists', () => {
+      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({ activeEvent: { id: 'some_event', type: 'financial' } })
       )
@@ -282,16 +279,13 @@ describe('usePostGigLogic', () => {
       expect(mockTriggerEvent).not.toHaveBeenCalled()
     })
 
-    it('triggers special event if financial event does not trigger', () => {
-      mockTriggerEvent.mockReturnValueOnce(null)
-      renderHook(() => usePostGigLogic())
+    it('cascades through event types when previous triggers fail', () => {
+      setupDefaultMocks()
+      mockTriggerEvent
+        .mockReturnValueOnce(null) // financial fails
+        .mockReturnValueOnce(null) // special fails
+        .mockReturnValueOnce({ id: 'band_event' }) // band succeeds
 
-      expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
-      expect(mockTriggerEvent).toHaveBeenCalledWith('special', 'post_gig')
-    })
-
-    it('triggers band event if financial and special events do not trigger', () => {
-      mockTriggerEvent.mockReturnValueOnce(null).mockReturnValueOnce(null)
       renderHook(() => usePostGigLogic())
 
       expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
@@ -318,6 +312,7 @@ describe('usePostGigLogic', () => {
 
   describe('post selection', () => {
     it('shows an error toast and aborts when post resolution throws', async () => {
+      setupDefaultMocks()
       socialEngine.resolvePost.mockImplementation(() => {
         throw new Error('broken resolver')
       })
@@ -339,7 +334,8 @@ describe('usePostGigLogic', () => {
       expect(mockUpdateSocial).not.toHaveBeenCalled()
     })
 
-    it('updates social followers when post is selected', async () => {
+    it('processes basic post: updates followers, viral count, and cross-posts', async () => {
+      setupDefaultMocks()
       const { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
@@ -350,150 +346,83 @@ describe('usePostGigLogic', () => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
+      // Verify social followers updated
       expect(mockUpdateSocial).toHaveBeenCalledWith(
         expect.objectContaining({
-          instagram: expect.any(Number)
+          instagram: expect.any(Number),
+          viral: 1, // incremented
+          tiktok: expect.any(Number), // cross-posted
+          youtube: expect.any(Number) // cross-posted
         })
       )
     })
 
-    it('calculates and displays mathematical deltas in toasts for money and harmony', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+    it('handles financial deltas: money, harmony, and clamping at bounds', async () => {
+      setupDefaultMocks()
+      // First call: normal deltas
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         platform: 'instagram',
         followers: 100,
-        moneyChange: 200, // Should trigger money toast
-        harmonyChange: 15 // Should trigger harmony toast
+        moneyChange: 200,
+        harmonyChange: 15
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      let { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockAddToast).toHaveBeenCalledWith('Money +200€', 'success')
       expect(mockAddToast).toHaveBeenCalledWith('Harmony +15', 'success')
-    })
 
-    it('displays clamped mathematical delta in toasts when bounds are reached', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+      // Cleanup for second test
+      vi.clearAllMocks()
+      setupDefaultMocks()
+
+      // Second call: clamped deltas
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         platform: 'instagram',
         followers: 100,
-        moneyChange: -600, // player money is 500, so real delta is -500
-        harmonyChange: 60 // band harmony is 50, so real delta is +50
+        moneyChange: -600, // would go negative
+        harmonyChange: 60 // would exceed max
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      result = renderHook(() => usePostGigLogic()).result
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockAddToast).toHaveBeenCalledWith('Money -500€', 'error')
       expect(mockAddToast).toHaveBeenCalledWith('Harmony +50', 'success')
     })
 
-    it('applies cross-posting to other platforms on successful post', async () => {
-      socialEngine.resolvePost.mockReturnValue({
-        success: true,
-        followers: 100,
-        platform: 'instagram',
-        message: 'Viral!'
-      })
-
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
-        result.current.handlePostSelection(result.current.postOptions[0])
-      })
-
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tiktok: expect.any(Number),
-          youtube: expect.any(Number)
-        })
-      )
-    })
-
-    it('increments viral count on successful post', async () => {
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
-        result.current.handlePostSelection(result.current.postOptions[0])
-      })
-
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          viral: 1
-        })
-      )
-    })
-
-    it('adds gig viral bonus when checkViralEvent returns true', async () => {
-      socialEngine.checkViralEvent.mockReturnValue(true)
-
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
-        result.current.handlePostSelection(result.current.postOptions[0])
-      })
-
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          viral: 2 // 1 for success + 1 for gig viral
-        })
-      )
-    })
-
-    it('updates band harmony when harmonyChange is provided', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+    it('handles band and member updates: harmony, mood changes, and targeting', async () => {
+      setupDefaultMocks()
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         harmonyChange: 15
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      let { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          harmony: 65 // 50 + 15
-        })
+        expect.objectContaining({ harmony: 65 })
       )
-    })
 
-    it('updates all member mood when allMembersMoodChange is true', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+      // Test all members mood change
+      vi.clearAllMocks()
+      setupDefaultMocks()
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
@@ -501,15 +430,11 @@ describe('usePostGigLogic', () => {
         allMembersMoodChange: true
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      result = renderHook(() => usePostGigLogic()).result
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockUpdateBand).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -519,10 +444,11 @@ describe('usePostGigLogic', () => {
           ])
         })
       )
-    })
 
-    it('updates specific member when targetMember is specified', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+      // Test target member
+      vi.clearAllMocks()
+      setupDefaultMocks()
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
@@ -530,15 +456,11 @@ describe('usePostGigLogic', () => {
         targetMember: 'Member1'
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      result = renderHook(() => usePostGigLogic()).result
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockUpdateBand).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -550,46 +472,53 @@ describe('usePostGigLogic', () => {
       )
     })
 
-    it('updates player money when moneyChange is provided', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+    it('applies player money and viral bonuses', async () => {
+      setupDefaultMocks()
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         moneyChange: 300
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      let { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        money: 800 // 500 + 300
-      })
+      expect(mockUpdatePlayer).toHaveBeenCalledWith({ money: 800 })
+
+      // Test viral bonus
+      vi.clearAllMocks()
+      setupDefaultMocks()
+      socialEngine.checkViralEvent.mockReturnValueOnce(true)
+
+      result = renderHook(() => usePostGigLogic()).result
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
+        result.current.handlePostSelection(result.current.postOptions[0])
+      )
+
+      expect(mockUpdateSocial).toHaveBeenCalledWith(
+        expect.objectContaining({ viral: 2 })
+      )
     })
 
-    it('unlocks trait when unlockTrait is provided', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+    it('processes trait unlock and influencer updates', async () => {
+      setupDefaultMocks()
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         unlockTrait: { memberId: 'Member1', traitId: 'social_butterfly' }
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      let { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockUnlockTrait).toHaveBeenCalledWith(
         'Member1',
@@ -599,9 +528,9 @@ describe('usePostGigLogic', () => {
         expect.stringContaining('SOCIAL BUTTERFLY'),
         'success'
       )
-    })
 
-    it('updates influencer score when influencerUpdate is provided', async () => {
+      // Test influencer update
+      vi.clearAllMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           social: {
@@ -616,35 +545,29 @@ describe('usePostGigLogic', () => {
           }
         })
       )
-
-      socialEngine.resolvePost.mockReturnValue({
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         influencerUpdate: { id: 'influencer1', scoreChange: 30 }
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      result = renderHook(() => usePostGigLogic()).result
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       expect(mockUpdateSocial).toHaveBeenCalledWith(
         expect.objectContaining({
-          influencers: {
-            influencer1: { score: 70 } // 40 + 30
-          }
+          influencers: { influencer1: { score: 70 } }
         })
       )
     })
 
-    it('advances to DEALS phase when brand offers are generated', async () => {
-      socialEngine.generateBrandOffers.mockReturnValue([
+    it('transitions to phase based on brand offers availability', async () => {
+      setupDefaultMocks()
+      socialEngine.generateBrandOffers.mockReturnValueOnce([
         {
           id: 'deal_1',
           name: 'Test Brand',
@@ -652,32 +575,26 @@ describe('usePostGigLogic', () => {
         }
       ])
 
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      let { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       await waitFor(() => {
         expect(result.current.phase).toBe('DEALS')
         expect(result.current.brandOffers).toHaveLength(1)
       })
-    })
 
-    it('advances to COMPLETE phase when no brand offers', async () => {
-      const { result } = renderHook(() => usePostGigLogic())
+      // Test no offers path
+      vi.clearAllMocks()
+      setupDefaultMocks()
 
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
-      act(() => {
+      result = renderHook(() => usePostGigLogic()).result
+      await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
+      act(() =>
         result.current.handlePostSelection(result.current.postOptions[0])
-      })
+      )
 
       await waitFor(() => {
         expect(result.current.phase).toBe('COMPLETE')
@@ -685,6 +602,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('deactivates sponsor on sellout ad post', async () => {
+      setupDefaultMocks()
       socialEngine.generatePostOptions.mockReturnValue([
         {
           id: 'comm_sellout_ad',
@@ -721,8 +639,10 @@ describe('usePostGigLogic', () => {
   })
 
   describe('brand deals', () => {
-    it('accepts deal with upfront payment', async () => {
-      const deal = {
+    it('accepts deals with various reward types and penalties', async () => {
+      setupDefaultMocks()
+      // Test upfront payment
+      let deal = {
         id: 'deal_1',
         name: 'Mega Corp',
         alignment: 'CORPORATE',
@@ -730,7 +650,7 @@ describe('usePostGigLogic', () => {
         penalty: null
       }
 
-      const { result } = renderHook(() => usePostGigLogic())
+      let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -741,25 +661,24 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdatePlayer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          money: 1500
-        })
+        expect.objectContaining({ money: 1500 })
       )
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Mega Corp'),
         'success'
       )
-    })
 
-    it('accepts deal with item reward', async () => {
-      const deal = {
+      // Test item reward
+      vi.clearAllMocks()
+      setupDefaultMocks()
+      deal = {
         id: 'deal_2',
         name: 'Cool Brand',
         offer: { item: 'special_guitar', duration: 2 },
         penalty: null
       }
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -770,10 +689,11 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateBand).toHaveBeenCalledWith(expect.any(Function))
-    })
 
-    it('applies brand deal penalties', async () => {
-      const deal = {
+      // Test with penalties
+      vi.clearAllMocks()
+      setupDefaultMocks()
+      deal = {
         id: 'deal_3',
         name: 'Evil Corp',
         alignment: 'EVIL',
@@ -781,7 +701,7 @@ describe('usePostGigLogic', () => {
         penalty: { loyalty: -15, controversy: 30 }
       }
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -794,7 +714,12 @@ describe('usePostGigLogic', () => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
     })
 
-    it('handles errors gracefully in handleAcceptDeal', async () => {
+    it('handles errors gracefully and rejects deals', async () => {
+      setupDefaultMocks()
+      mockUpdatePlayer.mockImplementationOnce(() => {
+        throw new Error('Database Error')
+      })
+
       const deal = {
         id: 'deal_error',
         name: 'Error Corp',
@@ -803,17 +728,12 @@ describe('usePostGigLogic', () => {
         penalty: null
       }
 
-      mockUpdatePlayer.mockImplementationOnce(() => {
-        throw new Error('Database Error')
-      })
-
       const { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
       })
 
-      // The try/catch should prevent the error from bubbling up
       expect(() => {
         act(() => {
           result.current.handleAcceptDeal(deal)
@@ -824,9 +744,10 @@ describe('usePostGigLogic', () => {
         expect.stringContaining('Deal failed'),
         'error'
       )
-    })
 
-    it('rejects all deals and advances to COMPLETE', async () => {
+      // Test reject all deals
+      vi.clearAllMocks()
+      setupDefaultMocks()
       socialEngine.generateBrandOffers.mockReturnValue([
         {
           id: 'deal_1',
@@ -835,26 +756,26 @@ describe('usePostGigLogic', () => {
         }
       ])
 
-      const { result } = renderHook(() => usePostGigLogic())
+      const { result: result2 } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
+        expect(result2.current.postOptions).toHaveLength(1)
       })
 
       act(() => {
-        result.current.handlePostSelection(result.current.postOptions[0])
+        result2.current.handlePostSelection(result2.current.postOptions[0])
       })
 
       await waitFor(() => {
-        expect(result.current.phase).toBe('DEALS')
+        expect(result2.current.phase).toBe('DEALS')
       })
 
       act(() => {
-        result.current.handleRejectDeals()
+        result2.current.handleRejectDeals()
       })
 
-      expect(result.current.phase).toBe('COMPLETE')
-      expect(result.current.brandOffers).toHaveLength(0)
+      expect(result2.current.phase).toBe('COMPLETE')
+      expect(result2.current.brandOffers).toHaveLength(0)
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Skipped'),
         'info'
@@ -863,8 +784,10 @@ describe('usePostGigLogic', () => {
   })
 
   describe('spin story', () => {
-    it('reduces controversy when player has enough money', async () => {
-      const { result } = renderHook(() => usePostGigLogic())
+    it('reduces controversy based on player funds', async () => {
+      setupDefaultMocks()
+      // Test with enough money
+      let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -882,16 +805,17 @@ describe('usePostGigLogic', () => {
         expect.stringContaining('Controversy reduced'),
         'success'
       )
-    })
 
-    it('rejects spin story when player lacks funds', async () => {
+      // Test with insufficient funds
+      vi.clearAllMocks()
+      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           player: { money: 100, fame: 100, day: 5, location: 'berlin' }
         })
       )
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -910,8 +834,9 @@ describe('usePostGigLogic', () => {
   })
 
   describe('continue and completion', () => {
-    it('updates player money and fame on continue', async () => {
-      const { result } = renderHook(() => usePostGigLogic())
+    it('handles game flow: updates state, saves, and transitions', async () => {
+      setupDefaultMocks()
+      let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -921,15 +846,22 @@ describe('usePostGigLogic', () => {
         result.current.handleContinue()
       })
 
+      // Check money/fame update
       expect(mockUpdatePlayer).toHaveBeenCalledWith(
         expect.objectContaining({
           money: 700, // 500 + 200 net
           fame: expect.any(Number)
         })
       )
-    })
 
-    it('triggers bankruptcy when shouldTriggerBankruptcy returns true', async () => {
+      // Check save/transition
+      await waitFor(() => {
+        expect(mockSaveGame).toHaveBeenCalledWith(false)
+        expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+      })
+
+      // Test bankruptcy path
+      vi.clearAllMocks()
       economyEngine.shouldTriggerBankruptcy.mockReturnValue(true)
       economyEngine.calculateGigFinancials.mockReturnValue({
         net: -600,
@@ -937,7 +869,7 @@ describe('usePostGigLogic', () => {
         expenses: { total: 700, breakdown: [] }
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -954,29 +886,14 @@ describe('usePostGigLogic', () => {
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
     })
 
-    it('saves game and returns to overworld on success', async () => {
-      const { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.financials).toBeTruthy()
-      })
-
-      act(() => {
-        result.current.handleContinue()
-      })
-
-      await waitFor(() => {
-        expect(mockSaveGame).toHaveBeenCalledWith(false)
-        expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
-      })
-    })
-
-    it('adds apology tour quest when cancel_quest_active flag is set', async () => {
+    it('triggers story quests based on active flags', async () => {
+      setupDefaultMocks()
+      // Test apology tour quest
       GameState.useGameState.mockReturnValue(
         getBaseState({ activeStoryFlags: ['cancel_quest_active'] })
       )
 
-      const { result } = renderHook(() => usePostGigLogic())
+      let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -989,18 +906,19 @@ describe('usePostGigLogic', () => {
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'quest_apology_tour',
-          deadline: 19, // day 5 + 14
+          deadline: 19,
           required: 3
         })
       )
-    })
 
-    it('adds ego management quest when breakup_quest_active flag is set', async () => {
+      // Test ego management quest
+      vi.clearAllMocks()
+      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({ activeStoryFlags: ['breakup_quest_active'] })
       )
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
@@ -1013,7 +931,7 @@ describe('usePostGigLogic', () => {
       expect(mockAddQuest).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'quest_ego_management',
-          deadline: 10, // day 5 + 5
+          deadline: 10,
           required: 1,
           failurePenalty: { type: 'game_over' }
         })
@@ -1022,15 +940,17 @@ describe('usePostGigLogic', () => {
   })
 
   describe('edge cases', () => {
-    it('clamps band harmony to valid range', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+    it('clamps band and member attributes to valid ranges', async () => {
+      setupDefaultMocks()
+      // Test harmony clamping
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
-        harmonyChange: 100 // Would exceed max
+        harmonyChange: 100
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
+      let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.postOptions).toHaveLength(1)
@@ -1041,13 +961,11 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          harmony: 100 // Clamped to max
-        })
+        expect.objectContaining({ harmony: 100 })
       )
-    })
 
-    it('clamps member mood and stamina to valid range', async () => {
+      // Test mood and stamina clamping
+      vi.clearAllMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           band: {
@@ -1058,7 +976,7 @@ describe('usePostGigLogic', () => {
         })
       )
 
-      socialEngine.resolvePost.mockReturnValue({
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
@@ -1068,7 +986,7 @@ describe('usePostGigLogic', () => {
         allMembersStaminaChange: true
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.postOptions).toHaveLength(1)
@@ -1082,23 +1000,25 @@ describe('usePostGigLogic', () => {
         expect.objectContaining({
           members: [
             expect.objectContaining({
-              mood: 100, // Clamped to max
-              stamina: 0 // Clamped to min (10 - 15 = -5 -> 0)
+              mood: 100,
+              stamina: 0
             })
           ]
         })
       )
     })
 
-    it('handles missing influencer gracefully', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+    it('handles missing data and ego management gracefully', async () => {
+      setupDefaultMocks()
+      // Test missing influencer
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         influencerUpdate: { id: 'nonexistent', scoreChange: 10 }
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
+      let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
         expect(result.current.postOptions).toHaveLength(1)
@@ -1108,11 +1028,11 @@ describe('usePostGigLogic', () => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      // Should not crash
       expect(mockUpdateSocial).toHaveBeenCalled()
-    })
 
-    it('clears egoFocus when egoClear is true', async () => {
+      // Test ego clear
+      vi.clearAllMocks()
+      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           social: {
@@ -1122,14 +1042,14 @@ describe('usePostGigLogic', () => {
         })
       )
 
-      socialEngine.resolvePost.mockReturnValue({
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         egoClear: true
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.postOptions).toHaveLength(1)
@@ -1140,21 +1060,21 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          egoFocus: null
-        })
+        expect.objectContaining({ egoFocus: null })
       )
-    })
 
-    it('sets egoFocus when egoDrop is provided', async () => {
-      socialEngine.resolvePost.mockReturnValue({
+      // Test ego drop
+      vi.clearAllMocks()
+      setupDefaultMocks()
+
+      socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
         platform: 'instagram',
         egoDrop: 'Member2'
       })
 
-      const { result } = renderHook(() => usePostGigLogic())
+      result = renderHook(() => usePostGigLogic()).result
 
       await waitFor(() => {
         expect(result.current.postOptions).toHaveLength(1)
@@ -1165,13 +1085,12 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          egoFocus: 'Member2'
-        })
+        expect.objectContaining({ egoFocus: 'Member2' })
       )
     })
 
     it('returns early from handleContinue if financials are null', async () => {
+      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({ lastGigStats: null })
       )
@@ -1182,7 +1101,6 @@ describe('usePostGigLogic', () => {
         result.current.handleContinue()
       })
 
-      // Should not call any update functions
       expect(mockUpdatePlayer).not.toHaveBeenCalled()
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
