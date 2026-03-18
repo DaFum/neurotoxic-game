@@ -86,90 +86,64 @@ export const useKabelsalatState = () => {
     }
   }, [connections])
 
+  const timeLeftRef = useRef(timeLeft)
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
+  const handleGameEnd = useCallback(
+    (delay, isPowered) => {
+      const timer = setTimeout(() => {
+        try {
+          completeKabelsalatMinigame({ isPoweredOn: isPowered, timeLeft: isPowered ? timeLeftRef.current : 0 })
+        } catch (error) {
+          import('../../utils/errorHandler.js')
+            .then(({ handleError, StateError }) => {
+              const wrappedError =
+                error instanceof Error ? error : new Error(String(error))
+              handleError(
+                new StateError('Failed to complete minigame', {
+                  originalError: wrappedError
+                })
+              )
+            })
+            .catch(err => {
+              const fallback =
+                err instanceof Error ? err : new Error(String(err))
+              try {
+                const fallbackStateError = new Error(
+                  'Failed to complete minigame (import error)'
+                )
+                console.error(fallback, fallbackStateError)
+              } catch (_e) {
+                // Ignore fallback error
+              }
+            })
+        } finally {
+          changeScene(GAME_PHASES.GIG)
+        }
+      }, delay)
+      return timer
+    },
+    [completeKabelsalatMinigame, changeScene]
+  )
+
   // End Game Effects
   useEffect(() => {
     if (isPoweredOn && !transitionedRef.current) {
       transitionedRef.current = true
-      const timer = setTimeout(() => {
-        try {
-          completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
-        } catch (error) {
-          import('../../utils/errorHandler.js')
-            .then(({ handleError, StateError }) => {
-              const wrappedError =
-                error instanceof Error ? error : new Error(String(error))
-              handleError(
-                new StateError('Failed to complete minigame', {
-                  originalError: wrappedError
-                })
-              )
-            })
-            .catch(err => {
-              const fallback =
-                err instanceof Error ? err : new Error(String(err))
-              try {
-                changeScene(GAME_PHASES.GIG)
-              } catch (_e) {
-                // Ignore fallback error
-              }
-              try {
-                const fallbackStateError = new Error(
-                  'Failed to complete minigame (import error)'
-                )
-                console.error(fallback, fallbackStateError)
-              } catch (_e) {
-                // Ignore fallback error
-              }
-            })
-        } finally {
-          changeScene(GAME_PHASES.GIG)
-        }
-      }, 2500)
+      const timer = handleGameEnd(2500, true)
       return () => clearTimeout(timer)
     }
-  }, [isPoweredOn, timeLeft, completeKabelsalatMinigame, changeScene])
+  }, [isPoweredOn, handleGameEnd])
 
   useEffect(() => {
     if (isGameOver && !transitionedRef.current) {
       transitionedRef.current = true
-      const timer = setTimeout(() => {
-        try {
-          completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
-        } catch (error) {
-          import('../../utils/errorHandler.js')
-            .then(({ handleError, StateError }) => {
-              const wrappedError =
-                error instanceof Error ? error : new Error(String(error))
-              handleError(
-                new StateError('Failed to complete minigame', {
-                  originalError: wrappedError
-                })
-              )
-            })
-            .catch(err => {
-              const fallback =
-                err instanceof Error ? err : new Error(String(err))
-              try {
-                changeScene(GAME_PHASES.GIG)
-              } catch (_e) {
-                // Ignore fallback error
-              }
-              try {
-                const fallbackStateError = new Error(
-                  'Failed to complete minigame (import error)'
-                )
-                console.error(fallback, fallbackStateError)
-              } catch (_e) {
-                // Ignore fallback error
-              }
-            })
-        } finally {
-          changeScene(GAME_PHASES.GIG)
-        }
-      }, 3500)
+      const timer = handleGameEnd(3500, false)
       return () => clearTimeout(timer)
     }
-  }, [isGameOver, completeKabelsalatMinigame, changeScene])
+  }, [isGameOver, handleGameEnd])
 
   // Background Texture
   useEffect(() => {
