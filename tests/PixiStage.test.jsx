@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, waitFor } from '@testing-library/react'
+import { PixiStage } from '../src/components/PixiStage.jsx'
 
 afterEach(() => {
   cleanup()
@@ -16,9 +17,7 @@ describe('PixiStage', () => {
     manualUpdate: vi.fn()
   })
 
-  test('renders canvas container with correct styling', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
-
+  test('renders canvas container with correct styling', () => {
     const { container } = render(
       <PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />
     )
@@ -31,7 +30,6 @@ describe('PixiStage', () => {
   })
 
   test('calls controller init on mount', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     const mockFactory = vi.fn(() => mockController)
 
@@ -50,7 +48,6 @@ describe('PixiStage', () => {
   })
 
   test('passes correct params to controller factory', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     const mockFactory = vi.fn(() => mockController)
 
@@ -74,7 +71,6 @@ describe('PixiStage', () => {
   })
 
   test('calls dispose on unmount', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     const mockFactory = vi.fn(() => mockController)
 
@@ -96,7 +92,6 @@ describe('PixiStage', () => {
   })
 
   test('handles controller init failure gracefully', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     mockController.init = vi.fn().mockRejectedValue(new Error('Init failed'))
     const mockFactory = vi.fn(() => mockController)
@@ -118,7 +113,6 @@ describe('PixiStage', () => {
   })
 
   test('disposes controller if unmounted before init completes', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     let resolveInit
     mockController.init = vi.fn(
@@ -149,7 +143,6 @@ describe('PixiStage', () => {
   })
 
   test('updates updateRef when update prop changes', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     const mockFactory = vi.fn(() => mockController)
 
@@ -179,8 +172,6 @@ describe('PixiStage', () => {
   })
 
   test('uses default controller factory when not provided', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
-
     // Should not crash when using default factory
     render(<PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />)
 
@@ -191,7 +182,6 @@ describe('PixiStage', () => {
   })
 
   test('containerRef is attached to DOM element', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     let capturedContainerRef
     const mockFactory = vi.fn(params => {
@@ -213,7 +203,6 @@ describe('PixiStage', () => {
   })
 
   test('does not recreate controller on gameStateRef change', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     const mockFactory = vi.fn(() => mockController)
 
@@ -247,7 +236,6 @@ describe('PixiStage', () => {
   })
 
   test('recreates controller when controllerFactory changes', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController1 = createMockController()
     const mockController2 = createMockController()
     const mockFactory1 = vi.fn(() => mockController1)
@@ -280,7 +268,6 @@ describe('PixiStage', () => {
   })
 
   test('memoizes component to prevent unnecessary rerenders', async () => {
-    const { PixiStage } = await import('../src/components/PixiStage.jsx')
     const mockController = createMockController()
     const mockFactory = vi.fn(() => mockController)
 
