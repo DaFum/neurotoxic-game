@@ -1,4 +1,4 @@
-import { describe, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createRoadieStageController } from '../../src/components/stage/RoadieStageController'
 
 // Mock utils
@@ -51,6 +51,7 @@ describe('RoadieStageController loadAssets performance', () => {
 
     // With sequential awaits, it takes > 200ms
     // With concurrent awaits, it takes ~ 100ms
+    expect(duration).toBeLessThan(200)
 
     // Cleanup
     controller.dispose()

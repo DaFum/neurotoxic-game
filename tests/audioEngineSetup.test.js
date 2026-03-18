@@ -289,9 +289,13 @@ test('ensureAudioContext', async t => {
     } finally {
       if (originalRawStateDesc) {
         Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
+      } else {
+        delete context.rawContext.state
       }
       if (originalToneStateDesc) {
         Object.defineProperty(context, 'state', originalToneStateDesc)
+      } else {
+        delete context.state
       }
       context.resume = originalResume
     }
@@ -336,9 +340,13 @@ test('ensureAudioContext', async t => {
     } finally {
       if (originalRawStateDesc) {
         Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
+      } else {
+        delete context.rawContext.state
       }
       if (originalToneStateDesc) {
         Object.defineProperty(context, 'state', originalToneStateDesc)
+      } else {
+        delete context.state
       }
     }
   })
@@ -391,9 +399,13 @@ test('ensureAudioContext', async t => {
     } finally {
       if (originalRawStateDesc) {
         Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
+      } else {
+        delete context.rawContext.state
       }
       if (originalToneStateDesc) {
         Object.defineProperty(context, 'state', originalToneStateDesc)
+      } else {
+        delete context.state
       }
     }
   })
