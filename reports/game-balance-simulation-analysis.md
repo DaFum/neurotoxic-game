@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-03-18T19:40:34.132Z
+Erstellt am: 2026-03-18T20:29:23.252Z
 
 ## Simulationseinstellungen
 
@@ -23,13 +23,13 @@ Erstellt am: 2026-03-18T19:40:34.132Z
 
 | Szenario | Ø Endgeld | Ø Endfame | Ø Harmony | Ø Kontroverse | Ø Gigs | Insolvenzrate | Ø Gig-Netto | Ø Events (viral/cash/band) | Ø Trend | Ø Brand Deals | Ø Contraband | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 29033 | 0 | 40 | 0.81 | 25 | 0% | 1889 | 6.91 | 9.19 | 3.3 | 8.42 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
-| Bootstrap Struggle | 10217 | 0 | 49 | 0.85 | 18 | 0% | 1628 | 9.34 | 9.28 | 2.98 | 8.21 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Aggressive Marketing | 74524 | 0 | 8 | 0.83 | 37 | 0% | 2431 | 11.31 | 9.12 | 3.55 | 8.14 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
-| Scandal Recovery | 18028 | 0 | 22 | 15.19 | 25 | 0% | 1452 | 14.46 | 9.25 | 3.05 | 8.19 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
-| Festival Push | 134450 | 63 | 41 | 0.77 | 25 | 0% | 5838 | 7.41 | 9.05 | 3.35 | 8.43 | ⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen. |
-| Chaos Tour | 40292 | 0 | 5 | 3.6 | 37 | 0% | 1654 | 17.62 | 9.12 | 3.26 | 8.55 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
-| Cult Hypergrowth | 127604 | 0 | 7 | 0.93 | 37 | 0% | 3822 | 10.42 | 8.87 | 3.44 | 8.36 | ⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen. |
+| Baseline Touring | 40096 | 0 | 41 | 0.73 | 25 | 0% | 1887 | 6.64 | 9.3 | 3.22 | 8.25 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
+| Bootstrap Struggle | 19419 | 0 | 49 | 0.97 | 18 | 0% | 1644 | 9.52 | 9.1 | 2.95 | 8.13 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Aggressive Marketing | 86122 | 0 | 8 | 0.85 | 37 | 0% | 2430 | 11.36 | 9.1 | 3.57 | 8.13 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
+| Scandal Recovery | 27457 | 0 | 23 | 15.79 | 25 | 0% | 1461 | 14.27 | 9.04 | 3.1 | 8.13 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
+| Festival Push | 146094 | 63 | 41 | 0.79 | 25 | 0% | 5839 | 7.42 | 9.06 | 3.35 | 8.4 | ⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen. |
+| Chaos Tour | 51885 | 0 | 5 | 3.63 | 37 | 0% | 1655 | 17.7 | 9.1 | 3.23 | 8.53 | ⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen. |
+| Cult Hypergrowth | 139420 | 0 | 7 | 0.93 | 37 | 0% | 3822 | 10.43 | 8.87 | 3.46 | 8.34 | ⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen. |
 
 ## Feature-Abdeckung in der Simulation
 
@@ -43,7 +43,7 @@ Erstellt am: 2026-03-18T19:40:34.132Z
 - ✅ gig_modifiers
 - ✅ gig_physics
 - ✅ world_events
-- ✅ events_db
+- ⚪ events_db
 - ✅ brand_deals
 - ✅ social_trends
 - ✅ social_platforms
@@ -55,7 +55,7 @@ Erstellt am: 2026-03-18T19:40:34.132Z
 
 ## Kurzfazit
 
-- Höchstes Risiko: **Baseline Touring** mit 0% Insolvenzrate.
-- Höchster Kapitalaufbau: **Festival Push** mit Ø 134450 Endgeld.
-- Höchste Volatilität: **Chaos Tour** mit Ø 17.62 Event-Impulsen.
+- Kein Szenario mit Insolvenzfällen beobachtet.
+- Höchster Kapitalaufbau: **Festival Push** mit Ø 146094 Endgeld.
+- Höchste Volatilität: **Chaos Tour** mit Ø 17.70 Event-Impulsen.
 - Empfehlung: Extreme Szenarien priorisiert gegeneinander testen und Ziel-KPI-Bänder definieren.

@@ -42,6 +42,10 @@ import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 const REPORT_DIR = path.join(PROJECT_ROOT, 'reports')
+const REPORT_FILES = {
+  outputJson: 'game-balance-simulation-results.json',
+  outputMarkdown: 'game-balance-simulation-analysis.md'
+}
 
 export const SIMULATION_CONSTANTS = {
   reportVersion: 3,
@@ -63,8 +67,8 @@ export const SIMULATION_CONSTANTS = {
   contrabandDropChance: 0.11,
   hqUpgradeCost: 240,
   vanUpgradeCost: 350,
-  outputJson: path.join(REPORT_DIR, 'game-balance-simulation-results.json'),
-  outputMarkdown: path.join(REPORT_DIR, 'game-balance-simulation-analysis.md')
+  outputJson: REPORT_FILES.outputJson,
+  outputMarkdown: REPORT_FILES.outputMarkdown
 }
 
 export const SCENARIOS = [
@@ -545,16 +549,44 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   const cost = Number(candidate.cost || 0)
   if (!Number.isFinite(cost) || cost <= 0 || cost > state.player.money) return
 
+  const ownedUpgrades = Array.isArray(state.player.hqUpgrades)
+    ? state.player.hqUpgrades
+    : []
+  if (ownedUpgrades.includes(candidate.id)) return
+
   state.player.money = clampPlayerMoney(state.player.money - cost)
-  state.player.hqUpgrades = [
-    ...new Set([...(state.player.hqUpgrades || []), candidate.id])
-  ]
+  state.player.hqUpgrades = [...ownedUpgrades, candidate.id]
   counters.catalogUpgrades += 1
 }
 
+const mergeGigModifierPipeline = (gigModifiers, physics) => {
+  const mergedMultipliers = {
+    guitar: physics.multipliers.guitar * (gigModifiers.guitarScoreMult || 1),
+    drums: physics.multipliers.drums,
+    bass: physics.multipliers.bass
+  }
+
+  return {
+    ...gigModifiers,
+    mergedMultipliers,
+    multiplierBonus:
+      mergedMultipliers.guitar +
+      mergedMultipliers.drums +
+      mergedMultipliers.bass -
+      3
+  }
+}
+
 const buildAppFeatureSnapshot = () => {
-  const eventCounts = Object.fromEntries(
-    Object.entries(EVENTS_DB).map(([key, value]) => [key, value.length])
+  const eventCatalog = Object.fromEntries(
+    Object.entries(EVENTS_DB).map(([key, events]) => [
+      key,
+      {
+        count: events.length,
+        sampleEventIds: events.slice(0, 5).map(event => event.id),
+        triggers: [...new Set(events.map(event => event.trigger || 'unknown'))]
+      }
+    ])
   )
 
   const trendList = [...ALLOWED_TRENDS]
@@ -566,7 +598,7 @@ const buildAppFeatureSnapshot = () => {
   return {
     venues: ALL_VENUES.length,
     scenarios: SCENARIOS.length,
-    eventsDb: eventCounts,
+    eventsDb: eventCatalog,
     brandDeals: BRAND_DEALS.length,
     postOptions: POST_OPTIONS.length,
     trends: trendList,
@@ -649,32 +681,39 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   }
 
   if (state.player.money > 1100 && rng() < 0.3) {
-    state.player.money = clampPlayerMoney(
-      state.player.money - SIMULATION_CONSTANTS.hqUpgradeCost
-    )
-    state.player.hqUpgrades = [
-      ...new Set([...(state.player.hqUpgrades || []), 'hq_room_sofa'])
-    ]
-    counters.hqUpgrades += 1
+    const ownedUpgrades = Array.isArray(state.player.hqUpgrades)
+      ? state.player.hqUpgrades
+      : []
+    if (!ownedUpgrades.includes('hq_room_sofa')) {
+      state.player.money = clampPlayerMoney(
+        state.player.money - SIMULATION_CONSTANTS.hqUpgradeCost
+      )
+      state.player.hqUpgrades = [...ownedUpgrades, 'hq_room_sofa']
+      counters.hqUpgrades += 1
+    }
   }
 
   if (state.player.money > 1500 && rng() < 0.2) {
-    state.player.money = clampPlayerMoney(
-      state.player.money - SIMULATION_CONSTANTS.vanUpgradeCost
-    )
-    state.player.van.upgrades = [
-      ...new Set([...(state.player.van.upgrades || []), 'van_tuning'])
-    ]
-    counters.vanUpgrades += 1
+    const ownedVanUpgrades = Array.isArray(state.player.van?.upgrades)
+      ? state.player.van.upgrades
+      : []
+    if (!ownedVanUpgrades.includes('van_tuning')) {
+      state.player.money = clampPlayerMoney(
+        state.player.money - SIMULATION_CONSTANTS.vanUpgradeCost
+      )
+      state.player.van.upgrades = [...ownedVanUpgrades, 'van_tuning']
+      counters.vanUpgrades += 1
+    }
   }
 }
 
 const calculatePerformanceScore = (state, venue, modifiers, rng) => {
-  const gigModifiers = getGigModifiers(state.band, modifiers)
+  const rawGigModifiers = getGigModifiers(state.band, modifiers)
   const physics = calculateGigPhysics(state.band, {
     bpm: 120 + Math.round(rng() * 90),
     difficulty: venue.diff
   })
+  const gigModifiers = mergeGigModifierPipeline(rawGigModifiers, physics)
 
   const members = state.band.members
   const avgMood =
@@ -693,12 +732,7 @@ const calculatePerformanceScore = (state, venue, modifiers, rng) => {
     12
   const modifierCore =
     gigModifiers.hitWindowBonus * 0.22 - (gigModifiers.noteJitter ? 7 : 0)
-  const multiplierCore =
-    (physics.multipliers.guitar +
-      physics.multipliers.drums +
-      physics.multipliers.bass -
-      3) *
-    18
+  const multiplierCore = gigModifiers.multiplierBonus * 18
   const variance = (rng() - 0.5) * 16
 
   const score = Math.round(
@@ -1065,7 +1099,9 @@ const buildFeatureCoverage = results => {
     coverage.fuel_cost = true
     coverage.gig_modifiers = true
     coverage.gig_physics = true
-    coverage.events_db = true
+    // World events are simulated stochastically and do not replay the full
+    // live EVENTS_DB processing pipeline yet.
+    coverage.events_db = false
     coverage.brand_deals = true
     coverage.social_trends = true
     coverage.social_platforms = true
@@ -1118,7 +1154,7 @@ const buildMarkdownReport = payload => {
     `- Event-Kategorien: ${Object.keys(payload.appFeatureSnapshot.eventsDb).length}`
   )
   lines.push(
-    `- Events gesamt: ${Object.values(payload.appFeatureSnapshot.eventsDb).reduce((sum, count) => sum + count, 0)}`
+    `- Events gesamt: ${Object.values(payload.appFeatureSnapshot.eventsDb).reduce((sum, category) => sum + category.count, 0)}`
   )
   lines.push(`- Brand Deals: ${payload.appFeatureSnapshot.brandDeals}`)
   lines.push(`- Post Options: ${payload.appFeatureSnapshot.postOptions}`)
@@ -1178,10 +1214,17 @@ const buildMarkdownReport = payload => {
         a.summary.avgCashSwings +
         a.summary.avgBandEvents)
   )[0]
-
-  lines.push(
-    `- Höchstes Risiko: **${riskiest.name}** mit ${riskiest.summary.bankruptcyRate}% Insolvenzrate.`
+  const maxBankruptcyRate = Math.max(
+    ...payload.results.map(result => result.summary.bankruptcyRate)
   )
+
+  if (maxBankruptcyRate > 0) {
+    lines.push(
+      `- Höchstes Risiko: **${riskiest.name}** mit ${riskiest.summary.bankruptcyRate}% Insolvenzrate.`
+    )
+  } else {
+    lines.push('- Kein Szenario mit Insolvenzfällen beobachtet.')
+  }
   lines.push(
     `- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${richest.summary.avgFinalMoney} Endgeld.`
   )
@@ -1230,6 +1273,8 @@ export const runSimulationSuite = async () => {
   const payload = {
     generatedAt: new Date().toISOString(),
     constants: SIMULATION_CONSTANTS,
+    outputJson: SIMULATION_CONSTANTS.outputJson,
+    outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown,
     scenarios: SCENARIOS,
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     featureCoverage: buildFeatureCoverage(results),
@@ -1237,13 +1282,15 @@ export const runSimulationSuite = async () => {
   }
 
   await fs.mkdir(REPORT_DIR, { recursive: true })
+  const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
+  const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)
   await fs.writeFile(
-    SIMULATION_CONSTANTS.outputJson,
+    outputJsonPath,
     `${JSON.stringify(payload, null, 2)}\n`,
     'utf8'
   )
   await fs.writeFile(
-    SIMULATION_CONSTANTS.outputMarkdown,
+    outputMarkdownPath,
     `${buildMarkdownReport(payload)}\n`,
     'utf8'
   )
@@ -1253,6 +1300,8 @@ export const runSimulationSuite = async () => {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const payload = await runSimulationSuite()
+  const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
+  const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)
   const totalRuns = payload.results.reduce(
     (sum, scenario) => sum + scenario.summary.sampleSize,
     0
@@ -1260,7 +1309,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   console.log(
     `[balance-sim] Fertig: ${payload.results.length} Szenarien / ${totalRuns} Runs.\n` +
-      `[balance-sim] JSON: ${SIMULATION_CONSTANTS.outputJson}\n` +
-      `[balance-sim] Analyse: ${SIMULATION_CONSTANTS.outputMarkdown}`
+      `[balance-sim] JSON: ${outputJsonPath}\n` +
+      `[balance-sim] Analyse: ${outputMarkdownPath}`
   )
 }
