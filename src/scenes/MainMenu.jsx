@@ -78,28 +78,7 @@ export const MainMenu = () => {
     })
   }, [reportAudioIssue])
 
-  const proceedToTour = useCallback(async () => {
-    setIsStarting(true)
-
-    // Optimization: Artificial delay removed
-    if (!isMountedRef.current) return
-
-    // State transitions (batched automatically by React 18+)
-    resetState()
-
-    // Re-apply identity after reset (since reset clears state to default)
-    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
-    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
-    if (savedPlayerId && savedPlayerName) {
-      updatePlayer({
-        playerId: savedPlayerId,
-        playerName: savedPlayerName
-      })
-    }
-
-    changeScene(GAME_PHASES.OVERWORLD)
-
-    // Audio setup is fire-and-forget — never blocks scene transitions.
+  const initializeAudio = useCallback(() => {
     void audioManager
       .ensureAudioContext()
       .then(success => {
@@ -122,11 +101,35 @@ export const MainMenu = () => {
           })
         )
       )
+  }, [reportAudioIssue, startAmbientSafely])
+
+  const proceedToTour = useCallback(async () => {
+    setIsStarting(true)
+
+    // Optimization: Artificial delay removed
+    if (!isMountedRef.current) return
+
+    // State transitions (batched automatically by React 18+)
+    resetState()
+
+    // Re-apply identity after reset (since reset clears state to default)
+    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
+    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
+    if (savedPlayerId && savedPlayerName) {
+      updatePlayer({
+        playerId: savedPlayerId,
+        playerName: savedPlayerName
+      })
+    }
+
+    changeScene(GAME_PHASES.OVERWORLD)
+
+    // Audio setup is fire-and-forget — never blocks scene transitions.
+    initializeAudio()
   }, [
     resetState,
     changeScene,
-    reportAudioIssue,
-    startAmbientSafely,
+    initializeAudio,
     updatePlayer
   ])
 
@@ -206,29 +209,8 @@ export const MainMenu = () => {
     changeScene(GAME_PHASES.OVERWORLD)
 
     // Audio is fire-and-forget; Overworld re-syncs audio.
-    void audioManager
-      .ensureAudioContext()
-      .then(success => {
-        if (success) {
-          startAmbientSafely()
-        } else {
-          reportAudioIssue(
-            new Error('Audio unlock failed'),
-            tRef.current('ui:errors.audio_init_failed', {
-              defaultValue: 'Audio initialization failed'
-            })
-          )
-        }
-      })
-      .catch(err =>
-        reportAudioIssue(
-          err,
-          tRef.current('ui:errors.audio_init_failed', {
-            defaultValue: 'Audio initialization failed'
-          })
-        )
-      )
-  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely])
+    initializeAudio()
+  }, [loadGame, addToast, changeScene, initializeAudio])
 
   const handleCredits = useCallback(
     () => changeScene(GAME_PHASES.CREDITS),
