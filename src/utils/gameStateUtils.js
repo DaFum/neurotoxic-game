@@ -243,6 +243,7 @@ export const calculateAppliedDelta = (state, delta) => {
     // Inventory
     if (delta.band.inventory) {
       applied.band.inventory = {}
+      // Optimization: using for...in instead of Object.entries to avoid array allocation
       for (const itemId in delta.band.inventory) {
         if (
           !Object.hasOwn(delta.band.inventory, itemId) ||

@@ -180,7 +180,9 @@ const sanitizeContextObject = (context, visited) => {
   visited.add(context)
   const sanitized = {}
 
-  for (const [key, value] of Object.entries(context)) {
+  for (const key in context) {
+    if (!Object.hasOwn(context, key)) continue
+    const value = context[key]
     const normalizedKey = key.toLowerCase()
     if (isSensitiveContextKey(normalizedKey)) {
       sanitized[key] = '[REDACTED]'
