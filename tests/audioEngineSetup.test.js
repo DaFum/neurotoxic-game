@@ -251,6 +251,7 @@ test('ensureAudioContext', async t => {
   await t.test('attempts to resume if suspended', async () => {
     let state = 'suspended'
     const context = mockTone.getContext()
+    const originalResume = context.resume
 
     const originalRawStateDesc = Object.getOwnPropertyDescriptor(
       context.rawContext,
@@ -292,12 +293,14 @@ test('ensureAudioContext', async t => {
       if (originalToneStateDesc) {
         Object.defineProperty(context, 'state', originalToneStateDesc)
       }
+      context.resume = originalResume
     }
   })
 
   await t.test('rebuilds if context is closed', async () => {
     let state = 'closed'
     const context = mockTone.getContext()
+    mockTone.start.mock.resetCalls()
     const originalRawStateDesc = Object.getOwnPropertyDescriptor(
       context.rawContext,
       'state'
@@ -329,7 +332,7 @@ test('ensureAudioContext', async t => {
     try {
       const result = await ensureAudioContext()
       assert.strictEqual(result, true)
-      assert.strictEqual(mockTone.start.mock.calls.length >= 1, true)
+      assert.strictEqual(mockTone.start.mock.calls.length, 1)
     } finally {
       if (originalRawStateDesc) {
         Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
