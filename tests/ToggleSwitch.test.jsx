@@ -9,15 +9,21 @@ describe('ToggleSwitch', () => {
   })
 
   test('renders correctly with ON state', () => {
-    const { getByRole, getByText } = render(
+    const { getByRole, getByText, container } = render(
       <ToggleSwitch isOn={true} onToggle={() => {}} ariaLabel='Test Switch' />
     )
 
     const switchButton = getByRole('switch')
     expect(switchButton).toBeTruthy()
     expect(switchButton.getAttribute('aria-checked')).toBe('true')
-    expect(switchButton.getAttribute('aria-label')).toBe('Test Switch')
-    expect(switchButton.getAttribute('aria-labelledby')).toBeTruthy()
+
+    const labelledById = switchButton.getAttribute('aria-labelledby')
+    expect(labelledById).toBeTruthy()
+
+    const labelElement = container.querySelector(`[id="${labelledById}"]`)
+    expect(labelElement).toBeTruthy()
+    expect(labelElement.textContent).toBe('Test Switch')
+
     expect(switchButton.type).toBe('button')
 
     // Check visual label
@@ -25,12 +31,19 @@ describe('ToggleSwitch', () => {
   })
 
   test('renders correctly with OFF state', () => {
-    const { getByRole, getByText } = render(
+    const { getByRole, getByText, container } = render(
       <ToggleSwitch isOn={false} onToggle={() => {}} ariaLabel='Test Switch' />
     )
 
     const switchButton = getByRole('switch')
     expect(switchButton.getAttribute('aria-checked')).toBe('false')
+
+    const labelledById = switchButton.getAttribute('aria-labelledby')
+    expect(labelledById).toBeTruthy()
+
+    const labelElement = container.querySelector(`[id="${labelledById}"]`)
+    expect(labelElement).toBeTruthy()
+    expect(labelElement.textContent).toBe('Test Switch')
 
     // Check visual label
     expect(getByText('ui:toggle.off')).toBeTruthy()
@@ -72,7 +85,7 @@ describe('ToggleSwitch', () => {
   })
 
   test('has correct accessibility attributes', () => {
-    const { getByRole } = render(
+    const { getByRole, container } = render(
       <ToggleSwitch
         isOn={true}
         onToggle={() => {}}
@@ -82,7 +95,10 @@ describe('ToggleSwitch', () => {
 
     const switchButton = getByRole('switch')
     expect(switchButton).toHaveProperty('type', 'button')
-    expect(switchButton.getAttribute('aria-label')).toBe('Accessible Switch')
-    expect(switchButton.getAttribute('aria-labelledby')).toBeTruthy()
+    const labelledById = switchButton.getAttribute('aria-labelledby')
+    expect(labelledById).toBeTruthy()
+    const labelElement = container.querySelector(`[id="${labelledById}"]`)
+    expect(labelElement).toBeTruthy()
+    expect(labelElement.textContent).toBe('Accessible Switch')
   })
 })

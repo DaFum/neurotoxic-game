@@ -1,5 +1,4 @@
-// TODO: Review this file
-import { memo, useState, useRef, useEffect, useId } from 'react'
+import { memo, useState, useRef, useEffect, useId, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
@@ -23,14 +22,14 @@ const ToggleSwitchComponent = ({
   const [isGlitching, setIsGlitching] = useState(false)
   const glitchTimerRef = useRef(null)
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     setIsGlitching(true)
     if (glitchTimerRef.current) {
       clearTimeout(glitchTimerRef.current)
     }
     glitchTimerRef.current = setTimeout(() => setIsGlitching(false), 150)
     onToggle()
-  }
+  }, [onToggle])
 
   useEffect(() => {
     return () => {
@@ -47,7 +46,6 @@ const ToggleSwitchComponent = ({
       <span
         id={labelId}
         className='text-sm font-bold tracking-widest uppercase'
-        aria-hidden='true'
       >
         {ariaLabel}
       </span>
@@ -57,8 +55,7 @@ const ToggleSwitchComponent = ({
         className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-checked={isOn}
         role='switch'
-        aria-label={ariaLabel}
-        aria-labelledby={labelId}
+        {...(labelId ? { 'aria-labelledby': labelId } : { 'aria-label': ariaLabel })}
       >
         <div
           className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
