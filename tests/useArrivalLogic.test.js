@@ -177,7 +177,9 @@ describe('useArrivalLogic', () => {
     // 1. triggerEvent('transport', 'travel') -> returns false
     // 2. triggerEvent('band', 'travel') -> returns false
     // 3. handleNodeArrival -> triggerEvent('special') -> returns true
+    let _callCount = 0
     mockGameState.triggerEvent.mock.mockImplementation(type => {
+      _callCount++
       if (type === 'special') return true
       return false // Let the 'travel' events fail so it reaches 'special'
     })
