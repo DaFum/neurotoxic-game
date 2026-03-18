@@ -80,6 +80,23 @@ const mockPixiStageUtils = {
     if (url?.includes('skull')) return mockTextureSkull
     if (url?.includes('lightning')) return mockTextureLightning
     return null
+  }),
+  loadTextures: mock.fn(async (urlMap, onError) => {
+    const results = {}
+    for (const key in urlMap) {
+      if (Object.hasOwn(urlMap, key)) {
+        const url = urlMap[key]
+        if (url?.includes('skull')) {
+          results[key] = mockTextureSkull
+        } else if (url?.includes('lightning')) {
+          results[key] = mockTextureLightning
+        } else {
+          results[key] = null
+          if (onError) onError(new Error(`${key} texture returned null`), `Note ${key} texture failed to load.`)
+        }
+      }
+    }
+    return results
   })
 }
 
@@ -149,8 +166,17 @@ describe('NoteManager', () => {
     assert.equal(sprite.height, 80) // NOTE_SPRITE_SIZE
   })
 
-  test('loadAssets reports error when loadTexture returns null', async () => {
-    mockPixiStageUtils.loadTexture.mock.mockImplementation(async () => null)
+  test('loadAssets reports error when loadTextures returns null', async () => {
+    mockPixiStageUtils.loadTextures.mock.mockImplementation(async (urlMap, onError) => {
+      const results = {}
+      for (const key in urlMap) {
+        if (Object.hasOwn(urlMap, key)) {
+          results[key] = null
+          if (onError) onError(new Error(`${key} texture returned null`), `Note ${key} texture failed to load.`)
+        }
+      }
+      return results
+    })
 
     await noteManager.loadAssets()
 
@@ -160,11 +186,11 @@ describe('NoteManager', () => {
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
     assert.equal(
       mockHandleError.mock.calls[0].arguments[0].message,
-      'Skull texture returned null'
+      'skull texture returned null'
     )
     assert.equal(
       mockHandleError.mock.calls[1].arguments[0].message,
-      'Lightning texture returned null'
+      'lightning texture returned null'
     )
   })
 

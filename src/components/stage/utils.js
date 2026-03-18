@@ -276,12 +276,17 @@ export const loadTextures = async (urlMap, onError) => {
   const promises = keys.map(key => loadTexture(urlMap[key]))
   const settledResults = await Promise.allSettled(promises)
 
-  return keys.reduce((acc, key, index) => {
+  const result = {}
+  for (const key in urlMap) {
+    if (!Object.hasOwn(urlMap, key)) continue
+
+    const index = keys.indexOf(key)
     const res = settledResults[index]
+
     if (res.status === 'fulfilled' && res.value !== null) {
-      acc[key] = res.value
+      result[key] = res.value
     } else {
-      acc[key] = null
+      result[key] = null
       const error =
         res.status === 'fulfilled'
           ? new Error(`Texture '${key}' returned null`)
@@ -297,6 +302,7 @@ export const loadTextures = async (urlMap, onError) => {
         )
       }
     }
-    return acc
-  }, {})
+  }
+
+  return result
 }

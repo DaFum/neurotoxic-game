@@ -36,9 +36,13 @@ vi.mock('../src/utils/logger', () => ({
   logger: { error: mocks.error, warn: mocks.warn }
 }))
 
-vi.mock('../src/components/stage/utils', () => ({
-  getOptimalResolution: () => 2
-}))
+vi.mock('../src/components/stage/utils', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    getOptimalResolution: () => 2
+  }
+})
 
 import { BaseStageController } from '../src/components/stage/BaseStageController'
 
