@@ -55,8 +55,8 @@ export class CrowdManager {
     this.container.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio
     this.stageContainer.addChild(this.container)
 
-    const fallbackColor = getPixiColorFromToken('--star-white')
-    const mutedColor = getPixiColorFromToken('--ash-gray')
+    const fallbackColor = this.colors.starWhite
+    const mutedColor = this.colors.ashGray
 
     const safeRandom = () => {
       try {
