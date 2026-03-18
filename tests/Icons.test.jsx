@@ -11,7 +11,7 @@ describe('RazorPlayIcon', () => {
   })
 
   test('applies custom className', () => {
-    const { container } = render(<RazorPlayIcon className="custom-class" />)
+    const { container } = render(<RazorPlayIcon className='custom-class' />)
     const svg = container.querySelector('svg')
     expect(svg.className.baseVal).toContain('custom-class')
     expect(svg.className.baseVal).toContain('text-toxic-green')
@@ -27,7 +27,7 @@ describe('VoidSkullIcon', () => {
   })
 
   test('applies custom className', () => {
-    const { container } = render(<VoidSkullIcon className="custom-skull" />)
+    const { container } = render(<VoidSkullIcon className='custom-skull' />)
     const svg = container.querySelector('svg')
     expect(svg.className.baseVal).toContain('custom-skull')
     expect(svg.className.baseVal).toContain('text-toxic-green')

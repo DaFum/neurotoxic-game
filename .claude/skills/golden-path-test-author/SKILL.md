@@ -15,6 +15,7 @@ Ensure the critical game loop—**INTRO → MENU → OVERWORLD → PREGIG → GI
 ## What Is a Golden Path Test?
 
 A **golden path test** runs a sequence of actions (state transitions) end-to-end, verifying:
+
 - **Scene transitions**: `CHANGE_SCENE` moves between valid game phases
 - **State mutations**: `TRAVEL`, `START_GIG`, `ADVANCE_DAY` update player/band correctly
 - **Resource safety**: Money never negative, harmony clamped [1, 100], fuel ∈ [0, 100]
@@ -26,17 +27,20 @@ Use `node:test` + `node:assert` to test the **reducer + action creators together
 ## Core Workflow
 
 ### 1. Choose Your Test Target
-| Target | Use Case | Notes |
-|--------|----------|-------|
-| **Full cycle** | INTRO → GAMEOVER in one test | ~50 state transitions; validates sequence integrity |
-| **Single transition** | E.g., "test TRAVEL costs fuel" | Focused; isolates one action |
-| **Edge case** | Bankruptcy, van breakdown, low harmony | Tests boundaries |
-| **State safety** | "Verify money never goes negative" | Runs same action 5+ times; checks invariant |
+
+| Target                | Use Case                               | Notes                                               |
+| --------------------- | -------------------------------------- | --------------------------------------------------- |
+| **Full cycle**        | INTRO → GAMEOVER in one test           | ~50 state transitions; validates sequence integrity |
+| **Single transition** | E.g., "test TRAVEL costs fuel"         | Focused; isolates one action                        |
+| **Edge case**         | Bankruptcy, van breakdown, low harmony | Tests boundaries                                    |
+| **State safety**      | "Verify money never goes negative"     | Runs same action 5+ times; checks invariant         |
 
 ### 2. Scaffold the Test File
+
 Create `tests/golden-path/[name].test.js`:
+
 ```javascript
-import test from 'node:test'  // use async `test()` to group subtests
+import test from 'node:test' // use async `test()` to group subtests
 import assert from 'node:assert/strict'
 import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
 import { createInitialState } from '../src/context/initialState.js'
@@ -51,7 +55,9 @@ test('Golden Path: [Your Test Name]', async t => {
 ```
 
 ### 3. Define Input + Expected Output
+
 For each action, specify:
+
 - **precondition**: What must be true before the action (e.g., "state has 10 fuel")
 - **action**: The reducer action type + payload
 - **assertion**: What should be true after (e.g., "fuel is 9")
@@ -59,9 +65,11 @@ For each action, specify:
 See **references/state-shapes.md** for game state structure and **references/common-assertions.md** for assertion patterns.
 
 ### 4. Run and Debug
+
 ```bash
 pnpm run test -- tests/golden-path/[name].test.js
 ```
+
 If it fails, see **references/debugging-guide.md** for diagnosis steps.
 
 ## Complete Example: Travel + Day Advance
@@ -153,7 +161,9 @@ test('Golden Path: Full gig cycle from setup to earnings', async t => {
 
   // Phase 2: PreGig setup
   state = applyAction(state, ActionTypes.SET_SETLIST, songs)
-  state = applyAction(state, ActionTypes.SET_GIG_MODIFIERS, { soundcheck: true })
+  state = applyAction(state, ActionTypes.SET_GIG_MODIFIERS, {
+    soundcheck: true
+  })
 
   // Phase 3: PreGig → Gig
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
@@ -181,6 +191,7 @@ test('Golden Path: Full gig cycle from setup to earnings', async t => {
 ## Debugging Failed Tests
 
 See **references/debugging-guide.md** for:
+
 - **Test fails on line X**: How to read assertion errors
 - **State is unexpectedly undefined**: Check preconditions and mocks
 - **Money went negative**: Audit the action sequence for missing clamping
@@ -189,6 +200,7 @@ See **references/debugging-guide.md** for:
 ## Testing All 5 Transitions
 
 See **references/transition-examples.md** for complete examples:
+
 1. **MENU → OVERWORLD** (scene + map setup)
 2. **OVERWORLD → PREGIG** (`START_GIG` action)
 3. **PREGIG → GIG** (scene change + setlist/modifiers)

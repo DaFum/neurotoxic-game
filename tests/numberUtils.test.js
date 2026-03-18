@@ -20,11 +20,20 @@ test('formatCurrency - formats currency with default English locale', () => {
 })
 
 test('formatCurrency - formats currency with German locale', () => {
-  assert.equal(formatCurrency(1234567.89, 'de').replace(/\s+/g, ' '), '1.234.568 €')
+  assert.equal(
+    formatCurrency(1234567.89, 'de').replace(/\s+/g, ' '),
+    '1.234.568 €'
+  )
   assert.equal(formatCurrency(1000, 'de').replace(/\s+/g, ' '), '1.000 €')
 })
 
 test('formatCurrency - respects signDisplay option', () => {
-  assert.equal(formatCurrency(1000, 'en', 'always').replace(/\s+/g, ' '), '+€1,000')
-  assert.equal(formatCurrency(1000, 'de', 'always').replace(/\s+/g, ' '), '+1.000 €')
+  assert.equal(
+    formatCurrency(1000, 'en', 'always').replace(/\s+/g, ' '),
+    '+€1,000'
+  )
+  assert.equal(
+    formatCurrency(1000, 'de', 'always').replace(/\s+/g, ' '),
+    '+1.000 €'
+  )
 })

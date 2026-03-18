@@ -474,7 +474,8 @@ export const PreGig = () => {
               randomVal = Math.random()
             }
 
-            const chosenGame = randomVal < roadieChance ? 'roadie' : 'kabelsalat'
+            const chosenGame =
+              randomVal < roadieChance ? 'roadie' : 'kabelsalat'
 
             lastMinigameFallback = chosenGame
             try {

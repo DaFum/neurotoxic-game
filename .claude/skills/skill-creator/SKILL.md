@@ -34,12 +34,12 @@ People using this skill range from veteran developers to parents who just discov
 
 Identify the user's intent from their phrasing:
 
-| User Says | Mode | Next Step |
-|-----------|------|-----------|
-| "turn this into a skill" / "make a skill for X" / "capture this workflow" | **Create** | Jump to Creating a Skill (Interview) |
-| "make my skill better" / "improve this skill" / "this skill isn't working" | **Improve** | Jump to Improving a Skill |
-| "test my skill on this case" / "does this work?" | **Eval** | Jump to Eval Mode |
-| "how well does my skill work?" / "measure performance" | **Benchmark** | Jump to Benchmark Mode (requires subagents) |
+| User Says                                                                  | Mode          | Next Step                                   |
+| -------------------------------------------------------------------------- | ------------- | ------------------------------------------- |
+| "turn this into a skill" / "make a skill for X" / "capture this workflow"  | **Create**    | Jump to Creating a Skill (Interview)        |
+| "make my skill better" / "improve this skill" / "this skill isn't working" | **Improve**   | Jump to Improving a Skill                   |
+| "test my skill on this case" / "does this work?"                           | **Eval**      | Jump to Eval Mode                           |
+| "how well does my skill work?" / "measure performance"                     | **Benchmark** | Jump to Benchmark Mode (requires subagents) |
 
 ---
 
@@ -215,7 +215,7 @@ When writing or reviewing a skill, check for these failure modes:
 
 **Start here**: Create 2–3 test cases manually. Don't wait for a perfect eval suite.
 
-1. List what the skill *should* do in a few bullet points
+1. List what the skill _should_ do in a few bullet points
 2. Come up with 2–3 realistic prompts users would actually say
 3. Run the skill on those prompts in the main agent loop (run in background so user sees the transcript)
 4. From the transcript, identify 1–2 concrete expectations (e.g., "should mention X", "should run tool Y", "should return JSON")
@@ -227,6 +227,7 @@ When writing or reviewing a skill, check for these failure modes:
 This is overfitting. The skill is too tailored to your specific examples.
 
 **Solution**:
+
 - Rewrite instructions to be more general (instead of "when the user says 'analyze my code'", say "when the user wants to understand code behavior, whether they ask to 'review', 'explain', 'analyze', or 'debug'")
 - Remove references to specific tool chains or frameworks (use "any build tool", "any test runner" instead of hardcoding)
 - Test on 3–5 additional prompts that are similar but not identical to your original cases
@@ -248,6 +249,7 @@ Explain why the winner is better
 **Problem**: The SKILL.md is huge (600+ lines), has too many options, or references are loaded upfront.
 
 **Solution**:
+
 - Shrink SKILL.md to <500 lines
 - Move detailed workflows to `references/` (only loaded when skill triggers)
 - If there are multiple domains (e.g., "cloud-deploy-aws" vs "cloud-deploy-gcp"), split into separate skills or put domain selection logic upfront
@@ -301,7 +303,7 @@ When the user asks to improve an existing skill:
 
 **Symptom: Skill ignores key instructions**
 → **Root cause**: Instructions are buried, contradicted later, or framed as commands instead of reasoning
-→ **Fix**: Move important things early and prominent; explain *why* instead of *what to do*; check for contradictions
+→ **Fix**: Move important things early and prominent; explain _why_ instead of _what to do_; check for contradictions
 
 ### Philosophy
 
@@ -326,6 +328,7 @@ Workflow: Setup → Check Dependencies → Prepare → Execute → Grade → Dis
 Without subagents, execute and grade sequentially — read `agents/executor.md` and `agents/grader.md` and follow procedures directly.
 
 Quick checklist:
+
 - Choose workspace location (suggest `<skill-name>-workspace/` sibling)
 - Scan skill for dependencies (check `compatibility` field in SKILL.md)
 - Run `python scripts/prepare_eval.py <skill> <eval-id> --output-dir <workspace>/`
@@ -344,6 +347,7 @@ Standardized performance measurement with variance analysis. **Requires subagent
 Runs all evals 3 times per configuration, always includes no-skill baseline, uses most capable model for analysis.
 
 Quick checklist:
+
 - Read benchmark-mode.md for full procedure
 - Run `python scripts/prepare_eval.py` for each eval (parallel OK)
 - Spawn 3 executor subagents per eval (parallel execution)
@@ -355,12 +359,12 @@ Quick checklist:
 
 ## Building Blocks
 
-| Block                 | Input                         | Output                       | Reference                   | Purpose                                                   |
-| --------------------- | ----------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------------- |
-| **Eval Run**          | skill + prompt + files        | transcript, outputs, metrics | `agents/executor.md`        | Execute skill on a single eval, capture output & timing   |
-| **Grade**             | outputs + expectations        | pass/fail per expectation    | `agents/grader.md`          | Evaluate outputs against success criteria                 |
-| **Blind Compare**     | output A, output B, prompt    | winner + reasoning           | `agents/comparator.md`      | Compare two outputs objectively (don't reveal lineage)    |
-| **Post-hoc Analysis** | winner + skills + transcripts | improvement suggestions      | `agents/analyzer.md`        | Analyze why one skill version beat another                |
+| Block                 | Input                         | Output                       | Reference              | Purpose                                                 |
+| --------------------- | ----------------------------- | ---------------------------- | ---------------------- | ------------------------------------------------------- |
+| **Eval Run**          | skill + prompt + files        | transcript, outputs, metrics | `agents/executor.md`   | Execute skill on a single eval, capture output & timing |
+| **Grade**             | outputs + expectations        | pass/fail per expectation    | `agents/grader.md`     | Evaluate outputs against success criteria               |
+| **Blind Compare**     | output A, output B, prompt    | winner + reasoning           | `agents/comparator.md` | Compare two outputs objectively (don't reveal lineage)  |
+| **Post-hoc Analysis** | winner + skills + transcripts | improvement suggestions      | `agents/analyzer.md`   | Analyze why one skill version beat another              |
 
 **How to use**: With subagents, spawn the subagent with a reference file path. Without subagents, read the reference file and follow procedures directly in the main coordinator loop.
 

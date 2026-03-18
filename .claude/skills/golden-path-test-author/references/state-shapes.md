@@ -114,16 +114,19 @@ Reference for the game state object used in golden path tests.
 When setting up a test, use these patterns:
 
 ### Start Fresh
+
 ```javascript
 let state = createInitialState()
 ```
 
 ### Move to OVERWORLD
+
 ```javascript
 state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
 ```
 
 ### Set up a gig
+
 ```javascript
 const venue = {
   id: 'test_venue',
@@ -139,6 +142,7 @@ state = applyAction(state, ActionTypes.START_GIG, venue)
 ```
 
 ### Prepare for performance
+
 ```javascript
 state = applyAction(state, ActionTypes.SET_SETLIST, [
   { id: '01 Kranker Schrank' }
@@ -150,6 +154,7 @@ state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
 ```
 
 ### Simulate gig performance
+
 ```javascript
 const gigStats = {
   score: 8000,
@@ -164,14 +169,14 @@ state = applyAction(state, ActionTypes.SET_LAST_GIG_STATS, gigStats)
 
 ## Key Constraints
 
-| Field | Min | Max | Notes |
-|-------|-----|-----|-------|
-| `money` | 0 | ∞ | Clamped by UPDATE_PLAYER, APPLY_EVENT_DELTA |
-| `harmony` | 1 | 100 | Clamped by UPDATE_BAND, APPLY_EVENT_DELTA |
-| `fuel` | 0 | 100 | Clamped by APPLY_EVENT_DELTA |
-| `condition` | 0 | 100 | Van durability, decays ~2 per day |
-| `day` | 1 | ∞ | Min 1, incremented by ADVANCE_DAY |
-| `stamina` (band members) | 0 | 100 | Clamped; can decay/recover |
+| Field                    | Min | Max | Notes                                       |
+| ------------------------ | --- | --- | ------------------------------------------- |
+| `money`                  | 0   | ∞   | Clamped by UPDATE_PLAYER, APPLY_EVENT_DELTA |
+| `harmony`                | 1   | 100 | Clamped by UPDATE_BAND, APPLY_EVENT_DELTA   |
+| `fuel`                   | 0   | 100 | Clamped by APPLY_EVENT_DELTA                |
+| `condition`              | 0   | 100 | Van durability, decays ~2 per day           |
+| `day`                    | 1   | ∞   | Min 1, incremented by ADVANCE_DAY           |
+| `stamina` (band members) | 0   | 100 | Clamped; can decay/recover                  |
 
 ## Accessing Nested State
 
@@ -192,12 +197,13 @@ state.player.van.fuel
 state.band.members[0].stamina
 
 // Gig stat score
-state.lastGigStats?.score ?? 0  // Safe access
+state.lastGigStats?.score ?? 0 // Safe access
 ```
 
 ## State Mutation Rules
 
 **NEVER** mutate state directly:
+
 ```javascript
 // ❌ WRONG: state.player.money = 100
 // ✅ CORRECT:

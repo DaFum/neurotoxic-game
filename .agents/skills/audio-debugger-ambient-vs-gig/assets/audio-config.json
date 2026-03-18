@@ -32,17 +32,29 @@
   "commonIssues": [
     {
       "symptom": "No audio plays",
-      "causes": ["AudioContext suspended", "volume too low", "files not loading"],
+      "causes": [
+        "AudioContext suspended",
+        "volume too low",
+        "files not loading"
+      ],
       "fix": "Resume context, check volume, validate asset paths"
     },
     {
       "symptom": "Audio stutters/crackles",
-      "causes": ["Too many simultaneous notes", "synchronization loss", "CPU throttling"],
+      "causes": [
+        "Too many simultaneous notes",
+        "synchronization loss",
+        "CPU throttling"
+      ],
       "fix": "Reduce polyphony, verify timing, check CPU load"
     },
     {
       "symptom": "Ambient/Gig transition fails",
-      "causes": ["Fade timing conflict", "context not resumed", "previous playback not stopped"],
+      "causes": [
+        "Fade timing conflict",
+        "context not resumed",
+        "previous playback not stopped"
+      ],
       "fix": "Ensure fade completes, resume context if suspended, force-stop before transition"
     }
   ],

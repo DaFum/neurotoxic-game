@@ -108,7 +108,10 @@ export const handleClinicHeal = (state, payload) => {
 
   return executeClinicAction(state, payload, member => ({
     ...member,
-    stamina: clampMemberStamina((member.stamina || 0) + staminaGain, member.staminaMax),
+    stamina: clampMemberStamina(
+      (member.stamina || 0) + staminaGain,
+      member.staminaMax
+    ),
     mood: clampMemberMood((member.mood || 0) + moodGain)
   }))
 }

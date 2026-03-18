@@ -18,11 +18,7 @@ import { useGameState } from '../context/GameState'
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
  */
 
-export const EventModal = ({
-  event,
-  onOptionSelect,
-  className = ''
-}) => {
+export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef(null)
 
@@ -47,35 +43,32 @@ export const EventModal = ({
     setPreviewError(false)
   }, [eventId])
 
-  const handleOptionSelect = useCallback(
-    option => {
-      try {
-        // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
-        // Snapshot vs Latest State Decision:
-        // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
-        // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
-        // preventing any background state mutations from altering the event outcome between preview and confirmation.
-        const { result, appliedDelta, delta, outcomeText, description } =
-          resolveEventChoice(option, gameStateRef.current)
+  const handleOptionSelect = useCallback(option => {
+    try {
+      // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
+      // Snapshot vs Latest State Decision:
+      // We capture this _precomputedResult as a static snapshot based on the game state *at the exact moment of selection*.
+      // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
+      // preventing any background state mutations from altering the event outcome between preview and confirmation.
+      const { result, appliedDelta, delta, outcomeText, description } =
+        resolveEventChoice(option, gameStateRef.current)
 
-        setOutcome({
-          option,
-          _precomputedResult: {
-            result,
-            delta,
-            appliedDelta: appliedDelta || delta,
-            outcomeText,
-            description
-          }
-        })
-      } catch (error) {
-        console.error('Failed to preview event outcome:', error)
-        setPreviewError(true)
-        setOutcome({ option })
-      }
-    },
-    []
-  )
+      setOutcome({
+        option,
+        _precomputedResult: {
+          result,
+          delta,
+          appliedDelta: appliedDelta || delta,
+          outcomeText,
+          description
+        }
+      })
+    } catch (error) {
+      console.error('Failed to preview event outcome:', error)
+      setPreviewError(true)
+      setOutcome({ option })
+    }
+  }, [])
 
   const handleContinue = useCallback(() => {
     if (outcome) {

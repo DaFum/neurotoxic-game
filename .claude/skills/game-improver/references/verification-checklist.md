@@ -7,11 +7,13 @@ Complete checklist to verify that improvements are production-ready.
 ### 1. Code Quality (Linting)
 
 **Run**:
+
 ```bash
 pnpm run lint
 ```
 
 **Verify**:
+
 - ✅ No ESLint errors (warnings OK if pre-existing)
 - ✅ Songs.js not linted (excluded by config)
 - ✅ No unused imports
@@ -21,11 +23,13 @@ pnpm run lint
 ### 2. Logic Tests (Node Tests)
 
 **Run**:
+
 ```bash
 pnpm run test
 ```
 
 **Verify**:
+
 - ✅ All logic tests pass
 - ✅ New tests added for bug fixes / features
 - ✅ State mutations tested (money clamping, harmony bounds, etc.)
@@ -33,11 +37,13 @@ pnpm run test
 - ✅ No flaky tests (run 3x, should be stable)
 
 **For single file**:
+
 ```bash
 pnpm run test -- tests/path/to/file.test.js
 ```
 
 **For watch mode** (faster iteration):
+
 ```bash
 pnpm run test -- --watch
 ```
@@ -45,11 +51,13 @@ pnpm run test -- --watch
 ### 3. UI Tests (Vitest)
 
 **Run**:
+
 ```bash
 pnpm run test:ui
 ```
 
 **Verify**:
+
 - ✅ All component tests pass
 - ✅ New components tested (render, props, callbacks)
 - ✅ No memory leaks (mocks cleaned up in `try/finally`)
@@ -57,6 +65,7 @@ pnpm run test:ui
 - ✅ No console errors from components
 
 **For single file**:
+
 ```bash
 pnpm run test:ui -- tests/path/to/file.test.jsx
 ```
@@ -64,11 +73,13 @@ pnpm run test:ui -- tests/path/to/file.test.jsx
 ### 4. Build Verification
 
 **Run**:
+
 ```bash
 pnpm run build
 ```
 
 **Verify**:
+
 - ✅ No import errors
 - ✅ No missing dependencies
 - ✅ No bundle size regression (>10% increase = investigate)
@@ -78,11 +89,13 @@ pnpm run build
 ### 5. All Tests in Sequence
 
 **Run** (takes 3-5 min):
+
 ```bash
 pnpm run test:all
 ```
 
 Or **manually in sequence**:
+
 ```bash
 pnpm run lint && pnpm run test && pnpm run test:ui && pnpm run build
 ```
@@ -157,15 +170,15 @@ pnpm run lint && pnpm run test && pnpm run test:ui && pnpm run build
 
 ## Common Verification Issues
 
-| Issue | Check | Fix |
-|-------|-------|-----|
-| Test fails: "Unknown action X" | `ActionTypes` enum updated? | Add to `ActionTypes` before using in reducer |
-| "Money is negative after action" | Clamping applied? | Use `gameStateUtils.clampMoney()` in reducer |
-| Linting fails: "unused import X" | Remove dead code? | Delete import, or use it |
-| Memory leak suspected | Pixi destroyed? Listeners cleaned? | Check `useEffect` cleanup return |
-| Build fails: "Cannot find module X" | Path correct? File exists? | Check file path, extension (`.js` vs `.jsx`) |
-| UI test flaky | Async state? Race condition? | Wrap in `waitFor()`, avoid `setTimeout` |
-| Color looks wrong | CSS var used? | Check token name, ensure `--color-` prefix |
+| Issue                               | Check                              | Fix                                          |
+| ----------------------------------- | ---------------------------------- | -------------------------------------------- |
+| Test fails: "Unknown action X"      | `ActionTypes` enum updated?        | Add to `ActionTypes` before using in reducer |
+| "Money is negative after action"    | Clamping applied?                  | Use `gameStateUtils.clampMoney()` in reducer |
+| Linting fails: "unused import X"    | Remove dead code?                  | Delete import, or use it                     |
+| Memory leak suspected               | Pixi destroyed? Listeners cleaned? | Check `useEffect` cleanup return             |
+| Build fails: "Cannot find module X" | Path correct? File exists?         | Check file path, extension (`.js` vs `.jsx`) |
+| UI test flaky                       | Async state? Race condition?       | Wrap in `waitFor()`, avoid `setTimeout`      |
+| Color looks wrong                   | CSS var used?                      | Check token name, ensure `--color-` prefix   |
 
 ---
 
@@ -187,11 +200,13 @@ Before pushing, verify:
 ### Linting Fails
 
 **Issue**: ESLint error "Unexpected token"
+
 ```
 SyntaxError: Unexpected token ) in tests/foo.test.js:42
 ```
 
 **Fix**:
+
 1. Check syntax at line 42
 2. Ensure matching parentheses, braces, semicolons
 3. Check JSX syntax if in component file
@@ -199,12 +214,14 @@ SyntaxError: Unexpected token ) in tests/foo.test.js:42
 ### Test Fails
 
 **Issue**: Assertion error
+
 ```
 AssertionError: 450 == 500
   at test (tests/travel.test.js:25)
 ```
 
 **Fix**:
+
 1. Read assertion message carefully
 2. Add console.log before assertion to debug state
 3. Check preconditions (initial state setup)
@@ -213,11 +230,13 @@ AssertionError: 450 == 500
 ### Build Fails
 
 **Issue**: Cannot find module
+
 ```
 Error: ENOENT: no such file or directory, open 'src/utils/missing.js'
 ```
 
 **Fix**:
+
 1. Verify file path (check for typos)
 2. Verify file exists: `ls src/utils/missing.js`
 3. Check import statement: `.js` or `.jsx`?
@@ -226,11 +245,13 @@ Error: ENOENT: no such file or directory, open 'src/utils/missing.js'
 ### Memory Leak
 
 **Issue**: Heap size grows continuously
+
 ```
 Start: 500MB, After 10 gigs: 1500MB
 ```
 
 **Fix**:
+
 1. Check Pixi cleanup in `useEffect` return
 2. Verify audio nodes destroyed on unmount
 3. Use DevTools Memory snapshots to identify retained objects
@@ -241,6 +262,7 @@ Start: 500MB, After 10 gigs: 1500MB
 ## Full Verification Command
 
 **One command to check everything**:
+
 ```bash
 pnpm run lint && \
 pnpm run test && \
@@ -250,6 +272,7 @@ echo "✅ All checks passed!"
 ```
 
 **Expected output**:
+
 ```
 [lint] ✓ 0 errors, 0 warnings
 [test] ✓ 678 tests pass
@@ -257,4 +280,3 @@ echo "✅ All checks passed!"
 [build] ✓ dist/ built
 ✅ All checks passed!
 ```
-

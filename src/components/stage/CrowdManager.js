@@ -32,9 +32,12 @@ export class CrowdManager {
         mosh: getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
       }
 
-      const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
-        handleError(error, { fallbackMessage })
-      })
+      const loadedTextures = await loadTextures(
+        urls,
+        (error, fallbackMessage) => {
+          handleError(error, { fallbackMessage })
+        }
+      )
 
       if (loadedTextures.idle) this.textures.idle = loadedTextures.idle
       if (loadedTextures.mosh) this.textures.mosh = loadedTextures.mosh

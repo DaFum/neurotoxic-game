@@ -65,8 +65,14 @@ export const getRandomChatter = state => {
   try {
     roll = secureRandom() * totalWeight
   } catch (error) {
-    console.error('Crypto API not available, secure random is strictly required.', error)
-    throw new Error('Secure random is strictly required for chatter weight roll', { cause: error })
+    console.error(
+      'Crypto API not available, secure random is strictly required.',
+      error
+    )
+    throw new Error(
+      'Secure random is strictly required for chatter weight roll',
+      { cause: error }
+    )
   }
 
   let item = pool[pool.length - 1]

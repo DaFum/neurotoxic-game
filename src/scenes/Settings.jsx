@@ -15,7 +15,10 @@ export const Settings = () => {
   const { t } = useTranslation()
   const { changeScene, settings, updateSettings, deleteSave } = useGameState()
   const { audioState, handleAudioChange } = useAudioControl()
-  const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(settings, updateSettings)
+  const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(
+    settings,
+    updateSettings
+  )
 
   const handleReturn = useCallback(
     () => changeScene(GAME_PHASES.MENU),

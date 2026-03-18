@@ -3,13 +3,14 @@ name: one-command-doctor
 description: diagnose environmental and build issues. Trigger when the repo is broken, tests fail mysteriously, or setup is needed. Checks Node version, dependencies, and build status. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Diagnose environment/setup breakage quickly and return one-command recovery steps where possible.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "diagnostics"
-  keywords: ["diagnostics","health-check","troubleshooting"]
-  maturity: "stable"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'diagnostics'
+  keywords: ['diagnostics', 'health-check', 'troubleshooting']
+  maturity: 'stable'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # One-Command Doctor
 
 Quickly diagnose the health of the repository and development environment.
@@ -58,6 +59,5 @@ Run `.agents/skills/one-command-doctor/scripts/doctor.sh`.
 ```
 
 "Your Node version is too old. Run `nvm install 22.13.0 && nvm use 22.13.0`."
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

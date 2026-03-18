@@ -55,7 +55,9 @@ const ToggleSwitchComponent = ({
         className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-checked={isOn}
         role='switch'
-        {...(labelId ? { 'aria-labelledby': labelId } : { 'aria-label': ariaLabel })}
+        {...(labelId
+          ? { 'aria-labelledby': labelId }
+          : { 'aria-label': ariaLabel })}
       >
         <div
           className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}

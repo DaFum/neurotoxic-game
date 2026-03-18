@@ -40,7 +40,9 @@ describe('ToxicModeFlash', () => {
   })
 
   test('transitions from false to true (rerender shows flash)', () => {
-    const { rerender, container } = render(<ToxicModeFlash isToxicMode={false} />)
+    const { rerender, container } = render(
+      <ToxicModeFlash isToxicMode={false} />
+    )
     expect(container.firstChild).toBeNull()
 
     rerender(<ToxicModeFlash isToxicMode={true} />)
@@ -49,7 +51,9 @@ describe('ToxicModeFlash', () => {
   })
 
   test('transitions from true to false (rerender hides flash)', () => {
-    const { rerender, container } = render(<ToxicModeFlash isToxicMode={true} />)
+    const { rerender, container } = render(
+      <ToxicModeFlash isToxicMode={true} />
+    )
     expect(container.firstChild).not.toBeNull()
 
     rerender(<ToxicModeFlash isToxicMode={false} />)

@@ -3,13 +3,14 @@ name: asset-pipeline-verifier
 description: diagnose and fix asset loading issues. Trigger when assets fail to load (404), have incorrect MIME types, or when paths are undefined. Checks import.meta.glob, new URL(), and public folder references. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Focus on undefined paths, MIME mismatches, and import strategy fixes with exact file-path remediation.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "assets"
-  keywords: ["assets","images","optimization","cdn"]
-  maturity: "stable"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'assets'
+  keywords: ['assets', 'images', 'optimization', 'cdn']
+  maturity: 'stable'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # Asset Pipeline Verifier
 
 Diagnose and resolve asset loading failures in the Vite build pipeline.
@@ -61,6 +62,5 @@ Diagnose and resolve asset loading failures in the Vite build pipeline.
 
 **Output**:
 "The file `src/assets/song1.midi` is missing, but referenced in `rhythm_songs.json`. Please add the file or remove the reference."
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

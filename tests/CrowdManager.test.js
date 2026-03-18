@@ -94,7 +94,11 @@ const mockPixiStageUtils = {
           results[key] = mockTextureMosh
         } else {
           results[key] = null
-          if (onError) onError(new Error(`${key} texture returned null`), `Crowd ${key.toUpperCase()} texture failed to load.`)
+          if (onError)
+            onError(
+              new Error(`${key} texture returned null`),
+              `Crowd ${key.toUpperCase()} texture failed to load.`
+            )
         }
       }
     }
@@ -163,16 +167,22 @@ describe('CrowdManager', () => {
   })
 
   test('loadAssets reports error when loadTextures returns null', async () => {
-    mockPixiStageUtils.loadTextures.mock.mockImplementation(async (urlMap, onError) => {
-      const results = {}
-      for (const key in urlMap) {
-        if (Object.hasOwn(urlMap, key)) {
-          results[key] = null
-          if (onError) onError(new Error(`${key} texture returned null`), `Crowd ${key.toUpperCase()} texture failed to load.`)
+    mockPixiStageUtils.loadTextures.mock.mockImplementation(
+      async (urlMap, onError) => {
+        const results = {}
+        for (const key in urlMap) {
+          if (Object.hasOwn(urlMap, key)) {
+            results[key] = null
+            if (onError)
+              onError(
+                new Error(`${key} texture returned null`),
+                `Crowd ${key.toUpperCase()} texture failed to load.`
+              )
+          }
         }
+        return results
       }
-      return results
-    })
+    )
 
     await crowdManager.loadAssets()
 

@@ -10,6 +10,7 @@ metadata:
   maturity: "beta"
 license: "Proprietary. See LICENSE.txt for terms"
 ---
+
 # React Performance Optimization
 
 Expert guidance for optimizing React application performance through memoization, code splitting, virtualization, and efficient rendering strategies.

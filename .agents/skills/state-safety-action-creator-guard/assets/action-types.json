@@ -5,105 +5,134 @@
   "actionTypes": [
     {
       "type": "CHANGE_SCENE",
-      "payload": {"sceneName": "string"},
+      "payload": { "sceneName": "string" },
       "stateChanges": ["game.currentScene = payload.sceneName"],
       "invariants": ["currentScene must be valid scene identifier"]
     },
     {
       "type": "UPDATE_PLAYER",
-      "payload": {"delta": "object", "keys": ["money", "fame", "fuel", "condition", "stress"]},
+      "payload": {
+        "delta": "object",
+        "keys": ["money", "fame", "fuel", "condition", "stress"]
+      },
       "stateChanges": ["player[key] += delta[key] for each key in delta"],
-      "invariants": ["player.money >= 0", "player.fame >= 0", "player.fuel >= 0"]
+      "invariants": [
+        "player.money >= 0",
+        "player.fame >= 0",
+        "player.fuel >= 0"
+      ]
     },
     {
       "type": "UPDATE_BAND",
-      "payload": {"delta": "object"},
-      "stateChanges": ["band.harmony = clamp(band.harmony + delta.harmony, 1, 100)"],
+      "payload": { "delta": "object" },
+      "stateChanges": [
+        "band.harmony = clamp(band.harmony + delta.harmony, 1, 100)"
+      ],
       "invariants": ["band.harmony >= 1", "band.harmony <= 100"]
     },
     {
       "type": "START_GIG",
-      "payload": {"songId": "string", "venue": "object"},
-      "stateChanges": ["gig.status = 'PLAYING'", "gig.songId = payload.songId", "gig.venue = payload.venue"],
+      "payload": { "songId": "string", "venue": "object" },
+      "stateChanges": [
+        "gig.status = 'PLAYING'",
+        "gig.songId = payload.songId",
+        "gig.venue = payload.venue"
+      ],
       "invariants": ["gig.songId must exist in SONGS_BY_ID"]
     },
     {
       "type": "SET_GIG",
-      "payload": {"songId": "string", "venue": "object", "difficulty": "number"},
-      "stateChanges": ["gig.songId = payload.songId", "gig.venue = payload.venue", "gig.difficulty = payload.difficulty"],
+      "payload": {
+        "songId": "string",
+        "venue": "object",
+        "difficulty": "number"
+      },
+      "stateChanges": [
+        "gig.songId = payload.songId",
+        "gig.venue = payload.venue",
+        "gig.difficulty = payload.difficulty"
+      ],
       "invariants": ["difficulty must be 1-10"]
     },
     {
       "type": "SET_SETLIST",
-      "payload": {"songs": "array<songId>"},
+      "payload": { "songs": "array<songId>" },
       "stateChanges": ["gig.setlist = payload.songs"],
       "invariants": ["all songIds must exist in SONGS_BY_ID"]
     },
     {
       "type": "SET_LAST_GIG_STATS",
-      "payload": {"score": "number", "accuracy": "number", "notes": "number"},
+      "payload": { "score": "number", "accuracy": "number", "notes": "number" },
       "stateChanges": ["gig.lastGigStats = payload"],
       "invariants": ["score >= 0", "accuracy 0-100", "notes >= 0"]
     },
     {
       "type": "APPLY_EVENT_DELTA",
-      "payload": {"delta": "object"},
+      "payload": { "delta": "object" },
       "stateChanges": ["player[key] += delta[key] for each key in delta"],
-      "invariants": ["player.money >= 0 after transaction", "band.harmony 1-100 after transaction"]
+      "invariants": [
+        "player.money >= 0 after transaction",
+        "band.harmony 1-100 after transaction"
+      ]
     },
     {
       "type": "CONSUME_ITEM",
-      "payload": {"itemId": "string", "quantity": "number"},
+      "payload": { "itemId": "string", "quantity": "number" },
       "stateChanges": ["band.inventory[itemId] -= quantity"],
       "invariants": ["quantity <= available inventory"]
     },
     {
       "type": "ADVANCE_DAY",
-      "payload": {"daysAdded": "number"},
+      "payload": { "daysAdded": "number" },
       "stateChanges": ["game.currentDay += payload.daysAdded"],
       "invariants": ["currentDay >= 0"]
     },
     {
       "type": "SET_GIG_MODIFIERS",
-      "payload": {"modifiers": "object"},
+      "payload": { "modifiers": "object" },
       "stateChanges": ["gig.modifiers = payload.modifiers"],
       "invariants": ["all modifier costs must be affordable"]
     },
     {
       "type": "ADD_TOAST",
-      "payload": {"message": "string", "type": "string"},
+      "payload": { "message": "string", "type": "string" },
       "stateChanges": ["ui.toasts.push(payload)"],
       "invariants": ["type must be valid (success, error, info, warning)"]
     },
     {
       "type": "REMOVE_TOAST",
-      "payload": {"id": "string"},
-      "stateChanges": ["ui.toasts = ui.toasts.filter(t => t.id !== payload.id)"],
+      "payload": { "id": "string" },
+      "stateChanges": [
+        "ui.toasts = ui.toasts.filter(t => t.id !== payload.id)"
+      ],
       "invariants": []
     },
     {
       "type": "UNLOCK_TRAIT",
-      "payload": {"traitId": "string"},
+      "payload": { "traitId": "string" },
       "stateChanges": ["band.traits.push(payload.traitId)"],
       "invariants": ["traitId must exist in traits registry"]
     },
     {
       "type": "ADD_CONTRABAND",
-      "payload": {"item": "string", "quantity": "number"},
+      "payload": { "item": "string", "quantity": "number" },
       "stateChanges": ["band.contraband[item] += quantity"],
       "invariants": ["quantity > 0"]
     },
     {
       "type": "USE_CONTRABAND",
-      "payload": {"item": "string"},
+      "payload": { "item": "string" },
       "stateChanges": ["band.contraband[item] -= 1"],
       "invariants": ["contraband[item] must exist and > 0"]
     },
     {
       "type": "LOAD_GAME",
-      "payload": {"gameState": "object"},
+      "payload": { "gameState": "object" },
       "stateChanges": ["entire state = payload.gameState"],
-      "invariants": ["state must be valid game state shape", "all invariants re-validated"]
+      "invariants": [
+        "state must be valid game state shape",
+        "all invariants re-validated"
+      ]
     },
     {
       "type": "RESET_STATE",

@@ -10,14 +10,29 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('../src/ui/bandhq/ShopItem', () => ({
-  ShopItem: ({ item, isOwned, isDisabled, adjustedCost, onBuy, processingItemId }) => (
+  ShopItem: ({
+    item,
+    isOwned,
+    isDisabled,
+    adjustedCost,
+    onBuy,
+    processingItemId
+  }) => (
     <div data-testid={`shop-item-${item.id}`}>
       <span>{item.name}</span>
       <span data-testid={`is-owned-${item.id}`}>{isOwned ? 'Yes' : 'No'}</span>
-      <span data-testid={`is-disabled-${item.id}`}>{isDisabled ? 'Yes' : 'No'}</span>
-      {adjustedCost !== undefined && adjustedCost !== null && <span data-testid={`adjusted-cost-${item.id}`}>{adjustedCost}</span>}
-      <button type="button" onClick={() => onBuy(item)}>Buy</button>
-      {processingItemId === item.id && <span data-testid="processing">Processing</span>}
+      <span data-testid={`is-disabled-${item.id}`}>
+        {isDisabled ? 'Yes' : 'No'}
+      </span>
+      {adjustedCost !== undefined && adjustedCost !== null && (
+        <span data-testid={`adjusted-cost-${item.id}`}>{adjustedCost}</span>
+      )}
+      <button type='button' onClick={() => onBuy(item)}>
+        Buy
+      </button>
+      {processingItemId === item.id && (
+        <span data-testid='processing'>Processing</span>
+      )}
     </div>
   )
 }))
@@ -29,8 +44,8 @@ describe('UpgradesTab', () => {
     { id: 'item2', name: 'Upgrade 2', cost: 200 }
   ]
   const handleBuy = vi.fn()
-  const isItemOwned = vi.fn((item) => item.id === 'item1')
-  const isItemDisabled = vi.fn((item) => item.id === 'item2')
+  const isItemOwned = vi.fn(item => item.id === 'item1')
+  const isItemDisabled = vi.fn(item => item.id === 'item2')
 
   test('renders player currency displays correctly', () => {
     render(
@@ -70,8 +85,8 @@ describe('UpgradesTab', () => {
         handleBuy={handleBuy}
         isItemOwned={isItemOwned}
         isItemDisabled={isItemDisabled}
-        getAdjustedCost={(item) => item.cost * 0.9}
-        processingItemId="item1"
+        getAdjustedCost={item => item.cost * 0.9}
+        processingItemId='item1'
       />
     )
 

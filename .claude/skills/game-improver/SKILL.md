@@ -18,28 +18,30 @@ Implement production-ready improvements—bug fixes, features, optimizations, an
 
 **Is the issue primarily...?**
 
-| Issue Type | Use This Skill | Else Use |
-|-----------|---|---|
-| **Gameplay balance** (costs, rewards, difficulty) | ❌ | `game-balancing-assistant` |
-| **Audio playback** (music fails, stutters, wrong track) | ❌ | `audio-debugger-ambient-vs-gig` or `webaudio-reliability-fixer` |
-| **UI design** (colors, borders, layout, typography) | ❌ | `convention-keeper-brutalist-ui` |
-| **State bugs** (reducer errors, invalid transitions) | ✅ | `state-safety-action-creator-guard` |
-| **Core logic bug** (game loop, travel cost calc) | ✅ | — |
-| **New feature** (upgrade, item, system) | ✅ | — |
-| **Performance** (render loops, memory, bundle) | ✅ | — |
-| **Testing** (regression, integration, edge cases) | ✅ | — |
-| **Refactoring** (extract components, reduce duplication) | ✅ | — |
+| Issue Type                                               | Use This Skill | Else Use                                                        |
+| -------------------------------------------------------- | -------------- | --------------------------------------------------------------- |
+| **Gameplay balance** (costs, rewards, difficulty)        | ❌             | `game-balancing-assistant`                                      |
+| **Audio playback** (music fails, stutters, wrong track)  | ❌             | `audio-debugger-ambient-vs-gig` or `webaudio-reliability-fixer` |
+| **UI design** (colors, borders, layout, typography)      | ❌             | `convention-keeper-brutalist-ui`                                |
+| **State bugs** (reducer errors, invalid transitions)     | ✅             | `state-safety-action-creator-guard`                             |
+| **Core logic bug** (game loop, travel cost calc)         | ✅             | —                                                               |
+| **New feature** (upgrade, item, system)                  | ✅             | —                                                               |
+| **Performance** (render loops, memory, bundle)           | ✅             | —                                                               |
+| **Testing** (regression, integration, edge cases)        | ✅             | —                                                               |
+| **Refactoring** (extract components, reduce duplication) | ✅             | —                                                               |
 
 **Unsure?** Proceed here. If we need a specialist, we'll delegate mid-workflow.
 
 ## Core Workflow
 
 ### 1. Understand the Request
+
 - What problem are we solving? (user pain, crash, balance, performance)
 - What's the affected game system? (economy, progression, audio, UI, state)
 - What's the success metric? (no crashes, +X DPS, faster load time, clarity)
 
 ### 2. Research & Map Dependencies
+
 - **State**: Which reducers, actions, selectors are involved?
 - **UI**: Which components render the feature? Do they need updates?
 - **Data**: Which data files (upgrades.js, hqItems.js, events) are affected?
@@ -51,7 +53,9 @@ Implement production-ready improvements—bug fixes, features, optimizations, an
 Use **references/improvement-patterns.md** to find a similar change.
 
 ### 3. Plan Implementation
+
 Define:
+
 - **Files to modify**: List top 3-5 files.
 - **Changes**: Brief 1–2 sentence summary per file.
 - **State mutations**: Any new `ActionTypes` or reducer cases?
@@ -59,6 +63,7 @@ Define:
 - **Localization**: New i18n keys needed?
 
 ### 4. Implement
+
 **State changes**: Use `ActionTypes`, reducers, action creators (together, not separately).
 **UI changes**: Follow Tailwind v4 syntax (`@import "tailwindcss"`, color tokens with `--color-` prefix).
 **Localization**: All user text via `t('key')`. Namespaced keys (`ui:`, `events:`, etc.). Both `en` and `de`.
@@ -70,11 +75,13 @@ See **references/state-mutations.md**, **references/improvement-patterns.md**, *
 ### 5. Verify & Test
 
 **Run full test suite** (takes ~3-5 min):
+
 ```bash
 pnpm run test:all  # lint + test + test:ui in sequence
 ```
 
 **Run targeted tests** (faster, for iteration):
+
 ```bash
 # Logic tests
 pnpm run test -- tests/path/to/file.test.js
@@ -87,11 +94,13 @@ pnpm run test -- --watch
 ```
 
 **Build check** (catches import errors, bundle issues):
+
 ```bash
 pnpm run build
 ```
 
 **All verification in one command**:
+
 ```bash
 pnpm run lint && pnpm run test && pnpm run test:ui && pnpm run build
 ```
@@ -114,6 +123,7 @@ See **references/verification-checklist.md** for detailed criteria.
 **Input**: "Fix: traveling doesn't deduct fuel correctly"
 
 **Workflow**:
+
 1. Find travel logic: `src/hooks/useOverworldLogic.js` (or `economyEngine.js`)
 2. Check reducer: Does `UPDATE_PLAYER` subtract fuel? Check `gameReducer.js`
 3. Find test: `tests/travel.test.js` — what's the failing assertion?
@@ -126,6 +136,7 @@ See **references/verification-checklist.md** for detailed criteria.
 **Input**: "Add meditation pod upgrade: +1 harmony/day, costs 500"
 
 **Workflow**:
+
 1. Data: Edit `src/data/hqItems.js` — add item with `effect: 'harmony_regen'`
 2. Economy: Check `economyEngine.js` — does it handle `harmony_regen` effect?
 3. Hook: `useGameLoop.js` — apply effect each day via `ADVANCE_DAY`
@@ -137,6 +148,7 @@ See **references/verification-checklist.md** for detailed criteria.
 **Input**: "Fix: memory grows when switching gigs"
 
 **Workflow**:
+
 1. Suspect: Pixi scene, audio context, event listeners not cleaned up
 2. Find scene: `src/scenes/GigScene.jsx` or `src/components/PixiStageController.jsx`
 3. Check cleanup: Does `useEffect` clean up? Pixi destroyed on unmount?
