@@ -41,6 +41,8 @@ vi.mock('../src/components/SceneRouter.jsx', () => ({
         return <div data-testid='tourbus-scene'>Tourbus</div>
       case GAME_PHASES.PRE_GIG_MINIGAME:
         return <div data-testid='roadie-scene'>Roadie</div>
+      case GAME_PHASES.CLINIC:
+        return <div data-testid='clinic-scene'>Clinic</div>
       case GAME_PHASES.MENU:
       default:
         return <div data-testid='main-menu-scene'>Main Menu</div>
@@ -114,8 +116,12 @@ vi.mock('../src/components/TutorialManager', () => ({
   TutorialManager: () => <div data-testid='tutorial'>Tutorial</div>
 }))
 
+const chatterProps = { current: null }
 vi.mock('../src/components/ChatterOverlay', () => ({
-  ChatterOverlay: () => <div data-testid='chatter'>Chatter</div>
+  ChatterOverlay: props => {
+    chatterProps.current = props
+    return <div data-testid='chatter'>Chatter</div>
+  }
 }))
 
 vi.mock('../src/ui/CrashHandler', () => ({
@@ -174,6 +180,7 @@ const resetMockGameState = () => {
   mockGameState.gameMap = { ...defaultMockGameState.gameMap }
   mockGameState.social = { ...defaultMockGameState.social }
   mockGameState.lastGigStats = { ...defaultMockGameState.lastGigStats }
+  chatterProps.current = null
 }
 
 beforeAll(async () => {
@@ -216,7 +223,8 @@ describe('App', () => {
       { scene: GAME_PHASES.CREDITS, testId: 'credits-scene' },
       { scene: GAME_PHASES.GAMEOVER, testId: 'gameover-scene' },
       { scene: GAME_PHASES.TRAVEL_MINIGAME, testId: 'tourbus-scene' },
-      { scene: GAME_PHASES.PRE_GIG_MINIGAME, testId: 'roadie-scene' }
+      { scene: GAME_PHASES.PRE_GIG_MINIGAME, testId: 'roadie-scene' },
+      { scene: GAME_PHASES.CLINIC, testId: 'clinic-scene' }
     ]
 
     for (const { scene, testId } of sceneCases) {
@@ -237,7 +245,11 @@ describe('App', () => {
       GAME_PHASES.INTRO,
       GAME_PHASES.MENU,
       GAME_PHASES.SETTINGS,
-      GAME_PHASES.GAMEOVER
+      GAME_PHASES.CREDITS,
+      GAME_PHASES.GAMEOVER,
+      GAME_PHASES.TRAVEL_MINIGAME,
+      GAME_PHASES.PRE_GIG_MINIGAME,
+      GAME_PHASES.CLINIC
     ]
 
     for (const scene of scenesWithoutHud) {
@@ -291,6 +303,11 @@ describe('App', () => {
 
     render(<App />)
     expect(screen.getByTestId('chatter')).toBeTruthy()
+    expect(chatterProps.current?.gameState?.currentScene).toBe(GAME_PHASES.GIG)
+    expect(chatterProps.current?.gameState?.band).toEqual(mockGameState.band)
+    expect(chatterProps.current?.gameState?.player).toEqual(
+      mockGameState.player
+    )
   })
 
   test('keeps the expected game container styling', () => {
