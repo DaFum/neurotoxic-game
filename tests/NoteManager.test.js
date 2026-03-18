@@ -92,7 +92,11 @@ const mockPixiStageUtils = {
           results[key] = mockTextureLightning
         } else {
           results[key] = null
-          if (onError) onError(new Error(`${key} texture returned null`), `Note ${key} texture failed to load.`)
+          if (onError)
+            onError(
+              new Error(`${key} texture returned null`),
+              `Note ${key} texture failed to load.`
+            )
         }
       }
     }
@@ -167,16 +171,22 @@ describe('NoteManager', () => {
   })
 
   test('loadAssets reports error when loadTextures returns null', async () => {
-    mockPixiStageUtils.loadTextures.mock.mockImplementation(async (urlMap, onError) => {
-      const results = {}
-      for (const key in urlMap) {
-        if (Object.hasOwn(urlMap, key)) {
-          results[key] = null
-          if (onError) onError(new Error(`${key} texture returned null`), `Note ${key} texture failed to load.`)
+    mockPixiStageUtils.loadTextures.mock.mockImplementation(
+      async (urlMap, onError) => {
+        const results = {}
+        for (const key in urlMap) {
+          if (Object.hasOwn(urlMap, key)) {
+            results[key] = null
+            if (onError)
+              onError(
+                new Error(`${key} texture returned null`),
+                `Note ${key} texture failed to load.`
+              )
+          }
         }
+        return results
       }
-      return results
-    })
+    )
 
     await noteManager.loadAssets()
 
@@ -254,34 +264,38 @@ describe('NoteManager', () => {
     assert.equal(sprite.texture.id, 'white')
   })
 
-  test('initializeNoteSprite sets correct texture for lightning lane', () => {
-    const lane = { color: 0x0000ff, renderX: 300 }
-    // Ensure textures are set up
-    noteManager.noteTextures.skull = { id: 'skull' }
-    noteManager.noteTextures.lightning = { id: 'lightning' }
+  // Parametrized: initializeNoteSprite texture selection by lane
+  const laneTextureVariants = [
+    {
+      label: 'sets correct texture for lightning lane [index: 1]',
+      laneIndex: 1,
+      expectedTexture: 'lightning'
+    },
+    {
+      label: 'sets correct texture for skull lane [index: 0]',
+      laneIndex: 0,
+      expectedTexture: 'skull'
+    }
+  ]
 
-    const sprite = new PIXI.Sprite()
+  laneTextureVariants.forEach(variant => {
+    test(`initializeNoteSprite ${variant.label}`, () => {
+      const lane = { color: 0x0000ff, renderX: 300 }
+      // Ensure textures are set up
+      noteManager.noteTextures.skull = { id: 'skull' }
+      noteManager.noteTextures.lightning = { id: 'lightning' }
 
-    // Lane index 1 is lightning lane
-    noteManager.initializeNoteSprite(sprite, lane, 1)
+      const sprite = new PIXI.Sprite()
 
-    assert.equal(sprite.texture.id, 'lightning')
-    assert.equal(sprite.isFallback, false)
-  })
+      noteManager.initializeNoteSprite(sprite, lane, variant.laneIndex)
 
-  test('initializeNoteSprite sets correct texture for skull lane', () => {
-    const lane = { color: 0x0000ff, renderX: 300 }
-    // Ensure textures are set up
-    noteManager.noteTextures.skull = { id: 'skull' }
-    noteManager.noteTextures.lightning = { id: 'lightning' }
-
-    const sprite = new PIXI.Sprite()
-
-    // Lane index 0 is skull lane
-    noteManager.initializeNoteSprite(sprite, lane, 0)
-
-    assert.equal(sprite.texture.id, 'skull')
-    assert.equal(sprite.isFallback, false)
+      assert.equal(
+        sprite.texture.id,
+        variant.expectedTexture,
+        `Should use ${variant.expectedTexture} texture`
+      )
+      assert.equal(sprite.isFallback, false)
+    })
   })
 
   test('acquireSpriteFromPool reuses a Sprite for fallback', () => {
