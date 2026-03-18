@@ -80,6 +80,15 @@ harmonyEffectVariants.forEach(variant => {
         ),
         `Should include ${variant.expectedEffectKeyword} effect`
       )
+    } else {
+      assert.ok(
+        !modifiers.activeEffects.some(
+          e =>
+            e.fallback.includes('TELEPATHY') ||
+            e.fallback.includes('DISCONNECT')
+        ),
+        'Should not include TELEPATHY or DISCONNECT effect'
+      )
     }
   })
 })
@@ -115,6 +124,11 @@ matzeMoodVariants.forEach(variant => {
       assert.ok(
         modifiers.activeEffects.some(e => e.fallback.includes('GRUMPY MATZE')),
         'Should describe Matze effect'
+      )
+    } else {
+      assert.ok(
+        !modifiers.activeEffects.some(e => e.fallback.includes('GRUMPY MATZE')),
+        'Should not include GRUMPY MATZE effect'
       )
     }
   })
@@ -153,6 +167,11 @@ mariusStaminaVariants.forEach(variant => {
       assert.ok(
         modifiers.activeEffects.some(e => e.fallback.includes('TIRED MARIUS')),
         'Should describe Marius effect'
+      )
+    } else {
+      assert.ok(
+        !modifiers.activeEffects.some(e => e.fallback.includes('TIRED MARIUS')),
+        'Should not include TIRED MARIUS effect'
       )
     }
   })

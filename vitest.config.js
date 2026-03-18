@@ -12,6 +12,10 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html']
-    }
+    },
+    // Keep test timeout at the vitest 5s default (fail fast on slow tests)
+    testTimeout: 5000,
+    // Isolate each test to prevent state pollution
+    isolate: true
   }
 })

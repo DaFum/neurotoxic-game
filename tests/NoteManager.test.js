@@ -171,7 +171,7 @@ describe('NoteManager', () => {
   })
 
   test('loadAssets reports error when loadTextures returns null', async () => {
-    mockPixiStageUtils.loadTextures.mock.mockImplementation(
+    mockPixiStageUtils.loadTextures.mock.mockImplementationOnce(
       async (urlMap, onError) => {
         const results = {}
         for (const key in urlMap) {

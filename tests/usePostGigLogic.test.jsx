@@ -139,6 +139,7 @@ describe('usePostGigLogic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    setupDefaultMocks()
   })
 
   const setupDefaultMocks = () => {
@@ -188,7 +189,6 @@ describe('usePostGigLogic', () => {
 
   describe('initialization', () => {
     it('initializes in REPORT phase with financials and post options', async () => {
-      setupDefaultMocks()
       const { result } = renderHook(() => usePostGigLogic())
 
       expect(result.current.phase).toBe('REPORT')
@@ -209,7 +209,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('falls back gracefully when post options generation throws', async () => {
-      setupDefaultMocks()
       socialEngine.generatePostOptions.mockImplementation(() => {
         throw new Error('bad state')
       })
@@ -232,7 +231,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('clamps performance score to minimum when stats are low', async () => {
-      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           lastGigStats: { score: 1000, accuracy: 50, events: [] }
@@ -253,7 +251,6 @@ describe('usePostGigLogic', () => {
 
   describe('event triggering', () => {
     it('triggers event cascade on mount (financial → special → band)', () => {
-      setupDefaultMocks()
       mockTriggerEvent
         .mockReturnValueOnce({ id: 'fin_event' }) // First call (financial) succeeds
         .mockReturnValueOnce(null) // Second call would be special
@@ -270,7 +267,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('skips event triggering when activeEvent already exists', () => {
-      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({ activeEvent: { id: 'some_event', type: 'financial' } })
       )
@@ -280,7 +276,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('cascades through event types when previous triggers fail', () => {
-      setupDefaultMocks()
       mockTriggerEvent
         .mockReturnValueOnce(null) // financial fails
         .mockReturnValueOnce(null) // special fails
@@ -312,7 +307,6 @@ describe('usePostGigLogic', () => {
 
   describe('post selection', () => {
     it('shows an error toast and aborts when post resolution throws', async () => {
-      setupDefaultMocks()
       socialEngine.resolvePost.mockImplementation(() => {
         throw new Error('broken resolver')
       })
@@ -335,7 +329,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('processes basic post: updates followers, viral count, and cross-posts', async () => {
-      setupDefaultMocks()
       const { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
@@ -358,7 +351,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('handles financial deltas: money, harmony, and clamping at bounds', async () => {
-      setupDefaultMocks()
       // First call: normal deltas
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
@@ -379,7 +371,6 @@ describe('usePostGigLogic', () => {
 
       // Cleanup for second test
       vi.clearAllMocks()
-      setupDefaultMocks()
 
       // Second call: clamped deltas
       socialEngine.resolvePost.mockReturnValueOnce({
@@ -401,7 +392,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('handles band and member updates: harmony, mood changes, and targeting', async () => {
-      setupDefaultMocks()
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
@@ -421,7 +411,6 @@ describe('usePostGigLogic', () => {
 
       // Test all members mood change
       vi.clearAllMocks()
-      setupDefaultMocks()
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
@@ -447,7 +436,6 @@ describe('usePostGigLogic', () => {
 
       // Test target member
       vi.clearAllMocks()
-      setupDefaultMocks()
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
@@ -473,7 +461,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('applies player money and viral bonuses', async () => {
-      setupDefaultMocks()
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
@@ -491,7 +478,6 @@ describe('usePostGigLogic', () => {
 
       // Test viral bonus
       vi.clearAllMocks()
-      setupDefaultMocks()
       socialEngine.checkViralEvent.mockReturnValueOnce(true)
 
       result = renderHook(() => usePostGigLogic()).result
@@ -506,7 +492,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('processes trait unlock and influencer updates', async () => {
-      setupDefaultMocks()
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
@@ -566,7 +551,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('transitions to phase based on brand offers availability', async () => {
-      setupDefaultMocks()
       socialEngine.generateBrandOffers.mockReturnValueOnce([
         {
           id: 'deal_1',
@@ -588,7 +572,6 @@ describe('usePostGigLogic', () => {
 
       // Test no offers path
       vi.clearAllMocks()
-      setupDefaultMocks()
 
       result = renderHook(() => usePostGigLogic()).result
       await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
@@ -602,7 +585,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('deactivates sponsor on sellout ad post', async () => {
-      setupDefaultMocks()
       socialEngine.generatePostOptions.mockReturnValue([
         {
           id: 'comm_sellout_ad',
@@ -640,7 +622,6 @@ describe('usePostGigLogic', () => {
 
   describe('brand deals', () => {
     it('accepts deals with various reward types and penalties', async () => {
-      setupDefaultMocks()
       // Test upfront payment
       let deal = {
         id: 'deal_1',
@@ -670,7 +651,6 @@ describe('usePostGigLogic', () => {
 
       // Test item reward
       vi.clearAllMocks()
-      setupDefaultMocks()
       deal = {
         id: 'deal_2',
         name: 'Cool Brand',
@@ -692,7 +672,6 @@ describe('usePostGigLogic', () => {
 
       // Test with penalties
       vi.clearAllMocks()
-      setupDefaultMocks()
       deal = {
         id: 'deal_3',
         name: 'Evil Corp',
@@ -715,7 +694,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('handles errors gracefully and rejects deals', async () => {
-      setupDefaultMocks()
       mockUpdatePlayer.mockImplementationOnce(() => {
         throw new Error('Database Error')
       })
@@ -747,7 +725,6 @@ describe('usePostGigLogic', () => {
 
       // Test reject all deals
       vi.clearAllMocks()
-      setupDefaultMocks()
       socialEngine.generateBrandOffers.mockReturnValue([
         {
           id: 'deal_1',
@@ -785,7 +762,6 @@ describe('usePostGigLogic', () => {
 
   describe('spin story', () => {
     it('reduces controversy based on player funds', async () => {
-      setupDefaultMocks()
       // Test with enough money
       let { result } = renderHook(() => usePostGigLogic())
 
@@ -808,7 +784,6 @@ describe('usePostGigLogic', () => {
 
       // Test with insufficient funds
       vi.clearAllMocks()
-      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           player: { money: 100, fame: 100, day: 5, location: 'berlin' }
@@ -835,7 +810,6 @@ describe('usePostGigLogic', () => {
 
   describe('continue and completion', () => {
     it('handles game flow: updates state, saves, and transitions', async () => {
-      setupDefaultMocks()
       let { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
@@ -887,7 +861,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('triggers story quests based on active flags', async () => {
-      setupDefaultMocks()
       // Test apology tour quest
       GameState.useGameState.mockReturnValue(
         getBaseState({ activeStoryFlags: ['cancel_quest_active'] })
@@ -913,7 +886,6 @@ describe('usePostGigLogic', () => {
 
       // Test ego management quest
       vi.clearAllMocks()
-      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({ activeStoryFlags: ['breakup_quest_active'] })
       )
@@ -941,7 +913,6 @@ describe('usePostGigLogic', () => {
 
   describe('edge cases', () => {
     it('clamps band and member attributes to valid ranges', async () => {
-      setupDefaultMocks()
       // Test harmony clamping
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
@@ -1009,7 +980,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('handles missing data and ego management gracefully', async () => {
-      setupDefaultMocks()
       // Test missing influencer
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
@@ -1032,7 +1002,6 @@ describe('usePostGigLogic', () => {
 
       // Test ego clear
       vi.clearAllMocks()
-      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({
           social: {
@@ -1065,7 +1034,6 @@ describe('usePostGigLogic', () => {
 
       // Test ego drop
       vi.clearAllMocks()
-      setupDefaultMocks()
 
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
@@ -1090,7 +1058,6 @@ describe('usePostGigLogic', () => {
     })
 
     it('returns early from handleContinue if financials are null', async () => {
-      setupDefaultMocks()
       GameState.useGameState.mockReturnValue(
         getBaseState({ lastGigStats: null })
       )
