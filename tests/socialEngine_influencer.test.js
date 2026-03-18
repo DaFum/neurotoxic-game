@@ -54,40 +54,41 @@ test('collab_influencer fails if no affordable influencer', () => {
   )
 })
 
-test('collab_influencer applies relationship discount', () => {
-  const state = {
-    player: { money: 1000 },
-    social: {
-      influencers: {
-        partner: { tier: 'Micro', score: 50 } // 50 score -> 25% discount off 100 -> 75 cost
+// Parametrized: discount application tests
+const discountVariants = [
+  {
+    label: 'applies relationship discount [score=50 → 25% off]',
+    influencerId: 'partner',
+    influencer: { tier: 'Micro', score: 50 },
+    expectedCost: -75
+  },
+  {
+    label: 'caps discount at 50% [score=200 → max 50% off]',
+    influencerId: 'bestie',
+    influencer: { tier: 'Micro', score: 200 },
+    expectedCost: -50
+  }
+]
+
+discountVariants.forEach(variant => {
+  test(`collab_influencer ${variant.label}`, () => {
+    const state = {
+      player: { money: 1000 },
+      social: {
+        influencers: {
+          [variant.influencerId]: variant.influencer
+        }
       }
     }
-  }
 
-  const result = resolvePost(collabOption, state, 0)
+    const result = resolvePost(collabOption, state, 0)
 
-  // Base 100. Discount 50 * 0.5 = 25%. Cost 75.
-  assert.equal(result.moneyChange, -75, 'Cost should be discounted to 75')
-})
-
-test('collab_influencer caps discount at 50%', () => {
-  const state = {
-    player: { money: 1000 },
-    social: {
-      influencers: {
-        bestie: { tier: 'Micro', score: 200 } // 200 score -> 100% discount? No, capped at 50%
-      }
-    }
-  }
-
-  const result = resolvePost(collabOption, state, 0)
-
-  // Base 100. Max discount 50%. Cost 50.
-  assert.equal(
-    result.moneyChange,
-    -50,
-    'Cost should be discounted to 50 (max cap)'
-  )
+    assert.equal(
+      result.moneyChange,
+      variant.expectedCost,
+      `Cost should be ${Math.abs(variant.expectedCost)}`
+    )
+  })
 })
 
 test('collab_influencer returns influencerUpdate', () => {
@@ -109,46 +110,65 @@ test('collab_influencer returns influencerUpdate', () => {
   )
 })
 
-test('collab_influencer applies trait: tech_savvy', () => {
-  const state = {
-    player: { money: 1000 },
-    social: {
-      influencers: {
-        techie: { tier: 'Micro', score: 0, trait: 'tech_savvy' }
+// Parametrized: trait effects tests
+const traitVariants = [
+  {
+    label: 'applies trait: tech_savvy',
+    influencerId: 'techie',
+    influencer: { tier: 'Micro', score: 0, trait: 'tech_savvy' },
+    expectedPlatform: SOCIAL_PLATFORMS.YOUTUBE.id,
+    expectedMessageMatch: /gear nerds/
+  },
+  {
+    label: 'applies trait: drama_magnet',
+    influencerId: 'queen',
+    influencer: { tier: 'Micro', score: 0, trait: 'drama_magnet' },
+    expectedPlatform: SOCIAL_PLATFORMS.TIKTOK.id,
+    expectedControversy: 20,
+    expectedFollowers: 1500
+  }
+]
+
+traitVariants.forEach(variant => {
+  test(`collab_influencer ${variant.label}`, () => {
+    const state = {
+      player: { money: 1000 },
+      social: {
+        influencers: {
+          [variant.influencerId]: variant.influencer
+        }
       }
     }
-  }
 
-  const result = resolvePost(collabOption, state, 0)
+    const result = resolvePost(collabOption, state, 0)
 
-  assert.equal(
-    result.platform,
-    SOCIAL_PLATFORMS.YOUTUBE.id,
-    'Should switch platform to YouTube'
-  )
-  assert.match(result.message, /gear nerds/, 'Should include trait flavor text')
-})
-
-test('collab_influencer applies trait: drama_magnet', () => {
-  const state = {
-    player: { money: 1000 },
-    social: {
-      influencers: {
-        queen: { tier: 'Micro', score: 0, trait: 'drama_magnet' }
-      }
+    assert.equal(
+      result.platform,
+      variant.expectedPlatform,
+      `Should switch to ${variant.expectedPlatform}`
+    )
+    if (variant.expectedMessageMatch) {
+      assert.match(
+        result.message,
+        variant.expectedMessageMatch,
+        'Should include trait flavor text'
+      )
     }
-  }
-
-  const result = resolvePost(collabOption, state, 0)
-
-  assert.equal(
-    result.platform,
-    SOCIAL_PLATFORMS.TIKTOK.id,
-    'Should switch platform to TikTok'
-  )
-  assert.equal(result.controversyChange, 20, 'Should increase controversy')
-  // Base gain 1000 * 1.5 = 1500
-  assert.equal(result.followers, 1500, 'Should boost followers by 1.5x')
+    if (variant.expectedControversy !== undefined) {
+      assert.equal(
+        result.controversyChange,
+        variant.expectedControversy,
+        'Should increase controversy'
+      )
+    }
+    if (variant.expectedFollowers !== undefined) {
+      assert.equal(
+        result.followers,
+        variant.expectedFollowers,
+        'Should boost followers by 1.5x'
+      )
+    }
+  })
 })
 
 test('collab_influencer ignores invalid influencer entries', () => {
