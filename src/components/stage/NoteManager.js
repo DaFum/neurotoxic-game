@@ -51,9 +51,7 @@ export class NoteManager {
       }
 
       const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
-        handleError(error, {
-          fallbackMessage: fallbackMessage
-        })
+        handleError(error, { fallbackMessage })
       })
 
       if (loadedTextures.skull) this.noteTextures.skull = loadedTextures.skull

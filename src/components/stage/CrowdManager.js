@@ -33,9 +33,7 @@ export class CrowdManager {
       }
 
       const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
-        handleError(error, {
-          fallbackMessage: fallbackMessage
-        })
+        handleError(error, { fallbackMessage })
       })
 
       if (loadedTextures.idle) this.textures.idle = loadedTextures.idle

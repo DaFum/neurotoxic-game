@@ -269,19 +269,19 @@ export const getOptimalResolution = () => {
  */
 export const loadTextures = async (urlMap, onError) => {
   const keys = Object.keys(urlMap)
-  const resultsMap = {}
-
-  if (keys.length === 0) return resultsMap
+  if (keys.length === 0) {
+    return {}
+  }
 
   const promises = keys.map(key => loadTexture(urlMap[key]))
   const settledResults = await Promise.allSettled(promises)
 
-  keys.forEach((key, index) => {
+  return keys.reduce((acc, key, index) => {
     const res = settledResults[index]
     if (res.status === 'fulfilled' && res.value !== null) {
-      resultsMap[key] = res.value
+      acc[key] = res.value
     } else {
-      resultsMap[key] = null
+      acc[key] = null
       const error =
         res.status === 'fulfilled'
           ? new Error(`Texture '${key}' returned null`)
@@ -290,10 +290,13 @@ export const loadTextures = async (urlMap, onError) => {
       if (onError) {
         onError(error, `Texture '${key}' failed to load.`)
       } else {
-        logger.warn('loadTextures', `Failed to load texture for '${key}'`, error)
+        logger.warn(
+          'loadTextures',
+          `Failed to load texture for '${key}'`,
+          error
+        )
       }
     }
-  })
-
-  return resultsMap
+    return acc
+  }, {})
 }
