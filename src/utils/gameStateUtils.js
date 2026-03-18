@@ -162,19 +162,17 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.player) {
     if (typeof delta.player.money === 'number') {
-      const nextMoney = clampPlayerMoney(
-        (state.player?.money || 0) + delta.player.money
-      )
-      applied.player.money = nextMoney - (state.player?.money || 0)
+      const currentMoney = Math.max(0, state.player?.money || 0)
+      const nextMoney = clampPlayerMoney(currentMoney + delta.player.money)
+      applied.player.money = nextMoney - currentMoney
     }
     if (typeof delta.player.time === 'number') {
       applied.player.time = delta.player.time // time is unbounded
     }
     if (typeof delta.player.fame === 'number') {
-      const nextFame = clampPlayerFame(
-        (state.player?.fame || 0) + delta.player.fame
-      )
-      applied.player.fame = nextFame - (state.player?.fame || 0)
+      const currentFame = Math.max(0, state.player?.fame || 0)
+      const nextFame = clampPlayerFame(currentFame + delta.player.fame)
+      applied.player.fame = nextFame - currentFame
     }
     const scoreDelta =
       typeof delta.player?.score === 'number'
@@ -237,10 +235,9 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.band) {
     if (typeof delta.band.harmony === 'number') {
-      const nextHarmony = clampBandHarmony(
-        (state.band?.harmony ?? 1) + delta.band.harmony
-      )
-      applied.band.harmony = nextHarmony - (state.band?.harmony ?? 1)
+      const currentHarmony = clampBandHarmony(state.band?.harmony ?? 1)
+      const nextHarmony = clampBandHarmony(currentHarmony + delta.band.harmony)
+      applied.band.harmony = nextHarmony - currentHarmony
     }
 
     // Inventory
