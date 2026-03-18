@@ -32,98 +32,130 @@ test('getGigModifiers returns default modifiers for average band', () => {
   )
 })
 
-test('getGigModifiers grants telepathy bonus for high harmony', () => {
-  const band = buildBandState({ harmony: 85 })
-  const modifiers = getGigModifiers(band)
+// Parametrized: getGigModifiers harmony effect variants
+const harmonyEffectVariants = [
+  {
+    label: 'grants telepathy bonus for high harmony',
+    harmony: 85,
+    expectedHitWindowBonus: 20,
+    expectedNoteJitter: false,
+    expectedEffectKeyword: 'TELEPATHY'
+  },
+  {
+    label: 'applies disconnect penalty for low harmony',
+    harmony: 25,
+    expectedHitWindowBonus: 0,
+    expectedNoteJitter: true,
+    expectedEffectKeyword: 'DISCONNECT'
+  },
+  {
+    label: 'has no special effects for mid harmony',
+    harmony: 50,
+    expectedHitWindowBonus: 0,
+    expectedNoteJitter: false,
+    expectedEffectKeyword: null
+  }
+]
 
-  assert.equal(
-    modifiers.hitWindowBonus,
-    20,
-    'Should grant 20ms bonus for high harmony'
-  )
-  assert.ok(
-    modifiers.activeEffects.some(e => e.fallback.includes('TELEPATHY')),
-    'Should describe telepathy effect'
-  )
+harmonyEffectVariants.forEach(variant => {
+  test(`getGigModifiers ${variant.label}`, () => {
+    const band = buildBandState({ harmony: variant.harmony })
+    const modifiers = getGigModifiers(band)
+
+    assert.equal(
+      modifiers.hitWindowBonus,
+      variant.expectedHitWindowBonus,
+      `Hit window bonus should be ${variant.expectedHitWindowBonus}`
+    )
+    assert.equal(
+      modifiers.noteJitter,
+      variant.expectedNoteJitter,
+      `Note jitter should be ${variant.expectedNoteJitter}`
+    )
+
+    if (variant.expectedEffectKeyword) {
+      assert.ok(
+        modifiers.activeEffects.some(e =>
+          e.fallback.includes(variant.expectedEffectKeyword)
+        ),
+        `Should include ${variant.expectedEffectKeyword} effect`
+      )
+    }
+  })
 })
 
-test('getGigModifiers applies disconnect penalty for low harmony', () => {
-  const band = buildBandState({ harmony: 25 })
-  const modifiers = getGigModifiers(band)
+// Parametrized: getGigModifiers Matze mood variations
+const matzeMoodVariants = [
+  {
+    label: 'applies grumpy Matze penalty [mood: 15]',
+    mood: 15,
+    expectedGuitarMult: 0.5,
+    shouldHaveEffect: true
+  },
+  {
+    label: 'does not apply Matze penalty when mood is okay [mood: 50]',
+    mood: 50,
+    expectedGuitarMult: 1.0,
+    shouldHaveEffect: false
+  }
+]
 
-  assert.equal(
-    modifiers.noteJitter,
-    true,
-    'Should enable note jitter for low harmony'
-  )
-  assert.ok(
-    modifiers.activeEffects.some(e => e.fallback.includes('DISCONNECT')),
-    'Should describe disconnect effect'
-  )
+matzeMoodVariants.forEach(variant => {
+  test(`getGigModifiers ${variant.label}`, () => {
+    const band = buildBandWithMembers([{ name: 'Matze', mood: variant.mood }])
+    const modifiers = getGigModifiers(band)
+
+    assert.equal(
+      modifiers.guitarScoreMult,
+      variant.expectedGuitarMult,
+      `Guitar multiplier should be ${variant.expectedGuitarMult}`
+    )
+
+    if (variant.shouldHaveEffect) {
+      assert.ok(
+        modifiers.activeEffects.some(e => e.fallback.includes('GRUMPY MATZE')),
+        'Should describe Matze effect'
+      )
+    }
+  })
 })
 
-test('getGigModifiers has no special effects for mid harmony', () => {
-  const band = buildBandState({ harmony: 50 })
-  const modifiers = getGigModifiers(band)
+// Parametrized: getGigModifiers Marius stamina variations
+const mariusStaminaVariants = [
+  {
+    label: 'applies tired Marius speed increase [stamina: 15]',
+    stamina: 15,
+    expectedDrumMult: 1.2,
+    shouldHaveEffect: true
+  },
+  {
+    label: 'does not apply Marius penalty when stamina is okay [stamina: 50]',
+    stamina: 50,
+    expectedDrumMult: 1.0,
+    shouldHaveEffect: false
+  }
+]
 
-  assert.equal(
-    modifiers.hitWindowBonus,
-    0,
-    'Should have no bonus for mid harmony'
-  )
-  assert.equal(
-    modifiers.noteJitter,
-    false,
-    'Should have no jitter for mid harmony'
-  )
-})
+mariusStaminaVariants.forEach(variant => {
+  test(`getGigModifiers ${variant.label}`, () => {
+    const band = buildBandWithMembers([
+      { name: 'Marius', stamina: variant.stamina }
+    ])
+    const modifiers = getGigModifiers(band)
 
-test('getGigModifiers applies grumpy Matze penalty', () => {
-  const band = buildBandWithMembers([{ name: 'Matze', mood: 15 }])
-  const modifiers = getGigModifiers(band)
+    assert.equal(
+      modifiers.drumSpeedMult,
+      variant.expectedDrumMult,
+      `Drum speed multiplier should be ${variant.expectedDrumMult}`
+    )
 
-  assert.equal(
-    modifiers.guitarScoreMult,
-    0.5,
-    'Grumpy Matze should halve guitar score'
-  )
-  assert.ok(
-    modifiers.activeEffects.some(e => e.fallback.includes('GRUMPY MATZE')),
-    'Should describe Matze effect'
-  )
-})
-
-test('getGigModifiers does not apply Matze penalty when mood is okay', () => {
-  const band = buildBandWithMembers([{ name: 'Matze', mood: 50 }])
-  const modifiers = getGigModifiers(band)
-
-  assert.equal(
-    modifiers.guitarScoreMult,
-    1.0,
-    'Should have normal guitar multiplier'
-  )
-})
-
-test('getGigModifiers applies tired Marius speed increase', () => {
-  const band = buildBandWithMembers([{ name: 'Marius', stamina: 15 }])
-  const modifiers = getGigModifiers(band)
-
-  assert.equal(
-    modifiers.drumSpeedMult,
-    1.2,
-    'Tired Marius should speed up tempo'
-  )
-  assert.ok(
-    modifiers.activeEffects.some(e => e.fallback.includes('TIRED MARIUS')),
-    'Should describe Marius effect'
-  )
-})
-
-test('getGigModifiers does not apply Marius penalty when stamina is okay', () => {
-  const band = buildBandWithMembers([{ name: 'Marius', stamina: 50 }])
-  const modifiers = getGigModifiers(band)
-
-  assert.equal(modifiers.drumSpeedMult, 1.0, 'Should have normal drum speed')
+    if (variant.shouldHaveEffect) {
+      assert.ok(
+        modifiers.activeEffects.some(e => e.fallback.includes('TIRED MARIUS')),
+        'Should describe Marius effect'
+      )
+    }
+  })
 })
 
 test('getGigModifiers can apply multiple effects', () => {
@@ -212,36 +244,36 @@ test('calculateGigPhysics skill increases hit windows', () => {
   )
 })
 
-test('calculateGigPhysics reduces speed for low stamina', () => {
-  const tiredBand = buildBandWithMembers([
-    { name: 'Matze', stamina: 20 },
-    { name: 'Marius', stamina: 25 },
-    { name: 'Lars', stamina: 20 }
-  ])
-  const song = { bpm: 120 }
-  const physics = calculateGigPhysics(tiredBand, song)
+// Parametrized: calculateGigPhysics speed modifier based on stamina
+const speedModifierVariants = [
+  {
+    label: 'reduces speed for low stamina [20, 25, 20]',
+    memberStaminas: [20, 25, 20],
+    expectedSpeedModifier: 0.8
+  },
+  {
+    label: 'maintains normal speed for adequate stamina [50, 50, 50]',
+    memberStaminas: [50, 50, 50],
+    expectedSpeedModifier: 1.0
+  }
+]
 
-  assert.equal(
-    physics.speedModifier,
-    0.8,
-    'Low stamina should reduce speed to 0.8'
-  )
-})
+speedModifierVariants.forEach(variant => {
+  test(`calculateGigPhysics ${variant.label}`, () => {
+    const band = buildBandWithMembers([
+      { name: 'Matze', stamina: variant.memberStaminas[0] },
+      { name: 'Marius', stamina: variant.memberStaminas[1] },
+      { name: 'Lars', stamina: variant.memberStaminas[2] }
+    ])
+    const song = { bpm: 120 }
+    const physics = calculateGigPhysics(band, song)
 
-test('calculateGigPhysics normal speed for adequate stamina', () => {
-  const band = buildBandWithMembers([
-    { name: 'Matze', stamina: 50 },
-    { name: 'Marius', stamina: 50 },
-    { name: 'Lars', stamina: 50 }
-  ])
-  const song = { bpm: 120 }
-  const physics = calculateGigPhysics(band, song)
-
-  assert.equal(
-    physics.speedModifier,
-    1.0,
-    'Adequate stamina should maintain normal speed'
-  )
+    assert.equal(
+      physics.speedModifier,
+      variant.expectedSpeedModifier,
+      `Speed modifier should be ${variant.expectedSpeedModifier}`
+    )
+  })
 })
 
 test('calculateGigPhysics returns default multipliers', () => {
@@ -266,32 +298,34 @@ test('calculateGigPhysics returns default multipliers', () => {
   )
 })
 
-test('calculateGigPhysics applies blast machine trait for fast songs', () => {
-  const band = buildBandWithMembers([
-    { name: 'Marius', traits: [{ id: 'blast_machine' }] }
-  ])
-  const fastSong = { bpm: 180 }
-  const physics = calculateGigPhysics(band, fastSong)
+// Parametrized: calculateGigPhysics blast machine trait on different song tempos
+const blastMachineVariants = [
+  {
+    label: 'applies blast machine trait for fast songs [bpm: 180]',
+    songBpm: 180,
+    expectedDrumMult: 1.5
+  },
+  {
+    label: 'does not apply blast machine for slow songs [bpm: 120]',
+    songBpm: 120,
+    expectedDrumMult: 1.0
+  }
+]
 
-  assert.equal(
-    physics.multipliers.drums,
-    1.5,
-    'Blast machine should boost drums on fast songs'
-  )
-})
+blastMachineVariants.forEach(variant => {
+  test(`calculateGigPhysics ${variant.label}`, () => {
+    const band = buildBandWithMembers([
+      { name: 'Marius', traits: [{ id: 'blast_machine' }] }
+    ])
+    const song = { bpm: variant.songBpm }
+    const physics = calculateGigPhysics(band, song)
 
-test('calculateGigPhysics does not apply blast machine for slow songs', () => {
-  const band = buildBandWithMembers([
-    { name: 'Marius', traits: [{ id: 'blast_machine' }] }
-  ])
-  const slowSong = { bpm: 120 }
-  const physics = calculateGigPhysics(band, slowSong)
-
-  assert.equal(
-    physics.multipliers.drums,
-    1.0,
-    'Blast machine should not apply to slow songs'
-  )
+    assert.equal(
+      physics.multipliers.drums,
+      variant.expectedDrumMult,
+      `Blast machine should ${variant.expectedDrumMult === 1.5 ? 'boost' : 'not affect'} drums`
+    )
+  })
 })
 
 test('calculateGigPhysics includes avgStamina in result', () => {
@@ -356,47 +390,55 @@ test('calculateGigPhysics handles missing skill property', () => {
   )
 })
 
-test('calculateDailyUpdates applies newsletter decay', () => {
-  const currentState = {
-    player: { day: 10, money: 100, van: { condition: 100 } },
-    band: { members: [], harmony: 50 },
-    social: {
-      instagram: 100,
-      tiktok: 100,
-      youtube: 100,
-      newsletter: 100,
-      viral: 0,
-      lastGigDay: 5
-    }
+// Parametrized: calculateDailyUpdates decay based on activity recency
+const decayVariants = [
+  {
+    label: 'applies newsletter decay when inactive [lastGigDay: 5 → day: 10]',
+    lastGigDay: 5,
+    currentDay: 10,
+    expectedNewsletter: 96,
+    checkInstagram: false
+  },
+  {
+    label: 'does not decay if active recently [lastGigDay: 9 → day: 10]',
+    lastGigDay: 9,
+    currentDay: 10,
+    expectedNewsletter: 100,
+    expectedInstagram: 100,
+    checkInstagram: true
   }
+]
 
-  const { social } = calculateDailyUpdates(currentState)
-
-  // nextDay = 11. daysSinceActivity = 11 - 5 = 6.
-  // Decay logic: 0.01 * (6 - 2) = 0.04
-  // 100 * 0.96 = 96
-  assert.ok(social.newsletter < 100, 'Newsletter should decay')
-  assert.equal(social.newsletter, 96, 'Newsletter decay calculation incorrect')
-})
-
-test('calculateDailyUpdates does not decay if active recently', () => {
-  const currentState = {
-    player: { day: 10, money: 100, van: { condition: 100 } },
-    band: { members: [], harmony: 50 },
-    social: {
-      instagram: 100,
-      newsletter: 100,
-      tiktok: 100,
-      youtube: 100,
-      viral: 0,
-      lastGigDay: 9
+decayVariants.forEach(variant => {
+  test(`calculateDailyUpdates ${variant.label}`, () => {
+    const currentState = {
+      player: { day: variant.currentDay, money: 100, van: { condition: 100 } },
+      band: { members: [], harmony: 50 },
+      social: {
+        instagram: 100,
+        tiktok: 100,
+        youtube: 100,
+        newsletter: 100,
+        viral: 0,
+        lastGigDay: variant.lastGigDay
+      }
     }
-  }
 
-  const { social } = calculateDailyUpdates(currentState)
+    const { social } = calculateDailyUpdates(currentState)
 
-  assert.equal(social.instagram, 100, 'Instagram should not decay')
-  assert.equal(social.newsletter, 100, 'Newsletter should not decay')
+    if (variant.checkInstagram) {
+      assert.equal(
+        social.instagram,
+        variant.expectedInstagram,
+        'Instagram should not decay'
+      )
+    }
+    assert.equal(
+      social.newsletter,
+      variant.expectedNewsletter,
+      `Newsletter should be ${variant.expectedNewsletter}`
+    )
+  })
 })
 
 test('calculateDailyUpdates handles missing lastGigDay safely', () => {

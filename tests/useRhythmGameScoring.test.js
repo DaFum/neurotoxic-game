@@ -133,25 +133,59 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(typeof result.current.activateToxicMode, 'function')
   })
 
-  test('handleHit updates score and combo on valid hit', () => {
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        performance: {},
-        contextActions
+  // Parametrized: handleHit valid hits with different multipliers
+  const handleHitValidVariants = [
+    {
+      label: 'updates score and combo on valid hit [no multiplier]',
+      performance: {},
+      laneIndex: 0,
+      expectedScore: 100,
+      expectedCombo: 1,
+      expectedPerfectHits: 1
+    },
+    {
+      label: 'applies lane multipliers [drumMultiplier: 1.5]',
+      performance: { drumMultiplier: 1.5 },
+      laneIndex: 1,
+      expectedScore: 150,
+      expectedCombo: 1,
+      expectedPerfectHits: 1
+    }
+  ]
+
+  handleHitValidVariants.forEach(variant => {
+    test(`handleHit ${variant.label}`, () => {
+      const { result } = renderHook(() =>
+        useRhythmGameScoring({
+          gameStateRef,
+          setters,
+          performance: variant.performance,
+          contextActions
+        })
+      )
+
+      let hitResult
+      act(() => {
+        hitResult = result.current.handleHit(variant.laneIndex)
       })
-    )
 
-    let hitResult
-    act(() => {
-      hitResult = result.current.handleHit(0)
+      assert.equal(hitResult, true, 'Should return true on valid hit')
+      assert.equal(
+        gameStateRef.current.score,
+        variant.expectedScore,
+        `Score should be ${variant.expectedScore}`
+      )
+      assert.equal(
+        gameStateRef.current.combo,
+        variant.expectedCombo,
+        'Combo should increment'
+      )
+      assert.equal(
+        gameStateRef.current.stats.perfectHits,
+        variant.expectedPerfectHits,
+        'Perfect hits should increment'
+      )
     })
-
-    assert.equal(hitResult, true)
-    assert.equal(gameStateRef.current.score, 100)
-    assert.equal(gameStateRef.current.combo, 1)
-    assert.equal(gameStateRef.current.stats.perfectHits, 1)
   })
 
   test('handleHit triggers miss on invalid hit', () => {
@@ -175,23 +209,6 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.combo, 0)
     // Health 100 - 1 = 99
     assert.equal(gameStateRef.current.health, 99)
-  })
-
-  test('handleHit applies lane multipliers', () => {
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        performance: { drumMultiplier: 1.5 },
-        contextActions
-      })
-    )
-
-    act(() => {
-      result.current.handleHit(1)
-    })
-
-    assert.equal(gameStateRef.current.score, 150)
   })
 
   test('handleMiss resets combo and applies penalties', () => {
@@ -321,52 +338,61 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.health, 51)
   })
 
-  test('Real miss deactivates Toxic Mode', () => {
-    gameStateRef.current.isToxicMode = true
+  // Parametrized: Toxic Mode deactivation on miss
+  const toxicMissVariants = [
+    {
+      label: 'deactivates on real miss',
+      isEmptyHit: false,
+      shouldDeactivate: true,
+      expectedToast: 'ui:gig.toasts.toxicModeLost'
+    },
+    {
+      label: 'does not deactivate on empty hit',
+      isEmptyHit: true,
+      shouldDeactivate: false
+    }
+  ]
 
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        performance: {},
-        contextActions
+  toxicMissVariants.forEach(variant => {
+    test(`Toxic Mode ${variant.label}`, () => {
+      gameStateRef.current.isToxicMode = true
+
+      const { result } = renderHook(() =>
+        useRhythmGameScoring({
+          gameStateRef,
+          setters,
+          performance: {},
+          contextActions
+        })
+      )
+
+      act(() => {
+        result.current.handleMiss(1, variant.isEmptyHit)
       })
-    )
 
-    act(() => {
-      result.current.handleMiss(1, false) // Real miss
+      assert.equal(
+        gameStateRef.current.isToxicMode,
+        !variant.shouldDeactivate,
+        `Toxic Mode should be ${!variant.shouldDeactivate}`
+      )
+
+      if (variant.shouldDeactivate) {
+        assert.equal(setters.setIsToxicMode.mock.calls[0].arguments[0], false)
+        assert.equal(
+          contextActions.addToast.mock.calls[0].arguments[0],
+          variant.expectedToast
+        )
+      } else {
+        const calls = setters.setIsToxicMode.mock.calls.filter(
+          c => c.arguments[0] === false
+        )
+        assert.equal(
+          calls.length,
+          0,
+          'Should not deactivate Toxic Mode on empty hit'
+        )
+      }
     })
-
-    assert.equal(gameStateRef.current.isToxicMode, false)
-    assert.equal(setters.setIsToxicMode.mock.calls[0].arguments[0], false)
-    assert.equal(
-      contextActions.addToast.mock.calls[0].arguments[0],
-      'ui:gig.toasts.toxicModeLost'
-    )
-  })
-
-  test('Empty hit does not deactivate Toxic Mode', () => {
-    gameStateRef.current.isToxicMode = true
-
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        performance: {},
-        contextActions
-      })
-    )
-
-    act(() => {
-      result.current.handleMiss(1, true) // Empty hit
-    })
-
-    assert.equal(gameStateRef.current.isToxicMode, true)
-    // setIsToxicMode should not have been called with false
-    const calls = setters.setIsToxicMode.mock.calls.filter(
-      c => c.arguments[0] === false
-    )
-    assert.equal(calls.length, 0)
   })
 
   test('Guestlist modifier increases score', () => {
@@ -389,47 +415,46 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.score, 120)
   })
 
-  test('Perfektionist trait applies bonus score at high accuracy', () => {
-    gameStateRef.current.modifiers = { hasPerfektionist: true }
-    // Mock accuracy calculation to return high accuracy
-    mockGigStats.calculateAccuracy.mock.mockImplementation(() => 90)
+  // Parametrized: Perfektionist trait score variations
+  const perfektionistVariants = [
+    {
+      label: 'applies bonus score at high accuracy [90%]',
+      accuracy: 90,
+      expectedScore: 114
+    },
+    {
+      label: 'does not apply bonus score at low accuracy [80%]',
+      accuracy: 80,
+      expectedScore: 100
+    }
+  ]
 
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        performance: {},
-        contextActions
+  perfektionistVariants.forEach(variant => {
+    test(`Perfektionist trait ${variant.label}`, () => {
+      gameStateRef.current.modifiers = { hasPerfektionist: true }
+      mockGigStats.calculateAccuracy.mock.mockImplementation(
+        () => variant.accuracy
+      )
+
+      const { result } = renderHook(() =>
+        useRhythmGameScoring({
+          gameStateRef,
+          setters,
+          performance: {},
+          contextActions
+        })
+      )
+
+      act(() => {
+        result.current.handleHit(0)
       })
-    )
 
-    act(() => {
-      result.current.handleHit(0)
+      assert.equal(
+        gameStateRef.current.score,
+        variant.expectedScore,
+        `Score should be ${variant.expectedScore} at ${variant.accuracy}% accuracy`
+      )
     })
-
-    // 100 * 1.15 = 114.999... -> 114 (Math.floor)
-    assert.equal(gameStateRef.current.score, 114)
-  })
-
-  test('Perfektionist trait does not apply bonus score at low accuracy', () => {
-    gameStateRef.current.modifiers = { hasPerfektionist: true }
-    // Mock accuracy calculation to return low accuracy
-    mockGigStats.calculateAccuracy.mock.mockImplementation(() => 80)
-
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        performance: {},
-        contextActions
-      })
-    )
-
-    act(() => {
-      result.current.handleHit(0)
-    })
-
-    assert.equal(gameStateRef.current.score, 100)
   })
 
   test('Overload increases on hit and triggers Toxic Mode when full', () => {
