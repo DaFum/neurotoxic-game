@@ -140,8 +140,8 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.flags) {
     applied.flags = {}
-    for (const key of Object.keys(delta.flags)) {
-      if (isForbiddenKey(key)) continue
+    for (const key in delta.flags) {
+      if (!Object.hasOwn(delta.flags, key) || isForbiddenKey(key)) continue
       applied.flags[key] = delta.flags[key]
     }
   } else {
@@ -199,8 +199,9 @@ export const calculateAppliedDelta = (state, delta) => {
     }
     if (delta.player.stats) {
       applied.player.stats = {}
-      for (const key of Object.keys(delta.player.stats)) {
-        if (isForbiddenKey(key)) continue
+      for (const key in delta.player.stats) {
+        if (!Object.hasOwn(delta.player.stats, key) || isForbiddenKey(key))
+          continue
         applied.player.stats[key] = delta.player.stats[key]
       }
     }
@@ -238,9 +239,14 @@ export const calculateAppliedDelta = (state, delta) => {
     // Inventory
     if (delta.band.inventory) {
       applied.band.inventory = {}
-      for (const [itemId, qty] of Object.entries(delta.band.inventory)) {
-        if (isForbiddenKey(itemId)) continue
+      for (const itemId in delta.band.inventory) {
+        if (
+          !Object.hasOwn(delta.band.inventory, itemId) ||
+          isForbiddenKey(itemId)
+        )
+          continue
 
+        const qty = delta.band.inventory[itemId]
         if (typeof qty === 'number') {
           if (qty !== 0) {
             applied.band.inventory[itemId] = qty
@@ -268,8 +274,8 @@ export const calculateAppliedDelta = (state, delta) => {
 
     if (membersDelta && !Array.isArray(membersDelta)) {
       applied.band.membersDelta = {}
-      for (const key of Object.keys(membersDelta)) {
-        if (isForbiddenKey(key)) continue
+      for (const key in membersDelta) {
+        if (!Object.hasOwn(membersDelta, key) || isForbiddenKey(key)) continue
         applied.band.membersDelta[key] = membersDelta[key]
       }
     } else if (membersDelta && Array.isArray(membersDelta)) {
@@ -310,8 +316,12 @@ export const calculateAppliedDelta = (state, delta) => {
         applied.band.relationshipChange = [...delta.band.relationshipChange]
       } else {
         applied.band.relationshipChange = {}
-        for (const key of Object.keys(delta.band.relationshipChange)) {
-          if (isForbiddenKey(key)) continue
+        for (const key in delta.band.relationshipChange) {
+          if (
+            !Object.hasOwn(delta.band.relationshipChange, key) ||
+            isForbiddenKey(key)
+          )
+            continue
           applied.band.relationshipChange[key] =
             delta.band.relationshipChange[key]
         }
