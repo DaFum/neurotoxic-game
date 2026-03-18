@@ -213,164 +213,139 @@ test('every venue chatter line key must have a valid translation key in EN and D
 
 // --- NEW: Condition-based chatter categories ---
 
-test('harmony chatter fires when band.harmony is low', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, { band: { harmony: 25 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_230'
-  )
-  assert.ok(matches.length > 0, 'Expected low-harmony chatter to activate')
+// Parametrized: Harmony & Van Conditions
+const harmonyVanVariants = [
+  {
+    label: 'harmony [low]',
+    state: buildState(GAME_PHASES.OVERWORLD, { band: { harmony: 25 } }),
+    expectedKey: 'chatter:standard.msg_230'
+  },
+  {
+    label: 'harmony [high]',
+    state: buildState(GAME_PHASES.OVERWORLD, { band: { harmony: 92 } }),
+    expectedKey: 'chatter:standard.msg_239'
+  },
+  {
+    label: 'van [low fuel]',
+    useDelta: true,
+    activeState: buildState(GAME_PHASES.OVERWORLD, {
+      player: { van: { fuel: 15, condition: 100 } }
+    }),
+    inactiveState: buildState(GAME_PHASES.OVERWORLD, {
+      player: { van: { fuel: 95, condition: 100 } }
+    })
+  },
+  {
+    label: 'van [critical condition]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      player: { van: { fuel: 100, condition: 20 } }
+    }),
+    expectedKey: 'chatter:standard.msg_249'
+  }
+]
+
+harmonyVanVariants.forEach(variant => {
+  test(`${variant.useDelta ? 'van chatter fires when fuel is low' : 'harmony chatter fires'} ${variant.label}`, () => {
+    let matches
+    if (variant.useDelta) {
+      matches = getConditionDelta({
+        activeState: variant.activeState,
+        inactiveState: variant.inactiveState
+      })
+    } else {
+      matches = CHATTER_DB.filter(
+        e =>
+          typeof e.condition === 'function' &&
+          e.condition(variant.state) &&
+          e.text === variant.expectedKey
+      )
+    }
+    assert.ok(
+      matches.length > 0,
+      `Expected chatter to activate for ${variant.label}`
+    )
+  })
 })
 
-test('harmony chatter fires when band.harmony is high', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, { band: { harmony: 92 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_239'
-  )
-  assert.ok(matches.length > 0, 'Expected high-harmony chatter to activate')
-})
-
-test('van chatter fires when fuel is low', () => {
-  const lowFuelState = buildState(GAME_PHASES.OVERWORLD, {
-    player: { van: { fuel: 15, condition: 100 } }
-  })
-  const highFuelState = buildState(GAME_PHASES.OVERWORLD, {
-    player: { van: { fuel: 95, condition: 100 } }
-  })
-  const matches = getConditionDelta({
-    activeState: lowFuelState,
-    inactiveState: highFuelState
-  })
-  assert.ok(matches.length > 0, 'Expected low-fuel chatter to activate')
-})
-
-test('van chatter fires when condition is critical', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { van: { fuel: 100, condition: 20 } }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_249'
-  )
-  assert.ok(
-    matches.length > 0,
-    'Expected bad-condition van chatter to activate'
-  )
-})
-
-test('tour progression chatter fires for late tour', () => {
-  const matches = getConditionDelta({
+// Parametrized: Tour Progression, Fame, Inventory, Modifiers, Luck
+const tourFameLuckVariants = [
+  {
+    label: 'tour [late]',
+    useDelta: true,
     activeState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 28 } }),
     inactiveState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 5 } })
-  })
-  assert.ok(matches.length > 0, 'Expected late-tour chatter to activate')
-})
-
-test('tour progression chatter fires for early tour', () => {
-  const matches = getConditionDelta({
+  },
+  {
+    label: 'tour [early]',
+    useDelta: true,
     activeState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 1 } }),
     inactiveState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 8 } })
-  })
-  assert.ok(matches.length > 0, 'Expected early-tour chatter to activate')
-})
-
-test('fame chatter fires when fameLevel >= 2', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { fameLevel: 2, fame: 200 }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_275'
-  )
-  assert.ok(matches.length > 0, 'Expected fame-level chatter to activate')
-})
-
-test('fame chatter fires when fame is low', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { fame: 20, fameLevel: 0 }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_272'
-  )
-  assert.ok(matches.length > 0, 'Expected low-fame chatter to activate')
-})
-
-test('inventory chatter fires when strings are missing', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    band: {
-      inventory: {
-        strings: false,
-        cables: true,
-        drum_parts: true,
-        golden_pick: false,
-        shirts: 50,
-        hoodies: 20,
-        patches: 100,
-        cds: 30,
-        vinyl: 10
+  },
+  {
+    label: 'fame [fameLevel >= 2]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      player: { fameLevel: 2, fame: 200 }
+    }),
+    expectedKey: 'chatter:standard.msg_275'
+  },
+  {
+    label: 'fame [low]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      player: { fame: 20, fameLevel: 0 }
+    }),
+    expectedKey: 'chatter:standard.msg_272'
+  },
+  {
+    label: 'inventory [missing strings]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      band: {
+        inventory: {
+          strings: false,
+          cables: true,
+          drum_parts: true,
+          golden_pick: false,
+          shirts: 50,
+          hoodies: 20,
+          patches: 100,
+          cds: 30,
+          vinyl: 10
+        }
       }
-    }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_284'
-  )
-  assert.ok(matches.length > 0, 'Expected missing-strings chatter to activate')
-})
-
-test('inventory chatter fires for golden pick', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    band: {
-      inventory: {
-        strings: true,
-        cables: true,
-        drum_parts: true,
-        golden_pick: true,
-        shirts: 50,
-        hoodies: 20,
-        patches: 100,
-        cds: 30,
-        vinyl: 10
+    }),
+    expectedKey: 'chatter:standard.msg_284'
+  },
+  {
+    label: 'inventory [golden pick]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      band: {
+        inventory: {
+          strings: true,
+          cables: true,
+          drum_parts: true,
+          golden_pick: true,
+          shirts: 50,
+          hoodies: 20,
+          patches: 100,
+          cds: 30,
+          vinyl: 10
+        }
       }
-    }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_290'
-  )
-  assert.ok(matches.length > 0, 'Expected golden-pick chatter to activate')
-})
-
-test('gig modifier chatter fires when catering is booked', () => {
-  const matches = getConditionDelta({
+    }),
+    expectedKey: 'chatter:standard.msg_290'
+  },
+  {
+    label: 'modifiers [catering booked]',
+    useDelta: true,
     activeState: buildState(GAME_PHASES.OVERWORLD, {
       gigModifiers: { catering: true }
     }),
     inactiveState: buildState(GAME_PHASES.OVERWORLD, {
       gigModifiers: { catering: false }
     })
-  })
-  assert.ok(matches.length > 0, 'Expected catering chatter to activate')
-})
-
-test('gig modifier chatter fires when nothing is booked', () => {
-  const matches = getConditionDelta({
+  },
+  {
+    label: 'modifiers [nothing booked]',
+    useDelta: true,
     activeState: buildState(GAME_PHASES.OVERWORLD, {
       gigModifiers: {
         soundcheck: false,
@@ -389,110 +364,122 @@ test('gig modifier chatter fires when nothing is booked', () => {
         guestlist: false
       }
     })
-  })
-  assert.ok(matches.length > 0, 'Expected no-modifiers chatter to activate')
-})
-
-test('luck chatter fires when luck is high', () => {
-  const matches = getConditionDelta({
+  },
+  {
+    label: 'luck [high]',
+    useDelta: true,
     activeState: buildState(GAME_PHASES.OVERWORLD, { band: { luck: 5 } }),
     inactiveState: buildState(GAME_PHASES.OVERWORLD, { band: { luck: 0 } })
+  },
+  {
+    label: 'luck [negative]',
+    state: buildState(GAME_PHASES.OVERWORLD, { band: { luck: -5 } }),
+    expectedKey: 'chatter:standard.msg_312'
+  }
+]
+
+tourFameLuckVariants.forEach(variant => {
+  test(`chatter fires ${variant.label}`, () => {
+    let matches
+    if (variant.useDelta) {
+      matches = getConditionDelta({
+        activeState: variant.activeState,
+        inactiveState: variant.inactiveState
+      })
+    } else {
+      matches = CHATTER_DB.filter(
+        e =>
+          typeof e.condition === 'function' &&
+          e.condition(variant.state) &&
+          e.text === variant.expectedKey
+      )
+    }
+    assert.ok(
+      matches.length > 0,
+      `Expected chatter to activate for ${variant.label}`
+    )
   })
-  assert.ok(matches.length > 0, 'Expected high-luck chatter to activate')
 })
 
-test('luck chatter fires when luck is negative', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, { band: { luck: -5 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_312'
-  )
-  assert.ok(matches.length > 0, 'Expected bad-luck chatter to activate')
-})
+// --- POST-GIG PERFORMANCE CONDITIONS (Parametrized) ---
 
-// --- POST-GIG PERFORMANCE CONDITIONS ---
-
-test('post-gig chatter fires when score is very high', () => {
-  const state = {
-    ...buildState(GAME_PHASES.POST_GIG),
-    lastGigStats: { score: 11000, misses: 3 }
+const postGigVariants = [
+  {
+    label: 'high score',
+    state: {
+      ...buildState(GAME_PHASES.POST_GIG),
+      lastGigStats: { score: 11000, misses: 3 }
+    },
+    expectedKey: 'chatter:standard.msg_097'
+  },
+  {
+    label: 'high misses',
+    state: {
+      ...buildState(GAME_PHASES.POST_GIG),
+      lastGigStats: { score: 5000, misses: 12 }
+    },
+    expectedKey: 'chatter:standard.msg_101'
+  },
+  {
+    label: 'score threshold 9000',
+    state: {
+      ...buildState(GAME_PHASES.POST_GIG),
+      lastGigStats: { score: 9500, misses: 2 }
+    },
+    expectedKey: 'chatter:standard.msg_119'
+  },
+  {
+    label: 'undefined lastGigStats',
+    state: buildState(GAME_PHASES.POST_GIG),
+    shouldNotActivate: true
   }
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_097'
-  )
-  assert.ok(matches.length > 0, 'Expected high-score post-gig chatter')
+]
+
+postGigVariants.forEach(variant => {
+  test(`post-gig chatter [${variant.label}]`, () => {
+    const matches = CHATTER_DB.filter(
+      e =>
+        typeof e.condition === 'function' &&
+        e.condition(variant.state) &&
+        e.text === (variant.expectedKey || 'chatter:standard.msg_120')
+    )
+    if (variant.shouldNotActivate) {
+      assert.strictEqual(
+        matches.length,
+        0,
+        `Should not activate for ${variant.label}`
+      )
+    } else {
+      assert.ok(matches.length > 0, `Expected chatter for ${variant.label}`)
+    }
+  })
 })
 
-test('post-gig chatter fires when misses are high', () => {
-  const state = {
-    ...buildState(GAME_PHASES.POST_GIG),
-    lastGigStats: { score: 5000, misses: 12 }
+// --- MONEY CONDITIONS (Parametrized) ---
+
+const moneyVariants = [
+  {
+    label: 'very poor [money=50]',
+    state: buildState(GAME_PHASES.OVERWORLD, { player: { money: 50 } }),
+    expectedKey: 'chatter:standard.msg_172'
+  },
+  {
+    label: 'wealthy [money=2500]',
+    state: buildState(GAME_PHASES.OVERWORLD, { player: { money: 2500 } }),
+    expectedKey: 'chatter:standard.msg_173'
   }
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_101'
-  )
-  assert.ok(matches.length > 0, 'Expected high-miss post-gig chatter')
-})
+]
 
-test('post-gig chatter with score threshold at 9000', () => {
-  const state = {
-    ...buildState(GAME_PHASES.POST_GIG),
-    lastGigStats: { score: 9500, misses: 2 }
-  }
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_119'
-  )
-  assert.ok(matches.length > 0, 'Expected score > 9000 chatter')
-})
-
-test('post-gig chatter handles undefined lastGigStats', () => {
-  const state = buildState(GAME_PHASES.POST_GIG)
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_120'
-  )
-  assert.strictEqual(
-    matches.length,
-    0,
-    'Should not activate when lastGigStats is undefined'
-  )
-})
-
-// --- MONEY CONDITIONS ---
-
-test('money chatter fires when very poor', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, { player: { money: 50 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_172'
-  )
-  assert.ok(matches.length > 0, 'Expected low-money chatter')
-})
-
-test('money chatter fires when wealthy', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, { player: { money: 2500 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_173'
-  )
-  assert.ok(matches.length > 0, 'Expected high-money chatter')
+moneyVariants.forEach(variant => {
+  test(`money chatter fires ${variant.label}`, () => {
+    const matches = CHATTER_DB.filter(
+      e =>
+        typeof e.condition === 'function' &&
+        e.condition(variant.state) &&
+        e.text === variant.expectedKey
+    )
+    assert.ok(matches.length > 0, `Expected chatter for ${variant.label}`)
+  })
 })
 
 test('money chatter at boundary thresholds', () => {
@@ -514,54 +501,48 @@ test('money chatter at boundary thresholds', () => {
   assert.strictEqual(matches100.length, 0, 'Should not activate at exactly 100')
 })
 
-// --- MOOD CONDITIONS ---
+// --- MOOD CONDITIONS (Parametrized) ---
 
-test('mood chatter fires when member mood is very low', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    band: { members: [{ name: 'Matze', mood: 15, stamina: 50 }] }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_135'
-  )
-  assert.ok(matches.length > 0, 'Expected very-low-mood chatter')
-})
+const moodVariants = [
+  {
+    label: 'very low [mood=15]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      band: { members: [{ name: 'Matze', mood: 15, stamina: 50 }] }
+    }),
+    expectedKey: 'chatter:standard.msg_135'
+  },
+  {
+    label: 'very high [mood=96]',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      band: { members: [{ name: 'Matze', mood: 96, stamina: 80 }] }
+    }),
+    expectedKey: 'chatter:standard.msg_156'
+  },
+  {
+    label: 'any member low',
+    state: buildState(GAME_PHASES.OVERWORLD, {
+      band: {
+        members: [
+          { name: 'Matze', mood: 85, stamina: 80 },
+          { name: 'Lars', mood: 50, stamina: 70 },
+          { name: 'Marius', mood: 18, stamina: 60 }
+        ]
+      }
+    }),
+    expectedKey: 'chatter:standard.msg_135'
+  }
+]
 
-test('mood chatter fires when member mood is high', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    band: { members: [{ name: 'Matze', mood: 96, stamina: 80 }] }
+moodVariants.forEach(variant => {
+  test(`mood chatter fires ${variant.label}`, () => {
+    const matches = CHATTER_DB.filter(
+      e =>
+        typeof e.condition === 'function' &&
+        e.condition(variant.state) &&
+        e.text === variant.expectedKey
+    )
+    assert.ok(matches.length > 0, `Expected chatter for ${variant.label}`)
   })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_156'
-  )
-  assert.ok(matches.length > 0, 'Expected very-high-mood chatter')
-})
-
-test('mood chatter checks any band member', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    band: {
-      members: [
-        { name: 'Matze', mood: 85, stamina: 80 },
-        { name: 'Lars', mood: 50, stamina: 70 },
-        { name: 'Marius', mood: 18, stamina: 60 }
-      ]
-    }
-  })
-  const lowMoodMatches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_135'
-  )
-  assert.ok(
-    lowMoodMatches.length > 0,
-    'Should activate if ANY member has low mood'
-  )
 })
 
 // --- SOCIAL MEDIA / VIRAL CONDITIONS ---
@@ -606,244 +587,263 @@ test('social chatter handles optional chaining for undefined social', () => {
   )
 })
 
-// --- LOCATION-BASED CONDITIONS ---
+// --- LOCATION-BASED CONDITIONS (Parametrized) ---
 
-test('location chatter fires in Stendal', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { location: 'venues:stendal_underground' }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_202'
-  )
-  assert.ok(matches.length > 0, 'Expected Stendal chatter')
-})
+const locationVariants = [
+  {
+    label: 'Stendal [venues:stendal_underground]',
+    location: 'venues:stendal_underground',
+    expectedKey: 'chatter:standard.msg_202'
+  },
+  {
+    label: 'Stendal [city slug]',
+    location: 'stendal',
+    expectedKey: 'chatter:standard.msg_202'
+  },
+  {
+    label: 'Berlin [venues:berlin_clubhouse]',
+    location: 'venues:berlin_clubhouse',
+    expectedKey: 'chatter:standard.msg_203'
+  },
+  {
+    label: 'Stendal [includes partial match]',
+    location: 'some_prefix_venues:stendal_suffix',
+    expectedKey: 'chatter:standard.msg_202'
+  }
+]
 
-test('location chatter fires in city-slug Stendal format', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { location: 'stendal' }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_202'
-  )
-  assert.ok(matches.length > 0, 'Expected Stendal chatter for city slug')
-})
-
-test('location chatter fires in Berlin', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { location: 'venues:berlin_clubhouse' }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_203'
-  )
-  assert.ok(matches.length > 0, 'Expected Berlin chatter')
-})
-
-test('location chatter partial match with includes', () => {
-  // It's intentional that location checks use .includes() for substring matching
-  // as the game engine appends prefixes/suffixes dynamically to locations.
-  const state = buildState(GAME_PHASES.OVERWORLD, {
-    player: { location: 'some_prefix_venues:stendal_suffix' }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_202'
-  )
-  assert.ok(matches.length > 0, 'Should match with includes')
-})
-
-// --- GIG SCENE STAMINA CONDITIONS ---
-
-test('gig stamina chatter fires when energy is high', () => {
-  const state = buildState(GAME_PHASES.GIG, {
-    band: { members: [{ name: 'Matze', mood: 70, stamina: 85 }] }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_215'
-  )
-  assert.ok(matches.length > 0, 'Expected high-stamina gig chatter')
-})
-
-test('gig stamina chatter fires when exhausted', () => {
-  const state = buildState(GAME_PHASES.GIG, {
-    band: { members: [{ name: 'Marius', mood: 60, stamina: 25 }] }
-  })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_216'
-  )
-  assert.ok(matches.length > 0, 'Expected low-stamina gig chatter')
-})
-
-test('gig stamina checks any band member during performance', () => {
-  const state = buildState(GAME_PHASES.GIG, {
-    band: {
-      members: [
-        { name: 'Matze', mood: 70, stamina: 82 },
-        { name: 'Lars', mood: 60, stamina: 50 },
-        { name: 'Marius', mood: 65, stamina: 28 }
-      ]
-    }
-  })
-  const highStaminaMatches = getActivatedConditionalEntries(state).filter(
-    e => e.text === 'chatter:standard.msg_215'
-  )
-  const lowStaminaMatches = getActivatedConditionalEntries(state).filter(
-    e => e.text === 'chatter:standard.msg_216'
-  )
-  assert.ok(highStaminaMatches.length > 0, 'Should detect high stamina member')
-  assert.ok(lowStaminaMatches.length > 0, 'Should detect low stamina member')
-})
-
-// --- MINIGAME-SPECIFIC CHATTER ---
-
-test('travel minigame chatter activates during travel', () => {
-  const state = buildState(GAME_PHASES.TRAVEL_MINIGAME)
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_314'
-  )
-  assert.ok(matches.length > 0, 'Expected travel minigame chatter')
-})
-
-test('pre-gig minigame (roadie) chatter activates', () => {
-  const state = buildState(GAME_PHASES.PRE_GIG_MINIGAME)
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_319'
-  )
-  assert.ok(matches.length > 0, 'Expected pre-gig minigame chatter')
-})
-
-// --- TRAVEL/OVERWORLD CATEGORY CHATTER ---
-
-test('travel category chatter activates in OVERWORLD', () => {
-  const state = buildState(GAME_PHASES.OVERWORLD)
-  const matches = CHATTER_DB.filter(
-    e =>
-      e.category === 'travel' &&
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_001'
-  )
-  assert.ok(matches.length > 0, 'Expected travel category chatter')
-})
-
-test('travel category chatter activates in TRAVEL_MINIGAME', () => {
-  const state = buildState(GAME_PHASES.TRAVEL_MINIGAME)
-  const matches = CHATTER_DB.filter(
-    e =>
-      e.category === 'travel' &&
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text === 'chatter:standard.msg_001'
-  )
-  assert.ok(matches.length > 0, 'Expected travel chatter in minigame')
-})
-
-// --- DATA INTEGRITY TESTS ---
-
-test('all CHATTER_DB entries have required text field', () => {
-  CHATTER_DB.forEach((entry, index) => {
-    assert.ok(entry.text, `Entry at index ${index} missing text field`)
-    assert.strictEqual(
-      typeof entry.text,
-      'string',
-      `Entry ${index} text is not a string`
+locationVariants.forEach(variant => {
+  test(`location chatter fires ${variant.label}`, () => {
+    const state = buildState(GAME_PHASES.OVERWORLD, {
+      player: { location: variant.location }
+    })
+    const matches = CHATTER_DB.filter(
+      e =>
+        typeof e.condition === 'function' &&
+        e.condition(state) &&
+        e.text === variant.expectedKey
     )
+    assert.ok(matches.length > 0, `Expected chatter for ${variant.label}`)
   })
 })
 
-test('all CHATTER_DB entries have valid weight', () => {
-  CHATTER_DB.forEach((entry, index) => {
-    assert.ok(
-      typeof entry.weight === 'number',
-      `Entry ${index} (${entry.text}) missing or invalid weight`
-    )
-    assert.ok(entry.weight > 0, `Entry ${index} has non-positive weight`)
-  })
-})
+// --- GIG SCENE STAMINA CONDITIONS (Parametrized) ---
 
-test('all CHATTER_DB entries use i18n key format', () => {
-  CHATTER_DB.forEach((entry, index) => {
-    assert.ok(
-      entry.text.startsWith('chatter:'),
-      `Entry ${index} text doesn't use i18n format: ${entry.text}`
-    )
-  })
-})
+const gigStaminaVariants = [
+  {
+    label: 'high stamina [stamina=85]',
+    state: buildState(GAME_PHASES.GIG, {
+      band: { members: [{ name: 'Matze', mood: 70, stamina: 85 }] }
+    }),
+    expectedKey: 'chatter:standard.msg_215'
+  },
+  {
+    label: 'exhausted [stamina=25]',
+    state: buildState(GAME_PHASES.GIG, {
+      band: { members: [{ name: 'Marius', mood: 60, stamina: 25 }] }
+    }),
+    expectedKey: 'chatter:standard.msg_216'
+  },
+  {
+    label: 'multi-member check',
+    state: buildState(GAME_PHASES.GIG, {
+      band: {
+        members: [
+          { name: 'Matze', mood: 70, stamina: 82 },
+          { name: 'Lars', mood: 60, stamina: 50 },
+          { name: 'Marius', mood: 65, stamina: 28 }
+        ]
+      }
+    }),
+    expectedKeys: ['chatter:standard.msg_215', 'chatter:standard.msg_216']
+  }
+]
 
-test('speaker field is valid when present', () => {
-  const validSpeakers = ['Marius', 'Lars', 'Matze']
-  CHATTER_DB.forEach((entry, index) => {
-    if (entry.speaker) {
-      assert.ok(
-        validSpeakers.includes(entry.speaker),
-        `Entry ${index} (${entry.text}) has invalid speaker: ${entry.speaker}`
+gigStaminaVariants.forEach(variant => {
+  test(`gig stamina chatter ${variant.label}`, () => {
+    if (variant.expectedKeys) {
+      const matches = getActivatedConditionalEntries(variant.state)
+      const highStamina = matches.filter(
+        e => e.text === 'chatter:standard.msg_215'
       )
-    }
-  })
-})
-
-test('category field is valid when present', () => {
-  const ALLOWED_CATEGORIES = ['travel']
-  CHATTER_DB.forEach((entry, index) => {
-    if (entry.category) {
-      assert.ok(
-        ALLOWED_CATEGORIES.includes(entry.category),
-        `Entry ${index} has invalid category: ${entry.category}`
+      const lowStamina = matches.filter(
+        e => e.text === 'chatter:standard.msg_216'
       )
+      assert.ok(highStamina.length > 0, 'Should detect high stamina member')
+      assert.ok(lowStamina.length > 0, 'Should detect low stamina member')
+    } else {
+      const matches = CHATTER_DB.filter(
+        e =>
+          typeof e.condition === 'function' &&
+          e.condition(variant.state) &&
+          e.text === variant.expectedKey
+      )
+      assert.ok(matches.length > 0, `Expected chatter for ${variant.label}`)
     }
   })
 })
 
-test('condition field is a function when present', () => {
-  CHATTER_DB.forEach((entry, index) => {
-    if (entry.condition) {
+// --- MINIGAME-SPECIFIC CHATTER (Parametrized) ---
+
+const minigameVariants = [
+  {
+    label: 'travel minigame',
+    scene: GAME_PHASES.TRAVEL_MINIGAME,
+    expectedKey: 'chatter:standard.msg_314'
+  },
+  {
+    label: 'pre-gig minigame (roadie)',
+    scene: GAME_PHASES.PRE_GIG_MINIGAME,
+    expectedKey: 'chatter:standard.msg_319'
+  }
+]
+
+minigameVariants.forEach(variant => {
+  test(`minigame chatter activates [${variant.label}]`, () => {
+    const state = buildState(variant.scene)
+    const matches = CHATTER_DB.filter(
+      e =>
+        typeof e.condition === 'function' &&
+        e.condition(state) &&
+        e.text === variant.expectedKey
+    )
+    assert.ok(matches.length > 0, `Expected chatter for ${variant.label}`)
+  })
+})
+
+// --- TRAVEL/OVERWORLD CATEGORY CHATTER (Parametrized) ---
+
+const travelCategoryVariants = [
+  {
+    label: 'OVERWORLD',
+    scene: GAME_PHASES.OVERWORLD
+  },
+  {
+    label: 'TRAVEL_MINIGAME',
+    scene: GAME_PHASES.TRAVEL_MINIGAME
+  }
+]
+
+travelCategoryVariants.forEach(variant => {
+  test(`travel category chatter activates [${variant.label}]`, () => {
+    const state = buildState(variant.scene)
+    const matches = CHATTER_DB.filter(
+      e =>
+        e.category === 'travel' &&
+        typeof e.condition === 'function' &&
+        e.condition(state) &&
+        e.text === 'chatter:standard.msg_001'
+    )
+    assert.ok(matches.length > 0, `Expected travel chatter in ${variant.label}`)
+  })
+})
+
+// --- DATA INTEGRITY TESTS (Parametrized) ---
+
+const fieldValidators = [
+  {
+    name: 'text field (required)',
+    validate: (entry, index) => {
+      assert.ok(entry.text, `Entry at index ${index} missing text field`)
       assert.strictEqual(
-        typeof entry.condition,
-        'function',
-        `Entry ${index} (${entry.text}) condition is not a function`
+        typeof entry.text,
+        'string',
+        `Entry ${index} text is not a string`
       )
     }
+  },
+  {
+    name: 'weight field (valid)',
+    validate: (entry, index) => {
+      assert.ok(
+        typeof entry.weight === 'number',
+        `Entry ${index} (${entry.text}) missing or invalid weight`
+      )
+      assert.ok(entry.weight > 0, `Entry ${index} has non-positive weight`)
+    }
+  },
+  {
+    name: 'i18n key format',
+    validate: (entry, index) => {
+      assert.ok(
+        entry.text.startsWith('chatter:'),
+        `Entry ${index} text doesn't use i18n format: ${entry.text}`
+      )
+    }
+  },
+  {
+    name: 'speaker field (when present)',
+    validate: (entry, index) => {
+      const validSpeakers = ['Marius', 'Lars', 'Matze']
+      if (entry.speaker) {
+        assert.ok(
+          validSpeakers.includes(entry.speaker),
+          `Entry ${index} (${entry.text}) has invalid speaker: ${entry.speaker}`
+        )
+      }
+    }
+  },
+  {
+    name: 'category field (when present)',
+    validate: (entry, index) => {
+      const ALLOWED_CATEGORIES = ['travel']
+      if (entry.category) {
+        assert.ok(
+          ALLOWED_CATEGORIES.includes(entry.category),
+          `Entry ${index} has invalid category: ${entry.category}`
+        )
+      }
+    }
+  },
+  {
+    name: 'condition field (when present)',
+    validate: (entry, index) => {
+      if (entry.condition) {
+        assert.strictEqual(
+          typeof entry.condition,
+          'function',
+          `Entry ${index} (${entry.text}) condition is not a function`
+        )
+      }
+    }
+  }
+]
+
+fieldValidators.forEach(validator => {
+  test(`all CHATTER_DB entries have valid ${validator.name}`, () => {
+    CHATTER_DB.forEach((entry, index) => {
+      validator.validate(entry, index)
+    })
   })
 })
 
-// --- WEIGHT VARIATION TESTS ---
+// --- WEIGHT VARIATION TESTS (Parametrized) ---
 
-test('weight variations exist across entries', () => {
-  const weights = new Set(CHATTER_DB.map(e => e.weight))
-  assert.ok(weights.size > 1, 'Expected multiple different weight values')
-})
+const weightTests = [
+  {
+    name: 'weight variations exist across entries',
+    validate: () => {
+      const weights = new Set(CHATTER_DB.map(e => e.weight))
+      assert.ok(weights.size > 1, 'Expected multiple different weight values')
+    }
+  },
+  {
+    name: 'high-weight entries for critical conditions',
+    validate: () => {
+      const criticalEntry = CHATTER_DB.find(
+        e => e.text === 'chatter:standard.msg_134'
+      )
+      assert.ok(criticalEntry, 'Critical low-mood entry exists')
+      assert.ok(
+        criticalEntry.weight >= 8,
+        'Critical conditions should have high weight'
+      )
+    }
+  }
+]
 
-test('high-weight entries for critical conditions', () => {
-  const criticalEntry = CHATTER_DB.find(
-    e => e.text === 'chatter:standard.msg_134'
-  )
-  assert.ok(criticalEntry, 'Critical low-mood entry exists')
-  assert.ok(
-    criticalEntry.weight >= 8,
-    'Critical conditions should have high weight'
-  )
+weightTests.forEach(testCase => {
+  test(testCase.name, testCase.validate)
 })
 
 // --- EDGE CASES ---
