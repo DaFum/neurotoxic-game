@@ -4,6 +4,7 @@ import { MainMenu } from '../src/scenes/MainMenu'
 import { useGameState } from '../src/context/GameState'
 import { GAME_PHASES } from '../src/context/gameConstants'
 import { useBandHQModal } from '../src/hooks/useBandHQModal'
+import { BandHQ } from '../src/ui/BandHQ'
 
 // Mock dependencies
 
@@ -33,11 +34,11 @@ vi.mock('../src/utils/errorHandler', () => ({
 
 // Mock BandHQ component to avoid deep dependencies
 vi.mock('../src/ui/BandHQ', () => ({
-  BandHQ: props => (
-    <div data-testid='band-hq-modal' {...props}>
+  BandHQ: vi.fn(({ onClose, player, band, ...rest }) => (
+    <div data-testid='band-hq-modal' {...rest}>
       Band HQ Modal
     </div>
-  )
+  ))
 }))
 
 describe('MainMenu Component', () => {
@@ -130,15 +131,24 @@ describe('MainMenu Component', () => {
     })
 
     it('renders Band HQ component when showHQ is true', () => {
+      const concreteBandHQProps = {
+        onClose: vi.fn(),
+        player: { id: 'test', name: 'tester' },
+        band: { harmony: 100 }
+      }
+
       useBandHQModal.mockReturnValue({
         showHQ: true,
         openHQ: mockOpenHQ,
-        bandHQProps: {}
+        bandHQProps: concreteBandHQProps
       })
 
       render(<MainMenu />)
 
       expect(screen.getByTestId('band-hq-modal')).toBeInTheDocument()
+
+      const expectedCallArgs = BandHQ.mock.calls[0]
+      expect(expectedCallArgs[0]).toEqual(expect.objectContaining(concreteBandHQProps))
     })
   })
 

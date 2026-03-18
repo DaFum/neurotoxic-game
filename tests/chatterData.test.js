@@ -971,6 +971,17 @@ test('multiple travel count thresholds work', () => {
 // --- ADDITIONAL STRUCTURE VALIDATION TESTS ---
 
 test('chatter.json structure is valid JSON', () => {
+  const enPath = path.resolve(process.cwd(), 'public/locales/en/chatter.json')
+  const dePath = path.resolve(process.cwd(), 'public/locales/de/chatter.json')
+
+  assert.doesNotThrow(() => {
+    JSON.parse(fs.readFileSync(enPath, 'utf-8'))
+  }, 'en/chatter.json must be valid JSON')
+
+  assert.doesNotThrow(() => {
+    JSON.parse(fs.readFileSync(dePath, 'utf-8'))
+  }, 'de/chatter.json must be valid JSON')
+
   assert.ok(translations.en && typeof translations.en === 'object', 'chatter.json must parse to a valid object')
   assert.ok(Object.keys(translations.en).length > 0, 'chatter.json must not be empty')
 })
