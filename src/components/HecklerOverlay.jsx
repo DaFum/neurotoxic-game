@@ -2,29 +2,14 @@
 import { useEffect, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 
-// Helper to populate seen IDs for O(1) lookups
-function populateSeenIds(seenIds, projectiles) {
+// Helper to update/create DOM nodes and remove stale ones in a single pass
+function updateOverlayNodes(projectiles, nodeCache, seenIds, container) {
   seenIds.clear()
-  for (let i = 0; i < projectiles.length; i++) {
-    seenIds.add(projectiles[i].id)
-  }
-}
 
-// Helper to remove old nodes that are no longer in the state
-function removeStaleNodes(nodeCache, seenIds, container) {
-  // Optimization: Use forEach to avoid iterator allocation and GC churn in hot loop
-  nodeCache.forEach((node, id) => {
-    if (!seenIds.has(id)) {
-      container.removeChild(node)
-      nodeCache.delete(id)
-    }
-  })
-}
-
-// Helper to add new nodes and update existing ones
-function updateOrAddNodes(projectiles, nodeCache, container) {
+  // 1. Update existing nodes and add new ones
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i]
+    seenIds.add(p.id)
     let node = nodeCache.get(p.id)
 
     if (!node) {
@@ -40,6 +25,19 @@ function updateOrAddNodes(projectiles, nodeCache, container) {
     node.style.left = `${p.x}px`
     node.style.top = `${p.y}px`
     node.style.transform = `rotate(${p.rotation * 57.29}deg)`
+  }
+
+  // 2. Remove old nodes that are no longer in the state.
+  // Optimization: `nodeCache` will always contain at least every ID in `seenIds`
+  // after the loop above (either pre-existing or newly created). Therefore, if
+  // sizes match, there are exactly zero stale nodes to remove.
+  if (nodeCache.size > seenIds.size) {
+    nodeCache.forEach((node, id) => {
+      if (!seenIds.has(id)) {
+        container.removeChild(node)
+        nodeCache.delete(id)
+      }
+    })
   }
 }
 
@@ -65,9 +63,7 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
         const nodeCache = nodeCacheRef.current
         const seenIds = seenIdsRef.current
 
-        populateSeenIds(seenIds, projectiles)
-        removeStaleNodes(nodeCache, seenIds, container)
-        updateOrAddNodes(projectiles, nodeCache, container)
+        updateOverlayNodes(projectiles, nodeCache, seenIds, container)
       }
       rAF = requestAnimationFrame(loop)
     }
