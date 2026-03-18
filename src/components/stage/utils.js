@@ -258,3 +258,42 @@ export const getOptimalResolution = () => {
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
   return Math.min(dpr, 2)
 }
+
+/**
+ * Loads multiple textures concurrently and maps the successful results to keys.
+ * Handles errors cleanly without throwing, either via a provided callback or logging.
+ *
+ * @param {Object.<string, string>} urlMap - A record mapping texture keys to their URLs.
+ * @param {function(Error, string): void} [onError] - Optional callback to handle individual load errors (receives error and fallback message).
+ * @returns {Promise<Object.<string, Texture|null>>} A record mapping the same keys to loaded Textures (or null if failed).
+ */
+export const loadTextures = async (urlMap, onError) => {
+  const keys = Object.keys(urlMap)
+  const resultsMap = {}
+
+  if (keys.length === 0) return resultsMap
+
+  const promises = keys.map(key => loadTexture(urlMap[key]))
+  const settledResults = await Promise.allSettled(promises)
+
+  keys.forEach((key, index) => {
+    const res = settledResults[index]
+    if (res.status === 'fulfilled' && res.value !== null) {
+      resultsMap[key] = res.value
+    } else {
+      resultsMap[key] = null
+      const error =
+        res.status === 'fulfilled'
+          ? new Error(`Texture '${key}' returned null`)
+          : res.reason
+
+      if (onError) {
+        onError(error, `Texture '${key}' failed to load.`)
+      } else {
+        logger.warn('loadTextures', `Failed to load texture for '${key}'`, error)
+      }
+    }
+  })
+
+  return resultsMap
+}

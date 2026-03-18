@@ -4,7 +4,7 @@ import {
   calculateCrowdOffset,
   CROWD_LAYOUT,
   getPixiColorFromToken,
-  loadTexture
+  loadTextures
 } from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
@@ -27,36 +27,19 @@ export class CrowdManager {
 
   async loadAssets() {
     try {
-      const results = await Promise.allSettled([
-        loadTexture(getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)),
-        loadTexture(getGenImageUrl(IMG_PROMPTS.CROWD_MOSH))
-      ])
-
-      // Handle IDLE texture
-      if (results[0].status === 'fulfilled' && results[0].value !== null) {
-        this.textures.idle = results[0].value
-      } else {
-        const error =
-          results[0].status === 'fulfilled'
-            ? new Error('IDLE texture returned null')
-            : results[0].reason
-        handleError(error, {
-          fallbackMessage: 'Crowd IDLE texture failed to load.'
-        })
+      const urls = {
+        idle: getGenImageUrl(IMG_PROMPTS.CROWD_IDLE),
+        mosh: getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
       }
 
-      // Handle MOSH texture
-      if (results[1].status === 'fulfilled' && results[1].value !== null) {
-        this.textures.mosh = results[1].value
-      } else {
-        const error =
-          results[1].status === 'fulfilled'
-            ? new Error('MOSH texture returned null')
-            : results[1].reason
+      const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
         handleError(error, {
-          fallbackMessage: 'Crowd MOSH texture failed to load.'
+          fallbackMessage: fallbackMessage
         })
-      }
+      })
+
+      if (loadedTextures.idle) this.textures.idle = loadedTextures.idle
+      if (loadedTextures.mosh) this.textures.mosh = loadedTextures.mosh
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'Critical error loading crowd textures.'

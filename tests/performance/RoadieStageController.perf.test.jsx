@@ -8,6 +8,14 @@ vi.mock('../../src/components/stage/utils.js', () => ({
     await new Promise(resolve => setTimeout(resolve, 100))
     return { width: 100, height: 100 }
   }),
+  loadTextures: vi.fn(async urlMap => {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const results = {}
+    for (const key of Object.keys(urlMap)) {
+      results[key] = { width: 100, height: 100 }
+    }
+    return results
+  }),
   getPixiColorFromToken: vi.fn(() => 0x000000)
 }))
 
