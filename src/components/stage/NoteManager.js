@@ -50,12 +50,16 @@ export class NoteManager {
         lightning: getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING)
       }
 
-      const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
-        handleError(error, { fallbackMessage })
-      })
+      const loadedTextures = await loadTextures(
+        urls,
+        (error, fallbackMessage) => {
+          handleError(error, { fallbackMessage })
+        }
+      )
 
       if (loadedTextures.skull) this.noteTextures.skull = loadedTextures.skull
-      if (loadedTextures.lightning) this.noteTextures.lightning = loadedTextures.lightning
+      if (loadedTextures.lightning)
+        this.noteTextures.lightning = loadedTextures.lightning
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'Critical error loading note textures.'

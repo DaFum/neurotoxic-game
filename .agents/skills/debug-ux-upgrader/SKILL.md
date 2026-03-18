@@ -3,13 +3,14 @@ name: debug-ux-upgrader
 description: add debug tools, overlays, and logging. Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Add diagnostics that are visible, togglable, and low-noise in normal gameplay paths.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "ui"
-  keywords: ["ui","ux","debug","user-experience"]
-  maturity: "beta"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'ui'
+  keywords: ['ui', 'ux', 'debug', 'user-experience']
+  maturity: 'beta'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # Debug UX Upgrader
 
 Enhance the application with developer-facing diagnostic tools.
@@ -55,6 +56,5 @@ Enhance the application with developer-facing diagnostic tools.
 
 **Output**:
 "Added coordinate logging to the player loop. Enable 'Player' category in DebugLogViewer to see it."
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

@@ -3,13 +3,14 @@ name: change-plan-conventional-commits
 description: plan code changes and draft commit messages. Trigger when preparing to modify code, refactor, or fix bugs. Ensures commits follow Conventional Commits standard. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Return an actionable plan plus Conventional Commit candidates aligned to scoped change intent.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "workflow"
-  keywords: ["commits","planning","workflow"]
-  maturity: "stable"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'workflow'
+  keywords: ['commits', 'planning', 'workflow']
+  maturity: 'stable'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # Change Plan & Conventional Commits
 
 Create a structured plan for code changes and draft compliant commit messages.
@@ -65,6 +66,5 @@ Create a structured plan for code changes and draft compliant commit messages.
 
     The volume slider now saves its value to localStorage and restores it on page load.
     ```
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

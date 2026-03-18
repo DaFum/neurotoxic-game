@@ -4,7 +4,7 @@ import { computeWorkerCount } from './utils/parallelism.mjs'
 const rawArgs = process.argv.slice(2)
 const nodeTestArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
 
-const hasExplicitConcurrency = nodeTestArgs.some((arg) =>
+const hasExplicitConcurrency = nodeTestArgs.some(arg =>
   arg.startsWith('--test-concurrency')
 )
 
@@ -17,9 +17,7 @@ const commandArgs = [
   '--experimental-test-module-mocks',
   '--import',
   './tests/setup.mjs',
-  ...(hasExplicitConcurrency
-    ? []
-    : [`--test-concurrency=${testConcurrency}`]),
+  ...(hasExplicitConcurrency ? [] : [`--test-concurrency=${testConcurrency}`]),
   ...nodeTestArgs
 ]
 

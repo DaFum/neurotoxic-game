@@ -148,7 +148,9 @@ describe('MainMenu Component', () => {
       expect(screen.getByTestId('band-hq-modal')).toBeInTheDocument()
 
       const expectedCallArgs = BandHQ.mock.calls[0]
-      expect(expectedCallArgs[0]).toEqual(expect.objectContaining(concreteBandHQProps))
+      expect(expectedCallArgs[0]).toEqual(
+        expect.objectContaining(concreteBandHQProps)
+      )
     })
   })
 

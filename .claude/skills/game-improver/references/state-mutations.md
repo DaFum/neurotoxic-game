@@ -17,22 +17,25 @@ Adding or modifying state always requires updating three files together:
 ## Pattern 1: Adding a New Action Type
 
 ### Scenario
+
 Add action `REPAIR_VAN` that costs money and restores van condition.
 
 ### Step 1: Add to ActionTypes
 
 **File: `src/context/gameConstants.js`**
+
 ```javascript
 export const ActionTypes = {
   // ...existing...
   ADVANCE_DAY: 'ADVANCE_DAY',
-  REPAIR_VAN: 'REPAIR_VAN',  // ← NEW
+  REPAIR_VAN: 'REPAIR_VAN' // ← NEW
 }
 ```
 
 ### Step 2: Add Reducer Case
 
 **File: `src/context/gameReducer.js`**
+
 ```javascript
 function gameReducer(state, action) {
   switch (action.type) {
@@ -49,7 +52,7 @@ function gameReducer(state, action) {
         ...state,
         player: {
           ...state.player,
-          money: Math.max(0, newMoney),  // ← Clamp to 0
+          money: Math.max(0, newMoney), // ← Clamp to 0
           van: {
             ...state.player.van,
             condition: newCondition
@@ -67,6 +70,7 @@ function gameReducer(state, action) {
 ### Step 3: Add Action Creator
 
 **File: `src/context/actionCreators.js`**
+
 ```javascript
 export function repairVan(cost, conditionRestored) {
   return {
@@ -79,6 +83,7 @@ export function repairVan(cost, conditionRestored) {
 ### Step 4: Use in Component/Hook
 
 **File: `src/hooks/useHQLogic.js` or similar**
+
 ```javascript
 function handleRepairVan() {
   const cost = 200
@@ -90,6 +95,7 @@ function handleRepairVan() {
 ### Step 5: Test
 
 **File: `tests/van-repair.test.js`**
+
 ```javascript
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -99,7 +105,10 @@ import { repairVan } from '../src/context/actionCreators.js'
 
 test('REPAIR_VAN restores condition and deducts money', () => {
   let state = createInitialState()
-  state = { ...state, player: { ...state.player, van: { ...state.player.van, condition: 30 } } }
+  state = {
+    ...state,
+    player: { ...state.player, van: { ...state.player.van, condition: 30 } }
+  }
 
   const action = repairVan(200, 30)
   state = gameReducer(state, action)
@@ -115,9 +124,11 @@ test('REPAIR_VAN restores condition and deducts money', () => {
 ## Pattern 2: Updating Nested State Safely
 
 ### Scenario
+
 Update player harmony during a gig (nested in band object).
 
 ### ❌ WRONG (Direct Mutation)
+
 ```javascript
 // DON'T DO THIS
 state.band.harmony = 50
@@ -125,6 +136,7 @@ return state
 ```
 
 ### ✅ CORRECT (Immutable Spread)
+
 ```javascript
 case ActionTypes.UPDATE_BAND: {
   const { harmony } = action.payload
@@ -166,6 +178,7 @@ case ActionTypes.UPGRADE_VAN_ENGINE: {
 ## Pattern 3: Batch Updates (Multiple Properties)
 
 ### Scenario
+
 `UPDATE_PLAYER` changes money, fame, and location at once.
 
 ```javascript
@@ -186,6 +199,7 @@ case ActionTypes.UPDATE_PLAYER: {
 ```
 
 **Usage in component**:
+
 ```javascript
 dispatch({
   type: ActionTypes.UPDATE_PLAYER,
@@ -202,15 +216,18 @@ dispatch({
 ## Pattern 4: Array Updates (Items, Band Members)
 
 ### Scenario
+
 Add a new HQ item to band.
 
 #### ❌ WRONG
+
 ```javascript
 state.band.hqItems.push('meditation_pod')
 return state
 ```
 
 #### ✅ CORRECT (Immutable)
+
 ```javascript
 case ActionTypes.ADD_HQ_ITEM: {
   const itemId = action.payload
@@ -225,6 +242,7 @@ case ActionTypes.ADD_HQ_ITEM: {
 ```
 
 ### Array Filter (Remove Item)
+
 ```javascript
 case ActionTypes.REMOVE_HQ_ITEM: {
   const itemId = action.payload
@@ -239,6 +257,7 @@ case ActionTypes.REMOVE_HQ_ITEM: {
 ```
 
 ### Array Map (Update Item)
+
 ```javascript
 case ActionTypes.UPDATE_BAND_MEMBER: {
   const { memberId, updates } = action.payload
@@ -303,6 +322,7 @@ case ActionTypes.APPLY_EVENT_DELTA: {
 ## Pattern 6: Conditional Updates
 
 ### Scenario
+
 Only apply harmony change if player has meditation pod.
 
 ```javascript
@@ -333,15 +353,17 @@ case ActionTypes.ADVANCE_DAY: {
 ## Pattern 7: Computed Derived State
 
 ### Scenario
+
 Calculate van breakdown chance from condition.
 
 **Option A: Calculate in Selector** (preferred)
+
 ```javascript
 // In a hook or component
 function getBreakdownChance(vanCondition) {
   if (vanCondition >= 60) return 0
-  if (vanCondition >= 30) return (60 - vanCondition) / 30 * 15  // 0-15%
-  return 15 + (30 - vanCondition) / 30 * 20  // 15-35%
+  if (vanCondition >= 30) return ((60 - vanCondition) / 30) * 15 // 0-15%
+  return 15 + ((30 - vanCondition) / 30) * 20 // 15-35%
 }
 
 // Use in component
@@ -349,6 +371,7 @@ const breakdownChance = getBreakdownChance(state.player.van.condition)
 ```
 
 **Option B: Calculate in Reducer** (if needed in state)
+
 ```javascript
 case ActionTypes.ADVANCE_DAY: {
   const newCondition = Math.max(0, state.player.van.condition - 2)
@@ -373,6 +396,7 @@ case ActionTypes.ADVANCE_DAY: {
 ## Testing State Mutations
 
 ### Test 1: Property Updates
+
 ```javascript
 test('UPDATE_PLAYER updates money', () => {
   let state = createInitialState()
@@ -385,6 +409,7 @@ test('UPDATE_PLAYER updates money', () => {
 ```
 
 ### Test 2: Clamping
+
 ```javascript
 test('Money clamped to 0 when negative', () => {
   let state = createInitialState()
@@ -397,10 +422,11 @@ test('Money clamped to 0 when negative', () => {
 ```
 
 ### Test 3: Immutability
+
 ```javascript
 test('Reducer does not mutate original state', () => {
   const state = createInitialState()
-  const stateCopy = structuredClone(state)  // Deep copy
+  const stateCopy = structuredClone(state) // Deep copy
   gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
   // state should be unchanged
   assert.deepEqual(state, stateCopy)
@@ -411,12 +437,11 @@ test('Reducer does not mutate original state', () => {
 
 ## Anti-Patterns to Avoid
 
-| ❌ Anti-Pattern | ✅ Correct Approach |
-|---|---|
-| `state.player.money = 100` | `{ ...state, player: { ...state.player, money: 100 } }` |
-| `state.band.members.push(m)` | `{ ...state.band.members, [m.id]: m }` (or array map) |
-| No clamping for money | Always clamp: `Math.max(0, newMoney)` |
-| Calling reducer directly | Use action creators + dispatch |
-| Creating action payload in component | Move to action creator function |
-| Storing same data in multiple places | Single source of truth (reducer state) |
-
+| ❌ Anti-Pattern                      | ✅ Correct Approach                                     |
+| ------------------------------------ | ------------------------------------------------------- |
+| `state.player.money = 100`           | `{ ...state, player: { ...state.player, money: 100 } }` |
+| `state.band.members.push(m)`         | `{ ...state.band.members, [m.id]: m }` (or array map)   |
+| No clamping for money                | Always clamp: `Math.max(0, newMoney)`                   |
+| Calling reducer directly             | Use action creators + dispatch                          |
+| Creating action payload in component | Move to action creator function                         |
+| Storing same data in multiple places | Single source of truth (reducer state)                  |

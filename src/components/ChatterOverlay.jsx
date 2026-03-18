@@ -106,7 +106,10 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
     try {
       roll = secureRandom()
     } catch (error) {
-      console.warn('Crypto API not available, falling back to Math.random', error)
+      console.warn(
+        'Crypto API not available, falling back to Math.random',
+        error
+      )
       roll = Math.random()
     }
     return memberNames[Math.floor(roll * memberNames.length)]
@@ -179,73 +182,71 @@ ChatterMessageLifetimeBar.propTypes = {
   barColorClass: PropTypes.string.isRequired
 }
 
-const ChatterMessage = memo(
-  ({ msg, onRemove, t }) => {
-    const messageScene = msg.scene
-    const sceneStyle = useMemo(
-      () => SCENE_STYLES[messageScene] || DEFAULT_STYLE,
-      [messageScene]
-    )
+const ChatterMessage = memo(({ msg, onRemove, t }) => {
+  const messageScene = msg.scene
+  const sceneStyle = useMemo(
+    () => SCENE_STYLES[messageScene] || DEFAULT_STYLE,
+    [messageScene]
+  )
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        onRemove(msg.id)
-      }, MESSAGE_LIFETIME_MS)
-      return () => clearTimeout(timer)
-    }, [msg.id, onRemove])
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onRemove(msg.id)
+    }, MESSAGE_LIFETIME_MS)
+    return () => clearTimeout(timer)
+  }, [msg.id, onRemove])
 
-    const sceneLabel = useMemo(
-      () =>
-        t(`ui:chatter_labels.${messageScene}`, {
-          defaultValue: t('ui:chatter_labels.default_fallback', {
-            defaultValue: 'Band Feed'
-          })
-        }),
-      [messageScene, t]
-    )
+  const sceneLabel = useMemo(
+    () =>
+      t(`ui:chatter_labels.${messageScene}`, {
+        defaultValue: t('ui:chatter_labels.default_fallback', {
+          defaultValue: 'Band Feed'
+        })
+      }),
+    [messageScene, t]
+  )
 
-    const textColorClass = useMemo(
-      () => resolveMessageTextColor(msg.type, messageScene),
-      [msg.type, messageScene]
-    )
+  const textColorClass = useMemo(
+    () => resolveMessageTextColor(msg.type, messageScene),
+    [msg.type, messageScene]
+  )
 
-    return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 18, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9, y: -10 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className='mb-2 last:mb-0'
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 18, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9, y: -10 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className='mb-2 last:mb-0'
+    >
+      <div
+        className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
+        style={{
+          boxShadow: `0 0 24px rgb(var(--color-void-black-rgb) / 90%), 0 0 10px ${sceneStyle.accentGlow}`
+        }}
       >
+        {/* Left accent bar */}
         <div
-          className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
-          style={{
-            boxShadow: `0 0 24px rgb(var(--color-void-black-rgb) / 90%), 0 0 10px ${sceneStyle.accentGlow}`
-          }}
-        >
-          {/* Left accent bar */}
-          <div
-            className={`absolute inset-y-0 left-0 w-1 ${sceneStyle.barColor}`}
-          />
+          className={`absolute inset-y-0 left-0 w-1 ${sceneStyle.barColor}`}
+        />
 
-          <ChatterMessageHeader
-            sceneStyle={sceneStyle}
-            sceneLabel={sceneLabel}
-            speaker={msg.speaker}
-          />
+        <ChatterMessageHeader
+          sceneStyle={sceneStyle}
+          sceneLabel={sceneLabel}
+          speaker={msg.speaker}
+        />
 
-          <ChatterMessageBody
-            text={t(msg.text)}
-            textColorClass={textColorClass}
-          />
+        <ChatterMessageBody
+          text={t(msg.text)}
+          textColorClass={textColorClass}
+        />
 
-          <ChatterMessageLifetimeBar barColorClass={sceneStyle.barColor} />
-        </div>
-      </motion.div>
-    )
-  }
-)
+        <ChatterMessageLifetimeBar barColorClass={sceneStyle.barColor} />
+      </div>
+    </motion.div>
+  )
+})
 
 ChatterMessage.displayName = 'ChatterMessage'
 
@@ -296,7 +297,10 @@ export const ChatterOverlay = memo(({ gameState }) => {
       try {
         delay = secureRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
       } catch (error) {
-        console.warn('Crypto API not available, falling back to Math.random', error)
+        console.warn(
+          'Crypto API not available, falling back to Math.random',
+          error
+        )
         delay = Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
       }
 
@@ -333,14 +337,23 @@ export const ChatterOverlay = memo(({ gameState }) => {
             } catch (error) {
               if (!secureRandomFallbackWarned) {
                 secureRandomFallbackWarned = true
-                console.warn('secureRandom() failed, falling back to Math.random().', error)
+                console.warn(
+                  'secureRandom() failed, falling back to Math.random().',
+                  error
+                )
               }
               roll = Math.random()
             }
             id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
           }
 
-          const newMessage = { id: String(id), text, speaker, type, scene: currentState.currentScene }
+          const newMessage = {
+            id: String(id),
+            text,
+            speaker,
+            type,
+            scene: currentState.currentScene
+          }
 
           setMessages(prev => [
             ...prev.slice(-4), // Keep max 5 (4 old + 1 new)

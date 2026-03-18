@@ -152,7 +152,10 @@ export const usePurchaseLogic = ({
         let playerPatch
         if (payingWithFame) {
           const newFame = clampPlayerFame(startingFame - finalCost)
-          playerPatch = { fame: newFame, fameLevel: calculateFameLevel(newFame) }
+          playerPatch = {
+            fame: newFame,
+            fameLevel: calculateFameLevel(newFame)
+          }
         } else {
           const newMoney = clampPlayerMoney(startingMoney - finalCost)
           playerPatch = { money: newMoney }
@@ -302,7 +305,9 @@ export const usePurchaseLogic = ({
 
           // Show generated toasts
           traitResult.toasts.forEach(toastItem => {
-            const safeOptions = toastItem.options ? translateContextKeys(toastItem.options, t) : {}
+            const safeOptions = toastItem.options
+              ? translateContextKeys(toastItem.options, t)
+              : {}
             const toastMsg = toastItem.messageKey
               ? t(toastItem.messageKey, {
                   ...safeOptions,

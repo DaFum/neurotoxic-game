@@ -10,7 +10,9 @@ describe('PauseButton', () => {
       await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
-    const { rerender } = render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
+    const { rerender } = render(
+      <PauseButton onTogglePause={mockToggle} isGameOver={false} />
+    )
 
     let button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
     expect(button).toBeTruthy()

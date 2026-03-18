@@ -147,10 +147,15 @@ test('getRandomChatter supports legacy lines format', t => {
 
   t.mock.method(Math, 'random', () => 0)
 
-  withMockedCrypto((arr) => { arr.fill(0) }, () => {
-    const result = getRandomChatter(state)
-    assert.strictEqual(result.text, 'Legacy 1')
-  })
+  withMockedCrypto(
+    arr => {
+      arr.fill(0)
+    },
+    () => {
+      const result = getRandomChatter(state)
+      assert.strictEqual(result.text, 'Legacy 1')
+    }
+  )
 })
 
 test('getRandomChatter includes standard chatter when conditions met', () => {
@@ -173,15 +178,25 @@ test('getRandomChatter implements weighted random selection', async t => {
 
   // Mock for fallback path
   t.mock.method(Math, 'random', () => 0.05)
-  withMockedCrypto((arr) => { arr.fill(Math.floor(0.05 * 4294967296)) }, () => {
-    let result = getRandomChatter(state)
-    assert.strictEqual(result.text, 'Standard 1')
-  })
+  withMockedCrypto(
+    arr => {
+      arr.fill(Math.floor(0.05 * 4294967296))
+    },
+    () => {
+      let result = getRandomChatter(state)
+      assert.strictEqual(result.text, 'Standard 1')
+    }
+  )
 
   // Change implementation to return 0.5
   t.mock.method(Math, 'random', () => 0.5)
-  withMockedCrypto((arr) => { arr.fill(Math.floor(0.5 * 4294967296)) }, () => {
-    let result = getRandomChatter(state)
-    assert.strictEqual(result.text, 'Standard 2')
-  })
+  withMockedCrypto(
+    arr => {
+      arr.fill(Math.floor(0.5 * 4294967296))
+    },
+    () => {
+      let result = getRandomChatter(state)
+      assert.strictEqual(result.text, 'Standard 2')
+    }
+  )
 })

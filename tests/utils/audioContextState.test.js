@@ -1,20 +1,45 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { isClosedAudioContextState, getPreferredAudioContextState, canResumeAudioContextState } from '../../src/utils/audioContextState.js'
+import {
+  isClosedAudioContextState,
+  getPreferredAudioContextState,
+  canResumeAudioContextState
+} from '../../src/utils/audioContextState.js'
 
 describe('getPreferredAudioContextState', () => {
   it('returns rawContextState when available', () => {
-    assert.strictEqual(getPreferredAudioContextState({ rawContextState: 'running', toneContextState: 'suspended' }), 'running')
+    assert.strictEqual(
+      getPreferredAudioContextState({
+        rawContextState: 'running',
+        toneContextState: 'suspended'
+      }),
+      'running'
+    )
   })
 
   it('returns toneContextState when rawContextState is unavailable', () => {
-    assert.strictEqual(getPreferredAudioContextState({ toneContextState: 'suspended' }), 'suspended')
-    assert.strictEqual(getPreferredAudioContextState({ rawContextState: null, toneContextState: 'suspended' }), 'suspended')
+    assert.strictEqual(
+      getPreferredAudioContextState({ toneContextState: 'suspended' }),
+      'suspended'
+    )
+    assert.strictEqual(
+      getPreferredAudioContextState({
+        rawContextState: null,
+        toneContextState: 'suspended'
+      }),
+      'suspended'
+    )
   })
 
   it('returns "unknown" when neither state is available', () => {
     assert.strictEqual(getPreferredAudioContextState({}), 'unknown')
-    assert.strictEqual(getPreferredAudioContextState({ rawContextState: null, toneContextState: undefined }), 'unknown')
+    assert.strictEqual(
+      getPreferredAudioContextState({
+        rawContextState: null,
+        toneContextState: undefined
+      }),
+      'unknown'
+    )
   })
 })
 

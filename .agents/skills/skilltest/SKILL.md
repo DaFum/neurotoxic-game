@@ -3,13 +3,14 @@ name: skilltest
 description: validate skill structure and metadata. Trigger when developing skills, checking CI, or debugging skill loading issues. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Validate skill schema/metadata/tests and report failing IDs, cause category, and rerun command.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "meta"
-  keywords: ["meta","skills","testing","validation"]
-  maturity: "beta"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'meta'
+  keywords: ['meta', 'skills', 'testing', 'validation']
+  maturity: 'beta'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # Skilltest Harness
 
 Discover, validate, and test skills against the Open Agent Skills standard.
@@ -79,6 +80,5 @@ Return results in this order:
 - [ ] Failure reproduced with command output.
 - [ ] Fix validated by re-running the same command.
 - [ ] No new failures introduced in adjacent case files.
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

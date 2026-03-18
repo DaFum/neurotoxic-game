@@ -3,13 +3,14 @@ name: ci-hardener
 description: improve CI reliability, speed, and clarity. Trigger when CI is slow, flaky, fails silently, or needs optimization. focus on GitHub Actions workflows. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize flaky-failure root causes, workflow observability, cache strategy, and deterministic CI outcomes.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "ci"
-  keywords: ["ci","github-actions","pipeline","safety"]
-  maturity: "stable"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'ci'
+  keywords: ['ci', 'github-actions', 'pipeline', 'safety']
+  maturity: 'stable'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # CI Hardener
 
 Optimize and harden Continuous Integration (CI) workflows.
@@ -67,6 +68,5 @@ jobs:
 
 **Output**:
 "Added `actions/setup-node` with caching to the install step. This will speed up subsequent runs by reusing the pnpm store."
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

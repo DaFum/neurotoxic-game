@@ -7,7 +7,9 @@ import { translateContextKeys } from '../utils/translationUtils.js'
 import { useEffect, memo } from 'react'
 
 const renderToastMessage = (toast, t) => {
-  const safeOptions = toast.options ? translateContextKeys(toast.options, t) : {}
+  const safeOptions = toast.options
+    ? translateContextKeys(toast.options, t)
+    : {}
 
   if (toast.messageKey) {
     return t(toast.messageKey, {

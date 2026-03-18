@@ -93,9 +93,7 @@ test('EventModal handles resolveEventChoice error by showing fallback preview', 
     id: 'test_event_error',
     title: 'Test Event',
     description: 'This is a test event.',
-    options: [
-      { label: 'Option Error' }
-    ]
+    options: [{ label: 'Option Error' }]
   }
   const handleSelect = vi.fn()
 
@@ -115,9 +113,11 @@ test('EventModal handles resolveEventChoice error by showing fallback preview', 
   fireEvent.click(continueButton)
 
   // It should call handleSelect with the raw option, since preview failed
-  expect(handleSelect).toHaveBeenCalledWith(expect.objectContaining({
-    label: 'Option Error'
-  }))
+  expect(handleSelect).toHaveBeenCalledWith(
+    expect.objectContaining({
+      label: 'Option Error'
+    })
+  )
 })
 
 test('EventModal handles keyboard selection', async () => {
@@ -193,4 +193,3 @@ test('EventModal uses fallback text when both outcomeText and description are em
     expect(screen.getByText('ui:event.resolved')).toBeInTheDocument()
   })
 })
-

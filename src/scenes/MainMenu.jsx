@@ -7,11 +7,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import {
-  Modal,
-  AnimatedDivider,
-  AnimatedSubtitle
-} from '../ui/shared'
+import { Modal, AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { MainMenuSocials } from './mainmenu/MainMenuSocials.jsx'
 import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.jsx'
@@ -126,12 +122,7 @@ export const MainMenu = () => {
 
     // Audio setup is fire-and-forget — never blocks scene transitions.
     initializeAudio()
-  }, [
-    resetState,
-    changeScene,
-    initializeAudio,
-    updatePlayer
-  ])
+  }, [resetState, changeScene, initializeAudio, updatePlayer])
 
   const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
@@ -394,9 +385,7 @@ export const MainMenu = () => {
         <MainMenuFeatures onClose={() => setShowFeatures(false)} />
       )}
 
-      {showSocials && (
-        <MainMenuSocials onClose={() => setShowSocials(false)} />
-      )}
+      {showSocials && <MainMenuSocials onClose={() => setShowSocials(false)} />}
 
       <motion.div
         initial={{ opacity: 0 }}

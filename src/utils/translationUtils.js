@@ -10,17 +10,16 @@ const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
  */
 export const translateContextKeys = (context, t) => {
   // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
-  if (
-    context === null ||
-    typeof context !== 'object'
-  ) {
+  if (context === null || typeof context !== 'object') {
     return context
   }
 
   if (Array.isArray(context)) {
     return context.map(item => {
       if (typeof item === 'string') {
-        const isTranslationKey = VALID_NAMESPACES.some(ns => item.startsWith(ns))
+        const isTranslationKey = VALID_NAMESPACES.some(ns =>
+          item.startsWith(ns)
+        )
         return isTranslationKey ? t(item, { defaultValue: item }) : item
       }
       return translateContextKeys(item, t)
@@ -36,7 +35,9 @@ export const translateContextKeys = (context, t) => {
     const value = context[prop]
     if (typeof value === 'string') {
       const isTranslationKey = VALID_NAMESPACES.some(ns => value.startsWith(ns))
-      translatedContext[prop] = isTranslationKey ? t(value, { defaultValue: value }) : value
+      translatedContext[prop] = isTranslationKey
+        ? t(value, { defaultValue: value })
+        : value
     } else if (typeof value === 'object' && value !== null) {
       // SECURITY: Recurse into nested objects to sanitize and translate
       translatedContext[prop] = translateContextKeys(value, t)

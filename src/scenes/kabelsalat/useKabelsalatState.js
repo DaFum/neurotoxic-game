@@ -95,7 +95,10 @@ export const useKabelsalatState = () => {
     (delay, isPowered) => {
       const timer = setTimeout(() => {
         try {
-          completeKabelsalatMinigame({ isPoweredOn: isPowered, timeLeft: isPowered ? timeLeftRef.current : 0 })
+          completeKabelsalatMinigame({
+            isPoweredOn: isPowered,
+            timeLeft: isPowered ? timeLeftRef.current : 0
+          })
         } catch (error) {
           import('../../utils/errorHandler.js')
             .then(({ handleError, StateError }) => {
@@ -186,7 +189,10 @@ export const useKabelsalatState = () => {
             secureRandom()
             return secureRandom
           } catch (e) {
-            console.warn('secureRandom unavailable, falling back to Math.random()', e)
+            console.warn(
+              'secureRandom unavailable, falling back to Math.random()',
+              e
+            )
             return Math.random
           }
         })()

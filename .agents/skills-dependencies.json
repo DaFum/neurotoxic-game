@@ -132,9 +132,7 @@
     "skill-aligner": {
       "depends_on": [],
       "routing_triggers": {},
-      "related_skills": [
-        "ci-hardener"
-      ]
+      "related_skills": ["ci-hardener"]
     },
     "skill-creator": {
       "depends_on": [],
@@ -144,9 +142,7 @@
     "skill-qa-harness": {
       "depends_on": [],
       "routing_triggers": {},
-      "related_skills": [
-        "skilltest"
-      ]
+      "related_skills": ["skilltest"]
     },
     "skilltest": {
       "depends_on": [],

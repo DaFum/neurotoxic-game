@@ -3,13 +3,14 @@ name: dependency-pin-upgrade-blocker
 description: enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prevent unpinned upgrades and verify version-lock integrity before accepting dependency changes.
 compatibility: Node.js 22.13+, pnpm
 metadata:
-  version: "1.0.0"
-  author: "neurotoxic-project"
-  category: "tooling"
-  keywords: ["dependencies","versioning","pinning"]
-  maturity: "stable"
-license: "Proprietary. See LICENSE.txt for terms"
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'tooling'
+  keywords: ['dependencies', 'versioning', 'pinning']
+  maturity: 'stable'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
+
 # Dependency Pin Guard
 
 Strictly enforce pinned versions for critical dependencies to ensure stability and compatibility.
@@ -56,6 +57,5 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 **Output**:
 "Upgraded minor dependencies. Held back React (19.x), Vite (8.x), and Pixi (8.x) to pinned major versions to preserve stability."
-
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

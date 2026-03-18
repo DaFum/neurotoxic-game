@@ -43,9 +43,12 @@ export class EffectManager {
         toxic: getGenImageUrl(IMG_PROMPTS.HIT_TOXIC)
       }
 
-      const loadedTextures = await loadTextures(urls, (error, fallbackMessage) => {
-        logger.warn('EffectManager', fallbackMessage, error)
-      })
+      const loadedTextures = await loadTextures(
+        urls,
+        (error, fallbackMessage) => {
+          logger.warn('EffectManager', fallbackMessage, error)
+        }
+      )
 
       if (loadedTextures.blood) this.textures.blood = loadedTextures.blood
       if (loadedTextures.toxic) this.textures.toxic = loadedTextures.toxic

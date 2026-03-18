@@ -208,7 +208,10 @@ export const handleUseContraband = (state, payload) => {
           ...m,
           [item.effectType]:
             item.effectType === 'stamina'
-              ? clampMemberStamina((m[item.effectType] || 0) + item.value, m.staminaMax)
+              ? clampMemberStamina(
+                  (m[item.effectType] || 0) + item.value,
+                  m.staminaMax
+                )
               : clampMemberMood((m[item.effectType] || 0) + item.value)
         }
       }

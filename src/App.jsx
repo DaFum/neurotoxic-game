@@ -46,8 +46,7 @@ const SceneLoadingFallback = () => {
  */
 function GameContent() {
   const gameState = useGameState()
-  const { currentScene, activeEvent, resolveEvent, settings } =
-    gameState
+  const { currentScene, activeEvent, resolveEvent, settings } = gameState
 
   // Construct a safe, read-only slice of state for ChatterOverlay
   // This avoids passing dispatch functions which violates the component's contract
@@ -89,10 +88,7 @@ function GameContent() {
 
       {/* Global Event Modal Overlay */}
       {activeEvent && (
-        <EventModal
-          event={activeEvent}
-          onOptionSelect={resolveEvent}
-        />
+        <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
       )}
 
       <ErrorBoundary>

@@ -14,12 +14,17 @@ import { createNamedLazyLoader } from '../utils/lazySceneLoader.js'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants.js'
 
 const ClinicScene = lazy(
-  createNamedLazyLoader(() => import('../scenes/ClinicScene.jsx'), 'ClinicScene')
+  createNamedLazyLoader(
+    () => import('../scenes/ClinicScene.jsx'),
+    'ClinicScene'
+  )
 )
 const Overworld = lazy(
   createNamedLazyLoader(() => import('../scenes/Overworld.jsx'), 'Overworld')
 )
-const Gig = lazy(createNamedLazyLoader(() => import('../scenes/Gig.jsx'), 'Gig'))
+const Gig = lazy(
+  createNamedLazyLoader(() => import('../scenes/Gig.jsx'), 'Gig')
+)
 const PreGig = lazy(
   createNamedLazyLoader(() => import('../scenes/PreGig.jsx'), 'PreGig')
 )
@@ -27,7 +32,10 @@ const PostGig = lazy(
   createNamedLazyLoader(() => import('../scenes/PostGig.jsx'), 'PostGig')
 )
 const TourbusScene = lazy(
-  createNamedLazyLoader(() => import('../scenes/TourbusScene.jsx'), 'TourbusScene')
+  createNamedLazyLoader(
+    () => import('../scenes/TourbusScene.jsx'),
+    'TourbusScene'
+  )
 )
 const RoadieRunScene = lazy(
   createNamedLazyLoader(

@@ -5,14 +5,14 @@ const rawArgs = process.argv.slice(2)
 const vitestArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
 
 const hasMaxWorkers = vitestArgs.some(
-  (arg) =>
+  arg =>
     arg === '--maxWorkers' ||
     arg.startsWith('--maxWorkers=') ||
     arg === '--max-workers' ||
     arg.startsWith('--max-workers=')
 )
 const hasPool = vitestArgs.some(
-  (arg) => arg === '--pool' || arg.startsWith('--pool=')
+  arg => arg === '--pool' || arg.startsWith('--pool=')
 )
 const maxWorkers = computeWorkerCount('VITEST_MAX_WORKERS')
 

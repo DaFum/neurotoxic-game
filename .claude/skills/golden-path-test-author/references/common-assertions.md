@@ -32,7 +32,10 @@ assert.ok(
 
 // ✅ After event that damages harmony
 const harmonyBefore = state.band.harmony
-state = gameReducer(state, { type: ActionTypes.APPLY_EVENT_DELTA, payload: { band: { harmony: -50 } } })
+state = gameReducer(state, {
+  type: ActionTypes.APPLY_EVENT_DELTA,
+  payload: { band: { harmony: -50 } }
+})
 assert.ok(state.band.harmony >= 1, 'Harmony clamped at 1')
 assert.ok(state.band.harmony <= harmonyBefore, 'Harmony decreased')
 ```
@@ -41,10 +44,16 @@ assert.ok(state.band.harmony <= harmonyBefore, 'Harmony decreased')
 
 ```javascript
 // ✅ Fuel bounds
-assert.ok(state.player.van.fuel >= 0 && state.player.van.fuel <= 100, 'Fuel in [0,100]')
+assert.ok(
+  state.player.van.fuel >= 0 && state.player.van.fuel <= 100,
+  'Fuel in [0,100]'
+)
 
 // ✅ Van condition bounds
-assert.ok(state.player.van.condition >= 0 && state.player.van.condition <= 100, 'Condition in [0,100]')
+assert.ok(
+  state.player.van.condition >= 0 && state.player.van.condition <= 100,
+  'Condition in [0,100]'
+)
 
 // ✅ Both together
 const { fuel, condition } = state.player.van
@@ -58,12 +67,20 @@ assert.ok(condition >= 0 && condition <= 100, `Condition ${condition} valid`)
 
 ```javascript
 // ✅ Scene changed
-assert.equal(state.currentScene, GAME_PHASES.OVERWORLD, 'Transitioned to OVERWORLD')
+assert.equal(
+  state.currentScene,
+  GAME_PHASES.OVERWORLD,
+  'Transitioned to OVERWORLD'
+)
 
 // ✅ Scene did NOT change
 const sceneBefore = state.currentScene
 state = applyAction(state, ActionTypes.INVALID_ACTION)
-assert.equal(state.currentScene, sceneBefore, 'Invalid action does not change scene')
+assert.equal(
+  state.currentScene,
+  sceneBefore,
+  'Invalid action does not change scene'
+)
 ```
 
 ### Gig Lifecycle
@@ -110,19 +127,32 @@ assert.equal(state.player.location, 'Berlin', 'City updated')
 ```javascript
 // ✅ Numeric item consumed
 const shirtsBefore = state.band.inventory.shirts
-state = gameReducer(state, { type: ActionTypes.CONSUME_ITEM, payload: 'shirts' })
-assert.equal(state.band.inventory.shirts, shirtsBefore - 1, 'Shirts decremented')
+state = gameReducer(state, {
+  type: ActionTypes.CONSUME_ITEM,
+  payload: 'shirts'
+})
+assert.equal(
+  state.band.inventory.shirts,
+  shirtsBefore - 1,
+  'Shirts decremented'
+)
 
 // ✅ Cannot go below 0
 state = applyAction(state, ActionTypes.UPDATE_BAND, {
   inventory: { ...state.band.inventory, shirts: 0 }
 })
-state = gameReducer(state, { type: ActionTypes.CONSUME_ITEM, payload: 'shirts' })
+state = gameReducer(state, {
+  type: ActionTypes.CONSUME_ITEM,
+  payload: 'shirts'
+})
 assert.equal(state.band.inventory.shirts, 0, 'Never negative')
 
 // ✅ Boolean item toggled
 assert.equal(state.band.inventory.strings, true, 'Has strings')
-state = gameReducer(state, { type: ActionTypes.CONSUME_ITEM, payload: 'strings' })
+state = gameReducer(state, {
+  type: ActionTypes.CONSUME_ITEM,
+  payload: 'strings'
+})
 assert.equal(state.band.inventory.strings, false, 'Strings consumed')
 ```
 
@@ -166,7 +196,14 @@ state = applyAction(state, ActionTypes.SET_GIG_MODIFIERS, { soundcheck: true })
 state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
 
 // Performance
-const gigStats = { score: 8000, perfectHits: 50, misses: 3, maxCombo: 25, peakHype: 70, toxicTimeTotal: 0 }
+const gigStats = {
+  score: 8000,
+  perfectHits: 50,
+  misses: 3,
+  maxCombo: 25,
+  peakHype: 70,
+  toxicTimeTotal: 0
+}
 state = applyAction(state, ActionTypes.SET_LAST_GIG_STATS, gigStats)
 
 // PostGig
@@ -225,7 +262,10 @@ state = applyAction(state, ActionTypes.UPDATE_BAND, { harmony: 1 })
 assert.equal(state.band.harmony, 1, 'Harmony at minimum')
 
 // Further damage doesn't go below 1
-state = gameReducer(state, { type: ActionTypes.APPLY_EVENT_DELTA, payload: { band: { harmony: -50 } } })
+state = gameReducer(state, {
+  type: ActionTypes.APPLY_EVENT_DELTA,
+  payload: { band: { harmony: -50 } }
+})
 assert.equal(state.band.harmony, 1, 'Harmony stays at minimum')
 ```
 
@@ -236,7 +276,10 @@ Create a helper file for reusable assertions:
 ```javascript
 // tests/helpers/assertions.js
 export const assertMoneySafe = (state, message = '') => {
-  assert.ok(state.player.money >= 0, `Money ${state.player.money} >= 0 ${message}`)
+  assert.ok(
+    state.player.money >= 0,
+    `Money ${state.player.money} >= 0 ${message}`
+  )
 }
 
 export const assertHarmonySafe = (state, message = '') => {
@@ -247,12 +290,22 @@ export const assertHarmonySafe = (state, message = '') => {
 }
 
 export const assertVanSafe = (state, message = '') => {
-  assert.ok(state.player.van.fuel >= 0 && state.player.van.fuel <= 100, `Fuel safe ${message}`)
-  assert.ok(state.player.van.condition >= 0 && state.player.van.condition <= 100, `Condition safe ${message}`)
+  assert.ok(
+    state.player.van.fuel >= 0 && state.player.van.fuel <= 100,
+    `Fuel safe ${message}`
+  )
+  assert.ok(
+    state.player.van.condition >= 0 && state.player.van.condition <= 100,
+    `Condition safe ${message}`
+  )
 }
 
 // Usage:
-import { assertMoneySafe, assertHarmonySafe, assertVanSafe } from '../helpers/assertions.js'
+import {
+  assertMoneySafe,
+  assertHarmonySafe,
+  assertVanSafe
+} from '../helpers/assertions.js'
 
 await t.test('After transaction', () => {
   state = applyAction(state, ActionTypes.ADVANCE_DAY)

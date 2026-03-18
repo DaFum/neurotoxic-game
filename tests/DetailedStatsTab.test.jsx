@@ -20,7 +20,16 @@ describe('DetailedStatsTab', () => {
   }
   const mockBand = {
     members: [
-      { id: '1', name: 'Member 1', role: 'Vocalist', skill: 50, stamina: 100, maxStamina: 100, mood: 100, traits: [] }
+      {
+        id: '1',
+        name: 'Member 1',
+        role: 'Vocalist',
+        skill: 50,
+        stamina: 100,
+        maxStamina: 100,
+        mood: 100,
+        traits: []
+      }
     ],
     equipment: {}
   }
@@ -62,7 +71,14 @@ describe('DetailedStatsTab', () => {
       ...mockBand,
       members: [
         {
-          id: '1', name: 'Member 1', role: 'Vocalist', skill: 50, stamina: 100, maxStamina: 100, mood: 100, traits: [],
+          id: '1',
+          name: 'Member 1',
+          role: 'Vocalist',
+          skill: 50,
+          stamina: 100,
+          maxStamina: 100,
+          mood: 100,
+          traits: [],
           equipment: { mic: 'Golden Mic' }
         }
       ]

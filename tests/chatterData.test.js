@@ -982,8 +982,14 @@ test('chatter.json structure is valid JSON', () => {
     JSON.parse(fs.readFileSync(dePath, 'utf-8'))
   }, 'de/chatter.json must be valid JSON')
 
-  assert.ok(translations.en && typeof translations.en === 'object', 'chatter.json must parse to a valid object')
-  assert.ok(Object.keys(translations.en).length > 0, 'chatter.json must not be empty')
+  assert.ok(
+    translations.en && typeof translations.en === 'object',
+    'chatter.json must parse to a valid object'
+  )
+  assert.ok(
+    Object.keys(translations.en).length > 0,
+    'chatter.json must not be empty'
+  )
 })
 
 test('all chatter keys in en/chatter.json have non-empty string values', () => {

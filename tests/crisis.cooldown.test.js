@@ -14,7 +14,8 @@ test('crisis_police_raid_zealotry includes a cooldown effect', () => {
     )
 
     const hasCooldown = opt.effect.effects.some(
-      eff => eff.type === 'cooldown' && eff.eventId === 'crisis_police_raid_zealotry'
+      eff =>
+        eff.type === 'cooldown' && eff.eventId === 'crisis_police_raid_zealotry'
     )
     assert.ok(
       hasCooldown,
@@ -33,11 +34,17 @@ test('crisis_poor_performance includes a cooldown effect', () => {
   const opt1FailureEffects = opt1.skillCheck.failure.effects || []
 
   assert.ok(
-    opt1SuccessEffects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'),
+    opt1SuccessEffects.some(
+      eff =>
+        eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'
+    ),
     'Option 1 success effect should include a cooldown'
   )
   assert.ok(
-    opt1FailureEffects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'),
+    opt1FailureEffects.some(
+      eff =>
+        eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'
+    ),
     'Option 1 failure effect should include a cooldown'
   )
 
@@ -45,7 +52,10 @@ test('crisis_poor_performance includes a cooldown effect', () => {
   const opt2 = event.options[1]
   const opt2Effects = opt2.effect.effects || []
   assert.ok(
-    opt2Effects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'),
+    opt2Effects.some(
+      eff =>
+        eff.type === 'cooldown' && eff.eventId === 'crisis_poor_performance'
+    ),
     'Option 2 effect should include a cooldown'
   )
 })
@@ -57,7 +67,9 @@ test('crisis_mass_unfollow includes a cooldown effect', () => {
   const opt1 = event.options[0]
   const opt1Effects = opt1.effect.effects || []
   assert.ok(
-    opt1Effects.some(eff => eff.type === 'cooldown' && eff.eventId === 'crisis_mass_unfollow'),
+    opt1Effects.some(
+      eff => eff.type === 'cooldown' && eff.eventId === 'crisis_mass_unfollow'
+    ),
     'Option 1 effect should include a cooldown'
   )
 })

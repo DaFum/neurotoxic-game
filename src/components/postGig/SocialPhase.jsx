@@ -94,14 +94,20 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
             <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.platform', { defaultValue: 'Platform' })}
             </span>
-            <span className='text-star-white drop-shadow-md'>{opt.platform}</span>
+            <span className='text-star-white drop-shadow-md'>
+              {opt.platform}
+            </span>
           </div>
           <div className='flex justify-between pt-1'>
             <span className='text-ash-gray drop-shadow-md'>
               {t('economy:social.category', { defaultValue: 'Category' })}
             </span>
             <span className='text-star-white drop-shadow-md'>
-              {opt.category ? t(`economy:social.categories.${opt.category}`, { defaultValue: opt.category }) : ''}
+              {opt.category
+                ? t(`economy:social.categories.${opt.category}`, {
+                    defaultValue: opt.category
+                  })
+                : ''}
             </span>
           </div>
         </div>

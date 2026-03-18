@@ -11,7 +11,10 @@ export const SettingsTab = ({
   updateSettings,
   deleteSave
 }) => {
-  const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(settings, updateSettings)
+  const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(
+    settings,
+    updateSettings
+  )
 
   return (
     <div className='max-w-3xl mx-auto'>

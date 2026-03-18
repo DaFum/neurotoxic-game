@@ -43,7 +43,13 @@ test('Golden Path: MENU → OVERWORLD initialization', async t => {
         node_1_0: {
           id: 'node_1_0',
           layer: 1,
-          venue: { id: 'venue_1', type: 'GIG', name: 'Punk Hall', pay: 300, capacity: 200 },
+          venue: {
+            id: 'venue_1',
+            type: 'GIG',
+            name: 'Punk Hall',
+            pay: 300,
+            capacity: 200
+          },
           type: 'GIG'
         }
       },
@@ -90,7 +96,11 @@ test('Golden Path: OVERWORLD → PRE_GIG setup', async t => {
 
   await t.test('START_GIG transitions to PRE_GIG', () => {
     state = applyAction(state, ActionTypes.START_GIG, venue)
-    assert.equal(state.currentScene, GAME_PHASES.PRE_GIG, 'Scene changed to PRE_GIG')
+    assert.equal(
+      state.currentScene,
+      GAME_PHASES.PRE_GIG,
+      'Scene changed to PRE_GIG'
+    )
     assert.deepEqual(state.currentGig, venue, 'Venue stored')
   })
 
@@ -102,10 +112,7 @@ test('Golden Path: OVERWORLD → PRE_GIG setup', async t => {
   })
 
   await t.test('Configure setlist', () => {
-    const setlist = [
-      { id: '01 Kranker Schrank' },
-      { id: '02 Toxic Beat' }
-    ]
+    const setlist = [{ id: '01 Kranker Schrank' }, { id: '02 Toxic Beat' }]
     state = applyAction(state, ActionTypes.SET_SETLIST, setlist)
     assert.equal(state.setlist.length, 2)
     assert.equal(state.setlist[0].id, '01 Kranker Schrank')
@@ -124,7 +131,10 @@ test('Golden Path: OVERWORLD → PRE_GIG setup', async t => {
   await t.test('Player ready to perform', () => {
     assert.ok(state.currentGig, 'Gig selected')
     assert.ok(state.setlist.length > 0, 'Setlist configured')
-    assert.ok(state.gigModifiers.soundcheck || state.gigModifiers.merch, 'Modifier enabled')
+    assert.ok(
+      state.gigModifiers.soundcheck || state.gigModifiers.merch,
+      'Modifier enabled'
+    )
   })
 })
 ```
@@ -138,7 +148,15 @@ test('Golden Path: PRE_GIG → GIG performance', async t => {
   let state = createInitialState()
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
 
-  const venue = { id: 'test', name: 'Hall', capacity: 200, price: 10, pay: 300, diff: 2, type: 'GIG' }
+  const venue = {
+    id: 'test',
+    name: 'Hall',
+    capacity: 200,
+    price: 10,
+    pay: 300,
+    diff: 2,
+    type: 'GIG'
+  }
   state = applyAction(state, ActionTypes.START_GIG, venue)
   state = applyAction(state, ActionTypes.SET_SETLIST, [{ id: '01 Song' }])
 
@@ -168,7 +186,8 @@ test('Golden Path: PRE_GIG → GIG performance', async t => {
   })
 
   await t.test('Stats are valid', () => {
-    const { score, perfectHits, misses, maxCombo, peakHype } = state.lastGigStats
+    const { score, perfectHits, misses, maxCombo, peakHype } =
+      state.lastGigStats
     assert.ok(score > 0, 'Score recorded')
     assert.ok(perfectHits >= 0, 'Perfect hits >= 0')
     assert.ok(misses >= 0, 'Misses >= 0')
@@ -186,12 +205,27 @@ Tests ending performance and moving to financial settlement.
 test('Golden Path: GIG → POST_GIG settlement', async t => {
   let state = createInitialState()
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
-  state = applyAction(state, ActionTypes.START_GIG, { id: 'v1', name: 'Venue', capacity: 200, price: 10, pay: 300, diff: 2, type: 'GIG' })
+  state = applyAction(state, ActionTypes.START_GIG, {
+    id: 'v1',
+    name: 'Venue',
+    capacity: 200,
+    price: 10,
+    pay: 300,
+    diff: 2,
+    type: 'GIG'
+  })
   state = applyAction(state, ActionTypes.SET_SETLIST, [{ id: '01 Song' }])
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
 
   await t.test('Record final stats before transition', () => {
-    const gigStats = { score: 7000, perfectHits: 45, misses: 5, maxCombo: 20, peakHype: 65, toxicTimeTotal: 0 }
+    const gigStats = {
+      score: 7000,
+      perfectHits: 45,
+      misses: 5,
+      maxCombo: 20,
+      peakHype: 65,
+      toxicTimeTotal: 0
+    }
     state = applyAction(state, ActionTypes.SET_LAST_GIG_STATS, gigStats)
     assert.equal(state.lastGigStats.score, 7000)
   })
@@ -210,7 +244,10 @@ test('Golden Path: GIG → POST_GIG settlement', async t => {
   await t.test('Calculate performance score from stats', () => {
     // Performance score is clamped to [30, 100]
     const rawScore = Math.min(100, Math.max(30, state.lastGigStats.score / 500))
-    assert.ok(rawScore >= 30 && rawScore <= 100, `Performance score ${rawScore} valid`)
+    assert.ok(
+      rawScore >= 30 && rawScore <= 100,
+      `Performance score ${rawScore} valid`
+    )
   })
 
   await t.test('Apply earnings (simplified)', () => {
@@ -239,10 +276,25 @@ Tests clearing gig state and returning to exploration phase.
 test('Golden Path: POST_GIG → OVERWORLD cleanup', async t => {
   let state = createInitialState()
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
-  state = applyAction(state, ActionTypes.START_GIG, { id: 'v1', name: 'V', capacity: 200, price: 10, pay: 300, diff: 2, type: 'GIG' })
+  state = applyAction(state, ActionTypes.START_GIG, {
+    id: 'v1',
+    name: 'V',
+    capacity: 200,
+    price: 10,
+    pay: 300,
+    diff: 2,
+    type: 'GIG'
+  })
   state = applyAction(state, ActionTypes.SET_SETLIST, [{ id: 'song' }])
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
-  state = applyAction(state, ActionTypes.SET_LAST_GIG_STATS, { score: 5000, perfectHits: 40, misses: 10, maxCombo: 15, peakHype: 50, toxicTimeTotal: 0 })
+  state = applyAction(state, ActionTypes.SET_LAST_GIG_STATS, {
+    score: 5000,
+    perfectHits: 40,
+    misses: 10,
+    maxCombo: 15,
+    peakHype: 50,
+    toxicTimeTotal: 0
+  })
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIG)
 
   await t.test('Apply PostGig earnings', () => {
@@ -281,7 +333,10 @@ test('Golden Path: POST_GIG → OVERWORLD cleanup', async t => {
   await t.test('Gig state completely cleared', () => {
     assert.equal(state.currentGig, null, 'No active gig')
     assert.equal(state.lastGigStats, null, 'No gig stats')
-    assert.ok(state.setlist.length >= 0, 'Setlist can persist or clear (depends on design)')
+    assert.ok(
+      state.setlist.length >= 0,
+      'Setlist can persist or clear (depends on design)'
+    )
   })
 
   await t.test('Ready for next day/gig cycle', () => {
@@ -308,7 +363,15 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
   })
 
   await t.test('Start and complete a gig poorly', () => {
-    state = applyAction(state, ActionTypes.START_GIG, { id: 'v', name: 'V', capacity: 100, price: 5, pay: 100, diff: 4, type: 'GIG' })
+    state = applyAction(state, ActionTypes.START_GIG, {
+      id: 'v',
+      name: 'V',
+      capacity: 100,
+      price: 5,
+      pay: 100,
+      diff: 4,
+      type: 'GIG'
+    })
     state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
     // Poor performance
     state = applyAction(state, ActionTypes.SET_LAST_GIG_STATS, {
