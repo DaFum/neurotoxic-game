@@ -1,10 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CONTRABAND_DB,
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY
 } from '../src/data/contraband.js'
+
+const CONTRABAND_DB = Array.from(CONTRABAND_BY_ID.values())
 
 /**
  * Integration tests for contraband data usage patterns

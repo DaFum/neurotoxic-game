@@ -6,7 +6,7 @@
  * @module contraband
  */
 
-export const CONTRABAND_DB = [
+const CONTRABAND_DB = [
   // ursprüngliche Items (bewahrt)
   {
     id: 'c_void_energy',

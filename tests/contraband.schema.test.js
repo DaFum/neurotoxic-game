@@ -1,11 +1,12 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CONTRABAND_DB,
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY,
   CONTRABAND_RARITY_WEIGHTS
 } from '../src/data/contraband.js'
+
+const CONTRABAND_DB = Array.from(CONTRABAND_BY_ID.values())
 
 describe('Contraband Schema (with imagePrompt)', () => {
   describe('CONTRABAND_DB structure', () => {
