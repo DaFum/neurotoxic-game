@@ -380,7 +380,7 @@ test('UPDATE_PLAYER updates money', () => {
     type: ActionTypes.UPDATE_PLAYER,
     payload: { money: 300 }
   })
-  assert.equal(state.money, 300)
+  assert.equal(state.player.money, 300)
 })
 ```
 

@@ -90,7 +90,7 @@ test('Golden Path: OVERWORLD → PRE_GIG setup', async t => {
 
   await t.test('START_GIG transitions to PRE_GIG', () => {
     state = applyAction(state, ActionTypes.START_GIG, venue)
-    assert.equal(state.currentScene, GAME_PHASES.PRE_GIG, 'Scene changed to PRE_GIGèves')
+    assert.equal(state.currentScene, GAME_PHASES.PRE_GIG, 'Scene changed to PRE_GIG')
     assert.deepEqual(state.currentGig, venue, 'Venue stored')
   })
 
@@ -129,7 +129,7 @@ test('Golden Path: OVERWORLD → PRE_GIG setup', async t => {
 })
 ```
 
-## Transition 3: PRE_GIGôme → GIG (Performance Starts)
+## Transition 3: PRE_GIQ → GIG (Performance Starts)
 
 Tests entering the rhythm game and capturing performance stats.
 
@@ -178,7 +178,7 @@ test('Golden Path: PRE_GIG → GIG performance', async t => {
 })
 ```
 
-## Transition 4: GIG → POST_GIGłami (Score Capture)
+## Transition 4: GIG → POST_GIQ (Score Capture)
 
 Tests ending performance and moving to financial settlement.
 
@@ -281,7 +281,7 @@ test('Golden Path: POST_GIG → OVERWORLD cleanup', async t => {
   await t.test('Gig state completely cleared', () => {
     assert.equal(state.currentGig, null, 'No active gig')
     assert.equal(state.lastGigStats, null, 'No gig stats')
-    assert.equal(state.setlist.length, 0 || state.setlist.length > 0, 'Setlist can persist or clear (depends on design)')
+    assert.ok(state.setlist.length >= 0, 'Setlist can persist or clear (depends on design)')
   })
 
   await t.test('Ready for next day/gig cycle', () => {
@@ -319,7 +319,7 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
       peakHype: 20,
       toxicTimeTotal: 0
     })
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIGнародно)
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIQ)
   })
 
   await t.test('Apply large loss', () => {
