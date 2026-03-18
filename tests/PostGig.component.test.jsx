@@ -58,112 +58,120 @@ const getLastFunctionalUpdate = mockFn =>
     .reverse()
     .find(updateArg => typeof updateArg === 'function')
 
-describe('PostGig Component - Phase Management', () => {
-  const mockUpdatePlayer = vi.fn()
-  const mockUpdateBand = vi.fn()
-  const mockUpdateSocial = vi.fn()
-  const mockChangeScene = vi.fn()
-  const mockTriggerEvent = vi.fn()
-  const mockAddToast = vi.fn()
-  const mockSaveGame = vi.fn()
-  const mockUnlockTrait = vi.fn()
-  const mockAddQuest = vi.fn()
+// Module-level mock functions (shared across all describes)
+const mockUpdatePlayer = vi.fn()
+const mockUpdateBand = vi.fn()
+const mockUpdateSocial = vi.fn()
+const mockChangeScene = vi.fn()
+const mockTriggerEvent = vi.fn()
+const mockAddToast = vi.fn()
+const mockSaveGame = vi.fn()
+const mockUnlockTrait = vi.fn()
+const mockAddQuest = vi.fn()
 
-  const getBaseState = (overrides = {}) => ({
-    currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
-    player: {
-      money: 500,
-      fame: 100,
-      day: 5,
-      location: 'berlin',
-      playerId: null,
-      playerName: null
+// Shared base state factory
+const createBaseState = (overrides = {}) => ({
+  currentGig: { songId: 'test_song', venue: 'Test Venue', payout: 500 },
+  player: {
+    money: 500,
+    fame: 100,
+    day: 5,
+    location: 'berlin',
+    playerId: null,
+    playerName: null
+  },
+  band: {
+    inventory: {},
+    members: [
+      { name: 'Member1', mood: 50, stamina: 50 },
+      { name: 'Member2', mood: 50, stamina: 50 }
+    ],
+    harmony: 50
+  },
+  social: {
+    instagram: 100,
+    tiktok: 50,
+    youtube: 25,
+    trend: 'NEUTRAL',
+    viral: 0,
+    controversyLevel: 0,
+    loyalty: 50,
+    reputationCooldown: 0,
+    egoFocus: null,
+    sponsorActive: false,
+    activeDeals: [],
+    influencers: { influencer1: { score: 50 } },
+    brandReputation: {}
+  },
+  lastGigStats: {
+    score: 50000,
+    accuracy: 95,
+    events: []
+  },
+  gigModifiers: {},
+  activeEvent: null,
+  activeStoryFlags: [],
+  triggerEvent: mockTriggerEvent,
+  updatePlayer: mockUpdatePlayer,
+  updateBand: mockUpdateBand,
+  updateSocial: mockUpdateSocial,
+  changeScene: mockChangeScene,
+  saveGame: mockSaveGame,
+  addToast: mockAddToast,
+  unlockTrait: mockUnlockTrait,
+  reputationByRegion: { berlin: 50 },
+  setlist: [],
+  addQuest: mockAddQuest,
+  ...overrides
+})
+
+// Shared setup function for all describes
+const setupCommonMocks = () => {
+  vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
+    net: 200,
+    income: {
+      total: 500,
+      breakdown: [
+        { labelKey: 'ticketSales', label: 'Ticket Sales', value: 500 }
+      ]
     },
-    band: {
-      inventory: {},
-      members: [
-        { name: 'Member1', mood: 50, stamina: 50 },
-        { name: 'Member2', mood: 50, stamina: 50 }
-      ],
-      harmony: 50
-    },
-    social: {
-      instagram: 100,
-      tiktok: 50,
-      youtube: 25,
-      trend: 'NEUTRAL',
-      viral: 0,
-      controversyLevel: 0,
-      loyalty: 50,
-      reputationCooldown: 0,
-      egoFocus: null,
-      sponsorActive: false,
-      activeDeals: [],
-      influencers: {},
-      brandReputation: {}
-    },
-    lastGigStats: {
-      score: 50000,
-      accuracy: 95,
-      events: []
-    },
-    gigModifiers: {},
-    activeEvent: null,
-    activeStoryFlags: [],
-    triggerEvent: mockTriggerEvent,
-    updatePlayer: mockUpdatePlayer,
-    updateBand: mockUpdateBand,
-    updateSocial: mockUpdateSocial,
-    changeScene: mockChangeScene,
-    saveGame: mockSaveGame,
-    addToast: mockAddToast,
-    unlockTrait: mockUnlockTrait,
-    reputationByRegion: { berlin: 50 },
-    setlist: [],
-    addQuest: mockAddQuest,
-    ...overrides
+    expenses: {
+      total: 300,
+      breakdown: [{ labelKey: 'venueCut', label: 'Venue Cut', value: 300 }]
+    }
   })
+
+  vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
+
+  vi.spyOn(socialEngine, 'generatePostOptions').mockReturnValue([
+    {
+      id: 'post_1',
+      name: 'Test Post',
+      platform: 'instagram',
+      type: 'basic'
+    }
+  ])
+
+  vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
+    success: true,
+    followers: 50,
+    platform: 'instagram',
+    message: 'Post successful!'
+  })
+
+  vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(false)
+  vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(25)
+  vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([])
+
+  useGameState.mockReturnValue(createBaseState())
+}
+
+describe('PostGig Component - Phase Management', () => {
+  const getBaseState = (overrides = {}) => createBaseState(overrides)
 
   beforeEach(() => {
     vi.clearAllMocks()
-
-    vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
-      net: 200,
-      income: {
-        total: 500,
-        breakdown: [
-          { labelKey: 'ticketSales', label: 'Ticket Sales', value: 500 }
-        ]
-      },
-      expenses: {
-        total: 300,
-        breakdown: [{ labelKey: 'venueCut', label: 'Venue Cut', value: 300 }]
-      }
-    })
-
-    vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
-
-    vi.spyOn(socialEngine, 'generatePostOptions').mockReturnValue([
-      {
-        id: 'post_1',
-        name: 'Test Post',
-        platform: 'instagram',
-        type: 'basic'
-      }
-    ])
-
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 50,
-      platform: 'instagram',
-      message: 'Post successful!'
-    })
-
-    vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(false)
-    vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(25)
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([])
-
-    useGameState.mockReturnValue(getBaseState())
+    setupCommonMocks()
   })
 
   afterEach(() => {
@@ -249,80 +257,11 @@ describe('PostGig Component - Phase Management', () => {
 })
 
 describe('PostGig Component - Social Post Selection', () => {
-  const mockUpdatePlayer = vi.fn()
-  const mockUpdateBand = vi.fn()
-  const mockUpdateSocial = vi.fn()
-  const mockChangeScene = vi.fn()
-  const mockTriggerEvent = vi.fn()
-  const mockAddToast = vi.fn()
-  const mockSaveGame = vi.fn()
-  const mockUnlockTrait = vi.fn()
-  const mockAddQuest = vi.fn()
-
-  const getBaseState = (overrides = {}) => ({
-    currentGig: { songId: 'test_song', venue: 'Test Venue' },
-    player: { money: 500, fame: 100, day: 5, location: 'berlin' },
-    band: {
-      inventory: {},
-      members: [
-        { name: 'Member1', mood: 50, stamina: 50 },
-        { name: 'Member2', mood: 50, stamina: 50 }
-      ],
-      harmony: 50
-    },
-    social: {
-      instagram: 100,
-      tiktok: 50,
-      youtube: 25,
-      trend: 'NEUTRAL',
-      viral: 0,
-      controversyLevel: 0,
-      loyalty: 50,
-      reputationCooldown: 0,
-      egoFocus: null,
-      sponsorActive: false,
-      activeDeals: [],
-      influencers: { influencer1: { score: 50 } },
-      brandReputation: {}
-    },
-    lastGigStats: { score: 50000, accuracy: 95, events: [] },
-    gigModifiers: {},
-    activeEvent: null,
-    activeStoryFlags: [],
-    triggerEvent: mockTriggerEvent,
-    updatePlayer: mockUpdatePlayer,
-    updateBand: mockUpdateBand,
-    updateSocial: mockUpdateSocial,
-    changeScene: mockChangeScene,
-    saveGame: mockSaveGame,
-    addToast: mockAddToast,
-    unlockTrait: mockUnlockTrait,
-    reputationByRegion: { berlin: 50 },
-    setlist: [],
-    addQuest: mockAddQuest,
-    ...overrides
-  })
+  const getBaseState = (overrides = {}) => createBaseState(overrides)
 
   beforeEach(() => {
     vi.clearAllMocks()
-
-    vi.spyOn(economyEngine, 'calculateGigFinancials').mockReturnValue({
-      net: 200,
-      income: { total: 500, breakdown: [] },
-      expenses: { total: 300, breakdown: [] }
-    })
-
-    vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
-
-    vi.spyOn(socialEngine, 'generatePostOptions').mockReturnValue([
-      { id: 'post_1', name: 'Test Post', platform: 'instagram', type: 'basic' }
-    ])
-
-    vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(false)
-    vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(25)
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([])
-
-    useGameState.mockReturnValue(getBaseState())
+    setupCommonMocks()
   })
 
   afterEach(() => {
