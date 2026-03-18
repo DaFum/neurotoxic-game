@@ -252,8 +252,12 @@ test('ensureAudioContext', async t => {
     let state = 'suspended'
     const context = mockTone.getContext()
 
-    const originalStateDesc = Object.getOwnPropertyDescriptor(
+    const originalRawStateDesc = Object.getOwnPropertyDescriptor(
       context.rawContext,
+      'state'
+    )
+    const originalToneStateDesc = Object.getOwnPropertyDescriptor(
+      context,
       'state'
     )
 
@@ -282,9 +286,11 @@ test('ensureAudioContext', async t => {
       assert.strictEqual(result, true)
       assert.strictEqual(resumeMock.mock.calls.length, 1)
     } finally {
-      if (originalStateDesc) {
-        Object.defineProperty(context.rawContext, 'state', originalStateDesc)
-        Object.defineProperty(context, 'state', originalStateDesc)
+      if (originalRawStateDesc) {
+        Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)
+      }
+      if (originalToneStateDesc) {
+        Object.defineProperty(context, 'state', originalToneStateDesc)
       }
     }
   })
@@ -378,6 +384,7 @@ test('ensureAudioContext', async t => {
 
       resolveStart()
       await Promise.all([p1, p2])
+      assert.strictEqual(mockTone.start.mock.calls.length, 1)
     } finally {
       if (originalRawStateDesc) {
         Object.defineProperty(context.rawContext, 'state', originalRawStateDesc)

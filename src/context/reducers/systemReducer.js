@@ -185,11 +185,10 @@ const sanitizeToasts = loadedToasts => {
 const migratePlayerLocation = location => {
   if (typeof location !== 'string') return location
 
-  const legacyLocation = location.startsWith('venues:')
-    ? location
-    : location.endsWith('.name')
-      ? location.slice(0, -5)
-      : location
+  let legacyLocation = location
+  if (!location.startsWith('venues:') && location.endsWith('.name')) {
+    legacyLocation = location.slice(0, -5)
+  }
 
   const normalizedLocation = normalizeVenueId(legacyLocation)
   if (!normalizedLocation || normalizedLocation === 'Unknown') {
