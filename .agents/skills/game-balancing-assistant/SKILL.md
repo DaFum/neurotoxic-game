@@ -1,8 +1,7 @@
 ---
 name: game-balancing-assistant
-description: analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects.
+description: analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Optimize economy/progression tuning with explicit trade-offs and measurable balancing deltas.
 ---
-
 # Game Balancing Assistant
 
 Tune the game's economy, difficulty, and progression curves.
@@ -54,5 +53,6 @@ Tune the game's economy, difficulty, and progression curves.
 
 **Output**:
 "Adjusted `src/data/venues.js`: 'The Dive Bar' payout increased from 50 to 80 to cover travel costs."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

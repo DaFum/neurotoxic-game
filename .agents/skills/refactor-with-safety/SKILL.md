@@ -1,8 +1,7 @@
 ---
 name: refactor-with-safety
-description: refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates.
+description: refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Refactor in small verified steps with preservation of behavior and explicit rollback points.
 ---
-
 # Refactor with Safety
 
 Perform structural changes while preserving behavior and stability.
@@ -43,5 +42,6 @@ Perform structural changes while preserving behavior and stability.
 
 **Output**:
 "Extracted helper functions `getBaseScore` and `getMultipliers`. Tests pass. Logic is unchanged but clearer."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

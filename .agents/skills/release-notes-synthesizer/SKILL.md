@@ -1,8 +1,7 @@
 ---
 name: release-notes-synthesizer
-description: create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits.
+description: create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Synthesize release notes by commit intent, user impact, and migration/testing implications.
 ---
-
 # Release Notes Synthesizer
 
 Generate professional release notes based on the project's commit history.
@@ -55,5 +54,6 @@ Generate professional release notes based on the project's commit history.
 
 - Updated dependencies to latest stable versions.
 ```
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

@@ -1,8 +1,7 @@
 ---
 name: one-command-quality-gate
-description: run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order.
+description: run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Run lint-test-build gating in order and stop at first blocker with reproducible failure output.
 ---
-
 # One-Command Quality Gate
 
 Enforce code quality standards by running the canonical check suite.
@@ -45,5 +44,6 @@ Run `.agents/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 ```
 
 "Quality gate failed at the Test step. Please fix the money initialization regression."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

@@ -1,8 +1,7 @@
 ---
 name: project-brain-codex-instructions
-description: generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture.
+description: generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Generate high-signal project context that improves agent decision quality without redundant prose.
 ---
-
 # Project Brain Codex
 
 Synthesize the project's architecture, constraints, and workflows into a single instruction set.
@@ -64,5 +63,6 @@ Neurotoxic is a brutalist rhythm game...
 - `src/scenes/`: Main game states (Overworld, Gig).
 - `src/utils/audioEngine.js`: Central audio controller.
 ```
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

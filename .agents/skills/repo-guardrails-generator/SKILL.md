@@ -1,8 +1,7 @@
 ---
 name: repo-guardrails-generator
-description: generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices.
+description: generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Generate enforceable guardrails that reduce ambiguity and prevent policy drift across contributors.
 ---
-
 # Repo Guardrails Generator
 
 Create concise, actionable rules for the repository.
@@ -40,5 +39,6 @@ Create concise, actionable rules for the repository.
 - [ ] **Testing**: Storybook story exists.
 - [ ] **Accessibility**: `aria-label` on icon-only buttons.
 ```
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

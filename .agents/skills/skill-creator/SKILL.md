@@ -1,8 +1,7 @@
 ---
 name: skill-creator
-description: create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis. Also trigger when users say things like "turn this into a skill", "make a skill for X", "help me improve my skill", "test my skill", "evaluate skill performance", or reference any .skill file or SKILL.md. Even if the user just describes a repeatable workflow they want to capture, consider suggesting a skill.
+description: Use this whenever users ask to create a skill, improve/refactor an existing skill, evaluate skill behavior, benchmark variance, or convert a repeatable workflow into a reusable agent instruction set. Trigger aggressively on phrases like "make a skill", "improve my SKILL.md", "benchmark/eval this skill", "turn this into a skill", references to `.skill`/`SKILL.md`, or requests for trigger tuning, edge-case handling, or instruction-following reliability. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Use mode-correct workflows (Create/Improve/Eval/Benchmark) and tie every improvement to measurable evidence.
 ---
-
 # Skill Creator
 
 Create new skills, improve existing ones, and measure their performance through structured evaluation.
@@ -260,6 +259,29 @@ Check whether you can spawn subagents for parallel execution.
 
 **Without subagents**: Read agent reference files and follow procedures inline/sequentially. Acknowledge reduced rigor — same context that executes also grades.
 
+### No-Subagent Rigor Protocol (Directional Mode)
+
+When subagents are unavailable, explicitly mark outputs as **directional** and use compensating controls so conclusions stay useful and honest:
+
+1. Run each critical eval at least 3 times sequentially to surface variance.
+2. Tighten expectations before comparing versions (reject weak presence-only assertions).
+3. Separate execution notes from grading notes in distinct files/sections.
+4. State confidence using labels: `high`, `medium`, `low` with one-line justification.
+5. Do not declare definitive superiority unless evidence is consistent across repeated runs.
+
+This preserves momentum while avoiding overconfident claims from single-context evaluation.
+
+### Evidence & Citation Contract
+
+For Improve/Benchmark reports, cite concrete artifacts for every material claim:
+
+- `transcript.md` lines for step-by-step behavior
+- `metrics.json` for tool/step variance
+- `grading.json` for pass-rate and claim verification
+- `comparison.json` + `posthoc-analysis.md` for winner rationale
+
+If evidence is missing, downgrade confidence and call out the gap explicitly instead of inferring certainty.
+
 ---
 
 ## Task Tracking
@@ -305,5 +327,33 @@ parent-directory/
 8. Review `user_notes` for issues that passed expectations might miss
 9. Capture execution metrics in Benchmark mode
 10. Use most capable model for analysis in Benchmark mode
+
+## Intent Routing Matrix
+
+Use the first matching route:
+
+1. **Create Route** — user asks to create/author a new skill from scratch.
+2. **Improve Route** — user asks to optimize/refactor existing `SKILL.md` behavior.
+3. **Eval Route** — user asks for pass/fail against one prompt or case.
+4. **Benchmark Route** — user asks for comparative performance/variance across runs.
+
+If a request mixes routes, split work into phases (e.g., Improve → Eval, or Create → Eval).
+
+## Output Contract (Skill-Creator Specific)
+
+Every completion must include:
+
+- `Selected route` + why.
+- `Artifacts produced` (exact files/paths).
+- `Measured result` (pass rate / winner / confidence).
+- `Next iteration plan` with 1–3 concrete changes.
+
+## Cut-List Checklist (Do Not Ship Without)
+
+- [ ] No generic filler instructions that could apply to any unrelated skill.
+- [ ] Every recommendation is linked to transcript/eval evidence.
+- [ ] No-subagent runs are labeled directional with explicit confidence.
+- [ ] Proposed changes are reversible and scoped to requested goals.
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

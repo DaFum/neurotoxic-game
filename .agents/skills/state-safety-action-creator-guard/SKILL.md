@@ -1,8 +1,7 @@
 ---
 name: state-safety-action-creator-guard
-description: enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs.
+description: enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce reducer/action-creator coherence and bounded-state invariants under all update paths.
 ---
-
 # State Safety & Action Creator Guard
 
 Ensure global state remains consistent, immutable, and valid.
@@ -61,5 +60,6 @@ case 'UPDATE_PLAYER':
 
 **Output**:
 "Updated dispatch to use `createUpdatePlayerAction` with validation check `player.money >= 50`."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

@@ -1,8 +1,7 @@
 ---
 name: pixi-lifecycle-memory-leak-sentinel
-description: detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time.
+description: detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Audit mount/unmount lifecycle, texture cleanup, and long-session memory stability in Pixi flows.
 ---
-
 # Pixi Lifecycle Sentinel
 
 Ensure strict lifecycle management for Pixi.js instances to prevent memory leaks.
@@ -61,5 +60,6 @@ useEffect(() => {
 
 **Output**:
 "Added cleanup function to destroy the Pixi application on unmount. This prevents canvas duplication and memory leaks."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

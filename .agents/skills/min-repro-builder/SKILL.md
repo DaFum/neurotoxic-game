@@ -1,8 +1,7 @@
 ---
 name: min-repro-builder
-description: create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction.
+description: create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Create deterministic minimal repros that isolate root causes with the fewest moving parts.
 ---
-
 # Minimal Repro Builder
 
 Isolate bugs by creating a minimal, self-contained reproduction environment.
@@ -46,5 +45,6 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 
 **Output**:
 "Created `tests/repro_travel_crash.test.js`. Run with `node --test tests/repro_travel_crash.test.js`. Confirmed it throws an error."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._

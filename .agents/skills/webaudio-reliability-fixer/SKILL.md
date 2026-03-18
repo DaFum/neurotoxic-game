@@ -1,8 +1,7 @@
 ---
 name: webaudio-reliability-fixer
-description: diagnose and fix Web Audio and Tone.js issues. Trigger when audio crackles, fails to start, or desyncs. Handles autoplay policies and context lifecycle.
+description: diagnose and fix Web Audio and Tone.js issues. Trigger when audio crackles, fails to start, or desyncs. Handles autoplay policies and context lifecycle. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Stabilize Web Audio startup, context lifecycle, and sync reliability under browser policy constraints.
 ---
-
 # WebAudio Reliability Fixer
 
 Ensure stable audio playback across all browsers and devices.
@@ -39,5 +38,6 @@ Ensure stable audio playback across all browsers and devices.
 
 **Output**:
 "Optimized synth pooling in `audioEngine.js` to reduce garbage collection pauses. Increased lookahead to 0.2s."
+
 
 _Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
