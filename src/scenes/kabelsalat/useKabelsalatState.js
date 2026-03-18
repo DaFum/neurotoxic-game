@@ -111,11 +111,6 @@ export const useKabelsalatState = () => {
               const fallback =
                 err instanceof Error ? err : new Error(String(err))
               try {
-                changeScene(GAME_PHASES.GIG)
-              } catch (_e) {
-                // Ignore fallback error
-              }
-              try {
                 const fallbackStateError = new Error(
                   'Failed to complete minigame (import error)'
                 )
