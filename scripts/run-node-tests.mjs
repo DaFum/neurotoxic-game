@@ -1,5 +1,5 @@
-import { availableParallelism } from 'node:os'
 import { spawnSync } from 'node:child_process'
+import { computeWorkerCount } from './utils/parallelism.mjs'
 
 const rawArgs = process.argv.slice(2)
 const nodeTestArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
@@ -8,14 +8,7 @@ const hasExplicitConcurrency = nodeTestArgs.some((arg) =>
   arg.startsWith('--test-concurrency')
 )
 
-const defaultConcurrency = Math.max(1, availableParallelism() - 1)
-const configuredConcurrency = Number.parseInt(
-  process.env.NODE_TEST_CONCURRENCY ?? `${defaultConcurrency}`,
-  10
-)
-const testConcurrency = Number.isFinite(configuredConcurrency)
-  ? Math.max(1, configuredConcurrency)
-  : defaultConcurrency
+const testConcurrency = computeWorkerCount('NODE_TEST_CONCURRENCY')
 
 const commandArgs = [
   '--test',
