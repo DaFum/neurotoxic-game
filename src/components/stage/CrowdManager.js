@@ -23,6 +23,11 @@ export class CrowdManager {
     this.crowdMembers = []
     this.container = null
     this.textures = { idle: null, mosh: null }
+    this.colors = {
+      toxicGreen: getPixiColorFromToken('--toxic-green'),
+      starWhite: getPixiColorFromToken('--star-white'),
+      ashGray: getPixiColorFromToken('--ash-gray')
+    }
   }
 
   async loadAssets() {
@@ -53,8 +58,8 @@ export class CrowdManager {
     this.container.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio
     this.stageContainer.addChild(this.container)
 
-    const fallbackColor = getPixiColorFromToken('--star-white')
-    const mutedColor = getPixiColorFromToken('--ash-gray')
+    const fallbackColor = this.colors.starWhite
+    const mutedColor = this.colors.ashGray
 
     const safeRandom = () => {
       try {
@@ -99,10 +104,10 @@ export class CrowdManager {
   update(combo, isToxicMode, timeMs) {
     const yOffset = calculateCrowdOffset({ combo, timeMs })
     const nextColor = isToxicMode
-      ? getPixiColorFromToken('--toxic-green')
+      ? this.colors.toxicGreen
       : combo > 20
-        ? getPixiColorFromToken('--star-white')
-        : getPixiColorFromToken('--ash-gray')
+        ? this.colors.starWhite
+        : this.colors.ashGray
 
     const shouldMosh = isToxicMode || combo > 20
     const targetTexture =
