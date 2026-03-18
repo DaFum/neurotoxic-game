@@ -163,8 +163,7 @@ const sanitizeBand = loadedBand => {
 const sanitizeToasts = loadedToasts => {
   if (!Array.isArray(loadedToasts)) return []
   const acc = []
-  for (let i = 0; i < loadedToasts.length; i++) {
-    const t = loadedToasts[i]
+  for (const t of loadedToasts) {
     if (t && typeof t === 'object' && t.id && t.message) {
       const message = String(t.message).trim()
       if (message.length > 0) {
@@ -184,15 +183,7 @@ const sanitizeToasts = loadedToasts => {
 const migratePlayerLocation = location => {
   if (typeof location !== 'string') return location
 
-  let rawId = location
-  if (rawId.startsWith('venues:')) {
-    rawId = rawId.slice(7)
-  }
-  if (rawId.endsWith('.name')) {
-    rawId = rawId.slice(0, -5)
-  }
-
-  const normalizedLocation = normalizeVenueId(rawId)
+  const normalizedLocation = normalizeVenueId(location)
   if (!normalizedLocation || normalizedLocation === 'Unknown') {
     return location
   }
