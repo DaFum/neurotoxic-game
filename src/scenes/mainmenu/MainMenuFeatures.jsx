@@ -26,25 +26,21 @@ export const MainMenuFeatures = ({ onClose }) => {
                 {section.items.map(item => {
                   const translatedItem = t(item)
                   const splitIdx = translatedItem.indexOf(':')
-                  if (splitIdx > -1) {
-                    return (
-                      <li
-                        key={item}
-                        className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
-                      >
-                        <span className='text-toxic-green font-bold'>
-                          {translatedItem.substring(0, splitIdx + 1)}
-                        </span>
-                        {translatedItem.substring(splitIdx + 1)}
-                      </li>
-                    )
-                  }
                   return (
                     <li
                       key={item}
                       className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
                     >
-                      {translatedItem}
+                      {splitIdx > -1 ? (
+                        <>
+                          <span className='text-toxic-green font-bold'>
+                            {translatedItem.substring(0, splitIdx + 1)}
+                          </span>
+                          {translatedItem.substring(splitIdx + 1)}
+                        </>
+                      ) : (
+                        translatedItem
+                      )}
                     </li>
                   )
                 })}
