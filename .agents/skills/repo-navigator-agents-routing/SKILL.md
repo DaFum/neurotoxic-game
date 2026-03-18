@@ -1,6 +1,14 @@
 ---
 name: repo-navigator-agents-routing
 description: route requests to the correct domain and `AGENTS.md`. Trigger when asked where code lives, who owns a feature, or how the repo is organized. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Route requests to the correct domain files/owners with minimal lookup ambiguity.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "infrastructure"
+  keywords: ["routing","navigation","agents","infrastructure"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Repo Navigator
 

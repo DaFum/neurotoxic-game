@@ -1,6 +1,14 @@
 ---
 name: project-brain-codex-instructions
 description: generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Generate high-signal project context that improves agent decision quality without redundant prose.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "documentation"
+  keywords: ["documentation","context","project-guide"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Project Brain Codex
 

@@ -1,6 +1,14 @@
 ---
 name: ci-hardener
 description: improve CI reliability, speed, and clarity. Trigger when CI is slow, flaky, fails silently, or needs optimization. focus on GitHub Actions workflows. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize flaky-failure root causes, workflow observability, cache strategy, and deterministic CI outcomes.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "ci"
+  keywords: ["ci","github-actions","pipeline","safety"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # CI Hardener
 

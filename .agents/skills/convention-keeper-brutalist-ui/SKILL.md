@@ -1,6 +1,14 @@
 ---
 name: convention-keeper-brutalist-ui
 description: enforce brutalist UI design system. Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce brutalist token usage, contrast/readability constraints, and component-level style consistency.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "ui"
+  keywords: ["ui","tailwind","accessibility"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Brutalist UI Convention Keeper
 

@@ -1,6 +1,14 @@
 ---
 name: repo-guardrails-generator
 description: generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Generate enforceable guardrails that reduce ambiguity and prevent policy drift across contributors.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "tooling"
+  keywords: ["tooling","guardrails","automation"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Repo Guardrails Generator
 

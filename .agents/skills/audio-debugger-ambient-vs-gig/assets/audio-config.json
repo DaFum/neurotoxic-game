@@ -1,0 +1,67 @@
+{
+  "schema": "Audio Context Configuration for NEUROTOXIC",
+  "version": "15.5.6",
+  "description": "Tone.js audio settings for ambient vs gig playback",
+  "contexts": {
+    "ambient": {
+      "name": "Ambient Background Music",
+      "volume": -20,
+      "fadeInTime": 2000,
+      "fadeOutTime": 1000,
+      "maxConcurrentNotes": 1,
+      "looping": true,
+      "priority": "background",
+      "description": "Continuous ambient soundtrack, lower volume, single-track"
+    },
+    "gig": {
+      "name": "Live Performance Audio",
+      "volume": -8,
+      "fadeInTime": 500,
+      "fadeOutTime": 500,
+      "maxConcurrentNotes": 8,
+      "looping": false,
+      "priority": "foreground",
+      "description": "Active gig performance, higher volume, multiple simultaneous notes"
+    }
+  },
+  "audioContextState": {
+    "running": "AudioContext.state === 'running'",
+    "suspended": "AudioContext.state === 'suspended' (autoplay policy)",
+    "closed": "AudioContext.state === 'closed' (cleanup, cannot resume)"
+  },
+  "commonIssues": [
+    {
+      "symptom": "No audio plays",
+      "causes": ["AudioContext suspended", "volume too low", "files not loading"],
+      "fix": "Resume context, check volume, validate asset paths"
+    },
+    {
+      "symptom": "Audio stutters/crackles",
+      "causes": ["Too many simultaneous notes", "synchronization loss", "CPU throttling"],
+      "fix": "Reduce polyphony, verify timing, check CPU load"
+    },
+    {
+      "symptom": "Ambient/Gig transition fails",
+      "causes": ["Fade timing conflict", "context not resumed", "previous playback not stopped"],
+      "fix": "Ensure fade completes, resume context if suspended, force-stop before transition"
+    }
+  ],
+  "transitions": {
+    "ambientToGig": {
+      "steps": [
+        "Stop ambient fade-out",
+        "Await fade completion (1000ms)",
+        "Resume AudioContext if suspended",
+        "Start gig with fade-in (500ms)",
+        "Monitor for playback errors"
+      ]
+    },
+    "gigToAmbient": {
+      "steps": [
+        "Stop gig playback immediately",
+        "Start ambient fade-in (2000ms)",
+        "Resume AudioContext if suspended"
+      ]
+    }
+  }
+}

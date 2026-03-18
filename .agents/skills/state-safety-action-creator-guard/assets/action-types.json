@@ -1,0 +1,42 @@
+{
+  "schema": "Redux Action Types for NEUROTOXIC Game State",
+  "description": "Complete list of action types with payloads and state invariants",
+  "actionTypes": [
+    {
+      "type": "START_GIG",
+      "payload": {"songId": "string", "difficulty": "1-10"},
+      "stateChanges": ["gig.status = 'PLAYING'", "gig.songId = payload.songId"],
+      "invariants": ["money >= 0", "band.harmony 1-100"]
+    },
+    {
+      "type": "COMPLETE_GIG",
+      "payload": {"score": "number", "earnedMoney": "number"},
+      "stateChanges": ["gig.status = 'COMPLETED'", "player.money += earnedMoney"],
+      "invariants": ["player.money >= 0", "gigsCompleted++"]
+    },
+    {
+      "type": "UPDATE_BAND_HARMONY",
+      "payload": {"delta": "number"},
+      "stateChanges": ["band.harmony = clamp(band.harmony + delta, 1, 100)"],
+      "invariants": ["band.harmony >= 1", "band.harmony <= 100"]
+    },
+    {
+      "type": "SPEND_MONEY",
+      "payload": {"amount": "number", "reason": "string"},
+      "stateChanges": ["player.money -= amount"],
+      "invariants": ["player.money >= 0 after transaction"],
+      "guards": "MUST validate amount <= player.money before reducing"
+    },
+    {
+      "type": "EARN_FAME",
+      "payload": {"amount": "number"},
+      "stateChanges": ["player.fame += amount"],
+      "invariants": ["player.fame >= 0"]
+    }
+  ],
+  "enforcementRules": {
+    "moneyNeverNegative": "All SPEND_* actions MUST clamp to 0",
+    "harmonyBounded": "All harmony changes MUST clamp to [1, 100]",
+    "fameMonotonic": "Fame MUST never decrease (only increase or stay same)"
+  }
+}

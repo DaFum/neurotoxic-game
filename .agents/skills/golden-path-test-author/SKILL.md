@@ -1,6 +1,14 @@
 ---
 name: golden-path-test-author
 description: write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Author end-to-end regression coverage for the main game loop with realistic user-path assertions.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "testing"
+  keywords: ["testing","golden-path","e2e","automation"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Golden Path Test Author
 

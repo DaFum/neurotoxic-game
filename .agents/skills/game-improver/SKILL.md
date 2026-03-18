@@ -1,6 +1,14 @@
 ---
 name: game-improver
 description: improve gameplay, balance, and code quality. Trigger when asked to fix bugs, add features, optimize performance, or refactor code. Acts as a general-purpose game engineer. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prefer minimal, test-backed gameplay improvements with clear regression guards and state-safety checks.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "game"
+  keywords: ["game","features","bugs","refactoring"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Game Improver
 

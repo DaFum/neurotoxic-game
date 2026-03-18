@@ -1,6 +1,14 @@
 ---
 name: tailwind-v4-css-variables-enforcer
 description: enforce Tailwind CSS v4 syntax and project-specific CSS variables. Trigger when writing styles, reviewing UI code, or fixing design inconsistencies. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Enforce Tailwind v4 token usage, variable correctness, and forbidden pattern detection.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "ui"
+  keywords: ["ui","tailwind","css","tokens"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Tailwind v4 Enforcer
 

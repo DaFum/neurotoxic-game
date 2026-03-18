@@ -1,6 +1,14 @@
 ---
 name: game-balancing-assistant
 description: analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Optimize economy/progression tuning with explicit trade-offs and measurable balancing deltas.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "game"
+  keywords: ["game","balance","economy","tuning"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Game Balancing Assistant
 

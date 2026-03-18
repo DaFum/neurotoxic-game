@@ -1,6 +1,14 @@
 ---
 name: release-notes-synthesizer
 description: create release notes from commit history. Trigger when preparing a release, summarizing changes, or writing a changelog. Understands Conventional Commits. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Synthesize release notes by commit intent, user impact, and migration/testing implications.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "documentation"
+  keywords: ["documentation","release","notes","changelog"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Release Notes Synthesizer
 

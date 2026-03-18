@@ -1,6 +1,14 @@
 ---
 name: asset-pipeline-verifier
 description: diagnose and fix asset loading issues. Trigger when assets fail to load (404), have incorrect MIME types, or when paths are undefined. Checks import.meta.glob, new URL(), and public folder references. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Focus on undefined paths, MIME mismatches, and import strategy fixes with exact file-path remediation.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "assets"
+  keywords: ["assets","images","optimization","cdn"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Asset Pipeline Verifier
 

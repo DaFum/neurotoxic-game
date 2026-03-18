@@ -1,6 +1,14 @@
 ---
 name: pixi-lifecycle-memory-leak-sentinel
 description: detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Audit mount/unmount lifecycle, texture cleanup, and long-session memory stability in Pixi flows.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "performance"
+  keywords: ["performance","memory","pixi.js","cleanup"]
+  maturity: "stable"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # Pixi Lifecycle Sentinel
 

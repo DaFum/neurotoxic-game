@@ -1,6 +1,14 @@
 ---
 name: react-performance-optimization
 description: React performance optimization patterns using memoization, code splitting, and efficient rendering strategies. Use when optimizing slow React applications, reducing bundle size, or improving user experience with large datasets. Trigger this skill proactively when user phrasing matches its domain, keywords, or expected workflow outcomes;. Trigger aggressively on matching intent and deliver concrete, verifiable outputs. Prioritize profiling-backed React optimizations: render hotspots, memoization validity, and split strategies.
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "performance"
+  keywords: ["performance","react","optimization","profiling"]
+  maturity: "beta"
+license: "Proprietary. See LICENSE.txt for terms"
 ---
 # React Performance Optimization
 
