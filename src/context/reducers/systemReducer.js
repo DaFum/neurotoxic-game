@@ -36,28 +36,17 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.CLINIC
 ])
 
-/**
- * Handles game load with migration and validation
- * @param {Object} state - Current state
- * @param {Object} payload - Loaded save data
- * @returns {Object} Updated state
- */
-export const handleLoadGame = (state, payload) => {
-  logger.info('GameState', 'Game Loaded')
-
-  const loadedState = payload || {}
-
-  // 1. Sanitize Player
+const sanitizePlayer = loadedPlayer => {
   const rawPlayer = {
     ...DEFAULT_PLAYER_STATE,
-    ...loadedState.player,
+    ...loadedPlayer,
     van: {
       ...DEFAULT_PLAYER_STATE.van,
-      ...(loadedState.player?.van || {})
+      ...(loadedPlayer?.van || {})
     },
     stats: {
       ...DEFAULT_PLAYER_STATE.stats,
-      ...(loadedState.player?.stats || {})
+      ...(loadedPlayer?.stats || {})
     }
   }
 
@@ -65,8 +54,7 @@ export const handleLoadGame = (state, payload) => {
     typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0
   )
 
-  // Validate Player
-  const mergedPlayer = {
+  return {
     ...rawPlayer,
     money: clampPlayerMoney(rawPlayer.money),
     fame: validatedFame,
@@ -83,26 +71,27 @@ export const handleLoadGame = (state, payload) => {
       )
     }
   }
+}
 
-  // 2. Sanitize Band
+const sanitizeBand = loadedBand => {
   const rawBand = {
     ...DEFAULT_BAND_STATE,
-    ...loadedState.band,
+    ...loadedBand,
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(loadedState.band?.performance || {})
+      ...(loadedBand?.performance || {})
     },
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
-      ...(loadedState.band?.inventory || {})
+      ...(loadedBand?.inventory || {})
     },
     stash: (() => {
       const defaultStash = Object.assign(
         Object.create(null),
         DEFAULT_BAND_STATE.stash
       )
-      if (Array.isArray(loadedState.band?.stash)) {
-        return loadedState.band.stash.reduce((acc, item) => {
+      if (Array.isArray(loadedBand?.stash)) {
+        return loadedBand.stash.reduce((acc, item) => {
           if (!item || typeof item !== 'object' || Array.isArray(item))
             return acc
           if (!CONTRABAND_BY_ID.has(item.id)) return acc
@@ -116,12 +105,9 @@ export const handleLoadGame = (state, payload) => {
           acc[item.id] = copy
           return acc
         }, defaultStash)
-      } else if (
-        loadedState.band?.stash &&
-        typeof loadedState.band.stash === 'object'
-      ) {
+      } else if (loadedBand?.stash && typeof loadedBand.stash === 'object') {
         const migrated = Object.create(null)
-        for (const [id, item] of Object.entries(loadedState.band.stash)) {
+        for (const [id, item] of Object.entries(loadedBand.stash)) {
           if (!CONTRABAND_BY_ID.has(id)) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           if (Object.hasOwn(item, '__proto__')) continue
@@ -137,10 +123,8 @@ export const handleLoadGame = (state, payload) => {
       }
       return defaultStash
     })(),
-    activeContrabandEffects: Array.isArray(
-      loadedState.band?.activeContrabandEffects
-    )
-      ? loadedState.band.activeContrabandEffects.map(effect => ({
+    activeContrabandEffects: Array.isArray(loadedBand?.activeContrabandEffects)
+      ? loadedBand.activeContrabandEffects.map(effect => ({
           ...effect,
           remainingDuration:
             Number.isFinite(effect.remainingDuration) &&
@@ -150,11 +134,10 @@ export const handleLoadGame = (state, payload) => {
         }))
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
-  // Validate Band Members
+
   const validatedMembers = Array.isArray(rawBand.members)
     ? rawBand.members.map(m => ({
         ...m,
-        // Backfill id from name for saves created before id fields were added
         id:
           typeof m.id === 'string'
             ? m.id
@@ -170,16 +153,73 @@ export const handleLoadGame = (state, payload) => {
       }))
     : []
 
-  const validatedBand = {
+  return {
     ...rawBand,
     members: validatedMembers,
     harmony: clampBandHarmony(rawBand.harmony)
   }
+}
 
-  // 3. Sanitize Social
+const sanitizeToasts = loadedToasts => {
+  if (!Array.isArray(loadedToasts)) return []
+  const acc = []
+  for (let i = 0; i < loadedToasts.length; i++) {
+    const t = loadedToasts[i]
+    if (t && typeof t === 'object' && t.id && t.message) {
+      const message = String(t.message).trim()
+      if (message.length > 0) {
+        acc.push({
+          ...t,
+          message,
+          type: ['success', 'error', 'warning', 'info'].includes(t.type)
+            ? t.type
+            : 'info'
+        })
+      }
+    }
+  }
+  return acc
+}
+
+const migratePlayerLocation = location => {
+  if (typeof location !== 'string') return location
+
+  let rawId = location
+  if (rawId.startsWith('venues:')) {
+    rawId = rawId.slice(7)
+  }
+  if (rawId.endsWith('.name')) {
+    rawId = rawId.slice(0, -5)
+  }
+
+  const normalizedLocation = normalizeVenueId(rawId)
+  if (!normalizedLocation || normalizedLocation === 'Unknown') {
+    return location
+  }
+
+  return `venues:${normalizedLocation}.name`
+}
+
+const migrateLegacyVenueId = id => {
+  if (typeof id !== 'string') return id
+  return normalizeVenueId(id) ?? id
+}
+
+/**
+ * Handles game load with migration and validation
+ * @param {Object} state - Current state
+ * @param {Object} payload - Loaded save data
+ * @returns {Object} Updated state
+ */
+export const handleLoadGame = (state, payload) => {
+  logger.info('GameState', 'Game Loaded')
+
+  const loadedState = payload || {}
+
+  const mergedPlayer = sanitizePlayer(loadedState.player)
+  const validatedBand = sanitizeBand(loadedState.band)
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
 
-  // 4. Construct Safe State (Whitelist)
   const incomingVersion =
     loadedState.version !== undefined ? loadedState.version : state.version
   const parsedVersion = parseInt(incomingVersion, 10)
@@ -193,8 +233,6 @@ export const handleLoadGame = (state, payload) => {
     social: mergedSocial,
     gameMap: loadedState.gameMap || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-
-    // Arrays
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
       : [],
@@ -205,26 +243,7 @@ export const handleLoadGame = (state, payload) => {
       ? loadedState.eventCooldowns
       : [],
     activeEvent: loadedState.activeEvent || null,
-    toasts: (() => {
-      if (!Array.isArray(loadedState.toasts)) return []
-      const acc = []
-      for (let i = 0; i < loadedState.toasts.length; i++) {
-        const t = loadedState.toasts[i]
-        if (t && typeof t === 'object' && t.id && t.message) {
-          const message = String(t.message).trim()
-          if (message.length > 0) {
-            acc.push({
-              ...t,
-              message,
-              type: ['success', 'error', 'warning', 'info'].includes(t.type)
-                ? t.type
-                : 'info'
-            })
-          }
-        }
-      }
-      return acc
-    })(),
+    toasts: sanitizeToasts(loadedState.toasts),
     reputationByRegion: loadedState.reputationByRegion || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
       ? loadedState.venueBlacklist
@@ -255,32 +274,6 @@ export const handleLoadGame = (state, payload) => {
     unlocks: Array.isArray(loadedState.unlocks)
       ? loadedState.unlocks
       : state.unlocks || []
-  }
-
-  // Migration: support older raw venue IDs while preserving current venues:* keys.
-  const migratePlayerLocation = location => {
-    if (typeof location !== 'string') return location
-
-    let rawId = location
-    if (rawId.startsWith('venues:')) {
-      rawId = rawId.slice(7)
-    }
-    if (rawId.endsWith('.name')) {
-      rawId = rawId.slice(0, -5)
-    }
-
-    const normalizedLocation = normalizeVenueId(rawId)
-    if (!normalizedLocation || normalizedLocation === 'Unknown') {
-      return location
-    }
-
-    return `venues:${normalizedLocation}.name`
-  }
-
-  // Migration: Legacy venue translation keys -> Raw IDs
-  const migrateLegacyVenueId = id => {
-    if (typeof id !== 'string') return id
-    return normalizeVenueId(id) ?? id
   }
 
   // Apply venue migrations using spreads
