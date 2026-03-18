@@ -52,12 +52,16 @@ export class MapGenerator {
     if (cachedVenuesLength !== ALL_VENUES.length) {
       cachedHomeVenue = undefined
       cachedFinaleVenue = undefined
-      for (let i = 0; i < ALL_VENUES.length; i++) {
-        const v = ALL_VENUES[i]
-        if (v.id === 'stendal_proberaum') cachedHomeVenue = v
-        else if (v.id === 'leipzig_arena') cachedFinaleVenue = v
+      for (const v of ALL_VENUES) {
+        if (v.id === 'stendal_proberaum') {
+          cachedHomeVenue = v
+        } else if (v.id === 'leipzig_arena') {
+          cachedFinaleVenue = v
+        }
 
-        if (cachedHomeVenue && cachedFinaleVenue) break
+        if (cachedHomeVenue && cachedFinaleVenue) {
+          break
+        }
       }
       cachedVenuesLength = ALL_VENUES.length
     }
