@@ -2,8 +2,8 @@
 import { useEffect, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 
-// Helper to process projectiles in a single pass
-function processProjectiles(projectiles, nodeCache, seenIds, container) {
+// Helper to update/create DOM nodes and remove stale ones in a single pass
+function updateOverlayNodes(projectiles, nodeCache, seenIds, container) {
   seenIds.clear()
 
   // 1. Update existing nodes and add new ones
@@ -27,8 +27,10 @@ function processProjectiles(projectiles, nodeCache, seenIds, container) {
     node.style.transform = `rotate(${p.rotation * 57.29}deg)`
   }
 
-  // 2. Remove old nodes that are no longer in the state
-  // Optimization: Only iterate the cache if we know there are stale nodes
+  // 2. Remove old nodes that are no longer in the state.
+  // Optimization: `nodeCache` will always contain at least every ID in `seenIds`
+  // after the loop above (either pre-existing or newly created). Therefore, if
+  // sizes match, there are exactly zero stale nodes to remove.
   if (nodeCache.size > seenIds.size) {
     nodeCache.forEach((node, id) => {
       if (!seenIds.has(id)) {
@@ -61,7 +63,7 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
         const nodeCache = nodeCacheRef.current
         const seenIds = seenIdsRef.current
 
-        processProjectiles(projectiles, nodeCache, seenIds, container)
+        updateOverlayNodes(projectiles, nodeCache, seenIds, container)
       }
       rAF = requestAnimationFrame(loop)
     }
