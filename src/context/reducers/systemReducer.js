@@ -135,9 +135,11 @@ const sanitizeBand = loadedBand => {
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
 
+  // Validate Band Members
   const validatedMembers = Array.isArray(rawBand.members)
     ? rawBand.members.map(m => ({
         ...m,
+        // Backfill id from name for saves created before id fields were added
         id:
           typeof m.id === 'string'
             ? m.id
@@ -207,10 +209,14 @@ export const handleLoadGame = (state, payload) => {
 
   const loadedState = payload || {}
 
+  // 1. Sanitize Player
   const mergedPlayer = sanitizePlayer(loadedState.player)
+  // 2. Sanitize Band
   const validatedBand = sanitizeBand(loadedState.band)
+  // 3. Sanitize Social
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
 
+  // 4. Construct Safe State (Whitelist)
   const incomingVersion =
     loadedState.version !== undefined ? loadedState.version : state.version
   const parsedVersion = parseInt(incomingVersion, 10)
