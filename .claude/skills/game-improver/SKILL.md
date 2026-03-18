@@ -65,7 +65,7 @@ Define:
 **Performance**: Memoize expensive calcs, watch for per-frame allocations, destroy Pixi on unmount.
 **Pixi cleanup**: Always use `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
 
-See **references/state-mutations.md**, **references/feature-patterns.md**, **references/performance-guardrails.md**.
+See **references/state-mutations.md**, **references/improvement-patterns.md**, **references/performance-guardrails.md**.
 
 ### 5. Verify & Test
 

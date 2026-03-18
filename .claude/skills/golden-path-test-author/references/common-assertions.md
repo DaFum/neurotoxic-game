@@ -196,7 +196,7 @@ assert.equal(state.currentGig, null)
 ```javascript
 // ✅ Low money triggers GAMEOVER path
 state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: 5 })
-state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.PRE_GIGisNaN, venue)
+state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.PRE_GIQ, venue)
 // ... perform badly ...
 state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: -100 })
 assert.equal(state.player.money, 0, 'Money clamped to 0')
