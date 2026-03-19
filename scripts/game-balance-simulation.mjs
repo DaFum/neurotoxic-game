@@ -34,6 +34,7 @@ import {
   clampMemberMood,
   clampMemberStamina,
   clampPlayerFame,
+  calculateFameLevel,
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,
@@ -789,6 +790,7 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
   }
 
   state.player.fame = clampPlayerFame(currentFame + fameDelta)
+  state.player.fameLevel = calculateFameLevel(state.player.fame)
   state.social.lastGigDay = state.player.day
 
   const followerDelta = Math.max(
@@ -914,6 +916,7 @@ const runSingleSimulation = (scenario, seed) => {
       // Show is cancelled due to poor harmony
       // Apply a penalty to fame directly as it doesn't go through standard score scaling
       state.player.fame = clampPlayerFame(state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2)
+      state.player.fameLevel = calculateFameLevel(state.player.fame)
 
       // Record cancelled state in timeline (without incrementing gigsPlayed)
       timeline.push({

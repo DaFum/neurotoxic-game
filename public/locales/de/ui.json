@@ -826,7 +826,7 @@
   "toggle.on": "AN",
   "tour.endedPrematurely": "Die Tour endete vorzeitig.",
   "toxicModeActive": "TOXISCHER MODUS AKTIV",
-  "travel.confirmTravelPrompt": "{{location}} ({{distance}}km) | Verpflegung: {{totalCost}}€ | Treibstoff: {{fuelLiters}}L — Zum Bestätigen erneut klicken",
+  "travel.confirmTravelPrompt": "{{location}} ({{distance}}km) | Reisekosten: {{totalCost}}€ | Treibstoff: {{fuelLiters}}L — Zum Bestätigen erneut klicken",
   "travel.currentLocation": "Du bist bei {{location}}.",
   "travel.errors.alreadyPlayedHere": "Du hast hier gerade erst gespielt! Fahr weiter und finde neues Publikum.",
   "travel.errors.bookingRefusedBlacklisted": "Buchung abgelehnt: {{location}} hat dich dauerhaft auf die Blacklist gesetzt!",
