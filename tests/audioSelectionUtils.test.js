@@ -6,6 +6,10 @@ test('selectRandomItem', async t => {
   await t.test('returns null for invalid or empty inputs', () => {
     assert.strictEqual(selectRandomItem([]), null)
     assert.strictEqual(selectRandomItem(null), null)
+    assert.strictEqual(selectRandomItem(undefined), null)
+    assert.strictEqual(selectRandomItem('not an array'), null)
+    assert.strictEqual(selectRandomItem(123), null)
+    assert.strictEqual(selectRandomItem({ a: 1 }), null)
   })
 
   await t.test('returns a stable item with deterministic rng', () => {
@@ -20,5 +24,12 @@ test('selectRandomItem', async t => {
     const highRng = () => 2
     assert.strictEqual(selectRandomItem(items, lowRng), 'x')
     assert.strictEqual(selectRandomItem(items, highRng), 'y')
+  })
+
+  await t.test('handles rng boundary values', () => {
+    const items = ['a', 'b', 'c']
+    assert.strictEqual(selectRandomItem(items, () => 0), 'a')
+    assert.strictEqual(selectRandomItem(items, () => 0.999), 'c')
+    assert.strictEqual(selectRandomItem(items, () => 1.0), 'c')
   })
 })
