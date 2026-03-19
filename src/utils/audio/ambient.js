@@ -5,6 +5,7 @@ import { stopAudio } from './playback.js'
 import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import { selectRandomItem } from './selectionUtils.js'
+import { secureRandom } from '../crypto.js'
 import { ensureAudioContext } from './setup.js'
 import { playMidiFileInternal } from './midiPlayback.js'
 import { SONGS_DB, SONGS_BY_MID } from '../../data/songs.js'
@@ -39,7 +40,7 @@ function getCustomSongsMap(songs) {
  */
 export async function playRandomAmbientMidi(
   songs = SONGS_DB,
-  rng = Math.random
+  rng = secureRandom
 ) {
   logger.debug('AudioEngine', 'playRandomAmbientMidi called')
   // Requirement: Stop transport before starting ambient
@@ -113,7 +114,7 @@ export async function playRandomAmbientMidi(
  * @returns {Promise<boolean>} Whether playback started successfully.
  */
 export async function playRandomAmbientOgg(
-  rng = Math.random,
+  rng = secureRandom,
   { skipStop = false } = {}
 ) {
   logger.debug('AudioEngine', 'playRandomAmbientOgg called')

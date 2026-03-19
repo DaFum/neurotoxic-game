@@ -1,5 +1,6 @@
 // TODO: Review this file
 import * as audioEngine from './audioEngine.js'
+import { secureRandom } from './crypto.js'
 import { handleError } from './errorHandler.js'
 import { logger } from './logger.js'
 
@@ -157,7 +158,7 @@ class AudioSystem {
       this.currentSongId = 'ambient'
       this.emitChange()
       try {
-        const oggSuccess = await audioEngine.playRandomAmbientOgg(Math.random, {
+        const oggSuccess = await audioEngine.playRandomAmbientOgg(secureRandom, {
           skipStop: true
         })
         if (oggSuccess) {
