@@ -135,14 +135,14 @@ export const TutorialManager = () => {
               <button
                 type='button'
                 onClick={skipTutorial}
-                className='text-xs text-ash-gray hover:text-star-white underline'
+                className='text-xs text-ash-gray hover:text-star-white underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               >
                 {t('ui:tutorial.skipAll', { defaultValue: 'SKIP ALL' })}
               </button>
               <button
                 type='button'
                 onClick={completeStep}
-                className='bg-toxic-green text-void-black px-6 py-1.5 font-bold hover:bg-star-white transition-colors'
+                className='bg-toxic-green text-void-black px-6 py-1.5 font-bold hover:bg-star-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               >
                 {step < TOTAL_STEPS - 1
                   ? t('ui:tutorial.next', { defaultValue: 'NEXT' })
