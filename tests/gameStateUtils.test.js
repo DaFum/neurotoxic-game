@@ -24,16 +24,32 @@ test('calculateFameLevel', () => {
 })
 
 test('calculateFameGain returns correct diminishing returns', () => {
-  assert.strictEqual(calculateFameGain(100, 0, 500), 100, 'Below 50 fame, raw gain is uncapped')
-  assert.strictEqual(calculateFameGain(600, 0, 500), 500, 'Below 50 fame, max gain is strictly applied')
+  assert.strictEqual(
+    calculateFameGain(100, 0, 500),
+    100,
+    'Below 50 fame, raw gain is uncapped'
+  )
+  assert.strictEqual(
+    calculateFameGain(600, 0, 500),
+    500,
+    'Below 50 fame, max gain is strictly applied'
+  )
 
   // At 100 current fame, multiplier is exp(-50 * 0.01) = exp(-0.5) = 0.6065
   // Raw 100 => 61
-  assert.strictEqual(calculateFameGain(100, 100, 500), 61, 'At 100 fame, gain is diminished (~60%)')
+  assert.strictEqual(
+    calculateFameGain(100, 100, 500),
+    61,
+    'At 100 fame, gain is diminished (~60%)'
+  )
 
   // At 500 current fame, multiplier is exp(-450 * 0.01) = exp(-4.5) = 0.0111
   // Raw 100 => 1
-  assert.strictEqual(calculateFameGain(100, 500, 500), 1, 'At 500 fame, gain is heavily diminished')
+  assert.strictEqual(
+    calculateFameGain(100, 500, 500),
+    1,
+    'At 500 fame, gain is heavily diminished'
+  )
 })
 
 test('applyEventDelta applies player updates', () => {

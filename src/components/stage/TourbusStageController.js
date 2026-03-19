@@ -244,17 +244,9 @@ class TourbusStageController extends BaseStageController {
         if (!sprite.hasExploded) {
           sprite.hasExploded = true
           if (obs.type === 'OBSTACLE') {
-            this.effectManager.spawnHitEffect(
-              x,
-              y,
-              this.colors.bloodRed
-            ) // Red explosion
+            this.effectManager.spawnHitEffect(x, y, this.colors.bloodRed) // Red explosion
           } else if (obs.type === 'FUEL') {
-            this.effectManager.spawnHitEffect(
-              x,
-              y,
-              this.colors.toxicGreen
-            ) // Green sparkle
+            this.effectManager.spawnHitEffect(x, y, this.colors.toxicGreen) // Green sparkle
           }
         }
       } else {
