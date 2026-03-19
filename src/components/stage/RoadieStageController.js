@@ -299,9 +299,9 @@ class RoadieStageController extends BaseStageController {
 
     // Clean up car sprites explicitly
     if (this.carSprites) {
-      for (const sprite of this.carSprites.values()) {
+      this.carSprites.forEach(sprite => {
         sprite.destroy()
-      }
+      })
       this.carSprites.clear()
       this.carSprites = null
     }
