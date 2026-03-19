@@ -269,18 +269,19 @@ export const useKabelsalatState = () => {
 
       if (connectionSocketId) {
         setConnections(prev => {
-          const newConn = { ...prev }
           let socketIdToRemove
-          for (const key in newConn) {
-            if (Object.hasOwn(newConn, key) && newConn[key] === cableId) {
+          for (const key in prev) {
+            if (Object.hasOwn(prev, key) && prev[key] === cableId) {
               socketIdToRemove = key
               break
             }
           }
           if (socketIdToRemove) {
+            const newConn = { ...prev }
             delete newConn[socketIdToRemove]
+            return newConn
           }
-          return newConn
+          return prev
         })
         setSelectedCable(null)
         return

@@ -610,7 +610,7 @@ CRISIS_EVENTS.forEach(event => {
     validEvents.push(event)
   } catch (err) {
     logger.error('CrisisEventValidation', err.message, { eventId: event.id })
-    if (process.env.NODE_ENV !== 'production') {
+    if (!import.meta.env.PROD) {
       throw err
     }
   }
