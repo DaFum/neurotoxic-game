@@ -87,8 +87,8 @@ test('Minigame State Transitions', async t => {
       // Distance: 90km
       // Consumption: (90 / 100) * 12 = 10.8L
       // Bonus: +0.5L
-      // Result: 100 - 10.8 + 0.5 = 89.7
-      assert.ok(Math.abs(newState.player.van.fuel - 89.7) < 1e-9)
+      // Result: floor(100 - 10.8 + 0.5) = floor(89.7) = 89
+      assert.strictEqual(newState.player.van.fuel, 89)
     }
   )
 

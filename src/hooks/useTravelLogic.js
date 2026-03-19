@@ -588,7 +588,8 @@ export const useTravelLogic = ({
       onShowHQ,
       startTravelSequence,
       clearPendingTravel,
-      getLocationName
+      getLocationName,
+      handleNodeArrivalCallback
     ]
   )
 

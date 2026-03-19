@@ -34,16 +34,15 @@ export const useKabelsalatState = () => {
     return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
   }, [connections])
 
-  const randomFn = useMemo(() => {
+  const randomFnRef = useRef(Math.random)
+
+  useEffect(() => {
     try {
       secureRandom()
-      return secureRandom
+      randomFnRef.current = secureRandom
     } catch (e) {
-      console.warn(
-        'secureRandom unavailable, falling back to Math.random()',
-        e
-      )
-      return Math.random
+      logger.warn('secureRandom unavailable, falling back to Math.random()', e)
+      randomFnRef.current = Math.random
     }
   }, [])
 
@@ -210,7 +209,7 @@ export const useKabelsalatState = () => {
         const shuffled = [...unconnectedIds]
 
         for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(randomFn() * (i + 1))
+          const j = Math.floor(randomFnRef.current() * (i + 1))
           ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
         }
 
@@ -229,7 +228,7 @@ export const useKabelsalatState = () => {
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [isPoweredOn, isGameOver, isShocked, unconnectedIds, randomFn, connections])
+  }, [isPoweredOn, isGameOver, isShocked, unconnectedIds, connections])
 
   // Shock Cleanup
   useEffect(() => {
@@ -260,15 +259,27 @@ export const useKabelsalatState = () => {
       if (isShocked || isPoweredOn || isGameOver) return
 
       // Performance: use Object iteration to find and remove connections in one pass
-      const connectionEntry = Object.entries(connections).find(
-        ([_, id]) => id === cableId
-      )
+      let connectionSocketId
+      for (const key in connections) {
+        if (Object.hasOwn(connections, key) && connections[key] === cableId) {
+          connectionSocketId = key
+          break
+        }
+      }
 
-      if (connectionEntry) {
-        const [socketIdToRemove] = connectionEntry
+      if (connectionSocketId) {
         setConnections(prev => {
           const newConn = { ...prev }
-          delete newConn[socketIdToRemove]
+          let socketIdToRemove
+          for (const key in newConn) {
+            if (Object.hasOwn(newConn, key) && newConn[key] === cableId) {
+              socketIdToRemove = key
+              break
+            }
+          }
+          if (socketIdToRemove) {
+            delete newConn[socketIdToRemove]
+          }
           return newConn
         })
         setSelectedCable(null)

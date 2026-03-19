@@ -116,7 +116,7 @@ export const clampVanFuel = (
   maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
 ) => {
   if (!Number.isFinite(fuel)) return 0
-  return Math.max(0, Math.min(maxFuel, fuel))
+  return Math.max(0, Math.min(maxFuel, Math.floor(fuel)))
 }
 
 /**

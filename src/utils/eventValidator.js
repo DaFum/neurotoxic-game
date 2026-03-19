@@ -12,6 +12,20 @@ const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
  * @throws {Error} If validation fails.
  * @returns {boolean} True if valid.
  */
+const validateEffect = (effect, eventId, idx) => {
+  if (!effect || typeof effect !== 'object') {
+    throw new Error(`Effect must be an object at index ${idx} for event ${eventId}`)
+  }
+  if (!effect.type) {
+    throw new Error(`Effect must have a type at index ${idx} for event ${eventId}`)
+  }
+  if (effect.type === 'composite' && (!Array.isArray(effect.effects) || effect.effects.length === 0)) {
+    throw new Error(
+      `Composite effect must have a non-empty effects array at index ${idx} for event ${eventId}`
+    )
+  }
+}
+
 export const validateCrisisEvent = event => {
   if (!event || typeof event !== 'object') {
     throw new Error('Event must be an object')
@@ -78,6 +92,10 @@ export const validateCrisisEvent = event => {
       throw new Error(
         `Option at index ${idx} for event ${event.id} must have effect or skillCheck`
       )
+    }
+
+    if (opt.effect) {
+      validateEffect(opt.effect, event.id, idx)
     }
 
     if (opt.skillCheck) {
