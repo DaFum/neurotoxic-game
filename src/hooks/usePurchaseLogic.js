@@ -275,14 +275,11 @@ export const usePurchaseLogic = ({
         // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
         let gearCount = 0
         const inv = nextBand.inventory || {}
-        for (const key in inv) {
-          if (Object.prototype.hasOwnProperty.call(inv, key)) {
-            const value = inv[key]
-            const isOwned =
-              value === true || (typeof value === 'number' && value > 0)
-            if (isOwned && GEAR_LOOKUP.has(key)) {
-              gearCount++
-            }
+        for (const [key, value] of Object.entries(inv)) {
+          const isOwned =
+            value === true || (typeof value === 'number' && value > 0)
+          if (isOwned && GEAR_LOOKUP.has(key)) {
+            gearCount++
           }
         }
 
