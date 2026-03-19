@@ -1,5 +1,5 @@
 // TODO: Review this file
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState.jsx'
 import { GAME_PHASES } from '../../context/gameConstants.js'
@@ -29,6 +29,23 @@ export const useKabelsalatState = () => {
   const [socketOrder, setSocketOrder] = useState(INITIAL_SOCKET_ORDER)
   const [lightningSeeds, setLightningSeeds] = useState([])
   const [bgTextureUrl, setBgTextureUrl] = useState(null)
+
+  const unconnectedIds = useMemo(() => {
+    return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
+  }, [connections])
+
+  const randomFn = useMemo(() => {
+    try {
+      secureRandom()
+      return secureRandom
+    } catch (e) {
+      console.warn(
+        'secureRandom unavailable, falling back to Math.random()',
+        e
+      )
+      return Math.random
+    }
+  }, [])
 
   const timerRef = useRef(null)
   const finishedRef = useRef(false)
@@ -178,26 +195,19 @@ export const useKabelsalatState = () => {
 
   // Shuffle sockets
   useEffect(() => {
-    if (isPoweredOn || isGameOver || isShocked || isWinningRef.current) return
+    if (
+      isPoweredOn ||
+      isGameOver ||
+      isShocked ||
+      isWinningRef.current ||
+      unconnectedIds.length <= 1
+    ) {
+      return
+    }
 
     const interval = setInterval(() => {
       setSocketOrder(prevOrder => {
-        const unconnected = prevOrder.filter(id => !connections[id])
-        if (unconnected.length <= 1) return prevOrder
-
-        const shuffled = [...unconnected]
-        const randomFn = (() => {
-          try {
-            secureRandom()
-            return secureRandom
-          } catch (e) {
-            console.warn(
-              'secureRandom unavailable, falling back to Math.random()',
-              e
-            )
-            return Math.random
-          }
-        })()
+        const shuffled = [...unconnectedIds]
 
         for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(randomFn() * (i + 1))
@@ -205,15 +215,21 @@ export const useKabelsalatState = () => {
         }
 
         let shuffleIndex = 0
-        return prevOrder.map(id => {
-          if (connections[id]) return id
-          return shuffled[shuffleIndex++]
-        })
+        const newOrder = new Array(prevOrder.length)
+        for (let i = 0; i < prevOrder.length; i++) {
+          const id = prevOrder[i]
+          if (connections[id]) {
+            newOrder[i] = id
+          } else {
+            newOrder[i] = shuffled[shuffleIndex++]
+          }
+        }
+        return newOrder
       })
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [connections, isPoweredOn, isGameOver, isShocked])
+  }, [isPoweredOn, isGameOver, isShocked, unconnectedIds, randomFn, connections])
 
   // Shock Cleanup
   useEffect(() => {
