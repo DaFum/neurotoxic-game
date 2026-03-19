@@ -285,9 +285,17 @@ class RoadieStageController extends BaseStageController {
         if (!this.currentIds.has(id)) {
           try {
             this.container.removeChild(sprite)
+          } catch (error) {
+            console.error(
+              `Error removing sprite from container for id ${id}:`,
+              error
+            )
+          }
+
+          try {
             sprite.destroy()
           } catch (error) {
-            console.error(`Error cleaning up sprite for id ${id}:`, error)
+            console.error(`Error destroying sprite for id ${id}:`, error)
           } finally {
             this.carSprites.delete(id)
           }
