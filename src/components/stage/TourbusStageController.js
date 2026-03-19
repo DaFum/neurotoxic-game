@@ -36,6 +36,12 @@ class TourbusStageController extends BaseStageController {
       barrier: null,
       fuel: null
     }
+
+    this.colors = {
+      warningYellow: getPixiColorFromToken('--warning-yellow'),
+      bloodRed: getPixiColorFromToken('--blood-red'),
+      toxicGreen: getPixiColorFromToken('--toxic-green')
+    }
   }
 
   async setup() {
@@ -208,10 +214,10 @@ class TourbusStageController extends BaseStageController {
           sprite = new Graphics()
           if (obs.type === 'FUEL') {
             sprite.circle(0, 0, 20)
-            sprite.fill(getPixiColorFromToken('--warning-yellow'))
+            sprite.fill(this.colors.warningYellow)
           } else {
             sprite.rect(-25, -25, 50, 50)
-            sprite.fill(getPixiColorFromToken('--blood-red'))
+            sprite.fill(this.colors.bloodRed)
           }
         }
 
@@ -241,13 +247,13 @@ class TourbusStageController extends BaseStageController {
             this.effectManager.spawnHitEffect(
               x,
               y,
-              getPixiColorFromToken('--blood-red')
+              this.colors.bloodRed
             ) // Red explosion
           } else if (obs.type === 'FUEL') {
             this.effectManager.spawnHitEffect(
               x,
               y,
-              getPixiColorFromToken('--toxic-green')
+              this.colors.toxicGreen
             ) // Green sparkle
           }
         }

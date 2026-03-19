@@ -25,6 +25,10 @@ class RoadieStageController extends BaseStageController {
       cars: [],
       items: {}
     }
+    this.colors = {
+      bloodRed: getPixiColorFromToken('--blood-red'),
+      starWhite: getPixiColorFromToken('--star-white')
+    }
   }
 
   async setup() {
@@ -202,7 +206,7 @@ class RoadieStageController extends BaseStageController {
     // Check Damage trigger
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
-      const redColor = getPixiColorFromToken('--blood-red')
+      const redColor = this.colors.bloodRed
       if (this.effectManager) {
         this.effectManager.spawnHitEffect(
           this.playerContainer.x,
@@ -218,7 +222,7 @@ class RoadieStageController extends BaseStageController {
         if (this._flashTimeout) clearTimeout(this._flashTimeout)
         this._flashTimeout = setTimeout(() => {
           if (this.playerSprite && !this.isDisposed)
-            this.playerSprite.tint = getPixiColorFromToken('--star-white')
+            this.playerSprite.tint = this.colors.starWhite
           this._flashTimeout = null
         }, 200)
       }
@@ -244,7 +248,7 @@ class RoadieStageController extends BaseStageController {
           } else {
             sprite = new Graphics()
             sprite.rect(-30, -20, 60, 40)
-            sprite.fill(getPixiColorFromToken('--blood-red'))
+            sprite.fill(this.colors.bloodRed)
           }
           this.container.addChild(sprite)
           this.carSprites.set(car.id, sprite)

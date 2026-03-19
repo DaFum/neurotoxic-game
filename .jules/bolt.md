@@ -17,3 +17,8 @@
 
 **Learning:** Re-instantiating `Intl.NumberFormat` in React functional components (even with `useMemo`) or within render loops (like mapping over quests) adds significant overhead to the JavaScript execution thread in this application. In a test benchmark, repeated instantiation took ~600ms vs ~10ms for a cached instance over 10,000 runs.
 **Action:** Always use the module-level caching utilities (`formatNumber` and `formatCurrency` in `src/utils/numberUtils.js`) instead of calling `new Intl.NumberFormat` inline to ensure predictable performance during frequent re-renders.
+
+## 2026-03-18 - CSS Token Lookup Overhead in PixiJS
+
+**Learning:** Calling `getPixiColorFromToken` (which fetches computed CSS variables from the DOM) repeatedly inside a high-frequency `update(dt)` loop in PixiJS stage controllers causes severe frame drops and overhead. The utility caches internally, but the map lookup and repeated function calls are still too slow for 60fps game loops.
+**Action:** When working with PixiJS controllers, always cache CSS token color values to class instance properties (e.g., `this.colors = { ... }`) in the `constructor` or `setup` method, and read from those properties during the `update` phase to eliminate lookup overhead.
