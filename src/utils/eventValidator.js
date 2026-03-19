@@ -12,6 +12,36 @@ const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
  * @throws {Error} If validation fails.
  * @returns {boolean} True if valid.
  */
+const validateEffect = (effect, eventId, idx) => {
+  if (!effect || typeof effect !== 'object') {
+    throw new Error(`Effect must be an object at index ${idx} for event ${eventId}`)
+  }
+  if (!effect.type) {
+    throw new Error(`Effect must have a type at index ${idx} for event ${eventId}`)
+  }
+  if (effect.type === 'composite') {
+    if (!Array.isArray(effect.effects) || effect.effects.length === 0) {
+      throw new Error(
+        `Composite effect must have a non-empty effects array at index ${idx} for event ${eventId}`
+      )
+    }
+    effect.effects.forEach((childEffect, childIdx) => {
+      try {
+        validateEffect(childEffect, eventId, idx)
+      } catch (err) {
+        throw new Error(`Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`)
+      }
+    })
+  } else if (effect.type === 'skillCheck') {
+    if (!effect.success || typeof effect.success !== 'object') {
+      throw new Error(`SkillCheck effect must have a success object at index ${idx} for event ${eventId}`)
+    }
+    if (!effect.failure || typeof effect.failure !== 'object') {
+      throw new Error(`SkillCheck effect must have a failure object at index ${idx} for event ${eventId}`)
+    }
+  }
+}
+
 export const validateCrisisEvent = event => {
   if (!event || typeof event !== 'object') {
     throw new Error('Event must be an object')
@@ -80,6 +110,10 @@ export const validateCrisisEvent = event => {
       )
     }
 
+    if (opt.effect) {
+      validateEffect(opt.effect, event.id, idx)
+    }
+
     if (opt.skillCheck) {
       const { stat, threshold, success, failure } = opt.skillCheck
       if (typeof stat !== 'string')
@@ -96,6 +130,8 @@ export const validateCrisisEvent = event => {
         throw new Error(
           `SkillCheck failure must be an object in event ${event.id}`
         )
+      validateEffect(success, event.id, idx)
+      validateEffect(failure, event.id, idx)
     }
   })
 

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Crisis Event",
+  "description": "Schema for Crisis Events. Note: the authoritative validation is performed by validateCrisisEvent in src/utils/eventValidator.js.",
   "type": "object",
   "required": ["id", "category", "tags", "title", "description", "trigger", "chance", "options"],
   "properties": {
@@ -39,8 +40,7 @@
       "maximum": 1
     },
     "condition": {
-      "description": "Optional condition function",
-      "type": "function"
+      "description": "Optional condition function (runtime only)"
     },
     "options": {
       "type": "array",
