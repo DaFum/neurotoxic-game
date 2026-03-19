@@ -241,28 +241,16 @@ export const useKabelsalatState = () => {
     cableId => {
       if (isShocked || isPoweredOn || isGameOver) return
 
-      // Optimization: Avoid Object.values/Object.keys inside the hot handler
-      let isConnected = false
-      for (const key in connections) {
-        if (connections[key] === cableId) {
-          isConnected = true
-          break
-        }
-      }
+      // Performance: use Object iteration to find and remove connections in one pass
+      const connectionEntry = Object.entries(connections).find(
+        ([_, id]) => id === cableId
+      )
 
-      if (isConnected) {
+      if (connectionEntry) {
+        const [socketIdToRemove] = connectionEntry
         setConnections(prev => {
           const newConn = { ...prev }
-          let socketIdToRemove
-          for (const key in newConn) {
-            if (newConn[key] === cableId) {
-              socketIdToRemove = key
-              break
-            }
-          }
-          if (socketIdToRemove) {
-            delete newConn[socketIdToRemove]
-          }
+          delete newConn[socketIdToRemove]
           return newConn
         })
         setSelectedCable(null)
