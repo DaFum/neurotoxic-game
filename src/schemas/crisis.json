@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Crisis Event",
+  "type": "object",
+  "required": ["id", "category", "tags", "title", "description", "trigger", "chance", "options"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^crisis_"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["band", "financial", "special"]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "contains": {
+        "const": "crisis"
+      }
+    },
+    "title": {
+      "type": "string",
+      "pattern": "^events:"
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^events:"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": ["post_gig", "travel", "random"]
+    },
+    "chance": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "condition": {
+      "description": "Optional condition function",
+      "type": "function"
+    },
+    "options": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["label", "outcomeText"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "pattern": "^events:"
+          },
+          "effect": {
+            "type": "object"
+          },
+          "skillCheck": {
+            "type": "object",
+            "required": ["stat", "threshold", "success", "failure"],
+            "properties": {
+              "stat": { "type": "string" },
+              "threshold": { "type": "number" },
+              "success": { "type": "object" },
+              "failure": { "type": "object" }
+            }
+          },
+          "outcomeText": {
+            "type": "string",
+            "pattern": "^events:"
+          }
+        },
+        "oneOf": [
+          { "required": ["effect"] },
+          { "required": ["skillCheck"] }
+        ]
+      }
+    }
+  }
+}
