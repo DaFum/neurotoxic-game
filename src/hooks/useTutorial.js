@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -11,7 +12,7 @@ export const useTutorial = () => {
     useGameState()
   const step = player.tutorialStep ?? 0
 
-  const completeStep = () => {
+  const completeStep = useCallback(() => {
     const nextStep = step + 1
     updatePlayer({ tutorialStep: nextStep })
 
@@ -19,15 +20,15 @@ export const useTutorial = () => {
     if (nextStep >= TOTAL_STEPS) {
       updateSettings({ tutorialSeen: true })
     }
-  }
+  }, [step, updatePlayer, updateSettings])
 
-  const skipTutorial = () => {
+  const skipTutorial = useCallback(() => {
     updatePlayer({ tutorialStep: -1 })
     updateSettings({ tutorialSeen: true })
-  }
+  }, [updatePlayer, updateSettings])
 
   // Tutorial Content Logic
-  const getContent = () => {
+  const content = useMemo(() => {
     if (
       step === 0 &&
       (currentScene === GAME_PHASES.MENU ||
@@ -79,9 +80,8 @@ export const useTutorial = () => {
       }
     }
     return null
-  }
+  }, [step, currentScene, t])
 
-  const content = getContent()
   const isVisible = !(settings?.tutorialSeen || !content || step === -1)
 
   return {

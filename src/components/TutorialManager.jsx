@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTutorial } from '../hooks/useTutorial'
 

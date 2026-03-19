@@ -30,8 +30,8 @@ class RoadieStageController extends BaseStageController {
       starWhite: getPixiColorFromToken('--star-white'),
       toxicGreen: getPixiColorFromToken('--toxic-green'),
       roadColor: getPixiColorFromToken('--void-black'),
-      grassColor: getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green'),
-      venueColor: getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red')
+      grassColor: getPixiColorFromToken('--roadie-grass') ?? getPixiColorFromToken('--toxic-green'),
+      venueColor: getPixiColorFromToken('--roadie-venue-blue') ?? getPixiColorFromToken('--blood-red')
     }
   }
 
@@ -283,9 +283,12 @@ class RoadieStageController extends BaseStageController {
     if (this.carSprites) {
       this.carSprites.forEach((sprite, id) => {
         if (!this.currentIds.has(id)) {
-          this.container.removeChild(sprite)
-          sprite.destroy()
-          this.carSprites.delete(id)
+          try {
+            this.container.removeChild(sprite)
+            sprite.destroy()
+          } finally {
+            this.carSprites.delete(id)
+          }
         }
       })
     }
