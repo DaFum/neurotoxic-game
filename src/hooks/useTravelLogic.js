@@ -152,7 +152,9 @@ export const useTravelLogic = ({
       handleNodeArrival({
         node,
         band: bandRef.current,
+        player: playerRef.current,
         updateBand,
+        updatePlayer,
         triggerEvent,
         startGig,
         addToast,
@@ -161,7 +163,7 @@ export const useTravelLogic = ({
         eventAlreadyActive
       })
     },
-    [updateBand, triggerEvent, startGig, addToast, onShowHQ, changeScene]
+    [updateBand, updatePlayer, triggerEvent, startGig, addToast, onShowHQ, changeScene]
   )
 
   /**

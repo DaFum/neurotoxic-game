@@ -4,6 +4,7 @@
   "aria.unmuteSystem": "Unmute system",
   "loading_stage": "Loading Stage...",
   "arrival.failedToStartGig": "Failed to start Gig.",
+  "arrival.showCancelled": "Show cancelled! The band refused to go on stage due to low harmony.",
   "arrival.harmonyTooLowToPerform": "Band's harmony too low to perform!",
   "arrival.homeSweetHome": "Home Sweet Home.",
   "arrival.restedAtStop": "Rested at stop. Band feels better.",

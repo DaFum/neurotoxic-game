@@ -60,14 +60,18 @@ describe('Crisis Management Integration', () => {
       state.social.sponsorActive = true
       state.social.instagram = 10000 // must be >= 5000 to avoid early drop from follower threshold
 
-      // rng() < 0.2 triggers the drop
+      // rng() drop is now immediate if controversy >= 80
       const rngDrop = () => 0.1
       const resultDropped = calculateDailyUpdates(state, rngDrop)
       assert.strictEqual(resultDropped.social.sponsorActive, false)
 
-      // rng() >= 0.2 keeps the sponsor
-      const rngKeep = () => 0.5
-      const resultKept = calculateDailyUpdates(state, rngKeep)
+      const state2 = createInitialState()
+      state2.social.controversyLevel = 60
+      state2.social.sponsorActive = true
+      state2.social.instagram = 10000
+
+      // rng() < 0.5 drops sponsor if >= 60 and < 80
+      const resultKept = calculateDailyUpdates(state2, () => 0.6)
       assert.strictEqual(resultKept.social.sponsorActive, true)
     })
   })

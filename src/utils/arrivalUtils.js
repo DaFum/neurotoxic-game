@@ -2,7 +2,7 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
-import { clampMemberStamina, clampMemberMood } from './gameStateUtils.js'
+import { clampMemberStamina, clampMemberMood, clampPlayerFame } from './gameStateUtils.js'
 import i18n from '../i18n.js'
 
 /**
@@ -23,7 +23,9 @@ import i18n from '../i18n.js'
 export const handleNodeArrival = ({
   node,
   band,
+  player,
   updateBand,
+  updatePlayer,
   triggerEvent,
   startGig,
   addToast,
@@ -88,6 +90,26 @@ export const handleNodeArrival = ({
         if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
         return
       }
+
+      // Chaos Tour fix: Show cancellation check
+      if ((band?.harmony ?? 100) < 15 && Math.random() < 0.25) {
+        addToast(
+          i18n.t('ui:arrival.showCancelled', {
+            defaultValue: "Show cancelled! The band refused to go on stage due to low harmony."
+          }),
+          'error'
+        )
+        // Apply fame penalty directly (double the standard bad gig loss)
+        if (player && updatePlayer) {
+           const currentFame = player.fame || 0
+           const newFame = clampPlayerFame(currentFame - 8)
+           updatePlayer({ fame: newFame })
+        }
+
+        if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
+        return
+      }
+
       logger.info('ArrivalLogic', 'Starting Gig at destination', {
         venue: node.venue.name
       })

@@ -556,7 +556,10 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   // Fuel: (20 / 100) * 12 = 2.4 liters
   // Fuel Cost: floor(2.4 * 1.75) = 4
   // Food Cost: 3 * 8 = 24
-  // Total Cost: 4 + 24 = 28
+  // Logistics cost: dist 20 * 0.15 * (1.2^0) = 3
+  // Total Cost: 24 (food) + 3 = 27
+  // Fuel is separate in calculateTravelExpenses logic (dist, fuelLiters, totalCost)
+  // where totalCost only includes food + logistics, not fuel cost.
 
   const result = calculateTravelExpenses(node)
 
@@ -569,7 +572,7 @@ test('calculateTravelExpenses returns correct cost structure', () => {
     Math.abs(result.fuelLiters - 2.4) < 0.001,
     'Fuel liters should be approx 2.4'
   )
-  assert.equal(result.totalCost, 24, 'Total cost should be 24 (Food only)')
+  assert.equal(result.totalCost, 27, 'Total cost should be 27 (Food + Logistics)')
 })
 
 test('calculateTravelExpenses computes distance consistently across node coordinates', () => {

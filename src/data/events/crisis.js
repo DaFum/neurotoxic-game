@@ -263,7 +263,7 @@ export const CRISIS_EVENTS = [
         effect: createCooldownComposite('crisis_redemption_charity', [
           { type: 'stat', stat: 'controversyLevel', value: -25 },
           { type: 'stat', stat: 'loyalty', value: 20 },
-          { type: 'stat', stat: 'harmony', value: 10 }
+          { type: 'stat', stat: 'harmony', value: 15 }
         ]),
         outcomeText: 'events:crisis_redemption_charity.opt1.outcome'
       },

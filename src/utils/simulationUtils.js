@@ -37,6 +37,13 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
       key: 'ui:pregig.effects.telepathy',
       fallback: 'TELEPATHY (Harmony > 80): Easier Hits'
     })
+  } else if (bandState.harmony < 20) {
+    modifiers.noteJitter = true
+    modifiers.hitWindowBonus = -25 // Strong penalty
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.toxic',
+      fallback: 'TOXIC (Harmony < 20): Severe Jitter & Strict Timing'
+    })
   } else if (bandState.harmony < 40) {
     modifiers.noteJitter = true
     modifiers.activeEffects.push({
@@ -208,7 +215,11 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // 1. Costs
   // Rent/Food scaled by band size
   const bandSize = Array.isArray(nextBand.members) ? nextBand.members.length : 3
-  let dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8
+
+  // Base daily cost plus a scaling "Burn Rate" based on fame level (lifestyle inflation)
+  const fameLevel = nextPlayer.fameLevel || 0
+  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
+  let dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
 
   // YouTube Passive Ad Revenue Perk (per 10k subscribers)
   if ((nextSocial.youtube || 0) >= 10000) {
@@ -293,7 +304,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     const nextHarmonyDecay = clampBandHarmony(nextBand.harmony - 2)
     nextBand.harmony = nextHarmonyDecay
   } else if (nextBand.harmony < 50) {
-    const nextHarmonyRegen = clampBandHarmony(nextBand.harmony + 2)
+    const nextHarmonyRegen = clampBandHarmony(nextBand.harmony + 3)
     nextBand.harmony = nextHarmonyRegen
   }
 
@@ -367,6 +378,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   if (
     !nextSocial.sponsorActive &&
     (nextSocial.instagram || 0) > 5000 &&
+    controversy < 60 && // Won't sign if controversy is too high
     rng() < 0.1
   ) {
     nextSocial.sponsorActive = true
@@ -375,9 +387,11 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     if ((nextSocial.instagram || 0) < 5000) {
       nextSocial.sponsorActive = false
     }
-    // Sponsorship Drops due to high controversy
-    else if (controversy >= 80 && rng() < 0.2) {
-      nextSocial.sponsorActive = false
+    // Sponsorship Drops due to high controversy (Immediate or high chance if severe)
+    else if (controversy >= 80) {
+      nextSocial.sponsorActive = false // Immediate drop
+    } else if (controversy >= 60 && rng() < 0.5) {
+      nextSocial.sponsorActive = false // High chance to drop
     }
   }
 
@@ -454,7 +468,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   }
 
   if (nextBand.harmonyRegenTravel) {
-    const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 2) // Reduced from 5
+    const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 4) // Reduced from 5
     nextBand.harmony = nextHarmonyTravel
   }
   if (nextPlayer.passiveFollowers) {

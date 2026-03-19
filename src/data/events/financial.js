@@ -11,7 +11,12 @@ export const FINANCIAL_EVENTS = [
     options: [
       {
         label: 'events:unexpected_bill.opt1.label',
-        effect: { type: 'resource', resource: 'money', value: -80 },
+        effect: {
+          type: 'percentage_resource',
+          resource: 'money',
+          percentage: -15,
+          min: -80
+        },
         outcomeText: 'events:unexpected_bill.opt1.outcome'
       }
     ]
@@ -64,9 +69,10 @@ export const FINANCIAL_EVENTS = [
       {
         label: 'events:parking_fine.opt1.label',
         effect: {
-          type: 'resource',
+          type: 'percentage_resource',
           resource: 'money',
-          value: -55,
+          percentage: -10,
+          min: -55,
           description: 'events:parking_fine.opt1.d_0a11'
         },
         outcomeText: 'events:parking_fine.opt1.outcome'

@@ -4,6 +4,7 @@
   "aria.unmuteSystem": "Systemton an",
   "loading_stage": "Bühne wird geladen...",
   "arrival.failedToStartGig": "Gig konnte nicht gestartet werden.",
+  "arrival.showCancelled": "Show abgesagt! Die Band weigerte sich wegen mangelnder Harmonie auf die Bühne zu gehen.",
   "arrival.harmonyTooLowToPerform": "Die Harmonie der Band ist zu niedrig zum Auftreten!",
   "arrival.homeSweetHome": "Zuhause, süßes Zuhause.",
   "arrival.restedAtStop": "Am Rastplatz ausgeruht. Die Band fühlt sich besser.",

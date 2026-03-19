@@ -561,12 +561,18 @@ export const usePostGigLogic = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
+    let fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
+    const prevFame = player.fame ?? 0
+
+    // Diminishing returns: It gets exponentially harder to gain fame once established
+    if (fameGain > 0 && prevFame > 50) {
+      const diminishingMultiplier = Math.exp(-(prevFame - 50) * 0.01)
+      fameGain = Math.max(1, Math.round(fameGain * diminishingMultiplier))
+    }
 
     const prevMoney = player.money ?? 0
     const newMoney = clampPlayerMoney(prevMoney + financials.net)
 
-    const prevFame = player.fame ?? 0
     const newFame = clampPlayerFame(prevFame + fameGain)
 
     updatePlayer({
