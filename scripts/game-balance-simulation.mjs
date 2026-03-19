@@ -549,13 +549,21 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   const cost = Number(candidate.cost || 0)
   if (!Number.isFinite(cost) || cost <= 0 || cost > state.player.money) return
 
-  const ownedUpgrades = Array.isArray(state.player.hqUpgrades)
+  const ownedHqUpgrades = Array.isArray(state.player.hqUpgrades)
     ? state.player.hqUpgrades
     : []
-  if (ownedUpgrades.includes(candidate.id)) return
+  const ownedVanUpgrades = Array.isArray(state.player.van?.upgrades)
+    ? state.player.van.upgrades
+    : []
+  const allOwned = new Set([...ownedHqUpgrades, ...ownedVanUpgrades])
+  if (allOwned.has(candidate.id)) return
 
   state.player.money = clampPlayerMoney(state.player.money - cost)
-  state.player.hqUpgrades = [...ownedUpgrades, candidate.id]
+  if (candidate.id.startsWith('van_')) {
+    state.player.van.upgrades = [...ownedVanUpgrades, candidate.id]
+  } else {
+    state.player.hqUpgrades = [...ownedHqUpgrades, candidate.id]
+  }
   counters.catalogUpgrades += 1
 }
 
@@ -875,7 +883,8 @@ const runSingleSimulation = (scenario, seed) => {
       state.player,
       state.band
     )
-    const totalTravelCost = travel.totalCost + fuelCost
+    const safeFuelCost = Number.isFinite(fuelCost) ? fuelCost : 0
+    const totalTravelCost = travel.totalCost + safeFuelCost
 
     state.player.money = clampPlayerMoney(state.player.money - totalTravelCost)
     state.player.van.fuel = clampVanFuel(
