@@ -24,11 +24,10 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
 import i18n from '../i18n.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
-import { clampPlayerMoney, clampBandHarmony, clampPlayerFame, calculateFameLevel, BALANCE_CONSTANTS } from '../utils/gameStateUtils.js'
+import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
 import { translateLocation } from '../utils/locationI18n.js'
 import { normalizeVenueId } from '../utils/mapUtils.js'
 import { ALL_VENUES } from '../data/venues.js'
-import { secureRandom } from '../utils/crypto.js'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -396,66 +395,13 @@ export const useTravelLogic = ({
             return
           }
 
-          if ((band?.harmony ?? 0) <= 0) {
-            addToast(
-              i18n.t('ui:arrival.harmonyTooLowToPerform', {
-                defaultValue: "Band's harmony too low to perform!"
-              }),
-              'warning'
-            )
-            return
+          // We can reuse the standardized arrival logic which handles
+          // harmony checks, show cancellations, and routing safely.
+          const processedNode = {
+            ...node,
+            venue: resolveVenue(node.venue, normalizeVenueId(node.venue)) || node.venue
           }
-
-          // Chaos Tour fix: Show cancellation check for current-node gigs
-          if ((band?.harmony ?? 100) < 15 && secureRandom() < 0.25) {
-            addToast(
-              i18n.t('ui:arrival.showCancelled', {
-                defaultValue: "Show cancelled! The band refused to go on stage due to low harmony."
-              }),
-              'error'
-            )
-
-            // Apply fame penalty directly (double the standard bad gig loss)
-            const currentFame = player.fame || 0
-            const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
-            const newFame = clampPlayerFame(currentFame - loss)
-            updatePlayer({
-              fame: newFame,
-              fameLevel: calculateFameLevel(newFame)
-            })
-
-            // We transition to POST_GIG natively since we're already at the node
-            // Note: Since financials are empty, usePostGigLogic will render a 0-state failure screen.
-            changeScene(GAME_PHASES.POST_GIG)
-            return
-          }
-
-          const venueId = normalizeVenueId(node.venue)
-          const resolvedVenue = resolveVenue(node.venue, venueId)
-
-          if (!resolvedVenue) {
-            addToast(
-              i18n.t('ui:errors.invalidVenueData', {
-                defaultValue: 'Invalid venue data.'
-              }),
-              'error'
-            )
-            return
-          }
-
-          logger.info('TravelLogic', 'Entering current node Gig', {
-            venue: getLocationName(resolvedVenue.name, venueId)
-          })
-          try {
-            startGig(resolvedVenue)
-          } catch (error) {
-            handleError(error, {
-              addToast,
-              fallbackMessage: i18n.t('ui:travel.errors.failedToEnterGig', {
-                defaultValue: 'Failed to enter Gig.'
-              })
-            })
-          }
+          handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
           try {
             onShowHQ?.()

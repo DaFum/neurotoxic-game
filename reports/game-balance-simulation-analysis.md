@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-03-19T12:39:39.027Z
+Erstellt am: 2026-03-19T14:28:56.153Z
 
 ## Simulationseinstellungen
 
@@ -23,13 +23,13 @@ Erstellt am: 2026-03-19T12:39:39.027Z
 
 | Szenario | Ø Endgeld | Ø Endfame | Ø Harmony | Ø Kontroverse | Ø Gigs | Insolvenzrate | Ø Gig-Netto | Ø Events (viral/cash/band) | Ø Trend | Ø Brand Deals | Ø Contraband | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 38233 | 0 | 44 | 0.72 | 25 | 0% | 1900 | 6.67 | 9.22 | 3.18 | 8.32 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Bootstrap Struggle | 17853 | 0 | 50 | 0.8 | 18 | 0% | 1646 | 9.54 | 9.04 | 2.85 | 8.13 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Aggressive Marketing | 81679 | 0 | 41 | 0.79 | 37 | 0% | 2516 | 11.6 | 9.1 | 3.51 | 8.18 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Scandal Recovery | 26658 | 0 | 44 | 16.03 | 25 | 0% | 1518 | 14.25 | 9.1 | 3.24 | 8.39 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Festival Push | 116807 | 45 | 44 | 0.91 | 25 | 0% | 4997 | 7.24 | 8.78 | 3.2 | 8.82 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Baseline Touring | 151936 | 106 | 44 | 0.7 | 25 | 0% | 6370 | 6.49 | 9.32 | 3.18 | 8.19 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Bootstrap Struggle | 28427 | 14 | 50 | 0.92 | 18 | 0% | 2224 | 9.68 | 9.05 | 2.88 | 8.42 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Aggressive Marketing | 267120 | 89 | 42 | 0.85 | 37 | 0% | 7575 | 11.41 | 8.78 | 3.37 | 8.29 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Scandal Recovery | 26975 | 0 | 44 | 16.05 | 25 | 0% | 1532 | 14.23 | 9.11 | 3.22 | 8.41 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Festival Push | 202092 | 156 | 44 | 0.8 | 25 | 0% | 8358 | 7.27 | 9.24 | 3.53 | 8.18 | ✅ Szenario liegt im robusten Simulationskorridor. |
 | Chaos Tour | 47560 | 0 | 32 | 3.53 | 36.88 | 0% | 1710 | 17.78 | 8.98 | 3.27 | 8.33 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Cult Hypergrowth | 125642 | 0 | 44 | 0.86 | 37 | 0% | 3731 | 10.21 | 9.17 | 3.44 | 8.51 | ⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen. |
+| Cult Hypergrowth | 302835 | 109 | 43 | 0.86 | 37 | 0% | 8685 | 9.97 | 9.24 | 3.39 | 8.35 | ✅ Szenario liegt im robusten Simulationskorridor. |
 
 ## Feature-Abdeckung in der Simulation
 
@@ -56,6 +56,6 @@ Erstellt am: 2026-03-19T12:39:39.027Z
 ## Kurzfazit
 
 - Kein Szenario mit Insolvenzfällen beobachtet.
-- Höchster Kapitalaufbau: **Cult Hypergrowth** mit Ø 125642 Endgeld.
+- Höchster Kapitalaufbau: **Cult Hypergrowth** mit Ø 302835 Endgeld.
 - Höchste Volatilität: **Chaos Tour** mit Ø 17.78 Event-Impulsen.
 - Empfehlung: Extreme Szenarien priorisiert gegeneinander testen und Ziel-KPI-Bänder definieren.

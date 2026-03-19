@@ -927,7 +927,8 @@ const runSingleSimulation = (scenario, seed) => {
         money: state.player.money,
         fame: state.player.fame,
         controversyLevel: state.social.controversyLevel,
-        sponsorActive: state.social.sponsorActive
+        sponsorActive: state.social.sponsorActive,
+        cancelled: true
       })
 
       if (shouldTriggerBankruptcy(state.player.money, 0)) {
