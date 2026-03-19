@@ -1,6 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { CRISIS_EVENTS } from '../../src/data/events/crisis.js'
+import { validateCrisisEvent } from '../../src/utils/eventValidator.js'
 
 describe('CRISIS_EVENTS', () => {
   const getCrisisEvent = id => {
@@ -201,5 +202,44 @@ describe('CRISIS_EVENTS', () => {
       false
     )
     assert.strictEqual(evt.condition({}), false)
+  })
+
+  describe('validateCrisisEvent', () => {
+    test('validates existing crisis events without throwing', () => {
+      for (const event of CRISIS_EVENTS) {
+        assert.doesNotThrow(() => validateCrisisEvent(event))
+      }
+    })
+
+    test('throws error for missing fields', () => {
+      const invalidEvent = { ...CRISIS_EVENTS[0] }
+      delete invalidEvent.id
+      assert.throws(() => validateCrisisEvent(invalidEvent), /Invalid event id/)
+    })
+
+    test('throws error for invalid types', () => {
+      const invalidEvent = { ...CRISIS_EVENTS[0], chance: 'high' }
+      assert.throws(() => validateCrisisEvent(invalidEvent), /Invalid chance/)
+    })
+
+    test('throws error for invalid categories', () => {
+      const invalidEvent = { ...CRISIS_EVENTS[0], category: 'invalid' }
+      assert.throws(() => validateCrisisEvent(invalidEvent), /Invalid category/)
+    })
+
+    test('throws error for missing crisis tag', () => {
+      const invalidEvent = { ...CRISIS_EVENTS[0], tags: ['reputation'] }
+      assert.throws(() => validateCrisisEvent(invalidEvent), /must have "crisis" tag/)
+    })
+
+    test('throws error for invalid i18n keys', () => {
+      const invalidEvent = { ...CRISIS_EVENTS[0], title: 'bad_title' }
+      assert.throws(() => validateCrisisEvent(invalidEvent), /Invalid title key/)
+    })
+
+    test('throws error for empty options', () => {
+      const invalidEvent = { ...CRISIS_EVENTS[0], options: [] }
+      assert.throws(() => validateCrisisEvent(invalidEvent), /must have at least one option/)
+    })
   })
 })
