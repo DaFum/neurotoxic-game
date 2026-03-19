@@ -34,7 +34,7 @@ vi.mock('../src/utils/errorHandler', () => ({
 
 // Mock BandHQ component to avoid deep dependencies
 vi.mock('../src/ui/BandHQ', () => ({
-  BandHQ: vi.fn(({ onClose, player, band, ...rest }) => (
+  BandHQ: vi.fn(({ ...rest }) => (
     <div data-testid='band-hq-modal' {...rest}>
       Band HQ Modal
     </div>
