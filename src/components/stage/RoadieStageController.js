@@ -27,7 +27,11 @@ class RoadieStageController extends BaseStageController {
     }
     this.colors = {
       bloodRed: getPixiColorFromToken('--blood-red'),
-      starWhite: getPixiColorFromToken('--star-white')
+      starWhite: getPixiColorFromToken('--star-white'),
+      toxicGreen: getPixiColorFromToken('--toxic-green'),
+      roadColor: getPixiColorFromToken('--void-black'),
+      grassColor: getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green'),
+      venueColor: getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red')
     }
   }
 
@@ -67,8 +71,7 @@ class RoadieStageController extends BaseStageController {
     } else {
       this.playerSprite = new Graphics()
       this.playerSprite.circle(0, 0, 20)
-      const toxicGreen = getPixiColorFromToken('--toxic-green')
-      this.playerSprite.fill(toxicGreen)
+      this.playerSprite.fill(this.colors.toxicGreen)
     }
     this.playerContainer.addChild(this.playerSprite)
 
@@ -123,14 +126,6 @@ class RoadieStageController extends BaseStageController {
 
     const g = new Graphics()
     this.bgGraphics = g
-    const roadColor = getPixiColorFromToken('--void-black')
-    const grassColor =
-      getPixiColorFromToken('--roadie-grass') ||
-      getPixiColorFromToken('--toxic-green')
-    const venueColor =
-      getPixiColorFromToken('--roadie-venue-blue') ||
-      getPixiColorFromToken('--blood-red')
-    const stripeColor = getPixiColorFromToken('--star-white')
 
     // Use screen width for better drawing
     const width = this.app ? this.app.screen.width : 2000
@@ -139,21 +134,21 @@ class RoadieStageController extends BaseStageController {
 
     // Start zone (row 0)
     g.rect(0, 0, width, cellH)
-    g.fill(grassColor)
+    g.fill(this.colors.grassColor)
 
     // Road
     g.rect(0, cellH, width, cellH * 6)
-    g.fill(roadColor)
+    g.fill(this.colors.roadColor)
 
     // Venue zone (row 7)
     g.rect(0, cellH * 7, width, cellH)
-    g.fill(venueColor)
+    g.fill(this.colors.venueColor)
 
     // Stripes
     for (let r = 2; r <= 6; r++) {
       for (let x = 0; x < width; x += 100) {
         g.rect(x, r * cellH - 2, 60, 4)
-        g.fill(stripeColor)
+        g.fill(this.colors.starWhite)
       }
     }
 
