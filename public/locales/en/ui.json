@@ -345,6 +345,7 @@
   "gameOver.soldOut": "SOLD OUT",
   "game_over": "GAME OVER: {{description}}",
   "gig.abandon": "ABANDON GIG",
+  "gig.controlsHint": "Game Controls",
   "gig.audioOverride": "Audio Interface requires manual override.",
   "gig.crowdEnergy": "CROWD ENERGY",
   "gig.initializeAudio": "INITIALIZE AUDIO",

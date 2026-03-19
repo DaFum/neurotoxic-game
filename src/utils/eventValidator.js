@@ -13,10 +13,11 @@ const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
  * @returns {boolean} True if valid.
  */
 const validateEffect = (effect, eventId, idx) => {
-  if (!effect || typeof effect !== 'object') {
-    throw new Error(
-      `Effect must be an object at index ${idx} for event ${eventId}`
-    )
+  if (!effect || typeof effect !== 'object' || Array.isArray(effect)) {
+    const message = Array.isArray(effect)
+      ? `Effect must be a plain object, not an array at index ${idx} for event ${eventId}`
+      : `Effect must be an object at index ${idx} for event ${eventId}`
+    throw new Error(message)
   }
   if (!effect.type) {
     throw new Error(
@@ -34,7 +35,8 @@ const validateEffect = (effect, eventId, idx) => {
         validateEffect(childEffect, eventId, idx)
       } catch (err) {
         throw new Error(
-          `Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`
+          `Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`,
+          { cause: err }
         )
       }
     })
