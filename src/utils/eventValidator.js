@@ -13,8 +13,11 @@ const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
  * @returns {boolean} True if valid.
  */
 const validateEffect = (effect, eventId, idx) => {
-  if (!effect || typeof effect !== 'object') {
-    throw new Error(`Effect must be an object at index ${idx} for event ${eventId}`)
+  if (!effect || typeof effect !== 'object' || Array.isArray(effect)) {
+    const message = Array.isArray(effect)
+      ? `Effect must be a plain object, not an array at index ${idx} for event ${eventId}`
+      : `Effect must be an object at index ${idx} for event ${eventId}`
+    throw new Error(message)
   }
   if (!effect.type) {
     throw new Error(`Effect must have a type at index ${idx} for event ${eventId}`)
@@ -29,16 +32,12 @@ const validateEffect = (effect, eventId, idx) => {
       try {
         validateEffect(childEffect, eventId, idx)
       } catch (err) {
-        throw new Error(`Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`)
+        throw new Error(
+          `Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`,
+          { cause: err }
+        )
       }
     })
-  } else if (effect.type === 'skillCheck') {
-    if (!effect.success || typeof effect.success !== 'object') {
-      throw new Error(`SkillCheck effect must have a success object at index ${idx} for event ${eventId}`)
-    }
-    if (!effect.failure || typeof effect.failure !== 'object') {
-      throw new Error(`SkillCheck effect must have a failure object at index ${idx} for event ${eventId}`)
-    }
   }
 }
 
