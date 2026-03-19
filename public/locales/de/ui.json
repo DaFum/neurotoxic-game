@@ -589,6 +589,7 @@
   "pregig.effects.grumpy": "GRUMPY {{name}}: Gitarren-Score -50%",
   "pregig.effects.telepathy": "TELEPATHIE (Harmonie > 80): Leichtere Treffer",
   "pregig.effects.tired": "MÜDE {{name}}: Schnelleres Tempo",
+  "pregig.effects.toxic": "TOXISCH (Harmonie < 20): Starkes Zittern & Hartes Timing",
   "pregig.initializing": "INITIALISIERE...",
   "pregig.locked": "GESPERRT (Beweise dich)",
   "pregig.modifiers.catering.desc": "Kontert müde Band",

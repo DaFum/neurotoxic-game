@@ -589,6 +589,7 @@
   "pregig.effects.grumpy": "GRUMPY {{name}}: Guitar Score -50%",
   "pregig.effects.telepathy": "TELEPATHY (Harmony > 80): Easier Hits",
   "pregig.effects.tired": "TIRED {{name}}: Rushing Tempo",
+  "pregig.effects.toxic": "TOXIC (Harmony < 20): Severe Jitter & Strict Timing",
   "pregig.initializing": "INITIALIZING...",
   "pregig.locked": "LOCKED (Prove Yourself)",
   "pregig.modifiers.catering.desc": "Counters Tired Band Penalty",

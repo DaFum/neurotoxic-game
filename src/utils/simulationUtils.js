@@ -468,7 +468,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   }
 
   if (nextBand.harmonyRegenTravel) {
-    const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 4) // Reduced from 5
+    // increase harmony by 4 then clamp
+    const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 4)
     nextBand.harmony = nextHarmonyTravel
   }
   if (nextPlayer.passiveFollowers) {

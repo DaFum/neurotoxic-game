@@ -3,6 +3,7 @@ import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
 import { clampMemberStamina, clampMemberMood, clampPlayerFame } from './gameStateUtils.js'
+import { secureRandom } from './crypto.js'
 import i18n from '../i18n.js'
 
 /**
@@ -19,6 +20,7 @@ import i18n from '../i18n.js'
  * @param {Function} [params.changeScene] - Function to change scene (fallback).
  * @param {Function} [params.onShowHQ] - Optional callback to show HQ (for START node).
  * @param {boolean} [params.eventAlreadyActive=false] - Whether an event is already active (to prevent stacking).
+ * @param {Function} [params.rng=secureRandom] - RNG function for probabilistic outcomes.
  */
 export const handleNodeArrival = ({
   node,
@@ -31,7 +33,8 @@ export const handleNodeArrival = ({
   addToast,
   changeScene,
   onShowHQ,
-  eventAlreadyActive = false
+  eventAlreadyActive = false,
+  rng = secureRandom
 }) => {
   switch (node.type) {
     case 'REST_STOP': {
@@ -92,7 +95,7 @@ export const handleNodeArrival = ({
       }
 
       // Chaos Tour fix: Show cancellation check
-      if ((band?.harmony ?? 100) < 15 && Math.random() < 0.25) {
+      if ((band?.harmony ?? 100) < 15 && rng() < 0.25) {
         addToast(
           i18n.t('ui:arrival.showCancelled', {
             defaultValue: "Show cancelled! The band refused to go on stage due to low harmony."

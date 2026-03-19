@@ -21,7 +21,8 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  calculateFameGain
 } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_BY_ID } from '../data/songs'
@@ -561,19 +562,14 @@ export const usePostGigLogic = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    let fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
     const prevFame = player.fame ?? 0
-
-    // Diminishing returns: It gets exponentially harder to gain fame once established
-    if (fameGain > 0 && prevFame > 50) {
-      const diminishingMultiplier = Math.exp(-(prevFame - 50) * 0.01)
-      fameGain = Math.max(1, Math.round(fameGain * diminishingMultiplier))
-    }
+    const rawFameGain = 50 + Math.floor(perfScore * 1.5)
+    const finalFameGain = calculateFameGain(rawFameGain, prevFame, MAX_FAME_GAIN)
 
     const prevMoney = player.money ?? 0
     const newMoney = clampPlayerMoney(prevMoney + financials.net)
 
-    const newFame = clampPlayerFame(prevFame + fameGain)
+    const newFame = clampPlayerFame(prevFame + finalFameGain)
 
     updatePlayer({
       money: newMoney,

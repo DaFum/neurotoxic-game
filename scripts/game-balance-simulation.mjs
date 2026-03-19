@@ -34,6 +34,7 @@ import {
   clampMemberMood,
   clampMemberStamina,
   clampPlayerFame,
+  calculateFameGain,
   clampPlayerMoney,
   clampVanFuel
 } from '../src/utils/gameStateUtils.js'
@@ -770,30 +771,21 @@ const calculatePerformanceScore = (state, venue, modifiers, rng) => {
 const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
   state.player.money = clampPlayerMoney(state.player.money + financials.net)
 
-  let fameDelta =
-    performanceScore >= 62
-      ? Math.round(
-          SIMULATION_CONSTANTS.fameGainBase +
-            venue.diff +
-            performanceScore / 15 +
-            Math.min(4, (state.social.viral || 0) * 0.8)
-        )
-      : -SIMULATION_CONSTANTS.fameLossBadGig
+  const currentFame = state.player.fame || 0
+  let fameDelta = -SIMULATION_CONSTANTS.fameLossBadGig
 
-  // Diminishing returns: The more fame you have, the harder it is to gain more
-  if (fameDelta > 0) {
-    const currentFame = state.player.fame || 0
-    if (currentFame > 50) {
-      // Smooth exponential decay curve:
-      // At 50 fame, multiplier is ~1.0
-      // At 100 fame, multiplier is ~0.6
-      // At 200 fame, multiplier is ~0.22
-      const diminishingMultiplier = Math.exp(-(currentFame - 50) * 0.01)
-      fameDelta = Math.max(1, Math.round(fameDelta * diminishingMultiplier))
-    }
+  if (performanceScore >= 62) {
+    const rawFameGain = Math.round(
+      SIMULATION_CONSTANTS.fameGainBase +
+      venue.diff +
+      performanceScore / 15 +
+      Math.min(4, (state.social.viral || 0) * 0.8)
+    )
+    // 500 is MAX_FAME_GAIN from the live game
+    fameDelta = calculateFameGain(rawFameGain, currentFame, 500)
   }
 
-  state.player.fame = clampPlayerFame(state.player.fame + fameDelta)
+  state.player.fame = clampPlayerFame(currentFame + fameDelta)
   state.social.lastGigDay = state.player.day
 
   const followerDelta = Math.max(
@@ -921,7 +913,7 @@ const runSingleSimulation = (scenario, seed) => {
     let gigModifiers = { activeEffects: [] }
     let physics = { hitWindows: { guitar: 150, drums: 150, bass: 150 } }
     let misses = 0
-    let financials = { net: 0, income: { total: 0 }, expenses: { total: 0 } }
+    let financials;
 
     if (!isCancelled) {
       const modifiers = calculateModifiers(scenario, rng)
@@ -964,7 +956,10 @@ const runSingleSimulation = (scenario, seed) => {
       state.player.fame = clampPlayerFame(state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2)
     }
 
-    applyPostGigState(state, venue, performanceScore, financials, rng)
+    // Only apply standard post-gig adjustments (mood decay, follower gain, etc) if the gig actually happened
+    if (!isCancelled) {
+      applyPostGigState(state, venue, performanceScore, financials, rng)
+    }
 
     currentNode = venue
     counters.gigsPlayed += 1
@@ -1119,14 +1114,6 @@ const summarizeScenario = runs => {
 const getScenarioInsight = summary => {
   if (summary.bankruptcyRate >= 15) {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
-  }
-
-  // Money is more tightly coupled to fame now. The festival push is expected
-  // to yield very high net returns, but fame threshold scales accordingly.
-  if (summary.avgFinalMoney >= 100000 && summary.avgFinalFame < 0) {
-    // This effectively disables the warning. We want some scenarios like Cult Hypergrowth
-    // to build money despite low fame via zealotry/merch optimization.
-    return '⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen.'
   }
 
   // Reduced harmony threshold slightly from 42 to 30 because chaotic/aggressive scenarios
