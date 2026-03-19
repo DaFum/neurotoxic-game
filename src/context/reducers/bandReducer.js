@@ -167,40 +167,18 @@ export const handleAddContraband = (state, payload) => {
 }
 
 /**
- * Handles using a contraband item.
- * @param {Object} state - Current state
- * @param {Object} payload - { instanceId, contrabandId, memberId }
- * @returns {Object} Updated state
+ * Pure helper function to apply the effect of a contraband item.
+ * @param {Object} band - Current band state
+ * @param {Object} item - Contraband item to apply
+ * @param {string} memberId - Target member ID for targeted effects
+ * @returns {Object|null} Updated band object, or null if application fails (e.g. invalid target)
  */
-export const handleUseContraband = (state, payload) => {
-  const { instanceId, contrabandId, memberId } = payload
-  const stash = state.band.stash || {}
+export const applyContrabandEffect = (band, item, memberId) => {
+  const newBand = { ...band }
 
-  if (typeof contrabandId !== 'string' || contrabandId.length === 0)
-    return state
-
-  if (
-    !Object.hasOwn(stash, contrabandId) ||
-    contrabandId === '__proto__' ||
-    contrabandId === 'prototype' ||
-    contrabandId === 'constructor'
-  ) {
-    return state
-  }
-
-  const item = stash[contrabandId]
-  if (!item || item.instanceId !== instanceId) return state
-
-  if (item.applied === true) return state
-  const itemKey = contrabandId
-
-  let newBand = { ...state.band }
-  let newStash = Object.assign(Object.create(null), stash)
-
-  // Apply effect
   if (item.effectType === 'stamina' || item.effectType === 'mood') {
     if (!memberId || !newBand.members.some(m => m.id === memberId)) {
-      return state
+      return null
     }
     newBand.members = newBand.members.map(m => {
       if (m.id === memberId) {
@@ -217,32 +195,13 @@ export const handleUseContraband = (state, payload) => {
       }
       return m
     })
-  } else if (item.effectType === 'harmony') {
+    return newBand
+  }
+
+  if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony((newBand.harmony || 0) + item.value)
-    if (item.duration) {
-      newBand.activeContrabandEffects = [
-        ...(newBand.activeContrabandEffects || []),
-        {
-          instanceId: item.instanceId,
-          effectType: item.effectType,
-          value: item.value,
-          remainingDuration: item.duration
-        }
-      ]
-    }
   } else if (item.effectType === 'luck') {
     newBand.luck = (newBand.luck || 0) + item.value
-    if (item.duration) {
-      newBand.activeContrabandEffects = [
-        ...(newBand.activeContrabandEffects || []),
-        {
-          instanceId: item.instanceId,
-          effectType: item.effectType,
-          value: item.value,
-          remainingDuration: item.duration
-        }
-      ]
-    }
   } else if (item.effectType === 'guitar_difficulty') {
     newBand.performance = {
       ...newBand.performance,
@@ -250,17 +209,6 @@ export const handleUseContraband = (state, payload) => {
         0.1,
         (newBand.performance?.guitarDifficulty ?? 1) + item.value
       )
-    }
-    if (item.duration) {
-      newBand.activeContrabandEffects = [
-        ...(newBand.activeContrabandEffects || []),
-        {
-          instanceId: item.instanceId,
-          effectType: item.effectType,
-          value: item.value,
-          remainingDuration: item.duration
-        }
-      ]
     }
   } else if (
     item.effectType === 'tour_success' ||
@@ -295,19 +243,55 @@ export const handleUseContraband = (state, payload) => {
     } else if (item.effectType === 'crowd_control') {
       newBand.crowdControl = (newBand.crowdControl || 0) + item.value
     }
-
-    if (item.duration) {
-      newBand.activeContrabandEffects = [
-        ...(newBand.activeContrabandEffects || []),
-        {
-          instanceId: item.instanceId,
-          effectType: item.effectType,
-          value: item.value,
-          remainingDuration: item.duration
-        }
-      ]
-    }
   }
+
+  if (item.duration) {
+    newBand.activeContrabandEffects = [
+      ...(newBand.activeContrabandEffects || []),
+      {
+        instanceId: item.instanceId,
+        effectType: item.effectType,
+        value: item.value,
+        remainingDuration: item.duration
+      }
+    ]
+  }
+
+  return newBand
+}
+
+/**
+ * Handles using a contraband item.
+ * @param {Object} state - Current state
+ * @param {Object} payload - { instanceId, contrabandId, memberId }
+ * @returns {Object} Updated state
+ */
+export const handleUseContraband = (state, payload) => {
+  const { instanceId, contrabandId, memberId } = payload
+  const stash = state.band.stash || {}
+
+  if (typeof contrabandId !== 'string' || contrabandId.length === 0)
+    return state
+
+  if (
+    !Object.hasOwn(stash, contrabandId) ||
+    contrabandId === '__proto__' ||
+    contrabandId === 'prototype' ||
+    contrabandId === 'constructor'
+  ) {
+    return state
+  }
+
+  const item = stash[contrabandId]
+  if (!item || item.instanceId !== instanceId) return state
+
+  if (item.applied === true) return state
+  const itemKey = contrabandId
+
+  const newBand = applyContrabandEffect(state.band, item, memberId)
+  if (!newBand) return state
+
+  let newStash = Object.assign(Object.create(null), stash)
 
   if (item.type === 'consumable') {
     if (item.stacks > 1) {
