@@ -255,8 +255,8 @@ export class EffectManager {
     this.tailIndex = 0
 
     // Destroy pool
-    for (const sprite of this.spritePool) {
-      sprite.destroy()
+    for (let i = 0; i < this.spritePool.length; i++) {
+      this.spritePool[i].destroy()
     }
     this.spritePool = []
 

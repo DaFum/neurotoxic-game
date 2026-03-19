@@ -345,6 +345,7 @@
   "gameOver.soldOut": "AUSVERKAUFT",
   "game_over": "GAME OVER: {{description}}",
   "gig.abandon": "GIG ABBRECHEN",
+  "gig.controlsHint": "Spielsteuerung",
   "gig.audioOverride": "Audio-Interface erfordert manuelle Überschreibung.",
   "gig.crowdEnergy": "PUBLIKUMSENERGIE",
   "gig.initializeAudio": "AUDIO INITIALISIEREN",
