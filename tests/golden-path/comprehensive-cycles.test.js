@@ -188,7 +188,6 @@ test('Golden Path: Low Harmony Recovery (critical harmony → gig failure → re
   await t.test(
     'Advance days: harmony regenerates naturally if available',
     () => {
-      const harmonyBefore = state.band.harmony
       for (let i = 0; i < 5; i++) {
         state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
       }
@@ -210,7 +209,6 @@ test('Golden Path: Low Harmony Recovery (critical harmony → gig failure → re
   })
 
   await t.test('Gig 2: Performance improves with recovered harmony', () => {
-    const harmonyBefore = state.band.harmony
     state = performGig(
       state,
       buildVenue({ id: 'v2' }),
@@ -443,19 +441,6 @@ test('Golden Path: Modifiers & Inventory Impact (consumables affect earnings acr
       buildVenue({ id: 'v3', diff: 2 }),
       buildGigStats({ score: 6000 })
     )
-
-    const performanceScore = Math.min(
-      100,
-      Math.max(30, state.lastGigStats.score / 500)
-    )
-    const financials = calculateGigFinancials({
-      gigData: state.currentGig,
-      performanceScore,
-      modifiers: state.gigModifiers,
-      bandInventory: state.band.inventory,
-      playerState: state.player,
-      gigStats: state.lastGigStats
-    })
 
     // Verify inventory is included in calculation
     assert.ok(
