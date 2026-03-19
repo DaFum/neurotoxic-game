@@ -41,40 +41,25 @@ const validateEffect = (effect, eventId, idx) => {
       }
     })
   } else if (effect.type === 'skillCheck') {
-    if (
-      !effect.success ||
-      typeof effect.success !== 'object' ||
-      Array.isArray(effect.success)
-    ) {
-      throw new Error(
-        `SkillCheck effect must have a success object at index ${idx} for event ${eventId}`
-      )
-    }
-    try {
-      validateEffect(effect.success, eventId, idx)
-    } catch (err) {
-      throw new Error(
-        `Invalid success effect in skillCheck at option index ${idx} for event ${eventId}: ${err.message}`,
-        { cause: err }
-      )
-    }
-
-    if (
-      !effect.failure ||
-      typeof effect.failure !== 'object' ||
-      Array.isArray(effect.failure)
-    ) {
-      throw new Error(
-        `SkillCheck effect must have a failure object at index ${idx} for event ${eventId}`
-      )
-    }
-    try {
-      validateEffect(effect.failure, eventId, idx)
-    } catch (err) {
-      throw new Error(
-        `Invalid failure effect in skillCheck at option index ${idx} for event ${eventId}: ${err.message}`,
-        { cause: err }
-      )
+    for (const effectName of ['success', 'failure']) {
+      const nestedEffect = effect[effectName]
+      if (
+        !nestedEffect ||
+        typeof nestedEffect !== 'object' ||
+        Array.isArray(nestedEffect)
+      ) {
+        throw new Error(
+          `SkillCheck effect must have a ${effectName} object at index ${idx} for event ${eventId}`
+        )
+      }
+      try {
+        validateEffect(nestedEffect, eventId, idx)
+      } catch (err) {
+        throw new Error(
+          `Invalid ${effectName} effect in skillCheck at option index ${idx} for event ${eventId}: ${err.message}`,
+          { cause: err }
+        )
+      }
     }
   }
 }
