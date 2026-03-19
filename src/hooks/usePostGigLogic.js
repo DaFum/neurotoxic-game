@@ -21,7 +21,9 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  calculateFameGain,
+  BALANCE_CONSTANTS
 } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_BY_ID } from '../data/songs'
@@ -34,7 +36,6 @@ export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
-const MAX_FAME_GAIN = 500
 
 const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
 const OPPOSING_ALIGNMENT_MAP = {
@@ -561,13 +562,18 @@ export const usePostGigLogic = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
+    const prevFame = player.fame ?? 0
+
+    let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
+    if (perfScore >= 62) {
+      const rawFameGain = 50 + Math.floor(perfScore * 1.5)
+      finalFameGain = calculateFameGain(rawFameGain, prevFame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
+    }
 
     const prevMoney = player.money ?? 0
     const newMoney = clampPlayerMoney(prevMoney + financials.net)
 
-    const prevFame = player.fame ?? 0
-    const newFame = clampPlayerFame(prevFame + fameGain)
+    const newFame = clampPlayerFame(prevFame + finalFameGain)
 
     updatePlayer({
       money: newMoney,

@@ -287,8 +287,17 @@ export const calculateTravelExpenses = (
 ) => {
   const dist = calculateDistance(node, fromNode)
   const { fuelLiters } = calculateFuelCost(dist, playerState, bandState)
-  const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3
-  const totalCost = foodCost
+
+  const bandSize = bandState?.members?.length || 3
+  const fameLevel = playerState?.fameLevel || 0
+
+  // Base food cost
+  let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
+
+  // Logistics/Crew scaling with fame and distance (exponential)
+  // Adjusted base scalar to 0.15 so early game distances don't drain the bank completely
+  const logisticsCost = Math.floor((dist * 0.15) * Math.pow(1.2, fameLevel))
+  const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }
 }

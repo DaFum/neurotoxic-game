@@ -55,6 +55,26 @@ export const clampPlayerFame = fame => {
 }
 
 /**
+ * Calculates fame gain with exponential diminishing returns.
+ * Ensures the logic is synced across the app and simulation.
+ * @param {number} rawGain - The uncapped fame gain calculated from performance.
+ * @param {number} currentFame - The player's current fame.
+ * @param {number} [maxGain=500] - Hard cap on raw gain.
+ * @returns {number} The final damped fame gain.
+ */
+export const calculateFameGain = (rawGain, currentFame, maxGain = 500) => {
+  let fameGain = Math.min(maxGain, rawGain)
+  const prevFame = currentFame ?? 0
+
+  if (fameGain > 0 && prevFame > 50) {
+    const diminishingMultiplier = Math.exp(-(prevFame - 50) * 0.01)
+    fameGain = Math.max(1, Math.round(fameGain * diminishingMultiplier))
+  }
+
+  return fameGain
+}
+
+/**
  * Clamps player money to a safe, non-negative integer.
  * Prevents negative balances and ensures integer boundaries.
  *
@@ -64,6 +84,12 @@ export const clampPlayerFame = fame => {
 export const clampPlayerMoney = money => {
   if (!Number.isFinite(money)) return 0
   return Math.floor(Math.max(0, money))
+}
+
+// Shared Balance Constants
+export const BALANCE_CONSTANTS = {
+  FAME_LOSS_BAD_GIG: 4,
+  MAX_FAME_GAIN: 500
 }
 
 /**

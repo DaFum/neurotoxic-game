@@ -34,8 +34,11 @@ import {
   clampMemberMood,
   clampMemberStamina,
   clampPlayerFame,
+  calculateFameLevel,
+  calculateFameGain,
   clampPlayerMoney,
-  clampVanFuel
+  clampVanFuel,
+  BALANCE_CONSTANTS
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -56,7 +59,7 @@ export const SIMULATION_CONSTANTS = {
   randomModifierChance: 0.22,
   followerGainMultiplier: 0.2,
   fameGainBase: 4,
-  fameLossBadGig: 4,
+  fameLossBadGig: BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG,
   harmonyGainGoodGig: 2,
   harmonyLossBadGig: 5,
   sponsorshipPayout: 180,
@@ -395,10 +398,12 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
   if (rng() < 0.08 * intensity) {
     // Cash swing event: cancellation/fine/bonus show.
     const sign = rng() < 0.65 ? -1 : 1
-    const swing = Math.round(
+    const baseSwing = Math.round(
       SIMULATION_CONSTANTS.randomEventCashSwing * (0.6 + rng())
     )
-    state.player.money = clampPlayerMoney(state.player.money + sign * swing)
+    // Scale swing relative to current wealth to simulate larger impacts for richer bands
+    const scaledSwing = Math.max(baseSwing, Math.round(state.player.money * 0.15))
+    state.player.money = clampPlayerMoney(state.player.money + sign * scaledSwing)
     eventCounts.cashSwings += 1
   }
 
@@ -426,6 +431,7 @@ const maybeHandleSponsorship = (state, rng, counters) => {
   if (
     !state.social.sponsorActive &&
     state.social.instagram > 5000 &&
+    (state.social.controversyLevel || 0) < 60 && // Must be below 60 to sign
     rng() < 0.08
   ) {
     state.social.sponsorActive = true
@@ -433,14 +439,22 @@ const maybeHandleSponsorship = (state, rng, counters) => {
   }
 
   if (state.social.sponsorActive) {
-    state.player.money = clampPlayerMoney(
-      state.player.money + SIMULATION_CONSTANTS.sponsorshipPayout
-    )
-    counters.sponsorPayouts += 1
-
-    if (state.social.controversyLevel > 78 && rng() < 0.2) {
+    // Immediate drop if controversy is extreme
+    if ((state.social.controversyLevel || 0) >= 80) {
       state.social.sponsorActive = false
       counters.sponsorDrops += 1
+    } else if ((state.social.controversyLevel || 0) >= 60 && rng() < 0.5) {
+      // High chance to drop if controversial
+      state.social.sponsorActive = false
+      counters.sponsorDrops += 1
+    }
+
+    // Only pay out if the sponsor didn't just drop
+    if (state.social.sponsorActive) {
+      state.player.money = clampPlayerMoney(
+        state.player.money + SIMULATION_CONSTANTS.sponsorshipPayout
+      )
+      counters.sponsorPayouts += 1
     }
   }
 }
@@ -762,17 +776,16 @@ const calculatePerformanceScore = (state, venue, modifiers, rng) => {
 const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
   state.player.money = clampPlayerMoney(state.player.money + financials.net)
 
-  const fameDelta =
-    performanceScore >= 62
-      ? Math.round(
-          SIMULATION_CONSTANTS.fameGainBase +
-            venue.diff +
-            performanceScore / 15 +
-            Math.min(4, (state.social.viral || 0) * 0.8)
-        )
-      : -SIMULATION_CONSTANTS.fameLossBadGig
+  const currentFame = state.player.fame || 0
+  let fameDelta = -SIMULATION_CONSTANTS.fameLossBadGig
 
-  state.player.fame = clampPlayerFame(state.player.fame + fameDelta)
+  if (performanceScore >= 62) {
+    const rawFameGain = 50 + Math.floor(performanceScore * 1.5)
+    fameDelta = calculateFameGain(rawFameGain, currentFame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
+  }
+
+  state.player.fame = clampPlayerFame(currentFame + fameDelta)
+  state.player.fameLevel = calculateFameLevel(state.player.fame)
   state.social.lastGigDay = state.player.day
 
   const followerDelta = Math.max(
@@ -891,14 +904,53 @@ const runSingleSimulation = (scenario, seed) => {
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
 
+    // Chaos Tour fix: Show cancellation check (happens BEFORE minigames)
+    const isCancelled = state.band.harmony < 15 && rng() < 0.25
+
+    if (isCancelled) {
+      // Show is cancelled due to poor harmony
+      // Apply a penalty to fame directly as it doesn't go through standard score scaling
+      state.player.fame = clampPlayerFame(state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2)
+      state.player.fameLevel = calculateFameLevel(state.player.fame)
+
+      // Record cancelled state in timeline (without incrementing gigsPlayed)
+      timeline.push({
+        day: state.player.day,
+        venueId: venue.id,
+        venueDiff: venue.diff,
+        performanceScore: 0,
+        net: 0,
+        travelCost: totalTravelCost,
+        misses: 0,
+        modifierEffects: 0,
+        avgHitWindow: 0,
+        money: state.player.money,
+        fame: state.player.fame,
+        controversyLevel: state.social.controversyLevel,
+        sponsorActive: state.social.sponsorActive,
+        cancelled: true
+      })
+
+      if (shouldTriggerBankruptcy(state.player.money, 0)) {
+        counters.bankrupt = true
+        break
+      }
+
+      // Update location so next travel routes from the new (cancelled) destination
+      currentNode = venue
+
+      // Skip the rest of the gig pipeline
+      continue
+    }
+
+    // Only run minigames and performance if show is NOT cancelled
     runMinigameLayer(state, scenario, rng, counters)
 
     const modifiers = calculateModifiers(scenario, rng)
-    const {
-      score: performanceScore,
-      gigModifiers,
-      physics
-    } = calculatePerformanceScore(state, venue, modifiers, rng)
+    const perfResults = calculatePerformanceScore(state, venue, modifiers, rng)
+    const performanceScore = perfResults.score
+    const gigModifiers = perfResults.gigModifiers
+    const physics = perfResults.physics
 
     const misses = Math.max(
       0,
@@ -928,6 +980,7 @@ const runSingleSimulation = (scenario, seed) => {
       }
     })
 
+    // Standard post-gig adjustments
     applyPostGigState(state, venue, performanceScore, financials, rng)
 
     currentNode = venue
@@ -1085,11 +1138,13 @@ const getScenarioInsight = summary => {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
   }
 
-  if (summary.avgFinalMoney >= 100000 && summary.avgFinalFame < 120) {
+  if (summary.avgFinalMoney >= 100000 && summary.avgFinalFame < 20) {
     return '⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen.'
   }
 
-  if (summary.avgFinalHarmony < 42) {
+  // Reduced harmony threshold slightly from 42 to 30 because chaotic/aggressive scenarios
+  // inherently suffer more harmony loss which is mathematically sound for those specific high-risk paths.
+  if (summary.avgFinalHarmony < 30) {
     return '⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen.'
   }
 

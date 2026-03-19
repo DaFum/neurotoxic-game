@@ -6,6 +6,7 @@ const mockGameState = {
   advanceDay: mock.fn(),
   saveGame: mock.fn(),
   updateBand: mock.fn(),
+  updatePlayer: mock.fn(),
   triggerEvent: mock.fn(),
   startGig: mock.fn(),
   changeScene: mock.fn(),
@@ -38,6 +39,7 @@ export const resetMockGameState = () => {
   mockGameState.advanceDay.mock.resetCalls()
   mockGameState.saveGame.mock.resetCalls()
   mockGameState.updateBand.mock.resetCalls()
+  mockGameState.updatePlayer.mock.resetCalls()
   mockGameState.triggerEvent.mock.resetCalls()
   mockGameState.startGig.mock.resetCalls()
   mockGameState.changeScene.mock.resetCalls()
@@ -71,6 +73,18 @@ mock.module('../src/utils/gameStateUtils.js', {
     clampMemberMood: val => {
       if (!Number.isFinite(val)) return 0
       return Math.max(0, Math.min(100, Math.floor(val)))
+    },
+    clampPlayerFame: val => {
+      if (!Number.isFinite(val)) return 0
+      return Math.max(0, Math.floor(val))
+    },
+    calculateFameLevel: val => {
+      if (!Number.isFinite(val)) return 0
+      return Math.floor(Math.max(0, val) / 1000)
+    },
+    BALANCE_CONSTANTS: {
+      FAME_LOSS_BAD_GIG: 4,
+      MAX_FAME_GAIN: 500
     }
   }
 })

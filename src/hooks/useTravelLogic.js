@@ -152,7 +152,9 @@ export const useTravelLogic = ({
       handleNodeArrival({
         node,
         band: bandRef.current,
+        player: playerRef.current,
         updateBand,
+        updatePlayer,
         triggerEvent,
         startGig,
         addToast,
@@ -161,7 +163,7 @@ export const useTravelLogic = ({
         eventAlreadyActive
       })
     },
-    [updateBand, triggerEvent, startGig, addToast, onShowHQ, changeScene]
+    [updateBand, updatePlayer, triggerEvent, startGig, addToast, onShowHQ, changeScene]
   )
 
   /**
@@ -393,41 +395,13 @@ export const useTravelLogic = ({
             return
           }
 
-          if ((band?.harmony ?? 0) <= 0) {
-            addToast(
-              i18n.t('ui:arrival.harmonyTooLowToPerform', {
-                defaultValue: "Band's harmony too low to perform!"
-              }),
-              'warning'
-            )
-            return
+          // We can reuse the standardized arrival logic which handles
+          // harmony checks, show cancellations, and routing safely.
+          const processedNode = {
+            ...node,
+            venue: resolveVenue(node.venue, normalizeVenueId(node.venue)) || node.venue
           }
-          const venueId = normalizeVenueId(node.venue)
-          const resolvedVenue = resolveVenue(node.venue, venueId)
-
-          if (!resolvedVenue) {
-            addToast(
-              i18n.t('ui:errors.invalidVenueData', {
-                defaultValue: 'Invalid venue data.'
-              }),
-              'error'
-            )
-            return
-          }
-
-          logger.info('TravelLogic', 'Entering current node Gig', {
-            venue: getLocationName(resolvedVenue.name, venueId)
-          })
-          try {
-            startGig(resolvedVenue)
-          } catch (error) {
-            handleError(error, {
-              addToast,
-              fallbackMessage: i18n.t('ui:travel.errors.failedToEnterGig', {
-                defaultValue: 'Failed to enter Gig.'
-              })
-            })
-          }
+          handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
           try {
             onShowHQ?.()
