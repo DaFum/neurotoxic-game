@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "category": { "type": "string" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "trigger": { "type": "string" },
+    "chance": { "type": "number" },
+    "condition": {},
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "effect": { "type": "object" },
+          "skillCheck": { "type": "object" },
+          "outcomeText": { "type": "string" }
+        },
+        "required": ["label", "outcomeText"]
+      }
+    }
+  },
+  "required": ["id", "category", "tags", "title", "description", "trigger", "chance", "options"]
+}

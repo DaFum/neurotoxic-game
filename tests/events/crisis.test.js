@@ -1,3 +1,4 @@
+import { validateCrisisEvent } from '../../src/utils/eventValidator.js'
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { CRISIS_EVENTS } from '../../src/data/events/crisis.js'
@@ -201,5 +202,59 @@ describe('CRISIS_EVENTS', () => {
       false
     )
     assert.strictEqual(evt.condition({}), false)
+  })
+})
+
+describe('validateCrisisEvent', () => {
+
+  test('valid event returns true', () => {
+    const event = {
+      id: 'test_id',
+      category: 'test',
+      tags: ['tag1'],
+      title: 'test_title',
+      description: 'test_desc',
+      trigger: 'post_gig',
+      chance: 0.5,
+      options: [
+        { label: 'opt1', outcomeText: 'outcome1' }
+      ]
+    }
+    assert.strictEqual(validateCrisisEvent(event), true)
+  })
+
+  test('missing fields returns false', () => {
+    const event = { id: 'test_id' }
+    assert.strictEqual(validateCrisisEvent(event), false)
+  })
+
+  test('invalid types returns false', () => {
+    const event = {
+      id: 123,
+      category: 'test',
+      tags: 'tag1',
+      title: 'test_title',
+      description: 'test_desc',
+      trigger: 'post_gig',
+      chance: '50%',
+      options: 'opt1'
+    }
+    assert.strictEqual(validateCrisisEvent(event), false)
+  })
+
+  test('invalid option types returns false', () => {
+    const event = {
+      id: 'test_id',
+      category: 'test',
+      tags: ['tag1'],
+      title: 'test_title',
+      description: 'test_desc',
+      trigger: 'post_gig',
+      chance: 0.5,
+      options: [
+        { label: 123, outcomeText: 'outcome1' }
+      ]
+    }
+    assert.strictEqual(validateCrisisEvent(event), false)
   })
 })
