@@ -5,6 +5,7 @@ import {
   applyInventoryItemDelta,
   clampBandHarmony,
   clampPlayerMoney,
+  clampVanFuel,
   calculateFameLevel,
   calculateAppliedDelta
 } from '../src/utils/gameStateUtils.js'
@@ -216,4 +217,23 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
   assert.equal(Object.hasOwn(applied.player.stats, '__proto__'), false)
   assert.equal(Object.hasOwn(applied.band.inventory, 'constructor'), false)
   assert.equal(Object.hasOwn(applied.band.membersDelta, 'prototype'), false)
+})
+
+test('clampVanFuel edge cases', () => {
+  // Normal value
+  assert.strictEqual(clampVanFuel(50), 50)
+  // Boundary values
+  assert.strictEqual(clampVanFuel(0), 0)
+  assert.strictEqual(clampVanFuel(100), 100)
+  // Negative values
+  assert.strictEqual(clampVanFuel(-10), 0)
+  // Overflow values
+  assert.strictEqual(clampVanFuel(150), 100)
+  // Non-finite values
+  assert.strictEqual(clampVanFuel(NaN), 0)
+  assert.strictEqual(clampVanFuel(Infinity), 0)
+  assert.strictEqual(clampVanFuel(-Infinity), 0)
+  // Custom maxFuel
+  assert.strictEqual(clampVanFuel(150, 200), 150)
+  assert.strictEqual(clampVanFuel(250, 200), 200)
 })
