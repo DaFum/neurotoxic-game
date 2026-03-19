@@ -780,12 +780,7 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
   let fameDelta = -SIMULATION_CONSTANTS.fameLossBadGig
 
   if (performanceScore >= 62) {
-    const rawFameGain = Math.round(
-      SIMULATION_CONSTANTS.fameGainBase +
-      venue.diff +
-      performanceScore / 15 +
-      Math.min(4, (state.social.viral || 0) * 0.8)
-    )
+    const rawFameGain = 50 + Math.floor(performanceScore * 1.5)
     fameDelta = calculateFameGain(rawFameGain, currentFame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
   }
 
