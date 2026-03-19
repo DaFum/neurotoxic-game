@@ -220,7 +220,8 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   // Base daily cost plus a scaling "Burn Rate" based on fame level (lifestyle inflation)
   const fameLevel = nextPlayer.fameLevel || 0
   const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
-  let dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
+  let dailyCost =
+    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
 
   // YouTube Passive Ad Revenue Perk (per 10k subscribers)
   if ((nextSocial.youtube || 0) >= 10000) {
