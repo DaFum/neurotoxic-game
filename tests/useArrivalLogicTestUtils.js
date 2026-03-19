@@ -77,6 +77,10 @@ mock.module('../src/utils/gameStateUtils.js', {
     clampPlayerFame: val => {
       if (!Number.isFinite(val)) return 0
       return Math.max(0, Math.floor(val))
+    },
+    BALANCE_CONSTANTS: {
+      FAME_LOSS_BAD_GIG: 4,
+      MAX_FAME_GAIN: 500
     }
   }
 })

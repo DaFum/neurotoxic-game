@@ -2,7 +2,7 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
-import { clampMemberStamina, clampMemberMood, clampPlayerFame } from './gameStateUtils.js'
+import { clampMemberStamina, clampMemberMood, clampPlayerFame, BALANCE_CONSTANTS } from './gameStateUtils.js'
 import { secureRandom } from './crypto.js'
 import i18n from '../i18n.js'
 
@@ -105,7 +105,8 @@ export const handleNodeArrival = ({
         // Apply fame penalty directly (double the standard bad gig loss)
         if (player && updatePlayer) {
            const currentFame = player.fame || 0
-           const newFame = clampPlayerFame(currentFame - 8)
+           const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
+           const newFame = clampPlayerFame(currentFame - loss)
            updatePlayer({ fame: newFame })
         }
 

@@ -36,7 +36,8 @@ import {
   clampPlayerFame,
   calculateFameGain,
   clampPlayerMoney,
-  clampVanFuel
+  clampVanFuel,
+  BALANCE_CONSTANTS
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -57,7 +58,7 @@ export const SIMULATION_CONSTANTS = {
   randomModifierChance: 0.22,
   followerGainMultiplier: 0.2,
   fameGainBase: 4,
-  fameLossBadGig: 4,
+  fameLossBadGig: BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG,
   harmonyGainGoodGig: 2,
   harmonyLossBadGig: 5,
   sponsorshipPayout: 180,
@@ -437,11 +438,6 @@ const maybeHandleSponsorship = (state, rng, counters) => {
   }
 
   if (state.social.sponsorActive) {
-    state.player.money = clampPlayerMoney(
-      state.player.money + SIMULATION_CONSTANTS.sponsorshipPayout
-    )
-    counters.sponsorPayouts += 1
-
     // Immediate drop if controversy is extreme
     if ((state.social.controversyLevel || 0) >= 80) {
       state.social.sponsorActive = false
@@ -450,6 +446,14 @@ const maybeHandleSponsorship = (state, rng, counters) => {
       // High chance to drop if controversial
       state.social.sponsorActive = false
       counters.sponsorDrops += 1
+    }
+
+    // Only pay out if the sponsor didn't just drop
+    if (state.social.sponsorActive) {
+      state.player.money = clampPlayerMoney(
+        state.player.money + SIMULATION_CONSTANTS.sponsorshipPayout
+      )
+      counters.sponsorPayouts += 1
     }
   }
 }
@@ -904,62 +908,79 @@ const runSingleSimulation = (scenario, seed) => {
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
 
-    runMinigameLayer(state, scenario, rng, counters)
-
-    // Chaos Tour fix: Show cancellation check
+    // Chaos Tour fix: Show cancellation check (happens BEFORE minigames)
     const isCancelled = state.band.harmony < 15 && rng() < 0.25
 
-    let performanceScore = 0
-    let gigModifiers = { activeEffects: [] }
-    let physics = { hitWindows: { guitar: 150, drums: 150, bass: 150 } }
-    let misses = 0
-    let financials;
-
-    if (!isCancelled) {
-      const modifiers = calculateModifiers(scenario, rng)
-      const perfResults = calculatePerformanceScore(state, venue, modifiers, rng)
-      performanceScore = perfResults.score
-      gigModifiers = perfResults.gigModifiers
-      physics = perfResults.physics
-
-      misses = Math.max(
-        0,
-        Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
-      )
-
-      financials = calculateGigFinancials({
-        gigData: venue,
-        performanceScore,
-        modifiers,
-        bandInventory: state.band.inventory,
-        playerState: state.player,
-        gigStats: {
-          misses,
-          hitRate: performanceScore / 100,
-          peakHype: Math.round(performanceScore + rng() * 12)
-        },
-        context: {
-          discountedTickets: rng() < scenario.ticketDiscountChance,
-          controversyLevel: state.social.controversyLevel,
-          loyalty: state.social.loyalty,
-          zealotry: state.social.zealotry,
-          instagramFollowers: state.social.instagram,
-          regionRep: Math.round(
-            (state.player.fame - state.social.controversyLevel) * 0.4
-          )
-        }
-      })
-    } else {
+    if (isCancelled) {
       // Show is cancelled due to poor harmony
-      financials = { net: 0, income: { total: 0 }, expenses: { total: 0 } }
       // Apply a penalty to fame directly as it doesn't go through standard score scaling
       state.player.fame = clampPlayerFame(state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2)
+
+      // Record cancelled state in timeline (without incrementing gigsPlayed or updating currentNode)
+      timeline.push({
+        day: state.player.day,
+        venueId: venue.id,
+        venueDiff: venue.diff,
+        performanceScore: 0,
+        net: 0,
+        travelCost: totalTravelCost,
+        misses: 0,
+        modifierEffects: 0,
+        avgHitWindow: 0,
+        money: state.player.money,
+        fame: state.player.fame,
+        controversyLevel: state.social.controversyLevel,
+        sponsorActive: state.social.sponsorActive
+      })
+
+      if (shouldTriggerBankruptcy(state.player.money, 0)) {
+        counters.bankrupt = true
+        break
+      }
+
+      // Skip the rest of the gig pipeline
+      continue
     }
 
-    // Only apply standard post-gig adjustments (mood decay, follower gain, etc) if the gig actually happened
-    if (!isCancelled) {
-      applyPostGigState(state, venue, performanceScore, financials, rng)
-    }
+    // Only run minigames and performance if show is NOT cancelled
+    runMinigameLayer(state, scenario, rng, counters)
+
+    const modifiers = calculateModifiers(scenario, rng)
+    const perfResults = calculatePerformanceScore(state, venue, modifiers, rng)
+    const performanceScore = perfResults.score
+    const gigModifiers = perfResults.gigModifiers
+    const physics = perfResults.physics
+
+    const misses = Math.max(
+      0,
+      Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
+    )
+
+    const financials = calculateGigFinancials({
+      gigData: venue,
+      performanceScore,
+      modifiers,
+      bandInventory: state.band.inventory,
+      playerState: state.player,
+      gigStats: {
+        misses,
+        hitRate: performanceScore / 100,
+        peakHype: Math.round(performanceScore + rng() * 12)
+      },
+      context: {
+        discountedTickets: rng() < scenario.ticketDiscountChance,
+        controversyLevel: state.social.controversyLevel,
+        loyalty: state.social.loyalty,
+        zealotry: state.social.zealotry,
+        instagramFollowers: state.social.instagram,
+        regionRep: Math.round(
+          (state.player.fame - state.social.controversyLevel) * 0.4
+        )
+      }
+    })
+
+    // Standard post-gig adjustments
+    applyPostGigState(state, venue, performanceScore, financials, rng)
 
     currentNode = venue
     counters.gigsPlayed += 1
