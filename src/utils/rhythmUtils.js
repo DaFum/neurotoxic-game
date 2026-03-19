@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { resolveSongPlaybackWindow } from './audio/songUtils.js'
+import { secureRandom } from './crypto.js'
 
 /**
  * Generates rhythm game notes for a given song and configuration.
@@ -10,7 +11,7 @@ import { resolveSongPlaybackWindow } from './audio/songUtils.js'
  * @returns {Array} Array of note objects.
  */
 export const generateNotesForSong = (song, options = {}) => {
-  const { leadIn = 2000, random = Math.random } = options
+  const { leadIn = 2000, random = secureRandom } = options
   const notes = []
   const beatInterval = 60000 / Math.max(1, song.bpm || 120)
   const songDurationMs = song.duration * 1000

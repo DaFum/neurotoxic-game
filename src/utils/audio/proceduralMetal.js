@@ -3,6 +3,7 @@ import * as Tone from 'tone'
 import { audioState } from './state.js'
 import { prepareTransportPlayback } from './playbackUtils.js'
 import { logger } from '../logger.js'
+import { secureRandom } from '../crypto.js'
 
 /**
  * Generates a procedural riff pattern.
@@ -65,14 +66,14 @@ function playDrumsLegacy(time, diff, note, random) {
  * Starts the procedural metal music generator for a specific song configuration.
  * @param {object} song - The song object containing metadata like BPM and difficulty.
  * @param {number} [delay=0] - Delay in seconds before the audio starts.
- * @param {Function} [random=Math.random] - RNG function for deterministic generation.
+ * @param {Function} [random=secureRandom] - RNG function for deterministic generation.
  * @returns {Promise<boolean>}
  */
 export async function startMetalGenerator(
   song,
   delay = 0,
   options = {},
-  random = Math.random
+  random = secureRandom
 ) {
   const { success, reqId, normalizedOptions } =
     await prepareTransportPlayback(options)

@@ -3,6 +3,7 @@ import {
   CONTRABAND_RARITY_WEIGHTS,
   CONTRABAND_BY_RARITY
 } from '../data/contraband.js'
+import { secureRandom } from './crypto.js'
 
 export const DROP_BASE_CHANCE = 0.15
 export const LUCK_MOD_PER_POINT = 0.005
@@ -10,10 +11,10 @@ export const MAX_DROP_CHANCE = 0.5
 
 /**
  * Picks a random rarity based on weights.
- * @param {Function} [rng=Math.random]
+ * @param {Function} [rng=secureRandom]
  * @returns {string} rarity tier
  */
-export function pickRarity(rng = Math.random) {
+export function pickRarity(rng = secureRandom) {
   const weights = CONTRABAND_RARITY_WEIGHTS
   let total = 0
   for (const rarity in weights) {
@@ -36,10 +37,10 @@ export function pickRarity(rng = Math.random) {
 /**
  * Picks a random contraband ID from a specific rarity pool.
  * @param {string} rarity
- * @param {Function} [rng=Math.random]
+ * @param {Function} [rng=secureRandom]
  * @returns {string|null} ID of picked contraband or null if none found
  */
-export function pickRandomContrabandByRarity(rarity, rng = Math.random) {
+export function pickRandomContrabandByRarity(rarity, rng = secureRandom) {
   const pool = CONTRABAND_BY_RARITY[rarity] || []
   if (pool.length === 0) return null
   return pool[Math.floor(rng() * pool.length)].id
@@ -47,10 +48,10 @@ export function pickRandomContrabandByRarity(rarity, rng = Math.random) {
 
 /**
  * Picks a random contraband ID using the weighted rarity system.
- * @param {Function} [rng=Math.random]
+ * @param {Function} [rng=secureRandom]
  * @returns {string|null}
  */
-export function pickRandomContraband(rng = Math.random) {
+export function pickRandomContraband(rng = secureRandom) {
   const rarity = pickRarity(rng)
   return pickRandomContrabandByRarity(rarity, rng)
 }

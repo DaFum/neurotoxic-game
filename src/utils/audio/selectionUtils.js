@@ -1,12 +1,13 @@
-// TODO: Review this file
+import { secureRandom } from '../crypto.js'
+
 /**
  * Selects a random item from an array using the provided RNG.
  * @template T
  * @param {T[]} items - The list of items to choose from.
- * @param {() => number} [rng=Math.random] - Random number generator returning [0, 1).
+ * @param {() => number} [rng=secureRandom] - Random number generator returning [0, 1).
  * @returns {T | null} The selected item, or null when the list is empty.
  */
-export const selectRandomItem = (items, rng = Math.random) => {
+export const selectRandomItem = (items, rng = secureRandom) => {
   if (!Array.isArray(items) || items.length === 0) {
     return null
   }
