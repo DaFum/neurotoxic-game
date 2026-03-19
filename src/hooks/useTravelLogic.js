@@ -163,7 +163,15 @@ export const useTravelLogic = ({
         eventAlreadyActive
       })
     },
-    [updateBand, updatePlayer, triggerEvent, startGig, addToast, onShowHQ, changeScene]
+    [
+      updateBand,
+      updatePlayer,
+      triggerEvent,
+      startGig,
+      addToast,
+      onShowHQ,
+      changeScene
+    ]
   )
 
   /**
@@ -399,7 +407,9 @@ export const useTravelLogic = ({
           // harmony checks, show cancellations, and routing safely.
           const processedNode = {
             ...node,
-            venue: resolveVenue(node.venue, normalizeVenueId(node.venue)) || node.venue
+            venue:
+              resolveVenue(node.venue, normalizeVenueId(node.venue)) ||
+              node.venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {

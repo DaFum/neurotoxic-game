@@ -2,7 +2,13 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
-import { clampMemberStamina, clampMemberMood, clampPlayerFame, calculateFameLevel, BALANCE_CONSTANTS } from './gameStateUtils.js'
+import {
+  clampMemberStamina,
+  clampMemberMood,
+  clampPlayerFame,
+  calculateFameLevel,
+  BALANCE_CONSTANTS
+} from './gameStateUtils.js'
 import { secureRandom } from './crypto.js'
 import i18n from '../i18n.js'
 
@@ -100,19 +106,20 @@ export const handleNodeArrival = ({
       if ((band?.harmony ?? 100) < 15 && rng() < 0.25) {
         addToast(
           i18n.t('ui:arrival.showCancelled', {
-            defaultValue: "Show cancelled! The band refused to go on stage due to low harmony."
+            defaultValue:
+              'Show cancelled! The band refused to go on stage due to low harmony.'
           }),
           'error'
         )
         // Apply fame penalty directly (double the standard bad gig loss)
         if (player && updatePlayer) {
-           const currentFame = player.fame || 0
-           const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
-           const newFame = clampPlayerFame(currentFame - loss)
-           updatePlayer({
-             fame: newFame,
-             fameLevel: calculateFameLevel(newFame)
-           })
+          const currentFame = player.fame || 0
+          const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
+          const newFame = clampPlayerFame(currentFame - loss)
+          updatePlayer({
+            fame: newFame,
+            fameLevel: calculateFameLevel(newFame)
+          })
         }
 
         if (changeScene) changeScene(GAME_PHASES.OVERWORLD)

@@ -14,10 +14,14 @@ const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
  */
 const validateEffect = (effect, eventId, idx) => {
   if (!effect || typeof effect !== 'object') {
-    throw new Error(`Effect must be an object at index ${idx} for event ${eventId}`)
+    throw new Error(
+      `Effect must be an object at index ${idx} for event ${eventId}`
+    )
   }
   if (!effect.type) {
-    throw new Error(`Effect must have a type at index ${idx} for event ${eventId}`)
+    throw new Error(
+      `Effect must have a type at index ${idx} for event ${eventId}`
+    )
   }
   if (effect.type === 'composite') {
     if (!Array.isArray(effect.effects) || effect.effects.length === 0) {
@@ -29,15 +33,22 @@ const validateEffect = (effect, eventId, idx) => {
       try {
         validateEffect(childEffect, eventId, idx)
       } catch (err) {
-        throw new Error(`Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`)
+        throw new Error(
+          `Invalid child effect at composite index ${childIdx} for option index ${idx} in event ${eventId}: ${err.message}`,
+          { cause: err }
+        )
       }
     })
   } else if (effect.type === 'skillCheck') {
     if (!effect.success || typeof effect.success !== 'object') {
-      throw new Error(`SkillCheck effect must have a success object at index ${idx} for event ${eventId}`)
+      throw new Error(
+        `SkillCheck effect must have a success object at index ${idx} for event ${eventId}`
+      )
     }
     if (!effect.failure || typeof effect.failure !== 'object') {
-      throw new Error(`SkillCheck effect must have a failure object at index ${idx} for event ${eventId}`)
+      throw new Error(
+        `SkillCheck effect must have a failure object at index ${idx} for event ${eventId}`
+      )
     }
   }
 }
@@ -76,7 +87,11 @@ export const validateCrisisEvent = event => {
     throw new Error(`Invalid trigger: ${event.trigger} for event ${event.id}`)
   }
 
-  if (typeof event.chance !== 'number' || event.chance < 0 || event.chance > 1) {
+  if (
+    typeof event.chance !== 'number' ||
+    event.chance < 0 ||
+    event.chance > 1
+  ) {
     throw new Error(`Invalid chance: ${event.chance} for event ${event.id}`)
   }
 

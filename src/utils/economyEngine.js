@@ -296,7 +296,7 @@ export const calculateTravelExpenses = (
 
   // Logistics/Crew scaling with fame and distance (exponential)
   // Adjusted base scalar to 0.15 so early game distances don't drain the bank completely
-  const logisticsCost = Math.floor((dist * 0.15) * Math.pow(1.2, fameLevel))
+  const logisticsCost = Math.floor(dist * 0.15 * Math.pow(1.2, fameLevel))
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }

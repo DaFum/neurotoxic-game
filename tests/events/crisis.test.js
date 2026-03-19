@@ -229,17 +229,26 @@ describe('CRISIS_EVENTS', () => {
 
     test('throws error for missing crisis tag', () => {
       const invalidEvent = { ...CRISIS_EVENTS[0], tags: ['reputation'] }
-      assert.throws(() => validateCrisisEvent(invalidEvent), /must have "crisis" tag/)
+      assert.throws(
+        () => validateCrisisEvent(invalidEvent),
+        /must have "crisis" tag/
+      )
     })
 
     test('throws error for invalid i18n keys', () => {
       const invalidEvent = { ...CRISIS_EVENTS[0], title: 'bad_title' }
-      assert.throws(() => validateCrisisEvent(invalidEvent), /Invalid title key/)
+      assert.throws(
+        () => validateCrisisEvent(invalidEvent),
+        /Invalid title key/
+      )
     })
 
     test('throws error for empty options', () => {
       const invalidEvent = { ...CRISIS_EVENTS[0], options: [] }
-      assert.throws(() => validateCrisisEvent(invalidEvent), /must have at least one option/)
+      assert.throws(
+        () => validateCrisisEvent(invalidEvent),
+        /must have at least one option/
+      )
     })
   })
 })

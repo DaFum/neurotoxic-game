@@ -402,8 +402,13 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
       SIMULATION_CONSTANTS.randomEventCashSwing * (0.6 + rng())
     )
     // Scale swing relative to current wealth to simulate larger impacts for richer bands
-    const scaledSwing = Math.max(baseSwing, Math.round(state.player.money * 0.15))
-    state.player.money = clampPlayerMoney(state.player.money + sign * scaledSwing)
+    const scaledSwing = Math.max(
+      baseSwing,
+      Math.round(state.player.money * 0.15)
+    )
+    state.player.money = clampPlayerMoney(
+      state.player.money + sign * scaledSwing
+    )
     eventCounts.cashSwings += 1
   }
 
@@ -781,7 +786,11 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
 
   if (performanceScore >= 62) {
     const rawFameGain = 50 + Math.floor(performanceScore * 1.5)
-    fameDelta = calculateFameGain(rawFameGain, currentFame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
+    fameDelta = calculateFameGain(
+      rawFameGain,
+      currentFame,
+      BALANCE_CONSTANTS.MAX_FAME_GAIN
+    )
   }
 
   state.player.fame = clampPlayerFame(currentFame + fameDelta)
@@ -910,7 +919,9 @@ const runSingleSimulation = (scenario, seed) => {
     if (isCancelled) {
       // Show is cancelled due to poor harmony
       // Apply a penalty to fame directly as it doesn't go through standard score scaling
-      state.player.fame = clampPlayerFame(state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2)
+      state.player.fame = clampPlayerFame(
+        state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2
+      )
       state.player.fameLevel = calculateFameLevel(state.player.fame)
 
       // Record cancelled state in timeline (without incrementing gigsPlayed)

@@ -572,7 +572,11 @@ test('calculateTravelExpenses returns correct cost structure', () => {
     Math.abs(result.fuelLiters - 2.4) < 0.001,
     'Fuel liters should be approx 2.4'
   )
-  assert.equal(result.totalCost, 27, 'Total cost should be 27 (Food + Logistics)')
+  assert.equal(
+    result.totalCost,
+    27,
+    'Total cost should be 27 (Food + Logistics)'
+  )
 })
 
 test('calculateTravelExpenses computes distance consistently across node coordinates', () => {

@@ -567,7 +567,11 @@ export const usePostGigLogic = () => {
     let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
     if (perfScore >= 62) {
       const rawFameGain = 50 + Math.floor(perfScore * 1.5)
-      finalFameGain = calculateFameGain(rawFameGain, prevFame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
+      finalFameGain = calculateFameGain(
+        rawFameGain,
+        prevFame,
+        BALANCE_CONSTANTS.MAX_FAME_GAIN
+      )
     }
 
     const prevMoney = player.money ?? 0
