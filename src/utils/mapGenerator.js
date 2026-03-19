@@ -432,8 +432,6 @@ export class MapGenerator {
         // Gather candidates from neighboring cells
         const candidates = this._getNeighborCandidates(grid, cellX, cellY, j)
 
-        // To guarantee strict PRNG sequence parity, candidates MUST be processed
-        // in ascending order of `k`, perfectly mimicking the original `for (let k = j + 1; ...)` loop.
         candidates.sort((a, b) => a - b)
 
         for (let c = 0; c < candidates.length; c++) {
