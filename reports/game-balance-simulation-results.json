@@ -1,0 +1,1764 @@
+{
+  "generatedAt": "2026-03-18T21:28:09.068Z",
+  "constants": {
+    "reportVersion": 3,
+    "runsPerScenario": 260,
+    "daysPerRun": 75,
+    "homeVenueId": "stendal_proberaum",
+    "baseGigGapDays": 3,
+    "randomModifierChance": 0.22,
+    "followerGainMultiplier": 0.2,
+    "fameGainBase": 4,
+    "fameLossBadGig": 4,
+    "harmonyGainGoodGig": 2,
+    "harmonyLossBadGig": 5,
+    "sponsorshipPayout": 180,
+    "randomEventCashSwing": 140,
+    "brandDealEvalChance": 0.14,
+    "postPulseChance": 0.18,
+    "trendShiftChance": 0.12,
+    "contrabandDropChance": 0.11,
+    "hqUpgradeCost": 240,
+    "vanUpgradeCost": 350,
+    "outputJson": "game-balance-simulation-results.json",
+    "outputMarkdown": "game-balance-simulation-analysis.md"
+  },
+  "outputJson": "game-balance-simulation-results.json",
+  "outputMarkdown": "game-balance-simulation-analysis.md",
+  "scenarios": [
+    {
+      "id": "baseline_touring",
+      "name": "Baseline Touring",
+      "description": "Ausgewogene Tour mit moderaten Modifikatoren und normalem Risiko.",
+      "gigGapDays": 3,
+      "ticketDiscountChance": 0.08,
+      "eventIntensity": 0.35,
+      "maintenanceDiscipline": 0.7,
+      "minigameSkill": 0.62,
+      "traitPack": [
+        "bandleader",
+        "gear_nerd",
+        "party_animal"
+      ],
+      "modifierBias": {
+        "promo": 0.35,
+        "merch": 0.3,
+        "catering": 0.15,
+        "soundcheck": 0.2,
+        "guestlist": 0.1
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 500,
+          "fame": 0
+        },
+        "band": {
+          "harmony": 80
+        },
+        "social": {
+          "controversyLevel": 0,
+          "loyalty": 5,
+          "zealotry": 0
+        }
+      }
+    },
+    {
+      "id": "bootstrap_struggle",
+      "name": "Bootstrap Struggle",
+      "description": "Wenig Startkapital, fragile Stimmung, seltene Premium-Modifikatoren.",
+      "gigGapDays": 4,
+      "ticketDiscountChance": 0.2,
+      "eventIntensity": 0.5,
+      "maintenanceDiscipline": 0.45,
+      "minigameSkill": 0.42,
+      "traitPack": [
+        "road_warrior"
+      ],
+      "modifierBias": {
+        "promo": 0.15,
+        "merch": 0.25,
+        "catering": 0.05,
+        "soundcheck": 0.05,
+        "guestlist": 0.03
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 240,
+          "fame": 0
+        },
+        "band": {
+          "harmony": 64,
+          "members": [
+            {
+              "mood": 65,
+              "stamina": 82
+            },
+            {
+              "mood": 58,
+              "stamina": 76
+            },
+            {
+              "mood": 61,
+              "stamina": 80
+            }
+          ]
+        },
+        "social": {
+          "controversyLevel": 0,
+          "loyalty": 3,
+          "zealotry": 0
+        }
+      }
+    },
+    {
+      "id": "aggressive_marketing",
+      "name": "Aggressive Marketing",
+      "description": "Hohe Modifikator-Nutzung und dichte Gig-Folge für schnelles Wachstum.",
+      "gigGapDays": 2,
+      "ticketDiscountChance": 0.04,
+      "eventIntensity": 0.62,
+      "maintenanceDiscipline": 0.63,
+      "minigameSkill": 0.58,
+      "traitPack": [
+        "social_manager",
+        "tech_wizard"
+      ],
+      "modifierBias": {
+        "promo": 0.78,
+        "merch": 0.65,
+        "catering": 0.45,
+        "soundcheck": 0.5,
+        "guestlist": 0.25
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 650,
+          "fame": 20
+        },
+        "band": {
+          "harmony": 78
+        },
+        "social": {
+          "controversyLevel": 8,
+          "loyalty": 10,
+          "zealotry": 12
+        }
+      }
+    },
+    {
+      "id": "scandal_recovery",
+      "name": "Scandal Recovery",
+      "description": "Start mit hoher Kontroverse; Fokus auf Stabilisierung statt Maximalgewinn.",
+      "gigGapDays": 3,
+      "ticketDiscountChance": 0.22,
+      "eventIntensity": 0.75,
+      "maintenanceDiscipline": 0.6,
+      "minigameSkill": 0.5,
+      "traitPack": [
+        "bandleader",
+        "melodic_genius"
+      ],
+      "modifierBias": {
+        "promo": 0.2,
+        "merch": 0.35,
+        "catering": 0.2,
+        "soundcheck": 0.3,
+        "guestlist": 0.05
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 450,
+          "fame": 30
+        },
+        "band": {
+          "harmony": 58,
+          "members": [
+            {
+              "mood": 56,
+              "stamina": 75
+            },
+            {
+              "mood": 53,
+              "stamina": 72
+            },
+            {
+              "mood": 55,
+              "stamina": 74
+            }
+          ]
+        },
+        "social": {
+          "controversyLevel": 72,
+          "loyalty": 34,
+          "zealotry": 8
+        }
+      }
+    },
+    {
+      "id": "festival_push",
+      "name": "Festival Push",
+      "description": "Späteres Midgame/Endgame-Setup mit Fokus auf große Venues und Premiumpreise.",
+      "gigGapDays": 3,
+      "ticketDiscountChance": 0.02,
+      "eventIntensity": 0.4,
+      "maintenanceDiscipline": 0.75,
+      "minigameSkill": 0.66,
+      "traitPack": [
+        "tech_wizard",
+        "blast_machine",
+        "social_manager"
+      ],
+      "modifierBias": {
+        "promo": 0.56,
+        "merch": 0.5,
+        "catering": 0.35,
+        "soundcheck": 0.45,
+        "guestlist": 0.4
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 1400,
+          "fame": 120
+        },
+        "band": {
+          "harmony": 86
+        },
+        "social": {
+          "controversyLevel": 10,
+          "loyalty": 28,
+          "zealotry": 40
+        }
+      }
+    },
+    {
+      "id": "chaos_tour",
+      "name": "Chaos Tour",
+      "description": "Hohe Event-Dichte, riskante Entscheidungen und volatile Bandwerte.",
+      "gigGapDays": 2,
+      "ticketDiscountChance": 0.3,
+      "eventIntensity": 0.95,
+      "maintenanceDiscipline": 0.35,
+      "minigameSkill": 0.35,
+      "traitPack": [
+        "party_animal"
+      ],
+      "modifierBias": {
+        "promo": 0.55,
+        "merch": 0.5,
+        "catering": 0.1,
+        "soundcheck": 0.08,
+        "guestlist": 0.22
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 380,
+          "fame": 16
+        },
+        "band": {
+          "harmony": 49,
+          "members": [
+            {
+              "mood": 52,
+              "stamina": 68
+            },
+            {
+              "mood": 47,
+              "stamina": 70
+            },
+            {
+              "mood": 45,
+              "stamina": 66
+            }
+          ]
+        },
+        "social": {
+          "controversyLevel": 46,
+          "loyalty": 12,
+          "zealotry": 5
+        }
+      }
+    },
+    {
+      "id": "cult_hypergrowth",
+      "name": "Cult Hypergrowth",
+      "description": "Zealotry-getriebene Fanbasis, starke Monetarisierung bei höherem Risiko.",
+      "gigGapDays": 2,
+      "ticketDiscountChance": 0,
+      "eventIntensity": 0.55,
+      "maintenanceDiscipline": 0.58,
+      "minigameSkill": 0.64,
+      "traitPack": [
+        "social_manager",
+        "tech_wizard",
+        "gear_nerd"
+      ],
+      "modifierBias": {
+        "promo": 0.88,
+        "merch": 0.72,
+        "catering": 0.3,
+        "soundcheck": 0.5,
+        "guestlist": 0.35
+      },
+      "initialOverrides": {
+        "player": {
+          "money": 900,
+          "fame": 70
+        },
+        "band": {
+          "harmony": 82
+        },
+        "social": {
+          "controversyLevel": 18,
+          "loyalty": 36,
+          "zealotry": 82
+        }
+      }
+    }
+  ],
+  "appFeatureSnapshot": {
+    "venues": 45,
+    "scenarios": 7,
+    "eventsDb": {
+      "transport": {
+        "count": 22,
+        "sampleEventIds": [
+          "van_breakdown_tire",
+          "van_breakdown_engine",
+          "van_critical_failure",
+          "police_control",
+          "wrong_turn"
+        ],
+        "triggers": [
+          "travel"
+        ]
+      },
+      "band": {
+        "count": 40,
+        "sampleEventIds": [
+          "internal_dispute",
+          "late_night_party",
+          "writers_block",
+          "ego_clash",
+          "gear_upgrade_argument"
+        ],
+        "triggers": [
+          "random",
+          "post_gig",
+          "travel"
+        ]
+      },
+      "gig": {
+        "count": 19,
+        "sampleEventIds": [
+          "gig_mid_strings_snapped",
+          "gig_intro_drunk_fan",
+          "amp_feedback_loop",
+          "crowd_surf_disaster",
+          "gig_intro_dead_air"
+        ],
+        "triggers": [
+          "gig_mid",
+          "gig_intro"
+        ]
+      },
+      "financial": {
+        "count": 27,
+        "sampleEventIds": [
+          "unexpected_bill",
+          "gear_theft",
+          "parking_fine",
+          "tax_audit",
+          "broken_merch_box"
+        ],
+        "triggers": [
+          "random",
+          "post_gig"
+        ]
+      },
+      "special": {
+        "count": 13,
+        "sampleEventIds": [
+          "deal_devil",
+          "mysterious_producer",
+          "strange_roadside_shrine",
+          "legendary_patch_trader",
+          "midnight_radio"
+        ],
+        "triggers": [
+          "special_location",
+          "travel",
+          "post_gig",
+          "random"
+        ]
+      }
+    },
+    "brandDeals": 4,
+    "postOptions": 32,
+    "trends": [
+      "NEUTRAL",
+      "DRAMA",
+      "TECH",
+      "MUSIC",
+      "WHOLESOME"
+    ],
+    "socialPlatforms": [
+      {
+        "id": "instagram",
+        "multiplier": 1.2
+      },
+      {
+        "id": "tiktok",
+        "multiplier": 1.5
+      },
+      {
+        "id": "youtube",
+        "multiplier": 0.8
+      },
+      {
+        "id": "newsletter",
+        "multiplier": 0.5
+      }
+    ],
+    "contrabandItems": 27,
+    "upgradeCatalogEntries": 60
+  },
+  "featureCoverage": {
+    "daily_updates": true,
+    "gig_financials": true,
+    "travel_expenses": true,
+    "fuel_cost": true,
+    "travel_minigame": true,
+    "roadie_minigame": true,
+    "kabelsalat_minigame": true,
+    "gig_modifiers": true,
+    "gig_physics": true,
+    "world_events": true,
+    "events_db": false,
+    "brand_deals": true,
+    "social_trends": true,
+    "social_platforms": true,
+    "post_options": true,
+    "contraband": true,
+    "sponsorship": true,
+    "maintenance": true,
+    "upgrades": true
+  },
+  "results": [
+    {
+      "id": "baseline_touring",
+      "name": "Baseline Touring",
+      "description": "Ausgewogene Tour mit moderaten Modifikatoren und normalem Risiko.",
+      "summary": {
+        "avgFinalMoney": 40096,
+        "avgFinalFame": 0,
+        "avgFinalHarmony": 41,
+        "avgFinalControversy": 0.73,
+        "avgPeakMoney": 40219,
+        "avgLowestMoney": 349,
+        "avgGigsPlayed": 25,
+        "avgGigNet": 1887,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.36,
+        "avgSponsorPayouts": 40.28,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 25,
+        "avgRoadieMinigames": 25,
+        "avgKabelsalatMinigames": 25,
+        "avgRefuels": 4.78,
+        "avgRepairs": 7.17,
+        "avgHqUpgrades": 0.99,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 2.67,
+        "avgCashSwings": 2.24,
+        "avgBandEvents": 1.73,
+        "avgEquipmentEvents": 1.62,
+        "avgTrendShifts": 9.3,
+        "avgBrandDealsActivated": 3.22,
+        "avgPostPulses": 13.43,
+        "avgContrabandDrops": 8.25,
+        "avgCatalogUpgrades": 14.93,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 4,
+          "venueId": "koeln_luxor",
+          "venueDiff": 3,
+          "performanceScore": 70,
+          "net": 3363,
+          "travelCost": 68,
+          "misses": 5,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 3749,
+          "fame": 12,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 7,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 72,
+          "net": 2419,
+          "travelCost": 56,
+          "misses": 5,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 2688,
+          "fame": 24,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 10,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 54,
+          "net": 2135,
+          "travelCost": 27,
+          "misses": 8,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 3514,
+          "fame": 20,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "hamburg_logo",
+          "venueDiff": 3,
+          "performanceScore": 47,
+          "net": 956,
+          "travelCost": 32,
+          "misses": 8,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 3119,
+          "fame": 16,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 16,
+          "venueId": "erfurt_centrum",
+          "venueDiff": 3,
+          "performanceScore": 49,
+          "net": 4318,
+          "travelCost": 57,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 7160,
+          "fame": 12,
+          "controversyLevel": 1,
+          "sponsorActive": false
+        },
+        {
+          "day": 19,
+          "venueId": "stendal_adler",
+          "venueDiff": 3,
+          "performanceScore": 46,
+          "net": 482,
+          "travelCost": 39,
+          "misses": 11,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 7310,
+          "fame": 8,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 22,
+          "venueId": "hamburg_knust",
+          "venueDiff": 3,
+          "performanceScore": 40,
+          "net": 3289,
+          "travelCost": 49,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 8836,
+          "fame": 4,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 25,
+          "venueId": "dresden_beatpol",
+          "venueDiff": 3,
+          "performanceScore": 37,
+          "net": 3225,
+          "travelCost": 68,
+          "misses": 11,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 10827,
+          "fame": 0,
+          "controversyLevel": 1,
+          "sponsorActive": false
+        },
+        {
+          "day": 28,
+          "venueId": "dresden_beatpol",
+          "venueDiff": 3,
+          "performanceScore": 45,
+          "net": 3422,
+          "travelCost": 27,
+          "misses": 8,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 13210,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 31,
+          "venueId": "hamburg_logo",
+          "venueDiff": 3,
+          "performanceScore": 41,
+          "net": 951,
+          "travelCost": 67,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 13953,
+          "fame": 0,
+          "controversyLevel": 2,
+          "sponsorActive": false
+        }
+      ]
+    },
+    {
+      "id": "bootstrap_struggle",
+      "name": "Bootstrap Struggle",
+      "description": "Wenig Startkapital, fragile Stimmung, seltene Premium-Modifikatoren.",
+      "summary": {
+        "avgFinalMoney": 19419,
+        "avgFinalFame": 0,
+        "avgFinalHarmony": 49,
+        "avgFinalControversy": 0.97,
+        "avgPeakMoney": 19907,
+        "avgLowestMoney": 44,
+        "avgGigsPlayed": 18,
+        "avgGigNet": 1644,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.45,
+        "avgSponsorPayouts": 22.92,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 18,
+        "avgRoadieMinigames": 18,
+        "avgKabelsalatMinigames": 18,
+        "avgRefuels": 3.44,
+        "avgRepairs": 6.42,
+        "avgHqUpgrades": 0.99,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 3.67,
+        "avgCashSwings": 3.03,
+        "avgBandEvents": 2.82,
+        "avgEquipmentEvents": 2.4,
+        "avgTrendShifts": 9.1,
+        "avgBrandDealsActivated": 2.95,
+        "avgPostPulses": 13.62,
+        "avgContrabandDrops": 8.13,
+        "avgCatalogUpgrades": 13.82,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 5,
+          "venueId": "dresden_beatpol",
+          "venueDiff": 3,
+          "performanceScore": 58,
+          "net": 2002,
+          "travelCost": 52,
+          "misses": 9,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 2002,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 9,
+          "venueId": "hamburg_logo",
+          "venueDiff": 3,
+          "performanceScore": 48,
+          "net": 1271,
+          "travelCost": 78,
+          "misses": 9,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 1731,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "hamburg_headcrash",
+          "venueDiff": 3,
+          "performanceScore": 47,
+          "net": 1747,
+          "travelCost": 29,
+          "misses": 10,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 2897,
+          "fame": 0,
+          "controversyLevel": 1,
+          "sponsorActive": false
+        },
+        {
+          "day": 17,
+          "venueId": "freiburg_jazzhaus",
+          "venueDiff": 3,
+          "performanceScore": 40,
+          "net": 1357,
+          "travelCost": 97,
+          "misses": 9,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 3757,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 21,
+          "venueId": "stendal_adler",
+          "venueDiff": 3,
+          "performanceScore": 39,
+          "net": 423,
+          "travelCost": 84,
+          "misses": 11,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 3556,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 25,
+          "venueId": "hamburg_logo",
+          "venueDiff": 3,
+          "performanceScore": 31,
+          "net": 906,
+          "travelCost": 55,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 2487,
+          "fame": 0,
+          "controversyLevel": 2,
+          "sponsorActive": false
+        },
+        {
+          "day": 29,
+          "venueId": "leipzig_ut",
+          "venueDiff": 3,
+          "performanceScore": 32,
+          "net": 889,
+          "travelCost": 71,
+          "misses": 10,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 2967,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 33,
+          "venueId": "berlin_cassiopeia",
+          "venueDiff": 3,
+          "performanceScore": 34,
+          "net": 1381,
+          "travelCost": 50,
+          "misses": 11,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 4194,
+          "fame": 0,
+          "controversyLevel": 3,
+          "sponsorActive": false
+        },
+        {
+          "day": 37,
+          "venueId": "kassel_goldgrube",
+          "venueDiff": 2,
+          "performanceScore": 44,
+          "net": 945,
+          "travelCost": 59,
+          "misses": 11,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 3877,
+          "fame": 0,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 41,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 48,
+          "net": 2217,
+          "travelCost": 48,
+          "misses": 7,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 5481,
+          "fame": 0,
+          "controversyLevel": 1,
+          "sponsorActive": false
+        }
+      ]
+    },
+    {
+      "id": "aggressive_marketing",
+      "name": "Aggressive Marketing",
+      "description": "Hohe Modifikator-Nutzung und dichte Gig-Folge für schnelles Wachstum.",
+      "summary": {
+        "avgFinalMoney": 86122,
+        "avgFinalFame": 0,
+        "avgFinalHarmony": 8,
+        "avgFinalControversy": 0.85,
+        "avgPeakMoney": 86341,
+        "avgLowestMoney": 575,
+        "avgGigsPlayed": 37,
+        "avgGigNet": 2430,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.43,
+        "avgSponsorPayouts": 58.68,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 37,
+        "avgRoadieMinigames": 37,
+        "avgKabelsalatMinigames": 37,
+        "avgRefuels": 7.18,
+        "avgRepairs": 9.14,
+        "avgHqUpgrades": 0.99,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 4.59,
+        "avgCashSwings": 3.64,
+        "avgBandEvents": 3.13,
+        "avgEquipmentEvents": 2.76,
+        "avgTrendShifts": 9.1,
+        "avgBrandDealsActivated": 3.57,
+        "avgPostPulses": 13.21,
+        "avgContrabandDrops": 8.13,
+        "avgCatalogUpgrades": 14.71,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 3,
+          "venueId": "kassel_goldgrube",
+          "venueDiff": 2,
+          "performanceScore": 81,
+          "net": 2072,
+          "travelCost": 47,
+          "misses": 3,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 2684,
+          "fame": 31,
+          "controversyLevel": 6,
+          "sponsorActive": false
+        },
+        {
+          "day": 5,
+          "venueId": "erfurt_centrum",
+          "venueDiff": 3,
+          "performanceScore": 65,
+          "net": 3350,
+          "travelCost": 36,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 5329,
+          "fame": 42,
+          "controversyLevel": 4,
+          "sponsorActive": false
+        },
+        {
+          "day": 7,
+          "venueId": "berlin_lido",
+          "venueDiff": 4,
+          "performanceScore": 71,
+          "net": 6605,
+          "travelCost": 47,
+          "misses": 5,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 11862,
+          "fame": 55,
+          "controversyLevel": 2,
+          "sponsorActive": false
+        },
+        {
+          "day": 9,
+          "venueId": "leipzig_conne",
+          "venueDiff": 4,
+          "performanceScore": 62,
+          "net": 3575,
+          "travelCost": 42,
+          "misses": 5,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 15250,
+          "fame": 67,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 11,
+          "venueId": "leipzig_taeubchen",
+          "venueDiff": 4,
+          "performanceScore": 50,
+          "net": 4016,
+          "travelCost": 28,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 18772,
+          "fame": 63,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "stendal_stadtfest",
+          "venueDiff": 2,
+          "performanceScore": 46,
+          "net": 571,
+          "travelCost": 41,
+          "misses": 11,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 17617,
+          "fame": 59,
+          "controversyLevel": 1,
+          "sponsorActive": false
+        },
+        {
+          "day": 15,
+          "venueId": "leipzig_taeubchen",
+          "venueDiff": 4,
+          "performanceScore": 49,
+          "net": 6443,
+          "travelCost": 41,
+          "misses": 7,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 26047,
+          "fame": 55,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 17,
+          "venueId": "leipzig_ut",
+          "venueDiff": 3,
+          "performanceScore": 35,
+          "net": 1353,
+          "travelCost": 28,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 28420,
+          "fame": 51,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 19,
+          "venueId": "hamburg_markthalle",
+          "venueDiff": 4,
+          "performanceScore": 43,
+          "net": 9370,
+          "travelCost": 62,
+          "misses": 8,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 39862,
+          "fame": 47,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 21,
+          "venueId": "muenchen_feierwerk",
+          "venueDiff": 3,
+          "performanceScore": 31,
+          "net": 2502,
+          "travelCost": 84,
+          "misses": 14,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 41365,
+          "fame": 43,
+          "controversyLevel": 1,
+          "sponsorActive": true
+        }
+      ]
+    },
+    {
+      "id": "scandal_recovery",
+      "name": "Scandal Recovery",
+      "description": "Start mit hoher Kontroverse; Fokus auf Stabilisierung statt Maximalgewinn.",
+      "summary": {
+        "avgFinalMoney": 27457,
+        "avgFinalFame": 0,
+        "avgFinalHarmony": 23,
+        "avgFinalControversy": 15.79,
+        "avgPeakMoney": 27662,
+        "avgLowestMoney": 279,
+        "avgGigsPlayed": 25,
+        "avgGigNet": 1461,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.39,
+        "avgSponsorPayouts": 34.45,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 25,
+        "avgRoadieMinigames": 25,
+        "avgKabelsalatMinigames": 25,
+        "avgRefuels": 4.77,
+        "avgRepairs": 7.69,
+        "avgHqUpgrades": 0.99,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 5.85,
+        "avgCashSwings": 4.58,
+        "avgBandEvents": 3.84,
+        "avgEquipmentEvents": 3.4,
+        "avgTrendShifts": 9.04,
+        "avgBrandDealsActivated": 3.1,
+        "avgPostPulses": 13.7,
+        "avgContrabandDrops": 8.13,
+        "avgCatalogUpgrades": 13.94,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 4,
+          "venueId": "muenchen_feierwerk",
+          "venueDiff": 3,
+          "performanceScore": 49,
+          "net": 1113,
+          "travelCost": 76,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 1113,
+          "fame": 26,
+          "controversyLevel": 66,
+          "sponsorActive": false
+        },
+        {
+          "day": 7,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 52,
+          "net": 794,
+          "travelCost": 95,
+          "misses": 9,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 1562,
+          "fame": 22,
+          "controversyLevel": 60,
+          "sponsorActive": false
+        },
+        {
+          "day": 10,
+          "venueId": "kiel_pumpe",
+          "venueDiff": 3,
+          "performanceScore": 38,
+          "net": 2717,
+          "travelCost": 46,
+          "misses": 10,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 3656,
+          "fame": 18,
+          "controversyLevel": 57,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "leipzig_distille",
+          "venueDiff": 2,
+          "performanceScore": 42,
+          "net": 178,
+          "travelCost": 77,
+          "misses": 10,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 3439,
+          "fame": 14,
+          "controversyLevel": 54,
+          "sponsorActive": false
+        },
+        {
+          "day": 16,
+          "venueId": "rostock_mau",
+          "venueDiff": 3,
+          "performanceScore": 37,
+          "net": 3023,
+          "travelCost": 69,
+          "misses": 9,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 6290,
+          "fame": 10,
+          "controversyLevel": 51,
+          "sponsorActive": false
+        },
+        {
+          "day": 19,
+          "venueId": "hamburg_knust",
+          "venueDiff": 3,
+          "performanceScore": 41,
+          "net": 2330,
+          "travelCost": 49,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 8095,
+          "fame": 6,
+          "controversyLevel": 50,
+          "sponsorActive": false
+        },
+        {
+          "day": 22,
+          "venueId": "kassel_goldgrube",
+          "venueDiff": 2,
+          "performanceScore": 33,
+          "net": 1001,
+          "travelCost": 52,
+          "misses": 11,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 8456,
+          "fame": 2,
+          "controversyLevel": 47,
+          "sponsorActive": false
+        },
+        {
+          "day": 25,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 45,
+          "net": 1333,
+          "travelCost": 48,
+          "misses": 9,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 8965,
+          "fame": 0,
+          "controversyLevel": 44,
+          "sponsorActive": false
+        },
+        {
+          "day": 28,
+          "venueId": "freiburg_jazzhaus",
+          "venueDiff": 3,
+          "performanceScore": 43,
+          "net": 1461,
+          "travelCost": 78,
+          "misses": 13,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 8745,
+          "fame": 0,
+          "controversyLevel": 43,
+          "sponsorActive": false
+        },
+        {
+          "day": 31,
+          "venueId": "berlin_k17",
+          "venueDiff": 3,
+          "performanceScore": 30,
+          "net": 2808,
+          "travelCost": 82,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 10214,
+          "fame": 0,
+          "controversyLevel": 42,
+          "sponsorActive": false
+        }
+      ]
+    },
+    {
+      "id": "festival_push",
+      "name": "Festival Push",
+      "description": "Späteres Midgame/Endgame-Setup mit Fokus auf große Venues und Premiumpreise.",
+      "summary": {
+        "avgFinalMoney": 146094,
+        "avgFinalFame": 63,
+        "avgFinalHarmony": 41,
+        "avgFinalControversy": 0.79,
+        "avgPeakMoney": 146122,
+        "avgLowestMoney": 1013,
+        "avgGigsPlayed": 25,
+        "avgGigNet": 5839,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.37,
+        "avgSponsorPayouts": 62.36,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 25,
+        "avgRoadieMinigames": 25,
+        "avgKabelsalatMinigames": 25,
+        "avgRefuels": 4.48,
+        "avgRepairs": 6.99,
+        "avgHqUpgrades": 0.99,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 2.98,
+        "avgCashSwings": 2.41,
+        "avgBandEvents": 2.03,
+        "avgEquipmentEvents": 1.77,
+        "avgTrendShifts": 9.06,
+        "avgBrandDealsActivated": 3.35,
+        "avgPostPulses": 13.73,
+        "avgContrabandDrops": 8.4,
+        "avgCatalogUpgrades": 15.27,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 4,
+          "venueId": "erfurt_centrum",
+          "venueDiff": 3,
+          "performanceScore": 69,
+          "net": 4254,
+          "travelCost": 44,
+          "misses": 6,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 5333,
+          "fame": 132,
+          "controversyLevel": 9,
+          "sponsorActive": false
+        },
+        {
+          "day": 7,
+          "venueId": "leipzig_conne",
+          "venueDiff": 4,
+          "performanceScore": 71,
+          "net": 2964,
+          "travelCost": 35,
+          "misses": 4,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 6761,
+          "fame": 145,
+          "controversyLevel": 8,
+          "sponsorActive": false
+        },
+        {
+          "day": 10,
+          "venueId": "leipzig_conne",
+          "venueDiff": 4,
+          "performanceScore": 62,
+          "net": 4047,
+          "travelCost": 27,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 10124,
+          "fame": 157,
+          "controversyLevel": 5,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "leipzig_agra",
+          "venueDiff": 5,
+          "performanceScore": 52,
+          "net": 8308,
+          "travelCost": 29,
+          "misses": 8,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 17991,
+          "fame": 153,
+          "controversyLevel": 2,
+          "sponsorActive": false
+        },
+        {
+          "day": 16,
+          "venueId": "berlin_so36",
+          "venueDiff": 4,
+          "performanceScore": 46,
+          "net": 5112,
+          "travelCost": 47,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 22842,
+          "fame": 149,
+          "controversyLevel": 0,
+          "sponsorActive": false
+        },
+        {
+          "day": 19,
+          "venueId": "saarbruecken_garage",
+          "venueDiff": 4,
+          "performanceScore": 47,
+          "net": 8791,
+          "travelCost": 78,
+          "misses": 8,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 31869,
+          "fame": 145,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 22,
+          "venueId": "frankfurt_batschkapp",
+          "venueDiff": 5,
+          "performanceScore": 44,
+          "net": 8606,
+          "travelCost": 46,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 39968,
+          "fame": 141,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 25,
+          "venueId": "leipzig_werk2",
+          "venueDiff": 4,
+          "performanceScore": 28,
+          "net": 9060,
+          "travelCost": 48,
+          "misses": 12,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 49261,
+          "fame": 137,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 28,
+          "venueId": "leipzig_taeubchen",
+          "venueDiff": 4,
+          "performanceScore": 36,
+          "net": 5396,
+          "travelCost": 29,
+          "misses": 12,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 55005,
+          "fame": 133,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 31,
+          "venueId": "leipzig_werk2",
+          "venueDiff": 4,
+          "performanceScore": 37,
+          "net": 9016,
+          "travelCost": 29,
+          "misses": 11,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 62519,
+          "fame": 129,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        }
+      ]
+    },
+    {
+      "id": "chaos_tour",
+      "name": "Chaos Tour",
+      "description": "Hohe Event-Dichte, riskante Entscheidungen und volatile Bandwerte.",
+      "summary": {
+        "avgFinalMoney": 51885,
+        "avgFinalFame": 0,
+        "avgFinalHarmony": 5,
+        "avgFinalControversy": 3.63,
+        "avgPeakMoney": 52103,
+        "avgLowestMoney": 295,
+        "avgGigsPlayed": 37,
+        "avgGigNet": 1655,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.44,
+        "avgSponsorPayouts": 49.17,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 37,
+        "avgRoadieMinigames": 37,
+        "avgKabelsalatMinigames": 37,
+        "avgRefuels": 6.39,
+        "avgRepairs": 9.18,
+        "avgHqUpgrades": 1,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 6.99,
+        "avgCashSwings": 5.5,
+        "avgBandEvents": 5.21,
+        "avgEquipmentEvents": 4.22,
+        "avgTrendShifts": 9.1,
+        "avgBrandDealsActivated": 3.23,
+        "avgPostPulses": 13.25,
+        "avgContrabandDrops": 8.53,
+        "avgCatalogUpgrades": 14.97,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 3,
+          "venueId": "stendal_adler",
+          "venueDiff": 3,
+          "performanceScore": 58,
+          "net": 596,
+          "travelCost": 29,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 785,
+          "fame": 12,
+          "controversyLevel": 44,
+          "sponsorActive": false
+        },
+        {
+          "day": 5,
+          "venueId": "magdeburg_moritzhof",
+          "venueDiff": 3,
+          "performanceScore": 53,
+          "net": 1163,
+          "travelCost": 32,
+          "misses": 7,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 1748,
+          "fame": 8,
+          "controversyLevel": 42,
+          "sponsorActive": false
+        },
+        {
+          "day": 7,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 41,
+          "net": 1370,
+          "travelCost": 49,
+          "misses": 9,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 2677,
+          "fame": 4,
+          "controversyLevel": 42,
+          "sponsorActive": false
+        },
+        {
+          "day": 9,
+          "venueId": "berlin_k17",
+          "venueDiff": 3,
+          "performanceScore": 41,
+          "net": 3032,
+          "travelCost": 54,
+          "misses": 10,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 5277,
+          "fame": 0,
+          "controversyLevel": 40,
+          "sponsorActive": false
+        },
+        {
+          "day": 11,
+          "venueId": "hamburg_headcrash",
+          "venueDiff": 3,
+          "performanceScore": 24,
+          "net": 1515,
+          "travelCost": 51,
+          "misses": 14,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 6321,
+          "fame": 0,
+          "controversyLevel": 38,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "berlin_cassiopeia",
+          "venueDiff": 3,
+          "performanceScore": 24,
+          "net": 1120,
+          "travelCost": 52,
+          "misses": 10,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 7346,
+          "fame": 0,
+          "controversyLevel": 36,
+          "sponsorActive": false
+        },
+        {
+          "day": 15,
+          "venueId": "kiel_pumpe",
+          "venueDiff": 3,
+          "performanceScore": 22,
+          "net": 1983,
+          "travelCost": 56,
+          "misses": 12,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 8456,
+          "fame": 0,
+          "controversyLevel": 34,
+          "sponsorActive": false
+        },
+        {
+          "day": 17,
+          "venueId": "koeln_mtc",
+          "venueDiff": 2,
+          "performanceScore": 27,
+          "net": 837,
+          "travelCost": 70,
+          "misses": 13,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 9243,
+          "fame": 0,
+          "controversyLevel": 38,
+          "sponsorActive": false
+        },
+        {
+          "day": 19,
+          "venueId": "bremen_tower",
+          "venueDiff": 3,
+          "performanceScore": 31,
+          "net": 1452,
+          "travelCost": 56,
+          "misses": 9,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 8096,
+          "fame": 0,
+          "controversyLevel": 36,
+          "sponsorActive": false
+        },
+        {
+          "day": 21,
+          "venueId": "leipzig_ut",
+          "venueDiff": 3,
+          "performanceScore": 32,
+          "net": 1127,
+          "travelCost": 60,
+          "misses": 15,
+          "modifierEffects": 2,
+          "avgHitWindow": 190,
+          "money": 9056,
+          "fame": 0,
+          "controversyLevel": 34,
+          "sponsorActive": false
+        }
+      ]
+    },
+    {
+      "id": "cult_hypergrowth",
+      "name": "Cult Hypergrowth",
+      "description": "Zealotry-getriebene Fanbasis, starke Monetarisierung bei höherem Risiko.",
+      "summary": {
+        "avgFinalMoney": 139420,
+        "avgFinalFame": 0,
+        "avgFinalHarmony": 7,
+        "avgFinalControversy": 0.93,
+        "avgPeakMoney": 139602,
+        "avgLowestMoney": 829,
+        "avgGigsPlayed": 37,
+        "avgGigNet": 3822,
+        "bankruptcyRate": 0,
+        "avgSponsorSignings": 0.34,
+        "avgSponsorPayouts": 62.73,
+        "avgSponsorDrops": 0,
+        "avgTravelMinigames": 37,
+        "avgRoadieMinigames": 37,
+        "avgKabelsalatMinigames": 37,
+        "avgRefuels": 7.15,
+        "avgRepairs": 8.55,
+        "avgHqUpgrades": 0.98,
+        "avgVanUpgrades": 1,
+        "avgViralSpikes": 4.29,
+        "avgCashSwings": 3.56,
+        "avgBandEvents": 2.58,
+        "avgEquipmentEvents": 2.53,
+        "avgTrendShifts": 8.87,
+        "avgBrandDealsActivated": 3.46,
+        "avgPostPulses": 13.47,
+        "avgContrabandDrops": 8.34,
+        "avgCatalogUpgrades": 15.01,
+        "sampleSize": 260
+      },
+      "sampleTimeline": [
+        {
+          "day": 3,
+          "venueId": "dortmund_junkyard",
+          "venueDiff": 3,
+          "performanceScore": 69,
+          "net": 5034,
+          "travelCost": 60,
+          "misses": 6,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 6060,
+          "fame": 82,
+          "controversyLevel": 16,
+          "sponsorActive": false
+        },
+        {
+          "day": 5,
+          "venueId": "berlin_so36",
+          "venueDiff": 4,
+          "performanceScore": 63,
+          "net": 4267,
+          "travelCost": 62,
+          "misses": 5,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 7565,
+          "fame": 94,
+          "controversyLevel": 14,
+          "sponsorActive": false
+        },
+        {
+          "day": 7,
+          "venueId": "berlin_cassiopeia",
+          "venueDiff": 3,
+          "performanceScore": 57,
+          "net": 3416,
+          "travelCost": 28,
+          "misses": 6,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 10520,
+          "fame": 90,
+          "controversyLevel": 12,
+          "sponsorActive": false
+        },
+        {
+          "day": 9,
+          "venueId": "nuernberg_hirsch",
+          "venueDiff": 4,
+          "performanceScore": 49,
+          "net": 8061,
+          "travelCost": 58,
+          "misses": 8,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 18091,
+          "fame": 86,
+          "controversyLevel": 10,
+          "sponsorActive": false
+        },
+        {
+          "day": 11,
+          "venueId": "leipzig_arena",
+          "venueDiff": 5,
+          "performanceScore": 48,
+          "net": 22718,
+          "travelCost": 41,
+          "misses": 9,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 40728,
+          "fame": 82,
+          "controversyLevel": 8,
+          "sponsorActive": false
+        },
+        {
+          "day": 13,
+          "venueId": "saarbruecken_garage",
+          "venueDiff": 4,
+          "performanceScore": 39,
+          "net": 7611,
+          "travelCost": 66,
+          "misses": 10,
+          "modifierEffects": 0,
+          "avgHitWindow": 190,
+          "money": 48182,
+          "fame": 78,
+          "controversyLevel": 6,
+          "sponsorActive": false
+        },
+        {
+          "day": 15,
+          "venueId": "dresden_chemie",
+          "venueDiff": 4,
+          "performanceScore": 49,
+          "net": 8538,
+          "travelCost": 74,
+          "misses": 9,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 56479,
+          "fame": 74,
+          "controversyLevel": 4,
+          "sponsorActive": false
+        },
+        {
+          "day": 17,
+          "venueId": "leipzig_werk2",
+          "venueDiff": 4,
+          "performanceScore": 48,
+          "net": 6983,
+          "travelCost": 35,
+          "misses": 8,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 63613,
+          "fame": 70,
+          "controversyLevel": 2,
+          "sponsorActive": true
+        },
+        {
+          "day": 19,
+          "venueId": "hamburg_headcrash",
+          "venueDiff": 3,
+          "performanceScore": 43,
+          "net": 3726,
+          "travelCost": 61,
+          "misses": 7,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 69219,
+          "fame": 66,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        },
+        {
+          "day": 21,
+          "venueId": "freiburg_jazzhaus",
+          "venueDiff": 3,
+          "performanceScore": 39,
+          "net": 2619,
+          "travelCost": 82,
+          "misses": 12,
+          "modifierEffects": 1,
+          "avgHitWindow": 190,
+          "money": 71987,
+          "fame": 62,
+          "controversyLevel": 0,
+          "sponsorActive": true
+        }
+      ]
+    }
+  ]
+}
