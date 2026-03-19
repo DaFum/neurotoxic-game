@@ -28,8 +28,17 @@ test('selectRandomItem', async t => {
 
   await t.test('handles rng boundary values', () => {
     const items = ['a', 'b', 'c']
-    assert.strictEqual(selectRandomItem(items, () => 0), 'a')
-    assert.strictEqual(selectRandomItem(items, () => 0.999), 'c')
-    assert.strictEqual(selectRandomItem(items, () => 1.0), 'c')
+    assert.strictEqual(
+      selectRandomItem(items, () => 0),
+      'a'
+    )
+    assert.strictEqual(
+      selectRandomItem(items, () => 0.999),
+      'c'
+    )
+    assert.strictEqual(
+      selectRandomItem(items, () => 1.0),
+      'c'
+    )
   })
 })

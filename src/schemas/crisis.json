@@ -3,7 +3,16 @@
   "title": "Crisis Event",
   "description": "Schema for Crisis Events. Note: the authoritative validation is performed by validateCrisisEvent in src/utils/eventValidator.js.",
   "type": "object",
-  "required": ["id", "category", "tags", "title", "description", "trigger", "chance", "options"],
+  "required": [
+    "id",
+    "category",
+    "tags",
+    "title",
+    "description",
+    "trigger",
+    "chance",
+    "options"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -71,10 +80,7 @@
             "pattern": "^events:"
           }
         },
-        "oneOf": [
-          { "required": ["effect"] },
-          { "required": ["skillCheck"] }
-        ]
+        "oneOf": [{ "required": ["effect"] }, { "required": ["skillCheck"] }]
       }
     }
   }

@@ -158,9 +158,12 @@ class AudioSystem {
       this.currentSongId = 'ambient'
       this.emitChange()
       try {
-        const oggSuccess = await audioEngine.playRandomAmbientOgg(secureRandom, {
-          skipStop: true
-        })
+        const oggSuccess = await audioEngine.playRandomAmbientOgg(
+          secureRandom,
+          {
+            skipStop: true
+          }
+        )
         if (oggSuccess) {
           this.emitChange()
           logger.info('AudioSystem', 'Ambient started via OGG buffer playback.')
