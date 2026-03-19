@@ -286,13 +286,13 @@ class RoadieStageController extends BaseStageController {
 
     // Cleanup
     if (this.carSprites) {
-      for (const [id, sprite] of this.carSprites.entries()) {
+      this.carSprites.forEach((sprite, id) => {
         if (!this.currentIds.has(id)) {
           this.container.removeChild(sprite)
           sprite.destroy()
           this.carSprites.delete(id)
         }
-      }
+      })
     }
   }
 
