@@ -785,8 +785,7 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
       performanceScore / 15 +
       Math.min(4, (state.social.viral || 0) * 0.8)
     )
-    // 500 is MAX_FAME_GAIN from the live game
-    fameDelta = calculateFameGain(rawFameGain, currentFame, 500)
+    fameDelta = calculateFameGain(rawFameGain, currentFame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
   }
 
   state.player.fame = clampPlayerFame(currentFame + fameDelta)
@@ -916,7 +915,7 @@ const runSingleSimulation = (scenario, seed) => {
       // Apply a penalty to fame directly as it doesn't go through standard score scaling
       state.player.fame = clampPlayerFame(state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2)
 
-      // Record cancelled state in timeline (without incrementing gigsPlayed or updating currentNode)
+      // Record cancelled state in timeline (without incrementing gigsPlayed)
       timeline.push({
         day: state.player.day,
         venueId: venue.id,
@@ -937,6 +936,9 @@ const runSingleSimulation = (scenario, seed) => {
         counters.bankrupt = true
         break
       }
+
+      // Update location so next travel routes from the new (cancelled) destination
+      currentNode = venue
 
       // Skip the rest of the gig pipeline
       continue
@@ -1135,6 +1137,10 @@ const summarizeScenario = runs => {
 const getScenarioInsight = summary => {
   if (summary.bankruptcyRate >= 15) {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
+  }
+
+  if (summary.avgFinalMoney >= 100000 && summary.avgFinalFame < 20) {
+    return '⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen.'
   }
 
   // Reduced harmony threshold slightly from 42 to 30 because chaotic/aggressive scenarios

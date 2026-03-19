@@ -86,18 +86,18 @@ export const clampPlayerMoney = money => {
   return Math.floor(Math.max(0, money))
 }
 
-/**
- * Clamps band harmony to the canonical gameplay range.
- *
- * @param {number} harmony - Candidate harmony value.
- * @returns {number} Clamped harmony value in range [1, 100].
- */
 // Shared Balance Constants
 export const BALANCE_CONSTANTS = {
   FAME_LOSS_BAD_GIG: 4,
   MAX_FAME_GAIN: 500
 }
 
+/**
+ * Clamps band harmony to the canonical gameplay range.
+ *
+ * @param {number} harmony - Candidate harmony value.
+ * @returns {number} Clamped harmony value in range [1, 100].
+ */
 export const clampBandHarmony = harmony => {
   if (!Number.isFinite(harmony)) return 1
   const safeHarmony = Math.floor(harmony)

@@ -585,7 +585,7 @@
   "pregig.budget": "BUDGET:",
   "pregig.costs": "COSTS:",
   "pregig.diff": "Diff:",
-  "pregig.effects.disconnect": "DISCONNECT (Harmony < 30): Notes Jitter",
+  "pregig.effects.disconnect": "DISCONNECT (Harmony < 40): Notes Jitter",
   "pregig.effects.grumpy": "GRUMPY {{name}}: Guitar Score -50%",
   "pregig.effects.telepathy": "TELEPATHY (Harmony > 80): Easier Hits",
   "pregig.effects.tired": "TIRED {{name}}: Rushing Tempo",

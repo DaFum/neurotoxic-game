@@ -2,7 +2,7 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
-import { clampMemberStamina, clampMemberMood, clampPlayerFame, BALANCE_CONSTANTS } from './gameStateUtils.js'
+import { clampMemberStamina, clampMemberMood, clampPlayerFame, calculateFameLevel, BALANCE_CONSTANTS } from './gameStateUtils.js'
 import { secureRandom } from './crypto.js'
 import i18n from '../i18n.js'
 
@@ -13,7 +13,9 @@ import i18n from '../i18n.js'
  * @param {object} params
  * @param {object} params.node - The node being arrived at.
  * @param {object} params.band - Current band state.
+ * @param {object} params.player - Current player state (inventory, stats, etc.).
  * @param {Function} params.updateBand - Function to update band state.
+ * @param {Function} params.updatePlayer - Function to update player state (handles side effects).
  * @param {Function} params.triggerEvent - Function to trigger events.
  * @param {Function} params.startGig - Function to start a gig.
  * @param {Function} params.addToast - Function to show notifications.
@@ -107,7 +109,10 @@ export const handleNodeArrival = ({
            const currentFame = player.fame || 0
            const loss = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
            const newFame = clampPlayerFame(currentFame - loss)
-           updatePlayer({ fame: newFame })
+           updatePlayer({
+             fame: newFame,
+             fameLevel: calculateFameLevel(newFame)
+           })
         }
 
         if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
