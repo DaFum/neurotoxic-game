@@ -17,33 +17,37 @@ test('propTypes', async (t) => {
 
     let errorCalled = false
     const originalConsoleError = console.error
-    console.error = () => { errorCalled = true }
+    try {
+      console.error = () => { errorCalled = true }
 
-    PropTypes.checkPropTypes(
-      { audio: AudioStatePropType },
-      validProps,
-      'prop',
-      'TestComponent'
-    )
-    assert.strictEqual(errorCalled, false)
+      PropTypes.resetWarningCache()
+      PropTypes.checkPropTypes(
+        { audio: AudioStatePropType },
+        validProps,
+        'prop',
+        'TestComponent'
+      )
+      assert.strictEqual(errorCalled, false)
 
-    const invalidProps = {
-      audio: {
-        musicVol: 'loud',
-        sfxVol: 0.8,
-        isMuted: false
+      const invalidProps = {
+        audio: {
+          musicVol: 'loud',
+          sfxVol: 0.8,
+          isMuted: false
+        }
       }
+
+      PropTypes.resetWarningCache()
+      PropTypes.checkPropTypes(
+        { audio: AudioStatePropType },
+        invalidProps,
+        'prop',
+        'TestComponent'
+      )
+      assert.strictEqual(errorCalled, true)
+    } finally {
+      console.error = originalConsoleError
     }
-
-    PropTypes.checkPropTypes(
-      { audio: AudioStatePropType },
-      invalidProps,
-      'prop',
-      'TestComponent'
-    )
-    assert.strictEqual(errorCalled, true)
-
-    console.error = originalConsoleError
   })
 
   await t.test('OnAudioChangePropType defines shape correctly', () => {
@@ -59,32 +63,36 @@ test('propTypes', async (t) => {
 
     let errorCalled = false
     const originalConsoleError = console.error
-    console.error = () => { errorCalled = true }
+    try {
+      console.error = () => { errorCalled = true }
 
-    PropTypes.checkPropTypes(
-      { handlers: OnAudioChangePropType },
-      validProps,
-      'prop',
-      'TestComponent'
-    )
-    assert.strictEqual(errorCalled, false)
+      PropTypes.resetWarningCache()
+      PropTypes.checkPropTypes(
+        { handlers: OnAudioChangePropType },
+        validProps,
+        'prop',
+        'TestComponent'
+      )
+      assert.strictEqual(errorCalled, false)
 
-    const invalidProps = {
-      handlers: {
-        setMusic: 'not a function',
-        setSfx: () => {},
-        toggleMute: () => {}
+      const invalidProps = {
+        handlers: {
+          setMusic: 'not a function',
+          setSfx: () => {},
+          toggleMute: () => {}
+        }
       }
+
+      PropTypes.resetWarningCache()
+      PropTypes.checkPropTypes(
+        { handlers: OnAudioChangePropType },
+        invalidProps,
+        'prop',
+        'TestComponent'
+      )
+      assert.strictEqual(errorCalled, true)
+    } finally {
+      console.error = originalConsoleError
     }
-
-    PropTypes.checkPropTypes(
-      { handlers: OnAudioChangePropType },
-      invalidProps,
-      'prop',
-      'TestComponent'
-    )
-    assert.strictEqual(errorCalled, true)
-
-    console.error = originalConsoleError
   })
 })

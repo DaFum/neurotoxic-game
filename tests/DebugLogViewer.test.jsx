@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { DebugLogViewer } from '../src/ui/DebugLogViewer.jsx'
 
@@ -27,7 +27,10 @@ vi.mock('../src/utils/logger', () => {
       listeners.add(cb)
       return () => listeners.delete(cb)
     },
-    clear: vi.fn(() => listeners.forEach(cb => cb({ type: 'clear' }))),
+    clear: vi.fn(() => {
+      logger.logs = []
+      listeners.forEach(cb => cb({ type: 'clear' }))
+    }),
     dump: vi.fn(() => []),
     _emitAdd: entry => listeners.forEach(cb => cb({ type: 'add', entry }))
   }
@@ -120,30 +123,31 @@ describe('DebugLogViewer', () => {
 
   test('dumps logs to console', () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    render(<DebugLogViewer />)
-    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+    try {
+      render(<DebugLogViewer />)
+      fireEvent.keyDown(window, { key: '`', ctrlKey: true })
 
-    const dumpButton = screen.getByText('DUMP TO CONSOLE')
-    fireEvent.click(dumpButton)
+      const dumpButton = screen.getByText('DUMP TO CONSOLE')
+      fireEvent.click(dumpButton)
 
-    expect(loggerMock.dump).toHaveBeenCalled()
-    expect(consoleSpy).toHaveBeenCalled()
-    consoleSpy.mockRestore()
+      expect(loggerMock.dump).toHaveBeenCalled()
+      expect(consoleSpy).toHaveBeenCalled()
+    } finally {
+      consoleSpy.mockRestore()
+    }
   })
 
   test('receives new logs dynamically', async () => {
     render(<DebugLogViewer />)
     fireEvent.keyDown(window, { key: '`', ctrlKey: true })
 
-    import('@testing-library/react').then(({ act }) => {
-      act(() => {
-        loggerMock._emitAdd({
-            id: 'log3',
-            timestamp: '2025-01-01T10:02:00.000Z',
-            level: 'WARN',
-            channel: 'Network',
-            message: 'retry connection'
-        })
+    act(() => {
+      loggerMock._emitAdd({
+          id: 'log3',
+          timestamp: '2025-01-01T10:02:00.000Z',
+          level: 'WARN',
+          channel: 'Network',
+          message: 'retry connection'
       })
     })
 

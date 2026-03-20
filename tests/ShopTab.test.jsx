@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { ShopTab } from '../src/ui/bandhq/ShopTab.jsx'
 
 vi.mock('react-i18next', () => ({
@@ -50,9 +50,16 @@ vi.mock('../src/ui/bandhq/ShopItem', () => ({
 
 describe('ShopTab', () => {
   const player = { money: 1000 }
-  const handleBuy = vi.fn()
-  const isItemOwned = vi.fn(item => item.id === 'gear1')
-  const isItemDisabled = vi.fn(item => item.id === 'inst1')
+  let handleBuy
+  let isItemOwned
+  let isItemDisabled
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    handleBuy = vi.fn()
+    isItemOwned = vi.fn(item => item.id === 'gear1')
+    isItemDisabled = vi.fn(item => item.id === 'inst1')
+  })
 
   test('renders player funds display correctly', () => {
     render(

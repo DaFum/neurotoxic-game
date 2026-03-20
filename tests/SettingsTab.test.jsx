@@ -39,18 +39,25 @@ vi.mock('../src/hooks/useSettingsActions', () => ({
   }))
 }))
 
+import { beforeEach } from 'vitest'
+
 describe('SettingsTab', () => {
-  const defaultProps = {
-    settings: { crtEnabled: true, logLevel: 'DEBUG' },
-    audioState: { musicVol: 0.8, sfxVol: 0.9, isMuted: false },
-    onAudioChange: {
-      setMusic: vi.fn(),
-      setSfx: vi.fn(),
-      toggleMute: vi.fn()
-    },
-    updateSettings: vi.fn(),
-    deleteSave: vi.fn()
-  }
+  let defaultProps
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    defaultProps = {
+      settings: { crtEnabled: true, logLevel: 'DEBUG' },
+      audioState: { musicVol: 0.8, sfxVol: 0.9, isMuted: false },
+      onAudioChange: {
+        setMusic: vi.fn(),
+        setSfx: vi.fn(),
+        toggleMute: vi.fn()
+      },
+      updateSettings: vi.fn(),
+      deleteSave: vi.fn()
+    }
+  })
 
   test('renders SettingsPanel and passes props correctly', () => {
     render(<SettingsTab {...defaultProps} />)
