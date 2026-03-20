@@ -6,6 +6,7 @@ import { GAME_PHASES } from '../src/context/gameConstants.js'
 describe('handleNodeArrival', () => {
   const getMocks = () => ({
     updateBand: mock.fn(),
+    updatePlayer: mock.fn(),
     triggerEvent: mock.fn(),
     startGig: mock.fn(),
     addToast: mock.fn(),
@@ -132,12 +133,55 @@ describe('handleNodeArrival', () => {
 
       assert.strictEqual(mocks.startGig.mock.calls.length, 0)
       assert.strictEqual(mocks.addToast.mock.calls.length, 1)
-      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'warning')
+      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
       assert.strictEqual(mocks.changeScene.mock.calls.length, 1)
       assert.strictEqual(
         mocks.changeScene.mock.calls[0].arguments[0],
         GAME_PHASES.OVERWORLD
       )
+    })
+
+    test(`${type} - luck-based cancellation (harmony < 15, rng < 0.25)`, () => {
+      const mocks = getMocks()
+      const node = { type, venue: { name: 'The Club' } }
+      const band = { harmony: 10 }
+      const player = { fame: 100 }
+      const rng = () => 0.1 // Triggers cancellation
+
+      handleNodeArrival({
+        node,
+        band,
+        player,
+        rng,
+        ...mocks
+      })
+
+      assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+      assert.strictEqual(mocks.addToast.mock.calls.length, 1)
+      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
+
+      // Check fame penalty (double bad gig loss)
+      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 1)
+      const fameUpdate = mocks.updatePlayer.mock.calls[0].arguments[0].fame
+      // BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG is 4, so 4*2 = 8. 100 - 8 = 92
+      assert.strictEqual(fameUpdate, 92)
+    })
+
+    test(`${type} - no cancellation (harmony < 15, rng >= 0.25)`, () => {
+      const mocks = getMocks()
+      const node = { type, venue: { name: 'The Club' } }
+      const band = { harmony: 10 }
+      const rng = () => 0.3 // Does NOT trigger cancellation
+
+      handleNodeArrival({
+        node,
+        band,
+        rng,
+        ...mocks
+      })
+
+      assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 0)
     })
   })
 

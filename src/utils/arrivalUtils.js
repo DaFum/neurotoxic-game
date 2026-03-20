@@ -91,19 +91,11 @@ export const handleNodeArrival = ({
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
-      if ((band?.harmony ?? 0) <= 0) {
-        addToast(
-          i18n.t('ui:arrival.harmonyTooLowToPerform', {
-            defaultValue: "Band's harmony too low to perform!"
-          }),
-          'warning'
-        )
-        if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
-        return
-      }
+      // Chaos Tour fix: Consolidated show cancellation check
+      const harmony = band?.harmony ?? 100
+      const isCancelled = harmony <= 0 || (harmony < 15 && rng() < 0.25)
 
-      // Chaos Tour fix: Show cancellation check
-      if ((band?.harmony ?? 100) < 15 && rng() < 0.25) {
+      if (isCancelled) {
         addToast(
           i18n.t('ui:arrival.showCancelled', {
             defaultValue:
@@ -111,6 +103,7 @@ export const handleNodeArrival = ({
           }),
           'error'
         )
+
         // Apply fame penalty directly (double the standard bad gig loss)
         if (player && updatePlayer) {
           const currentFame = player.fame || 0
