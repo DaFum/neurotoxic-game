@@ -35,11 +35,13 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   }, [gameState])
 
   // Reset outcome on new events
+  const [prevEventId, setPrevEventId] = useState(null)
   const eventId = event?.id
-  useEffect(() => {
+  if (eventId !== prevEventId) {
+    setPrevEventId(eventId)
     setOutcome(null)
     setPreviewError(false)
-  }, [eventId])
+  }
 
   const handleOptionSelect = useCallback(option => {
     try {

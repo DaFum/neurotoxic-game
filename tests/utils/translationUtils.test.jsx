@@ -91,7 +91,6 @@ test('translateContextKeys handles non-object types', () => {
 })
 
 test('translateContextKeys ignores inherited properties', () => {
-  const t = vi.fn()
   const proto = { inherited: 'ui:key' }
   const context = Object.create(proto)
   context.own = 'ui:own'

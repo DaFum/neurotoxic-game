@@ -61,15 +61,20 @@ export const Tooltip = ({ children, content, className = '' }) => {
     [children?.props, isDisabled]
   )
 
-  if (!isValidElement(children)) {
-    console.warn('Tooltip children must be a single valid React element.')
-    return children
-  }
+  const isValid = isValidElement(children)
+  const isFragment = children && children.type === React.Fragment
 
-  if (children.type === React.Fragment) {
-    console.warn(
-      'Tooltip children must be a single valid React element and not a Fragment.'
-    )
+  React.useEffect(() => {
+    if (!isValid) {
+      console.warn('Tooltip children must be a single valid React element.')
+    } else if (isFragment) {
+      console.warn(
+        'Tooltip children must be a single valid React element and not a Fragment.'
+      )
+    }
+  }, [isValid, isFragment])
+
+  if (!isValid || isFragment) {
     return children
   }
 

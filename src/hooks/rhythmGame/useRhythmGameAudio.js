@@ -549,7 +549,7 @@ export const useRhythmGameAudio = ({
     }
   }, [
     band,
-    gameMap?.nodes,
+    gameMap,
     player.currentNodeId,
     setlist,
     gigModifiers,

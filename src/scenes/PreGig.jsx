@@ -160,6 +160,7 @@ export const PreGig = () => {
       }
     }
     // Intentionally run once on mount
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
   }, [])
 
   /**

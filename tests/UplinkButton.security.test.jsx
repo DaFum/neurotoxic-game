@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { UplinkButton } from '../src/ui/shared/BrutalistUI.jsx'
 
 test('UplinkButton should not allow javascript: URLs', () => {
@@ -7,6 +7,7 @@ test('UplinkButton should not allow javascript: URLs', () => {
   render(
     <UplinkButton
       title='Malicious Link'
+      // eslint-disable-next-line @eslint-react/dom/no-script-url
       url={maliciousUrl}
       subtitle='XSS'
       type='exploit'
@@ -61,6 +62,7 @@ test('UplinkButton should prevent default action for unsafe URLs on click', () =
   render(
     <UplinkButton
       title='Unsafe Link'
+      // eslint-disable-next-line @eslint-react/dom/no-script-url
       url="javascript:alert('XSS')"
       subtitle='Unsafe'
       type='exploit'
