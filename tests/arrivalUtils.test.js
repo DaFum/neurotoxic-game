@@ -2,10 +2,12 @@ import assert from 'node:assert/strict'
 import { test, mock, describe } from 'node:test'
 import { handleNodeArrival } from '../src/utils/arrivalUtils.js'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
+import { BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
 
 describe('handleNodeArrival', () => {
   const getMocks = () => ({
     updateBand: mock.fn(),
+    updatePlayer: mock.fn(),
     triggerEvent: mock.fn(),
     startGig: mock.fn(),
     addToast: mock.fn(),
@@ -123,10 +125,12 @@ describe('handleNodeArrival', () => {
       const mocks = getMocks()
       const node = { type, venue: { name: 'The Club' } }
       const band = { harmony: 0 }
+      const player = { fame: 100 }
 
       handleNodeArrival({
         node,
         band,
+        player,
         ...mocks
       })
 
@@ -138,6 +142,57 @@ describe('handleNodeArrival', () => {
         mocks.changeScene.mock.calls[0].arguments[0],
         GAME_PHASES.OVERWORLD
       )
+
+      // NO fame penalty for deterministic low harmony cancellation
+      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 0)
+    })
+
+    test(`${type} - luck-based cancellation (harmony < threshold, rng < chance)`, () => {
+      const mocks = getMocks()
+      const node = { type, venue: { name: 'The Club' } }
+      const band = { harmony: 10 }
+      const player = { fame: 100 }
+      const rng = () => 0.1 // Triggers cancellation
+
+      handleNodeArrival({
+        node,
+        band,
+        player,
+        rng,
+        ...mocks
+      })
+
+      assert.strictEqual(mocks.startGig.mock.calls.length, 0)
+      assert.strictEqual(mocks.addToast.mock.calls.length, 1)
+      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
+
+      // Check fame penalty (double bad gig loss)
+      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 1)
+      const fameUpdate = mocks.updatePlayer.mock.calls[0].arguments[0].fame
+      // Fame penalty is double the standard bad gig loss
+      assert.strictEqual(
+        fameUpdate,
+        player.fame - BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
+      )
+    })
+
+    test(`${type} - no cancellation (harmony < threshold, rng >= chance)`, () => {
+      const mocks = getMocks()
+      const node = { type, venue: { name: 'The Club' } }
+      const band = { harmony: 10 }
+      const player = { fame: 100 }
+      const rng = () => 0.3 // Does NOT trigger cancellation
+
+      handleNodeArrival({
+        node,
+        band,
+        player,
+        rng,
+        ...mocks
+      })
+
+      assert.strictEqual(mocks.startGig.mock.calls.length, 1)
+      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 0)
     })
   })
 

@@ -91,7 +91,11 @@ export const handleNodeArrival = ({
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
-      if ((band?.harmony ?? 0) <= 0) {
+      // Chaos Tour fix: Show cancellation check
+      const harmony = band?.harmony ?? 0
+
+      // Path 1: Immediate cancellation for zero or missing harmony (Defensive)
+      if (harmony <= 0) {
         addToast(
           i18n.t('ui:arrival.harmonyTooLowToPerform', {
             defaultValue: "Band's harmony too low to perform!"
@@ -102,8 +106,11 @@ export const handleNodeArrival = ({
         return
       }
 
-      // Chaos Tour fix: Show cancellation check
-      if ((band?.harmony ?? 100) < 15 && rng() < 0.25) {
+      // Path 2: Luck-based cancellation for low harmony (Chaos Tour Mechanic)
+      if (
+        harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD &&
+        rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+      ) {
         addToast(
           i18n.t('ui:arrival.showCancelled', {
             defaultValue:
@@ -111,6 +118,7 @@ export const handleNodeArrival = ({
           }),
           'error'
         )
+
         // Apply fame penalty directly (double the standard bad gig loss)
         if (player && updatePlayer) {
           const currentFame = player.fame || 0
