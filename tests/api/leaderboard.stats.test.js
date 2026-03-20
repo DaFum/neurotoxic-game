@@ -1,3 +1,11 @@
+// 🟢🧪⚙️ NEXUS ENCAPSULATES ALL OPTIMIZED TEST ARTIFACTS W '🟢🧪⚙️'s 🟢🧪⚙️
+// Async handling strategy:
+// This test suite leverages Native Node.js test runner mocking capabilities.
+// Redis external I/O operations are strictly mocked by intercepting the `lib/redis.js` import using `mock.module()`.
+// Since our Redis mock methods return resolved Promises and are explicitly awaited, we avoid dangling event loop ticks.
+// Proper cleanup is ensured via `afterEach` where `mockRedisClient.disconnect()` handles teardown, and
+// all mock counters are strictly reset in `beforeEach` (`mockFn.mock.resetCalls()`) rather than totally destroying the mock module.
+
 import { test, mock, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert'
 
@@ -287,3 +295,4 @@ describe('Leaderboard Stats API', () => {
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
   })
 })
+// 🟢🧪⚙️ NEXUS TEST ARTIFACT END 🟢🧪⚙️
