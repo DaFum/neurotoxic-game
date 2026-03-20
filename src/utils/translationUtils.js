@@ -1,6 +1,15 @@
 import { isForbiddenKey } from './gameStateUtils.js'
 
-const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
+const VALID_NAMESPACES = ['ui', 'events', 'venues', 'items', 'economy', 'traits']
+
+const isTranslatableKey = (key) => {
+  if (typeof key !== 'string') return false
+  const parts = key.split(':')
+  if (parts.length > 1) {
+    return VALID_NAMESPACES.includes(parts[0])
+  }
+  return false
+}
 
 /**
  * Recursively translates translation keys within a context object and filters forbidden keys.
@@ -17,10 +26,7 @@ export const translateContextKeys = (context, t) => {
   if (Array.isArray(context)) {
     return context.map(item => {
       if (typeof item === 'string') {
-        const isTranslationKey = VALID_NAMESPACES.some(ns =>
-          item.startsWith(ns)
-        )
-        return isTranslationKey ? t(item, { defaultValue: item }) : item
+        return isTranslatableKey(item) ? t(item) : item
       }
       return translateContextKeys(item, t)
     })
@@ -34,9 +40,8 @@ export const translateContextKeys = (context, t) => {
 
     const value = context[prop]
     if (typeof value === 'string') {
-      const isTranslationKey = VALID_NAMESPACES.some(ns => value.startsWith(ns))
-      translatedContext[prop] = isTranslationKey
-        ? t(value, { defaultValue: value })
+      translatedContext[prop] = isTranslatableKey(value)
+        ? t(value)
         : value
     } else if (typeof value === 'object' && value !== null) {
       // SECURITY: Recurse into nested objects to sanitize and translate
