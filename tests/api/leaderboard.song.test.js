@@ -3,11 +3,13 @@ import assert from 'node:assert'
 
 const mockClient = {
   isOpen: true,
-  connect: mock.fn(),
-  hSet: mock.fn(),
-  zAdd: mock.fn(),
-  zRangeWithScores: mock.fn(),
-  hmGet: mock.fn()
+  connect: mock.fn(() => Promise.resolve()),
+  hSet: mock.fn(() => Promise.resolve()),
+  zAdd: mock.fn(() => Promise.resolve()),
+  zRangeWithScores: mock.fn(() => Promise.resolve([])),
+  hmGet: mock.fn(() => Promise.resolve([])),
+  disconnect: mock.fn(() => Promise.resolve()),
+  on: mock.fn()
 }
 
 mock.module('../../lib/redis.js', {
@@ -28,10 +30,11 @@ describe('Leaderboard API - Song', () => {
     mockClient.zAdd.mock.resetCalls()
     mockClient.zRangeWithScores.mock.resetCalls()
     mockClient.hmGet.mock.resetCalls()
+    mockClient.disconnect.mock.resetCalls()
   })
 
-  afterEach(() => {
-    mock.reset()
+  afterEach(async () => {
+    await mockClient.disconnect()
   })
 
   const createRes = () => {
@@ -46,7 +49,7 @@ describe('Leaderboard API - Song', () => {
 
   describe('POST requests', () => {
     test('missing or invalid body returns 400', async () => {
-      const bodies = [null, undefined, []]
+    const bodies = [null, undefined, []]
 
       for (const body of bodies) {
         const req = { method: 'POST', body }
@@ -196,7 +199,7 @@ describe('Leaderboard API - Song', () => {
 
     test('internal server error returns 500 for POST', async () => {
       mockClient.hSet.mock.mockImplementationOnce(() => {
-        throw new Error('Redis down')
+        return Promise.reject(new Error('Redis down'))
       })
 
       const req = {
@@ -335,7 +338,7 @@ describe('Leaderboard API - Song', () => {
 
     test('internal server error returns 500 for GET', async () => {
       mockClient.zRangeWithScores.mock.mockImplementationOnce(() => {
-        throw new Error('Redis down')
+        return Promise.reject(new Error('Redis down'))
       })
 
       const req = {
