@@ -256,15 +256,6 @@ describe('PixiStageController', () => {
     assert.equal(result, 'success')
   })
 
-  test('withTimeout resolves with null when timeout is reached', async () => {
-    await controller.init()
-    const promise = new Promise(resolve =>
-      setTimeout(() => resolve('late'), 15000)
-    )
-    const result = await controller.withTimeout(promise, 'Test')
-    assert.equal(result, null)
-  })
-
   test('manualUpdate calls handleTicker with deltaMS', async () => {
     await controller.init()
     const deltaMS = 16

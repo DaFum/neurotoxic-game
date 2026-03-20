@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   flattenToObject,
-  resolveNamespaceKey
+  resolveNamespaceKey,
+  readLocaleJson
 } from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -27,38 +28,34 @@ const UI_SOURCE_FILES = [
 
 const KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g
 
-const extractLocalizedKeys = () => {
+const extractLocalizedKeys = async () => {
   const localizedKeys = new Set()
 
-  UI_SOURCE_FILES.forEach(filePath => {
-    const absolutePath = path.join(REPO_ROOT, filePath)
-    const source = readFileSync(absolutePath, 'utf8')
+  await Promise.all(
+    UI_SOURCE_FILES.map(async filePath => {
+      const absolutePath = path.join(REPO_ROOT, filePath)
+      const source = await fs.readFile(absolutePath, 'utf8')
 
-    for (const match of source.matchAll(KEY_PATTERN)) {
-      const resolved = resolveNamespaceKey(match[1])
-      if (resolved) {
-        localizedKeys.add(`${resolved.namespace}:${resolved.key}`)
+      for (const match of source.matchAll(KEY_PATTERN)) {
+        const resolved = resolveNamespaceKey(match[1])
+        if (resolved) {
+          localizedKeys.add(`${resolved.namespace}:${resolved.key}`)
+        }
       }
-    }
-  })
+    })
+  )
 
   return localizedKeys
 }
 
 const readLocaleMap = (locale, namespace) => {
-  const localePath = path.join(
-    REPO_ROOT,
-    'public',
-    'locales',
-    locale,
-    `${namespace}.json`
-  )
-  const localeData = JSON.parse(readFileSync(localePath, 'utf8'))
+  const localeDir = path.join(REPO_ROOT, 'public', 'locales', locale)
+  const localeData = readLocaleJson(localeDir, `${namespace}.json`)
   return { ...flattenToObject(localeData), ...localeData }
 }
 
-test('localized keys used in UI integration files exist in both en and de locales', () => {
-  const localizedKeys = extractLocalizedKeys()
+test('localized keys used in UI integration files exist in both en and de locales', async () => {
+  const localizedKeys = await extractLocalizedKeys()
 
   const missingInEnglish = []
   const missingInGerman = []

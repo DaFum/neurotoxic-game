@@ -1,6 +1,5 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import fs from 'node:fs'
 import path from 'node:path'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import {
@@ -9,14 +8,15 @@ import {
   getRandomChatter
 } from '../src/data/chatter.js'
 import { VENUE_CHATTER_DB } from '../src/data/chatter/venueChatter.js'
+import { readLocaleJson } from './utils/localeTestUtils.js'
 
 // Cache translations at module level to avoid repeated file I/O
 const loadTranslations = () => {
-  const enPath = path.resolve(process.cwd(), 'public/locales/en/chatter.json')
-  const dePath = path.resolve(process.cwd(), 'public/locales/de/chatter.json')
+  const enDir = path.resolve(process.cwd(), 'public/locales/en')
+  const deDir = path.resolve(process.cwd(), 'public/locales/de')
   return {
-    en: JSON.parse(fs.readFileSync(enPath, 'utf-8')),
-    de: JSON.parse(fs.readFileSync(dePath, 'utf-8'))
+    en: readLocaleJson(enDir, 'chatter.json'),
+    de: readLocaleJson(deDir, 'chatter.json')
   }
 }
 
@@ -971,15 +971,15 @@ test('multiple travel count thresholds work', () => {
 // --- ADDITIONAL STRUCTURE VALIDATION TESTS ---
 
 test('chatter.json structure is valid JSON', () => {
-  const enPath = path.resolve(process.cwd(), 'public/locales/en/chatter.json')
-  const dePath = path.resolve(process.cwd(), 'public/locales/de/chatter.json')
+  const enDir = path.resolve(process.cwd(), 'public/locales/en')
+  const deDir = path.resolve(process.cwd(), 'public/locales/de')
 
   assert.doesNotThrow(() => {
-    JSON.parse(fs.readFileSync(enPath, 'utf-8'))
+    readLocaleJson(enDir, 'chatter.json')
   }, 'en/chatter.json must be valid JSON')
 
   assert.doesNotThrow(() => {
-    JSON.parse(fs.readFileSync(dePath, 'utf-8'))
+    readLocaleJson(deDir, 'chatter.json')
   }, 'de/chatter.json must be valid JSON')
 
   assert.ok(

@@ -47,9 +47,16 @@ export const flattenToObject = (entry, parentKey = '', result = {}) => {
   return result
 }
 
+const localeJsonCache = new Map()
+
 export const readLocaleJson = (directory, fileName) => {
   const localePath = path.join(directory, fileName)
-  return JSON.parse(readFileSync(localePath, 'utf8'))
+  if (localeJsonCache.has(localePath)) {
+    return structuredClone(localeJsonCache.get(localePath))
+  }
+  const data = JSON.parse(readFileSync(localePath, 'utf8'))
+  localeJsonCache.set(localePath, data)
+  return structuredClone(data)
 }
 
 export const toKeyMap = flattened =>
@@ -58,10 +65,16 @@ export const toKeyMap = flattened =>
     return accumulator
   }, new Map())
 
+const sourceFilesCache = new Map()
+
 export const collectSourceFiles = directory => {
+  if (sourceFilesCache.has(directory)) {
+    return sourceFilesCache.get(directory)
+  }
+
   const entries = readdirSync(directory, { withFileTypes: true })
 
-  return entries.flatMap(entry => {
+  const files = entries.flatMap(entry => {
     const entryPath = path.join(directory, entry.name)
 
     if (entry.isDirectory()) {
@@ -70,6 +83,9 @@ export const collectSourceFiles = directory => {
 
     return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
   })
+
+  sourceFilesCache.set(directory, files)
+  return files
 }
 
 export const resolveNamespaceKey = rawKey => {
