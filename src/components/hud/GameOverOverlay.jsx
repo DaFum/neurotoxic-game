@@ -7,7 +7,11 @@ export const GameOverOverlay = memo(function GameOverOverlay({ isGameOver }) {
   const { t } = useTranslation()
   if (!isGameOver) return null
   return (
-    <div className='absolute inset-0 z-50 bg-void-black/90 flex flex-col items-center justify-center pointer-events-none'>
+    <div
+      className='absolute inset-0 z-50 bg-void-black/90 flex flex-col items-center justify-center pointer-events-none'
+      role='alert'
+      aria-live='assertive'
+    >
       <h1 className='text-7xl text-blood-red font-[Metal_Mania] animate-doom-zoom'>
         {t('ui:game-over.booed-off-stage', { defaultValue: 'BOOED OFF STAGE' })}
       </h1>
