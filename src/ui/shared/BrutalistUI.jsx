@@ -1,5 +1,5 @@
 // TODO: Review this file
-import { useState, useEffect, useRef, useId, memo } from 'react'
+import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import { secureRandom } from '../../utils/crypto.js'
 
 export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
@@ -22,18 +22,26 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
   const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
   const safeUrl = isSafeUrl ? url.trim() : '#'
 
+  const handleClick = useCallback(
+    e => {
+      if (!isSafeUrl) {
+        e.preventDefault()
+      }
+    },
+    [isSafeUrl]
+  )
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [setIsHovered])
+  const handleMouseLeave = useCallback(() => setIsHovered(false), [setIsHovered])
+
   return (
     <a
       href={safeUrl}
       target={isSafeUrl ? '_blank' : undefined}
       rel={isSafeUrl ? 'noopener noreferrer' : undefined}
-      onClick={e => {
-        if (!isSafeUrl) {
-          e.preventDefault()
-        }
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
     >
       {/* Glitch Background on Hover */}
