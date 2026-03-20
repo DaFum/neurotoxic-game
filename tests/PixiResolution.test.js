@@ -149,19 +149,16 @@ describe('Pixi Resolution Capping', () => {
       documentElement: {}
     }
 
-    const utilsModule = await import('../src/components/stage/utils.js')
+    const [utilsModule, controllerModule, tourbusModule, roadieModule] = await Promise.all([
+      import('../src/components/stage/utils.js'),
+      import('../src/components/PixiStageController.js'),
+      import('../src/components/stage/TourbusStageController.js'),
+      import('../src/components/stage/RoadieStageController.js')
+    ])
+
     getOptimalResolution = utilsModule.getOptimalResolution
-
-    const controllerModule =
-      await import('../src/components/PixiStageController.js')
     createPixiStageController = controllerModule.createPixiStageController
-
-    const tourbusModule =
-      await import('../src/components/stage/TourbusStageController.js')
     createTourbusStageController = tourbusModule.createTourbusStageController
-
-    const roadieModule =
-      await import('../src/components/stage/RoadieStageController.js')
     createRoadieStageController = roadieModule.createRoadieStageController
   })
 

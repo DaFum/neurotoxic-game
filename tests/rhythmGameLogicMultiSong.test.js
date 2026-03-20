@@ -220,7 +220,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const { result } = renderHook(() => useRhythmGameLogic())
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setImmediate(resolve))
     })
 
     const playbackCalls = mockAudioEngine.startGigPlayback.mock.calls
@@ -249,7 +249,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       assert.strictEqual(mockChangeScene.mock.calls.length, 0)
 
       await promise
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => setImmediate(resolve))
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 2)
@@ -267,7 +267,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     await act(async () => {
       await onSong2Ended()
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => setImmediate(resolve))
     })
 
     assert.strictEqual(
@@ -327,7 +327,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setImmediate(r))
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
@@ -339,7 +339,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     await act(async () => {
       await onSong1Ended()
-      await new Promise(r => setTimeout(r, 50))
+      await new Promise(r => setImmediate(r))
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
@@ -375,7 +375,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setImmediate(r))
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
@@ -413,7 +413,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setImmediate(r))
     })
 
     mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
@@ -488,7 +488,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setImmediate(r))
     })
 
     const durationBefore = result.current.gameStateRef.current.totalDuration
@@ -497,7 +497,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.ok(capturedOnEnded, 'capturedOnEnded should be defined')
     await act(async () => {
       await capturedOnEnded()
-      await new Promise(r => setTimeout(r, 50))
+      await new Promise(r => setImmediate(r))
     })
 
     assert.strictEqual(

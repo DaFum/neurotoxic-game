@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { test } from 'node:test'
-import fs from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -12,12 +12,29 @@ import {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const jsonPath = path.join(__dirname, '../src/assets/rhythm_songs.json')
-const songsData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
+
+let songsData = null
+let songsDataPromise = null
+
+async function loadSongsData() {
+  if (songsData) return songsData
+  if (songsDataPromise) return await songsDataPromise
+
+  songsDataPromise = fs.readFile(jsonPath, 'utf8').then(data => {
+    songsData = JSON.parse(data)
+    songsDataPromise = null
+    return songsData
+  })
+
+  return await songsDataPromise
+}
 
 test('rhythm_songs.json integration', async t => {
+  const data = await loadSongsData()
+
   await t.test('all songs can be parsed without error', () => {
     // The JSON is an object with song IDs as keys
-    const songsArray = Object.values(songsData)
+    const songsArray = Object.values(data)
 
     // We iterate over the REAL data file to ensure no crashes
     songsArray.forEach(song => {
@@ -58,8 +75,10 @@ test('rhythm_songs.json integration', async t => {
 })
 
 test('rhythm_songs.json sourceOgg fields', async t => {
+  const data = await loadSongsData()
+
   await t.test('every song with sourceMid has a matching sourceOgg', () => {
-    const songs = Object.values(songsData)
+    const songs = Object.values(data)
     const songsWithMidi = songs.filter(s => s.sourceMid)
     assert.ok(songsWithMidi.length > 0, 'Should have songs with sourceMid')
 
