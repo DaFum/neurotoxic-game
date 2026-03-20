@@ -57,4 +57,4 @@ Analyze and optimize application performance, focusing on bundle size and runtim
 **Output**:
 "Lazy-loaded Pixi and Tone. Main bundle size reduced by 80%. Initial load is now under 1s."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

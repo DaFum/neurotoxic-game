@@ -68,6 +68,9 @@ export default [
       globals: {
         ...globals.node
       }
+    },
+    rules: {
+      '@eslint-react/component-hook-factories': 'off',
     }
   }
 ]

@@ -91,7 +91,7 @@ When rules span multiple projects or teams:
    - Solution: Create a shared rule ("utils are CSS-in-JS") and project overrides
 
 2. **Error recovery**: What if someone breaks a rule? How do they fix it?
-   - Example: "MUST pin Vite to 8.0.0" → Error recovery: "If upgraded, run `pnpm install --frozen-lockfile vite@8.0.0` and rebuild"
+   - Example: "MUST pin Vite to 8.0.0" → Error recovery: "If upgraded, run `pnpm install --frozen-lockfile vite@8.0.1` and rebuild"
 
 3. **Validation**: How do we verify compliance?
    - Manual checklist (pre-commit review)
@@ -156,7 +156,7 @@ This avoids duplication and keeps guardrails as the **operational checklist**, n
 
 ## Performance & Dependencies
 
-- [ ] **Version Pinning**: MUST keep exact versions: React 19.2.4, Vite 8.0.0, Tailwind 4.2.1. See CLAUDE.md → "Architecture Constraints" for rationale. Do NOT upgrade without explicit approval.
+- [ ] **Version Pinning**: MUST keep exact versions: React 19.2.4, Vite 8.0.1, Tailwind 4.2.2. See CLAUDE.md → "Architecture Constraints" for rationale. Do NOT upgrade without explicit approval.
 - [ ] **Howler.js**: NEVER import Howler.js. Use Tone.js only. See webaudio-reliability-fixer skill if audio breaks.
 
 ## Integration with Docs
@@ -174,4 +174,4 @@ See CLAUDE.md → "Critical Commands", "Architecture Constraints", "Gotchas" for
 | No reference to docs              | Duplication and confusion                    | Link to AGENTS.md/CLAUDE.md sections instead of repeating       |
 | Missing the "why"                 | Rules feel arbitrary                         | Explain the failure cost (review time, bugs, onboarding burden) |
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

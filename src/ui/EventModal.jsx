@@ -37,9 +37,9 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   // Reset outcome on new events
   const eventId = event?.id
   useEffect(() => {
-    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    //
     setOutcome(null)
-    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    //
     setPreviewError(false)
   }, [eventId])
 

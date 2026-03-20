@@ -53,7 +53,7 @@ export const Gig = () => {
 
   useEffect(() => {
     if (!currentGig) {
-      /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
+
       addToast(
         tRef.current('ui:pregig.toasts.noGig', {
           defaultValue: 'No gig active! Returning to map.'
@@ -61,7 +61,7 @@ export const Gig = () => {
         'error'
       )
       changeScene(GAME_PHASES.OVERWORLD)
-      /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
+
     }
   }, [currentGig, changeScene, addToast])
 
@@ -86,7 +86,7 @@ export const Gig = () => {
       }
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      //
       addToast(
         tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
         'info'
@@ -98,14 +98,14 @@ export const Gig = () => {
 
     if (isPaused) {
       pauseAudio()
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      //
       addToast(
         tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
         'info'
       )
     } else {
       resumeAudio()
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      //
       addToast(
         tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
         'info'

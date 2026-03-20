@@ -63,4 +63,4 @@ Diagnose and resolve asset loading failures in the Vite build pipeline.
 **Output**:
 "The file `src/assets/song1.midi` is missing, but referenced in `rhythm_songs.json`. Please add the file or remove the reference."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

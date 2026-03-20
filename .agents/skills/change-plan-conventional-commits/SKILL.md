@@ -67,4 +67,4 @@ Create a structured plan for code changes and draft compliant commit messages.
     The volume slider now saves its value to localStorage and restores it on page load.
     ```
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

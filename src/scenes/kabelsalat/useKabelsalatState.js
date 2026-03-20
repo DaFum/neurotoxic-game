@@ -54,7 +54,7 @@ export const useKabelsalatState = () => {
 
   // Lightning Seeds
   useEffect(() => {
-    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    //
     setLightningSeeds(prev => {
       if (isShocked && prev.length === 0) return generateLightningSeeds()
       if (!isShocked && prev.length > 0) return []
@@ -111,7 +111,7 @@ export const useKabelsalatState = () => {
     (delay, isPowered) => {
       const timer = setTimeout(() => {
         try {
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          //
           completeKabelsalatMinigame({
             isPoweredOn: isPowered,
             timeLeft: isPowered ? timeLeftRef.current : 0
@@ -140,7 +140,7 @@ export const useKabelsalatState = () => {
               }
             })
         } finally {
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          //
           changeScene(GAME_PHASES.GIG)
         }
       }, delay)

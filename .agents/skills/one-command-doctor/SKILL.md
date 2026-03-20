@@ -60,4 +60,4 @@ Run `.agents/skills/one-command-doctor/scripts/doctor.sh`.
 
 "Your Node version is too old. Run `nvm install 22.13.0 && nvm use 22.13.0`."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

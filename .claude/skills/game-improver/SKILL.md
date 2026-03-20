@@ -109,7 +109,7 @@ See **references/verification-checklist.md** for detailed criteria.
 
 ## Core Constraints
 
-**Stack**: React 19.2.4, Vite 8.0.0, Tailwind 4.2.1, Framer Motion 12.36.0, Tone.js 15.5.6. Node 22.13+.
+**Stack**: React 19.2.4, Vite 8.0.1, Tailwind 4.2.2, Framer Motion 12.38.0, Tone.js 15.5.6. Node 22.13+.
 **State Limits**: `player.money >= 0`, `band.harmony ∈ [1, 100]`, `van.fuel ∈ [0, 100]`. Clamp via `gameStateUtils.js`.
 **Audio**: Use `audioEngine.getGigTimeMs()` as single clock. Don't access Tone.js directly. Handle suspended AudioContext.
 **Pixi**: Destroy on unmount. No memory leaks. Pre-compute, don't allocate per-frame.
@@ -157,4 +157,4 @@ See **references/verification-checklist.md** for detailed criteria.
 
 See **references/improvement-patterns.md** for more complete examples.
 
-_Skill sync: React 19.2.4, Vite 8.0.0, Tailwind 4.2.1 baseline as of 2026-03-18._
+_Skill sync: React 19.2.4, Vite 8.0.1, Tailwind 4.2.2 baseline as of 2026-03-18._

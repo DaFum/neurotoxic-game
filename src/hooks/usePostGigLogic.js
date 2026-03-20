@@ -103,11 +103,11 @@ export const usePostGigLogic = () => {
     if (!currentGig) return
 
     if (!activeEvent) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      //
       triggerEvent('financial', 'post_gig') ||
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+        //
         triggerEvent('special', 'post_gig') ||
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+        //
         triggerEvent('band', 'post_gig')
     }
   }, [currentGig, activeEvent, triggerEvent])
@@ -132,7 +132,7 @@ export const usePostGigLogic = () => {
           )
         }
       })
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      //
       setFinancials(result)
 
       // Pass the necessary game state to evaluate post conditions
@@ -146,18 +146,18 @@ export const usePostGigLogic = () => {
         gigEvents: lastGigStats?.events || []
       }
       try {
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+        //
         setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
       } catch (e) {
         if (!errorHandledRef.current) {
           errorHandledRef.current = true
           logger.error('PostGig', 'Failed to generate post options', e)
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          //
           setPostOptions([])
           const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
             defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
           })
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          //
           setPostResult({
             type: 'ERROR',
             success: false,
@@ -166,9 +166,9 @@ export const usePostGigLogic = () => {
             moneyChange: 0,
             message: fallbackMsg
           })
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          //
           setPhase('COMPLETE')
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          //
           addToast(fallbackMsg, 'error')
         }
       }

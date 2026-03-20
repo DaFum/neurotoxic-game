@@ -55,4 +55,4 @@ Direct questions to the correct domain and authoritative documentation.
 **Output**:
 "Modify `src/context/initialState.js`. Consult `src/context/AGENTS.md` for state constraints."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
