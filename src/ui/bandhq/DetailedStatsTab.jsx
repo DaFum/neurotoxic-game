@@ -455,10 +455,14 @@ const MemberTraits = ({ member, t }) => {
     }
   }
 
-  const activeTraitIds = useMemo(
-    () => new Set((member.traits || []).map(tr => tr.id)),
-    [member.traits]
-  )
+  const activeTraitIds = useMemo(() => {
+    const ids = new Set()
+    const traitsList = member.traits || []
+    for (let i = 0; i < traitsList.length; i++) {
+      ids.add(traitsList[i].id)
+    }
+    return ids
+  }, [member.traits])
 
   const potentialTraits = Array.from(allTraitsMap.values())
   if (potentialTraits.length === 0)
