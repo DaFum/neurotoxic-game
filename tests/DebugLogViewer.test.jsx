@@ -1,0 +1,152 @@
+import { render, screen, fireEvent, within } from '@testing-library/react'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
+import { DebugLogViewer } from '../src/ui/DebugLogViewer.jsx'
+
+vi.mock('../src/utils/logger', () => {
+  const listeners = new Set()
+  const logger = {
+    maxLogs: 100,
+    logs: [
+      {
+        id: 'log1',
+        timestamp: '2025-01-01T10:00:00.000Z',
+        level: 'INFO',
+        channel: 'Test',
+        message: 'hello world'
+      },
+      {
+        id: 'log2',
+        timestamp: '2025-01-01T10:01:00.000Z',
+        level: 'ERROR',
+        channel: 'System',
+        message: 'critical failure',
+        data: { reason: 'timeout' }
+      }
+    ],
+    subscribe: cb => {
+      listeners.add(cb)
+      return () => listeners.delete(cb)
+    },
+    clear: vi.fn(() => listeners.forEach(cb => cb({ type: 'clear' }))),
+    dump: vi.fn(() => []),
+    _emitAdd: entry => listeners.forEach(cb => cb({ type: 'add', entry }))
+  }
+  return {
+    logger,
+    LOG_LEVELS: { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 }
+  }
+})
+
+describe('DebugLogViewer', () => {
+  let loggerMock
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    loggerMock = (await import('../src/utils/logger')).logger
+    // Reset to test environment
+    vi.stubEnv('DEV', true)
+  })
+
+  test('is invisible by default', () => {
+    const { container } = render(<DebugLogViewer />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  test('toggles visibility via keyboard shortcut (Ctrl + `)', () => {
+    render(<DebugLogViewer />)
+
+    // initially hidden
+    expect(screen.queryByText('NEUROTOXIC DEBUGGER')).not.toBeInTheDocument()
+
+    // press Ctrl + `
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    // should be visible
+    expect(screen.getByText('NEUROTOXIC DEBUGGER')).toBeInTheDocument()
+    expect(screen.getByText('hello world')).toBeInTheDocument()
+    expect(screen.getByText('critical failure')).toBeInTheDocument()
+    expect(screen.getByText('{"reason":"timeout"}')).toBeInTheDocument()
+
+    // press Ctrl + ` again
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    // should be hidden
+    expect(screen.queryByText('NEUROTOXIC DEBUGGER')).not.toBeInTheDocument()
+  })
+
+  test('does not toggle in production', () => {
+    vi.stubEnv('DEV', false)
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+    expect(screen.queryByText('NEUROTOXIC DEBUGGER')).not.toBeInTheDocument()
+  })
+
+  test('filters logs by level', () => {
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    expect(screen.getByText('hello world')).toBeInTheDocument()
+
+    // Change filter to ERROR (40)
+    const select = screen.getByRole('combobox')
+    fireEvent.change(select, { target: { value: '40' } }) // ERROR level
+
+    // INFO log should be hidden, ERROR log should be visible
+    expect(screen.queryByText('hello world')).not.toBeInTheDocument()
+    expect(screen.getByText('critical failure')).toBeInTheDocument()
+  })
+
+  test('clears logs', () => {
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    const clearButton = screen.getByText('CLEAR')
+    fireEvent.click(clearButton)
+
+    expect(loggerMock.clear).toHaveBeenCalled()
+    expect(screen.queryByText('hello world')).not.toBeInTheDocument()
+    expect(screen.queryByText('critical failure')).not.toBeInTheDocument()
+  })
+
+  test('closes via close button', () => {
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    const closeButton = screen.getByText('CLOSE')
+    fireEvent.click(closeButton)
+
+    expect(screen.queryByText('NEUROTOXIC DEBUGGER')).not.toBeInTheDocument()
+  })
+
+  test('dumps logs to console', () => {
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    const dumpButton = screen.getByText('DUMP TO CONSOLE')
+    fireEvent.click(dumpButton)
+
+    expect(loggerMock.dump).toHaveBeenCalled()
+    expect(consoleSpy).toHaveBeenCalled()
+    consoleSpy.mockRestore()
+  })
+
+  test('receives new logs dynamically', async () => {
+    render(<DebugLogViewer />)
+    fireEvent.keyDown(window, { key: '`', ctrlKey: true })
+
+    import('@testing-library/react').then(({ act }) => {
+      act(() => {
+        loggerMock._emitAdd({
+            id: 'log3',
+            timestamp: '2025-01-01T10:02:00.000Z',
+            level: 'WARN',
+            channel: 'Network',
+            message: 'retry connection'
+        })
+      })
+    })
+
+    expect(await screen.findByText('retry connection')).toBeInTheDocument()
+  })
+})
