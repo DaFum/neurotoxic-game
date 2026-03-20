@@ -523,7 +523,12 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
       // Defend against unknown/invalid trend values and avoid runtime errors.
       // We first check if social.trend is valid globally via ALLOWED_TRENDS_SET.
       if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(social.trend)) continue
-      if (!deal.requirements.trend.includes(social.trend)) continue
+
+      if (deal.requirements.trendSet) {
+        if (!deal.requirements.trendSet.has(social.trend)) continue
+      } else if (!deal.requirements.trend.includes(social.trend)) {
+        continue
+      }
     }
 
     // Check trait match (if required trait exists in band)

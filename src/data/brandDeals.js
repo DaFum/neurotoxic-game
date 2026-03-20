@@ -90,5 +90,17 @@ export const BRAND_DEALS = [
 ]
 
 export const BRAND_DEALS_BY_ID = new Map(
-  BRAND_DEALS.map(deal => [deal.id, deal])
+  BRAND_DEALS.map(deal => [
+    deal.id,
+    {
+      ...deal,
+      requirements: {
+        ...deal.requirements,
+        trendSet:
+          deal.requirements && Array.isArray(deal.requirements.trend)
+            ? new Set(deal.requirements.trend)
+            : undefined
+      }
+    }
+  ])
 )
