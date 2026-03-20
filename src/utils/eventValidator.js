@@ -148,11 +148,11 @@ export const validateCrisisEvent = event => {
         throw new Error(
           `SkillCheck threshold must be a number in event ${event.id}`
         )
-      if (!success || typeof success !== 'object')
+      if (!success || typeof success !== 'object' || Array.isArray(success))
         throw new Error(
           `SkillCheck success must be an object in event ${event.id}`
         )
-      if (!failure || typeof failure !== 'object')
+      if (!failure || typeof failure !== 'object' || Array.isArray(failure))
         throw new Error(
           `SkillCheck failure must be an object in event ${event.id}`
         )

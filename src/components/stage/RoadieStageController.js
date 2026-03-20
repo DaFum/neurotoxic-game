@@ -4,6 +4,7 @@ import { BaseStageController } from './BaseStageController'
 import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
+import { logger } from '../../utils/logger.js'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import { handleError, GameError } from '../../utils/errorHandler'
 import { hashString } from '../../utils/stringUtils'
@@ -286,7 +287,8 @@ class RoadieStageController extends BaseStageController {
           try {
             this.container.removeChild(sprite)
           } catch (error) {
-            console.error(
+            logger.error(
+              'RoadieStageController',
               `Error removing sprite from container for id ${id}:`,
               error
             )
@@ -295,7 +297,11 @@ class RoadieStageController extends BaseStageController {
           try {
             sprite.destroy()
           } catch (error) {
-            console.error(`Error destroying sprite for id ${id}:`, error)
+            logger.error(
+              'RoadieStageController',
+              `Error destroying sprite for id ${id}:`,
+              error
+            )
           } finally {
             this.carSprites.delete(id)
           }
