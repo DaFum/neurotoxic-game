@@ -52,11 +52,11 @@ const localeJsonCache = new Map()
 export const readLocaleJson = (directory, fileName) => {
   const localePath = path.join(directory, fileName)
   if (localeJsonCache.has(localePath)) {
-    return localeJsonCache.get(localePath)
+    return structuredClone(localeJsonCache.get(localePath))
   }
   const data = JSON.parse(readFileSync(localePath, 'utf8'))
   localeJsonCache.set(localePath, data)
-  return data
+  return structuredClone(data)
 }
 
 export const toKeyMap = flattened =>
