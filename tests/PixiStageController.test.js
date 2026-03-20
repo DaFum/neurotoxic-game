@@ -257,12 +257,19 @@ describe('PixiStageController', () => {
   })
 
   test('withTimeout resolves with null when timeout is reached', async () => {
-    await controller.init()
-    const promise = new Promise(resolve =>
-      setTimeout(() => resolve('late'), 15000)
-    )
-    const result = await controller.withTimeout(promise, 'Test')
-    assert.equal(result, null)
+    mock.timers.enable({ apis: ['setTimeout'] })
+    try {
+      await controller.init()
+      const promise = new Promise(() => {}) // Never resolves
+      // Default timeout in BaseStageController.withTimeout is often large, but we pass custom
+      const timeoutPromise = controller.withTimeout(promise, 'Test', 100)
+      mock.timers.tick(100)
+      const result = await timeoutPromise
+      assert.equal(result, null)
+    } finally {
+      mock.timers.reset()
+      mock.restoreAll()
+    }
   })
 
   test('manualUpdate calls handleTicker with deltaMS', async () => {
@@ -527,6 +534,7 @@ describe('PixiStageController', () => {
         assert.equal(result, null)
       } finally {
         mock.timers.reset()
+        mock.restoreAll()
       }
     })
 
@@ -550,6 +558,7 @@ describe('PixiStageController', () => {
         assert.equal(result, null)
       } finally {
         mock.timers.reset()
+        mock.restoreAll()
       }
     })
 

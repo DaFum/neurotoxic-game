@@ -1,8 +1,15 @@
 import { isForbiddenKey } from './gameStateUtils.js'
 
-const VALID_NAMESPACES = ['ui', 'events', 'venues', 'items', 'economy', 'traits']
+const VALID_NAMESPACES = [
+  'ui',
+  'events',
+  'venues',
+  'items',
+  'economy',
+  'traits'
+]
 
-const isTranslatableKey = (key) => {
+const isTranslatableKey = key => {
   if (typeof key !== 'string') return false
   const parts = key.split(':')
   if (parts.length > 1) {
@@ -40,9 +47,7 @@ export const translateContextKeys = (context, t) => {
 
     const value = context[prop]
     if (typeof value === 'string') {
-      translatedContext[prop] = isTranslatableKey(value)
-        ? t(value)
-        : value
+      translatedContext[prop] = isTranslatableKey(value) ? t(value) : value
     } else if (typeof value === 'object' && value !== null) {
       // SECURITY: Recurse into nested objects to sanitize and translate
       translatedContext[prop] = translateContextKeys(value, t)

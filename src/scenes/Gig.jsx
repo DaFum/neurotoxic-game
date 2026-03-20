@@ -53,7 +53,6 @@ export const Gig = () => {
 
   useEffect(() => {
     if (!currentGig) {
-
       addToast(
         tRef.current('ui:pregig.toasts.noGig', {
           defaultValue: 'No gig active! Returning to map.'
@@ -61,7 +60,6 @@ export const Gig = () => {
         'error'
       )
       changeScene(GAME_PHASES.OVERWORLD)
-
     }
   }, [currentGig, changeScene, addToast])
 
