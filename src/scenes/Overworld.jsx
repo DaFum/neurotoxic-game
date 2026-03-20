@@ -199,11 +199,12 @@ export const Overworld = () => {
   const renderedNodes = useMemo(() => {
     if (!gameMap) return null
     const nodes = gameMap.nodes
-    const keys = Object.keys(nodes)
-    const result = new Array(keys.length)
+    const result = []
 
-    for (let i = 0; i < keys.length; i++) {
-      const node = nodes[keys[i]]
+    for (const key in nodes) {
+      if (!Object.hasOwn(nodes, key)) continue
+
+      const node = nodes[key]
       const isCurrent = node.id === player.currentNodeId
       const visibility = getNodeVisibility(node.layer, currentLayer)
       const isReachable = isConnected(node.id) || node.type === 'START'
@@ -221,7 +222,7 @@ export const Overworld = () => {
         )
       })
 
-      result[i] = (
+      result.push(
         <MapNode
           key={node.id}
           node={node}
