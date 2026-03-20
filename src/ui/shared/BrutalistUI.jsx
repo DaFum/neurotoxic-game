@@ -5,9 +5,13 @@ import { secureRandom } from '../../utils/crypto.js'
 export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
   const [isHovered, setIsHovered] = useState(false)
 
+  const isSafeUrl =
+    url && (url.startsWith('http://') || url.startsWith('https://'))
+  const safeUrl = isSafeUrl ? url : '#'
+
   return (
     <a
-      href={url}
+      href={safeUrl}
       target='_blank'
       rel='noopener noreferrer'
       onMouseEnter={() => setIsHovered(true)}
