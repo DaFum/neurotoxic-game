@@ -37,11 +37,16 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   // Reset outcome on new events
   const [prevEventId, setPrevEventId] = useState(null)
   const eventId = event?.id
-  if (eventId !== prevEventId) {
-    setPrevEventId(eventId)
-    setOutcome(null)
-    setPreviewError(false)
-  }
+  useEffect(() => {
+    if (eventId !== prevEventId) {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPrevEventId(eventId)
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setOutcome(null)
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPreviewError(false)
+    }
+  }, [eventId, prevEventId])
 
   const handleOptionSelect = useCallback(option => {
     try {

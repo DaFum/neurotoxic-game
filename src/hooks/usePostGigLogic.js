@@ -72,6 +72,7 @@ export const usePostGigLogic = () => {
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
   const [postResult, setPostResult] = useState(null)
   const [brandOffers, setBrandOffers] = useState([])
+  const [postOptionsError, setPostOptionsError] = useState(false)
   const errorHandledRef = useRef(false)
 
   // Create cache refs for pure derivation without effect sets
@@ -172,24 +173,7 @@ export const usePostGigLogic = () => {
       if (!errorHandledRef.current) {
         errorHandledRef.current = true
         logger.error('PostGig', 'Failed to generate post options', e)
-        const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
-          defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
-        })
-
-        // Push the side effects to the end of the current task queue
-        // to avoid React warning: Cannot update a component while rendering a different component
-        setTimeout(() => {
-          setPostResult({
-            type: 'ERROR',
-            success: false,
-            platform: 'none',
-            followers: 0,
-            moneyChange: 0,
-            message: fallbackMsg
-          })
-          setPhase('COMPLETE')
-          addToast(fallbackMsg, 'error')
-        }, 0)
+        setPostOptionsError(true)
       }
       return []
     }
@@ -200,9 +184,33 @@ export const usePostGigLogic = () => {
     band,
     social,
     activeEvent,
-    addToast,
-    t
   ])
+
+  // Handle post options generation error side effects purely in an effect
+  useEffect(() => {
+    if (postOptionsError) {
+      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
+        defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
+      })
+
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPostResult({
+        type: 'ERROR',
+        success: false,
+        platform: 'none',
+        followers: 0,
+        moneyChange: 0,
+        message: fallbackMsg
+      })
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPhase('COMPLETE')
+      addToast(fallbackMsg, 'error')
+
+      // Reset the error state so it doesn't loop
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPostOptionsError(false)
+    }
+  }, [postOptionsError, t, addToast])
 
   const handlePostSelection = useCallback(
     option => {
