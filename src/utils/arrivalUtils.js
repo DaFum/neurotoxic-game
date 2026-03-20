@@ -91,11 +91,26 @@ export const handleNodeArrival = ({
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
-      // Chaos Tour fix: Consolidated show cancellation check
-      const harmony = band?.harmony ?? 100
-      const isCancelled = harmony <= 0 || (harmony < 15 && rng() < 0.25)
+      // Chaos Tour fix: Show cancellation check
+      const harmony = band?.harmony ?? 0
 
-      if (isCancelled) {
+      // Path 1: Immediate cancellation for zero or missing harmony (Defensive)
+      if (harmony <= 0) {
+        addToast(
+          i18n.t('ui:arrival.harmonyTooLowToPerform', {
+            defaultValue: "Band's harmony too low to perform!"
+          }),
+          'warning'
+        )
+        if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
+        return
+      }
+
+      // Path 2: Luck-based cancellation for low harmony (Chaos Tour Mechanic)
+      if (
+        harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD &&
+        rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+      ) {
         addToast(
           i18n.t('ui:arrival.showCancelled', {
             defaultValue:
