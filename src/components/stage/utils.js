@@ -270,11 +270,15 @@ export const getOptimalResolution = () => {
  */
 export const loadTextures = async (urlMap, onError) => {
   const keys = Object.keys(urlMap)
-  if (keys.length === 0) {
+  const length = keys.length
+  if (length === 0) {
     return {}
   }
 
-  const promises = keys.map(key => loadTexture(urlMap[key]))
+  const promises = new Array(length)
+  for (let i = 0; i < length; i++) {
+    promises[i] = loadTexture(urlMap[keys[i]])
+  }
   const settledResults = await Promise.allSettled(promises)
 
   const result = {}
