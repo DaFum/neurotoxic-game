@@ -98,9 +98,15 @@ const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
 
 const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
   if (fixedSpeaker) return fixedSpeaker
-  const memberNames = (bandMembers ?? [])
-    .map(member => member.name)
-    .filter(memberName => typeof memberName === 'string')
+  const memberNames = []
+  if (bandMembers) {
+    for (let i = 0; i < bandMembers.length; i++) {
+      const name = bandMembers[i].name
+      if (typeof name === 'string') {
+        memberNames.push(name)
+      }
+    }
+  }
   if (memberNames.length > 0) {
     let roll
     try {
