@@ -25,7 +25,7 @@ i18n
     ], // Pre-load namespaces used across scenes/modal overlays
     defaultNS: 'ui',
     keySeparator: false,
-    interpolation: { escapeValue: true },
+    interpolation: { escapeValue: false },
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json'
     },
