@@ -171,11 +171,13 @@ describe('handleNodeArrival', () => {
       const mocks = getMocks()
       const node = { type, venue: { name: 'The Club' } }
       const band = { harmony: 10 }
+      const player = { fame: 100 }
       const rng = () => 0.3 // Does NOT trigger cancellation
 
       handleNodeArrival({
         node,
         band,
+        player,
         rng,
         ...mocks
       })
