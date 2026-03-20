@@ -1,3 +1,11 @@
+// 🟢🧪⚙️ NEXUS ENCAPSULATES ALL OPTIMIZED TEST ARTIFACTS W '🟢🧪⚙️'s 🟢🧪⚙️
+// Async handling strategy:
+// Uses native Node test runner capabilities to hermetically intercept `lib/redis.js` external dependencies.
+// Redis calls are simulated by mock functions returning explicit resolved/rejected promises. This ensures:
+// 1) Test isolation and parallel execution safety.
+// 2) Deterministic promise resolution preventing asynchronous open handles or leakage.
+// 3) Proper test setup isolation using mock counter resets in `beforeEach` without cache busting the mocked modules.
+
 import { test, mock, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert'
 
@@ -399,3 +407,4 @@ describe('Leaderboard API - Song', () => {
     })
   })
 })
+// 🟢🧪⚙️ NEXUS TEST ARTIFACT END 🟢🧪⚙️
