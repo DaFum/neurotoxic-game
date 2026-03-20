@@ -226,8 +226,7 @@ class RoadieStageController extends BaseStageController {
     // Render Traffic
     if (Array.isArray(state.traffic)) {
       this.currentIds.clear()
-      for (let i = 0; i < state.traffic.length; i++) {
-        const car = state.traffic[i]
+      for (const car of state.traffic) {
         this.currentIds.add(car.id)
         let sprite = this.carSprites.get(car.id)
         if (!sprite) {
@@ -280,7 +279,7 @@ class RoadieStageController extends BaseStageController {
       }
     }
 
-    // Cleanup
+    // Cleanup - deletion during for...of Map iteration is safe in JS
     if (this.carSprites) {
       for (const [id, sprite] of this.carSprites) {
         if (!this.currentIds.has(id)) {
