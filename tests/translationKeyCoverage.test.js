@@ -1,4 +1,5 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
@@ -6,7 +7,8 @@ import assert from 'node:assert/strict'
 import {
   flattenToObject,
   collectSourceFiles,
-  resolveNamespaceKey
+  resolveNamespaceKey,
+  readLocaleJson
 } from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -25,9 +27,7 @@ const readLocaleNamespaceMap = locale => {
 
   return namespaceFiles.reduce((accumulator, namespaceFile) => {
     const namespace = namespaceFile.replace('.json', '')
-    const namespaceData = JSON.parse(
-      readFileSync(path.join(localePath, namespaceFile), 'utf8')
-    )
+    const namespaceData = readLocaleJson(localePath, namespaceFile)
 
     return {
       ...accumulator,
@@ -36,7 +36,7 @@ const readLocaleNamespaceMap = locale => {
   }, {})
 }
 
-test('all literal translation keys used in src exist in both en and de locale namespaces', () => {
+test('all literal translation keys used in src exist in both en and de locale namespaces', async () => {
   const sourceFiles = collectSourceFiles(SOURCE_ROOT)
   const englishNamespaces = readLocaleNamespaceMap('en')
   const germanNamespaces = readLocaleNamespaceMap('de')
@@ -44,33 +44,35 @@ test('all literal translation keys used in src exist in both en and de locale na
   const missingInEnglish = []
   const missingInGerman = []
 
-  sourceFiles.forEach(filePath => {
-    const source = readFileSync(filePath, 'utf8')
+  await Promise.all(
+    sourceFiles.map(async filePath => {
+      const source = await fs.readFile(filePath, 'utf8')
 
-    const matches = [
-      ...source.matchAll(TRANSLATION_KEY_PATTERN),
-      ...source.matchAll(TRANS_I18NKEY_PATTERN)
-    ]
+      const matches = [
+        ...source.matchAll(TRANSLATION_KEY_PATTERN),
+        ...source.matchAll(TRANS_I18NKEY_PATTERN)
+      ]
 
-    for (const match of matches) {
-      const resolved = resolveNamespaceKey(match[1])
-      if (!resolved) {
-        assert.fail(`Unresolved i18n key: ${match[1]} must be namespaced`)
+      for (const match of matches) {
+        const resolved = resolveNamespaceKey(match[1])
+        if (!resolved) {
+          assert.fail(`Unresolved i18n key: ${match[1]} must be namespaced`)
+        }
+
+        const namespaceKey = `${resolved.namespace}:${resolved.key}`
+        const englishMap = englishNamespaces[resolved.namespace] || {}
+        const germanMap = germanNamespaces[resolved.namespace] || {}
+
+        if (!(resolved.key in englishMap)) {
+          missingInEnglish.push(`${filePath}:${namespaceKey}`)
+        }
+
+        if (!(resolved.key in germanMap)) {
+          missingInGerman.push(`${filePath}:${namespaceKey}`)
+        }
       }
-
-      const namespaceKey = `${resolved.namespace}:${resolved.key}`
-      const englishMap = englishNamespaces[resolved.namespace] || {}
-      const germanMap = germanNamespaces[resolved.namespace] || {}
-
-      if (!(resolved.key in englishMap)) {
-        missingInEnglish.push(`${filePath}:${namespaceKey}`)
-      }
-
-      if (!(resolved.key in germanMap)) {
-        missingInGerman.push(`${filePath}:${namespaceKey}`)
-      }
-    }
-  })
+    })
+  )
 
   assert.deepEqual(
     missingInEnglish,

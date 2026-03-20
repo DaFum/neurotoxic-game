@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
-    "test": "node ./scripts/run-node-tests.mjs",
+    "test": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs",
     "test:ui": "node ./scripts/run-vitest-ui.mjs",
     "test:all": "npm run test && npm run test:ui",
     "simulate:balance": "node scripts/game-balance-simulation.mjs",
