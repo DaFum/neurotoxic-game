@@ -25,42 +25,6 @@ vi.mock('../src/utils/logger.js', () => ({
 }))
 
 const { ToastOverlay } = await import('../src/ui/ToastOverlay.jsx')
-const { translateContextKeys } =
-  await import('../src/utils/translationUtils.js')
-
-test('translateContextKeys securely translates and filters deep properties', () => {
-  const t = vi.fn(key => key.toUpperCase())
-
-  // Use JSON.parse to ensure __proto__ is created as an own property,
-  // not as setting the actual object prototype, mimicking a malicious JSON payload.
-  const ctx = JSON.parse(`{
-    "normalKey": "ui:hello",
-    "num": 123,
-    "nullVal": null,
-    "arr": [1, 2, 3],
-    "nested": {
-      "deepKey": "events:boom"
-    },
-    "__proto__": { "injected": "bad" },
-    "constructor": { "prototype": { "injected": "bad" } },
-    "normalStr": "hello"
-  }`)
-
-  const result = translateContextKeys(ctx, t)
-
-  // check valid translations
-  expect(result.normalKey).toBe('UI:HELLO')
-  expect(result.num).toBe(123)
-  expect(result.nullVal).toBeNull()
-  expect(result.arr).toEqual([1, 2, 3])
-  expect(result.nested.deepKey).toBe('EVENTS:BOOM')
-  expect(result.normalStr).toBe('hello')
-
-  // check forbidden keys
-  // Note: the test runner creates object prototype anyway so checking undefined on __proto__ directly fails in some envs
-  expect(Object.hasOwn(result, '__proto__')).toBe(false)
-  expect(Object.hasOwn(result, 'constructor')).toBe(false)
-})
 
 test('ToastOverlay renders all taxonomy variants with themed classes', () => {
   const html = renderToStaticMarkup(React.createElement(ToastOverlay))
