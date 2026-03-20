@@ -19,7 +19,7 @@ vi.mock('../src/utils/audioEngine', () => ({
   stopAudio: vi.fn()
 }))
 vi.mock('../src/utils/imageGen', () => ({
-  getGenImageUrl: vi.fn(() => 'mock-image.jpg'),
+  getGenImageUrl: vi.fn((prompt) => `mock-${prompt}.jpg`),
   IMG_PROMPTS: {
     VENUE_CLUB: 'club',
     VENUE_KAMINSTUBE: 'kaminstube',
@@ -185,31 +185,35 @@ describe('Gig Scene Component', () => {
 
   describe('Band Member Display', () => {
     test('shows correct band member moods based on harmony', () => {
-      // High harmony
+      // High harmony (assuming PLAYING for everyone)
       useGameState.mockReturnValue({
         currentGig: { id: 'gig', name: 'Test', diff: 3 },
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 85 }, endGig: mockEndGig
       })
       const { container, rerender } = render(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]')).toBeInTheDocument()
-      expect(container.querySelector('img[alt="Marius"]')).toBeInTheDocument()
-      expect(container.querySelector('img[alt="Lars"]')).toBeInTheDocument()
+      expect(container.querySelector('img[alt="Matze"]').src).toContain('matze')
+      expect(container.querySelector('img[alt="Marius"]').src).toContain('marius')
+      expect(container.querySelector('img[alt="Lars"]').src).toContain('lars')
 
-      // Very low harmony
+      // Very low harmony (harmony: 15 -> Matze Angry, Marius Drinking, Lars Idle)
       useGameState.mockReturnValue({
         currentGig: { id: 'gig', name: 'Test', diff: 3 },
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 15 }, endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]')).toBeInTheDocument()
+      expect(container.querySelector('img[alt="Matze"]').src).toContain('matze_angry')
+      expect(container.querySelector('img[alt="Marius"]').src).toContain('marius_drink')
+      expect(container.querySelector('img[alt="Lars"]').src).toContain('lars_idle')
 
-      // Moderate harmony
+      // Moderate harmony (harmony: 45 -> Matze Angry, Marius Playing, Lars Screaming)
       useGameState.mockReturnValue({
         currentGig: { id: 'gig', name: 'Test', diff: 3 },
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 45 }, endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelectorAll('[id^="band-member-"]').length).toBe(3)
+      expect(container.querySelector('img[alt="Matze"]').src).toContain('matze_angry')
+      expect(container.querySelector('img[alt="Marius"]').src).toContain('marius') // MARIUS_PLAYING is 'marius'
+      expect(container.querySelector('img[alt="Lars"]').src).toContain('lars_scream')
     })
   })
 

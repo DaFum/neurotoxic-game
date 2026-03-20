@@ -34,7 +34,7 @@ describe('MapNode', () => {
   })
 
   test('renders visual states appropriately (position, current, travel, pending, unreachable, ticketPrice)', async () => {
-    const { container, rerender, getByText, queryByAltText, getByAltText } = render(
+    const { container, rerender } = render(
       <MapNode node={mockNode} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />
     )
 
@@ -63,12 +63,13 @@ describe('MapNode', () => {
 
     // Not reachable
     rerender(<MapNode node={mockNode} isCurrent={false} isTraveling={false} visibility='visible' isReachable={false} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />)
-    expect(wrapper.className).toContain('opacity-30')
-    expect(wrapper.className).toContain('grayscale')
+    const newWrapper = container.firstChild
+    expect(newWrapper.className).toContain('opacity-30')
+    expect(newWrapper.className).toContain('grayscale')
   })
 
   test('renders different node types correctly', async () => {
-    const { container, rerender, getByText, queryByText } = render(
+    const { rerender, getByText, queryByText } = render(
       <MapNode node={{ ...mockNode, type: 'GIG' }} isCurrent={false} isTraveling={false} visibility='hidden' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />
     )
 

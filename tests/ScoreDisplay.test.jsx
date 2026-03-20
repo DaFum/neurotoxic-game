@@ -26,7 +26,7 @@ describe('ScoreDisplay', () => {
   })
 
   test('formats and updates scores correctly', () => {
-    const { getByText, rerender, container } = render(<ScoreDisplay score={500} />)
+    const { getByText, rerender } = render(<ScoreDisplay score={500} />)
     expect(getByText('0000500')).toBeInTheDocument()
 
     // Thousands formatting
