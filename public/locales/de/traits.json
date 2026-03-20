@@ -1,77 +1,47 @@
 {
-  "grudgeHolder": {
-    "name": "Nachtragend",
-    "desc": "Verstärkt negative Beziehungsänderungen",
-    "unlockHint": "Lass einen Beziehungswert unter 30 fallen."
-  },
-  "peacemaker": {
-    "name": "Friedensstifter",
-    "desc": "Verstärkt positive und dämpft negative Beziehungsänderungen",
-    "unlockHint": "Halte die Bandharmonie konstant hoch."
-  },
-  "cyberLungs": {
-    "name": "Cyber-Lunge",
-    "desc": "Deutlich erhöhte Ausdauerregeneration.",
-    "unlockHint": "Opfere Ruhm in der Leeren-Klinik."
-  },
-  "perfektionist": {
-    "name": "Perfektionist",
-    "desc": "+15% Punktzahl bei >85% Trefferrate",
-    "unlockHint": "Erreiche 100% Trefferrate bei einem Auftritt."
-  },
-  "gearNerd": {
-    "name": "Ausrüstungs-Nerd",
-    "desc": "-20% Ausrüstungskosten",
-    "unlockHint": "Kaufe 5 verschiedene Ausrüstungsgegenstände."
-  },
-  "virtuoso": {
-    "name": "Virtuose",
-    "desc": "+10% Trefferfenster",
-    "unlockHint": "Schließe ein Solo ab, ohne eine Note zu verfehlen."
-  },
-  "techWizard": {
-    "name": "Technik-Magier",
-    "desc": "+10% Punktzahl bei technischen Songs",
-    "unlockHint": "Erreiche 100% Trefferrate bei einem technischen Song."
-  },
-  "partyAnimal": {
-    "name": "Party-Tier",
-    "desc": "Zufälliger Kater (-Ausdauer) aber +Stimmung beim Trinken",
-    "unlockHint": "Kaufe den Bierkühlschrank und trinke ihn leer."
-  },
-  "blastMachine": {
-    "name": "Blastbeat-Maschine",
-    "desc": "+25% Punktzahl in schnellen Abschnitten",
-    "unlockHint": "Halte eine 50+ Kombo in einem schnellen Abschnitt (>160 BPM)."
-  },
-  "showman": {
-    "name": "Showman",
-    "desc": "+20% Viralitätsbonus",
-    "unlockHint": "Führe 3 Stage Dives erfolgreich aus."
-  },
-  "clumsy": {
-    "name": "Tollpatschig",
-    "desc": "Erhöhte Fehlschlagchance bei physischen Stunts",
-    "unlockHint": "Erfordert 2 fehlgeschlagene Stage Dives."
-  },
-  "bandleader": {
-    "name": "Bandleader",
-    "desc": "+50% Chance, Konflikte zu lösen",
-    "unlockHint": "Löse 3 Bandkonflikte erfolgreich."
-  },
-  "socialManager": {
-    "name": "Social-Nerd",
-    "desc": "+15% Viralitäts-Chance",
-    "unlockHint": "Erreiche 1000 Follower auf einer beliebigen Plattform."
-  },
-  "roadWarrior": {
-    "name": "Road Warrior",
-    "desc": "-15% Kraftstoffverbrauch",
-    "unlockHint": "Reise insgesamt 5000 km."
-  },
-  "melodicGenius": {
-    "name": "Melodisches Genie",
-    "desc": "+10% Max. Kombo bei langsamen Songs",
-    "unlockHint": "Halte eine 30+ Kombo in einem langsamen Song (<120 BPM)."
-  }
+  "grudgeHolder.name": "Nachtragend",
+  "grudgeHolder.desc": "Verstärkt negative Beziehungsänderungen",
+  "grudgeHolder.unlockHint": "Lass einen Beziehungswert unter 30 fallen.",
+  "peacemaker.name": "Friedensstifter",
+  "peacemaker.desc": "Verstärkt positive und dämpft negative Beziehungsänderungen",
+  "peacemaker.unlockHint": "Halte die Bandharmonie konstant hoch.",
+  "cyberLungs.name": "Cyber-Lunge",
+  "cyberLungs.desc": "Deutlich erhöhte Ausdauerregeneration.",
+  "cyberLungs.unlockHint": "Opfere Ruhm in der Leeren-Klinik.",
+  "perfektionist.name": "Perfektionist",
+  "perfektionist.desc": "+15% Punktzahl bei >85% Trefferrate",
+  "perfektionist.unlockHint": "Erreiche 100% Trefferrate bei einem Auftritt.",
+  "gearNerd.name": "Ausrüstungs-Nerd",
+  "gearNerd.desc": "-20% Ausrüstungskosten",
+  "gearNerd.unlockHint": "Kaufe 5 verschiedene Ausrüstungsgegenstände.",
+  "virtuoso.name": "Virtuose",
+  "virtuoso.desc": "+10% Trefferfenster",
+  "virtuoso.unlockHint": "Schließe ein Solo ab, ohne eine Note zu verfehlen.",
+  "techWizard.name": "Technik-Magier",
+  "techWizard.desc": "+10% Punktzahl bei technischen Songs",
+  "techWizard.unlockHint": "Erreiche 100% Trefferrate bei einem technischen Song.",
+  "partyAnimal.name": "Party-Tier",
+  "partyAnimal.desc": "Zufälliger Kater (-Ausdauer) aber +Stimmung beim Trinken",
+  "partyAnimal.unlockHint": "Kaufe den Bierkühlschrank und trinke ihn leer.",
+  "blastMachine.name": "Blastbeat-Maschine",
+  "blastMachine.desc": "+25% Punktzahl in schnellen Abschnitten",
+  "blastMachine.unlockHint": "Halte eine 50+ Kombo in einem schnellen Abschnitt (>160 BPM).",
+  "showman.name": "Showman",
+  "showman.desc": "+20% Viralitätsbonus",
+  "showman.unlockHint": "Führe 3 Stage Dives erfolgreich aus.",
+  "clumsy.name": "Tollpatschig",
+  "clumsy.desc": "Erhöhte Fehlschlagchance bei physischen Stunts",
+  "clumsy.unlockHint": "Erfordert 2 fehlgeschlagene Stage Dives.",
+  "bandleader.name": "Bandleader",
+  "bandleader.desc": "+50% Chance, Konflikte zu lösen",
+  "bandleader.unlockHint": "Löse 3 Bandkonflikte erfolgreich.",
+  "socialManager.name": "Social-Nerd",
+  "socialManager.desc": "+15% Viralitäts-Chance",
+  "socialManager.unlockHint": "Erreiche 1000 Follower auf einer beliebigen Plattform.",
+  "roadWarrior.name": "Road Warrior",
+  "roadWarrior.desc": "-15% Kraftstoffverbrauch",
+  "roadWarrior.unlockHint": "Reise insgesamt 5000 km.",
+  "melodicGenius.name": "Melodisches Genie",
+  "melodicGenius.desc": "+10% Max. Kombo bei langsamen Songs",
+  "melodicGenius.unlockHint": "Halte eine 30+ Kombo in einem langsamen Song (<120 BPM)."
 }
