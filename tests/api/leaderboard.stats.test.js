@@ -105,7 +105,7 @@ describe('Leaderboard Stats API', () => {
       method: 'POST',
       body: {
         playerId: 'test-band',
-        playerName: 'A'.repeat(1001), // over the 1000 character limit
+        playerName: 'A'.repeat(101), // over the 100 character limit
         money: 100
       }
     }

@@ -30,6 +30,7 @@ describe('Leaderboard API - Song', () => {
     mockClient.zAdd.mock.resetCalls()
     mockClient.zRangeWithScores.mock.resetCalls()
     mockClient.hmGet.mock.resetCalls()
+    mockClient.disconnect.mock.resetCalls()
   })
 
   afterEach(async () => {
