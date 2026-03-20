@@ -8,20 +8,30 @@ import {
   getRandomChatter
 } from '../src/data/chatter.js'
 import { VENUE_CHATTER_DB } from '../src/data/chatter/venueChatter.js'
-import { readLocaleJson } from './utils/localeTestUtils.js'
+import { readLocaleJson, resetLocaleJsonCache } from './utils/localeTestUtils.js'
 
 // Cache translations at module level to avoid repeated file I/O
-let translations = null
+let translationsPromise = null
+
+export const resetTranslationsCache = () => {
+  translationsPromise = null
+}
+
+test.beforeEach(() => {
+  resetTranslationsCache()
+  resetLocaleJsonCache()
+})
 
 const loadTranslations = async () => {
-  if (translations) return translations
-  const enDir = path.resolve(process.cwd(), 'public/locales/en')
-  const deDir = path.resolve(process.cwd(), 'public/locales/de')
-  translations = {
-    en: await readLocaleJson(enDir, 'chatter.json'),
-    de: await readLocaleJson(deDir, 'chatter.json')
+  if (!translationsPromise) {
+    const enDir = path.resolve(process.cwd(), 'public/locales/en')
+    const deDir = path.resolve(process.cwd(), 'public/locales/de')
+    translationsPromise = Promise.all([
+      readLocaleJson(enDir, 'chatter.json'),
+      readLocaleJson(deDir, 'chatter.json')
+    ]).then(([en, de]) => ({ en, de }))
   }
-  return translations
+  return translationsPromise
 }
 
 const buildState = (scene, overrides = {}) => {
@@ -975,31 +985,29 @@ test('multiple travel count thresholds work', () => {
 // --- ADDITIONAL STRUCTURE VALIDATION TESTS ---
 
 test('chatter.json structure is valid JSON', async () => {
-  const enDir = path.resolve(process.cwd(), 'public/locales/en')
-  const deDir = path.resolve(process.cwd(), 'public/locales/de')
-
-  try {
-    await readLocaleJson(enDir, 'chatter.json')
-    assert.ok(true)
-  } catch(e) {
-    assert.fail(`en/chatter.json must be valid JSON: ${e.message}`)
-  }
-
-  try {
-    await readLocaleJson(deDir, 'chatter.json')
-    assert.ok(true)
-  } catch(e) {
-    assert.fail(`de/chatter.json must be valid JSON: ${e.message}`)
-  }
+  await assert.doesNotReject(
+    loadTranslations,
+    'chatter.json files must be valid, readable, and parseable JSON'
+  )
 
   const t = await loadTranslations()
+
   assert.ok(
     t.en && typeof t.en === 'object',
-    'chatter.json must parse to a valid object'
+    'en/chatter.json must parse to a valid object'
   )
   assert.ok(
     Object.keys(t.en).length > 0,
-    'chatter.json must not be empty'
+    'en/chatter.json must not be empty'
+  )
+
+  assert.ok(
+    t.de && typeof t.de === 'object',
+    'de/chatter.json must parse to a valid object'
+  )
+  assert.ok(
+    Object.keys(t.de).length > 0,
+    'de/chatter.json must not be empty'
   )
 })
 

@@ -49,14 +49,15 @@ export const flattenToObject = (entry, parentKey = '', result = {}) => {
 
 const localeJsonCache = new Map()
 
+export const resetLocaleJsonCache = () => localeJsonCache.clear()
+
 export const readLocaleJson = async (directory, fileName) => {
   const localePath = path.join(directory, fileName)
-  if (localeJsonCache.has(localePath)) {
-    return structuredClone(localeJsonCache.get(localePath))
+  if (!localeJsonCache.has(localePath)) {
+    const promise = fs.readFile(localePath, 'utf8').then(rawData => JSON.parse(rawData))
+    localeJsonCache.set(localePath, promise)
   }
-  const rawData = await fs.readFile(localePath, 'utf8')
-  const data = JSON.parse(rawData)
-  localeJsonCache.set(localePath, data)
+  const data = await localeJsonCache.get(localePath)
   return structuredClone(data)
 }
 
@@ -69,27 +70,25 @@ export const toKeyMap = flattened =>
 const sourceFilesCache = new Map()
 
 export const collectSourceFiles = async directory => {
-  if (sourceFilesCache.has(directory)) {
-    return sourceFilesCache.get(directory)
+  if (!sourceFilesCache.has(directory)) {
+    const promise = fs.readdir(directory, { withFileTypes: true }).then(async entries => {
+      const filePromises = entries.map(async entry => {
+        const entryPath = path.join(directory, entry.name)
+
+        if (entry.isDirectory()) {
+          return collectSourceFiles(entryPath)
+        }
+
+        return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
+      })
+
+      const results = await Promise.all(filePromises)
+      return results.flat()
+    })
+    sourceFilesCache.set(directory, promise)
   }
 
-  const entries = await fs.readdir(directory, { withFileTypes: true })
-
-  const filePromises = entries.map(async entry => {
-    const entryPath = path.join(directory, entry.name)
-
-    if (entry.isDirectory()) {
-      return collectSourceFiles(entryPath)
-    }
-
-    return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
-  })
-
-  const results = await Promise.all(filePromises)
-  const files = results.flat()
-
-  sourceFilesCache.set(directory, files)
-  return files
+  return sourceFilesCache.get(directory)
 }
 
 export const resolveNamespaceKey = rawKey => {
