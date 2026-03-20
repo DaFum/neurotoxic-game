@@ -15,10 +15,17 @@ export const useClinicLogic = () => {
 
   const currentVisits = player?.clinicVisits || 0
 
-  const membersMap = useMemo(
-    () => new Map(band?.members?.map(m => [m.id, m]) || []),
-    [band?.members]
-  )
+  const membersMap = useMemo(() => {
+    const map = new Map()
+    const members = band?.members
+    if (members) {
+      for (let i = 0; i < members.length; i++) {
+        const m = members[i]
+        map.set(m.id, m)
+      }
+    }
+    return map
+  }, [band?.members])
 
   const healCostMoney = calculateClinicCost(
     CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
