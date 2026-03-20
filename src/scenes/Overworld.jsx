@@ -198,7 +198,13 @@ export const Overworld = () => {
   // Memoized node rendering
   const renderedNodes = useMemo(() => {
     if (!gameMap) return null
-    return Object.values(gameMap.nodes).map(node => {
+    const nodes = gameMap.nodes
+    const result = []
+
+    for (const key in nodes) {
+      if (!Object.hasOwn(nodes, key)) continue
+
+      const node = nodes[key]
       const isCurrent = node.id === player.currentNodeId
       const visibility = getNodeVisibility(node.layer, currentLayer)
       const isReachable = isConnected(node.id) || node.type === 'START'
@@ -216,7 +222,7 @@ export const Overworld = () => {
         )
       })
 
-      return (
+      result.push(
         <MapNode
           key={node.id}
           node={node}
@@ -232,7 +238,9 @@ export const Overworld = () => {
           ticketPrice={effectivePrice}
         />
       )
-    })
+    }
+
+    return result
   }, [
     gameMap,
     player.currentNodeId,
