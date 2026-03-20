@@ -27,7 +27,6 @@ export const useKabelsalatState = () => {
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
   const [isGameOver, setIsGameOver] = useState(false)
   const [socketOrder, setSocketOrder] = useState(INITIAL_SOCKET_ORDER)
-  const [lightningSeeds, setLightningSeeds] = useState([])
   const [bgTextureUrl, setBgTextureUrl] = useState(null)
 
   const unconnectedIds = useMemo(() => {
@@ -53,12 +52,9 @@ export const useKabelsalatState = () => {
   const transitionedRef = useRef(false)
 
   // Lightning Seeds
-  useEffect(() => {
-    setLightningSeeds(prev => {
-      if (isShocked && prev.length === 0) return generateLightningSeeds()
-      if (!isShocked && prev.length > 0) return []
-      return prev
-    })
+  const lightningSeeds = useMemo(() => {
+    if (isShocked) return generateLightningSeeds()
+    return []
   }, [isShocked])
 
   // Timer Logic
