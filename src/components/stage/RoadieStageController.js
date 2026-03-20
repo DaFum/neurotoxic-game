@@ -31,8 +31,12 @@ class RoadieStageController extends BaseStageController {
       starWhite: getPixiColorFromToken('--star-white'),
       toxicGreen: getPixiColorFromToken('--toxic-green'),
       roadColor: getPixiColorFromToken('--void-black'),
-      grassColor: getPixiColorFromToken('--roadie-grass') ?? getPixiColorFromToken('--toxic-green'),
-      venueColor: getPixiColorFromToken('--roadie-venue-blue') ?? getPixiColorFromToken('--blood-red')
+      grassColor:
+        getPixiColorFromToken('--roadie-grass') ??
+        getPixiColorFromToken('--toxic-green'),
+      venueColor:
+        getPixiColorFromToken('--roadie-venue-blue') ??
+        getPixiColorFromToken('--blood-red')
     }
   }
 

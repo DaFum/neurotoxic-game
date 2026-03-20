@@ -8,7 +8,11 @@ import { useTranslation } from 'react-i18next'
  * @returns {Object} Stash state and handlers
  */
 export const useContrabandStash = () => {
-  const { band, useContraband: dispatchUseContraband, addToast } = useGameState()
+  const {
+    band,
+    useContraband: dispatchUseContraband,
+    addToast
+  } = useGameState()
   const [showStash, setShowStash] = useState(false)
   const [selectedMember, setSelectedMember] = useState(band.members[0]?.id)
   const { t } = useTranslation(['ui'])
