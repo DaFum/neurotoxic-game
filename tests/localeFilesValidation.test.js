@@ -56,17 +56,20 @@ LOCALES.forEach(locale => {
       const localeDir = path.join(LOCALES_ROOT, locale)
       const fileName = `${namespace}.json`
       const data = await readLocaleJson(localeDir, fileName)
-      const entries = flattenToEntries(data)
 
-      entries.forEach(entry => {
-        if (typeof entry.value === 'string') {
-          assert.notEqual(
-            entry.value,
-            null,
-            `${locale}/${namespace}.json key "${entry.key}" should not be null`
-          )
+      const assertNoNullLeaves = (obj, currentPath = '') => {
+        for (const [key, value] of Object.entries(obj)) {
+          const newPath = currentPath ? `${currentPath}.${key}` : key
+
+          if (value === null) {
+            assert.fail(`${locale}/${namespace}.json key "${newPath}" should not be null`)
+          } else if (typeof value === 'object' && !Array.isArray(value)) {
+            assertNoNullLeaves(value, newPath)
+          }
         }
-      })
+      }
+
+      assertNoNullLeaves(data)
     })
   })
 })

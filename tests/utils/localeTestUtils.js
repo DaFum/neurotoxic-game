@@ -54,7 +54,12 @@ export const resetLocaleJsonCache = () => localeJsonCache.clear()
 export const readLocaleJson = async (directory, fileName) => {
   const localePath = path.join(directory, fileName)
   if (!localeJsonCache.has(localePath)) {
-    const promise = fs.readFile(localePath, 'utf8').then(rawData => JSON.parse(rawData))
+    const promise = fs.readFile(localePath, 'utf8')
+      .then(rawData => JSON.parse(rawData))
+      .catch(err => {
+        localeJsonCache.delete(localePath)
+        throw err
+      })
     localeJsonCache.set(localePath, promise)
   }
   const data = await localeJsonCache.get(localePath)
@@ -84,6 +89,9 @@ export const collectSourceFiles = async directory => {
 
       const results = await Promise.all(filePromises)
       return results.flat()
+    }).catch(err => {
+      sourceFilesCache.delete(directory)
+      throw err
     })
     sourceFilesCache.set(directory, promise)
   }

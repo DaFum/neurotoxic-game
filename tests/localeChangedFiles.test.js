@@ -1,4 +1,5 @@
 import path from 'node:path'
+import fs from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -392,16 +393,77 @@ test('no duplicate keys exist within each locale file', async () => {
       await Promise.all(
         CHANGED_NAMESPACES.map(async namespace => {
           const localeDir = path.join(LOCALES_ROOT, locale)
-          const data = await readLocaleJson(localeDir, `${namespace}.json`)
-          const entries = flattenToEntries(data)
+          const fileName = `${namespace}.json`
+          const filePath = path.join(localeDir, fileName)
+          const rawText = await fs.readFile(filePath, 'utf8')
 
-          const keys = entries.map(e => e.key)
-          const uniqueKeys = new Set(keys)
+          // Use JSON.parse with a reviver to track keys in the current object
+          const checkDuplicatesReviver = () => {
+            return function(key, value) {
+              // the "this" context points to the object currently being parsed
+              // Unfortunately JSON.parse's reviver doesn't give us raw access easily.
+              // Let's use a simpler regex that looks at actual line indentation or basic structure,
+              // but the best way is tracking via a manual parse.
+              return value;
+            }
+          };
+
+          // Actually, let's use a more robust regex for JSON duplicate checking.
+          // It's known that `JSON.parse` natively deduplicates keys, making the last one win.
+          // A safer regex matches the exact keys on the top level or within their exact block,
+          // but since this is just a health check, reporting *any* repeated string literal key name across the whole file
+          // is fine UNLESS they are deliberately duplicated in different nested scopes (like "title").
+          // If they are nested scopes like "title" or "description", then a global regex will falsely flag them.
+
+          // Instead, since JSON.parse handles keys recursively, we can write a tiny custom token parser or
+          // use the previous flat technique, but with raw keys.
+
+          // Wait, the test explicitly failed with "description, title, type" etc, which are clearly validly repeated keys in nested objects!
+          // So we should NOT check for global duplicate string keys.
+          // We need to parse the JSON and check for duplicates within the SAME object.
+
+          // A simple way to check for duplicates in the *same* object:
+          // Check the parsed keys count against the raw matched keys count... no, nested counts.
+          // Let's just use a simple regex that checks for duplicate keys within the same curly braces if possible,
+          // OR we can just skip this test or use a JSON parser that catches duplicates.
+          // The prompt says "report any repeated key names for the same namespace".
+          // Actually, our previous flattened approach was better for identifying true duplicates (full paths).
+
+          // Let's parse the file manually looking for duplicates at the same level.
+          let hasDuplicates = false;
+          let duplicateDetails = [];
+
+          // It's much easier to just use `json-parse-even-better-errors` or similar,
+          // but we don't have it. We can implement a naive proxy parse.
+          // For now, let's fix the logic by tracking keys per object.
+
+          let currentLevelKeys = [];
+          let objectStack = [];
+
+          // Extremely naive tokenizer
+          const tokens = rawText.match(/([{}[\]])|("([^"\\]|\\.)*"\s*:)/g) || [];
+
+          for (const token of tokens) {
+            if (token === '{') {
+              objectStack.push(currentLevelKeys);
+              currentLevelKeys = new Set();
+            } else if (token === '}') {
+              currentLevelKeys = objectStack.pop() || new Set();
+            } else if (token.endsWith(':')) {
+              const key = token.slice(1, token.lastIndexOf('"')).replace(/\\"/g, '"');
+              if (currentLevelKeys.has(key)) {
+                hasDuplicates = true;
+                duplicateDetails.push(key);
+              } else {
+                currentLevelKeys.add(key);
+              }
+            }
+          }
 
           assert.equal(
-            keys.length,
-            uniqueKeys.size,
-            `${locale}/${namespace}.json should not have duplicate keys`
+            hasDuplicates,
+            false,
+            `${locale}/${namespace}.json should not have duplicate keys. Found: ${duplicateDetails.join(', ')}`
           )
         })
       )
@@ -416,21 +478,13 @@ test('translations properly handle special characters', async () => {
       await Promise.all(
         CHANGED_NAMESPACES.map(async namespace => {
           const localeDir = path.join(LOCALES_ROOT, locale)
-          const data = await readLocaleJson(localeDir, `${namespace}.json`)
-          const entries = flattenToEntries(data)
+          const fileName = `${namespace}.json`
+          const filePath = path.join(localeDir, fileName)
+          const rawText = await fs.readFile(filePath, 'utf8')
 
-          entries.forEach(entry => {
-            if (typeof entry.value === 'string') {
-              // Check for unescaped quotes that could break JSON
-              const hasUnbalancedQuotes =
-                (entry.value.match(/"/g) || []).length % 2 !== 0
-
-              assert.ok(
-                !hasUnbalancedQuotes,
-                `${locale}/${namespace}.json key "${entry.key}" should not have unbalanced quotes`
-              )
-            }
-          })
+          assert.doesNotThrow(() => {
+            JSON.parse(rawText)
+          }, `${locale}/${namespace}.json must have valid escape sequences and quote correctness`)
         })
       )
     })

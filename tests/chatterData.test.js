@@ -13,7 +13,7 @@ import { readLocaleJson, resetLocaleJsonCache } from './utils/localeTestUtils.js
 // Cache translations at module level to avoid repeated file I/O
 let translationsPromise = null
 
-export const resetTranslationsCache = () => {
+const resetTranslationsCache = () => {
   translationsPromise = null
 }
 
