@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22.13.0'
           cache: 'pnpm'
@@ -69,4 +69,4 @@ jobs:
 **Output**:
 "Added `actions/setup-node` with caching to the install step. This will speed up subsequent runs by reusing the pnpm store."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

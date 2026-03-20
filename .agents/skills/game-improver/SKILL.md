@@ -40,7 +40,7 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 
 ## Core Constraints
 
-- **Stack**: React 19.2.4, Vite 8.0.0, Tailwind 4, Pixi 8.
+- **Stack**: React 19.2.4, Vite 8.0.1, Tailwind 4, Pixi 8.
 - **State**: `player.money` must be >= 0. `band.harmony` must be > 0.
 - **Audio**: Must handle AudioContext state (suspended/running).
 
@@ -58,4 +58,4 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 **Output**:
 "Implemented `meditation_pod` upgrade. Added logic to `useGameLoop` to regenerate +1 harmony per day."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

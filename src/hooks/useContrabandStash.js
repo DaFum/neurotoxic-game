@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
  * @returns {Object} Stash state and handlers
  */
 export const useContrabandStash = () => {
-  const { band, useContraband, addToast } = useGameState()
+  const { band, useContraband: dispatchUseContraband, addToast } = useGameState()
   const [showStash, setShowStash] = useState(false)
   const [selectedMember, setSelectedMember] = useState(band.members[0]?.id)
   const { t } = useTranslation(['ui'])
@@ -21,7 +21,7 @@ export const useContrabandStash = () => {
     [band.stash]
   )
 
-  const useItem = useCallback(
+  const handleUseItem = useCallback(
     (instanceId, item) => {
       // If it's a member-targeted effect but no member selected, error
       if (
@@ -37,7 +37,7 @@ export const useContrabandStash = () => {
         return
       }
 
-      useContraband(instanceId, item.id, selectedMember)
+      dispatchUseContraband(instanceId, item.id, selectedMember)
 
       const translatedName = t(item.name, { defaultValue: item.name })
       const messageAction =
@@ -53,7 +53,7 @@ export const useContrabandStash = () => {
         'success'
       )
     },
-    [useContraband, selectedMember, addToast, t]
+    [dispatchUseContraband, selectedMember, addToast, t]
   )
 
   return {
@@ -65,7 +65,7 @@ export const useContrabandStash = () => {
       members: band.members,
       selectedMember,
       setSelectedMember,
-      useItem,
+      handleUseItem,
       onClose: closeStash
     }
   }

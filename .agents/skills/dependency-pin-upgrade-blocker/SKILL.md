@@ -58,4 +58,4 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 **Output**:
 "Upgraded minor dependencies. Held back React (19.x), Vite (8.x), and Pixi (8.x) to pinned major versions to preserve stability."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

@@ -111,9 +111,7 @@ export const PreGig = () => {
 
   useEffect(() => {
     if (!currentGig) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast(tRef.current('ui:pregig.toasts.noGig'), 'error')
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       changeScene(GAME_PHASES.OVERWORLD)
     }
   }, [currentGig, changeScene, addToast])
@@ -153,10 +151,8 @@ export const PreGig = () => {
   useEffect(() => {
     // Chance for a Pre-Gig event (Band or Gig category)
     if (!activeEvent) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         triggerEvent('gig', 'pre_gig')
       }
     }

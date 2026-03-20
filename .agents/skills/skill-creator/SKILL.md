@@ -364,4 +364,4 @@ Every completion must include:
 - [ ] No-subagent runs are labeled directional with explicit confidence.
 - [ ] Proposed changes are reversible and scoped to requested goals.
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

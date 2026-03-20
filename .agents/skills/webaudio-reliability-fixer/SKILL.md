@@ -48,4 +48,4 @@ Ensure stable audio playback across all browsers and devices.
 **Output**:
 "Optimized synth pooling in `audioEngine.js` to reduce garbage collection pauses. Increased lookahead to 0.2s."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

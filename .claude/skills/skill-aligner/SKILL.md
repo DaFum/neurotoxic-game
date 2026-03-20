@@ -12,7 +12,7 @@ Detect and fix drift between skills and the repository. Drift happens when the r
 **Single skill drift:**
 
 - A skill references `pnpm run lint:fix` but the repo only has `pnpm run lint`
-- A skill mentions "Vite 7" but you upgraded to "Vite 8.0.0"
+- A skill mentions "Vite 7" but you upgraded to "Vite 8.0.1"
 - A skill references `src/utils/` but you moved it to `packages/shared/src/utils/`
 
 **Monorepo cascading drift:**
@@ -59,7 +59,7 @@ jq '.scripts | keys' package.json
 **What it looks like:**
 
 - Skill says: "Vite 7 compatible"
-- Repo says: `"vite": "8.0.0"` in package.json
+- Repo says: `"vite": "8.0.1"` in package.json
 
 **How to detect:**
 
@@ -287,12 +287,12 @@ Before making changes:
 
 ### Scenario 3: Version Mismatch Requiring Rewrite
 
-**Problem**: Skill references "Vite 7" and old file structure, but we're on Vite 8.0.0 with API changes
+**Problem**: Skill references "Vite 7" and old file structure, but we're on Vite 8.0.1 with API changes
 
 **Steps**:
 
 1. Audit: Extract version references → "Vite 7 compatible"
-2. Cross-reference: Package.json says `"vite": "8.0.0"`, CLAUDE.md says "Vite 8.0.0 required"
+2. Cross-reference: Package.json says `"vite": "8.0.1"`, CLAUDE.md says "Vite 8.0.1 required"
 3. Risk assessment:
    - Is this a simple version bump in examples? → Update and test
    - Are there API changes? (e.g., Vite 7 plugin API changed in v8) → Escalate to skill-creator
@@ -348,4 +348,4 @@ Escalation example:
 
 > "game-improver references Vite 7 and old structure. Vite 8 has plugin API changes. This needs skill-creator review before I proceed."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

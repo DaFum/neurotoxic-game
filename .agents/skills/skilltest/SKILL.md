@@ -81,4 +81,4 @@ Return results in this order:
 - [ ] Fix validated by re-running the same command.
 - [ ] No new failures introduced in adjacent case files.
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._

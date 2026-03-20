@@ -101,7 +101,7 @@ describe('useContrabandStash', () => {
     })
 
     act(() => {
-      result.current.stashProps.useItem('item1', { effectType: 'stamina' })
+      result.current.stashProps.handleUseItem('item1', { effectType: 'stamina' })
     })
 
     expect(mockUseContraband).not.toHaveBeenCalled()
@@ -119,7 +119,7 @@ describe('useContrabandStash', () => {
     })
 
     act(() => {
-      result.current.stashProps.useItem('item1', { effectType: 'mood' })
+      result.current.stashProps.handleUseItem('item1', { effectType: 'mood' })
     })
 
     expect(mockUseContraband).not.toHaveBeenCalled()
@@ -133,7 +133,7 @@ describe('useContrabandStash', () => {
     const { result } = renderHook(() => useContrabandStash())
 
     act(() => {
-      result.current.stashProps.useItem('item1', {
+      result.current.stashProps.handleUseItem('item1', {
         id: 'energy_drink',
         type: 'consumable',
         name: 'Energy Drink'
@@ -152,7 +152,7 @@ describe('useContrabandStash', () => {
     const { result } = renderHook(() => useContrabandStash())
 
     act(() => {
-      result.current.stashProps.useItem('item2', {
+      result.current.stashProps.handleUseItem('item2', {
         id: 'guitar_strings',
         type: 'equipment',
         name: 'Guitar Strings'

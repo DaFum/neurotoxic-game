@@ -21,7 +21,7 @@ export const ContrabandStash = ({
   members = [],
   selectedMember,
   setSelectedMember,
-  useItem,
+  handleUseItem,
   onClose
 }) => {
   const { t } = useTranslation(['ui', 'items'])
@@ -32,8 +32,8 @@ export const ContrabandStash = ({
   )
 
   const makeUseItem = useCallback(
-    (instanceId, item) => () => useItem(instanceId, item),
-    [useItem]
+    (instanceId, item) => () => handleUseItem(instanceId, item),
+    [handleUseItem]
   )
 
   return (

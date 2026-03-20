@@ -211,4 +211,4 @@ See **references/transition-examples.md** for complete examples:
 
 The project already has comprehensive golden path tests in `tests/goldenPath.test.js` (630+ lines). Review that file for patterns before writing new tests—don't duplicate what's already covered.
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.0 baseline as of 2026-03-17._
+_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-17._
