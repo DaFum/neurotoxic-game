@@ -5,15 +5,33 @@ import { secureRandom } from '../../utils/crypto.js'
 export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
   const [isHovered, setIsHovered] = useState(false)
 
-  const isSafeUrl =
-    url && (url.startsWith('http://') || url.startsWith('https://'))
-  const safeUrl = isSafeUrl ? url : '#'
+  /**
+   * ACTUAL UPDATES (#1):
+   * - Implemented robust URL validation using regex for case-insensitive protocol check (http/https).
+   * - Conditionally apply target='_blank' and rel='noopener noreferrer' only for safe URLs.
+   * - Added onClick handler to prevent default behavior (opening a new tab with #) for unsafe URLs.
+   *
+   * NEXT STEPS AND IDEAS (#2):
+   * - Consider moving the URL sanitizer to a shared utility if other components need it.
+   * - Implement a 'copy to clipboard' fallback for unsafe URLs if they appear intended as data but not navigation.
+   *
+   * FOUND ERRORS + SOLUTIONS (#3):
+   * - ERROR: Case-sensitive protocol check was too restrictive. SOLUTION: Used case-insensitive regex.
+   * - ERROR: Clicking unsafe URL with target='_blank' opened an empty tab. SOLUTION: Conditional target and e.preventDefault().
+   */
+  const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
+  const safeUrl = isSafeUrl ? url.trim() : '#'
 
   return (
     <a
       href={safeUrl}
-      target='_blank'
-      rel='noopener noreferrer'
+      target={isSafeUrl ? '_blank' : undefined}
+      rel={isSafeUrl ? 'noopener noreferrer' : undefined}
+      onClick={e => {
+        if (!isSafeUrl) {
+          e.preventDefault()
+        }
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className='relative w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
