@@ -118,11 +118,11 @@ describe('MapNode', () => {
 
     // Keyboard Enter
     await act(async () => { button.focus(); await user.keyboard('{Enter}') })
-    expect(mockHandleTravel).toHaveBeenCalled()
+    expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
     mockHandleTravel.mockClear()
 
     // Keyboard Space
     await act(async () => { button.focus(); await user.keyboard(' ') })
-    expect(mockHandleTravel).toHaveBeenCalled()
+    expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
   })
 })

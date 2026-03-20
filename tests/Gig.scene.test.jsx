@@ -163,7 +163,7 @@ describe('Gig Scene Component', () => {
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 70 }, endGig: mockEndGig
       })
       const { container, rerender } = render(<Gig />)
-      expect(container.querySelector('[style*="background-image"]')).toBeInTheDocument()
+      expect(container.querySelector('[style*="background-image"]').style.backgroundImage).toContain('mock-kaminstube.jpg')
 
       // Low diff
       useGameState.mockReturnValue({
@@ -171,7 +171,7 @@ describe('Gig Scene Component', () => {
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 70 }, endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('[style*="background-image"]')).toBeInTheDocument()
+      expect(container.querySelector('[style*="background-image"]').style.backgroundImage).toContain('mock-dive.jpg')
 
       // High diff
       useGameState.mockReturnValue({
@@ -179,7 +179,7 @@ describe('Gig Scene Component', () => {
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 70 }, endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('[style*="background-image"]')).toBeInTheDocument()
+      expect(container.querySelector('[style*="background-image"]').style.backgroundImage).toContain('mock-galactic.jpg')
     })
   })
 
@@ -191,9 +191,9 @@ describe('Gig Scene Component', () => {
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 85 }, endGig: mockEndGig
       })
       const { container, rerender } = render(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]').src).toContain('matze')
-      expect(container.querySelector('img[alt="Marius"]').src).toContain('marius')
-      expect(container.querySelector('img[alt="Lars"]').src).toContain('lars')
+      expect(container.querySelector('img[alt="Matze"]').src).toMatch(/mock-matze\.jpg$/)
+      expect(container.querySelector('img[alt="Marius"]').src).toMatch(/mock-marius\.jpg$/)
+      expect(container.querySelector('img[alt="Lars"]').src).toMatch(/mock-lars\.jpg$/)
 
       // Very low harmony (harmony: 15 -> Matze Angry, Marius Drinking, Lars Idle)
       useGameState.mockReturnValue({
@@ -201,9 +201,9 @@ describe('Gig Scene Component', () => {
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 15 }, endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]').src).toContain('matze_angry')
-      expect(container.querySelector('img[alt="Marius"]').src).toContain('marius_drink')
-      expect(container.querySelector('img[alt="Lars"]').src).toContain('lars_idle')
+      expect(container.querySelector('img[alt="Matze"]').src).toMatch(/mock-matze_angry\.jpg$/)
+      expect(container.querySelector('img[alt="Marius"]').src).toMatch(/mock-marius_drink\.jpg$/)
+      expect(container.querySelector('img[alt="Lars"]').src).toMatch(/mock-lars_idle\.jpg$/)
 
       // Moderate harmony (harmony: 45 -> Matze Angry, Marius Playing, Lars Screaming)
       useGameState.mockReturnValue({
@@ -211,9 +211,9 @@ describe('Gig Scene Component', () => {
         changeScene: mockChangeScene, addToast: mockAddToast, setActiveEvent: mockSetActiveEvent, setLastGigStats: mockSetLastGigStats, band: { harmony: 45 }, endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]').src).toContain('matze_angry')
-      expect(container.querySelector('img[alt="Marius"]').src).toContain('marius') // MARIUS_PLAYING is 'marius'
-      expect(container.querySelector('img[alt="Lars"]').src).toContain('lars_scream')
+      expect(container.querySelector('img[alt="Matze"]').src).toMatch(/mock-matze_angry\.jpg$/)
+      expect(container.querySelector('img[alt="Marius"]').src).toMatch(/mock-marius\.jpg$/) // MARIUS_PLAYING is 'marius'
+      expect(container.querySelector('img[alt="Lars"]').src).toMatch(/mock-lars_scream\.jpg$/)
     })
   })
 
