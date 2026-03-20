@@ -1,6 +1,5 @@
-import test from 'node:test'
+import { test, mock, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert'
-import { mock } from 'node:test'
 
 const mockMulti = {
   zAdd: mock.fn(),
@@ -9,39 +8,44 @@ const mockMulti = {
 
 const mockRedisClient = {
   isOpen: true,
-  zAdd: mock.fn(),
-  zRangeWithScores: mock.fn(),
-  hmGet: mock.fn(),
-  hSet: mock.fn(),
+  zAdd: mock.fn(() => Promise.resolve()),
+  zRangeWithScores: mock.fn(() => Promise.resolve([])),
+  hmGet: mock.fn(() => Promise.resolve([])),
+  hSet: mock.fn(() => Promise.resolve()),
   multi: mock.fn(() => mockMulti),
-  disconnect: mock.fn(),
+  disconnect: mock.fn(() => Promise.resolve()),
   on: mock.fn(),
-  connect: mock.fn()
+  connect: mock.fn(() => Promise.resolve())
 }
 
 // Since stats.js imports the client directly as the default export of lib/redis.js
 mock.module('../../lib/redis.js', { defaultExport: mockRedisClient })
 
-const API_PATH = '../../api/leaderboard/stats.js'
-let importCounter = 0
-
-test('Leaderboard Stats API', async t => {
+describe('Leaderboard Stats API', () => {
   let statsModule
 
-  t.beforeEach(async () => {
+  beforeEach(async () => {
+    mockRedisClient.isOpen = true
     mockRedisClient.zAdd.mock.resetCalls()
     mockRedisClient.zRangeWithScores.mock.resetCalls()
     mockRedisClient.hmGet.mock.resetCalls()
     mockRedisClient.hSet.mock.resetCalls()
+    mockRedisClient.disconnect.mock.resetCalls()
+    mockRedisClient.on.mock.resetCalls()
+    mockRedisClient.connect.mock.resetCalls()
     mockMulti.zAdd.mock.resetCalls()
     mockMulti.exec.mock.resetCalls()
 
-    // Dynamically import module with deterministic incrementing counter
-    importCounter++
-    statsModule = await import(API_PATH + '?t=' + importCounter)
+    // Import module once properly
+    statsModule = await import('../../api/leaderboard/stats.js')
   })
 
-  await t.test('POST handles valid stats update', async () => {
+  afterEach(async () => {
+    await mockRedisClient.disconnect()
+    mock.reset()
+  })
+
+  test('POST handles valid stats update', async () => {
     const req = {
       method: 'POST',
       body: {
@@ -75,7 +79,7 @@ test('Leaderboard Stats API', async t => {
     assert.strictEqual(mockMulti.exec.mock.calls.length, 1)
   })
 
-  await t.test('POST rejects missing required fields', async () => {
+  test('POST rejects missing required fields', async () => {
     const req = {
       method: 'POST',
       body: {
@@ -97,7 +101,7 @@ test('Leaderboard Stats API', async t => {
     )
   })
 
-  await t.test('POST rejects excessively long playerName', async () => {
+  test('POST rejects excessively long playerName', async () => {
     const req = {
       method: 'POST',
       body: {
@@ -120,7 +124,7 @@ test('Leaderboard Stats API', async t => {
     )
   })
 
-  await t.test('GET retrieves stat leaderboard', async () => {
+  test('GET retrieves stat leaderboard', async () => {
     const req = {
       method: 'GET',
       query: {
@@ -156,7 +160,7 @@ test('Leaderboard Stats API', async t => {
     assert.strictEqual(res.json.mock.calls[0].arguments[0][0].score, 100)
   })
 
-  await t.test('GET handles invalid stat type', async () => {
+  test('GET handles invalid stat type', async () => {
     const req = {
       method: 'GET',
       query: {
@@ -177,7 +181,7 @@ test('Leaderboard Stats API', async t => {
     )
   })
 
-  await t.test('POST rejects undefined body', async () => {
+  test('POST rejects undefined body', async () => {
     const req = {
       method: 'POST',
       body: undefined
@@ -196,7 +200,7 @@ test('Leaderboard Stats API', async t => {
     )
   })
 
-  await t.test(
+  test(
     'POST handles extreme and negative stat values correctly',
     async () => {
       const req = {
@@ -237,7 +241,7 @@ test('Leaderboard Stats API', async t => {
     }
   )
 
-  await t.test('GET enforces limit constraints', async () => {
+  test('GET enforces limit constraints', async () => {
     const req = {
       method: 'GET',
       query: {
@@ -263,7 +267,7 @@ test('Leaderboard Stats API', async t => {
     )
   })
 
-  await t.test('Rejects unsupported HTTP methods', async () => {
+  test('Rejects unsupported HTTP methods', async () => {
     const req = {
       method: 'DELETE'
     }
