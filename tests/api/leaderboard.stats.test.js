@@ -42,7 +42,6 @@ describe('Leaderboard Stats API', () => {
 
   afterEach(async () => {
     await mockRedisClient.disconnect()
-    mock.reset()
   })
 
   test('POST handles valid stats update', async () => {

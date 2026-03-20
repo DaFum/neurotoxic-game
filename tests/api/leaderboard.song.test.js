@@ -34,7 +34,6 @@ describe('Leaderboard API - Song', () => {
 
   afterEach(async () => {
     await mockClient.disconnect()
-    mock.reset()
   })
 
   const createRes = () => {
