@@ -226,7 +226,8 @@ class RoadieStageController extends BaseStageController {
     // Render Traffic
     if (Array.isArray(state.traffic)) {
       this.currentIds.clear()
-      state.traffic.forEach(car => {
+      for (let i = 0; i < state.traffic.length; i++) {
+        const car = state.traffic[i]
         this.currentIds.add(car.id)
         let sprite = this.carSprites.get(car.id)
         if (!sprite) {
@@ -276,18 +277,18 @@ class RoadieStageController extends BaseStageController {
           sprite.width = car.width * cellW
           sprite.height = cellH * 0.7
         }
-      })
+      }
     }
 
     // Cleanup
     if (this.carSprites) {
-      this.carSprites.forEach((sprite, id) => {
+      for (const [id, sprite] of this.carSprites) {
         if (!this.currentIds.has(id)) {
           this.container.removeChild(sprite)
           sprite.destroy()
           this.carSprites.delete(id)
         }
-      })
+      }
     }
   }
 
@@ -299,9 +300,9 @@ class RoadieStageController extends BaseStageController {
 
     // Clean up car sprites explicitly
     if (this.carSprites) {
-      this.carSprites.forEach(sprite => {
+      for (const sprite of this.carSprites.values()) {
         sprite.destroy()
-      })
+      }
       this.carSprites.clear()
       this.carSprites = null
     }
