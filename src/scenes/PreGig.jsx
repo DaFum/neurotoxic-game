@@ -99,10 +99,13 @@ export const PreGig = () => {
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
-  const selectedSongIds = useMemo(
-    () => new Set(setlist.map(s => getSongId(s))),
-    [setlist]
-  )
+  const selectedSongIds = useMemo(() => {
+    const ids = new Set()
+    for (let i = 0; i < setlist.length; i++) {
+      ids.add(getSongId(setlist[i]))
+    }
+    return ids
+  }, [setlist])
 
   const tRef = useRef(t)
   useEffect(() => {
