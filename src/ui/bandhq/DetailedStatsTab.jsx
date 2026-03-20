@@ -15,11 +15,17 @@ const isUnlocked = val => {
   return !!val
 }
 
-const CHAR_MAP = Object.fromEntries(
-  Object.values(CHARACTERS)
-    .filter(c => c.role !== 'NPC')
-    .map(c => [c.name, c])
-)
+// Generate CHAR_MAP using a single pass loop to avoid intermediate array allocations
+// from chained map/filter pipelines that run on module evaluation.
+const CHAR_MAP = {}
+for (const key in CHARACTERS) {
+  if (Object.hasOwn(CHARACTERS, key)) {
+    const c = CHARACTERS[key]
+    if (c.role !== 'NPC') {
+      CHAR_MAP[c.name] = c
+    }
+  }
+}
 
 const DetailRow = ({ label, value, subtext, locked, className = '' }) => (
   <div
