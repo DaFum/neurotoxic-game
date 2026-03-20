@@ -34,7 +34,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className='relative w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
+      className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
     >
       {/* Glitch Background on Hover */}
       {isHovered && (

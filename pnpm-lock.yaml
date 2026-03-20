@@ -18,7 +18,7 @@ importers:
         specifier: 2.0.0
         version: 2.0.0(react@19.2.4)
       flatted:
-        specifier: 3.4.2
+        specifier: ^3.4.2
         version: 3.4.2
       framer-motion:
         specifier: 12.38.0
