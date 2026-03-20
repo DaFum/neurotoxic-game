@@ -14,13 +14,19 @@ const __dirname = path.dirname(__filename)
 const jsonPath = path.join(__dirname, '../src/assets/rhythm_songs.json')
 
 let songsData = null
+let songsDataPromise = null
 
 async function loadSongsData() {
-  if (!songsData) {
-    const data = await fs.readFile(jsonPath, 'utf8')
+  if (songsData) return songsData
+  if (songsDataPromise) return await songsDataPromise
+
+  songsDataPromise = fs.readFile(jsonPath, 'utf8').then(data => {
     songsData = JSON.parse(data)
-  }
-  return songsData
+    songsDataPromise = null
+    return songsData
+  })
+
+  return await songsDataPromise
 }
 
 test('rhythm_songs.json integration', async t => {
