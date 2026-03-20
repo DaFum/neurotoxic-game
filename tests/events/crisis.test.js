@@ -250,5 +250,39 @@ describe('CRISIS_EVENTS', () => {
         /must have at least one option/
       )
     })
+
+    test('throws error for composite effect with empty effects array', () => {
+      const invalidEvent = {
+        ...CRISIS_EVENTS[0],
+        options: [
+          {
+            label: 'events:test_label',
+            outcomeText: 'events:test_outcome',
+            effect: { type: 'composite', effects: [] }
+          }
+        ]
+      }
+      assert.throws(
+        () => validateCrisisEvent(invalidEvent),
+        /Composite effect must have a non-empty effects array/
+      )
+    })
+
+    test('throws error for composite effect with invalid child effect', () => {
+      const invalidEvent = {
+        ...CRISIS_EVENTS[0],
+        options: [
+          {
+            label: 'events:test_label',
+            outcomeText: 'events:test_outcome',
+            effect: { type: 'composite', effects: [{}] } // Missing type
+          }
+        ]
+      }
+      assert.throws(
+        () => validateCrisisEvent(invalidEvent),
+        /Invalid child effect at composite index 0 for option index 0/
+      )
+    })
   })
 })
