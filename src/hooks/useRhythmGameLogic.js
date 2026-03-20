@@ -75,9 +75,10 @@ export const useRhythmGameLogic = () => {
 
   // Cleanup hook to prevent memory leaks and sync audio state on unmount
   useEffect(() => {
+    const currentState = gameStateRef.current
     return () => {
-      if (gameStateRef.current) {
-        gameStateRef.current.isGameOver = true
+      if (currentState) {
+        currentState.isGameOver = true
       }
       stopAudio()
     }

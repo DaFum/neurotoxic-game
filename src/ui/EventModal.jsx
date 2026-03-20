@@ -35,11 +35,18 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   }, [gameState])
 
   // Reset outcome on new events
+  const [prevEventId, setPrevEventId] = useState(null)
   const eventId = event?.id
   useEffect(() => {
-    setOutcome(null)
-    setPreviewError(false)
-  }, [eventId])
+    if (eventId !== prevEventId) {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPrevEventId(eventId)
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setOutcome(null)
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPreviewError(false)
+    }
+  }, [eventId, prevEventId])
 
   const handleOptionSelect = useCallback(option => {
     try {

@@ -33,6 +33,7 @@ export const DebugLogViewer = ({ className = '' }) => {
       }
     })
     // Initial load
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
     setLogs([...logger.logs])
     return unsubscribe
   }, [visible])

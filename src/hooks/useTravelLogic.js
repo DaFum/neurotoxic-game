@@ -593,12 +593,12 @@ export const useTravelLogic = ({
       }, 5000)
     },
     [
-      startGig,
       addToast,
       onShowHQ,
       startTravelSequence,
       clearPendingTravel,
       getLocationName,
+      resolveVenue,
       handleNodeArrivalCallback
     ]
   )

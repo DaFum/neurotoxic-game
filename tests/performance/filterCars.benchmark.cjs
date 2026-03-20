@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 const Benchmark = require('benchmark');
 
 const suite = new Benchmark.Suite;
@@ -9,6 +10,7 @@ const loaded = {
 };
 
 suite.add('filter Boolean', function() {
+  // eslint-disable-next-line no-unused-vars
   const cars = [loaded.carA, loaded.carB, loaded.carC].filter(Boolean);
 })
 .add('manual if-checks without push', function() {

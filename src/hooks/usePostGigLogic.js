@@ -70,11 +70,14 @@ export const usePostGigLogic = () => {
   } = useGameState()
 
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
-  const [financials, setFinancials] = useState(null)
-  const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
   const [brandOffers, setBrandOffers] = useState([])
+  const [postOptionsError, setPostOptionsError] = useState(false)
   const errorHandledRef = useRef(false)
+
+  // Create cache refs for pure derivation without effect sets
+  const cachedFinancialsRef = useRef(null)
+  const cachedPostOptionsRef = useRef([])
 
   const phaseTitleKey =
     {
@@ -109,76 +112,105 @@ export const usePostGigLogic = () => {
     }
   }, [currentGig, activeEvent, triggerEvent])
 
-  // Initialize Results once (simulated)
-  useEffect(() => {
-    if (!financials && currentGig && lastGigStats) {
-      const result = calculateGigFinancials({
-        gigData: currentGig,
-        performanceScore: perfScore,
-        modifiers: gigModifiers,
-        bandInventory: band.inventory,
-        playerState: player,
-        gigStats: lastGigStats,
-        context: {
-          controversyLevel: social?.controversyLevel || 0,
-          regionRep: reputationByRegion?.[player?.location] || 0,
-          loyalty: social?.loyalty || 0,
-          zealotry: social?.zealotry || 0,
-          discountedTickets: activeStoryFlags?.includes(
-            'discounted_tickets_active'
-          )
-        }
-      })
-      setFinancials(result)
+  // Derive financials purely without triggering a re-render loop
+  const financials = useMemo(() => {
+    if (!currentGig || !lastGigStats) return null
+    if (cachedFinancialsRef.current) return cachedFinancialsRef.current
 
-      // Pass the necessary game state to evaluate post conditions
-      const gameStateForPosts = {
-        player,
-        band,
-        social,
-        lastGigStats,
-        activeEvent,
-        currentGig,
-        gigEvents: lastGigStats?.events || []
+    const result = calculateGigFinancials({
+      gigData: currentGig,
+      performanceScore: perfScore,
+      modifiers: gigModifiers,
+      bandInventory: band.inventory,
+      playerState: player,
+      gigStats: lastGigStats,
+      context: {
+        controversyLevel: social?.controversyLevel || 0,
+        regionRep: reputationByRegion?.[player?.location] || 0,
+        loyalty: social?.loyalty || 0,
+        zealotry: social?.zealotry || 0,
+        discountedTickets: activeStoryFlags?.includes(
+          'discounted_tickets_active'
+        )
       }
-      try {
-        setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
-      } catch (e) {
-        if (!errorHandledRef.current) {
-          errorHandledRef.current = true
-          logger.error('PostGig', 'Failed to generate post options', e)
-          setPostOptions([])
-          const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
-            defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
-          })
-          setPostResult({
-            type: 'ERROR',
-            success: false,
-            platform: 'none',
-            followers: 0,
-            moneyChange: 0,
-            message: fallbackMsg
-          })
-          setPhase('COMPLETE')
-          addToast(fallbackMsg, 'error')
-        }
-      }
-    }
+    })
+    cachedFinancialsRef.current = result
+    return result
   }, [
-    financials,
     currentGig,
     lastGigStats,
-    gigModifiers,
     perfScore,
-    activeEvent,
-    activeStoryFlags,
-    band,
+    gigModifiers,
+    band.inventory,
     player,
-    social,
+    social?.controversyLevel,
+    social?.loyalty,
+    social?.zealotry,
     reputationByRegion,
-    addToast,
-    t
+    activeStoryFlags
   ])
+
+  // Derive post options purely without triggering a re-render loop
+  const postOptions = useMemo(() => {
+    if (!currentGig || !lastGigStats) return []
+    if (cachedPostOptionsRef.current.length > 0) return cachedPostOptionsRef.current
+
+    // Pass the necessary game state to evaluate post conditions
+    const gameStateForPosts = {
+      player,
+      band,
+      social,
+      lastGigStats,
+      activeEvent,
+      currentGig,
+      gigEvents: lastGigStats?.events || []
+    }
+    try {
+      const options = generatePostOptions(currentGig, gameStateForPosts)
+      cachedPostOptionsRef.current = options
+      return options
+    } catch (e) {
+      if (!errorHandledRef.current) {
+        errorHandledRef.current = true
+        logger.error('PostGig', 'Failed to generate post options', e)
+        setPostOptionsError(true)
+      }
+      return []
+    }
+  }, [
+    currentGig,
+    lastGigStats,
+    player,
+    band,
+    social,
+    activeEvent,
+  ])
+
+  // Handle post options generation error side effects purely in an effect
+  useEffect(() => {
+    if (postOptionsError) {
+      const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
+        defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
+      })
+
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPostResult({
+        type: 'ERROR',
+        success: false,
+        platform: 'none',
+        followers: 0,
+        moneyChange: 0,
+        message: fallbackMsg
+      })
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPhase('COMPLETE')
+      addToast(fallbackMsg, 'error')
+
+      // Reset the error state so it doesn't loop
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setPostOptionsError(false)
+    }
+  }, [postOptionsError, t, addToast])
 
   const handlePostSelection = useCallback(
     option => {
