@@ -4,6 +4,7 @@ import { BaseStageController } from './BaseStageController'
 import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
+import { logger } from '../../utils/logger.js'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import { handleError, GameError } from '../../utils/errorHandler'
 import { hashString } from '../../utils/stringUtils'
@@ -30,8 +31,8 @@ class RoadieStageController extends BaseStageController {
       starWhite: getPixiColorFromToken('--star-white'),
       toxicGreen: getPixiColorFromToken('--toxic-green'),
       roadColor: getPixiColorFromToken('--void-black'),
-      grassColor: getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green'),
-      venueColor: getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red')
+      grassColor: getPixiColorFromToken('--roadie-grass') ?? getPixiColorFromToken('--toxic-green'),
+      venueColor: getPixiColorFromToken('--roadie-venue-blue') ?? getPixiColorFromToken('--blood-red')
     }
   }
 
@@ -283,9 +284,27 @@ class RoadieStageController extends BaseStageController {
     if (this.carSprites) {
       this.carSprites.forEach((sprite, id) => {
         if (!this.currentIds.has(id)) {
-          this.container.removeChild(sprite)
-          sprite.destroy()
-          this.carSprites.delete(id)
+          try {
+            this.container.removeChild(sprite)
+          } catch (error) {
+            logger.error(
+              'RoadieStageController',
+              `Error removing sprite from container for id ${id}:`,
+              error
+            )
+          }
+
+          try {
+            sprite.destroy()
+          } catch (error) {
+            logger.error(
+              'RoadieStageController',
+              `Error destroying sprite for id ${id}:`,
+              error
+            )
+          } finally {
+            this.carSprites.delete(id)
+          }
         }
       })
     }

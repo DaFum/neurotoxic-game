@@ -10,7 +10,8 @@ const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--warning-yellow': '#ffcc00',
   '--blood-red': '#cc0000',
   '--roadie-grass': '#1a4d1a',
-  '--cosmic-purple': '#6600cc'
+  '--cosmic-purple': '#6600cc',
+  '--roadie-venue-blue': '#0044cc'
 })
 
 const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
