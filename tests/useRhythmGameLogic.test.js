@@ -50,8 +50,9 @@ describe('useRhythmGameLogic', () => {
   // Helper to init hook and wait
   const initHook = async () => {
     const { result } = renderHook(() => useRhythmGameLogic())
+    // Allow macro-task queue to flush initialization promises
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, ASYNC_INIT_TIMEOUT_MS))
+      await new Promise(resolve => setImmediate(resolve))
     })
     return result
   }
@@ -76,9 +77,7 @@ describe('useRhythmGameLogic', () => {
 
     // Wait for async initialization
     await act(async () => {
-      // In a real test environment with proper timers, we would use waitFor
-      // Here we use a slightly longer timeout to ensure the promise resolves
-      await new Promise(resolve => setTimeout(resolve, ASYNC_INIT_TIMEOUT_MS))
+      await new Promise(resolve => setImmediate(resolve))
     })
 
     // Check if initialization ran (>= 1 because unstable dependencies from mockUseGameState might trigger re-runs)
@@ -135,7 +134,7 @@ describe('useRhythmGameLogic', () => {
       async ({ onEnded }) => {
         if (typeof onEnded === 'function') {
           // Asynchronous callback to ensure it runs after initialization completes
-          setTimeout(onEnded, 0)
+          setImmediate(onEnded)
         }
         return true
       }
@@ -152,7 +151,7 @@ describe('useRhythmGameLogic', () => {
 
     // Wait for async callback
     await act(async () => {
-      await new Promise(r => setTimeout(r, 10))
+      await new Promise(r => setImmediate(r))
     })
 
     assert.ok(mockEndGig.mock.calls.length >= 1)
