@@ -37,9 +37,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   // Reset outcome on new events
   const eventId = event?.id
   useEffect(() => {
-    //
     setOutcome(null)
-    //
     setPreviewError(false)
   }, [eventId])
 

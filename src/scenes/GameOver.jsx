@@ -17,7 +17,6 @@ export const GameOver = () => {
 
   useEffect(() => {
     if (!player || player.score === undefined) {
-      //
       changeScene(GAME_PHASES.MENU)
     }
   }, [player, changeScene])

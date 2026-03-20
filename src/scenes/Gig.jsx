@@ -86,7 +86,6 @@ export const Gig = () => {
       }
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
-      //
       addToast(
         tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
         'info'
@@ -98,14 +97,12 @@ export const Gig = () => {
 
     if (isPaused) {
       pauseAudio()
-      //
       addToast(
         tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
         'info'
       )
     } else {
       resumeAudio()
-      //
       addToast(
         tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
         'info'

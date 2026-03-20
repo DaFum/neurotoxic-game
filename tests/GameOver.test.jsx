@@ -11,7 +11,6 @@ const GameOverTestHarness = ({ children }) => {
 
   useEffect(() => {
     if (player.score !== 100) {
-      //
       updatePlayer({ score: 100, day: 5, fame: 50, totalTravels: 2 })
     }
   }, [player.score, updatePlayer])

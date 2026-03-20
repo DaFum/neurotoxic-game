@@ -33,7 +33,6 @@ export const DebugLogViewer = ({ className = '' }) => {
       }
     })
     // Initial load
-    //
     setLogs([...logger.logs])
     return unsubscribe
   }, [visible])

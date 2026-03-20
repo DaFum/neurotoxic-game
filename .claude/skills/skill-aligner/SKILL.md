@@ -59,7 +59,7 @@ jq '.scripts | keys' package.json
 **What it looks like:**
 
 - Skill says: "Vite 7 compatible"
-- Repo says: `"vite": "8.0.0"` in package.json
+- Repo says: `"vite": "8.0.1"` in package.json
 
 **How to detect:**
 
@@ -292,7 +292,7 @@ Before making changes:
 **Steps**:
 
 1. Audit: Extract version references → "Vite 7 compatible"
-2. Cross-reference: Package.json says `"vite": "8.0.0"`, CLAUDE.md says "Vite 8.0.1 required"
+2. Cross-reference: Package.json says `"vite": "8.0.1"`, CLAUDE.md says "Vite 8.0.1 required"
 3. Risk assessment:
    - Is this a simple version bump in examples? → Update and test
    - Are there API changes? (e.g., Vite 7 plugin API changed in v8) → Escalate to skill-creator

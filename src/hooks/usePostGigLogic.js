@@ -103,11 +103,8 @@ export const usePostGigLogic = () => {
     if (!currentGig) return
 
     if (!activeEvent) {
-      //
       triggerEvent('financial', 'post_gig') ||
-        //
         triggerEvent('special', 'post_gig') ||
-        //
         triggerEvent('band', 'post_gig')
     }
   }, [currentGig, activeEvent, triggerEvent])
@@ -132,7 +129,6 @@ export const usePostGigLogic = () => {
           )
         }
       })
-      //
       setFinancials(result)
 
       // Pass the necessary game state to evaluate post conditions
@@ -146,18 +142,15 @@ export const usePostGigLogic = () => {
         gigEvents: lastGigStats?.events || []
       }
       try {
-        //
         setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
       } catch (e) {
         if (!errorHandledRef.current) {
           errorHandledRef.current = true
           logger.error('PostGig', 'Failed to generate post options', e)
-          //
           setPostOptions([])
           const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
             defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
           })
-          //
           setPostResult({
             type: 'ERROR',
             success: false,
@@ -166,9 +159,7 @@ export const usePostGigLogic = () => {
             moneyChange: 0,
             message: fallbackMsg
           })
-          //
           setPhase('COMPLETE')
-          //
           addToast(fallbackMsg, 'error')
         }
       }

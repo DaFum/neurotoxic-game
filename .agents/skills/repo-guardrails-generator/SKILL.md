@@ -91,7 +91,7 @@ When rules span multiple projects or teams:
    - Solution: Create a shared rule ("utils are CSS-in-JS") and project overrides
 
 2. **Error recovery**: What if someone breaks a rule? How do they fix it?
-   - Example: "MUST pin Vite to 8.0.0" → Error recovery: "If upgraded, run `pnpm install --frozen-lockfile vite@8.0.1` and rebuild"
+   - Example: "MUST pin Vite to 8.0.1" → Error recovery: "If upgraded, run `pnpm install --frozen-lockfile vite@8.0.1` and rebuild"
 
 3. **Validation**: How do we verify compliance?
    - Manual checklist (pre-commit review)

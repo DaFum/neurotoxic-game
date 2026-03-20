@@ -54,7 +54,6 @@ export const useKabelsalatState = () => {
 
   // Lightning Seeds
   useEffect(() => {
-    //
     setLightningSeeds(prev => {
       if (isShocked && prev.length === 0) return generateLightningSeeds()
       if (!isShocked && prev.length > 0) return []
@@ -111,7 +110,6 @@ export const useKabelsalatState = () => {
     (delay, isPowered) => {
       const timer = setTimeout(() => {
         try {
-          //
           completeKabelsalatMinigame({
             isPoweredOn: isPowered,
             timeLeft: isPowered ? timeLeftRef.current : 0
@@ -140,7 +138,6 @@ export const useKabelsalatState = () => {
               }
             })
         } finally {
-          //
           changeScene(GAME_PHASES.GIG)
         }
       }, delay)

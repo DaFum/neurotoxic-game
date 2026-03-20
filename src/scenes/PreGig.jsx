@@ -111,9 +111,7 @@ export const PreGig = () => {
 
   useEffect(() => {
     if (!currentGig) {
-      //
       addToast(tRef.current('ui:pregig.toasts.noGig'), 'error')
-      //
       changeScene(GAME_PHASES.OVERWORLD)
     }
   }, [currentGig, changeScene, addToast])
@@ -153,10 +151,8 @@ export const PreGig = () => {
   useEffect(() => {
     // Chance for a Pre-Gig event (Band or Gig category)
     if (!activeEvent) {
-      //
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
-        //
         triggerEvent('gig', 'pre_gig')
       }
     }
