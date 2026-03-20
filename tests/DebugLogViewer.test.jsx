@@ -29,10 +29,12 @@ vi.mock('../src/utils/logger', () => {
     },
     clear: vi.fn(() => {
       logger.logs = []
-      listeners.forEach(cb => cb({ type: 'clear' }))
+      listeners.forEach(cb => { cb({ type: 'clear' }) })
     }),
     dump: vi.fn(() => []),
-    _emitAdd: entry => listeners.forEach(cb => cb({ type: 'add', entry }))
+    _emitAdd: entry => {
+      listeners.forEach(cb => { cb({ type: 'add', entry }) })
+    }
   }
   return {
     logger,
@@ -46,6 +48,26 @@ describe('DebugLogViewer', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     loggerMock = (await import('../src/utils/logger')).logger
+
+    // Reset seed data
+    loggerMock.logs = [
+      {
+        id: 'log1',
+        timestamp: '2025-01-01T10:00:00.000Z',
+        level: 'INFO',
+        channel: 'Test',
+        message: 'hello world'
+      },
+      {
+        id: 'log2',
+        timestamp: '2025-01-01T10:01:00.000Z',
+        level: 'ERROR',
+        channel: 'System',
+        message: 'critical failure',
+        data: { reason: 'timeout' }
+      }
+    ]
+
     // Reset to test environment
     vi.stubEnv('DEV', true)
   })
