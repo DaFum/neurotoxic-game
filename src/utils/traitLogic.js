@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Utility functions for checking character traits.
  * Centralizes logic for trait effects and conditions.
