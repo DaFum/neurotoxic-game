@@ -14,7 +14,22 @@ test('translateContextKeys translates valid keys and ignores others', () => {
   expect(result.validKey).toBe('translated:ui:test')
   expect(result.invalidKey).toBe('other:test')
   expect(result.notAKey).toBe('normal string')
-  expect(t).toHaveBeenCalledWith('ui:test', { defaultValue: 'ui:test' })
+  expect(t).toHaveBeenCalledWith('ui:test')
+})
+
+test('translateContextKeys translates valid traits keys', () => {
+  const t = vi.fn(key => `translated:${key}`)
+  const context = {
+    traitKey: 'traits:grudgeHolder.name',
+    traitKeyNested: { name: 'traits:peacemaker.name' }
+  }
+
+  const result = translateContextKeys(context, t)
+
+  expect(result.traitKey).toBe('translated:traits:grudgeHolder.name')
+  expect(result.traitKeyNested.name).toBe('translated:traits:peacemaker.name')
+  expect(t).toHaveBeenCalledWith('traits:grudgeHolder.name')
+  expect(t).toHaveBeenCalledWith('traits:peacemaker.name')
 })
 
 test('translateContextKeys handles nested objects and arrays', () => {
