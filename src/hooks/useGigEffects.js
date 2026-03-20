@@ -103,18 +103,20 @@ export const useGigEffects = stats => {
   // Chaos Mode Visuals (Filters)
   const chaosStyle = useMemo(() => {
     const style = {}
-    if (stats.overload > 50) {
-      style.filter = `saturate(${1 + (stats.overload - 50) / 25})`
-    }
-    if (stats.overload > 80) {
-      // Subtle hue shift based on overload
-      style.filter =
-        (style.filter || '') + ` hue-rotate(${stats.overload - 80}deg)`
-    }
+
     if (stats.isToxicMode) {
       // Full Chaos Filter
       style.filter = 'invert(0.1) contrast(1.5) saturate(2)'
+      return style
     }
+
+    if (stats.overload > 80) {
+      // Subtle hue shift based on overload
+      style.filter = `saturate(${1 + (stats.overload - 50) / 25}) hue-rotate(${stats.overload - 80}deg)`
+    } else if (stats.overload > 50) {
+      style.filter = `saturate(${1 + (stats.overload - 50) / 25})`
+    }
+
     return style
   }, [stats.overload, stats.isToxicMode])
 
