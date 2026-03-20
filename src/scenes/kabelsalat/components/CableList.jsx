@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLES } from '../constants.js'
 import { PlugGraphics } from './PlugGraphics.jsx'
 

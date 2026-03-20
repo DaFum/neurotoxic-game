@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'

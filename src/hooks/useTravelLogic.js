@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 /**
  * Travel Logic Hook
  * Encapsulates all travel-related state and logic for the Overworld scene.

@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { secureRandom } from '../utils/crypto.js'
 import { handleError } from '../utils/errorHandler.js'

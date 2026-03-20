@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLE_MAP, SLOT_XS } from './constants.js'
 import { secureRandom } from '../../utils/crypto.js'
 

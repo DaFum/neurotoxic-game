@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useMemo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRoadieLogic } from '../hooks/minigames/useRoadieLogic'

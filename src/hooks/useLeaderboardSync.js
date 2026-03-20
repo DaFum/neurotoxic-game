@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useEffect } from 'react'
 import { logger } from '../utils/logger'
 
