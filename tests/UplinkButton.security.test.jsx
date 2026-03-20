@@ -72,9 +72,8 @@ test('UplinkButton should prevent default action for unsafe URLs on click', () =
     bubbles: true,
     cancelable: true,
   })
-  vi.spyOn(clickEvent, 'preventDefault')
 
   fireEvent(link, clickEvent)
 
-  expect(clickEvent.preventDefault).toHaveBeenCalled()
+  expect(clickEvent.defaultPrevented).toBe(true)
 })
