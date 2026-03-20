@@ -102,9 +102,11 @@ class RoadieStageController extends BaseStageController {
       if (this.isDisposed) return
 
       this.textures.roadie = loaded.roadie
-      this.textures.cars = [loaded.carA, loaded.carB, loaded.carC].filter(
-        Boolean
-      )
+      const cars = []
+      if (loaded.carA) cars.push(loaded.carA)
+      if (loaded.carB) cars.push(loaded.carB)
+      if (loaded.carC) cars.push(loaded.carC)
+      this.textures.cars = cars
       this.textures.items = {
         AMP: loaded.amp,
         DRUMS: loaded.drums,
