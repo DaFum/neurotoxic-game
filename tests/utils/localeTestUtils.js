@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 
 export const extractPlaceholders = value => {
@@ -49,12 +49,13 @@ export const flattenToObject = (entry, parentKey = '', result = {}) => {
 
 const localeJsonCache = new Map()
 
-export const readLocaleJson = (directory, fileName) => {
+export const readLocaleJson = async (directory, fileName) => {
   const localePath = path.join(directory, fileName)
   if (localeJsonCache.has(localePath)) {
     return structuredClone(localeJsonCache.get(localePath))
   }
-  const data = JSON.parse(readFileSync(localePath, 'utf8'))
+  const rawData = await fs.readFile(localePath, 'utf8')
+  const data = JSON.parse(rawData)
   localeJsonCache.set(localePath, data)
   return structuredClone(data)
 }
@@ -67,14 +68,14 @@ export const toKeyMap = flattened =>
 
 const sourceFilesCache = new Map()
 
-export const collectSourceFiles = directory => {
+export const collectSourceFiles = async directory => {
   if (sourceFilesCache.has(directory)) {
     return sourceFilesCache.get(directory)
   }
 
-  const entries = readdirSync(directory, { withFileTypes: true })
+  const entries = await fs.readdir(directory, { withFileTypes: true })
 
-  const files = entries.flatMap(entry => {
+  const filePromises = entries.map(async entry => {
     const entryPath = path.join(directory, entry.name)
 
     if (entry.isDirectory()) {
@@ -83,6 +84,9 @@ export const collectSourceFiles = directory => {
 
     return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
   })
+
+  const results = await Promise.all(filePromises)
+  const files = results.flat()
 
   sourceFilesCache.set(directory, files)
   return files

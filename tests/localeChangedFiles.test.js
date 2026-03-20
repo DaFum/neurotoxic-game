@@ -23,332 +23,357 @@ const hasKeyOrPrefix = (data, key) =>
  */
 
 // Test: All changed files are valid JSON
-test('all changed locale files are valid JSON', () => {
-  LOCALES.forEach(locale => {
-    CHANGED_NAMESPACES.forEach(namespace => {
-      const localeDir = path.join(LOCALES_ROOT, locale)
-      const fileName = `${namespace}.json`
+test('all changed locale files are valid JSON', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      await Promise.all(
+        CHANGED_NAMESPACES.map(async namespace => {
+          const localeDir = path.join(LOCALES_ROOT, locale)
+          const fileName = `${namespace}.json`
 
-      assert.doesNotThrow(() => {
-        readLocaleJson(localeDir, fileName)
-      }, `${locale}/${namespace}.json should parse as valid JSON`)
+          try {
+            await readLocaleJson(localeDir, fileName)
+            assert.ok(true)
+          } catch (err) {
+            assert.fail(`${locale}/${namespace}.json should parse as valid JSON: ${err.message}`)
+          }
+        })
+      )
     })
-  })
+  )
 })
 
 // Test: Files have matching keys between locales
-test('locale files have matching translation keys between en and de', () => {
-  CHANGED_NAMESPACES.forEach(namespace => {
-    const enData = readLocaleJson(
-      path.join(LOCALES_ROOT, 'en'),
-      `${namespace}.json`
-    )
-    const deData = readLocaleJson(
-      path.join(LOCALES_ROOT, 'de'),
-      `${namespace}.json`
-    )
+test('locale files have matching translation keys between en and de', async () => {
+  await Promise.all(
+    CHANGED_NAMESPACES.map(async namespace => {
+      const [enData, deData] = await Promise.all([
+        readLocaleJson(path.join(LOCALES_ROOT, 'en'), `${namespace}.json`),
+        readLocaleJson(path.join(LOCALES_ROOT, 'de'), `${namespace}.json`)
+      ])
 
-    const enKeys = Object.keys(enData).sort()
-    const deKeys = Object.keys(deData).sort()
+      const enKeys = Object.keys(enData).sort()
+      const deKeys = Object.keys(deData).sort()
 
-    assert.deepEqual(
-      deKeys,
-      enKeys,
-      `${namespace}.json should have matching top-level keys between locales`
-    )
-  })
+      assert.deepEqual(
+        deKeys,
+        enKeys,
+        `${namespace}.json should have matching top-level keys between locales`
+      )
+    })
+  )
 })
 
 // Test: Nested structures match between locales
-test('nested structures are consistent between locales', () => {
-  CHANGED_NAMESPACES.forEach(namespace => {
-    const enData = readLocaleJson(
-      path.join(LOCALES_ROOT, 'en'),
-      `${namespace}.json`
-    )
-    const deData = readLocaleJson(
-      path.join(LOCALES_ROOT, 'de'),
-      `${namespace}.json`
-    )
+test('nested structures are consistent between locales', async () => {
+  await Promise.all(
+    CHANGED_NAMESPACES.map(async namespace => {
+      const [enData, deData] = await Promise.all([
+        readLocaleJson(path.join(LOCALES_ROOT, 'en'), `${namespace}.json`),
+        readLocaleJson(path.join(LOCALES_ROOT, 'de'), `${namespace}.json`)
+      ])
 
-    const enFlat = flattenToEntries(enData)
-      .map(e => e.key)
-      .sort()
-    const deFlat = flattenToEntries(deData)
-      .map(e => e.key)
-      .sort()
+      const enFlat = flattenToEntries(enData)
+        .map(e => e.key)
+        .sort()
+      const deFlat = flattenToEntries(deData)
+        .map(e => e.key)
+        .sort()
 
-    assert.deepEqual(
-      deFlat,
-      enFlat,
-      `${namespace}.json should have matching flattened keys between locales`
-    )
-  })
+      assert.deepEqual(
+        deFlat,
+        enFlat,
+        `${namespace}.json should have matching flattened keys between locales`
+      )
+    })
+  )
 })
 
 // Test: No translation has non-string values (except objects and arrays)
-test('all leaf translation values are strings', () => {
-  LOCALES.forEach(locale => {
-    CHANGED_NAMESPACES.forEach(namespace => {
-      const localeDir = path.join(LOCALES_ROOT, locale)
-      const data = readLocaleJson(localeDir, `${namespace}.json`)
-      const entries = flattenToEntries(data)
+test('all leaf translation values are strings', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      await Promise.all(
+        CHANGED_NAMESPACES.map(async namespace => {
+          const localeDir = path.join(LOCALES_ROOT, locale)
+          const data = await readLocaleJson(localeDir, `${namespace}.json`)
+          const entries = flattenToEntries(data)
 
-      entries.forEach(entry => {
-        assert.equal(
-          typeof entry.value,
-          'string',
-          `${locale}/${namespace}.json key "${entry.key}" should have string value`
-        )
-      })
+          entries.forEach(entry => {
+            assert.equal(
+              typeof entry.value,
+              'string',
+              `${locale}/${namespace}.json key "${entry.key}" should have string value`
+            )
+          })
+        })
+      )
     })
-  })
+  )
 })
 
 // Test: Placeholder variables match between locales
-test('placeholder variables match between en and de', () => {
-  CHANGED_NAMESPACES.forEach(namespace => {
-    const enData = readLocaleJson(
-      path.join(LOCALES_ROOT, 'en'),
-      `${namespace}.json`
-    )
-    const deData = readLocaleJson(
-      path.join(LOCALES_ROOT, 'de'),
-      `${namespace}.json`
-    )
+test('placeholder variables match between en and de', async () => {
+  await Promise.all(
+    CHANGED_NAMESPACES.map(async namespace => {
+      const [enData, deData] = await Promise.all([
+        readLocaleJson(path.join(LOCALES_ROOT, 'en'), `${namespace}.json`),
+        readLocaleJson(path.join(LOCALES_ROOT, 'de'), `${namespace}.json`)
+      ])
 
-    const enEntries = flattenToEntries(enData)
-    const deEntries = flattenToEntries(deData)
+      const enEntries = flattenToEntries(enData)
+      const deEntries = flattenToEntries(deData)
 
-    const enMap = new Map(enEntries.map(e => [e.key, e.value]))
-    const deMap = new Map(deEntries.map(e => [e.key, e.value]))
+      const enMap = new Map(enEntries.map(e => [e.key, e.value]))
+      const deMap = new Map(deEntries.map(e => [e.key, e.value]))
 
-    enMap.forEach((enValue, key) => {
-      const deValue = deMap.get(key)
+      enMap.forEach((enValue, key) => {
+        const deValue = deMap.get(key)
 
-      if (typeof enValue === 'string' && typeof deValue === 'string') {
-        const enPlaceholders = (enValue.match(/{{[^}]+}}/g) || []).sort()
-        const dePlaceholders = (deValue.match(/{{[^}]+}}/g) || []).sort()
+        if (typeof enValue === 'string' && typeof deValue === 'string') {
+          const enPlaceholders = (enValue.match(/{{[^}]+}}/g) || []).sort()
+          const dePlaceholders = (deValue.match(/{{[^}]+}}/g) || []).sort()
 
-        assert.deepEqual(
-          dePlaceholders,
-          enPlaceholders,
-          `${namespace}.json key "${key}" should have matching placeholders between locales`
-        )
-      }
-    })
-  })
-})
-
-// Test: Economy namespace has required structures
-test('economy.json has required top-level structures', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'economy.json')
-
-    const requiredKeys = ['gigExpenses', 'gigIncome', 'postGig', 'social']
-    requiredKeys.forEach(key => {
-      assert.ok(
-        hasKeyOrPrefix(data, key),
-        `${locale}/economy.json should have "${key}" structure`
-      )
-    })
-
-    // Test specific sub-structures (flat or nested)
-    assert.ok(
-      data['gigExpenses.catering.label'] !== undefined ||
-        data.gigExpenses?.catering !== undefined,
-      `${locale}/economy.json should have gigExpenses.catering`
-    )
-    assert.ok(
-      data['gigIncome.ticketSales.label'] !== undefined ||
-        data.gigIncome?.ticketSales !== undefined,
-      `${locale}/economy.json should have gigIncome.ticketSales`
-    )
-  })
-})
-
-// Test: Minigame namespace has tourbus structure
-test('minigame.json has tourbus structure', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'minigame.json')
-
-    assert.ok(
-      hasKeyOrPrefix(data, 'tourbus'),
-      `${locale}/minigame.json should have tourbus structure`
-    )
-
-    const requiredTourbusKeys = [
-      'damage',
-      'destination_reached',
-      'distance',
-      'title',
-      'van_condition'
-    ]
-
-    requiredTourbusKeys.forEach(key => {
-      assert.ok(
-        data[`tourbus.${key}`] !== undefined ||
-          data.tourbus?.[key] !== undefined,
-        `${locale}/minigame.json tourbus should have "${key}"`
-      )
-    })
-  })
-})
-
-// Test: UI namespace has major sections
-test('ui.json has required major sections', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'ui.json')
-
-    const requiredSections = [
-      'bandhq',
-      'detailedStats',
-      'gig',
-      'leaderboard',
-      'pregig',
-      'stats'
-    ]
-
-    requiredSections.forEach(section => {
-      assert.ok(
-        hasKeyOrPrefix(data, section),
-        `${locale}/ui.json should have "${section}" section`
-      )
-    })
-  })
-})
-
-// Test: UI namespace featureList array is valid
-test('ui.json featureList is present in valid nested or flat form', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'ui.json')
-
-    const hasNestedArray = Array.isArray(data.featureList)
-    const flatFeatureKeys = Object.keys(data).filter(key =>
-      key.startsWith('featureList.')
-    )
-
-    assert.ok(
-      hasNestedArray || flatFeatureKeys.length > 0,
-      `${locale}/ui.json should include featureList content`
-    )
-
-    if (hasNestedArray) {
-      assert.ok(
-        data.featureList.length > 0,
-        `${locale}/ui.json featureList should not be empty`
-      )
-    }
-  })
-})
-
-// Test: Venues namespace has location entries
-test('venues.json has venue and city names', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'venues.json')
-
-    // venues.json uses dot notation at the top level
-    const keys = Object.keys(data)
-    const nameKeys = keys.filter(k => k.endsWith('.name'))
-
-    assert.ok(
-      nameKeys.length > 0,
-      `${locale}/venues.json should have location name entries`
-    )
-
-    // Check specific known venues exist
-    assert.ok(
-      data['berlin.name'],
-      `${locale}/venues.json should have berlin.name entry`
-    )
-    assert.ok(
-      data['leipzig.name'],
-      `${locale}/venues.json should have leipzig.name entry`
-    )
-  })
-})
-
-// Test: No translations with only whitespace
-test('no translations contain only whitespace', () => {
-  LOCALES.forEach(locale => {
-    CHANGED_NAMESPACES.forEach(namespace => {
-      const localeDir = path.join(LOCALES_ROOT, locale)
-      const data = readLocaleJson(localeDir, `${namespace}.json`)
-      const entries = flattenToEntries(data)
-
-      entries.forEach(entry => {
-        if (typeof entry.value === 'string' && entry.value.length > 0) {
-          assert.ok(
-            entry.value.trim().length > 0,
-            `${locale}/${namespace}.json key "${entry.key}" should not be whitespace-only`
+          assert.deepEqual(
+            dePlaceholders,
+            enPlaceholders,
+            `${namespace}.json key "${key}" should have matching placeholders between locales`
           )
         }
       })
     })
-  })
+  )
 })
 
-// Test: Currency format consistency
-test('economy.json uses consistent currency formatting', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'economy.json')
-    const entries = flattenToEntries(data)
+// Test: Economy namespace has required structures
+test('economy.json has required top-level structures', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'economy.json')
 
-    const currencyEntries = entries.filter(
-      e =>
-        e.value.includes('{{') &&
-        (e.value.includes('€') || e.value.includes('sold'))
-    )
-
-    // Verify currency placeholders use consistent variable names
-    currencyEntries.forEach(entry => {
-      if (entry.value.includes('€')) {
-        // Should use placeholders like {{cost}}, {{value}}, etc.
-        const hasValidPlaceholder =
-          /{{(cost|value|amount|percent|rate|sold|capacity|buyers)}}/.test(
-            entry.value
-          )
-
+      const requiredKeys = ['gigExpenses', 'gigIncome', 'postGig', 'social']
+      requiredKeys.forEach(key => {
         assert.ok(
-          hasValidPlaceholder,
-          `${locale}/economy.json key "${entry.key}" should use standard currency placeholder`
+          hasKeyOrPrefix(data, key),
+          `${locale}/economy.json should have "${key}" structure`
+        )
+      })
+
+      // Test specific sub-structures (flat or nested)
+      assert.ok(
+        data['gigExpenses.catering.label'] !== undefined ||
+          data.gigExpenses?.catering !== undefined,
+        `${locale}/economy.json should have gigExpenses.catering`
+      )
+      assert.ok(
+        data['gigIncome.ticketSales.label'] !== undefined ||
+          data.gigIncome?.ticketSales !== undefined,
+        `${locale}/economy.json should have gigIncome.ticketSales`
+      )
+    })
+  )
+})
+
+// Test: Minigame namespace has tourbus structure
+test('minigame.json has tourbus structure', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'minigame.json')
+
+      assert.ok(
+        hasKeyOrPrefix(data, 'tourbus'),
+        `${locale}/minigame.json should have tourbus structure`
+      )
+
+      const requiredTourbusKeys = [
+        'damage',
+        'destination_reached',
+        'distance',
+        'title',
+        'van_condition'
+      ]
+
+      requiredTourbusKeys.forEach(key => {
+        assert.ok(
+          data[`tourbus.${key}`] !== undefined ||
+            data.tourbus?.[key] !== undefined,
+          `${locale}/minigame.json tourbus should have "${key}"`
+        )
+      })
+    })
+  )
+})
+
+// Test: UI namespace has major sections
+test('ui.json has required major sections', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'ui.json')
+
+      const requiredSections = [
+        'bandhq',
+        'detailedStats',
+        'gig',
+        'leaderboard',
+        'pregig',
+        'stats'
+      ]
+
+      requiredSections.forEach(section => {
+        assert.ok(
+          hasKeyOrPrefix(data, section),
+          `${locale}/ui.json should have "${section}" section`
+        )
+      })
+    })
+  )
+})
+
+// Test: UI namespace featureList array is valid
+test('ui.json featureList is present in valid nested or flat form', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'ui.json')
+
+      const hasNestedArray = Array.isArray(data.featureList)
+      const flatFeatureKeys = Object.keys(data).filter(key =>
+        key.startsWith('featureList.')
+      )
+
+      assert.ok(
+        hasNestedArray || flatFeatureKeys.length > 0,
+        `${locale}/ui.json should include featureList content`
+      )
+
+      if (hasNestedArray) {
+        assert.ok(
+          data.featureList.length > 0,
+          `${locale}/ui.json featureList should not be empty`
         )
       }
     })
-  })
+  )
+})
+
+// Test: Venues namespace has location entries
+test('venues.json has venue and city names', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'venues.json')
+
+      // venues.json uses dot notation at the top level
+      const keys = Object.keys(data)
+      const nameKeys = keys.filter(k => k.endsWith('.name'))
+
+      assert.ok(
+        nameKeys.length > 0,
+        `${locale}/venues.json should have location name entries`
+      )
+
+      // Check specific known venues exist
+      assert.ok(
+        data['berlin.name'],
+        `${locale}/venues.json should have berlin.name entry`
+      )
+      assert.ok(
+        data['leipzig.name'],
+        `${locale}/venues.json should have leipzig.name entry`
+      )
+    })
+  )
+})
+
+// Test: No translations with only whitespace
+test('no translations contain only whitespace', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      await Promise.all(
+        CHANGED_NAMESPACES.map(async namespace => {
+          const localeDir = path.join(LOCALES_ROOT, locale)
+          const data = await readLocaleJson(localeDir, `${namespace}.json`)
+          const entries = flattenToEntries(data)
+
+          entries.forEach(entry => {
+            if (typeof entry.value === 'string' && entry.value.length > 0) {
+              assert.ok(
+                entry.value.trim().length > 0,
+                `${locale}/${namespace}.json key "${entry.key}" should not be whitespace-only`
+              )
+            }
+          })
+        })
+      )
+    })
+  )
+})
+
+// Test: Currency format consistency
+test('economy.json uses consistent currency formatting', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'economy.json')
+      const entries = flattenToEntries(data)
+
+      const currencyEntries = entries.filter(
+        e =>
+          e.value.includes('{{') &&
+          (e.value.includes('€') || e.value.includes('sold'))
+      )
+
+      // Verify currency placeholders use consistent variable names
+      currencyEntries.forEach(entry => {
+        if (entry.value.includes('€')) {
+          // Should use placeholders like {{cost}}, {{value}}, etc.
+          const hasValidPlaceholder =
+            /{{(cost|value|amount|percent|rate|sold|capacity|buyers)}}/.test(
+              entry.value
+            )
+
+          assert.ok(
+            hasValidPlaceholder,
+            `${locale}/economy.json key "${entry.key}" should use standard currency placeholder`
+          )
+        }
+      })
+    })
+  )
 })
 
 // Summary test: Overall file health
-test('changed locale files are structurally sound', () => {
+test('changed locale files are structurally sound', async () => {
   let totalKeys = 0
   let totalFiles = 0
 
-  LOCALES.forEach(locale => {
-    CHANGED_NAMESPACES.forEach(namespace => {
-      const localeDir = path.join(LOCALES_ROOT, locale)
-      const data = readLocaleJson(localeDir, `${namespace}.json`)
-      const entries = flattenToEntries(data)
+  await Promise.all(
+    LOCALES.map(async locale => {
+      await Promise.all(
+        CHANGED_NAMESPACES.map(async namespace => {
+          const localeDir = path.join(LOCALES_ROOT, locale)
+          const data = await readLocaleJson(localeDir, `${namespace}.json`)
+          const entries = flattenToEntries(data)
 
-      totalKeys += entries.length
-      totalFiles++
+          totalKeys += entries.length
+          totalFiles++
 
-      // Basic sanity checks
-      assert.ok(
-        entries.length > 0,
-        `${locale}/${namespace}.json should have translations`
-      )
-      assert.ok(
-        Object.keys(data).length > 0,
-        `${locale}/${namespace}.json should have top-level keys`
+          // Basic sanity checks
+          assert.ok(
+            entries.length > 0,
+            `${locale}/${namespace}.json should have translations`
+          )
+          assert.ok(
+            Object.keys(data).length > 0,
+            `${locale}/${namespace}.json should have top-level keys`
+          )
+        })
       )
     })
-  })
+  )
 
   // Verify we processed all expected files
   assert.equal(totalFiles, LOCALES.length * CHANGED_NAMESPACES.length)
@@ -361,121 +386,137 @@ test('changed locale files are structurally sound', () => {
 })
 
 // Test: No duplicate keys in any namespace
-test('no duplicate keys exist within each locale file', () => {
-  LOCALES.forEach(locale => {
-    CHANGED_NAMESPACES.forEach(namespace => {
-      const localeDir = path.join(LOCALES_ROOT, locale)
-      const data = readLocaleJson(localeDir, `${namespace}.json`)
-      const entries = flattenToEntries(data)
+test('no duplicate keys exist within each locale file', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      await Promise.all(
+        CHANGED_NAMESPACES.map(async namespace => {
+          const localeDir = path.join(LOCALES_ROOT, locale)
+          const data = await readLocaleJson(localeDir, `${namespace}.json`)
+          const entries = flattenToEntries(data)
 
-      const keys = entries.map(e => e.key)
-      const uniqueKeys = new Set(keys)
+          const keys = entries.map(e => e.key)
+          const uniqueKeys = new Set(keys)
 
-      assert.equal(
-        keys.length,
-        uniqueKeys.size,
-        `${locale}/${namespace}.json should not have duplicate keys`
+          assert.equal(
+            keys.length,
+            uniqueKeys.size,
+            `${locale}/${namespace}.json should not have duplicate keys`
+          )
+        })
       )
     })
-  })
+  )
 })
 
 // Test: Special characters are properly escaped
-test('translations properly handle special characters', () => {
-  LOCALES.forEach(locale => {
-    CHANGED_NAMESPACES.forEach(namespace => {
+test('translations properly handle special characters', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      await Promise.all(
+        CHANGED_NAMESPACES.map(async namespace => {
+          const localeDir = path.join(LOCALES_ROOT, locale)
+          const data = await readLocaleJson(localeDir, `${namespace}.json`)
+          const entries = flattenToEntries(data)
+
+          entries.forEach(entry => {
+            if (typeof entry.value === 'string') {
+              // Check for unescaped quotes that could break JSON
+              const hasUnbalancedQuotes =
+                (entry.value.match(/"/g) || []).length % 2 !== 0
+
+              assert.ok(
+                !hasUnbalancedQuotes,
+                `${locale}/${namespace}.json key "${entry.key}" should not have unbalanced quotes`
+              )
+            }
+          })
+        })
+      )
+    })
+  )
+})
+
+// Test: UI namespace has postGig structure (related to changed file)
+test('ui.json has postGig related translation keys', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
       const localeDir = path.join(LOCALES_ROOT, locale)
-      const data = readLocaleJson(localeDir, `${namespace}.json`)
+      const data = await readLocaleJson(localeDir, 'ui.json')
+
+      assert.ok(
+        hasKeyOrPrefix(data, 'postGig'),
+        `${locale}/ui.json should have postGig structure`
+      )
+    })
+  )
+})
+
+// Test: Economy namespace has reasonable numeric placeholders
+test('economy.json numeric placeholders use valid variable names', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'economy.json')
       const entries = flattenToEntries(data)
 
       entries.forEach(entry => {
         if (typeof entry.value === 'string') {
-          // Check for unescaped quotes that could break JSON
-          const hasUnbalancedQuotes =
-            (entry.value.match(/"/g) || []).length % 2 !== 0
+          const placeholders = entry.value.match(/{{[^}]+}}/g) || []
 
-          assert.ok(
-            !hasUnbalancedQuotes,
-            `${locale}/${namespace}.json key "${entry.key}" should not have unbalanced quotes`
-          )
+          placeholders.forEach(placeholder => {
+            // Ensure placeholder contains only valid characters
+            const content = placeholder.slice(2, -2).trim()
+
+            assert.ok(
+              /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content),
+              `${locale}/economy.json key "${entry.key}" has invalid placeholder format: ${placeholder}`
+            )
+          })
         }
       })
     })
-  })
-})
-
-// Test: UI namespace has postGig structure (related to changed file)
-test('ui.json has postGig related translation keys', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'ui.json')
-
-    assert.ok(
-      hasKeyOrPrefix(data, 'postGig'),
-      `${locale}/ui.json should have postGig structure`
-    )
-  })
-})
-
-// Test: Economy namespace has reasonable numeric placeholders
-test('economy.json numeric placeholders use valid variable names', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'economy.json')
-    const entries = flattenToEntries(data)
-
-    entries.forEach(entry => {
-      if (typeof entry.value === 'string') {
-        const placeholders = entry.value.match(/{{[^}]+}}/g) || []
-
-        placeholders.forEach(placeholder => {
-          // Ensure placeholder contains only valid characters
-          const content = placeholder.slice(2, -2).trim()
-
-          assert.ok(
-            /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content),
-            `${locale}/economy.json key "${entry.key}" has invalid placeholder format: ${placeholder}`
-          )
-        })
-      }
-    })
-  })
+  )
 })
 
 // Test: Minigame namespace structure completeness
-test('minigame.json has comprehensive tourbus keys', () => {
-  LOCALES.forEach(locale => {
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'minigame.json')
-    const entries = flattenToEntries(data)
+test('minigame.json has comprehensive tourbus keys', async () => {
+  await Promise.all(
+    LOCALES.map(async locale => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'minigame.json')
+      const entries = flattenToEntries(data)
 
-    const tourbusKeys = entries.filter(e => e.key.startsWith('tourbus'))
+      const tourbusKeys = entries.filter(e => e.key.startsWith('tourbus'))
 
-    assert.ok(
-      tourbusKeys.length >= 5,
-      `${locale}/minigame.json should have at least 5 tourbus-related keys`
-    )
-  })
+      assert.ok(
+        tourbusKeys.length >= 5,
+        `${locale}/minigame.json should have at least 5 tourbus-related keys`
+      )
+    })
+  )
 })
 
 // Test: Venues namespace consistency between locales
-test('venues.json has same number of venues in all locales', () => {
-  const enData = readLocaleJson(path.join(LOCALES_ROOT, 'en'), 'venues.json')
+test('venues.json has same number of venues in all locales', async () => {
+  const enData = await readLocaleJson(path.join(LOCALES_ROOT, 'en'), 'venues.json')
   const enEntries = flattenToEntries(enData)
   const enVenueCount = enEntries.filter(e => e.key.endsWith('.name')).length
 
-  LOCALES.forEach(locale => {
-    if (locale === 'en') return
+  await Promise.all(
+    LOCALES.map(async locale => {
+      if (locale === 'en') return
 
-    const localeDir = path.join(LOCALES_ROOT, locale)
-    const data = readLocaleJson(localeDir, 'venues.json')
-    const entries = flattenToEntries(data)
-    const venueCount = entries.filter(e => e.key.endsWith('.name')).length
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = await readLocaleJson(localeDir, 'venues.json')
+      const entries = flattenToEntries(data)
+      const venueCount = entries.filter(e => e.key.endsWith('.name')).length
 
-    assert.equal(
-      venueCount,
-      enVenueCount,
-      `${locale}/venues.json should have same number of venues as en locale`
-    )
-  })
+      assert.equal(
+        venueCount,
+        enVenueCount,
+        `${locale}/venues.json should have same number of venues as en locale`
+      )
+    })
+  )
 })

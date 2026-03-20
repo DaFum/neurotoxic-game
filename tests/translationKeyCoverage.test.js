@@ -1,4 +1,3 @@
-import { readdirSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,27 +18,35 @@ const SOURCE_ROOT = path.join(REPO_ROOT, 'src')
 const TRANSLATION_KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g
 const TRANS_I18NKEY_PATTERN = /<Trans[^>]*i18nKey=['"]([^'"]+)['"]/g
 
-const readLocaleNamespaceMap = locale => {
+const readLocaleNamespaceMap = async locale => {
   const localePath = path.join(REPO_ROOT, 'public', 'locales', locale)
-  const namespaceFiles = readdirSync(localePath).filter(file =>
-    file.endsWith('.json')
+  const allFiles = await fs.readdir(localePath)
+  const namespaceFiles = allFiles.filter(file => file.endsWith('.json'))
+
+  const results = await Promise.all(
+    namespaceFiles.map(async namespaceFile => {
+      const namespace = namespaceFile.replace('.json', '')
+      const namespaceData = await readLocaleJson(localePath, namespaceFile)
+
+      return {
+        namespace,
+        data: { ...flattenToObject(namespaceData), ...namespaceData }
+      }
+    })
   )
 
-  return namespaceFiles.reduce((accumulator, namespaceFile) => {
-    const namespace = namespaceFile.replace('.json', '')
-    const namespaceData = readLocaleJson(localePath, namespaceFile)
-
-    return {
-      ...accumulator,
-      [namespace]: { ...flattenToObject(namespaceData), ...namespaceData }
-    }
+  return results.reduce((accumulator, item) => {
+    accumulator[item.namespace] = item.data
+    return accumulator
   }, {})
 }
 
 test('all literal translation keys used in src exist in both en and de locale namespaces', async () => {
-  const sourceFiles = collectSourceFiles(SOURCE_ROOT)
-  const englishNamespaces = readLocaleNamespaceMap('en')
-  const germanNamespaces = readLocaleNamespaceMap('de')
+  const [sourceFiles, englishNamespaces, germanNamespaces] = await Promise.all([
+    collectSourceFiles(SOURCE_ROOT),
+    readLocaleNamespaceMap('en'),
+    readLocaleNamespaceMap('de')
+  ])
 
   const missingInEnglish = []
   const missingInGerman = []
