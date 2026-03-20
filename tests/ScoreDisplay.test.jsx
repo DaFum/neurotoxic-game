@@ -1,79 +1,59 @@
-import { render, screen } from '@testing-library/react'
 import { describe, test, expect } from 'vitest'
+import { render } from '@testing-library/react'
 import { ScoreDisplay } from '../src/components/hud/ScoreDisplay.jsx'
 
 describe('ScoreDisplay', () => {
-  test('renders SCORE label', () => {
-    render(<ScoreDisplay score={0} />)
-    expect(screen.getByText('SCORE')).toBeInTheDocument()
-  })
+  test('renders baseline structural elements', () => {
+    const { container, getByText } = render(<ScoreDisplay score={0} />)
 
-  test('pads score of 0 to 7 digits', () => {
-    render(<ScoreDisplay score={0} />)
-    expect(screen.getByText('0000000')).toBeInTheDocument()
-  })
+    // Existence and Label
+    expect(container).toBeTruthy()
+    expect(getByText('SCORE')).toBeInTheDocument()
 
-  test('pads score of 1 to 7 digits', () => {
-    render(<ScoreDisplay score={1} />)
-    expect(screen.getByText('0000001')).toBeInTheDocument()
-  })
+    // Classes
+    const wrapper = container.firstChild
+    expect(wrapper.className).toContain('inline-block')
 
-  test('pads score of 123 to 7 digits', () => {
-    render(<ScoreDisplay score={123} />)
-    expect(screen.getByText('0000123')).toBeInTheDocument()
-  })
 
-  test('displays 7-digit score without padding', () => {
-    render(<ScoreDisplay score={1234567} />)
-    expect(screen.getByText('1234567')).toBeInTheDocument()
-  })
 
-  test('displays score larger than 7 digits without truncation', () => {
-    render(<ScoreDisplay score={12345678} />)
-    expect(screen.getByText('12345678')).toBeInTheDocument()
-  })
+    expect(wrapper.className).toContain('bg-void-black')
+    expect(wrapper.className).toContain('border-toxic-green')
 
-  test('floors fractional score values', () => {
-    render(<ScoreDisplay score={100.9} />)
-    expect(screen.getByText('0000100')).toBeInTheDocument()
-  })
-
-  test('floors score of 999999.99 to 999999', () => {
-    render(<ScoreDisplay score={999999.99} />)
-    expect(screen.getByText('0999999')).toBeInTheDocument()
-  })
-
-  test('floors score of 1234567.5 to 1234567', () => {
-    render(<ScoreDisplay score={1234567.5} />)
-    expect(screen.getByText('1234567')).toBeInTheDocument()
-  })
-
-  test('score element has tabular-nums class for consistent digit width', () => {
-    const { container } = render(<ScoreDisplay score={100} />)
+    // Inner score element specific styling
     const scoreEl = container.querySelector('.tabular-nums')
-    expect(scoreEl).not.toBeNull()
-    expect(scoreEl.textContent).toBe('0000100')
-  })
-
-  test('renders with correct outer container styling', () => {
-    const { container } = render(<ScoreDisplay score={500} />)
-    expect(container.firstChild.className).toContain('bg-void-black')
-    expect(container.firstChild.className).toContain('inline-block')
-  })
-
-  test('score text has toxic-green styling', () => {
-    const { container } = render(<ScoreDisplay score={500} />)
-    const scoreEl = container.querySelector('.tabular-nums')
+    expect(scoreEl).toBeTruthy()
     expect(scoreEl.className).toContain('text-toxic-green')
   })
 
-  test('pads score of 9999999 exactly to 7 digits (no extra padding)', () => {
-    render(<ScoreDisplay score={9999999} />)
-    expect(screen.getByText('9999999')).toBeInTheDocument()
-  })
+  test('formats and updates scores correctly', () => {
+    const { getByText, rerender } = render(<ScoreDisplay score={500} />)
+    expect(getByText('0000500')).toBeInTheDocument()
 
-  test('handles score of 0.4 floored to 0', () => {
-    render(<ScoreDisplay score={0.4} />)
-    expect(screen.getByText('0000000')).toBeInTheDocument()
+    // Thousands formatting
+    rerender(<ScoreDisplay score={1234} />)
+    expect(getByText('0001234')).toBeInTheDocument()
+
+    // Ten thousands
+    rerender(<ScoreDisplay score={15000} />)
+    expect(getByText('0015000')).toBeInTheDocument()
+
+    // Huge numbers
+    rerender(<ScoreDisplay score={1234567} />)
+    expect(getByText('1234567')).toBeInTheDocument()
+
+    // Zero
+    rerender(<ScoreDisplay score={0} />)
+    expect(getByText('0000000')).toBeInTheDocument()
+
+    // Negative (if applicable, testing edge case)
+    rerender(<ScoreDisplay score={-50} />)
+    expect(getByText('0000-50')).toBeInTheDocument()
+
+    // Fractional
+    rerender(<ScoreDisplay score={100.5} />)
+    expect(getByText('0000100')).toBeInTheDocument()
+
+    rerender(<ScoreDisplay score={12345678} />)
+    expect(getByText('12345678')).toBeInTheDocument()
   })
 })
