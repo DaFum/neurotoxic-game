@@ -480,12 +480,8 @@ const MemberTraits = ({ member, t }) => {
         className='w-full'
         content={
           <div className='text-left'>
-            <div className='font-bold mb-1'>
-              {t(trait.name)}
-            </div>
-            <div className='mb-2'>
-              {t(trait.desc)}
-            </div>
+            <div className='font-bold mb-1'>{t(trait.name)}</div>
+            <div className='mb-2'>{t(trait.desc)}</div>
             {!isTraitActive && (
               <div className='text-ash-gray italic border-t border-ash-gray/30 pt-1'>
                 {t('ui:detailedStats.toUnlock', {
