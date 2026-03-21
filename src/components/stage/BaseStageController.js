@@ -2,6 +2,7 @@
 import { Application, Container } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
+import { destroyPixiApp } from './pixiAppTeardown'
 
 export class BaseStageController {
   constructor({ containerRef, gameStateRef, updateRef }) {
@@ -29,141 +30,10 @@ export class BaseStageController {
     }
   }
 
-  isBenignDestroyError(error) {
-    const message = String(error?.message || error || '')
-    const benignPhrases = [
-      "reading '_cancelResize'",
-      "reading 'destroy'",
-      "reading 'canvas'",
-      'updateLocalTransform'
-    ]
-    return benignPhrases.some(phrase => message.includes(phrase))
-  }
-
-  _teardownCancelResize(app) {
-    try {
-      if (typeof app._cancelResize === 'function') {
-        app._cancelResize()
-      }
-    } catch (_e) {
-      // Ignore plugin teardown races
-    }
-  }
-
-  _teardownResizeTo(app) {
-    try {
-      if ('resizeTo' in app) {
-        app.resizeTo = null
-      }
-    } catch (_e) {
-      // Ignore plugin teardown races
-    }
-  }
-
-  _teardownQueueResize(app) {
-    try {
-      if (
-        typeof globalThis?.removeEventListener === 'function' &&
-        typeof app.queueResize === 'function'
-      ) {
-        globalThis.removeEventListener('resize', app.queueResize)
-      }
-    } catch (_e) {
-      // Ignore plugin teardown races
-    }
-  }
-
-  _teardownResizePlugin(app) {
-    this._teardownCancelResize(app)
-    this._teardownResizeTo(app)
-    this._teardownQueueResize(app)
-
-    if (typeof app._cancelResize !== 'function') {
-      app._cancelResize = () => {}
-    }
-  }
-
-  _destroyApp(app) {
-    if (typeof app.destroy !== 'function') return false
-
-    try {
-      app.destroy(
-        { removeView: true },
-        { children: true, texture: true, textureSource: true }
-      )
-      return true
-    } catch (destroyError) {
-      if (!this.isBenignDestroyError(destroyError)) {
-        throw destroyError
-      }
-      // Fall through to partial-init fallback for known races.
-      return false
-    }
-  }
-
-  _fallbackDestroyStage(app) {
-    app.stage?.destroy?.({
-      children: true,
-      texture: true,
-      textureSource: true
-    })
-  }
-
-  _fallbackDestroyRenderer(app) {
-    app.renderer?.destroy?.({ removeView: true })
-  }
-
-  _fallbackRemoveCanvas(app) {
-    let canvas = null
-    try {
-      canvas = app.canvas
-    } catch (_e) {
-      // Ignore - app getter can throw after failed/partial teardown.
-    }
-    if (canvas?.parentNode) {
-      canvas.parentNode.removeChild(canvas)
-    }
-  }
-
-  _fallbackDestroy(app) {
-    this._fallbackDestroyStage(app)
-    this._fallbackDestroyRenderer(app)
-    this._fallbackRemoveCanvas(app)
-  }
-
-  _removeAppTicker(app) {
-    app.ticker?.remove?.(this.handleTicker)
-  }
-
-  _handleDestroyError(error) {
-    if (!this.isBenignDestroyError(error)) {
-      logger.warn(this.constructor.name, 'Destroy failed', error)
-    }
-  }
-
-  destroyPixiApp(app) {
-    if (!app) return
-
-    try {
-      this._removeAppTicker(app)
-
-      // Stop ResizePlugin loops before app teardown to prevent resize-on-destroy races.
-      this._teardownResizePlugin(app)
-
-      // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
-      if (this._destroyApp(app)) return
-
-      // Fallback for partially initialized apps.
-      this._fallbackDestroy(app)
-    } catch (error) {
-      this._handleDestroyError(error)
-    }
-  }
-
   _checkLifecycleRace(app) {
     if (this.isDisposed || this.app !== app) {
       if (this.app === app) this.app = null
-      this.destroyPixiApp(app)
+      destroyPixiApp(app, this.handleTicker, this.constructor.name)
       return true
     }
     return false
@@ -196,7 +66,7 @@ export class BaseStageController {
       )
       this.cleanupHostResizeListeners()
       if (this.app === app) this.app = null
-      this.destroyPixiApp(app)
+      destroyPixiApp(app, this.handleTicker, this.constructor.name)
     }
   }
 
@@ -294,7 +164,7 @@ export class BaseStageController {
     if (this.app) {
       const app = this.app
       this.app = null
-      this.destroyPixiApp(app)
+      destroyPixiApp(app, this.handleTicker, this.constructor.name)
     }
   }
 }
