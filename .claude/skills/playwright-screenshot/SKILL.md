@@ -1,11 +1,6 @@
 ---
 name: playwright-screenshot
-description: |
-  Take Playwright screenshots at any point in the Neurotoxic app — single scene, full tour, UI overlays, PixiJS canvas, modal states, and visual regression baselines.
-
-  Trigger when: asked to take screenshots of any game scene (INTRO, MENU, OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER, CLINIC), capture UI states (modals, toasts, overlays, HUD), produce visual regression baselines, record before/after diffs for a UI change, document the game for any purpose, capture PixiJS canvas content, or debug visual glitches.
-
-  Also trigger for: "show me what X looks like", "what does X look like", "how does X look", "look at X", "display X", "preview X", "capture a screenshot of the gig scene", "take a screenshot before and after this change", "update visual baseline", "record all scenes", "screenshot at this point in the flow", "make a visual test for this UI", "document the game", "I want to see the current state of", "can you show me", "screenshot this", "what does the UI look like", "show me the current state", "take a photo of", "capture the current view", "visualize", "render a preview".
+description: Take Playwright screenshots of any Neurotoxic game scene (INTRO, MENU, OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER, CLINIC), UI overlays, PixiJS canvas, modal states, and visual regression baselines. Trigger when capturing screenshots, documenting UI, recording before/after diffs, debugging visual glitches, or producing visual regression tests.
 ---
 
 # Playwright Screenshot Skill
