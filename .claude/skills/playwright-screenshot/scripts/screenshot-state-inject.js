@@ -319,7 +319,8 @@ const FIXTURES = {
           // Continue
         }
 
-        await page.waitForTimeout(300)
+        // Small explicit wait for next check
+        await page.waitForTimeout(100)
       }
 
       // If we get here, stats haven't appeared in 10s but page is loaded
@@ -365,17 +366,33 @@ const FIXTURES = {
       }
     },
     waitFor: async page => {
+      // Check if "SYSTEM LOCKED" overlay is present (audio-locking scenario)
       try {
-        // GIG scene has PixiJS canvas
+        const lockedOverlay = await page.evaluate(() => {
+          const bodyText = document.body.innerText || ''
+          return bodyText.includes('SYSTEM LOCKED')
+        })
+        if (lockedOverlay) {
+          throw new Error(
+            'GIG scene is locked - audio playback failed to initialize'
+          )
+        }
+      } catch (err) {
+        if (err.message?.includes('SYSTEM LOCKED')) throw err
+        // Ignore evaluation errors, continue to canvas check
+      }
+
+      try {
+        // GIG scene has PixiJS canvas - wait for it to be visible
         return await page
           .locator('canvas')
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for gig UI overlay (fallback if canvas slow to render)
+        // Fallback: wait for gig UI overlay (if canvas slow to render)
         return await page
           .getByRole('button', { name: /skip|continue|escape/i })
           .first()
-          .waitFor({ state: 'visible', timeout: 2000 })
+          .waitFor({ state: 'visible', timeout: 3000 })
       }
     }
   },
@@ -398,7 +415,15 @@ const FIXTURES = {
           throw err
         }
       }
-      await page.waitForTimeout(500)
+      // Wait for the clinic UI to be interactive (fallback to heading or section)
+      try {
+        await page
+          .getByRole('heading', { name: /clinic|doctor/i })
+          .waitFor({ state: 'visible', timeout: 2000 })
+      } catch {
+        // If no heading found, wait for a generic element to stabilize
+        await page.waitForLoadState('domcontentloaded')
+      }
     }
   },
 
@@ -411,10 +436,15 @@ const FIXTURES = {
         .waitFor({ state: 'visible', timeout: 10000 }),
     capture: async page => {
       await page.getByRole('button', { name: /band hq/i }).click()
+      // Wait for the Band HQ modal to fully render
       await page
         .getByRole('heading', { name: /band hq/i })
-        .waitFor({ state: 'visible' })
-      await page.waitForTimeout(300)
+        .waitFor({ state: 'visible', timeout: 5000 })
+      // Verify modal content is interactive
+      await page
+        .getByRole('button', { name: /close|back/i })
+        .first()
+        .waitFor({ state: 'visible', timeout: 2000 })
     }
   },
 
@@ -541,7 +571,22 @@ async function injectAndCapture(fixtureName, outFile) {
 
     // Wait for the scene to be ready
     await fixture.waitFor(page)
-    await page.waitForTimeout(600) // let Framer Motion transitions settle
+    // Wait for Framer Motion animations to settle by checking for stable DOM
+    await page.evaluate(() => {
+      return new Promise(resolve => {
+        // Use requestAnimationFrame to wait for animations to complete
+        let frameCount = 0
+        const checkFrame = () => {
+          frameCount++
+          if (frameCount > 3) {
+            resolve()
+          } else {
+            requestAnimationFrame(checkFrame)
+          }
+        }
+        requestAnimationFrame(checkFrame)
+      })
+    })
 
     // Run any extra capture steps
     if (fixture.capture) {
