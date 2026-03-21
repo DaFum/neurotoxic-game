@@ -71,7 +71,7 @@ export const OverworldMenu = ({
               variant='warning'
               size='sm'
             >
-              [{t('ui:overworld.refuel')}]
+              [{t('ui:overworld.refuel', { defaultValue: 'REFUEL' })}]
             </GlitchButton>
             <GlitchButton
               onClick={() => changeScene(GAME_PHASES.CLINIC)}
@@ -87,7 +87,7 @@ export const OverworldMenu = ({
               variant='primary'
               size='sm'
             >
-              [{t('ui:overworld.repair')}]
+              [{t('ui:overworld.repair', { defaultValue: 'REPAIR' })}]
             </GlitchButton>
             <GlitchButton
               onClick={handleSaveWithDelay}
@@ -96,7 +96,7 @@ export const OverworldMenu = ({
               variant='primary'
               size='sm'
             >
-              [{t('ui:overworld.save_game')}]
+              [{t('ui:overworld.save_game', { defaultValue: 'SAVE GAME' })}]
             </GlitchButton>
           </motion.div>
         )}

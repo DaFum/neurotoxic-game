@@ -32,7 +32,7 @@ export const TravelingVan = React.memo(({
     >
       <img
         src={vanUrl}
-        alt={t('ui:overworld.traveling_van')}
+        alt={t('ui:overworld.traveling_van', { defaultValue: 'Traveling Van' })}
         className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
         style={{ transform: 'translate(0, -50%)' }}
       />
