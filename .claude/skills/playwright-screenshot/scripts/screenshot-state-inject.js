@@ -44,7 +44,8 @@ const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
 // ── Minimal base state (mirrors initialState.js shape) ────────────────────
 // This is the shape the game expects. You can override individual fields per fixture.
-const BASE_STATE = {
+// Exported for validation in playwright-screenshot-fixture-validation.test.js
+export const BASE_STATE = {
   version: 2,
   currentScene: 'MENU',
   player: {
@@ -571,22 +572,8 @@ async function injectAndCapture(fixtureName, outFile) {
 
     // Wait for the scene to be ready
     await fixture.waitFor(page)
-    // Wait for Framer Motion animations to settle by checking for stable DOM
-    await page.evaluate(() => {
-      return new Promise(resolve => {
-        // Use requestAnimationFrame to wait for animations to complete
-        let frameCount = 0
-        const checkFrame = () => {
-          frameCount++
-          if (frameCount > 3) {
-            resolve()
-          } else {
-            requestAnimationFrame(checkFrame)
-          }
-        }
-        requestAnimationFrame(checkFrame)
-      })
-    })
+    // Let Framer Motion transitions settle (no condition to wait for — purely visual)
+    await page.waitForTimeout(400)
 
     // Run any extra capture steps
     if (fixture.capture) {

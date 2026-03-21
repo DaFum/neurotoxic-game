@@ -131,7 +131,8 @@ async function main() {
       })
       const visible = await node
         .first()
-        .isVisible({ timeout: 2000 })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .then(() => true)
         .catch(() => false)
       if (visible) {
         await node.first().click()
@@ -149,7 +150,8 @@ async function main() {
       })
       const visible = await node
         .first()
-        .isVisible({ timeout: 2000 })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .then(() => true)
         .catch(() => false)
       if (visible) {
         await node.first().click()
@@ -168,7 +170,8 @@ async function main() {
       const continueBtn = page.getByRole('button', { name: /continue/i })
       const visible = await continueBtn
         .first()
-        .isVisible({ timeout: 3000 })
+        .waitFor({ state: 'visible', timeout: 3000 })
+        .then(() => true)
         .catch(() => false)
       if (visible) {
         await continueBtn.first().click()
@@ -183,7 +186,8 @@ async function main() {
     try {
       const startBtn = page.getByRole('button', { name: /start show/i })
       const visible = await startBtn
-        .isVisible({ timeout: 2000 })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .then(() => true)
         .catch(() => false)
       if (visible) {
         await startBtn.click()

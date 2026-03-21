@@ -8,57 +8,41 @@
  */
 
 import { test, describe } from 'node:test'
-import { ok, strictEqual } from 'node:assert'
+import { ok, strictEqual, deepStrictEqual } from 'node:assert'
 
 // Import the actual initialState for comparison
 import { initialState } from '../src/context/initialState.js'
 
-// Dynamically import BASE_STATE from screenshot-state-inject.js
-// Note: This must use createRequire since the module may not be in ESM format
-import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url)
-let BASE_STATE = null
-
-try {
-  const screenshotModule = require('../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js')
-  // BASE_STATE is not exported, so we need to extract it from the script
-  // For now, we'll just test that initialState has all required fields
-  // and document that BASE_STATE should be compared manually or exported
-} catch (e) {
-  // Script may not be importable in test environment, skip BASE_STATE import
-}
+// Import BASE_STATE directly — ensures fixture shape stays in sync with game state
+import { BASE_STATE } from '../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
 
 describe('Playwright Screenshot Fixtures', () => {
-  test('initialState contains all required top-level fields', () => {
-    const requiredFields = [
-      'version',
-      'currentScene',
-      'player',
-      'band',
-      'social',
-      'gameMap',
-      'currentGig',
-      'setlist',
-      'lastGigStats',
-      'activeEvent',
-      'toasts',
-      'activeStoryFlags',
-      'eventCooldowns',
-      'pendingEvents',
-      'venueBlacklist',
-      'activeQuests',
-      'reputationByRegion',
-      'settings',
-      'npcs',
-      'gigModifiers',
-      'minigame',
-      'unlocks'
-    ]
+  test('BASE_STATE contains all required top-level fields from initialState', () => {
+    // Compare BASE_STATE against initialState to catch drift.
+    // Fields in initialState that are OK to omit from BASE_STATE
+    // because they're transient/runtime-only:
+    const ALLOWED_OMISSIONS = new Set([
+      'toasts', // runtime-only, injected at hydration time
+      'isScreenshotMode' // test flag, set by fixture not BASE_STATE
+    ])
 
-    for (const field of requiredFields) {
+    const initialKeys = Object.keys(initialState)
+    for (const field of initialKeys) {
+      if (ALLOWED_OMISSIONS.has(field)) continue
       ok(
-        Object.hasOwn(initialState, field),
-        `initialState is missing required field: ${field}`
+        Object.hasOwn(BASE_STATE, field),
+        `BASE_STATE is missing field "${field}" that exists in initialState — update BASE_STATE in screenshot-state-inject.js`
+      )
+    }
+  })
+
+  test('BASE_STATE has no fields absent from initialState', () => {
+    // Catch fields added to BASE_STATE that were never in initialState
+    const initialKeys = new Set(Object.keys(initialState))
+    for (const field of Object.keys(BASE_STATE)) {
+      ok(
+        initialKeys.has(field),
+        `BASE_STATE has extra field "${field}" not in initialState — remove it or add it to initialState`
       )
     }
   })
