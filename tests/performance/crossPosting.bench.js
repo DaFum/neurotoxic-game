@@ -1,0 +1,57 @@
+import { performance } from 'node:perf_hooks';
+
+const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube'];
+const social = { instagram: 100, tiktok: 200, youtube: 300 };
+const result = { success: true, platform: 'tiktok' };
+const totalFollowers = 1000;
+
+function runOldApproach(iterations) {
+  let updatedSocial = { ...social };
+  for (let i = 0; i < iterations; i++) {
+    updatedSocial = { ...social };
+    const otherPlatforms = CROSS_POSTING_PLATFORMS.filter(
+      p => p !== result.platform
+    );
+    otherPlatforms.forEach(p => {
+      updatedSocial[p] = Math.max(
+        0,
+        (social[p] || 0) + Math.floor(totalFollowers * 0.25)
+      );
+    });
+  }
+  return updatedSocial;
+}
+
+function runNewApproach(iterations) {
+  let updatedSocial = { ...social };
+  for (let i = 0; i < iterations; i++) {
+    updatedSocial = { ...social };
+    for (const p of CROSS_POSTING_PLATFORMS) {
+      if (p !== result.platform) {
+        updatedSocial[p] = Math.max(
+          0,
+          (social[p] || 0) + Math.floor(totalFollowers * 0.25)
+        );
+      }
+    }
+  }
+  return updatedSocial;
+}
+
+const RUNS = 1_000_000;
+
+// Warmup
+runOldApproach(10000);
+runNewApproach(10000);
+
+const startOld = performance.now();
+runOldApproach(RUNS);
+const timeOld = performance.now() - startOld;
+
+const startNew = performance.now();
+runNewApproach(RUNS);
+const timeNew = performance.now() - startNew;
+
+console.log(`Old Approach Time: ${timeOld.toFixed(2)}ms`);
+console.log(`New Approach (for...of) Time: ${timeNew.toFixed(2)}ms`);
+console.log(`Improvement: ${(((timeOld - timeNew) / timeOld) * 100).toFixed(2)}% faster`);
