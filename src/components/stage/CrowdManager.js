@@ -12,6 +12,18 @@ import { secureRandom } from '../../utils/crypto.js'
 
 let secureRandomErrorReported = false
 
+const safeRandom = () => {
+  try {
+    return secureRandom()
+  } catch (error) {
+    if (!secureRandomErrorReported) {
+      secureRandomErrorReported = true
+      handleError(error, { silent: true, severity: 'medium' })
+    }
+    return Math.random()
+  }
+}
+
 export class CrowdManager {
   /**
    * @param {Application} app
@@ -61,33 +73,11 @@ export class CrowdManager {
     const fallbackColor = this.colors.starWhite
     const mutedColor = this.colors.ashGray
 
-    const safeRandom = () => {
-      try {
-        return secureRandom()
-      } catch (error) {
-        if (!secureRandomErrorReported) {
-          secureRandomErrorReported = true
-          handleError(error, { silent: true, severity: 'medium' })
-        }
-        return Math.random()
-      }
-    }
-
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =
         CROWD_LAYOUT.minRadius + safeRandom() * CROWD_LAYOUT.radiusVariance
 
-      let crowd
-      if (this.textures.idle) {
-        crowd = new Sprite(this.textures.idle)
-        crowd.anchor.set(0.5)
-        crowd.width = radius * 2.5 // Adjust scale to match circle size approx
-        crowd.height = radius * 2.5
-      } else {
-        crowd = new Graphics()
-        crowd.circle(0, 0, radius)
-        crowd.fill(fallbackColor)
-      }
+      const crowd = this._createCrowdMember(radius, fallbackColor)
 
       crowd.tint = mutedColor
       crowd.x = safeRandom() * this.app.screen.width
@@ -99,6 +89,26 @@ export class CrowdManager {
       this.container.addChild(crowd)
       this.crowdMembers.push(crowd)
     }
+  }
+
+  /**
+   * @param {number} radius
+   * @param {number} fallbackColor
+   * @private
+   */
+  _createCrowdMember(radius, fallbackColor) {
+    let crowd
+    if (this.textures.idle) {
+      crowd = new Sprite(this.textures.idle)
+      crowd.anchor.set(0.5)
+      crowd.width = radius * 2.5 // Adjust scale to match circle size approx
+      crowd.height = radius * 2.5
+    } else {
+      crowd = new Graphics()
+      crowd.circle(0, 0, radius)
+      crowd.fill(fallbackColor)
+    }
+    return crowd
   }
 
   update(combo, isToxicMode, timeMs) {
@@ -114,20 +124,35 @@ export class CrowdManager {
       shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
 
     for (let i = 0; i < this.crowdMembers.length; i++) {
-      const member = this.crowdMembers[i]
-      member.y = member.baseY - yOffset
+      this._updateMember(
+        this.crowdMembers[i],
+        yOffset,
+        targetTexture,
+        nextColor
+      )
+    }
+  }
 
-      // Texture swapping logic
-      if (member instanceof Sprite) {
-        if (targetTexture && member.texture !== targetTexture) {
-          member.texture = targetTexture
-        }
-      }
+  /**
+   * @param {Sprite|Graphics} member
+   * @param {number} yOffset
+   * @param {Texture|null} targetTexture
+   * @param {number} nextColor
+   * @private
+   */
+  _updateMember(member, yOffset, targetTexture, nextColor) {
+    member.y = member.baseY - yOffset
 
-      if (member.currentFillColor !== nextColor) {
-        member.currentFillColor = nextColor
-        member.tint = nextColor
+    // Texture swapping logic
+    if (member instanceof Sprite) {
+      if (targetTexture && member.texture !== targetTexture) {
+        member.texture = targetTexture
       }
+    }
+
+    if (member.currentFillColor !== nextColor) {
+      member.currentFillColor = nextColor
+      member.tint = nextColor
     }
   }
 
