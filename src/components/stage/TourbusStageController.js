@@ -151,25 +151,7 @@ class TourbusStageController extends BaseStageController {
     this.container.addChild(this.busSprite)
   }
 
-  update(dt) {
-    if (this.effectManager) this.effectManager.update(dt)
-
-    const state = this.gameStateRef.current
-    if (!state) return
-
-    const height = this.app.screen.height
-
-    // Scroll Road
-    if (this.roadStripes) {
-      // Speed is relative units per ms.
-      // Let's say speed 0.05 => 50 units per sec.
-      // We need pixel speed.
-      // Height is 100 units. So 1 unit = height/100 pixels.
-      const pixelSpeed = state.speed * (height / 100) * dt
-      this.roadStripes.tilePosition.y += pixelSpeed
-    }
-
-    // Update Bus Position (Lerp for smoothness)
+  _updateBusPosition(state, dt, height) {
     if (this.busSprite) {
       const targetX = state.busLane * this.laneWidth + this.laneWidth / 2
 
@@ -188,8 +170,20 @@ class TourbusStageController extends BaseStageController {
       this.wobbleTime = (this.wobbleTime + dt) % (Math.PI * 2 * 100)
       this.busSprite.rotation = Math.sin(this.wobbleTime / 100) * 0.05
     }
+  }
 
-    // Render Obstacles
+  _updateRoadScroll(state, dt, height) {
+    if (this.roadStripes) {
+      // Speed is relative units per ms.
+      // Let's say speed 0.05 => 50 units per sec.
+      // We need pixel speed.
+      // Height is 100 units. So 1 unit = height/100 pixels.
+      const pixelSpeed = state.speed * (height / 100) * dt
+      this.roadStripes.tilePosition.y += pixelSpeed
+    }
+  }
+
+  _updateObstacles(state, height) {
     this.currentIds.clear()
 
     state.obstacles.forEach(obs => {
@@ -254,8 +248,9 @@ class TourbusStageController extends BaseStageController {
         sprite.alpha = 1
       }
     })
+  }
 
-    // Cleanup removed obstacles
+  _cleanupObstacles() {
     for (const [id, sprite] of this.obstacleMap.entries()) {
       if (!this.currentIds.has(id)) {
         this.obstacleContainer.removeChild(sprite)
@@ -263,6 +258,20 @@ class TourbusStageController extends BaseStageController {
         this.obstacleMap.delete(id)
       }
     }
+  }
+
+  update(dt) {
+    if (this.effectManager) this.effectManager.update(dt)
+
+    const state = this.gameStateRef.current
+    if (!state) return
+
+    const height = this.app.screen.height
+
+    this._updateRoadScroll(state, dt, height)
+    this._updateBusPosition(state, dt, height)
+    this._updateObstacles(state, height)
+    this._cleanupObstacles()
   }
 
   dispose() {
