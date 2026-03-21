@@ -2,16 +2,16 @@
 // Generates a directed acyclic graph (DAG) for the tour
 /*
  * #1 Updates:
- * - Refactored index-based `for` and `forEach` loops to `for...of` loops across multiple map generation steps to improve both performance (avoiding function closure allocation) and readability.
- * - Hoisted constant definitions (`padding = 10`) outside loops in `resolveOverlaps`.
+ * - Refactored index-based `for` loops (previously converted from `forEach` closures) to `for...of` loops across multiple map generation steps to improve readability while maintaining the performance benefits of avoiding closure allocations.
+ * - Hoisted constant definitions (`padding = 10`) outside the main simulation iteration loop in `resolveOverlaps`.
  *
  * #2 Next Steps:
  * - Monitor performance for exceptionally large maps (depth > 50).
  * - Consider WebWorker offloading if `resolveOverlaps` becomes a bottleneck on mobile.
  *
  * #3 Errors + Solutions:
- * - Issue: `forEach` closure allocations were negatively impacting performance during deep map generation.
- * - Solution: Replaced all `forEach` arrays with native `for` and `for...of` loops to guarantee V8 optimization.
+ * - Issue: Previously, `forEach` closure allocations were negatively impacting performance during deep map generation. The initial fix used indexed `for` loops.
+ * - Solution: Transitioned from indexed `for` loops to `for...of` loops to achieve the best balance between V8 execution performance and code clarity.
  */
 
 import { ALL_VENUES } from '../data/venues.js'
@@ -416,6 +416,7 @@ export class MapGenerator {
     const iterations = 150 // Increased iterations
     const minDistance = 6 // % of map width/height (approx 2x pin size)
     const minDistanceSq = minDistance * minDistance
+    const padding = 10 // Wall repulsion bounds
     // Reduce movement strength over time to stabilize
     let strength = 0.5
 
@@ -484,7 +485,6 @@ export class MapGenerator {
       }
 
       // Wall repulsion (keep away from edges)
-      const padding = 10
       for (const n of nodeList) {
         if (n.x < padding) n.x += 0.2
         if (n.x > 100 - padding) n.x -= 0.2
