@@ -165,7 +165,28 @@ export const GameStateProvider = ({ children }) => {
   }, [t])
 
   // Lazy initialization of state to ensure fresh data fetch on mount
+  // Check localStorage for saved game first (for state injection in tests)
   const initGameState = () => {
+    const savedGame = safeStorageOperation(
+      'loadGame',
+      () => {
+        const saved = localStorage.getItem(SAVE_KEY)
+        return saved ? JSON.parse(saved) : null
+      },
+      null
+    )
+
+    // If there's a saved game, use it; otherwise create fresh state
+    if (savedGame && savedGame.version !== undefined) {
+      return {
+        ...savedGame,
+        unlocks:
+          savedGame.unlocks ||
+          safeStorageOperation('loadUnlocks', () => getUnlocks(), []) ||
+          []
+      }
+    }
+
     return createInitialState({
       unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
     })
