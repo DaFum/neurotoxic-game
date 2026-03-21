@@ -52,7 +52,7 @@ async function main() {
     console.log('→ MENU')
     try {
       const skipBtn = page.getByRole('button', { name: /skip/i })
-      if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      if (await skipBtn.isVisible().catch(() => false)) {
         await skipBtn.click()
         await page.waitForTimeout(800)
       }
@@ -85,12 +85,12 @@ async function main() {
       console.log('    (skipped - no identity modal)')
     }
 
-    // 03. CREDITS
+    // 04. CREDITS
     console.log('→ CREDITS')
     try {
       const creditsBtn = page.getByRole('button', { name: /credits/i })
       await creditsBtn.click({ timeout: 5000 })
-      await snap(page, '03-credits', 800)
+      await snap(page, '04-credits', 800)
       const returnBtn = page.getByRole('button', { name: /return/i })
       await returnBtn.click()
       await page.waitForTimeout(600)
@@ -98,12 +98,12 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    // 04. BAND HQ MODAL
+    // 05. BAND HQ MODAL
     console.log('→ BAND HQ modal')
     try {
       const bandHqBtn = page.getByRole('button', { name: /band hq/i })
       await bandHqBtn.click({ timeout: 5000 })
-      await snap(page, '04-band-hq-modal', 800)
+      await snap(page, '05-band-hq-modal', 800)
       const leaveBtn = page.getByRole('button', { name: /leave|esc/i })
       await leaveBtn.click()
       await page.waitForTimeout(600)
@@ -111,7 +111,7 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    // 05. OVERWORLD
+    // 06. OVERWORLD
     console.log('→ OVERWORLD')
     try {
       const startBtn = page.getByRole('button', { name: /start tour/i })
@@ -126,7 +126,7 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    // 06. OVERWORLD - SELECT NODE
+    // 07. OVERWORLD - SELECT NODE
     console.log('→ OVERWORLD node selection')
     try {
       const node = page.getByRole('button', {
@@ -144,7 +144,7 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    // 07. TRAVEL MINIGAME
+    // 08. TRAVEL MINIGAME
     console.log('→ TRAVEL MINIGAME')
     try {
       const node = page.getByRole('button', {
@@ -157,7 +157,7 @@ async function main() {
       if (visible) {
         await node.first().click()
         await page.locator('canvas').waitFor({ timeout: 10000 })
-        await snap(page, '07-travel-minigame', 1000)
+        await snap(page, '08-travel-minigame', 1000)
         await page.keyboard.press('Shift+P')
         await page.waitForTimeout(800)
       }
@@ -165,7 +165,7 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    // 08. PREGIG
+    // 09. PREGIG
     console.log('→ PREGIG')
     try {
       const continueBtn = page.getByRole('button', { name: /continue/i })
@@ -175,13 +175,13 @@ async function main() {
         .catch(() => false)
       if (visible) {
         await continueBtn.first().click()
-        await snap(page, '08-pregig', 1200)
+        await snap(page, '09-pregig', 1200)
       }
     } catch (_e) {
       console.log('    (skipped)')
     }
 
-    // 09. GIG (canvas)
+    // 10. GIG (canvas)
     console.log('→ GIG scene')
     try {
       const startBtn = page.getByRole('button', { name: /start show/i })
@@ -191,7 +191,7 @@ async function main() {
       if (visible) {
         await startBtn.click()
         await page.locator('canvas').waitFor({ timeout: 15000 })
-        await snap(page, '09-gig-canvas', 2000)
+        await snap(page, '10-gig-canvas', 2000)
         await page.keyboard.press('Shift+P')
         await page.waitForTimeout(800)
       }
@@ -199,12 +199,12 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    // 10. POSTGIG
+    // 11. POSTGIG
     console.log('→ POSTGIG')
     try {
       const heading = page.getByRole('heading', { name: /gig report/i })
       await heading.waitFor({ timeout: 5000 })
-      await snap(page, '10-postgig', 1000)
+      await snap(page, '11-postgig', 1000)
     } catch (_e) {
       console.log('    (skipped)')
     }

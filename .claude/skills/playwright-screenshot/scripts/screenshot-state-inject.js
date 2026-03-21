@@ -75,6 +75,7 @@ const BASE_STATE = {
     }
   },
   band: {
+    harmony: 50,
     members: [
       {
         id: 'matze',
@@ -172,7 +173,15 @@ const BASE_STATE = {
     score: 0
   },
   settings: { crtEnabled: true, tutorialSeen: true, logLevel: 'WARN' },
-  toasts: []
+  toasts: [],
+  setlist: [],
+  activeStoryFlags: [],
+  eventCooldowns: [],
+  venueBlacklist: [],
+  activeQuests: [],
+  reputationByRegion: {},
+  npcs: {},
+  unlocks: []
 }
 
 // ── Per-fixture overrides ──────────────────────────────────────────────────
@@ -306,8 +315,8 @@ const FIXTURES = {
       currentGig: {
         venueId: 'goldgrube',
         venueName: 'Goldgrube',
-        songId: 'kranker-schrank',
-        setlist: ['kranker-schrank'],
+        songId: '01 Kranker Schrank',
+        setlist: ['01 Kranker Schrank'],
         capacity: 120,
         basePay: 80,
         nodeId: 'node_2_1'
