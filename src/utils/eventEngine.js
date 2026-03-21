@@ -79,15 +79,9 @@ const getEventMapForPool = pool => {
 
 const selectEvent = (pool, gameState, triggerPoint) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
-  // Monkey-patch .includes for compatibility with condition filters expecting arrays
   const cooldownsSet = new Set(gameState.eventCooldowns || [])
-  cooldownsSet.includes = cooldownsSet.has
-
   const flagsSet = new Set(gameState.activeStoryFlags || [])
-  flagsSet.includes = flagsSet.has
-
   const pendingSet = new Set(gameState.pendingEvents || [])
-  pendingSet.includes = pendingSet.has
 
   const optimizedState = {
     ...gameState,
