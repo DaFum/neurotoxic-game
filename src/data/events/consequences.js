@@ -1,3 +1,5 @@
+import { hasStateItem } from '../../utils/gameStateUtils.js'
+
 // TODO: Review this file
 /**
  * Consequences Event Pool
@@ -15,7 +17,7 @@ export const CONSEQUENCE_EVENTS = [
       const score = state.lastGigStats?.score ?? 0
       return (
         score < 30 &&
-        !(state.eventCooldowns || []).includes('consequences_venue_complaint')
+        !hasStateItem(state.eventCooldowns, 'consequences_venue_complaint')
       )
     },
     options: [
@@ -85,9 +87,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         consecutiveBadShows >= 2 &&
         controversy >= 40 &&
-        !(state.eventCooldowns || []).includes(
-          'consequences_ticket_sales_collapse'
-        )
+        !hasStateItem(state.eventCooldowns, 'consequences_ticket_sales_collapse')
       )
     },
     options: [
@@ -128,7 +128,7 @@ export const CONSEQUENCE_EVENTS = [
       if (
         state.social?.egoFocus != null &&
         (state.social?.controversyLevel || 0) >= 30 &&
-        !(state.eventCooldowns || []).includes('consequences_bandmate_scandal')
+        !hasStateItem(state.eventCooldowns, 'consequences_bandmate_scandal')
       ) {
         return { egoFocus: state.social.egoFocus }
       }
@@ -203,7 +203,7 @@ export const CONSEQUENCE_EVENTS = [
       const quests = state.activeQuests || []
       return (
         controversy >= 85 &&
-        !flags.includes('cancel_quest_active') &&
+        !hasStateItem(flags, 'cancel_quest_active') &&
         !quests.some(q => q.id === 'quest_apology_tour')
       )
     },
@@ -247,7 +247,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         egoFocus != null &&
         harmony < 25 &&
-        !flags.includes('breakup_quest_active')
+        !hasStateItem(flags, 'breakup_quest_active')
       )
     },
     options: [
@@ -284,8 +284,8 @@ export const CONSEQUENCE_EVENTS = [
     chance: 1.0,
     condition: state => {
       return (
-        (state.pendingEvents || []).includes('consequences_comeback_album') &&
-        !(state.activeStoryFlags || []).includes('comeback_triggered')
+        hasStateItem(state.pendingEvents, 'consequences_comeback_album') &&
+        !hasStateItem(state.activeStoryFlags, 'comeback_triggered')
       )
     },
     options: [
