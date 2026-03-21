@@ -6,20 +6,19 @@ How to run Playwright screenshots and visual regression tests in GitHub Actions 
 
 ## Project CI Configuration
 
-The existing `playwright.config.js` already provides a solid baseline:
+The existing `playwright.config.js` provides a solid baseline:
 
 - **Base URL:** `http://localhost:5173`
-- **Dev server:** auto-started via `npm run dev` (use `pnpm run dev` — see below)
+- **Dev server:** auto-started via `pnpm run dev` (the `webServer.command` is correctly set)
 - **Browser:** Chromium Desktop only
 - **Workers:** 1 (serial — prevents audio/WebGL conflicts)
 - **Flags:** `--no-sandbox`, `--disable-gpu`, `--mute-audio`, `--disable-webgl`
 
-**One fix needed:** The `webServer.command` uses `npm run dev` but the project uses `pnpm`.
-Update `playwright.config.js` if it hasn't been updated yet:
+The `playwright.config.js` `webServer` block should look like:
 
 ```js
 webServer: {
-  command: 'pnpm run dev',   // ← was 'npm run dev'
+  command: 'pnpm run dev',
   url: 'http://localhost:5173',
   reuseExistingServer: !process.env.CI,
   stdout: 'ignore',

@@ -6,7 +6,8 @@
  * Uses the full golden-path flow: INTRO → MENU → OVERWORLD → TRAVEL → PREGIG
  *   → PRE_GIG_MINIGAME → GIG (auto-fail) → POSTGIG → back to OVERWORLD.
  *
- * GAMEOVER is reached via a separate state-inject run (see screenshot-state-inject.js).
+ * After the golden path, GAMEOVER and CLINIC are captured via state injection
+ * (these scenes cannot be reliably reached through normal gameplay flow).
  *
  * Usage:
  *   node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
@@ -21,6 +22,7 @@
 import { chromium } from '@playwright/test'
 import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { injectSave } from './screenshot-state-inject.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/scenes')
@@ -280,7 +282,44 @@ async function main() {
       }
     }
 
-    console.log(`\nDone. Screenshots saved to ${OUT_DIR}/`)
+    // ── 15. GAMEOVER (state injection — cannot be reached via normal gameplay) ──
+    console.log('→ GAMEOVER (state inject)')
+    try {
+      await page.goto(BASE_URL, { waitUntil: 'commit' })
+      await injectSave(page, 'gameover')
+      await page.reload({ waitUntil: 'domcontentloaded' })
+      await page.waitForLoadState('networkidle')
+      await page
+        .getByRole('heading', { name: /game over/i })
+        .waitFor({ state: 'visible', timeout: 10000 })
+      await waitSettle(page, 400)
+      await snap(page, '15-gameover')
+    } catch (err) {
+      console.warn('  ⚠ GAMEOVER capture failed:', err.message)
+    }
+
+    // ── 16. CLINIC (state injection — accessible from specific overworld nodes) ─
+    console.log('→ CLINIC (state inject)')
+    try {
+      await page.goto(BASE_URL, { waitUntil: 'commit' })
+      await injectSave(page, 'clinic')
+      await page.reload({ waitUntil: 'domcontentloaded' })
+      await page.waitForLoadState('networkidle')
+      await waitSettle(page, 500)
+      await snap(page, '16-clinic')
+    } catch (err) {
+      console.warn('  ⚠ CLINIC capture failed:', err.message)
+    }
+
+    // ── Summary ──────────────────────────────────────────────────────────────
+    const { readdir } = await import('node:fs/promises')
+    const captured = (await readdir(OUT_DIR).catch(() => [])).filter(f =>
+      f.endsWith('.png')
+    )
+    console.log(`\nDone. ${captured.length} screenshot(s) saved to ${OUT_DIR}/`)
+    if (captured.length > 0) {
+      captured.forEach(f => console.log(`  ${OUT_DIR}/${f}`))
+    }
   } finally {
     await browser.close()
   }
