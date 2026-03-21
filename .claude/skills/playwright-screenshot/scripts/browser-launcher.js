@@ -48,12 +48,21 @@ async function findCachedBrowser() {
       })
 
     for (const browser of browsers) {
-      const chromePath = join(
-        cacheDir,
-        browser.name,
-        process.platform === 'win32' ? 'chrome-win' : 'chrome-linux',
-        process.platform === 'win32' ? 'chrome.exe' : 'chrome'
-      )
+      let platformPath, exeName
+      if (process.platform === 'win32') {
+        platformPath = 'chrome-win'
+        exeName = 'chrome.exe'
+      } else if (process.platform === 'darwin') {
+        // macOS: Chromium is inside an .app bundle
+        platformPath = 'chrome-mac'
+        exeName = 'Chromium.app/Contents/MacOS/Chromium'
+      } else {
+        // Linux
+        platformPath = 'chrome-linux'
+        exeName = 'chrome'
+      }
+
+      const chromePath = join(cacheDir, browser.name, platformPath, exeName)
       if (existsSync(chromePath)) {
         return chromePath
       }

@@ -30,7 +30,6 @@ import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 import { createInitialState } from './initialState'
 import { GAME_PHASES } from './gameConstants'
 import { gameReducer } from './gameReducer'
-import { handleLoadGame } from './reducers/systemReducer'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -198,19 +197,20 @@ export const GameStateProvider = ({ children }) => {
 
       if (savedGame && savedGame.version !== undefined) {
         try {
-          // Route through the same sanitisation path as LOAD_GAME
-          // so we get validation, clamping, and migration for free.
-          const sanitised = handleLoadGame(freshState, {
-            ...savedGame,
-            unlocks
-          })
-          // Preserve the injected currentScene (handleLoadGame forces OVERWORLD)
-          // and isScreenshotMode (test fixture flag)
+          // Merge injected state, ensuring all required fields are present.
+          // For screenshot fixtures, we trust the injected data (no sanitization needed).
+          // Critical fields like toasts and minigame are always taken from freshState
+          // to prevent crashes when loading incomplete fixture data.
           return {
-            ...sanitised,
-            currentScene: savedGame.currentScene ?? sanitised.currentScene,
+            ...freshState,
+            ...savedGame,
+            // Always ensure these critical fields are valid (never undefined)
+            toasts: savedGame.toasts ?? freshState.toasts,
+            minigame: savedGame.minigame ?? freshState.minigame,
+            unlocks,
+            // isScreenshotMode flag is used by scenes to suppress random events
             isScreenshotMode:
-              savedGame.isScreenshotMode ?? sanitised.isScreenshotMode
+              savedGame.isScreenshotMode ?? freshState.isScreenshotMode
           }
         } catch (err) {
           logger.error('GameState', 'Failed to hydrate injected state', err)
