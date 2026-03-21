@@ -12,6 +12,13 @@ description: |
 
 Takes precise screenshots of the Neurotoxic game using Playwright. Covers all scenes, element crops, PixiJS canvas, overlay states, and CI-ready visual regression baselines.
 
+## ✨ Recent Improvements (2026-03-21)
+
+- **Robust browser launcher** (`browser-launcher.js`): Automatically falls back to cached Chromium if CDN is unreachable
+- **Extended screenshot timeouts** (60s): Handles font loading delays in Playwright
+- **Network-aware error handling**: Helpful recovery steps when browser binaries are unavailable
+- **Environment variable support**: `BROWSER_PATH` for custom Chromium installations
+
 ---
 
 ## Agent Execution Workflow
@@ -43,6 +50,32 @@ sleep 3
 ```
 
 The Playwright test runner auto-starts the server via `webServer` config. The standalone scripts do not — they need it running.
+
+### Step 2b — Browser Download / Network Issues
+
+**If Playwright browser download fails (CDN unreachable):**
+
+The scripts now have automatic fallback logic:
+1. First attempt: Download latest Playwright browser (requires `storage.googleapis.com` access)
+2. Second attempt: Use cached Chromium browser from `~/.cache/ms-playwright/` if available
+3. Final fallback: Return helpful error with recovery steps
+
+**To manually provide a browser path:**
+```bash
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+BROWSER_PATH=/path/to/chrome \
+node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+```
+
+**To find available cached browsers:**
+```bash
+find ~/.cache/ms-playwright -name "chrome" -o -name "firefox" 2>/dev/null
+```
+
+If no browsers are cached, and CDN is unreachable, the environment is air-gapped. In that case:
+- Screenshots cannot be captured automatically
+- Consider documenting the game flow manually
+- Or provide pre-built browser binaries to the environment
 
 ### Step 3 — Run and capture
 
@@ -335,6 +368,31 @@ node .claude/skills/playwright-screenshot/scripts/diff-screenshots.js before/ af
 ```
 
 All scripts respect `BASE_URL` env var (default: `http://localhost:5173`) and `OUT_DIR`.
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| **Timeout 30000ms exceeded** (font loading) | Increase screenshot timeout to 60000ms. Fonts load asynchronously; Playwright waits for them. |
+| **Timeout 5000ms exceeded** (element not found) | Increase timeout to 10000ms. Some elements load lazily after React Suspense/animation. Use `waitSettle(page, 800)` before snapping. |
+| **Browser executable doesn't exist** | CDN is unreachable. The script will fallback to cached browser. If none cached, provide `BROWSER_PATH` env var. |
+| **Screenshot is blank/black** | PixiJS canvas needs extra wait. Use `await page.waitForTimeout(1000)` after visibility. Canvas2D fallback (--disable-webgl) is more stable. |
+| **Audio crackles during capture** | Use `--mute-audio` flag. Audio timing affects page stability; muting prevents race conditions. |
+| **dev:shm exhausted** | Use `--disable-dev-shm-usage` flag (already set). Chromium falls back to disk-based temp storage. |
+
+## Captured Screenshots Should Look Like
+
+**INTRO**: Dark background, green text "NEUROTOXIC", skip/agree buttons visible
+**MENU**: Main menu with "Start Tour", "Load Game", "Band HQ", "Credits" buttons
+**OVERWORLD**: Tour plan heading, node map, travel UI
+**GIG**: PixiJS canvas visible, HUD bar at top, notes/playfield rendering
+**POSTGIG**: Gig report heading, score/earnings summary
+**GAMEOVER**: Game Over heading, final stats
+
+If a screenshot looks blank/wrong:
+- Increase wait times before snap
+- Check dev server is still running (`curl http://localhost:5173`)
+- Verify `BASE_URL` env var matches running server
 
 ## CI Usage
 
