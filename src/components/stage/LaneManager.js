@@ -14,19 +14,17 @@ const LANE_GUIDE_ALPHA = 0.16
 
 class LaneRenderer {
   constructor(index) {
-    this.static = new Graphics()
-    this.static.__laneIndex = index
-    this.static.__layer = 'static'
+    const createGraphicsLayer = (layer, isVisible = true) => {
+      const g = new Graphics()
+      g.__laneIndex = index
+      g.__layer = layer
+      g.visible = isVisible
+      return g
+    }
 
-    this.active = new Graphics()
-    this.active.__laneIndex = index
-    this.active.__layer = 'active'
-    this.active.visible = false
-
-    this.inactive = new Graphics()
-    this.inactive.__laneIndex = index
-    this.inactive.__layer = 'inactive'
-    this.inactive.visible = true
+    this.static = createGraphicsLayer('static')
+    this.active = createGraphicsLayer('active', false)
+    this.inactive = createGraphicsLayer('inactive')
   }
 
   addTo(container) {
@@ -40,10 +38,12 @@ class LaneRenderer {
     this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
 
+    const guideStripWidthRatio = 0.3
+    const guideStripXOffset = (layout.laneWidth * (1 - guideStripWidthRatio)) / 2
     this.static.rect(
-      renderX + layout.laneWidth * 0.35,
+      renderX + guideStripXOffset,
       0,
-      layout.laneWidth * 0.3,
+      layout.laneWidth * guideStripWidthRatio,
       layout.laneHeight
     )
     this.static.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
@@ -102,7 +102,7 @@ export class LaneManager {
     this.gameStateRef = gameStateRef
     this.rhythmContainer = null
     this.laneLayout = null
-    this.laneGraphics = [] // { static: Graphics, active: Graphics, inactive: Graphics }
+    this.laneGraphics = [] // LaneRenderer[]
     this.lastLaneActive = []
     this.lastScreenWidth = -1
     this.lastScreenHeight = -1
