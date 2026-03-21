@@ -127,7 +127,7 @@ describe('useArrivalLogic', () => {
     )
     assert.ok(
       mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('too low')
+        c.arguments[0].includes('cancelled')
       )
     )
   })
