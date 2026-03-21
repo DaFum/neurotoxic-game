@@ -141,6 +141,11 @@ export class LaneManager {
 
   _createLaneGraphics(lane, index, laneX) {
     const renderer = new LaneRenderer(index)
+
+    // Set initial visibility based on lane state and initialize cache
+    renderer.setVisibility(lane.active)
+    this.lastLaneActive[index] = lane.active
+
     renderer.addTo(this.rhythmContainer)
     renderer.draw(lane, laneX, this.laneLayout)
 
