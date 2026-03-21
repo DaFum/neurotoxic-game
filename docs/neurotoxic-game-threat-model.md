@@ -72,7 +72,7 @@ flowchart TD
 
 ## Entry points and attack surfaces
 
-<!-- markdownlint-disable -->
+<!-- markdownlint-disable MD013 -->
 
 | Surface                  | How reached                                 | Trust boundary        | Notes                                           | Evidence (repository path / symbol)                                              |
 | ------------------------ | ------------------------------------------- | --------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ flowchart TD
 | localStorage persistence | Game save/load actions                      | Browser → Storage     | Attacker can alter localStorage to affect state | `loadGame`/`saveGame` in `GameState.jsx`【F:src/context/GameState.jsx†loadGame】 |
 | MIDI asset fetch         | Gameplay audio start                        | Browser → Asset fetch | Same-origin assets loaded via `fetch`           | `playMidiFile` fetch in `src/utils/audio/midiPlayback.js`                        |
 
-<!-- markdownlint-enable -->
+<!-- markdownlint-enable MD013 -->
 
 ## Top abuse paths
 
@@ -96,7 +96,7 @@ flowchart TD
 
 ## Threat model table
 
-<!-- markdownlint-disable -->
+<!-- markdownlint-disable MD013 -->
 
 | Threat ID | Threat source          | Prerequisites                                            | Threat action                                 | Impact                                       | Impacted assets        | Existing controls (evidence)                                                         | Gaps                                  | Recommended mitigations                                                                     | Detection ideas                          | Likelihood | Impact severity | Priority |
 | --------- | ---------------------- | -------------------------------------------------------- | --------------------------------------------- | -------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------- | ---------- | --------------- | -------- |
@@ -106,7 +106,7 @@ flowchart TD
 | TM-004    | Future developer error | Introduction of unsafe HTML sinks                        | DOM XSS if untrusted data rendered            | Script execution in browser                  | Client JS bundle       | React rendering defaults reduce XSS risk                                             | No explicit linter rule for sinks     | Add ESLint rules or review checklist for `innerHTML`/`dangerouslySetInnerHTML`              | Code review checklist                    | Low        | Medium          | low      |
 | TM-005    | Remote attacker        | Ability to trigger heavy audio/path loops                | Resource exhaustion by repeated actions       | App slowdown, audio glitches                 | Audio subsystem        | Audio engine guards for invalid notes/durations【F:src/utils/audio/midiUtils.js】    | No explicit rate limiting             | Add UI throttling on repeated actions; guard against extreme replay triggers                | Client performance telemetry             | Low        | Low             | low      |
 
-<!-- markdownlint-enable -->
+<!-- markdownlint-enable MD013 -->
 
 <!-- markdownlint-disable MD013 -->
 

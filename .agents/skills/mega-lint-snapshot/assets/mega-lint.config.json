@@ -18,7 +18,7 @@
     {
       "name": "GITLEAKS",
       "command": "bash",
-      "args": ["-lc", "gitleaks detect --source . --no-git"]
+      "args": ["-lc", "gitleaks detect --source . --no-git -c .gitleaks.toml"]
     },
     {
       "name": "JAVASCRIPT_ES",
@@ -34,7 +34,7 @@
     {
       "name": "JSCPD",
       "command": "bash",
-      "args": ["-lc", "jscpd --silent"]
+      "args": ["-lc", "jscpd --config .jscpd.json --silent"]
     },
     {
       "name": "JSON",
@@ -53,10 +53,7 @@
     {
       "name": "MARKDOWN",
       "command": "bash",
-      "args": [
-        "-lc",
-        "markdownlint \"*.md\" \"docs/**/*.md\" \"tests/**/*.md\" \"src/**/*.md\""
-      ]
+      "args": ["-lc", "markdownlint \"**/*.md\""]
     },
     {
       "name": "MARKDOWN_PRETTIER",

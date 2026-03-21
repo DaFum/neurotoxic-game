@@ -1,4 +1,4 @@
-// TODO: Review this file
+// Reviewed: Fixed stale cache issue with postOptions derivation
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -153,8 +153,6 @@ export const usePostGigLogic = () => {
   // Derive post options purely without triggering a re-render loop
   const postOptions = useMemo(() => {
     if (!currentGig || !lastGigStats) return []
-    if (cachedPostOptionsRef.current.length > 0)
-      return cachedPostOptionsRef.current
 
     // Pass the necessary game state to evaluate post conditions
     const gameStateForPosts = {
@@ -167,9 +165,7 @@ export const usePostGigLogic = () => {
       gigEvents: lastGigStats?.events || []
     }
     try {
-      const options = generatePostOptions(currentGig, gameStateForPosts)
-      cachedPostOptionsRef.current = options
-      return options
+      return generatePostOptions(currentGig, gameStateForPosts)
     } catch (e) {
       if (!errorHandledRef.current) {
         errorHandledRef.current = true

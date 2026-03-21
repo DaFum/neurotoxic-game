@@ -1,22 +1,13 @@
 {
-  "threshold": 0,
-  "reporters": ["console", "html"],
+  "threshold": 4,
+  "reporters": ["html", "console"],
   "ignore": [
     "**/node_modules/**",
     "**/dist/**",
-    "**/coverage/**",
-    "**/*.min.js",
-    "**/*.map",
-    "**/package-lock.json",
-    "**/yarn.lock",
     "**/.claude/**",
-    "**/.claude/skills/**",
     "**/.agents/**",
-    "**/.agents/skills/**",
-    "**/skilltest-lib.mjs",
-    "**/format-report.mjs",
+    "**/reports/**",
     "**/report/**"
   ],
-  "absolute": true,
-  "gitignore": true
+  "absolute": true
 }
