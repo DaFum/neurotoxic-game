@@ -13,6 +13,7 @@
     "test:ui": "node ./scripts/run-vitest-ui.mjs",
     "test:all": "npm run test && npm run test:ui",
     "simulate:balance": "node scripts/game-balance-simulation.mjs",
+    "bench:eventEngine": "node tests/performance/eventEngine.bench.js",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
     "prepare": "husky",

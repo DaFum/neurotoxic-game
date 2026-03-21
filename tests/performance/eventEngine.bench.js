@@ -1,4 +1,4 @@
-import { eventEngine } from './src/utils/eventEngine.js';
+import { eventEngine } from '../../src/utils/eventEngine.js';
 
 const iterations = 1000000;
 
@@ -17,8 +17,8 @@ const choice = {
   skillCheck: {
     stat: 'skill',
     threshold: 15,
-    success: { effect: { type: 'stat', stat: 'fame', value: 10 } },
-    failure: { effect: { type: 'stat', stat: 'fame', value: -10 } }
+    success: { type: 'stat', stat: 'fame', value: 10 },
+    failure: { type: 'stat', stat: 'fame', value: -10 }
   }
 };
 
