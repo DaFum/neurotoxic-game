@@ -1,3 +1,15 @@
+/*
+ * REVIEW.md
+ * (#1) Actual Updates:
+ * - Extracted texture loading, generation, and resolution from EffectManager into EffectTextureManager.
+ * - Added correct .destroy(true) calls for blood and toxic textures in dispose().
+ * - Corrected JSDoc type definitions for the PixiJS Application parameter.
+ * (#2) Next Steps:
+ * - Consider creating dedicated asset bundles or pre-generating particle textures for all specific lane colors (red, green, blue) to remove the fallback-to-toxic behavior.
+ * (#3) Found Errors + Solutions:
+ * - Error: Memory leak when disposing EffectManager. Solution: Added .destroy(true) for textures before nulling them out.
+ * - Error: Accidentally changed bass lane hit effect logic during refactor. Solution: Reverted the `g > r && g > b` logic to the original `this.textures.toxic` fallback so non-red colors (like blue bass and white fallback) render the toxic texture as originally designed.
+ */
 import { Graphics } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
@@ -78,7 +90,7 @@ export class EffectTextureManager {
 
     if (r > g && r > b && this.textures.blood) {
       return this.textures.blood
-    } else if (g > r && g > b && this.textures.toxic) {
+    } else if (this.textures.toxic) {
       return this.textures.toxic
     }
 
