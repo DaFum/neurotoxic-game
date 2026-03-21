@@ -29,3 +29,5 @@ export const EventLog = React.memo(({ t, player, locationName }) => {
     </div>
   )
 })
+
+EventLog.displayName = 'EventLog'

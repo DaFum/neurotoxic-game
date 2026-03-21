@@ -1,5 +1,4 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
@@ -102,7 +101,7 @@ export const Overworld = () => {
     }
   }, [])
 
-  const handleSaveWithDelay = () => {
+  const handleSaveWithDelay = useCallback(() => {
     if (isSaving) return
     setIsSaving(true)
     setTimeout(() => {
@@ -111,7 +110,7 @@ export const Overworld = () => {
         setIsSaving(false)
       }
     }, 500)
-  }
+  }, [isSaving, saveGame])
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0

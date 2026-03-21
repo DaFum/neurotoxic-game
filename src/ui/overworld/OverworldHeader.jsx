@@ -1,6 +1,7 @@
+import React from 'react'
 import { ToggleRadio } from '../../components/ToggleRadio'
 
-export const OverworldHeader = ({ t, locationName, isTraveling }) => {
+export const OverworldHeader = React.memo(({  t, locationName, isTraveling }) => {
   return (
     <>
       <h2 className='absolute top-20 text-4xl text-toxic-green font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--color-toxic-green)] pointer-events-none'>
@@ -36,4 +37,6 @@ export const OverworldHeader = ({ t, locationName, isTraveling }) => {
       </div>
     </>
   )
-}
+})
+
+OverworldHeader.displayName = 'OverworldHeader'

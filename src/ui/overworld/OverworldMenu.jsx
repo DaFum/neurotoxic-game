@@ -1,9 +1,10 @@
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
 import { GAME_PHASES } from '../../context/gameConstants'
 
-export const OverworldMenu = ({
+export const OverworldMenu = React.memo(({
   t,
   isMenuOpen,
   setIsMenuOpen,
@@ -44,7 +45,7 @@ export const OverworldMenu = ({
               variant='primary'
               size='sm'
             >
-              [{t('ui:quests.button')}]
+              [{t('ui:quests.button', { defaultValue: 'QUESTS' })}]
             </GlitchButton>
             <GlitchButton
               onClick={openPirateRadio}
@@ -108,8 +109,10 @@ export const OverworldMenu = ({
         variant='primary'
         size='sm'
       >
-        {isMenuOpen ? `[${t('ui:menu.close')}]` : `[${t('ui:menu.open')}]`}
+        {isMenuOpen ? `[${t('ui:menu.close', { defaultValue: 'CLOSE MENU' })}]` : `[${t('ui:menu.open', { defaultValue: 'OPEN MENU' })}]`}
       </GlitchButton>
     </div>
   )
-}
+})
+
+OverworldMenu.displayName = 'OverworldMenu'
