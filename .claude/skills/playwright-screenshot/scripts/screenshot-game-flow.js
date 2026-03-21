@@ -65,19 +65,21 @@ async function main() {
     console.log('→ Setting band identity...')
     try {
       const input = page.locator('input[type="text"]')
-      if (await input.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const isInitiallyVisible = await input.isVisible().catch(() => false)
+      if (isInitiallyVisible) {
         await input.fill('Test Band')
         const confirmBtn = page.getByRole('button', { name: /confirm/i })
         await confirmBtn.click()
-        await page.waitForTimeout(1500)
-        // Verify modal is gone
-        const stillVisible = await input
-          .isVisible({ timeout: 1000 })
-          .catch(() => false)
-        if (stillVisible) {
+        // Wait for modal to actually close
+        try {
+          await input.waitFor({ state: 'hidden', timeout: 3000 })
+        } catch {
+          // If modal didn't close, retry with different name
+          console.log('    (retrying identity confirmation)')
           await input.fill('Test Band 2')
           await confirmBtn.click()
-          await page.waitForTimeout(1500)
+          // Wait for it to be hidden, fail if it doesn't
+          await input.waitFor({ state: 'hidden', timeout: 3000 })
         }
       }
     } catch (_e) {

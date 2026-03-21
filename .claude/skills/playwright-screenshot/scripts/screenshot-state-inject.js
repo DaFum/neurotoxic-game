@@ -200,10 +200,16 @@ const FIXTURES = {
           .getByRole('heading', { name: /tour plan|overworld/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
-        return await page
-          .locator('body')
-          .waitFor({ state: 'visible', timeout: 2000 })
+        // Fallback: validate that the app root is at least rendered (data-scene="OVERWORLD")
+        const sceneMarker = page.locator('[data-scene="OVERWORLD"]')
+        const isVisible = await sceneMarker
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+        if (!isVisible) {
+          throw new Error(
+            'OVERWORLD scene marker not found after 15s + fallback'
+          )
+        }
       }
     }
   },
@@ -228,10 +234,14 @@ const FIXTURES = {
           .getByRole('heading', { name: /preparation|pregig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
-        return await page
-          .locator('body')
-          .waitFor({ state: 'visible', timeout: 2000 })
+        // Fallback: validate that the pregig scene marker is rendered
+        const sceneMarker = page.locator('[data-scene="PREGIG"]')
+        const isVisible = await sceneMarker
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+        if (!isVisible) {
+          throw new Error('PREGIG scene marker not found after 15s + fallback')
+        }
       }
     }
   },
@@ -259,10 +269,14 @@ const FIXTURES = {
           .getByRole('heading', { name: /gig report|postgig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
-        return await page
-          .locator('body')
-          .waitFor({ state: 'visible', timeout: 2000 })
+        // Fallback: validate that the postgig scene marker is rendered
+        const sceneMarker = page.locator('[data-scene="POSTGIG"]')
+        const isVisible = await sceneMarker
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+        if (!isVisible) {
+          throw new Error('POSTGIG scene marker not found after 15s + fallback')
+        }
       }
     }
   },
@@ -280,10 +294,16 @@ const FIXTURES = {
           .getByRole('heading', { name: /game over/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
-        return await page
-          .locator('body')
-          .waitFor({ state: 'visible', timeout: 2000 })
+        // Fallback: validate that the gameover scene marker is rendered
+        const sceneMarker = page.locator('[data-scene="GAMEOVER"]')
+        const isVisible = await sceneMarker
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+        if (!isVisible) {
+          throw new Error(
+            'GAMEOVER scene marker not found after 15s + fallback'
+          )
+        }
       }
     }
   },
@@ -309,10 +329,14 @@ const FIXTURES = {
           .locator('canvas')
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
-        return await page
-          .locator('body')
-          .waitFor({ state: 'visible', timeout: 2000 })
+        // Fallback: validate that the gig scene marker is rendered
+        const sceneMarker = page.locator('[data-scene="GIG"]')
+        const isVisible = await sceneMarker
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
+        if (!isVisible) {
+          throw new Error('GIG scene marker not found after 15s + fallback')
+        }
       }
     }
   },
@@ -325,9 +349,15 @@ const FIXTURES = {
     },
     waitFor: async page => {
       // Clinic has no unique heading — wait for networkidle then stabilize
-      await page
-        .waitForLoadState('networkidle', { timeout: 5000 })
-        .catch(() => console.log('    (networkidle timed out, continuing)'))
+      try {
+        await page.waitForLoadState('networkidle', { timeout: 5000 })
+      } catch (err) {
+        // Only tolerate timeout errors; rethrow navigation/other errors
+        if (err.name !== 'TimeoutError') {
+          throw err
+        }
+        console.log('    (networkidle timed out, continuing)')
+      }
       await page.waitForTimeout(500)
     }
   },
@@ -451,9 +481,16 @@ async function injectAndCapture(fixtureName, outFile) {
     // Now reload to let the game pick up the injected state
     await page.reload({ waitUntil: 'domcontentloaded' })
     // Attempt networkidle, but app may be functional even if it times out
-    await page
-      .waitForLoadState('networkidle', { timeout: 5000 })
-      .catch(() => console.log('    (networkidle timed out, continuing)'))
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 5000 })
+    } catch (err) {
+      // Only tolerate timeout errors; rethrow navigation/other errors
+      if (err.name === 'TimeoutError') {
+        console.log('    (networkidle timed out, continuing)')
+      } else {
+        throw err
+      }
+    }
 
     // Wait for the scene to be ready
     await fixture.waitFor(page)
