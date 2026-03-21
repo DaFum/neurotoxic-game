@@ -101,14 +101,14 @@ export class EffectTextureManager {
   }
 
   dispose() {
-    if (this.genericHitTexture) {
+    if (this.genericHitTexture && typeof this.genericHitTexture.destroy === 'function') {
       this.genericHitTexture.destroy(true)
       this.genericHitTexture = null
     }
-    if (this.textures.blood) {
+    if (this.textures.blood && typeof this.textures.blood.destroy === 'function') {
       this.textures.blood.destroy(true)
     }
-    if (this.textures.toxic) {
+    if (this.textures.toxic && typeof this.textures.toxic.destroy === 'function') {
       this.textures.toxic.destroy(true)
     }
     this.textures = { blood: null, toxic: null }
