@@ -400,15 +400,15 @@ export const usePostGigLogic = () => {
 
       // Cross-posting Logic: 25% diminishing returns across other main platforms
       if (result.success && totalFollowers > 0) {
-        const otherPlatforms = CROSS_POSTING_PLATFORMS.filter(
-          p => p !== result.platform
-        )
-        otherPlatforms.forEach(p => {
-          updatedSocial[p] = Math.max(
-            0,
-            (social[p] || 0) + Math.floor(totalFollowers * 0.25)
-          )
-        })
+        const delta = Math.floor(totalFollowers * 0.25)
+        for (const p of CROSS_POSTING_PLATFORMS) {
+          if (p !== result.platform) {
+            updatedSocial[p] = Math.max(
+              0,
+              (social[p] || 0) + delta
+            )
+          }
+        }
       }
 
       updateSocial(updatedSocial)
