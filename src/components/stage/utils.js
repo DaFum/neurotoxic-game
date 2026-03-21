@@ -1,4 +1,8 @@
-// TODO: Review this file
+/*
+ * (#1) Actual Updates: Added withTimeout utility from PixiStageController.
+ * (#2) Next Steps: Continue adding shared utilities here.
+ * (#3) Found Errors + Solutions: None.
+ */
 import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger.js'
 
@@ -72,6 +76,43 @@ export const getPixiColorFromToken = tokenName => {
   const result = Number.parseInt(normalizedHexColor.slice(1), 16)
   colorCache.set(tokenName, result)
   return result
+}
+
+/**
+ * Wraps a promise with a timeout to prevent indefinite hanging.
+ * Errors and timeouts are swallowed, logging a warning/error and returning null.
+ * @param {Promise} promise - The promise to wrap.
+ * @param {string} label - Label for logging.
+ * @param {number} [timeoutMs=10000] - Timeout in milliseconds.
+ * @returns {Promise<any|null>} The resolved value or null if an error/timeout occurred.
+ */
+export const withTimeout = async (promise, label, timeoutMs = 10000) => {
+  let timerId
+  const timeout = new Promise((resolve, _reject) => {
+    timerId = setTimeout(() => {
+      logger.warn(
+        'PixiStageController',
+        `${label} load timed out, proceeding with fallbacks.`
+      )
+      // Explicitly resolve null on timeout to ensure non-blocking fallback
+      resolve(null)
+    }, timeoutMs)
+  })
+
+  try {
+    const result = await Promise.race([promise, timeout])
+    return result
+  } catch (err) {
+    const errorMessage = err?.message ?? String(err)
+    logger.error(
+      'PixiStageController',
+      `${label} load failed: ${errorMessage}`,
+      err
+    )
+    return null // Graceful fallback on error
+  } finally {
+    clearTimeout(timerId)
+  }
 }
 
 /**
