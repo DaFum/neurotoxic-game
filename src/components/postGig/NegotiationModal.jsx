@@ -2,6 +2,40 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 
+const TACTICS = [
+  {
+    id: 'SAFE',
+    containerClass:
+      'w-full p-3 border border-toxic-green hover:bg-toxic-green/20 text-left group transition-all',
+    titleClass: 'text-toxic-green font-bold mb-1',
+    titleKey: 'ui:deals.safe',
+    titleDefault: 'SAFE (Low Risk)',
+    descKey: 'ui:deals.safeDesc',
+    descDefault: 'Attempt to get +10% upfront. High chance of success.'
+  },
+  {
+    id: 'PERSUASIVE',
+    containerClass:
+      'w-full p-3 border border-electric-blue hover:bg-electric-blue/20 text-left group transition-all',
+    titleClass: 'text-electric-blue font-bold mb-1',
+    titleKey: 'ui:deals.persuasive',
+    titleDefault: 'PERSUASIVE (Medium Risk)',
+    descKey: 'ui:deals.persuasiveDesc',
+    descDefault:
+      'Try for +20% upfront & +10% per gig. Failure worsens terms (-10%).'
+  },
+  {
+    id: 'AGGRESSIVE',
+    containerClass:
+      'w-full p-3 border border-blood-red hover:bg-blood-red/20 text-left group transition-all',
+    titleClass: 'text-blood-red font-bold mb-1',
+    titleKey: 'ui:deals.aggressive',
+    titleDefault: 'AGGRESSIVE (High Risk)',
+    descKey: 'ui:deals.aggressiveDesc',
+    descDefault: 'Demand +50% upfront. Failure loses the deal completely.'
+  }
+]
+
 export const NegotiationModal = ({
   isOpen,
   onClose,
@@ -27,57 +61,21 @@ export const NegotiationModal = ({
             })}
           </p>
 
-          <button
-            type='button'
-            onClick={() => handleNegotiationSubmit('SAFE')}
-            className='w-full p-3 border border-toxic-green hover:bg-toxic-green/20 text-left group transition-all'
-          >
-            <div className='text-toxic-green font-bold mb-1'>
-              {t('ui:deals.safe', { defaultValue: 'SAFE (Low Risk)' })}
-            </div>
-            <div className='text-xs text-ash-gray group-hover:text-star-white'>
-              {t('ui:deals.safeDesc', {
-                defaultValue:
-                  'Attempt to get +10% upfront. High chance of success.'
-              })}
-            </div>
-          </button>
-
-          <button
-            type='button'
-            onClick={() => handleNegotiationSubmit('PERSUASIVE')}
-            className='w-full p-3 border border-electric-blue hover:bg-electric-blue/20 text-left group transition-all'
-          >
-            <div className='text-electric-blue font-bold mb-1'>
-              {t('ui:deals.persuasive', {
-                defaultValue: 'PERSUASIVE (Medium Risk)'
-              })}
-            </div>
-            <div className='text-xs text-ash-gray group-hover:text-star-white'>
-              {t('ui:deals.persuasiveDesc', {
-                defaultValue:
-                  'Try for +20% upfront & +10% per gig. Failure worsens terms (-10%).'
-              })}
-            </div>
-          </button>
-
-          <button
-            type='button'
-            onClick={() => handleNegotiationSubmit('AGGRESSIVE')}
-            className='w-full p-3 border border-blood-red hover:bg-blood-red/20 text-left group transition-all'
-          >
-            <div className='text-blood-red font-bold mb-1'>
-              {t('ui:deals.aggressive', {
-                defaultValue: 'AGGRESSIVE (High Risk)'
-              })}
-            </div>
-            <div className='text-xs text-ash-gray group-hover:text-star-white'>
-              {t('ui:deals.aggressiveDesc', {
-                defaultValue:
-                  'Demand +50% upfront. Failure loses the deal completely.'
-              })}
-            </div>
-          </button>
+          {TACTICS.map((tactic) => (
+            <button
+              key={tactic.id}
+              type='button'
+              onClick={() => handleNegotiationSubmit(tactic.id)}
+              className={tactic.containerClass}
+            >
+              <div className={tactic.titleClass}>
+                {t(tactic.titleKey, { defaultValue: tactic.titleDefault })}
+              </div>
+              <div className='text-xs text-ash-gray group-hover:text-star-white'>
+                {t(tactic.descKey, { defaultValue: tactic.descDefault })}
+              </div>
+            </button>
+          ))}
         </div>
       ) : (
         <div className='text-center py-6'>
