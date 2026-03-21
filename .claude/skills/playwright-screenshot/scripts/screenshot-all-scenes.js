@@ -19,9 +19,9 @@
  *   SLOWMO=0                         Playwright slowMo in ms (default 0)
  */
 
-import { chromium } from '@playwright/test'
 import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { launchBrowserWithFallback } from './browser-launcher.js'
 import { injectSave } from './screenshot-state-inject.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
@@ -31,7 +31,7 @@ const SLOWMO = Number(process.env.SLOWMO ?? 0)
 
 async function snap(page, name) {
   const file = `${OUT_DIR}/${name}.png`
-  await page.screenshot({ path: file })
+  await page.screenshot({ path: file, timeout: 60000 })
   console.log(`  ✓ ${name}.png`)
   return file
 }
@@ -43,17 +43,9 @@ async function waitSettle(page, ms = 400) {
 async function main() {
   await mkdir(OUT_DIR, { recursive: true })
 
-  const browser = await chromium.launch({
+  const browser = await launchBrowserWithFallback({
     headless: HEADLESS,
-    slowMo: SLOWMO,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
-      '--mute-audio',
-      '--disable-webgl'
-    ]
+    slowMo: SLOWMO
   })
 
   const context = await browser.newContext({
