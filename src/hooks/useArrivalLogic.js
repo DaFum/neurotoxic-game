@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { clampBandHarmony } from '../utils/gameStateUtils'
@@ -9,7 +9,7 @@ import { GAME_PHASES } from '../context/gameConstants'
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
  * Ensures consistent side effects (Events, Autosave, Day Advance, Routing).
  */
-export const useArrivalLogic = ({ onShowHQ } = {}) => {
+export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
   const {
     advanceDay,
     saveGame,
@@ -73,7 +73,8 @@ export const useArrivalLogic = ({ onShowHQ } = {}) => {
           addToast,
           changeScene,
           onShowHQ,
-          eventAlreadyActive: travelEventActive
+          eventAlreadyActive: travelEventActive,
+          rng
         })
       }
 

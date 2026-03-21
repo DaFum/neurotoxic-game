@@ -136,15 +136,20 @@ describe('handleNodeArrival', () => {
 
       assert.strictEqual(mocks.startGig.mock.calls.length, 0)
       assert.strictEqual(mocks.addToast.mock.calls.length, 1)
-      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'warning')
+      assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
       assert.strictEqual(mocks.changeScene.mock.calls.length, 1)
       assert.strictEqual(
         mocks.changeScene.mock.calls[0].arguments[0],
         GAME_PHASES.OVERWORLD
       )
 
-      // NO fame penalty for deterministic low harmony cancellation
-      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 0)
+      // Check fame penalty (double bad gig loss)
+      assert.strictEqual(mocks.updatePlayer.mock.calls.length, 1)
+      const fameUpdate = mocks.updatePlayer.mock.calls[0].arguments[0].fame
+      assert.strictEqual(
+        fameUpdate,
+        player.fame - BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG * 2
+      )
     })
 
     test(`${type} - luck-based cancellation (harmony < threshold, rng < chance)`, () => {

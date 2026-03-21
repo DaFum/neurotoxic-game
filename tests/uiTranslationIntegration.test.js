@@ -48,9 +48,9 @@ const extractLocalizedKeys = async () => {
   return localizedKeys
 }
 
-const readLocaleMap = (locale, namespace) => {
+const readLocaleMap = async (locale, namespace) => {
   const localeDir = path.join(REPO_ROOT, 'public', 'locales', locale)
-  const localeData = readLocaleJson(localeDir, `${namespace}.json`)
+  const localeData = await readLocaleJson(localeDir, `${namespace}.json`)
   return { ...flattenToObject(localeData), ...localeData }
 }
 
@@ -62,18 +62,18 @@ test('localized keys used in UI integration files exist in both en and de locale
 
   const localeCache = new Map()
 
-  const getCachedLocaleMap = (locale, namespace) => {
+  const getCachedLocaleMap = async (locale, namespace) => {
     const cacheKey = `${locale}:${namespace}`
     if (!localeCache.has(cacheKey)) {
-      localeCache.set(cacheKey, readLocaleMap(locale, namespace))
+      localeCache.set(cacheKey, await readLocaleMap(locale, namespace))
     }
     return localeCache.get(cacheKey)
   }
 
-  localizedKeys.forEach(namespaceKey => {
+  for (const namespaceKey of localizedKeys) {
     const [namespace, key] = namespaceKey.split(/:(.+)/)
-    const englishMap = getCachedLocaleMap('en', namespace)
-    const germanMap = getCachedLocaleMap('de', namespace)
+    const englishMap = await getCachedLocaleMap('en', namespace)
+    const germanMap = await getCachedLocaleMap('de', namespace)
 
     if (!(key in englishMap)) {
       missingInEnglish.push(namespaceKey)
@@ -81,7 +81,7 @@ test('localized keys used in UI integration files exist in both en and de locale
     if (!(key in germanMap)) {
       missingInGerman.push(namespaceKey)
     }
-  })
+  }
 
   assert.deepEqual(
     missingInEnglish,

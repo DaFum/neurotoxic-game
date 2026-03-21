@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 /**
  * Purchase Logic Hook
  * Encapsulates all purchase-related logic for the BandHQ shop.

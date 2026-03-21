@@ -9,6 +9,7 @@
  * FOUND ERRORS + SOLUTIONS (#3):
  * - ERROR: cachedPostOptionsRef prevented useMemo from returning fresh options when deps changed. SOLUTION: Removed ref cache, relying on useMemo's built-in memoization.
  */
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -400,15 +401,15 @@ export const usePostGigLogic = () => {
 
       // Cross-posting Logic: 25% diminishing returns across other main platforms
       if (result.success && totalFollowers > 0) {
-        const otherPlatforms = CROSS_POSTING_PLATFORMS.filter(
-          p => p !== result.platform
-        )
-        otherPlatforms.forEach(p => {
-          updatedSocial[p] = Math.max(
-            0,
-            (social[p] || 0) + Math.floor(totalFollowers * 0.25)
-          )
-        })
+        const delta = Math.floor(totalFollowers * 0.25)
+        for (const p of CROSS_POSTING_PLATFORMS) {
+          if (p !== result.platform) {
+            updatedSocial[p] = Math.max(
+              0,
+              (social[p] || 0) + delta
+            )
+          }
+        }
       }
 
       updateSocial(updatedSocial)

@@ -395,16 +395,19 @@ export const eventEngine = {
           ? gameState.band.members
           : []
         if (members.length > 0) {
-          skillValue = Math.max(
-            ...members.map(m => {
-              // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
-              // Then check top-level (dynamic stats like mood/health 0-100)
-              // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
-              const val =
-                m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
-              return val ?? 0
-            })
-          )
+          skillValue = -Infinity
+          for (let i = 0; i < members.length; i++) {
+            const m = members[i]
+            // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
+            // Then check top-level (dynamic stats like mood/health 0-100)
+            // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
+            const val =
+              m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
+            const currentVal = val ?? 0
+            if (currentVal > skillValue) {
+              skillValue = currentVal
+            }
+          }
         } else {
           skillValue = 0
         }

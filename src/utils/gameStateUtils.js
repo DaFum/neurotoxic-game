@@ -171,8 +171,10 @@ const calculateClampedStatDelta = (currentValue, deltaValue) => {
 const copyFilteredProperties = source => {
   if (!source) return {}
   const destination = {}
-  for (const key in source) {
-    if (Object.hasOwn(source, key) && !isForbiddenKey(key)) {
+  const keys = Object.keys(source)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (!isForbiddenKey(key)) {
       destination[key] = source[key]
     }
   }
@@ -271,13 +273,11 @@ export const calculateAppliedDelta = (state, delta) => {
     // Inventory
     if (delta.band.inventory) {
       applied.band.inventory = {}
-      // Optimization: using for...in instead of Object.entries to avoid array allocation
-      for (const itemId in delta.band.inventory) {
-        if (
-          !Object.hasOwn(delta.band.inventory, itemId) ||
-          isForbiddenKey(itemId)
-        )
-          continue
+      // Optimization: using Object.keys avoids prototype chain traversal and Object.hasOwn checks
+      const inventoryKeys = Object.keys(delta.band.inventory)
+      for (let i = 0; i < inventoryKeys.length; i++) {
+        const itemId = inventoryKeys[i]
+        if (isForbiddenKey(itemId)) continue
 
         const qty = delta.band.inventory[itemId]
         if (typeof qty === 'number') {
@@ -384,9 +384,11 @@ export const applyEventDelta = (state, delta) => {
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
-      for (const key in delta.player.stats) {
-        if (!Object.hasOwn(delta.player.stats, key) || isForbiddenKey(key))
-          continue
+      const statKeys = Object.keys(delta.player.stats)
+      for (let i = 0; i < statKeys.length; i++) {
+        const key = statKeys[i]
+        if (isForbiddenKey(key)) continue
+
         if (typeof delta.player.stats[key] === 'number') {
           nextPlayer.stats[key] = Math.max(
             0,
@@ -432,101 +434,143 @@ export const applyEventDelta = (state, delta) => {
       nextBand.harmony = nextHarmony
     }
 
-    const membersDelta =
-      delta.band.membersDelta !== undefined
-        ? delta.band.membersDelta
-        : delta.band.members
-    if (membersDelta) {
-      if (Array.isArray(membersDelta)) {
-        nextBand.members = nextBand.members.map((member, index) => {
-          const memberDelta = membersDelta[index] || {}
+    const membersDelta = delta.band.membersDelta ?? delta.band.members
+    const relationshipChange = delta.band.relationshipChange
+    const skillDelta = delta.band.skill
+
+    if (membersDelta || relationshipChange || typeof skillDelta === 'number') {
+      const isArrayDelta = Array.isArray(membersDelta)
+      const memberCount = nextBand.members.length
+      let updatedMembers = null
+      let bandChanged = false
+
+      for (let i = 0; i < memberCount; i++) {
+        const member = nextBand.members[i]
+        let nextMember = member
+        let memberHasChanges = false
+
+        // 1. Mood & Stamina
+        if (membersDelta) {
+          const mDelta = isArrayDelta ? membersDelta[i] || {} : membersDelta
           const moodChange =
-            typeof memberDelta.moodChange === 'number'
-              ? memberDelta.moodChange
-              : 0
+            typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
           const staminaChange =
-            typeof memberDelta.staminaChange === 'number'
-              ? memberDelta.staminaChange
-              : 0
-          return {
-            ...member,
-            mood: clampMemberMood(member.mood + moodChange),
-            stamina: clampMemberStamina(
+            typeof mDelta.staminaChange === 'number' ? mDelta.staminaChange : 0
+
+          if (moodChange !== 0 || staminaChange !== 0) {
+            const newMood = clampMemberMood(member.mood + moodChange)
+            const newStamina = clampMemberStamina(
               member.stamina + staminaChange,
               member.staminaMax
             )
-          }
-        })
-      } else {
-        nextBand.members = nextBand.members.map(member => {
-          let newMood = member.mood
-          let newStamina = member.stamina
-          if (typeof membersDelta.moodChange === 'number') {
-            newMood += membersDelta.moodChange
-          }
-          if (typeof membersDelta.staminaChange === 'number') {
-            newStamina += membersDelta.staminaChange
-          }
-          return {
-            ...member,
-            mood: clampMemberMood(newMood),
-            stamina: clampMemberStamina(newStamina, member.staminaMax)
-          }
-        })
-      }
-    }
 
-    if (delta.band.relationshipChange) {
-      nextBand.members = nextBand.members.map(member => {
-        let newRelationships = { ...member.relationships }
-        let hasChanges = false
-
-        const hasGrudgeHolder = hasTrait(member, 'grudge_holder')
-        const hasPeacemaker = hasTrait(member, 'peacemaker')
-
-        delta.band.relationshipChange.forEach(change => {
-          const otherMember =
-            change.member1 === member.name ? change.member2 : change.member1
-
-          if (isForbiddenKey(otherMember)) return
-
-          if (
-            change.member1 === member.name ||
-            change.member2 === member.name
-          ) {
-            let amount = change.change
-            // Apply traits
-            if (amount < 0 && hasGrudgeHolder) {
-              amount *= 1.5 // Grudge Holder amplifies negative
+            if (newMood !== member.mood || newStamina !== member.stamina) {
+              nextMember = { ...nextMember, mood: newMood, stamina: newStamina }
+              memberHasChanges = true
             }
-            if (amount > 0 && hasPeacemaker) {
-              amount *= 1.5 // Peacemaker amplifies positive
-            }
-            if (amount < 0 && hasPeacemaker) {
-              amount *= 0.5 // Peacemaker dampens negative
-            }
-
-            const currentScore = newRelationships[otherMember] ?? 50
-            newRelationships[otherMember] = Math.max(
-              0,
-              Math.min(100, Math.round(currentScore + amount))
-            )
-            hasChanges = true
           }
-        })
-
-        if (hasChanges) {
-          return { ...member, relationships: newRelationships }
         }
-        return member
-      })
+
+        // 2. Relationships
+        if (relationshipChange) {
+          let newRelationships = null
+          const hasGrudgeHolder = hasTrait(member, 'grudge_holder')
+          const hasPeacemaker = hasTrait(member, 'peacemaker')
+
+          for (let j = 0; j < relationshipChange.length; j++) {
+            const change = relationshipChange[j]
+            const isM1 = change.member1 === member.name
+            const isM2 = change.member2 === member.name
+
+            if (isM1 || isM2) {
+              const other = isM1 ? change.member2 : change.member1
+              if (isForbiddenKey(other)) continue
+
+              let amount = change.change
+              // Apply traits
+              if (amount < 0 && hasGrudgeHolder) amount *= 1.5
+              if (amount > 0 && hasPeacemaker) amount *= 1.5
+              if (amount < 0 && hasPeacemaker) amount *= 0.5
+
+              const relSource = newRelationships || nextMember.relationships || {}
+              const oldExists = Object.hasOwn(relSource, other)
+              const currentScore = relSource[other] ?? 50
+              const newScore = Math.max(
+                0,
+                Math.min(100, Math.round(currentScore + amount))
+              )
+
+              if (oldExists || newScore !== 50) {
+                if (!newRelationships) {
+                  newRelationships = { ...(nextMember.relationships || {}) }
+                }
+                newRelationships[other] = newScore
+              }
+            }
+          }
+
+          if (newRelationships) {
+            let relationshipsActuallyChanged = false
+            const newRelKeys = Object.keys(newRelationships)
+            for (let k = 0; k < newRelKeys.length; k++) {
+              const key = newRelKeys[k]
+              if (newRelationships[key] !== member.relationships?.[key]) {
+                relationshipsActuallyChanged = true
+                break
+              }
+            }
+
+            if (relationshipsActuallyChanged) {
+              if (nextMember === member) nextMember = { ...member }
+              nextMember.relationships = newRelationships
+              memberHasChanges = true
+            }
+          }
+        }
+
+        // 3. Skill
+        if (typeof skillDelta === 'number' && skillDelta !== 0) {
+          const currentSkill =
+            member.baseStats && typeof member.baseStats.skill === 'number'
+              ? member.baseStats.skill
+              : 5
+          const newSkill = Math.max(1, Math.min(10, currentSkill + skillDelta))
+
+          if (newSkill !== currentSkill) {
+            if (nextMember === member) nextMember = { ...member }
+            nextMember.baseStats = {
+              ...nextMember.baseStats,
+              skill: newSkill
+            }
+            memberHasChanges = true
+          }
+        }
+
+        if (memberHasChanges) {
+          if (!bandChanged) {
+            bandChanged = true
+            updatedMembers = new Array(memberCount)
+            for (let k = 0; k < i; k++) {
+              updatedMembers[k] = nextBand.members[k]
+            }
+          }
+          updatedMembers[i] = nextMember
+        } else if (bandChanged) {
+          updatedMembers[i] = member
+        }
+      }
+
+      if (bandChanged) {
+        nextBand.members = updatedMembers
+      }
     }
 
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
-      for (const item in delta.band.inventory) {
-        if (!Object.hasOwn(delta.band.inventory, item) || isForbiddenKey(item))
-          continue
+      const bandInventoryKeys = Object.keys(delta.band.inventory)
+      for (let i = 0; i < bandInventoryKeys.length; i++) {
+        const item = bandInventoryKeys[i]
+        if (isForbiddenKey(item)) continue
         const val = delta.band.inventory[item]
         nextBand.inventory[item] = applyInventoryItemDelta(
           nextBand.inventory[item],
@@ -537,28 +581,15 @@ export const applyEventDelta = (state, delta) => {
     if (typeof delta.band.luck === 'number') {
       nextBand.luck = Math.max(0, (nextBand.luck || 0) + delta.band.luck)
     }
-    if (typeof delta.band.skill === 'number') {
-      nextBand.members = nextBand.members.map(member => {
-        const currentSkill =
-          member.baseStats && typeof member.baseStats.skill === 'number'
-            ? member.baseStats.skill
-            : 5
-        return {
-          ...member,
-          baseStats: {
-            ...member.baseStats,
-            skill: Math.max(1, Math.min(10, currentSkill + delta.band.skill))
-          }
-        }
-      })
-    }
     nextState.band = nextBand
   }
 
   if (delta.social) {
     const nextSocial = { ...nextState.social }
-    for (const key in delta.social) {
-      if (!Object.hasOwn(delta.social, key) || isForbiddenKey(key)) continue
+    const socialKeys = Object.keys(delta.social)
+    for (let i = 0; i < socialKeys.length; i++) {
+      const key = socialKeys[i]
+      if (isForbiddenKey(key)) continue
       const value = delta.social[key]
 
       if (key === 'influencers') {

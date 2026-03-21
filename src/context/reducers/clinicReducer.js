@@ -144,7 +144,13 @@ export const handleClinicEnhance = (state, payload) => {
 
   // Early return if member already has trait to prevent charging cost
   if (state.band && Array.isArray(state.band.members)) {
-    const targetMember = state.band.members.find(m => m.id === memberId)
+    let targetMember = null
+    for (let i = 0; i < state.band.members.length; i++) {
+      if (state.band.members[i].id === memberId) {
+        targetMember = state.band.members[i]
+        break
+      }
+    }
     if (targetMember && Array.isArray(targetMember.traits)) {
       if (targetMember.traits.some(tr => tr.id === resolvedTrait.id)) {
         logger.debug(

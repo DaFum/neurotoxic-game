@@ -8,19 +8,31 @@ import {
   getRandomChatter
 } from '../src/data/chatter.js'
 import { VENUE_CHATTER_DB } from '../src/data/chatter/venueChatter.js'
-import { readLocaleJson } from './utils/localeTestUtils.js'
+import { readLocaleJson, resetLocaleJsonCache } from './utils/localeTestUtils.js'
 
 // Cache translations at module level to avoid repeated file I/O
-const loadTranslations = () => {
-  const enDir = path.resolve(process.cwd(), 'public/locales/en')
-  const deDir = path.resolve(process.cwd(), 'public/locales/de')
-  return {
-    en: readLocaleJson(enDir, 'chatter.json'),
-    de: readLocaleJson(deDir, 'chatter.json')
-  }
+let translationsPromise = null
+
+const resetTranslationsCache = () => {
+  translationsPromise = null
 }
 
-const translations = loadTranslations()
+test.beforeEach(() => {
+  resetTranslationsCache()
+  resetLocaleJsonCache()
+})
+
+const loadTranslations = async () => {
+  if (!translationsPromise) {
+    const enDir = path.resolve(process.cwd(), 'public/locales/en')
+    const deDir = path.resolve(process.cwd(), 'public/locales/de')
+    translationsPromise = Promise.all([
+      readLocaleJson(enDir, 'chatter.json'),
+      readLocaleJson(deDir, 'chatter.json')
+    ]).then(([en, de]) => ({ en, de }))
+  }
+  return translationsPromise
+}
 
 const buildState = (scene, overrides = {}) => {
   const baseBand = {
@@ -139,7 +151,8 @@ test('disallowed scenes are not in ALLOWED_DEFAULT_SCENES', () => {
   })
 })
 
-test('every chatter entry text must have a valid translation key in EN and DE locales', () => {
+test('every chatter entry text must have a valid translation key in EN and DE locales', async () => {
+  const t = await loadTranslations()
   const resolveKey = (obj, keyPath) => {
     if (obj[keyPath] !== undefined) return obj[keyPath]
     return keyPath.split('.').reduce((acc, part) => acc && acc[part], obj)
@@ -156,17 +169,18 @@ test('every chatter entry text must have a valid translation key in EN and DE lo
     const jsonKey = textKey.split('chatter:')[1]
 
     assert.ok(
-      resolveKey(translations.en, jsonKey),
+      resolveKey(t.en, jsonKey),
       `Missing English translation for key: ${jsonKey}`
     )
     assert.ok(
-      resolveKey(translations.de, jsonKey),
+      resolveKey(t.de, jsonKey),
       `Missing German translation for key: ${jsonKey}`
     )
   })
 })
 
-test('every venue chatter line key must have a valid translation key in EN and DE locales', () => {
+test('every venue chatter line key must have a valid translation key in EN and DE locales', async () => {
+  const t = await loadTranslations()
   const resolveKey = (obj, keyPath) => {
     if (obj[keyPath] !== undefined) return obj[keyPath]
     return keyPath.split('.').reduce((acc, part) => acc && acc[part], obj)
@@ -183,11 +197,11 @@ test('every venue chatter line key must have a valid translation key in EN and D
         const jsonKey = textKey.split('chatter:')[1]
 
         assert.ok(
-          resolveKey(translations.en, jsonKey),
+          resolveKey(t.en, jsonKey),
           `Missing English translation for venue chatter key: ${jsonKey}`
         )
         assert.ok(
-          resolveKey(translations.de, jsonKey),
+          resolveKey(t.de, jsonKey),
           `Missing German translation for venue chatter key: ${jsonKey}`
         )
       })
@@ -970,30 +984,36 @@ test('multiple travel count thresholds work', () => {
 
 // --- ADDITIONAL STRUCTURE VALIDATION TESTS ---
 
-test('chatter.json structure is valid JSON', () => {
-  const enDir = path.resolve(process.cwd(), 'public/locales/en')
-  const deDir = path.resolve(process.cwd(), 'public/locales/de')
+test('chatter.json structure is valid JSON', async () => {
+  await assert.doesNotReject(
+    loadTranslations,
+    'chatter.json files must be valid, readable, and parseable JSON'
+  )
 
-  assert.doesNotThrow(() => {
-    readLocaleJson(enDir, 'chatter.json')
-  }, 'en/chatter.json must be valid JSON')
-
-  assert.doesNotThrow(() => {
-    readLocaleJson(deDir, 'chatter.json')
-  }, 'de/chatter.json must be valid JSON')
+  const t = await loadTranslations()
 
   assert.ok(
-    translations.en && typeof translations.en === 'object',
-    'chatter.json must parse to a valid object'
+    t.en && typeof t.en === 'object',
+    'en/chatter.json must parse to a valid object'
   )
   assert.ok(
-    Object.keys(translations.en).length > 0,
-    'chatter.json must not be empty'
+    Object.keys(t.en).length > 0,
+    'en/chatter.json must not be empty'
+  )
+
+  assert.ok(
+    t.de && typeof t.de === 'object',
+    'de/chatter.json must parse to a valid object'
+  )
+  assert.ok(
+    Object.keys(t.de).length > 0,
+    'de/chatter.json must not be empty'
   )
 })
 
-test('all chatter keys in en/chatter.json have non-empty string values', () => {
-  Object.entries(translations.en).forEach(([key, value]) => {
+test('all chatter keys in en/chatter.json have non-empty string values', async () => {
+  const t = await loadTranslations()
+  Object.entries(t.en).forEach(([key, value]) => {
     assert.strictEqual(
       typeof value,
       'string',
@@ -1007,8 +1027,9 @@ test('all chatter keys in en/chatter.json have non-empty string values', () => {
   })
 })
 
-test('chatter keys follow naming convention', () => {
-  Object.keys(translations.en).forEach(key => {
+test('chatter keys follow naming convention', async () => {
+  const t = await loadTranslations()
+  Object.keys(t.en).forEach(key => {
     assert.match(
       key,
       /^(standard|venues)\./,
@@ -1017,8 +1038,9 @@ test('chatter keys follow naming convention', () => {
   })
 })
 
-test('venue chatter keys include scene phase suffixes', () => {
-  const chatterData = translations.en
+test('venue chatter keys include scene phase suffixes', async () => {
+  const t = await loadTranslations()
+  const chatterData = t.en
 
   const venueKeys = Object.keys(chatterData).filter(k =>
     k.startsWith('venues.')
@@ -1038,8 +1060,9 @@ test('venue chatter keys include scene phase suffixes', () => {
   })
 })
 
-test('no duplicate chatter text content across all entries', () => {
-  const textValues = Object.values(translations.en)
+test('no duplicate chatter text content across all entries', async () => {
+  const t = await loadTranslations()
+  const textValues = Object.values(t.en)
   const duplicates = textValues.filter(
     (val, idx, arr) => arr.indexOf(val) !== idx
   )
@@ -1052,8 +1075,9 @@ test('no duplicate chatter text content across all entries', () => {
   assert.ok(true, 'All chatter texts are unique')
 })
 
-test('chatter text content has reasonable length limits', () => {
-  Object.entries(translations.en).forEach(([key, value]) => {
+test('chatter text content has reasonable length limits', async () => {
+  const t = await loadTranslations()
+  Object.entries(t.en).forEach(([key, value]) => {
     assert.ok(
       value.length >= 10,
       `Chatter ${key} too short (${value.length} chars)`

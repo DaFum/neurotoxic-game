@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 
 export const extractPlaceholders = value => {
@@ -49,13 +49,20 @@ export const flattenToObject = (entry, parentKey = '', result = {}) => {
 
 const localeJsonCache = new Map()
 
-export const readLocaleJson = (directory, fileName) => {
+export const resetLocaleJsonCache = () => localeJsonCache.clear()
+
+export const readLocaleJson = async (directory, fileName) => {
   const localePath = path.join(directory, fileName)
-  if (localeJsonCache.has(localePath)) {
-    return structuredClone(localeJsonCache.get(localePath))
+  if (!localeJsonCache.has(localePath)) {
+    const promise = fs.readFile(localePath, 'utf8')
+      .then(rawData => JSON.parse(rawData))
+      .catch(err => {
+        localeJsonCache.delete(localePath)
+        throw err
+      })
+    localeJsonCache.set(localePath, promise)
   }
-  const data = JSON.parse(readFileSync(localePath, 'utf8'))
-  localeJsonCache.set(localePath, data)
+  const data = await localeJsonCache.get(localePath)
   return structuredClone(data)
 }
 
@@ -67,25 +74,29 @@ export const toKeyMap = flattened =>
 
 const sourceFilesCache = new Map()
 
-export const collectSourceFiles = directory => {
-  if (sourceFilesCache.has(directory)) {
-    return sourceFilesCache.get(directory)
+export const collectSourceFiles = async directory => {
+  if (!sourceFilesCache.has(directory)) {
+    const promise = fs.readdir(directory, { withFileTypes: true }).then(async entries => {
+      const filePromises = entries.map(async entry => {
+        const entryPath = path.join(directory, entry.name)
+
+        if (entry.isDirectory()) {
+          return collectSourceFiles(entryPath)
+        }
+
+        return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
+      })
+
+      const results = await Promise.all(filePromises)
+      return results.flat()
+    }).catch(err => {
+      sourceFilesCache.delete(directory)
+      throw err
+    })
+    sourceFilesCache.set(directory, promise)
   }
 
-  const entries = readdirSync(directory, { withFileTypes: true })
-
-  const files = entries.flatMap(entry => {
-    const entryPath = path.join(directory, entry.name)
-
-    if (entry.isDirectory()) {
-      return collectSourceFiles(entryPath)
-    }
-
-    return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
-  })
-
-  sourceFilesCache.set(directory, files)
-  return files
+  return sourceFilesCache.get(directory)
 }
 
 export const resolveNamespaceKey = rawKey => {
