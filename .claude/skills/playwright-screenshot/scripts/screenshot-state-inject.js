@@ -30,9 +30,9 @@
  *   4. Add a new entry to the FIXTURES map below with a meaningful key
  */
 
-import { chromium } from '@playwright/test'
 import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { launchBrowserWithFallback } from './browser-launcher.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/injected')
@@ -353,16 +353,8 @@ async function injectAndCapture(fixtureName, outFile) {
 
   await mkdir(OUT_DIR, { recursive: true })
 
-  const browser = await chromium.launch({
-    headless: HEADLESS,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
-      '--mute-audio',
-      '--disable-webgl'
-    ]
+  const browser = await launchBrowserWithFallback({
+    headless: HEADLESS
   })
 
   const context = await browser.newContext({
