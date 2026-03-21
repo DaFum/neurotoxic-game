@@ -28,6 +28,71 @@ const getNodeTypeLabel = (t, type) => {
   })
 }
 
+const MapNodeTooltip = memo(
+  ({ node, isCurrent, nodeLocationName, ticketPrice, t }) => {
+    return (
+      <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
+        <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
+        {(node.type === 'GIG' ||
+          node.type === 'FESTIVAL' ||
+          node.type === 'FINALE') && (
+          <div className='text-[10px] text-ash-gray font-mono'>
+            {node.type === 'FESTIVAL' && (
+              <div className='text-warning-yellow font-bold mb-1'>
+                {t('ui:map.festival')}
+              </div>
+            )}
+            {t('ui:map.cap')}: {node.venue?.capacity} | {t('ui:map.pay')}: ~
+            {node.venue?.pay}
+            {'\u20AC'}
+            <br />
+            {t('ui:map.ticket')}: {ticketPrice ?? node.venue?.price}
+            {'\u20AC'} | {t('ui:map.diff')}:{' '}
+            {'\u2605'.repeat(node.venue?.diff || 0)}
+          </div>
+        )}
+        {node.type === 'REST_STOP' && (
+          <div className='text-[10px] text-warning-yellow font-mono'>
+            {t('ui:map.rest_stop_desc')}
+          </div>
+        )}
+        {node.type === 'SPECIAL' && (
+          <div className='text-[10px] text-purple-glow font-mono'>
+            {t('ui:map.mystery_desc')}
+          </div>
+        )}
+        {node.type === 'FINALE' && (
+          <div className='text-[10px] text-warning-yellow font-mono font-bold'>
+            {t('ui:map.finale_desc')}
+          </div>
+        )}
+        {isCurrent && (
+          <div className='text-blood-red text-xs font-bold'>
+            {t('ui:map.current_location')}
+          </div>
+        )}
+      </div>
+    )
+  }
+)
+
+MapNodeTooltip.displayName = 'MapNodeTooltip'
+MapNodeTooltip.propTypes = {
+  node: PropTypes.shape({
+    type: PropTypes.string.isRequired,
+    venue: PropTypes.shape({
+      capacity: PropTypes.number,
+      pay: PropTypes.number,
+      price: PropTypes.number,
+      diff: PropTypes.number
+    })
+  }).isRequired,
+  isCurrent: PropTypes.bool.isRequired,
+  nodeLocationName: PropTypes.string.isRequired,
+  ticketPrice: PropTypes.number,
+  t: PropTypes.func.isRequired
+}
+
 export const MapNode = memo(
   ({
     node,
@@ -191,47 +256,13 @@ export const MapNode = memo(
           </span>
         </div>
 
-        <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
-          <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
-          {(node.type === 'GIG' ||
-            node.type === 'FESTIVAL' ||
-            node.type === 'FINALE') && (
-            <div className='text-[10px] text-ash-gray font-mono'>
-              {node.type === 'FESTIVAL' && (
-                <div className='text-warning-yellow font-bold mb-1'>
-                  {t('ui:map.festival')}
-                </div>
-              )}
-              {t('ui:map.cap')}: {node.venue?.capacity} | {t('ui:map.pay')}: ~
-              {node.venue?.pay}
-              {'\u20AC'}
-              <br />
-              {t('ui:map.ticket')}: {ticketPrice ?? node.venue?.price}
-              {'\u20AC'} | {t('ui:map.diff')}:{' '}
-              {'\u2605'.repeat(node.venue?.diff || 0)}
-            </div>
-          )}
-          {node.type === 'REST_STOP' && (
-            <div className='text-[10px] text-warning-yellow font-mono'>
-              {t('ui:map.rest_stop_desc')}
-            </div>
-          )}
-          {node.type === 'SPECIAL' && (
-            <div className='text-[10px] text-purple-glow font-mono'>
-              {t('ui:map.mystery_desc')}
-            </div>
-          )}
-          {node.type === 'FINALE' && (
-            <div className='text-[10px] text-warning-yellow font-mono font-bold'>
-              {t('ui:map.finale_desc')}
-            </div>
-          )}
-          {isCurrent && (
-            <div className='text-blood-red text-xs font-bold'>
-              {t('ui:map.current_location')}
-            </div>
-          )}
-        </div>
+        <MapNodeTooltip
+          node={node}
+          isCurrent={isCurrent}
+          nodeLocationName={nodeLocationName}
+          ticketPrice={ticketPrice}
+          t={t}
+        />
       </div>
     )
   },
