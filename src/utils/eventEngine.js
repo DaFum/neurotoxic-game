@@ -1,3 +1,18 @@
+/**
+ * REVIEW.md Compliance Block
+ *
+ * (#1) Actual Updates:
+ * - Optimized `resolveTemplateString` by replacing `for...in` and `Object.hasOwn` with `Object.keys()` to avoid prototype chain overhead.
+ * - Added a global `toLowerCaseCache` to prevent re-allocating new lowercase strings for frequently reused context keys.
+ * - Added explicit forbidden key checks (`__proto__`, `constructor`, `prototype`) within the mapping loop to maintain protection against prototype pollution when using `Object.keys()`.
+ *
+ * (#2) Next Steps:
+ * - Consider pre-compiling templates at event load time if template resolution remains a hot path during large event pools generation.
+ *
+ * (#3) Found Errors + Solutions:
+ * - Found repeated string allocation for `.toLowerCase()` in a hot loop path. Solved by introducing a module-level `toLowerCaseCache`.
+ */
+
 // TODO: Review this file
 import { EVENTS_DB } from '../data/events/index.js'
 import { EVENT_STRINGS } from '../data/events/constants.js'
@@ -13,6 +28,7 @@ import { clampVanFuel, calculateAppliedDelta } from './gameStateUtils.js'
 const TEMPLATE_REGEX = /\{([^}]+)\}/gi
 
 const contextMapCache = new WeakMap()
+const toLowerCaseCache = Object.create(null)
 
 /**
  * Resolves a template string by replacing {key} with the corresponding value from the context.
@@ -37,17 +53,33 @@ const resolveTemplateString = (str, context) => {
       lowerKeysMap = contextMapCache.get(context)
       if (!lowerKeysMap) {
         lowerKeysMap = Object.create(null)
-        for (const k in context) {
-          if (Object.hasOwn(context, k)) {
-            const lk = k.toLowerCase()
-            lowerKeysMap[lk] ??= k
+        const keys = Object.keys(context)
+        for (let i = 0; i < keys.length; i++) {
+          const k = keys[i]
+          if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
+            continue
+          }
+
+          let lk = toLowerCaseCache[k]
+          if (lk === undefined) {
+            lk = k.toLowerCase()
+            toLowerCaseCache[k] = lk
+          }
+
+          if (lowerKeysMap[lk] === undefined) {
+            lowerKeysMap[lk] = k
           }
         }
         contextMapCache.set(context, lowerKeysMap)
       }
     }
 
-    const lowerKey = key.toLowerCase()
+    let lowerKey = toLowerCaseCache[key]
+    if (lowerKey === undefined) {
+      lowerKey = key.toLowerCase()
+      toLowerCaseCache[key] = lowerKey
+    }
+
     const foundKey = lowerKeysMap[lowerKey]
 
     if (foundKey && typeof context[foundKey] === 'string') {
