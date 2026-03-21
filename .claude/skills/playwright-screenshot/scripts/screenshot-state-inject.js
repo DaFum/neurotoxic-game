@@ -75,7 +75,6 @@ const BASE_STATE = {
     }
   },
   band: {
-    harmony: 50,
     members: [
       {
         id: 'matze',

@@ -121,7 +121,7 @@ async function main() {
         name: /tour plan|overworld/i
       })
       await heading.waitFor({ timeout: 5000 })
-      await snap(page, '05-overworld', 1200)
+      await snap(page, '06-overworld', 1200)
     } catch (_e) {
       console.log('    (skipped)')
     }
@@ -138,7 +138,7 @@ async function main() {
         .catch(() => false)
       if (visible) {
         await node.first().click()
-        await snap(page, '06-overworld-node-select', 800)
+        await snap(page, '07-overworld-node-select', 800)
       }
     } catch (_e) {
       console.log('    (skipped)')
