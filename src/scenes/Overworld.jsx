@@ -1,6 +1,5 @@
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
@@ -8,23 +7,21 @@ import { useBandHQModal } from '../hooks/useBandHQModal'
 import { useQuestsModal } from '../hooks/useQuestsModal'
 import { useContrabandStash } from '../hooks/useContrabandStash'
 import { usePirateRadio } from '../hooks/usePirateRadio'
-import { ToggleRadio } from '../components/ToggleRadio'
+
+import { OverworldHeader } from '../components/overworld/OverworldHeader'
+import { OverworldMenu } from '../components/overworld/OverworldMenu'
+import { TravelingVan } from '../components/overworld/TravelingVan'
+import { EventLog } from '../components/overworld/EventLog'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
 import { BandHQ } from '../ui/BandHQ'
 import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'
 import { PirateRadioModal } from '../ui/PirateRadioModal'
-import { GlitchButton } from '../ui/GlitchButton'
-import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import {
-  EXPENSE_CONSTANTS,
-  calculateEffectiveTicketPrice
-} from '../utils/economyEngine'
+import { calculateEffectiveTicketPrice } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { translateLocation } from '../utils/locationI18n'
-import { GAME_PHASES } from '../context/gameConstants'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -282,136 +279,24 @@ export const Overworld = () => {
     <div
       className={`w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      <h2 className='absolute top-20 text-4xl text-toxic-green font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--color-toxic-green)] pointer-events-none'>
-        {t('ui:overworld.header.tourPlan', { defaultValue: 'TOUR PLAN' })}:{' '}
-        {locationName}
-      </h2>
+      <OverworldHeader t={t} locationName={locationName} isTraveling={isTraveling} />
 
-      {/* Instructions / Status */}
-      <div className='absolute top-32 z-20 bg-void-black/80 border border-toxic-green p-2 text-center pointer-events-none'>
-        <div className='text-toxic-green font-bold text-sm uppercase'>
-          {isTraveling
-            ? t('ui:overworld.status.traveling', {
-                defaultValue: 'TRAVELING...'
-              })
-            : t('ui:overworld.status.nextStop', { defaultValue: 'Next Stop' })}
-        </div>
-        <div className='text-star-white text-xs'>
-          {isTraveling
-            ? t('ui:overworld.status.onRoad', { defaultValue: 'On the road' })
-            : t('ui:overworld.status.selectLocation', {
-                defaultValue: 'Select a highlighted location'
-              })}
-        </div>
-      </div>
-
-      {/* Radio Widget */}
-      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-void-black border border-shadow-black p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--color-toxic-green-20)]'>
-        <div className='w-2 h-2 rounded-full bg-blood-red animate-pulse' />
-        <span className='text-xs text-ash-gray font-mono'>
-          {t('ui:overworld.radio_station', { defaultValue: 'FM 66.6' })}
-        </span>
-        <ToggleRadio />
-      </div>
-
-      <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className='flex flex-col gap-2 items-end mb-2'
-            >
-              <GlitchButton
-                onClick={openStash}
-                disabled={isTraveling}
-                variant='primary'
-                size='sm'
-              >
-                [{t('ui:contraband.button', { defaultValue: 'STASH' })}]
-              </GlitchButton>
-              <GlitchButton
-                onClick={openQuests}
-                disabled={isTraveling}
-                variant='primary'
-                size='sm'
-              >
-                [{t('ui:quests.button')}]
-              </GlitchButton>
-              <GlitchButton
-                onClick={openPirateRadio}
-                disabled={isTraveling}
-                variant='warning'
-                size='sm'
-              >
-                [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}
-                ]
-              </GlitchButton>
-              <GlitchButton
-                onClick={openHQ}
-                disabled={isTraveling}
-                variant='primary'
-                size='sm'
-              >
-                [{t('ui:overworld.band_hq_button', { defaultValue: 'BAND HQ' })}
-                ]
-              </GlitchButton>
-              <GlitchButton
-                onClick={handleRefuel}
-                disabled={
-                  isTraveling ||
-                  (player.van?.fuel ?? 0) >=
-                    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
-                }
-                variant='warning'
-                size='sm'
-              >
-                [REFUEL]
-              </GlitchButton>
-              <GlitchButton
-                onClick={() => changeScene(GAME_PHASES.CLINIC)}
-                disabled={isTraveling}
-                variant='warning'
-                size='sm'
-              >
-                [
-                {t('ui:overworld.void_clinic_button', {
-                  defaultValue: 'VOID CLINIC'
-                })}
-                ]
-              </GlitchButton>
-              <GlitchButton
-                onClick={handleRepair}
-                disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
-                variant='primary'
-                size='sm'
-              >
-                [REPAIR]
-              </GlitchButton>
-              <GlitchButton
-                onClick={handleSaveWithDelay}
-                disabled={isTraveling}
-                isLoading={isSaving}
-                variant='primary'
-                size='sm'
-              >
-                [SAVE GAME]
-              </GlitchButton>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <GlitchButton
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          disabled={isTraveling}
-          variant='primary'
-          size='sm'
-        >
-          {isMenuOpen ? `[${t('ui:menu.close')}]` : `[${t('ui:menu.open')}]`}
-        </GlitchButton>
-      </div>
+      <OverworldMenu
+        t={t}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+        isTraveling={isTraveling}
+        player={player}
+        isSaving={isSaving}
+        openStash={openStash}
+        openQuests={openQuests}
+        openPirateRadio={openPirateRadio}
+        openHQ={openHQ}
+        handleRefuel={handleRefuel}
+        handleRepair={handleRepair}
+        handleSaveWithDelay={handleSaveWithDelay}
+        changeScene={changeScene}
+      />
 
       <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-toxic-green bg-void-black/80 rounded-lg shadow-[0_0_50px_var(--color-toxic-green-20)] overflow-hidden'>
         <div
@@ -429,59 +314,17 @@ export const Overworld = () => {
 
         {renderedNodes}
 
-        {/* Animated Van (Global Overlay) - Refactored to motion.div */}
-        {isTraveling && currentNode && travelTarget && (
-          <motion.div
-            className='absolute z-[60] pointer-events-none'
-            initial={{
-              left: `${currentNode.x}%`,
-              top: `${currentNode.y}%`
-            }}
-            animate={{
-              left: `${travelTarget.x}%`,
-              top: `${travelTarget.y}%`
-            }}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
-            onAnimationComplete={() => {
-              if (!travelCompletedRef.current) {
-                onTravelComplete(travelTarget)
-              }
-            }}
-          >
-            <img
-              src={vanUrl}
-              alt='Traveling Van'
-              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
-              style={{ transform: 'translate(0, -50%)' }}
-            />
-          </motion.div>
-        )}
+        <TravelingVan
+          isTraveling={isTraveling}
+          currentNode={currentNode}
+          travelTarget={travelTarget}
+          vanUrl={vanUrl}
+          travelCompletedRef={travelCompletedRef}
+          onTravelComplete={onTravelComplete}
+        />
       </div>
 
-      <div className='absolute bottom-8 left-8 p-4 border border-ash-gray bg-void-black/90 max-w-sm z-20 pointer-events-none'>
-        <h3 className='text-toxic-green font-bold mb-2'>
-          {t('ui:overworld.event_log', { defaultValue: 'EVENT LOG:' })}
-        </h3>
-        <p className='text-xs text-ash-gray font-mono'>
-          &gt;{' '}
-          {t('ui:overworld.locations_loaded', {
-            count: ALL_VENUES.length,
-            defaultValue: `Locations loaded: ${ALL_VENUES.length}`
-          })}
-          <br />
-          &gt;{' '}
-          {t('ui:overworld.tour_active', {
-            date: `${player.day}.01.2026`,
-            defaultValue: `${player.day}.01.2026: Tour active.`
-          })}
-          <br />
-          &gt;{' '}
-          {t('ui:overworld.location_secured', {
-            location: locationName,
-            defaultValue: `${locationName} secured.`
-          })}
-        </p>
-      </div>
+      <EventLog t={t} player={player} locationName={locationName} />
 
       {showHQ && <BandHQ {...bandHQProps} />}
       {showQuests && <QuestsModal {...questsProps} />}
