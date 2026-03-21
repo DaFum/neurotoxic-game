@@ -1,7 +1,7 @@
 import React from 'react'
 import { ALL_VENUES } from '../../data/venues'
 
-export const EventLog = React.memo(({ t, player, locationName }) => {
+export const EventLog = React.memo(({ t, day, locationName }) => {
   return (
     <div className='absolute bottom-8 left-8 p-4 border border-ash-gray bg-void-black/90 max-w-sm z-20 pointer-events-none'>
       <h3 className='text-toxic-green font-bold mb-2'>
@@ -16,8 +16,8 @@ export const EventLog = React.memo(({ t, player, locationName }) => {
         <br />
         &gt;{' '}
         {t('ui:overworld.tour_active', {
-          date: `${player.day}.01.2026`,
-          defaultValue: `${player.day}.01.2026: Tour active.`
+          date: `${String(day).padStart(2, '0')}.01.2026`,
+          defaultValue: `${String(day).padStart(2, '0')}.01.2026: Tour active.`
         })}
         <br />
         &gt;{' '}

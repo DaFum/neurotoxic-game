@@ -285,7 +285,7 @@ export const Overworld = () => {
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
         isTraveling={isTraveling}
-        player={player}
+        vanFuel={player.van?.fuel} vanCondition={player.van?.condition}
         isSaving={isSaving}
         openStash={openStash}
         openQuests={openQuests}
@@ -324,7 +324,7 @@ export const Overworld = () => {
         />
       </div>
 
-      <EventLog t={t} player={player} locationName={locationName} />
+      <EventLog t={t} day={player.day} locationName={locationName} />
 
       {showHQ && <BandHQ {...bandHQProps} />}
       {showQuests && <QuestsModal {...questsProps} />}

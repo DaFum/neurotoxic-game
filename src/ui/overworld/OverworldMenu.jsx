@@ -9,7 +9,8 @@ export const OverworldMenu = React.memo(({
   isMenuOpen,
   setIsMenuOpen,
   isTraveling,
-  player,
+  vanFuel,
+  vanCondition,
   isSaving,
   openStash,
   openQuests,
@@ -67,7 +68,7 @@ export const OverworldMenu = React.memo(({
               onClick={handleRefuel}
               disabled={
                 isTraveling ||
-                (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+                (vanFuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
               }
               variant='warning'
               size='sm'
@@ -84,7 +85,7 @@ export const OverworldMenu = React.memo(({
             </GlitchButton>
             <GlitchButton
               onClick={handleRepair}
-              disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
+              disabled={isTraveling || (vanCondition ?? 100) >= 100}
               variant='primary'
               size='sm'
             >

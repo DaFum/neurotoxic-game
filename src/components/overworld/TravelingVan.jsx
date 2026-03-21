@@ -39,3 +39,5 @@ export const TravelingVan = React.memo(({
     </motion.div>
   )
 })
+
+TravelingVan.displayName = 'TravelingVan'

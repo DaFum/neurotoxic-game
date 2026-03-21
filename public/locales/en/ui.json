@@ -2,12 +2,11 @@
   "aria.muteSystem": "Mute system",
   "aria.shortcutsHelp": "Toggle keyboard shortcuts help",
   "aria.unmuteSystem": "Unmute system",
-  "loading_stage": "Loading Stage...",
   "arrival.failedToStartGig": "Failed to start Gig.",
-  "arrival.showCancelled": "Show cancelled! The band refused to go on stage due to low harmony.",
   "arrival.harmonyTooLowToPerform": "Band's harmony too low to perform!",
   "arrival.homeSweetHome": "Home Sweet Home.",
   "arrival.restedAtStop": "Rested at stop. Band feels better.",
+  "arrival.showCancelled": "Show cancelled! The band refused to go on stage due to low harmony.",
   "arrival.specialNothingHappened": "A mysterious place, but nothing happened.",
   "audio_protocols": "AUDIO PROTOCOLS",
   "bandStatus": "BAND STATUS",
@@ -211,12 +210,12 @@
   "errors.audio_cleanup_failed": "Audio cleanup failed.",
   "errors.audio_init_failed": "Audio initialization failed.",
   "errors.invalidVenueData": "Invalid venue data.",
-  "event.resolved": "Event resolved.",
   "event.effects_label": "Effects:",
-  "event.new_quest": "New Quest",
-  "event.story_updated": "Story Updated",
   "event.game_over_effect": "Game Over",
+  "event.new_quest": "New Quest",
+  "event.resolved": "Event resolved.",
   "event.severity.critical": "CRITICAL",
+  "event.story_updated": "Story Updated",
   "event_error": "EVENT ERROR: Resolution failed.",
   "executed": "EXECUTED",
   "featureList": [
@@ -252,10 +251,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -278,10 +289,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -345,8 +368,8 @@
   "gameOver.soldOut": "SOLD OUT",
   "game_over": "GAME OVER: {{description}}",
   "gig.abandon": "ABANDON GIG",
-  "gig.controlsHint": "Game Controls",
   "gig.audioOverride": "Audio Interface requires manual override.",
+  "gig.controlsHint": "Game Controls",
   "gig.crowdEnergy": "CROWD ENERGY",
   "gig.initializeAudio": "INITIALIZE AUDIO",
   "gig.pause": "Pause Game (ESC)",
@@ -432,6 +455,7 @@
   "leaderboard.top_100_wealth": "TOP 100 WEALTHIEST",
   "load_game": "Load Game",
   "loading": "Loading",
+  "loading_stage": "Loading Stage...",
   "log_protocols": "LOG PROTOCOLS",
   "mainMenu.existingSave.desc": "A save game already exists. Do you want to load it or start a new tour?",
   "mainMenu.existingSave.load": "LOAD EXISTING",
@@ -462,8 +486,8 @@
     "unknown": "Unknown"
   },
   "menu.close": "CLOSE MENU",
-  "menu.open": "MENU",
   "menu.inventory": "INVENTORY",
+  "menu.open": "MENU",
   "menu.upgrades": "UPGRADES",
   "min_log_level": "MINIMUM LOG LEVEL",
   "minigames.kabelsalat.a11y.cable": "Cable {{label}}",
@@ -518,11 +542,15 @@
   "overworld.location_secured": "{{location}} secured.",
   "overworld.locations_loaded": "Locations loaded: {{count}}",
   "overworld.radio_station": "FM 66.6",
+  "overworld.refuel": "REFUEL",
+  "overworld.repair": "REPAIR",
+  "overworld.save_game": "SAVE GAME",
   "overworld.status.nextStop": "Next Stop",
   "overworld.status.onRoad": "On the road",
   "overworld.status.selectLocation": "Select a highlighted location",
   "overworld.status.traveling": "TRAVELING...",
   "overworld.tour_active": "{{date}}: Tour active.",
+  "overworld.traveling_van": "Traveling Van",
   "overworld.void_clinic_button": "VOID CLINIC",
   "pirate_radio.button": "PIRATE RADIO",
   "pirate_radio.controversy_gain": "CONTROVERSY",
@@ -756,6 +784,7 @@
   "stats.controversy": "Controversy",
   "stats.currentTrend": "Current Trend",
   "stats.daysSurvived": "DAYS SURVIVED",
+  "stats.energy": "Energy",
   "stats.fame": "Fame",
   "stats.fameReached": "FAME REACHED",
   "stats.fanLoyalty": "Fan Loyalty",
@@ -763,17 +792,15 @@
   "stats.followers": "Followers",
   "stats.fuel": "Fuel",
   "stats.funds": "Funds",
-  "stats.luck": "Luck",
-  "stats.skill": "Skill",
-  "stats.money": "Money",
-  "stats.health": "Health",
-  "stats.energy": "Energy",
-  "stats.time": "Time",
-  "stats.hype": "Hype",
   "stats.harmony": "Harmony",
+  "stats.health": "Health",
+  "stats.hype": "Hype",
   "stats.instagram": "Instagram",
   "stats.inventory_equipment": "Inventory & Equipment",
   "stats.inventory_slots": "Inventory Slots",
+  "stats.loyalty": "Loyalty",
+  "stats.luck": "Luck",
+  "stats.money": "Money",
   "stats.mood": "Mood",
   "stats.newsletter": "Newsletter",
   "stats.noContracts": "No active contracts",
@@ -782,18 +809,19 @@
   "stats.repCooldown": "Rep Cooldown",
   "stats.repCooldownDesc": "Days until rep-gated posts clear",
   "stats.riskOfShadowban": "Risk of Shadowban",
+  "stats.score": "Score",
   "stats.shadowbanned": "SHADOWBANNED (-75% Growth)",
+  "stats.skill": "Skill",
   "stats.socialDynamics": "SOCIAL DYNAMICS",
   "stats.social_reach": "Social Media Reach",
   "stats.stamina": "Stamina",
   "stats.tiktok": "TikTok",
+  "stats.time": "Time",
   "stats.totalReach": "Total Reach",
-  "stats.score": "Score",
   "stats.totalScore": "TOTAL SCORE",
   "stats.totalTravels": "TOTAL TRAVELS",
   "stats.trendNeutral": "NEUTRAL",
   "stats.van_condition": "VAN STATUS",
-  "stats.loyalty": "Loyalty",
   "stats.viral": "VIRAL",
   "stats.viralStatus": "Viral Status",
   "stats.youtube": "YouTube",
@@ -849,10 +877,6 @@
   "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}€ to repair.",
   "travel.repair.repaired": "Repaired: -{{cost}}€",
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
-  "overworld.refuel": "REFUEL",
-  "overworld.repair": "REPAIR",
-  "overworld.save_game": "SAVE GAME",
-  "overworld.traveling_van": "Traveling Van",
   "tutorial": {
     "map": {
       "text": "Travel between cities to play Gigs. Traveling costs Fuel and Time. Watch your supplies.",
