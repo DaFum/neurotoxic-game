@@ -1,8 +1,6 @@
 // TODO: Review this file
-import { Container, Graphics, Sprite, Texture } from 'pixi.js'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
-import { logger } from '../../utils/logger.js'
-import { loadTextures, getPixiColorFromToken } from './utils.js'
+import { Container, Sprite, Texture } from 'pixi.js'
+import { EffectTextureManager } from './EffectTextureManager.js'
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
@@ -16,6 +14,7 @@ export class EffectManager {
     this.app = app
     this.parentContainer = parentContainer
     this.container = null
+    this.textureManager = new EffectTextureManager(app)
 
     // Use an array with index tracking to implement a fast Circular Buffer
     // This allows O(1) removals of the oldest effect without shifting.
@@ -26,9 +25,6 @@ export class EffectManager {
 
     // Pool for Sprites (no longer need separate graphics pool)
     this.spritePool = []
-
-    this.textures = { blood: null, toxic: null }
-    this.genericHitTexture = null
   }
 
   init() {
@@ -37,65 +33,7 @@ export class EffectManager {
   }
 
   async loadAssets() {
-    try {
-      const urls = {
-        blood: getGenImageUrl(IMG_PROMPTS.HIT_BLOOD),
-        toxic: getGenImageUrl(IMG_PROMPTS.HIT_TOXIC)
-      }
-
-      const loadedTextures = await loadTextures(
-        urls,
-        (error, fallbackMessage) => {
-          logger.warn('EffectManager', fallbackMessage, error)
-        }
-      )
-
-      if (loadedTextures.blood) this.textures.blood = loadedTextures.blood
-      if (loadedTextures.toxic) this.textures.toxic = loadedTextures.toxic
-    } catch (error) {
-      logger.warn('EffectManager', 'Effect textures failed to load', error)
-    }
-  }
-
-  createGenericHitTexture() {
-    if (this.genericHitTexture) return
-
-    const graphics = new Graphics()
-    const whiteColor = getPixiColorFromToken('--star-white')
-
-    // Draw a white circle with white stroke to create a base texture
-    // that can be tinted to any color while preserving opacity variation.
-    // Fill alpha is 0.8, stroke alpha is 1.0.
-    graphics.circle(0, 0, 40)
-    graphics.fill({ color: whiteColor, alpha: 0.8 })
-    graphics.stroke({ width: 4, color: whiteColor, alpha: 1.0 })
-
-    try {
-      // Handle PixiJS v8 API changes for texture generation
-      if (this.app?.renderer?.textureGenerator) {
-        this.genericHitTexture =
-          this.app.renderer.textureGenerator.generateTexture({
-            target: graphics,
-            resolution: 1,
-            antialias: true
-          })
-      } else if (this.app?.renderer?.generateTexture) {
-        this.genericHitTexture = this.app.renderer.generateTexture(graphics)
-      } else {
-        logger.warn(
-          'EffectManager',
-          'Renderer not available for texture generation'
-        )
-      }
-    } catch (error) {
-      logger.warn(
-        'EffectManager',
-        'Failed to generate generic hit texture',
-        error
-      )
-    } finally {
-      graphics.destroy()
-    }
+    await this.textureManager.loadAssets()
   }
 
   _evictOldestEffect() {
@@ -106,25 +44,6 @@ export class EffectManager {
 
     this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
     this.effectCount--
-  }
-
-  _resolveHitTexture(color) {
-    // Determine texture based on color (Red component dominance)
-    const r = (color >> 16) & 0xff
-    const g = (color >> 8) & 0xff
-    const b = color & 0xff
-
-    if (r > g && r > b && this.textures.blood) {
-      return this.textures.blood
-    } else if (this.textures.toxic) {
-      return this.textures.toxic
-    }
-
-    // Use generic texture for fallback
-    if (!this.genericHitTexture) {
-      this.createGenericHitTexture()
-    }
-    return this.genericHitTexture
   }
 
   _getSpriteFromPool(texture) {
@@ -150,7 +69,7 @@ export class EffectManager {
       this._evictOldestEffect()
     }
 
-    const texture = this._resolveHitTexture(color)
+    const texture = this.textureManager.resolveHitTexture(color)
     const effect = this._getSpriteFromPool(texture)
 
     effect.tint = color
@@ -260,10 +179,7 @@ export class EffectManager {
     }
     this.spritePool = []
 
-    if (this.genericHitTexture) {
-      this.genericHitTexture.destroy(true)
-      this.genericHitTexture = null
-    }
+    this.textureManager.dispose()
 
     if (this.container) {
       this.container.destroy({ children: true })
