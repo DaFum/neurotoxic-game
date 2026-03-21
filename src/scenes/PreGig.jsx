@@ -437,10 +437,6 @@ export const PreGig = () => {
         className='relative z-30 mt-4 lg:mt-6 mb-20 lg:mb-12 w-full max-w-[20rem] sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-toxic-green text-void-black font-bold text-lg sm:text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[6px_6px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         disabled={setlist.length === 0 || isStarting}
         onClick={async () => {
-          if (band.harmony < 10) {
-            addToast(t('ui:pregig.toasts.harmonyLow'), 'error')
-            return
-          }
           setIsStarting(true)
           try {
             await audioManager.ensureAudioContext()

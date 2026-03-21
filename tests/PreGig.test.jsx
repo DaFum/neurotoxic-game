@@ -253,7 +253,7 @@ describe('PreGig', () => {
     expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 100 })
   })
 
-  test('prevents starting gig when harmony is too low', async () => {
+  test('allows starting gig when harmony is low (handled by arrival check)', async () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
     mockUseGameState.band.harmony = 5
 
@@ -264,12 +264,15 @@ describe('PreGig', () => {
 
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+    expect(mockUseGameState.addToast).not.toHaveBeenCalledWith(
       'ui:pregig.toasts.harmonyLow',
       'error'
     )
-    expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
-    expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
+    // Should start one of the minigames
+    expect(
+      mockUseGameState.startRoadieMinigame.mock.calls.length +
+        mockUseGameState.startKabelsalatMinigame.mock.calls.length
+    ).toBe(1)
   })
 
   test('prevents toggling modifier when insufficient budget', async () => {

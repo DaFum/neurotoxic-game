@@ -84,7 +84,9 @@ mock.module('../src/utils/gameStateUtils.js', {
     },
     BALANCE_CONSTANTS: {
       FAME_LOSS_BAD_GIG: 4,
-      MAX_FAME_GAIN: 500
+      MAX_FAME_GAIN: 500,
+      LOW_HARMONY_THRESHOLD: 15,
+      LOW_HARMONY_CANCELLATION_CHANCE: 0.25
     }
   }
 })
@@ -94,7 +96,7 @@ export const setupArrivalLogicTest = async () => {
   return { useArrivalLogic, mockGameState }
 }
 
-export const setupArrivalScenario = (useArrivalLogic, stateOverrides = {}) => {
+export const setupArrivalScenario = (useArrivalLogic, stateOverrides = {}, hookProps = {}) => {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     throw new Error(
       'setupArrivalScenario requires a DOM environment. Please call setupJSDOM() before running this test.'
@@ -104,7 +106,7 @@ export const setupArrivalScenario = (useArrivalLogic, stateOverrides = {}) => {
   resetMockGameState()
   setMockGameState(stateOverrides)
 
-  const { result } = renderHook(() => useArrivalLogic())
+  const { result } = renderHook(() => useArrivalLogic(hookProps))
 
   return { result, mockGameState }
 }
