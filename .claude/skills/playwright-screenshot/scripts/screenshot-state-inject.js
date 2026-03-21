@@ -456,19 +456,26 @@ export async function waitForFixtureScene(page, fixtureName) {
 }
 
 // ── CLI entry point ────────────────────────────────────────────────────────
+// Guard against running when imported as a module (e.g., from screenshot-all-scenes.js)
 
-const [, , fixtureName, outFile] = process.argv
+import { fileURLToPath } from 'node:url'
 
-if (!fixtureName) {
-  console.log('Usage: screenshot-state-inject.js <fixture> [outfile.png]')
-  console.log('\nAvailable fixtures:')
-  for (const [key, f] of Object.entries(FIXTURES)) {
-    console.log(`  ${key.padEnd(16)} ${f.description}`)
+const isMain = process.argv[1] === fileURLToPath(import.meta.url)
+
+if (isMain) {
+  const [, , fixtureName, outFile] = process.argv
+
+  if (!fixtureName) {
+    console.log('Usage: screenshot-state-inject.js <fixture> [outfile.png]')
+    console.log('\nAvailable fixtures:')
+    for (const [key, f] of Object.entries(FIXTURES)) {
+      console.log(`  ${key.padEnd(16)} ${f.description}`)
+    }
+    process.exit(0)
   }
-  process.exit(0)
-}
 
-injectAndCapture(fixtureName, outFile).catch(err => {
-  console.error(err)
-  process.exit(1)
-})
+  injectAndCapture(fixtureName, outFile).catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
+}

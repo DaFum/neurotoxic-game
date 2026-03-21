@@ -3,9 +3,9 @@ name: playwright-screenshot
 description: |
   Take Playwright screenshots at any point in the Neurotoxic app — single scene, full tour, UI overlays, PixiJS canvas, modal states, and visual regression baselines.
 
-  Trigger when: asked to take screenshots of any game scene (INTRO, MENU, OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER), capture UI states (modals, toasts, overlays, HUD), produce visual regression baselines, record before/after diffs for a UI change, document the game for any purpose, capture PixiJS canvas content, or debug visual glitches.
+  Trigger when: asked to take screenshots of any game scene (INTRO, MENU, OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER, CLINIC), capture UI states (modals, toasts, overlays, HUD), produce visual regression baselines, record before/after diffs for a UI change, document the game for any purpose, capture PixiJS canvas content, or debug visual glitches.
 
-  Also trigger for: "show me what X looks like", "what does X look like", "capture a screenshot of the gig scene", "take a screenshot before and after this change", "update visual baseline", "record all scenes", "screenshot at this point in the flow", "make a visual test for this UI", "document the game", "I want to see the current state of", "can you show me", "screenshot this".
+  Also trigger for: "show me what X looks like", "what does X look like", "how does X look", "look at X", "display X", "preview X", "capture a screenshot of the gig scene", "take a screenshot before and after this change", "update visual baseline", "record all scenes", "screenshot at this point in the flow", "make a visual test for this UI", "document the game", "I want to see the current state of", "can you show me", "screenshot this", "what does the UI look like", "show me the current state", "take a photo of", "capture the current view", "visualize", "render a preview".
 ---
 
 # Playwright Screenshot Skill
@@ -46,11 +46,11 @@ The Playwright test runner auto-starts the server via `webServer` config. The st
 
 ### Step 3 — Run and capture
 
-**All scenes:**
+**All scenes (full golden-path flow + state-injected scenes):**
 ```bash
 node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
 ```
-Output: `screenshots/scenes/01-intro.png` … `14-overworld-after-gig.png`
+Output: `screenshots/scenes/01-intro.png` … `16-gameover.png` (includes GAMEOVER and CLINIC via state injection)
 
 **Single scene via state injection:**
 ```bash
@@ -64,6 +64,10 @@ Output: `screenshots/injected/<fixture>.png`
 pnpm exec playwright test e2e/visual.spec.js
 ```
 
+**Tip — available Playwright helpers in `e2e/helpers.js`:**
+- `skipToMenu(page)` — navigates from INTRO to MENU, handles skip button and tutorial dismissal
+- `raceWithCrash(page, fn, timeout)` — wraps navigation in audio-crash detection for CI safety
+
 ### Step 4 — Show screenshots to the user
 
 After capturing, use the `Read` tool to display each PNG file inline so the user sees the result immediately. Do not just report the file path — show the image.
@@ -71,6 +75,13 @@ After capturing, use the `Read` tool to display each PNG file inline so the user
 ```
 Read("screenshots/scenes/05-overworld.png")  ← Claude can render PNG files
 ```
+
+If the script fails partway through, show whatever was captured before the failure, then explain what went wrong. Partial results are still valuable. For scenes that fail, suggest running the state-inject script directly for that scene:
+```bash
+node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js <fixture>
+```
+
+**Tip — cleaner screenshots without CRT scanlines:** Pass `crtEnabled: false` in the global settings when calling `injectSave`, or add `--disable-crt` awareness. The `screenshot-state-inject.js` script defaults to `crtEnabled: true` — for documentation or baseline images where the CRT effect adds noise, temporarily set it to `false` in the `globalSettings` object inside the script.
 
 ---
 
@@ -147,19 +158,21 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 | Scene | How to Reach | Key Wait Signal |
 |-------|-------------|-----------------|
 | **INTRO** | `page.goto('/')` | `getByRole('button', { name: /skip/i })` visible |
-| **MENU** | `skipToMenu(page)` helper | heading `/neurotoxic/i` visible |
-| **OVERWORLD** | MENU → "Start Tour" | `getByRole('heading', { name: /tour plan/i })` |
+| **MENU** | `skipToMenu(page)` helper (`e2e/helpers.js`) | heading `/neurotoxic/i` visible |
+| **OVERWORLD** | MENU → "Start Tour" (or inject `overworld`) | `getByRole('heading', { name: /tour plan/i })` |
 | **TRAVEL_MINIGAME** | OVERWORLD → click node → confirm | text `TOURBUS TERROR` visible |
-| **PREGIG** | complete travel → dismiss events | heading `/preparation/i` visible |
+| **PREGIG** | complete travel → dismiss events (or inject `pregig`) | heading `/preparation/i` visible |
 | **PRE_GIG_MINIGAME** | PREGIG → Start Show | `canvas` visible + 600 ms |
 | **GIG** | pre-gig minigame → Shift+P | `canvas` visible + 1500 ms |
-| **POSTGIG** | GIG → Shift+P (or auto-fail) | heading `/gig report/i` visible |
-| **GAMEOVER** | inject `gameover` save state | heading `/game over/i` visible |
-| **SETTINGS** | MENU → Band HQ → SETTINGS tab | heading `/settings/i` visible |
+| **POSTGIG** | GIG → Shift+P (or inject `postgig`) | heading `/gig report/i` visible |
+| **GAMEOVER** | inject `gameover` save state (only reliable path) | heading `/game over/i` visible |
+| **SETTINGS** | MENU → Band HQ → SETTINGS tab | any settings control visible |
 | **CREDITS** | MENU → "Credits" | heading `/credits/i` visible |
-| **CLINIC** | inject `clinic` save state | `networkidle` + 500 ms |
+| **CLINIC** | inject `clinic` save state (only reliable path) | `networkidle` + 500 ms |
+| **BAND HQ modal** | inject `band-hq` (opens modal automatically) | heading `/band hq/i` visible |
+| **Event modal** | inject `event-modal` | `getByRole('dialog')` visible |
 
-**Fastest paths for hard-to-reach scenes:** use state injection — no need to play through.
+**Fastest paths for hard-to-reach scenes:** use state injection — no need to play through. GAMEOVER and CLINIC cannot be reliably reached without injection.
 
 ---
 
