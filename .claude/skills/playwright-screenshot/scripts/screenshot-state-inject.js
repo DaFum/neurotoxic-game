@@ -229,7 +229,9 @@ const FIXTURES = {
         capacity: 120,
         basePay: 80,
         nodeId: 'node_2_1'
-      }
+      },
+      activeEvent: null,
+      pendingEvents: []
     },
     waitFor: async page => {
       try {
@@ -255,6 +257,15 @@ const FIXTURES = {
     description: 'Post-gig report screen after a successful gig',
     state: {
       currentScene: 'POSTGIG',
+      currentGig: {
+        venueId: 'goldgrube',
+        venueName: 'Goldgrube',
+        songId: '01 Kranker Schrank',
+        setlist: ['01 Kranker Schrank'],
+        capacity: 120,
+        basePay: 80,
+        nodeId: 'node_2_1'
+      },
       lastGigStats: {
         venueName: 'Goldgrube',
         earnings: 95,
@@ -266,7 +277,9 @@ const FIXTURES = {
         songTitle: 'Kranker Schrank',
         bonuses: [],
         penalties: []
-      }
+      },
+      activeEvent: null,
+      pendingEvents: []
     },
     waitFor: async page => {
       // Wait for POSTGIG scene to fully load (stats animation + render)

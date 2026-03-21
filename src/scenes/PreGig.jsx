@@ -153,8 +153,13 @@ export const PreGig = () => {
   }
 
   useEffect(() => {
+    // Skip event triggering during screenshot testing (state injection mode).
+    // The injection marker signals the game was loaded via test fixture, not normal play.
+    const isScreenshotMode =
+      localStorage.getItem('neurotoxic_inject_marker') === 'true'
+
     // Chance for a Pre-Gig event (Band or Gig category)
-    if (!activeEvent) {
+    if (!activeEvent && !isScreenshotMode) {
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
         triggerEvent('gig', 'pre_gig')
