@@ -69,7 +69,16 @@ async function main() {
         await input.fill('Test Band')
         const confirmBtn = page.getByRole('button', { name: /confirm/i })
         await confirmBtn.click()
-        await page.waitForTimeout(1000)
+        await page.waitForTimeout(1500)
+        // Verify modal is gone
+        const stillVisible = await input
+          .isVisible({ timeout: 1000 })
+          .catch(() => false)
+        if (stillVisible) {
+          await input.fill('Test Band 2')
+          await confirmBtn.click()
+          await page.waitForTimeout(1500)
+        }
       }
     } catch (_e) {
       console.log('    (skipped - no identity modal)')
@@ -106,6 +115,11 @@ async function main() {
     try {
       const startBtn = page.getByRole('button', { name: /start tour/i })
       await startBtn.click({ timeout: 5000 })
+      // Verify we're in OVERWORLD by waiting for tour plan heading
+      const heading = page.getByRole('heading', {
+        name: /tour plan|overworld/i
+      })
+      await heading.waitFor({ timeout: 5000 })
       await snap(page, '05-overworld', 1200)
     } catch (_e) {
       console.log('    (skipped)')
@@ -187,6 +201,8 @@ async function main() {
     // 10. POSTGIG
     console.log('→ POSTGIG')
     try {
+      const heading = page.getByRole('heading', { name: /gig report/i })
+      await heading.waitFor({ timeout: 5000 })
       await snap(page, '10-postgig', 1000)
     } catch (_e) {
       console.log('    (skipped)')
