@@ -30,6 +30,7 @@ import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 import { createInitialState } from './initialState'
 import { GAME_PHASES } from './gameConstants'
 import { gameReducer } from './gameReducer'
+import { handleLoadGame } from './reducers/systemReducer'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -165,34 +166,67 @@ export const GameStateProvider = ({ children }) => {
   }, [t])
 
   // Lazy initialization of state to ensure fresh data fetch on mount
-  // Check localStorage for saved game first (for state injection in tests)
   const initGameState = () => {
-    const savedGame = safeStorageOperation(
-      'loadGame',
-      () => {
-        const saved = localStorage.getItem(SAVE_KEY)
-        return saved ? JSON.parse(saved) : null
-      },
-      null
+    const unlocks =
+      safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+    const freshState = createInitialState({ unlocks })
+
+    // Check for test-injected state (screenshot testing).
+    // A special marker key signals the state was placed by the screenshot
+    // injection script and should be hydrated on mount.  Normal player
+    // saves are loaded explicitly via the MENU → "Load Game" button.
+    const shouldHydrate = safeStorageOperation(
+      'checkInjectMarker',
+      () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
+      false
     )
 
-    // If there's a saved game, use it; otherwise create fresh state
-    if (savedGame && savedGame.version !== undefined) {
-      return {
-        ...savedGame,
-        unlocks:
-          savedGame.unlocks ||
-          safeStorageOperation('loadUnlocks', () => getUnlocks(), []) ||
-          []
+    if (shouldHydrate) {
+      // NOTE: Do NOT remove the marker here.  React StrictMode double-invokes
+      // lazy initialisers in dev, so removing it on the first call would cause
+      // the second (authoritative) call to miss the marker and return INTRO.
+      // The marker is cleaned up in a useEffect after mount instead.
+
+      const savedGame = safeStorageOperation(
+        'loadInjectedState',
+        () => {
+          const saved = localStorage.getItem(SAVE_KEY)
+          return saved ? JSON.parse(saved) : null
+        },
+        null
+      )
+
+      if (savedGame && savedGame.version !== undefined) {
+        try {
+          // Route through the same sanitisation path as LOAD_GAME
+          // so we get validation, clamping, and migration for free.
+          const sanitised = handleLoadGame(freshState, {
+            ...savedGame,
+            unlocks
+          })
+          // Preserve the injected currentScene (handleLoadGame forces OVERWORLD)
+          return {
+            ...sanitised,
+            currentScene: savedGame.currentScene ?? sanitised.currentScene
+          }
+        } catch (err) {
+          logger.error('GameState', 'Failed to hydrate injected state', err)
+        }
       }
     }
 
-    return createInitialState({
-      unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
-    })
+    return freshState
   }
 
   const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
+
+  // Clean up injection marker after mount (deferred from initGameState to
+  // survive React StrictMode's double-invocation of lazy initialisers).
+  useEffect(() => {
+    safeStorageOperation('removeInjectMarker', () =>
+      localStorage.removeItem('neurotoxic_inject_marker')
+    )
+  }, [])
 
   // Leaderboard Sync Hook
   useLeaderboardSync(state)

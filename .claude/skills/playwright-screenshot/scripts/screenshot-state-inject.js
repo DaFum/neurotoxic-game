@@ -493,6 +493,8 @@ async function injectAndCapture(fixtureName, outFile) {
       ({ saveKey, settingsKey, save, settings }) => {
         localStorage.setItem(saveKey, JSON.stringify(save))
         localStorage.setItem(settingsKey, JSON.stringify(settings))
+        // Marker tells GameStateProvider to hydrate from localStorage on next mount
+        localStorage.setItem('neurotoxic_inject_marker', 'true')
       },
       {
         saveKey: SAVE_KEY,
@@ -555,6 +557,8 @@ export async function injectSave(page, fixtureName) {
     ({ saveKey, settingsKey, save, settings }) => {
       localStorage.setItem(saveKey, JSON.stringify(save))
       localStorage.setItem(settingsKey, JSON.stringify(settings))
+      // Marker tells GameStateProvider to hydrate from localStorage on next mount
+      localStorage.setItem('neurotoxic_inject_marker', 'true')
     },
     {
       saveKey: SAVE_KEY,
