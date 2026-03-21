@@ -849,12 +849,10 @@
   "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}€ to repair.",
   "travel.repair.repaired": "Repaired: -{{cost}}€",
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
-  "overworld": {
-    "refuel": "REFUEL",
-    "repair": "REPAIR",
-    "save_game": "SAVE GAME",
-    "traveling_van": "Traveling Van"
-  },
+  "overworld.refuel": "REFUEL",
+  "overworld.repair": "REPAIR",
+  "overworld.save_game": "SAVE GAME",
+  "overworld.traveling_van": "Traveling Van",
   "tutorial": {
     "map": {
       "text": "Travel between cities to play Gigs. Traveling costs Fuel and Time. Watch your supplies.",
