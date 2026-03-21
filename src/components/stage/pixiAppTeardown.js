@@ -1,7 +1,4 @@
-// (#1) Actual Updates: Extracted PixiJS app destruction and teardown logic from BaseStageController into a separate utility file to reduce its complexity.
-// (#2) Next Steps: Continue abstracting generic application lifecycle code to keep stage controllers lean and focused only on gameplay.
-// (#3) Found Errors + Solutions: Handled references to the logger utility to ensure error logging remains fully functional.
-
+/** Utility for robust PixiJS application teardown. */
 import { logger } from '../../utils/logger'
 
 export function isBenignDestroyError(error) {
@@ -58,7 +55,7 @@ function teardownResizePlugin(app) {
   }
 }
 
-function destroyApp(app) {
+function destroyApp(app, contextName) {
   if (typeof app.destroy !== 'function') return false
 
   try {
@@ -68,42 +65,52 @@ function destroyApp(app) {
     )
     return true
   } catch (destroyError) {
-    if (!isBenignDestroyError(destroyError)) {
-      throw destroyError
-    }
+    handleDestroyError(destroyError, contextName)
     // Fall through to partial-init fallback for known races.
     return false
   }
 }
 
-function fallbackDestroyStage(app) {
-  app.stage?.destroy?.({
-    children: true,
-    texture: true,
-    textureSource: true
-  })
+function fallbackDestroyStage(app, contextName) {
+  try {
+    app.stage?.destroy?.({
+      children: true,
+      texture: true,
+      textureSource: true
+    })
+  } catch (e) {
+    handleDestroyError(e, contextName)
+  }
 }
 
-function fallbackDestroyRenderer(app) {
-  app.renderer?.destroy?.({ removeView: true })
+function fallbackDestroyRenderer(app, contextName) {
+  try {
+    app.renderer?.destroy?.({ removeView: true })
+  } catch (e) {
+    handleDestroyError(e, contextName)
+  }
 }
 
-function fallbackRemoveCanvas(app) {
+function fallbackRemoveCanvas(app, contextName) {
   let canvas = null
   try {
     canvas = app.canvas
-  } catch (_e) {
-    // Ignore - app getter can throw after failed/partial teardown.
+  } catch (e) {
+    handleDestroyError(e, contextName)
   }
-  if (canvas?.parentNode) {
-    canvas.parentNode.removeChild(canvas)
+  try {
+    if (canvas?.parentNode) {
+      canvas.parentNode.removeChild(canvas)
+    }
+  } catch (e) {
+    handleDestroyError(e, contextName)
   }
 }
 
-function fallbackDestroy(app) {
-  fallbackDestroyStage(app)
-  fallbackDestroyRenderer(app)
-  fallbackRemoveCanvas(app)
+function fallbackDestroy(app, contextName) {
+  fallbackDestroyStage(app, contextName)
+  fallbackDestroyRenderer(app, contextName)
+  fallbackRemoveCanvas(app, contextName)
 }
 
 function removeAppTicker(app, tickerHandler) {
@@ -131,16 +138,20 @@ export function destroyPixiApp(app, tickerHandler, contextName = 'PixiAppTeardow
 
   try {
     removeAppTicker(app, tickerHandler)
+  } catch (e) {
+    handleDestroyError(e, contextName)
+  }
 
+  try {
     // Stop ResizePlugin loops before app teardown to prevent resize-on-destroy races.
     teardownResizePlugin(app)
+  } catch (e) {
+    handleDestroyError(e, contextName)
+  }
 
-    // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
-    if (destroyApp(app)) return
-
+  // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
+  if (!destroyApp(app, contextName)) {
     // Fallback for partially initialized apps.
-    fallbackDestroy(app)
-  } catch (error) {
-    handleDestroyError(error, contextName)
+    fallbackDestroy(app, contextName)
   }
 }
