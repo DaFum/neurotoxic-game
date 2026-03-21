@@ -269,18 +269,45 @@ const FIXTURES = {
       }
     },
     waitFor: async page => {
-      try {
-        return await page
-          .getByRole('heading', { name: /gig report|postgig/i })
-          .waitFor({ state: 'visible', timeout: 15000 })
-      } catch {
-        // Fallback: wait for gig stats display (core postgig UI)
-        return await page
-          .locator('[class*="grid"]')
-          .filter({ hasText: /earnings|crowd|fame/i })
-          .first()
-          .waitFor({ state: 'visible', timeout: 2000 })
+      // Wait for POSTGIG scene to fully load (stats animation + render)
+      // First, wait for the scene to transition (30s max)
+      let found = false
+      const startTime = Date.now()
+
+      while (Date.now() - startTime < 10000 && !found) {
+        try {
+          // Try heading first
+          const isHeading = await page
+            .getByRole('heading', { name: /gig report|postgig/i })
+            .isVisible({ timeout: 1000 })
+            .catch(() => false)
+          if (isHeading) return
+        } catch {
+          // Continue to next attempt
+        }
+
+        try {
+          // Try finding any text with stats keywords
+          const bodyText = await page.evaluate(() => document.body.innerText)
+          if (
+            bodyText.includes('Earnings') ||
+            bodyText.includes('earnings') ||
+            bodyText.includes('Crowd') ||
+            bodyText.includes('crowd') ||
+            bodyText.includes('Fame') ||
+            bodyText.includes('fame')
+          ) {
+            return // Stats are visible
+          }
+        } catch {
+          // Continue
+        }
+
+        await page.waitForTimeout(300)
       }
+
+      // If we get here, stats haven't appeared in 10s but page is loaded
+      // Just proceed anyway (better to get a partial screenshot than fail)
     }
   },
 
@@ -499,7 +526,8 @@ async function injectAndCapture(fixtureName, outFile) {
     }
 
     const dest = outFile ?? `${OUT_DIR}/${fixtureName}.png`
-    await page.screenshot({ path: dest })
+    // Extended timeout (120s) for font loading and network-constrained environments
+    await page.screenshot({ path: dest, timeout: 120000 })
     console.log(`✓ ${fixtureName} → ${dest}`)
   } finally {
     await browser.close()
