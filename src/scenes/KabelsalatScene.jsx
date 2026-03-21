@@ -1,4 +1,3 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useKabelsalatState } from './kabelsalat/useKabelsalatState.js'
 import { Header } from './kabelsalat/components/Header.jsx'
 import { Rules } from './kabelsalat/components/Rules.jsx'
@@ -6,7 +5,8 @@ import { Overlays } from './kabelsalat/components/Overlays.jsx'
 import { CableList } from './kabelsalat/components/CableList.jsx'
 import { SocketList } from './kabelsalat/components/SocketList.jsx'
 import { ConnectionPaths } from './kabelsalat/components/ConnectionPaths.jsx'
-import { RackScrew } from './kabelsalat/components/HardwareProps.jsx'
+import { RackPanel, PowerIndicator } from './kabelsalat/components/HardwareProps.jsx'
+import { LightningEffects } from './kabelsalat/components/LightningEffects.jsx'
 
 export const KabelsalatScene = () => {
   const {
@@ -76,62 +76,9 @@ export const KabelsalatScene = () => {
             aria-label={t('ui:minigames.kabelsalat.title')}
           >
             <title>{t('ui:minigames.kabelsalat.title')}</title>
-            <rect
-              x='40'
-              y='20'
-              width='720'
-              height='180'
-              fill='var(--color-shadow-black)'
-              stroke='var(--color-concrete-gray)'
-              strokeWidth='4'
-            />
-            <rect
-              x='50'
-              y='30'
-              width='700'
-              height='160'
-              fill='var(--color-void-black)'
-            />
-            <RackScrew x='60' y='40' /> <RackScrew x='760' y='40' />
-            <RackScrew x='60' y='170' /> <RackScrew x='760' y='170' />
-            <circle
-              cx='80'
-              cy='100'
-              r='6'
-              fill={
-                isPowerConnected
-                  ? 'var(--color-success-green)'
-                  : 'var(--color-concrete-gray)'
-              }
-              style={{
-                filter: isPowerConnected
-                  ? 'drop-shadow(0 0 10px var(--color-success-green))'
-                  : 'none'
-              }}
-            />
-            <text
-              x='80'
-              y='125'
-              fill='var(--color-ash-gray)'
-              fontSize='8'
-              textAnchor='middle'
-              className='font-mono tracking-widest'
-            >
-              {t('ui:minigames.kabelsalat.pwrLabel')}
-            </text>
-            {lightningSeeds.map(seed => (
-              <path
-                key={seed.id}
-                d={`M ${seed.startX} 0 L ${seed.startX + seed.o1} 200 L ${seed.startX + seed.o2} 400 L ${seed.startX + seed.o3} 600`}
-                fill='none'
-                stroke='var(--color-warning-yellow)'
-                strokeWidth={seed.w}
-                className='animate-[flash_0.05s_infinite]'
-                style={{
-                  filter: 'drop-shadow(0 0 20px var(--color-warning-yellow))'
-                }}
-              />
-            ))}
+            <RackPanel />
+            <PowerIndicator t={t} isPowerConnected={isPowerConnected} />
+            <LightningEffects lightningSeeds={lightningSeeds} />
             <ConnectionPaths
               connections={connections}
               isPowerConnected={isPowerConnected}
