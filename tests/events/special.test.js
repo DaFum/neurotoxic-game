@@ -17,10 +17,15 @@ describe('SPECIAL_EVENTS', () => {
   }
 
   test('all special events have required fields and correct structure', () => {
+    assert.ok(Array.isArray(SPECIAL_EVENTS), 'SPECIAL_EVENTS is not an array')
     assert.ok(SPECIAL_EVENTS.length > 0, 'SPECIAL_EVENTS array is empty')
 
+    const seenIds = new Set()
     for (const evt of SPECIAL_EVENTS) {
       assert.ok(evt.id, `Event missing id`)
+      assert.ok(!seenIds.has(evt.id), `Duplicate event id: ${evt.id}`)
+      seenIds.add(evt.id)
+
       assert.strictEqual(evt.category, 'special', `Event ${evt.id} has incorrect category`)
       assert.ok(evt.title && evt.title.startsWith('events:'), `Event ${evt.id} invalid title key`)
       assert.ok(evt.description && evt.description.startsWith('events:'), `Event ${evt.id} invalid description key`)
