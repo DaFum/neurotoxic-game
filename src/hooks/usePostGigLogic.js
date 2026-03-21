@@ -1,3 +1,14 @@
+/**
+ * ACTUAL UPDATES (#1):
+ * - Removed stale ref-cache from postOptions useMemo so options regenerate when game state changes.
+ *
+ * NEXT STEPS AND IDEAS (#2):
+ * - Apply the same fix to the financials useMemo cachedFinancialsRef to be consistent.
+ * - Remove the now-unused cachedPostOptionsRef declaration.
+ *
+ * FOUND ERRORS + SOLUTIONS (#3):
+ * - ERROR: cachedPostOptionsRef prevented useMemo from returning fresh options when deps changed. SOLUTION: Removed ref cache, relying on useMemo's built-in memoization.
+ */
 // TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -153,7 +164,6 @@ export const usePostGigLogic = () => {
   // Derive post options purely without triggering a re-render loop
   const postOptions = useMemo(() => {
     if (!currentGig || !lastGigStats) return []
-    if (cachedPostOptionsRef.current.length > 0) return cachedPostOptionsRef.current
 
     // Pass the necessary game state to evaluate post conditions
     const gameStateForPosts = {
@@ -166,9 +176,7 @@ export const usePostGigLogic = () => {
       gigEvents: lastGigStats?.events || []
     }
     try {
-      const options = generatePostOptions(currentGig, gameStateForPosts)
-      cachedPostOptionsRef.current = options
-      return options
+      return generatePostOptions(currentGig, gameStateForPosts)
     } catch (e) {
       if (!errorHandledRef.current) {
         errorHandledRef.current = true
@@ -177,14 +185,7 @@ export const usePostGigLogic = () => {
       }
       return []
     }
-  }, [
-    currentGig,
-    lastGigStats,
-    player,
-    band,
-    social,
-    activeEvent,
-  ])
+  }, [currentGig, lastGigStats, player, band, social, activeEvent])
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {

@@ -35,7 +35,7 @@ const findRepoRoot = async startDir => {
 const repoRoot = await findRepoRoot(process.cwd())
 const configPath = path.resolve(
   repoRoot,
-  '.claude',
+  '.agents',
   'skills',
   'mega-lint-snapshot',
   'assets',

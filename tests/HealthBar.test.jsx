@@ -4,7 +4,9 @@ import { HealthBar } from '../src/components/hud/HealthBar.jsx'
 
 describe('HealthBar', () => {
   test('renders baseline and structural elements', () => {
-    const { container, getByText, queryByText } = render(<HealthBar health={100} isToxicMode={false} />)
+    const { container, getByText, queryByText } = render(
+      <HealthBar health={100} isToxicMode={false} />
+    )
 
     // Baseline checks
     expect(container).toBeTruthy()
@@ -21,7 +23,9 @@ describe('HealthBar', () => {
   })
 
   test('handles health value changes correctly', () => {
-    const { getByText, rerender } = render(<HealthBar health={75} isToxicMode={false} />)
+    const { getByText, rerender } = render(
+      <HealthBar health={75} isToxicMode={false} />
+    )
     expect(getByText('15 / 20')).toBeInTheDocument()
 
     // Fractional health
@@ -51,7 +55,9 @@ describe('HealthBar', () => {
 
 describe('BlockMeter (via HealthBar)', () => {
   test('renders correct segments and applies appropriate colors', () => {
-    const { container, rerender } = render(<HealthBar health={100} isToxicMode={false} />)
+    const { container, rerender } = render(
+      <HealthBar health={100} isToxicMode={false} />
+    )
 
     // Check total segments
     const segments = container.querySelectorAll('.flex-1')

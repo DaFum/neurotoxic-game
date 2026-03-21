@@ -21,13 +21,7 @@ test('UplinkButton should not allow javascript: URLs', () => {
 })
 
 test('UplinkButton should use "#" when url is missing or undefined', () => {
-  render(
-    <UplinkButton
-      title='No Link'
-      subtitle='Missing'
-      type='safe'
-    />
-  )
+  render(<UplinkButton title='No Link' subtitle='Missing' type='safe' />)
 
   const link = screen.getByRole('link', { name: /No Link/i })
   expect(link.getAttribute('href')).toBe('#')
@@ -38,17 +32,12 @@ test('UplinkButton should allow http: and https: URLs with varying formats', () 
     'http://example.com',
     'https://example.com',
     'HTTPS://example.com',
-    '  http://example.com',
+    '  http://example.com'
   ]
 
   safeUrls.forEach(url => {
     const { unmount } = render(
-      <UplinkButton
-        title='Safe Link'
-        url={url}
-        subtitle='Safe'
-        type='safe'
-      />
+      <UplinkButton title='Safe Link' url={url} subtitle='Safe' type='safe' />
     )
     const link = screen.getByRole('link', { name: /Safe Link/i })
     expect(link.getAttribute('href')).toBe(url.trim())
@@ -72,7 +61,7 @@ test('UplinkButton should prevent default action for unsafe URLs on click', () =
   const link = screen.getByRole('link', { name: /Unsafe Link/i })
   const clickEvent = new MouseEvent('click', {
     bubbles: true,
-    cancelable: true,
+    cancelable: true
   })
 
   fireEvent(link, clickEvent)

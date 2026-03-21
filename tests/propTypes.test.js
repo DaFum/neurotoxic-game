@@ -1,9 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert'
 import PropTypes from 'prop-types'
-import { AudioStatePropType, OnAudioChangePropType } from '../src/ui/shared/propTypes.js'
+import {
+  AudioStatePropType,
+  OnAudioChangePropType
+} from '../src/ui/shared/propTypes.js'
 
-test('propTypes', async (t) => {
+test('propTypes', async t => {
   await t.test('AudioStatePropType defines shape correctly', () => {
     assert.strictEqual(typeof AudioStatePropType, 'function')
 
@@ -18,7 +21,9 @@ test('propTypes', async (t) => {
     let errorCalled = false
     const originalConsoleError = console.error
     try {
-      console.error = () => { errorCalled = true }
+      console.error = () => {
+        errorCalled = true
+      }
 
       PropTypes.resetWarningCache()
       PropTypes.checkPropTypes(
@@ -64,7 +69,9 @@ test('propTypes', async (t) => {
     let errorCalled = false
     const originalConsoleError = console.error
     try {
-      console.error = () => { errorCalled = true }
+      console.error = () => {
+        errorCalled = true
+      }
 
       PropTypes.resetWarningCache()
       PropTypes.checkPropTypes(

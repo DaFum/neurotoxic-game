@@ -5,7 +5,13 @@ import prettier from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['dist/**', 'src/data/songs.js', '.claude/**']
+    ignores: [
+      'dist/**',
+      'src/data/songs.js',
+      '.agents/**',
+      'report/**',
+      '.claude/**'
+    ]
   },
   {
     files: ['**/*.{js,jsx,mjs,cjs}'],
@@ -70,7 +76,7 @@ export default [
       }
     },
     rules: {
-      '@eslint-react/component-hook-factories': 'off',
+      '@eslint-react/component-hook-factories': 'off'
     }
   }
 ]

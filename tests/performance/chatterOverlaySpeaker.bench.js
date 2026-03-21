@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks'
 
-const RUNS = 1000000;
+const RUNS = 1000000
 const bandMembers = Array.from({ length: 10 }, (_, i) => ({
   name: i % 2 === 0 ? `Member ${i}` : null
 }))
@@ -24,7 +24,9 @@ function optimized(members) {
   return memberNames
 }
 
-console.log(`Running benchmark with ${bandMembers.length} members over ${RUNS} iterations...`)
+console.log(
+  `Running benchmark with ${bandMembers.length} members over ${RUNS} iterations...`
+)
 
 const startMapFilter = performance.now()
 for (let i = 0; i < RUNS; i++) {
@@ -38,5 +40,7 @@ for (let i = 0; i < RUNS; i++) {
 }
 const endOptimized = performance.now()
 
-console.log(`Original map/filter: ${(endMapFilter - startMapFilter).toFixed(2)} ms`)
+console.log(
+  `Original map/filter: ${(endMapFilter - startMapFilter).toFixed(2)} ms`
+)
 console.log(`Optimized loop: ${(endOptimized - startOptimized).toFixed(2)} ms`)

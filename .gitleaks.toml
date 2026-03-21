@@ -1,0 +1,7 @@
+[allowlist]
+description = "Ignore false positives"
+regexes = [
+  '''AKIAIMNOJVGFDXXXE4OA''',
+  '''cafebabe:deadbeef''',
+  '''neurotoxic_v3_save'''
+]

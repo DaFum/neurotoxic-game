@@ -29,11 +29,15 @@ vi.mock('../src/utils/logger', () => {
     },
     clear: vi.fn(() => {
       logger.logs = []
-      listeners.forEach(cb => { cb({ type: 'clear' }) })
+      listeners.forEach(cb => {
+        cb({ type: 'clear' })
+      })
     }),
     dump: vi.fn(() => []),
     _emitAdd: entry => {
-      listeners.forEach(cb => { cb({ type: 'add', entry }) })
+      listeners.forEach(cb => {
+        cb({ type: 'add', entry })
+      })
     }
   }
   return {
@@ -165,11 +169,11 @@ describe('DebugLogViewer', () => {
 
     act(() => {
       loggerMock._emitAdd({
-          id: 'log3',
-          timestamp: '2025-01-01T10:02:00.000Z',
-          level: 'WARN',
-          channel: 'Network',
-          message: 'retry connection'
+        id: 'log3',
+        timestamp: '2025-01-01T10:02:00.000Z',
+        level: 'WARN',
+        channel: 'Network',
+        message: 'retry connection'
       })
     })
 

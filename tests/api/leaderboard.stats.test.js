@@ -207,46 +207,43 @@ describe('Leaderboard Stats API', () => {
     )
   })
 
-  test(
-    'POST handles extreme and negative stat values correctly',
-    async () => {
-      const req = {
-        method: 'POST',
-        body: {
-          playerId: 'extreme-band',
-          playerName: 'Extreme',
-          money: 500,
-          fame: -100, // Negative should clamp to 0
-          followers: 1000000000000000000, // Huge should clamp to MAX_STAT_VALUE
-          distance: NaN, // Invalid should clamp to 0
-          conflicts: -5,
-          stageDives: Infinity
-        }
+  test('POST handles extreme and negative stat values correctly', async () => {
+    const req = {
+      method: 'POST',
+      body: {
+        playerId: 'extreme-band',
+        playerName: 'Extreme',
+        money: 500,
+        fame: -100, // Negative should clamp to 0
+        followers: 1000000000000000000, // Huge should clamp to MAX_STAT_VALUE
+        distance: NaN, // Invalid should clamp to 0
+        conflicts: -5,
+        stageDives: Infinity
       }
-      const res = {
-        status: mock.fn(() => res),
-        json: mock.fn(() => res)
-      }
-
-      await statsModule.default(req, res)
-
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-
-      // Verify clampStat worked
-      const zAddCalls = mockMulti.zAdd.mock.calls
-      const fameCall = zAddCalls.find(call => call.arguments[0] === 'lb:fame')
-      const followersCall = zAddCalls.find(
-        call => call.arguments[0] === 'lb:followers'
-      )
-      const distanceCall = zAddCalls.find(
-        call => call.arguments[0] === 'lb:distance'
-      )
-
-      assert.strictEqual(fameCall.arguments[1].score, 0)
-      assert.strictEqual(followersCall.arguments[1].score, 999999999999) // MAX_STAT_VALUE
-      assert.strictEqual(distanceCall.arguments[1].score, 0)
     }
-  )
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res)
+    }
+
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
+
+    // Verify clampStat worked
+    const zAddCalls = mockMulti.zAdd.mock.calls
+    const fameCall = zAddCalls.find(call => call.arguments[0] === 'lb:fame')
+    const followersCall = zAddCalls.find(
+      call => call.arguments[0] === 'lb:followers'
+    )
+    const distanceCall = zAddCalls.find(
+      call => call.arguments[0] === 'lb:distance'
+    )
+
+    assert.strictEqual(fameCall.arguments[1].score, 0)
+    assert.strictEqual(followersCall.arguments[1].score, 999999999999) // MAX_STAT_VALUE
+    assert.strictEqual(distanceCall.arguments[1].score, 0)
+  })
 
   test('GET enforces limit constraints', async () => {
     const req = {

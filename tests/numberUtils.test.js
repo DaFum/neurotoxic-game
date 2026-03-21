@@ -67,10 +67,7 @@ test('formatCurrency - supports other signDisplay options', () => {
     formatCurrency(1000, 'en', 'exceptZero').replace(/\s+/g, ' '),
     '+€1,000'
   )
-  assert.equal(
-    formatCurrency(0, 'en', 'exceptZero').replace(/\s+/g, ' '),
-    '€0'
-  )
+  assert.equal(formatCurrency(0, 'en', 'exceptZero').replace(/\s+/g, ' '), '€0')
   assert.equal(
     formatCurrency(-1000, 'en', 'never').replace(/\s+/g, ' '),
     '€1,000'

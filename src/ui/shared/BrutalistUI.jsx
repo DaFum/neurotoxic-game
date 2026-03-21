@@ -32,10 +32,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
   )
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), [])
-  const handleMouseLeave = useCallback(
-    () => setIsHovered(false),
-    []
-  )
+  const handleMouseLeave = useCallback(() => setIsHovered(false), [])
 
   return (
     <a

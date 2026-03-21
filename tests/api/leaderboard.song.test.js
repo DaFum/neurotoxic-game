@@ -57,7 +57,7 @@ describe('Leaderboard API - Song', () => {
 
   describe('POST requests', () => {
     test('missing or invalid body returns 400', async () => {
-    const bodies = [null, undefined, []]
+      const bodies = [null, undefined, []]
 
       for (const body of bodies) {
         const req = { method: 'POST', body }

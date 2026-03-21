@@ -72,19 +72,27 @@ flowchart TD
 
 ## Entry points and attack surfaces
 
+<!-- markdownlint-disable MD013 -->
+
 | Surface                  | How reached                                 | Trust boundary        | Notes                                           | Evidence (repository path / symbol)                                              |
 | ------------------------ | ------------------------------------------- | --------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------- |
 | SPA bootstrap            | Browser loads `index.html` + `src/main.jsx` | Internet → Browser    | Primary entrypoint for code execution           | `src/main.jsx` render mount【F:src/main.jsx†L1-L11】                             |
 | localStorage persistence | Game save/load actions                      | Browser → Storage     | Attacker can alter localStorage to affect state | `loadGame`/`saveGame` in `GameState.jsx`【F:src/context/GameState.jsx†loadGame】 |
 | MIDI asset fetch         | Gameplay audio start                        | Browser → Asset fetch | Same-origin assets loaded via `fetch`           | `playMidiFile` fetch in `src/utils/audio/midiPlayback.js`                        |
 
+<!-- markdownlint-enable MD013 -->
+
 ## Top abuse paths
+
+<!-- markdownlint-disable -->
 
 1. **Tamper game state** → Modify localStorage save → Load corrupted or unfair state → Game integrity loss (cheating).
 2. **Supply-chain compromise** → Malicious dependency or altered bundle → User runs attacker-controlled script → Full client compromise within origin.
 3. **Hosting asset tamper** → Replace MIDI/JS assets in static host → Audio/logic altered → Integrity loss or malicious behavior.
 4. **Future DOM XSS** → Introduce unsafe HTML sink later → Untrusted data rendered → Script execution in user browser.
 5. **Resource exhaustion** → Oversized asset or repeated playback → CPU/memory spike → App instability/DoS in browser.
+
+<!-- markdownlint-enable -->
 
 ## Threat model table
 
@@ -100,6 +108,8 @@ flowchart TD
 
 <!-- markdownlint-enable MD013 -->
 
+<!-- markdownlint-disable MD013 -->
+
 ## Criticality calibration
 
 - **Critical:** Would require user credentials/PII or server-side data compromise (not present). Example: theft of user accounts (not applicable).
@@ -109,6 +119,8 @@ flowchart TD
 
 ## Focus paths for security review
 
+<!-- markdownlint-disable -->
+
 | Path                        | Why it matters                                       | Related Threat IDs |
 | --------------------------- | ---------------------------------------------------- | ------------------ |
 | `src/context/GameState.jsx` | LocalStorage persistence and schema checks           | TM-001             |
@@ -116,7 +128,11 @@ flowchart TD
 | `src/main.jsx`              | SPA entrypoint, trust boundary for browser execution | TM-002             |
 | `package.json`              | Dependency surface for supply-chain risk             | TM-002             |
 
+<!-- markdownlint-enable -->
+
 ## Notes on use
+
+<!-- markdownlint-disable -->
 
 - This threat model assumes static hosting on GitHub Pages with no backend services or sensitive data flows, per user-provided context.
 - Evidence anchors are included per major claim to keep the model grounded in repository paths.
@@ -131,3 +147,5 @@ _Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
 - Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.
+
+<!-- markdownlint-enable -->
