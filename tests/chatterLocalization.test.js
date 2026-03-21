@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const readLocaleFile = locale => {
+const readLocaleFile = async locale => {
   const localePath = path.join(
     __dirname,
     '..',
@@ -16,11 +16,12 @@ const readLocaleFile = locale => {
     locale,
     'chatter.json'
   )
-  return JSON.parse(readFileSync(localePath, 'utf8'))
+  const data = await fs.readFile(localePath, 'utf8')
+  return JSON.parse(data)
 }
 
-test('english chatter should not contain unresolved templated venue placeholders', () => {
-  const englishChatter = readLocaleFile('en')
+test('english chatter should not contain unresolved templated venue placeholders', async () => {
+  const englishChatter = await readLocaleFile('en')
   const unresolvedEntries = Object.entries(englishChatter).filter(([, value]) =>
     /\{\{.*?\}\}|\$\{.*?\}|\bis buzzing about (any|overworld|pregig|gig|postgig)\.|\b(ANY|OVERWORLD|PREGIG|GIG|POSTGIG)\b/.test(
       value
@@ -34,8 +35,8 @@ test('english chatter should not contain unresolved templated venue placeholders
   )
 })
 
-test('english chatter should avoid duplicated prepositions in venue names', () => {
-  const englishChatter = readLocaleFile('en')
+test('english chatter should avoid duplicated prepositions in venue names', async () => {
+  const englishChatter = await readLocaleFile('en')
   const duplicatedAtEntries = Object.entries(englishChatter).filter(
     ([, value]) => /\bat\s+at\b/i.test(value.replace(/\s+/g, ' '))
   )
@@ -47,9 +48,11 @@ test('english chatter should avoid duplicated prepositions in venue names', () =
   )
 })
 
-test('english and german chatter should have matching key parity', () => {
-  const englishChatter = readLocaleFile('en')
-  const germanChatter = readLocaleFile('de')
+test('english and german chatter should have matching key parity', async () => {
+  const [englishChatter, germanChatter] = await Promise.all([
+    readLocaleFile('en'),
+    readLocaleFile('de')
+  ])
 
   const englishKeys = new Set(Object.keys(englishChatter))
   const germanKeys = new Set(Object.keys(germanChatter))
