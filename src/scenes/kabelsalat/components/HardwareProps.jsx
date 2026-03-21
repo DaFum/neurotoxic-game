@@ -76,7 +76,7 @@ const INDICATOR_GEOMETRY = {
   LABEL_Y: 125
 }
 
-export const PowerIndicator = ({ t, isPowerConnected }) => (
+export const PowerIndicator = memo(({ t, isPowerConnected }) => (
   <g>
     <circle
       cx={INDICATOR_GEOMETRY.CX}
@@ -104,4 +104,4 @@ export const PowerIndicator = ({ t, isPowerConnected }) => (
       {t('ui:minigames.kabelsalat.pwrLabel')}
     </text>
   </g>
-)
+))
