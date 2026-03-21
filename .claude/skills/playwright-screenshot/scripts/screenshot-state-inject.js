@@ -200,9 +200,10 @@ const FIXTURES = {
           .getByRole('heading', { name: /tour plan|overworld/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
+        // Fallback: wait for SVG map (core overworld element)
         return await page
-          .locator('body')
+          .locator('svg')
+          .first()
           .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
@@ -228,9 +229,15 @@ const FIXTURES = {
           .getByRole('heading', { name: /preparation|pregig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
+        // Fallback: wait for gig modifier options (core pregig UI)
         return await page
-          .locator('body')
+          .getByRole('heading', { name: /modifier/i })
+          .or(
+            page
+              .locator('button')
+              .filter({ hasText: /soundcheck|promo/i })
+              .first()
+          )
           .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
@@ -259,9 +266,11 @@ const FIXTURES = {
           .getByRole('heading', { name: /gig report|postgig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
+        // Fallback: wait for gig stats display (core postgig UI)
         return await page
-          .locator('body')
+          .locator('[class*="grid"]')
+          .filter({ hasText: /earnings|crowd|fame/i })
+          .first()
           .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
@@ -280,9 +289,11 @@ const FIXTURES = {
           .getByRole('heading', { name: /game over/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
+        // Fallback: wait for gameover stats section
         return await page
-          .locator('body')
+          .locator('[class*="flex"]')
+          .filter({ hasText: /bankruptcy|stats|day/i })
+          .first()
           .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
@@ -309,9 +320,10 @@ const FIXTURES = {
           .locator('canvas')
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for body to be visible
+        // Fallback: wait for gig UI overlay (fallback if canvas slow to render)
         return await page
-          .locator('body')
+          .getByRole('button', { name: /skip|continue|escape/i })
+          .first()
           .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
@@ -325,9 +337,16 @@ const FIXTURES = {
     },
     waitFor: async page => {
       // Clinic has no unique heading — wait for networkidle then stabilize
-      await page
-        .waitForLoadState('networkidle', { timeout: 5000 })
-        .catch(() => console.log('    (networkidle timed out, continuing)'))
+      try {
+        await page.waitForLoadState('networkidle', { timeout: 5000 })
+      } catch (err) {
+        // Only tolerate timeout; rethrow navigation/connection errors
+        if (err.name === 'TimeoutError') {
+          console.log('    (networkidle timed out, continuing)')
+        } else {
+          throw err
+        }
+      }
       await page.waitForTimeout(500)
     }
   },
@@ -451,9 +470,16 @@ async function injectAndCapture(fixtureName, outFile) {
     // Now reload to let the game pick up the injected state
     await page.reload({ waitUntil: 'domcontentloaded' })
     // Attempt networkidle, but app may be functional even if it times out
-    await page
-      .waitForLoadState('networkidle', { timeout: 5000 })
-      .catch(() => console.log('    (networkidle timed out, continuing)'))
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 5000 })
+    } catch (err) {
+      // Only tolerate timeout; rethrow navigation/connection errors
+      if (err.name === 'TimeoutError') {
+        console.log('    (networkidle timed out, continuing)')
+      } else {
+        throw err
+      }
+    }
 
     // Wait for the scene to be ready
     await fixture.waitFor(page)
