@@ -101,7 +101,9 @@ describe('useContrabandStash', () => {
     })
 
     act(() => {
-      result.current.stashProps.handleUseItem('item1', { effectType: 'stamina' })
+      result.current.stashProps.handleUseItem('item1', {
+        effectType: 'stamina'
+      })
     })
 
     expect(mockUseContraband).not.toHaveBeenCalled()

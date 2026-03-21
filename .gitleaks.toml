@@ -1,0 +1,7 @@
+[allowlist]
+description = "Ignore tests"
+paths = [
+  '''README\.md''',
+  '''src/context/GameState\.jsx''',
+  '''eslint\.config\.js'''
+]

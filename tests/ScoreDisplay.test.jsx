@@ -14,8 +14,6 @@ describe('ScoreDisplay', () => {
     const wrapper = container.firstChild
     expect(wrapper.className).toContain('inline-block')
 
-
-
     expect(wrapper.className).toContain('bg-void-black')
     expect(wrapper.className).toContain('border-toxic-green')
 

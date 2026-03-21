@@ -11,8 +11,11 @@
     "**/yarn.lock",
     "**/.claude/**",
     "**/.claude/skills/**",
+    "**/.agents/**",
+    "**/.agents/skills/**",
     "**/skilltest-lib.mjs",
-    "**/format-report.mjs"
+    "**/format-report.mjs",
+    "**/report/**"
   ],
   "absolute": true,
   "gitignore": true

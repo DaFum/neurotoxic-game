@@ -95,7 +95,7 @@ test('translateContextKeys ignores inherited properties', () => {
   const context = Object.create(proto)
   context.own = 'ui:own'
 
-  const result = translateContextKeys(context, (key) => `translated:${key}`)
+  const result = translateContextKeys(context, key => `translated:${key}`)
 
   expect(result.own).toBe('translated:ui:own')
   expect(Object.hasOwn(result, 'inherited')).toBe(false)

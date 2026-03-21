@@ -35,7 +35,19 @@ describe('MapNode', () => {
 
   test('renders visual states appropriately (position, current, travel, pending, unreachable, ticketPrice)', async () => {
     const { container, rerender } = render(
-      <MapNode node={mockNode} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />
+      <MapNode
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={25}
+      />
     )
 
     // Position check
@@ -46,23 +58,81 @@ describe('MapNode', () => {
     expect(screen.getByText(/25/)).toBeInTheDocument() // Ticket price usage
 
     // Current node with van
-    rerender(<MapNode node={mockNode} isCurrent={true} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />)
+    rerender(
+      <MapNode
+        node={mockNode}
+        isCurrent={true}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={25}
+      />
+    )
     const vanImage = screen.getByAltText('ui:map.vanAlt')
     expect(vanImage).toBeTruthy()
 
     expect(screen.getByText('ui:map.current_location')).toBeInTheDocument()
 
     // Traveling (no van)
-    rerender(<MapNode node={mockNode} isCurrent={true} isTraveling={true} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />)
+    rerender(
+      <MapNode
+        node={mockNode}
+        isCurrent={true}
+        isTraveling={true}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={25}
+      />
+    )
     expect(screen.queryByAltText('ui:map.vanAlt')).toBeFalsy()
 
     // Pending confirm
-    rerender(<MapNode node={mockNode} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={true} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />)
+    rerender(
+      <MapNode
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={true}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={25}
+      />
+    )
     expect(screen.getByText('ui:map.confirm_q')).toBeInTheDocument()
-    expect(screen.getByText('ui:map.confirm_q').className).toContain('animate-pulse')
+    expect(screen.getByText('ui:map.confirm_q').className).toContain(
+      'animate-pulse'
+    )
 
     // Not reachable
-    rerender(<MapNode node={mockNode} isCurrent={false} isTraveling={false} visibility='visible' isReachable={false} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={25} />)
+    rerender(
+      <MapNode
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={false}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={25}
+      />
+    )
     const newWrapper = container.firstChild
     expect(newWrapper.className).toContain('opacity-30')
     expect(newWrapper.className).toContain('grayscale')
@@ -70,59 +140,167 @@ describe('MapNode', () => {
 
   test('renders different node types correctly', async () => {
     const { rerender, getByText, queryByText } = render(
-      <MapNode node={{ ...mockNode, type: 'GIG' }} isCurrent={false} isTraveling={false} visibility='hidden' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />
+      <MapNode
+        node={{ ...mockNode, type: 'GIG' }}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='hidden'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
     )
 
     // Hidden node
     expect(getByText('?')).toBeInTheDocument()
 
     // Hidden but type START
-    rerender(<MapNode node={{ ...mockNode, type: 'START' }} isCurrent={false} isTraveling={false} visibility='hidden' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />)
+    rerender(
+      <MapNode
+        node={{ ...mockNode, type: 'START' }}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='hidden'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
     expect(queryByText('?')).toBeNull()
 
     // Festival type
-    rerender(<MapNode node={{ ...mockNode, type: 'FESTIVAL' }} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />)
+    rerender(
+      <MapNode
+        node={{ ...mockNode, type: 'FESTIVAL' }}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
     expect(screen.getByText(/ui:map\.festival/)).toBeInTheDocument()
 
     // Rest Stop type
-    rerender(<MapNode node={{ ...mockNode, type: 'REST_STOP' }} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />)
+    rerender(
+      <MapNode
+        node={{ ...mockNode, type: 'REST_STOP' }}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
     expect(screen.getByText(/ui:map\.rest_stop/)).toBeInTheDocument()
 
     // Mystery type
-    rerender(<MapNode node={{ ...mockNode, type: 'SPECIAL' }} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />)
+    rerender(
+      <MapNode
+        node={{ ...mockNode, type: 'SPECIAL' }}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
     expect(screen.getByText(/ui:map\.mystery/)).toBeInTheDocument()
 
     // Finale type
-    rerender(<MapNode node={{ ...mockNode, type: 'FINALE' }} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />)
+    rerender(
+      <MapNode
+        node={{ ...mockNode, type: 'FINALE' }}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
     expect(screen.getByText(/ui:map\.finale/)).toBeInTheDocument()
   })
 
   test('handles user interactions appropriately', async () => {
     const user = userEvent.setup()
 
-    render(<MapNode node={mockNode} isCurrent={false} isTraveling={false} visibility='visible' isReachable={true} isPendingConfirm={false} handleTravel={mockHandleTravel} setHoveredNode={mockSetHoveredNode} iconUrl={iconUrl} vanUrl={vanUrl} ticketPrice={10} />)
+    render(
+      <MapNode
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
     const button = screen.getByRole('button')
 
     // Hover
-    await act(async () => { await user.hover(button) })
+    await act(async () => {
+      await user.hover(button)
+    })
     expect(mockSetHoveredNode).toHaveBeenCalledWith(mockNode)
 
     // Unhover
-    await act(async () => { await user.unhover(button) })
+    await act(async () => {
+      await user.unhover(button)
+    })
     expect(mockSetHoveredNode).toHaveBeenCalledWith(null)
 
     // Click
-    await act(async () => { await user.click(button) })
+    await act(async () => {
+      await user.click(button)
+    })
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
     mockHandleTravel.mockClear()
 
     // Keyboard Enter
-    await act(async () => { button.focus(); await user.keyboard('{Enter}') })
+    await act(async () => {
+      button.focus()
+      await user.keyboard('{Enter}')
+    })
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
     mockHandleTravel.mockClear()
 
     // Keyboard Space
-    await act(async () => { button.focus(); await user.keyboard(' ') })
+    await act(async () => {
+      button.focus()
+      await user.keyboard(' ')
+    })
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
   })
 })

@@ -11,9 +11,7 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../src/data/hqItems', () => ({
   HQ_ITEMS: {
-    gear: [
-      { id: 'gear1', name: 'Gear 1', cost: 100, currency: 'money' }
-    ],
+    gear: [{ id: 'gear1', name: 'Gear 1', cost: 100, currency: 'money' }],
     instruments: [
       { id: 'inst1', name: 'Instrument 1', cost: 500, currency: 'money' }
     ]
@@ -122,6 +120,11 @@ describe('ShopTab', () => {
     )
     const buttons = screen.getAllByText('Buy')
     fireEvent.click(buttons[0]) // click gear1
-    expect(handleBuy).toHaveBeenCalledWith({ id: 'gear1', name: 'Gear 1', cost: 100, currency: 'money' })
+    expect(handleBuy).toHaveBeenCalledWith({
+      id: 'gear1',
+      name: 'Gear 1',
+      cost: 100,
+      currency: 'money'
+    })
   })
 })

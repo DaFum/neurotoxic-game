@@ -22,12 +22,24 @@ vi.mock('../src/ui/shared', () => ({
       <span data-testid='sfxVol'>{sfxVol}</span>
       <span data-testid='isMuted'>{isMuted ? 'yes' : 'no'}</span>
 
-      <button type='button' onClick={() => onMusicChange(0.5)}>Music</button>
-      <button type='button' onClick={() => onSfxChange(0.7)}>SFX</button>
-      <button type='button' onClick={onToggleMute}>Mute</button>
-      <button type='button' onClick={onToggleCRT}>CRT</button>
-      <button type='button' onClick={() => onLogLevelChange('INFO')}>LogLevel</button>
-      <button type='button' onClick={onDeleteSave}>Delete</button>
+      <button type='button' onClick={() => onMusicChange(0.5)}>
+        Music
+      </button>
+      <button type='button' onClick={() => onSfxChange(0.7)}>
+        SFX
+      </button>
+      <button type='button' onClick={onToggleMute}>
+        Mute
+      </button>
+      <button type='button' onClick={onToggleCRT}>
+        CRT
+      </button>
+      <button type='button' onClick={() => onLogLevelChange('INFO')}>
+        LogLevel
+      </button>
+      <button type='button' onClick={onDeleteSave}>
+        Delete
+      </button>
     </div>
   )
 }))

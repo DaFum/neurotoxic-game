@@ -153,7 +153,8 @@ export const usePostGigLogic = () => {
   // Derive post options purely without triggering a re-render loop
   const postOptions = useMemo(() => {
     if (!currentGig || !lastGigStats) return []
-    if (cachedPostOptionsRef.current.length > 0) return cachedPostOptionsRef.current
+    if (cachedPostOptionsRef.current.length > 0)
+      return cachedPostOptionsRef.current
 
     // Pass the necessary game state to evaluate post conditions
     const gameStateForPosts = {
@@ -177,14 +178,7 @@ export const usePostGigLogic = () => {
       }
       return []
     }
-  }, [
-    currentGig,
-    lastGigStats,
-    player,
-    band,
-    social,
-    activeEvent,
-  ])
+  }, [currentGig, lastGigStats, player, band, social, activeEvent])
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {

@@ -53,7 +53,10 @@
     {
       "name": "MARKDOWN",
       "command": "bash",
-      "args": ["-lc", "markdownlint \"**/*.md\""]
+      "args": [
+        "-lc",
+        "markdownlint \"*.md\" \"docs/**/*.md\" \"tests/**/*.md\" \"src/**/*.md\""
+      ]
     },
     {
       "name": "MARKDOWN_PRETTIER",
