@@ -1,4 +1,8 @@
-// TODO: Review this file
+/*
+ * (#1) Actual Updates: Extracted withTimeout utility to utils.js.
+ * (#2) Next Steps: Continue monitoring class size.
+ * (#3) Found Errors + Solutions: None.
+ */
 import { ColorMatrixFilter } from 'pixi.js'
 import { BaseStageController } from './stage/BaseStageController.js'
 import { CrowdManager } from './stage/CrowdManager.js'
@@ -7,6 +11,7 @@ import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
 import { logger } from '../utils/logger.js'
 import { getGigTimeMs } from '../utils/audioEngine.js'
+import { withTimeout } from './stage/utils.js'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -61,7 +66,7 @@ class PixiStageController extends BaseStageController {
   _initManagersAndStartLoading() {
     // Initialize Managers and start loading assets in parallel
     this.crowdManager = new CrowdManager(this.app, this.stageContainer)
-    const crowdLoad = this.withTimeout(
+    const crowdLoad = withTimeout(
       this.crowdManager.loadAssets(),
       'Crowd Assets'
     )
@@ -78,7 +83,7 @@ class PixiStageController extends BaseStageController {
     const rhythmContainer = this.laneManager.container
 
     this.effectManager = new EffectManager(this.app, rhythmContainer)
-    const effectLoad = this.withTimeout(
+    const effectLoad = withTimeout(
       this.effectManager.loadAssets(),
       'Effect Assets'
     )
@@ -89,7 +94,7 @@ class PixiStageController extends BaseStageController {
       this.gameStateRef,
       (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
     )
-    const noteLoad = this.withTimeout(
+    const noteLoad = withTimeout(
       this.noteManager.loadAssets(),
       'Note Assets'
     )
@@ -108,43 +113,6 @@ class PixiStageController extends BaseStageController {
     this.crowdManager.init()
     this.effectManager.init()
     this.noteManager.init()
-  }
-
-  /**
-   * Wraps a promise with a timeout to prevent indefinite hanging.
-   * Errors and timeouts are swallowed, logging a warning/error and returning null.
-   * @param {Promise} promise - The promise to wrap.
-   * @param {string} label - Label for logging.
-   * @param {number} [timeoutMs=10000] - Timeout in milliseconds.
-   * @returns {Promise<any|null>} The resolved value or null if an error/timeout occurred.
-   */
-  async withTimeout(promise, label, timeoutMs = 10000) {
-    let timerId
-    const timeout = new Promise((resolve, _reject) => {
-      timerId = setTimeout(() => {
-        logger.warn(
-          'PixiStageController',
-          `${label} load timed out, proceeding with fallbacks.`
-        )
-        // Explicitly resolve null on timeout to ensure non-blocking fallback
-        resolve(null)
-      }, timeoutMs)
-    })
-
-    try {
-      const result = await Promise.race([promise, timeout])
-      return result
-    } catch (err) {
-      const errorMessage = err?.message ?? String(err)
-      logger.error(
-        'PixiStageController',
-        `${label} load failed: ${errorMessage}`,
-        err
-      )
-      return null // Graceful fallback on error
-    } finally {
-      clearTimeout(timerId)
-    }
   }
 
   /**

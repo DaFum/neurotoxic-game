@@ -11,7 +11,7 @@ vi.mock('../../src/components/stage/utils.js', async importOriginal => {
       await new Promise(resolve => setTimeout(resolve, 100))
       const textures = {}
       for (const key of Object.keys(urlMap)) {
-        textures[key] = { width: 100, height: 100 }
+        textures[key] = { width: 100, height: 100, destroy: vi.fn() }
       }
       return textures
     }),
