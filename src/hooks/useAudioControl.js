@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'

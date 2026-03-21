@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'

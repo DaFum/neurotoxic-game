@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/AudioManager'

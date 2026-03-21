@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'

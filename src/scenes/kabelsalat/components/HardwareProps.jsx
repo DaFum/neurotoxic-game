@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const RackScrew = ({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
     <circle

@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLE_MAP } from '../constants.js'
 import { getMessyPath } from '../utils.js'
 
