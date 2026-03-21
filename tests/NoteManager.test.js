@@ -180,6 +180,26 @@ describe('NoteManager', () => {
     return { note, state }
   }
 
+  test('loadAssets successfully loads textures before init', async () => {
+    // Recreate noteManager without init
+    const app = new PIXI.Application()
+    const uninitializedNoteManager = new NoteManager(app, parentContainer, gameStateRef, mock.fn())
+
+    mockPixiStageUtils.loadTextures.mock.mockImplementationOnce(async () => {
+      return { skull: mockTextureSkull, lightning: mockTextureLightning }
+    })
+
+    await uninitializedNoteManager.loadAssets()
+
+    assert.equal(uninitializedNoteManager.noteTextures.skull, mockTextureSkull)
+    assert.equal(uninitializedNoteManager.noteTextures.lightning, mockTextureLightning)
+
+    // Verify it assigns to pool upon init
+    uninitializedNoteManager.init()
+    assert.equal(uninitializedNoteManager.pool.noteTextures.skull, mockTextureSkull)
+    assert.equal(uninitializedNoteManager.pool.noteTextures.lightning, mockTextureLightning)
+  })
+
   test('loadAssets reports error when loadTextures returns null', async () => {
     mockPixiStageUtils.loadTextures.mock.mockImplementationOnce(
       async (urlMap, onError) => {
@@ -200,6 +220,8 @@ describe('NoteManager', () => {
 
     await noteManager.loadAssets()
 
+    assert.equal(noteManager.noteTextures.skull, null)
+    assert.equal(noteManager.noteTextures.lightning, null)
     assert.equal(mockNoteTextures.skull, null)
     assert.equal(mockNoteTextures.lightning, null)
     assert.equal(mockHandleError.mock.calls.length, 2)

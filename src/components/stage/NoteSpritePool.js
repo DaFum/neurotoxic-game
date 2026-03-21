@@ -10,8 +10,6 @@ export const NOTE_INITIAL_Y = -50
 export const NOTE_CENTER_OFFSET = 50
 export const NOTE_LIGHTNING_LANE_INDEX = 1
 
-let rngErrorReported = false
-
 export class NoteSpritePool {
   static MAX_POOL_SIZE = 64
 
@@ -19,6 +17,7 @@ export class NoteSpritePool {
     this.container = container
     this.spritePool = []
     this.noteTextures = { skull: null, lightning: null }
+    this.rngErrorReported = false
   }
 
   acquireSpriteFromPool(lane, laneIndex) {
@@ -33,7 +32,7 @@ export class NoteSpritePool {
     return sprite
   }
 
-  createNoteSprite(laneIndex) {
+  _getEffectiveTexture(laneIndex) {
     const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
     const desiredTexture = useLightning
       ? this.noteTextures.lightning
@@ -42,8 +41,11 @@ export class NoteSpritePool {
       ? this.noteTextures.skull
       : this.noteTextures.lightning
 
-    // Try desired first, then fallback
-    const effectiveTexture = desiredTexture || fallbackTexture
+    return desiredTexture || fallbackTexture
+  }
+
+  createNoteSprite(laneIndex) {
+    const effectiveTexture = this._getEffectiveTexture(laneIndex)
 
     if (effectiveTexture) {
       const sprite = new Sprite(effectiveTexture)
@@ -67,23 +69,15 @@ export class NoteSpritePool {
     try {
       randomVal = secureRandom()
     } catch (e) {
-      if (!rngErrorReported) {
-        rngErrorReported = true
+      if (!this.rngErrorReported) {
+        this.rngErrorReported = true
         handleError(e, { severity: 'medium', silent: true })
       }
       randomVal = Math.random()
     }
     sprite.jitterOffset = (randomVal - 0.5) * NOTE_JITTER_RANGE
 
-    const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
-    const desiredTexture = useLightning
-      ? this.noteTextures.lightning
-      : this.noteTextures.skull
-    const fallbackTexture = useLightning
-      ? this.noteTextures.skull
-      : this.noteTextures.lightning
-
-    const effectiveTexture = desiredTexture || fallbackTexture
+    const effectiveTexture = this._getEffectiveTexture(laneIndex)
 
     if (effectiveTexture) {
       if (sprite.texture !== effectiveTexture) {

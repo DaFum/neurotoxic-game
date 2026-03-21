@@ -24,12 +24,15 @@ export class NoteManager {
     this.activeEntities = [] // Track active {note, sprite} pairs for fast iteration
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
+    this.noteTextures = { skull: null, lightning: null }
   }
 
   init() {
     this.container = new Container()
     this.parentContainer.addChild(this.container)
     this.pool = new NoteSpritePool(this.container)
+    // Pass loaded textures to the pool
+    this.pool.noteTextures = this.noteTextures
   }
 
   async loadAssets() {
@@ -46,9 +49,14 @@ export class NoteManager {
         }
       )
 
-      if (loadedTextures.skull) this.pool.noteTextures.skull = loadedTextures.skull
-      if (loadedTextures.lightning)
-        this.pool.noteTextures.lightning = loadedTextures.lightning
+      if (loadedTextures.skull) {
+        this.noteTextures.skull = loadedTextures.skull
+        if (this.pool) this.pool.noteTextures.skull = loadedTextures.skull
+      }
+      if (loadedTextures.lightning) {
+        this.noteTextures.lightning = loadedTextures.lightning
+        if (this.pool) this.pool.noteTextures.lightning = loadedTextures.lightning
+      }
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'Critical error loading note textures.'

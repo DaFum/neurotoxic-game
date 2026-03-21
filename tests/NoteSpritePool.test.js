@@ -91,6 +91,26 @@ describe('NoteSpritePool', () => {
     mockHandleError.mock.resetCalls()
   })
 
+  test('_getEffectiveTexture returns the correct texture based on lane index', () => {
+    pool.noteTextures.skull = { id: 'skull' }
+    pool.noteTextures.lightning = { id: 'lightning' }
+
+    // Skull lane
+    assert.equal(pool._getEffectiveTexture(0).id, 'skull')
+
+    // Lightning lane
+    assert.equal(pool._getEffectiveTexture(1).id, 'lightning')
+
+    // Missing lightning falls back to skull
+    pool.noteTextures.lightning = null
+    assert.equal(pool._getEffectiveTexture(1).id, 'skull')
+
+    // Missing skull falls back to lightning
+    pool.noteTextures.lightning = { id: 'lightning' }
+    pool.noteTextures.skull = null
+    assert.equal(pool._getEffectiveTexture(0).id, 'lightning')
+  })
+
   afterEach(() => {
     randomMock.mock.restore()
   })
@@ -277,5 +297,29 @@ describe('NoteSpritePool', () => {
     assert.equal(pool.spritePool.length, 0)
     assert.equal(pool.container, null)
     assert.equal(mockSprite.destroy.mock.calls.length, 1)
+  })
+
+  test('reports rng error exactly once per pool instance', async () => {
+    mockHandleError.mock.resetCalls()
+    const cryptoModule = await import('../src/utils/crypto.js')
+
+    // Break secureRandom to throw an error
+    cryptoModule.secureRandom.mock.mockImplementation(() => {
+      throw new Error('crypto failed')
+    })
+
+    const sprite = new PIXI.Sprite()
+    const lane = { color: 0x0000ff, renderX: 300 }
+
+    // First call: Error is caught and reported
+    pool.initializeNoteSprite(sprite, lane, 0)
+    assert.equal(pool.rngErrorReported, true)
+    assert.equal(mockHandleError.mock.calls.length, 1)
+
+    // Second call: Error is caught but not reported again
+    pool.initializeNoteSprite(sprite, lane, 0)
+    assert.equal(mockHandleError.mock.calls.length, 1) // still 1
+
+    cryptoModule.secureRandom.mock.restore()
   })
 })
