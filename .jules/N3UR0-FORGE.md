@@ -57,3 +57,17 @@ After travel the band can get an item with specials to use.
   actionTypes.js: Added `PIRATE_BROADCAST`.
   socialReducer.js: Added `handlePirateBroadcast` to apply bounds-clamped updates to player money, fame, band harmony, zealotry, and controversy.
   PirateRadioModal.jsx: A new Brutalist UI component added to the Overworld scene, allowing players to view the costs and gains and trigger the broadcast.
+
+## 2026-03-15 - UNDERGROUND MERCH PRESS
+
+**Feature:** Underground Merch Press System
+
+**Description:**
+
+- Lore Integration:
+  The band funds their brutalist lifestyle by pressing bootleg merch in a sweat-drenched underground basement. It costs upfront cash and drains the band's collective Harmony due to the grueling labor, but successfully flooding the streets with illicit gear yields a massive surge in Fame and raw, untraceable profit.
+- State Impact:
+  actionTypes.js: Added `PRESS_MERCH`.
+  socialReducer.js: Added `handlePressMerch` enforcing strict bounds (e.g. money max 99999, fame max 10000, harmony clamped 0-100).
+  useMerchPress.js: Custom hook to calculate scaling costs and returns based on the band's current stats (fame multiplier).
+  MerchPressModal.jsx: Brutalist UI utilizing flex-box chaining to present the brutal math of the merch hustle.

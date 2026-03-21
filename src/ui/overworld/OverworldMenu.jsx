@@ -16,6 +16,7 @@ export const OverworldMenu = React.memo(
     openStash,
     openQuests,
     openPirateRadio,
+    openMerchPress,
     openHQ,
     handleRefuel,
     handleRepair,
@@ -56,6 +57,15 @@ export const OverworldMenu = React.memo(
                 size='sm'
               >
                 [{t('ui:pirate_radio.button', { defaultValue: 'PIRATE RADIO' })}
+                ]
+              </GlitchButton>
+              <GlitchButton
+                onClick={openMerchPress}
+                disabled={isTraveling}
+                variant='warning'
+                size='sm'
+              >
+                [{t('ui:merch_press.button', { defaultValue: 'MERCH PRESS' })}
                 ]
               </GlitchButton>
               <GlitchButton

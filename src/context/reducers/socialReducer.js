@@ -103,6 +103,80 @@ export const handleAddVenueBlacklist = (state, venueId) => {
   return nextState
 }
 
+export const handleMerchPress = (state, payload) => {
+  if (!payload || typeof payload !== 'object') {
+    logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
+    return state
+  }
+
+  const cost = Number(payload.cost) || 0
+  const loyaltyGain = Number(payload.loyaltyGain) || 0
+  const controversyGain = Number(payload.controversyGain) || 0
+  const harmonyCost = Number(payload.harmonyCost) || 0
+  const successToast = payload.successToast
+
+  const currentMoney = Number(state.player.money) || 0
+  const currentHarmony = Number(state.band.harmony) || 0
+
+  if (currentMoney < cost) {
+    logger.warn('GameState', 'Insufficient funds for merch press')
+    return state
+  }
+
+  const currentLoyalty = Number(state.social.loyalty) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
+
+  const nextMoney = clampPlayerMoney(currentMoney - cost)
+  const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
+  const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
+  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+
+  const nextInventory = { ...(state.band.inventory || {}) }
+  nextInventory['bootleg_shirt'] = (nextInventory['bootleg_shirt'] || 0) + 10
+  nextInventory['bootleg_vinyl'] = (nextInventory['bootleg_vinyl'] || 0) + 5
+
+  const nextState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney
+    },
+    band: {
+      ...state.band,
+      harmony: nextHarmony,
+      inventory: nextInventory
+    },
+    social: {
+      ...state.social,
+      loyalty: nextLoyalty,
+      controversyLevel: nextControversy
+    }
+  }
+
+  if (successToast) {
+    const deltaLoyalty = nextLoyalty - currentLoyalty
+    const deltaControversy = nextControversy - currentControversy
+    const deltaHarmony = nextHarmony - currentHarmony
+    const actualCost = currentMoney - nextMoney
+
+    nextState.toasts = [
+      ...(state.toasts || []),
+      {
+        ...successToast,
+        options: {
+          ...successToast.options,
+          deltaLoyalty,
+          deltaControversy,
+          deltaHarmony,
+          cost: actualCost
+        }
+      }
+    ]
+  }
+
+  return nextState
+}
+
 export const handlePirateBroadcast = (state, payload) => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')

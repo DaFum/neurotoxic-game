@@ -6,6 +6,7 @@ import { useBandHQModal } from '../hooks/useBandHQModal'
 import { useQuestsModal } from '../hooks/useQuestsModal'
 import { useContrabandStash } from '../hooks/useContrabandStash'
 import { usePirateRadio } from '../hooks/usePirateRadio'
+import { useMerchPress } from '../hooks/useMerchPress'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
@@ -17,6 +18,7 @@ import { BandHQ } from '../ui/BandHQ'
 import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'
 import { PirateRadioModal } from '../ui/PirateRadioModal'
+import { MerchPressModal } from '../ui/MerchPressModal'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { calculateEffectiveTicketPrice } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
@@ -59,6 +61,15 @@ export const Overworld = () => {
     hasBroadcastedToday,
     PIRATE_RADIO_CONFIG
   } = usePirateRadio()
+
+  const {
+    showMerchPress,
+    openMerchPress,
+    closeMerchPress,
+    triggerPress,
+    canPress,
+    MERCH_PRESS_CONFIG
+  } = useMerchPress()
 
   const {
     isTraveling,
@@ -295,6 +306,7 @@ export const Overworld = () => {
         openStash={openStash}
         openQuests={openQuests}
         openPirateRadio={openPirateRadio}
+        openMerchPress={openMerchPress}
         openHQ={openHQ}
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
@@ -341,6 +353,14 @@ export const Overworld = () => {
           canBroadcast={canBroadcast}
           hasBroadcastedToday={hasBroadcastedToday}
           config={PIRATE_RADIO_CONFIG}
+        />
+      )}
+      {showMerchPress && (
+        <MerchPressModal
+          onClose={closeMerchPress}
+          onPress={triggerPress}
+          canPress={canPress}
+          config={MERCH_PRESS_CONFIG}
         />
       )}
     </div>
