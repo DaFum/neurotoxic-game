@@ -39,7 +39,8 @@ class LaneRenderer {
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
 
     const guideStripWidthRatio = 0.3
-    const guideStripXOffset = (layout.laneWidth * (1 - guideStripWidthRatio)) / 2
+    const guideStripXOffset =
+      (layout.laneWidth * (1 - guideStripWidthRatio)) / 2
     this.static.rect(
       renderX + guideStripXOffset,
       0,

@@ -96,7 +96,11 @@ export const setupArrivalLogicTest = async () => {
   return { useArrivalLogic, mockGameState }
 }
 
-export const setupArrivalScenario = (useArrivalLogic, stateOverrides = {}, hookProps = {}) => {
+export const setupArrivalScenario = (
+  useArrivalLogic,
+  stateOverrides = {},
+  hookProps = {}
+) => {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     throw new Error(
       'setupArrivalScenario requires a DOM environment. Please call setupJSDOM() before running this test.'

@@ -5,7 +5,10 @@ import { Overlays } from './kabelsalat/components/Overlays.jsx'
 import { CableList } from './kabelsalat/components/CableList.jsx'
 import { SocketList } from './kabelsalat/components/SocketList.jsx'
 import { ConnectionPaths } from './kabelsalat/components/ConnectionPaths.jsx'
-import { RackPanel, PowerIndicator } from './kabelsalat/components/HardwareProps.jsx'
+import {
+  RackPanel,
+  PowerIndicator
+} from './kabelsalat/components/HardwareProps.jsx'
 import { LightningEffects } from './kabelsalat/components/LightningEffects.jsx'
 
 export const KabelsalatScene = () => {

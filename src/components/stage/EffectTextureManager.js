@@ -42,7 +42,11 @@ export class EffectTextureManager {
       if (loadedTextures.blood) this.textures.blood = loadedTextures.blood
       if (loadedTextures.toxic) this.textures.toxic = loadedTextures.toxic
     } catch (error) {
-      logger.warn('EffectTextureManager', 'Effect textures failed to load', error)
+      logger.warn(
+        'EffectTextureManager',
+        'Effect textures failed to load',
+        error
+      )
     }
   }
 

@@ -22,7 +22,9 @@ LOCALES.forEach(locale => {
         await readLocaleJson(localeDir, fileName)
         assert.ok(true)
       } catch (err) {
-        assert.fail(`${locale}/${namespace}.json should be valid JSON: ${err.message}`)
+        assert.fail(
+          `${locale}/${namespace}.json should be valid JSON: ${err.message}`
+        )
       }
     })
   })
@@ -62,7 +64,9 @@ LOCALES.forEach(locale => {
           const newPath = currentPath ? `${currentPath}.${key}` : key
 
           if (value === null) {
-            assert.fail(`${locale}/${namespace}.json key "${newPath}" should not be null`)
+            assert.fail(
+              `${locale}/${namespace}.json key "${newPath}" should not be null`
+            )
           } else if (typeof value === 'object' && !Array.isArray(value)) {
             assertNoNullLeaves(value, newPath)
           }

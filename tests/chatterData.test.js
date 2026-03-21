@@ -8,7 +8,10 @@ import {
   getRandomChatter
 } from '../src/data/chatter.js'
 import { VENUE_CHATTER_DB } from '../src/data/chatter/venueChatter.js'
-import { readLocaleJson, resetLocaleJsonCache } from './utils/localeTestUtils.js'
+import {
+  readLocaleJson,
+  resetLocaleJsonCache
+} from './utils/localeTestUtils.js'
 
 // Cache translations at module level to avoid repeated file I/O
 let translationsPromise = null
@@ -996,19 +999,13 @@ test('chatter.json structure is valid JSON', async () => {
     t.en && typeof t.en === 'object',
     'en/chatter.json must parse to a valid object'
   )
-  assert.ok(
-    Object.keys(t.en).length > 0,
-    'en/chatter.json must not be empty'
-  )
+  assert.ok(Object.keys(t.en).length > 0, 'en/chatter.json must not be empty')
 
   assert.ok(
     t.de && typeof t.de === 'object',
     'de/chatter.json must parse to a valid object'
   )
-  assert.ok(
-    Object.keys(t.de).length > 0,
-    'de/chatter.json must not be empty'
-  )
+  assert.ok(Object.keys(t.de).length > 0, 'de/chatter.json must not be empty')
 })
 
 test('all chatter keys in en/chatter.json have non-empty string values', async () => {

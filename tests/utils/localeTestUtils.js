@@ -54,7 +54,8 @@ export const resetLocaleJsonCache = () => localeJsonCache.clear()
 export const readLocaleJson = async (directory, fileName) => {
   const localePath = path.join(directory, fileName)
   if (!localeJsonCache.has(localePath)) {
-    const promise = fs.readFile(localePath, 'utf8')
+    const promise = fs
+      .readFile(localePath, 'utf8')
       .then(rawData => JSON.parse(rawData))
       .catch(err => {
         localeJsonCache.delete(localePath)
@@ -76,23 +77,26 @@ const sourceFilesCache = new Map()
 
 export const collectSourceFiles = async directory => {
   if (!sourceFilesCache.has(directory)) {
-    const promise = fs.readdir(directory, { withFileTypes: true }).then(async entries => {
-      const filePromises = entries.map(async entry => {
-        const entryPath = path.join(directory, entry.name)
+    const promise = fs
+      .readdir(directory, { withFileTypes: true })
+      .then(async entries => {
+        const filePromises = entries.map(async entry => {
+          const entryPath = path.join(directory, entry.name)
 
-        if (entry.isDirectory()) {
-          return collectSourceFiles(entryPath)
-        }
+          if (entry.isDirectory()) {
+            return collectSourceFiles(entryPath)
+          }
 
-        return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
+          return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [entryPath] : []
+        })
+
+        const results = await Promise.all(filePromises)
+        return results.flat()
       })
-
-      const results = await Promise.all(filePromises)
-      return results.flat()
-    }).catch(err => {
-      sourceFilesCache.delete(directory)
-      throw err
-    })
+      .catch(err => {
+        sourceFilesCache.delete(directory)
+        throw err
+      })
     sourceFilesCache.set(directory, promise)
   }
 

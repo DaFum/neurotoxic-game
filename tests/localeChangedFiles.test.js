@@ -36,7 +36,9 @@ test('all changed locale files are valid JSON', async () => {
             await readLocaleJson(localeDir, fileName)
             assert.ok(true)
           } catch (err) {
-            assert.fail(`${locale}/${namespace}.json should parse as valid JSON: ${err.message}`)
+            assert.fail(
+              `${locale}/${namespace}.json should parse as valid JSON: ${err.message}`
+            )
           }
         })
       )
@@ -399,14 +401,14 @@ test('no duplicate keys exist within each locale file', async () => {
 
           // Use JSON.parse with a reviver to track keys in the current object
           const checkDuplicatesReviver = () => {
-            return function(key, value) {
+            return function (key, value) {
               // the "this" context points to the object currently being parsed
               // Unfortunately JSON.parse's reviver doesn't give us raw access easily.
               // Let's use a simpler regex that looks at actual line indentation or basic structure,
               // but the best way is tracking via a manual parse.
-              return value;
+              return value
             }
-          };
+          }
 
           // Actually, let's use a more robust regex for JSON duplicate checking.
           // It's known that `JSON.parse` natively deduplicates keys, making the last one win.
@@ -430,32 +432,34 @@ test('no duplicate keys exist within each locale file', async () => {
           // Actually, our previous flattened approach was better for identifying true duplicates (full paths).
 
           // Let's parse the file manually looking for duplicates at the same level.
-          let hasDuplicates = false;
-          let duplicateDetails = [];
+          let hasDuplicates = false
+          let duplicateDetails = []
 
           // It's much easier to just use `json-parse-even-better-errors` or similar,
           // but we don't have it. We can implement a naive proxy parse.
           // For now, let's fix the logic by tracking keys per object.
 
-          let currentLevelKeys = [];
-          let objectStack = [];
+          let currentLevelKeys = []
+          let objectStack = []
 
           // Extremely naive tokenizer
-          const tokens = rawText.match(/([{}[\]])|("([^"\\]|\\.)*"\s*:)/g) || [];
+          const tokens = rawText.match(/([{}[\]])|("([^"\\]|\\.)*"\s*:)/g) || []
 
           for (const token of tokens) {
             if (token === '{') {
-              objectStack.push(currentLevelKeys);
-              currentLevelKeys = new Set();
+              objectStack.push(currentLevelKeys)
+              currentLevelKeys = new Set()
             } else if (token === '}') {
-              currentLevelKeys = objectStack.pop() || new Set();
+              currentLevelKeys = objectStack.pop() || new Set()
             } else if (token.endsWith(':')) {
-              const key = token.slice(1, token.lastIndexOf('"')).replace(/\\"/g, '"');
+              const key = token
+                .slice(1, token.lastIndexOf('"'))
+                .replace(/\\"/g, '"')
               if (currentLevelKeys.has(key)) {
-                hasDuplicates = true;
-                duplicateDetails.push(key);
+                hasDuplicates = true
+                duplicateDetails.push(key)
               } else {
-                currentLevelKeys.add(key);
+                currentLevelKeys.add(key)
               }
             }
           }
@@ -553,7 +557,10 @@ test('minigame.json has comprehensive tourbus keys', async () => {
 
 // Test: Venues namespace consistency between locales
 test('venues.json has same number of venues in all locales', async () => {
-  const enData = await readLocaleJson(path.join(LOCALES_ROOT, 'en'), 'venues.json')
+  const enData = await readLocaleJson(
+    path.join(LOCALES_ROOT, 'en'),
+    'venues.json'
+  )
   const enEntries = flattenToEntries(enData)
   const enVenueCount = enEntries.filter(e => e.key.endsWith('.name')).length
 

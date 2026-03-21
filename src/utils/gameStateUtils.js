@@ -492,7 +492,8 @@ export const applyEventDelta = (state, delta) => {
               if (amount > 0 && hasPeacemaker) amount *= 1.5
               if (amount < 0 && hasPeacemaker) amount *= 0.5
 
-              const relSource = newRelationships || nextMember.relationships || {}
+              const relSource =
+                newRelationships || nextMember.relationships || {}
               const oldExists = Object.hasOwn(relSource, other)
               const currentScore = relSource[other] ?? 50
               const newScore = Math.max(
