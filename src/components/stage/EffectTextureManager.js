@@ -5,7 +5,7 @@ import { loadTextures, getPixiColorFromToken } from './utils.js'
 
 export class EffectTextureManager {
   /**
-   * @param {Application} app
+   * @param {import('pixi.js').Application} app
    */
   constructor(app) {
     this.app = app
@@ -34,7 +34,7 @@ export class EffectTextureManager {
     }
   }
 
-  createGenericHitTexture() {
+  _createGenericHitTexture() {
     if (this.genericHitTexture) return
 
     const graphics = new Graphics()
@@ -78,12 +78,12 @@ export class EffectTextureManager {
 
     if (r > g && r > b && this.textures.blood) {
       return this.textures.blood
-    } else if (this.textures.toxic) {
+    } else if (g > r && g > b && this.textures.toxic) {
       return this.textures.toxic
     }
 
     if (!this.genericHitTexture) {
-      this.createGenericHitTexture()
+      this._createGenericHitTexture()
     }
     return this.genericHitTexture
   }
@@ -92,6 +92,12 @@ export class EffectTextureManager {
     if (this.genericHitTexture) {
       this.genericHitTexture.destroy(true)
       this.genericHitTexture = null
+    }
+    if (this.textures.blood) {
+      this.textures.blood.destroy(true)
+    }
+    if (this.textures.toxic) {
+      this.textures.toxic.destroy(true)
     }
     this.textures = { blood: null, toxic: null }
   }
