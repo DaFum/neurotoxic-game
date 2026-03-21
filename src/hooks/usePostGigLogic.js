@@ -1,4 +1,14 @@
-// Reviewed: Fixed stale cache issue with postOptions derivation
+/**
+ * ACTUAL UPDATES (#1):
+ * - Removed stale ref-cache from postOptions useMemo so options regenerate when game state changes.
+ *
+ * NEXT STEPS AND IDEAS (#2):
+ * - Apply the same fix to the financials useMemo cachedFinancialsRef to be consistent.
+ * - Remove the now-unused cachedPostOptionsRef declaration.
+ *
+ * FOUND ERRORS + SOLUTIONS (#3):
+ * - ERROR: cachedPostOptionsRef prevented useMemo from returning fresh options when deps changed. SOLUTION: Removed ref cache, relying on useMemo's built-in memoization.
+ */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
