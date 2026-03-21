@@ -284,21 +284,24 @@ export class MapGenerator {
       const nextLayer = map.layers[i + 1]
 
       // Forward pass: ensure everyone connects forward
-      currentLayer.forEach(node => {
+      for (let j = 0; j < currentLayer.length; j++) {
+        const node = currentLayer[j]
         // Pick 1-2 random targets in next layer
         const targets = this.pickRandomSubset(
           nextLayer,
           Math.floor(this.random() * 2) + 1
         )
-        targets.forEach(target => {
+        for (let k = 0; k < targets.length; k++) {
+          const target = targets[k]
           map.connections.push({ from: node.id, to: target.id })
           connectedToIds.add(target.id)
-        })
-      })
+        }
+      }
 
       // Backward pass check: ensure everyone has a parent
       // (Simplified: Just ensure nextLayer nodes are reachable. If not, force connect from random parent)
-      nextLayer.forEach(node => {
+      for (let j = 0; j < nextLayer.length; j++) {
+        const node = nextLayer[j]
         const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
           const randomParent =
@@ -306,7 +309,7 @@ export class MapGenerator {
           map.connections.push({ from: randomParent.id, to: node.id })
           connectedToIds.add(node.id)
         }
-      })
+      }
     }
   }
 
@@ -340,9 +343,10 @@ export class MapGenerator {
     map.nodeList.push(endNode)
 
     // Connect last layer to finale
-    map.layers[depth - 1].forEach(node => {
-      map.connections.push({ from: node.id, to: endNode.id })
-    })
+    const lastLayer = map.layers[depth - 1]
+    for (let i = 0; i < lastLayer.length; i++) {
+      map.connections.push({ from: lastLayer[i].id, to: endNode.id })
+    }
   }
 
   /**
@@ -352,12 +356,14 @@ export class MapGenerator {
   _assignInitialCoordinates(map) {
     // Assign initial coordinates with jitter and resolve overlaps
     // Increased jitter to +/- 5 to help initial separation
-    map.nodeList.forEach(node => {
+    const nodeList = map.nodeList
+    for (let i = 0; i < nodeList.length; i++) {
+      const node = nodeList[i]
       const baseX = node.venue?.x ?? 50
       const baseY = node.venue?.y ?? 50
       node.x = baseX + (this.random() * 10 - 5)
       node.y = baseY + (this.random() * 10 - 5)
-    })
+    }
   }
 
   /**
@@ -468,13 +474,14 @@ export class MapGenerator {
       }
 
       // Wall repulsion (keep away from edges)
-      nodeList.forEach(n => {
+      for (let j = 0; j < nodeList.length; j++) {
+        const n = nodeList[j]
         const padding = 10
         if (n.x < padding) n.x += 0.2
         if (n.x > 100 - padding) n.x -= 0.2
         if (n.y < padding) n.y += 0.2
         if (n.y > 100 - padding) n.y -= 0.2
-      })
+      }
 
       // If no overlaps processed, we can exit early (optional optimization)
       if (!moved) break
@@ -484,10 +491,11 @@ export class MapGenerator {
     }
 
     // Final hard clamp
-    nodeList.forEach(n => {
+    for (let j = 0; j < nodeList.length; j++) {
+      const n = nodeList[j]
       n.x = Math.max(5, Math.min(95, n.x))
       n.y = Math.max(5, Math.min(95, n.y))
-    })
+    }
   }
 
   /**
