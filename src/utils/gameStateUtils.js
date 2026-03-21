@@ -439,7 +439,7 @@ export const applyEventDelta = (state, delta) => {
     if (membersDelta || relationshipChange || typeof skillDelta === 'number') {
       const isArrayDelta = Array.isArray(membersDelta)
       const memberCount = nextBand.members.length
-      const updatedMembers = new Array(memberCount)
+      let updatedMembers = null
       let bandChanged = false
 
       for (let i = 0; i < memberCount; i++) {
@@ -490,14 +490,20 @@ export const applyEventDelta = (state, delta) => {
               if (amount > 0 && hasPeacemaker) amount *= 1.5
               if (amount < 0 && hasPeacemaker) amount *= 0.5
 
-              if (!newRelationships) {
-                newRelationships = { ...nextMember.relationships }
-              }
-              const currentScore = newRelationships[other] ?? 50
-              newRelationships[other] = Math.max(
+              const relSource = newRelationships || nextMember.relationships || {}
+              const oldExists = Object.hasOwn(relSource, other)
+              const currentScore = relSource[other] ?? 50
+              const newScore = Math.max(
                 0,
                 Math.min(100, Math.round(currentScore + amount))
               )
+
+              if (oldExists || newScore !== 50) {
+                if (!newRelationships) {
+                  newRelationships = { ...(nextMember.relationships || {}) }
+                }
+                newRelationships[other] = newScore
+              }
             }
           }
 
@@ -536,8 +542,18 @@ export const applyEventDelta = (state, delta) => {
           }
         }
 
-        updatedMembers[i] = nextMember
-        if (memberHasChanges) bandChanged = true
+        if (memberHasChanges) {
+          if (!bandChanged) {
+            bandChanged = true
+            updatedMembers = new Array(memberCount)
+            for (let k = 0; k < i; k++) {
+              updatedMembers[k] = nextBand.members[k]
+            }
+          }
+          updatedMembers[i] = nextMember
+        } else if (bandChanged) {
+          updatedMembers[i] = member
+        }
       }
 
       if (bandChanged) {
