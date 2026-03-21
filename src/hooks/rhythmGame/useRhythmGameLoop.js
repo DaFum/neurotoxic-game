@@ -1,4 +1,3 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useRef, useEffect } from 'react'
 import {
   trySpawnProjectile,
@@ -15,6 +14,81 @@ import {
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
 
 const NOTE_MISS_WINDOW_MS = 300
+
+export const processHecklerProjectiles = (
+  stateRef,
+  hecklerSession,
+  deltaMS,
+  dimensions,
+  handleCollision
+) => {
+  if (stateRef.projectiles.length > 0) {
+    stateRef.projectiles = processProjectiles(
+      hecklerSession,
+      stateRef.projectiles,
+      deltaMS,
+      dimensions.height,
+      handleCollision
+    )
+  }
+
+  const newProjectile = trySpawnProjectile(
+    hecklerSession,
+    { health: stateRef.health, combo: stateRef.combo },
+    stateRef.rng,
+    dimensions.width
+  )
+  if (newProjectile) {
+    stateRef.projectiles.push(newProjectile)
+  }
+}
+
+export const processToxicMode = (stateRef, now, deltaMS, setIsToxicMode) => {
+  if (stateRef.isToxicMode) {
+    if (now > stateRef.toxicModeEndTime) {
+      setIsToxicMode(false)
+      stateRef.isToxicMode = false
+    } else {
+      stateRef.toxicTimeTotal += deltaMS
+    }
+  }
+}
+
+export const processMissedNotes = (stateRef, now, handleMiss) => {
+  let missCount = 0
+  const notes = stateRef.notes
+  let i = stateRef.nextMissCheckIndex
+
+  while (i < notes.length) {
+    const note = notes[i]
+
+    if (note.time > now + NOTE_MISS_WINDOW_MS) {
+      break
+    }
+
+    if (!note.visible || note.hit) {
+      if (i === stateRef.nextMissCheckIndex) {
+        stateRef.nextMissCheckIndex++
+      }
+      i++
+      continue
+    }
+
+    if (now > note.time + NOTE_MISS_WINDOW_MS) {
+      note.visible = false
+      missCount++
+      if (i === stateRef.nextMissCheckIndex) {
+        stateRef.nextMissCheckIndex++
+      }
+    }
+
+    i++
+  }
+
+  if (missCount > 0) {
+    handleMiss(missCount, false)
+  }
+}
 
 export const useRhythmGameLoop = ({
   gameStateRef,
@@ -101,37 +175,15 @@ export const useRhythmGameLoop = ({
         duration > 0 ? Math.min(100, (now / duration) * 100) : 0
       stateRef.progress = Math.max(0, rawProgress)
 
-      const currentInnerHeight = dimensionsRef.current.height
-      const currentInnerWidth = dimensionsRef.current.width
-
-      if (stateRef.projectiles.length > 0) {
-        stateRef.projectiles = processProjectiles(
-          hecklerSessionRef.current,
-          stateRef.projectiles,
-          deltaMS,
-          currentInnerHeight,
-          handleCollision
-        )
-      }
-
-      const newProjectile = trySpawnProjectile(
+      processHecklerProjectiles(
+        stateRef,
         hecklerSessionRef.current,
-        { health: stateRef.health, combo: stateRef.combo },
-        stateRef.rng,
-        currentInnerWidth
+        deltaMS,
+        dimensionsRef.current,
+        handleCollision
       )
-      if (newProjectile) {
-        stateRef.projectiles.push(newProjectile)
-      }
 
-      if (stateRef.isToxicMode) {
-        if (now > stateRef.toxicModeEndTime) {
-          setIsToxicMode(false)
-          stateRef.isToxicMode = false
-        } else {
-          stateRef.toxicTimeTotal += deltaMS
-        }
-      }
+      processToxicMode(stateRef, now, deltaMS, setIsToxicMode)
 
       const isNearTrackEnd =
         duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS
@@ -141,39 +193,7 @@ export const useRhythmGameLoop = ({
         return
       }
 
-      let missCount = 0
-      const notes = stateRef.notes
-      let i = stateRef.nextMissCheckIndex
-
-      while (i < notes.length) {
-        const note = notes[i]
-
-        if (note.time > now + NOTE_MISS_WINDOW_MS) {
-          break
-        }
-
-        if (!note.visible || note.hit) {
-          if (i === stateRef.nextMissCheckIndex) {
-            stateRef.nextMissCheckIndex++
-          }
-          i++
-          continue
-        }
-
-        if (now > note.time + NOTE_MISS_WINDOW_MS) {
-          note.visible = false
-          missCount++
-          if (i === stateRef.nextMissCheckIndex) {
-            stateRef.nextMissCheckIndex++
-          }
-        }
-
-        i++
-      }
-
-      if (missCount > 0) {
-        handleMiss(missCount, false)
-      }
+      processMissedNotes(stateRef, now, handleMiss)
     },
     [
       activeEvent,

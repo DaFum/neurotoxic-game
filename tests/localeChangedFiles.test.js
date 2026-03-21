@@ -398,15 +398,6 @@ test('no duplicate keys exist within each locale file', async () => {
           const rawText = await fs.readFile(filePath, 'utf8')
 
           // Use JSON.parse with a reviver to track keys in the current object
-          const checkDuplicatesReviver = () => {
-            return function(key, value) {
-              // the "this" context points to the object currently being parsed
-              // Unfortunately JSON.parse's reviver doesn't give us raw access easily.
-              // Let's use a simpler regex that looks at actual line indentation or basic structure,
-              // but the best way is tracking via a manual parse.
-              return value;
-            }
-          };
 
           // Actually, let's use a more robust regex for JSON duplicate checking.
           // It's known that `JSON.parse` natively deduplicates keys, making the last one win.
