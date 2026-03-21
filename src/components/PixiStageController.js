@@ -189,7 +189,7 @@ class PixiStageController extends BaseStageController {
       }
     } else {
       if (this.isToxicActive) {
-        this.stageContainer.filters = this.emptyFilters
+        this.stageContainer.filters = null
         this.isToxicActive = false
       }
     }

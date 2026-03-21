@@ -339,7 +339,7 @@ describe('PixiStageController', () => {
       initialMode: true,
       switchMode: false,
       expectedActive: false,
-      expectedFilters: () => controller.emptyFilters
+      expectedFilters: () => null
     }
   ]
 
