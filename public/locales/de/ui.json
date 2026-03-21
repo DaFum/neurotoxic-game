@@ -2,12 +2,11 @@
   "aria.muteSystem": "Systemton stumm",
   "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
   "aria.unmuteSystem": "Systemton an",
-  "loading_stage": "Bühne wird geladen...",
   "arrival.failedToStartGig": "Gig konnte nicht gestartet werden.",
-  "arrival.showCancelled": "Show abgesagt! Die Band weigerte sich wegen mangelnder Harmonie auf die Bühne zu gehen.",
   "arrival.harmonyTooLowToPerform": "Die Harmonie der Band ist zu niedrig zum Auftreten!",
   "arrival.homeSweetHome": "Zuhause, süßes Zuhause.",
   "arrival.restedAtStop": "Am Rastplatz ausgeruht. Die Band fühlt sich besser.",
+  "arrival.showCancelled": "Show abgesagt! Die Band weigerte sich wegen mangelnder Harmonie auf die Bühne zu gehen.",
   "arrival.specialNothingHappened": "Ein mysteriöser Ort, aber nichts ist passiert.",
   "audio_protocols": "AUDIO PROTOKOLLE",
   "bandStatus": "BANDSTATUS",
@@ -211,12 +210,12 @@
   "errors.audio_cleanup_failed": "Audio-Bereinigung fehlgeschlagen.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
   "errors.invalidVenueData": "Ungültige Veranstaltungsdaten.",
-  "event.resolved": "Ereignis beendet.",
   "event.effects_label": "Effekte:",
-  "event.new_quest": "Neue Quest",
-  "event.story_updated": "Geschichte aktualisiert",
   "event.game_over_effect": "Spielende",
+  "event.new_quest": "Neue Quest",
+  "event.resolved": "Ereignis beendet.",
   "event.severity.critical": "KRITISCH",
+  "event.story_updated": "Geschichte aktualisiert",
   "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
   "featureList": [
@@ -252,10 +251,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -278,10 +289,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -345,8 +368,8 @@
   "gameOver.soldOut": "AUSVERKAUFT",
   "game_over": "GAME OVER: {{description}}",
   "gig.abandon": "GIG ABBRECHEN",
-  "gig.controlsHint": "Spielsteuerung",
   "gig.audioOverride": "Audio-Interface erfordert manuelle Überschreibung.",
+  "gig.controlsHint": "Spielsteuerung",
   "gig.crowdEnergy": "PUBLIKUMSENERGIE",
   "gig.initializeAudio": "AUDIO INITIALISIEREN",
   "gig.pause": "Spiel pausieren (ESC)",
@@ -432,6 +455,7 @@
   "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
   "load_game": "Spiel Laden",
   "loading": "Lade",
+  "loading_stage": "Bühne wird geladen...",
   "log_protocols": "LOG PROTOKOLLE",
   "mainMenu.existingSave.desc": "Ein Spielstand existiert bereits. Möchtest du ihn laden oder eine neue Tour starten?",
   "mainMenu.existingSave.load": "BESTEHENDEN LADEN",
@@ -462,8 +486,8 @@
     "unknown": "Unbekannt"
   },
   "menu.close": "MENÜ SCHLIEßEN",
-  "menu.open": "MENÜ",
   "menu.inventory": "INVENTAR",
+  "menu.open": "MENÜ",
   "menu.upgrades": "UPGRADES",
   "min_log_level": "MINIMALES LOG LEVEL",
   "minigames.kabelsalat.a11y.cable": "Kabel {{label}}",
@@ -518,11 +542,15 @@
   "overworld.location_secured": "{{location}} gesichert.",
   "overworld.locations_loaded": "Locations geladen: {{count}}",
   "overworld.radio_station": "FM 66.6",
+  "overworld.refuel": "AUFTANKEN",
+  "overworld.repair": "REPARIEREN",
+  "overworld.save_game": "SPIEL SPEICHERN",
   "overworld.status.nextStop": "Nächster Halt",
   "overworld.status.onRoad": "Unterwegs",
   "overworld.status.selectLocation": "Markierte Location auswählen",
   "overworld.status.traveling": "UNTERWEGS...",
   "overworld.tour_active": "{{date}}: Tour aktiv.",
+  "overworld.traveling_van": "Reisevan",
   "overworld.void_clinic_button": "LEEREN-KLINIK",
   "pirate_radio.button": "PIRATENSENDER",
   "pirate_radio.controversy_gain": "KONTROVERSE",
@@ -756,6 +784,7 @@
   "stats.controversy": "Kontroverse",
   "stats.currentTrend": "Aktueller Trend",
   "stats.daysSurvived": "ÜBERLEBTE TAGE",
+  "stats.energy": "Energie",
   "stats.fame": "Ruhm",
   "stats.fameReached": "ERREICHTER RUHM",
   "stats.fanLoyalty": "Fan-Loyalität",
@@ -763,17 +792,15 @@
   "stats.followers": "Follower",
   "stats.fuel": "Treibstoff",
   "stats.funds": "Geld",
-  "stats.luck": "Glück",
-  "stats.skill": "Können",
-  "stats.money": "Geld",
-  "stats.health": "Gesundheit",
-  "stats.energy": "Energie",
-  "stats.time": "Zeit",
-  "stats.hype": "Hype",
   "stats.harmony": "Harmonie",
+  "stats.health": "Gesundheit",
+  "stats.hype": "Hype",
   "stats.instagram": "Instagram",
   "stats.inventory_equipment": "Inventar & Ausrüstung",
   "stats.inventory_slots": "Inventarplätze",
+  "stats.loyalty": "Loyalität",
+  "stats.luck": "Glück",
+  "stats.money": "Geld",
   "stats.mood": "Stimmung",
   "stats.newsletter": "Newsletter",
   "stats.noContracts": "Keine aktiven Verträge",
@@ -782,18 +809,19 @@
   "stats.repCooldown": "Ruf-Cooldown",
   "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
   "stats.riskOfShadowban": "Shadowban-Risiko",
+  "stats.score": "Score",
   "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
+  "stats.skill": "Können",
   "stats.socialDynamics": "SOZIALE DYNAMIK",
   "stats.social_reach": "Social-Media-Reichweite",
   "stats.stamina": "Ausdauer",
   "stats.tiktok": "TikTok",
+  "stats.time": "Zeit",
   "stats.totalReach": "Gesamt-Reichweite",
-  "stats.score": "Score",
   "stats.totalScore": "GESAMTPUNKTZAHL",
   "stats.totalTravels": "GESAMTE REISEN",
   "stats.trendNeutral": "NEUTRAL",
   "stats.van_condition": "VAN-STATUS",
-  "stats.loyalty": "Loyalität",
   "stats.viral": "VIRAL",
   "stats.viralStatus": "Viral-Status",
   "stats.youtube": "YouTube",

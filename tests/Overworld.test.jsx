@@ -89,9 +89,9 @@ describe('Overworld Component', () => {
 
     // Check buttons
     expect(screen.getByText(/\[ui:quests\.button\]/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[REFUEL\]/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[REPAIR\]/i)).toBeInTheDocument()
-    expect(screen.getByText(/\[SAVE GAME\]/i)).toBeInTheDocument()
+    expect(screen.getByText(/ui:overworld\.refuel/i)).toBeInTheDocument()
+    expect(screen.getByText(/ui:overworld\.repair/i)).toBeInTheDocument()
+    expect(screen.getByText(/ui:overworld\.save_game/i)).toBeInTheDocument()
   })
 
   it('triggers save game action when save button is clicked', async () => {
@@ -111,7 +111,7 @@ describe('Overworld Component', () => {
         fireEvent.click(menuButton)
       })
 
-      const saveButton = screen.getByText(/\[SAVE GAME\]/i)
+      const saveButton = screen.getByText(/ui:overworld\.save_game/i)
 
       await act(async () => {
         fireEvent.click(saveButton)
