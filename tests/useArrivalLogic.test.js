@@ -132,6 +132,36 @@ describe('useArrivalLogic', () => {
     )
   })
 
+  test('handles luck-based cancellation in GIG node', () => {
+    const rng = () => 0.1 // Below chance (0.25)
+    const { result } = setupArrivalScenario(
+      useArrivalLogic,
+      {
+        gameMap: {
+          nodes: {
+            node_start: { type: 'GIG', venue: {} }
+          }
+        },
+        band: { harmony: 10 } // Below threshold (15)
+      },
+      { rng }
+    )
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    assert.equal(mockGameState.startGig.mock.calls.length, 0)
+    assert.equal(mockGameState.changeScene.mock.calls.length, 1)
+    assert.ok(
+      mockGameState.addToast.mock.calls.some(c =>
+        c.arguments[0].includes('cancelled')
+      )
+    )
+    // Should apply fame penalty
+    assert.equal(mockGameState.updatePlayer.mock.calls.length, 1)
+  })
+
   test('idempotency guard prevents double execution', () => {
     const { result } = setupArrivalScenario(useArrivalLogic)
 
