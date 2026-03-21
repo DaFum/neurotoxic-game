@@ -1,4 +1,4 @@
-import { ToggleRadio } from '../ToggleRadio'
+import { ToggleRadio } from '../../components/ToggleRadio'
 
 export const OverworldHeader = ({ t, locationName, isTraveling }) => {
   return (

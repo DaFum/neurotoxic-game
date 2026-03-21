@@ -8,10 +8,10 @@ import { useQuestsModal } from '../hooks/useQuestsModal'
 import { useContrabandStash } from '../hooks/useContrabandStash'
 import { usePirateRadio } from '../hooks/usePirateRadio'
 
-import { OverworldHeader } from '../components/overworld/OverworldHeader'
-import { OverworldMenu } from '../components/overworld/OverworldMenu'
+import { OverworldHeader } from '../ui/overworld/OverworldHeader'
+import { OverworldMenu } from '../ui/overworld/OverworldMenu'
 import { TravelingVan } from '../components/overworld/TravelingVan'
-import { EventLog } from '../components/overworld/EventLog'
+import { EventLog } from '../ui/overworld/EventLog'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
 import { BandHQ } from '../ui/BandHQ'
@@ -315,6 +315,7 @@ export const Overworld = () => {
         {renderedNodes}
 
         <TravelingVan
+          t={t}
           isTraveling={isTraveling}
           currentNode={currentNode}
           travelTarget={travelTarget}

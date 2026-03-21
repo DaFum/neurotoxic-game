@@ -1,6 +1,7 @@
+import React from 'react'
 import { ALL_VENUES } from '../../data/venues'
 
-export const EventLog = ({ t, player, locationName }) => {
+export const EventLog = React.memo(({ t, player, locationName }) => {
   return (
     <div className='absolute bottom-8 left-8 p-4 border border-ash-gray bg-void-black/90 max-w-sm z-20 pointer-events-none'>
       <h3 className='text-toxic-green font-bold mb-2'>
@@ -27,4 +28,4 @@ export const EventLog = ({ t, player, locationName }) => {
       </p>
     </div>
   )
-}
+})
