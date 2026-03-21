@@ -171,10 +171,8 @@ const calculateClampedStatDelta = (currentValue, deltaValue) => {
 const copyFilteredProperties = source => {
   if (!source) return {}
   const destination = {}
-  const keys = Object.keys(source)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
-    if (!isForbiddenKey(key)) {
+  for (const key in source) {
+    if (Object.hasOwn(source, key) && !isForbiddenKey(key)) {
       destination[key] = source[key]
     }
   }
@@ -384,11 +382,9 @@ export const applyEventDelta = (state, delta) => {
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
-      const statKeys = Object.keys(delta.player.stats)
-      for (let i = 0; i < statKeys.length; i++) {
-        const key = statKeys[i]
-        if (isForbiddenKey(key)) continue
-
+      for (const key in delta.player.stats) {
+        if (!Object.hasOwn(delta.player.stats, key) || isForbiddenKey(key))
+          continue
         if (typeof delta.player.stats[key] === 'number') {
           nextPlayer.stats[key] = Math.max(
             0,
@@ -511,9 +507,7 @@ export const applyEventDelta = (state, delta) => {
 
           if (newRelationships) {
             let relationshipsActuallyChanged = false
-            const newRelKeys = Object.keys(newRelationships)
-            for (let k = 0; k < newRelKeys.length; k++) {
-              const key = newRelKeys[k]
+            for (const key in newRelationships) {
               if (newRelationships[key] !== member.relationships?.[key]) {
                 relationshipsActuallyChanged = true
                 break
@@ -586,10 +580,8 @@ export const applyEventDelta = (state, delta) => {
 
   if (delta.social) {
     const nextSocial = { ...nextState.social }
-    const socialKeys = Object.keys(delta.social)
-    for (let i = 0; i < socialKeys.length; i++) {
-      const key = socialKeys[i]
-      if (isForbiddenKey(key)) continue
+    for (const key in delta.social) {
+      if (!Object.hasOwn(delta.social, key) || isForbiddenKey(key)) continue
       const value = delta.social[key]
 
       if (key === 'influencers') {
