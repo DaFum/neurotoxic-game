@@ -26,11 +26,12 @@ function runNewApproach(iterations) {
   let updatedSocial = { ...social };
   for (let i = 0; i < iterations; i++) {
     updatedSocial = { ...social };
+    const delta = Math.floor(totalFollowers * 0.25);
     for (const p of CROSS_POSTING_PLATFORMS) {
       if (p !== result.platform) {
         updatedSocial[p] = Math.max(
           0,
-          (social[p] || 0) + Math.floor(totalFollowers * 0.25)
+          (social[p] || 0) + delta
         );
       }
     }
