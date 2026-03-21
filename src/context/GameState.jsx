@@ -205,9 +205,12 @@ export const GameStateProvider = ({ children }) => {
             unlocks
           })
           // Preserve the injected currentScene (handleLoadGame forces OVERWORLD)
+          // and isScreenshotMode (test fixture flag)
           return {
             ...sanitised,
-            currentScene: savedGame.currentScene ?? sanitised.currentScene
+            currentScene: savedGame.currentScene ?? sanitised.currentScene,
+            isScreenshotMode:
+              savedGame.isScreenshotMode ?? sanitised.isScreenshotMode
           }
         } catch (err) {
           logger.error('GameState', 'Failed to hydrate injected state', err)

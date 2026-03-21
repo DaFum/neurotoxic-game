@@ -162,6 +162,7 @@ const BASE_STATE = {
   lastGigStats: null,
   activeEvent: null,
   pendingEvents: [],
+  isScreenshotMode: false,
   minigame: {
     active: false,
     type: null,
@@ -231,7 +232,9 @@ const FIXTURES = {
         nodeId: 'node_2_1'
       },
       activeEvent: null,
-      pendingEvents: []
+      pendingEvents: [],
+      // Flag to prevent event triggering in screenshot fixtures
+      isScreenshotMode: true
     },
     waitFor: async page => {
       try {
@@ -492,6 +495,11 @@ async function injectAndCapture(fixtureName, outFile) {
     viewport: { width: 1280, height: 720 }
   })
   const page = await context.newPage()
+
+  // Capture console messages for debugging
+  page.on('console', msg =>
+    console.log(`[Browser] ${msg.type()}: ${msg.text()}`)
+  )
 
   try {
     // Inject state before the app loads by going to a blank page first,

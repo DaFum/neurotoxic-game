@@ -95,7 +95,8 @@ export const PreGig = () => {
     updateBand,
     addToast,
     startRoadieMinigame,
-    startKabelsalatMinigame
+    startKabelsalatMinigame,
+    isScreenshotMode
   } = useGameState()
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
@@ -153,12 +154,8 @@ export const PreGig = () => {
   }
 
   useEffect(() => {
-    // Skip event triggering during screenshot testing (state injection mode).
-    // The injection marker signals the game was loaded via test fixture, not normal play.
-    const isScreenshotMode =
-      localStorage.getItem('neurotoxic_inject_marker') === 'true'
-
-    // Chance for a Pre-Gig event (Band or Gig category)
+    // Only trigger events if no event is already active and not in screenshot mode.
+    // isScreenshotMode is set in fixtures to prevent random event triggering during tests.
     if (!activeEvent && !isScreenshotMode) {
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
