@@ -178,13 +178,21 @@ class RoadieStageController extends BaseStageController {
     const cellW = screenW / GRID_WIDTH
     const cellH = screenH / GRID_HEIGHT
 
-    // Update Player Position
+    this._updatePlayerPosition(state, cellW, cellH)
+    this._updateCarryingVisuals(state, cellW, cellH)
+    this._checkDamageTriggers(state)
+    this._renderTraffic(state, cellW, cellH)
+    this._cleanupTraffic()
+  }
+
+  _updatePlayerPosition(state, cellW, cellH) {
     if (this.playerContainer) {
       this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
       this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
     }
+  }
 
-    // Visuals: Carrying
+  _updateCarryingVisuals(state, cellW, cellH) {
     if (this.itemSprite && this.textures.items) {
       if (state.carrying) {
         this.itemSprite.visible = true
@@ -204,8 +212,9 @@ class RoadieStageController extends BaseStageController {
         this.itemSprite.visible = false
       }
     }
+  }
 
-    // Check Damage trigger
+  _checkDamageTriggers(state) {
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
       const redColor = this.colors.bloodRed
@@ -229,8 +238,9 @@ class RoadieStageController extends BaseStageController {
         }, 200)
       }
     }
+  }
 
-    // Render Traffic
+  _renderTraffic(state, cellW, cellH) {
     if (Array.isArray(state.traffic)) {
       this.currentIds.clear()
       for (const car of state.traffic) {
@@ -285,8 +295,9 @@ class RoadieStageController extends BaseStageController {
         }
       }
     }
+  }
 
-    // Cleanup - deletion during for...of Map iteration is safe in JS
+  _cleanupTraffic() {
     if (this.carSprites) {
       for (const [id, sprite] of this.carSprites) {
         if (!this.currentIds.has(id)) {
