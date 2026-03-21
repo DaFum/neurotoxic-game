@@ -229,6 +229,15 @@ export const GameStateProvider = ({ children }) => {
     safeStorageOperation('removeInjectMarker', () =>
       localStorage.removeItem('neurotoxic_inject_marker')
     )
+
+    // Also clean up on page unload to prevent marker persistence if test crashes
+    const handleUnload = () => {
+      safeStorageOperation('removeInjectMarkerOnUnload', () =>
+        localStorage.removeItem('neurotoxic_inject_marker')
+      )
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
   }, [])
 
   // Leaderboard Sync Hook

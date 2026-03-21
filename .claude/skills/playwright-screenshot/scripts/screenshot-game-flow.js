@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable no-undef */
-import { chromium } from 'playwright'
 import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { launchBrowserWithFallback } from './browser-launcher.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/scenes')
-const CHROMIUM_PATH =
-  '/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome'
 
 async function snap(page, name, delay = 500) {
   const file = `${OUT_DIR}/${name}.png`
@@ -20,9 +18,8 @@ async function snap(page, name, delay = 500) {
 async function main() {
   await mkdir(OUT_DIR, { recursive: true })
 
-  console.log('🎬 Launching Chromium from cache...')
-  const browser = await chromium.launch({
-    executablePath: CHROMIUM_PATH,
+  console.log('🎬 Launching Chromium...')
+  const browser = await launchBrowserWithFallback({
     headless: true,
     args: [
       '--no-sandbox',
