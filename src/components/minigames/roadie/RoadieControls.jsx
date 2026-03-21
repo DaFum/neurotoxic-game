@@ -16,7 +16,7 @@ export const RoadieControls = memo(function RoadieControls({
       {/* Controls Toggle (Desktop Mode Support) */}
       <button
         type='button'
-        className='absolute top-4 right-4 z-50 p-2 bg-void-black/50 text-toxic-green border border-toxic-green rounded hover:bg-toxic-green/20 pointer-events-auto text-xs font-mono hidden md:block'
+        className='absolute top-4 right-4 z-50 p-2 bg-void-black/50 text-toxic-green border border-toxic-green rounded hover:bg-toxic-green/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green pointer-events-auto text-xs font-mono hidden md:block'
         onClick={() => setShowControls(prev => !prev)}
         aria-label={t('ui:roadieRun.controls.toggleAria')}
       >
@@ -37,7 +37,7 @@ export const RoadieControls = memo(function RoadieControls({
         <div />
         <button
           type='button'
-          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           onClick={handleMoveUp}
           aria-label={t('ui:moveUp', { defaultValue: 'Move Up' })}
         >
@@ -46,7 +46,7 @@ export const RoadieControls = memo(function RoadieControls({
         <div />
         <button
           type='button'
-          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           onClick={handleMoveLeft}
           aria-label={t('ui:moveLeft', { defaultValue: 'Move Left' })}
         >
@@ -54,7 +54,7 @@ export const RoadieControls = memo(function RoadieControls({
         </button>
         <button
           type='button'
-          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           onClick={handleMoveDown}
           aria-label={t('ui:moveDown', { defaultValue: 'Move Down' })}
         >
@@ -62,7 +62,7 @@ export const RoadieControls = memo(function RoadieControls({
         </button>
         <button
           type='button'
-          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           onClick={handleMoveRight}
           aria-label={t('ui:moveRight', { defaultValue: 'Move Right' })}
         >
