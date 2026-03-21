@@ -5,12 +5,74 @@ description: |
 
   Trigger when: asked to take screenshots of any game scene (INTRO, MENU, OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER), capture UI states (modals, toasts, overlays, HUD), produce visual regression baselines, record before/after diffs for a UI change, document the game for any purpose, capture PixiJS canvas content, or debug visual glitches.
 
-  Also trigger for: "show me what X looks like", "capture a screenshot of the gig scene", "take a screenshot before and after this change", "update visual baseline", "record all scenes", "screenshot at this point in the flow", "make a visual test for this UI".
+  Also trigger for: "show me what X looks like", "what does X look like", "capture a screenshot of the gig scene", "take a screenshot before and after this change", "update visual baseline", "record all scenes", "screenshot at this point in the flow", "make a visual test for this UI", "document the game", "I want to see the current state of", "can you show me", "screenshot this".
 ---
 
 # Playwright Screenshot Skill
 
-Takes precise screenshots of the Neurotoxic game at any point in its lifecycle using Playwright. Covers full-page captures, element-level crops, PixiJS canvas, all game scenes, overlay states, and CI-ready visual regression baselines.
+Takes precise screenshots of the Neurotoxic game using Playwright. Covers all scenes, element crops, PixiJS canvas, overlay states, and CI-ready visual regression baselines.
+
+---
+
+## Agent Execution Workflow
+
+When triggered, follow this decision tree — don't just provide code samples, actually run the screenshot:
+
+### Step 1 — Decide scope
+
+| Request | Approach |
+|---------|----------|
+| All scenes / full tour | Run `screenshot-all-scenes.js` script |
+| One specific scene | Use state injection (`screenshot-state-inject.js`) |
+| Current page / overlay / element | Write inline Playwright snippet as a temp spec |
+| Before/after a code change | Run injection script twice; diff with `diff-screenshots.js` |
+| Visual regression test | Add `toMatchSnapshot()` to `e2e/visual.spec.js` |
+
+### Step 2 — Check dev server
+
+The scripts and tests require the dev server running at `http://localhost:5173`. Check first:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+```
+
+If it returns anything other than 200, start it in the background:
+```bash
+pnpm run dev &
+sleep 3
+```
+
+The Playwright test runner auto-starts the server via `webServer` config. The standalone scripts do not — they need it running.
+
+### Step 3 — Run and capture
+
+**All scenes:**
+```bash
+node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+```
+Output: `screenshots/scenes/01-intro.png` … `14-overworld-after-gig.png`
+
+**Single scene via state injection:**
+```bash
+node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js <fixture>
+# Fixtures: menu | overworld | pregig | postgig | gameover | clinic | event-modal | band-hq
+```
+Output: `screenshots/injected/<fixture>.png`
+
+**Run existing E2E visual tests:**
+```bash
+pnpm exec playwright test e2e/visual.spec.js
+```
+
+### Step 4 — Show screenshots to the user
+
+After capturing, use the `Read` tool to display each PNG file inline so the user sees the result immediately. Do not just report the file path — show the image.
+
+```
+Read("screenshots/scenes/05-overworld.png")  ← Claude can render PNG files
+```
+
+---
 
 ## Quick Reference
 
@@ -20,7 +82,8 @@ Takes precise screenshots of the Neurotoxic game at any point in its lifecycle u
 | Specific scene from cold start | inject state → navigate | `screenshot-state-inject.js` |
 | Single UI element | `locator.screenshot()` | inline snippet |
 | PixiJS canvas only | `page.locator('canvas').screenshot()` | inline snippet |
-| Visual regression baseline | `toMatchSnapshot()` | inline snippet |
+| Visual regression baseline | `toMatchSnapshot()` | `e2e/visual.spec.js` |
+| Before/after diff | run twice + `diff-screenshots.js` | see Pattern F |
 
 ---
 
@@ -42,7 +105,7 @@ await page.screenshot({ path: 'out/full.png', fullPage: true })
 ### 3. Single Element / Locator
 
 ```js
-const hud = page.locator('.hud-root')   // adjust selector
+const hud = page.locator('.hud-root')
 await hud.screenshot({ path: 'out/hud.png' })
 ```
 
@@ -57,10 +120,9 @@ await page.screenshot({
 
 ### 5. PixiJS Canvas
 
-The PixiJS canvas is rendered inside `.absolute.inset-0` at z-index 20. The canvas element is the only `<canvas>` on the page during GIG / minigame scenes.
+The PixiJS canvas renders inside `.absolute.inset-0`. `--disable-webgl` forces Canvas2D fallback — screenshots are reliable.
 
 ```js
-// Wait for canvas to paint at least one frame
 await page.locator('canvas').waitFor({ state: 'visible', timeout: 10000 })
 await page.waitForTimeout(500) // allow first render
 await page.locator('canvas').screenshot({ path: 'out/pixi-canvas.png' })
@@ -70,7 +132,7 @@ await page.locator('canvas').screenshot({ path: 'out/pixi-canvas.png' })
 
 ```js
 expect(await page.screenshot()).toMatchSnapshot('scene-baseline.png', {
-  maxDiffPixelRatio: 0.05   // 5 % pixel tolerance
+  maxDiffPixelRatio: 0.05   // 5% pixel tolerance
 })
 ```
 
@@ -89,13 +151,15 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 | **OVERWORLD** | MENU → "Start Tour" | `getByRole('heading', { name: /tour plan/i })` |
 | **TRAVEL_MINIGAME** | OVERWORLD → click node → confirm | text `TOURBUS TERROR` visible |
 | **PREGIG** | complete travel → dismiss events | heading `/preparation/i` visible |
-| **PRE_GIG_MINIGAME** | PREGIG → Start Show | `canvas` visible |
-| **GIG** | pre-gig minigame → Shift+P | heading `/gig report/i` (skip to postgig) |
-| **POSTGIG** | GIG completes (or auto-fail) | heading `/gig report/i` visible |
-| **GAMEOVER** | inject bankrupt save state | heading `/game over/i` visible |
-| **SETTINGS** | MENU → any settings button | heading `/settings/i` visible |
+| **PRE_GIG_MINIGAME** | PREGIG → Start Show | `canvas` visible + 600 ms |
+| **GIG** | pre-gig minigame → Shift+P | `canvas` visible + 1500 ms |
+| **POSTGIG** | GIG → Shift+P (or auto-fail) | heading `/gig report/i` visible |
+| **GAMEOVER** | inject `gameover` save state | heading `/game over/i` visible |
+| **SETTINGS** | MENU → Band HQ → SETTINGS tab | heading `/settings/i` visible |
 | **CREDITS** | MENU → "Credits" | heading `/credits/i` visible |
-| **CLINIC** | OVERWORLD → clinic node | clinic scene visible |
+| **CLINIC** | inject `clinic` save state | `networkidle` + 500 ms |
+
+**Fastest paths for hard-to-reach scenes:** use state injection — no need to play through.
 
 ---
 
@@ -126,32 +190,28 @@ test('capture band HQ modal', async ({ page }) => {
 
 ### Pattern C — Inject State, Skip to Deep Scene
 
-Use `screenshot-state-inject.js` to inject a pre-built localStorage save before loading the app. This is the fastest way to reach late-game scenes (POSTGIG, GAMEOVER) without playing through the full flow.
-
 ```js
-import { injectSave } from './scripts/screenshot-state-inject.js'
+import { injectSave } from './.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
 
 test('capture post-gig', async ({ page }) => {
-  await injectSave(page, 'postgig-ready')   // loads a fixture save
-  await page.goto('/')
-  await page.waitForLoadState('networkidle')
+  await page.goto('/', { waitUntil: 'commit' })
+  await injectSave(page, 'postgig')
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByRole('heading', { name: /gig report/i }).waitFor()
   await page.screenshot({ path: 'screenshots/postgig.png' })
 })
 ```
 
-See `scripts/screenshot-state-inject.js` for available fixtures and how to create custom saves.
+Available fixtures: `menu | overworld | pregig | postgig | gameover | clinic | event-modal | band-hq`
 
 ### Pattern D — PixiJS Canvas During GIG
 
-The Pixi canvas renders the rhythm lane. `--disable-webgl` is set in `playwright.config.js`; Pixi falls back to Canvas2D, which is fully screenshottable.
-
 ```js
 test('capture gig canvas', async ({ page }) => {
-  // ... navigate to GIG scene via full flow or state injection
+  // navigate to GIG scene via full flow or state injection
   await page.locator('canvas').waitFor({ state: 'visible', timeout: 15000 })
-  await page.waitForTimeout(1000)  // let notes render
+  await page.waitForTimeout(1500)  // let notes render
   await page.locator('canvas').screenshot({ path: 'screenshots/gig-canvas.png' })
-
   // OR: composite canvas + HUD in one shot
   await page.screenshot({ path: 'screenshots/gig-full.png' })
 })
@@ -169,34 +229,31 @@ test('document full game flow', async ({ page }) => {
   await page.getByRole('button', { name: /start tour/i }).click()
   await page.getByRole('heading', { name: /tour plan/i }).waitFor()
   await snap('02-overworld')
-
-  // ... continue through flow
 })
 ```
 
-See `scripts/screenshot-all-scenes.js` for a ready-made full-flow capture.
+See `scripts/screenshot-all-scenes.js` for the ready-made full-flow capture.
 
 ### Pattern F — Before / After Diff
 
-```js
-// before.spec.js
-await page.screenshot({ path: 'screenshots/before/component.png' })
-
-// after.spec.js
-await page.screenshot({ path: 'screenshots/after/component.png' })
-```
-
-Then diff with:
 ```bash
-node .claude/skills/playwright-screenshot/scripts/diff-screenshots.js \
-  screenshots/before/ screenshots/after/
+# Take before screenshots
+OUT_DIR=screenshots/before node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+
+# Make your code changes...
+
+# Take after screenshots
+OUT_DIR=screenshots/after node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+
+# Diff
+node .claude/skills/playwright-screenshot/scripts/diff-screenshots.js screenshots/before/ screenshots/after/
 ```
 
 ---
 
 ## Waiting Correctly Before Shooting
 
-Screenshots taken too early capture loading spinners or blank frames. Use the right wait signal per scene:
+Screenshots taken too early capture loading spinners or blank frames.
 
 ```js
 // Lazy-loaded scenes: wait for React Suspense to resolve
@@ -220,21 +277,14 @@ await page.getByRole('heading', { name: /tour plan/i }).waitFor({ state: 'visibl
 See `references/selector-cookbook.md` for the full selector list per scene. Quick cheatsheet:
 
 ```js
-// Scene-level containers
 page.locator('.game-container')                    // root wrapper (all scenes)
 page.locator('canvas')                             // PixiJS canvas (GIG/minigames)
-
-// Navigation landmarks
 page.getByRole('heading', { name: /neurotoxic/i }) // MENU
 page.getByRole('heading', { name: /tour plan/i })  // OVERWORLD
 page.getByRole('heading', { name: /preparation/i })// PREGIG
 page.getByRole('heading', { name: /gig report/i }) // POSTGIG
 page.getByRole('heading', { name: /game over/i })  // GAMEOVER
-
-// HUD (visible in OVERWORLD, PREGIG, POSTGIG, CLINIC)
 page.locator('.hud-bar')                            // top resource bar
-
-// Overlays
 page.getByRole('dialog')                            // EventModal, BandHQ
 page.getByRole('status')                            // Toast notifications
 ```
@@ -242,8 +292,6 @@ page.getByRole('status')                            // Toast notifications
 ---
 
 ## Output Directory Convention
-
-Store screenshots under `screenshots/` (gitignored by convention) or `e2e/__snapshots__/` for snapshot baselines:
 
 ```
 screenshots/
@@ -254,39 +302,9 @@ screenshots/
 └── baselines/       # visual regression baselines (commit these)
 ```
 
-Add to `.gitignore`:
-```
-screenshots/scenes/
-screenshots/flow/
-screenshots/before/
-screenshots/after/
-```
+Add to `.gitignore`: `screenshots/scenes/`, `screenshots/flow/`, `screenshots/before/`, `screenshots/after/`
 
 Commit only `screenshots/baselines/` or `e2e/__snapshots__/`.
-
----
-
-## CI Usage
-
-```yaml
-# .github/workflows/visual.yml (excerpt)
-- name: Install Playwright browsers
-  run: pnpm exec playwright install chromium --with-deps
-
-- name: Run visual regression
-  run: pnpm exec playwright test e2e/visual.spec.js
-
-- name: Upload screenshots on failure
-  if: failure()
-  uses: actions/upload-artifact@v4
-  with:
-    name: playwright-screenshots
-    path: |
-      e2e/__snapshots__/
-      test-results/
-```
-
-See `references/ci-integration.md` for full CI workflow.
 
 ---
 
@@ -303,4 +321,16 @@ node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js pos
 node .claude/skills/playwright-screenshot/scripts/diff-screenshots.js before/ after/
 ```
 
-All scripts respect `BASE_URL` env var (default: `http://localhost:5173`).
+All scripts respect `BASE_URL` env var (default: `http://localhost:5173`) and `OUT_DIR`.
+
+## CI Usage
+
+See `references/ci-integration.md` for the full GitHub Actions workflow. The `webServer.command` in `playwright.config.js` is correctly set to `pnpm run dev`.
+
+```bash
+# Update visual regression baselines
+pnpm exec playwright test e2e/visual.spec.js --update-snapshots
+
+# Run all E2E tests
+pnpm exec playwright test
+```

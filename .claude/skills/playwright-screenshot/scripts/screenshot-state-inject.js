@@ -261,7 +261,27 @@ const FIXTURES = {
       currentScene: 'CLINIC',
       player: { money: 800, fame: 500 }
     },
-    waitFor: async page => page.waitForLoadState('networkidle')
+    waitFor: async page => {
+      await page.waitForLoadState('networkidle')
+      // Clinic has no unique heading — wait for the scene container to stabilize
+      await page.waitForTimeout(500)
+    }
+  },
+
+  'band-hq': {
+    description: 'Main menu with Band HQ modal open',
+    state: { currentScene: 'MENU' },
+    waitFor: async page =>
+      page
+        .getByRole('heading', { name: /neurotoxic/i })
+        .waitFor({ state: 'visible', timeout: 10000 }),
+    capture: async page => {
+      await page.getByRole('button', { name: /band hq/i }).click()
+      await page
+        .getByRole('heading', { name: /band hq/i })
+        .waitFor({ state: 'visible' })
+      await page.waitForTimeout(300)
+    }
   },
 
   'event-modal': {

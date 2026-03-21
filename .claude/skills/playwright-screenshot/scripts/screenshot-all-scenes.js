@@ -207,7 +207,12 @@ async function main() {
         // ── 10. PRE_GIG_MINIGAME ──────────────────────────────────────────
         console.log('→ PRE_GIG_MINIGAME')
         await page.getByRole('button', { name: /start show/i }).click()
-        await page.waitForTimeout(2000)
+        // Wait for the canvas to actually be visible before screenshotting
+        await page
+          .locator('canvas')
+          .waitFor({ state: 'visible', timeout: 10000 })
+          .catch(() => {})
+        await page.waitForTimeout(600) // let Pixi render first frame
         await snap(page, '10-pregig-minigame')
 
         await page.keyboard.press('Shift+P')
@@ -222,15 +227,26 @@ async function main() {
           await miniContinue.click()
         }
 
-        // ── 11. GIG (rhythm game — auto-fail, wait for report) ────────────
-        console.log('→ GIG (waiting for auto-complete/fail)')
+        // ── 11. GIG (rhythm game canvas + auto-fail for report) ───────────
+        console.log('→ GIG (canvas capture, then Shift+P for report)')
         const gigReport = page.getByRole('heading', { name: /gig report/i })
         try {
-          await gigReport.waitFor({ state: 'visible', timeout: 90000 })
-          await waitSettle(page)
-          await snap(page, '11-postgig-report')
+          // Capture mid-gig canvas while notes are falling
+          await page
+            .locator('canvas')
+            .waitFor({ state: 'visible', timeout: 15000 })
+            .catch(() => {})
+          await page.waitForTimeout(1500) // let notes render
+          await snap(page, '11-gig-canvas')
+          await snap(page, '11b-gig-full') // full viewport captures canvas + HUD overlay
 
-          // ── 12. POSTGIG social phase ────────────────────────────────────
+          // Use Shift+P backdoor to skip to end instead of waiting 90s for auto-fail
+          await page.keyboard.press('Shift+P')
+          await gigReport.waitFor({ state: 'visible', timeout: 15000 })
+          await waitSettle(page)
+          await snap(page, '12-postgig-report')
+
+          // ── 13. POSTGIG social phase ────────────────────────────────────
           console.log('→ POSTGIG (social)')
           await page
             .getByRole('button', { name: /continue to socials/i })
@@ -241,19 +257,19 @@ async function main() {
               state: 'visible'
             })
           await waitSettle(page)
-          await snap(page, '12-postgig-social')
+          await snap(page, '13-postgig-social')
 
           await page
             .getByRole('button', { name: /back to tour/i })
             .waitFor({ state: 'visible' })
           await waitSettle(page)
-          await snap(page, '12b-postgig-result')
+          await snap(page, '13b-postgig-result')
 
           await page.getByRole('button', { name: /back to tour/i }).click()
           await page
             .getByRole('heading', { name: /tour plan/i })
             .waitFor({ state: 'visible' })
-          await snap(page, '13-overworld-after-gig')
+          await snap(page, '14-overworld-after-gig')
         } catch (_) {
           console.warn(
             '  ⚠ GIG/POSTGIG capture failed — gig may still be running'
