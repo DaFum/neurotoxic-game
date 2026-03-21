@@ -12,7 +12,7 @@
  * Usage:
  *   node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js <fixture> [outfile]
  *
- *   Fixtures:  menu | overworld | pregig | postgig | gameover | clinic | event-modal
+ *   Fixtures:  menu | overworld | pregig | gig | postgig | gameover | clinic | band-hq | event-modal
  *
  * Examples:
  *   node screenshot-state-inject.js gameover screenshots/gameover.png
@@ -200,8 +200,10 @@ const FIXTURES = {
           .getByRole('heading', { name: /tour plan|overworld/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: wait for any main content to appear
-        return await page.waitForTimeout(2000)
+        // Fallback: wait for body to be visible
+        return await page
+          .locator('body')
+          .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
   },
@@ -226,8 +228,10 @@ const FIXTURES = {
           .getByRole('heading', { name: /preparation|pregig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        // Fallback: just wait a bit
-        return await page.waitForTimeout(2000)
+        // Fallback: wait for body to be visible
+        return await page
+          .locator('body')
+          .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
   },
@@ -255,7 +259,10 @@ const FIXTURES = {
           .getByRole('heading', { name: /gig report|postgig/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        return await page.waitForTimeout(2000)
+        // Fallback: wait for body to be visible
+        return await page
+          .locator('body')
+          .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
   },
@@ -273,7 +280,10 @@ const FIXTURES = {
           .getByRole('heading', { name: /game over/i })
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        return await page.waitForTimeout(2000)
+        // Fallback: wait for body to be visible
+        return await page
+          .locator('body')
+          .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
   },
@@ -299,7 +309,10 @@ const FIXTURES = {
           .locator('canvas')
           .waitFor({ state: 'visible', timeout: 15000 })
       } catch {
-        await page.waitForTimeout(2000)
+        // Fallback: wait for body to be visible
+        return await page
+          .locator('body')
+          .waitFor({ state: 'visible', timeout: 2000 })
       }
     }
   },
@@ -311,12 +324,10 @@ const FIXTURES = {
       player: { money: 800, fame: 500 }
     },
     waitFor: async page => {
-      try {
-        await page
-          .waitForLoadState('networkidle', { timeout: 5000 })
-          .catch(() => {})
-      } catch (_e) {}
-      // Clinic has no unique heading — wait for the scene container to stabilize
+      // Clinic has no unique heading — wait for networkidle then stabilize
+      await page
+        .waitForLoadState('networkidle', { timeout: 5000 })
+        .catch(() => console.log('    (networkidle timed out, continuing)'))
       await page.waitForTimeout(500)
     }
   },
@@ -439,15 +450,10 @@ async function injectAndCapture(fixtureName, outFile) {
 
     // Now reload to let the game pick up the injected state
     await page.reload({ waitUntil: 'domcontentloaded' })
-    // Wait for app to initialize (avoid networkidle which can hang on slow connections)
-    await page.waitForTimeout(1000)
-    try {
-      await page
-        .waitForLoadState('networkidle', { timeout: 5000 })
-        .catch(() => {})
-    } catch (_e) {
-      // networkidle timeout is OK - app may be fully functional already
-    }
+    // Attempt networkidle, but app may be functional even if it times out
+    await page
+      .waitForLoadState('networkidle', { timeout: 5000 })
+      .catch(() => console.log('    (networkidle timed out, continuing)'))
 
     // Wait for the scene to be ready
     await fixture.waitFor(page)
@@ -473,7 +479,7 @@ async function injectAndCapture(fixtureName, outFile) {
  * Call this AFTER page.goto() has established the origin, before your actual navigation.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} fixtureName  One of: menu | overworld | pregig | postgig | gameover | clinic | event-modal
+ * @param {string} fixtureName  One of: menu | overworld | pregig | gig | postgig | gameover | clinic | band-hq | event-modal
  */
 export async function injectSave(page, fixtureName) {
   const fixture = FIXTURES[fixtureName]
