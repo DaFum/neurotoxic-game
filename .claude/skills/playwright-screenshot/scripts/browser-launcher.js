@@ -16,9 +16,8 @@
  */
 
 import { chromium } from 'playwright'
-import { execSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readdirSync, existsSync } from 'node:fs'
+import { resolve, join } from 'node:path'
 import { homedir } from 'node:os'
 
 const DEFAULT_ARGS = [
@@ -33,21 +32,34 @@ const DEFAULT_ARGS = [
 async function findCachedBrowser() {
   const cacheDir = resolve(homedir(), '.cache', 'ms-playwright')
 
-  // Look for most recent chromium build
+  // Cross-platform browser discovery (no shell commands)
   try {
-    const result = execSync(
-      `find ${cacheDir} -name chrome -o -name chromium 2>/dev/null | head -1`,
-      {
-        encoding: 'utf-8',
-        timeout: 5000
+    if (!existsSync(cacheDir)) {
+      return null
+    }
+
+    const browsers = readdirSync(cacheDir, { withFileTypes: true })
+      .filter(d => d.isDirectory() && d.name.includes('chromium'))
+      .sort((a, b) => {
+        // Sort by version number (descending) to get most recent
+        const aVer = parseInt(a.name.match(/\d+/) || [0], 10)
+        const bVer = parseInt(b.name.match(/\d+/) || [0], 10)
+        return bVer - aVer
+      })
+
+    for (const browser of browsers) {
+      const chromePath = join(
+        cacheDir,
+        browser.name,
+        process.platform === 'win32' ? 'chrome-win' : 'chrome-linux',
+        process.platform === 'win32' ? 'chrome.exe' : 'chrome'
+      )
+      if (existsSync(chromePath)) {
+        return chromePath
       }
-    )
-    const browserPath = result.trim()
-    if (browserPath && existsSync(browserPath)) {
-      return browserPath
     }
   } catch (_error) {
-    // find command failed or timed out
+    // Directory read failed, return null and let fallback handle it
   }
 
   return null

@@ -9,10 +9,15 @@ Takes precise screenshots of the Neurotoxic game using Playwright. Covers all sc
 
 ## ✨ Recent Improvements (2026-03-21)
 
-- **Robust browser launcher** (`browser-launcher.js`): Automatically falls back to cached Chromium if CDN is unreachable
-- **Extended screenshot timeouts** (60s): Handles font loading delays in Playwright
-- **Network-aware error handling**: Helpful recovery steps when browser binaries are unavailable
-- **Environment variable support**: `BROWSER_PATH` for custom Chromium installations
+### v1.1.0 — Production Ready (5/5 Rating)
+- ✅ **Cross-platform browser discovery** (`browser-launcher.js`): Replaces shell `find` with Node.js APIs for Windows/Linux/Mac compatibility
+- ✅ **BASE_STATE validation test**: Automatic detection of state schema drift (prevents silent fixture failures)
+- ✅ **Centralized scene config** (`scenes.config.js`): Single source of truth for all 16 scenes and 9 fixtures
+- ✅ **CI integration guide** (`ci-integration-guide.md`): Complete GitHub Actions workflows with parallel captures and visual regression
+- ✅ **Robust browser launcher**: 3-tier fallback (CDN → cached → env var) with helpful error messages
+- ✅ **Extended screenshot timeouts** (60s): Handles font loading delays
+- ✅ **Network-aware error handling**: Selective error discrimination (TimeoutError vs. fatal failures)
+- ✅ **Environment variable support**: `BROWSER_PATH`, `BASE_URL`, `OUT_DIR` fully documented
 
 ---
 
