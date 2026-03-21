@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 export const RackScrew = ({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
     <circle
@@ -27,37 +29,59 @@ export const RackScrew = ({ x, y }) => (
   </g>
 )
 
-export const RackPanel = () => (
+const RACK_GEOMETRY = {
+  OUTER_X: 40,
+  OUTER_Y: 20,
+  OUTER_WIDTH: 720,
+  OUTER_HEIGHT: 180,
+  INNER_X: 50,
+  INNER_Y: 30,
+  INNER_WIDTH: 700,
+  INNER_HEIGHT: 160,
+  SCREW_LEFT_X: 60,
+  SCREW_RIGHT_X: 760,
+  SCREW_TOP_Y: 40,
+  SCREW_BOTTOM_Y: 170
+}
+
+export const RackPanel = memo(() => (
   <g>
     <rect
-      x='40'
-      y='20'
-      width='720'
-      height='180'
+      x={RACK_GEOMETRY.OUTER_X}
+      y={RACK_GEOMETRY.OUTER_Y}
+      width={RACK_GEOMETRY.OUTER_WIDTH}
+      height={RACK_GEOMETRY.OUTER_HEIGHT}
       fill='var(--color-shadow-black)'
       stroke='var(--color-concrete-gray)'
       strokeWidth='4'
     />
     <rect
-      x='50'
-      y='30'
-      width='700'
-      height='160'
+      x={RACK_GEOMETRY.INNER_X}
+      y={RACK_GEOMETRY.INNER_Y}
+      width={RACK_GEOMETRY.INNER_WIDTH}
+      height={RACK_GEOMETRY.INNER_HEIGHT}
       fill='var(--color-void-black)'
     />
-    <RackScrew x='60' y='40' />
-    <RackScrew x='760' y='40' />
-    <RackScrew x='60' y='170' />
-    <RackScrew x='760' y='170' />
+    <RackScrew x={RACK_GEOMETRY.SCREW_LEFT_X} y={RACK_GEOMETRY.SCREW_TOP_Y} />
+    <RackScrew x={RACK_GEOMETRY.SCREW_RIGHT_X} y={RACK_GEOMETRY.SCREW_TOP_Y} />
+    <RackScrew x={RACK_GEOMETRY.SCREW_LEFT_X} y={RACK_GEOMETRY.SCREW_BOTTOM_Y} />
+    <RackScrew x={RACK_GEOMETRY.SCREW_RIGHT_X} y={RACK_GEOMETRY.SCREW_BOTTOM_Y} />
   </g>
-)
+))
+
+const INDICATOR_GEOMETRY = {
+  CX: 80,
+  CY: 100,
+  RADIUS: 6,
+  LABEL_Y: 125
+}
 
 export const PowerIndicator = ({ t, isPowerConnected }) => (
   <g>
     <circle
-      cx='80'
-      cy='100'
-      r='6'
+      cx={INDICATOR_GEOMETRY.CX}
+      cy={INDICATOR_GEOMETRY.CY}
+      r={INDICATOR_GEOMETRY.RADIUS}
       fill={
         isPowerConnected
           ? 'var(--color-success-green)'
@@ -70,8 +94,8 @@ export const PowerIndicator = ({ t, isPowerConnected }) => (
       }}
     />
     <text
-      x='80'
-      y='125'
+      x={INDICATOR_GEOMETRY.CX}
+      y={INDICATOR_GEOMETRY.LABEL_Y}
       fill='var(--color-ash-gray)'
       fontSize='8'
       textAnchor='middle'

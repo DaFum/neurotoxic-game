@@ -1,9 +1,11 @@
+const LIGHTNING_Y_COORDS = [0, 200, 400, 600]
+
 export const LightningEffects = ({ lightningSeeds }) => (
   <g>
     {lightningSeeds.map(seed => (
       <path
         key={seed.id}
-        d={`M ${seed.startX} 0 L ${seed.startX + seed.o1} 200 L ${seed.startX + seed.o2} 400 L ${seed.startX + seed.o3} 600`}
+        d={`M ${seed.startX} ${LIGHTNING_Y_COORDS[0]} L ${seed.startX + seed.o1} ${LIGHTNING_Y_COORDS[1]} L ${seed.startX + seed.o2} ${LIGHTNING_Y_COORDS[2]} L ${seed.startX + seed.o3} ${LIGHTNING_Y_COORDS[3]}`}
         fill='none'
         stroke='var(--color-warning-yellow)'
         strokeWidth={seed.w}
