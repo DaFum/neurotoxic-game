@@ -1,16 +1,11 @@
 // TODO: Review this file
-import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
+import { useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
-import { secureRandom } from '../utils/crypto.js'
+import { useChatterLogic } from '../hooks/useChatterLogic'
 
-let secureRandomFallbackWarned = false
-
-const CHATTER_DELAY_MIN_MS = 8000
-const CHATTER_DELAY_RANGE_MS = 17000
 const MESSAGE_LIFETIME_MS = 10000
 
 const FONT_UI_CLASS = 'font-ui'
@@ -95,33 +90,6 @@ const SCENE_STYLES = {
 const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
 
 const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
-
-const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
-  if (fixedSpeaker) return fixedSpeaker
-  const memberNames = []
-  if (bandMembers) {
-    for (let i = 0; i < bandMembers.length; i++) {
-      const name = bandMembers[i].name
-      if (typeof name === 'string') {
-        memberNames.push(name)
-      }
-    }
-  }
-  if (memberNames.length > 0) {
-    let roll
-    try {
-      roll = secureRandom()
-    } catch (error) {
-      console.warn(
-        'Crypto API not available, falling back to Math.random',
-        error
-      )
-      roll = Math.random()
-    }
-    return memberNames[Math.floor(roll * memberNames.length)]
-  }
-  return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
-}
 
 const resolveMessageTextColor = (msgType, currentScene) => {
   if (msgType === 'hate' || currentScene === GAME_PHASES.GAMEOVER) {
@@ -279,118 +247,9 @@ ChatterMessage.propTypes = {
  */
 export const ChatterOverlay = memo(({ gameState }) => {
   const { t } = useTranslation(['chatter', 'ui'])
-  const stateRef = useRef(gameState)
-  const [messages, setMessages] = useState([])
+  const { messages, removeMessage } = useChatterLogic(gameState, t)
 
   const currentScene = gameState.currentScene
-
-  const removeMessage = useCallback(id => {
-    setMessages(prev => prev.filter(m => m.id !== id))
-  }, [])
-
-  useEffect(() => {
-    stateRef.current = gameState
-  }, [gameState])
-
-  // Single recursive effect loop using refs
-  useEffect(() => {
-    let timeoutId
-    let active = true
-
-    const scheduleNext = () => {
-      if (!active) return
-      let delay
-      try {
-        delay = secureRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-      } catch (error) {
-        console.warn(
-          'Crypto API not available, falling back to Math.random',
-          error
-        )
-        delay = Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-      }
-
-      timeoutId = setTimeout(() => {
-        if (!active) return
-
-        const currentState = stateRef.current
-        const result = getRandomChatter(currentState)
-
-        if (result) {
-          const { text, speaker: fixedSpeaker, type } = result
-          const members = currentState.band?.members
-          const speaker = resolveSpeaker(fixedSpeaker, members, t)
-
-          const generators = [
-            () => (globalThis.crypto || window?.crypto)?.randomUUID(),
-            () => secureRandom().toString(36).substring(2)
-          ]
-          let id
-          for (const gen of generators) {
-            try {
-              id = gen()
-              if (id) break
-            } catch {
-              // Try the next generator
-            }
-          }
-
-          if (!id) {
-            // Fallback to Math.random() if secureRandom is unavailable
-            let roll
-            try {
-              roll = secureRandom()
-            } catch (error) {
-              if (!secureRandomFallbackWarned) {
-                secureRandomFallbackWarned = true
-                console.warn(
-                  'secureRandom() failed, falling back to Math.random().',
-                  error
-                )
-              }
-              roll = Math.random()
-            }
-            id = `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
-          }
-
-          const newMessage = {
-            id: String(id),
-            text,
-            speaker,
-            type,
-            scene: currentState.currentScene
-          }
-
-          setMessages(prev => [
-            ...prev.slice(-4), // Keep max 5 (4 old + 1 new)
-            newMessage
-          ])
-        }
-
-        scheduleNext()
-      }, delay)
-    }
-
-    // Pause scheduling when tab is hidden
-    const handleVisibilityChange = () => {
-      if (!active) return
-      if (document.hidden) {
-        clearTimeout(timeoutId)
-        return
-      }
-      clearTimeout(timeoutId)
-      scheduleNext()
-    }
-
-    scheduleNext()
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      active = false
-      clearTimeout(timeoutId)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [t])
 
   // Scene-aware positioning:
   // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center

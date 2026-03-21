@@ -96,7 +96,8 @@ export const handleNodeArrival = ({
 
       // Show cancellation check: Deterministic for zero harmony, probabilistic for low harmony (Chaos Tour Mechanic)
       const isLowHarmony = harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD
-      const luckCheck = rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+      const luckCheck =
+        rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
       const shouldCancel = harmony <= 0 || (isLowHarmony && luckCheck)
 
       if (shouldCancel) {

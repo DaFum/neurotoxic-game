@@ -278,14 +278,19 @@ export const Overworld = () => {
     <div
       className={`w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      <OverworldHeader t={t} locationName={locationName} isTraveling={isTraveling} />
+      <OverworldHeader
+        t={t}
+        locationName={locationName}
+        isTraveling={isTraveling}
+      />
 
       <OverworldMenu
         t={t}
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
         isTraveling={isTraveling}
-        vanFuel={player.van?.fuel} vanCondition={player.van?.condition}
+        vanFuel={player.van?.fuel}
+        vanCondition={player.van?.condition}
         isSaving={isSaving}
         openStash={openStash}
         openQuests={openQuests}

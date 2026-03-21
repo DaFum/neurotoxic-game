@@ -404,10 +404,7 @@ export const usePostGigLogic = () => {
         const delta = Math.floor(totalFollowers * 0.25)
         for (const p of CROSS_POSTING_PLATFORMS) {
           if (p !== result.platform) {
-            updatedSocial[p] = Math.max(
-              0,
-              (social[p] || 0) + delta
-            )
+            updatedSocial[p] = Math.max(0, (social[p] || 0) + delta)
           }
         }
       }

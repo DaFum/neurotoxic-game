@@ -55,7 +55,8 @@ export class NoteManager {
       }
       if (loadedTextures.lightning) {
         this.noteTextures.lightning = loadedTextures.lightning
-        if (this.pool) this.pool.noteTextures.lightning = loadedTextures.lightning
+        if (this.pool)
+          this.pool.noteTextures.lightning = loadedTextures.lightning
       }
     } catch (error) {
       handleError(error, {

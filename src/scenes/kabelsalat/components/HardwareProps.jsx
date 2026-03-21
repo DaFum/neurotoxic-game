@@ -64,8 +64,14 @@ export const RackPanel = memo(() => (
     />
     <RackScrew x={RACK_GEOMETRY.SCREW_LEFT_X} y={RACK_GEOMETRY.SCREW_TOP_Y} />
     <RackScrew x={RACK_GEOMETRY.SCREW_RIGHT_X} y={RACK_GEOMETRY.SCREW_TOP_Y} />
-    <RackScrew x={RACK_GEOMETRY.SCREW_LEFT_X} y={RACK_GEOMETRY.SCREW_BOTTOM_Y} />
-    <RackScrew x={RACK_GEOMETRY.SCREW_RIGHT_X} y={RACK_GEOMETRY.SCREW_BOTTOM_Y} />
+    <RackScrew
+      x={RACK_GEOMETRY.SCREW_LEFT_X}
+      y={RACK_GEOMETRY.SCREW_BOTTOM_Y}
+    />
+    <RackScrew
+      x={RACK_GEOMETRY.SCREW_RIGHT_X}
+      y={RACK_GEOMETRY.SCREW_BOTTOM_Y}
+    />
   </g>
 ))
 
