@@ -198,12 +198,14 @@ describe('LaneManager', () => {
   })
 
   test('does not redraw static lanes on first update frame', () => {
-    laneManager.update(gameStateRef.current)
-
+    // Clear out any initial calls from init() drawing so we can just check the update
     const firstLaneStaticGraphics = getLaneGraphics({
       laneIndex: 0,
       layer: 'static'
     })
+    firstLaneStaticGraphics.clear.mock.resetCalls()
+
+    laneManager.update(gameStateRef.current)
 
     assert.equal(firstLaneStaticGraphics.clear.mock.calls.length, 0)
   })

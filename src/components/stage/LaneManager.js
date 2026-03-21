@@ -12,6 +12,84 @@ const HIT_BAR_ACTIVE_ALPHA = 0.95
 const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
 
+class LaneRenderer {
+  constructor(index) {
+    this.static = new Graphics()
+    this.static.__laneIndex = index
+    this.static.__layer = 'static'
+
+    this.active = new Graphics()
+    this.active.__laneIndex = index
+    this.active.__layer = 'active'
+    this.active.visible = false
+
+    this.inactive = new Graphics()
+    this.inactive.__laneIndex = index
+    this.inactive.__layer = 'inactive'
+    this.inactive.visible = true
+  }
+
+  addTo(container) {
+    container.addChild(this.static)
+    container.addChild(this.inactive)
+    container.addChild(this.active)
+  }
+
+  draw(lane, renderX, layout) {
+    this.static.clear()
+    this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
+    this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+    this.static.rect(
+      renderX + layout.laneWidth * 0.35,
+      0,
+      layout.laneWidth * 0.3,
+      layout.laneHeight
+    )
+    this.static.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
+    this.static.stroke({
+      width: layout.laneStrokeWidth,
+      color: LANE_BORDER_COLOR,
+      alpha: LANE_BORDER_ALPHA
+    })
+
+    this.active.clear()
+    this.active.rect(
+      renderX,
+      layout.hitLineY,
+      layout.laneWidth,
+      layout.hitLineHeight
+    )
+    this.active.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
+    this.active.stroke({
+      width: layout.hitLineStrokeWidth,
+      color: HIT_BAR_BORDER_COLOR
+    })
+
+    this.inactive.clear()
+    this.inactive.rect(
+      renderX,
+      layout.hitLineY,
+      layout.laneWidth,
+      layout.hitLineHeight
+    )
+    this.inactive.fill({
+      color: lane.color,
+      alpha: HIT_BAR_INACTIVE_ALPHA
+    })
+    this.inactive.stroke({
+      width: layout.hitLineStrokeWidth,
+      color: lane.color
+    })
+  }
+
+  setVisibility(isActive) {
+    this.active.visible = !!isActive
+    this.inactive.visible = !isActive
+  }
+}
+
 export class LaneManager {
   /**
    * @param {Application} app
@@ -51,104 +129,22 @@ export class LaneManager {
 
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
-    const laneHeight = this.laneLayout.laneHeight
-    const laneStrokeWidth = this.laneLayout.laneStrokeWidth
-
-    // Initial hit line geometry
-    const hitLineY = this.laneLayout.hitLineY
-    const hitLineHeight = this.laneLayout.hitLineHeight
-    const hitLineStrokeWidth = this.laneLayout.hitLineStrokeWidth
 
     this.gameStateRef.current.lanes.forEach((lane, index) => {
       const laneX = startX + index * (laneWidth + LANE_GAP)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
 
-      this._createLaneGraphics(
-        lane,
-        index,
-        laneX,
-        laneWidth,
-        laneHeight,
-        laneStrokeWidth,
-        hitLineY,
-        hitLineHeight,
-        hitLineStrokeWidth
-      )
+      this._createLaneGraphics(lane, index, laneX)
     })
   }
 
-  _createLaneGraphics(
-    lane,
-    index,
-    laneX,
-    laneWidth,
-    laneHeight,
-    laneStrokeWidth,
-    hitLineY,
-    hitLineHeight,
-    hitLineStrokeWidth
-  ) {
-    // Create separate graphics for static background and dynamic elements
-    const staticGraphics = new Graphics()
-    staticGraphics.__laneIndex = index
-    staticGraphics.__layer = 'static'
+  _createLaneGraphics(lane, index, laneX) {
+    const renderer = new LaneRenderer(index)
+    renderer.addTo(this.rhythmContainer)
+    renderer.draw(lane, laneX, this.laneLayout)
 
-    const activeGraphics = new Graphics()
-    activeGraphics.__laneIndex = index
-    activeGraphics.__layer = 'active'
-    activeGraphics.visible = false
-
-    const inactiveGraphics = new Graphics()
-    inactiveGraphics.__laneIndex = index
-    inactiveGraphics.__layer = 'inactive'
-    inactiveGraphics.visible = true
-
-    // Draw static background once
-    staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
-    staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
-
-    staticGraphics.rect(
-      laneX + laneWidth * 0.35,
-      0,
-      laneWidth * 0.3,
-      laneHeight
-    )
-    staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
-
-    staticGraphics.stroke({
-      width: laneStrokeWidth,
-      color: LANE_BORDER_COLOR,
-      alpha: LANE_BORDER_ALPHA
-    })
-
-    // Draw active/inactive states initially
-    activeGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
-    activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
-    activeGraphics.stroke({
-      width: hitLineStrokeWidth,
-      color: HIT_BAR_BORDER_COLOR
-    })
-
-    inactiveGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
-    inactiveGraphics.fill({
-      color: lane.color,
-      alpha: HIT_BAR_INACTIVE_ALPHA
-    })
-    inactiveGraphics.stroke({
-      width: hitLineStrokeWidth,
-      color: lane.color
-    })
-
-    this.rhythmContainer.addChild(staticGraphics)
-    this.rhythmContainer.addChild(inactiveGraphics)
-    this.rhythmContainer.addChild(activeGraphics)
-
-    this.laneGraphics[index] = {
-      static: staticGraphics,
-      active: activeGraphics,
-      inactive: inactiveGraphics
-    }
+    this.laneGraphics[index] = renderer
   }
 
   update(state) {
@@ -163,78 +159,20 @@ export class LaneManager {
       }
 
       if (layoutUpdated) {
-        this.redrawLaneGraphics(lane, layout, graphicsSet)
+        graphicsSet.draw(lane, lane.renderX, layout)
       }
 
       this.updateLaneVisibility(lane, index, graphicsSet)
     }
   }
 
-  redrawLaneGraphics(lane, layout, graphicsSet) {
-    const {
-      static: staticGraphics,
-      active: activeGraphics,
-      inactive: inactiveGraphics
-    } = graphicsSet
-
-    staticGraphics.clear()
-    staticGraphics.rect(lane.renderX, 0, layout.laneWidth, layout.laneHeight)
-    staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
-
-    staticGraphics.rect(
-      lane.renderX + layout.laneWidth * 0.35,
-      0,
-      layout.laneWidth * 0.3,
-      layout.laneHeight
-    )
-    staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
-
-    staticGraphics.stroke({
-      width: layout.laneStrokeWidth,
-      color: LANE_BORDER_COLOR,
-      alpha: LANE_BORDER_ALPHA
-    })
-
-    activeGraphics.clear()
-    activeGraphics.rect(
-      lane.renderX,
-      layout.hitLineY,
-      layout.laneWidth,
-      layout.hitLineHeight
-    )
-    activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
-    activeGraphics.stroke({
-      width: layout.hitLineStrokeWidth,
-      color: HIT_BAR_BORDER_COLOR
-    })
-
-    inactiveGraphics.clear()
-    inactiveGraphics.rect(
-      lane.renderX,
-      layout.hitLineY,
-      layout.laneWidth,
-      layout.hitLineHeight
-    )
-    inactiveGraphics.fill({
-      color: lane.color,
-      alpha: HIT_BAR_INACTIVE_ALPHA
-    })
-    inactiveGraphics.stroke({
-      width: layout.hitLineStrokeWidth,
-      color: lane.color
-    })
-  }
-
   updateLaneVisibility(lane, index, graphicsSet) {
-    const { active: activeGraphics, inactive: inactiveGraphics } = graphicsSet
     const wasActive = this.lastLaneActive[index]
 
     // Update visibility only when activity state changes
     if (wasActive !== lane.active) {
       this.lastLaneActive[index] = lane.active
-
-      activeGraphics.visible = !!lane.active
-      inactiveGraphics.visible = !lane.active
+      graphicsSet.setVisibility(lane.active)
     }
   }
 
