@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { ProgressBar } from './shared/index.jsx'
 import { useGameState } from '../context/GameState'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 
 export const MerchPressModal = ({
   onClose,
@@ -27,10 +28,23 @@ export const MerchPressModal = ({
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-[var(--color-void-black)] border-2 border-[var(--color-toxic-green)] p-6 shadow-[0_0_30px_var(--color-toxic-green-20)]"
+          className="relative w-full max-w-lg bg-[var(--color-void-black)] border-2 border-[var(--color-toxic-green)] shadow-[0_0_30px_var(--color-toxic-green-20)] overflow-hidden"
         >
-          {/* Header */}
-          <div className="flex justify-between items-start mb-6 border-b border-[var(--color-toxic-green-30)] pb-4">
+          {/* Background Image with Overlay */}
+          <div
+            className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+            style={{
+              backgroundImage: `url('${getGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG)}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              mixBlendMode: 'screen'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void-black)] via-[var(--color-void-black)]/80 to-transparent z-0 pointer-events-none" />
+
+          <div className="relative z-10 p-6">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-6 border-b border-[var(--color-toxic-green-30)] pb-4">
             <div>
               <h2 className="text-2xl font-display text-[var(--color-toxic-green)] tracking-widest uppercase glitch-text" data-text={t('ui:merch_press.title', { defaultValue: 'UNDERGROUND MERCH PRESS' })}>
                 {t('ui:merch_press.title', { defaultValue: 'UNDERGROUND MERCH PRESS' })}
@@ -114,9 +128,9 @@ export const MerchPressModal = ({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="mt-8 flex justify-end gap-4">
-            <GlitchButton
+            {/* Actions */}
+            <div className="mt-8 flex justify-end gap-4">
+              <GlitchButton
               variant="secondary"
               onClick={onClose}
               className="uppercase"
@@ -142,15 +156,16 @@ export const MerchPressModal = ({
                 className="uppercase"
               >
                 [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]
-              </GlitchButton>
-            )}
-          </div>
+                </GlitchButton>
+              )}
+            </div>
 
-          {/* Corner Decorations */}
-          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[var(--color-toxic-green)] pointer-events-none" />
-          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[var(--color-toxic-green)] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[var(--color-toxic-green)] pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[var(--color-toxic-green)] pointer-events-none" />
+            {/* Corner Decorations */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[var(--color-toxic-green)] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[var(--color-toxic-green)] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[var(--color-toxic-green)] pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[var(--color-toxic-green)] pointer-events-none" />
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
