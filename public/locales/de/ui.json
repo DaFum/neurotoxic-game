@@ -533,7 +533,7 @@
   "merch_press.description": "Drucke Bootleg-Shirts und presse illegales Vinyl im Keller. Hohes Risiko, hoher Gewinn.",
   "merch_press.cost_label": "KOSTEN",
   "merch_press.gain_label": "GEWINN",
-  "merch_press.risk_warning": "WARNUNG: {{risk}}% RISIKO FÜR EQUIPMENT-AUSFALL",
+  "merch_press.risk_warning": "WARNUNG: {{risk}}% RISIKO FÜR EQUIPMENT-AUSFALL (-{{harmonyCostOnFail}} HARMONIE)",
   "merch_press.current_stats": "AKTUELLE RESSOURCEN",
   "merch_press.confirm": "PRESSE STARTEN",
   "merch_press.success_toast": "Merch erfolgreich gepresst",

@@ -17,6 +17,7 @@ export const useMerchPress = () => {
       cost: Math.floor(150 * multiplier),
       loyaltyGain: Math.floor(5 * multiplier),
       controversyGain: Math.floor(10 * multiplier),
+      fameGain: Math.floor(100 * multiplier),
       failChance: 0.2, // 20% constant chance of failure
       harmonyCostOnFail: Math.min(50, Math.floor(15 * multiplier))
     }
@@ -41,6 +42,7 @@ export const useMerchPress = () => {
       cost: config.cost,
       loyaltyGain: config.loyaltyGain,
       controversyGain: config.controversyGain,
+      fameGain: config.fameGain,
       harmonyCost,
       isSuccess: !isFailure,
       successToast

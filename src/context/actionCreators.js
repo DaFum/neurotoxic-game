@@ -451,6 +451,7 @@ export const createPirateBroadcastAction = payload => ({
  * @param {number} payload.cost - Money cost.
  * @param {number} payload.loyaltyGain - Loyalty gained.
  * @param {number} payload.controversyGain - Controversy gained.
+ * @param {number} payload.fameGain - Fame gained.
  * @param {number} payload.harmonyCost - Band harmony lost.
  * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object

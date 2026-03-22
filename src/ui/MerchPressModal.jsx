@@ -97,7 +97,7 @@ export const MerchPressModal = ({
 
             <div className="bg-blood-red-20 border border-blood-red-20 p-4 mt-4">
                 <p className="text-blood-red text-sm text-center font-bold">
-                    {t('ui:merch_press.risk_warning', { risk: config.failChance * 100, defaultValue: `WARNING: ${config.failChance * 100}% CHANCE OF EQUIPMENT FAILURE (-${config.harmonyCostOnFail} HARMONY)` })}
+                    {t('ui:merch_press.risk_warning', { risk: config.failChance * 100, harmonyCostOnFail: config.harmonyCostOnFail, defaultValue: `WARNING: ${config.failChance * 100}% CHANCE OF EQUIPMENT FAILURE (-${config.harmonyCostOnFail} HARMONY)` })}
                 </p>
             </div>
 
@@ -142,15 +142,9 @@ export const MerchPressModal = ({
               {createElement(
                 !canPress ? 'span' : Fragment,
                 !canPress ? {
-                  tabIndex: 0,
                   role: 'button',
-                  'aria-label': t('ui:merch_press.confirm', { defaultValue: 'START PRESS' }),
-                  onKeyDown: (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      if (canPress) onPress()
-                    }
-                  }
+                  'aria-disabled': 'true',
+                  'aria-label': t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })
                 } : {},
                 <GlitchButton
                   variant={canPress ? "warning" : "danger"}

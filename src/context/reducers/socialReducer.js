@@ -109,33 +109,38 @@ export const handleMerchPress = (state, payload) => {
     return state
   }
 
-  const cost = Number(payload.cost) || 0
+  const cost = Math.max(0, Number(payload.cost) || 0)
   const loyaltyGain = Number(payload.loyaltyGain) || 0
   const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost) || 0
+  const harmonyCost = Math.max(0, Number(payload.harmonyCost) || 0)
+  const fameGain = Math.max(0, Number(payload.fameGain) || 0)
   const successToast = payload.successToast
 
   const currentMoney = Number(state.player.money) || 0
   const currentHarmony = Number(state.band.harmony) || 0
 
-  if (currentMoney < cost) {
+  if (clampPlayerMoney(currentMoney - cost) < 0 || currentMoney < cost) {
     logger.warn('GameState', 'Insufficient funds for merch press')
     return state
   }
 
   const currentLoyalty = Number(state.social.loyalty) || 0
   const currentControversy = Number(state.social.controversyLevel) || 0
+  const currentFame = Number(state.player.fame) || 0
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
   const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+  const nextFame = clampPlayerFame(currentFame + fameGain)
 
   const nextState = {
     ...state,
     player: {
       ...state.player,
-      money: nextMoney
+      money: nextMoney,
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame)
     },
     band: {
       ...state.band,
@@ -155,6 +160,7 @@ export const handleMerchPress = (state, payload) => {
     const deltaLoyalty = nextLoyalty - currentLoyalty
     const deltaControversy = nextControversy - currentControversy
     const deltaHarmony = nextHarmony - currentHarmony
+    const deltaFame = nextFame - currentFame
     const actualCost = currentMoney - nextMoney
 
     nextState.toasts = [
@@ -166,6 +172,7 @@ export const handleMerchPress = (state, payload) => {
           deltaLoyalty,
           deltaControversy,
           deltaHarmony,
+          deltaFame,
           cost: actualCost
         }
       }
