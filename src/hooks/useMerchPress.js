@@ -1,24 +1,22 @@
 import { useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { createMerchPressAction } from '../context/actionCreators'
 
+export const MERCH_PRESS_CONFIG = {
+  cost: 150,
+  loyaltyGain: 5,
+  controversyGain: 10,
+  failChance: 0.2, // 20% chance equipment breaks
+  harmonyCostOnFail: 15
+}
+
 export const useMerchPress = () => {
-  const { t } = useTranslation(['ui'])
-  const { dispatch, player, band, social } = useGameState()
+  const { dispatch, player } = useGameState()
 
   const [showMerchPress, setShowMerchPress] = useState(false)
 
   const openMerchPress = useCallback(() => setShowMerchPress(true), [])
   const closeMerchPress = useCallback(() => setShowMerchPress(false), [])
-
-  const MERCH_PRESS_CONFIG = {
-    cost: 150,
-    loyaltyGain: 5,
-    controversyGain: 10,
-    failChance: 0.2, // 20% chance equipment breaks
-    harmonyCostOnFail: 15
-  }
 
   const canPress = (player?.money || 0) >= MERCH_PRESS_CONFIG.cost
 
@@ -44,7 +42,7 @@ export const useMerchPress = () => {
     }))
 
     closeMerchPress()
-  }, [canPress, dispatch, closeMerchPress, MERCH_PRESS_CONFIG])
+  }, [canPress, dispatch, closeMerchPress])
 
   return {
     showMerchPress,

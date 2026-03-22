@@ -51,7 +51,7 @@ describe('MerchPressModal', () => {
     expect(onPress).toHaveBeenCalledTimes(1)
   })
 
-  it('disables press button when funds are insufficient', () => {
+  it('renders disabled when canPress is false', () => {
     useGameState.mockReturnValue({
       ...defaultState,
       player: { money: 50 }

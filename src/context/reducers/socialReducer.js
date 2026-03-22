@@ -5,7 +5,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  applyInventoryItemDelta
 } from '../../utils/gameStateUtils.js'
 
 /**
@@ -131,10 +132,6 @@ export const handleMerchPress = (state, payload) => {
   const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
   const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
 
-  const nextInventory = { ...(state.band.inventory || {}) }
-  nextInventory['bootleg_shirt'] = (nextInventory['bootleg_shirt'] || 0) + 10
-  nextInventory['bootleg_vinyl'] = (nextInventory['bootleg_vinyl'] || 0) + 5
-
   const nextState = {
     ...state,
     player: {
@@ -144,13 +141,18 @@ export const handleMerchPress = (state, payload) => {
     band: {
       ...state.band,
       harmony: nextHarmony,
-      inventory: nextInventory
+      inventory: { ...(state.band.inventory || {}) }
     },
     social: {
       ...state.social,
       loyalty: nextLoyalty,
       controversyLevel: nextControversy
     }
+  }
+
+  if (harmonyCost === 0) { // Success condition
+    nextState.band.inventory = applyInventoryItemDelta(nextState.band.inventory, 'bootleg_shirt', 10)
+    nextState.band.inventory = applyInventoryItemDelta(nextState.band.inventory, 'bootleg_vinyl', 5)
   }
 
   if (successToast) {

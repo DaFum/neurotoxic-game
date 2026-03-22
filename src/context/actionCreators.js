@@ -443,3 +443,26 @@ export const createPirateBroadcastAction = payload => ({
         }
       : payload
 })
+
+/**
+ * Creates an action to press merch underground.
+ * @param {Object} payload
+ * @param {number} payload.cost - Money cost.
+ * @param {number} payload.loyaltyGain - Loyalty gained.
+ * @param {number} payload.controversyGain - Controversy gained.
+ * @param {number} payload.harmonyCost - Band harmony lost.
+ * @param {Object} [payload.successToast] - Toast object appended to state on success.
+ * @returns {Object} Action object
+ */
+export const createMerchPressAction = payload => ({
+  type: ActionTypes.MERCH_PRESS,
+  payload:
+    payload && typeof payload === 'object'
+      ? {
+          ...payload,
+          successToast: payload.successToast
+            ? { ...payload.successToast, id: crypto.randomUUID() }
+            : undefined
+        }
+      : payload
+})

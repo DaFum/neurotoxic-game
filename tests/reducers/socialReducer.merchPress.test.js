@@ -1,12 +1,14 @@
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
-import { handleMerchPress } from '../../src/context/reducers/socialReducer.js'
 
 mock.module('../../src/utils/logger.js', {
   namedExports: {
-    logger: { warn: mock.fn(), info: mock.fn() }
+    logger: { warn: mock.fn(), info: mock.fn() },
+    LOG_LEVELS: { ERROR: 0, WARN: 1, INFO: 2, DEBUG: 3 }
   }
 })
+
+const { handleMerchPress } = await import('../../src/context/reducers/socialReducer.js')
 
 describe('socialReducer.merchPress', () => {
   test('rejects invalid payloads', () => {
