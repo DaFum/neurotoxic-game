@@ -185,25 +185,25 @@ export const Gig = () => {
   }, [currentGig?.name, currentGig?.diff])
 
   // Character Images based on Harmony
-  const { matzeUrl, MariusUrl, LarsUrl } = useMemo(() => {
+  const { matzeUrl, mariusUrl, larsUrl } = useMemo(() => {
     let matzePrompt = IMG_PROMPTS.MATZE_PLAYING
-    let MariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
-    let LarsPrompt = IMG_PROMPTS.LARS_PLAYING
+    let mariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+    let larsPrompt = IMG_PROMPTS.LARS_PLAYING
 
     if (band.harmony < 30) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      MariusPrompt = IMG_PROMPTS.MARIUS_DRINKING
-      LarsPrompt = IMG_PROMPTS.LARS_IDLE
+      mariusPrompt = IMG_PROMPTS.MARIUS_DRINKING
+      larsPrompt = IMG_PROMPTS.LARS_IDLE
     } else if (band.harmony < 60) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      MariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
-      LarsPrompt = IMG_PROMPTS.LARS_SCREAMING
+      mariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+      larsPrompt = IMG_PROMPTS.LARS_SCREAMING
     }
 
     return {
       matzeUrl: getGenImageUrl(matzePrompt),
-      MariusUrl: getGenImageUrl(MariusPrompt),
-      LarsUrl: getGenImageUrl(LarsPrompt)
+      mariusUrl: getGenImageUrl(mariusPrompt),
+      larsUrl: getGenImageUrl(larsPrompt)
     }
   }, [band.harmony])
 
@@ -237,8 +237,8 @@ export const Gig = () => {
       {/* Layer 1: Band Members (DOM) */}
       <BandMembersLayer
         matzeUrl={matzeUrl}
-        mariusUrl={MariusUrl}
-        larsUrl={LarsUrl}
+        mariusUrl={mariusUrl}
+        larsUrl={larsUrl}
         setBandMemberRef={setBandMemberRef}
       />
 
