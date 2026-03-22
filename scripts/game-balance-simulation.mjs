@@ -325,15 +325,17 @@ const applyScenarioOverrides = (state, scenario) => {
   }
 
   if (Array.isArray(scenario.traitPack)) {
-    next.band.members = next.band.members.map((member, index) => ({
-      ...member,
-      traits: [
-        ...new Set([
-          ...(member.traits || []),
-          scenario.traitPack[index % scenario.traitPack.length]
-        ])
-      ]
-    }))
+    next.band.members = next.band.members.map((member, index) => {
+      const traitId = scenario.traitPack[index % scenario.traitPack.length]
+      const newTraits = Object.assign(Object.create(null), member.traits)
+      if (traitId) {
+        newTraits[traitId] = { id: traitId }
+      }
+      return {
+        ...member,
+        traits: newTraits
+      }
+    })
   }
 
   return next
