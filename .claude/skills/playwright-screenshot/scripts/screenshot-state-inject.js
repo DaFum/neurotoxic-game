@@ -439,9 +439,9 @@ const FIXTURES = {
       await page
         .getByRole('heading', { name: /band hq/i })
         .waitFor({ state: 'visible', timeout: 5000 })
-      // Verify modal content is interactive
+      // Verify modal content is interactive (matches "LEAVE [ESC]" button)
       await page
-        .getByRole('button', { name: /close|back/i })
+        .getByRole('button', { name: /leave|esc/i })
         .first()
         .waitFor({ state: 'visible', timeout: 2000 })
     }
