@@ -1,9 +1,9 @@
-import React from 'react'
+import { Fragment, createElement } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
-import { ProgressBar } from './shared/index.jsx'
+import { ProgressBar, Tooltip } from './shared/index.jsx'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 
@@ -14,7 +14,7 @@ export const MerchPressModal = ({
   config
 }) => {
   const { t } = useTranslation(['ui'])
-  const { player, band, social } = useGameState()
+  const { player, band } = useGameState()
 
   return (
     <AnimatePresence>
@@ -53,14 +53,16 @@ export const MerchPressModal = ({
                 {t('ui:merch_press.subtitle', { defaultValue: 'BOOTLEG OPERATION' })}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-[var(--color-toxic-green)] hover:text-white transition-colors p-2"
-              aria-label={t('ui:menu.close')}
-            >
-              [X]
-            </button>
+            <Tooltip content={t('ui:menu.close')}>
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-[var(--color-toxic-green)] hover:text-white transition-colors p-2"
+                aria-label={t('ui:menu.close')}
+              >
+                [X]
+              </button>
+            </Tooltip>
           </div>
 
           {/* Content */}
@@ -131,31 +133,22 @@ export const MerchPressModal = ({
             {/* Actions */}
             <div className="mt-8 flex justify-end gap-4">
               <GlitchButton
-              variant="secondary"
-              onClick={onClose}
-              className="uppercase"
-            >
-              [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
-            </GlitchButton>
-            {!canPress ? (
-              <span tabIndex={0}>
+                variant="secondary"
+                onClick={onClose}
+                className="uppercase"
+              >
+                [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
+              </GlitchButton>
+              {createElement(
+                !canPress ? 'span' : Fragment,
+                !canPress ? { tabIndex: 0 } : {},
                 <GlitchButton
-                  variant="danger"
+                  variant={canPress ? "warning" : "danger"}
                   onClick={onPress}
-                  disabled={true}
+                  disabled={!canPress}
                   className="uppercase"
                 >
                   [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]
-                </GlitchButton>
-              </span>
-            ) : (
-              <GlitchButton
-                variant="warning"
-                onClick={onPress}
-                disabled={false}
-                className="uppercase"
-              >
-                [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]
                 </GlitchButton>
               )}
             </div>

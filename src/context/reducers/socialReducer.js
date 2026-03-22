@@ -151,8 +151,11 @@ export const handleMerchPress = (state, payload) => {
   }
 
   if (harmonyCost === 0) { // Success condition
-    nextState.band.inventory = applyInventoryItemDelta(nextState.band.inventory, 'bootleg_shirt', 10)
-    nextState.band.inventory = applyInventoryItemDelta(nextState.band.inventory, 'bootleg_vinyl', 5)
+    nextState.band.inventory = {
+      ...nextState.band.inventory,
+      'bootleg_shirt': applyInventoryItemDelta(nextState.band.inventory['bootleg_shirt'], 10),
+      'bootleg_vinyl': applyInventoryItemDelta(nextState.band.inventory['bootleg_vinyl'], 5)
+    }
   }
 
   if (successToast) {

@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { createMerchPressAction } from '../context/actionCreators'
 
 export const MERCH_PRESS_CONFIG = {
   cost: 150,
@@ -11,7 +10,7 @@ export const MERCH_PRESS_CONFIG = {
 }
 
 export const useMerchPress = () => {
-  const { dispatch, player } = useGameState()
+  const { merchPress, player } = useGameState()
 
   const [showMerchPress, setShowMerchPress] = useState(false)
 
@@ -33,16 +32,16 @@ export const useMerchPress = () => {
       type: isFailure ? 'warning' : 'success'
     }
 
-    dispatch(createMerchPressAction({
+    merchPress({
       cost: MERCH_PRESS_CONFIG.cost,
       loyaltyGain: MERCH_PRESS_CONFIG.loyaltyGain,
       controversyGain: MERCH_PRESS_CONFIG.controversyGain,
       harmonyCost,
       successToast
-    }))
+    })
 
     closeMerchPress()
-  }, [canPress, dispatch, closeMerchPress])
+  }, [canPress, merchPress, closeMerchPress])
 
   return {
     showMerchPress,
