@@ -57,7 +57,7 @@ export const MerchPressModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-[var(--color-toxic-green)] hover:text-white transition-colors p-2"
+                className="text-[var(--color-toxic-green)] hover:text-[var(--color-white)] transition-colors p-2"
                 aria-label={t('ui:menu.close')}
               >
                 [X]
@@ -115,7 +115,7 @@ export const MerchPressModal = ({
                       </span>
                     </div>
                     <ProgressBar
-                      value={Math.min(100, ((player?.money || 0) / config.cost) * 100)}
+                      value={config.cost > 0 ? Math.min(100, ((player?.money || 0) / config.cost) * 100) : 0}
                       color={canPress ? 'var(--color-toxic-green)' : 'var(--color-critical-red)'}
                     />
                  </div>
@@ -141,7 +141,17 @@ export const MerchPressModal = ({
               </GlitchButton>
               {createElement(
                 !canPress ? 'span' : Fragment,
-                !canPress ? { tabIndex: 0 } : {},
+                !canPress ? {
+                  tabIndex: 0,
+                  role: 'button',
+                  'aria-label': t('ui:merch_press.confirm', { defaultValue: 'START PRESS' }),
+                  onKeyDown: (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      if (canPress) onPress()
+                    }
+                  }
+                } : {},
                 <GlitchButton
                   variant={canPress ? "warning" : "danger"}
                   onClick={onPress}
