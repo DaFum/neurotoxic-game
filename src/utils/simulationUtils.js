@@ -275,15 +275,48 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     )
   }
 
-  // 2. Mood & Stamina Drift
-  // Drift towards 50
-  nextBand.members = nextBand.members.map(m => {
+  // 4. Passive Effects
+  const hqUpgrades = nextPlayer.hqUpgrades || []
+
+  // Coffee & Beer Fridge: Mood recovery
+  const hasCoffee = hqUpgrades.includes('hq_room_coffee')
+  const hasBeerFridge = hqUpgrades.includes('hq_room_cheap_beer_fridge')
+  // Sofa & Old Couch: Stamina recovery
+  const hasSofa = hqUpgrades.includes('hq_room_sofa')
+  const hasOldCouch = hqUpgrades.includes('hq_room_old_couch')
+
+  // High Controversy passive effects — snapshot before decay so same-day checks
+  // (sponsorship drop at line ~327) use the start-of-day value, not the decayed one.
+  const controversy = nextSocial.controversyLevel || 0
+
+  // Optimize: Single pass over members to apply drift, controversy, and passive effects
+  const nextMembers = new Array(nextBand.members.length)
+  for (let i = 0; i < nextBand.members.length; i++) {
+    const m = nextBand.members[i]
     let mood = m.mood
+
+    // 2a. Mood Drift (towards 50)
     if (mood > 50) mood -= 2
     else if (mood < 50) mood += 2
+
+    // 2b. High Controversy Mood Penalty
+    if (controversy >= 50) {
+      mood -= 1
+    }
+
+    // 2c. HQ Upgrades Mood Recovery
+    if (hasCoffee) mood += 2
+    if (hasBeerFridge) {
+      mood += 1
+      // Party Animal Trait (Marius): Extra mood, but risk of stamina loss (stamina logic applied below)
+      if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
+        mood += 2
+      }
+    }
+
     mood = clampMemberMood(mood)
 
-    // Stamina Decay (Life on the road is tiring)
+    // 2d. Stamina Decay (Life on the road is tiring)
     let stamina = typeof m.stamina === 'number' ? m.stamina : 100
     stamina = Math.max(0, stamina - 5)
 
@@ -298,8 +331,24 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     // Cyber Lungs Trait: Bonus stamina regen from clinic graft
     if (hasTrait(m, 'cyber_lungs')) stamina += 3
 
-    return { ...m, mood, stamina: clampMemberStamina(stamina, m.staminaMax) }
-  })
+    // 2e. HQ Upgrades Stamina Recovery & Penalties
+    if (hasSofa) stamina += 3
+    if (hasOldCouch) stamina += 1
+
+    // Party Animal Trait Stamina Penalty
+    if (hasBeerFridge && m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
+      if (rng() < 0.3) {
+        stamina -= 5
+      }
+    }
+
+    nextMembers[i] = {
+      ...m,
+      mood,
+      stamina: clampMemberStamina(stamina, m.staminaMax)
+    }
+  }
+  nextBand.members = nextMembers
 
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
@@ -333,17 +382,10 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     }
   }
 
-  // High Controversy passive effects — snapshot before decay so same-day checks
-  // (sponsorship drop at line ~327) use the start-of-day value, not the decayed one.
-  const controversy = nextSocial.controversyLevel || 0
   if (controversy >= 50) {
     // Harmony drain is worse under stress
     const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
     nextBand.harmony = nextHarmonyControversy
-    nextBand.members = nextBand.members.map(m => ({
-      ...m,
-      mood: clampMemberMood(m.mood - 1)
-    }))
   }
 
   // Clamp harmony to valid range after all modifications
@@ -424,43 +466,6 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
       nextSocial.newsletter || 0,
       daysSinceActivity
     )
-  }
-
-  // 4. Passive Effects
-  const hqUpgrades = nextPlayer.hqUpgrades || []
-
-  // Coffee & Beer Fridge: Mood recovery
-  const hasCoffee = hqUpgrades.includes('hq_room_coffee')
-  const hasBeerFridge = hqUpgrades.includes('hq_room_cheap_beer_fridge')
-  // Sofa & Old Couch: Stamina recovery
-  const hasSofa = hqUpgrades.includes('hq_room_sofa')
-  const hasOldCouch = hqUpgrades.includes('hq_room_old_couch')
-
-  if (hasCoffee || hasBeerFridge || hasSofa || hasOldCouch) {
-    nextBand.members = nextBand.members.map(m => {
-      let mood = m.mood
-      let stamina = typeof m.stamina === 'number' ? m.stamina : 100
-
-      if (hasCoffee) mood += 2
-      if (hasBeerFridge) {
-        mood += 1
-        // Party Animal Trait (Marius): Extra mood, but risk of stamina loss
-        if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
-          mood += 2
-          if (rng() < 0.3) {
-            stamina -= 5
-          }
-        }
-      }
-      if (hasSofa) stamina += 3
-      if (hasOldCouch) stamina += 1
-
-      return {
-        ...m,
-        mood: clampMemberMood(mood),
-        stamina: clampMemberStamina(stamina, m.staminaMax)
-      }
-    })
   }
 
   // Soundproofing: Harmony boost
