@@ -91,10 +91,7 @@ export const ClinicScene = () => {
                   }
                   disabled={
                     player.fame < enhanceCostFame ||
-                    (member.traits &&
-                      member.traits.some(
-                        tr => tr.id === CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID
-                      ))
+                    !!member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]
                   }
                   variant='warning'
                   size='sm'
