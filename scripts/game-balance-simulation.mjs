@@ -11,6 +11,8 @@ import { ALLOWED_TRENDS } from '../src/data/socialTrends.js'
 import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
 import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
+import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine.js'
+import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 import {
   calculateFuelCost,
   calculateGigFinancials,
@@ -38,7 +40,8 @@ import {
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,
-  BALANCE_CONSTANTS
+  BALANCE_CONSTANTS,
+  applyEventDelta
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -58,7 +61,6 @@ export const SIMULATION_CONSTANTS = {
   baseGigGapDays: 3,
   randomModifierChance: 0.22,
   followerGainMultiplier: 0.2,
-  fameGainBase: 4,
   fameLossBadGig: BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG,
   harmonyGainGoodGig: 2,
   harmonyLossBadGig: 5,
@@ -327,8 +329,8 @@ const applyScenarioOverrides = (state, scenario) => {
   if (Array.isArray(scenario.traitPack)) {
     next.band.members = next.band.members.map((member, index) => {
       const traitId = scenario.traitPack[index % scenario.traitPack.length]
-      const newTraits = Object.assign(Object.create(null), member.traits)
-      if (traitId) {
+      const newTraits = normalizeTraitMap(member.traits)
+      if (traitId && !Object.hasOwn(newTraits, traitId)) {
         newTraits[traitId] = { id: traitId }
       }
       return {
@@ -380,57 +382,52 @@ const calculateModifiers = (scenario, rng) => {
 const applyWorldEvents = (state, scenario, rng, eventCounts) => {
   const intensity = scenario.eventIntensity ?? 0.5
 
-  if (rng() < 0.1 * intensity) {
-    // Viral spike with mild controversy risk.
-    const boost = Math.round(220 + rng() * 450)
-    state.social.instagram += boost
-    state.social.tiktok += Math.round(boost * 0.65)
-    state.social.youtube += Math.round(boost * 0.3)
+  // Process financial and special events to replace viral spikes and cash swings
+  if (rng() < 0.18 * intensity) {
+    const category = rng() < 0.5 ? 'financial' : 'special'
+    const event = eventEngine.checkEvent(category, state, 'random')
+    if (event && event.options && event.options.length > 0) {
+      const choice = event.options[Math.floor(rng() * event.options.length)]
+      const { delta } = resolveEventChoice(choice, state, rng)
 
-    if (rng() < 0.4) {
-      state.social.controversyLevel = Math.min(
-        100,
-        state.social.controversyLevel + 4
-      )
+      if (delta) {
+        Object.assign(state, applyEventDelta(state, delta))
+      }
+
+      if (category === 'financial') {
+        eventCounts.cashSwings += 1
+      } else {
+        eventCounts.viralSpikes += 1
+      }
     }
-
-    eventCounts.viralSpikes += 1
   }
 
-  if (rng() < 0.08 * intensity) {
-    // Cash swing event: cancellation/fine/bonus show.
-    const sign = rng() < 0.65 ? -1 : 1
-    const baseSwing = Math.round(
-      SIMULATION_CONSTANTS.randomEventCashSwing * (0.6 + rng())
-    )
-    // Scale swing relative to current wealth to simulate larger impacts for richer bands
-    const scaledSwing = Math.max(
-      baseSwing,
-      Math.round(state.player.money * 0.15)
-    )
-    state.player.money = clampPlayerMoney(
-      state.player.money + sign * scaledSwing
-    )
-    eventCounts.cashSwings += 1
-  }
-
+  // Process band events
   if (rng() < 0.07 * intensity) {
-    // Band conflict / healing event.
-    const harmonyDelta = rng() < 0.6 ? -6 : 5
-    state.band.harmony = clampBandHarmony(state.band.harmony + harmonyDelta)
-    state.band.members = state.band.members.map(member => ({
-      ...member,
-      mood: clampMemberMood(member.mood + (harmonyDelta > 0 ? 2 : -3))
-    }))
-    eventCounts.bandEvents += 1
+    const event = eventEngine.checkEvent('band', state, 'random')
+    if (event && event.options && event.options.length > 0) {
+      const choice = event.options[Math.floor(rng() * event.options.length)]
+      const { delta } = resolveEventChoice(choice, state, rng)
+
+      if (delta) {
+        Object.assign(state, applyEventDelta(state, delta))
+      }
+      eventCounts.bandEvents += 1
+    }
   }
 
+  // Process equipment events (transport)
   if (rng() < 0.06 * intensity) {
-    // Equipment theft / insurance recover.
-    const loss = Math.round(90 + rng() * 160)
-    state.player.money = clampPlayerMoney(state.player.money - loss)
-    state.player.van.condition = Math.max(0, state.player.van.condition - 5)
-    eventCounts.equipmentEvents += 1
+    const event = eventEngine.checkEvent('transport', state, 'random')
+    if (event && event.options && event.options.length > 0) {
+      const choice = event.options[Math.floor(rng() * event.options.length)]
+      const { delta } = resolveEventChoice(choice, state, rng)
+
+      if (delta) {
+        Object.assign(state, applyEventDelta(state, delta))
+      }
+      eventCounts.equipmentEvents += 1
+    }
   }
 }
 
@@ -1176,9 +1173,7 @@ const buildFeatureCoverage = results => {
     coverage.fuel_cost = true
     coverage.gig_modifiers = true
     coverage.gig_physics = true
-    // World events are simulated stochastically and do not replay the full
-    // live EVENTS_DB processing pipeline yet.
-    coverage.events_db = false
+    coverage.events_db = true
     coverage.brand_deals = true
     coverage.social_trends = true
     coverage.social_platforms = true
