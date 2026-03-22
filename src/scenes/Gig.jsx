@@ -1,4 +1,3 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import {
   useEffect,
   useMemo,
@@ -20,11 +19,15 @@ const PixiStage = lazy(() =>
 )
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen.js'
 import { audioManager } from '../utils/AudioManager'
-import { GlitchButton } from '../ui/GlitchButton'
+
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
 import { useTranslation } from 'react-i18next'
+
+import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
+import { BandMembersLayer } from '../components/minigames/gig/BandMembersLayer'
+import { PauseOverlay } from '../components/minigames/gig/PauseOverlay'
 
 /**
  * The core Rhythm Game scene.
@@ -182,53 +185,40 @@ export const Gig = () => {
   }, [currentGig?.name, currentGig?.diff])
 
   // Character Images based on Harmony
-  const { matzeUrl, MariusUrl, LarsUrl } = useMemo(() => {
+  const { matzeUrl, mariusUrl, larsUrl } = useMemo(() => {
     let matzePrompt = IMG_PROMPTS.MATZE_PLAYING
-    let MariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
-    let LarsPrompt = IMG_PROMPTS.LARS_PLAYING
+    let mariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+    let larsPrompt = IMG_PROMPTS.LARS_PLAYING
 
     if (band.harmony < 30) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      MariusPrompt = IMG_PROMPTS.MARIUS_DRINKING
-      LarsPrompt = IMG_PROMPTS.LARS_IDLE
+      mariusPrompt = IMG_PROMPTS.MARIUS_DRINKING
+      larsPrompt = IMG_PROMPTS.LARS_IDLE
     } else if (band.harmony < 60) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      MariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
-      LarsPrompt = IMG_PROMPTS.LARS_SCREAMING
+      mariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+      larsPrompt = IMG_PROMPTS.LARS_SCREAMING
     }
 
     return {
       matzeUrl: getGenImageUrl(matzePrompt),
-      MariusUrl: getGenImageUrl(MariusPrompt),
-      LarsUrl: getGenImageUrl(LarsPrompt)
+      mariusUrl: getGenImageUrl(mariusPrompt),
+      larsUrl: getGenImageUrl(larsPrompt)
     }
   }, [band.harmony])
 
   // Render blocking overlay if audio is locked (moved here to avoid hook violations)
   if (stats.isAudioReady === false) {
     return (
-      <div className='flex flex-col items-center justify-center w-full h-full bg-void-black z-[100] relative'>
-        <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center">
-          {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
-        </h2>
-        <p className='text-ash-gray mb-8 font-mono max-w-md text-center'>
-          {t('ui:gig.audioOverride', {
-            defaultValue: 'Audio Interface requires manual override.'
-          })}
-        </p>
-        <GlitchButton
-          onClick={() => {
-            audioManager.ensureAudioContext().then(isUnlocked => {
-              if (isUnlocked) {
-                actions.retryAudioInitialization()
-              }
-            })
-          }}
-          className='scale-150'
-        >
-          {t('ui:gig.initializeAudio', { defaultValue: 'INITIALIZE AUDIO' })}
-        </GlitchButton>
-      </div>
+      <AudioLockedOverlay
+        onInitializeAudio={() => {
+          audioManager.ensureAudioContext().then(isUnlocked => {
+            if (isUnlocked !== false) {
+              actions.retryAudioInitialization()
+            }
+          })
+        }}
+      />
     )
   }
 
@@ -245,44 +235,12 @@ export const Gig = () => {
       />
 
       {/* Layer 1: Band Members (DOM) */}
-      <div className='absolute inset-0 z-10 pointer-events-none'>
-        {/* Matze (Guitar) - Left */}
-        <div
-          id='band-member-0'
-          ref={setBandMemberRef(0)}
-          className='absolute left-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
-        >
-          <img
-            src={matzeUrl}
-            alt='Matze'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-blood-red)]'
-          />
-        </div>
-        {/* Marius (Drums) - Center Back */}
-        <div
-          id='band-member-1'
-          ref={setBandMemberRef(1)}
-          className='absolute left-[50%] top-[20%] -translate-x-1/2 w-40 h-40 transition-transform duration-100'
-        >
-          <img
-            src={MariusUrl}
-            alt='Marius'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
-          />
-        </div>
-        {/* Lars (Bass) - Right */}
-        <div
-          id='band-member-2'
-          ref={setBandMemberRef(2)}
-          className='absolute right-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
-        >
-          <img
-            src={LarsUrl}
-            alt='Lars'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
-          />
-        </div>
-      </div>
+      <BandMembersLayer
+        matzeUrl={matzeUrl}
+        mariusUrl={mariusUrl}
+        larsUrl={larsUrl}
+        setBandMemberRef={setBandMemberRef}
+      />
 
       {/* Layer 2: Pixi Canvas (Notes) */}
       <Suspense
@@ -304,25 +262,11 @@ export const Gig = () => {
       />
 
       {/* Pause Overlay */}
-      {isPaused && (
-        <div
-          className='absolute inset-0 z-[100] bg-void-black/90 flex flex-col items-center justify-center pointer-events-auto'
-          role='dialog'
-          aria-modal='true'
-        >
-          <h2 className='text-6xl font-display text-toxic-green mb-8 animate-pulse drop-shadow-[0_0_15px_var(--color-toxic-green)]'>
-            {t('ui:gig.pause_title', { defaultValue: 'PAUSED' })}
-          </h2>
-          <div className='flex flex-col gap-6 w-64'>
-            <GlitchButton onClick={handleTogglePause}>
-              {t('ui:gig.resume', { defaultValue: 'RESUME' })}
-            </GlitchButton>
-            <GlitchButton onClick={handleQuitGig} variant='danger'>
-              {t('ui:gig.quit', { defaultValue: 'QUIT GIG' })}
-            </GlitchButton>
-          </div>
-        </div>
-      )}
+      <PauseOverlay
+        isPaused={isPaused}
+        onResume={handleTogglePause}
+        onQuit={handleQuitGig}
+      />
     </div>
   )
 }
