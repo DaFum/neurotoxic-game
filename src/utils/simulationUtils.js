@@ -326,6 +326,8 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   if (nextSocial.viral > 0) nextSocial.viral -= 1
 
   // Controversy/Shadowban Decay
+  // Note: Intentionally using the live nextSocial.controversyLevel here (not the snapshot)
+  // so the daily decay is correctly applied to the actual state value.
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown — accelerated above threshold to prevent death spirals
     const decayAmount =
