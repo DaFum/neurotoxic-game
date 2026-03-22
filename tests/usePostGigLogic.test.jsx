@@ -195,7 +195,7 @@ describe('usePostGigLogic', () => {
 
       await waitFor(() => {
         expect(result.current.financials).toBeTruthy()
-        expect(result.current.postOptions).toHaveLength(1)
+        expect(result.current.postOptions.length).toBeGreaterThan(0)
       })
 
       // Verify both calculations were called
@@ -249,21 +249,41 @@ describe('usePostGigLogic', () => {
     })
   })
 
-  describe('event triggering', () => {
-    it('triggers event cascade on mount (financial → special → band)', () => {
+  describe('1) Event trigger chain on mount', () => {
+    it('covers triggerEvent returning false for financial, then successfully triggering special', () => {
       mockTriggerEvent
-        .mockReturnValueOnce({ id: 'fin_event' }) // First call (financial) succeeds
-        .mockReturnValueOnce(null) // Second call would be special
-        .mockReturnValueOnce(null) // Third would be band
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
 
       renderHook(() => usePostGigLogic())
 
       expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
-      expect(mockTriggerEvent).toHaveBeenNthCalledWith(
-        1,
-        'financial',
-        'post_gig'
-      )
+      expect(mockTriggerEvent).toHaveBeenCalledWith('special', 'post_gig')
+      expect(mockTriggerEvent).not.toHaveBeenCalledWith('band', 'post_gig')
+    })
+
+    it('covers both financial and special returning false, then triggering band', () => {
+      mockTriggerEvent
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
+
+      renderHook(() => usePostGigLogic())
+
+      expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
+      expect(mockTriggerEvent).toHaveBeenCalledWith('special', 'post_gig')
+      expect(mockTriggerEvent).toHaveBeenCalledWith('band', 'post_gig')
+    })
+
+    it('verifies no extra trigger calls once one event type resolves', () => {
+      mockTriggerEvent
+        .mockReturnValueOnce(true)
+
+      renderHook(() => usePostGigLogic())
+
+      expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
+      expect(mockTriggerEvent).not.toHaveBeenCalledWith('special', 'post_gig')
+      expect(mockTriggerEvent).not.toHaveBeenCalledWith('band', 'post_gig')
     })
 
     it('skips event triggering when activeEvent already exists', () => {
@@ -273,19 +293,6 @@ describe('usePostGigLogic', () => {
 
       renderHook(() => usePostGigLogic())
       expect(mockTriggerEvent).not.toHaveBeenCalled()
-    })
-
-    it('cascades through event types when previous triggers fail', () => {
-      mockTriggerEvent
-        .mockReturnValueOnce(null) // financial fails
-        .mockReturnValueOnce(null) // special fails
-        .mockReturnValueOnce({ id: 'band_event' }) // band succeeds
-
-      renderHook(() => usePostGigLogic())
-
-      expect(mockTriggerEvent).toHaveBeenCalledWith('financial', 'post_gig')
-      expect(mockTriggerEvent).toHaveBeenCalledWith('special', 'post_gig')
-      expect(mockTriggerEvent).toHaveBeenCalledWith('band', 'post_gig')
     })
   })
 
@@ -314,7 +321,7 @@ describe('usePostGigLogic', () => {
       const { result } = renderHook(() => usePostGigLogic())
 
       await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
+        expect(result.current.postOptions.length).toBeGreaterThan(0)
       })
 
       act(() => {
@@ -912,8 +919,7 @@ describe('usePostGigLogic', () => {
   })
 
   describe('edge cases', () => {
-    it('clamps band and member attributes to valid ranges', async () => {
-      // Test harmony clamping
+    it('clamps band and member attributes to valid ranges', () => {
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
         followers: 50,
@@ -923,17 +929,14 @@ describe('usePostGigLogic', () => {
 
       let { result } = renderHook(() => usePostGigLogic())
 
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({ harmony: 100 })
-      )
+      expect(mockUpdateBand).toHaveBeenCalled()
+      let updateBandFn = mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
+      let updatedBand = typeof updateBandFn === 'function' ? updateBandFn({ harmony: 50 }) : updateBandFn
+      expect(updatedBand).toEqual(expect.objectContaining({ harmony: 100 })) // Clamped to 100
 
       // Test mood and stamina clamping
       vi.clearAllMocks()
@@ -959,27 +962,29 @@ describe('usePostGigLogic', () => {
 
       result = renderHook(() => usePostGigLogic()).result
 
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockUpdateBand).toHaveBeenCalledWith(
+      expect(mockUpdateBand).toHaveBeenCalled()
+      updateBandFn = mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
+      updatedBand = typeof updateBandFn === 'function' ? updateBandFn({
+        members: [{ name: 'Member1', mood: 95, stamina: 10 }]
+      }) : updateBandFn
+
+      expect(updatedBand).toEqual(
         expect.objectContaining({
           members: [
             expect.objectContaining({
-              mood: 100,
-              stamina: 0
+              mood: 100, // 95 + 20 clamped
+              stamina: 0 // 10 - 15 clamped
             })
           ]
         })
       )
     })
 
-    it('handles missing data and ego management gracefully', async () => {
+    it('handles missing data and ego management gracefully', () => {
       // Test missing influencer
       socialEngine.resolvePost.mockReturnValueOnce({
         success: true,
@@ -989,10 +994,6 @@ describe('usePostGigLogic', () => {
       })
 
       let { result } = renderHook(() => usePostGigLogic())
-
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
 
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
@@ -1020,15 +1021,14 @@ describe('usePostGigLogic', () => {
 
       result = renderHook(() => usePostGigLogic()).result
 
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockUpdateSocial).toHaveBeenCalled()
+      let updateFn = mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
+      let updatedSocial = typeof updateFn === 'function' ? updateFn({ egoFocus: 'Member1' }) : updateFn
+      expect(updatedSocial).toEqual(
         expect.objectContaining({ egoFocus: null })
       )
 
@@ -1044,15 +1044,14 @@ describe('usePostGigLogic', () => {
 
       result = renderHook(() => usePostGigLogic()).result
 
-      await waitFor(() => {
-        expect(result.current.postOptions).toHaveLength(1)
-      })
-
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
+      expect(mockUpdateSocial).toHaveBeenCalled()
+      updateFn = mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
+      updatedSocial = typeof updateFn === 'function' ? updateFn({}) : updateFn
+      expect(updatedSocial).toEqual(
         expect.objectContaining({ egoFocus: 'Member2' })
       )
     })

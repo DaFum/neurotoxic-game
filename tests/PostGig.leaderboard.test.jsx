@@ -8,6 +8,19 @@ import * as socialEngine from '../src/utils/socialEngine'
 
 // Mock dependencies
 
+const mocks = vi.hoisted(() => ({
+  mockLoggerError: vi.fn()
+}))
+
+vi.mock('../src/utils/logger', () => ({
+  logger: {
+    error: mocks.mockLoggerError,
+    info: vi.fn(),
+    warn: vi.fn()
+  },
+  LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
+}))
+
 vi.mock('../src/context/GameState', () => ({
   useGameState: vi.fn()
 }))
@@ -216,25 +229,25 @@ describe('PostGig Leaderboard Submission', () => {
 
     render(<PostGig />)
 
-    // Phase: REPORT
-    const nextBtn = await screen.findByRole('button', {
+    // Report -> Next
+    let nextBtn = await screen.findByRole('button', {
       name: /continue|next|social/i
     })
     fireEvent.click(nextBtn)
 
-    // Phase: SOCIAL
-    const postBtn = await screen.findByText('Selfie')
+    // Social -> Post
+    let postBtn = await screen.findByText('Selfie')
     fireEvent.click(postBtn)
 
-    // Phase: COMPLETE
-    const continueBtn = await screen.findByRole('button', {
-      name: /back to tour/i
+    // Complete -> Overworld
+    let finishBtn = await screen.findByRole('button', {
+      name: /back to tour|continue/i
     })
-    fireEvent.click(continueBtn)
+    fireEvent.click(finishBtn)
 
     // Verify fetch call resolves leaderboardId from setlist
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(global.fetch).toHaveBeenCalledWith(
         '/api/leaderboard/song',
         expect.objectContaining({
           method: 'POST',
@@ -246,6 +259,174 @@ describe('PostGig Leaderboard Submission', () => {
             accuracy: 95
           })
         })
+      )
+    })
+  })
+
+  it('skips leaderboard submission if playerName is missing', async () => {
+    const base = getBaseState()
+    useGameState.mockReturnValue({
+      ...base,
+      player: { ...base.player, playerName: null }, // No playerName
+      setlist: []
+    })
+
+    render(<PostGig />)
+
+    // Report -> Next
+    let nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
+
+    // Social -> Post
+    let postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    // Complete -> Overworld
+    let finishBtn = await screen.findByRole('button', {
+      name: /back to tour|continue/i
+    })
+    fireEvent.click(finishBtn)
+
+    // Should not call fetch
+    await waitFor(() => {
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+  })
+
+  it('skips unknown songs gracefully without making a fetch call', async () => {
+    const base = getBaseState()
+    useGameState.mockReturnValue({
+      ...base,
+      currentGig: { ...base.currentGig, songId: 'unknown_song_not_in_db' },
+      lastGigStats: { score: 100, accuracy: 100, songStats: undefined }
+    })
+
+    render(<PostGig />)
+
+    // Report -> Next
+    let nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
+
+    // Social -> Post
+    let postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    // Complete -> Overworld
+    let finishBtn = await screen.findByRole('button', {
+      name: /back to tour|continue/i
+    })
+    fireEvent.click(finishBtn)
+
+    // Should not call fetch because song is unknown
+    await waitFor(() => {
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+  })
+
+  it('submits mixed songStats list, processing knowns and skipping unknowns', async () => {
+    const base = getBaseState()
+    useGameState.mockReturnValue({
+      ...base,
+      lastGigStats: {
+        score: 200,
+        accuracy: 95,
+        songStats: [
+          { songId: 'unknown_song', score: 50, accuracy: 90 },
+          { songId: 'raw_01_kranker_schrank', score: 150, accuracy: 99 }
+        ]
+      }
+    })
+
+    render(<PostGig />)
+
+    // Report -> Next
+    const nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
+
+    // Social -> Post
+    let postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    // Complete -> Overworld
+    const finishBtn = await screen.findByRole('button', {
+      name: /back to tour|continue/i
+    })
+    fireEvent.click(finishBtn)
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          body: expect.stringContaining('"songId":"slug-01"')
+        })
+      )
+    })
+  })
+
+  it('logs an error when fetch response is not ok', async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        status: 500,
+        text: async () => 'Internal Server Error'
+      })
+    )
+
+    render(<PostGig />)
+
+    let nextBtn = await screen.findByRole('button', { name: /continue|next|social/i })
+    fireEvent.click(nextBtn)
+
+    let postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    let finishBtn = await screen.findByRole('button', { name: /back to tour|continue/i })
+    fireEvent.click(finishBtn)
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      expect(mocks.mockLoggerError).toHaveBeenCalledWith(
+        'PostGig',
+        expect.stringContaining('Score submit failed for slug-01'),
+        expect.anything()
+      )
+    })
+  })
+
+  it('logs an error when fetch promise rejects', async () => {
+    global.fetch = vi.fn(() => Promise.reject(new Error('Network error')))
+
+    render(<PostGig />)
+
+    // Phase: REPORT
+    let nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
+
+    // Phase: SOCIAL
+    const postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    // Phase: COMPLETE
+    let finishBtn = await screen.findByRole('button', {
+      name: /back to tour|continue/i
+    })
+    fireEvent.click(finishBtn)
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      expect(mocks.mockLoggerError).toHaveBeenCalledWith(
+        'PostGig',
+        expect.stringContaining('Score submit failed for slug-01'),
+        expect.any(Error)
       )
     })
   })
