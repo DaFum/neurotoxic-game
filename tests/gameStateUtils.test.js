@@ -8,7 +8,8 @@ import {
   clampVanFuel,
   calculateFameLevel,
   calculateFameGain,
-  calculateAppliedDelta
+  calculateAppliedDelta,
+  isForbiddenKey
 } from '../src/utils/gameStateUtils.js'
 
 test('calculateFameLevel', () => {
@@ -266,4 +267,19 @@ test('clampVanFuel edge cases', () => {
   // Custom maxFuel
   assert.strictEqual(clampVanFuel(150, 200), 150)
   assert.strictEqual(clampVanFuel(250, 200), 200)
+})
+
+test('isForbiddenKey identifies prototype pollution keys', () => {
+  // Forbidden keys
+  assert.strictEqual(isForbiddenKey('__proto__'), true)
+  assert.strictEqual(isForbiddenKey('constructor'), true)
+  assert.strictEqual(isForbiddenKey('prototype'), true)
+
+  // Safe keys
+  assert.strictEqual(isForbiddenKey('money'), false)
+  assert.strictEqual(isForbiddenKey('fame'), false)
+  assert.strictEqual(isForbiddenKey('inventory'), false)
+  assert.strictEqual(isForbiddenKey(''), false)
+  assert.strictEqual(isForbiddenKey(null), false)
+  assert.strictEqual(isForbiddenKey(undefined), false)
 })
