@@ -1,4 +1,4 @@
-import { calculateFameGain } from '../src/utils/gameStateUtils.js'
+import { calculateFameGain, BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
 
 /**
  * Mathematically isolates and logs the fame calculation, demonstrating the true
@@ -7,7 +7,7 @@ import { calculateFameGain } from '../src/utils/gameStateUtils.js'
 
 const TARGET_DAYS = 75 // The typical length of a complete game simulation run
 const MAX_FAME_GAIN = 500
-const FLAT_FAME_PENALTY_PER_BAD_GIG = 5
+const FLAT_FAME_PENALTY_PER_BAD_GIG = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
 
 console.log('--- NEUROTOXIC: 75-Day Baseline Tour Simulation ---')
 console.log(`Simulating ${TARGET_DAYS} Days of Player Actions.\n`)

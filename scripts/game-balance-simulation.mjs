@@ -385,7 +385,7 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
   // Process financial and special events to replace viral spikes and cash swings
   if (rng() < 0.18 * intensity) {
     const category = rng() < 0.5 ? 'financial' : 'special'
-    const event = eventEngine.checkEvent(category, state, 'random')
+    const event = eventEngine.checkEvent(category, state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
       const { delta } = resolveEventChoice(choice, state, rng)
@@ -404,7 +404,7 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
 
   // Process band events
   if (rng() < 0.07 * intensity) {
-    const event = eventEngine.checkEvent('band', state, 'random')
+    const event = eventEngine.checkEvent('band', state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
       const { delta } = resolveEventChoice(choice, state, rng)
@@ -418,7 +418,7 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
 
   // Process equipment events (transport)
   if (rng() < 0.06 * intensity) {
-    const event = eventEngine.checkEvent('transport', state, 'random')
+    const event = eventEngine.checkEvent('transport', state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
       const { delta } = resolveEventChoice(choice, state, rng)
@@ -896,7 +896,7 @@ const runSingleSimulation = (scenario, seed) => {
 
     // Check if the band needs rest/clinic before taking on a gig
     const needsRest = state.band.harmony < 30 || state.band.members.some(m => m.stamina < 30 || m.mood < 30)
-    if (needsRest && rng() < 0.85) {
+    if (needsRest && rng() < 0.85 && state.player.money >= 150) {
       // Simulate resting / clinic visit
       // Pay the cost and recover stats, skip the gig for the day
       state.player.money = clampPlayerMoney(state.player.money - 150)
