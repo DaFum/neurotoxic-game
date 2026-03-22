@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 

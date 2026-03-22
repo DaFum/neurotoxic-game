@@ -38,7 +38,7 @@ const mockState = {
         name: 'M2',
         stamina: 100,
         mood: 100,
-        traits: { cyber_lungs: { id: 'cyber_lungs' } }
+        traits: [{ id: 'cyber_lungs' }]
       }
     ]
   },

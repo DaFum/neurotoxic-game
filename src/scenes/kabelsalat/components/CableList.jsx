@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLES } from '../constants.js'
 import PropTypes from 'prop-types'

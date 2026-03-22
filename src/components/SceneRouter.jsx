@@ -2,6 +2,7 @@
  * REVIEW
  * #1 Actual updates:
  *    Extracted SceneRouter component and its lazy-loaded scene imports from App.jsx into this dedicated file.
+ *    Added strict PropTypes validation using enums for currentScene and minigameType.
  * #2 Next steps and ideas to develop further:
  *    Consider dynamic loading of scene configurations from a data file, or creating nested routers for complex minigames.
  * #3 Found errors + solutions:
@@ -108,6 +109,6 @@ export function SceneRouter({ currentScene, minigameType }) {
 }
 
 SceneRouter.propTypes = {
-  currentScene: PropTypes.string.isRequired,
-  minigameType: PropTypes.string
+  currentScene: PropTypes.oneOf(Object.values(GAME_PHASES)).isRequired,
+  minigameType: PropTypes.oneOf(Object.values(MINIGAME_TYPES))
 }

@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added strict isRequired to MinigameSceneFrame logic props and added this block.
+ * (#2) Next Steps: Extract specific minigame UIs from this component.
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Review this file
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
@@ -102,8 +107,8 @@ MinigameSceneFrame.propTypes = {
     gameStateRef: PropTypes.oneOfType([
       PropTypes.func,
       PropTypes.shape({ current: PropTypes.any })
-    ]),
-    update: PropTypes.func,
+    ]).isRequired,
+    update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
     dispatch: PropTypes.func
   }).isRequired,
