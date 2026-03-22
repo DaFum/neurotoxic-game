@@ -13,7 +13,7 @@ export const BandMembersLayer = memo(({
   return (
     <div
       className='absolute inset-0 pointer-events-none'
-      style={{ zIndex: 'var(--z-crt)' }}
+      style={{ zIndex: 'var(--z-hud)' }}
     >
       {/* Matze (Guitar) - Left */}
       <div
