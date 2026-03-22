@@ -89,7 +89,7 @@ export const useClinicLogic = () => {
 
       // Intentional silent return: If the member already has the trait,
       // do nothing (no clinicEnhance or toast).
-      if (member.traits && member.traits.some(tr => tr.id === trait)) return
+      if (member.traits && member.traits[trait]) return
 
       if (player.fame < enhanceCostFame) {
         addToast(

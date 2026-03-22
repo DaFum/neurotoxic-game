@@ -58,7 +58,10 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
   const members = currentState.band?.members ?? []
   const nextBand = {
     ...currentState.band,
-    members: members.map(m => ({ ...m, traits: [...m.traits] }))
+    members: members.map(m => ({
+      ...m,
+      traits: Object.assign(Object.create(null), m.traits)
+    }))
   }
   const nextToasts = [...(currentState.toasts ?? [])]
 
@@ -88,7 +91,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     const member = nextBand.members[memberIndex]
 
     // Check if trait is already unlocked
-    if (member.traits.some(t => t.id === u.traitId)) return
+    if (member.traits[u.traitId]) return
 
     // Find trait definition using the member's name to resolve static character data
     // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
@@ -101,7 +104,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     if (!traitDef) return
 
     // Apply trait
-    member.traits.push(traitDef)
+    member.traits[u.traitId] = traitDef
 
     // Add toast with a unique ID
     nextToasts.push({

@@ -26,7 +26,14 @@ test('systemReducer - LOAD_GAME', async t => {
         },
         band: {
           harmony: 90,
-          members: [{ id: 'm1', mood: 80, stamina: 70, traits: ['trait1'] }]
+          members: [
+            {
+              id: 'm1',
+              mood: 80,
+              stamina: 70,
+              traits: [{ id: 'trait1', name: 'Trait 1' }]
+            }
+          ]
         },
         social: {
           controversyLevel: 10
@@ -54,7 +61,9 @@ test('systemReducer - LOAD_GAME', async t => {
         id: 'm1',
         mood: 80,
         stamina: 70,
-        traits: ['trait1']
+        traits: Object.assign(Object.create(null), {
+          trait1: { id: 'trait1', name: 'Trait 1' }
+        })
       })
       assert.equal(nextState.social.controversyLevel, 10)
       assert.deepEqual(nextState.setlist, ['song1'])

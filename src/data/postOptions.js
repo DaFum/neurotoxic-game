@@ -27,12 +27,6 @@ const POST_BADGES = {
   STORY: '📖'
 }
 
-// Optimization: WeakMap to cache trait lookups for individual member objects.
-// Since band.members array references change frequently (e.g. Redux updates) but
-// the member objects themselves persist, caching per-member prevents O(N*M) redundant
-// trait traversals when the array reference changes but the members do not.
-const memberTraitCache = new WeakMap()
-
 const getCost = inf => {
   if (
     !inf ||
@@ -57,26 +51,7 @@ const isValidAndAffordableInfluencer = (inf, money) => {
 }
 
 /**
- * Ensures the traits Set for a given member is built and cached.
- * @param {object} member - A band member object
- * @returns {Set} A Set of trait IDs
- */
-function ensureMemberTraitSet(member) {
-  let traitsSet = memberTraitCache.get(member)
-  if (!traitsSet) {
-    traitsSet = new Set()
-    if (member.traits) {
-      for (let i = 0; i < member.traits.length; i++) {
-        traitsSet.add(member.traits[i].id)
-      }
-    }
-    memberTraitCache.set(member, traitsSet)
-  }
-  return traitsSet
-}
-
-/**
- * O(N) over members array with O(1) cached lookups per member for the first member with a specific trait.
+ * O(N) over members array with O(1) lookups per member for the first member with a specific trait.
  * N is typically very small (~4).
  * @param {Array} members - The band.members array
  * @param {string} traitId - The ID of the trait
@@ -86,13 +61,13 @@ function getMemberWithTrait(members, traitId) {
   if (!members || !members.length) return undefined
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
-    if (ensureMemberTraitSet(m).has(traitId)) return m
+    if (m.traits && m.traits[traitId]) return m
   }
   return undefined
 }
 
 /**
- * O(N) over members array with O(1) cached check if any member has a specific trait (or one of two traits).
+ * O(N) over members array with O(1) check if any member has a specific trait (or one of two traits).
  * @param {Array} members - The band.members array
  * @param {string} traitId1 - The ID of the primary trait
  * @param {string} [traitId2] - Optional ID of a secondary trait
@@ -101,9 +76,10 @@ function getMemberWithTrait(members, traitId) {
 function hasMemberWithTrait(members, traitId1, traitId2) {
   if (!members || !members.length) return false
   for (let i = 0; i < members.length; i++) {
-    const traitsSet = ensureMemberTraitSet(members[i])
-    if (traitsSet.has(traitId1)) return true
-    if (traitId2 && traitsSet.has(traitId2)) return true
+    const m = members[i]
+    if (m.traits && (m.traits[traitId1] || (traitId2 && m.traits[traitId2]))) {
+      return true
+    }
   }
   return false
 }

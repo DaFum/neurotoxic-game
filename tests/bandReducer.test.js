@@ -18,7 +18,7 @@ describe('bandReducer', () => {
           consumable_item: 5,
           boolean_item: true
         },
-        members: [{ id: 'm1', name: 'Matze', traits: [] }]
+        members: [{ id: 'm1', name: 'Matze', traits: {} }]
       },
       toasts: []
     }
@@ -81,7 +81,8 @@ describe('bandReducer', () => {
       const nextState = handleUnlockTrait(baseState, payload)
 
       const matze = nextState.band.members.find(m => m.id === 'm1')
-      assert.ok(matze.traits.some(t => t.id === 'tech_wizard'))
+      assert.ok(matze.traits.tech_wizard)
+      assert.strictEqual(matze.traits.tech_wizard.id, 'tech_wizard')
       assert.ok(nextState.toasts.length > 0)
     })
 
