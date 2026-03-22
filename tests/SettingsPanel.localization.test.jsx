@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 test('SettingsPanel renders localized language option labels', async () => {
-  const { SettingsPanel } = await import('../src/ui/shared/SettingsPanel.jsx')
+  const { SettingsPanel } = await import('../src/ui/settings/SettingsPanel.jsx')
 
   render(
     <SettingsPanel

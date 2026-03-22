@@ -9,7 +9,7 @@ import { memo } from 'react'
 import PropTypes from 'prop-types'
 
 // Export components
-export { SettingsPanel } from './SettingsPanel'
+export { SettingsPanel } from '../settings/SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'
 export { Tooltip } from './Tooltip'
 export { Modal } from './Modal'
