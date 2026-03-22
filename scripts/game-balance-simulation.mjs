@@ -58,7 +58,7 @@ export const SIMULATION_CONSTANTS = {
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
-  baseGigGapDays: 3,
+  baseGigGapDays: 1, // In-game, traveling to a new node advances the day exactly once, allowing a gig immediately upon arrival
   randomModifierChance: 0.22,
   followerGainMultiplier: 0.2,
   fameLossBadGig: BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG,
@@ -82,7 +82,7 @@ export const SCENARIOS = [
     name: 'Baseline Touring',
     description:
       'Ausgewogene Tour mit moderaten Modifikatoren und normalem Risiko.',
-    gigGapDays: 3,
+    gigGapDays: 1,
     ticketDiscountChance: 0.08,
     eventIntensity: 0.35,
     maintenanceDiscipline: 0.7,
@@ -794,6 +794,7 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
 
   state.player.fame = clampPlayerFame(currentFame + fameDelta)
   state.player.fameLevel = calculateFameLevel(state.player.fame)
+
   state.social.lastGigDay = state.player.day
 
   const followerDelta = Math.max(
@@ -847,6 +848,7 @@ const runSingleSimulation = (scenario, seed) => {
     kabelsalatMinigames: 0,
     refuels: 0,
     repairs: 0,
+    clinicVisits: 0,
     hqUpgrades: 0,
     vanUpgrades: 0,
     viralSpikes: 0,
@@ -887,6 +889,25 @@ const runSingleSimulation = (scenario, seed) => {
       day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
 
     if (!shouldPlayGig) {
+      peakMoney = Math.max(peakMoney, state.player.money)
+      lowestMoney = Math.min(lowestMoney, state.player.money)
+      continue
+    }
+
+    // Check if the band needs rest/clinic before taking on a gig
+    const needsRest = state.band.harmony < 30 || state.band.members.some(m => m.stamina < 30 || m.mood < 30)
+    if (needsRest && rng() < 0.85) {
+      // Simulate resting / clinic visit
+      // Pay the cost and recover stats, skip the gig for the day
+      state.player.money = clampPlayerMoney(state.player.money - 150)
+      state.band.harmony = clampBandHarmony(state.band.harmony + 20)
+      state.band.members = state.band.members.map(member => ({
+        ...member,
+        mood: clampMemberMood(member.mood + 30),
+        stamina: clampMemberStamina(member.stamina + 40)
+      }))
+
+      counters.clinicVisits = (counters.clinicVisits || 0) + 1
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       continue
@@ -1060,6 +1081,7 @@ const summarizeScenario = runs => {
       acc.kabelsalatMinigames += run.kabelsalatMinigames
       acc.refuels += run.refuels
       acc.repairs += run.repairs
+      acc.clinicVisits += run.clinicVisits
       acc.hqUpgrades += run.hqUpgrades
       acc.vanUpgrades += run.vanUpgrades
       acc.viralSpikes += run.viralSpikes
@@ -1091,6 +1113,7 @@ const summarizeScenario = runs => {
       kabelsalatMinigames: 0,
       refuels: 0,
       repairs: 0,
+      clinicVisits: 0,
       hqUpgrades: 0,
       vanUpgrades: 0,
       viralSpikes: 0,
@@ -1126,6 +1149,7 @@ const summarizeScenario = runs => {
     ),
     avgRefuels: Number((totals.refuels / count).toFixed(2)),
     avgRepairs: Number((totals.repairs / count).toFixed(2)),
+    avgClinicVisits: Number((totals.clinicVisits / count).toFixed(2)),
     avgHqUpgrades: Number((totals.hqUpgrades / count).toFixed(2)),
     avgVanUpgrades: Number((totals.vanUpgrades / count).toFixed(2)),
     avgViralSpikes: Number((totals.viralSpikes / count).toFixed(2)),
@@ -1240,9 +1264,9 @@ const buildMarkdownReport = payload => {
   lines.push('## Ergebnis-Matrix')
   lines.push('')
   lines.push(
-    '| Szenario | Ø Endgeld | Ø Endfame | Ø Harmony | Ø Kontroverse | Ø Gigs | Insolvenzrate | Ø Gig-Netto | Ø Events (viral/cash/band) | Ø Trend | Ø Brand Deals | Ø Contraband | Bewertung |'
+    '| Szenario | Ø Endgeld | Ø Endfame | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenzrate | Ø Gig-Netto | Ø Events (viral/cash/band) | Bewertung |'
   )
-  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
 
   for (const scenario of payload.results) {
     const summary = scenario.summary
@@ -1255,7 +1279,7 @@ const buildMarkdownReport = payload => {
     )
 
     lines.push(
-      `| ${scenario.name} | ${summary.avgFinalMoney} | ${summary.avgFinalFame} | ${summary.avgFinalHarmony} | ${summary.avgFinalControversy} | ${summary.avgGigsPlayed} | ${summary.bankruptcyRate}% | ${summary.avgGigNet} | ${avgEvents} | ${summary.avgTrendShifts} | ${summary.avgBrandDealsActivated} | ${summary.avgContrabandDrops} | ${getScenarioInsight(summary)} |`
+      `| ${scenario.name} | ${summary.avgFinalMoney} | ${summary.avgFinalFame} | ${summary.avgFinalHarmony} | ${summary.avgFinalControversy} | ${summary.avgGigsPlayed} | ${summary.avgClinicVisits} | ${summary.bankruptcyRate}% | ${summary.avgGigNet} | ${avgEvents} | ${getScenarioInsight(summary)} |`
     )
   }
 

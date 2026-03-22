@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-03-22T19:04:59.434Z
+Erstellt am: 2026-03-22T21:01:03.037Z
 
 ## Simulationseinstellungen
 
@@ -21,15 +21,15 @@ Erstellt am: 2026-03-22T19:04:59.434Z
 
 ## Ergebnis-Matrix
 
-| Szenario | Ø Endgeld | Ø Endfame | Ø Harmony | Ø Kontroverse | Ø Gigs | Insolvenzrate | Ø Gig-Netto | Ø Events (viral/cash/band) | Ø Trend | Ø Brand Deals | Ø Contraband | Bewertung |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 155240 | 107 | 44 | 0.57 | 25 | 0% | 6266 | 3.05 | 9.25 | 3.22 | 8.36 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Bootstrap Struggle | 24372 | 10 | 50 | 0.55 | 18 | 0% | 1991 | 4.47 | 8.63 | 2.7 | 8.14 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Aggressive Marketing | 295805 | 98 | 44 | 0.48 | 37 | 0% | 7909 | 5.34 | 9.21 | 3.54 | 8.56 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Scandal Recovery | 29141 | 0 | 44 | 7.13 | 25 | 0% | 1561 | 6.63 | 8.95 | 3.02 | 8.33 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Festival Push | 233529 | 240 | 44 | 0.63 | 25 | 0% | 9248 | 3.46 | 8.94 | 3.33 | 8.23 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Chaos Tour | 56068 | 0 | 38 | 0.88 | 36.98 | 0% | 1768 | 8.34 | 9.21 | 3.36 | 8.44 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Cult Hypergrowth | 325046 | 108 | 46 | 0.66 | 37 | 0% | 8651 | 4.91 | 8.98 | 3.5 | 8.1 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Szenario | Ø Endgeld | Ø Endfame | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenzrate | Ø Gig-Netto | Ø Events (viral/cash/band) | Bewertung |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Baseline Touring | 532962 | 357 | 50 | 0.56 | 61.81 | 13.19 | 0% | 8583 | 3.28 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Bootstrap Struggle | 71231 | 222 | 53 | 0.58 | 13.67 | 4.33 | 0% | 5764 | 4.42 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Aggressive Marketing | 304923 | 310 | 55 | 0.49 | 31.27 | 5.73 | 0% | 9698 | 5.42 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Scandal Recovery | 113371 | 254 | 52 | 7.04 | 19.49 | 5.51 | 0% | 6152 | 6.49 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Festival Push | 215505 | 363 | 52 | 0.6 | 22.08 | 2.92 | 0% | 9695 | 3.43 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Chaos Tour | 236019 | 314 | 53 | 0.7 | 29.86 | 7.14 | 0% | 8062 | 8.29 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Cult Hypergrowth | 328614 | 290 | 56 | 0.5 | 31.36 | 5.64 | 0% | 10358 | 4.72 | ✅ Szenario liegt im robusten Simulationskorridor. |
 
 ## Feature-Abdeckung in der Simulation
 
@@ -56,6 +56,6 @@ Erstellt am: 2026-03-22T19:04:59.434Z
 ## Kurzfazit
 
 - Kein Szenario mit Insolvenzfällen beobachtet.
-- Höchster Kapitalaufbau: **Cult Hypergrowth** mit Ø 325046 Endgeld.
-- Höchste Volatilität: **Chaos Tour** mit Ø 8.34 Event-Impulsen.
+- Höchster Kapitalaufbau: **Baseline Touring** mit Ø 532962 Endgeld.
+- Höchste Volatilität: **Chaos Tour** mit Ø 8.29 Event-Impulsen.
 - Empfehlung: Extreme Szenarien priorisiert gegeneinander testen und Ziel-KPI-Bänder definieren.
