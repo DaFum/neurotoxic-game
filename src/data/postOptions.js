@@ -3,6 +3,7 @@ import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
 import { secureRandom } from '../utils/crypto.js'
 import { handleError } from '../utils/errorHandler.js'
+import { hasTrait } from '../utils/traitLogic.js'
 
 const getSecureRollOnce = (() => {
   let errorReported = false
@@ -61,7 +62,7 @@ function getMemberWithTrait(members, traitId) {
   if (!members || !members.length) return undefined
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
-    if (m.traits && m.traits[traitId]) return m
+    if (hasTrait(m, traitId)) return m
   }
   return undefined
 }
@@ -77,7 +78,7 @@ function hasMemberWithTrait(members, traitId1, traitId2) {
   if (!members || !members.length) return false
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
-    if (m.traits && (m.traits[traitId1] || (traitId2 && m.traits[traitId2]))) {
+    if (hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2))) {
       return true
     }
   }

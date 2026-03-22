@@ -10,10 +10,15 @@
  * @returns {boolean} True if the member has the trait.
  */
 export const hasTrait = (member, traitId) => {
-  if (!member || !member.traits || typeof member.traits !== 'object') {
+  if (
+    !member ||
+    !member.traits ||
+    typeof member.traits !== 'object' ||
+    Array.isArray(member.traits)
+  ) {
     return false
   }
-  return !!member.traits[traitId]
+  return Object.hasOwn(member.traits, traitId)
 }
 
 /**

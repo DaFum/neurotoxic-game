@@ -8,6 +8,7 @@
 import { CHARACTERS } from '../data/characters.js'
 import { LOG_LEVELS } from '../utils/logger.js'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants.js'
+import { normalizeTraitMap } from '../utils/traitUtils.js'
 
 /**
  * Brand alignment constants
@@ -213,7 +214,7 @@ export const createInitialState = (persistedData = {}) => ({
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({
       ...m,
-      traits: Object.assign(Object.create(null), m.traits),
+      traits: normalizeTraitMap(m.traits),
       relationships: { ...m.relationships }
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },
