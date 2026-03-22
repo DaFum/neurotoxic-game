@@ -65,7 +65,8 @@ import {
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
-  createPirateBroadcastAction
+  createPirateBroadcastAction,
+  createMerchPressAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -532,6 +533,15 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  /**
+   * Dispatches a merch press action.
+   * @param {object} payload - The merch press payload.
+   */
+  const merchPress = useCallback(
+    payload => dispatch(createMerchPressAction(payload)),
+    []
+  )
+
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -871,7 +881,8 @@ export const GameStateProvider = ({ children }) => {
       useContraband,
       clinicHeal,
       clinicEnhance,
-      pirateBroadcast
+      pirateBroadcast,
+      merchPress
     }),
     [
       changeScene,
@@ -909,7 +920,8 @@ export const GameStateProvider = ({ children }) => {
       useContraband,
       clinicHeal,
       clinicEnhance,
-      pirateBroadcast
+      pirateBroadcast,
+      merchPress
     ]
   )
 
