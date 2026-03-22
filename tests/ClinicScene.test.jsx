@@ -97,7 +97,13 @@ describe('ClinicScene', () => {
       band: {
         members: [
           { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: {} },
-          { id: 'm2', name: 'M2', stamina: 100, mood: 100, traits: { cyber_lungs: true } }
+          {
+            id: 'm2',
+            name: 'M2',
+            stamina: 100,
+            mood: 100,
+            traits: { cyber_lungs: true }
+          }
         ]
       },
       healCostMoney: 50,

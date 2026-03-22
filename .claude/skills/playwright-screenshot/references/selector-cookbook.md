@@ -37,7 +37,7 @@ page.locator('div.relative.w-full.h-full.overflow-hidden')
 page.locator('canvas')
 
 // CRT overlay (always present when crtEnabled = true)
-page.locator('.crt-overlay')   // class may vary; inspect DOM if needed
+page.locator('.crt-overlay') // class may vary; inspect DOM if needed
 ```
 
 ---
@@ -70,8 +70,8 @@ page.getByAltText(/lars/i)
 page.getByRole('heading', { name: /tour plan/i })
 
 // Map container (SVG-based game map)
-page.locator('svg')            // the map SVG
-page.locator('svg').first()    // if multiple SVGs exist
+page.locator('svg') // the map SVG
+page.locator('svg').first() // if multiple SVGs exist
 
 // Travel node buttons — name includes "Travel to <venue>"
 page.getByRole('button', { name: /travel to goldgrube/i })
@@ -81,9 +81,11 @@ page.getByRole('button', { name: /travel to stadtfest/i })
 page.getByRole('button', { name: /travel to deichbrand/i })
 page.getByRole('button', { name: /travel to wacken/i })
 // Generic: first reachable travel node
-page.getByRole('button', {
-  name: /travel to (Goldgrube|MTC|Die Distille|Stadtfest|Deichbrand|Wacken)/i
-}).first()
+page
+  .getByRole('button', {
+    name: /travel to (Goldgrube|MTC|Die Distille|Stadtfest|Deichbrand|Wacken)/i
+  })
+  .first()
 
 // Confirm travel tooltip
 page.getByText('CONFIRM?')
@@ -92,7 +94,7 @@ page.getByText('CONFIRM?')
 page.getByRole('button', { name: /band hq/i })
 
 // Current location indicator (text varies by location)
-page.getByText(/stendal/i)   // example starting city
+page.getByText(/stendal/i) // example starting city
 ```
 
 ---
@@ -106,20 +108,20 @@ page.getByRole('heading', { name: /band hq/i, exact: true })
 // Tab navigation
 page.getByRole('button', { name: 'SHOP' })
 page.getByRole('button', { name: 'SETTINGS' })
-page.getByRole('button', { name: 'BAND' })      // if tab exists
-page.getByRole('button', { name: 'LEADERBOARD' })  // if tab exists
+page.getByRole('button', { name: 'BAND' }) // if tab exists
+page.getByRole('button', { name: 'LEADERBOARD' }) // if tab exists
 
 // Close button
 page.getByRole('button', { name: /leave \[esc\]/i })
 
 // Shop items (generic — text varies by item name)
-page.locator('button[data-item-id]')             // if data attrs exist
+page.locator('button[data-item-id]') // if data attrs exist
 page.getByRole('button', { name: /buy/i }).first()
 
 // Settings panel elements
-page.locator('#logLevelSelect')                  // log level dropdown
-page.getByRole('checkbox', { name: /crt/i })     // CRT toggle
-page.getByRole('slider')                         // audio sliders (volume etc.)
+page.locator('#logLevelSelect') // log level dropdown
+page.getByRole('checkbox', { name: /crt/i }) // CRT toggle
+page.getByRole('slider') // audio sliders (volume etc.)
 ```
 
 ---
@@ -131,10 +133,10 @@ page.getByRole('slider')                         // audio sliders (volume etc.)
 page.getByRole('heading', { name: /preparation/i })
 
 // Setlist / song picker
-page.getByText('01 Kranker Schrank')             // first song by display name
-page.getByText('02')                              // second slot etc.
+page.getByText('01 Kranker Schrank') // first song by display name
+page.getByText('02') // second slot etc.
 // Songs are rendered as clickable list items
-page.locator('[data-song-id]').first()            // if data attr exists
+page.locator('[data-song-id]').first() // if data attr exists
 
 // Modifier checkboxes (promo, soundcheck, merch, catering, guestlist)
 page.getByRole('checkbox', { name: /promo/i })
@@ -163,11 +165,11 @@ page.locator('canvas')
 
 // GIG HUD (React overlay above canvas, z-index 30)
 // Health bar
-page.locator('.health-bar')           // class name may vary
-page.getByRole('progressbar')         // if health bar is a <progress>
+page.locator('.health-bar') // class name may vary
+page.getByRole('progressbar') // if health bar is a <progress>
 
 // Score counter
-page.getByText(/score/i)             // look for score label
+page.getByText(/score/i) // look for score label
 
 // Crowd meter
 page.locator('.crowd-meter')
@@ -177,6 +179,7 @@ page.getByRole('heading', { name: /gig report/i })
 ```
 
 **Capturing canvas content:**
+
 ```js
 // Full viewport (canvas + HUD overlay)
 await page.screenshot({ path: 'gig-full.png' })
@@ -203,7 +206,7 @@ page.getByRole('button', { name: /continue to socials/i })
 
 // Social media phase
 page.getByRole('heading', { name: /post to social media/i })
-page.locator('button:has-text("Platform")').first()   // social platform buttons
+page.locator('button:has-text("Platform")').first() // social platform buttons
 
 // After posting
 page.getByRole('button', { name: /back to tour/i })
@@ -238,7 +241,7 @@ page.locator('button', { hasText: /^2 / }).first()
 page.locator('button', { hasText: /^3 / }).first()
 
 // Event title (i18n key resolved to text)
-page.getByRole('heading')   // first heading inside the modal
+page.getByRole('heading') // first heading inside the modal
 ```
 
 ---
@@ -250,9 +253,9 @@ TRAVEL_MINIGAME, PRE_GIG_MINIGAME, and CLINIC.
 
 ```js
 // Resource values (text-based)
-page.getByText(/€\d+/)           // money display
-page.getByText(/day \d+/i)       // day counter
-page.getByText(/harmony/i)       // harmony label
+page.getByText(/€\d+/) // money display
+page.getByText(/day \d+/i) // day counter
+page.getByText(/harmony/i) // harmony label
 
 // Fuel bar (progress element or text)
 page.getByRole('progressbar', { name: /fuel/i })
@@ -296,7 +299,7 @@ page.getByRole('button', { name: /skip all/i })
 page.getByRole('button', { name: /next/i })
 
 // Tutorial step text
-page.getByRole('dialog')   // if tutorial uses a dialog role
+page.getByRole('dialog') // if tutorial uses a dialog role
 ```
 
 Always dismiss the tutorial before taking screenshots:
@@ -315,11 +318,11 @@ try {
 
 ## Selector Priority Guide
 
-| Priority | Strategy | Example | When to use |
-|----------|----------|---------|-------------|
-| 1 | `getByRole` | `getByRole('button', { name: /start tour/i })` | Buttons, headings, dialogs, checkboxes |
-| 2 | `getByText` | `getByText('01 Kranker Schrank')` | Static text content |
-| 3 | `getByAltText` | `getByAltText(/matze/i)` | Images with alt text |
-| 4 | `locator(id)` | `locator('#logLevelSelect')` | Form elements with stable IDs |
-| 5 | `locator(css)` | `locator('canvas')` | Canvas, structural containers |
-| 6 | `locator(data-*)` | `locator('[data-song-id]')` | Only if data attributes are present |
+| Priority | Strategy          | Example                                        | When to use                            |
+| -------- | ----------------- | ---------------------------------------------- | -------------------------------------- |
+| 1        | `getByRole`       | `getByRole('button', { name: /start tour/i })` | Buttons, headings, dialogs, checkboxes |
+| 2        | `getByText`       | `getByText('01 Kranker Schrank')`              | Static text content                    |
+| 3        | `getByAltText`    | `getByAltText(/matze/i)`                       | Images with alt text                   |
+| 4        | `locator(id)`     | `locator('#logLevelSelect')`                   | Form elements with stable IDs          |
+| 5        | `locator(css)`    | `locator('canvas')`                            | Canvas, structural containers          |
+| 6        | `locator(data-*)` | `locator('[data-song-id]')`                    | Only if data attributes are present    |

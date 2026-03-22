@@ -267,8 +267,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
     if (controversySnapshot >= 80) conditionMultiplier += 0.5
-    else if (controversySnapshot >= 50)
-      conditionMultiplier += 0.2
+    else if (controversySnapshot >= 50) conditionMultiplier += 0.2
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%

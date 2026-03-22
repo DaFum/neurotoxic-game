@@ -892,35 +892,44 @@ export const SetlistSelector = memo(() => {
   const tracks = [
     {
       id: 1,
-      name: t('ui:setlistSelector.track1'),
-      difficulty: t('ui:setlistSelector.diffHard')
+      name: t('ui:setlistSelector.track1', { defaultValue: 'Track 1' }),
+      difficulty: t('ui:setlistSelector.diffHard', { defaultValue: 'Hard' })
     },
     {
       id: 2,
-      name: t('ui:setlistSelector.track2'),
-      difficulty: t('ui:setlistSelector.diffExpert')
+      name: t('ui:setlistSelector.track2', { defaultValue: 'Track 2' }),
+      difficulty: t('ui:setlistSelector.diffExpert', { defaultValue: 'Expert' })
     },
     {
       id: 3,
-      name: t('ui:setlistSelector.track3'),
-      difficulty: t('ui:setlistSelector.diffInsane')
+      name: t('ui:setlistSelector.track3', { defaultValue: 'Track 3' }),
+      difficulty: t('ui:setlistSelector.diffInsane', { defaultValue: 'Insane' })
     }
   ]
 
   return (
-    <div className='w-full max-w-sm flex flex-col gap-3'>
+    <div
+      className='w-full max-w-sm flex flex-col gap-3'
+      role='radiogroup'
+      aria-label={t('ui:setlistSelector.label', {
+        defaultValue: 'Select a track'
+      })}
+    >
       {tracks.map(track => {
         const isSelected = selected === track.id
         return (
           <button
             type='button'
+            role='radio'
+            aria-checked={isSelected}
             key={track.id}
             onClick={() => setSelected(track.id)}
-            className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group
+            className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
               ${isSelected ? 'border-toxic-green bg-toxic-green/10 shadow-[inset_0_0_15px_var(--color-toxic-green-20)]' : 'border-toxic-green/30 bg-void-black hover:border-toxic-green/70'}`}
           >
             <div className='flex items-center gap-3'>
               <span
+                aria-hidden='true'
                 className={`text-xl font-bold ${isSelected ? 'text-toxic-green' : 'text-toxic-green/30'}`}
               >
                 {isSelected ? '[X]' : '[ ]'}

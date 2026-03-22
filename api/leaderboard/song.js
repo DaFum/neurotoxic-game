@@ -18,7 +18,10 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       // Rate Limiting (5 requests per 60s)
-      const ip = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'
+      const ip =
+        req.headers?.['x-forwarded-for'] ||
+        req.socket?.remoteAddress ||
+        'unknown'
       const rateKey = `ratelimit:lb:song:${ip}`
       const current = await client.incr(rateKey)
       if (current === 1) {
@@ -45,7 +48,6 @@ export default async function handler(req, res) {
       ) {
         return res.status(400).json({ error: 'Invalid payload structure' })
       }
-
 
       const { playerId, playerName, songId, score } = req.body
 

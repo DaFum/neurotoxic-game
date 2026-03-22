@@ -8,16 +8,25 @@ mock.module('../../src/utils/logger.js', {
   }
 })
 
-const { handleMerchPress } = await import('../../src/context/reducers/socialReducer.js')
+const { handleMerchPress } =
+  await import('../../src/context/reducers/socialReducer.js')
 
 describe('socialReducer.merchPress', () => {
   test('rejects invalid payloads', () => {
-    const state = { player: { money: 1000 }, band: { harmony: 100 }, social: { loyalty: 0, controversyLevel: 0 } }
+    const state = {
+      player: { money: 1000 },
+      band: { harmony: 100 },
+      social: { loyalty: 0, controversyLevel: 0 }
+    }
     assert.strictEqual(handleMerchPress(state, null), state)
   })
 
   test('rejects if insufficient funds', () => {
-    const state = { player: { money: 100 }, band: { harmony: 100 }, social: { loyalty: 0, controversyLevel: 0 } }
+    const state = {
+      player: { money: 100 },
+      band: { harmony: 100 },
+      social: { loyalty: 0, controversyLevel: 0 }
+    }
     const result = handleMerchPress(state, { cost: 150 })
     assert.strictEqual(result.player.money, 100)
   })

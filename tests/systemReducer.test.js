@@ -107,7 +107,10 @@ test('systemReducer - LOAD_GAME', async t => {
       expectedTraits['trait2'] = { id: 'trait2', name: 'Trait 2' }
 
       assert.deepEqual(nextState.band.members[0].traits, expectedTraits)
-      assert.equal(Object.getPrototypeOf(nextState.band.members[0].traits), null)
+      assert.equal(
+        Object.getPrototypeOf(nextState.band.members[0].traits),
+        null
+      )
     }
   )
 

@@ -381,13 +381,17 @@ describe('PostGig Leaderboard Submission', () => {
 
     render(<PostGig />)
 
-    let nextBtn = await screen.findByRole('button', { name: /continue|next|social/i })
+    let nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
     fireEvent.click(nextBtn)
 
     let postBtn = await screen.findByText('Selfie')
     fireEvent.click(postBtn)
 
-    let finishBtn = await screen.findByRole('button', { name: /back to tour|continue/i })
+    let finishBtn = await screen.findByRole('button', {
+      name: /back to tour|continue/i
+    })
     fireEvent.click(finishBtn)
 
     await waitFor(() => {

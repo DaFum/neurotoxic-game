@@ -87,7 +87,10 @@ export const CONSEQUENCE_EVENTS = [
       return (
         consecutiveBadShows >= 2 &&
         controversy >= 40 &&
-        !hasStateItem(state.eventCooldowns, 'consequences_ticket_sales_collapse')
+        !hasStateItem(
+          state.eventCooldowns,
+          'consequences_ticket_sales_collapse'
+        )
       )
     },
     options: [
