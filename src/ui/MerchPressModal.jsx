@@ -16,6 +16,8 @@ export const MerchPressModal = ({
   const { t } = useTranslation(['ui'])
   const { player, band } = useGameState()
 
+  const isAffordable = (player?.money || 0) >= (config.cost || 0)
+
   return (
     <AnimatePresence>
       <motion.div
@@ -91,6 +93,8 @@ export const MerchPressModal = ({
                   +{config.loyaltyGain} {t('ui:stats.loyalty', { defaultValue: 'LOYALTY' })}
                   <br />
                   +{config.controversyGain} {t('ui:stats.controversy', { defaultValue: 'CONTROVERSY' })}
+                  <br />
+                  +{config.fameGain} {t('ui:stats.fame', { defaultValue: 'FAME' })}
                 </span>
               </div>
             </div>
@@ -110,13 +114,13 @@ export const MerchPressModal = ({
                  <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-ash-gray uppercase">{t('ui:stats.money', { defaultValue: 'FUNDS' })}</span>
-                      <span className={`${canPress ? 'text-toxic-green' : 'text-blood-red'}`}>
+                      <span className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}>
                         €{player?.money || 0} / €{config.cost}
                       </span>
                     </div>
                     <ProgressBar
                       value={config.cost > 0 ? Math.min(100, ((player?.money || 0) / config.cost) * 100) : 0}
-                      color={canPress ? 'var(--color-toxic-green)' : 'var(--color-blood-red)'}
+                      color={isAffordable ? 'var(--color-toxic-green)' : 'var(--color-blood-red)'}
                     />
                  </div>
                  <div>
@@ -143,6 +147,7 @@ export const MerchPressModal = ({
                 !canPress ? 'span' : Fragment,
                 !canPress ? {
                   role: 'button',
+                  tabIndex: 0,
                   'aria-disabled': 'true',
                   'aria-label': t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })
                 } : {},
@@ -177,6 +182,7 @@ MerchPressModal.propTypes = {
     cost: PropTypes.number.isRequired,
     loyaltyGain: PropTypes.number.isRequired,
     controversyGain: PropTypes.number.isRequired,
+    fameGain: PropTypes.number.isRequired,
     failChance: PropTypes.number.isRequired,
     harmonyCostOnFail: PropTypes.number.isRequired
   }).isRequired

@@ -437,7 +437,6 @@ export const createPirateBroadcastAction = payload => ({
     payload && typeof payload === 'object'
       ? {
           ...payload,
-          isSuccess: payload.isSuccess,
           successToast: payload.successToast
             ? { ...payload.successToast, id: crypto.randomUUID() }
             : undefined
