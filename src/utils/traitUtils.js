@@ -39,6 +39,35 @@ export const getTraitById = traitId => {
 }
 
 /**
+ * Normalizes a trait map into a null-prototype object.
+ * Applies current/hardening logic for legacy shapes.
+ * @param {object|Array} traits - The raw traits to normalize.
+ * @returns {object} A null-prototype object with normalized trait data.
+ */
+export const normalizeTraitMap = traits => {
+  if (Array.isArray(traits)) {
+    const traitsMap = Object.create(null)
+    for (const t of traits) {
+      if (t && t.id) {
+        traitsMap[t.id] = t
+      }
+    }
+    return traitsMap
+  }
+  if (traits && typeof traits === 'object') {
+    const traitsMap = Object.create(null)
+    const values = Object.values(traits)
+    for (const t of values) {
+      if (t && t.id) {
+        traitsMap[t.id] = t
+      }
+    }
+    return traitsMap
+  }
+  return Object.create(null)
+}
+
+/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
@@ -60,7 +89,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     ...currentState.band,
     members: members.map(m => ({
       ...m,
-      traits: Object.assign(Object.create(null), m.traits)
+      traits: normalizeTraitMap(m.traits)
     }))
   }
   const nextToasts = [...(currentState.toasts ?? [])]
