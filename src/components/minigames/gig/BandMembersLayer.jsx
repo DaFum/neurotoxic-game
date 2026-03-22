@@ -1,10 +1,11 @@
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
-export const BandMembersLayer = ({
+export const BandMembersLayer = memo(({
   matzeUrl,
-  MariusUrl,
-  LarsUrl,
+  mariusUrl,
+  larsUrl,
   setBandMemberRef
 }) => {
   const { t } = useTranslation()
@@ -33,7 +34,7 @@ export const BandMembersLayer = ({
         className='absolute left-[50%] top-[20%] -translate-x-1/2 w-40 h-40 transition-transform duration-100'
       >
         <img
-          src={MariusUrl}
+          src={mariusUrl}
           alt={t('gig:bandMembers.marius', { defaultValue: 'Marius' })}
           className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
         />
@@ -45,18 +46,20 @@ export const BandMembersLayer = ({
         className='absolute right-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
       >
         <img
-          src={LarsUrl}
+          src={larsUrl}
           alt={t('gig:bandMembers.lars', { defaultValue: 'Lars' })}
           className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
         />
       </div>
     </div>
   )
-}
+})
+
+BandMembersLayer.displayName = 'BandMembersLayer'
 
 BandMembersLayer.propTypes = {
   matzeUrl: PropTypes.string.isRequired,
-  MariusUrl: PropTypes.string.isRequired,
-  LarsUrl: PropTypes.string.isRequired,
+  mariusUrl: PropTypes.string.isRequired,
+  larsUrl: PropTypes.string.isRequired,
   setBandMemberRef: PropTypes.func.isRequired
 }

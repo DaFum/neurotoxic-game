@@ -237,8 +237,8 @@ export const Gig = () => {
       {/* Layer 1: Band Members (DOM) */}
       <BandMembersLayer
         matzeUrl={matzeUrl}
-        MariusUrl={MariusUrl}
-        LarsUrl={LarsUrl}
+        mariusUrl={MariusUrl}
+        larsUrl={LarsUrl}
         setBandMemberRef={setBandMemberRef}
       />
 
