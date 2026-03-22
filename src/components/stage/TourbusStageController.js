@@ -256,8 +256,7 @@ class TourbusStageController extends BaseStageController {
     for (const id of this.obstacleMap.keys()) {
       if (!this.currentIds.has(id)) {
         const sprite = this.obstacleMap.get(id)
-        this.obstacleContainer.removeChild(sprite)
-        sprite.destroy()
+        sprite.destroy() // PixiJS automatically removes from parent
         this.obstacleMap.delete(id)
       }
     }
