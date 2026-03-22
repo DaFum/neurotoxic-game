@@ -130,7 +130,7 @@ export const SocketList = ({
 SocketList.propTypes = {
   t: PropTypes.func.isRequired,
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
-  connections: PropTypes.object.isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
   isPowerConnected: PropTypes.bool.isRequired,
   selectedCable: PropTypes.string,
   isGameOver: PropTypes.bool.isRequired,

@@ -120,7 +120,7 @@ export const CableList = ({
 
 CableList.propTypes = {
   t: PropTypes.func.isRequired,
-  connections: PropTypes.object.isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
   selectedCable: PropTypes.string,
   isShocked: PropTypes.bool.isRequired,
   isGameOver: PropTypes.bool.isRequired,

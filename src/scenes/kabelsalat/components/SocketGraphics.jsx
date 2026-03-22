@@ -4,6 +4,7 @@
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'
+import { CONNECTOR_TYPES } from './constants.js'
 
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const SocketGraphics = ({ type }) => {
@@ -120,5 +121,5 @@ export const SocketGraphics = ({ type }) => {
 }
 
 SocketGraphics.propTypes = {
-  type: PropTypes.string.isRequired
+  type: PropTypes.oneOf(CONNECTOR_TYPES).isRequired
 }

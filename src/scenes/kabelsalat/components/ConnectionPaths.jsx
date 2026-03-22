@@ -44,7 +44,7 @@ export const ConnectionPaths = ({
 }
 
 ConnectionPaths.propTypes = {
-  connections: PropTypes.object.isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
   isPowerConnected: PropTypes.bool.isRequired,
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired
 }

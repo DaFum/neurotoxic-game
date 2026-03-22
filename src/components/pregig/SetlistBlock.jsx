@@ -132,12 +132,12 @@ export const SetlistBlock = ({
 
 const SongShape = PropTypes.shape({
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  name: PropTypes.string,
-  difficulty: PropTypes.number,
-  duration: PropTypes.number,
+  name: PropTypes.string.isRequired,
+  difficulty: PropTypes.number.isRequired,
+  duration: PropTypes.number.isRequired,
   energy: PropTypes.shape({
     peak: PropTypes.number.isRequired
-  })
+  }).isRequired
 })
 
 SetlistBlock.propTypes = {
@@ -148,6 +148,10 @@ SetlistBlock.propTypes = {
   songsDb: PropTypes.arrayOf(SongShape).isRequired,
   songsDict: PropTypes.objectOf(SongShape).isRequired,
   selectedSongIds: PropTypes.instanceOf(Set).isRequired,
-  player: PropTypes.object,
+  player: PropTypes.shape({
+    stats: PropTypes.shape({
+      proveYourselfMode: PropTypes.bool
+    })
+  }),
   toggleSong: PropTypes.func.isRequired
 }

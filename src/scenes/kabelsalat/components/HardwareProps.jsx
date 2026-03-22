@@ -6,7 +6,7 @@
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 
-export const RackScrew = ({ x, y }) => (
+export const RackScrew = memo(({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
     <circle
       cx='0'
@@ -33,7 +33,7 @@ export const RackScrew = ({ x, y }) => (
       strokeWidth='1.5'
     />
   </g>
-)
+))
 
 const RACK_GEOMETRY = {
   OUTER_X: 40,

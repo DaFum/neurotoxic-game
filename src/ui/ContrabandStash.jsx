@@ -99,9 +99,11 @@ export const ContrabandStash = ({
             stash.map(item => {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
+              const stableKey =
+                item.instanceId || `migrated-${item.id}-${Date.now()}`
               return (
                 <HexBorder
-                  key={item.instanceId}
+                  key={stableKey}
                   color='var(--color-toxic-green)'
                   className='bg-void-black flex flex-col justify-between'
                   padding='p-4'
@@ -243,8 +245,7 @@ export const ContrabandStash = ({
 ContrabandStash.propTypes = {
   stash: PropTypes.arrayOf(
     PropTypes.shape({
-      instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-        .isRequired,
+      instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       id: PropTypes.string.isRequired,
       effectType: PropTypes.string,
       rarity: PropTypes.string,

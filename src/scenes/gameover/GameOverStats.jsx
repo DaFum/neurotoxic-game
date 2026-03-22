@@ -55,5 +55,5 @@ GameOverStats.propTypes = {
     fame: PropTypes.number,
     totalTravels: PropTypes.number,
     score: PropTypes.number
-  }).isRequired
+  })
 }
