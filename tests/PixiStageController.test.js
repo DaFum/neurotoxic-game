@@ -245,7 +245,6 @@ describe('PixiStageController', () => {
     assert.equal(controller.effectManager, null)
     assert.equal(controller.noteManager, null)
     assert.equal(controller.toxicFilters, null)
-    assert.deepEqual(controller.emptyFilters, [])
     assert.equal(controller.isToxicActive, false)
   })
 
@@ -339,7 +338,7 @@ describe('PixiStageController', () => {
       initialMode: true,
       switchMode: false,
       expectedActive: false,
-      expectedFilters: () => controller.emptyFilters
+      expectedFilters: () => null
     }
   ]
 
@@ -382,7 +381,6 @@ describe('PixiStageController', () => {
     assert.equal(controller.stageContainer, null)
     assert.equal(controller.colorMatrix, null)
     assert.equal(controller.toxicFilters, null)
-    assert.deepEqual(controller.emptyFilters, [])
   })
 
   test('dispose handles null stageContainer gracefully', async () => {
@@ -648,7 +646,6 @@ describe('PixiStageController', () => {
       controller.dispose()
 
       assert.equal(controller.toxicFilters, null)
-      assert.deepEqual(controller.emptyFilters, [])
     })
 
     test('handles dispose when managers are null', async () => {
