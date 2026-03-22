@@ -1,3 +1,11 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import PropTypes from 'prop-types'
+import { CONNECTOR_TYPES } from '../constants.js'
+
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const SocketGraphics = ({ type }) => {
   switch (type) {
@@ -110,4 +118,8 @@ export const SocketGraphics = ({ type }) => {
     default:
       return null
   }
+}
+
+SocketGraphics.propTypes = {
+  type: PropTypes.oneOf(CONNECTOR_TYPES).isRequired
 }

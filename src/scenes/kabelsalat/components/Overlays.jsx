@@ -1,3 +1,10 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import PropTypes from 'prop-types'
+
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const Overlays = ({
   t,
@@ -42,4 +49,12 @@ export const Overlays = ({
       )}
     </>
   )
+}
+
+Overlays.propTypes = {
+  t: PropTypes.func.isRequired,
+  isShocked: PropTypes.bool.isRequired,
+  isGameOver: PropTypes.bool.isRequired,
+  isPoweredOn: PropTypes.bool.isRequired,
+  faultReason: PropTypes.string.isRequired
 }

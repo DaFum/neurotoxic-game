@@ -32,13 +32,13 @@ const mockState = {
   player: { money: 1000, fame: 500, clinicVisits: 0 },
   band: {
     members: [
-      { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: [] },
+      { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: {} },
       {
         id: 'm2',
         name: 'M2',
         stamina: 100,
         mood: 100,
-        traits: [{ id: 'cyber_lungs' }]
+        traits: { cyber_lungs: { id: 'cyber_lungs' } }
       }
     ]
   },

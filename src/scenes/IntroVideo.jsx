@@ -1,17 +1,15 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useRef, useEffect, useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import introVideo from '../assets/Neurotoxic_start.webm'
-import { GlitchButton } from '../ui/GlitchButton'
+import { AutoplayOverlay } from './intro/components/AutoplayOverlay'
+import { SkipButton } from './intro/components/SkipButton'
 import { logger } from '../utils/logger'
 
 /**
  * Scene for playing the intro video before the main menu.
  */
 export const IntroVideo = () => {
-  const { t } = useTranslation()
   const { changeScene } = useGameState()
   const videoRef = useRef(null)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
@@ -40,7 +38,7 @@ export const IntroVideo = () => {
   }, [])
 
   return (
-    <div className='relative w-full h-full bg-black overflow-hidden flex items-center justify-center z-[100]'>
+    <div className='relative w-full h-full bg-void-black overflow-hidden flex items-center justify-center z-[100]'>
       <video
         ref={videoRef}
         src={introVideo}
@@ -53,18 +51,10 @@ export const IntroVideo = () => {
       />
 
       {/* Autoplay Blocked Overlay */}
-      {autoplayBlocked && (
-        <div className='absolute inset-0 z-50 flex items-center justify-center bg-black/80'>
-          <GlitchButton onClick={handleManualPlay} className='scale-150'>
-            {t('ui:intro_play')}
-          </GlitchButton>
-        </div>
-      )}
+      {autoplayBlocked && <AutoplayOverlay onPlay={handleManualPlay} />}
 
       {/* Skip Button */}
-      <div className='absolute bottom-8 right-8 z-50 opacity-80 hover:opacity-100 transition-opacity'>
-        <GlitchButton onClick={handleEnd}>{t('ui:intro_skip')}</GlitchButton>
-      </div>
+      <SkipButton onSkip={handleEnd} />
     </div>
   )
 }

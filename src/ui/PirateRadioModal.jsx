@@ -1,9 +1,14 @@
-// TODO: Review this file
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameState } from '../context/GameState'
 import { formatCurrency } from '../utils/numberUtils'
+import PropTypes from 'prop-types'
 
 /**
  * Pirate Radio Broadcast Interface
@@ -149,4 +154,19 @@ export const PirateRadioModal = ({
       </motion.div>
     </div>
   )
+}
+
+PirateRadioModal.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  onBroadcast: PropTypes.func.isRequired,
+  canBroadcast: PropTypes.bool.isRequired,
+  hasBroadcastedToday: PropTypes.bool.isRequired,
+  config: PropTypes.shape({
+    FAME_GAIN: PropTypes.number.isRequired,
+    ZEALOTRY_GAIN: PropTypes.number.isRequired,
+    CONTROVERSY_GAIN: PropTypes.number.isRequired,
+    COST: PropTypes.number.isRequired,
+    HARMONY_COST: PropTypes.number.isRequired
+  }).isRequired,
+  contentClassName: PropTypes.string
 }

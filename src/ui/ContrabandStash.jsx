@@ -1,4 +1,11 @@
+/*
+ * (#1) Actual Updates: Added specific PropTypes and cleaned up imports.
+ * (#2) Next Steps: Consider pagination if stash grows too large.
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Review this file
+import { useCallback } from 'react'
+import PropTypes from 'prop-types'
 import {
   Modal,
   Panel,
@@ -14,7 +21,6 @@ import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
  * Contraband Stash Modal Component
  * Displays acquired relics and consumables.
  */
-import { useCallback } from 'react'
 
 export const ContrabandStash = ({
   stash = [],
@@ -93,9 +99,11 @@ export const ContrabandStash = ({
             stash.map(item => {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
+              const stableKey =
+                item.instanceId || `migrated-${item.id}`
               return (
                 <HexBorder
-                  key={item.instanceId}
+                  key={stableKey}
                   color='var(--color-toxic-green)'
                   className='bg-void-black flex flex-col justify-between'
                   padding='p-4'
@@ -154,7 +162,7 @@ export const ContrabandStash = ({
                     </div>
                     <div className='flex flex-row gap-4 items-start mb-4'>
                       {item.imagePrompt && (
-                        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
+                        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
                           <img
                             src={getGenImageUrl(IMG_PROMPTS[item.imagePrompt])}
                             alt={t(`items:contraband.${item.id}.name`)}
@@ -232,4 +240,31 @@ export const ContrabandStash = ({
       </Panel>
     </Modal>
   )
+}
+
+ContrabandStash.propTypes = {
+  stash: PropTypes.arrayOf(
+    PropTypes.shape({
+      instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      id: PropTypes.string.isRequired,
+      effectType: PropTypes.string,
+      rarity: PropTypes.string,
+      type: PropTypes.string,
+      duration: PropTypes.number,
+      imagePrompt: PropTypes.string,
+      description: PropTypes.string,
+      applied: PropTypes.bool,
+      applyOnAdd: PropTypes.bool
+    })
+  ),
+  members: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string
+    })
+  ),
+  selectedMember: PropTypes.string,
+  setSelectedMember: PropTypes.func.isRequired,
+  handleUseItem: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired
 }

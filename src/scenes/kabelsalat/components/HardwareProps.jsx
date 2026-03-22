@@ -1,6 +1,12 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { memo } from 'react'
+import PropTypes from 'prop-types'
 
-export const RackScrew = ({ x, y }) => (
+export const RackScrew = memo(({ x, y }) => (
   <g transform={`translate(${x}, ${y})`}>
     <circle
       cx='0'
@@ -27,7 +33,7 @@ export const RackScrew = ({ x, y }) => (
       strokeWidth='1.5'
     />
   </g>
-)
+))
 
 const RACK_GEOMETRY = {
   OUTER_X: 40,
@@ -111,3 +117,13 @@ export const PowerIndicator = memo(({ t, isPowerConnected }) => (
     </text>
   </g>
 ))
+
+RackScrew.propTypes = {
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired
+}
+
+PowerIndicator.propTypes = {
+  t: PropTypes.func.isRequired,
+  isPowerConnected: PropTypes.bool.isRequired
+}

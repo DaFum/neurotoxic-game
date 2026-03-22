@@ -1,5 +1,11 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLES } from '../constants.js'
+import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.jsx'
 
 export const CableList = ({
@@ -110,4 +116,13 @@ export const CableList = ({
       })}
     </>
   )
+}
+
+CableList.propTypes = {
+  t: PropTypes.func.isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
+  selectedCable: PropTypes.string,
+  isShocked: PropTypes.bool.isRequired,
+  isGameOver: PropTypes.bool.isRequired,
+  handleCableClick: PropTypes.func.isRequired
 }

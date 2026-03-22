@@ -1,3 +1,11 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import PropTypes from 'prop-types'
+import { CONNECTOR_TYPES } from '../constants.js'
+
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const PlugGraphics = ({ type }) => {
   switch (type) {
@@ -110,4 +118,8 @@ export const PlugGraphics = ({ type }) => {
     default:
       return null
   }
+}
+
+PlugGraphics.propTypes = {
+  type: PropTypes.oneOf(CONNECTOR_TYPES).isRequired
 }

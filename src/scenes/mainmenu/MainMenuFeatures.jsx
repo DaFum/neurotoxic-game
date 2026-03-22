@@ -1,4 +1,10 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { Modal } from '../../ui/shared'
 
 export const MainMenuFeatures = ({ onClose }) => {
@@ -87,4 +93,8 @@ export const MainMenuFeatures = ({ onClose }) => {
       </div>
     </Modal>
   )
+}
+
+MainMenuFeatures.propTypes = {
+  onClose: PropTypes.func.isRequired
 }

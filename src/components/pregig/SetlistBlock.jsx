@@ -1,9 +1,10 @@
 /**
- * (#1) Actual Updates: Extracted SetlistBlock from PreGig scene
- * (#2) Next Steps: Extract remaining logic
+ * (#1) Actual Updates: Extracted SetlistBlock from PreGig scene. Added precise PropTypes definitions.
+ * (#2) Next Steps: Extract remaining logic.
  * (#3) Found Errors + Solutions: N/A
  */
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { getSongId } from '../../utils/audio/songUtils'
 
 export const SetlistBlock = ({
@@ -29,7 +30,8 @@ export const SetlistBlock = ({
       <div className='flex-1 overflow-y-auto pr-0 sm:pr-2 space-y-2'>
         {songsDb.map(song => {
           const isSelected = selectedSongIds.has(song.id)
-          const isLocked = player?.stats?.proveYourselfMode && song.difficulty > 2
+          const isLocked =
+            player?.stats?.proveYourselfMode && song.difficulty > 2
 
           return (
             <div
@@ -126,4 +128,30 @@ export const SetlistBlock = ({
       </div>
     </motion.div>
   )
+}
+
+const SongShape = PropTypes.shape({
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  name: PropTypes.string.isRequired,
+  difficulty: PropTypes.number.isRequired,
+  duration: PropTypes.number.isRequired,
+  energy: PropTypes.shape({
+    peak: PropTypes.number.isRequired
+  }).isRequired
+})
+
+SetlistBlock.propTypes = {
+  t: PropTypes.func.isRequired,
+  setlist: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, SongShape])
+  ).isRequired,
+  songsDb: PropTypes.arrayOf(SongShape).isRequired,
+  songsDict: PropTypes.objectOf(SongShape).isRequired,
+  selectedSongIds: PropTypes.instanceOf(Set).isRequired,
+  player: PropTypes.shape({
+    stats: PropTypes.shape({
+      proveYourselfMode: PropTypes.bool
+    })
+  }),
+  toggleSong: PropTypes.func.isRequired
 }

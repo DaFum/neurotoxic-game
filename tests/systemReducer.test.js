@@ -81,6 +81,36 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'loads game and sanitizes object-based band member traits (regression test)',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 100 },
+        band: {
+          members: [
+            {
+              id: 'm1',
+              traits: {
+                0: { id: 'trait1', name: 'Trait 1' },
+                arbitrary_key: { id: 'trait2', name: 'Trait 2' }
+              }
+            }
+          ]
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      const expectedTraits = Object.create(null)
+      expectedTraits['trait1'] = { id: 'trait1', name: 'Trait 1' }
+      expectedTraits['trait2'] = { id: 'trait2', name: 'Trait 2' }
+
+      assert.deepEqual(nextState.band.members[0].traits, expectedTraits)
+      assert.equal(Object.getPrototypeOf(nextState.band.members[0].traits), null)
+    }
+  )
+
   await t.test('handles missing or malformed loaded state gracefully', () => {
     const initialState = createInitialState()
     const loadedState = {

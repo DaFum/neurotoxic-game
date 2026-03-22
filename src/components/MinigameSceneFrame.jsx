@@ -1,9 +1,15 @@
+/*
+ * (#1) Actual Updates: Added strict isRequired to MinigameSceneFrame logic props and added this block.
+ * (#2) Next Steps: Extract specific minigame UIs from this component.
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Review this file
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
+import PropTypes from 'prop-types'
 
 export const MinigameSceneFrame = ({
   controllerFactory,
@@ -93,4 +99,25 @@ export const MinigameSceneFrame = ({
       )}
     </div>
   )
+}
+
+MinigameSceneFrame.propTypes = {
+  controllerFactory: PropTypes.func.isRequired,
+  logic: PropTypes.shape({
+    gameStateRef: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.shape({ current: PropTypes.any })
+    ]).isRequired,
+    update: PropTypes.func.isRequired,
+    finishMinigame: PropTypes.func,
+    dispatch: PropTypes.func
+  }).isRequired,
+  uiState: PropTypes.shape({
+    isGameOver: PropTypes.bool
+  }),
+  onComplete: PropTypes.func.isRequired,
+  completionTitle: PropTypes.string,
+  renderCompletionStats: PropTypes.func,
+  completionButtonText: PropTypes.string,
+  children: PropTypes.node
 }

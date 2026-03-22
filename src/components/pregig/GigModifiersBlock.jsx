@@ -4,6 +4,7 @@
  * (#3) Found Errors + Solutions: N/A
  */
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import GigModifierButton from '../../ui/GigModifierButton'
 
 export const GigModifiersBlock = ({
@@ -86,4 +87,18 @@ export const GigModifiersBlock = ({
       </div>
     </motion.div>
   )
+}
+
+GigModifiersBlock.propTypes = {
+  t: PropTypes.func.isRequired,
+  gigModifierOptions: PropTypes.arrayOf(PropTypes.object).isRequired,
+  gigModifiers: PropTypes.object.isRequired,
+  toggleModifier: PropTypes.func.isRequired,
+  handleBandMeeting: PropTypes.func.isRequired,
+  bandMeetingCost: PropTypes.number.isRequired,
+  currentModifiers: PropTypes.shape({
+    activeEffects: PropTypes.arrayOf(
+      PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+    ).isRequired
+  }).isRequired
 }
