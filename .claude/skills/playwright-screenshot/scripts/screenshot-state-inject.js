@@ -12,7 +12,7 @@
  * Usage:
  *   node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js <fixture> [outfile]
  *
- *   Fixtures:  menu | overworld | pregig | postgig | gameover | clinic | event-modal
+ *   Fixtures:  menu | overworld | pregig | gig | postgig | gameover | clinic | band-hq | event-modal
  *
  * Examples:
  *   node screenshot-state-inject.js gameover screenshots/gameover.png
@@ -44,7 +44,8 @@ const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
 // ── Minimal base state (mirrors initialState.js shape) ────────────────────
 // This is the shape the game expects. You can override individual fields per fixture.
-const BASE_STATE = {
+// Exported for validation in playwright-screenshot-fixture-validation.test.js
+export const BASE_STATE = {
   version: 2,
   currentScene: 'MENU',
   player: {
@@ -162,6 +163,7 @@ const BASE_STATE = {
   lastGigStats: null,
   activeEvent: null,
   pendingEvents: [],
+  isScreenshotMode: false,
   minigame: {
     active: false,
     type: null,
@@ -172,7 +174,15 @@ const BASE_STATE = {
     score: 0
   },
   settings: { crtEnabled: true, tutorialSeen: true, logLevel: 'WARN' },
-  toasts: []
+  toasts: [],
+  setlist: [],
+  activeStoryFlags: [],
+  eventCooldowns: [],
+  venueBlacklist: [],
+  activeQuests: [],
+  reputationByRegion: {},
+  npcs: {},
+  unlocks: []
 }
 
 // ── Per-fixture overrides ──────────────────────────────────────────────────
@@ -193,10 +203,20 @@ const FIXTURES = {
   overworld: {
     description: 'Overworld map with moderate resources',
     state: { currentScene: 'OVERWORLD', player: { money: 480, fame: 350 } },
-    waitFor: async page =>
-      page
-        .getByRole('heading', { name: /tour plan/i })
-        .waitFor({ state: 'visible', timeout: 10000 })
+    waitFor: async page => {
+      // Try multiple selectors for robustness
+      try {
+        return await page
+          .getByRole('heading', { name: /tour plan|overworld/i })
+          .waitFor({ state: 'visible', timeout: 15000 })
+      } catch {
+        // Fallback: wait for SVG map (core overworld element)
+        return await page
+          .locator('svg')
+          .first()
+          .waitFor({ state: 'visible', timeout: 2000 })
+      }
+    }
   },
 
   pregig: {
@@ -211,18 +231,45 @@ const FIXTURES = {
         capacity: 120,
         basePay: 80,
         nodeId: 'node_2_1'
-      }
+      },
+      activeEvent: null,
+      pendingEvents: [],
+      // Flag to prevent event triggering in screenshot fixtures
+      isScreenshotMode: true
     },
-    waitFor: async page =>
-      page
-        .getByRole('heading', { name: /preparation/i })
-        .waitFor({ state: 'visible', timeout: 10000 })
+    waitFor: async page => {
+      try {
+        return await page
+          .getByRole('heading', { name: /preparation|pregig/i })
+          .waitFor({ state: 'visible', timeout: 15000 })
+      } catch {
+        // Fallback: wait for gig modifier options (core pregig UI)
+        return await page
+          .getByRole('heading', { name: /modifier/i })
+          .or(
+            page
+              .locator('button')
+              .filter({ hasText: /soundcheck|promo/i })
+              .first()
+          )
+          .waitFor({ state: 'visible', timeout: 2000 })
+      }
+    }
   },
 
   postgig: {
     description: 'Post-gig report screen after a successful gig',
     state: {
       currentScene: 'POSTGIG',
+      currentGig: {
+        venueId: 'goldgrube',
+        venueName: 'Goldgrube',
+        songId: '01 Kranker Schrank',
+        setlist: ['01 Kranker Schrank'],
+        capacity: 120,
+        basePay: 80,
+        nodeId: 'node_2_1'
+      },
       lastGigStats: {
         venueName: 'Goldgrube',
         earnings: 95,
@@ -234,12 +281,50 @@ const FIXTURES = {
         songTitle: 'Kranker Schrank',
         bonuses: [],
         penalties: []
-      }
+      },
+      activeEvent: null,
+      pendingEvents: []
     },
-    waitFor: async page =>
-      page
-        .getByRole('heading', { name: /gig report/i })
-        .waitFor({ state: 'visible', timeout: 10000 })
+    waitFor: async page => {
+      // Wait for POSTGIG scene to fully load (stats animation + render), 10s max
+      const startTime = Date.now()
+
+      while (Date.now() - startTime < 10000) {
+        try {
+          // Try heading first
+          const isHeading = await page
+            .getByRole('heading', { name: /gig report|postgig/i })
+            .waitFor({ state: 'visible', timeout: 500 })
+            .then(() => true)
+            .catch(() => false)
+          if (isHeading) return
+        } catch {
+          // Continue to next attempt
+        }
+
+        try {
+          // Try finding any text with stats keywords
+          const bodyText = await page.evaluate(() => document.body.innerText)
+          if (
+            bodyText.includes('Earnings') ||
+            bodyText.includes('earnings') ||
+            bodyText.includes('Crowd') ||
+            bodyText.includes('crowd') ||
+            bodyText.includes('Fame') ||
+            bodyText.includes('fame')
+          ) {
+            return // Stats are visible
+          }
+        } catch {
+          // Continue
+        }
+
+        // Small explicit wait before next check
+        await page.waitForTimeout(100)
+      }
+
+      // Stats haven't appeared in 10s but page is loaded — proceed anyway
+    }
   },
 
   gameover: {
@@ -249,10 +334,66 @@ const FIXTURES = {
       player: { money: 0, fame: 0, day: 14 },
       band: { harmony: 1 }
     },
-    waitFor: async page =>
-      page
-        .getByRole('heading', { name: /game over/i })
-        .waitFor({ state: 'visible', timeout: 10000 })
+    waitFor: async page => {
+      try {
+        return await page
+          .getByRole('heading', { name: /game over/i })
+          .waitFor({ state: 'visible', timeout: 15000 })
+      } catch {
+        // Fallback: wait for gameover stats section
+        return await page
+          .locator('[class*="flex"]')
+          .filter({ hasText: /bankruptcy|stats|day/i })
+          .first()
+          .waitFor({ state: 'visible', timeout: 2000 })
+      }
+    }
+  },
+
+  gig: {
+    description: 'GIG scene with PixiJS canvas',
+    state: {
+      currentScene: 'GIG',
+      currentGig: {
+        venueId: 'goldgrube',
+        venueName: 'Goldgrube',
+        songId: '01 Kranker Schrank',
+        setlist: ['01 Kranker Schrank'],
+        capacity: 120,
+        basePay: 80,
+        nodeId: 'node_2_1'
+      }
+    },
+    waitFor: async page => {
+      // Check if "SYSTEM LOCKED" overlay is present (audio-locking scenario)
+      try {
+        const lockedOverlay = await page.evaluate(() => {
+          const bodyText = document.body.innerText || ''
+          return bodyText.includes('SYSTEM LOCKED')
+        })
+        if (lockedOverlay) {
+          throw new Error(
+            'GIG scene is locked - audio playback failed to initialize'
+          )
+        }
+      } catch (err) {
+        if (err.message?.includes('SYSTEM LOCKED')) throw err
+        // Ignore evaluation errors, continue to canvas check
+      }
+
+      try {
+        // GIG scene has PixiJS canvas - wait for it to be visible
+        return await page
+          .locator('canvas')
+          .waitFor({ state: 'visible', timeout: 15000 })
+      } catch {
+        // Fallback: wait for gig UI overlay (if canvas slow to render)
+        return await page
+          .getByRole('button', { name: /skip|continue|escape/i })
+          .first()
+          .waitFor({ state: 'visible', timeout: 3000 })
+      }
+    }
   },
 
   clinic: {
@@ -262,9 +403,26 @@ const FIXTURES = {
       player: { money: 800, fame: 500 }
     },
     waitFor: async page => {
-      await page.waitForLoadState('networkidle')
-      // Clinic has no unique heading — wait for the scene container to stabilize
-      await page.waitForTimeout(500)
+      // Clinic has no unique heading — wait for networkidle then stabilize
+      try {
+        await page.waitForLoadState('networkidle', { timeout: 5000 })
+      } catch (err) {
+        // Only tolerate timeout; rethrow navigation/connection errors
+        if (err.name === 'TimeoutError') {
+          console.log('    (networkidle timed out, continuing)')
+        } else {
+          throw err
+        }
+      }
+      // Wait for the clinic UI to be interactive (fallback to heading or section)
+      try {
+        await page
+          .getByRole('heading', { name: /clinic|doctor/i })
+          .waitFor({ state: 'visible', timeout: 2000 })
+      } catch {
+        // If no heading found, wait for a generic element to stabilize
+        await page.waitForLoadState('domcontentloaded')
+      }
     }
   },
 
@@ -277,10 +435,15 @@ const FIXTURES = {
         .waitFor({ state: 'visible', timeout: 10000 }),
     capture: async page => {
       await page.getByRole('button', { name: /band hq/i }).click()
+      // Wait for the Band HQ modal to fully render
       await page
         .getByRole('heading', { name: /band hq/i })
-        .waitFor({ state: 'visible' })
-      await page.waitForTimeout(300)
+        .waitFor({ state: 'visible', timeout: 5000 })
+      // Verify modal content is interactive (matches "LEAVE [ESC]" button)
+      await page
+        .getByRole('button', { name: /leave|esc/i })
+        .first()
+        .waitFor({ state: 'visible', timeout: 2000 })
     }
   },
 
@@ -362,6 +525,11 @@ async function injectAndCapture(fixtureName, outFile) {
   })
   const page = await context.newPage()
 
+  // Capture console messages for debugging
+  page.on('console', msg =>
+    console.log(`[Browser] ${msg.type()}: ${msg.text()}`)
+  )
+
   try {
     // Inject state before the app loads by going to a blank page first,
     // setting localStorage, then navigating to the app.
@@ -375,6 +543,8 @@ async function injectAndCapture(fixtureName, outFile) {
       ({ saveKey, settingsKey, save, settings }) => {
         localStorage.setItem(saveKey, JSON.stringify(save))
         localStorage.setItem(settingsKey, JSON.stringify(settings))
+        // Marker tells GameStateProvider to hydrate from localStorage on next mount
+        localStorage.setItem('neurotoxic_inject_marker', 'true')
       },
       {
         saveKey: SAVE_KEY,
@@ -386,11 +556,22 @@ async function injectAndCapture(fixtureName, outFile) {
 
     // Now reload to let the game pick up the injected state
     await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.waitForLoadState('networkidle')
+    // Attempt networkidle, but app may be functional even if it times out
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 5000 })
+    } catch (err) {
+      // Only tolerate timeout; rethrow navigation/connection errors
+      if (err.name === 'TimeoutError') {
+        console.log('    (networkidle timed out, continuing)')
+      } else {
+        throw err
+      }
+    }
 
     // Wait for the scene to be ready
     await fixture.waitFor(page)
-    await page.waitForTimeout(600) // let Framer Motion transitions settle
+    // Let Framer Motion transitions settle (no condition to wait for — purely visual)
+    await page.waitForTimeout(400)
 
     // Run any extra capture steps
     if (fixture.capture) {
@@ -398,7 +579,8 @@ async function injectAndCapture(fixtureName, outFile) {
     }
 
     const dest = outFile ?? `${OUT_DIR}/${fixtureName}.png`
-    await page.screenshot({ path: dest })
+    // Extended timeout (120s) for font loading and network-constrained environments
+    await page.screenshot({ path: dest, timeout: 120000 })
     console.log(`✓ ${fixtureName} → ${dest}`)
   } finally {
     await browser.close()
@@ -412,7 +594,7 @@ async function injectAndCapture(fixtureName, outFile) {
  * Call this AFTER page.goto() has established the origin, before your actual navigation.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} fixtureName  One of: menu | overworld | pregig | postgig | gameover | clinic | event-modal
+ * @param {string} fixtureName  One of: menu | overworld | pregig | gig | postgig | gameover | clinic | band-hq | event-modal
  */
 export async function injectSave(page, fixtureName) {
   const fixture = FIXTURES[fixtureName]
@@ -426,6 +608,8 @@ export async function injectSave(page, fixtureName) {
     ({ saveKey, settingsKey, save, settings }) => {
       localStorage.setItem(saveKey, JSON.stringify(save))
       localStorage.setItem(settingsKey, JSON.stringify(settings))
+      // Marker tells GameStateProvider to hydrate from localStorage on next mount
+      localStorage.setItem('neurotoxic_inject_marker', 'true')
     },
     {
       saveKey: SAVE_KEY,

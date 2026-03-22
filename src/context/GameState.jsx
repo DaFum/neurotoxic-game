@@ -166,12 +166,80 @@ export const GameStateProvider = ({ children }) => {
 
   // Lazy initialization of state to ensure fresh data fetch on mount
   const initGameState = () => {
-    return createInitialState({
-      unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
-    })
+    const unlocks =
+      safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+    const freshState = createInitialState({ unlocks })
+
+    // Check for test-injected state (screenshot testing).
+    // A special marker key signals the state was placed by the screenshot
+    // injection script and should be hydrated on mount.  Normal player
+    // saves are loaded explicitly via the MENU → "Load Game" button.
+    const shouldHydrate = safeStorageOperation(
+      'checkInjectMarker',
+      () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
+      false
+    )
+
+    if (shouldHydrate) {
+      // NOTE: Do NOT remove the marker here.  React StrictMode double-invokes
+      // lazy initialisers in dev, so removing it on the first call would cause
+      // the second (authoritative) call to miss the marker and return INTRO.
+      // The marker is cleaned up in a useEffect after mount instead.
+
+      const savedGame = safeStorageOperation(
+        'loadInjectedState',
+        () => {
+          const saved = localStorage.getItem(SAVE_KEY)
+          return saved ? JSON.parse(saved) : null
+        },
+        null
+      )
+
+      if (savedGame && savedGame.version !== undefined) {
+        try {
+          // Merge strategy: freshState spreads first (all defaults), then savedGame
+          // overrides its fields. Incomplete fixtures (e.g. screenshot test stubs)
+          // safely fall back to fresh defaults for any field they omit.
+          // toasts/minigame/isScreenshotMode are re-asserted explicitly because
+          // createPersistedState omits them — savedGame may lack these keys entirely.
+          return {
+            ...freshState,
+            ...savedGame,
+            // Always ensure these critical fields are valid (never undefined)
+            toasts: savedGame.toasts ?? freshState.toasts,
+            minigame: savedGame.minigame ?? freshState.minigame,
+            unlocks,
+            // isScreenshotMode flag is used by scenes to suppress random events
+            isScreenshotMode:
+              savedGame.isScreenshotMode ?? freshState.isScreenshotMode
+          }
+        } catch (err) {
+          logger.error('GameState', 'Failed to hydrate injected state', err)
+        }
+      }
+    }
+
+    return freshState
   }
 
   const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
+
+  // Clean up injection marker after mount (deferred from initGameState to
+  // survive React StrictMode's double-invocation of lazy initialisers).
+  useEffect(() => {
+    safeStorageOperation('removeInjectMarker', () =>
+      localStorage.removeItem('neurotoxic_inject_marker')
+    )
+
+    // Also clean up on page unload to prevent marker persistence if test crashes
+    const handleUnload = () => {
+      safeStorageOperation('removeInjectMarkerOnUnload', () =>
+        localStorage.removeItem('neurotoxic_inject_marker')
+      )
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
+  }, [])
 
   // Leaderboard Sync Hook
   useLeaderboardSync(state)
