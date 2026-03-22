@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import PropTypes from 'prop-types'
 
 const LIGHTNING_Y_COORDS = [0, 200, 400, 600]

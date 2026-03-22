@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants.js'
 import PropTypes from 'prop-types'
@@ -125,7 +130,7 @@ export const SocketList = ({
 SocketList.propTypes = {
   t: PropTypes.func.isRequired,
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
-  connections: PropTypes.object.isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
   isPowerConnected: PropTypes.bool.isRequired,
   selectedCable: PropTypes.string,
   isGameOver: PropTypes.bool.isRequired,

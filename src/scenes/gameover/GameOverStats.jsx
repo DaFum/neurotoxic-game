@@ -1,5 +1,5 @@
 /*
- * (#1) Actual Updates: Extracted statistics container and rows from GameOver.jsx to a standalone file.
+ * (#1) Actual Updates: Extracted statistics container and rows from GameOver.jsx to a standalone file. Added strict PropTypes and nullish coalescing to GameOverStats.
  * (#2) Next Steps: Continue extracting other sub-components from GameOver.jsx.
  * (#3) Found Errors + Solutions: N/A
  */
@@ -11,8 +11,8 @@ export const GameOverStats = ({ player }) => {
   const { t } = useTranslation(['ui'])
 
   const statRows = [
-    { label: t('ui:stats.daysSurvived'), value: player?.day },
-    { label: t('ui:stats.fameReached'), value: player?.fame },
+    { label: t('ui:stats.daysSurvived'), value: player?.day ?? 0 },
+    { label: t('ui:stats.fameReached'), value: player?.fame ?? 0 },
     { label: t('ui:stats.totalTravels'), value: player?.totalTravels ?? 0 },
     { label: t('ui:stats.totalScore'), value: player?.score ?? 0 }
   ]

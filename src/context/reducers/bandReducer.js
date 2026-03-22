@@ -283,7 +283,9 @@ export const handleUseContraband = (state, payload) => {
   }
 
   const item = stash[contrabandId]
-  if (!item || item.instanceId !== instanceId) return state
+  if (!item) return state
+  if (item.instanceId !== undefined && item.instanceId !== instanceId)
+    return state
 
   if (item.applied === true) return state
   const itemKey = contrabandId

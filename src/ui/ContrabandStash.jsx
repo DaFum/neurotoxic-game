@@ -1,4 +1,11 @@
+/*
+ * (#1) Actual Updates: Added specific PropTypes and cleaned up imports.
+ * (#2) Next Steps: Consider pagination if stash grows too large.
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Review this file
+import { useCallback } from 'react'
+import PropTypes from 'prop-types'
 import {
   Modal,
   Panel,
@@ -9,13 +16,11 @@ import {
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import PropTypes from 'prop-types'
 
 /**
  * Contraband Stash Modal Component
  * Displays acquired relics and consumables.
  */
-import { useCallback } from 'react'
 
 export const ContrabandStash = ({
   stash = [],
@@ -94,9 +99,11 @@ export const ContrabandStash = ({
             stash.map(item => {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
+              const stableKey =
+                item.instanceId || `migrated-${item.id}`
               return (
                 <HexBorder
-                  key={item.instanceId}
+                  key={stableKey}
                   color='var(--color-toxic-green)'
                   className='bg-void-black flex flex-col justify-between'
                   padding='p-4'
@@ -236,8 +243,26 @@ export const ContrabandStash = ({
 }
 
 ContrabandStash.propTypes = {
-  stash: PropTypes.arrayOf(PropTypes.object),
-  members: PropTypes.arrayOf(PropTypes.object),
+  stash: PropTypes.arrayOf(
+    PropTypes.shape({
+      instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      id: PropTypes.string.isRequired,
+      effectType: PropTypes.string,
+      rarity: PropTypes.string,
+      type: PropTypes.string,
+      duration: PropTypes.number,
+      imagePrompt: PropTypes.string,
+      description: PropTypes.string,
+      applied: PropTypes.bool,
+      applyOnAdd: PropTypes.bool
+    })
+  ),
+  members: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string
+    })
+  ),
   selectedMember: PropTypes.string,
   setSelectedMember: PropTypes.func.isRequired,
   handleUseItem: PropTypes.func.isRequired,

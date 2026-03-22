@@ -85,3 +85,5 @@ export const SOCKET_DEFS = {
 
 export const INITIAL_SOCKET_ORDER = ['mic', 'amp', 'pedal', 'power', 'synth']
 export const TIME_LIMIT = 25
+
+export const CONNECTOR_TYPES = [...new Set(CABLES.map(c => c.type))]

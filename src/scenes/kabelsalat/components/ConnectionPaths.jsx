@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added PropTypes.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLE_MAP } from '../constants.js'
 import { getMessyPath } from '../utils.js'
@@ -39,7 +44,7 @@ export const ConnectionPaths = ({
 }
 
 ConnectionPaths.propTypes = {
-  connections: PropTypes.object.isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
   isPowerConnected: PropTypes.bool.isRequired,
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired
 }
