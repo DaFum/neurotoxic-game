@@ -374,7 +374,8 @@ describe('PostGig Leaderboard Submission', () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
-        statusText: 'Internal Server Error'
+        status: 500,
+        text: async () => 'Internal Server Error'
       })
     )
 

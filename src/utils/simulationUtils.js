@@ -213,6 +213,9 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   const nextBand = { ...currentState.band }
   const nextSocial = { ...currentState.social }
 
+  // Snapshot controversyLevel at start of daily update to ensure consistent checks
+  const controversySnapshot = nextSocial.controversyLevel || 0
+
   // 1. Costs
   // Rent/Food scaled by band size
   const bandSize = Array.isArray(nextBand.members) ? nextBand.members.length : 3
@@ -263,8 +266,8 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     }
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
-    if ((nextSocial.controversyLevel || 0) >= 80) conditionMultiplier += 0.5
-    else if ((nextSocial.controversyLevel || 0) >= 50)
+    if (controversySnapshot >= 80) conditionMultiplier += 0.5
+    else if (controversySnapshot >= 50)
       conditionMultiplier += 0.2
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
@@ -307,7 +310,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     }
   }
 
-  if ((nextSocial.controversyLevel || 0) >= 50) {
+  if (controversySnapshot >= 50) {
     // Harmony drain is worse under stress
     const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
     nextBand.harmony = nextHarmonyControversy
@@ -347,7 +350,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   if (
     !nextSocial.sponsorActive &&
     (nextSocial.instagram || 0) > 5000 &&
-    (nextSocial.controversyLevel || 0) < 60 && // Won't sign if controversy is too high
+    controversySnapshot < 60 && // Won't sign if controversy is too high
     rng() < 0.1
   ) {
     nextSocial.sponsorActive = true
@@ -357,9 +360,9 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
       nextSocial.sponsorActive = false
     }
     // Sponsorship Drops due to high controversy (Immediate or high chance if severe)
-    else if ((nextSocial.controversyLevel || 0) >= 80) {
+    else if (controversySnapshot >= 80) {
       nextSocial.sponsorActive = false // Immediate drop
-    } else if ((nextSocial.controversyLevel || 0) >= 60 && rng() < 0.5) {
+    } else if (controversySnapshot >= 60 && rng() < 0.5) {
       nextSocial.sponsorActive = false // High chance to drop
     }
   }
@@ -415,7 +418,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     mood = clampMemberMood(mood)
 
     // 2b. High Controversy Mood Penalty
-    if ((nextSocial.controversyLevel || 0) >= 50) {
+    if (controversySnapshot >= 50) {
       mood = clampMemberMood(mood - 1)
     }
 
