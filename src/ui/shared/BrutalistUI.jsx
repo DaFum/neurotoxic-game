@@ -892,18 +892,20 @@ export const SetlistSelector = memo(() => {
   const tracks = [
     {
       id: 1,
-      name: t('ui:setlistSelector.track1', { defaultValue: 'Track 1' }),
-      difficulty: t('ui:setlistSelector.diffHard', { defaultValue: 'Hard' })
+      name: t('ui:setlistSelector.track1', { defaultValue: 'SUICIDAL JESUS' }),
+      difficulty: t('ui:setlistSelector.diffHard', { defaultValue: 'HARD' })
     },
     {
       id: 2,
-      name: t('ui:setlistSelector.track2', { defaultValue: 'Track 2' }),
-      difficulty: t('ui:setlistSelector.diffExpert', { defaultValue: 'Expert' })
+      name: t('ui:setlistSelector.track2', { defaultValue: 'SYSTEMSPRENGER' }),
+      difficulty: t('ui:setlistSelector.diffExpert', { defaultValue: 'EXPERT' })
     },
     {
       id: 3,
-      name: t('ui:setlistSelector.track3', { defaultValue: 'Track 3' }),
-      difficulty: t('ui:setlistSelector.diffInsane', { defaultValue: 'Insane' })
+      name: t('ui:setlistSelector.track3', {
+        defaultValue: 'TRAVESTIE MASSAKER'
+      }),
+      difficulty: t('ui:setlistSelector.diffInsane', { defaultValue: 'INSANE' })
     }
   ]
 
