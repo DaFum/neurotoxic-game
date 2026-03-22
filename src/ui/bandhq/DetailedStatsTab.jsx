@@ -448,7 +448,7 @@ const MemberTraits = ({ member, t }) => {
   const def = CHAR_MAP[member.name]
   // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
   const baseTraits = def?.traits || []
-  const runtimeTraits = member?.traits || []
+  const runtimeTraits = Object.values(member?.traits || {})
 
   // Build a unique list of traits to display
   const allTraitsMap = new Map()
@@ -461,14 +461,10 @@ const MemberTraits = ({ member, t }) => {
     }
   }
 
-  const activeTraitIds = useMemo(() => {
-    const ids = new Set()
-    const traitsList = member.traits || []
-    for (let i = 0; i < traitsList.length; i++) {
-      ids.add(traitsList[i].id)
-    }
-    return ids
-  }, [member.traits])
+  const activeTraitIds = useMemo(
+    () => new Set(Object.keys(member.traits || {})),
+    [member.traits]
+  )
 
   const potentialTraits = Array.from(allTraitsMap.values())
   if (potentialTraits.length === 0)
@@ -712,11 +708,7 @@ BandMembersSection.propTypes = {
         improv: PropTypes.number,
         composition: PropTypes.number
       }),
-      traits: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired
-        })
-      ),
+      traits: PropTypes.object,
       equipment: PropTypes.object
     })
   ),

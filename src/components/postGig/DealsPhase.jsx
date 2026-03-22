@@ -15,7 +15,6 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     negotiatedDeals,
     negotiationModalOpen,
     setNegotiationModalOpen,
-    selectedDeal,
     negotiationResult,
     handleNegotiationStart,
     handleAcceptDeal,

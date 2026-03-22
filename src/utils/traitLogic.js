@@ -10,10 +10,15 @@
  * @returns {boolean} True if the member has the trait.
  */
 export const hasTrait = (member, traitId) => {
-  if (!member || !member.traits || !Array.isArray(member.traits)) {
+  if (
+    !member ||
+    !member.traits ||
+    typeof member.traits !== 'object' ||
+    Array.isArray(member.traits)
+  ) {
     return false
   }
-  return member.traits.some(t => t.id === traitId)
+  return Object.hasOwn(member.traits, traitId)
 }
 
 /**
@@ -26,5 +31,12 @@ export const bandHasTrait = (bandState, traitId) => {
   if (!bandState || !bandState.members || !Array.isArray(bandState.members)) {
     return false
   }
-  return bandState.members.some(member => hasTrait(member, traitId))
+  // Using a for loop instead of .some() to avoid array allocation if performance is critical,
+  // though band members array is small (usually 3-4).
+  for (let i = 0; i < bandState.members.length; i++) {
+    if (hasTrait(bandState.members[i], traitId)) {
+      return true
+    }
+  }
+  return false
 }

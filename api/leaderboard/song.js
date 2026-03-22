@@ -17,6 +17,17 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
+      // Rate Limiting (5 requests per 60s)
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+      const rateKey = `ratelimit:lb:song:${ip}`
+      const current = await client.incr(rateKey)
+      if (current === 1) {
+        await client.expire(rateKey, 60)
+      }
+      if (current > 5) {
+        return res.status(429).json({ error: 'Too many requests' })
+      }
+
       // Anti-Tamper / Prototype Pollution Check
       if (
         !req.body ||

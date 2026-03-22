@@ -39,6 +39,36 @@ export const getTraitById = traitId => {
 }
 
 /**
+ * Normalizes a trait map into a null-prototype object.
+ * Applies current/hardening logic for legacy shapes.
+ * @param {object|Array} traits - The raw traits to normalize.
+ * @returns {object} A null-prototype object with normalized trait data.
+ */
+export const normalizeTraitMap = traits => {
+  if (Array.isArray(traits)) {
+    const traitsMap = Object.create(null)
+    for (const t of traits) {
+      if (t && t.id) {
+        traitsMap[t.id] = t
+      }
+    }
+    return traitsMap
+  }
+  if (traits && typeof traits === 'object') {
+    const traitsMap = Object.create(null)
+    for (const key in traits) {
+      if (!Object.hasOwn(traits, key)) continue
+      const t = traits[key]
+      if (t && t.id) {
+        traitsMap[t.id] = t
+      }
+    }
+    return traitsMap
+  }
+  return Object.create(null)
+}
+
+/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
@@ -58,7 +88,10 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
   const members = currentState.band?.members ?? []
   const nextBand = {
     ...currentState.band,
-    members: members.map(m => ({ ...m, traits: [...m.traits] }))
+    members: members.map(m => ({
+      ...m,
+      traits: normalizeTraitMap(m.traits)
+    }))
   }
   const nextToasts = [...(currentState.toasts ?? [])]
 
@@ -88,7 +121,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     const member = nextBand.members[memberIndex]
 
     // Check if trait is already unlocked
-    if (member.traits.some(t => t.id === u.traitId)) return
+    if (Object.hasOwn(member.traits, u.traitId)) return
 
     // Find trait definition using the member's name to resolve static character data
     // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
@@ -101,7 +134,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     if (!traitDef) return
 
     // Apply trait
-    member.traits.push(traitDef)
+    member.traits[u.traitId] = traitDef
 
     // Add toast with a unique ID
     nextToasts.push({

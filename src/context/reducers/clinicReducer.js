@@ -8,7 +8,7 @@ import {
   clampMemberStamina,
   calculateFameLevel
 } from '../../utils/gameStateUtils.js'
-import { getTraitById } from '../../utils/traitUtils.js'
+import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils.js'
 
 /**
  * Common logic for clinic actions.
@@ -151,8 +151,8 @@ export const handleClinicEnhance = (state, payload) => {
         break
       }
     }
-    if (targetMember && Array.isArray(targetMember.traits)) {
-      if (targetMember.traits.some(tr => tr.id === resolvedTrait.id)) {
+    if (targetMember && targetMember.traits) {
+      if (Object.hasOwn(targetMember.traits, resolvedTrait.id)) {
         logger.debug(
           'ClinicReducer',
           `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`
@@ -163,8 +163,8 @@ export const handleClinicEnhance = (state, payload) => {
   }
 
   return executeClinicAction(state, payload, member => {
-    const updatedTraits = Array.isArray(member.traits) ? [...member.traits] : []
-    updatedTraits.push(resolvedTrait)
+    const updatedTraits = normalizeTraitMap(member.traits)
+    updatedTraits[resolvedTrait.id] = resolvedTrait
 
     return {
       ...member,

@@ -4,6 +4,7 @@
  * (#3) Found Errors + Solutions: N/A
  */
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import { getSongId } from '../../utils/audio/songUtils'
 
 export const SetlistBlock = ({
@@ -29,7 +30,8 @@ export const SetlistBlock = ({
       <div className='flex-1 overflow-y-auto pr-0 sm:pr-2 space-y-2'>
         {songsDb.map(song => {
           const isSelected = selectedSongIds.has(song.id)
-          const isLocked = player?.stats?.proveYourselfMode && song.difficulty > 2
+          const isLocked =
+            player?.stats?.proveYourselfMode && song.difficulty > 2
 
           return (
             <div
@@ -126,4 +128,16 @@ export const SetlistBlock = ({
       </div>
     </motion.div>
   )
+}
+
+SetlistBlock.propTypes = {
+  t: PropTypes.func.isRequired,
+  setlist: PropTypes.arrayOf(PropTypes.any).isRequired,
+  songsDb: PropTypes.arrayOf(PropTypes.object).isRequired,
+  songsDict: PropTypes.object.isRequired,
+  selectedSongIds: PropTypes.shape({
+    has: PropTypes.func.isRequired
+  }).isRequired,
+  player: PropTypes.object,
+  toggleSong: PropTypes.func.isRequired
 }

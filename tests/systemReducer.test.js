@@ -26,7 +26,14 @@ test('systemReducer - LOAD_GAME', async t => {
         },
         band: {
           harmony: 90,
-          members: [{ id: 'm1', mood: 80, stamina: 70, traits: ['trait1'] }]
+          members: [
+            {
+              id: 'm1',
+              mood: 80,
+              stamina: 70,
+              traits: [{ id: 'trait1', name: 'Trait 1' }]
+            }
+          ]
         },
         social: {
           controversyLevel: 10
@@ -54,7 +61,9 @@ test('systemReducer - LOAD_GAME', async t => {
         id: 'm1',
         mood: 80,
         stamina: 70,
-        traits: ['trait1']
+        traits: Object.assign(Object.create(null), {
+          trait1: { id: 'trait1', name: 'Trait 1' }
+        })
       })
       assert.equal(nextState.social.controversyLevel, 10)
       assert.deepEqual(nextState.setlist, ['song1'])
@@ -69,6 +78,36 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(nextState.gigModifiers.catering, 1)
       assert.equal(nextState.minigame.score, 100)
       assert.deepEqual(nextState.unlocks, ['unlock1'])
+    }
+  )
+
+  await t.test(
+    'loads game and sanitizes object-based band member traits (regression test)',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: { money: 100 },
+        band: {
+          members: [
+            {
+              id: 'm1',
+              traits: {
+                0: { id: 'trait1', name: 'Trait 1' },
+                arbitrary_key: { id: 'trait2', name: 'Trait 2' }
+              }
+            }
+          ]
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      const expectedTraits = Object.create(null)
+      expectedTraits['trait1'] = { id: 'trait1', name: 'Trait 1' }
+      expectedTraits['trait2'] = { id: 'trait2', name: 'Trait 2' }
+
+      assert.deepEqual(nextState.band.members[0].traits, expectedTraits)
+      assert.equal(Object.getPrototypeOf(nextState.band.members[0].traits), null)
     }
   )
 

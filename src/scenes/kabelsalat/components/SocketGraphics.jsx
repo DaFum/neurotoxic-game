@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const SocketGraphics = ({ type }) => {
   switch (type) {
@@ -110,4 +112,8 @@ export const SocketGraphics = ({ type }) => {
     default:
       return null
   }
+}
+
+SocketGraphics.propTypes = {
+  type: PropTypes.string.isRequired
 }

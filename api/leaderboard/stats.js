@@ -22,6 +22,17 @@ export default async function handler(req, res) {
         await client.connect()
       }
 
+      // Rate Limiting (5 requests per 60s)
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+      const rateKey = `ratelimit:lb:stats:${ip}`
+      const current = await client.incr(rateKey)
+      if (current === 1) {
+        await client.expire(rateKey, 60)
+      }
+      if (current > 5) {
+        return res.status(429).json({ error: 'Too many requests' })
+      }
+
       if (!req.body || typeof req.body !== 'object') {
         return res.status(400).json({ error: 'Missing required fields' })
       }

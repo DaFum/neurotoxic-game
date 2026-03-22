@@ -42,7 +42,8 @@ describe('ActionTypes', () => {
       'USE_CONTRABAND',
       'CLINIC_HEAL',
       'CLINIC_ENHANCE',
-      'PIRATE_BROADCAST'
+      'PIRATE_BROADCAST',
+      'MERCH_PRESS'
     ]
 
     expectedTypes.forEach(type => {

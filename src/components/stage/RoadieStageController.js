@@ -298,9 +298,10 @@ class RoadieStageController extends BaseStageController {
   }
 
   _cleanupTraffic() {
-    if (this.carSprites) {
-      for (const [id, sprite] of this.carSprites) {
+    if (this.carSprites && this.carSprites.size > 0) {
+      for (const id of this.carSprites.keys()) {
         if (!this.currentIds.has(id)) {
+          const sprite = this.carSprites.get(id)
           try {
             this.container.removeChild(sprite)
           } catch (error) {

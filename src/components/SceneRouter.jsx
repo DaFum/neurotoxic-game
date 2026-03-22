@@ -9,6 +9,7 @@
  */
 
 import { lazy } from 'react'
+import PropTypes from 'prop-types'
 import { MainMenu } from '../scenes/MainMenu.jsx'
 import { createNamedLazyLoader } from '../utils/lazySceneLoader.js'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants.js'
@@ -104,4 +105,9 @@ export function SceneRouter({ currentScene, minigameType }) {
     default:
       return <MainMenu />
   }
+}
+
+SceneRouter.propTypes = {
+  currentScene: PropTypes.string.isRequired,
+  minigameType: PropTypes.string
 }
