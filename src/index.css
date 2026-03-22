@@ -102,6 +102,7 @@
   --color-disabled-border: var(--color-ash-gray);
   --color-shadow-overlay: rgb(10 10 10 / 40%);
   --color-shadow-overlay-strong: rgb(10 10 10 / 70%);
+  --color-overlay: rgb(0 0 0 / 80%);
 
   /* =========================================
      TYPOGRAFIE & Z-INDEX (Nativer T4 Support)
