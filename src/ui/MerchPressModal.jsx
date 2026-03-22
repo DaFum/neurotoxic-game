@@ -143,18 +143,27 @@ export const MerchPressModal = ({
               >
                 [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
               </GlitchButton>
-              {createElement(
-                !canPress ? 'span' : Fragment,
-                !canPress ? {
-                  role: 'button',
-                  tabIndex: 0,
-                  'aria-disabled': 'true',
-                  'aria-label': t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })
-                } : {},
+              {!canPress ? (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-disabled="true"
+                  aria-label={t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })}
+                >
+                  <GlitchButton
+                    variant="danger"
+                    onClick={onPress}
+                    disabled={true}
+                    className="uppercase"
+                  >
+                    [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]
+                  </GlitchButton>
+                </span>
+              ) : (
                 <GlitchButton
-                  variant={canPress ? "warning" : "danger"}
+                  variant="warning"
                   onClick={onPress}
-                  disabled={!canPress}
+                  disabled={false}
                   className="uppercase"
                 >
                   [ {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })} ]

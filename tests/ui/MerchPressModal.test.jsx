@@ -16,6 +16,7 @@ describe('MerchPressModal', () => {
     cost: 150,
     loyaltyGain: 5,
     controversyGain: 10,
+    fameGain: 100,
     failChance: 0.2,
     harmonyCostOnFail: 15
   }

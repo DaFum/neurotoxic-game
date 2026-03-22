@@ -360,7 +360,7 @@ export const Overworld = () => {
           onClose={closeMerchPress}
           onPress={triggerPress}
           canPress={canPress}
-            config={merchPressConfig}
+          config={merchPressConfig}
         />
       )}
     </div>

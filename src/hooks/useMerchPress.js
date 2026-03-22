@@ -3,7 +3,7 @@ import { useGameState } from '../context/GameState'
 import { secureRandom } from '../utils/crypto'
 
 export const useMerchPress = () => {
-  const { merchPress, player } = useGameState()
+  const { merchPress, player, band } = useGameState()
 
   const [showMerchPress, setShowMerchPress] = useState(false)
 
@@ -23,7 +23,7 @@ export const useMerchPress = () => {
     }
   }, [player?.fameLevel])
 
-  const canPress = (player?.money || 0) >= config.cost
+  const canPress = (player?.money || 0) >= config.cost && (band?.harmony || 0) >= config.harmonyCostOnFail
 
   const triggerPress = useCallback(() => {
     if (!canPress) return
