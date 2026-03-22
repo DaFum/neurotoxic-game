@@ -6,7 +6,10 @@ export const AudioLockedOverlay = ({ onInitializeAudio }) => {
   const { t } = useTranslation()
 
   return (
-    <div className='flex flex-col items-center justify-center w-full h-full bg-void-black z-[100] relative'>
+    <div
+      className='flex flex-col items-center justify-center w-full h-full bg-void-black relative'
+      style={{ zIndex: 'var(--z-crt)' }}
+    >
       <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center">
         {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
       </h2>

@@ -220,13 +220,16 @@ describe('Gig Scene Component', () => {
         endGig: mockEndGig
       })
       const { container, rerender } = render(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]').src).toMatch(
+      // The images use i18n for alt text, so we'll use a data attribute or class to query, or just update the alt text query.
+      // But we can check alt based on translation default values since it is mocked.
+      // Actually, we can check by id on the wrapper div.
+      expect(container.querySelector('#band-member-0 img').src).toMatch(
         /mock-matze\.jpg$/
       )
-      expect(container.querySelector('img[alt="Marius"]').src).toMatch(
+      expect(container.querySelector('#band-member-1 img').src).toMatch(
         /mock-marius\.jpg$/
       )
-      expect(container.querySelector('img[alt="Lars"]').src).toMatch(
+      expect(container.querySelector('#band-member-2 img').src).toMatch(
         /mock-lars\.jpg$/
       )
 
@@ -241,13 +244,13 @@ describe('Gig Scene Component', () => {
         endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]').src).toMatch(
+      expect(container.querySelector('#band-member-0 img').src).toMatch(
         /mock-matze_angry\.jpg$/
       )
-      expect(container.querySelector('img[alt="Marius"]').src).toMatch(
+      expect(container.querySelector('#band-member-1 img').src).toMatch(
         /mock-marius_drink\.jpg$/
       )
-      expect(container.querySelector('img[alt="Lars"]').src).toMatch(
+      expect(container.querySelector('#band-member-2 img').src).toMatch(
         /mock-lars_idle\.jpg$/
       )
 
@@ -262,13 +265,13 @@ describe('Gig Scene Component', () => {
         endGig: mockEndGig
       })
       rerender(<Gig />)
-      expect(container.querySelector('img[alt="Matze"]').src).toMatch(
+      expect(container.querySelector('#band-member-0 img').src).toMatch(
         /mock-matze_angry\.jpg$/
       )
-      expect(container.querySelector('img[alt="Marius"]').src).toMatch(
+      expect(container.querySelector('#band-member-1 img').src).toMatch(
         /mock-marius\.jpg$/
       ) // MARIUS_PLAYING is 'marius'
-      expect(container.querySelector('img[alt="Lars"]').src).toMatch(
+      expect(container.querySelector('#band-member-2 img').src).toMatch(
         /mock-lars_scream\.jpg$/
       )
     })

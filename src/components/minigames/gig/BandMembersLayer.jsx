@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
 export const BandMembersLayer = ({
   matzeUrl,
@@ -6,8 +7,13 @@ export const BandMembersLayer = ({
   LarsUrl,
   setBandMemberRef
 }) => {
+  const { t } = useTranslation()
+
   return (
-    <div className='absolute inset-0 z-10 pointer-events-none'>
+    <div
+      className='absolute inset-0 pointer-events-none'
+      style={{ zIndex: 'var(--z-crt)' }}
+    >
       {/* Matze (Guitar) - Left */}
       <div
         id='band-member-0'
@@ -16,7 +22,7 @@ export const BandMembersLayer = ({
       >
         <img
           src={matzeUrl}
-          alt='Matze'
+          alt={t('gig:bandMembers.matze', { defaultValue: 'Matze' })}
           className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-blood-red)]'
         />
       </div>
@@ -28,7 +34,7 @@ export const BandMembersLayer = ({
       >
         <img
           src={MariusUrl}
-          alt='Marius'
+          alt={t('gig:bandMembers.marius', { defaultValue: 'Marius' })}
           className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
         />
       </div>
@@ -40,7 +46,7 @@ export const BandMembersLayer = ({
       >
         <img
           src={LarsUrl}
-          alt='Lars'
+          alt={t('gig:bandMembers.lars', { defaultValue: 'Lars' })}
           className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
         />
       </div>

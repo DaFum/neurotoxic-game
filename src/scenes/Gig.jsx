@@ -213,7 +213,7 @@ export const Gig = () => {
       <AudioLockedOverlay
         onInitializeAudio={() => {
           audioManager.ensureAudioContext().then(isUnlocked => {
-            if (isUnlocked) {
+            if (isUnlocked !== false) {
               actions.retryAudioInitialization()
             }
           })
