@@ -250,10 +250,10 @@ describe('usePostGigLogic', () => {
   })
 
   describe('1) Event trigger chain on mount', () => {
-    it('covers triggerEvent returning null for financial, then successfully triggering special', () => {
+    it('covers triggerEvent returning false for financial, then successfully triggering special', () => {
       mockTriggerEvent
-        .mockReturnValueOnce(null)
-        .mockReturnValueOnce({ id: 'special_event' })
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
 
       renderHook(() => usePostGigLogic())
 
@@ -262,11 +262,11 @@ describe('usePostGigLogic', () => {
       expect(mockTriggerEvent).not.toHaveBeenCalledWith('band', 'post_gig')
     })
 
-    it('covers both financial and special returning null, then triggering band', () => {
+    it('covers both financial and special returning false, then triggering band', () => {
       mockTriggerEvent
-        .mockReturnValueOnce(null)
-        .mockReturnValueOnce(null)
-        .mockReturnValueOnce({ id: 'band_event' })
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true)
 
       renderHook(() => usePostGigLogic())
 
@@ -277,7 +277,7 @@ describe('usePostGigLogic', () => {
 
     it('verifies no extra trigger calls once one event type resolves', () => {
       mockTriggerEvent
-        .mockReturnValueOnce({ id: 'financial_event' })
+        .mockReturnValueOnce(true)
 
       renderHook(() => usePostGigLogic())
 
