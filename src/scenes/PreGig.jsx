@@ -95,7 +95,8 @@ export const PreGig = () => {
     updateBand,
     addToast,
     startRoadieMinigame,
-    startKabelsalatMinigame
+    startKabelsalatMinigame,
+    isScreenshotMode
   } = useGameState()
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
@@ -153,8 +154,9 @@ export const PreGig = () => {
   }
 
   useEffect(() => {
-    // Chance for a Pre-Gig event (Band or Gig category)
-    if (!activeEvent) {
+    // Only trigger events if no event is already active and not in screenshot mode.
+    // isScreenshotMode is set in fixtures to prevent random event triggering during tests.
+    if (!activeEvent && !isScreenshotMode) {
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
         triggerEvent('gig', 'pre_gig')

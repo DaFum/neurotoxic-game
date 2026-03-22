@@ -103,6 +103,85 @@ export const handleAddVenueBlacklist = (state, venueId) => {
   return nextState
 }
 
+export const handleMerchPress = (state, payload) => {
+  if (!payload || typeof payload !== 'object') {
+    logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
+    return state
+  }
+
+  const cost = Math.max(0, Number(payload.cost) || 0)
+  const loyaltyGain = Number(payload.loyaltyGain) || 0
+  const controversyGain = Number(payload.controversyGain) || 0
+  const harmonyCost = Math.max(0, Number(payload.harmonyCost) || 0)
+  const fameGain = Math.max(0, Number(payload.fameGain) || 0)
+  const successToast = payload.successToast
+
+  const currentMoney = Number(state.player.money) || 0
+  const currentHarmony = Number(state.band.harmony) || 0
+
+  if (currentMoney < cost || currentHarmony < harmonyCost) {
+    logger.warn('GameState', 'Insufficient funds or harmony for merch press')
+    return state
+  }
+
+  const currentLoyalty = Number(state.social.loyalty) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
+  const currentFame = Number(state.player.fame) || 0
+
+  const nextMoney = clampPlayerMoney(currentMoney - cost)
+  const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
+  const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
+  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+  const nextFame = clampPlayerFame(currentFame + fameGain)
+
+  const nextState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney,
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame)
+    },
+    band: {
+      ...state.band,
+      harmony: nextHarmony
+    },
+    social: {
+      ...state.social,
+      loyalty: nextLoyalty,
+      controversyLevel: nextControversy
+    }
+  }
+
+  // Inventory rewards removed based on feedback that they are unused/orphaned
+  // and do not add gameplay value.
+
+  if (successToast) {
+    const deltaLoyalty = nextLoyalty - currentLoyalty
+    const deltaControversy = nextControversy - currentControversy
+    const deltaHarmony = nextHarmony - currentHarmony
+    const deltaFame = nextFame - currentFame
+    const actualCost = currentMoney - nextMoney
+
+    nextState.toasts = [
+      ...(state.toasts || []),
+      {
+        ...successToast,
+        options: {
+          ...successToast.options,
+          deltaLoyalty,
+          deltaControversy,
+          deltaHarmony,
+          deltaFame,
+          cost: actualCost
+        }
+      }
+    ]
+  }
+
+  return nextState
+}
+
 export const handlePirateBroadcast = (state, payload) => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')

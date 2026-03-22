@@ -307,9 +307,6 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     }
   }
 
-  // High Controversy passive effects — snapshot before decay so same-day checks
-  // (sponsorship drop at line ~327) use the start-of-day value, not the decayed one.
-  const controversy = nextSocial.controversyLevel || 0
   if (controversy >= 50) {
     // Harmony drain is worse under stress
     const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
