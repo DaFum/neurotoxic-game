@@ -150,13 +150,8 @@ export const handleMerchPress = (state, payload) => {
     }
   }
 
-  if (harmonyCost === 0) { // Success condition
-    nextState.band.inventory = {
-      ...nextState.band.inventory,
-      'bootleg_shirt': applyInventoryItemDelta(nextState.band.inventory['bootleg_shirt'], 10),
-      'bootleg_vinyl': applyInventoryItemDelta(nextState.band.inventory['bootleg_vinyl'], 5)
-    }
-  }
+  // Inventory rewards removed based on feedback that they are unused/orphaned
+  // and do not add gameplay value.
 
   if (successToast) {
     const deltaLoyalty = nextLoyalty - currentLoyalty

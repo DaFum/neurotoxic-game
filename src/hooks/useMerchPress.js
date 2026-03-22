@@ -1,13 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
-
-export const MERCH_PRESS_CONFIG = {
-  cost: 150,
-  loyaltyGain: 5,
-  controversyGain: 10,
-  failChance: 0.2, // 20% chance equipment breaks
-  harmonyCostOnFail: 15
-}
 
 export const useMerchPress = () => {
   const { merchPress, player } = useGameState()
@@ -17,13 +9,25 @@ export const useMerchPress = () => {
   const openMerchPress = useCallback(() => setShowMerchPress(true), [])
   const closeMerchPress = useCallback(() => setShowMerchPress(false), [])
 
-  const canPress = (player?.money || 0) >= MERCH_PRESS_CONFIG.cost
+  const config = useMemo(() => {
+    // Dynamic config scaling with fame level (e.g. higher stakes as you grow)
+    const multiplier = 1 + (player?.fameLevel || 0) * 0.5
+    return {
+      cost: Math.floor(150 * multiplier),
+      loyaltyGain: Math.floor(5 * multiplier),
+      controversyGain: Math.floor(10 * multiplier),
+      failChance: 0.2, // 20% constant chance of failure
+      harmonyCostOnFail: 15
+    }
+  }, [player?.fameLevel])
+
+  const canPress = (player?.money || 0) >= config.cost
 
   const triggerPress = useCallback(() => {
     if (!canPress) return
 
-    const isFailure = Math.random() < MERCH_PRESS_CONFIG.failChance
-    const harmonyCost = isFailure ? MERCH_PRESS_CONFIG.harmonyCostOnFail : 0
+    const isFailure = Math.random() < config.failChance
+    const harmonyCost = isFailure ? config.harmonyCostOnFail : 0
 
     const successToast = {
       message: isFailure
@@ -33,15 +37,16 @@ export const useMerchPress = () => {
     }
 
     merchPress({
-      cost: MERCH_PRESS_CONFIG.cost,
-      loyaltyGain: MERCH_PRESS_CONFIG.loyaltyGain,
-      controversyGain: MERCH_PRESS_CONFIG.controversyGain,
+      cost: config.cost,
+      loyaltyGain: config.loyaltyGain,
+      controversyGain: config.controversyGain,
       harmonyCost,
+      isSuccess: !isFailure,
       successToast
     })
 
     closeMerchPress()
-  }, [canPress, merchPress, closeMerchPress])
+  }, [canPress, merchPress, closeMerchPress, config])
 
   return {
     showMerchPress,
@@ -49,6 +54,6 @@ export const useMerchPress = () => {
     closeMerchPress,
     triggerPress,
     canPress,
-    MERCH_PRESS_CONFIG
+    config
   }
 }

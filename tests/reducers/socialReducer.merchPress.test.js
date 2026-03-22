@@ -39,8 +39,6 @@ describe('socialReducer.merchPress', () => {
     assert.strictEqual(result.social.loyalty, 15)
     assert.strictEqual(result.social.controversyLevel, 10)
     assert.strictEqual(result.band.harmony, 100)
-    assert.strictEqual(result.band.inventory['bootleg_shirt'], 10)
-    assert.strictEqual(result.band.inventory['bootleg_vinyl'], 5)
   })
 
   test('handles harmony cost on equipment failure', () => {
