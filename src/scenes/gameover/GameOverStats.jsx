@@ -5,6 +5,7 @@
  */
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 
 export const GameOverStats = ({ player }) => {
   const { t } = useTranslation(['ui'])
@@ -46,4 +47,13 @@ export const GameOverStats = ({ player }) => {
       </div>
     </motion.div>
   )
+}
+
+GameOverStats.propTypes = {
+  player: PropTypes.shape({
+    day: PropTypes.number,
+    fame: PropTypes.number,
+    totalTravels: PropTypes.number,
+    score: PropTypes.number
+  })
 }

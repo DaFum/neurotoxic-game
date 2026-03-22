@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import PropTypes from 'prop-types'
 
 /**
  * Contraband Stash Modal Component
@@ -232,4 +233,13 @@ export const ContrabandStash = ({
       </Panel>
     </Modal>
   )
+}
+
+ContrabandStash.propTypes = {
+  stash: PropTypes.arrayOf(PropTypes.object),
+  members: PropTypes.arrayOf(PropTypes.object),
+  selectedMember: PropTypes.string,
+  setSelectedMember: PropTypes.func.isRequired,
+  handleUseItem: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired
 }

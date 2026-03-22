@@ -1,5 +1,6 @@
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants.js'
+import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.jsx'
 import { SocketGraphics } from './SocketGraphics.jsx'
 
@@ -119,4 +120,14 @@ export const SocketList = ({
       })}
     </>
   )
+}
+
+SocketList.propTypes = {
+  t: PropTypes.func.isRequired,
+  socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
+  connections: PropTypes.object.isRequired,
+  isPowerConnected: PropTypes.bool.isRequired,
+  selectedCable: PropTypes.string,
+  isGameOver: PropTypes.bool.isRequired,
+  handleSocketClick: PropTypes.func.isRequired
 }
