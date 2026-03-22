@@ -20,6 +20,8 @@ const mockRedisClient = {
   zRangeWithScores: mock.fn(() => Promise.resolve([])),
   hmGet: mock.fn(() => Promise.resolve([])),
   hSet: mock.fn(() => Promise.resolve()),
+  incr: mock.fn(() => Promise.resolve(1)),
+  expire: mock.fn(() => Promise.resolve()),
   multi: mock.fn(() => mockMulti),
   disconnect: mock.fn(() => Promise.resolve()),
   on: mock.fn(),
@@ -38,6 +40,8 @@ describe('Leaderboard Stats API', () => {
     mockRedisClient.zRangeWithScores.mock.resetCalls()
     mockRedisClient.hmGet.mock.resetCalls()
     mockRedisClient.hSet.mock.resetCalls()
+    mockRedisClient.incr.mock.resetCalls()
+    mockRedisClient.expire.mock.resetCalls()
     mockRedisClient.disconnect.mock.resetCalls()
     mockRedisClient.on.mock.resetCalls()
     mockRedisClient.connect.mock.resetCalls()

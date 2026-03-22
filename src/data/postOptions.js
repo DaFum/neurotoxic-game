@@ -14,7 +14,7 @@ const getSecureRollOnce = (() => {
         errorReported = true
         handleError(e, { severity: 'medium', silent: true })
       }
-      return Math.random()
+      return secureRandom()
     }
   }
 })()
