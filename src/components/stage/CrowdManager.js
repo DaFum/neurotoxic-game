@@ -20,6 +20,7 @@ const safeRandom = () => {
       secureRandomErrorReported = true
       handleError(error, { silent: true, severity: 'medium' })
     }
+    // Fallback if secureRandom fails
     return Math.random()
   }
 }

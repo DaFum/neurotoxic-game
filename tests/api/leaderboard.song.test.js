@@ -16,6 +16,8 @@ const mockClient = {
   zAdd: mock.fn(() => Promise.resolve()),
   zRangeWithScores: mock.fn(() => Promise.resolve([])),
   hmGet: mock.fn(() => Promise.resolve([])),
+  incr: mock.fn(() => Promise.resolve(1)),
+  expire: mock.fn(() => Promise.resolve()),
   disconnect: mock.fn(() => Promise.resolve()),
   on: mock.fn()
 }
@@ -38,6 +40,8 @@ describe('Leaderboard API - Song', () => {
     mockClient.zAdd.mock.resetCalls()
     mockClient.zRangeWithScores.mock.resetCalls()
     mockClient.hmGet.mock.resetCalls()
+    mockClient.incr.mock.resetCalls()
+    mockClient.expire.mock.resetCalls()
     mockClient.disconnect.mock.resetCalls()
   })
 
