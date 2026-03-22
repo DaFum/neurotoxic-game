@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 // TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const Rules = ({ t }) => (
   <div className='mt-6 border border-warning-yellow bg-warning-yellow/10 p-4 text-sm text-warning-yellow max-w-4xl w-full'>
@@ -18,3 +20,7 @@ export const Rules = ({ t }) => (
     </ul>
   </div>
 )
+
+Rules.propTypes = {
+  t: PropTypes.func.isRequired
+}
