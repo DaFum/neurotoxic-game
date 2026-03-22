@@ -251,8 +251,11 @@ class TourbusStageController extends BaseStageController {
   }
 
   _cleanupObstacles() {
-    for (const [id, sprite] of this.obstacleMap.entries()) {
+    // Performance optimization: Iterate over keys() instead of entries() to prevent
+    // per-frame garbage collection pauses caused by allocating [id, sprite] arrays.
+    for (const id of this.obstacleMap.keys()) {
       if (!this.currentIds.has(id)) {
+        const sprite = this.obstacleMap.get(id)
         this.obstacleContainer.removeChild(sprite)
         sprite.destroy()
         this.obstacleMap.delete(id)
