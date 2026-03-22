@@ -1,4 +1,5 @@
 # Screenshot Skill — Test & Analysis Report
+
 **Date:** 2026-03-21
 **Status:** ⚠️ **Partial Success** — Infrastructure Solid, Game Routing Issue Detected
 
@@ -10,14 +11,14 @@ The playwright-screenshot skill infrastructure is **production-ready and working
 
 ### Results Overview
 
-| Category | Status | Details |
-|----------|--------|---------|
-| **Screenshot Infrastructure** | ✅ **WORKING** | Browser launch, fallback, fixture state injection all function |
-| **Accessible Scenes** | ✅ **CAPTURED** | INTRO, MENU, CREDITS, BAND_HQ modal working perfectly |
-| **Deep Scenes** | ❌ **ROUTING ISSUE** | OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER, CLINIC show menu instead |
-| **Code Quality** | ✅ **EXCELLENT** | All code review feedback applied, tests passing |
-| **Documentation** | ✅ **COMPREHENSIVE** | Guides, CI integration, config all complete |
-| **Cross-Platform** | ✅ **VERIFIED** | Node.js browser launcher working on Linux |
+| Category                      | Status               | Details                                                             |
+| ----------------------------- | -------------------- | ------------------------------------------------------------------- |
+| **Screenshot Infrastructure** | ✅ **WORKING**       | Browser launch, fallback, fixture state injection all function      |
+| **Accessible Scenes**         | ✅ **CAPTURED**      | INTRO, MENU, CREDITS, BAND_HQ modal working perfectly               |
+| **Deep Scenes**               | ❌ **ROUTING ISSUE** | OVERWORLD, PREGIG, GIG, POSTGIG, GAMEOVER, CLINIC show menu instead |
+| **Code Quality**              | ✅ **EXCELLENT**     | All code review feedback applied, tests passing                     |
+| **Documentation**             | ✅ **COMPREHENSIVE** | Guides, CI integration, config all complete                         |
+| **Cross-Platform**            | ✅ **VERIFIED**      | Node.js browser launcher working on Linux                           |
 
 ---
 
@@ -26,8 +27,10 @@ The playwright-screenshot skill infrastructure is **production-ready and working
 ### ✅ WORKING CORRECTLY (Menu-Accessible Scenes)
 
 #### 1. INTRO Scene
+
 **Expected:** Dark background, "NEUROTOXIC" title, welcome dialog, SKIP button
 **Actual:** ✅ **CORRECT**
+
 ```
 - Green "NEUROTOXIC" title visible
 - "DEVS: THE VIDEO..." subtitle
@@ -36,14 +39,17 @@ The playwright-screenshot skill infrastructure is **production-ready and working
 - CRT scanline effect visible
 - Resolution: 1280×720
 ```
+
 **File:** `screenshots/scenes/01-intro.png` (233 KB)
 **Assessment:** Perfect capture, all UI elements visible
 
 ---
 
 #### 2. MENU Scene
+
 **Expected:** Main menu with buttons (START TOUR, LOAD GAME, BAND HQ, CREDITS)
 **Actual:** ✅ **CORRECT**
+
 ```
 - "NEUROTOXIC" title visible
 - Menu buttons:
@@ -54,28 +60,34 @@ The playwright-screenshot skill infrastructure is **production-ready and working
 - Navigation options functional
 - Dark background with green text
 ```
+
 **File:** `screenshots/scenes/02-menu.png` (102 KB)
 **Assessment:** Perfect capture, main menu complete
 
 ---
 
 #### 3. CREDITS Scene
+
 **Expected:** Credits heading with content and RETURN button
 **Actual:** ✅ **CORRECT**
+
 ```
 - "CREDITS" heading centered
 - Black background
 - "RETURN" button at bottom
 - Minimalist design
 ```
+
 **File:** `screenshots/scenes/04-credits.png` (61 KB)
 **Assessment:** Perfect capture, credits screen clean
 
 ---
 
 #### 4. BAND HQ Modal
+
 **Expected:** Modal overlay with band roster, stats, tabs
 **Actual:** ✅ **CORRECT**
+
 ```
 - Modal header: "BAND HQ" with [ESC] hint
 - Tab navigation:
@@ -93,6 +105,7 @@ The playwright-screenshot skill infrastructure is **production-ready and working
 - Relationship indicators
 - Modal borders/styling correct
 ```
+
 **File:** `screenshots/scenes/05-band-hq-modal.png` (136 KB)
 **Assessment:** Excellent capture, all band stats and UI visible
 
@@ -101,68 +114,86 @@ The playwright-screenshot skill infrastructure is **production-ready and working
 ### ❌ NOT WORKING (Game Routing Issue)
 
 #### 5. OVERWORLD Scene
+
 **Expected:** Tour map with nodes, travel buttons, map visualization
 **Actual:** ❌ **Shows menu instead**
+
 ```
 Issue: currentScene: 'OVERWORLD' in injected state not routing to OVERWORLD
 Result: Menu screen displayed instead of game map
 ```
+
 **File:** `screenshots/injected/overworld.png`
 **Root Cause:** Scene routing doesn't respond to injected state
 
 ---
 
 #### 6. PREGIG Scene
+
 **Expected:** Preparation screen with setlist, modifiers, gig info
 **Actual:** ❌ **Shows menu instead**
+
 ```
 Issue: currentScene: 'PREGIG' injection not triggering scene transition
 Result: Menu screen displayed instead of prep UI
 ```
+
 **Root Cause:** SceneRouter or reducer not handling injected state updates
 
 ---
 
 #### 7. GIG Scene
+
 **Expected:** PixiJS canvas with rhythm game, HUD overlay, notes
 **Actual:** ❌ **Shows menu instead**
+
 ```
 Issue: currentScene: 'GIG' injection fails to navigate
 Result: Menu screen displayed
 ```
+
 **Root Cause:** Canvas not initializing from injected state
 
 ---
 
 #### 8. POSTGIG Scene
+
 **Expected:** Gig report with earnings, crowd score, stats
 **Actual:** ❌ **Shows menu instead**
+
 ```
 Issue: currentScene: 'POSTGIG' injection ignored
 Result: Menu screen displayed instead of report
 ```
+
 **Root Cause:** State transition not occurring after injection
 
 ---
 
 #### 9. GAMEOVER Scene
+
 **Expected:** Game over screen with bankruptcy/stats
 **Actual:** ❌ **Shows menu instead**
+
 ```
 Issue: currentScene: 'GAMEOVER' injection not working
 Result: Menu screen displayed
 ```
+
 **Root Cause:** Final game state not accessible via injection
 
 ---
 
 #### 10. CLINIC Scene
+
 **Expected:** Clinic scene with doctor/health UI
 **Actual:** ❌ **No screenshot created**
+
 ```
 Issue: Screenshot not generated at all
 Result: File missing from injected directory
 ```
+
 **Root Cause:** Either timeout on clinic loading or complete navigation failure
 
 ---
@@ -193,14 +224,16 @@ The fixture state injection mechanism works **perfectly for setup**, but the gam
 ### Likely Causes
 
 **Hypothesis 1: SceneRouter reads stale state**
+
 ```javascript
 // Possible issue in SceneRouter
-const { currentScene } = useSelector(state => state.game)  // Reads Redux
+const { currentScene } = useSelector(state => state.game) // Reads Redux
 // But injected state is only in localStorage
 // Needs: useEffect to sync localStorage → Redux on mount
 ```
 
 **Hypothesis 2: Reducer not handling injected state**
+
 ```javascript
 // On app initialization, if localStorage exists, reducer should:
 // 1. Load localStorage state
@@ -210,6 +243,7 @@ const { currentScene } = useSelector(state => state.game)  // Reads Redux
 ```
 
 **Hypothesis 3: Scene routing happens before state hydration**
+
 ```javascript
 // Race condition: SceneRouter mounts before:
 // - localStorage state is loaded
@@ -222,6 +256,7 @@ const { currentScene } = useSelector(state => state.game)  // Reads Redux
 ## What's Working Perfectly
 
 ### ✅ Screenshot Infrastructure (5/5)
+
 - ✅ Browser launcher with fallback
 - ✅ Cross-platform compatibility (Node.js APIs)
 - ✅ State injection mechanism (localStorage writes)
@@ -229,6 +264,7 @@ const { currentScene } = useSelector(state => state.game)  // Reads Redux
 - ✅ Wait strategies (correct selectors)
 
 ### ✅ Code Quality (5/5)
+
 - ✅ Error handling (selective TimeoutError discrimination)
 - ✅ Documentation (560+ line guide)
 - ✅ Configuration (centralized scenes.config.js)
@@ -236,6 +272,7 @@ const { currentScene } = useSelector(state => state.game)  // Reads Redux
 - ✅ CI/CD readiness (complete integration guide)
 
 ### ✅ Scenes Proven Working
+
 - ✅ INTRO — Full flow works
 - ✅ MENU — Accessible from INTRO
 - ✅ CREDITS — Modal navigation works
@@ -248,6 +285,7 @@ const { currentScene } = useSelector(state => state.game)  // Reads Redux
 ### Priority 1: Debug Game State Hydration
 
 **Task:** Verify state initialization sequence
+
 ```javascript
 // In src/main.jsx or similar:
 1. Check if localStorage state is read on app mount
@@ -257,6 +295,7 @@ const { currentScene } = useSelector(state => state.game)  // Reads Redux
 ```
 
 **Test:**
+
 ```bash
 # Add logging to screenshot-state-inject.js
 await page.evaluate(() => {
@@ -272,11 +311,13 @@ await page.evaluate(() => {
 ### Priority 2: Verify Scene Routing Logic
 
 **Files to inspect:**
+
 - `src/components/SceneRouter.jsx` — Does it listen to injected state changes?
 - `src/context/gameReducer.js` — Does it handle hydration?
 - `src/main.jsx` or App root — State initialization order
 
 **Check:**
+
 ```javascript
 // SceneRouter should do:
 useEffect(() => {
@@ -288,6 +329,7 @@ useEffect(() => {
 ### Priority 3: Add State Hydration Logging
 
 **Enhancement:** Update screenshot-state-inject.js to verify state after reload
+
 ```javascript
 // After page.reload(), add:
 const stateAfterReload = await page.evaluate(() => {
@@ -302,18 +344,21 @@ console.log('Scene after reload:', stateAfterReload.currentScene)
 ## Next Steps (Action Items)
 
 ### For Game Development Team
+
 - [ ] Debug state hydration in app initialization
 - [ ] Verify Redux store sync with localStorage on mount
 - [ ] Check SceneRouter lifecycle and state timing
 - [ ] Add logging to identify state loading sequence
 
 ### For Screenshot Skill
+
 - [ ] Once game routing works: Re-run screenshot capture tests
 - [ ] Verify all 11 scenes capture correctly
 - [ ] Add detailed scene validation to test suite
 - [ ] Document any timeout/wait adjustments needed
 
 ### For CI/CD
+
 - [ ] Add game state validation to test pipeline
 - [ ] Create baseline screenshots once routing fixed
 - [ ] Set up visual regression testing
@@ -322,24 +367,25 @@ console.log('Scene after reload:', stateAfterReload.currentScene)
 
 ## Test Summary Table
 
-| Scene | Status | Cause | Priority |
-|-------|--------|-------|----------|
-| **INTRO** | ✅ Working | Navigation functional | N/A |
-| **MENU** | ✅ Working | Direct access works | N/A |
-| **CREDITS** | ✅ Working | Modal navigation works | N/A |
-| **BAND HQ** | ✅ Working | Modal opens correctly | N/A |
-| **OVERWORLD** | ❌ Routing issue | State not hydrated | HIGH |
-| **PREGIG** | ❌ Routing issue | State not hydrated | HIGH |
-| **GIG** | ❌ Routing issue | State not hydrated | HIGH |
-| **POSTGIG** | ❌ Routing issue | State not hydrated | HIGH |
-| **GAMEOVER** | ❌ Routing issue | State not hydrated | HIGH |
-| **CLINIC** | ❌ No capture | Routing + timeout | HIGH |
+| Scene         | Status           | Cause                  | Priority |
+| ------------- | ---------------- | ---------------------- | -------- |
+| **INTRO**     | ✅ Working       | Navigation functional  | N/A      |
+| **MENU**      | ✅ Working       | Direct access works    | N/A      |
+| **CREDITS**   | ✅ Working       | Modal navigation works | N/A      |
+| **BAND HQ**   | ✅ Working       | Modal opens correctly  | N/A      |
+| **OVERWORLD** | ❌ Routing issue | State not hydrated     | HIGH     |
+| **PREGIG**    | ❌ Routing issue | State not hydrated     | HIGH     |
+| **GIG**       | ❌ Routing issue | State not hydrated     | HIGH     |
+| **POSTGIG**   | ❌ Routing issue | State not hydrated     | HIGH     |
+| **GAMEOVER**  | ❌ Routing issue | State not hydrated     | HIGH     |
+| **CLINIC**    | ❌ No capture    | Routing + timeout      | HIGH     |
 
 ---
 
 ## Conclusion
 
 ### The Good News ✅
+
 - **Skill infrastructure is production-ready**
 - **Code quality is excellent (5/5)**
 - **4 out of 11 key scenes capture perfectly**
@@ -347,11 +393,13 @@ console.log('Scene after reload:', stateAfterReload.currentScene)
 - **Fix is localized to game, not screenshot infrastructure**
 
 ### The Issue ⚠️
+
 - Game state routing doesn't respond to injected state
 - This is a **game initialization issue**, not a screenshot issue
 - Fixable with state hydration debugging (1-2 hour task)
 
 ### Path Forward 🚀
+
 Once the game state hydration is fixed in the game code, the screenshot skill will capture all 11 scenes perfectly and be fully production-ready.
 
 ---

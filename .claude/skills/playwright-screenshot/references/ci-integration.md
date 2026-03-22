@@ -82,12 +82,12 @@ jobs:
 ## Running All E2E Tests in CI
 
 ```yaml
-      - name: Run all E2E tests
-        run: pnpm exec playwright test
-        env:
-          CI: true
-          # Chromium path if needed in specific environments:
-          # CHROME_PATH: /usr/bin/chromium-browser
+- name: Run all E2E tests
+  run: pnpm exec playwright test
+  env:
+    CI: true
+    # Chromium path if needed in specific environments:
+    # CHROME_PATH: /usr/bin/chromium-browser
 ```
 
 ---
@@ -99,27 +99,27 @@ use `@playwright/test`'s `chromium` directly (not via the test runner).
 They need the dev server running.
 
 ```yaml
-      - name: Start dev server
-        run: pnpm run dev &
-        env:
-          CI: true
+- name: Start dev server
+  run: pnpm run dev &
+  env:
+    CI: true
 
-      - name: Wait for dev server
-        run: pnpm exec wait-on http://localhost:5173 --timeout 30000
+- name: Wait for dev server
+  run: pnpm exec wait-on http://localhost:5173 --timeout 30000
 
-      - name: Capture all scenes
-        run: |
-          node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
-        env:
-          BASE_URL: http://localhost:5173
-          OUT_DIR: screenshots/ci-run
-          HEADLESS: true
+- name: Capture all scenes
+  run: |
+    node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+  env:
+    BASE_URL: http://localhost:5173
+    OUT_DIR: screenshots/ci-run
+    HEADLESS: true
 
-      - name: Upload scene screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: scene-screenshots
-          path: screenshots/ci-run/
+- name: Upload scene screenshots
+  uses: actions/upload-artifact@v4
+  with:
+    name: scene-screenshots
+    path: screenshots/ci-run/
 ```
 
 > Install `wait-on` if not present: `pnpm add -D wait-on`
@@ -181,7 +181,7 @@ to avoid flaky failures from minor pixel-level animation differences.
 ```js
 // e2e/visual.spec.js
 expect(await page.screenshot()).toMatchSnapshot('menu.png', {
-  maxDiffPixelRatio: 0.05   // 5% tolerance (recommended for game UIs)
+  maxDiffPixelRatio: 0.05 // 5% tolerance (recommended for game UIs)
 })
 
 // Stricter for static UI elements
@@ -215,23 +215,24 @@ await page.reload({ waitUntil: 'networkidle' })
 ```
 
 Or set it in the `screenshot-state-inject.js` global settings object:
+
 ```js
-const globalSettings = { tutorialSeen: true, crtEnabled: false }  // ← false
+const globalSettings = { tutorialSeen: true, crtEnabled: false } // ← false
 ```
 
 ---
 
 ## Common CI Failures and Fixes
 
-| Failure | Cause | Fix |
-|---------|-------|-----|
-| `browserType.launch: Failed to launch chromium` | Missing system deps | Add `playwright install --with-deps` |
-| `net::ERR_CONNECTION_REFUSED` | Dev server not ready | Use `wait-on` before test step |
-| `snapshot.png does not exist` | First run, no baseline yet | Run with `--update-snapshots` once |
-| `maxDiffPixelRatio exceeded` | Animation frame timing | Increase tolerance or add `waitForTimeout` |
-| `page crashed` | Audio init in Chromium | Already handled by `--mute-audio` flag |
-| `canvas` always blank | WebGL disabled, Pixi not falling back | Pixi falls back to Canvas2D automatically — add 500 ms wait |
-| `timeout: waiting for locator` | Scene lazy-load timing | Use `waitForLoadState('networkidle')` before assertion |
+| Failure                                         | Cause                                 | Fix                                                         |
+| ----------------------------------------------- | ------------------------------------- | ----------------------------------------------------------- |
+| `browserType.launch: Failed to launch chromium` | Missing system deps                   | Add `playwright install --with-deps`                        |
+| `net::ERR_CONNECTION_REFUSED`                   | Dev server not ready                  | Use `wait-on` before test step                              |
+| `snapshot.png does not exist`                   | First run, no baseline yet            | Run with `--update-snapshots` once                          |
+| `maxDiffPixelRatio exceeded`                    | Animation frame timing                | Increase tolerance or add `waitForTimeout`                  |
+| `page crashed`                                  | Audio init in Chromium                | Already handled by `--mute-audio` flag                      |
+| `canvas` always blank                           | WebGL disabled, Pixi not falling back | Pixi falls back to Canvas2D automatically — add 500 ms wait |
+| `timeout: waiting for locator`                  | Scene lazy-load timing                | Use `waitForLoadState('networkidle')` before assertion      |
 
 ---
 

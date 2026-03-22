@@ -15,8 +15,7 @@ export const TourbusHUD = ({ distance, damage }) => {
           {distance}m
         </p>
         <p>
-          {t('minigame:tourbus.damage', { defaultValue: 'DAMAGE:' })}{' '}
-          {damage}%
+          {t('minigame:tourbus.damage', { defaultValue: 'DAMAGE:' })} {damage}%
         </p>
       </div>
     </div>

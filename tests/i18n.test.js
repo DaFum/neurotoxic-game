@@ -39,7 +39,11 @@ test('i18n runtime configuration', () => {
   assert.equal(i18n.options.defaultNS, 'ui', 'Default namespace should be "ui"')
 
   // Other options
-  assert.equal(i18n.options.keySeparator, false, 'Key separator should be false')
+  assert.equal(
+    i18n.options.keySeparator,
+    false,
+    'Key separator should be false'
+  )
   assert.equal(
     i18n.options.interpolation.escapeValue,
     false,

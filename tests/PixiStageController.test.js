@@ -248,7 +248,6 @@ describe('PixiStageController', () => {
     assert.equal(controller.isToxicActive, false)
   })
 
-
   test('manualUpdate calls handleTicker with deltaMS', async () => {
     await controller.init()
     const deltaMS = 16
@@ -488,7 +487,6 @@ describe('PixiStageController', () => {
     // Should not crash due to guard clause
     controller.handleTicker(ticker)
   })
-
 
   describe('manualUpdate', () => {
     test('calls handleTicker with deltaMS', async () => {

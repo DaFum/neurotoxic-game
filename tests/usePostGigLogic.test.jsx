@@ -251,9 +251,7 @@ describe('usePostGigLogic', () => {
 
   describe('1) Event trigger chain on mount', () => {
     it('covers triggerEvent returning false for financial, then successfully triggering special', () => {
-      mockTriggerEvent
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(true)
+      mockTriggerEvent.mockReturnValueOnce(false).mockReturnValueOnce(true)
 
       renderHook(() => usePostGigLogic())
 
@@ -276,8 +274,7 @@ describe('usePostGigLogic', () => {
     })
 
     it('verifies no extra trigger calls once one event type resolves', () => {
-      mockTriggerEvent
-        .mockReturnValueOnce(true)
+      mockTriggerEvent.mockReturnValueOnce(true)
 
       renderHook(() => usePostGigLogic())
 
@@ -934,8 +931,12 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateBand).toHaveBeenCalled()
-      let updateBandFn = mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
-      let updatedBand = typeof updateBandFn === 'function' ? updateBandFn({ harmony: 50 }) : updateBandFn
+      let updateBandFn =
+        mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
+      let updatedBand =
+        typeof updateBandFn === 'function'
+          ? updateBandFn({ harmony: 50 })
+          : updateBandFn
       expect(updatedBand).toEqual(expect.objectContaining({ harmony: 100 })) // Clamped to 100
 
       // Test mood and stamina clamping
@@ -967,10 +968,14 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateBand).toHaveBeenCalled()
-      updateBandFn = mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
-      updatedBand = typeof updateBandFn === 'function' ? updateBandFn({
-        members: [{ name: 'Member1', mood: 95, stamina: 10 }]
-      }) : updateBandFn
+      updateBandFn =
+        mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
+      updatedBand =
+        typeof updateBandFn === 'function'
+          ? updateBandFn({
+              members: [{ name: 'Member1', mood: 95, stamina: 10 }]
+            })
+          : updateBandFn
 
       expect(updatedBand).toEqual(
         expect.objectContaining({
@@ -1026,11 +1031,13 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateSocial).toHaveBeenCalled()
-      let updateFn = mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
-      let updatedSocial = typeof updateFn === 'function' ? updateFn({ egoFocus: 'Member1' }) : updateFn
-      expect(updatedSocial).toEqual(
-        expect.objectContaining({ egoFocus: null })
-      )
+      let updateFn =
+        mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
+      let updatedSocial =
+        typeof updateFn === 'function'
+          ? updateFn({ egoFocus: 'Member1' })
+          : updateFn
+      expect(updatedSocial).toEqual(expect.objectContaining({ egoFocus: null }))
 
       // Test ego drop
       vi.clearAllMocks()
@@ -1049,7 +1056,8 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockUpdateSocial).toHaveBeenCalled()
-      updateFn = mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
+      updateFn =
+        mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
       updatedSocial = typeof updateFn === 'function' ? updateFn({}) : updateFn
       expect(updatedSocial).toEqual(
         expect.objectContaining({ egoFocus: 'Member2' })

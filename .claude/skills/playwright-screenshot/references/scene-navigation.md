@@ -31,7 +31,9 @@ The app always starts here on a fresh load. IntroVideo plays a looping backgroun
 await page.goto('/', { waitUntil: 'domcontentloaded' })
 await page.waitForLoadState('networkidle')
 // Wait signal: skip button
-await page.getByRole('button', { name: /skip/i }).waitFor({ state: 'visible', timeout: 8000 })
+await page
+  .getByRole('button', { name: /skip/i })
+  .waitFor({ state: 'visible', timeout: 8000 })
 // Screenshot
 await page.screenshot({ path: 'intro.png' })
 ```
@@ -53,6 +55,7 @@ await page.screenshot({ path: 'menu.png' })
 ```
 
 Manual equivalent:
+
 ```js
 await page.goto('/')
 // Race: skip button OR menu heading
@@ -66,7 +69,9 @@ if (await skip.isVisible()) await skip.click()
 await menu.waitFor({ state: 'visible', timeout: 10000 })
 // Dismiss tutorial
 try {
-  await page.getByRole('button', { name: /skip all/i }).waitFor({ timeout: 2000 })
+  await page
+    .getByRole('button', { name: /skip all/i })
+    .waitFor({ timeout: 2000 })
   await page.getByRole('button', { name: /skip all/i }).click()
 } catch (_) {}
 ```
@@ -81,7 +86,9 @@ Always try to dismiss it before screenshotting.
 ```js
 await skipToMenu(page)
 await page.getByRole('button', { name: /credits/i }).click()
-await page.getByRole('heading', { name: /credits/i, exact: true }).waitFor({ state: 'visible' })
+await page
+  .getByRole('heading', { name: /credits/i, exact: true })
+  .waitFor({ state: 'visible' })
 await page.waitForTimeout(300) // text fade-in animation
 await page.screenshot({ path: 'credits.png' })
 // Return
@@ -95,6 +102,7 @@ await page.getByRole('button', { name: /return/i }).click()
 Settings is accessible as a scene (SETTINGS) and also as a tab inside Band HQ.
 
 **As a standalone scene** (from within Band HQ → SETTINGS tab):
+
 ```js
 await skipToMenu(page)
 await page.getByRole('button', { name: /band hq/i }).click()
@@ -125,15 +133,20 @@ if (result !== 'success') {
   test.skip(true, 'Audio crash — skip')
   return
 }
-await page.getByRole('heading', { name: /tour plan/i }).waitFor({ state: 'visible', timeout: 8000 })
+await page
+  .getByRole('heading', { name: /tour plan/i })
+  .waitFor({ state: 'visible', timeout: 8000 })
 await page.waitForTimeout(400) // map SVG render
 await page.screenshot({ path: 'overworld.png' })
 ```
 
 **Via state injection (no audio crash risk):**
+
 ```js
-import { injectSave, waitForFixtureScene } from
-  './.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
+import {
+  injectSave,
+  waitForFixtureScene
+} from './.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
 
 await page.goto('/', { waitUntil: 'commit' })
 await injectSave(page, 'overworld')
@@ -152,21 +165,27 @@ and confirming.
 
 ```js
 // Assumes we are on OVERWORLD
-const node = page.getByRole('button', {
-  name: /Travel to (Goldgrube|MTC|Die Distille)/i
-}).first()
+const node = page
+  .getByRole('button', {
+    name: /Travel to (Goldgrube|MTC|Die Distille)/i
+  })
+  .first()
 await node.waitFor({ state: 'visible', timeout: 5000 })
-await node.click()                                         // first click = select
+await node.click() // first click = select
 await page.getByText('CONFIRM?').waitFor({ state: 'visible', timeout: 3000 })
-await node.click()                                         // second click = confirm
+await node.click() // second click = confirm
 
-await page.getByText('TOURBUS TERROR').waitFor({ state: 'visible', timeout: 10000 })
+await page
+  .getByText('TOURBUS TERROR')
+  .waitFor({ state: 'visible', timeout: 10000 })
 await page.waitForTimeout(600) // canvas first render
 await page.screenshot({ path: 'travel-minigame.png' })
 
 // Backdoor-complete (Shift+P dev shortcut):
 await page.keyboard.press('Shift+P')
-await page.getByRole('button', { name: /continue/i }).waitFor({ state: 'visible', timeout: 10000 })
+await page
+  .getByRole('button', { name: /continue/i })
+  .waitFor({ state: 'visible', timeout: 10000 })
 ```
 
 **Gotcha:** The canvas is PixiJS (Canvas2D fallback because `--disable-webgl` is set).
@@ -186,13 +205,18 @@ for (let i = 0; i < 3; i++) {
     await opt.waitFor({ state: 'visible', timeout: 2000 })
     await opt.click()
     await page.waitForTimeout(800)
-  } catch (_) { break }
+  } catch (_) {
+    break
+  }
 }
-await page.getByRole('heading', { name: /preparation/i }).waitFor({ state: 'visible', timeout: 15000 })
+await page
+  .getByRole('heading', { name: /preparation/i })
+  .waitFor({ state: 'visible', timeout: 15000 })
 await page.screenshot({ path: 'pregig.png' })
 ```
 
 **Via state injection:**
+
 ```js
 await injectSave(page, 'pregig')
 await page.reload({ waitUntil: 'networkidle' })
@@ -211,7 +235,7 @@ Reached after clicking "Start Show" on PREGIG.
 // Assumes we are on PREGIG with a song selected
 await page.getByText('01 Kranker Schrank').click()
 await page.getByRole('button', { name: /start show/i }).click()
-await page.waitForTimeout(2000)             // minigame lazy-loads
+await page.waitForTimeout(2000) // minigame lazy-loads
 await page.locator('canvas').waitFor({ state: 'visible', timeout: 10000 })
 await page.waitForTimeout(600)
 await page.screenshot({ path: 'pregig-minigame.png' })
@@ -242,10 +266,13 @@ await page.screenshot({ path: 'gig-canvas.png' })
 await page.screenshot({ path: 'gig-full.png' })
 
 // Let the gig auto-fail (no input → health drops to 0 → GigReport appears)
-await page.getByRole('heading', { name: /gig report/i }).waitFor({ timeout: 90000 })
+await page
+  .getByRole('heading', { name: /gig report/i })
+  .waitFor({ timeout: 90000 })
 ```
 
 **Capturing the GIG HUD (GigHUD.jsx):**
+
 ```js
 // GigHUD overlays the canvas. It shows health, score, crowd meter.
 // It is rendered above the canvas (z-index 30).
@@ -263,9 +290,12 @@ identical to the WebGL path for our game. Screenshots are reliable.
 The post-gig report and social strategy phases (PostGig.jsx).
 
 **Via full flow (auto-fail gig):**
+
 ```js
 // After GIG scene, wait for gig report heading
-await page.getByRole('heading', { name: /gig report/i }).waitFor({ timeout: 90000 })
+await page
+  .getByRole('heading', { name: /gig report/i })
+  .waitFor({ timeout: 90000 })
 await page.waitForTimeout(400)
 await page.screenshot({ path: 'postgig-report.png' })
 
@@ -276,10 +306,13 @@ await page.screenshot({ path: 'postgig-social.png' })
 ```
 
 **Via state injection (fastest):**
+
 ```js
 await injectSave(page, 'postgig')
 await page.reload({ waitUntil: 'networkidle' })
-await page.getByRole('heading', { name: /gig report/i }).waitFor({ timeout: 10000 })
+await page
+  .getByRole('heading', { name: /gig report/i })
+  .waitFor({ timeout: 10000 })
 await page.screenshot({ path: 'postgig.png' })
 ```
 
@@ -290,10 +323,13 @@ await page.screenshot({ path: 'postgig.png' })
 GAMEOVER (GameOver.jsx) is triggered when `player.money` reaches 0 or other bankruptcy conditions.
 
 **Via state injection (only reliable path):**
+
 ```js
 await injectSave(page, 'gameover')
 await page.reload({ waitUntil: 'networkidle' })
-await page.getByRole('heading', { name: /game over/i }).waitFor({ timeout: 10000 })
+await page
+  .getByRole('heading', { name: /game over/i })
+  .waitFor({ timeout: 10000 })
 await page.waitForTimeout(400)
 await page.screenshot({ path: 'gameover.png' })
 ```
@@ -363,22 +399,25 @@ await page.getByRole('button', { name: /buy/i }).first().click()
 await page.waitForTimeout(200)
 await page.screenshot({ path: 'toast.png' })
 // Or capture just the toast region (top of screen)
-await page.screenshot({ path: 'toast-crop.png', clip: { x: 0, y: 0, width: 1280, height: 120 } })
+await page.screenshot({
+  path: 'toast-crop.png',
+  clip: { x: 0, y: 0, width: 1280, height: 120 }
+})
 ```
 
 ---
 
 ## Scene Load Timing Reference
 
-| Scene | Load type | Min wait before screenshot |
-|-------|-----------|---------------------------|
-| INTRO | Eager | 800 ms (animation starts) |
-| MENU | Lazy (React Suspense) | `networkidle` + 300 ms |
-| OVERWORLD | Lazy + SVG map | `networkidle` + 400 ms |
-| TRAVEL_MINIGAME | Lazy + Pixi canvas | canvas visible + 500 ms |
-| PREGIG | Lazy | heading visible + 300 ms |
-| PRE_GIG_MINIGAME | Lazy + Pixi canvas | canvas visible + 600 ms |
-| GIG | Lazy + Pixi canvas | canvas visible + 1500 ms |
-| POSTGIG | Lazy | heading visible + 400 ms |
-| GAMEOVER | Lazy | heading visible + 300 ms |
-| CLINIC | Lazy | `networkidle` + 500 ms |
+| Scene            | Load type             | Min wait before screenshot |
+| ---------------- | --------------------- | -------------------------- |
+| INTRO            | Eager                 | 800 ms (animation starts)  |
+| MENU             | Lazy (React Suspense) | `networkidle` + 300 ms     |
+| OVERWORLD        | Lazy + SVG map        | `networkidle` + 400 ms     |
+| TRAVEL_MINIGAME  | Lazy + Pixi canvas    | canvas visible + 500 ms    |
+| PREGIG           | Lazy                  | heading visible + 300 ms   |
+| PRE_GIG_MINIGAME | Lazy + Pixi canvas    | canvas visible + 600 ms    |
+| GIG              | Lazy + Pixi canvas    | canvas visible + 1500 ms   |
+| POSTGIG          | Lazy                  | heading visible + 400 ms   |
+| GAMEOVER         | Lazy                  | heading visible + 300 ms   |
+| CLINIC           | Lazy                  | `networkidle` + 500 ms     |

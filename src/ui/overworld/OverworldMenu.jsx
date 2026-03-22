@@ -65,8 +65,7 @@ export const OverworldMenu = React.memo(
                 variant='warning'
                 size='sm'
               >
-                [{t('ui:merch_press.button', { defaultValue: 'MERCH PRESS' })}
-                ]
+                [{t('ui:merch_press.button', { defaultValue: 'MERCH PRESS' })}]
               </GlitchButton>
               <GlitchButton
                 onClick={openHQ}

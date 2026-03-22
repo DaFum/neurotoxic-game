@@ -45,7 +45,9 @@ describe('MerchPressModal', () => {
     expect(screen.getByText('€150')).toBeInTheDocument()
 
     // Check buttons
-    const confirmBtn = screen.getByRole('button', { name: '[ ui:merch_press.confirm ]' })
+    const confirmBtn = screen.getByRole('button', {
+      name: '[ ui:merch_press.confirm ]'
+    })
     expect(confirmBtn).not.toBeDisabled()
 
     fireEvent.click(confirmBtn)
@@ -70,7 +72,9 @@ describe('MerchPressModal', () => {
       />
     )
 
-    const confirmBtn = screen.getByRole('button', { name: '[ ui:merch_press.confirm ]' })
+    const confirmBtn = screen.getByRole('button', {
+      name: '[ ui:merch_press.confirm ]'
+    })
     expect(confirmBtn).toBeDisabled()
 
     fireEvent.click(confirmBtn)

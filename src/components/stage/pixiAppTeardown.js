@@ -133,7 +133,11 @@ function handleDestroyError(error, contextName) {
  * @param {Function} tickerHandler - Optional reference to a ticker function to remove before destroy.
  * @param {string} contextName - The name of the class or context destroying the app, used for logging.
  */
-export function destroyPixiApp(app, tickerHandler, contextName = 'PixiAppTeardown') {
+export function destroyPixiApp(
+  app,
+  tickerHandler,
+  contextName = 'PixiAppTeardown'
+) {
   if (!app) return
 
   try {
