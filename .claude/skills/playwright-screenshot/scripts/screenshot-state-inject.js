@@ -286,17 +286,16 @@ const FIXTURES = {
       pendingEvents: []
     },
     waitFor: async page => {
-      // Wait for POSTGIG scene to fully load (stats animation + render)
-      // First, wait for the scene to transition (30s max)
-      let found = false
+      // Wait for POSTGIG scene to fully load (stats animation + render), 10s max
       const startTime = Date.now()
 
-      while (Date.now() - startTime < 10000 && !found) {
+      while (Date.now() - startTime < 10000) {
         try {
           // Try heading first
           const isHeading = await page
             .getByRole('heading', { name: /gig report|postgig/i })
-            .isVisible({ timeout: 1000 })
+            .waitFor({ state: 'visible', timeout: 500 })
+            .then(() => true)
             .catch(() => false)
           if (isHeading) return
         } catch {
@@ -320,12 +319,11 @@ const FIXTURES = {
           // Continue
         }
 
-        // Small explicit wait for next check
+        // Small explicit wait before next check
         await page.waitForTimeout(100)
       }
 
-      // If we get here, stats haven't appeared in 10s but page is loaded
-      // Just proceed anyway (better to get a partial screenshot than fail)
+      // Stats haven't appeared in 10s but page is loaded — proceed anyway
     }
   },
 

@@ -19,11 +19,13 @@ import { BASE_STATE } from '../.claude/skills/playwright-screenshot/scripts/scre
 describe('Playwright Screenshot Fixtures', () => {
   test('BASE_STATE contains all required top-level fields from initialState', () => {
     // Compare BASE_STATE against initialState to catch drift.
-    // Fields in initialState that are OK to omit from BASE_STATE
-    // because they're transient/runtime-only:
+    // Fields listed here are allowed to be absent from BASE_STATE because
+    // they're transient/runtime-only and always supplied at hydration time.
+    // Note: BASE_STATE currently includes both of these anyway (with safe
+    // defaults), so this set acts as a future-proofing allowlist.
     const ALLOWED_OMISSIONS = new Set([
-      'toasts', // runtime-only, injected at hydration time
-      'isScreenshotMode' // test flag, set by fixture not BASE_STATE
+      'toasts', // runtime-only UI queue, never injected via fixture
+      'isScreenshotMode' // defaults to false in BASE_STATE; fixtures override per-fixture
     ])
 
     const initialKeys = Object.keys(initialState)
