@@ -56,8 +56,9 @@ export const normalizeTraitMap = traits => {
   }
   if (traits && typeof traits === 'object') {
     const traitsMap = Object.create(null)
-    const values = Object.values(traits)
-    for (const t of values) {
+    for (const key in traits) {
+      if (!Object.hasOwn(traits, key)) continue
+      const t = traits[key]
       if (t && t.id) {
         traitsMap[t.id] = t
       }
@@ -120,7 +121,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     const member = nextBand.members[memberIndex]
 
     // Check if trait is already unlocked
-    if (member.traits[u.traitId]) return
+    if (Object.hasOwn(member.traits, u.traitId)) return
 
     // Find trait definition using the member's name to resolve static character data
     // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
