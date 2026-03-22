@@ -38,7 +38,7 @@ export const IntroVideo = () => {
   }, [])
 
   return (
-    <div className='relative w-full h-full bg-black overflow-hidden flex items-center justify-center z-[100]'>
+    <div className='relative w-full h-full bg-void-black overflow-hidden flex items-center justify-center z-[100]'>
       <video
         ref={videoRef}
         src={introVideo}

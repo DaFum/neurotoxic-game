@@ -10,7 +10,10 @@ import PropTypes from 'prop-types'
 export const ConnectionPath = ({ sockId, cabId, isPowerConnected, socketOrder }) => {
   const cable = CABLE_MAP[cabId]
 
-  if (!cable) return null
+  if (!cable) {
+    console.warn(`ConnectionPath received invalid cabId: ${cabId}. Returning null.`)
+    return null
+  }
 
   const isActive = isPowerConnected || cabId === 'iec'
   const cableColor = isActive ? cable.color : 'var(--color-concrete-gray)'
