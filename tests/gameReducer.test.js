@@ -10,7 +10,7 @@ import { GAME_PHASES } from '../src/context/gameConstants.js'
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   const band = { ...state.band }
   // Deep copy members to avoid mutation issues in test
-  band.members = band.members.map(m => ({ ...m, traits: [...m.traits] }))
+  band.members = band.members.map(m => ({ ...m, traits: { ...m.traits } }))
 
   unlocks.forEach(u => {
     // Mock matching logic: ID match OR case-insensitive name match
@@ -20,7 +20,7 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
         (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
     )
     if (member) {
-      member.traits.push({ id: u.traitId })
+      member.traits[u.traitId] = { id: u.traitId }
     }
   })
 
@@ -36,10 +36,13 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   }
 })
 
+import { normalizeTraitMap } from '../src/utils/traitUtils.js'
+
 mock.module('../src/utils/traitUtils.js', {
   namedExports: {
     applyTraitUnlocks: mockApplyTraitUnlocks,
-    getTraitById: mock.fn(traitId => ({ id: traitId }))
+    getTraitById: mock.fn(traitId => ({ id: traitId })),
+    normalizeTraitMap
   }
 })
 
@@ -444,8 +447,8 @@ describe('gameReducer', () => {
         band: {
           ...createInitialState().band,
           members: [
-            { name: 'Matze', traits: [] },
-            { name: 'Marius', traits: [] }
+            { name: 'Matze', traits: {} },
+            { name: 'Marius', traits: {} }
           ]
         }
       }
@@ -468,8 +471,8 @@ describe('gameReducer', () => {
 
       // Verify state change (simulated by mock)
       const matze = nextState.band.members.find(m => m.name === 'Matze')
-      assert.strictEqual(matze.traits.length, 1)
-      assert.strictEqual(matze.traits[0].id, 'gear_nerd')
+      assert.strictEqual(Object.keys(matze.traits).length, 1)
+      assert.strictEqual(matze.traits['gear_nerd'].id, 'gear_nerd')
     })
 
     it('UNLOCK_TRAIT adds toast', () => {
@@ -477,7 +480,7 @@ describe('gameReducer', () => {
         ...createInitialState(),
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: {} }]
         }
       }
 
@@ -501,7 +504,7 @@ describe('gameReducer', () => {
         currentGig: { isPractice: true },
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: {} }]
         }
       }
 
@@ -526,7 +529,7 @@ describe('gameReducer', () => {
         currentGig: { isPractice: false },
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: {} }]
         }
       }
 

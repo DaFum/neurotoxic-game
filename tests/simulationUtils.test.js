@@ -334,7 +334,7 @@ const blastMachineVariants = [
 blastMachineVariants.forEach(variant => {
   test(`calculateGigPhysics ${variant.label}`, () => {
     const band = buildBandWithMembers([
-      { name: 'Marius', traits: [{ id: 'blast_machine' }] }
+      { name: 'Marius', traits: { blast_machine: { id: 'blast_machine' } } }
     ])
     const song = { bpm: variant.songBpm }
     const physics = calculateGigPhysics(band, song)
@@ -372,14 +372,14 @@ test('calculateGigPhysics handles missing member gracefully', () => {
         mood: 70,
         stamina: 80,
         baseStats: { skill: 5 },
-        traits: []
+        traits: {}
       },
       {
         name: 'Unknown',
         mood: 70,
         stamina: 75,
         baseStats: { skill: 4 },
-        traits: []
+        traits: {}
       }
     ]
   })
@@ -393,9 +393,9 @@ test('calculateGigPhysics handles missing member gracefully', () => {
 test('calculateGigPhysics handles missing skill property', () => {
   const band = buildBandState({
     members: [
-      { name: 'Matze', mood: 70, stamina: 80, traits: [] },
-      { name: 'Marius', mood: 65, stamina: 75, traits: [] },
-      { name: 'Lars', mood: 75, stamina: 70, traits: [] }
+      { name: 'Matze', mood: 70, stamina: 80, traits: {} },
+      { name: 'Marius', mood: 65, stamina: 75, traits: {} },
+      { name: 'Lars', mood: 75, stamina: 70, traits: {} }
     ]
   })
 
@@ -479,13 +479,13 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
   const song = { bpm: 120 }
 
   const normalBand = buildBandWithMembers([
-    { name: 'Matze', baseStats: { skill: 8 }, traits: [] }
+    { name: 'Matze', baseStats: { skill: 8 }, traits: {} }
   ])
   const normalPhysics = calculateGigPhysics(normalBand, song)
   const baseWindow = normalPhysics.hitWindows.guitar
 
   const virtuosoBand = buildBandWithMembers([
-    { name: 'Matze', baseStats: { skill: 8 }, traits: [{ id: 'virtuoso' }] }
+    { name: 'Matze', baseStats: { skill: 8 }, traits: { virtuoso: { id: 'virtuoso' } } }
   ])
   const virtuosoPhysics = calculateGigPhysics(virtuosoBand, song)
 

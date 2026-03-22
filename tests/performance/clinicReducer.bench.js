@@ -3,9 +3,9 @@ import { performance } from 'perf_hooks'
 const state = {
   band: {
     members: [
-      { id: 'm1', traits: [{ id: 't1' }] },
-      { id: 'm2', traits: [{ id: 't2' }] },
-      { id: 'm3', traits: [{ id: 't3' }] },
+      { id: 'm1', traits: { t1: { id: 't1' } } },
+      { id: 'm2', traits: { t2: { id: 't2' } } },
+      { id: 'm3', traits: { t3: { id: 't3' } } },
       { id: 'm4', traits: [{ id: 't4' }, { id: 't5' }, { id: 't6' }] }
     ]
   }

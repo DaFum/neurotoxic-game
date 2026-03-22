@@ -4,7 +4,7 @@ const members = [
   { name: 'Alice', traits: [{ id: 'virtuoso' }, { id: 'gear_nerd' }] },
   { name: 'Bob', traits: [{ id: 'clumsy' }, { id: 'party_animal' }] },
   { name: 'Charlie', traits: [{ id: 'lead_singer' }, { id: 'drama_magnet' }] },
-  { name: 'Dave', traits: [{ id: 'tech_wizard' }] }
+  { name: 'Dave', traits: { tech_wizard: { id: 'tech_wizard' } } }
 ]
 
 const memberTraitCache = new WeakMap()
