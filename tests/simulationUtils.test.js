@@ -334,7 +334,7 @@ const blastMachineVariants = [
 blastMachineVariants.forEach(variant => {
   test(`calculateGigPhysics ${variant.label}`, () => {
     const band = buildBandWithMembers([
-      { name: 'Marius', traits: [{ id: 'blast_machine' }] }
+      { name: 'Marius', traits: { blast_machine: { id: 'blast_machine' } } }
     ])
     const song = { bpm: variant.songBpm }
     const physics = calculateGigPhysics(band, song)
@@ -485,7 +485,11 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
   const baseWindow = normalPhysics.hitWindows.guitar
 
   const virtuosoBand = buildBandWithMembers([
-    { name: 'Matze', baseStats: { skill: 8 }, traits: [{ id: 'virtuoso' }] }
+    {
+      name: 'Matze',
+      baseStats: { skill: 8 },
+      traits: { virtuoso: { id: 'virtuoso' } }
+    }
   ])
   const virtuosoPhysics = calculateGigPhysics(virtuosoBand, song)
 

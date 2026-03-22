@@ -20,7 +20,7 @@ let mockGameState = {
         name: 'M2',
         stamina: 100,
         mood: 100,
-        traits: [{ id: 'cyber_lungs' }]
+        traits: { cyber_lungs: { id: 'cyber_lungs' } }
       }
     ]
   },
@@ -70,7 +70,7 @@ describe('useClinicLogic', () => {
             name: 'M2',
             stamina: 100,
             mood: 100,
-            traits: [{ id: 'cyber_lungs' }]
+            traits: { cyber_lungs: { id: 'cyber_lungs' } }
           }
         ]
       },

@@ -18,7 +18,7 @@ const UI_SOURCE_FILES = [
   'src/ui/bandhq/StatsTab.jsx',
   'src/ui/bandhq/SetlistTab.jsx',
   'src/ui/bandhq/LeaderboardTab.jsx',
-  'src/ui/shared/SettingsPanel.jsx',
+  'src/ui/settings/SettingsPanel.jsx',
   'src/scenes/GameOver.jsx',
   'src/scenes/MainMenu.jsx',
   'src/scenes/IntroVideo.jsx',

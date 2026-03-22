@@ -58,7 +58,9 @@ describe('Extended Social & Trait Systems', () => {
     it('generateBrandOffers returns eligible deals', () => {
       const gameState = {
         social: { instagram: 10000, trend: 'TECH' },
-        band: { members: [{ traits: [{ id: 'party_animal' }] }] }
+        band: {
+          members: [{ traits: { party_animal: { id: 'party_animal' } } }]
+        }
       }
 
       // RNG mock that always returns 0 (success for 30% check)
@@ -115,7 +117,7 @@ describe('Extended Social & Trait Systems', () => {
       const baseScore = calculateViralityScore(80, [], {}, { members: [] })
 
       const bandWithShowman = {
-        members: [{ traits: [{ id: 'showman' }] }]
+        members: [{ traits: { showman: { id: 'showman' } } }]
       }
       const showmanScore = calculateViralityScore(80, [], {}, bandWithShowman)
 
