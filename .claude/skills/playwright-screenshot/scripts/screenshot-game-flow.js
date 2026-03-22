@@ -158,7 +158,11 @@ async function main() {
         await page.locator('canvas').waitFor({ timeout: 10000 })
         await snap(page, '08-travel-minigame', 1000)
         await page.keyboard.press('Shift+P')
-        await page.waitForTimeout(800)
+        // Wait for canvas to disappear (travel minigame ended) rather than a fixed delay
+        await page
+          .locator('canvas')
+          .waitFor({ state: 'hidden', timeout: 3000 })
+          .catch(() => {})
       }
     } catch (_e) {
       console.log('    (skipped)')
@@ -194,7 +198,11 @@ async function main() {
         await page.locator('canvas').waitFor({ timeout: 15000 })
         await snap(page, '10-gig-canvas', 2000)
         await page.keyboard.press('Shift+P')
-        await page.waitForTimeout(800)
+        // Wait for canvas to disappear (gig ended) rather than a fixed delay
+        await page
+          .locator('canvas')
+          .waitFor({ state: 'hidden', timeout: 3000 })
+          .catch(() => {})
       }
     } catch (_e) {
       console.log('    (skipped)')

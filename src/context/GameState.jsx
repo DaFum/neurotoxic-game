@@ -197,10 +197,11 @@ export const GameStateProvider = ({ children }) => {
 
       if (savedGame && savedGame.version !== undefined) {
         try {
-          // Merge injected state, ensuring all required fields are present.
-          // For screenshot fixtures, we trust the injected data (no sanitization needed).
-          // Critical fields like toasts and minigame are always taken from freshState
-          // to prevent crashes when loading incomplete fixture data.
+          // Merge strategy: freshState spreads first (all defaults), then savedGame
+          // overrides its fields. Incomplete fixtures (e.g. screenshot test stubs)
+          // safely fall back to fresh defaults for any field they omit.
+          // toasts/minigame/isScreenshotMode are re-asserted explicitly because
+          // createPersistedState omits them — savedGame may lack these keys entirely.
           return {
             ...freshState,
             ...savedGame,

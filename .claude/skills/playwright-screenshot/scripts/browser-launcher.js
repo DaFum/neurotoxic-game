@@ -42,8 +42,8 @@ async function findCachedBrowser() {
       .filter(d => d.isDirectory() && d.name.includes('chromium'))
       .sort((a, b) => {
         // Sort by version number (descending) to get most recent
-        const aVer = parseInt(a.name.match(/\d+/) || [0], 10)
-        const bVer = parseInt(b.name.match(/\d+/) || [0], 10)
+        const aVer = parseInt((a.name.match(/\d+/) ?? ['0'])[0], 10)
+        const bVer = parseInt((b.name.match(/\d+/) ?? ['0'])[0], 10)
         return bVer - aVer
       })
 
