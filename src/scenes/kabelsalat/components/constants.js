@@ -1,1 +1,0 @@
-export const CONNECTOR_TYPES = ['xlr', 'jack', 'dc', 'iec', 'midi']
