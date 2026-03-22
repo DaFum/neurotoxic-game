@@ -152,7 +152,7 @@ export const handleClinicEnhance = (state, payload) => {
       }
     }
     if (targetMember && targetMember.traits) {
-      if (targetMember.traits[resolvedTrait.id]) {
+      if (Object.hasOwn(targetMember.traits, resolvedTrait.id)) {
         logger.debug(
           'ClinicReducer',
           `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`
