@@ -1159,7 +1159,7 @@ export const TerminalReadout = memo(() => {
           setLines(prev => [...prev, FULL_LOG_KEYS[currentIndex]])
           setCurrentIndex(currentIndex + 1)
         },
-        Math.random() * 400 + 200
+        secureRandom() * 400 + 200
       ) // Random typing delay
       return () => clearTimeout(timer)
     }
@@ -1289,7 +1289,7 @@ export const CorruptedText = memo(({ text, delay = 0 }) => {
               if (index < iteration) {
                 return char
               }
-              return chars[Math.floor(Math.random() * chars.length)]
+              return chars[Math.floor(secureRandom() * chars.length)]
             })
             .join('')
         )
@@ -1674,7 +1674,7 @@ export const VoidDecryptor = memo(() => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'
         let str = ''
         for (let i = 0; i < 15; i++)
-          str += chars.charAt(Math.floor(Math.random() * chars.length))
+          str += chars.charAt(Math.floor(secureRandom() * chars.length))
         setGlitchEffect(str)
       }, 50)
     }

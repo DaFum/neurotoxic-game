@@ -35,6 +35,21 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid payload structure' })
       }
 
+      // Rate Limiting
+      const forwarded = req.headers?.['x-forwarded-for']
+      const ip = (typeof forwarded === 'string' && forwarded.split(',')[0].trim()) || req.socket?.remoteAddress
+
+      if (!ip) {
+        return res.status(400).json({ error: 'Unable to determine client IP for rate limiting.' })
+      }
+
+      const rateLimitKey = `rate_limit:stats:${ip}`
+      const [requests] = await client.multi().incr(rateLimitKey).expire(rateLimitKey, 60).exec()
+
+      if (requests > 5) {
+        return res.status(429).json({ error: 'Too many requests' })
+      }
+
       const {
         playerId,
         playerName,

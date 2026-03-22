@@ -16,6 +16,15 @@ const mockClient = {
   zAdd: mock.fn(() => Promise.resolve()),
   zRangeWithScores: mock.fn(() => Promise.resolve([])),
   hmGet: mock.fn(() => Promise.resolve([])),
+  incr: mock.fn(() => Promise.resolve(1)),
+  expire: mock.fn(() => Promise.resolve()),
+  multi: mock.fn(() => {
+    const m = {}
+    m.incr = mock.fn(() => m)
+    m.expire = mock.fn(() => m)
+    m.exec = mock.fn(() => Promise.resolve([1, true]))
+    return m
+  }),
   disconnect: mock.fn(() => Promise.resolve()),
   on: mock.fn()
 }
@@ -38,6 +47,9 @@ describe('Leaderboard API - Song', () => {
     mockClient.zAdd.mock.resetCalls()
     mockClient.zRangeWithScores.mock.resetCalls()
     mockClient.hmGet.mock.resetCalls()
+    mockClient.incr.mock.resetCalls()
+    mockClient.expire.mock.resetCalls()
+    mockClient.multi.mock.resetCalls()
     mockClient.disconnect.mock.resetCalls()
   })
 
@@ -47,10 +59,18 @@ describe('Leaderboard API - Song', () => {
 
   const createRes = () => {
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res),
+      statusCode: 200,
+      status: mock.fn((code) => {
+        res.statusCode = code
+        return res
+      }),
+      json: mock.fn((data) => {
+        res._data = data
+        return res
+      }),
       setHeader: mock.fn(),
-      end: mock.fn()
+      end: mock.fn(),
+      _getData: () => JSON.stringify(res._data)
     }
     return res
   }
@@ -65,16 +85,65 @@ describe('Leaderboard API - Song', () => {
 
         await handler(req, res)
 
-        assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-        assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-          error: 'Invalid payload structure: expected object'
-        })
+        assert.strictEqual(res.statusCode, 400)
+        const data = JSON.parse(res._getData())
+        assert.strictEqual(data.error, 'Invalid payload structure: expected object')
       }
+    })
+
+    test('returns 400 when no valid IP can be extracted', async () => {
+      const req = {
+        method: 'POST',
+        headers: {},
+        socket: {},
+        body: {
+          playerId: 'player1',
+          playerName: 'Player One',
+          songId: 'song1',
+          score: 1000
+        }
+      }
+      const res = createRes()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Unable to determine client IP for rate limiting.')
+    })
+
+    test('returns 429 when rate limit exceeded', async () => {
+      mockClient.multi.mock.mockImplementationOnce(function () {
+        return {
+          incr: mock.fn(function () { return this }),
+          expire: mock.fn(function () { return this }),
+          exec: mock.fn(() => Promise.resolve([6, true])) // Requests > 5
+        }
+      })
+
+      const req = {
+        method: 'POST',
+        headers: { 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
+        body: {
+          playerId: 'player1',
+          playerName: 'Player One',
+          songId: 'song1',
+          score: 1000
+        }
+      }
+      const res = createRes()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.statusCode, 429)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Too many requests')
     })
 
     test('missing required fields returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player One',
@@ -86,15 +155,15 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Missing required fields'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Missing required fields')
     })
 
     test('invalid score value returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player One',
@@ -106,15 +175,15 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Invalid score value'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Invalid score value')
     })
 
     test('invalid playerName length returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: '   ',
@@ -126,15 +195,15 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Invalid playerName length'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Invalid playerName length')
     })
 
     test('invalid playerId format returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'invalid player id!',
           playerName: 'Player',
@@ -146,15 +215,15 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Invalid playerId format'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Invalid playerId format')
     })
 
     test('invalid songId format returns 400 for POST', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player',
@@ -166,15 +235,15 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Invalid songId format'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Invalid songId format')
     })
 
     test('successful update calls redis commands and returns 200', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player One',
@@ -199,10 +268,9 @@ describe('Leaderboard API - Song', () => {
         { GT: true }
       ])
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        success: true
-      })
+      assert.strictEqual(res.statusCode, 200)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.success, true)
     })
 
     test('internal server error returns 500 for POST', async () => {
@@ -212,6 +280,7 @@ describe('Leaderboard API - Song', () => {
 
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player',
@@ -231,10 +300,9 @@ describe('Leaderboard API - Song', () => {
         console.error = originalConsoleError
       }
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 500)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Internal Server Error'
-      })
+      assert.strictEqual(res.statusCode, 500)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Internal Server Error')
     })
   })
 
@@ -248,10 +316,9 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Missing songId'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Missing songId')
     })
 
     test('invalid songId format returns 400 for GET', async () => {
@@ -263,10 +330,9 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Invalid songId format'
-      })
+      assert.strictEqual(res.statusCode, 400)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Invalid songId format')
     })
 
     test('returns empty array if no results', async () => {
@@ -316,8 +382,9 @@ describe('Leaderboard API - Song', () => {
         ['player1', 'player2']
       ])
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], [
+      assert.strictEqual(res.statusCode, 200)
+      const data = JSON.parse(res._getData())
+      assert.deepStrictEqual(data, [
         { rank: 1, playerId: 'player1', playerName: 'Player One', score: 1000 },
         { rank: 2, playerId: 'player2', playerName: 'Player Two', score: 500 }
       ])
@@ -338,8 +405,9 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], [
+      assert.strictEqual(res.statusCode, 200)
+      const data = JSON.parse(res._getData())
+      assert.deepStrictEqual(data, [
         { rank: 1, playerId: 'player1', playerName: 'Unknown', score: 1000 }
       ])
     })
@@ -365,10 +433,9 @@ describe('Leaderboard API - Song', () => {
         console.error = originalConsoleError
       }
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 500)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
-        error: 'Internal Server Error'
-      })
+      assert.strictEqual(res.statusCode, 500)
+      const data = JSON.parse(res._getData())
+      assert.strictEqual(data.error, 'Internal Server Error')
     })
   })
 
@@ -385,7 +452,7 @@ describe('Leaderboard API - Song', () => {
         ['GET', 'POST']
       ])
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
+      assert.strictEqual(res.statusCode, 405)
       assert.strictEqual(res.end.mock.calls.length, 1)
       assert.deepStrictEqual(res.end.mock.calls[0].arguments, [
         'Method PUT Not Allowed'
