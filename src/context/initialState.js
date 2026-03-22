@@ -66,21 +66,21 @@ export const DEFAULT_BAND_STATE = {
       ...CHARACTERS.MATZE,
       mood: 80,
       stamina: 100,
-      traits: [],
+      traits: Object.create(null),
       relationships: { Marius: 50, Lars: 50 }
     },
     {
       ...CHARACTERS.MARIUS,
       mood: 80,
       stamina: 100,
-      traits: [],
+      traits: Object.create(null),
       relationships: { Matze: 50, Lars: 50 }
     },
     {
       ...CHARACTERS.LARS,
       mood: 80,
       stamina: 100,
-      traits: [],
+      traits: Object.create(null),
       relationships: { Matze: 50, Marius: 50 }
     }
   ],
@@ -213,7 +213,7 @@ export const createInitialState = (persistedData = {}) => ({
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({
       ...m,
-      traits: [...m.traits],
+      traits: Object.assign(Object.create(null), m.traits),
       relationships: { ...m.relationships }
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },

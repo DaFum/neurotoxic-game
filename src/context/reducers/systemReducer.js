@@ -148,7 +148,20 @@ const sanitizeBand = loadedBand => {
             : typeof m.name === 'string'
               ? m.name.toLowerCase()
               : m.id,
-        traits: Array.isArray(m.traits) ? m.traits : [],
+        traits: (() => {
+          if (Array.isArray(m.traits)) {
+            const traitsMap = Object.create(null)
+            for (const t of m.traits) {
+              if (t && t.id) {
+                traitsMap[t.id] = t
+              }
+            }
+            return traitsMap
+          }
+          return m.traits && typeof m.traits === 'object'
+            ? m.traits
+            : Object.create(null)
+        })(),
         mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
         stamina: clampMemberStamina(
           typeof m.stamina === 'number' ? m.stamina : 100,

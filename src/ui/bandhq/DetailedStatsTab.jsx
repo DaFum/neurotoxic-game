@@ -463,9 +463,12 @@ const MemberTraits = ({ member, t }) => {
 
   const activeTraitIds = useMemo(() => {
     const ids = new Set()
-    const traitsList = member.traits || []
-    for (let i = 0; i < traitsList.length; i++) {
-      ids.add(traitsList[i].id)
+    if (member.traits) {
+      for (const id in member.traits) {
+        if (Object.hasOwn(member.traits, id)) {
+          ids.add(id)
+        }
+      }
     }
     return ids
   }, [member.traits])
@@ -712,11 +715,7 @@ BandMembersSection.propTypes = {
         improv: PropTypes.number,
         composition: PropTypes.number
       }),
-      traits: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired
-        })
-      ),
+      traits: PropTypes.object,
       equipment: PropTypes.object
     })
   ),
