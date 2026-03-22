@@ -12,6 +12,8 @@ import assert from 'node:assert'
 const mockClient = {
   isOpen: true,
   connect: mock.fn(() => Promise.resolve()),
+  incr: mock.fn(() => Promise.resolve(1)),
+  expire: mock.fn(() => Promise.resolve()),
   hSet: mock.fn(() => Promise.resolve()),
   zAdd: mock.fn(() => Promise.resolve()),
   zRangeWithScores: mock.fn(() => Promise.resolve([])),
@@ -34,6 +36,8 @@ describe('Leaderboard API - Song', () => {
 
     mockClient.isOpen = true
     mockClient.connect.mock.resetCalls()
+    mockClient.incr.mock.resetCalls()
+    mockClient.expire.mock.resetCalls()
     mockClient.hSet.mock.resetCalls()
     mockClient.zAdd.mock.resetCalls()
     mockClient.zRangeWithScores.mock.resetCalls()
@@ -60,7 +64,11 @@ describe('Leaderboard API - Song', () => {
       const bodies = [null, undefined, []]
 
       for (const body of bodies) {
-        const req = { method: 'POST', body }
+        const req = {
+          method: 'POST',
+          headers: { 'x-forwarded-for': '127.0.0.1' },
+          body
+        }
         const res = createRes()
 
         await handler(req, res)
@@ -75,6 +83,7 @@ describe('Leaderboard API - Song', () => {
     test('missing required fields returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player One',
@@ -95,6 +104,7 @@ describe('Leaderboard API - Song', () => {
     test('invalid score value returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player One',
@@ -115,6 +125,7 @@ describe('Leaderboard API - Song', () => {
     test('invalid playerName length returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: '   ',
@@ -135,6 +146,7 @@ describe('Leaderboard API - Song', () => {
     test('invalid playerId format returns 400', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'invalid player id!',
           playerName: 'Player',
@@ -155,6 +167,7 @@ describe('Leaderboard API - Song', () => {
     test('invalid songId format returns 400 for POST', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player',
@@ -175,6 +188,7 @@ describe('Leaderboard API - Song', () => {
     test('successful update calls redis commands and returns 200', async () => {
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player One',
@@ -205,6 +219,29 @@ describe('Leaderboard API - Song', () => {
       })
     })
 
+    test('rate limit exceeded returns 429', async () => {
+      mockClient.incr.mock.mockImplementationOnce(() => Promise.resolve(6))
+
+      const req = {
+        method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        body: {
+          playerId: 'player1',
+          playerName: 'Player One',
+          songId: 'song1',
+          score: 1000
+        }
+      }
+      const res = createRes()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0].arguments[0], 429)
+      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+        error: 'Too many requests'
+      })
+    })
+
     test('internal server error returns 500 for POST', async () => {
       mockClient.hSet.mock.mockImplementationOnce(() => {
         return Promise.reject(new Error('Redis down'))
@@ -212,6 +249,7 @@ describe('Leaderboard API - Song', () => {
 
       const req = {
         method: 'POST',
+        headers: { 'x-forwarded-for': '127.0.0.1' },
         body: {
           playerId: 'player1',
           playerName: 'Player',

@@ -16,6 +16,8 @@ const mockMulti = {
 
 const mockRedisClient = {
   isOpen: true,
+  incr: mock.fn(() => Promise.resolve(1)),
+  expire: mock.fn(() => Promise.resolve()),
   zAdd: mock.fn(() => Promise.resolve()),
   zRangeWithScores: mock.fn(() => Promise.resolve([])),
   hmGet: mock.fn(() => Promise.resolve([])),
@@ -34,6 +36,8 @@ describe('Leaderboard Stats API', () => {
 
   beforeEach(async () => {
     mockRedisClient.isOpen = true
+    mockRedisClient.incr.mock.resetCalls()
+    mockRedisClient.expire.mock.resetCalls()
     mockRedisClient.zAdd.mock.resetCalls()
     mockRedisClient.zRangeWithScores.mock.resetCalls()
     mockRedisClient.hmGet.mock.resetCalls()
@@ -55,6 +59,7 @@ describe('Leaderboard Stats API', () => {
   test('POST handles valid stats update', async () => {
     const req = {
       method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
       body: {
         playerId: 'test-band',
         playerName: 'Test Band',
@@ -89,6 +94,7 @@ describe('Leaderboard Stats API', () => {
   test('POST rejects missing required fields', async () => {
     const req = {
       method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
       body: {
         playerId: 'test-band'
         // missing playerName and money
@@ -111,6 +117,7 @@ describe('Leaderboard Stats API', () => {
   test('POST rejects excessively long playerName', async () => {
     const req = {
       method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
       body: {
         playerId: 'test-band',
         playerName: 'A'.repeat(101), // over the 100 character limit
@@ -191,6 +198,7 @@ describe('Leaderboard Stats API', () => {
   test('POST rejects undefined body', async () => {
     const req = {
       method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
       body: undefined
     }
     const res = {
@@ -210,6 +218,7 @@ describe('Leaderboard Stats API', () => {
   test('POST handles extreme and negative stat values correctly', async () => {
     const req = {
       method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
       body: {
         playerId: 'extreme-band',
         playerName: 'Extreme',
@@ -290,6 +299,31 @@ describe('Leaderboard Stats API', () => {
       'POST'
     ])
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
+  })
+
+  test('POST rate limit exceeded returns 429', async () => {
+    mockRedisClient.incr.mock.mockImplementationOnce(() => Promise.resolve(6))
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '127.0.0.1' },
+      body: {
+        playerId: 'test-band',
+        playerName: 'Test Band',
+        money: 100
+      }
+    }
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res)
+    }
+
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.status.mock.calls[0].arguments[0], 429)
+    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      error: 'Too many requests'
+    })
   })
 })
 // 🟢🧪⚙️ NEXUS TEST ARTIFACT END 🟢🧪⚙️
