@@ -1,4 +1,3 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
@@ -7,10 +6,12 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import { Modal, AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
+import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { MainMenuSocials } from './mainmenu/MainMenuSocials.jsx'
 import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.jsx'
+import { MainMenuExistingSavePrompt } from './mainmenu/MainMenuExistingSavePrompt.jsx'
+import { MainMenuNameInputPrompt } from './mainmenu/MainMenuNameInputPrompt.jsx'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
 
@@ -222,65 +223,21 @@ export const MainMenu = () => {
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 relative overflow-hidden'>
       {showExistingSavePrompt && (
-        <Modal
-          isOpen={true}
-          title={t('ui:mainMenu.existingSave.title')}
+        <MainMenuExistingSavePrompt
+          onLoad={handleLoadExistingFromPrompt}
+          onStartNew={handleStartNewAnyway}
           onClose={() => setShowExistingSavePrompt(false)}
-        >
-          <div className='flex flex-col gap-4'>
-            <p className='text-ash-gray font-mono text-sm'>
-              {t('ui:mainMenu.existingSave.desc')}
-            </p>
-            <div className='flex gap-2 justify-end'>
-              <GlitchButton
-                onClick={handleLoadExistingFromPrompt}
-                className='border-toxic-green text-toxic-green'
-              >
-                {t('ui:mainMenu.existingSave.load')}
-              </GlitchButton>
-              <GlitchButton
-                onClick={handleStartNewAnyway}
-                className='border-blood-red text-blood-red'
-              >
-                {t('ui:mainMenu.existingSave.startNew')}
-              </GlitchButton>
-            </div>
-          </div>
-        </Modal>
+        />
       )}
 
       {showNameInput && (
-        <Modal
-          isOpen={true}
-          title={t('ui:identity_required')}
+        <MainMenuNameInputPrompt
+          playerNameInput={playerNameInput}
+          setPlayerNameInput={setPlayerNameInput}
+          handleNameSubmit={handleNameSubmit}
           onClose={closeNameInput}
-          className='max-w-md'
-          aria-label={t('ui:identity_required')}
-        >
-          <div className='flex flex-col gap-4'>
-            <label
-              htmlFor='playerName'
-              className='text-ash-gray font-mono text-sm cursor-pointer'
-            >
-              {t('ui:enter_alias_desc')}
-            </label>
-            <input
-              id='playerName'
-              ref={inputRef}
-              type='text'
-              value={playerNameInput}
-              onChange={e => setPlayerNameInput(e.target.value)}
-              placeholder={t('ui:enter_name_placeholder')}
-              className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase'
-              maxLength={20}
-              onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
-              aria-label={t('ui:enter_alias_desc')}
-            />
-            <GlitchButton onClick={handleNameSubmit}>
-              {t('ui:confirm_identity')}
-            </GlitchButton>
-          </div>
-        </Modal>
+          inputRef={inputRef}
+        />
       )}
 
       {/* Dynamic Background */}
