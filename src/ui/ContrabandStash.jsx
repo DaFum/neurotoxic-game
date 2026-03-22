@@ -100,7 +100,7 @@ export const ContrabandStash = ({
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
               const stableKey =
-                item.instanceId || `migrated-${item.id}-${Date.now()}`
+                item.instanceId || `migrated-${item.id}`
               return (
                 <HexBorder
                   key={stableKey}
