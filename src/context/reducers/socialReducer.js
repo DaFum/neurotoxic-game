@@ -5,8 +5,7 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
-  calculateFameLevel,
-  applyInventoryItemDelta
+  calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 
 /**
@@ -140,8 +139,7 @@ export const handleMerchPress = (state, payload) => {
     },
     band: {
       ...state.band,
-      harmony: nextHarmony,
-      inventory: { ...(state.band.inventory || {}) }
+      harmony: nextHarmony
     },
     social: {
       ...state.social,

@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
+import { secureRandom } from '../utils/crypto'
 
 export const useMerchPress = () => {
   const { merchPress, player } = useGameState()
@@ -17,7 +18,7 @@ export const useMerchPress = () => {
       loyaltyGain: Math.floor(5 * multiplier),
       controversyGain: Math.floor(10 * multiplier),
       failChance: 0.2, // 20% constant chance of failure
-      harmonyCostOnFail: 15
+      harmonyCostOnFail: Math.min(50, Math.floor(15 * multiplier))
     }
   }, [player?.fameLevel])
 
@@ -26,7 +27,7 @@ export const useMerchPress = () => {
   const triggerPress = useCallback(() => {
     if (!canPress) return
 
-    const isFailure = Math.random() < config.failChance
+    const isFailure = secureRandom() < config.failChance
     const harmonyCost = isFailure ? config.harmonyCostOnFail : 0
 
     const successToast = {
