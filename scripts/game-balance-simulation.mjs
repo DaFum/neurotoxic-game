@@ -348,9 +348,9 @@ const pickVenueForState = (state, rng) => {
   const controversy = state.social.controversyLevel || 0
   let targetDiff = 2
 
-  if (fame >= 130) targetDiff = 5
-  else if (fame >= 70) targetDiff = 4
-  else if (fame >= 25) targetDiff = 3
+  if (fame >= 400) targetDiff = 5
+  else if (fame >= 200) targetDiff = 4
+  else if (fame >= 60) targetDiff = 3
 
   if (controversy >= 70) targetDiff = Math.max(2, targetDiff - 1)
 
@@ -583,6 +583,38 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
     state.player.hqUpgrades = [...ownedHqUpgrades, candidate.id]
   }
   counters.catalogUpgrades += 1
+}
+
+const estimateMerchBuyers = (venue, performanceScore, modifiers, state) => {
+  const fame = state.player.fame || 0
+  const fameRatio = Math.min(1.0, fame / (venue.capacity * 8))
+  let fillRate = 0.3 + fameRatio * 0.8
+  if (modifiers.promo) fillRate += 0.15
+  if (modifiers.soundcheck) fillRate += 0.15
+  fillRate = Math.min(1, Math.max(0.1, fillRate))
+  const ticketsSold = Math.floor(venue.capacity * fillRate)
+  const buyRate = Math.max(0, 0.15 + (performanceScore / 100) * 0.2 + (modifiers.merch ? 0.1 : 0))
+  const inv = state.band.inventory || {}
+  const totalInventory =
+    (inv.shirts || 0) + (inv.hoodies || 0) + (inv.cds || 0) + (inv.patches || 0) + (inv.vinyl || 0)
+  return Math.min(Math.floor(ticketsSold * buyRate), totalInventory)
+}
+
+const depleteInventory = (inventory, buyers) => {
+  if (!inventory || buyers <= 0) return inventory
+  const total =
+    (inventory.shirts || 0) + (inventory.hoodies || 0) + (inventory.cds || 0) +
+    (inventory.patches || 0) + (inventory.vinyl || 0)
+  if (total <= 0) return inventory
+  const depletionRatio = Math.min(1, buyers / total)
+  return {
+    ...inventory,
+    shirts:  Math.max(0, Math.floor((inventory.shirts  || 0) * (1 - depletionRatio))),
+    hoodies: Math.max(0, Math.floor((inventory.hoodies || 0) * (1 - depletionRatio))),
+    cds:     Math.max(0, Math.floor((inventory.cds     || 0) * (1 - depletionRatio))),
+    patches: Math.max(0, Math.floor((inventory.patches || 0) * (1 - depletionRatio))),
+    vinyl:   Math.max(0, Math.floor((inventory.vinyl   || 0) * (1 - depletionRatio)))
+  }
 }
 
 const mergeGigModifierPipeline = (gigModifiers, physics) => {
@@ -868,12 +900,20 @@ const runSingleSimulation = (scenario, seed) => {
   const timeline = []
 
   for (let day = 1; day <= SIMULATION_CONSTANTS.daysPerRun; day++) {
+    const moneyBeforeDay = state.player.money
     const updates = calculateDailyUpdates(state, rng)
     state = {
       ...state,
       player: { ...state.player, ...updates.player },
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
+    }
+
+    // Bankruptcy from daily costs draining the player to zero
+    const dailyNetChange = state.player.money - moneyBeforeDay
+    if (shouldTriggerBankruptcy(state.player.money, dailyNetChange)) {
+      counters.bankrupt = true
+      break
     }
 
     applyWorldEvents(state, scenario, rng, counters)
@@ -1013,6 +1053,10 @@ const runSingleSimulation = (scenario, seed) => {
 
     // Standard post-gig adjustments
     applyPostGigState(state, venue, performanceScore, financials, rng)
+
+    // Deplete merch inventory based on estimated buyers this gig
+    const buyers = estimateMerchBuyers(venue, performanceScore, modifiers, state)
+    state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
     currentNode = venue
     counters.gigsPlayed += 1

@@ -639,11 +639,11 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
   const res1 = calculateFuelCost(dist, null, null)
   assert.equal(res1.fuelLiters, 12)
 
-  // With trait
+  // With trait (object map format required by hasTrait)
   const bandState = {
     members: [
       {
-        traits: [{ id: 'road_warrior' }]
+        traits: { road_warrior: { id: 'road_warrior' } }
       }
     ]
   }
