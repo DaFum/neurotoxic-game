@@ -1,6 +1,7 @@
 // TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useEffect } from 'react'
 import { logger } from '../utils/logger'
+import { generateSignature } from '../utils/crypto'
 
 /**
  * Hook to sync player stats to the global leaderboards.
@@ -53,10 +54,19 @@ export const useLeaderboardSync = state => {
           stageDives: stageDives || 0
         }
 
+        const body = JSON.stringify(payload)
+        const signature = await generateSignature(
+          body,
+          import.meta.env.VITE_LEADERBOARD_TOKEN
+        )
+
         const response = await fetch('/api/leaderboard/stats', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          headers: {
+            'Content-Type': 'application/json',
+            'x-lb-signature': signature
+          },
+          body
         })
 
         if (!response.ok) {

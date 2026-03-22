@@ -14,7 +14,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
-import { secureRandom } from '../utils/crypto'
+import { secureRandom, generateSignature } from '../utils/crypto'
 import {
   calculateGigFinancials,
   shouldTriggerBankruptcy
@@ -663,7 +663,7 @@ export const usePostGigLogic = () => {
       }
 
       // Submit each song individually
-      songsToSubmit.forEach(songData => {
+      songsToSubmit.forEach(async songData => {
         // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
         // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
         const leaderboardSongId = SONGS_BY_ID.get(
@@ -671,16 +671,27 @@ export const usePostGigLogic = () => {
         )?.leaderboardId
 
         if (leaderboardSongId) {
+          const payload = {
+            playerId: player.playerId,
+            playerName: player.playerName,
+            songId: leaderboardSongId,
+            score: songData.score,
+            accuracy: songData.accuracy
+          }
+
+          const body = JSON.stringify(payload)
+          const signature = await generateSignature(
+            body,
+            import.meta.env.VITE_LEADERBOARD_TOKEN
+          )
+
           fetch('/api/leaderboard/song', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              playerId: player.playerId,
-              playerName: player.playerName,
-              songId: leaderboardSongId,
-              score: songData.score,
-              accuracy: songData.accuracy
-            })
+            headers: {
+              'Content-Type': 'application/json',
+              'x-lb-signature': signature
+            },
+            body
           })
             .then(async res => {
               if (!res.ok) {

@@ -1,4 +1,5 @@
 import client from '../../lib/redis.js'
+import { verifySignature } from '../../src/utils/crypto.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
@@ -17,6 +18,27 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
+      // 1. Authentication Check
+      const signature = req.headers['x-lb-signature']
+      const secret = process.env.LEADERBOARD_TOKEN
+
+      if (!secret) {
+        return res.status(500).json({ error: 'Auth configuration missing' })
+      }
+
+      if (!signature) {
+        return res.status(401).json({ error: 'Missing signature' })
+      }
+
+      const isValid = await verifySignature(
+        JSON.stringify(req.body),
+        signature,
+        secret
+      )
+      if (!isValid) {
+        return res.status(403).json({ error: 'Invalid signature' })
+      }
+
       // Anti-Tamper / Prototype Pollution Check
       if (
         !req.body ||
