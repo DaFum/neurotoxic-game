@@ -307,7 +307,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     }
   }
 
-  if (controversy >= 50) {
+  if ((nextSocial.controversyLevel || 0) >= 50) {
     // Harmony drain is worse under stress
     const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
     nextBand.harmony = nextHarmonyControversy
@@ -347,7 +347,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   if (
     !nextSocial.sponsorActive &&
     (nextSocial.instagram || 0) > 5000 &&
-    controversy < 60 && // Won't sign if controversy is too high
+    (nextSocial.controversyLevel || 0) < 60 && // Won't sign if controversy is too high
     rng() < 0.1
   ) {
     nextSocial.sponsorActive = true
@@ -357,9 +357,9 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
       nextSocial.sponsorActive = false
     }
     // Sponsorship Drops due to high controversy (Immediate or high chance if severe)
-    else if (controversy >= 80) {
+    else if ((nextSocial.controversyLevel || 0) >= 80) {
       nextSocial.sponsorActive = false // Immediate drop
-    } else if (controversy >= 60 && rng() < 0.5) {
+    } else if ((nextSocial.controversyLevel || 0) >= 60 && rng() < 0.5) {
       nextSocial.sponsorActive = false // High chance to drop
     }
   }
@@ -415,7 +415,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     mood = clampMemberMood(mood)
 
     // 2b. High Controversy Mood Penalty
-    if (controversy >= 50) {
+    if ((nextSocial.controversyLevel || 0) >= 50) {
       mood = clampMemberMood(mood - 1)
     }
 
