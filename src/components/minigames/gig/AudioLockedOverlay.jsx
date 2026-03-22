@@ -9,7 +9,7 @@ export const AudioLockedOverlay = memo(({ onInitializeAudio }) => {
   return (
     <div
       className='flex flex-col items-center justify-center w-full h-full bg-void-black relative'
-      style={{ zIndex: 'var(--z-crt)' }}
+      style={{ zIndex: 'var(--z-modal)' }}
     >
       <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center">
         {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}

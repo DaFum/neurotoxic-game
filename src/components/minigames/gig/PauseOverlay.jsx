@@ -10,7 +10,7 @@ export const PauseOverlay = ({ isPaused, onResume, onQuit }) => {
   return (
     <div
       className='absolute inset-0 bg-void-black/90 flex flex-col items-center justify-center pointer-events-auto'
-      style={{ zIndex: 'var(--z-crt)' }}
+      style={{ zIndex: 'var(--z-modal)' }}
       role='dialog'
       aria-modal='true'
     >
