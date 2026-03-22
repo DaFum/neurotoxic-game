@@ -1,7 +1,7 @@
 /*
- * (#1) Actual Updates: Extracted ConnectionPath component from ConnectionPaths.jsx for better maintainability.
+ * (#1) Actual Updates: Extracted ConnectionPath component from ConnectionPaths.jsx for better maintainability. Added a guard clause to return null if the cable is not found in CABLE_MAP to prevent runtime errors.
  * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+ * (#3) Found Errors + Solutions: Component assumed cabId was always valid, which could cause a runtime error if undefined. Solution: Return null if CABLE_MAP[cabId] is undefined.
  */
 import { CABLE_MAP } from '../constants.js'
 import { getMessyPath } from '../utils.js'
@@ -9,6 +9,12 @@ import PropTypes from 'prop-types'
 
 export const ConnectionPath = ({ sockId, cabId, isPowerConnected, socketOrder }) => {
   const cable = CABLE_MAP[cabId]
+
+  if (!cable) {
+    console.warn(`ConnectionPath received invalid cabId: ${cabId}. Returning null.`)
+    return null
+  }
+
   const isActive = isPowerConnected || cabId === 'iec'
   const cableColor = isActive ? cable.color : 'var(--color-concrete-gray)'
 
