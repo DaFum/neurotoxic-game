@@ -25,3 +25,7 @@
 ## 2024-05-24 - Avoid monkey patching JS native objects for performance tricks
 **Learning:** Monkey-patching `Set.prototype.includes = Set.prototype.has` was used as a workaround to provide O(1) performance to consumer functions expecting Arrays. While performant, this is an anti-pattern. Passing Sets inside `optimizedState` directly and using a `hasStateItem` utility to route `has` vs `includes` preserves the exact same performance profile but keeps data structures pure.
 **Action:** Use polymorphic helpers like `hasStateItem(collection, item)` instead of mutating instance methods on built-in types when dealing with optimized state objects that may temporarily convert underlying representations for lookup speed.
+
+## 2025-05-24 - Avoiding Array Allocation for Nullable State
+**Learning:** In PixiJS and similar mutable rendering contexts, actively tearing down collections (like filters or graphics modifiers) by re-assigning empty arrays (`[]`) triggers internal tracking, dirty checks, and GC overhead. Replacing it with `null` entirely bypasses these internal systems with zero allocations.
+**Action:** Use `null` instead of `[]` when clearing optional property collections on rendering objects.

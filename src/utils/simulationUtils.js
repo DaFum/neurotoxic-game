@@ -275,81 +275,6 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
     )
   }
 
-  // 4. Passive Effects
-  const hqUpgrades = nextPlayer.hqUpgrades || []
-
-  // Coffee & Beer Fridge: Mood recovery
-  const hasCoffee = hqUpgrades.includes('hq_room_coffee')
-  const hasBeerFridge = hqUpgrades.includes('hq_room_cheap_beer_fridge')
-  // Sofa & Old Couch: Stamina recovery
-  const hasSofa = hqUpgrades.includes('hq_room_sofa')
-  const hasOldCouch = hqUpgrades.includes('hq_room_old_couch')
-
-  // High Controversy passive effects — snapshot before decay so same-day checks
-  // (sponsorship drop at line ~327) use the start-of-day value, not the decayed one.
-  const controversy = nextSocial.controversyLevel || 0
-
-  // Optimize: Single pass over members to apply drift, controversy, and passive effects
-  const nextMembers = new Array(nextBand.members.length)
-  for (let i = 0; i < nextBand.members.length; i++) {
-    const m = nextBand.members[i]
-    let mood = m.mood
-
-    // 2a. Mood Drift (towards 50)
-    if (mood > 50) mood -= 2
-    else if (mood < 50) mood += 2
-
-    // 2b. High Controversy Mood Penalty
-    if (controversy >= 50) {
-      mood -= 1
-    }
-
-    // 2c. HQ Upgrades Mood Recovery
-    if (hasCoffee) mood += 2
-    if (hasBeerFridge) {
-      mood += 1
-      // Party Animal Trait (Marius): Extra mood, but risk of stamina loss (stamina logic applied below)
-      if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
-        mood += 2
-      }
-    }
-
-    mood = clampMemberMood(mood)
-
-    // 2d. Stamina Decay (Life on the road is tiring)
-    let stamina = typeof m.stamina === 'number' ? m.stamina : 100
-    stamina = Math.max(0, stamina - 5)
-
-    // Partial stamina recovery when band harmony is high
-    if (nextBand.harmony > 60) {
-      stamina += 3
-    }
-
-    // Instagram Gear Endorsement Perk (Free stamina recovery)
-    if ((nextSocial.instagram || 0) >= 10000) stamina += 2
-
-    // Cyber Lungs Trait: Bonus stamina regen from clinic graft
-    if (hasTrait(m, 'cyber_lungs')) stamina += 3
-
-    // 2e. HQ Upgrades Stamina Recovery & Penalties
-    if (hasSofa) stamina += 3
-    if (hasOldCouch) stamina += 1
-
-    // Party Animal Trait Stamina Penalty
-    if (hasBeerFridge && m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
-      if (rng() < 0.3) {
-        stamina -= 5
-      }
-    }
-
-    nextMembers[i] = {
-      ...m,
-      mood,
-      stamina: clampMemberStamina(stamina, m.staminaMax)
-    }
-  }
-  nextBand.members = nextMembers
-
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
     const nextHarmonyDecay = clampBandHarmony(nextBand.harmony - 2)
@@ -466,6 +391,72 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
       nextSocial.newsletter || 0,
       daysSinceActivity
     )
+  }
+
+  // 4. Passive Effects
+  const hqUpgrades = nextPlayer.hqUpgrades || []
+
+  // Coffee & Beer Fridge: Mood recovery
+  const hasCoffee = hqUpgrades.includes('hq_room_coffee')
+  const hasBeerFridge = hqUpgrades.includes('hq_room_cheap_beer_fridge')
+  // Sofa & Old Couch: Stamina recovery
+  const hasSofa = hqUpgrades.includes('hq_room_sofa')
+  const hasOldCouch = hqUpgrades.includes('hq_room_old_couch')
+
+  // Optimize: Combine 3 separate `.map()` passes into a single loop, eliminating intermediate arrays
+  const nextMembers = new Array(nextBand.members.length)
+  for (let i = 0; i < nextBand.members.length; i++) {
+    const m = nextBand.members[i]
+
+    // 2a. Base Mood Drift
+    let mood = m.mood
+    if (mood > 50) mood -= 2
+    else if (mood < 50) mood += 2
+    mood = clampMemberMood(mood)
+
+    // 2b. High Controversy Mood Penalty
+    if (controversy >= 50) {
+      mood = clampMemberMood(mood - 1)
+    }
+
+    // 2c. Base Stamina Drift
+    let stamina = typeof m.stamina === 'number' ? m.stamina : 100
+    stamina = Math.max(0, stamina - 5)
+    if (nextBand.harmony > 60) stamina += 3
+    if ((nextSocial.instagram || 0) >= 10000) stamina += 2
+    if (hasTrait(m, 'cyber_lungs')) stamina += 3
+    stamina = clampMemberStamina(stamina, m.staminaMax)
+
+    // 2d. HQ Upgrades
+    if (hasCoffee || hasBeerFridge || hasSofa || hasOldCouch) {
+      if (hasCoffee) mood += 2
+      if (hasBeerFridge) {
+        mood += 1
+        if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
+          mood += 2
+        }
+      }
+      mood = clampMemberMood(mood)
+
+      if (hasSofa) stamina += 3
+      if (hasOldCouch) stamina += 1
+      stamina = clampMemberStamina(stamina, m.staminaMax)
+    }
+
+    nextMembers[i] = { ...m, mood, stamina }
+  }
+  nextBand.members = nextMembers
+
+  // Apply Party Animal RNG penalty in its original global sequence position
+  if (hasBeerFridge) {
+    for (let i = 0; i < nextBand.members.length; i++) {
+      const m = nextBand.members[i]
+      if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
+        if (rng() < 0.3) {
+          m.stamina = clampMemberStamina(m.stamina - 5, m.staminaMax)
+        }
+      }
+    }
   }
 
   // Soundproofing: Harmony boost

@@ -32,7 +32,6 @@ class PixiStageController extends BaseStageController {
     this.noteManager = null
 
     this.toxicFilters = null
-    this.emptyFilters = []
     this.isToxicActive = false
   }
 
@@ -225,7 +224,6 @@ class PixiStageController extends BaseStageController {
     }
 
     this.toxicFilters = null
-    this.emptyFilters = []
 
     super.dispose()
   }
