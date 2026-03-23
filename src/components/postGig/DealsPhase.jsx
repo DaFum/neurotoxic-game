@@ -1,4 +1,3 @@
-// TODO: Review this file
 import PropTypes from 'prop-types'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
