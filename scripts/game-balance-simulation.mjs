@@ -1169,6 +1169,7 @@ const summarizeScenario = runs => {
       acc.cashSwings += run.cashSwings
       acc.bandEvents += run.bandEvents
       acc.equipmentEvents += run.equipmentEvents
+      acc.eventsApplied += run.eventsApplied || 0
       acc.trendShifts += run.trendShifts
       acc.brandDealsActivated += run.brandDealsActivated
       acc.postPulses += run.postPulses
@@ -1201,6 +1202,7 @@ const summarizeScenario = runs => {
       cashSwings: 0,
       bandEvents: 0,
       equipmentEvents: 0,
+      eventsApplied: 0,
       trendShifts: 0,
       brandDealsActivated: 0,
       postPulses: 0,
@@ -1237,6 +1239,7 @@ const summarizeScenario = runs => {
     avgCashSwings: Number((totals.cashSwings / count).toFixed(2)),
     avgBandEvents: Number((totals.bandEvents / count).toFixed(2)),
     avgEquipmentEvents: Number((totals.equipmentEvents / count).toFixed(2)),
+    avgEventsApplied: Number((totals.eventsApplied / count).toFixed(2)),
     avgTrendShifts: Number((totals.trendShifts / count).toFixed(2)),
     avgBrandDealsActivated: Number(
       (totals.brandDealsActivated / count).toFixed(2)
@@ -1272,7 +1275,7 @@ const buildFeatureCoverage = results => {
   )
 
   if (results.length > 0) {
-    const hasEventsApplied = results.some(run => run.eventsApplied > 0)
+    const hasEventsApplied = results.some(scenario => scenario.summary.avgEventsApplied > 0)
     coverage.daily_updates = true
     coverage.gig_financials = true
     coverage.travel_expenses = true

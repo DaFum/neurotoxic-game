@@ -90,6 +90,9 @@ while (state.day <= TARGET_DAYS) {
       `€${state.money}`
     )
 
+    // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
+    state.day += 1
+
     continue
   }
 
