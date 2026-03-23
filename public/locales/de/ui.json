@@ -107,7 +107,12 @@
   "crash.rebootButton": "SYSTEM NEUSTARTEN",
   "crash.title": "SYSTEMAUSFALL",
   "credits": "CREDITS",
+  "creditFooter": {
+    "title": "NEUROTOXIC: GRIND THE VOID v3.0",
+    "subtitle": "DEATH GRINDCORE FROM STENDAL // 2026"
+  },
   "creditsScreen.return": "ZURÜCK",
+  "nowPlaying": "Spielt jetzt: {{name}}",
   "crisis.desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld für einen zwielichtigen Mechaniker oder riskierst du, zu spät zu kommen und das Gesicht zu verlieren?",
   "crisis.opt1": "Mechaniker bezahlen (-$250)",
   "crisis.opt2": "Per Anhalter (-20 Ruf)",

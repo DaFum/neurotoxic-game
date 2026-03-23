@@ -318,7 +318,7 @@ export const handleSongEnded = (gameStateRef, currentSong, index) => {
 
 
 // Helper 6: playSongSequence
-export const playSongSequence = async (index, activeSetlist, gameStateRef, addToast) => {
+export const playSongSequence = async (index, activeSetlist, gameStateRef, addToast, t) => {
   if (
     gameStateRef.current.hasSubmittedResults ||
     gameStateRef.current.isGameOver
@@ -381,7 +381,7 @@ export const playSongSequence = async (index, activeSetlist, gameStateRef, addTo
 
     logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
     gameStateRef.current.songTransitioning = true
-    return playSongSequence(index + 1, activeSetlist, gameStateRef, addToast).catch(err => {
+    return playSongSequence(index + 1, activeSetlist, gameStateRef, addToast, t).catch(err => {
       handleError(err, {
         addToast,
         fallbackMessage: 'Failed to start next song!'
@@ -408,16 +408,23 @@ export const playSongSequence = async (index, activeSetlist, gameStateRef, addTo
     finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
   const buffer = 4000
   const noteDuration = maxNoteTime + buffer
-  const audioDuration = resolveSongPlaybackWindow(currentSong, {
-    defaultDurationMs: 0
-  }).excerptDurationMs
-  gameStateRef.current.totalDuration =
-    maxNoteTime > 0 ? noteDuration : Math.max(noteDuration, audioDuration)
+
+  if (currentSong.notes || currentSong.id === 'tutorial_01') {
+    // Note-driven song (explicit JSON notes or known tutorial)
+    gameStateRef.current.totalDuration = noteDuration
+  } else {
+    // Procedurally-generated song
+    const audioDuration = resolveSongPlaybackWindow(currentSong, {
+      defaultDurationMs: 0
+    }).excerptDurationMs
+    gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
+  }
 
   gameStateRef.current.songTransitioning = false
 
   if (activeSetlist.length > 1) {
-    addToast(`Now Playing: ${currentSong.name}`, 'info')
+    const text = t ? t('ui:nowPlaying', { name: currentSong.name }) : `Now Playing: ${currentSong.name}`
+    addToast(text, 'info')
   }
 }
 
@@ -430,6 +437,8 @@ export const resetGigStateTracking = (gameStateRef) => {
     gameStateRef.current.currentSongStartScore = 0
     gameStateRef.current.currentSongStartPerfectHits = 0
     gameStateRef.current.currentSongStartMisses = 0
+    gameStateRef.current.songTransitioning = false
+    gameStateRef.current.setlistCompleted = false
   }
 }
 /**
@@ -450,7 +459,7 @@ export const useRhythmGameAudio = ({
   const { setIsAudioReady } = setters
   const { band, gameMap, player, setlist, gigModifiers, currentGig } =
     contextState
-  const { addToast } = contextActions
+  const { addToast, t } = contextActions
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
@@ -538,7 +547,7 @@ export const useRhythmGameAudio = ({
       }
 
       if (!isAborted()) {
-        await playSongSequence(0, activeSetlist, gameStateRef, addToast)
+        await playSongSequence(0, activeSetlist, gameStateRef, addToast, t)
       }
     } catch (error) {
       if (isAborted()) {
@@ -552,6 +561,7 @@ export const useRhythmGameAudio = ({
       })
       setIsAudioReady(false)
       isInitializingRef.current = false
+      hasInitializedRef.current = false
     }
   }, [
     band,
@@ -560,6 +570,7 @@ export const useRhythmGameAudio = ({
     setlist,
     gigModifiers,
     addToast,
+    t,
     gameStateRef,
     setIsAudioReady,
     currentGig?.songId

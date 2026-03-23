@@ -1,12 +1,22 @@
-export const CreditFooter = () => {
+/*
+ * (#1) Actual Updates: Extracted CreditFooter component, localized text, and wrapped in React.memo.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+
+export const CreditFooter = React.memo(() => {
+  const { t } = useTranslation()
   return (
     <div className='pt-16'>
       <div className='text-toxic-green/40 text-xs font-mono tracking-widest'>
-        NEUROTOXIC: GRIND THE VOID v3.0
+        {t('ui:creditFooter.title')}
       </div>
       <div className='text-ash-gray/30 text-[10px] font-mono mt-2'>
-        DEATH GRINDCORE FROM STENDAL // 2026
+        {t('ui:creditFooter.subtitle')}
       </div>
     </div>
   )
-}
+})
+CreditFooter.displayName = 'CreditFooter'
