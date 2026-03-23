@@ -46,3 +46,8 @@
 ## 2025-02-14 - Optimize Virality Check Lookups
 **Learning:** Using `Set.has()` instead of `Array.includes()` for checking multiple events in `calculateViralityScore` didn't yield a noticeable performance improvement in benchmarks due to the overhead of dynamically allocating `new Set()` for small arrays. O(1) lookups are mathematically better, but object allocation costs often dominate for N < 5.
 **Action:** When converting array lookups to Sets for performance, ensure the Set is either passed in directly from the caller, cached, or that N is large enough to offset the instantiation overhead. We proceeded with the change because it was explicitly requested, but noted the allocation caveat.
+
+## 2025-05-25 - Avoid `.some()` overhead in recursive serializers
+
+**Learning:** Array iteration methods like `.some()` introduce function allocation and call overhead on each tick. When performing sanitization recursively across highly nested objects (e.g., `sanitizeContextValue` walking through thousands of `GameState` keys on error), this overhead adds up quickly compared to a basic `for` loop.
+**Action:** Use plain `for` loops instead of array iteration methods inside deeply recursive operations or hot traversal code.

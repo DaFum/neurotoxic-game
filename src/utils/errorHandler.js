@@ -155,7 +155,10 @@ const normalizeSeverity = severity => {
 
 const isSensitiveContextKey = key => {
   if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
-  return SENSITIVE_KEY_PATTERNS.some(pattern => key.includes(pattern))
+  for (let i = 0; i < SENSITIVE_KEY_PATTERNS.length; i++) {
+    if (key.includes(SENSITIVE_KEY_PATTERNS[i])) return true
+  }
+  return false
 }
 
 const sanitizeContextValue = (value, visited) => {
