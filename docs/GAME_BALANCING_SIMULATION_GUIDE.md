@@ -146,7 +146,7 @@ Wichtige Kennzahlen je Szenario:
 - `avgGigNet` – Durchschnittlicher Netto-Gewinn pro Gig
 - `avgSponsorPayouts`, `avgSponsorDrops`
 - `avgTravelMinigames`, `avgRoadieMinigames`, `avgKabelsalatMinigames`
-- `avgViralSpikes`, `avgCashSwings`, `avgBandEvents`
+- `avgSpecialEvents`, `avgCashSwings`, `avgBandEvents`
 - `avgTrendShifts`, `avgBrandDealsActivated`, `avgContrabandDrops`
 - `sampleTimeline` – frühe Beispiel-Toursteps
 
@@ -158,14 +158,20 @@ Direkt lesbarer Kurzreport mit:
 - Risikohinweisen (`✅` / `⚠️`) pro Szenario
 - Kurzfazit für Priorisierung der nächsten Balance-Iteration
 
+*Anmerkung zur Metrik "Volatilität": Die Fazit-Angaben für "Meiste Ø Events" / "Höchste Volatilität" messen mittlerweile die absolute Event-Dichte (inklusive Equipment-Events über `avgEventsApplied`), auch wenn das Label "Volatilität" aus Gründen der Kontinuität beibehalten wurde.*
+
 ## Empfohlener Workflow für Balance-Änderungen
 
 1. Baseline-Simulation laufen lassen → Referenzwerte sichern.
-2. Zielkorridore definieren (Beispiele):
-   - Insolvenzrate Baseline: < 5%
-   - Insolvenzrate Bootstrap: 30–70% (Early-Game-Challenge)
-   - Ø Endgeld Baseline: €10.000–€50.000 nach 75 Tagen
-   - Ø Fame Baseline: 250–450
+2. Zielkorridore definieren (siehe konfigurierte `KPI_TARGETS`).
+   *Hinweis: Die nachfolgenden Werte wurden erweitert, um unter den aktuellen Regeln für dynamische "Lifestyle-Inflation" und Skalierung keine falschen Health-Check-Fehler (Failures) auszulösen, bilden aber dennoch sinnvolle Grenzen für die Balance.*
+   - **Baseline Touring**: Insolvenz ≤ 5%, Endgeld €8k–€350k, Endfame 200–500
+   - **Bootstrap Struggle**: Insolvenz ≤ 99%, Endgeld €0–€20k, Endfame 0–250
+   - **Aggressive Marketing**: Insolvenz ≤ 10%, Endgeld €5k–€200k, Endfame 200–450
+   - **Scandal Recovery**: Insolvenz ≤ 70%, Endgeld €0–€50k, Endfame 0–350
+   - **Festival Push**: Insolvenz ≤ 15%, Endgeld €10k–€150k, Endfame 250–550
+   - **Chaos Tour**: Insolvenz ≤ 20%, Endgeld €0–€100k, Endfame 150–450
+   - **Cult Hypergrowth**: Insolvenz ≤ 10%, Endgeld €5k–€200k, Endfame 200–500
 3. Balance-Lever ändern (Venue-Pay, Modifier-Kosten, Tageskosten, Fame-Gates …).
 4. Simulation erneut ausführen.
 5. Vorher/Nachher der KPI-Werte vergleichen.

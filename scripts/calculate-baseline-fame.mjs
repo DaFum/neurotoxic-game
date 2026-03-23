@@ -1,11 +1,11 @@
-import { calculateFameGain, BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
+import { calculateFameGain, calculateFameLevel, BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
 
 /**
  * Mathematically isolates and logs the fame calculation, demonstrating the true
  * "Baseline Touring" experience an actual player would see.
  *
  * Economic model (simplified, matching game constants):
- *   - Daily living cost: €64 / day (EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 members × €8)
+ *   - Daily living cost: €64 / day + lifestyleInflation (where lifestyleInflation = Math.floor(Math.pow(calculateFameLevel(state.fame), 1.4) * 15)). The currentDailyCost is applied to state.money dynamically.
  *   - Clinic / rest cost: €150 per visit
  *   - Gig net income: tiered by fame / venue difficulty (post-merch-depletion estimate)
  *       fame < 60  → diff-2 venues (~€350 net after travel + modifier costs)
@@ -53,8 +53,12 @@ console.log('Day'.padEnd(7) + 'Action'.padEnd(32) + 'Condition'.padEnd(16) +
   'Score'.padEnd(7) + 'Outcome'.padEnd(46) + 'Fame'.padEnd(8) + 'Money')
 
 while (state.day <= TARGET_DAYS) {
-  // Apply daily living cost
-  state.money = Math.max(0, state.money - DAILY_COST)
+  // Apply daily living cost with lifestyle inflation
+  const currentFameLevel = calculateFameLevel(state.fame)
+  const lifestyleInflation = Math.floor(Math.pow(currentFameLevel, 1.4) * 15)
+  const currentDailyCost = DAILY_COST + lifestyleInflation
+
+  state.money = Math.max(0, state.money - currentDailyCost)
 
   // Determine Condition Text BEFORE taking an action
   let conditionStr = 'Ready to rock'

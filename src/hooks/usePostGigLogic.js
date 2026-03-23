@@ -456,7 +456,7 @@ export const usePostGigLogic = () => {
                 (prevSocial.loyalty || 0) + deal.penalty.loyalty
               )
             if (deal.penalty.controversy)
-            updates.controversyLevel = clampControversyLevel(
+              updates.controversyLevel = clampControversyLevel(
                 (prevSocial.controversyLevel || 0) + deal.penalty.controversy
               )
           }
