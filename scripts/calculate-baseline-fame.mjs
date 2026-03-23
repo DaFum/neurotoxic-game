@@ -34,6 +34,7 @@ let state = {
 
 // Helpers
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
+const clampHarmony = val => clamp(val, 1, 100)
 
 /**
  * Returns estimated net gig income by venue difficulty tier.
@@ -72,12 +73,12 @@ while (state.day <= TARGET_DAYS) {
       state.money -= CLINIC_COST
       state.band.stamina  = clamp(state.band.stamina  + 40, 0, 100)
       state.band.mood     = clamp(state.band.mood     + 30, 0, 100)
-      state.band.harmony  = clamp(state.band.harmony  + 15, 0, 100)
+      state.band.harmony  = clampHarmony(state.band.harmony  + 15)
     } else {
       // Reduced recovery without paid care
       state.band.stamina  = clamp(state.band.stamina  + 20, 0, 100)
       state.band.mood     = clamp(state.band.mood     + 10, 0, 100)
-      state.band.harmony  = clamp(state.band.harmony  +  5, 0, 100)
+      state.band.harmony  = clampHarmony(state.band.harmony  +  5)
     }
 
     console.log(
@@ -117,7 +118,7 @@ while (state.day <= TARGET_DAYS) {
     const rawGain = 50 + Math.floor(score * 1.5)
     fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
 
-    state.band.harmony = clamp(state.band.harmony + 2, 0, 100)
+    state.band.harmony = clampHarmony(state.band.harmony + 2)
     state.band.mood    = clamp(state.band.mood    + 2, 0, 100)
     state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
 
@@ -141,7 +142,7 @@ while (state.day <= TARGET_DAYS) {
     // Bad Gig
     fameDelta = -FLAT_FAME_PENALTY_PER_BAD_GIG
 
-    state.band.harmony = clamp(state.band.harmony - 5, 0, 100)
+    state.band.harmony = clampHarmony(state.band.harmony - 5)
     state.band.mood    = clamp(state.band.mood    - 3, 0, 100)
     state.band.stamina = clamp(state.band.stamina - 10, 0, 100)
 

@@ -922,6 +922,7 @@ const runSingleSimulation = (scenario, seed) => {
     cashSwings: 0,
     bandEvents: 0,
     equipmentEvents: 0,
+    eventsApplied: 0,
     trendShifts: 0,
     brandDealsActivated: 0,
     postPulses: 0,
