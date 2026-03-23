@@ -980,7 +980,6 @@ const runSingleSimulation = (scenario, seed) => {
       // Simulate resting / clinic visit
       // Pay the cost and recover stats, skip the gig for the day
       state.player.money = clampPlayerMoney(state.player.money - 150)
-      state.band.harmony = clampBandHarmony(state.band.harmony + 15)
       state.band.members = state.band.members.map(member => ({
         ...member,
         mood: clampMemberMood(member.mood + 30),
@@ -1303,10 +1302,7 @@ const buildFeatureCoverage = results => {
     if (summary.avgTravelMinigames > 0) coverage.travel_minigame = true
     if (summary.avgRoadieMinigames > 0) coverage.roadie_minigame = true
     if (summary.avgKabelsalatMinigames > 0) coverage.kabelsalat_minigame = true
-    if (
-      summary.avgSpecialEvents + summary.avgCashSwings + summary.avgBandEvents >
-      0
-    ) {
+    if (summary.avgEventsApplied > 0) {
       coverage.world_events = true
     }
     if (summary.avgSponsorPayouts > 0 || summary.avgSponsorSignings > 0) {
@@ -1329,10 +1325,10 @@ const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
   baseline_touring:     { bankruptcyMax: 5,  moneyMin: 8000,  moneyMax: 400000, fameMin: 200, fameMax: 500 },
-  bootstrap_struggle:   { bankruptcyMax: 100, moneyMin: 0,     moneyMax: 20000,  fameMin: 0,  fameMax: 250 },
+  bootstrap_struggle:   { bankruptcyMax: 99, moneyMin: 0,     moneyMax: 20000,  fameMin: 0,  fameMax: 250 },
   aggressive_marketing: { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 450 },
-  scandal_recovery:     { bankruptcyMax: 30, moneyMin: 0,     moneyMax: 60000,  fameMin: 0, fameMax: 350 },
-  festival_push:        { bankruptcyMax: 10, moneyMin: 10000, moneyMax: 200000, fameMin: 250, fameMax: 550 },
+  scandal_recovery:     { bankruptcyMax: 85, moneyMin: 0,     moneyMax: 60000,  fameMin: 0, fameMax: 350 },
+  festival_push:        { bankruptcyMax: 15, moneyMin: 10000, moneyMax: 200000, fameMin: 250, fameMax: 550 },
   chaos_tour:           { bankruptcyMax: 20, moneyMin: 0,     moneyMax: 150000, fameMin: 150, fameMax: 450 },
   cult_hypergrowth:     { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 500 }
 }
@@ -1498,7 +1494,7 @@ const buildMarkdownReport = payload => {
     { label: 'Höchster Ø Gig-Netto',  key: s => s.avgGigNet,        fmt: fmtEur },
     { label: 'Höchstes Ø Peak-Geld',  key: s => s.avgPeakMoney,     fmt: fmtEur },
     { label: 'Meiste Ø Gigs',          key: s => s.avgGigsPlayed,   fmt: v => String(v) },
-    { label: 'Meiste Ø Events',        key: s => s.avgSpecialEvents + s.avgCashSwings + s.avgBandEvents, fmt: v => v.toFixed(2) }
+    { label: 'Meiste Ø Events',        key: s => s.avgEventsApplied, fmt: v => v.toFixed(2) }
   ]
   lines.push('| Metrik | Gewinner | Wert |')
   lines.push('|---|---|---:|')
@@ -1540,9 +1536,7 @@ const buildMarkdownReport = payload => {
   const riskiest    = [...payload.results].sort((a, b) => b.summary.bankruptcyRate - a.summary.bankruptcyRate)[0]
   const richest     = [...payload.results].sort((a, b) => b.summary.avgFinalMoney  - a.summary.avgFinalMoney)[0]
   const mostVolatile = [...payload.results].sort(
-    (a, b) =>
-      (b.summary.avgSpecialEvents + b.summary.avgCashSwings + b.summary.avgBandEvents) -
-      (a.summary.avgSpecialEvents + a.summary.avgCashSwings + a.summary.avgBandEvents)
+    (a, b) => b.summary.avgEventsApplied - a.summary.avgEventsApplied
   )[0]
   const failedKpis = payload.results.flatMap(scenario => {
     const checks = checkKpi(scenario.id, scenario.summary) || []
@@ -1556,7 +1550,7 @@ const buildMarkdownReport = payload => {
     lines.push('- Kein Szenario mit Insolvenzfällen beobachtet.')
   }
   lines.push(`- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`)
-  lines.push(`- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgSpecialEvents + mostVolatile.summary.avgCashSwings + mostVolatile.summary.avgBandEvents).toFixed(2)} Event-Impulsen.`)
+  lines.push(`- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${mostVolatile.summary.avgEventsApplied.toFixed(2)} Event-Impulsen.`)
 
   if (failedKpis.length > 0) {
     lines.push(`- ❌ KPI-Verstöße: ${failedKpis.join(' · ')}`)

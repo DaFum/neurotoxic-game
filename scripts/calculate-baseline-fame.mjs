@@ -5,7 +5,7 @@ import { calculateFameGain, calculateFameLevel, BALANCE_CONSTANTS } from '../src
  * "Baseline Touring" experience an actual player would see.
  *
  * Economic model (simplified, matching game constants):
- *   - Daily living cost: €64 / day (EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 members × €8)
+ *   - Daily living cost: €64 / day + lifestyleInflation (where lifestyleInflation = Math.floor(Math.pow(calculateFameLevel(state.fame), 1.4) * 15)). The currentDailyCost is applied to state.money dynamically.
  *   - Clinic / rest cost: €150 per visit
  *   - Gig net income: tiered by fame / venue difficulty (post-merch-depletion estimate)
  *       fame < 60  → diff-2 venues (~€350 net after travel + modifier costs)

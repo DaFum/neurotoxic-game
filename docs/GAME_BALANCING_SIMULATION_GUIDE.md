@@ -146,7 +146,7 @@ Wichtige Kennzahlen je Szenario:
 - `avgGigNet` – Durchschnittlicher Netto-Gewinn pro Gig
 - `avgSponsorPayouts`, `avgSponsorDrops`
 - `avgTravelMinigames`, `avgRoadieMinigames`, `avgKabelsalatMinigames`
-- `avgViralSpikes`, `avgCashSwings`, `avgBandEvents`
+- `avgSpecialEvents`, `avgCashSwings`, `avgBandEvents`
 - `avgTrendShifts`, `avgBrandDealsActivated`, `avgContrabandDrops`
 - `sampleTimeline` – frühe Beispiel-Toursteps
 
