@@ -446,27 +446,25 @@ const InventoryEquipmentSection = ({ band, t }) => (
 
 const MemberTraits = ({ member, t }) => {
   const def = CHAR_MAP[member.name]
-  // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
-  const baseTraits = def?.traits || []
-  const runtimeTraits = Object.values(member?.traits || {})
 
-  // Build a unique list of traits to display
-  const allTraitsMap = new Map()
-  for (const bt of baseTraits) {
-    allTraitsMap.set(bt.id, bt)
-  }
-  for (const rt of runtimeTraits) {
-    if (!allTraitsMap.has(rt.id)) {
-      allTraitsMap.set(rt.id, rt)
+  const potentialTraits = useMemo(() => {
+    // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
+    const baseTraits = def?.traits || []
+    const runtimeTraits = Object.values(member?.traits || {})
+    if (baseTraits.length === 0 && runtimeTraits.length === 0) return []
+
+    const merged = [...baseTraits]
+    const seen = new Set(baseTraits.map(bt => bt.id))
+
+    for (const rt of runtimeTraits) {
+      if (!seen.has(rt.id)) {
+        merged.push(rt)
+        seen.add(rt.id)
+      }
     }
-  }
+    return merged
+  }, [def, member.traits])
 
-  const activeTraitIds = useMemo(
-    () => new Set(Object.keys(member.traits || {})),
-    [member.traits]
-  )
-
-  const potentialTraits = Array.from(allTraitsMap.values())
   if (potentialTraits.length === 0)
     return (
       <div className='text-xs text-ash-gray'>
@@ -475,7 +473,7 @@ const MemberTraits = ({ member, t }) => {
     )
 
   return potentialTraits.map(trait => {
-    const isTraitActive = activeTraitIds.has(trait.id)
+    const isTraitActive = !!member.traits?.[trait.id]
     return (
       <Tooltip
         key={trait.id}
