@@ -1,4 +1,3 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState.jsx'
