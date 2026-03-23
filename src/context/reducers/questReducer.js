@@ -2,7 +2,8 @@
 import {
   clampBandHarmony,
   clampPlayerMoney,
-  calculateFameLevel
+  calculateFameLevel,
+  clampControversyLevel
 } from '../../utils/gameStateUtils.js'
 
 export const handleAddQuest = (state, quest) => {
@@ -197,9 +198,11 @@ export const handleFailQuests = state => {
         if (quest.failurePenalty.social?.controversyLevel) {
           // Deep clone before mutating
           nextState.social = { ...nextState.social }
-          nextState.social.controversyLevel =
-            (nextState.social.controversyLevel || 0) +
-            quest.failurePenalty.social.controversyLevel
+          const penalty = Number(quest.failurePenalty.social.controversyLevel)
+          const validPenalty = Number.isFinite(penalty) ? penalty : 0
+          nextState.social.controversyLevel = clampControversyLevel(
+            (nextState.social.controversyLevel || 0) + validPenalty
+          )
         }
         if (quest.failurePenalty.band?.harmony) {
           // Deep clone before mutating

@@ -9,7 +9,6 @@ import { CrowdManager } from './stage/CrowdManager.js'
 import { LaneManager } from './stage/LaneManager.js'
 import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
-import { logger } from '../utils/logger.js'
 import { getGigTimeMs } from '../utils/audioEngine.js'
 import { withTimeout } from './stage/utils.js'
 

@@ -1,4 +1,9 @@
 {
+  "bandMembers": {
+    "lars": "Lars",
+    "marius": "Marius",
+    "matze": "Matze"
+  },
   "tourbus.damage": "DAMAGE:",
   "tourbus.destination_reached": "DESTINATION REACHED",
   "tourbus.distance": "DISTANCE:",
