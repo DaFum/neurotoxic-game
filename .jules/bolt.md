@@ -34,9 +34,11 @@
 **Action:** Use `null` instead of `[]` when clearing optional property collections on rendering objects.
 
 ## 2024-05-24 - Redundant child removal before destroy() in PixiJS
+
 **Learning:** Calling `container.removeChild(sprite)` before `sprite.destroy()` is redundant because PixiJS automatically removes a destroyed display object from its parent.
 **Action:** Simply call `sprite.destroy()` directly when cleaning up entities in PixiJS update loops.
 
 ## 2024-05-24 - Avoid `Map.entries()` in High-Frequency Game Loops
+
 **Learning:** In high-frequency paths like the PIXI.js update loop (e.g., `TourbusStageController.js`), using `for (const [key, value] of map.entries())` causes continuous per-iteration memory allocation for the `[key, value]` array. This puts pressure on the garbage collector and can cause frame drops.
 **Action:** Replace `map.entries()` iteration in `update()` or `_cleanupObstacles()` loops with `for (const key of map.keys())`. Retrieve the associated value using `map.get(key)` only if the condition necessitates it (e.g., when deleting an item).

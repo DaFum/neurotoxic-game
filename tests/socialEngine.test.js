@@ -391,7 +391,9 @@ test('checkViralEvent uses calculateViralityScore when context is provided', () 
   const stats = { accuracy: 80, maxCombo: 10 }
   // Use Lars as he usually has the trait, but specific name not required by current logic, just trait existence
   const band = {
-    members: [{ name: 'Lars', traits: { social_manager: { id: 'social_manager' } } }]
+    members: [
+      { name: 'Lars', traits: { social_manager: { id: 'social_manager' } } }
+    ]
   }
   const context = {
     perfScore: 80,
@@ -443,7 +445,9 @@ test('generateBrandOffers filters by reputation and traits', () => {
   }
 
   // Mock trait check by adding trait to band
-  gameState.band.members = [{ traits: { party_animal: { id: 'party_animal' } } }]
+  gameState.band.members = [
+    { traits: { party_animal: { id: 'party_animal' } } }
+  ]
 
   const offers = generateBrandOffers(gameState)
   assert.ok(Array.isArray(offers))

@@ -384,7 +384,12 @@ export const eventEngine = {
    * @param {function} [rng=secureRandom] - Random number generator.
    * @returns {object|null} The selected event object or null if none found.
    */
-  checkEvent: (category, gameState, triggerPoint = null, rng = secureRandom) => {
+  checkEvent: (
+    category,
+    gameState,
+    triggerPoint = null,
+    rng = secureRandom
+  ) => {
     const pool = EVENTS_DB[category]
     if (!pool) return null
     return selectEvent(pool, gameState, triggerPoint, rng)
