@@ -109,7 +109,7 @@ const getEventMapForPool = pool => {
   return map
 }
 
-const selectEvent = (pool, gameState, triggerPoint) => {
+const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
   const cooldownsSet = new Set(gameState.eventCooldowns || [])
   const flagsSet = new Set(gameState.activeStoryFlags || [])
@@ -160,7 +160,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 
   // Fisher-Yates shuffle for unbiased randomness and better performance
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(secureRandom() * (i + 1))
+    const j = Math.floor(rng() * (i + 1))
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
 
@@ -182,7 +182,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
       chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
     }
 
-    if (secureRandom() < chance) {
+    if (rng() < chance) {
       logger.debug('EventEngine', 'Event Selected', event.id)
 
       // Dynamic text parsing
@@ -381,12 +381,13 @@ export const eventEngine = {
    * @param {string} category - The category of events to check (e.g., 'travel', 'gig').
    * @param {object} gameState - The current game state.
    * @param {string|null} [triggerPoint=null] - Optional specific trigger point filter.
+   * @param {function} [rng=secureRandom] - Random number generator.
    * @returns {object|null} The selected event object or null if none found.
    */
-  checkEvent: (category, gameState, triggerPoint = null) => {
+  checkEvent: (category, gameState, triggerPoint = null, rng = secureRandom) => {
     const pool = EVENTS_DB[category]
     if (!pool) return null
-    return selectEvent(pool, gameState, triggerPoint)
+    return selectEvent(pool, gameState, triggerPoint, rng)
   },
 
   /**

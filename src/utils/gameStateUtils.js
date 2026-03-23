@@ -16,7 +16,7 @@ export const clampNonNegative = value => Math.max(0, value)
  * @returns {number} Derived fame level.
  */
 export const calculateFameLevel = fame => {
-  return Math.floor(Math.max(0, fame || 0) / 1000)
+  return Math.floor(Math.max(0, fame || 0) / 100)
 }
 
 /**

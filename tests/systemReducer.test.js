@@ -31,7 +31,7 @@ test('systemReducer - LOAD_GAME', async t => {
               id: 'm1',
               mood: 80,
               stamina: 70,
-              traits: [{ id: 'trait1', name: 'Trait 1' }]
+              traits: { trait1: { id: 'trait1', name: 'Trait 1' } }
             }
           ]
         },
