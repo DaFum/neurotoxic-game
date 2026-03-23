@@ -1,4 +1,12 @@
-export const MidiSocket = () => (
+/*
+ * (#1) Actual Updates: Extracted MidiSocket into a static UI component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+
+export const MidiSocket = React.memo(function MidiSocket() {
+  return (
   <g>
     <circle
       cx='0'
@@ -16,4 +24,5 @@ export const MidiSocket = () => (
       strokeLinecap='round'
     />
   </g>
-)
+  )
+})

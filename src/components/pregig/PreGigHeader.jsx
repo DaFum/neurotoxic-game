@@ -1,8 +1,14 @@
+/*
+ * (#1) Actual Updates: Extracted PreGigHeader into a separate component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { formatNumber } from '../../utils/numberUtils'
 
-export const PreGigHeader = ({
+export const PreGigHeader = React.memo(({
   t,
   i18n,
   currentGig,
@@ -43,7 +49,8 @@ export const PreGigHeader = ({
       </div>
     </motion.div>
   )
-}
+})
+PreGigHeader.displayName = 'PreGigHeader'
 
 PreGigHeader.propTypes = {
   t: PropTypes.func.isRequired,

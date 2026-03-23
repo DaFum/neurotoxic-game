@@ -1,5 +1,0 @@
-export { XlrSocket } from './XlrSocket.jsx'
-export { JackSocket } from './JackSocket.jsx'
-export { DcSocket } from './DcSocket.jsx'
-export { IecSocket } from './IecSocket.jsx'
-export { MidiSocket } from './MidiSocket.jsx'

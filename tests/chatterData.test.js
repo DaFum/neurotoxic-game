@@ -100,10 +100,17 @@ const buildState = (scene, overrides = {}) => {
   }
 }
 
-const getActivatedConditionalEntries = state =>
-  CHATTER_DB.filter(
-    entry => typeof entry.condition === 'function' && entry.condition(state)
+const getActivatedConditionalEntries = state => {
+  const memo = {
+    minMood: state.band?.members ? Math.min(...state.band.members.map(m => m.mood ?? Infinity)) : Infinity,
+    maxMood: state.band?.members ? Math.max(...state.band.members.map(m => m.mood ?? -Infinity)) : -Infinity,
+    minStamina: state.band?.members ? Math.min(...state.band.members.map(m => m.stamina ?? Infinity)) : Infinity,
+    maxStamina: state.band?.members ? Math.max(...state.band.members.map(m => m.stamina ?? -Infinity)) : -Infinity
+  }
+  return CHATTER_DB.filter(
+    entry => typeof entry.condition === 'function' && entry.condition(state, memo)
   )
+}
 
 const getConditionDelta = ({ activeState, inactiveState }) => {
   const inactiveEntries = new Set(getActivatedConditionalEntries(inactiveState))

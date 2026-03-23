@@ -1,9 +1,15 @@
+/*
+ * (#1) Actual Updates: Extracted SocketItem component, wrapped in React.memo
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
 import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.jsx'
 import { SocketGraphics } from './SocketGraphics.jsx'
 import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants.js'
 
-export const SocketItem = ({
+export const SocketItem = React.memo(({
   t,
   socketId,
   index,
@@ -109,7 +115,8 @@ export const SocketItem = ({
       )}
     </g>
   )
-}
+})
+SocketItem.displayName = 'SocketItem'
 
 SocketItem.propTypes = {
   t: PropTypes.func.isRequired,

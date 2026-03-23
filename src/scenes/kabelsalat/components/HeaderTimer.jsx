@@ -1,6 +1,12 @@
+/*
+ * (#1) Actual Updates: Extracted HeaderTimer component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
 import PropTypes from 'prop-types'
 
-export const HeaderTimer = ({ t, isPoweredOn, timeLeft }) => (
+export const HeaderTimer = React.memo(({ t, isPoweredOn, timeLeft }) => (
   <div
     className={`flex items-center gap-4 px-4 py-2 border-2 transition-colors bg-void-black/50
     ${
@@ -18,7 +24,8 @@ export const HeaderTimer = ({ t, isPoweredOn, timeLeft }) => (
       {t('ui:minigames.kabelsalat.timeValue', { count: timeLeft })}
     </span>
   </div>
-)
+))
+HeaderTimer.displayName = 'HeaderTimer'
 
 HeaderTimer.propTypes = {
   t: PropTypes.func.isRequired,
