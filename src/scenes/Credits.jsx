@@ -1,10 +1,11 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
-import { motion } from 'framer-motion'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { GlitchButton } from '../ui/GlitchButton'
+import { CreditEntry } from './credits/CreditEntry'
+import { CreditFooter } from './credits/CreditFooter'
+import { CreditHeader } from './credits/CreditHeader'
 
 /**
  * Scene displaying game credits.
@@ -51,39 +52,18 @@ export const Credits = () => {
       {/* Scrolling credits */}
       <div className='flex-1 flex items-center justify-center w-full overflow-hidden'>
         <div className='animate-credits-scroll space-y-12 py-16'>
-          <div className='mb-16'>
-            <h1 className='text-6xl text-toxic-green font-[Metal_Mania] animate-neon-flicker'>
-              CREDITS
-            </h1>
-            <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-toxic-green to-transparent mx-auto mt-4' />
-          </div>
+          <CreditHeader />
 
           {credits.map((c, i) => (
-            <motion.div
+            <CreditEntry
               key={c.role}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 + i * 0.3 }}
-              className='flex flex-col gap-2'
-            >
-              <span className='text-ash-gray/60 text-[10px] font-mono tracking-[0.4em] uppercase'>
-                {c.role}
-              </span>
-              <span className='text-star-white text-2xl font-bold font-[Metal_Mania] tracking-wide'>
-                {c.name}
-              </span>
-              <div className='w-16 h-[1px] bg-ash-gray/20 mx-auto mt-2' />
-            </motion.div>
+              role={c.role}
+              name={c.name}
+              delay={0.3 + i * 0.3}
+            />
           ))}
 
-          <div className='pt-16'>
-            <div className='text-toxic-green/40 text-xs font-mono tracking-widest'>
-              NEUROTOXIC: GRIND THE VOID v3.0
-            </div>
-            <div className='text-ash-gray/30 text-[10px] font-mono mt-2'>
-              DEATH GRINDCORE FROM STENDAL // 2026
-            </div>
-          </div>
+          <CreditFooter />
         </div>
       </div>
 

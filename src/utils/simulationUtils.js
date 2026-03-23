@@ -25,8 +25,8 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
     noteJitter: false,
     drumSpeedMult: 1.0,
     guitarScoreMult: 1.0,
-    activeEffects: [], // Text descriptions for UI
-    ...gigModifiers // Merge active PreGig toggles (soundcheck, energy, etc)
+    ...gigModifiers, // Merge active PreGig toggles (soundcheck, energy, etc)
+    activeEffects: [] // Text descriptions for UI
   }
 
   const members = Array.isArray(bandState.members) ? bandState.members : []

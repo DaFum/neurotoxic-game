@@ -974,104 +974,104 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_134',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 30)
+    condition: (state, memo) => memo.minMood < 30
   },
   {
     text: 'chatter:standard.msg_135',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 20)
+    condition: (state, memo) => memo.minMood < 20
   },
   {
     text: 'chatter:standard.msg_136',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_137',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 30)
+    condition: (state, memo) => memo.minMood < 30
   },
   {
     text: 'chatter:standard.msg_138',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 20)
+    condition: (state, memo) => memo.minMood < 20
   },
   {
     text: 'chatter:standard.msg_139',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_140',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 30)
+    condition: (state, memo) => memo.minMood < 30
   },
   {
     text: 'chatter:standard.msg_141',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_142',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 30)
+    condition: (state, memo) => memo.minMood < 30
   },
   {
     text: 'chatter:standard.msg_143',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 20)
+    condition: (state, memo) => memo.minMood < 20
   },
   {
     text: 'chatter:standard.msg_144',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_145',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 20)
+    condition: (state, memo) => memo.minMood < 20
   },
   {
     text: 'chatter:standard.msg_146',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_147',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 30)
+    condition: (state, memo) => memo.minMood < 30
   },
   {
     text: 'chatter:standard.msg_148',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_149',
     weight: 10,
-    condition: state => state.band.members.some(m => m.mood < 20)
+    condition: (state, memo) => memo.minMood < 20
   },
   {
     text: 'chatter:standard.msg_150',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25)
+    condition: (state, memo) => memo.minMood < 25
   },
   {
     text: 'chatter:standard.msg_151',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 30),
+    condition: (state, memo) => memo.minMood < 30,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_152',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25),
+    condition: (state, memo) => memo.minMood < 25,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_153',
     weight: 8,
-    condition: state => state.band.members.some(m => m.mood < 25),
+    condition: (state, memo) => memo.minMood < 25,
     speaker: 'Lars'
   },
 
@@ -1079,94 +1079,94 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_154',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 80)
+    condition: (state, memo) => memo.maxMood > 80
   },
   {
     text: 'chatter:standard.msg_155',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 90)
+    condition: (state, memo) => memo.maxMood > 90
   },
   {
     text: 'chatter:standard.msg_156',
     weight: 1,
-    condition: state => state.band.members.some(m => m.mood > 95)
+    condition: (state, memo) => memo.maxMood > 95
   },
   {
     text: 'chatter:standard.msg_157',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 80)
+    condition: (state, memo) => memo.maxMood > 80
   },
   {
     text: 'chatter:standard.msg_158',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 90)
+    condition: (state, memo) => memo.maxMood > 90
   },
   {
     text: 'chatter:standard.msg_159',
     weight: 1,
-    condition: state => state.band.members.some(m => m.mood > 95)
+    condition: (state, memo) => memo.maxMood > 95
   },
   {
     text: 'chatter:standard.msg_160',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 85)
+    condition: (state, memo) => memo.maxMood > 85
   },
   {
     text: 'chatter:standard.msg_161',
     weight: 4,
-    condition: state => state.band.members.some(m => m.mood > 80)
+    condition: (state, memo) => memo.maxMood > 80
   },
   {
     text: 'chatter:standard.msg_162',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 90)
+    condition: (state, memo) => memo.maxMood > 90
   },
   {
     text: 'chatter:standard.msg_163',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 85)
+    condition: (state, memo) => memo.maxMood > 85
   },
   {
     text: 'chatter:standard.msg_164',
     weight: 1,
-    condition: state => state.band.members.some(m => m.mood > 95)
+    condition: (state, memo) => memo.maxMood > 95
   },
   {
     text: 'chatter:standard.msg_165',
     weight: 1,
-    condition: state => state.band.members.some(m => m.mood > 95)
+    condition: (state, memo) => memo.maxMood > 95
   },
   {
     text: 'chatter:standard.msg_166',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 85)
+    condition: (state, memo) => memo.maxMood > 85
   },
   {
     text: 'chatter:standard.msg_167',
     weight: 4,
-    condition: state => state.band.members.some(m => m.mood > 80),
+    condition: (state, memo) => memo.maxMood > 80,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_168',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 85)
+    condition: (state, memo) => memo.maxMood > 85
   },
   {
     text: 'chatter:standard.msg_169',
     weight: 5,
-    condition: state => state.band.members.some(m => m.mood > 90)
+    condition: (state, memo) => memo.maxMood > 90
   },
   {
     text: 'chatter:standard.msg_170',
     weight: 4,
-    condition: state => state.band.members.some(m => m.mood > 80),
+    condition: (state, memo) => memo.maxMood > 80,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_171',
     weight: 3,
-    condition: state => state.band.members.some(m => m.mood > 90)
+    condition: (state, memo) => memo.maxMood > 90
   },
 
   // --- CONDITION: MONEY ---
@@ -1402,115 +1402,100 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_215',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 80)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 80
   },
   {
     text: 'chatter:standard.msg_216',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 30),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 30,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_217',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 80)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 80
   },
   {
     text: 'chatter:standard.msg_218',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 30),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 30,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_219',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 80)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 80
   },
   {
     text: 'chatter:standard.msg_220',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 80)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 80
   },
   {
     text: 'chatter:standard.msg_221',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 75)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 75
   },
   {
     text: 'chatter:standard.msg_222',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 35),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 35,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_223',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 30),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 30,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_224',
     weight: 4,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 35),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 35,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_225',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 80),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 80,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_226',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 75)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 75
   },
   {
     text: 'chatter:standard.msg_227',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 30),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 30,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_228',
     weight: 4,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina < 35),
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.minStamina < 35,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_229',
     weight: 5,
-    condition: state =>
-      state.currentScene === GAME_PHASES.GIG &&
-      state.band.members.some(m => m.stamina > 80)
+    condition: (state, memo) =>
+      state.currentScene === GAME_PHASES.GIG && memo.maxStamina > 80
   },
 
   // --- CONDITION: BAND HARMONY ---

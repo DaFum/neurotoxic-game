@@ -1,4 +1,3 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { motion } from 'framer-motion'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { usePostGigLogic } from '../hooks/usePostGigLogic.js'

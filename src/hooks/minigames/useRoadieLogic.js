@@ -1,4 +1,4 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
+// Refactor logic to reduce cognitive complexity and improve testability
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
@@ -14,6 +14,117 @@ const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Slow trucks: 0.005
 const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.01]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
+
+// --- Pure Game Logic Extractors ---
+
+export function checkCollision(car, playerPos) {
+  if (car.row !== playerPos.y) return false
+
+  const pLeft = playerPos.x + 0.1
+  const pRight = playerPos.x + 0.9
+  const cLeft = car.x
+  const cRight = car.x + car.width
+
+  return pLeft < cRight && pRight > cLeft
+}
+
+export function handleCrash(game, onGameOver) {
+  audioManager.playSFX('crash')
+
+  if (game.carrying) {
+    game.equipmentDamage = Math.max(0, Math.min(100, game.equipmentDamage + 10))
+
+    if (game.equipmentDamage >= 100) {
+      game.isGameOver = true
+      game.playerPos.y = 0
+      game.playerPos.x = 6
+      onGameOver(100)
+    } else {
+      game.playerPos.y = 0
+      game.playerPos.x = 6
+    }
+  } else {
+    game.playerPos.y = 0
+    game.playerPos.x = 6
+  }
+}
+
+export function spawnTraffic(game, deltaMS) {
+  game.spawners.forEach(spawner => {
+    spawner.timer += deltaMS
+    while (spawner.timer > spawner.rate) {
+      spawner.timer -= spawner.rate
+
+      const id = `${performance.now()}-${spawner.row}-${spawner.timer}`
+
+      game.traffic.push({
+        id,
+        textureHash: Math.abs(hashString(id)),
+        row: spawner.row,
+        x: spawner.speed > 0 ? -1 : GRID_WIDTH,
+        speed: spawner.speed,
+        width: 1.5
+      })
+    }
+  })
+}
+
+export function processTraffic(game, deltaMS, onCrash) {
+  const traffic = game.traffic
+  let writeIdx = 0
+  let crashed = false
+
+  for (let i = 0; i < traffic.length; i++) {
+    const car = traffic[i]
+    car.x += car.speed * deltaMS
+
+    if (checkCollision(car, game.playerPos)) {
+      crashed = true
+      handleCrash(game, onCrash)
+    }
+
+    let keep = false
+    if (car.speed > 0) {
+      if (car.x < GRID_WIDTH + 2) keep = true
+    } else {
+      if (car.x > -2) keep = true
+    }
+
+    if (keep) {
+      if (i !== writeIdx) {
+        traffic[writeIdx] = car
+      }
+      writeIdx++
+    }
+  }
+
+  if (traffic.length > writeIdx) {
+    traffic.length = writeIdx
+  }
+  return crashed
+}
+
+export function handlePickup(game) {
+  if (game.playerPos.y === 0 && !game.carrying && game.itemsToDeliver.length > 0) {
+    game.carrying = game.itemsToDeliver.pop()
+    audioManager.playSFX('pickup')
+  }
+}
+
+export function handleDelivery(game, onGameOver) {
+  if (game.playerPos.y === GRID_HEIGHT - 1 && game.carrying) {
+    game.itemsDelivered.push(game.carrying)
+    game.carrying = null
+    audioManager.playSFX('deliver')
+
+    if (game.itemsToDeliver.length === 0 && !game.carrying) {
+      game.isGameOver = true
+      onGameOver(game.equipmentDamage)
+    }
+  }
+}
+
+// --- End Logic Extractors ---
 
 export const useRoadieLogic = () => {
   const { completeRoadieMinigame, currentScene, changeScene } = useGameState()
@@ -68,31 +179,11 @@ export const useRoadieLogic = () => {
       const newX = Math.max(0, Math.min(GRID_WIDTH - 1, game.playerPos.x + dx))
       const newY = Math.max(0, Math.min(GRID_HEIGHT - 1, game.playerPos.y + dy))
 
-      // Logic:
-      // If at y=0 (Start), pick up item if not carrying
-      // If at y=GRID_HEIGHT-1 (Venue), drop item
-
-      // Check pickup
-      if (newY === 0 && !game.carrying && game.itemsToDeliver.length > 0) {
-        // Auto pickup next item? Or manual? Let's say auto for now.
-        game.carrying = game.itemsToDeliver.pop()
-        audioManager.playSFX('pickup')
-      }
-
-      // Check delivery
-      if (newY === GRID_HEIGHT - 1 && game.carrying) {
-        game.itemsDelivered.push(game.carrying)
-        game.carrying = null
-        audioManager.playSFX('deliver')
-        // Win Condition check
-        if (game.itemsToDeliver.length === 0 && !game.carrying) {
-          game.isGameOver = true
-          completeRoadieMinigame(game.equipmentDamage)
-        }
-      }
-
       game.playerPos = { x: newX, y: newY }
       game.lastMoveTime = now
+
+      handlePickup(game)
+      handleDelivery(game, completeRoadieMinigame)
 
       // Update UI immediately for responsiveness
       setUiState(prev => ({
@@ -111,96 +202,15 @@ export const useRoadieLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
-      // Spawn Traffic
-      game.spawners.forEach(spawner => {
-        spawner.timer += deltaMS
-        while (spawner.timer > spawner.rate) {
-          spawner.timer -= spawner.rate
+      spawnTraffic(game, deltaMS)
+      const crashed = processTraffic(game, deltaMS, completeRoadieMinigame)
 
-          const id = `${performance.now()}-${spawner.row}-${spawner.timer}`
-
-          game.traffic.push({
-            id, // Unique ID
-            textureHash: Math.abs(hashString(id)),
-            row: spawner.row,
-            x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
-            speed: spawner.speed,
-            width: 1.5 // Car width in cells
-          })
-        }
-      })
-
-      // Move Traffic & Collision (Optimized: in-place update)
-      const traffic = game.traffic
-      let writeIdx = 0
-
-      for (let i = 0; i < traffic.length; i++) {
-        const car = traffic[i]
-        car.x += car.speed * deltaMS
-
-        // Collision
-        // Player is at integer (x,y). Car is at float x, integer row.
-        // Bounding box overlap.
-        // Player width ~0.8. Car width ~1.5.
-        if (car.row === game.playerPos.y) {
-          const pLeft = game.playerPos.x + 0.1
-          const pRight = game.playerPos.x + 0.9
-          const cLeft = car.x
-          const cRight = car.x + car.width
-
-          if (pLeft < cRight && pRight > cLeft) {
-            // Hit!
-            audioManager.playSFX('crash')
-            if (game.carrying) {
-              game.equipmentDamage = Math.max(
-                0,
-                Math.min(100, game.equipmentDamage + 10)
-              )
-
-              if (game.equipmentDamage >= 100) {
-                game.isGameOver = true
-                game.playerPos.y = 0
-                game.playerPos.x = 6
-                completeRoadieMinigame(100)
-              } else {
-                // Drop item? Or just damage?
-                // Let's respawn player at start with item still? Or item damaged.
-                // Let's say item is damaged, player respawns at start (y=0)
-                game.playerPos.y = 0
-                game.playerPos.x = 6 // Reset x
-              }
-            } else {
-              // Just hit, respawn
-              game.playerPos.y = 0
-              game.playerPos.x = 6
-            }
-            setUiState(prev => ({
-              ...prev,
-              currentDamage: game.equipmentDamage,
-              isGameOver: game.isGameOver
-            }))
-          }
-        }
-
-        // Cleanup Check
-        let keep = false
-        if (car.speed > 0) {
-          if (car.x < GRID_WIDTH + 2) keep = true
-        } else {
-          if (car.x > -2) keep = true
-        }
-
-        if (keep) {
-          if (i !== writeIdx) {
-            traffic[writeIdx] = car
-          }
-          writeIdx++
-        }
-      }
-
-      // Truncate array to remove dead items
-      if (traffic.length > writeIdx) {
-        traffic.length = writeIdx
+      if (crashed) {
+        setUiState(prev => ({
+          ...prev,
+          currentDamage: game.equipmentDamage,
+          isGameOver: game.isGameOver
+        }))
       }
     },
     [completeRoadieMinigame]

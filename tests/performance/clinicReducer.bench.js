@@ -18,7 +18,10 @@ const optimizedState = {
       { id: 'm1', traits: { t1: { id: 't1' } } },
       { id: 'm2', traits: { t2: { id: 't2' } } },
       { id: 'm3', traits: { t3: { id: 't3' } } },
-      { id: 'm4', traits: { t4: { id: 't4' }, t5: { id: 't5' }, t6: { id: 't6' } } }
+      {
+        id: 'm4',
+        traits: { t4: { id: 't4' }, t5: { id: 't5' }, t6: { id: 't6' } }
+      }
     ]
   }
 }

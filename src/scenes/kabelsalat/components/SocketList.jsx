@@ -1,12 +1,11 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
+ * (#1) Actual Updates: Extracted SocketItem component to improve maintainability.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
 import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants.js'
 import PropTypes from 'prop-types'
-import { PlugGraphics } from './PlugGraphics.jsx'
-import { SocketGraphics } from './SocketGraphics.jsx'
+import { SocketItem } from './SocketItem.jsx'
 
 const SocketItem = ({
   t,

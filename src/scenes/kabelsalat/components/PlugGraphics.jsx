@@ -1,10 +1,15 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
+ * (#1) Actual Updates: Extracted plug graphics to sub-components, removed TODO.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../constants.js'
+import { XlrPlug } from './plugs/XlrPlug.jsx'
+import { JackPlug } from './plugs/JackPlug.jsx'
+import { DcPlug } from './plugs/DcPlug.jsx'
+import { IecPlug } from './plugs/IecPlug.jsx'
+import { MidiPlug } from './plugs/MidiPlug.jsx'
 
 const PlugXlr = () => (
   <g>

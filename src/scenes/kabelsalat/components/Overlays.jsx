@@ -1,9 +1,12 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
+ * (#1) Actual Updates: Refactored Overlays component to use sub-components.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'
+import { ShockOverlay } from './overlays/ShockOverlay'
+import { GameOverOverlay } from './overlays/GameOverOverlay'
+import { PoweredOnOverlay } from './overlays/PoweredOnOverlay'
 
 const ShockOverlay = ({ t, faultReason }) => (
   <div className='absolute inset-0 z-40 mix-blend-color-dodge flex flex-col items-center justify-center bg-blood-red/50 backdrop-blur-[2px]'>

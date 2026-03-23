@@ -29,7 +29,7 @@ test('applyEventDelta amplifies negative change for grudge_holder', () => {
         {
           name: 'Grumpy',
           relationships: { Happy: 50 },
-          traits: { grudge_holder: { id: "grudge_holder" } }
+          traits: { grudge_holder: { id: 'grudge_holder' } }
         },
         { name: 'Happy', relationships: { Grumpy: 50 }, traits: {} }
       ]
@@ -55,7 +55,7 @@ test('applyEventDelta does not amplify positive change for grudge_holder', () =>
         {
           name: 'Grumpy',
           relationships: { Happy: 50 },
-          traits: { grudge_holder: { id: "grudge_holder" } }
+          traits: { grudge_holder: { id: 'grudge_holder' } }
         },
         { name: 'Happy', relationships: { Grumpy: 50 }, traits: {} }
       ]
@@ -80,7 +80,7 @@ test('applyEventDelta amplifies positive change for peacemaker', () => {
         {
           name: 'Peaceful',
           relationships: { Angry: 50 },
-          traits: { peacemaker: { id: "peacemaker" } }
+          traits: { peacemaker: { id: 'peacemaker' } }
         },
         { name: 'Angry', relationships: { Peaceful: 50 }, traits: {} }
       ]
@@ -108,7 +108,7 @@ test('applyEventDelta dampens negative change for peacemaker', () => {
         {
           name: 'Peaceful',
           relationships: { Angry: 50 },
-          traits: { peacemaker: { id: "peacemaker" } }
+          traits: { peacemaker: { id: 'peacemaker' } }
         },
         { name: 'Angry', relationships: { Peaceful: 50 }, traits: {} }
       ]
@@ -198,7 +198,10 @@ test('applyEventDelta handles both traits simultaneously (edge case) and symmetr
         {
           name: 'Weirdo',
           relationships: { Normal: 50 },
-          traits: { grudge_holder: { id: 'grudge_holder' }, peacemaker: { id: 'peacemaker' } }
+          traits: {
+            grudge_holder: { id: 'grudge_holder' },
+            peacemaker: { id: 'peacemaker' }
+          }
         },
         { name: 'Normal', relationships: { Weirdo: 50 }, traits: {} }
       ]

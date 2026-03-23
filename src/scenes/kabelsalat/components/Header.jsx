@@ -1,9 +1,11 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
+ * (#1) Actual Updates: Extracted complex UI sub-components into standalone files (HeaderTitle, HeaderTimer) for better maintainability.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'
+import { HeaderTitle } from './HeaderTitle'
+import { HeaderTimer } from './HeaderTimer'
 
 const HeaderStatus = ({ t, isShocked, isPoweredOn, isGameOver }) => (
   <div>

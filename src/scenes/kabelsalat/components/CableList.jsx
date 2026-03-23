@@ -1,11 +1,11 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
+ * (#1) Actual Updates: Extracted CableItem for maintainability.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
 import { CABLES } from '../constants.js'
 import PropTypes from 'prop-types'
-import { PlugGraphics } from './PlugGraphics.jsx'
+import { CableItem } from './CableItem.jsx'
 
 const CableItem = ({
   t,
@@ -131,10 +131,12 @@ export const CableList = ({
   isGameOver,
   handleCableClick
 }) => {
+  const connectedCableIds = new Set(Object.values(connections))
+
   return (
     <>
       {CABLES.map(cable => {
-        const isConnected = Object.values(connections).includes(cable.id)
+        const isConnected = connectedCableIds.has(cable.id)
         const isSelected = selectedCable === cable.id
 
         return (

@@ -1,10 +1,15 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
- * (#2) Next Steps: N/A
+ * (#1) Actual Updates: Extracted socket graphics to sub-components, removed TODO.
+ * (#2) Next Steps: Extract PlugGraphics components.
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../constants.js'
+import { XlrSocket } from './sockets/XlrSocket.jsx'
+import { JackSocket } from './sockets/JackSocket.jsx'
+import { DcSocket } from './sockets/DcSocket.jsx'
+import { IecSocket } from './sockets/IecSocket.jsx'
+import { MidiSocket } from './sockets/MidiSocket.jsx'
 
 const SocketXlr = () => (
   <g>
