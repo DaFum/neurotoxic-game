@@ -1,6 +1,12 @@
+/*
+ * (#1) Actual Updates: Extracted HeaderTitle component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
 import PropTypes from 'prop-types'
 
-export const HeaderTitle = ({ t, isShocked, isPoweredOn, isGameOver }) => (
+export const HeaderTitle = React.memo(({ t, isShocked, isGameOver, isPoweredOn }) => (
   <div>
     <h2 className='text-2xl font-bold text-toxic-green tracking-[0.2em] relative'>
       <span className='relative z-10'>
@@ -26,7 +32,8 @@ export const HeaderTitle = ({ t, isShocked, isPoweredOn, isGameOver }) => (
           : t('ui:minigames.kabelsalat.statusPending')}
     </p>
   </div>
-)
+))
+HeaderTitle.displayName = 'HeaderTitle'
 
 HeaderTitle.propTypes = {
   t: PropTypes.func.isRequired,

@@ -1,7 +1,13 @@
+/*
+ * (#1) Actual Updates: Extracted CableItem component, wrapped in React.memo
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
 import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.jsx'
 
-export const CableItem = ({
+export const CableItem = React.memo(({
   t,
   cable,
   isConnected,
@@ -100,7 +106,8 @@ export const CableItem = ({
       )}
     </g>
   )
-}
+})
+CableItem.displayName = 'CableItem'
 
 CableItem.propTypes = {
   t: PropTypes.func.isRequired,

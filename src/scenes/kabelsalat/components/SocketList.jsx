@@ -3,7 +3,6 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
-import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants.js'
 import PropTypes from 'prop-types'
 import { SocketItem } from './SocketItem.jsx'
 

@@ -107,7 +107,12 @@
   "crash.rebootButton": "REBOOT SYSTEM",
   "crash.title": "SYSTEM FAILURE",
   "credits": "CREDITS",
+  "creditFooter": {
+    "title": "NEUROTOXIC: GRIND THE VOID v3.0",
+    "subtitle": "DEATH GRINDCORE FROM STENDAL // 2026"
+  },
   "creditsScreen.return": "RETURN",
+  "nowPlaying": "Now Playing: {{name}}",
   "crisis.desc": "The transmission just dropped halfway to Leipzig. You have a gig in 4 hours. Do you burn through your cash for a sketchy mechanic, or risk showing up late and losing face?",
   "crisis.opt1": "Pay mechanic (-$250)",
   "crisis.opt2": "Hitchhike (-20 Rep)",

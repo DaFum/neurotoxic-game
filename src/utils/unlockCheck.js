@@ -1,4 +1,8 @@
-// TODO: Review this file
+/*
+ * (#1) Actual Updates: Refactored Grudge holder check to use for...in loop, added Object.hasOwn guard.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { hasTrait } from './traitLogic.js'
 import { CHARACTERS } from '../data/characters.js'
 
@@ -134,9 +138,11 @@ export const checkTraitUnlocks = (state, context = {}) => {
     if (Matze && !hasTrait(Matze, 'grudge_holder') && Matze.relationships) {
       let hasGrudge = false
       for (const memberId in Matze.relationships) {
-        if (Matze.relationships[memberId] < 30) {
-          hasGrudge = true
-          break
+        if (Object.hasOwn(Matze.relationships, memberId)) {
+          if (Matze.relationships[memberId] < 30) {
+            hasGrudge = true
+            break
+          }
         }
       }
       if (hasGrudge) {

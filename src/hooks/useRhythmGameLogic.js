@@ -1,5 +1,6 @@
 // TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useMemo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
 import { stopAudio } from '../utils/audioEngine'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
@@ -13,6 +14,7 @@ import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
 export const useRhythmGameLogic = () => {
+  const { t } = useTranslation()
   const {
     setlist,
     band,
@@ -49,7 +51,7 @@ export const useRhythmGameLogic = () => {
       setlist,
       gigModifiers
     },
-    contextActions: { addToast }
+    contextActions: { addToast, t }
   })
 
   // 4. Game Loop (Update)
