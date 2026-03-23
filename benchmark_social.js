@@ -13,16 +13,14 @@ const eventsPool = [
   ['some_other_event'],
   ['stage_diver', 'some_other_event', 'influencer_spotted']
 ]
+const eventsPoolSet = eventsPool.map(arr => new Set(arr))
 const venuePool = [null, { name: 'Some Venue' }, { name: 'Kaminstube' }]
 const bandStates = [
-  {},
-  { traits: { social_manager: true } },
-  { traits: { showman: true } },
-  { traits: { social_manager: true, showman: true } }
+  { members: [] },
+  { members: [{ traits: { social_manager: { id: 'social_manager' } } }] },
+  { members: [{ traits: { showman: { id: 'showman' } } }] },
+  { members: [{ traits: { social_manager: { id: 'social_manager' }, showman: { id: 'showman' } } }] }
 ]
-
-// Mock for bandHasTrait (since we aren't loading traitLogic.js correctly)
-// Wait, we can just let it call it. Let's see if it works.
 
 async function runBenchmark() {
   console.log('Warming up...')
@@ -30,8 +28,8 @@ async function runBenchmark() {
     calculateViralityScore(80, ['stage_diver'], { name: 'Kaminstube' }, {})
   }
 
-  console.log(`Running benchmark with ${ITERATIONS} iterations...`)
-  const start = performance.now()
+  console.log(`Running benchmark with ${ITERATIONS} iterations (Array inputs)...`)
+  const startArray = performance.now()
 
   for (let i = 0; i < ITERATIONS; i++) {
     const score = performanceScores[i % performanceScores.length]
@@ -42,8 +40,23 @@ async function runBenchmark() {
     calculateViralityScore(score, events, venue, bandState)
   }
 
-  const end = performance.now()
-  console.log(`Total time: ${(end - start).toFixed(2)} ms`)
+  const endArray = performance.now()
+  console.log(`Total time (Array): ${(endArray - startArray).toFixed(2)} ms`)
+
+  console.log(`Running benchmark with ${ITERATIONS} iterations (Set inputs)...`)
+  const startSet = performance.now()
+
+  for (let i = 0; i < ITERATIONS; i++) {
+    const score = performanceScores[i % performanceScores.length]
+    const events = eventsPoolSet[i % eventsPoolSet.length]
+    const venue = venuePool[i % venuePool.length]
+    const bandState = bandStates[i % bandStates.length]
+
+    calculateViralityScore(score, events, venue, bandState)
+  }
+
+  const endSet = performance.now()
+  console.log(`Total time (Set): ${(endSet - startSet).toFixed(2)} ms`)
 }
 
 runBenchmark().catch(console.error)

@@ -15,7 +15,7 @@ const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.01]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
-// --- Pure Game Logic Extractors ---
+// --- Extracted Game Logic ---
 
 export function checkCollision(car, playerPos) {
   if (car.row !== playerPos.y) return false
@@ -78,7 +78,7 @@ export function processTraffic(game, deltaMS, onCrash) {
     const car = traffic[i]
     car.x += car.speed * deltaMS
 
-    if (checkCollision(car, game.playerPos)) {
+    if (!crashed && checkCollision(car, game.playerPos)) {
       crashed = true
       handleCrash(game, onCrash)
     }
@@ -117,14 +117,14 @@ export function handleDelivery(game, onGameOver) {
     game.carrying = null
     audioManager.playSFX('deliver')
 
-    if (game.itemsToDeliver.length === 0 && !game.carrying) {
+    if (game.itemsToDeliver.length === 0) {
       game.isGameOver = true
       onGameOver(game.equipmentDamage)
     }
   }
 }
 
-// --- End Logic Extractors ---
+// --- End Extracted Game Logic ---
 
 export const useRoadieLogic = () => {
   const { completeRoadieMinigame, currentScene, changeScene } = useGameState()
