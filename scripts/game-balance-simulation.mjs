@@ -597,7 +597,13 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   counters.catalogUpgrades += 1
 }
 
-const estimateMerchBuyers = (venue, performanceScore, modifiers, state, previousFame = state.player.fame) => {
+const estimateMerchBuyers = (
+  venue,
+  performanceScore,
+  modifiers,
+  state,
+  previousFame = state.player.fame
+) => {
   const fame = previousFame || 0
   const fameRatio = Math.min(1.0, fame / (venue.capacity * 8))
   let fillRate = 0.3 + fameRatio * 0.8
@@ -605,10 +611,17 @@ const estimateMerchBuyers = (venue, performanceScore, modifiers, state, previous
   if (modifiers.soundcheck) fillRate += 0.15
   fillRate = Math.min(1, Math.max(0.1, fillRate))
   const ticketsSold = Math.floor(venue.capacity * fillRate)
-  const buyRate = Math.max(0, 0.15 + (performanceScore / 100) * 0.2 + (modifiers.merch ? 0.1 : 0))
+  const buyRate = Math.max(
+    0,
+    0.15 + (performanceScore / 100) * 0.2 + (modifiers.merch ? 0.1 : 0)
+  )
   const inv = state.band.inventory || {}
   const totalInventory =
-    (inv.shirts || 0) + (inv.hoodies || 0) + (inv.cds || 0) + (inv.patches || 0) + (inv.vinyl || 0)
+    (inv.shirts || 0) +
+    (inv.hoodies || 0) +
+    (inv.cds || 0) +
+    (inv.patches || 0) +
+    (inv.vinyl || 0)
   return Math.min(Math.floor(ticketsSold * buyRate), totalInventory)
 }
 
@@ -646,7 +659,10 @@ const depleteInventory = (inventory, buyers) => {
 
   const newInventory = { ...inventory }
   skus.forEach(sku => {
-    newInventory[sku] = Math.max(0, (inventory[sku] || 0) - (removals[sku] || 0))
+    newInventory[sku] = Math.max(
+      0,
+      (inventory[sku] || 0) - (removals[sku] || 0)
+    )
   })
 
   return newInventory
@@ -958,7 +974,9 @@ const runSingleSimulation = (scenario, seed) => {
     let willRest = false
     // Check if the band needs rest/clinic before taking on a gig
     if (shouldPlayGig) {
-      const needsRest = state.band.harmony < 30 || state.band.members.some(m => m.stamina < 30 || m.mood < 30)
+      const needsRest =
+        state.band.harmony < 30 ||
+        state.band.members.some(m => m.stamina < 30 || m.mood < 30)
       // Save original random state by evaluating early if they *would* rest.
       // Note: we'll just consume the rng here.
       if (needsRest && rng() < 0.85 && state.player.money >= 150) {
@@ -967,7 +985,9 @@ const runSingleSimulation = (scenario, seed) => {
       }
     }
 
-    counters.eventsApplied = (counters.eventsApplied || 0) + applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
+    counters.eventsApplied =
+      (counters.eventsApplied || 0) +
+      applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
     maybeShiftSocialTrend(state, rng, counters)
     maybeActivateBrandDeal(state, rng, counters)
     maybeApplyPostPulse(state, rng, counters)
@@ -1017,7 +1037,9 @@ const runSingleSimulation = (scenario, seed) => {
     )
 
     // Chaos Tour fix: Show cancellation check (happens BEFORE minigames)
-    const isCancelled = state.band.harmony < 15 && rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+    const isCancelled =
+      state.band.harmony < 15 &&
+      rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
 
     if (isCancelled) {
       // Show is cancelled due to poor harmony
@@ -1100,7 +1122,13 @@ const runSingleSimulation = (scenario, seed) => {
     applyPostGigState(state, venue, performanceScore, financials, rng)
 
     // Deplete merch inventory based on estimated buyers this gig
-    const buyers = estimateMerchBuyers(venue, performanceScore, modifiers, state, previousFame)
+    const buyers = estimateMerchBuyers(
+      venue,
+      performanceScore,
+      modifiers,
+      state,
+      previousFame
+    )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
     currentNode = venue
@@ -1283,7 +1311,9 @@ const buildFeatureCoverage = results => {
   )
 
   if (results.length > 0) {
-    const hasEventsApplied = results.some(scenario => scenario.summary.avgEventsApplied > 0)
+    const hasEventsApplied = results.some(
+      scenario => scenario.summary.avgEventsApplied > 0
+    )
     coverage.daily_updates = true
     coverage.gig_financials = true
     coverage.travel_expenses = true
@@ -1325,13 +1355,55 @@ const fmtEur = n => `€${fmt(n)}`
 const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
-  baseline_touring:     { bankruptcyMax: 5,  moneyMin: 8000,  moneyMax: 350000, fameMin: 200, fameMax: 500 },
-  bootstrap_struggle:   { bankruptcyMax: 99, moneyMin: 0,     moneyMax: 20000,  fameMin: 0,  fameMax: 250 },
-  aggressive_marketing: { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 450 },
-  scandal_recovery:     { bankruptcyMax: 70, moneyMin: 0,     moneyMax: 50000,  fameMin: 0, fameMax: 350 },
-  festival_push:        { bankruptcyMax: 15, moneyMin: 10000, moneyMax: 150000, fameMin: 250, fameMax: 550 },
-  chaos_tour:           { bankruptcyMax: 20, moneyMin: 0,     moneyMax: 100000, fameMin: 150, fameMax: 450 },
-  cult_hypergrowth:     { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 500 }
+  baseline_touring: {
+    bankruptcyMax: 5,
+    moneyMin: 8000,
+    moneyMax: 350000,
+    fameMin: 200,
+    fameMax: 500
+  },
+  bootstrap_struggle: {
+    bankruptcyMax: 99,
+    moneyMin: 0,
+    moneyMax: 20000,
+    fameMin: 0,
+    fameMax: 250
+  },
+  aggressive_marketing: {
+    bankruptcyMax: 10,
+    moneyMin: 5000,
+    moneyMax: 200000,
+    fameMin: 200,
+    fameMax: 450
+  },
+  scandal_recovery: {
+    bankruptcyMax: 70,
+    moneyMin: 0,
+    moneyMax: 50000,
+    fameMin: 0,
+    fameMax: 350
+  },
+  festival_push: {
+    bankruptcyMax: 15,
+    moneyMin: 10000,
+    moneyMax: 150000,
+    fameMin: 250,
+    fameMax: 550
+  },
+  chaos_tour: {
+    bankruptcyMax: 20,
+    moneyMin: 0,
+    moneyMax: 100000,
+    fameMin: 150,
+    fameMax: 450
+  },
+  cult_hypergrowth: {
+    bankruptcyMax: 10,
+    moneyMin: 5000,
+    moneyMax: 200000,
+    fameMin: 200,
+    fameMax: 500
+  }
 }
 
 const checkKpi = (id, summary) => {
@@ -1346,13 +1418,16 @@ const checkKpi = (id, summary) => {
   })
   checks.push({
     label: 'Endgeld',
-    pass: summary.avgFinalMoney >= t.moneyMin && summary.avgFinalMoney <= t.moneyMax,
+    pass:
+      summary.avgFinalMoney >= t.moneyMin &&
+      summary.avgFinalMoney <= t.moneyMax,
     actual: fmtEur(summary.avgFinalMoney),
     target: `${fmtEur(t.moneyMin)} – ${fmtEur(t.moneyMax)}`
   })
   checks.push({
     label: 'Endfame',
-    pass: summary.avgFinalFame >= t.fameMin && summary.avgFinalFame <= t.fameMax,
+    pass:
+      summary.avgFinalFame >= t.fameMin && summary.avgFinalFame <= t.fameMax,
     actual: String(summary.avgFinalFame),
     target: `${t.fameMin} – ${t.fameMax}`
   })
@@ -1362,7 +1437,10 @@ const checkKpi = (id, summary) => {
 const buildMarkdownReport = payload => {
   const lines = []
   const snap = payload.appFeatureSnapshot
-  const totalEvents = Object.values(snap.eventsDb).reduce((s, c) => s + c.count, 0)
+  const totalEvents = Object.values(snap.eventsDb).reduce(
+    (s, c) => s + c.count,
+    0
+  )
 
   // ── Header ────────────────────────────────────────────────────────────────
   lines.push('# Game Balance Simulation – Analyse')
@@ -1377,9 +1455,15 @@ const buildMarkdownReport = payload => {
   lines.push(`|---|---|`)
   lines.push(`| Runs je Szenario | ${payload.constants.runsPerScenario} |`)
   lines.push(`| Tage je Run | ${payload.constants.daysPerRun} |`)
-  lines.push(`| Basis-Tageskosten | ${fmtEur(EXPENSE_CONSTANTS.DAILY.BASE_COST)} |`)
-  lines.push(`| Modifier-Kosten | Catering ${fmtEur(MODIFIER_COSTS.catering)}, Promo ${fmtEur(MODIFIER_COSTS.promo)}, Merch ${fmtEur(MODIFIER_COSTS.merch)}, Soundcheck ${fmtEur(MODIFIER_COSTS.soundcheck)}, Guestlist ${fmtEur(MODIFIER_COSTS.guestlist)} |`)
-  lines.push(`| Venue-Fame-Gates | diff-2: fame 0–59 · diff-3: 60–199 · diff-4: 200–399 · diff-5: 400+ |`)
+  lines.push(
+    `| Basis-Tageskosten | ${fmtEur(EXPENSE_CONSTANTS.DAILY.BASE_COST)} |`
+  )
+  lines.push(
+    `| Modifier-Kosten | Catering ${fmtEur(MODIFIER_COSTS.catering)}, Promo ${fmtEur(MODIFIER_COSTS.promo)}, Merch ${fmtEur(MODIFIER_COSTS.merch)}, Soundcheck ${fmtEur(MODIFIER_COSTS.soundcheck)}, Guestlist ${fmtEur(MODIFIER_COSTS.guestlist)} |`
+  )
+  lines.push(
+    `| Venue-Fame-Gates | diff-2: fame 0–59 · diff-3: 60–199 · diff-4: 200–399 · diff-5: 400+ |`
+  )
   lines.push(`| Fame-Level-Skala | Level = floor(fame / 100) |`)
   lines.push('')
 
@@ -1412,15 +1496,17 @@ const buildMarkdownReport = payload => {
   // ── Main Result Matrix ────────────────────────────────────────────────────
   lines.push('## Ergebnis-Matrix')
   lines.push('')
-  lines.push('| Szenario | Startkapital | Startfame | Ø Endgeld | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |')
+  lines.push(
+    '| Szenario | Startkapital | Startfame | Ø Endgeld | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
     const sc = SCENARIOS.find(x => x.id === scenario.id)
     const startMoney = sc?.initialOverrides?.player?.money ?? '?'
-    const startFame  = sc?.initialOverrides?.player?.fame  ?? 0
-    const fameLevel  = Math.floor(s.avgFinalFame / 100)
+    const startFame = sc?.initialOverrides?.player?.fame ?? 0
+    const fameLevel = Math.floor(s.avgFinalFame / 100)
     lines.push(
       `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
     )
@@ -1430,7 +1516,9 @@ const buildMarkdownReport = payload => {
   // ── Economy Deep Dive ─────────────────────────────────────────────────────
   lines.push('## Wirtschaft im Detail')
   lines.push('')
-  lines.push('| Szenario | Ø Peak-Geld | Ø Tiefstkurs | Ø Gig-Netto | Ø Sponsor-Payouts | Ø Brand Deals | Ø Upgrades (HQ+Van) | Ø Refuels | Ø Repairs |')
+  lines.push(
+    '| Szenario | Ø Peak-Geld | Ø Tiefstkurs | Ø Gig-Netto | Ø Sponsor-Payouts | Ø Brand Deals | Ø Upgrades (HQ+Van) | Ø Refuels | Ø Repairs |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|')
 
   for (const scenario of payload.results) {
@@ -1445,7 +1533,9 @@ const buildMarkdownReport = payload => {
   // ── Band Health Deep Dive ─────────────────────────────────────────────────
   lines.push('## Bandgesundheit im Detail')
   lines.push('')
-  lines.push('| Szenario | Ø Endharmony | Ø Clinic-Besuche | Ø Sponsor-Signings | Ø Sponsor-Drops | Ø Kontraband-Drops | Ø Post Pulses |')
+  lines.push(
+    '| Szenario | Ø Endharmony | Ø Clinic-Besuche | Ø Sponsor-Signings | Ø Sponsor-Drops | Ø Kontraband-Drops | Ø Post Pulses |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|---:|')
 
   for (const scenario of payload.results) {
@@ -1459,7 +1549,9 @@ const buildMarkdownReport = payload => {
   // ── Events & Social ───────────────────────────────────────────────────────
   lines.push('## Events & Social im Detail')
   lines.push('')
-  lines.push('| Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades |')
+  lines.push(
+    '| Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|---:|')
 
   for (const scenario of payload.results) {
@@ -1473,12 +1565,20 @@ const buildMarkdownReport = payload => {
   // ── Minigame Coverage ─────────────────────────────────────────────────────
   lines.push('## Minigame-Abdeckung im Detail')
   lines.push('')
-  lines.push('| Szenario | Ø Travel-Games | Ø Roadie-Games | Ø Kabelsalat-Games | Gesamt Minigames |')
+  lines.push(
+    '| Szenario | Ø Travel-Games | Ø Roadie-Games | Ø Kabelsalat-Games | Gesamt Minigames |'
+  )
   lines.push('|---|---:|---:|---:|---:|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
-    const total = Number((s.avgTravelMinigames + s.avgRoadieMinigames + s.avgKabelsalatMinigames).toFixed(2))
+    const total = Number(
+      (
+        s.avgTravelMinigames +
+        s.avgRoadieMinigames +
+        s.avgKabelsalatMinigames
+      ).toFixed(2)
+    )
     lines.push(
       `| ${scenario.name} | ${s.avgTravelMinigames} | ${s.avgRoadieMinigames} | ${s.avgKabelsalatMinigames} | ${total} |`
     )
@@ -1489,26 +1589,40 @@ const buildMarkdownReport = payload => {
   lines.push('## Cross-Szenario-Vergleich (Höchstwerte)')
   lines.push('')
   const metrics = [
-    { label: 'Höchstes Ø Endgeld',    key: s => s.avgFinalMoney,    fmt: fmtEur },
-    { label: 'Höchstes Ø Endfame',    key: s => s.avgFinalFame,     fmt: v => String(v) },
-    { label: 'Höchste Insolvenzrate', key: s => s.bankruptcyRate,   fmt: fmtPct },
-    { label: 'Höchster Ø Gig-Netto',  key: s => s.avgGigNet,        fmt: fmtEur },
-    { label: 'Höchstes Ø Peak-Geld',  key: s => s.avgPeakMoney,     fmt: fmtEur },
-    { label: 'Meiste Ø Gigs',          key: s => s.avgGigsPlayed,   fmt: v => String(v) },
-    { label: 'Meiste Ø Events',        key: s => s.avgEventsApplied, fmt: v => v.toFixed(2) }
+    { label: 'Höchstes Ø Endgeld', key: s => s.avgFinalMoney, fmt: fmtEur },
+    {
+      label: 'Höchstes Ø Endfame',
+      key: s => s.avgFinalFame,
+      fmt: v => String(v)
+    },
+    { label: 'Höchste Insolvenzrate', key: s => s.bankruptcyRate, fmt: fmtPct },
+    { label: 'Höchster Ø Gig-Netto', key: s => s.avgGigNet, fmt: fmtEur },
+    { label: 'Höchstes Ø Peak-Geld', key: s => s.avgPeakMoney, fmt: fmtEur },
+    { label: 'Meiste Ø Gigs', key: s => s.avgGigsPlayed, fmt: v => String(v) },
+    {
+      label: 'Meiste Ø Events',
+      key: s => s.avgEventsApplied,
+      fmt: v => v.toFixed(2)
+    }
   ]
   lines.push('| Metrik | Gewinner | Wert |')
   lines.push('|---|---|---:|')
   for (const m of metrics) {
-    const winner = [...payload.results].sort((a, b) => m.key(b.summary) - m.key(a.summary))[0]
-    lines.push(`| ${m.label} | **${winner.name}** | ${m.fmt(m.key(winner.summary))} |`)
+    const winner = [...payload.results].sort(
+      (a, b) => m.key(b.summary) - m.key(a.summary)
+    )[0]
+    lines.push(
+      `| ${m.label} | **${winner.name}** | ${m.fmt(m.key(winner.summary))} |`
+    )
   }
   lines.push('')
 
   // ── KPI Health Check ──────────────────────────────────────────────────────
   lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')
-  lines.push('Zieldefinition: Insolvenz, Endgeld, Endfame pro Szenario (kalibriert auf 75-Tage-Lauf).')
+  lines.push(
+    'Zieldefinition: Insolvenz, Endgeld, Endfame pro Szenario (kalibriert auf 75-Tage-Lauf).'
+  )
   lines.push('')
   lines.push('| Szenario | KPI | Ziel | Ist-Wert | Status |')
   lines.push('|---|---|---|---|---|')
@@ -1517,7 +1631,9 @@ const buildMarkdownReport = payload => {
     const checks = checkKpi(scenario.id, scenario.summary)
     if (!checks) continue
     for (const c of checks) {
-      lines.push(`| ${scenario.name} | ${c.label} | ${c.target} | ${c.actual} | ${c.pass ? '✅' : '❌'} |`)
+      lines.push(
+        `| ${scenario.name} | ${c.label} | ${c.target} | ${c.actual} | ${c.pass ? '✅' : '❌'} |`
+      )
     }
   }
   lines.push('')
@@ -1534,8 +1650,12 @@ const buildMarkdownReport = payload => {
   lines.push('## Kurzfazit')
   lines.push('')
 
-  const riskiest    = [...payload.results].sort((a, b) => b.summary.bankruptcyRate - a.summary.bankruptcyRate)[0]
-  const richest     = [...payload.results].sort((a, b) => b.summary.avgFinalMoney  - a.summary.avgFinalMoney)[0]
+  const riskiest = [...payload.results].sort(
+    (a, b) => b.summary.bankruptcyRate - a.summary.bankruptcyRate
+  )[0]
+  const richest = [...payload.results].sort(
+    (a, b) => b.summary.avgFinalMoney - a.summary.avgFinalMoney
+  )[0]
   const mostVolatile = [...payload.results].sort(
     (a, b) => b.summary.avgEventsApplied - a.summary.avgEventsApplied
   )[0]
@@ -1544,21 +1664,33 @@ const buildMarkdownReport = payload => {
     return checks.filter(c => !c.pass).map(c => `${scenario.name} (${c.label})`)
   })
 
-  const maxBankruptcyRate = Math.max(...payload.results.map(r => r.summary.bankruptcyRate))
+  const maxBankruptcyRate = Math.max(
+    ...payload.results.map(r => r.summary.bankruptcyRate)
+  )
   if (maxBankruptcyRate > 0) {
-    lines.push(`- Höchstes Risiko: **${riskiest.name}** mit ${riskiest.summary.bankruptcyRate}% Insolvenzrate.`)
+    lines.push(
+      `- Höchstes Risiko: **${riskiest.name}** mit ${riskiest.summary.bankruptcyRate}% Insolvenzrate.`
+    )
   } else {
     lines.push('- Kein Szenario mit Insolvenzfällen beobachtet.')
   }
-  lines.push(`- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`)
-  lines.push(`- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${mostVolatile.summary.avgEventsApplied.toFixed(2)} Event-Impulsen.`)
+  lines.push(
+    `- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`
+  )
+  lines.push(
+    `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${mostVolatile.summary.avgEventsApplied.toFixed(2)} Event-Impulsen.`
+  )
 
   if (failedKpis.length > 0) {
     lines.push(`- ❌ KPI-Verstöße: ${failedKpis.join(' · ')}`)
-    lines.push('- Empfehlung: Balance-Lever für betroffene Szenarien anpassen, dann Simulation erneut ausführen.')
+    lines.push(
+      '- Empfehlung: Balance-Lever für betroffene Szenarien anpassen, dann Simulation erneut ausführen.'
+    )
   } else {
     lines.push('- ✅ Alle KPI-Zielkorridore eingehalten.')
-    lines.push('- Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.')
+    lines.push(
+      '- Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.'
+    )
   }
 
   return lines.join('\n')
