@@ -158,7 +158,9 @@ test('Minigame State Transitions', async t => {
           ...initialState.band,
           harmony: 80,
           members: initialState.band.members.map(m =>
-            m.name === 'Matze' ? { ...m, traits: { gear_nerd: { id: 'gear_nerd' } } } : m
+            m.name === 'Matze'
+              ? { ...m, traits: { gear_nerd: { id: 'gear_nerd' } } }
+              : m
           )
         },
         minigame: {
