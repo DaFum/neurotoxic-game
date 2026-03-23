@@ -1,4 +1,3 @@
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 export const CABLES = [
   {
     id: 'midi',
