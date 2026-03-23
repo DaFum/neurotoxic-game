@@ -6,11 +6,15 @@
  * @returns {string} The normalized IP address or 'unknown'.
  */
 export function normalizeIp(req) {
-  const forwarded = req.headers?.['x-forwarded-for']
+  let forwarded = req.headers?.['x-forwarded-for']
   if (forwarded) {
+    // Some environments pass this as an array
+    if (Array.isArray(forwarded)) {
+      forwarded = forwarded.join(',')
+    }
     // x-forwarded-for can be a comma-separated list of IPs.
     // The first IP is the original client.
-    const ips = forwarded.split(',')
+    const ips = typeof forwarded === 'string' ? forwarded.split(',') : []
     for (const ip of ips) {
       const trimmed = ip.trim()
       if (trimmed) {

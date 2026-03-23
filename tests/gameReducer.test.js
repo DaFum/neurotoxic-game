@@ -504,7 +504,7 @@ describe('gameReducer', () => {
         currentGig: { isPractice: true },
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: {} }]
+          members: [{ name: 'Matze', traits: Object.create(null) }]
         }
       }
 
@@ -529,7 +529,7 @@ describe('gameReducer', () => {
         currentGig: { isPractice: false },
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: {} }]
+          members: [{ name: 'Matze', traits: Object.create(null) }]
         }
       }
 
