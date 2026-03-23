@@ -1,5 +1,5 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
+ * (#1) Actual Updates: Extracted plug graphics to sub-components, removed TODO.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
