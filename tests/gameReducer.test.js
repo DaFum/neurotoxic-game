@@ -41,7 +41,14 @@ mock.module('../src/utils/traitUtils.js', {
     applyTraitUnlocks: mockApplyTraitUnlocks,
     getTraitById: mock.fn(traitId => ({ id: traitId })),
     normalizeTraitMap: mock.fn(traits => {
-      if (!traits || Array.isArray(traits)) return Object.create(null)
+      if (!traits) return Object.create(null)
+      if (Array.isArray(traits)) {
+        const result = Object.create(null)
+        traits.forEach(t => {
+          if (t && t.id) result[t.id] = t
+        })
+        return result
+      }
       return Object.assign(Object.create(null), traits)
     })
   }

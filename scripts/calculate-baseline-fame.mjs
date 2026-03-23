@@ -34,6 +34,7 @@ let state = {
 
 // Helpers
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
+const clampHarmony = val => clamp(val, 1, 100)
 
 /**
  * Returns estimated net gig income by venue difficulty tier.
@@ -52,9 +53,6 @@ console.log('Day'.padEnd(7) + 'Action'.padEnd(32) + 'Condition'.padEnd(16) +
   'Score'.padEnd(7) + 'Outcome'.padEnd(46) + 'Fame'.padEnd(8) + 'Money')
 
 while (state.day <= TARGET_DAYS) {
-  // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
-  state.day += 1
-
   // Apply daily living cost
   state.money = Math.max(0, state.money - DAILY_COST)
 
@@ -75,12 +73,12 @@ while (state.day <= TARGET_DAYS) {
       state.money -= CLINIC_COST
       state.band.stamina  = clamp(state.band.stamina  + 40, 0, 100)
       state.band.mood     = clamp(state.band.mood     + 30, 0, 100)
-      state.band.harmony  = clamp(state.band.harmony  + 15, 0, 100)
+      state.band.harmony  = clampHarmony(state.band.harmony  + 15)
     } else {
       // Reduced recovery without paid care
       state.band.stamina  = clamp(state.band.stamina  + 20, 0, 100)
       state.band.mood     = clamp(state.band.mood     + 10, 0, 100)
-      state.band.harmony  = clamp(state.band.harmony  +  5, 0, 100)
+      state.band.harmony  = clampHarmony(state.band.harmony  +  5)
     }
 
     console.log(
@@ -92,6 +90,9 @@ while (state.day <= TARGET_DAYS) {
       `${Math.round(state.fame).toString().padStart(5)} | ` +
       `€${state.money}`
     )
+
+    // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
+    state.day += 1
 
     continue
   }
@@ -108,59 +109,65 @@ while (state.day <= TARGET_DAYS) {
   score = clamp(score, 5, 100)
 
   const previousFame = state.fame
-  let fameDelta = 0
-  let outcomeText = ''
-
-  // Good gig threshold aligns with applyPostGigState in game-balance-simulation.mjs
-  if (score >= 78) {
-    // Great Gig — harmony reward
-    const rawGain = 50 + Math.floor(score * 1.5)
-    fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
-
-    state.band.harmony = clamp(state.band.harmony + 2, 0, 100)
-    state.band.mood    = clamp(state.band.mood    + 2, 0, 100)
-    state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
-
-    const dampFactor = previousFame > 50
-      ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
-      : ''
-    outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
-  } else if (score >= 62) {
-    // Decent Gig — fame gain, no harmony bonus
-    const rawGain = 50 + Math.floor(score * 1.5)
-    fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
-
-    state.band.mood    = clamp(state.band.mood    + 1, 0, 100)
-    state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
-
-    const dampFactor = previousFame > 50
-      ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
-      : ''
-    outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`
-  } else {
-    // Bad Gig
-    fameDelta = -FLAT_FAME_PENALTY_PER_BAD_GIG
-
-    state.band.harmony = clamp(state.band.harmony - 5, 0, 100)
-    state.band.mood    = clamp(state.band.mood    - 3, 0, 100)
-    state.band.stamina = clamp(state.band.stamina - 10, 0, 100)
-
-    outcomeText = `Bad Show...  Fame ${fameDelta}`
-  }
+  let fameDelta
+  let outcomeText
+  let isCancelled = false
 
   // Show cancellation if harmony is critically low
   if (state.band.harmony < 15 && Math.random() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE) {
     fameDelta = -(FLAT_FAME_PENALTY_PER_BAD_GIG * 2)
     outcomeText = `CANCELLED! Harmony too low. Fame ${fameDelta}`
     score = 0
+    isCancelled = true
+  } else {
+    // Good gig threshold aligns with applyPostGigState in game-balance-simulation.mjs
+    if (score >= 78) {
+      // Great Gig — harmony reward
+      const rawGain = 50 + Math.floor(score * 1.5)
+      fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
+
+      state.band.harmony = clampHarmony(state.band.harmony + 2)
+      state.band.mood    = clamp(state.band.mood    + 2, 0, 100)
+      state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
+
+      const dampFactor = previousFame > 50
+        ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
+        : ''
+      outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
+    } else if (score >= 62) {
+      // Decent Gig — fame gain, harmony penalty
+      const rawGain = 50 + Math.floor(score * 1.5)
+      fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
+
+      state.band.harmony = clampHarmony(state.band.harmony - 5)
+      state.band.mood    = clamp(state.band.mood    + 1, 0, 100)
+      state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
+
+      const dampFactor = previousFame > 50
+        ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
+        : ''
+      outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`
+    } else {
+      // Bad Gig
+      fameDelta = -FLAT_FAME_PENALTY_PER_BAD_GIG
+
+      state.band.harmony = clampHarmony(state.band.harmony - 5)
+      state.band.mood    = clamp(state.band.mood    - 3, 0, 100)
+      state.band.stamina = clamp(state.band.stamina - 10, 0, 100)
+
+      outcomeText = `Bad Show...  Fame ${fameDelta}`
+    }
   }
 
-  state.gigsPlayed++
   state.fame = Math.max(0, state.fame + fameDelta)
 
-  // Add estimated gig income
-  const gigNet = estimateGigNet(previousFame)
-  state.money += gigNet
+  let gigNet = 0
+  if (!isCancelled) {
+    state.gigsPlayed++
+    // Add estimated gig income
+    gigNet = estimateGigNet(previousFame)
+    state.money += gigNet
+  }
 
   console.log(
     `[Day ${state.day.toString().padStart(2, '0')}] ` +
@@ -178,6 +185,9 @@ while (state.day <= TARGET_DAYS) {
     state.fame = Math.max(0, state.fame - eventFameLoss)
     console.log(`          > Event: Bad PR! Fame -${eventFameLoss} | Total Fame: ${Math.round(state.fame)}`)
   }
+
+  // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
+  state.day += 1
 }
 
 console.log('\n--- End of Tour ---')
