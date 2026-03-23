@@ -1,5 +1,5 @@
 /*
- * (#1) Actual Updates: Reordered spread operators in getGigModifiers for correct default overrides.
+ * (#1) Actual Updates: Added missing REVIEW.md comment block.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */

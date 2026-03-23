@@ -1,4 +1,8 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
+/*
+ * (#1) Actual Updates: Refactored song playback duration logic and localized toasts. Added proper state resets on initialization.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { useCallback, useRef, useEffect } from 'react'
 import { audioManager } from '../../utils/AudioManager'
 import {

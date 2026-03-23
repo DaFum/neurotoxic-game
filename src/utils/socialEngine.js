@@ -1,4 +1,8 @@
-// TODO: Review this file
+/*
+ * (#1) Actual Updates: Reverted Set conversion optimization in `calculateViralityScore`.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto.js'
 import { POST_OPTIONS } from '../data/postOptions.js'
