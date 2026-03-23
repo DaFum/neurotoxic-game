@@ -1,14 +1,3 @@
-/**
- * ACTUAL UPDATES (#1):
- * - Removed stale ref-cache from postOptions useMemo so options regenerate when game state changes.
- *
- * NEXT STEPS AND IDEAS (#2):
- * - Apply the same fix to the financials useMemo cachedFinancialsRef to be consistent.
- * - Remove the now-unused cachedPostOptionsRef declaration.
- *
- * FOUND ERRORS + SOLUTIONS (#3):
- * - ERROR: cachedPostOptionsRef prevented useMemo from returning fresh options when deps changed. SOLUTION: Removed ref cache, relying on useMemo's built-in memoization.
- */
 // TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -34,6 +23,7 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   calculateFameGain,
+  clampControversyLevel,
   BALANCE_CONSTANTS
 } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
@@ -86,9 +76,6 @@ export const usePostGigLogic = () => {
   const [postOptionsError, setPostOptionsError] = useState(false)
   const errorHandledRef = useRef(false)
 
-  // Create cache refs for pure derivation without effect sets
-  const cachedFinancialsRef = useRef(null)
-
   const phaseTitleKey =
     {
       REPORT: 'ui:postGig.phaseReport',
@@ -125,7 +112,6 @@ export const usePostGigLogic = () => {
   // Derive financials purely without triggering a re-render loop
   const financials = useMemo(() => {
     if (!currentGig || !lastGigStats) return null
-    if (cachedFinancialsRef.current) return cachedFinancialsRef.current
 
     const result = calculateGigFinancials({
       gigData: currentGig,
@@ -144,7 +130,6 @@ export const usePostGigLogic = () => {
         )
       }
     })
-    cachedFinancialsRef.current = result
     return result
   }, [
     currentGig,
@@ -355,8 +340,7 @@ export const usePostGigLogic = () => {
         ),
         viral: (social.viral || 0) + (result.success ? 1 : 0) + gigViralBonus,
         lastGigDay: player.day,
-        controversyLevel: Math.max(
-          0,
+        controversyLevel: clampControversyLevel(
           (social.controversyLevel || 0) + (result.controversyChange || 0)
         ),
         loyalty: Math.max(
@@ -472,8 +456,7 @@ export const usePostGigLogic = () => {
                 (prevSocial.loyalty || 0) + deal.penalty.loyalty
               )
             if (deal.penalty.controversy)
-              updates.controversyLevel = Math.max(
-                0,
+            updates.controversyLevel = clampControversyLevel(
                 (prevSocial.controversyLevel || 0) + deal.penalty.controversy
               )
           }
@@ -566,7 +549,7 @@ export const usePostGigLogic = () => {
 
     updatePlayer({ money: nextMoney })
     updateSocial(prev => ({
-      controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
+      controversyLevel: clampControversyLevel((prev.controversyLevel || 0) - 25)
     }))
 
     const moneyText = appliedDelta !== 0 ? ` (${appliedDelta}€)` : ''

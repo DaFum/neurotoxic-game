@@ -75,6 +75,18 @@ export const calculateFameGain = (rawGain, currentFame, maxGain = 500) => {
 }
 
 /**
+ * Clamps a social controversy level to be between 0 and 100.
+ *
+ * @param {number} level - Candidate controversy level.
+ * @returns {number} Clamped controversy level in range [0, 100].
+ */
+export const clampControversyLevel = level => {
+  if (!Number.isFinite(level)) return 0
+  const safeLevel = Math.floor(level)
+  return Math.max(0, Math.min(100, safeLevel))
+}
+
+/**
  * Clamps player money to a safe, non-negative integer.
  * Prevents negative balances and ensures integer boundaries.
  *
@@ -163,6 +175,11 @@ const calculateClampedStatDelta = (currentValue, deltaValue) => {
   return nextValue - (currentValue || 0)
 }
 
+const calculateClampedControversyDelta = (currentValue, deltaValue) => {
+  const nextValue = clampControversyLevel((currentValue || 0) + deltaValue)
+  return nextValue - (currentValue || 0)
+}
+
 /**
  * Copies enumerable own properties from source to a new object, filtering out forbidden keys.
  * @param {object} source - Source object to copy from.
@@ -244,7 +261,7 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.social) {
     if (typeof delta.social.controversyLevel === 'number') {
-      applied.social.controversyLevel = calculateClampedStatDelta(
+      applied.social.controversyLevel = calculateClampedControversyDelta(
         state.social?.controversyLevel,
         delta.social.controversyLevel
       )
@@ -593,7 +610,13 @@ export const applyEventDelta = (state, delta) => {
       if (isForbiddenKey(key)) continue
       const value = delta.social[key]
 
-      if (key === 'influencers') {
+      if (key === 'controversyLevel') {
+        if (typeof value === 'number') {
+          const currentValue =
+            typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
+          nextSocial[key] = clampControversyLevel(currentValue + value)
+        }
+      } else if (key === 'influencers') {
         if (
           typeof value === 'object' &&
           value !== null &&
