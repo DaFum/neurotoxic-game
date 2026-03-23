@@ -5,13 +5,11 @@
  */
 import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../constants.js'
-import {
-  XlrPlug,
-  JackPlug,
-  DcPlug,
-  IecPlug,
-  MidiPlug
-} from './plug-graphics/index.js'
+import { XlrPlug } from './plugs/XlrPlug.jsx'
+import { JackPlug } from './plugs/JackPlug.jsx'
+import { DcPlug } from './plugs/DcPlug.jsx'
+import { IecPlug } from './plugs/IecPlug.jsx'
+import { MidiPlug } from './plugs/MidiPlug.jsx'
 
 export const PlugGraphics = ({ type }) => {
   switch (type) {
