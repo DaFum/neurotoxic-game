@@ -16,10 +16,12 @@ export const CableList = ({
   isGameOver,
   handleCableClick
 }) => {
+  const connectedCableIds = new Set(Object.values(connections))
+
   return (
     <>
       {CABLES.map(cable => {
-        const isConnected = Object.values(connections).includes(cable.id)
+        const isConnected = connectedCableIds.has(cable.id)
         const isSelected = selectedCable === cable.id
 
         return (
