@@ -1,4 +1,4 @@
-import { calculateFameGain, BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
+import { calculateFameGain, calculateFameLevel, BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
 
 /**
  * Mathematically isolates and logs the fame calculation, demonstrating the true
@@ -53,8 +53,12 @@ console.log('Day'.padEnd(7) + 'Action'.padEnd(32) + 'Condition'.padEnd(16) +
   'Score'.padEnd(7) + 'Outcome'.padEnd(46) + 'Fame'.padEnd(8) + 'Money')
 
 while (state.day <= TARGET_DAYS) {
-  // Apply daily living cost
-  state.money = Math.max(0, state.money - DAILY_COST)
+  // Apply daily living cost with lifestyle inflation
+  const currentFameLevel = calculateFameLevel(state.fame)
+  const lifestyleInflation = Math.floor(Math.pow(currentFameLevel, 1.4) * 15)
+  const currentDailyCost = DAILY_COST + lifestyleInflation
+
+  state.money = Math.max(0, state.money - currentDailyCost)
 
   // Determine Condition Text BEFORE taking an action
   let conditionStr = 'Ready to rock'

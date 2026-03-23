@@ -612,9 +612,10 @@ export const applyEventDelta = (state, delta) => {
 
       if (key === 'controversyLevel') {
         if (typeof value === 'number') {
-          const currentValue =
-            typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
-          nextSocial[key] = clampControversyLevel(currentValue + value)
+          const newValue = clampControversyLevel(
+            (typeof nextSocial[key] === 'number' ? nextSocial[key] : 0) + value
+          )
+          nextSocial[key] = newValue
         }
       } else if (key === 'influencers') {
         if (

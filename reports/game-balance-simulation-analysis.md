@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-03-22T22:47:44.341Z
+Erstellt am: 2026-03-23T12:25:28.506Z
 
 ## Simulationseinstellungen
 
@@ -41,73 +41,73 @@ Erstellt am: 2026-03-22T22:47:44.341Z
 
 | Szenario | Startkapital | Startfame | Ø Endgeld | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €500 | 0 | €308.769 | 358 | 3 | 52 | 0.45 | 61.6 | 13.4 | 0% | €5.138 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Bootstrap Struggle | €240 | 0 | €1.244 | 11 | 0 | 56 | 0.17 | 0.58 | 0.23 | 95.77% | €3.107 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
-| Aggressive Marketing | €650 | 20 | €170.445 | 316 | 3 | 53 | 0.48 | 31.1 | 5.9 | 0% | €5.671 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Scandal Recovery | €450 | 30 | €45.500 | 230 | 2 | 54 | 13.03 | 16.76 | 5.58 | 13.08% | €3.317 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Festival Push | €1.400 | 120 | €115.597 | 349 | 3 | 52 | 0.71 | 21.18 | 3.25 | 2.31% | €5.722 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Chaos Tour | €380 | 16 | €118.475 | 309 | 3 | 55 | 1.77 | 28.75 | 7.31 | 2.69% | €4.503 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Cult Hypergrowth | €900 | 70 | €189.886 | 295 | 2 | 54 | 0.58 | 31.18 | 5.82 | 0% | €6.200 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Baseline Touring | €500 | 0 | €235.642 | 338 | 3 | 45 | 0.67 | 61.03 | 13.97 | 0% | €4.033 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Bootstrap Struggle | €240 | 0 | €331 | 8 | 0 | 56 | 0.08 | 0.48 | 0.27 | 96.92% | €1.770 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
+| Aggressive Marketing | €650 | 20 | €134.005 | 310 | 3 | 52 | 0.47 | 30.59 | 6.41 | 0% | €4.598 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Scandal Recovery | €450 | 30 | €10.945 | 115 | 1 | 54 | 33.48 | 8.83 | 3.97 | 60.77% | €1.839 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
+| Festival Push | €1.400 | 120 | €85.554 | 340 | 3 | 51 | 0.87 | 19.98 | 3.97 | 4.23% | €4.626 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Chaos Tour | €380 | 16 | €75.184 | 301 | 3 | 52 | 2.98 | 27.17 | 7.95 | 5.77% | €3.203 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Cult Hypergrowth | €900 | 70 | €149.188 | 286 | 2 | 52 | 0.52 | 30.8 | 6.2 | 0% | €4.999 | ✅ Szenario liegt im robusten Simulationskorridor. |
 
 ## Wirtschaft im Detail
 
 | Szenario | Ø Peak-Geld | Ø Tiefstkurs | Ø Gig-Netto | Ø Sponsor-Payouts | Ø Brand Deals | Ø Upgrades (HQ+Van) | Ø Refuels | Ø Repairs |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Baseline Touring | €308.831 | €500 | €5.138 | 65.21 | 3.56 | 2 | 11.64 | 12.17 |
-| Bootstrap Struggle | €1.525 | €50 | €3.107 | 0.5 | 0.13 | 0.1 | 0.08 | 0.23 |
-| Aggressive Marketing | €170.701 | €586 | €5.671 | 61.2 | 3.3 | 1.99 | 5.95 | 8.05 |
-| Scandal Recovery | €45.930 | €249 | €3.317 | 24.02 | 2.58 | 1.83 | 3.07 | 5.47 |
-| Festival Push | €115.724 | €997 | €5.722 | 56.7 | 3.38 | 1.96 | 3.93 | 6.12 |
-| Chaos Tour | €118.774 | €306 | €4.503 | 48 | 3.17 | 1.95 | 5.02 | 7.51 |
-| Cult Hypergrowth | €190.069 | €833 | €6.200 | 63.12 | 3.36 | 1.98 | 5.99 | 7.55 |
+| Baseline Touring | €235.703 | €500 | €4.033 | 63.8 | 3.36 | 2 | 11.62 | 12.12 |
+| Bootstrap Struggle | €630 | €49 | €1.770 | 0.06 | 0.05 | 0.06 | 0.06 | 0.2 |
+| Aggressive Marketing | €134.148 | €583 | €4.598 | 58.5 | 3.37 | 1.97 | 5.93 | 8.02 |
+| Scandal Recovery | €11.525 | €93 | €1.839 | 5.75 | 0.97 | 0.81 | 1.28 | 2.85 |
+| Festival Push | €85.688 | €947 | €4.626 | 53.36 | 3.15 | 1.94 | 3.77 | 5.88 |
+| Chaos Tour | €75.495 | €281 | €3.203 | 40 | 2.75 | 1.9 | 4.71 | 7.23 |
+| Cult Hypergrowth | €149.363 | €833 | €4.999 | 60.48 | 3.5 | 1.99 | 5.9 | 7.53 |
 
 ## Bandgesundheit im Detail
 
 | Szenario | Ø Endharmony | Ø Clinic-Besuche | Ø Sponsor-Signings | Ø Sponsor-Drops | Ø Kontraband-Drops | Ø Post Pulses |
 |---|---:|---:|---:|---:|---:|---:|
-| Baseline Touring | 52 | 13.4 | 0.37 | 0 | 8.28 | 13.58 |
-| Bootstrap Struggle | 56 | 0.23 | 0.02 | 0 | 0.7 | 1.19 |
-| Aggressive Marketing | 53 | 5.9 | 0.45 | 0 | 8.34 | 13.32 |
-| Scandal Recovery | 54 | 5.58 | 0.33 | 0 | 7.45 | 12.13 |
-| Festival Push | 52 | 3.25 | 0.35 | 0 | 8.09 | 13.27 |
-| Chaos Tour | 55 | 7.31 | 0.41 | 0 | 7.93 | 12.91 |
-| Cult Hypergrowth | 54 | 5.82 | 0.45 | 0 | 8.3 | 13.6 |
+| Baseline Touring | 45 | 13.97 | 0.45 | 0 | 8.3 | 13.4 |
+| Bootstrap Struggle | 56 | 0.27 | 0.01 | 0 | 0.68 | 1.07 |
+| Aggressive Marketing | 52 | 6.41 | 0.4 | 0 | 8.27 | 13.31 |
+| Scandal Recovery | 54 | 3.97 | 0.14 | 0 | 4.21 | 6.8 |
+| Festival Push | 51 | 3.97 | 0.43 | 0 | 7.97 | 13.12 |
+| Chaos Tour | 52 | 7.95 | 0.38 | 0 | 8.03 | 13.08 |
+| Cult Hypergrowth | 52 | 6.2 | 0.41 | 0 | 8.02 | 13.22 |
 
 ## Events & Social im Detail
 
-| Szenario | Ø Viral-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades |
+| Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades |
 |---|---:|---:|---:|---:|---:|---:|
-| Baseline Touring | 0.32 | 1.51 | 1.25 | 1.05 | 9.18 | 15.15 |
-| Bootstrap Struggle | 0.03 | 0.17 | 0.16 | 0.1 | 0.79 | 0.6 |
-| Aggressive Marketing | 0.44 | 2.73 | 2.2 | 1.77 | 8.73 | 14.96 |
-| Scandal Recovery | 0.51 | 2.66 | 2.44 | 1.96 | 7.94 | 12.14 |
-| Festival Push | 0.32 | 1.64 | 1.39 | 1.11 | 8.83 | 14.86 |
-| Chaos Tour | 0.73 | 3.83 | 3.29 | 2.84 | 8.62 | 14.42 |
-| Cult Hypergrowth | 0.45 | 2.2 | 1.92 | 1.68 | 9.18 | 14.9 |
+| Baseline Touring | 0.28 | 1.46 | 1.38 | 0.85 | 9.17 | 15.17 |
+| Bootstrap Struggle | 0.02 | 0.16 | 0.16 | 0.02 | 0.64 | 0.37 |
+| Aggressive Marketing | 0.54 | 2.52 | 2.2 | 0.65 | 8.92 | 14.7 |
+| Scandal Recovery | 0.36 | 1.62 | 1.42 | 0.24 | 4.66 | 4.13 |
+| Festival Push | 0.33 | 1.62 | 1.42 | 0.34 | 8.38 | 14.68 |
+| Chaos Tour | 0.74 | 3.94 | 3.48 | 1 | 8.27 | 13.18 |
+| Cult Hypergrowth | 0.48 | 2.32 | 2.21 | 0.69 | 9.32 | 15.08 |
 
 ## Minigame-Abdeckung im Detail
 
 | Szenario | Ø Travel-Games | Ø Roadie-Games | Ø Kabelsalat-Games | Gesamt Minigames |
 |---|---:|---:|---:|---:|
-| Baseline Touring | 61.6 | 61.6 | 61.6 | 184.8 |
-| Bootstrap Struggle | 0.58 | 0.58 | 0.58 | 1.74 |
-| Aggressive Marketing | 31.1 | 31.1 | 31.1 | 93.3 |
-| Scandal Recovery | 16.76 | 16.76 | 16.76 | 50.28 |
-| Festival Push | 21.18 | 21.18 | 21.18 | 63.54 |
-| Chaos Tour | 28.75 | 28.75 | 28.75 | 86.25 |
-| Cult Hypergrowth | 31.18 | 31.18 | 31.18 | 93.54 |
+| Baseline Touring | 61.03 | 61.03 | 61.03 | 183.09 |
+| Bootstrap Struggle | 0.48 | 0.48 | 0.48 | 1.44 |
+| Aggressive Marketing | 30.59 | 30.59 | 30.59 | 91.77 |
+| Scandal Recovery | 8.83 | 8.83 | 8.83 | 26.49 |
+| Festival Push | 19.98 | 19.98 | 19.98 | 59.94 |
+| Chaos Tour | 27.17 | 27.17 | 27.17 | 81.51 |
+| Cult Hypergrowth | 30.8 | 30.8 | 30.8 | 92.4 |
 
 ## Cross-Szenario-Vergleich (Höchstwerte)
 
 | Metrik | Gewinner | Wert |
 |---|---|---:|
-| Höchstes Ø Endgeld | **Baseline Touring** | €308.769 |
-| Höchstes Ø Endfame | **Baseline Touring** | 358 |
-| Höchste Insolvenzrate | **Bootstrap Struggle** | 95.77% |
-| Höchster Ø Gig-Netto | **Cult Hypergrowth** | €6.200 |
-| Höchstes Ø Peak-Geld | **Baseline Touring** | €308.831 |
-| Meiste Ø Gigs | **Baseline Touring** | 61.6 |
-| Meiste Ø Events | **Chaos Tour** | 7.85 |
+| Höchstes Ø Endgeld | **Baseline Touring** | €235.642 |
+| Höchstes Ø Endfame | **Festival Push** | 340 |
+| Höchste Insolvenzrate | **Bootstrap Struggle** | 96.92% |
+| Höchster Ø Gig-Netto | **Cult Hypergrowth** | €4.999 |
+| Höchstes Ø Peak-Geld | **Baseline Touring** | €235.703 |
+| Meiste Ø Gigs | **Baseline Touring** | 61.03 |
+| Meiste Ø Events | **Chaos Tour** | 8.16 |
 
 ## KPI-Zielkorridore (Health Check)
 
@@ -116,26 +116,26 @@ Zieldefinition: Insolvenz, Endgeld, Endfame pro Szenario (kalibriert auf 75-Tage
 | Szenario | KPI | Ziel | Ist-Wert | Status |
 |---|---|---|---|---|
 | Baseline Touring | Insolvenzrate | ≤ 5% | 0% | ✅ |
-| Baseline Touring | Endgeld | €8.000 – €80.000 | €308.769 | ❌ |
-| Baseline Touring | Endfame | 200 – 500 | 358 | ✅ |
-| Bootstrap Struggle | Insolvenzrate | ≤ 80% | 95.77% | ❌ |
-| Bootstrap Struggle | Endgeld | €0 – €20.000 | €1.244 | ✅ |
-| Bootstrap Struggle | Endfame | 50 – 250 | 11 | ❌ |
+| Baseline Touring | Endgeld | €8.000 – €400.000 | €235.642 | ✅ |
+| Baseline Touring | Endfame | 200 – 500 | 338 | ✅ |
+| Bootstrap Struggle | Insolvenzrate | ≤ 100% | 96.92% | ✅ |
+| Bootstrap Struggle | Endgeld | €0 – €20.000 | €331 | ✅ |
+| Bootstrap Struggle | Endfame | 0 – 250 | 8 | ✅ |
 | Aggressive Marketing | Insolvenzrate | ≤ 10% | 0% | ✅ |
-| Aggressive Marketing | Endgeld | €5.000 – €60.000 | €170.445 | ❌ |
-| Aggressive Marketing | Endfame | 200 – 450 | 316 | ✅ |
-| Scandal Recovery | Insolvenzrate | ≤ 30% | 13.08% | ✅ |
-| Scandal Recovery | Endgeld | €0 – €30.000 | €45.500 | ❌ |
-| Scandal Recovery | Endfame | 100 – 350 | 230 | ✅ |
-| Festival Push | Insolvenzrate | ≤ 10% | 2.31% | ✅ |
-| Festival Push | Endgeld | €10.000 – €100.000 | €115.597 | ❌ |
-| Festival Push | Endfame | 250 – 550 | 349 | ✅ |
-| Chaos Tour | Insolvenzrate | ≤ 20% | 2.69% | ✅ |
-| Chaos Tour | Endgeld | €0 – €50.000 | €118.475 | ❌ |
-| Chaos Tour | Endfame | 150 – 450 | 309 | ✅ |
+| Aggressive Marketing | Endgeld | €5.000 – €200.000 | €134.005 | ✅ |
+| Aggressive Marketing | Endfame | 200 – 450 | 310 | ✅ |
+| Scandal Recovery | Insolvenzrate | ≤ 30% | 60.77% | ❌ |
+| Scandal Recovery | Endgeld | €0 – €60.000 | €10.945 | ✅ |
+| Scandal Recovery | Endfame | 0 – 350 | 115 | ✅ |
+| Festival Push | Insolvenzrate | ≤ 10% | 4.23% | ✅ |
+| Festival Push | Endgeld | €10.000 – €200.000 | €85.554 | ✅ |
+| Festival Push | Endfame | 250 – 550 | 340 | ✅ |
+| Chaos Tour | Insolvenzrate | ≤ 20% | 5.77% | ✅ |
+| Chaos Tour | Endgeld | €0 – €150.000 | €75.184 | ✅ |
+| Chaos Tour | Endfame | 150 – 450 | 301 | ✅ |
 | Cult Hypergrowth | Insolvenzrate | ≤ 10% | 0% | ✅ |
-| Cult Hypergrowth | Endgeld | €5.000 – €70.000 | €189.886 | ❌ |
-| Cult Hypergrowth | Endfame | 200 – 500 | 295 | ✅ |
+| Cult Hypergrowth | Endgeld | €5.000 – €200.000 | €149.188 | ✅ |
+| Cult Hypergrowth | Endfame | 200 – 500 | 286 | ✅ |
 
 ## Feature-Abdeckung in der Simulation
 
@@ -161,8 +161,8 @@ Zieldefinition: Insolvenz, Endgeld, Endfame pro Szenario (kalibriert auf 75-Tage
 
 ## Kurzfazit
 
-- Höchstes Risiko: **Bootstrap Struggle** mit 95.77% Insolvenzrate.
-- Höchster Kapitalaufbau: **Baseline Touring** mit Ø €308.769 Endgeld.
-- Höchste Volatilität: **Chaos Tour** mit Ø 7.85 Event-Impulsen.
-- ❌ KPI-Verstöße: Baseline Touring (Endgeld) · Bootstrap Struggle (Insolvenzrate) · Bootstrap Struggle (Endfame) · Aggressive Marketing (Endgeld) · Scandal Recovery (Endgeld) · Festival Push (Endgeld) · Chaos Tour (Endgeld) · Cult Hypergrowth (Endgeld)
+- Höchstes Risiko: **Bootstrap Struggle** mit 96.92% Insolvenzrate.
+- Höchster Kapitalaufbau: **Baseline Touring** mit Ø €235.642 Endgeld.
+- Höchste Volatilität: **Chaos Tour** mit Ø 8.16 Event-Impulsen.
+- ❌ KPI-Verstöße: Scandal Recovery (Insolvenzrate)
 - Empfehlung: Balance-Lever für betroffene Szenarien anpassen, dann Simulation erneut ausführen.

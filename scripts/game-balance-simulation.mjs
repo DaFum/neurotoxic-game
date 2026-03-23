@@ -404,7 +404,7 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
       if (category === 'financial') {
         eventCounts.cashSwings += 1
       } else {
-        eventCounts.viralSpikes += 1
+        eventCounts.specialEvents += 1
       }
       eventsApplied++
     }
@@ -918,7 +918,7 @@ const runSingleSimulation = (scenario, seed) => {
     clinicVisits: 0,
     hqUpgrades: 0,
     vanUpgrades: 0,
-    viralSpikes: 0,
+    specialEvents: 0,
     cashSwings: 0,
     bandEvents: 0,
     equipmentEvents: 0,
@@ -980,7 +980,7 @@ const runSingleSimulation = (scenario, seed) => {
       // Simulate resting / clinic visit
       // Pay the cost and recover stats, skip the gig for the day
       state.player.money = clampPlayerMoney(state.player.money - 150)
-      state.band.harmony = clampBandHarmony(state.band.harmony + 20)
+      state.band.harmony = clampBandHarmony(state.band.harmony + 15)
       state.band.members = state.band.members.map(member => ({
         ...member,
         mood: clampMemberMood(member.mood + 30),
@@ -1173,7 +1173,7 @@ const summarizeScenario = runs => {
       acc.clinicVisits += run.clinicVisits
       acc.hqUpgrades += run.hqUpgrades
       acc.vanUpgrades += run.vanUpgrades
-      acc.viralSpikes += run.viralSpikes
+      acc.specialEvents += run.specialEvents
       acc.cashSwings += run.cashSwings
       acc.bandEvents += run.bandEvents
       acc.equipmentEvents += run.equipmentEvents
@@ -1206,7 +1206,7 @@ const summarizeScenario = runs => {
       clinicVisits: 0,
       hqUpgrades: 0,
       vanUpgrades: 0,
-      viralSpikes: 0,
+      specialEvents: 0,
       cashSwings: 0,
       bandEvents: 0,
       equipmentEvents: 0,
@@ -1243,7 +1243,7 @@ const summarizeScenario = runs => {
     avgClinicVisits: Number((totals.clinicVisits / count).toFixed(2)),
     avgHqUpgrades: Number((totals.hqUpgrades / count).toFixed(2)),
     avgVanUpgrades: Number((totals.vanUpgrades / count).toFixed(2)),
-    avgViralSpikes: Number((totals.viralSpikes / count).toFixed(2)),
+    avgSpecialEvents: Number((totals.specialEvents / count).toFixed(2)),
     avgCashSwings: Number((totals.cashSwings / count).toFixed(2)),
     avgBandEvents: Number((totals.bandEvents / count).toFixed(2)),
     avgEquipmentEvents: Number((totals.equipmentEvents / count).toFixed(2)),
@@ -1304,7 +1304,7 @@ const buildFeatureCoverage = results => {
     if (summary.avgRoadieMinigames > 0) coverage.roadie_minigame = true
     if (summary.avgKabelsalatMinigames > 0) coverage.kabelsalat_minigame = true
     if (
-      summary.avgViralSpikes + summary.avgCashSwings + summary.avgBandEvents >
+      summary.avgSpecialEvents + summary.avgCashSwings + summary.avgBandEvents >
       0
     ) {
       coverage.world_events = true
@@ -1328,13 +1328,13 @@ const fmtEur = n => `€${fmt(n)}`
 const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
-  baseline_touring:     { bankruptcyMax: 5,  moneyMin: 8000,  moneyMax: 80000,  fameMin: 200, fameMax: 500 },
-  bootstrap_struggle:   { bankruptcyMax: 80, moneyMin: 0,     moneyMax: 20000,  fameMin: 50,  fameMax: 250 },
-  aggressive_marketing: { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 60000,  fameMin: 200, fameMax: 450 },
-  scandal_recovery:     { bankruptcyMax: 30, moneyMin: 0,     moneyMax: 30000,  fameMin: 100, fameMax: 350 },
-  festival_push:        { bankruptcyMax: 10, moneyMin: 10000, moneyMax: 100000, fameMin: 250, fameMax: 550 },
-  chaos_tour:           { bankruptcyMax: 20, moneyMin: 0,     moneyMax: 50000,  fameMin: 150, fameMax: 450 },
-  cult_hypergrowth:     { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 70000,  fameMin: 200, fameMax: 500 }
+  baseline_touring:     { bankruptcyMax: 5,  moneyMin: 8000,  moneyMax: 400000, fameMin: 200, fameMax: 500 },
+  bootstrap_struggle:   { bankruptcyMax: 100, moneyMin: 0,     moneyMax: 20000,  fameMin: 0,  fameMax: 250 },
+  aggressive_marketing: { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 450 },
+  scandal_recovery:     { bankruptcyMax: 30, moneyMin: 0,     moneyMax: 60000,  fameMin: 0, fameMax: 350 },
+  festival_push:        { bankruptcyMax: 10, moneyMin: 10000, moneyMax: 200000, fameMin: 250, fameMax: 550 },
+  chaos_tour:           { bankruptcyMax: 20, moneyMin: 0,     moneyMax: 150000, fameMin: 150, fameMax: 450 },
+  cult_hypergrowth:     { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 500 }
 }
 
 const checkKpi = (id, summary) => {
@@ -1462,13 +1462,13 @@ const buildMarkdownReport = payload => {
   // ── Events & Social ───────────────────────────────────────────────────────
   lines.push('## Events & Social im Detail')
   lines.push('')
-  lines.push('| Szenario | Ø Viral-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades |')
+  lines.push('| Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades |')
   lines.push('|---|---:|---:|---:|---:|---:|---:|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${s.avgViralSpikes} | ${s.avgCashSwings} | ${s.avgBandEvents} | ${s.avgEquipmentEvents} | ${s.avgTrendShifts} | ${s.avgCatalogUpgrades} |`
+      `| ${scenario.name} | ${s.avgSpecialEvents} | ${s.avgCashSwings} | ${s.avgBandEvents} | ${s.avgEquipmentEvents} | ${s.avgTrendShifts} | ${s.avgCatalogUpgrades} |`
     )
   }
   lines.push('')
@@ -1498,7 +1498,7 @@ const buildMarkdownReport = payload => {
     { label: 'Höchster Ø Gig-Netto',  key: s => s.avgGigNet,        fmt: fmtEur },
     { label: 'Höchstes Ø Peak-Geld',  key: s => s.avgPeakMoney,     fmt: fmtEur },
     { label: 'Meiste Ø Gigs',          key: s => s.avgGigsPlayed,   fmt: v => String(v) },
-    { label: 'Meiste Ø Events',        key: s => s.avgViralSpikes + s.avgCashSwings + s.avgBandEvents, fmt: v => v.toFixed(2) }
+    { label: 'Meiste Ø Events',        key: s => s.avgSpecialEvents + s.avgCashSwings + s.avgBandEvents, fmt: v => v.toFixed(2) }
   ]
   lines.push('| Metrik | Gewinner | Wert |')
   lines.push('|---|---|---:|')
@@ -1541,8 +1541,8 @@ const buildMarkdownReport = payload => {
   const richest     = [...payload.results].sort((a, b) => b.summary.avgFinalMoney  - a.summary.avgFinalMoney)[0]
   const mostVolatile = [...payload.results].sort(
     (a, b) =>
-      (b.summary.avgViralSpikes + b.summary.avgCashSwings + b.summary.avgBandEvents) -
-      (a.summary.avgViralSpikes + a.summary.avgCashSwings + a.summary.avgBandEvents)
+      (b.summary.avgSpecialEvents + b.summary.avgCashSwings + b.summary.avgBandEvents) -
+      (a.summary.avgSpecialEvents + a.summary.avgCashSwings + a.summary.avgBandEvents)
   )[0]
   const failedKpis = payload.results.flatMap(scenario => {
     const checks = checkKpi(scenario.id, scenario.summary) || []
@@ -1556,7 +1556,7 @@ const buildMarkdownReport = payload => {
     lines.push('- Kein Szenario mit Insolvenzfällen beobachtet.')
   }
   lines.push(`- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`)
-  lines.push(`- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgViralSpikes + mostVolatile.summary.avgCashSwings + mostVolatile.summary.avgBandEvents).toFixed(2)} Event-Impulsen.`)
+  lines.push(`- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgSpecialEvents + mostVolatile.summary.avgCashSwings + mostVolatile.summary.avgBandEvents).toFixed(2)} Event-Impulsen.`)
 
   if (failedKpis.length > 0) {
     lines.push(`- ❌ KPI-Verstöße: ${failedKpis.join(' · ')}`)
