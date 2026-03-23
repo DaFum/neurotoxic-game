@@ -93,10 +93,7 @@ class PixiStageController extends BaseStageController {
       this.gameStateRef,
       (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
     )
-    const noteLoad = withTimeout(
-      this.noteManager.loadAssets(),
-      'Note Assets'
-    )
+    const noteLoad = withTimeout(this.noteManager.loadAssets(), 'Note Assets')
 
     return [crowdLoad, effectLoad, noteLoad]
   }

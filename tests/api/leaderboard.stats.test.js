@@ -16,8 +16,6 @@ const mockMulti = {
 
 const mockRedisClient = {
   isOpen: true,
-  incr: mock.fn(() => Promise.resolve(1)),
-  expire: mock.fn(() => Promise.resolve()),
   zAdd: mock.fn(() => Promise.resolve()),
   zRangeWithScores: mock.fn(() => Promise.resolve([])),
   hmGet: mock.fn(() => Promise.resolve([])),

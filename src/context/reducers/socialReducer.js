@@ -131,7 +131,10 @@ export const handleMerchPress = (state, payload) => {
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
-  const nextControversy = Math.max(0, Math.min(100, currentControversy + controversyGain))
+  const nextControversy = Math.max(
+    0,
+    Math.min(100, currentControversy + controversyGain)
+  )
   const nextFame = clampPlayerFame(currentFame + fameGain)
 
   const nextState = {

@@ -23,7 +23,9 @@ export const useMerchPress = () => {
     }
   }, [player?.fameLevel])
 
-  const canPress = (player?.money || 0) >= config.cost && (band?.harmony || 0) >= config.harmonyCostOnFail
+  const canPress =
+    (player?.money || 0) >= config.cost &&
+    (band?.harmony || 0) >= config.harmonyCostOnFail
 
   const triggerPress = useCallback(() => {
     if (!canPress) return
