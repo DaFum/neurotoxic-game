@@ -61,7 +61,7 @@ test('Relationship Mechanics', async t => {
     const state = createInitialState()
     const matze = state.band.members.find(m => m.name === 'Matze')
     // Give Matze 'grudge_holder' trait
-    matze.traits = { grudge_holder: { id: 'grudge_holder' } }
+    matze.traits['grudge_holder'] = { id: 'grudge_holder' }
 
     const delta = {
       band: {
@@ -86,7 +86,7 @@ test('Relationship Mechanics', async t => {
     const state = createInitialState()
     const lars = state.band.members.find(m => m.name === 'Lars')
     // Give Lars 'peacemaker' trait
-    lars.traits = { peacemaker: { id: 'peacemaker' } }
+    lars.traits['peacemaker'] = { id: 'peacemaker' }
 
     const delta = {
       band: {
@@ -105,7 +105,7 @@ test('Relationship Mechanics', async t => {
     const state = createInitialState()
     const lars = state.band.members.find(m => m.name === 'Lars')
     // Give Lars 'peacemaker' trait
-    lars.traits = { peacemaker: { id: 'peacemaker' } }
+    lars.traits['peacemaker'] = { id: 'peacemaker' }
 
     const delta = {
       band: {

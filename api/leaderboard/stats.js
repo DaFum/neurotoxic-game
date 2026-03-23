@@ -1,5 +1,5 @@
 import client from '../../lib/redis.js'
-import { normalizeIp } from '../../src/utils/apiUtils.js'
+import { normalizeIp } from '../../lib/apiUtils.js'
 
 const VALID_STATS = [
   'balance',
