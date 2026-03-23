@@ -1,9 +1,8 @@
 /*
- * (#1) Actual Updates: Extracted CableItem component to improve maintainability.
+ * (#1) Actual Updates: Extracted CableItem for maintainability.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
-// TODO: Extract complex UI sub-components into standalone files for better maintainability
 import { CABLES } from '../constants.js'
 import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.jsx'
@@ -18,18 +17,23 @@ export const CableList = ({
 }) => {
   return (
     <>
-      {CABLES.map(cable => (
-        <CableItem
-          key={cable.id}
-          t={t}
-          cable={cable}
-          connections={connections}
-          selectedCable={selectedCable}
-          isShocked={isShocked}
-          isGameOver={isGameOver}
-          handleCableClick={handleCableClick}
-        />
-      ))}
+      {CABLES.map(cable => {
+        const isConnected = Object.values(connections).includes(cable.id)
+        const isSelected = selectedCable === cable.id
+
+        return (
+          <CableItem
+            key={cable.id}
+            t={t}
+            cable={cable}
+            isConnected={isConnected}
+            isSelected={isSelected}
+            isShocked={isShocked}
+            isGameOver={isGameOver}
+            handleCableClick={handleCableClick}
+          />
+        )
+      })}
     </>
   )
 }

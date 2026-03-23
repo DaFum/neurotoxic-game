@@ -4,15 +4,12 @@ import { PlugGraphics } from './PlugGraphics.jsx'
 export const CableItem = ({
   t,
   cable,
-  connections,
-  selectedCable,
+  isConnected,
+  isSelected,
   isShocked,
   isGameOver,
   handleCableClick
 }) => {
-  const isConnected = Object.values(connections).includes(cable.id)
-  const isSelected = selectedCable === cable.id
-
   return (
     <g
       transform={`translate(${cable.x}, ${isSelected ? cable.y - 40 : cable.y})`}
@@ -109,14 +106,14 @@ CableItem.propTypes = {
   t: PropTypes.func.isRequired,
   cable: PropTypes.shape({
     id: PropTypes.string.isRequired,
+    labelKey: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
-    color: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    labelKey: PropTypes.string.isRequired
+    color: PropTypes.string.isRequired
   }).isRequired,
-  connections: PropTypes.objectOf(PropTypes.string).isRequired,
-  selectedCable: PropTypes.string,
+  isConnected: PropTypes.bool.isRequired,
+  isSelected: PropTypes.bool.isRequired,
   isShocked: PropTypes.bool.isRequired,
   isGameOver: PropTypes.bool.isRequired,
   handleCableClick: PropTypes.func.isRequired
