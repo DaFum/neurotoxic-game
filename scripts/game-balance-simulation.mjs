@@ -980,6 +980,7 @@ const runSingleSimulation = (scenario, seed) => {
       // Simulate resting / clinic visit
       // Pay the cost and recover stats, skip the gig for the day
       state.player.money = clampPlayerMoney(state.player.money - 150)
+      state.band.harmony = clampBandHarmony(state.band.harmony + 15)
       state.band.members = state.band.members.map(member => ({
         ...member,
         mood: clampMemberMood(member.mood + 30),
@@ -1324,12 +1325,12 @@ const fmtEur = n => `€${fmt(n)}`
 const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
-  baseline_touring:     { bankruptcyMax: 5,  moneyMin: 8000,  moneyMax: 400000, fameMin: 200, fameMax: 500 },
+  baseline_touring:     { bankruptcyMax: 5,  moneyMin: 8000,  moneyMax: 350000, fameMin: 200, fameMax: 500 },
   bootstrap_struggle:   { bankruptcyMax: 99, moneyMin: 0,     moneyMax: 20000,  fameMin: 0,  fameMax: 250 },
   aggressive_marketing: { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 450 },
-  scandal_recovery:     { bankruptcyMax: 85, moneyMin: 0,     moneyMax: 60000,  fameMin: 0, fameMax: 350 },
-  festival_push:        { bankruptcyMax: 15, moneyMin: 10000, moneyMax: 200000, fameMin: 250, fameMax: 550 },
-  chaos_tour:           { bankruptcyMax: 20, moneyMin: 0,     moneyMax: 150000, fameMin: 150, fameMax: 450 },
+  scandal_recovery:     { bankruptcyMax: 70, moneyMin: 0,     moneyMax: 50000,  fameMin: 0, fameMax: 350 },
+  festival_push:        { bankruptcyMax: 15, moneyMin: 10000, moneyMax: 150000, fameMin: 250, fameMax: 550 },
+  chaos_tour:           { bankruptcyMax: 20, moneyMin: 0,     moneyMax: 100000, fameMin: 150, fameMax: 450 },
   cult_hypergrowth:     { bankruptcyMax: 10, moneyMin: 5000,  moneyMax: 200000, fameMin: 200, fameMax: 500 }
 }
 
@@ -1366,7 +1367,7 @@ const buildMarkdownReport = payload => {
   // ── Header ────────────────────────────────────────────────────────────────
   lines.push('# Game Balance Simulation – Analyse')
   lines.push('')
-  lines.push(`Erstellt am: ${new Date().toISOString()}`)
+  lines.push(`Erstellt am: ${payload.generatedAt}`)
   lines.push('')
 
   // ── Config ────────────────────────────────────────────────────────────────
