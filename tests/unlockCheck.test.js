@@ -92,7 +92,9 @@ describe('checkTraitUnlocks', () => {
 
     it('unlocks Tech Wizard for Matze with technical song (>3 difficulty) and 100% accuracy', () => {
       // Give Matze 'perfektionist' so only 'tech_wizard' is unlocked
-      const matze = createMember('Matze', { perfektionist: { id: 'perfektionist' } })
+      const matze = createMember('Matze', {
+        perfektionist: { id: 'perfektionist' }
+      })
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
@@ -237,7 +239,10 @@ describe('checkTraitUnlocks', () => {
   // Edge Cases
   describe('Edge Cases', () => {
     it('does not unlock trait if already owned', () => {
-      const matze = createMember('Matze', { virtuoso: { id: 'virtuoso' }, perfektionist: { id: 'perfektionist' } })
+      const matze = createMember('Matze', {
+        virtuoso: { id: 'virtuoso' },
+        perfektionist: { id: 'perfektionist' }
+      })
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',

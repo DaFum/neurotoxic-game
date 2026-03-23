@@ -1,4 +1,8 @@
-import { calculateFameGain, calculateFameLevel, BALANCE_CONSTANTS } from '../src/utils/gameStateUtils.js'
+import {
+  calculateFameGain,
+  calculateFameLevel,
+  BALANCE_CONSTANTS
+} from '../src/utils/gameStateUtils.js'
 
 /**
  * Mathematically isolates and logs the fame calculation, demonstrating the true
@@ -16,7 +20,7 @@ import { calculateFameGain, calculateFameLevel, BALANCE_CONSTANTS } from '../src
 const TARGET_DAYS = 75 // The typical length of a complete game simulation run
 const MAX_FAME_GAIN = 500
 const FLAT_FAME_PENALTY_PER_BAD_GIG = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
-const DAILY_COST = 64   // matches EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 members × 8
+const DAILY_COST = 64 // matches EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 members × 8
 const CLINIC_COST = 150 // matches simulation clinic visit cost
 
 // Initialize typical starting stats for a player
@@ -42,15 +46,22 @@ const clampHarmony = val => clamp(val, 1, 100)
  * and assume merch inventory has run dry after the first few gigs.
  */
 const estimateGigNet = fame => {
-  if (fame >= 200) return 4500  // diff-4: ~700-cap venue, €20 ticket, ~40% fill
-  if (fame >= 60)  return 1200  // diff-3: ~321-cap venue, €14 ticket, ~40% fill
-  return 350                    // diff-2: ~185-cap venue, €6 ticket, ~30% fill
+  if (fame >= 200) return 4500 // diff-4: ~700-cap venue, €20 ticket, ~40% fill
+  if (fame >= 60) return 1200 // diff-3: ~321-cap venue, €14 ticket, ~40% fill
+  return 350 // diff-2: ~185-cap venue, €6 ticket, ~30% fill
 }
 
 console.log('--- NEUROTOXIC: 75-Day Baseline Tour Simulation ---')
 console.log(`Simulating ${TARGET_DAYS} Days of Player Actions.\n`)
-console.log('Day'.padEnd(7) + 'Action'.padEnd(32) + 'Condition'.padEnd(16) +
-  'Score'.padEnd(7) + 'Outcome'.padEnd(46) + 'Fame'.padEnd(8) + 'Money')
+console.log(
+  'Day'.padEnd(7) +
+    'Action'.padEnd(32) +
+    'Condition'.padEnd(16) +
+    'Score'.padEnd(7) +
+    'Outcome'.padEnd(46) +
+    'Fame'.padEnd(8) +
+    'Money'
+)
 
 while (state.day <= TARGET_DAYS) {
   // Apply daily living cost with lifestyle inflation
@@ -75,24 +86,24 @@ while (state.day <= TARGET_DAYS) {
 
     if (canAffordClinic) {
       state.money -= CLINIC_COST
-      state.band.stamina  = clamp(state.band.stamina  + 40, 0, 100)
-      state.band.mood     = clamp(state.band.mood     + 30, 0, 100)
-      state.band.harmony  = clampHarmony(state.band.harmony  + 15)
+      state.band.stamina = clamp(state.band.stamina + 40, 0, 100)
+      state.band.mood = clamp(state.band.mood + 30, 0, 100)
+      state.band.harmony = clampHarmony(state.band.harmony + 15)
     } else {
       // Reduced recovery without paid care
-      state.band.stamina  = clamp(state.band.stamina  + 20, 0, 100)
-      state.band.mood     = clamp(state.band.mood     + 10, 0, 100)
-      state.band.harmony  = clampHarmony(state.band.harmony  +  5)
+      state.band.stamina = clamp(state.band.stamina + 20, 0, 100)
+      state.band.mood = clamp(state.band.mood + 10, 0, 100)
+      state.band.harmony = clampHarmony(state.band.harmony + 5)
     }
 
     console.log(
       `[Day ${state.day.toString().padStart(2, '0')}] ` +
-      `${recoveryLabel.padEnd(30)} | ` +
-      `${conditionStr.padEnd(14)} | ` +
-      `     | ` +
-      `${'(skipped gig)'.padEnd(44)} | ` +
-      `${Math.round(state.fame).toString().padStart(5)} | ` +
-      `€${state.money}`
+        `${recoveryLabel.padEnd(30)} | ` +
+        `${conditionStr.padEnd(14)} | ` +
+        `     | ` +
+        `${'(skipped gig)'.padEnd(44)} | ` +
+        `${Math.round(state.fame).toString().padStart(5)} | ` +
+        `€${state.money}`
     )
 
     // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
@@ -103,7 +114,7 @@ while (state.day <= TARGET_DAYS) {
 
   // Travel fatigue applied right before gig
   state.band.stamina = clamp(state.band.stamina - 15, 0, 100)
-  state.band.mood    = clamp(state.band.mood    - 10, 0, 100)
+  state.band.mood = clamp(state.band.mood - 10, 0, 100)
 
   // A human player performs well consistently unless the band is broken
   let score = 65 + Math.floor(Math.random() * 8) - 4 // avg ~65, range 61-68
@@ -118,7 +129,10 @@ while (state.day <= TARGET_DAYS) {
   let isCancelled = false
 
   // Show cancellation if harmony is critically low
-  if (state.band.harmony < 15 && Math.random() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE) {
+  if (
+    state.band.harmony < 15 &&
+    Math.random() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+  ) {
     fameDelta = -(FLAT_FAME_PENALTY_PER_BAD_GIG * 2)
     outcomeText = `CANCELLED! Harmony too low. Fame ${fameDelta}`
     score = 0
@@ -131,12 +145,13 @@ while (state.day <= TARGET_DAYS) {
       fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
 
       state.band.harmony = clampHarmony(state.band.harmony + 2)
-      state.band.mood    = clamp(state.band.mood    + 2, 0, 100)
+      state.band.mood = clamp(state.band.mood + 2, 0, 100)
       state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
 
-      const dampFactor = previousFame > 50
-        ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
-        : ''
+      const dampFactor =
+        previousFame > 50
+          ? `(Dampened: ${Math.exp(-(previousFame - 50) * 0.01).toFixed(2)}x)`
+          : ''
       outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
     } else if (score >= 62) {
       // Decent Gig — fame gain, harmony penalty
@@ -144,19 +159,20 @@ while (state.day <= TARGET_DAYS) {
       fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
 
       state.band.harmony = clampHarmony(state.band.harmony - 5)
-      state.band.mood    = clamp(state.band.mood    + 1, 0, 100)
+      state.band.mood = clamp(state.band.mood + 1, 0, 100)
       state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
 
-      const dampFactor = previousFame > 50
-        ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
-        : ''
+      const dampFactor =
+        previousFame > 50
+          ? `(Dampened: ${Math.exp(-(previousFame - 50) * 0.01).toFixed(2)}x)`
+          : ''
       outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`
     } else {
       // Bad Gig
       fameDelta = -FLAT_FAME_PENALTY_PER_BAD_GIG
 
       state.band.harmony = clampHarmony(state.band.harmony - 5)
-      state.band.mood    = clamp(state.band.mood    - 3, 0, 100)
+      state.band.mood = clamp(state.band.mood - 3, 0, 100)
       state.band.stamina = clamp(state.band.stamina - 10, 0, 100)
 
       outcomeText = `Bad Show...  Fame ${fameDelta}`
@@ -175,19 +191,22 @@ while (state.day <= TARGET_DAYS) {
 
   console.log(
     `[Day ${state.day.toString().padStart(2, '0')}] ` +
-    `Gig ${state.gigsPlayed.toString().padStart(2, '0')}`.padEnd(30) + ` | ` +
-    `${conditionStr.padEnd(14)} | ` +
-    `${score.toString().padStart(3)}  | ` +
-    `${outcomeText.padEnd(44)} | ` +
-    `${Math.round(state.fame).toString().padStart(5)} | ` +
-    `€${state.money} (+€${gigNet})`
+      `Gig ${state.gigsPlayed.toString().padStart(2, '0')}`.padEnd(30) +
+      ` | ` +
+      `${conditionStr.padEnd(14)} | ` +
+      `${score.toString().padStart(3)}  | ` +
+      `${outcomeText.padEnd(44)} | ` +
+      `${Math.round(state.fame).toString().padStart(5)} | ` +
+      `€${state.money} (+€${gigNet})`
   )
 
   // Random world friction event (controversy, bad PR)
   if (Math.random() < 0.15) {
     const eventFameLoss = 15
     state.fame = Math.max(0, state.fame - eventFameLoss)
-    console.log(`          > Event: Bad PR! Fame -${eventFameLoss} | Total Fame: ${Math.round(state.fame)}`)
+    console.log(
+      `          > Event: Bad PR! Fame -${eventFameLoss} | Total Fame: ${Math.round(state.fame)}`
+    )
   }
 
   // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
@@ -198,4 +217,6 @@ console.log('\n--- End of Tour ---')
 console.log(`Final Fame:      ${Math.round(state.fame)}`)
 console.log(`Final Money:     €${state.money}`)
 console.log(`Total Gigs:      ${state.gigsPlayed}`)
-console.log(`Final Harmony:   ${state.band.harmony} | Mood: ${state.band.mood} | Stamina: ${state.band.stamina}`)
+console.log(
+  `Final Harmony:   ${state.band.harmony} | Mood: ${state.band.mood} | Stamina: ${state.band.stamina}`
+)

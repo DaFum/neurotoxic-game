@@ -30,7 +30,7 @@ const NOTE_LEAD_IN_MS = 100
 const NOTE_TAIL_MS = 1000
 
 // Helper 1: Gig Physics and Modifiers Setup
-const setupGigPhysics = (
+export const setupGigPhysics = (
   band,
   gigModifiers,
   currentGigId,
@@ -85,7 +85,7 @@ const setupGigPhysics = (
 }
 
 // Helper 2: Setlist Resolution
-const resolveActiveSetlist = setlist => {
+export const resolveActiveSetlist = setlist => {
   return (
     setlist.length > 0
       ? setlist
@@ -238,7 +238,7 @@ const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
 }
 
 // Helper 4: Song Playback Logic
-const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
+export const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
   let bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
 
   if (!bgAudioStarted) {
@@ -273,8 +273,8 @@ const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
   return finalNotes
 }
 
-// Helper 4: onSongEnded stats handler
-const handleSongEnded = (gameStateRef, currentSong, index) => {
+// Helper 5: onSongEnded stats handler
+export const handleSongEnded = (gameStateRef, currentSong, index) => {
   const currentState = gameStateRef.current
   if (!currentState) return
 
@@ -316,6 +316,122 @@ const handleSongEnded = (gameStateRef, currentSong, index) => {
   currentState.currentSongStartMisses = currentMisses
 }
 
+
+// Helper 6: playSongSequence
+export const playSongSequence = async (index, activeSetlist, gameStateRef, addToast) => {
+  if (
+    gameStateRef.current.hasSubmittedResults ||
+    gameStateRef.current.isGameOver
+  ) {
+    logger.info(
+      'RhythmGame',
+      'Gig stopped or submitted, aborting playSongSequence.'
+    )
+    return
+  }
+
+  if (index >= activeSetlist.length) {
+    gameStateRef.current.setlistCompleted = true
+    gameStateRef.current.songTransitioning = false
+    const nowMs = getGigTimeMs()
+    if (Number.isFinite(nowMs) && nowMs > 0) {
+      gameStateRef.current.totalDuration = nowMs
+    }
+    return
+  }
+
+  const currentSong = activeSetlist[index]
+  let notes = []
+  const rng = Math.random
+  gameStateRef.current.rng = rng
+
+  gameStateRef.current.setlistCompleted = false
+  gameStateRef.current.songTransitioning = true
+  gameStateRef.current.notes = []
+  gameStateRef.current.nextMissCheckIndex = 0
+
+  // Parse Notes
+  if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
+    const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
+      onWarn: msg => logger.warn('RhythmGame', msg)
+    })
+    if (parsedNotes.length > 0) {
+      notes = notes.concat(parsedNotes)
+    }
+  }
+
+  const onSongEnded = () => {
+    if (gameStateRef.current.lastEndedSongIndex === index) {
+      return Promise.resolve()
+    }
+    gameStateRef.current.lastEndedSongIndex = index
+
+    if (
+      gameStateRef.current.isGameOver ||
+      gameStateRef.current.hasSubmittedResults
+    ) {
+      logger.info(
+        'RhythmGame',
+        'Gig stopped or submitted, ignoring onSongEnded chaining.'
+      )
+      return Promise.resolve()
+    }
+
+    handleSongEnded(gameStateRef, currentSong, index)
+
+    logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
+    gameStateRef.current.songTransitioning = true
+    return playSongSequence(index + 1, activeSetlist, gameStateRef, addToast).catch(err => {
+      handleError(err, {
+        addToast,
+        fallbackMessage: 'Failed to start next song!'
+      })
+      gameStateRef.current.setlistCompleted = true
+      gameStateRef.current.songTransitioning = false
+    })
+  }
+
+  const finalNotes = await playAudioForSong(
+    currentSong,
+    notes,
+    onSongEnded,
+    rng
+  )
+
+  // Update Game State
+  gameStateRef.current.notes = finalNotes
+  gameStateRef.current.nextMissCheckIndex = 0
+  gameStateRef.current.notesVersion =
+    gameStateRef.current.notesVersion + 1
+
+  const maxNoteTime =
+    finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
+  const buffer = 4000
+  const noteDuration = maxNoteTime + buffer
+  const audioDuration = resolveSongPlaybackWindow(currentSong, {
+    defaultDurationMs: 0
+  }).excerptDurationMs
+  gameStateRef.current.totalDuration =
+    maxNoteTime > 0 ? noteDuration : Math.max(noteDuration, audioDuration)
+
+  gameStateRef.current.songTransitioning = false
+
+  if (activeSetlist.length > 1) {
+    addToast(`Now Playing: ${currentSong.name}`, 'info')
+  }
+}
+
+
+// Helper 7: resetGigStateTracking
+export const resetGigStateTracking = (gameStateRef) => {
+  if (gameStateRef.current) {
+    gameStateRef.current.lastEndedSongIndex = -1
+    gameStateRef.current.songStats = []
+    gameStateRef.current.currentSongStartScore = 0
+    gameStateRef.current.currentSongStartPerfectHits = 0
+    gameStateRef.current.currentSongStartMisses = 0
+  }
+}
 /**
  * Manages audio initialization, playback, and setup for the gig.
  *
@@ -388,13 +504,7 @@ export const useRhythmGameAudio = ({
       isInitializingRef.current = false
 
       // Reset cross-song tracking state for a new gig
-      if (gameStateRef.current) {
-        gameStateRef.current.lastEndedSongIndex = -1
-        gameStateRef.current.songStats = []
-        gameStateRef.current.currentSongStartScore = 0
-        gameStateRef.current.currentSongStartPerfectHits = 0
-        gameStateRef.current.currentSongStartMisses = 0
-      }
+      resetGigStateTracking(gameStateRef)
 
       const setlistFirstId =
         typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
@@ -421,110 +531,6 @@ export const useRhythmGameAudio = ({
 
       const activeSetlist = resolveActiveSetlist(setlist)
 
-      // Function to play a specific song by index
-      const playSongAtIndex = async index => {
-        if (
-          gameStateRef.current.hasSubmittedResults ||
-          gameStateRef.current.isGameOver
-        ) {
-          logger.info(
-            'RhythmGame',
-            'Gig stopped or submitted, aborting playSongAtIndex.'
-          )
-          return
-        }
-
-        if (index >= activeSetlist.length) {
-          gameStateRef.current.setlistCompleted = true
-          gameStateRef.current.songTransitioning = false
-          const nowMs = getGigTimeMs()
-          if (Number.isFinite(nowMs) && nowMs > 0) {
-            gameStateRef.current.totalDuration = nowMs
-          }
-          return
-        }
-
-        const currentSong = activeSetlist[index]
-        let notes = []
-        const rng = Math.random
-        gameStateRef.current.rng = rng
-
-        gameStateRef.current.setlistCompleted = false
-        gameStateRef.current.songTransitioning = true
-        gameStateRef.current.notes = []
-        gameStateRef.current.nextMissCheckIndex = 0
-
-        // Parse Notes
-        if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
-          const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
-            onWarn: msg => logger.warn('RhythmGame', msg)
-          })
-          if (parsedNotes.length > 0) {
-            notes = notes.concat(parsedNotes)
-          }
-        }
-
-        const onSongEnded = () => {
-          if (gameStateRef.current.lastEndedSongIndex === index) {
-            return Promise.resolve()
-          }
-          gameStateRef.current.lastEndedSongIndex = index
-
-          if (
-            gameStateRef.current.isGameOver ||
-            gameStateRef.current.hasSubmittedResults
-          ) {
-            logger.info(
-              'RhythmGame',
-              'Gig stopped or submitted, ignoring onSongEnded chaining.'
-            )
-            return Promise.resolve()
-          }
-
-          handleSongEnded(gameStateRef, currentSong, index)
-
-          logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
-          gameStateRef.current.songTransitioning = true
-          return playSongAtIndex(index + 1).catch(err => {
-            handleError(err, {
-              addToast,
-              fallbackMessage: 'Failed to start next song!'
-            })
-            gameStateRef.current.setlistCompleted = true
-            gameStateRef.current.songTransitioning = false
-          })
-        }
-
-        const finalNotes = await playAudioForSong(
-          currentSong,
-          notes,
-          onSongEnded,
-          rng
-        )
-
-        // Update Game State
-        gameStateRef.current.notes = finalNotes
-        gameStateRef.current.nextMissCheckIndex = 0
-        gameStateRef.current.notesVersion =
-          gameStateRef.current.notesVersion + 1
-
-        const maxNoteTime =
-          finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
-        const buffer = 4000
-        const noteDuration = maxNoteTime + buffer
-        const audioDuration = resolveSongPlaybackWindow(currentSong, {
-          defaultDurationMs: 0
-        }).excerptDurationMs
-        gameStateRef.current.totalDuration =
-          maxNoteTime > 0 ? noteDuration : Math.max(noteDuration, audioDuration)
-
-        gameStateRef.current.songTransitioning = false
-
-        if (activeSetlist.length > 1) {
-          addToast(`Now Playing: ${currentSong.name}`, 'info')
-        }
-      }
-
       if (isAborted()) {
         setIsAudioReady(false)
         isInitializingRef.current = false
@@ -532,7 +538,7 @@ export const useRhythmGameAudio = ({
       }
 
       if (!isAborted()) {
-        await playSongAtIndex(0)
+        await playSongSequence(0, activeSetlist, gameStateRef, addToast)
       }
     } catch (error) {
       if (isAborted()) {
