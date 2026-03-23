@@ -485,7 +485,11 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
   const baseWindow = normalPhysics.hitWindows.guitar
 
   const virtuosoBand = buildBandWithMembers([
-    { name: 'Matze', baseStats: { skill: 8 }, traits: { virtuoso: { id: 'virtuoso' } } }
+    {
+      name: 'Matze',
+      baseStats: { skill: 8 },
+      traits: { virtuoso: { id: 'virtuoso' } }
+    }
   ])
   const virtuosoPhysics = calculateGigPhysics(virtuosoBand, song)
 

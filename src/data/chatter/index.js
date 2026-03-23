@@ -42,11 +42,28 @@ export const getRandomChatter = state => {
     }
   }
 
+  // Pre-calculate band member stats for standard chatter condition checks
+  const bandMembers = state.band?.members || []
+  let minMood = Infinity
+  let maxMood = -Infinity
+  let minStamina = Infinity
+  let maxStamina = -Infinity
+
+  for (let i = 0; i < bandMembers.length; i++) {
+    const m = bandMembers[i]
+    if (m.mood < minMood) minMood = m.mood
+    if (m.mood > maxMood) maxMood = m.mood
+    if (m.stamina < minStamina) minStamina = m.stamina
+    if (m.stamina > maxStamina) maxStamina = m.stamina
+  }
+
+  const memo = { minMood, maxMood, minStamina, maxStamina }
+
   // 2) Standard chatter
   for (let i = 0; i < CHATTER_DB.length; i++) {
     const c = CHATTER_DB[i]
     if (
-      (c.condition && c.condition(state)) ||
+      (c.condition && c.condition(state, memo)) ||
       (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene))
     ) {
       pool.push(c)
