@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Reverted Set conversion optimization in `calculateViralityScore`.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
- */
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto.js'
 import { POST_OPTIONS } from '../data/postOptions.js'
@@ -34,10 +29,10 @@ export const calculateViralityScore = (
 
   // Event Multiplier (e.g. "Stage Diver", "Influencer")
   const isSet = gigEvents instanceof Set
-  if (isSet ? gigEvents.has('stage_diver') : gigEvents.includes('stage_diver')) {
+  if (gigEvents != null && (isSet ? gigEvents.has('stage_diver') : gigEvents.includes('stage_diver'))) {
     baseChance *= 2.0
   }
-  if (isSet ? gigEvents.has('influencer_spotted') : gigEvents.includes('influencer_spotted')) {
+  if (gigEvents != null && (isSet ? gigEvents.has('influencer_spotted') : gigEvents.includes('influencer_spotted'))) {
     baseChance *= 3.0
   }
 

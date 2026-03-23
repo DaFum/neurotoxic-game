@@ -1,4 +1,9 @@
 // TODO: Refactor logic to reduce cognitive complexity and improve testability
+/*
+ * (#1) Actual Updates: Added useTranslation hook and passed t to useRhythmGameAudio contextActions for localized toasts.
+ * (#2) Next Steps: Refactor logic to reduce cognitive complexity and improve testability.
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
