@@ -111,51 +111,52 @@ while (state.day <= TARGET_DAYS) {
   const previousFame = state.fame
   let fameDelta
   let outcomeText
-
-  // Good gig threshold aligns with applyPostGigState in game-balance-simulation.mjs
-  if (score >= 78) {
-    // Great Gig — harmony reward
-    const rawGain = 50 + Math.floor(score * 1.5)
-    fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
-
-    state.band.harmony = clampHarmony(state.band.harmony + 2)
-    state.band.mood    = clamp(state.band.mood    + 2, 0, 100)
-    state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
-
-    const dampFactor = previousFame > 50
-      ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
-      : ''
-    outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
-  } else if (score >= 62) {
-    // Decent Gig — fame gain, no harmony bonus
-    const rawGain = 50 + Math.floor(score * 1.5)
-    fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
-
-    state.band.mood    = clamp(state.band.mood    + 1, 0, 100)
-    state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
-
-    const dampFactor = previousFame > 50
-      ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
-      : ''
-    outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`
-  } else {
-    // Bad Gig
-    fameDelta = -FLAT_FAME_PENALTY_PER_BAD_GIG
-
-    state.band.harmony = clampHarmony(state.band.harmony - 5)
-    state.band.mood    = clamp(state.band.mood    - 3, 0, 100)
-    state.band.stamina = clamp(state.band.stamina - 10, 0, 100)
-
-    outcomeText = `Bad Show...  Fame ${fameDelta}`
-  }
+  let isCancelled = false
 
   // Show cancellation if harmony is critically low
-  let isCancelled = false
   if (state.band.harmony < 15 && Math.random() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE) {
     fameDelta = -(FLAT_FAME_PENALTY_PER_BAD_GIG * 2)
     outcomeText = `CANCELLED! Harmony too low. Fame ${fameDelta}`
     score = 0
     isCancelled = true
+  } else {
+    // Good gig threshold aligns with applyPostGigState in game-balance-simulation.mjs
+    if (score >= 78) {
+      // Great Gig — harmony reward
+      const rawGain = 50 + Math.floor(score * 1.5)
+      fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
+
+      state.band.harmony = clampHarmony(state.band.harmony + 2)
+      state.band.mood    = clamp(state.band.mood    + 2, 0, 100)
+      state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
+
+      const dampFactor = previousFame > 50
+        ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
+        : ''
+      outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
+    } else if (score >= 62) {
+      // Decent Gig — fame gain, harmony penalty
+      const rawGain = 50 + Math.floor(score * 1.5)
+      fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
+
+      state.band.harmony = clampHarmony(state.band.harmony - 5)
+      state.band.mood    = clamp(state.band.mood    + 1, 0, 100)
+      state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
+
+      const dampFactor = previousFame > 50
+        ? `(Dampened: ${(Math.exp(-(previousFame - 50) * 0.01)).toFixed(2)}x)`
+        : ''
+      outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`
+    } else {
+      // Bad Gig
+      fameDelta = -FLAT_FAME_PENALTY_PER_BAD_GIG
+
+      state.band.harmony = clampHarmony(state.band.harmony - 5)
+      state.band.mood    = clamp(state.band.mood    - 3, 0, 100)
+      state.band.stamina = clamp(state.band.stamina - 10, 0, 100)
+
+      outcomeText = `Bad Show...  Fame ${fameDelta}`
+    }
   }
 
   state.fame = Math.max(0, state.fame + fameDelta)

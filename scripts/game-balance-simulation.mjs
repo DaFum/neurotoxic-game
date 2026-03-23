@@ -952,8 +952,20 @@ const runSingleSimulation = (scenario, seed) => {
       break
     }
 
-    const shouldPlayGig =
+    let shouldPlayGig =
       day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
+
+    let willRest = false
+    // Check if the band needs rest/clinic before taking on a gig
+    if (shouldPlayGig) {
+      const needsRest = state.band.harmony < 30 || state.band.members.some(m => m.stamina < 30 || m.mood < 30)
+      // Save original random state by evaluating early if they *would* rest.
+      // Note: we'll just consume the rng here.
+      if (needsRest && rng() < 0.85 && state.player.money >= 150) {
+        willRest = true
+        shouldPlayGig = false
+      }
+    }
 
     counters.eventsApplied = (counters.eventsApplied || 0) + applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
     maybeShiftSocialTrend(state, rng, counters)
@@ -964,15 +976,7 @@ const runSingleSimulation = (scenario, seed) => {
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
 
-    if (!shouldPlayGig) {
-      peakMoney = Math.max(peakMoney, state.player.money)
-      lowestMoney = Math.min(lowestMoney, state.player.money)
-      continue
-    }
-
-    // Check if the band needs rest/clinic before taking on a gig
-    const needsRest = state.band.harmony < 30 || state.band.members.some(m => m.stamina < 30 || m.mood < 30)
-    if (needsRest && rng() < 0.85 && state.player.money >= 150) {
+    if (willRest) {
       // Simulate resting / clinic visit
       // Pay the cost and recover stats, skip the gig for the day
       state.player.money = clampPlayerMoney(state.player.money - 150)
@@ -984,6 +988,9 @@ const runSingleSimulation = (scenario, seed) => {
       }))
 
       counters.clinicVisits = (counters.clinicVisits || 0) + 1
+    }
+
+    if (!shouldPlayGig) {
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       continue
