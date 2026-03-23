@@ -1017,7 +1017,7 @@ const runSingleSimulation = (scenario, seed) => {
     )
 
     // Chaos Tour fix: Show cancellation check (happens BEFORE minigames)
-    const isCancelled = state.band.harmony < 15 && rng() < 0.25
+    const isCancelled = state.band.harmony < 15 && rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
 
     if (isCancelled) {
       // Show is cancelled due to poor harmony
