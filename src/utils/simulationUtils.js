@@ -1,4 +1,8 @@
-// TODO: Review this file
+/*
+ * (#1) Actual Updates: Reordered spread operators in getGigModifiers for correct default overrides.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 // Utility functions for Simulation <-> Action connection
 import { CHARACTERS } from '../data/characters.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'

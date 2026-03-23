@@ -1,8 +1,14 @@
+/*
+ * (#1) Actual Updates: Extracted PreGigStartButton into a separate component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
 
-export const PreGigStartButton = ({
+export const PreGigStartButton = React.memo(({
   t,
   isStarting,
   isSetlistEmpty,
@@ -21,7 +27,8 @@ export const PreGigStartButton = ({
       {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
     </motion.button>
   )
-}
+})
+PreGigStartButton.displayName = 'PreGigStartButton'
 
 PreGigStartButton.propTypes = {
   t: PropTypes.func.isRequired,

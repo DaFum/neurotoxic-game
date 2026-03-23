@@ -1,5 +1,5 @@
 /*
- * (#1) Actual Updates: Extracted CableItem for maintainability.
+ * (#1) Actual Updates: Extracted CableItem for maintainability. Added Set optimization for O(1) lookups.
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
