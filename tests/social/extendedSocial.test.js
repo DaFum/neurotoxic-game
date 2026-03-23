@@ -58,7 +58,7 @@ describe('Extended Social & Trait Systems', () => {
     it('generateBrandOffers returns eligible deals', () => {
       const gameState = {
         social: { instagram: 10000, trend: 'TECH' },
-        band: { members: [{ traits: [{ id: 'party_animal' }] }] }
+        band: { members: [{ traits: { party_animal: { id: 'party_animal' } } }] }
       }
 
       // RNG mock that always returns 0 (success for 30% check)
@@ -115,7 +115,7 @@ describe('Extended Social & Trait Systems', () => {
       const baseScore = calculateViralityScore(80, [], {}, { members: [] })
 
       const bandWithShowman = {
-        members: [{ traits: [{ id: 'showman' }] }]
+        members: [{ traits: { showman: { id: 'showman' } } }]
       }
       const showmanScore = calculateViralityScore(80, [], {}, bandWithShowman)
 
@@ -127,7 +127,7 @@ describe('Extended Social & Trait Systems', () => {
     it('Unlocks Melodic Genius for Lars on slow song combo', () => {
       const state = {
         band: {
-          members: [{ name: 'Lars', traits: [] }]
+          members: [{ name: 'Lars', traits: {} }]
         }
       }
       const context = {
@@ -146,7 +146,7 @@ describe('Extended Social & Trait Systems', () => {
     it('Unlocks Tech Wizard for Matze on technical song accuracy', () => {
       const state = {
         band: {
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: {} }]
         }
       }
       const context = {
@@ -166,7 +166,7 @@ describe('Extended Social & Trait Systems', () => {
     it('Unlocks Showman for Marius on stage dives', () => {
       const state = {
         band: {
-          members: [{ name: 'Marius', traits: [] }]
+          members: [{ name: 'Marius', traits: {} }]
         },
         player: {
           stats: { stageDives: 3 }

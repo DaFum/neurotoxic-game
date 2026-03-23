@@ -30,7 +30,7 @@ describe('generateBrandOffers with Zealotry', () => {
         zealotry: 10
       },
       band: {
-        members: [{ traits: [{ id: 'virtuoso' }] }]
+        members: [{ traits: { virtuoso: { id: 'virtuoso' } } }]
       }
     }
     const offersLow = generateBrandOffers(gameStateLowZealotry, () => 0.01) // Always highest roll for guaranteed pass
@@ -45,7 +45,7 @@ describe('generateBrandOffers with Zealotry', () => {
         zealotry: 30
       },
       band: {
-        members: [{ traits: [{ id: 'virtuoso' }] }]
+        members: [{ traits: { virtuoso: { id: 'virtuoso' } } }]
       }
     }
     const offersHigh = generateBrandOffers(gameStateHighZealotry, () => 0.01)

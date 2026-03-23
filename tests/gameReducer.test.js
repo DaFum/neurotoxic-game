@@ -5,22 +5,26 @@
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
+import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   const band = { ...state.band }
   // Deep copy members to avoid mutation issues in test
-  band.members = band.members.map(m => ({ ...m, traits: [...m.traits] }))
+  band.members = band.members.map(m => ({ ...m, traits: normalizeTraitMap(m.traits) }))
 
   unlocks.forEach(u => {
     // Mock matching logic: ID match OR case-insensitive name match
+    const isStringId = typeof u.memberId === 'string'
     const member = band.members.find(
       m =>
         (m.id && m.id === u.memberId) ||
-        (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+        (isStringId && m.name && typeof m.name === 'string' && m.name.toLowerCase() === u.memberId.toLowerCase())
     )
-    if (member) {
-      member.traits.push({ id: u.traitId })
+    if (member && u.traitId) {
+      if (!member.traits[u.traitId]) {
+        member.traits[u.traitId] = { id: u.traitId }
+      }
     }
   })
 
@@ -39,7 +43,8 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 mock.module('../src/utils/traitUtils.js', {
   namedExports: {
     applyTraitUnlocks: mockApplyTraitUnlocks,
-    getTraitById: mock.fn(traitId => ({ id: traitId }))
+    getTraitById: mock.fn(traitId => ({ id: traitId })),
+    normalizeTraitMap
   }
 })
 
@@ -444,8 +449,8 @@ describe('gameReducer', () => {
         band: {
           ...createInitialState().band,
           members: [
-            { name: 'Matze', traits: [] },
-            { name: 'Marius', traits: [] }
+            { name: 'Matze', traits: Object.create(null) },
+            { name: 'Marius', traits: Object.create(null) }
           ]
         }
       }
@@ -468,8 +473,9 @@ describe('gameReducer', () => {
 
       // Verify state change (simulated by mock)
       const matze = nextState.band.members.find(m => m.name === 'Matze')
-      assert.strictEqual(matze.traits.length, 1)
-      assert.strictEqual(matze.traits[0].id, 'gear_nerd')
+      assert.ok(matze, 'Matze should be found in members array')
+      assert.strictEqual(Object.keys(matze.traits).length, 1)
+      assert.strictEqual(matze.traits['gear_nerd'].id, 'gear_nerd')
     })
 
     it('UNLOCK_TRAIT adds toast', () => {
@@ -477,7 +483,7 @@ describe('gameReducer', () => {
         ...createInitialState(),
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: Object.create(null) }]
         }
       }
 
@@ -501,7 +507,7 @@ describe('gameReducer', () => {
         currentGig: { isPractice: true },
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: Object.create(null) }]
         }
       }
 
@@ -526,7 +532,7 @@ describe('gameReducer', () => {
         currentGig: { isPractice: false },
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: [] }]
+          members: [{ name: 'Matze', traits: Object.create(null) }]
         }
       }
 

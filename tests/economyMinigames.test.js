@@ -69,7 +69,7 @@ test('Minigame Economy Calculations', async t => {
     const resultTrait = calculateKabelsalatMinigameResult(
       { isPoweredOn: true, timeLeft: 25 }, // Base 135 reward
       {
-        members: [{ name: 'Matze', traits: [{ id: 'tech_wizard' }] }]
+        members: [{ name: 'Matze', traits: { tech_wizard: { id: 'tech_wizard' } } }]
       }
     )
     assert.strictEqual(resultTrait.stress, 0)

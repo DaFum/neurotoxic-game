@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
@@ -11,6 +12,20 @@ export const MainMenuNameInputPrompt = ({
   inputRef
 }) => {
   const { t } = useTranslation()
+
+  const handleNameChange = useCallback(
+    e => setPlayerNameInput(e.target.value),
+    [setPlayerNameInput]
+  )
+
+  const handleKeyDown = useCallback(
+    e => {
+      if (e.key === 'Enter') {
+        handleNameSubmit()
+      }
+    },
+    [handleNameSubmit]
+  )
 
   return (
     <Modal
@@ -32,11 +47,11 @@ export const MainMenuNameInputPrompt = ({
           ref={inputRef}
           type='text'
           value={playerNameInput}
-          onChange={e => setPlayerNameInput(e.target.value)}
+          onChange={handleNameChange}
           placeholder={t('ui:enter_name_placeholder')}
           className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase'
           maxLength={20}
-          onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
+          onKeyDown={handleKeyDown}
           aria-label={t('ui:enter_alias_desc')}
         />
         <GlitchButton onClick={handleNameSubmit}>
@@ -54,6 +69,6 @@ MainMenuNameInputPrompt.propTypes = {
   onClose: PropTypes.func.isRequired,
   inputRef: PropTypes.oneOfType([
     PropTypes.func,
-    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+    PropTypes.shape({ current: PropTypes.object })
   ])
 }

@@ -40,13 +40,13 @@ describe('purchaseLogicUtils', () => {
 
     test('returns discounted cost with gear_nerd for GEAR money items', () => {
       const item = { cost: 100, category: 'GEAR', currency: 'money' }
-      const band = { members: [{ traits: [{ id: 'gear_nerd' }] }] }
+      const band = { members: [{ traits: { gear_nerd: { id: 'gear_nerd' } } }] }
       assert.equal(getAdjustedCost(item, band), 80)
     })
 
     test('does not discount if currency is fame', () => {
       const item = { cost: 100, category: 'GEAR', currency: 'fame' }
-      const band = { members: [{ traits: [{ id: 'gear_nerd' }] }] }
+      const band = { members: [{ traits: { gear_nerd: { id: 'gear_nerd' } } }] }
       assert.equal(getAdjustedCost(item, band), 100)
     })
   })

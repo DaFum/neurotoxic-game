@@ -104,7 +104,7 @@ test('clinicReducer', async t => {
       const state = {
         player: { money: 1000, fame: 500, clinicVisits: 0 },
         band: {
-          members: [{ id: 'm1', traits: [{ id: 'existing_trait' }] }]
+          members: [{ id: 'm1', traits: { existing_trait: { id: 'existing_trait' } } }]
         }
       }
 
@@ -119,14 +119,15 @@ test('clinicReducer', async t => {
       // Enhance base cost is 500 fame at 0 visits
       assert.equal(nextState.player.fame, 0)
       assert.equal(nextState.player.clinicVisits, 1)
-      assert.equal(nextState.band.members[0].traits.length, 2)
-      assert.equal(nextState.band.members[0].traits[1].id, 'cyber_lungs')
+      assert.equal(Object.keys(nextState.band.members[0].traits).length, 2)
+      assert.ok(nextState.band.members[0].traits['cyber_lungs'])
+      assert.equal(nextState.band.members[0].traits['cyber_lungs'].id, 'cyber_lungs')
     })
 
     await t2.test('fails if missing trait string', () => {
       const state = {
         player: { money: 1000, fame: 500 },
-        band: { members: [{ id: 'm1', traits: [] }] }
+        band: { members: [{ id: 'm1', traits: {} }] }
       }
 
       const payload = { memberId: 'm1', type: 'enhance' }
@@ -139,7 +140,7 @@ test('clinicReducer', async t => {
       const state = {
         player: { money: 1000, fame: 0, clinicVisits: 0 },
         band: {
-          members: [{ id: 'm1', traits: [] }]
+          members: [{ id: 'm1', traits: {} }]
         }
       }
 
@@ -169,9 +170,9 @@ test('clinicReducer', async t => {
             name: 'Matze',
             mood: 50,
             stamina: 50,
-            traits: [{ id: 'cyber_lungs' }]
+            traits: { cyber_lungs: { id: 'cyber_lungs' } }
           },
-          { name: 'Marius', mood: 50, stamina: 50, traits: [] }
+          { name: 'Marius', mood: 50, stamina: 50, traits: {} }
         ],
         harmony: 50
       },

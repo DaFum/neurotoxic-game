@@ -6,8 +6,8 @@ test('applyEventDelta applies basic relationship changes', () => {
   const state = {
     band: {
       members: [
-        { name: 'Matze', relationships: { Marius: 50 }, traits: [] },
-        { name: 'Marius', relationships: { Matze: 50 }, traits: [] }
+        { name: 'Matze', relationships: { Marius: 50 }, traits: {} },
+        { name: 'Marius', relationships: { Matze: 50 }, traits: {} }
       ]
     }
   }
@@ -29,9 +29,9 @@ test('applyEventDelta amplifies negative change for grudge_holder', () => {
         {
           name: 'Grumpy',
           relationships: { Happy: 50 },
-          traits: [{ id: 'grudge_holder' }]
+          traits: { grudge_holder: { id: "grudge_holder" } }
         },
-        { name: 'Happy', relationships: { Grumpy: 50 }, traits: [] }
+        { name: 'Happy', relationships: { Grumpy: 50 }, traits: {} }
       ]
     }
   }
@@ -55,9 +55,9 @@ test('applyEventDelta does not amplify positive change for grudge_holder', () =>
         {
           name: 'Grumpy',
           relationships: { Happy: 50 },
-          traits: [{ id: 'grudge_holder' }]
+          traits: { grudge_holder: { id: "grudge_holder" } }
         },
-        { name: 'Happy', relationships: { Grumpy: 50 }, traits: [] }
+        { name: 'Happy', relationships: { Grumpy: 50 }, traits: {} }
       ]
     }
   }
@@ -80,9 +80,9 @@ test('applyEventDelta amplifies positive change for peacemaker', () => {
         {
           name: 'Peaceful',
           relationships: { Angry: 50 },
-          traits: [{ id: 'peacemaker' }]
+          traits: { peacemaker: { id: "peacemaker" } }
         },
-        { name: 'Angry', relationships: { Peaceful: 50 }, traits: [] }
+        { name: 'Angry', relationships: { Peaceful: 50 }, traits: {} }
       ]
     }
   }
@@ -108,9 +108,9 @@ test('applyEventDelta dampens negative change for peacemaker', () => {
         {
           name: 'Peaceful',
           relationships: { Angry: 50 },
-          traits: [{ id: 'peacemaker' }]
+          traits: { peacemaker: { id: "peacemaker" } }
         },
-        { name: 'Angry', relationships: { Peaceful: 50 }, traits: [] }
+        { name: 'Angry', relationships: { Peaceful: 50 }, traits: {} }
       ]
     }
   }
@@ -133,8 +133,8 @@ test('applyEventDelta clamps relationship scores to 0-100', () => {
   const state = {
     band: {
       members: [
-        { name: 'A', relationships: { B: 95 }, traits: [] },
-        { name: 'B', relationships: { A: 5 }, traits: [] }
+        { name: 'A', relationships: { B: 95 }, traits: {} },
+        { name: 'B', relationships: { A: 5 }, traits: {} }
       ]
     }
   }
@@ -157,9 +157,9 @@ test('applyEventDelta handles multiple relationship changes', () => {
   const state = {
     band: {
       members: [
-        { name: 'A', relationships: { B: 50, C: 50 }, traits: [] },
-        { name: 'B', relationships: { A: 50, C: 50 }, traits: [] },
-        { name: 'C', relationships: { A: 50, B: 50 }, traits: [] }
+        { name: 'A', relationships: { B: 50, C: 50 }, traits: {} },
+        { name: 'B', relationships: { A: 50, C: 50 }, traits: {} },
+        { name: 'C', relationships: { A: 50, B: 50 }, traits: {} }
       ]
     }
   }
@@ -198,9 +198,9 @@ test('applyEventDelta handles both traits simultaneously (edge case) and symmetr
         {
           name: 'Weirdo',
           relationships: { Normal: 50 },
-          traits: [{ id: 'grudge_holder' }, { id: 'peacemaker' }]
+          traits: { grudge_holder: { id: 'grudge_holder' }, peacemaker: { id: 'peacemaker' } }
         },
-        { name: 'Normal', relationships: { Weirdo: 50 }, traits: [] }
+        { name: 'Normal', relationships: { Weirdo: 50 }, traits: {} }
       ]
     }
   }

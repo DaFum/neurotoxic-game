@@ -643,7 +643,7 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
   const bandState = {
     members: [
       {
-        traits: [{ id: 'road_warrior' }]
+        traits: { road_warrior: { id: 'road_warrior' } }
       }
     ]
   }

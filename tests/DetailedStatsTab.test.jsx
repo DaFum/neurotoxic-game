@@ -28,7 +28,7 @@ describe('DetailedStatsTab', () => {
         stamina: 100,
         maxStamina: 100,
         mood: 100,
-        traits: []
+        traits: {}
       }
     ],
     equipment: {}
@@ -78,7 +78,7 @@ describe('DetailedStatsTab', () => {
           stamina: 100,
           maxStamina: 100,
           mood: 100,
-          traits: [],
+          traits: {},
           equipment: { mic: 'Golden Mic' }
         }
       ]
