@@ -197,9 +197,10 @@ export const handleFailQuests = state => {
         if (quest.failurePenalty.social?.controversyLevel) {
           // Deep clone before mutating
           nextState.social = { ...nextState.social }
-          nextState.social.controversyLevel =
+          nextState.social.controversyLevel = Math.max(0, Math.min(100,
             (nextState.social.controversyLevel || 0) +
             quest.failurePenalty.social.controversyLevel
+          ))
         }
         if (quest.failurePenalty.band?.harmony) {
           // Deep clone before mutating

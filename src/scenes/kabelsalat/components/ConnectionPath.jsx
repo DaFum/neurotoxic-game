@@ -16,9 +16,6 @@ export const ConnectionPath = ({
   const cable = CABLE_MAP[cabId]
 
   if (!cable) {
-    console.warn(
-      `ConnectionPath received invalid cabId: ${cabId}. Returning null.`
-    )
     return null
   }
 

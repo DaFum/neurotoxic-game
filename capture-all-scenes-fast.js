@@ -165,7 +165,7 @@ async function main() {
       console.log('    (skipped)')
     }
 
-    const captured = await mkdir(OUT_DIR, { recursive: true }).catch(() => [])
+    await mkdir(OUT_DIR, { recursive: true }).catch(() => [])
     console.log('\n✅ Scene capture complete!')
   } catch (error) {
     console.error('❌ Error:', error.message)

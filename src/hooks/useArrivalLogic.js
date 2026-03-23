@@ -100,7 +100,8 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
     band,
     gameMap,
     player,
-    onShowHQ
+    onShowHQ,
+    rng
   ])
 
   return { handleArrivalSequence }

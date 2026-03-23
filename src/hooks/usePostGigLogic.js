@@ -88,7 +88,6 @@ export const usePostGigLogic = () => {
 
   // Create cache refs for pure derivation without effect sets
   const cachedFinancialsRef = useRef(null)
-  const cachedPostOptionsRef = useRef([])
 
   const phaseTitleKey =
     {

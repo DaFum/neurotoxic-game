@@ -8,7 +8,7 @@
  */
 
 import { test, describe } from 'node:test'
-import { ok, strictEqual, deepStrictEqual } from 'node:assert'
+import { ok, strictEqual } from 'node:assert'
 
 // Import the actual initialState for comparison
 import { initialState } from '../src/context/initialState.js'
