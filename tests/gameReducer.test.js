@@ -15,13 +15,16 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 
   unlocks.forEach(u => {
     // Mock matching logic: ID match OR case-insensitive name match
+    const isStringId = typeof u.memberId === 'string'
     const member = band.members.find(
       m =>
         (m.id && m.id === u.memberId) ||
-        (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+        (isStringId && m.name && typeof m.name === 'string' && m.name.toLowerCase() === u.memberId.toLowerCase())
     )
-    if (member) {
-      member.traits[u.traitId] = { id: u.traitId }
+    if (member && u.traitId) {
+      if (!member.traits[u.traitId]) {
+        member.traits[u.traitId] = { id: u.traitId }
+      }
     }
   })
 

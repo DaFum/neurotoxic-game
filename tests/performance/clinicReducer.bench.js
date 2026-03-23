@@ -1,9 +1,18 @@
 import { performance } from 'perf_hooks'
 
-// Note: Both benchmark paths previously compared array iterations (`usingFind` vs `usingForLoop`),
-// but now test the updated `usingForLoop` (which correctly accesses the new object map structure `targetMember.traits[resolvedTrait.id]`)
-// against the legacy `usingFind` (which fails on maps). We ensure both inputs and logic are correctly updated for the new structure.
-const state = {
+// Compare legacy array `.find`/.some iteration against optimized new map access (`usingForLoop`)
+const legacyState = {
+  band: {
+    members: [
+      { id: 'm1', traits: [{ id: 't1' }] },
+      { id: 'm2', traits: [{ id: 't2' }] },
+      { id: 'm3', traits: [{ id: 't3' }] },
+      { id: 'm4', traits: [{ id: 't4' }, { id: 't5' }, { id: 't6' }] }
+    ]
+  }
+}
+
+const optimizedState = {
   band: {
     members: [
       { id: 'm1', traits: { t1: { id: 't1' } } },
@@ -50,14 +59,14 @@ function usingForLoop(state, memberId, resolvedTrait) {
 
 let start = performance.now()
 for (let i = 0; i < ITERATIONS; i++) {
-  usingFind(state, memberId, resolvedTrait)
+  usingFind(legacyState, memberId, resolvedTrait)
 }
 let end = performance.now()
-console.log('baseline (Array.find):', end - start, 'ms')
+console.log('legacy baseline (Array.find with arrays):', end - start, 'ms')
 
 start = performance.now()
 for (let i = 0; i < ITERATIONS; i++) {
-  usingForLoop(state, memberId, resolvedTrait)
+  usingForLoop(optimizedState, memberId, resolvedTrait)
 }
 end = performance.now()
-console.log('optimized (for loop):', end - start, 'ms')
+console.log('optimized structure (O(1) Map access):', end - start, 'ms')
