@@ -1,4 +1,12 @@
-export const MidiPlug = () => (
+/*
+ * (#1) Actual Updates: Extracted MidiPlug into a static UI component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+
+export const MidiPlug = React.memo(function MidiPlug() {
+  return (
   <g>
     <circle
       cx='0'
@@ -14,4 +22,5 @@ export const MidiPlug = () => (
     <circle cx='5' cy='-28' r='2' fill='currentColor' />
     <circle cx='8' cy='-20' r='2' fill='currentColor' />
   </g>
-)
+  )
+})

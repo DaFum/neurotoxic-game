@@ -1,4 +1,12 @@
-export const DcPlug = () => (
+/*
+ * (#1) Actual Updates: Extracted DcPlug into a static UI component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+
+export const DcPlug = React.memo(function DcPlug() {
+  return (
   <g>
     <rect
       x='-10'
@@ -20,4 +28,5 @@ export const DcPlug = () => (
       strokeWidth='2'
     />
   </g>
-)
+  )
+})

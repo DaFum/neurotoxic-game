@@ -1,4 +1,12 @@
-export const XlrPlug = () => (
+/*
+ * (#1) Actual Updates: Extracted XlrPlug into a static UI component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+
+export const XlrPlug = React.memo(function XlrPlug() {
+  return (
   <g>
     <rect
       x='-15'
@@ -14,4 +22,5 @@ export const XlrPlug = () => (
     <circle cx='6' cy='-25' r='2.5' fill='currentColor' />
     <circle cx='0' cy='-12' r='2.5' fill='currentColor' />
   </g>
-)
+  )
+})

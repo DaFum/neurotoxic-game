@@ -1,4 +1,12 @@
-export const JackSocket = () => (
+/*
+ * (#1) Actual Updates: Extracted JackSocket into a static UI component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+
+export const JackSocket = React.memo(function JackSocket() {
+  return (
   <g>
     <polygon
       points='-18,-10 0,-22 18,-10 18,10 0,22 -18,10'
@@ -16,4 +24,5 @@ export const JackSocket = () => (
       strokeDasharray='2 2'
     />
   </g>
-)
+  )
+})

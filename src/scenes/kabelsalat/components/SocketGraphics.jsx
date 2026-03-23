@@ -1,6 +1,6 @@
 /*
  * (#1) Actual Updates: Extracted socket graphics to sub-components, removed TODO.
- * (#2) Next Steps: Extract PlugGraphics components.
+ * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'

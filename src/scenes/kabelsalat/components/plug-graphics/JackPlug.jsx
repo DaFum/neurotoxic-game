@@ -1,4 +1,12 @@
-export const JackPlug = () => (
+/*
+ * (#1) Actual Updates: Extracted JackPlug into a static UI component.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
+import React from 'react'
+
+export const JackPlug = React.memo(function JackPlug() {
+  return (
   <g>
     <rect
       x='-8'
@@ -27,4 +35,5 @@ export const JackPlug = () => (
       strokeWidth='1'
     />
   </g>
-)
+  )
+})
