@@ -4,6 +4,7 @@ import {
   applyEventDelta,
   applyInventoryItemDelta,
   clampBandHarmony,
+  clampNonNegative,
   clampPlayerMoney,
   clampVanFuel,
   calculateFameLevel,
@@ -11,6 +12,15 @@ import {
   calculateAppliedDelta,
   isForbiddenKey
 } from '../src/utils/gameStateUtils.js'
+
+test('clampNonNegative edge cases', () => {
+  assert.strictEqual(clampNonNegative(10), 10)
+  assert.strictEqual(clampNonNegative(0), 0)
+  assert.strictEqual(clampNonNegative(-5), 0)
+  assert.strictEqual(clampNonNegative(NaN), 0)
+  assert.strictEqual(clampNonNegative(Infinity), 0)
+  assert.strictEqual(clampNonNegative(-Infinity), 0)
+})
 
 test('calculateFameLevel', () => {
   assert.strictEqual(calculateFameLevel(0), 0)
