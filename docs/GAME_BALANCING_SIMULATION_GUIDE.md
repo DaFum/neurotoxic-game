@@ -142,7 +142,7 @@ Geeignet für automatisierte Auswertung in BI/Notebook/CI.
 Wichtige Kennzahlen je Szenario:
 
 - `avgFinalMoney`, `avgFinalFame`, `avgFinalHarmony`
-- `bankruptcyRate` – Anteil der Runs mit Insolvenz (0–1)
+- `bankruptcyRate` – Anteil der Runs mit Insolvenz in Prozent (0–100)
 - `avgGigNet` – Durchschnittlicher Netto-Gewinn pro Gig
 - `avgSponsorPayouts`, `avgSponsorDrops`
 - `avgTravelMinigames`, `avgRoadieMinigames`, `avgKabelsalatMinigames`

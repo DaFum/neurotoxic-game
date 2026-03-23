@@ -54,6 +54,6 @@ MainMenuNameInputPrompt.propTypes = {
   onClose: PropTypes.func.isRequired,
   inputRef: PropTypes.oneOfType([
     PropTypes.func,
-    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+    PropTypes.shape({ current: PropTypes.object })
   ])
 }

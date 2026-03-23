@@ -312,6 +312,12 @@ const applyScenarioOverrides = (state, scenario) => {
   const { player, band, social } = scenario.initialOverrides
 
   Object.assign(next.player, player)
+
+  // Ensure fameLevel is properly synchronized after applying player overrides
+  if (next.player.fame !== undefined) {
+    next.player.fameLevel = calculateFameLevel(next.player.fame)
+  }
+
   Object.assign(next.band, { harmony: band.harmony })
   Object.assign(next.social, social)
 
@@ -355,7 +361,7 @@ const pickVenueForState = (state, rng) => {
   if (controversy >= 70) targetDiff = Math.max(2, targetDiff - 1)
 
   const candidates = VENUES.filter(
-    venue => Math.abs(venue.diff - targetDiff) <= 1
+    venue => venue.diff <= targetDiff && venue.diff >= targetDiff - 1
   )
   const pool = candidates.length ? candidates : VENUES
   return pool[Math.floor(rng() * pool.length)]
@@ -379,8 +385,9 @@ const calculateModifiers = (scenario, rng) => {
   return modifiers
 }
 
-const applyWorldEvents = (state, scenario, rng, eventCounts) => {
+const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
   const intensity = scenario.eventIntensity ?? 0.5
+  let eventsApplied = 0
 
   // Process financial and special events to replace viral spikes and cash swings
   if (rng() < 0.18 * intensity) {
@@ -399,6 +406,7 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
       } else {
         eventCounts.viralSpikes += 1
       }
+      eventsApplied++
     }
   }
 
@@ -413,11 +421,12 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
         Object.assign(state, applyEventDelta(state, delta))
       }
       eventCounts.bandEvents += 1
+      eventsApplied++
     }
   }
 
   // Process equipment events (transport)
-  if (rng() < 0.06 * intensity) {
+  if (isTravelDay && rng() < 0.06 * intensity) {
     const event = eventEngine.checkEvent('transport', state, 'travel', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
@@ -427,8 +436,11 @@ const applyWorldEvents = (state, scenario, rng, eventCounts) => {
         Object.assign(state, applyEventDelta(state, delta))
       }
       eventCounts.equipmentEvents += 1
+      eventsApplied++
     }
   }
+
+  return eventsApplied
 }
 
 const maybeHandleSponsorship = (state, rng, counters) => {
@@ -585,8 +597,8 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   counters.catalogUpgrades += 1
 }
 
-const estimateMerchBuyers = (venue, performanceScore, modifiers, state) => {
-  const fame = state.player.fame || 0
+const estimateMerchBuyers = (venue, performanceScore, modifiers, state, previousFame = state.player.fame) => {
+  const fame = previousFame || 0
   const fameRatio = Math.min(1.0, fame / (venue.capacity * 8))
   let fillRate = 0.3 + fameRatio * 0.8
   if (modifiers.promo) fillRate += 0.15
@@ -602,19 +614,42 @@ const estimateMerchBuyers = (venue, performanceScore, modifiers, state) => {
 
 const depleteInventory = (inventory, buyers) => {
   if (!inventory || buyers <= 0) return inventory
-  const total =
-    (inventory.shirts || 0) + (inventory.hoodies || 0) + (inventory.cds || 0) +
-    (inventory.patches || 0) + (inventory.vinyl || 0)
+  const skus = ['shirts', 'hoodies', 'cds', 'patches', 'vinyl']
+  const total = skus.reduce((sum, sku) => sum + (inventory[sku] || 0), 0)
+
   if (total <= 0) return inventory
-  const depletionRatio = Math.min(1, buyers / total)
-  return {
-    ...inventory,
-    shirts:  Math.max(0, Math.floor((inventory.shirts  || 0) * (1 - depletionRatio))),
-    hoodies: Math.max(0, Math.floor((inventory.hoodies || 0) * (1 - depletionRatio))),
-    cds:     Math.max(0, Math.floor((inventory.cds     || 0) * (1 - depletionRatio))),
-    patches: Math.max(0, Math.floor((inventory.patches || 0) * (1 - depletionRatio))),
-    vinyl:   Math.max(0, Math.floor((inventory.vinyl   || 0) * (1 - depletionRatio)))
+
+  let buyersLeft = Math.min(buyers, total)
+  const removals = {}
+  const fractions = []
+
+  skus.forEach(sku => {
+    const count = inventory[sku] || 0
+    const idealRemoval = (count / total) * buyersLeft
+    const floorRemoval = Math.min(count, Math.floor(idealRemoval))
+    removals[sku] = floorRemoval
+
+    if (count > floorRemoval) {
+      fractions.push({
+        sku,
+        fraction: idealRemoval - floorRemoval
+      })
+    }
+  })
+
+  buyersLeft -= skus.reduce((sum, sku) => sum + removals[sku], 0)
+
+  fractions.sort((a, b) => b.fraction - a.fraction)
+  for (let i = 0; i < buyersLeft && i < fractions.length; i++) {
+    removals[fractions[i].sku] += 1
   }
+
+  const newInventory = { ...inventory }
+  skus.forEach(sku => {
+    newInventory[sku] = Math.max(0, (inventory[sku] || 0) - (removals[sku] || 0))
+  })
+
+  return newInventory
 }
 
 const mergeGigModifierPipeline = (gigModifiers, physics) => {
@@ -916,7 +951,10 @@ const runSingleSimulation = (scenario, seed) => {
       break
     }
 
-    applyWorldEvents(state, scenario, rng, counters)
+    const shouldPlayGig =
+      day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
+
+    counters.eventsApplied = (counters.eventsApplied || 0) + applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
     maybeShiftSocialTrend(state, rng, counters)
     maybeActivateBrandDeal(state, rng, counters)
     maybeApplyPostPulse(state, rng, counters)
@@ -924,9 +962,6 @@ const runSingleSimulation = (scenario, seed) => {
     maybeHandleSponsorship(state, rng, counters)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
-
-    const shouldPlayGig =
-      day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
 
     if (!shouldPlayGig) {
       peakMoney = Math.max(peakMoney, state.player.money)
@@ -1051,11 +1086,13 @@ const runSingleSimulation = (scenario, seed) => {
       }
     })
 
+    const previousFame = state.player.fame
+
     // Standard post-gig adjustments
     applyPostGigState(state, venue, performanceScore, financials, rng)
 
     // Deplete merch inventory based on estimated buyers this gig
-    const buyers = estimateMerchBuyers(venue, performanceScore, modifiers, state)
+    const buyers = estimateMerchBuyers(venue, performanceScore, modifiers, state, previousFame)
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
     currentNode = venue
@@ -1235,13 +1272,14 @@ const buildFeatureCoverage = results => {
   )
 
   if (results.length > 0) {
+    const hasEventsApplied = results.some(run => run.eventsApplied > 0)
     coverage.daily_updates = true
     coverage.gig_financials = true
     coverage.travel_expenses = true
     coverage.fuel_cost = true
     coverage.gig_modifiers = true
     coverage.gig_physics = true
-    coverage.events_db = true
+    coverage.events_db = hasEventsApplied
     coverage.brand_deals = true
     coverage.social_trends = true
     coverage.social_platforms = true

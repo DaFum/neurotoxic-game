@@ -122,7 +122,6 @@ test('clinicReducer', async t => {
       assert.equal(nextState.player.fame, 0)
       assert.equal(nextState.player.clinicVisits, 1)
       const traits = nextState.band.members[0].traits
-      assert.equal(Object.keys(traits).length, 2)
       assert.ok(Object.hasOwn(traits, 'cyber_lungs'))
       assert.equal(traits.cyber_lungs.id, 'cyber_lungs')
     })

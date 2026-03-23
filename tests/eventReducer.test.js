@@ -71,6 +71,7 @@ describe('eventReducer', () => {
       // checkTraitUnlocks is mocked to return a tech_wizard trait for member m1,
       // and the real trait application logic should add that trait to Matze and emit at least one toast.
       const matze = nextState.band.members.find(m => m.name === 'Matze')
+      assert.ok(matze)
       assert.ok(Object.hasOwn(matze.traits, 'tech_wizard'))
       assert.ok(nextState.toasts.length > 0)
     })

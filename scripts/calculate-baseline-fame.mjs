@@ -52,9 +52,6 @@ console.log('Day'.padEnd(7) + 'Action'.padEnd(32) + 'Condition'.padEnd(16) +
   'Score'.padEnd(7) + 'Outcome'.padEnd(46) + 'Fame'.padEnd(8) + 'Money')
 
 while (state.day <= TARGET_DAYS) {
-  // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
-  state.day += 1
-
   // Apply daily living cost
   state.money = Math.max(0, state.money - DAILY_COST)
 
@@ -108,8 +105,8 @@ while (state.day <= TARGET_DAYS) {
   score = clamp(score, 5, 100)
 
   const previousFame = state.fame
-  let fameDelta = 0
-  let outcomeText = ''
+  let fameDelta
+  let outcomeText
 
   // Good gig threshold aligns with applyPostGigState in game-balance-simulation.mjs
   if (score >= 78) {
@@ -149,18 +146,23 @@ while (state.day <= TARGET_DAYS) {
   }
 
   // Show cancellation if harmony is critically low
+  let isCancelled = false
   if (state.band.harmony < 15 && Math.random() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE) {
     fameDelta = -(FLAT_FAME_PENALTY_PER_BAD_GIG * 2)
     outcomeText = `CANCELLED! Harmony too low. Fame ${fameDelta}`
     score = 0
+    isCancelled = true
   }
 
-  state.gigsPlayed++
   state.fame = Math.max(0, state.fame + fameDelta)
 
-  // Add estimated gig income
-  const gigNet = estimateGigNet(previousFame)
-  state.money += gigNet
+  let gigNet = 0
+  if (!isCancelled) {
+    state.gigsPlayed++
+    // Add estimated gig income
+    gigNet = estimateGigNet(previousFame)
+    state.money += gigNet
+  }
 
   console.log(
     `[Day ${state.day.toString().padStart(2, '0')}] ` +
@@ -178,6 +180,9 @@ while (state.day <= TARGET_DAYS) {
     state.fame = Math.max(0, state.fame - eventFameLoss)
     console.log(`          > Event: Bad PR! Fame -${eventFameLoss} | Total Fame: ${Math.round(state.fame)}`)
   }
+
+  // Advancing a day costs 1 day. Playing a gig happens on the SAME day after traveling.
+  state.day += 1
 }
 
 console.log('\n--- End of Tour ---')
