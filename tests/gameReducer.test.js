@@ -11,7 +11,10 @@ import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   const band = { ...state.band }
   // Deep copy members to avoid mutation issues in test
-  band.members = band.members.map(m => ({ ...m, traits: normalizeTraitMap(m.traits) }))
+  band.members = band.members.map(m => ({
+    ...m,
+    traits: normalizeTraitMap(m.traits)
+  }))
 
   unlocks.forEach(u => {
     // Mock matching logic: ID match OR case-insensitive name match
@@ -19,7 +22,10 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
     const member = band.members.find(
       m =>
         (m.id && m.id === u.memberId) ||
-        (isStringId && m.name && typeof m.name === 'string' && m.name.toLowerCase() === u.memberId.toLowerCase())
+        (isStringId &&
+          m.name &&
+          typeof m.name === 'string' &&
+          m.name.toLowerCase() === u.memberId.toLowerCase())
     )
     if (member && u.traitId) {
       if (!member.traits[u.traitId]) {

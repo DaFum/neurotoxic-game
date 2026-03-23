@@ -1,9 +1,21 @@
 import { performance } from 'perf_hooks'
 
 const members = [
-  { name: 'Alice', traits: { virtuoso: { id: 'virtuoso' }, gear_nerd: { id: 'gear_nerd' } } },
-  { name: 'Bob', traits: { clumsy: { id: 'clumsy' }, party_animal: { id: 'party_animal' } } },
-  { name: 'Charlie', traits: { lead_singer: { id: 'lead_singer' }, drama_magnet: { id: 'drama_magnet' } } },
+  {
+    name: 'Alice',
+    traits: { virtuoso: { id: 'virtuoso' }, gear_nerd: { id: 'gear_nerd' } }
+  },
+  {
+    name: 'Bob',
+    traits: { clumsy: { id: 'clumsy' }, party_animal: { id: 'party_animal' } }
+  },
+  {
+    name: 'Charlie',
+    traits: {
+      lead_singer: { id: 'lead_singer' },
+      drama_magnet: { id: 'drama_magnet' }
+    }
+  },
   { name: 'Dave', traits: { tech_wizard: { id: 'tech_wizard' } } }
 ]
 
@@ -16,7 +28,9 @@ function ensureTraitCache(members) {
     for (let i = 0; i < members.length; i++) {
       const m = members[i]
       if (m.traits) {
-        const traitsIterable = Array.isArray(m.traits) ? m.traits : Object.values(m.traits)
+        const traitsIterable = Array.isArray(m.traits)
+          ? m.traits
+          : Object.values(m.traits)
         for (let j = 0; j < traitsIterable.length; j++) {
           const tId = traitsIterable[j].id
           if (!cacheMap.has(tId)) {
