@@ -1,9 +1,9 @@
 import { performance } from 'perf_hooks'
 
 const members = [
-  { name: 'Alice', traits: [{ id: 'virtuoso' }, { id: 'gear_nerd' }] },
-  { name: 'Bob', traits: [{ id: 'clumsy' }, { id: 'party_animal' }] },
-  { name: 'Charlie', traits: [{ id: 'lead_singer' }, { id: 'drama_magnet' }] },
+  { name: 'Alice', traits: { virtuoso: { id: 'virtuoso' }, gear_nerd: { id: 'gear_nerd' } } },
+  { name: 'Bob', traits: { clumsy: { id: 'clumsy' }, party_animal: { id: 'party_animal' } } },
+  { name: 'Charlie', traits: { lead_singer: { id: 'lead_singer' }, drama_magnet: { id: 'drama_magnet' } } },
   { name: 'Dave', traits: { tech_wizard: { id: 'tech_wizard' } } }
 ]
 

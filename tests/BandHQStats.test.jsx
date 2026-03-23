@@ -25,8 +25,8 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
 
 vi.mock('../src/data/characters.js', () => ({
   CHARACTERS: {
-    AXEL: { name: 'Axel', traits: [] },
-    FREDDIE: { name: 'Freddie', traits: [] }
+    AXEL: { name: 'Axel', traits: {} },
+    FREDDIE: { name: 'Freddie', traits: {} }
   }
 }))
 

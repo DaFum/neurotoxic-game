@@ -1,4 +1,5 @@
 import client from '../../lib/redis.js'
+import { normalizeIp } from '../../src/utils/apiUtils.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
       }
 
       // Rate Limiting (5 requests per 60s)
-      const ip = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'
+      const ip = normalizeIp(req)
       const rateLimitKey = `rate_limit:song:${ip}`
       const requests = await client.incr(rateLimitKey)
       if (requests === 1) {
@@ -101,11 +102,6 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
-      // Ensure connection
-      if (!client.isOpen) {
-        await client.connect()
-      }
-
       const { songId } = req.query
       if (!songId) return res.status(400).json({ error: 'Missing songId' })
 
@@ -119,6 +115,11 @@ export default async function handler(req, res) {
       let limit = parseInt(req.query.limit, 10)
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
+
+      // Ensure connection
+      if (!client.isOpen) {
+        await client.connect()
+      }
 
       // v4: zRangeWithScores(key, min, max, options)
       const range = await client.zRangeWithScores(

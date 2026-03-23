@@ -212,7 +212,7 @@ describe('checkTraitUnlocks', () => {
     })
 
     it('unlocks Grudge Holder for Matze when any relationship < 30', () => {
-      const matze = createMember('Matze', [], { Marius: 29, Lars: 50 })
+      const matze = createMember('Matze', {}, { Marius: 29, Lars: 50 })
       const state = createState([matze])
       const context = { type: 'EVENT_RESOLVED' }
 

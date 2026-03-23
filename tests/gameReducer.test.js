@@ -446,8 +446,8 @@ describe('gameReducer', () => {
         band: {
           ...createInitialState().band,
           members: [
-            { name: 'Matze', traits: {} },
-            { name: 'Marius', traits: {} }
+            { name: 'Matze', traits: Object.create(null) },
+            { name: 'Marius', traits: Object.create(null) }
           ]
         }
       }
@@ -470,6 +470,7 @@ describe('gameReducer', () => {
 
       // Verify state change (simulated by mock)
       const matze = nextState.band.members.find(m => m.name === 'Matze')
+      assert.ok(matze, 'Matze should be found in members array')
       assert.strictEqual(Object.keys(matze.traits).length, 1)
       assert.strictEqual(matze.traits['gear_nerd'].id, 'gear_nerd')
     })
@@ -479,7 +480,7 @@ describe('gameReducer', () => {
         ...createInitialState(),
         band: {
           ...createInitialState().band,
-          members: [{ name: 'Matze', traits: {} }]
+          members: [{ name: 'Matze', traits: Object.create(null) }]
         }
       }
 

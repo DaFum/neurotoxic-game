@@ -5,7 +5,7 @@ import { generateBrandOffers } from '../../src/utils/socialEngine.js'
 // Setup Mock Game State with multiple traits and eligible deals
 const mockGameState = {
   player: { fame: 5000 },
-  band: { members: [{ traits: ['social_manager'] }] },
+  band: { members: [{ traits: { social_manager: { id: 'social_manager' } } }] },
   social: {
     instagram: 50000,
     tiktok: 50000,
