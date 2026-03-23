@@ -10,13 +10,13 @@ const MAX_SONG_ID_LENGTH = 64
  * GET: Validiert query.songId und optionales query.limit, liest die Top-N-Einträge der Song-Leaderboard-Zeile und die zugehörigen Spielernamen und liefert ein Array mit Einträgen { rank, playerId, playerName, score }. Gibt 400 für fehlerhafte Abfragen, 200 mit dem Leaderboard oder einem leeren Array bei keinem Eintrag, und 500 bei internen Fehlern.
  */
 export default async function handler(req, res) {
-  // Ensure connection
-  if (!client.isOpen) {
-    await client.connect()
-  }
-
   if (req.method === 'POST') {
     try {
+      // Ensure connection
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
       // Rate Limiting (5 requests per 60s)
       const ip = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'
       const rateLimitKey = `rate_limit:song:${ip}`
@@ -101,6 +101,11 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
+      // Ensure connection
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
       const { songId } = req.query
       if (!songId) return res.status(400).json({ error: 'Missing songId' })
 

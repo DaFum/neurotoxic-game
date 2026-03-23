@@ -5,12 +5,13 @@
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
+import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   const band = { ...state.band }
   // Deep copy members to avoid mutation issues in test
-  band.members = band.members.map(m => ({ ...m, traits: { ...m.traits } }))
+  band.members = band.members.map(m => ({ ...m, traits: normalizeTraitMap(m.traits) }))
 
   unlocks.forEach(u => {
     // Mock matching logic: ID match OR case-insensitive name match
@@ -35,8 +36,6 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
         : state.toasts || []
   }
 })
-
-import { normalizeTraitMap } from '../src/utils/traitUtils.js'
 
 mock.module('../src/utils/traitUtils.js', {
   namedExports: {

@@ -16,8 +16,9 @@ function ensureTraitCache(members) {
     for (let i = 0; i < members.length; i++) {
       const m = members[i]
       if (m.traits) {
-        for (let j = 0; j < m.traits.length; j++) {
-          const tId = m.traits[j].id
+        const traitsIterable = Array.isArray(m.traits) ? m.traits : Object.values(m.traits)
+        for (let j = 0; j < traitsIterable.length; j++) {
+          const tId = traitsIterable[j].id
           if (!cacheMap.has(tId)) {
             cacheMap.set(tId, m)
           }

@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { checkTraitUnlocks } from '../src/utils/unlockCheck.js'
 
 describe('checkTraitUnlocks', () => {
-  const createMember = (name, traits = [], relationships = {}) => ({
+  const createMember = (name, traits = {}, relationships = {}) => ({
     name,
     traits,
     relationships

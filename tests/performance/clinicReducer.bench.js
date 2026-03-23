@@ -1,12 +1,15 @@
 import { performance } from 'perf_hooks'
 
+// Note: Both benchmark paths previously compared array iterations (`usingFind` vs `usingForLoop`),
+// but now test the updated `usingForLoop` (which correctly accesses the new object map structure `targetMember.traits[resolvedTrait.id]`)
+// against the legacy `usingFind` (which fails on maps). We ensure both inputs and logic are correctly updated for the new structure.
 const state = {
   band: {
     members: [
       { id: 'm1', traits: { t1: { id: 't1' } } },
       { id: 'm2', traits: { t2: { id: 't2' } } },
       { id: 'm3', traits: { t3: { id: 't3' } } },
-      { id: 'm4', traits: [{ id: 't4' }, { id: 't5' }, { id: 't6' }] }
+      { id: 'm4', traits: { t4: { id: 't4' }, t5: { id: 't5' }, t6: { id: 't6' } } }
     ]
   }
 }
@@ -36,8 +39,8 @@ function usingForLoop(state, memberId, resolvedTrait) {
         break
       }
     }
-    if (targetMember && Array.isArray(targetMember.traits)) {
-      if (targetMember.traits.some(tr => tr.id === resolvedTrait.id)) {
+    if (targetMember && targetMember.traits) {
+      if (Object.hasOwn(targetMember.traits, resolvedTrait.id)) {
         return true
       }
     }
