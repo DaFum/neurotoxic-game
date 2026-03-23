@@ -23,7 +23,8 @@ export default async function handler(req, res) {
       }
 
       // Rate Limiting (5 requests per 60s)
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+      const ip =
+        req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
       const rateKey = `ratelimit:lb:stats:${ip}`
       const current = await client.incr(rateKey)
       if (current === 1) {
@@ -44,17 +45,6 @@ export default async function handler(req, res) {
         Object.hasOwn(req.body, 'prototype')
       ) {
         return res.status(400).json({ error: 'Invalid payload structure' })
-      }
-
-      // Rate Limiting
-      const ip = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'
-      const rateLimitKey = `rate_limit:stats:${ip}`
-      const requests = await client.incr(rateLimitKey)
-      if (requests === 1) {
-        await client.expire(rateLimitKey, 60)
-      }
-      if (requests > 5) {
-        return res.status(429).json({ error: 'Too many requests' })
       }
 
       const {

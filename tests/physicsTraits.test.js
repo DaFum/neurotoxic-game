@@ -16,7 +16,7 @@ describe('calculateGigPhysics - Character Traits', () => {
   it('should apply gear_nerd trait correctly (Matze)', () => {
     const matzeWithTrait = {
       ...matze,
-      traits: [{ id: 'gear_nerd' }]
+      traits: { gear_nerd: { id: 'gear_nerd' } }
     }
     const bandState = { members: [matzeWithTrait, Marius, Lars] }
     const result = calculateGigPhysics(bandState, { bpm: 120 })
@@ -35,7 +35,7 @@ describe('calculateGigPhysics - Character Traits', () => {
   it('should apply party_animal trait correctly (Marius)', () => {
     const MariusWithTrait = {
       ...Marius,
-      traits: [{ id: 'party_animal' }]
+      traits: { party_animal: { id: 'party_animal' } }
     }
     const bandState = { members: [matze, MariusWithTrait, Lars] }
     const result = calculateGigPhysics(bandState, { bpm: 120 })
@@ -54,7 +54,7 @@ describe('calculateGigPhysics - Character Traits', () => {
   it('should apply bandleader trait correctly (Lars)', () => {
     const LarsWithTrait = {
       ...Lars,
-      traits: [{ id: 'bandleader' }]
+      traits: { bandleader: { id: 'bandleader' } }
     }
     const bandState = { members: [matze, Marius, LarsWithTrait] }
 
@@ -88,7 +88,7 @@ describe('calculateGigPhysics - Character Traits', () => {
   it('should apply social_manager trait correctly (Lars)', () => {
     const LarsWithTrait = {
       ...Lars,
-      traits: [{ id: 'social_manager' }]
+      traits: { social_manager: { id: 'social_manager' } }
     }
     const bandState = { members: [matze, Marius, LarsWithTrait] }
     const result = calculateGigPhysics(bandState, { bpm: 120 })

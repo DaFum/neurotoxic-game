@@ -21,7 +21,7 @@ test('resolveEventChoice appends SAVED_BY_BANDLEADER string on successful bandle
         {
           id: 'leader',
           baseStats: { skill: 1 },
-          traits: [{ id: 'bandleader' }]
+          traits: { bandleader: { id: 'bandleader' } }
         }
       ]
     }

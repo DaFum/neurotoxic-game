@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { checkTraitUnlocks } from '../src/utils/unlockCheck.js'
 
 describe('checkTraitUnlocks', () => {
-  const createMember = (name, traits = [], relationships = {}) => ({
+  const createMember = (name, traits = {}, relationships = {}) => ({
     name,
     traits,
     relationships
@@ -92,7 +92,9 @@ describe('checkTraitUnlocks', () => {
 
     it('unlocks Tech Wizard for Matze with technical song (>3 difficulty) and 100% accuracy', () => {
       // Give Matze 'perfektionist' so only 'tech_wizard' is unlocked
-      const matze = createMember('Matze', [{ id: 'perfektionist' }])
+      const matze = createMember('Matze', {
+        perfektionist: { id: 'perfektionist' }
+      })
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
@@ -212,7 +214,7 @@ describe('checkTraitUnlocks', () => {
     })
 
     it('unlocks Grudge Holder for Matze when any relationship < 30', () => {
-      const matze = createMember('Matze', [], { Marius: 29, Lars: 50 })
+      const matze = createMember('Matze', {}, { Marius: 29, Lars: 50 })
       const state = createState([matze])
       const context = { type: 'EVENT_RESOLVED' }
 
@@ -237,10 +239,10 @@ describe('checkTraitUnlocks', () => {
   // Edge Cases
   describe('Edge Cases', () => {
     it('does not unlock trait if already owned', () => {
-      const matze = createMember('Matze', [
-        { id: 'virtuoso' },
-        { id: 'perfektionist' }
-      ])
+      const matze = createMember('Matze', {
+        virtuoso: { id: 'virtuoso' },
+        perfektionist: { id: 'perfektionist' }
+      })
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
