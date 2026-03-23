@@ -142,9 +142,8 @@ const SongShape = PropTypes.shape({
 
 SetlistBlock.propTypes = {
   t: PropTypes.func.isRequired,
-  setlist: PropTypes.arrayOf(
-    PropTypes.oneOfType([PropTypes.string, SongShape])
-  ).isRequired,
+  setlist: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, SongShape]))
+    .isRequired,
   songsDb: PropTypes.arrayOf(SongShape).isRequired,
   songsDict: PropTypes.objectOf(SongShape).isRequired,
   selectedSongIds: PropTypes.instanceOf(Set).isRequired,

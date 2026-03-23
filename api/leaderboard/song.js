@@ -1,4 +1,5 @@
 import client from '../../lib/redis.js'
+import { normalizeIp } from '../../lib/apiUtils.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
@@ -10,22 +11,21 @@ const MAX_SONG_ID_LENGTH = 64
  * GET: Validiert query.songId und optionales query.limit, liest die Top-N-Einträge der Song-Leaderboard-Zeile und die zugehörigen Spielernamen und liefert ein Array mit Einträgen { rank, playerId, playerName, score }. Gibt 400 für fehlerhafte Abfragen, 200 mit dem Leaderboard oder einem leeren Array bei keinem Eintrag, und 500 bei internen Fehlern.
  */
 export default async function handler(req, res) {
-  // Ensure connection
-  if (!client.isOpen) {
-    await client.connect()
-  }
-
   if (req.method === 'POST') {
     try {
-      // Rate Limiting (5 requests per 60s)
-      const ip =
-        req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
-      const rateKey = `ratelimit:lb:song:${ip}`
-      const current = await client.incr(rateKey)
-      if (current === 1) {
-        await client.expire(rateKey, 60)
+      // Ensure connection
+      if (!client.isOpen) {
+        await client.connect()
       }
-      if (current > 5) {
+
+      // Rate Limiting (5 requests per 60s)
+      const ip = normalizeIp(req)
+      const rateLimitKey = `rate_limit:song:${ip}`
+      const requests = await client.incr(rateLimitKey)
+      if (requests === 1) {
+        await client.expire(rateLimitKey, 60)
+      }
+      if (requests > 5) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -115,6 +115,11 @@ export default async function handler(req, res) {
       let limit = parseInt(req.query.limit, 10)
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
+
+      // Ensure connection
+      if (!client.isOpen) {
+        await client.connect()
+      }
 
       // v4: zRangeWithScores(key, min, max, options)
       const range = await client.zRangeWithScores(

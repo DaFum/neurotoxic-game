@@ -71,14 +71,18 @@ describe('Trait Logic', () => {
 
     it('returns false if band.members is not an array', () => {
       const band = {
-        members: { memberA: { traits: { target_trait: { id: 'target_trait' } } } }
+        members: {
+          memberA: { traits: { target_trait: { id: 'target_trait' } } }
+        }
       }
       assert.strictEqual(bandHasTrait(band, 'target_trait'), false)
     })
 
     it('returns false if traitId is undefined', () => {
       const band = {
-        members: [{ name: 'B', traits: { target_trait: { id: 'target_trait' } } }]
+        members: [
+          { name: 'B', traits: { target_trait: { id: 'target_trait' } } }
+        ]
       }
       assert.strictEqual(bandHasTrait(band, undefined), false)
     })

@@ -105,14 +105,14 @@ pnpm exec playwright test
 
 ## Environment Variables for CI
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `BASE_URL` | `http://localhost:5173` | Dev server URL |
-| `OUT_DIR` | `screenshots/scenes` | Output directory for captures |
-| `HEADLESS` | `true` | Run headless (always true in CI) |
-| `SLOWMO` | `0` | Slow-motion for debugging (leave at 0 in CI) |
-| `BROWSER_PATH` | (auto-detect) | Path to Chrome/Chromium binary |
-| `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | (unset) | Set to 1 if providing cached browser |
+| Variable                           | Default                 | Purpose                                      |
+| ---------------------------------- | ----------------------- | -------------------------------------------- |
+| `BASE_URL`                         | `http://localhost:5173` | Dev server URL                               |
+| `OUT_DIR`                          | `screenshots/scenes`    | Output directory for captures                |
+| `HEADLESS`                         | `true`                  | Run headless (always true in CI)             |
+| `SLOWMO`                           | `0`                     | Slow-motion for debugging (leave at 0 in CI) |
+| `BROWSER_PATH`                     | (auto-detect)           | Path to Chrome/Chromium binary               |
+| `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | (unset)                 | Set to 1 if providing cached browser         |
 
 ## Handling Browser Installation
 
@@ -261,6 +261,7 @@ steps:
 **Cause:** CDN unreachable, no cached browser, no BROWSER_PATH
 
 **Solution:**
+
 ```bash
 # Pre-populate browser cache
 pnpm install  # Downloads Playwright browsers locally
@@ -273,6 +274,7 @@ tar -czf playwright-cache.tar.gz ~/.cache/ms-playwright
 **Cause:** Network lag, font loading, animation timeouts
 
 **Solution:**
+
 ```yaml
 - name: Increase screenshot timeout
   run: |
@@ -287,6 +289,7 @@ tar -czf playwright-cache.tar.gz ~/.cache/ms-playwright
 **Cause:** Dev server failed to start, port conflict
 
 **Solution:**
+
 ```bash
 # Check server startup
 pnpm run dev 2>&1 | tee dev-server.log &

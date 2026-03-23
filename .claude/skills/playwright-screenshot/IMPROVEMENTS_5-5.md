@@ -11,6 +11,7 @@ The playwright-screenshot skill has been upgraded from **4/5 to 5/5** (productio
 **Problem:** Used shell `find` command, breaking Windows compatibility
 
 **Solution:**
+
 - Replaced `execSync("find ...")` with Node.js `readdirSync()`
 - Version-sorted browser selection (descending, most recent first)
 - Works seamlessly on Windows, Linux, macOS
@@ -27,7 +28,7 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
   .sort((a, b) => {
     const aVer = parseInt(a.name.match(/\d+/) || [0], 10)
     const bVer = parseInt(b.name.match(/\d+/) || [0], 10)
-    return bVer - aVer  // descending
+    return bVer - aVer // descending
   })
 ```
 
@@ -40,6 +41,7 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 **Problem:** Fixtures could silently fail if initialState.js schema changed
 
 **Solution:**
+
 - Created comprehensive test suite: `tests/playwright-screenshot-fixture-validation.test.js`
 - Validates 22+ required fields across player, band, social, minigame objects
 - Tests state bounds (harmony 1-100, money >= 0)
@@ -48,6 +50,7 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 **File:** `tests/playwright-screenshot-fixture-validation.test.js` (10 test cases)
 
 **Tests:**
+
 1. BASE_STATE contains all required top-level fields (22 fields)
 2. Player object structure (18 fields)
 3. Band object structure (9 fields)
@@ -70,12 +73,14 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 **Problem:** Scene definitions scattered across 3 files (screenshot-game-flow.js, screenshot-all-scenes.js, screenshot-state-inject.js)
 
 **Solution:**
+
 - Created single source of truth: `.claude/skills/playwright-screenshot/scenes.config.js`
 - Exported SCENES (16 scenes), FIXTURES (9 fixtures), helpers, validation
 
 **File:** `.claude/skills/playwright-screenshot/scenes.config.js`
 
 **Features:**
+
 - `SCENES` object with metadata for all 16 game scenes
 - `FIXTURES` object defining 9 pre-built save states
 - Helper functions:
@@ -86,6 +91,7 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
   - `validateSceneConfig()` — Validate scene order uniqueness
 
 **Scene Coverage:**
+
 - INTRO, MENU, CREDITS, BAND_HQ
 - OVERWORLD, OVERWORLD_NODE_SELECT
 - TRAVEL_MINIGAME, PREGIG, PRE_GIG_MINIGAME
@@ -102,6 +108,7 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 **Problem:** No guidance for integrating screenshots into CI pipelines
 
 **Solution:**
+
 - Created `references/ci-integration-guide.md` (400+ lines)
 - Complete GitHub Actions workflows with examples
 - Troubleshooting table with recovery steps
@@ -110,6 +117,7 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 **File:** `.claude/skills/playwright-screenshot/references/ci-integration-guide.md`
 
 **Includes:**
+
 1. **Full GitHub Actions Workflow Examples**
    - Browser cache strategies (Playwright cache, custom paths)
    - Artifact retention for debugging (7 days)
@@ -146,12 +154,14 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 ### 5. ✅ Code Review Fixes Applied
 
 **Commit d919b76:** Address initial code review feedback
+
 - ✅ Added missing BASE_STATE fields (setlist, activeStoryFlags, eventCooldowns, etc.)
 - ✅ Fixed songId from 'kranker-schrank' to '01 Kranker Schrank'
 - ✅ Removed no-op timeout parameters from isVisible()
 - ✅ Fixed duplicate step numbering (01-11 consistent)
 
 **Commit 9aa1285:** Resolve follow-up code review issues
+
 - ✅ Removed duplicate harmony key in BASE_STATE
 - ✅ Completed screenshot filename renumbering
 - ✅ Verified BASE_STATE field completeness
@@ -162,21 +172,22 @@ const browsers = readdirSync(cacheDir, { withFileTypes: true })
 
 ## Quality Metrics
 
-| Metric | Before | After | Status |
-|--------|--------|-------|--------|
-| Cross-platform support | ❌ (shell find) | ✅ (Node.js APIs) | **FIXED** |
-| Fixture validation | ❌ Manual | ✅ Automated (10 tests) | **NEW** |
-| Scene duplication | ❌ 3 files | ✅ 1 config | **CENTRALIZED** |
-| CI documentation | ❌ None | ✅ 400+ lines | **NEW** |
-| Code review feedback | ❌ Pending | ✅ All addressed | **COMPLETE** |
-| Test coverage | 4/5 | 5/5 | **COMPLETE** |
-| Production readiness | Partial | Full | **READY** |
+| Metric                 | Before          | After                   | Status          |
+| ---------------------- | --------------- | ----------------------- | --------------- |
+| Cross-platform support | ❌ (shell find) | ✅ (Node.js APIs)       | **FIXED**       |
+| Fixture validation     | ❌ Manual       | ✅ Automated (10 tests) | **NEW**         |
+| Scene duplication      | ❌ 3 files      | ✅ 1 config             | **CENTRALIZED** |
+| CI documentation       | ❌ None         | ✅ 400+ lines           | **NEW**         |
+| Code review feedback   | ❌ Pending      | ✅ All addressed        | **COMPLETE**    |
+| Test coverage          | 4/5             | 5/5                     | **COMPLETE**    |
+| Production readiness   | Partial         | Full                    | **READY**       |
 
 ---
 
 ## Testing Results
 
 ### Unit Tests (Fixture Validation)
+
 ```
 ✅ BASE_STATE contains all required fields
 ✅ Player object structure validated
@@ -193,6 +204,7 @@ Result: 10/10 PASSING
 ```
 
 ### Full Test Suite
+
 ```
 ✅ Logic tests (node:test): 1972 passing
 ✅ UI tests (vitest): 648 passing
@@ -207,11 +219,13 @@ Result: ~2630 TESTS PASSING
 ## Files Modified/Created
 
 ### Created (3 new files, 899 lines)
+
 1. `tests/playwright-screenshot-fixture-validation.test.js` — Fixture validation test suite
 2. `.claude/skills/playwright-screenshot/scenes.config.js` — Centralized scene config
 3. `.claude/skills/playwright-screenshot/references/ci-integration-guide.md` — CI/CD guide
 
 ### Modified (2 files)
+
 1. `.claude/skills/playwright-screenshot/scripts/browser-launcher.js` — Cross-platform fix
 2. `.claude/skills/playwright-screenshot/SKILL.md` — Documentation update
 
@@ -235,6 +249,7 @@ d919b76  refactor: address code review feedback on playwright screenshot tests
 ### No Breaking Changes ✅
 
 All changes are backward compatible:
+
 - `browser-launcher.js` API unchanged
 - Screenshot scripts work exactly as before
 - New `scenes.config.js` is optional (for future integrations)
@@ -243,14 +258,20 @@ All changes are backward compatible:
 ### Optional Enhancements
 
 **Use centralized config:**
+
 ```javascript
-import { SCENES, FIXTURES, getScene } from './.claude/skills/playwright-screenshot/scenes.config.js'
+import {
+  SCENES,
+  FIXTURES,
+  getScene
+} from './.claude/skills/playwright-screenshot/scenes.config.js'
 
 const currentScene = getScene('OVERWORLD')
-console.log(currentScene.waitSignal)  // { type: 'heading', text: /tour plan/i }
+console.log(currentScene.waitSignal) // { type: 'heading', text: /tour plan/i }
 ```
 
 **Leverage validation in CI:**
+
 ```bash
 # Now runs automatically in test suite
 pnpm run test  # includes fixture validation
@@ -270,15 +291,15 @@ pnpm run test  # includes fixture validation
 
 ## Rating Justification: 5/5 ⭐⭐⭐⭐⭐
 
-| Dimension | Score | Justification |
-|-----------|-------|---------------|
-| **Architecture** | ⭐⭐⭐⭐⭐ | Modular, scalable, strategic fallbacks, centralized config |
-| **Code Quality** | ⭐⭐⭐⭐⭐ | Excellent patterns, all code review feedback applied |
-| **Error Handling** | ⭐⭐⭐⭐⭐ | Selective error discrimination, graceful degradation, helpful messages |
-| **Documentation** | ⭐⭐⭐⭐⭐ | Comprehensive SKILL.md + CI integration guide + config examples |
-| **Usability** | ⭐⭐⭐⭐⭐ | Single command works, env vars override, clear output |
-| **Testing** | ⭐⭐⭐⭐⭐ | End-to-end tested, automated validation, 2630+ tests passing |
-| **Performance** | ⭐⭐⭐⭐⭐ | Tuned timeouts, no global hangs, optimized for headless |
+| Dimension                | Score      | Justification                                                            |
+| ------------------------ | ---------- | ------------------------------------------------------------------------ |
+| **Architecture**         | ⭐⭐⭐⭐⭐ | Modular, scalable, strategic fallbacks, centralized config               |
+| **Code Quality**         | ⭐⭐⭐⭐⭐ | Excellent patterns, all code review feedback applied                     |
+| **Error Handling**       | ⭐⭐⭐⭐⭐ | Selective error discrimination, graceful degradation, helpful messages   |
+| **Documentation**        | ⭐⭐⭐⭐⭐ | Comprehensive SKILL.md + CI integration guide + config examples          |
+| **Usability**            | ⭐⭐⭐⭐⭐ | Single command works, env vars override, clear output                    |
+| **Testing**              | ⭐⭐⭐⭐⭐ | End-to-end tested, automated validation, 2630+ tests passing             |
+| **Performance**          | ⭐⭐⭐⭐⭐ | Tuned timeouts, no global hangs, optimized for headless                  |
 | **Production Readiness** | ⭐⭐⭐⭐⭐ | Cross-platform, CI/CD ready, schema drift detection, fallback strategies |
 
 **Overall: 5/5 — Production-Ready, Best-in-Class Screenshot Testing Infrastructure**
@@ -288,6 +309,7 @@ pnpm run test  # includes fixture validation
 ## Summary
 
 The playwright-screenshot skill is now **production-ready** with:
+
 - ✅ Cross-platform compatibility (Windows/Linux/macOS)
 - ✅ Automated fixture validation (prevents schema drift)
 - ✅ Centralized configuration (single source of truth)

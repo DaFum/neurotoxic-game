@@ -32,7 +32,7 @@ vi.mock('../src/ui/shared/Icons', () => ({
 vi.mock('../src/context/GameState', () => ({
   useGameState: () => ({
     player: { money: 100 },
-    band: { members: [{ id: 'm1', skills: {}, traits: [] }] },
+    band: { members: [{ id: 'm1', skills: {}, traits: {} }] },
     activeEvent: { id: 'test_event', context: {} }
   }),
   GameStateProvider: ({ children }) => <div>{children}</div>

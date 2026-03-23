@@ -1,4 +1,5 @@
 import client from '../../lib/redis.js'
+import { normalizeIp } from '../../lib/apiUtils.js'
 
 const VALID_STATS = [
   'balance',
@@ -23,14 +24,13 @@ export default async function handler(req, res) {
       }
 
       // Rate Limiting (5 requests per 60s)
-      const ip =
-        req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
-      const rateKey = `ratelimit:lb:stats:${ip}`
-      const current = await client.incr(rateKey)
-      if (current === 1) {
-        await client.expire(rateKey, 60)
+      const ip = normalizeIp(req)
+      const rateLimitKey = `rate_limit:stats:${ip}`
+      const requests = await client.incr(rateLimitKey)
+      if (requests === 1) {
+        await client.expire(rateLimitKey, 60)
       }
-      if (current > 5) {
+      if (requests > 5) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
@@ -115,10 +115,6 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
-      if (!client.isOpen) {
-        await client.connect()
-      }
-
       let limit = parseInt(req.query.limit, 10)
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
@@ -126,6 +122,10 @@ export default async function handler(req, res) {
       const stat = req.query.stat || 'balance'
       if (!VALID_STATS.includes(stat)) {
         return res.status(400).json({ error: 'Invalid stat requested' })
+      }
+
+      if (!client.isOpen) {
+        await client.connect()
       }
 
       const sortedSetKey = `lb:${stat}`

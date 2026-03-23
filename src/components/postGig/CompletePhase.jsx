@@ -39,9 +39,7 @@ const SideEffectsSummary = ({ result, i18n, t }) => {
       {result.controversyChange ? (
         <div
           className={
-            result.controversyChange > 0
-              ? 'text-blood-red'
-              : 'text-toxic-green'
+            result.controversyChange > 0 ? 'text-blood-red' : 'text-toxic-green'
           }
         >
           {result.controversyChange > 0 ? '⚠️' : '🛡️'}{' '}

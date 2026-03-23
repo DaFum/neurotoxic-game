@@ -61,7 +61,7 @@ export const NegotiationModal = ({
             })}
           </p>
 
-          {TACTICS.map((tactic) => (
+          {TACTICS.map(tactic => (
             <button
               key={tactic.id}
               type='button'

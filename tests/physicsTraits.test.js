@@ -6,7 +6,7 @@ describe('calculateGigPhysics - Character Traits', () => {
   const baseMember = {
     name: 'TestMember',
     baseStats: { skill: 10, stamina: 50 },
-    traits: []
+    traits: {}
   }
 
   const matze = { ...baseMember, name: 'Matze', role: 'Guitar' }

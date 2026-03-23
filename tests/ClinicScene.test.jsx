@@ -92,6 +92,27 @@ describe('ClinicScene', () => {
   it('disables buttons correctly based on state', () => {
     // M2 has 100 stamina AND 100 mood, so their heal button should be disabled
     // M2 has 'cyber_lungs', so their enhance button should be disabled
+    useClinicLogic.mockReturnValue({
+      player: { money: 100, fame: 100 }, // Ensure player has enough resources to not trigger disable due to funds
+      band: {
+        members: [
+          { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: {} },
+          {
+            id: 'm2',
+            name: 'M2',
+            stamina: 100,
+            mood: 100,
+            traits: { cyber_lungs: true }
+          }
+        ]
+      },
+      healCostMoney: 50,
+      enhanceCostFame: 50,
+      healMember: vi.fn(),
+      enhanceMember: vi.fn(),
+      leaveClinic: vi.fn()
+    })
+
     renderComponent()
 
     const healButtons = screen.getAllByRole('button', { name: /HEAL/i })

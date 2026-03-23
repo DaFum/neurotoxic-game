@@ -7,11 +7,15 @@ import { CABLE_MAP } from '../constants.js'
 import { getMessyPath } from '../utils.js'
 import PropTypes from 'prop-types'
 
-export const ConnectionPath = ({ sockId, cabId, isPowerConnected, socketOrder }) => {
+export const ConnectionPath = ({
+  sockId,
+  cabId,
+  isPowerConnected,
+  socketOrder
+}) => {
   const cable = CABLE_MAP[cabId]
 
   if (!cable) {
-    console.warn(`ConnectionPath received invalid cabId: ${cabId}. Returning null.`)
     return null
   }
 

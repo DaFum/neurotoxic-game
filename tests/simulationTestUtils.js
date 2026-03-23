@@ -6,21 +6,21 @@ export const buildBandState = (overrides = {}) => ({
       mood: 70,
       stamina: 80,
       baseStats: { skill: 5 },
-      traits: []
+      traits: {}
     },
     {
       name: 'Marius',
       mood: 65,
       stamina: 75,
       baseStats: { skill: 4 },
-      traits: []
+      traits: {}
     },
     {
       name: 'Lars',
       mood: 75,
       stamina: 70,
       baseStats: { skill: 3 },
-      traits: []
+      traits: {}
     }
   ],
   ...overrides
