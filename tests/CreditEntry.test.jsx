@@ -7,7 +7,9 @@ describe('CreditEntry Component', () => {
     const roleText = 'VOCAL CODE VOMIT'
     const nameText = 'Jules Agent'
 
-    const { getByText } = render(<CreditEntry role={roleText} name={nameText} delay={0.5} />)
+    const { getByText } = render(
+      <CreditEntry role={roleText} name={nameText} delay={0.5} />
+    )
 
     expect(getByText(roleText)).toBeInTheDocument()
     expect(getByText(nameText)).toBeInTheDocument()

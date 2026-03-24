@@ -5,8 +5,17 @@
  */
 import { useCallback, useRef, useEffect } from 'react'
 import { createHecklerSession } from '../../utils/hecklerLogic'
-import { getTransportState, getGigTimeMs, pauseAudio, resumeAudio, stopAudio } from '../../utils/audioEngine'
-import { processRhythmGameTick, finalizeGig } from '../../utils/rhythmGameLoopUtils'
+import {
+  getTransportState,
+  getGigTimeMs,
+  pauseAudio,
+  resumeAudio,
+  stopAudio
+} from '../../utils/audioEngine'
+import {
+  processRhythmGameTick,
+  finalizeGig
+} from '../../utils/rhythmGameLoopUtils'
 
 export const useRhythmGameLoop = ({
   gameStateRef,

@@ -3,6 +3,7 @@
 This reference covers detailed migration paths from each tool-specific format to AGENTS.md as the universal standard.
 
 ## Table of Contents
+
 1. From .cursorrules / .cursor/rules/
 2. From .github/copilot-instructions.md
 3. From GEMINI.md
@@ -33,12 +34,14 @@ alwaysApply: false
 ### What to keep vs. discard
 
 **Keep** (likely passes the Golden Rule):
+
 - Non-standard build/test commands
 - Architecture constraints not enforced by linters
 - Gotchas about auto-generated files, frozen directories, etc.
 - Scoping information (which rules apply to which directories) — translate to subdirectory CLAUDE.md files or `.claude/rules/` if the user uses Claude Code
 
 **Discard** (fails the Golden Rule):
+
 - Technology descriptions ("We use React 18 with TypeScript")
 - Generic style rules that linters enforce
 - Framework basics ("Use functional components") — agents know these
@@ -63,6 +66,7 @@ ln -sfn ../../AGENTS.md .cursor/rules/main.mdc
 ### Scoping: what gets lost
 
 Cursor's `globs` and `alwaysApply` frontmatter have no AGENTS.md equivalent. For scoped rules:
+
 - **If the user uses Claude Code**: Create subdirectory CLAUDE.md files or `.claude/rules/*.md` with `paths:` frontmatter
 - **If they also use Cursor**: Keep the scoped `.mdc` files alongside AGENTS.md. Only the shared/universal rules go in AGENTS.md.
 
@@ -76,7 +80,7 @@ A single Markdown file at `.github/copilot-instructions.md`. Plain Markdown, no 
 
 ```yaml
 ---
-applyTo: "src/api/**"
+applyTo: 'src/api/**'
 ---
 Use Express middleware pattern for all route handlers.
 ```
@@ -108,9 +112,11 @@ Plain Markdown at the project root. Gemini CLI has a unique behavior: it walks b
 
 ```markdown
 ## Stack
+
 - Go 1.22, Chi router, sqlc for database queries
 
 ## Guidelines
+
 - Use structured logging (slog) not fmt.Println
 - All errors must be wrapped with fmt.Errorf
 ```
@@ -140,13 +146,15 @@ Keep CLAUDE.md, but make it thin — it imports AGENTS.md and adds only Claude-s
 @AGENTS.md
 
 ## Claude-Specific
-- Hooks: run `uv run ruff check --fix .` on PostFileWrite for *.py files
+
+- Hooks: run `uv run ruff check --fix .` on PostFileWrite for \*.py files
 - Auto-memory is enabled — don't repeat corrections, they're persisted
 ```
 
 ### What stays in CLAUDE.md vs. moves to AGENTS.md
 
 **Stays in CLAUDE.md:**
+
 - Import syntax (`@path/to/file`)
 - Hook-related instructions
 - Auto-memory guidance
@@ -154,6 +162,7 @@ Keep CLAUDE.md, but make it thin — it imports AGENTS.md and adds only Claude-s
 - Anything referencing `.claude/` directory features
 
 **Moves to AGENTS.md:**
+
 - Build/test/lint commands
 - Architecture constraints
 - Style conventions
