@@ -47,7 +47,7 @@ const INITIAL_GAME_STATE_REF = {
       id: 'guitar',
       key: 'ArrowLeft',
       x: 0,
-      color: getPixiColorFromToken('--rhythm-guitar') ?? 0xff0041,
+      color: getPixiColorFromToken('--rhythm-guitar', '#ff0041'),
       active: false,
       hitWindow: 150
     },
@@ -55,7 +55,7 @@ const INITIAL_GAME_STATE_REF = {
       id: 'drums',
       key: 'ArrowDown',
       x: 120,
-      color: getPixiColorFromToken('--rhythm-drums') ?? 0x00ff41,
+      color: getPixiColorFromToken('--rhythm-drums', '#00ff41'),
       active: false,
       hitWindow: 150
     },
@@ -63,7 +63,7 @@ const INITIAL_GAME_STATE_REF = {
       id: 'bass',
       key: 'ArrowRight',
       x: 240,
-      color: getPixiColorFromToken('--rhythm-bass') ?? 0x0041ff,
+      color: getPixiColorFromToken('--rhythm-bass', '#0041ff'),
       active: false,
       hitWindow: 150
     }
@@ -111,10 +111,13 @@ export const useRhythmGameState = () => {
 
   // High-Frequency Game State (Ref)
   // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
-  const gameStateRef = useRef({
-    ...structuredClone(INITIAL_GAME_STATE_REF),
-    rng: Math.random // Store RNG for consistency
-  })
+  const gameStateRef = useRef()
+  if (!gameStateRef.current) {
+    gameStateRef.current = {
+      ...structuredClone(INITIAL_GAME_STATE_REF),
+      rng: Math.random // Store RNG for consistency
+    }
+  }
 
   const setters = useMemo(() => ({
     setScore: (score) => dispatch({ type: 'SET_SCORE', payload: score }),

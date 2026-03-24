@@ -12,6 +12,9 @@ const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--star-white': '#ffffff',
   '--ash-gray': '#888888',
   '--warning-yellow': '#ffcc00',
+  '--rhythm-guitar': '#ff0041',
+  '--rhythm-drums': '#00ff41',
+  '--rhythm-bass': '#0041ff',
   '--blood-red': '#cc0000',
   '--roadie-grass': '#1a4d1a',
   '--cosmic-purple': '#6600cc',
@@ -44,14 +47,14 @@ const colorCache = new Map()
  * @param {string} tokenName - CSS custom property name (for example, "--toxic-green").
  * @returns {number} Pixi numeric hex color.
  */
-export const getPixiColorFromToken = tokenName => {
+export const getPixiColorFromToken = (tokenName, defaultHexFallback = '#ffffff') => {
   const canReadCssVariables =
     typeof window !== 'undefined' &&
     typeof document !== 'undefined' &&
     typeof window.getComputedStyle === 'function'
 
   if (!canReadCssVariables) {
-    const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
+    const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback
     return Number.parseInt(fallbackColor.slice(1), 16)
   }
 
@@ -59,7 +62,7 @@ export const getPixiColorFromToken = tokenName => {
     return colorCache.get(tokenName)
   }
 
-  const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
+  const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback
   // @theme tokens use --color- prefix (e.g. --toxic-green → --color-toxic-green).
   // Guard against double-prefix if caller already passes --color-* directly.
   const cssPropertyName = tokenName.startsWith('--color-')
