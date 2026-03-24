@@ -1,9 +1,3 @@
-// TODO: Review this file
-/*
- * (#1) Actual Updates: Refactored chatter conditions to use pre-calculated memoized values for mood and stamina checks with robust fallback logic.
- * (#2) Next Steps: Review this file.
- * (#3) Found Errors + Solutions: N/A
- */
 import { GAME_PHASES } from '../../context/gameConstants.js'
 
 const getMinMood = (state, memo) =>

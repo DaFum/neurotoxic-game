@@ -17,29 +17,33 @@ export const CableItem = React.memo(
     isGameOver,
     handleCableClick
   }) => {
-    const handleClick = useCallback(
-      () => handleCableClick(cable.id),
-      [handleCableClick, cable.id]
-    )
+    const isInteractive = !isConnected && !isShocked && !isGameOver
+
+    const handleClick = useCallback(() => {
+      if (!isInteractive) return
+      handleCableClick(cable.id)
+    }, [handleCableClick, cable.id, isInteractive])
+
     const handleKeyDown = useCallback(
       e => {
+        if (!isInteractive) return
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           handleCableClick(cable.id)
         }
       },
-      [handleCableClick, cable.id]
+      [handleCableClick, cable.id, isInteractive]
     )
 
     return (
       <g
         transform={`translate(${cable.x}, ${isSelected ? cable.y - 40 : cable.y})`}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
+        onClick={isInteractive ? handleClick : undefined}
+        onKeyDown={isInteractive ? handleKeyDown : undefined}
         role='button'
-        tabIndex={!isConnected && !isShocked && !isGameOver ? 0 : -1}
+        tabIndex={isInteractive ? 0 : -1}
         className={
-          !isConnected && !isShocked && !isGameOver
+          isInteractive
             ? 'cursor-pointer transition-transform duration-200 group'
             : 'transition-transform duration-200 outline-hidden'
         }
