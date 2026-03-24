@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../GlitchButton'
 
@@ -10,4 +11,8 @@ export const SettingsReturnButton = ({ onReturn }) => {
       </GlitchButton>
     </div>
   )
+}
+
+SettingsReturnButton.propTypes = {
+  onReturn: PropTypes.func.isRequired
 }
