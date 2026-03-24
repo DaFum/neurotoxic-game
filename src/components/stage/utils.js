@@ -58,8 +58,9 @@ export const getPixiColorFromToken = (tokenName, defaultHexFallback = '#ffffff')
     return Number.parseInt(fallbackColor.slice(1), 16)
   }
 
-  if (colorCache.has(tokenName)) {
-    return colorCache.get(tokenName)
+  const cacheKey = `${tokenName}-${defaultHexFallback}`;
+  if (colorCache.has(cacheKey)) {
+    return colorCache.get(cacheKey)
   }
 
   const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback
@@ -77,7 +78,7 @@ export const getPixiColorFromToken = (tokenName, defaultHexFallback = '#ffffff')
     normalizeHexColor(resolvedCssValue) ?? normalizeHexColor(fallbackColor)
 
   const result = Number.parseInt(normalizedHexColor.slice(1), 16)
-  colorCache.set(tokenName, result)
+  colorCache.set(cacheKey, result)
   return result
 }
 
