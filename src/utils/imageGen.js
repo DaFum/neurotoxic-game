@@ -32,17 +32,53 @@ export const fetchGenImage = description => {
   )
 }
 
+const objectUrlCache = new Map()
+
 /**
  * Fetches a generated image and returns an object URL for use in CSS/styles.
+ * Uses a memory cache to avoid redundant network requests and memory leaks.
+ * Caches the Promise to prevent concurrent fetch races.
  *
  * @param {string} description - The detailed prompt for the image.
  * @returns {Promise<string>} A blob object URL.
  */
-export const fetchGenImageAsObjectUrl = async description => {
-  const res = await fetchGenImage(description)
-  if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`)
-  const blob = await res.blob()
-  return URL.createObjectURL(blob)
+export const fetchGenImageAsObjectUrl = description => {
+  if (objectUrlCache.has(description)) {
+    return objectUrlCache.get(description)
+  }
+
+  const promise = (async () => {
+    try {
+      const res = await fetchGenImage(description)
+      if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`)
+      const blob = await res.blob()
+      return URL.createObjectURL(blob)
+    } catch (error) {
+      objectUrlCache.delete(description)
+      throw error
+    }
+  })()
+
+  objectUrlCache.set(description, promise)
+  return promise
+}
+
+/**
+ * Clears the object URL cache and revokes all generated blob URLs to free up memory.
+ * Primarily used for testing or when memory pressure is high.
+ */
+export const clearImageCache = async () => {
+  const urls = await Promise.allSettled(Array.from(objectUrlCache.values()))
+  for (const result of urls) {
+    if (
+      result.status === 'fulfilled' &&
+      typeof URL !== 'undefined' &&
+      URL.revokeObjectURL
+    ) {
+      URL.revokeObjectURL(result.value)
+    }
+  }
+  objectUrlCache.clear()
 }
 
 export const IMG_PROMPTS = {
