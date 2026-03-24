@@ -113,7 +113,12 @@ export const useTravelLogic = ({
   }, [player, band, gameMap, reputationByRegion, venueBlacklist])
 
   const getLocationName = useCallback((location, venueId) => {
-    return getLocationNameUtil(location, venueId, i18n.t.bind(i18n), translateLocation)
+    return getLocationNameUtil(
+      location,
+      venueId,
+      i18n.t.bind(i18n),
+      translateLocation
+    )
   }, [])
 
   /**
@@ -192,12 +197,19 @@ export const useTravelLogic = ({
       travelCompletedRef.current = true
 
       if (!target?.venue) {
-        handleError(new StateError(target ? 'Target node has no venue data' : 'Travel complete but no target'), {
-          addToast,
-          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
-            defaultValue: 'Error: Invalid destination.'
-          })
-        })
+        handleError(
+          new StateError(
+            target
+              ? 'Target node has no venue data'
+              : 'Travel complete but no target'
+          ),
+          {
+            addToast,
+            fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
+              defaultValue: 'Error: Invalid destination.'
+            })
+          }
+        )
         setIsTraveling(false)
         return
       }
@@ -281,6 +293,7 @@ export const useTravelLogic = ({
    */
   const clearPendingTravel = useCallback(() => {
     setPendingTravelNode(null)
+    pendingTravelNodeRef.current = null
     if (pendingTimeoutRef.current) {
       clearTimeout(pendingTimeoutRef.current)
       pendingTimeoutRef.current = null
@@ -297,6 +310,7 @@ export const useTravelLogic = ({
       setTravelTarget(node)
       // setIsTraveling(true) // Disable local animation state
       setPendingTravelNode(null)
+      pendingTravelNodeRef.current = null
 
       if (pendingTimeoutRef.current) {
         clearTimeout(pendingTimeoutRef.current)
@@ -347,7 +361,6 @@ export const useTravelLogic = ({
       const player = playerRef.current
       const band = bandRef.current
       const gameMap = gameMapRef.current
-      const pendingTravelNode = pendingTravelNodeRef.current
 
       if (!node?.venue) {
         addToast(
@@ -445,11 +458,15 @@ export const useTravelLogic = ({
           }),
           'error'
         )
-        if (pendingTravelNode?.id === node.id) clearPendingTravel()
+        if (pendingTravelNodeRef.current?.id === node.id) clearPendingTravel()
         return
       }
 
-      const preCheck = checkTravelPrerequisites(node, visibility, isConnectedUtil(gameMap, player.currentNodeId, node.id))
+      const preCheck = checkTravelPrerequisites(
+        node,
+        visibility,
+        isConnectedUtil(gameMap, player.currentNodeId, node.id)
+      )
       if (!preCheck.allowed) {
         addToast(
           i18n.t(preCheck.errorKey, {
@@ -476,12 +493,12 @@ export const useTravelLogic = ({
           }),
           'error'
         )
-        if (pendingTravelNode?.id === node.id) clearPendingTravel()
+        if (pendingTravelNodeRef.current?.id === node.id) clearPendingTravel()
         return
       }
 
       // Two-click confirmation: if this node is already pending, confirm and travel
-      if (pendingTravelNode?.id === node.id) {
+      if (pendingTravelNodeRef.current?.id === node.id) {
         startTravelSequence(node)
         return
       }
@@ -489,6 +506,7 @@ export const useTravelLogic = ({
       // First click: show cost and set pending state
       clearPendingTravel()
       setPendingTravelNode(node)
+      pendingTravelNodeRef.current = node
       addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
@@ -507,6 +525,7 @@ export const useTravelLogic = ({
       // Auto-cancel pending after 5 seconds
       pendingTimeoutRef.current = setTimeout(() => {
         setPendingTravelNode(null)
+        pendingTravelNodeRef.current = null
         pendingTimeoutRef.current = null
       }, 5000)
     },

@@ -34,10 +34,18 @@ export const calculateViralityScore = (
 
   // Event Multiplier (e.g. "Stage Diver", "Influencer")
   const isSet = gigEvents instanceof Set
-  if (gigEvents != null && (isSet ? gigEvents.has('stage_diver') : gigEvents.includes('stage_diver'))) {
+  if (
+    gigEvents != null &&
+    (isSet ? gigEvents.has('stage_diver') : gigEvents.includes('stage_diver'))
+  ) {
     baseChance *= 2.0
   }
-  if (gigEvents != null && (isSet ? gigEvents.has('influencer_spotted') : gigEvents.includes('influencer_spotted'))) {
+  if (
+    gigEvents != null &&
+    (isSet
+      ? gigEvents.has('influencer_spotted')
+      : gigEvents.includes('influencer_spotted'))
+  ) {
     baseChance *= 3.0
   }
 

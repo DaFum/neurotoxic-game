@@ -69,7 +69,8 @@ export const checkVenueAccess = ({
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.bookingRefusedBlacklisted',
-      defaultMessage: 'Booking refused: {{location}} has permanently blacklisted you!',
+      defaultMessage:
+        'Booking refused: {{location}} has permanently blacklisted you!',
       errorContext: { location: getLocationName(resolvedVenue.name, venueId) }
     }
   }
@@ -78,7 +79,8 @@ export const checkVenueAccess = ({
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.proveYourselfVenueTooBig',
-      defaultMessage: 'PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). {{location}} is too big!',
+      defaultMessage:
+        'PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). {{location}} is too big!',
       errorContext: { location: getLocationName(resolvedVenue.name, venueId) }
     }
   }
@@ -88,7 +90,8 @@ export const checkVenueAccess = ({
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.bookingRefusedRegionalReputation',
-      defaultMessage: 'Booking refused: The venue in {{location}} blacklisted you due to poor regional reputation!',
+      defaultMessage:
+        'Booking refused: The venue in {{location}} blacklisted you due to poor regional reputation!',
       errorContext: { location: getLocationName(resolvedVenue.name, venueId) }
     }
   }

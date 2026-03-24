@@ -109,7 +109,11 @@ export function processTraffic(game, deltaMS, onCrash) {
 }
 
 export function handlePickup(game) {
-  if (game.playerPos.y === 0 && !game.carrying && game.itemsToDeliver.length > 0) {
+  if (
+    game.playerPos.y === 0 &&
+    !game.carrying &&
+    game.itemsToDeliver.length > 0
+  ) {
     game.carrying = game.itemsToDeliver.pop()
     audioManager.playSFX('pickup')
   }

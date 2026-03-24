@@ -24,7 +24,16 @@ const bandStates = [
   { members: [] },
   { members: [{ traits: { social_manager: { id: 'social_manager' } } }] },
   { members: [{ traits: { showman: { id: 'showman' } } }] },
-  { members: [{ traits: { social_manager: { id: 'social_manager' }, showman: { id: 'showman' } } }] }
+  {
+    members: [
+      {
+        traits: {
+          social_manager: { id: 'social_manager' },
+          showman: { id: 'showman' }
+        }
+      }
+    ]
+  }
 ]
 
 async function runBenchmark() {
@@ -38,7 +47,9 @@ async function runBenchmark() {
     calculateViralityScore(score, events, venue, bandState)
   }
 
-  console.log(`Running benchmark with ${ITERATIONS} iterations (Array inputs)...`)
+  console.log(
+    `Running benchmark with ${ITERATIONS} iterations (Array inputs)...`
+  )
   const startArray = performance.now()
 
   for (let i = 0; i < ITERATIONS; i++) {

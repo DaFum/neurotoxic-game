@@ -40,15 +40,20 @@ describe('travelUtils', () => {
 
   describe('getLocationName', () => {
     test('translates location using provided helpers', () => {
-      const t = (k) => k
+      const t = k => k
       const translateLocation = (t, key) => `Translated ${key}`
-      const result = getLocationName('My Place', 'venue_1', t, translateLocation)
+      const result = getLocationName(
+        'My Place',
+        'venue_1',
+        t,
+        translateLocation
+      )
       assert.strictEqual(result, 'Translated My Place')
     })
   })
 
   describe('checkVenueAccess', () => {
-    const mockGetLocationName = (name) => name
+    const mockGetLocationName = name => name
 
     test('allows access to START node', () => {
       const result = checkVenueAccess({ node: { type: 'START' } })
@@ -73,7 +78,10 @@ describe('travelUtils', () => {
         getLocationName: mockGetLocationName
       })
       assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.bookingRefusedBlacklisted')
+      assert.strictEqual(
+        result.errorKey,
+        'ui:travel.errors.bookingRefusedBlacklisted'
+      )
     })
 
     test('denies access in proveYourselfMode if capacity > 150', () => {
@@ -84,18 +92,29 @@ describe('travelUtils', () => {
         getLocationName: mockGetLocationName
       })
       assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.proveYourselfVenueTooBig')
+      assert.strictEqual(
+        result.errorKey,
+        'ui:travel.errors.proveYourselfVenueTooBig'
+      )
     })
 
     test('denies access if regional reputation is too low', () => {
       const result = checkVenueAccess({
         node: { type: 'GIG', venue: { id: 'REGION_venue_1', name: 'Rep' } },
         reputationByRegion: { REGION: -31 },
-        venuesMap: new Map([['REGION_venue_1', { id: 'REGION_venue_1', name: 'Rep', capacity: 50 }]]),
+        venuesMap: new Map([
+          [
+            'REGION_venue_1',
+            { id: 'REGION_venue_1', name: 'Rep', capacity: 50 }
+          ]
+        ]),
         getLocationName: mockGetLocationName
       })
       assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.bookingRefusedRegionalReputation')
+      assert.strictEqual(
+        result.errorKey,
+        'ui:travel.errors.bookingRefusedRegionalReputation'
+      )
     })
 
     test('allows access if all checks pass', () => {
@@ -111,7 +130,11 @@ describe('travelUtils', () => {
 
   describe('checkTravelPrerequisites', () => {
     test('allows START node regardless of visibility', () => {
-      const result = checkTravelPrerequisites({ type: 'START' }, 'hidden', false)
+      const result = checkTravelPrerequisites(
+        { type: 'START' },
+        'hidden',
+        false
+      )
       assert.strictEqual(result.allowed, true)
     })
 
@@ -124,7 +147,10 @@ describe('travelUtils', () => {
     test('denies if not connected', () => {
       const result = checkTravelPrerequisites({ type: 'GIG' }, 'visible', false)
       assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.locationNotConnected')
+      assert.strictEqual(
+        result.errorKey,
+        'ui:travel.errors.locationNotConnected'
+      )
     })
 
     test('allows if visible and connected', () => {
@@ -135,19 +161,31 @@ describe('travelUtils', () => {
 
   describe('checkTravelResources', () => {
     test('denies if not enough money', () => {
-      const result = checkTravelResources(100, 10, { money: 50, van: { fuel: 20 } })
+      const result = checkTravelResources(100, 10, {
+        money: 50,
+        van: { fuel: 20 }
+      })
       assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.notEnoughMoneyForTravel')
+      assert.strictEqual(
+        result.errorKey,
+        'ui:travel.errors.notEnoughMoneyForTravel'
+      )
     })
 
     test('denies if not enough fuel', () => {
-      const result = checkTravelResources(100, 30, { money: 200, van: { fuel: 20 } })
+      const result = checkTravelResources(100, 30, {
+        money: 200,
+        van: { fuel: 20 }
+      })
       assert.strictEqual(result.allowed, false)
       assert.strictEqual(result.errorKey, 'ui:travel.errors.notEnoughFuel')
     })
 
     test('allows if enough resources', () => {
-      const result = checkTravelResources(100, 10, { money: 200, van: { fuel: 20 } })
+      const result = checkTravelResources(100, 10, {
+        money: 200,
+        van: { fuel: 20 }
+      })
       assert.strictEqual(result.allowed, true)
     })
   })
