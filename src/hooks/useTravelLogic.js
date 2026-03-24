@@ -15,8 +15,16 @@ import {
 import {
   isConnected as isConnectedUtil,
   getNodeVisibility as getNodeVisibilityUtil,
-  checkSoftlock
+  checkSoftlock,
+  normalizeVenueId
 } from '../utils/mapUtils.js'
+import {
+  resolveVenue,
+  getLocationName as getLocationNameUtil,
+  checkVenueAccess,
+  checkTravelPrerequisites,
+  checkTravelResources
+} from '../utils/travelUtils.js'
 import { handleNodeArrival } from '../utils/arrivalUtils.js'
 import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
@@ -26,7 +34,6 @@ import i18n from '../i18n.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
 import { translateLocation } from '../utils/locationI18n.js'
-import { normalizeVenueId } from '../utils/mapUtils.js'
 import { ALL_VENUES } from '../data/venues.js'
 
 /**
@@ -106,19 +113,7 @@ export const useTravelLogic = ({
   }, [player, band, gameMap, reputationByRegion, venueBlacklist])
 
   const getLocationName = useCallback((location, venueId) => {
-    const key = location || venueId || 'Unknown'
-    return translateLocation(i18n.t.bind(i18n), key, key)
-  }, [])
-
-  // Resolves full venue for capacity checks or fallback naming from VENUES_MAP list
-  const resolveVenue = useCallback((venue, id) => {
-    if (typeof venue === 'string') {
-      return VENUES_MAP.get(id) || null
-    }
-    if (!('capacity' in venue)) {
-      return VENUES_MAP.get(id) || venue
-    }
-    return venue
+    return getLocationNameUtil(location, venueId, i18n.t.bind(i18n), translateLocation)
   }, [])
 
   /**
@@ -196,19 +191,8 @@ export const useTravelLogic = ({
       if (travelCompletedRef.current) return
       travelCompletedRef.current = true
 
-      if (!target) {
-        handleError(new StateError('Travel complete but no target'), {
-          addToast,
-          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
-            defaultValue: 'Error: Invalid destination.'
-          })
-        })
-        setIsTraveling(false)
-        return
-      }
-
-      if (!target.venue) {
-        handleError(new StateError('Target node has no venue data'), {
+      if (!target?.venue) {
+        handleError(new StateError(target ? 'Target node has no venue data' : 'Travel complete but no target'), {
           addToast,
           fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
             defaultValue: 'Error: Invalid destination.'
@@ -230,12 +214,10 @@ export const useTravelLogic = ({
       )
 
       // Affordability check
-      if (
-        (player.money ?? 0) < totalCost ||
-        (player.van?.fuel ?? 0) < fuelLiters
-      ) {
+      const resourceCheck = checkTravelResources(totalCost, fuelLiters, player)
+      if (!resourceCheck.allowed) {
         addToast(
-          i18n.t('ui:travel.errors.insufficientResourcesOnArrival', {
+          i18n.t(resourceCheck.errorKey, {
             defaultValue: 'Error: Insufficient resources upon arrival.'
           }),
           'error'
@@ -405,11 +387,10 @@ export const useTravelLogic = ({
 
           // We can reuse the standardized arrival logic which handles
           // harmony checks, show cancellations, and routing safely.
+          const venueId = normalizeVenueId(node.venue)
           const processedNode = {
             ...node,
-            venue:
-              resolveVenue(node.venue, normalizeVenueId(node.venue)) ||
-              node.venue
+            venue: resolveVenue(node.venue, venueId, VENUES_MAP) || node.venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
@@ -447,82 +428,33 @@ export const useTravelLogic = ({
       const currentLayer = currentStartNode?.layer || 0
       const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
 
-      const reputation = reputationByRegionRef.current || {}
-      const bList = venueBlacklistRef.current || []
+      const accessCheck = checkVenueAccess({
+        node,
+        player,
+        reputationByRegion: reputationByRegionRef.current,
+        venueBlacklist: venueBlacklistRef.current,
+        venuesMap: VENUES_MAP,
+        getLocationName
+      })
 
-      if (node.type !== 'START' && node.venue) {
-        const venueId = normalizeVenueId(node.venue)
-        const resolvedVenue = resolveVenue(node.venue, venueId)
-
-        if (!resolvedVenue) {
-          addToast(
-            i18n.t('ui:errors.invalidVenueData', {
-              defaultValue: 'Invalid venue data.'
-            }),
-            'error'
-          )
-          if (pendingTravelNode?.id === node.id) clearPendingTravel()
-          return
-        }
-
-        if (venueId && bList.includes(venueId)) {
-          addToast(
-            i18n.t('ui:travel.errors.bookingRefusedBlacklisted', {
-              defaultValue:
-                'Booking refused: {{location}} has permanently blacklisted you!',
-              location: getLocationName(resolvedVenue.name, venueId)
-            }),
-            'error'
-          )
-          if (pendingTravelNode?.id === node.id) clearPendingTravel()
-          return
-        }
-
-        if (player?.stats?.proveYourselfMode && resolvedVenue.capacity > 150) {
-          addToast(
-            i18n.t('ui:travel.errors.proveYourselfVenueTooBig', {
-              defaultValue:
-                'PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). {{location}} is too big!',
-              location: getLocationName(resolvedVenue.name, venueId)
-            }),
-            'error'
-          )
-          if (pendingTravelNode?.id === node.id) clearPendingTravel()
-          return
-        }
-
-        const regionId = venueId?.split('_')?.[0] || 'Unknown'
-        if ((reputation[regionId] || 0) <= -30) {
-          addToast(
-            i18n.t('ui:travel.errors.bookingRefusedRegionalReputation', {
-              defaultValue:
-                'Booking refused: The venue in {{location}} blacklisted you due to poor regional reputation!',
-              location: getLocationName(resolvedVenue.name, venueId)
-            }),
-            'error'
-          )
-          if (pendingTravelNode?.id === node.id) {
-            clearPendingTravel()
-          }
-          return
-        }
+      if (!accessCheck.allowed) {
+        addToast(
+          i18n.t(accessCheck.errorKey, {
+            defaultValue: accessCheck.defaultMessage,
+            ...accessCheck.errorContext
+          }),
+          'error'
+        )
+        if (pendingTravelNode?.id === node.id) clearPendingTravel()
+        return
       }
 
-      // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
-      if (node.type === 'START') {
-        // Always allow returning to HQ regardless of connections or visibility
-      } else if (
-        visibility !== 'visible' ||
-        !isConnectedUtil(gameMap, player.currentNodeId, node.id)
-      ) {
+      const preCheck = checkTravelPrerequisites(node, visibility, isConnectedUtil(gameMap, player.currentNodeId, node.id))
+      if (!preCheck.allowed) {
         addToast(
-          visibility !== 'visible'
-            ? i18n.t('ui:travel.errors.locationNotVisible', {
-                defaultValue: 'Cannot travel: location not visible'
-              })
-            : i18n.t('ui:travel.errors.locationNotConnected', {
-                defaultValue: 'Cannot travel: location not connected'
-              }),
+          i18n.t(preCheck.errorKey, {
+            defaultValue: preCheck.defaultMessage
+          }),
           'warning'
         )
         return
@@ -536,29 +468,15 @@ export const useTravelLogic = ({
         band
       )
 
-      if (clampPlayerMoney(player.money ?? 0) < totalCost) {
+      const resourceCheck = checkTravelResources(totalCost, fuelLiters, player)
+      if (!resourceCheck.allowed) {
         addToast(
-          i18n.t('ui:travel.errors.notEnoughMoneyForTravel', {
-            defaultValue: 'Not enough money for gas and food!'
+          i18n.t(resourceCheck.errorKey, {
+            defaultValue: resourceCheck.defaultMessage
           }),
           'error'
         )
-        if (pendingTravelNode?.id === node.id) {
-          clearPendingTravel()
-        }
-        return
-      }
-
-      if (Math.max(0, player.van?.fuel ?? 0) < fuelLiters) {
-        addToast(
-          i18n.t('ui:travel.errors.notEnoughFuel', {
-            defaultValue: 'Not enough fuel in the tank!'
-          }),
-          'error'
-        )
-        if (pendingTravelNode?.id === node.id) {
-          clearPendingTravel()
-        }
+        if (pendingTravelNode?.id === node.id) clearPendingTravel()
         return
       }
 
@@ -598,7 +516,6 @@ export const useTravelLogic = ({
       startTravelSequence,
       clearPendingTravel,
       getLocationName,
-      resolveVenue,
       handleNodeArrivalCallback
     ]
   )
