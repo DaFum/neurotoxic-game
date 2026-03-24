@@ -1,4 +1,5 @@
 import { useReducer, useRef, useMemo } from 'react'
+import { getPixiColorFromToken } from '../../components/stage/utils'
 
 const INITIAL_UI_STATE = {
   score: 0,
@@ -46,7 +47,7 @@ const INITIAL_GAME_STATE_REF = {
       id: 'guitar',
       key: 'ArrowLeft',
       x: 0,
-      color: 0xff0041,
+      color: getPixiColorFromToken('--rhythm-guitar') ?? 0xff0041,
       active: false,
       hitWindow: 150
     },
@@ -54,7 +55,7 @@ const INITIAL_GAME_STATE_REF = {
       id: 'drums',
       key: 'ArrowDown',
       x: 120,
-      color: 0x00ff41,
+      color: getPixiColorFromToken('--rhythm-drums') ?? 0x00ff41,
       active: false,
       hitWindow: 150
     },
@@ -62,7 +63,7 @@ const INITIAL_GAME_STATE_REF = {
       id: 'bass',
       key: 'ArrowRight',
       x: 240,
-      color: 0x0041ff,
+      color: getPixiColorFromToken('--rhythm-bass') ?? 0x0041ff,
       active: false,
       hitWindow: 150
     }
@@ -124,7 +125,7 @@ export const useRhythmGameState = () => {
     setIsGameOver: (isGameOver) => dispatch({ type: 'SET_IS_GAME_OVER', payload: isGameOver }),
     setIsAudioReady: (isAudioReady) => dispatch({ type: 'SET_IS_AUDIO_READY', payload: isAudioReady }),
     setAccuracy: (accuracy) => dispatch({ type: 'SET_ACCURACY', payload: accuracy })
-  }), [dispatch])
+  }), [])
 
   return {
     gameStateRef,
