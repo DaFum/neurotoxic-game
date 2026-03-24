@@ -1,4 +1,8 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
+/*
+ * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability. Extracted pure logic to utils.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 /**
  * Travel Logic Hook
  * Encapsulates all travel-related state and logic for the Overworld scene.
@@ -32,9 +36,10 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
 import i18n from '../i18n.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
-import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
+import { clampPlayerMoney } from '../utils/gameStateUtils.js'
 import { translateLocation } from '../utils/locationI18n.js'
 import { ALL_VENUES } from '../data/venues.js'
+import { getTravelArrivalUpdates } from '../utils/travelLogicUtils'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -228,16 +233,15 @@ export const useTravelLogic = ({
       }
 
       // Apply travel costs
-      updatePlayer({
-        money: clampPlayerMoney((player.money ?? 0) - totalCost),
-        van: {
-          ...player.van,
-          fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
-        },
-        location: normalizeVenueId(node.venue)?.split('_')?.[0] || 'Unknown',
-        currentNodeId: node.id,
-        totalTravels: (player.totalTravels ?? 0) + 1
+      const updates = getTravelArrivalUpdates({
+        player,
+        band,
+        node,
+        fuelLiters,
+        totalCost
       })
+
+      updatePlayer(updates.nextPlayer)
       advanceDay()
 
       // Autosave
@@ -246,8 +250,8 @@ export const useTravelLogic = ({
       }
 
       // Harmony regen while traveling (enabled by Mobile Studio / van_sound_system)
-      if (band?.harmonyRegenTravel) {
-        updateBand({ harmony: clampBandHarmony((band.harmony ?? 0) + 5) })
+      if (updates.nextBand) {
+        updateBand(updates.nextBand)
       }
 
       setIsTraveling(false)
