@@ -12,10 +12,7 @@ import {
   calculateGigFinancials,
   shouldTriggerBankruptcy
 } from '../utils/economyEngine'
-import {
-  generatePostOptions,
-  generateBrandOffers
-} from '../utils/socialEngine'
+import { generatePostOptions, generateBrandOffers } from '../utils/socialEngine'
 import {
   clampPlayerMoney,
   clampPlayerFame,
@@ -197,7 +194,7 @@ export const usePostGigLogic = () => {
 
   const handlePostSelection = useCallback(
     option => {
-      let updates;
+      let updates
       try {
         updates = calculatePostGigStateUpdates({
           option,
@@ -256,7 +253,10 @@ export const usePostGigLogic = () => {
       }
 
       if (finalResult.unlockTrait) {
-        unlockTrait(finalResult.unlockTrait.memberId, finalResult.unlockTrait.traitId)
+        unlockTrait(
+          finalResult.unlockTrait.memberId,
+          finalResult.unlockTrait.traitId
+        )
         const traitName = finalResult.unlockTrait.traitId
           .replace(/_/g, ' ')
           .toUpperCase()

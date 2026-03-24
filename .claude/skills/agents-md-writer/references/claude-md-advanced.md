@@ -3,6 +3,7 @@
 Deep dive into Claude Code-specific context file features that go beyond what AGENTS.md can express.
 
 ## Table of Contents
+
 1. File Discovery and Loading Order
 2. Import System
 3. Rules Directory
@@ -43,6 +44,7 @@ Use `@path/to/file` anywhere in a CLAUDE.md file to import another file's conten
 @AGENTS.md
 
 ## Additional Rules
+
 - Always run migrations after pulling
 ```
 
@@ -69,8 +71,9 @@ Use `@path/to/file` anywhere in a CLAUDE.md file to import another file's conten
 @docs/api-contracts.md
 
 ## Claude-Specific
+
 - Auto-memory is enabled — corrections persist across sessions
-- Run `make lint` via hooks on PostFileWrite for *.py
+- Run `make lint` via hooks on PostFileWrite for \*.py
 ```
 
 This keeps the root file under 10 lines while giving Claude access to shared instructions and API contracts when needed.
@@ -107,7 +110,7 @@ All endpoints must return standardized error responses with `code`, `message`, a
 
 ### When to use rules/ vs. subdirectory CLAUDE.md
 
-- **Rules directory**: Better for cross-cutting concerns that apply to file patterns (e.g., "all *.test.ts files should use vitest")
+- **Rules directory**: Better for cross-cutting concerns that apply to file patterns (e.g., "all \*.test.ts files should use vitest")
 - **Subdirectory CLAUDE.md**: Better for directory-scoped conventions (e.g., "everything in backend/ uses Express middleware pattern")
 
 Both work. Use whichever matches your mental model.
@@ -178,13 +181,16 @@ For very large monorepos, use `worktree.sparsePaths` in Claude Code settings to 
 `<!-- comments -->` in CLAUDE.md are hidden from Claude when auto-injected at session start but remain visible when Claude reads the file with the Read tool.
 
 Use cases:
+
 - Human-only maintenance notes: `<!-- Last reviewed: 2026-03-15 by @alice -->`
 - Documenting why a rule exists (for human maintainers, not the agent)
 - Temporarily disabling rules without deleting them
 
 ```markdown
 ## Critical Commands
+
 <!-- This changed in v3.2 — see PR #847 for context -->
+
 - Build: `turbo build --filter=@myorg/api`
 
 <!-- DISABLED: re-enable after migration completes
@@ -214,10 +220,12 @@ Effort levels: `low` (○), `medium` (◐), `high` (●). Use `high` for complex
 Claude Code has a separate auto-memory system that accumulates learnings from your corrections across sessions. These are stored separately from CLAUDE.md.
 
 **How they interact:**
+
 - CLAUDE.md: instructions you write explicitly
 - Auto-memory: notes Claude writes based on your corrections and preferences
 
 **Guidance for context files:**
+
 - Don't duplicate what auto-memory will learn naturally (like "I prefer tabs over spaces" — Claude will pick this up from corrections)
 - DO include hard constraints that Claude shouldn't learn by trial-and-error (like "never deploy to production from main branch")
 - You can reference auto-memory behavior: "Auto-memory is enabled — don't ask about preferences I've already corrected"
@@ -255,14 +263,18 @@ This means Claude will **ignore** CLAUDE.md content it deems irrelevant. The mor
 
 ```markdown
 # frontend/CLAUDE.md
+
 ## Component Conventions
+
 - All components must export a Storybook story in `*.stories.tsx`
 - Use `data-testid` attributes for E2E test selectors (not CSS classes)
 ```
 
 ```markdown
 # backend/CLAUDE.md
-## API Conventions  
+
+## API Conventions
+
 - All new endpoints need OpenAPI annotations via decorators
 - Database queries must use the repository pattern in `src/repos/`
 ```
@@ -271,7 +283,9 @@ This means Claude will **ignore** CLAUDE.md content it deems irrelevant. The mor
 
 ```markdown
 # src/generated/CLAUDE.md
+
 DO NOT edit files in this directory. They are auto-generated from:
+
 - Protobuf definitions in `../proto/`
 - OpenAPI spec in `../api/openapi.yaml`
 
@@ -282,6 +296,7 @@ To make changes, edit the source files and run `make generate`.
 
 ```markdown
 # legacy/CLAUDE.md
+
 This directory is frozen. Do not modify any files here.
 When you need functionality from legacy code, create wrapper modules in `src/adapters/` instead.
 The legacy code uses jQuery and ES5 — do not attempt to modernize it.

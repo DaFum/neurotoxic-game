@@ -403,13 +403,14 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
 
   // 4. Passive Effects
   const hqUpgrades = nextPlayer.hqUpgrades || []
+  const hqUpgradesSet = new Set(hqUpgrades)
 
   // Coffee & Beer Fridge: Mood recovery
-  const hasCoffee = hqUpgrades.includes('hq_room_coffee')
-  const hasBeerFridge = hqUpgrades.includes('hq_room_cheap_beer_fridge')
+  const hasCoffee = hqUpgradesSet.has('hq_room_coffee')
+  const hasBeerFridge = hqUpgradesSet.has('hq_room_cheap_beer_fridge')
   // Sofa & Old Couch: Stamina recovery
-  const hasSofa = hqUpgrades.includes('hq_room_sofa')
-  const hasOldCouch = hqUpgrades.includes('hq_room_old_couch')
+  const hasSofa = hqUpgradesSet.has('hq_room_sofa')
+  const hasOldCouch = hqUpgradesSet.has('hq_room_old_couch')
 
   // Optimize: Combine 3 separate `.map()` passes into a single loop, eliminating intermediate arrays
   const nextMembers = new Array(nextBand.members.length)
@@ -468,7 +469,7 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   }
 
   // Soundproofing: Harmony boost
-  if (hqUpgrades.includes('hq_room_diy_soundproofing')) {
+  if (hqUpgradesSet.has('hq_room_diy_soundproofing')) {
     const nextHarmonySoundproofing = clampBandHarmony(nextBand.harmony + 1)
     nextBand.harmony = nextHarmonySoundproofing
   }

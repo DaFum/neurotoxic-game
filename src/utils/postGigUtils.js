@@ -3,7 +3,11 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
-import { checkViralEvent, calculateSocialGrowth, resolvePost } from './socialEngine'
+import {
+  checkViralEvent,
+  calculateSocialGrowth,
+  resolvePost
+} from './socialEngine'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -118,10 +122,7 @@ export const calculatePostGigStateUpdates = ({
     controversyLevel: clampControversyLevel(
       (social.controversyLevel || 0) + (result.controversyChange || 0)
     ),
-    loyalty: Math.max(
-      0,
-      (social.loyalty || 0) + (result.loyaltyChange || 0)
-    ),
+    loyalty: Math.max(0, (social.loyalty || 0) + (result.loyaltyChange || 0)),
     zealotry: boundedZealotry,
     reputationCooldown:
       result.reputationCooldownSet !== undefined
