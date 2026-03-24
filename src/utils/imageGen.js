@@ -66,6 +66,9 @@ export const fetchGenImageAsObjectUrl = description => {
 /**
  * Clears the object URL cache and revokes all generated blob URLs to free up memory.
  * Primarily used for testing or when memory pressure is high.
+ * Must be awaited to ensure all pending blob generation promises are handled.
+ *
+ * @returns {Promise<void>} Resolves when all object URLs are cleared.
  */
 export const clearImageCache = async () => {
   const urls = await Promise.allSettled(Array.from(objectUrlCache.values()))

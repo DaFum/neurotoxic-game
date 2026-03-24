@@ -61,8 +61,8 @@ test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
   const originalFetch = globalThis.fetch
   const originalCreateObjectURL = globalThis.URL?.createObjectURL
 
-  t.afterEach(() => {
-    clearImageCache()
+  t.afterEach(async () => {
+    await clearImageCache()
     globalThis.fetch = originalFetch
     if (globalThis.URL) {
       globalThis.URL.createObjectURL = originalCreateObjectURL
