@@ -55,13 +55,14 @@ test('IMG_PROMPTS contains expected keys and string values', async () => {
 })
 
 test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
-  const { fetchGenImage, fetchGenImageAsObjectUrl } =
+  const { fetchGenImage, fetchGenImageAsObjectUrl, clearImageCache } =
     await import('../src/utils/imageGen.js')
 
   const originalFetch = globalThis.fetch
   const originalCreateObjectURL = globalThis.URL?.createObjectURL
 
-  t.afterEach(() => {
+  t.afterEach(async () => {
+    await clearImageCache()
     globalThis.fetch = originalFetch
     if (globalThis.URL) {
       globalThis.URL.createObjectURL = originalCreateObjectURL
@@ -118,6 +119,39 @@ test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
       await assert.rejects(
         async () => await fetchGenImageAsObjectUrl('test fail'),
         { message: 'Image fetch failed: 500' }
+      )
+    }
+  )
+
+  await t.test(
+    'fetchGenImageAsObjectUrl caches object URLs to avoid redundant requests',
+    async () => {
+      let fetchCallCount = 0
+      globalThis.fetch = async () => {
+        fetchCallCount++
+        return {
+          ok: true,
+          blob: async () => ({ size: 1024, type: 'image/png' })
+        }
+      }
+
+      if (!globalThis.URL) globalThis.URL = {}
+      globalThis.URL.createObjectURL = _blob => `blob:mock-url-${Math.random()}`
+
+      const url1 = await fetchGenImageAsObjectUrl('cache test')
+      const url2 = await fetchGenImageAsObjectUrl('cache test')
+      const url3 = await fetchGenImageAsObjectUrl('another test')
+
+      assert.strictEqual(
+        fetchCallCount,
+        2,
+        'Fetch should be called twice (once for each unique description)'
+      )
+      assert.strictEqual(url1, url2, 'Cached URLs should be strictly equal')
+      assert.notStrictEqual(
+        url1,
+        url3,
+        'Different descriptions should have different URLs'
       )
     }
   )
