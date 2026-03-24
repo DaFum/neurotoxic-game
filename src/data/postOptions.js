@@ -705,9 +705,18 @@ export const POST_OPTIONS = [
     condition: ({ social, player }) => {
       const influencers = social?.influencers || {}
       if (!player || typeof player.money !== 'number') return false
-      return Object.values(influencers).some(inf =>
-        isValidAndAffordableInfluencer(inf, player.money)
-      )
+
+      // ⚡ Bolt Optimization: Replace Object.values().some() with for...in loop
+      // Avoids O(N) array allocation overhead and enables early return when a match is found.
+      for (const id in influencers) {
+        if (
+          Object.hasOwn(influencers, id) &&
+          isValidAndAffordableInfluencer(influencers[id], player.money)
+        ) {
+          return true
+        }
+      }
+      return false
     },
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
