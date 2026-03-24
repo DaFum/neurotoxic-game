@@ -5,7 +5,7 @@
  */
 import { useCallback, useRef, useEffect } from 'react'
 import { createHecklerSession } from '../../utils/hecklerLogic'
-import { getTransportState } from '../../utils/audioEngine'
+import { getTransportState, getGigTimeMs, pauseAudio, resumeAudio, stopAudio } from '../../utils/audioEngine'
 import { processRhythmGameTick, finalizeGig } from '../../utils/rhythmGameLoopUtils'
 
 export const useRhythmGameLoop = ({
@@ -47,7 +47,7 @@ export const useRhythmGameLoop = ({
 
   const finalizeGigCallback = useCallback(
     stateRef => {
-      finalizeGig(stateRef, setLastGigStats, endGig)
+      finalizeGig(stateRef, setLastGigStats, endGig, stopAudio)
     },
     [endGig, setLastGigStats]
   )
@@ -68,7 +68,10 @@ export const useRhythmGameLoop = ({
         handleCollision,
         setIsToxicMode,
         handleMiss,
-        finalizeGigCallback
+        finalizeGigCallback,
+        getGigTimeMs,
+        pauseAudio,
+        resumeAudio
       })
     },
     [

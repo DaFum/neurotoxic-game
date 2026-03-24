@@ -4,7 +4,7 @@
  * (#3) Found Errors + Solutions: N/A
  */
 import { normalizeVenueId } from './mapUtils'
-import { clampPlayerMoney } from './gameStateUtils'
+import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
 
 export const getTravelArrivalUpdates = ({
   player,
@@ -26,7 +26,7 @@ export const getTravelArrivalUpdates = ({
 
   let nextBand = null
   if (band?.harmonyRegenTravel) {
-    nextBand = { harmony: Math.max(1, Math.min(100, Math.floor((band.harmony ?? 0) + 5))) }
+    nextBand = { harmony: clampBandHarmony((band.harmony ?? 0) + 5) }
   }
 
   return { nextPlayer, nextBand }

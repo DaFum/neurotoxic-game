@@ -4,12 +4,11 @@
  * (#3) Found Errors + Solutions: N/A
  */
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
-import { getGigTimeMs, pauseAudio, resumeAudio, stopAudio } from './audioEngine'
 import { buildGigStatsSnapshot } from './gigStats'
 
 const NOTE_MISS_WINDOW_MS = 300
 
-export const finalizeGig = (stateRef, setLastGigStats, endGig) => {
+export const finalizeGig = (stateRef, setLastGigStats, endGig, stopAudio) => {
   if (stateRef.hasSubmittedResults) return
   stateRef.hasSubmittedResults = true
   setLastGigStats(
@@ -35,7 +34,10 @@ export const processRhythmGameTick = ({
   handleCollision,
   setIsToxicMode,
   handleMiss,
-  finalizeGigCallback
+  finalizeGigCallback,
+  getGigTimeMs,
+  pauseAudio,
+  resumeAudio
 }) => {
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
     if (isTransportRunning && !stateRef.transportPausedByOverlay) {
@@ -86,6 +88,8 @@ export const processRhythmGameTick = ({
 
   if (stateRef.isToxicMode) {
     if (now > stateRef.toxicModeEndTime) {
+      const remaining = stateRef.toxicModeEndTime - (now - deltaMS)
+      stateRef.toxicTimeTotal += Math.max(0, Math.min(deltaMS, remaining))
       setIsToxicMode(false)
       stateRef.isToxicMode = false
     } else {
