@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added symmetric warmup loop for the Set path before benchmarking.
+ * (#2) Next Steps: Review benchmarking results.
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { calculateViralityScore } from './src/utils/socialEngine.js'
 
 // Setup benchmark variables

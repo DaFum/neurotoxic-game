@@ -30,6 +30,7 @@ export const useRhythmGameLogic = () => {
     player,
     changeScene,
     gigModifiers,
+    currentGig,
     endGig
   } = useGameState()
 
@@ -54,7 +55,8 @@ export const useRhythmGameLogic = () => {
       gameMap,
       player,
       setlist,
-      gigModifiers
+      gigModifiers,
+      currentGig
     },
     contextActions: { addToast, t }
   })
