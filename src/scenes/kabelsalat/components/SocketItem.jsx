@@ -3,7 +3,7 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.jsx'
 import { SocketGraphics } from './SocketGraphics.jsx'
@@ -31,16 +31,25 @@ export const SocketItem = React.memo(
       ? socket.color
       : 'var(--color-ash-gray)'
 
+    const onClickHandler = useCallback(
+      () => handleSocketClick(socketId),
+      [handleSocketClick, socketId]
+    )
+    const onKeyDownHandler = useCallback(
+      e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleSocketClick(socketId)
+        }
+      },
+      [handleSocketClick, socketId]
+    )
+
     return (
       <g
         transform={`translate(${x}, ${y})`}
-        onClick={() => handleSocketClick(socketId)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            handleSocketClick(socketId)
-          }
-        }}
+        onClick={onClickHandler}
+        onKeyDown={onKeyDownHandler}
         role='button'
         tabIndex={!isConnected && selectedCable && !isGameOver ? 0 : -1}
         className={`transition-transform duration-500 ease-in-out ${!isConnected && selectedCable && !isGameOver ? 'cursor-pointer group' : 'outline-hidden'}`}

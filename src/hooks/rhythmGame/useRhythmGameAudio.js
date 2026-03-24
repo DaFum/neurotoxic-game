@@ -446,7 +446,10 @@ export const playSongSequence = async (
 
   if (activeSetlist.length > 1) {
     const text = t
-      ? t('ui:nowPlaying', { name: currentSong.name })
+      ? t('ui:nowPlaying', {
+          name: currentSong.name,
+          defaultValue: `Now Playing: {{name}}`
+        })
       : `Now Playing: ${currentSong.name}`
     addToast(text, 'info')
   }

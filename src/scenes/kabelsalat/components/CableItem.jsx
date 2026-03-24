@@ -3,7 +3,7 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.jsx'
 
@@ -17,16 +17,25 @@ export const CableItem = React.memo(
     isGameOver,
     handleCableClick
   }) => {
+    const handleClick = useCallback(
+      () => handleCableClick(cable.id),
+      [handleCableClick, cable.id]
+    )
+    const handleKeyDown = useCallback(
+      e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleCableClick(cable.id)
+        }
+      },
+      [handleCableClick, cable.id]
+    )
+
     return (
       <g
         transform={`translate(${cable.x}, ${isSelected ? cable.y - 40 : cable.y})`}
-        onClick={() => handleCableClick(cable.id)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            handleCableClick(cable.id)
-          }
-        }}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
         role='button'
         tabIndex={!isConnected && !isShocked && !isGameOver ? 0 : -1}
         className={
