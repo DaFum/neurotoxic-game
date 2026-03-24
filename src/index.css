@@ -57,6 +57,11 @@
   --color-warning-yellow-30: rgb(255 204 0 / 30%);
   --color-warning-yellow-20: rgb(255 204 0 / 20%);
 
+  /* Rhythm Lanes */
+  --color-rhythm-guitar: #ff0041;
+  --color-rhythm-drums: #00ff41;
+  --color-rhythm-bass: #0041ff;
+
   /* =========================================
      KOSMISCH / GLITCH (Base & Erweiterung)
      ========================================= */
