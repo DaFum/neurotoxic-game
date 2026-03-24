@@ -9,6 +9,8 @@
 
 **Learning:** Custom interactive lists (like track selectors or character choices) that simulate radio button behavior are often built using `div` or generic `button` tags. Without the `radiogroup` and `radio` roles, screen readers announce them as disconnected buttons, making the relationship and selection state unclear.
 **Action:** Always apply `role="radiogroup"` to the container with a descriptive `aria-label`, and `role="radio"` with `aria-checked` to the selectable children items when building custom single-choice lists.
+
 ## 2023-10-27 - MapNode Keyboard Accessibility
+
 **Learning:** Adding focus-visible indicators to interactive divs used as buttons (like MapNode.jsx) is critical for keyboard accessibility. A `tabIndex` alone isn't enough; the user needs a clear visual cue when they tab to an element.
 **Action:** Always ensure that any element acting as an interactive component has focus states, preferably using `focus-visible` styles like `focus-visible:ring-2 focus-visible:ring-toxic-green` to match this project's design language.

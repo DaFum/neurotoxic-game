@@ -113,7 +113,12 @@ export const useTravelLogic = ({
   }, [player, band, gameMap, reputationByRegion, venueBlacklist])
 
   const getLocationName = useCallback((location, venueId) => {
-    return getLocationNameUtil(location, venueId, i18n.t.bind(i18n), translateLocation)
+    return getLocationNameUtil(
+      location,
+      venueId,
+      i18n.t.bind(i18n),
+      translateLocation
+    )
   }, [])
 
   /**
@@ -192,12 +197,19 @@ export const useTravelLogic = ({
       travelCompletedRef.current = true
 
       if (!target?.venue) {
-        handleError(new StateError(target ? 'Target node has no venue data' : 'Travel complete but no target'), {
-          addToast,
-          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
-            defaultValue: 'Error: Invalid destination.'
-          })
-        })
+        handleError(
+          new StateError(
+            target
+              ? 'Target node has no venue data'
+              : 'Travel complete but no target'
+          ),
+          {
+            addToast,
+            fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
+              defaultValue: 'Error: Invalid destination.'
+            })
+          }
+        )
         setIsTraveling(false)
         return
       }
@@ -449,7 +461,11 @@ export const useTravelLogic = ({
         return
       }
 
-      const preCheck = checkTravelPrerequisites(node, visibility, isConnectedUtil(gameMap, player.currentNodeId, node.id))
+      const preCheck = checkTravelPrerequisites(
+        node,
+        visibility,
+        isConnectedUtil(gameMap, player.currentNodeId, node.id)
+      )
       if (!preCheck.allowed) {
         addToast(
           i18n.t(preCheck.errorKey, {

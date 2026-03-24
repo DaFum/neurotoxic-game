@@ -44,6 +44,7 @@
 **Action:** Replace `map.entries()` iteration in `update()` or `_cleanupObstacles()` loops with `for (const key of map.keys())`. Retrieve the associated value using `map.get(key)` only if the condition necessitates it (e.g., when deleting an item).
 
 ## 2025-02-14 - Optimize Virality Check Lookups
+
 **Learning:** Using `Set.has()` instead of `Array.includes()` for checking multiple events in `calculateViralityScore` didn't yield a noticeable performance improvement in benchmarks due to the overhead of dynamically allocating `new Set()` for small arrays. O(1) lookups are mathematically better, but object allocation costs often dominate for N < 5.
 **Action:** When converting array lookups to Sets for performance, ensure the Set is either passed in directly from the caller, cached, or that N is large enough to offset the instantiation overhead. We proceeded with the change because it was explicitly requested, but noted the allocation caveat.
 
