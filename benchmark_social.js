@@ -1,3 +1,8 @@
+/*
+ * (#1) Actual Updates: Added symmetric warmup loop for the Set path before benchmarking.
+ * (#2) Next Steps: Review benchmarking results.
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { calculateViralityScore } from './src/utils/socialEngine.js'
 
 // Setup benchmark variables
@@ -23,9 +28,14 @@ const bandStates = [
 ]
 
 async function runBenchmark() {
-  console.log('Warming up...')
+  console.log('Warming up (Array)...')
   for (let i = 0; i < 10000; i++) {
-    calculateViralityScore(80, ['stage_diver'], { name: 'Kaminstube' }, {})
+    const score = performanceScores[i % performanceScores.length]
+    const events = eventsPool[i % eventsPool.length]
+    const venue = venuePool[i % venuePool.length]
+    const bandState = bandStates[i % bandStates.length]
+
+    calculateViralityScore(score, events, venue, bandState)
   }
 
   console.log(`Running benchmark with ${ITERATIONS} iterations (Array inputs)...`)
@@ -42,6 +52,16 @@ async function runBenchmark() {
 
   const endArray = performance.now()
   console.log(`Total time (Array): ${(endArray - startArray).toFixed(2)} ms`)
+
+  console.log('Warming up (Set)...')
+  for (let i = 0; i < 10000; i++) {
+    const score = performanceScores[i % performanceScores.length]
+    const events = eventsPoolSet[i % eventsPoolSet.length]
+    const venue = venuePool[i % venuePool.length]
+    const bandState = bandStates[i % bandStates.length]
+
+    calculateViralityScore(score, events, venue, bandState)
+  }
 
   console.log(`Running benchmark with ${ITERATIONS} iterations (Set inputs)...`)
   const startSet = performance.now()

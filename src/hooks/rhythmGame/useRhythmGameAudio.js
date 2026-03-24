@@ -413,7 +413,7 @@ export const playSongSequence = async (index, activeSetlist, gameStateRef, addTo
   const buffer = 4000
   const noteDuration = maxNoteTime + buffer
 
-  if (currentSong.notes || currentSong.id === 'tutorial_01') {
+  if ((currentSong.notes && currentSong.notes.length > 0) || currentSong.id === 'tutorial_01') {
     // Note-driven song (explicit JSON notes or known tutorial)
     gameStateRef.current.totalDuration = noteDuration
   } else {
