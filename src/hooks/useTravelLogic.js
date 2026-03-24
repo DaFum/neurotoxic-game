@@ -359,7 +359,6 @@ export const useTravelLogic = ({
       const player = playerRef.current
       const band = bandRef.current
       const gameMap = gameMapRef.current
-      const pendingTravelNode = pendingTravelNodeRef.current
 
       if (!node?.venue) {
         addToast(
@@ -457,7 +456,7 @@ export const useTravelLogic = ({
           }),
           'error'
         )
-        if (pendingTravelNode?.id === node.id) clearPendingTravel()
+        if (pendingTravelNodeRef.current?.id === node.id) clearPendingTravel()
         return
       }
 
@@ -492,12 +491,12 @@ export const useTravelLogic = ({
           }),
           'error'
         )
-        if (pendingTravelNode?.id === node.id) clearPendingTravel()
+        if (pendingTravelNodeRef.current?.id === node.id) clearPendingTravel()
         return
       }
 
       // Two-click confirmation: if this node is already pending, confirm and travel
-      if (pendingTravelNode?.id === node.id) {
+      if (pendingTravelNodeRef.current?.id === node.id) {
         startTravelSequence(node)
         return
       }
