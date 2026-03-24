@@ -22,7 +22,7 @@ describe('Credits Scene', () => {
         <Credits />
       </GameStateProvider>
     )
-    expect(getByText('CREDITS')).toBeInTheDocument()
+    expect(getByText('ui:credits')).toBeInTheDocument()
     expect(getByText('VOCAL CODE VOMIT')).toBeInTheDocument()
   })
 
