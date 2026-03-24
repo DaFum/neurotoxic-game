@@ -1,4 +1,8 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
+/*
+ * (#1) Actual Updates: Refactored handlePostSelection by extracting state manipulation to utils/postGigUtils.js.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -10,16 +14,10 @@ import {
 } from '../utils/economyEngine'
 import {
   generatePostOptions,
-  resolvePost,
-  checkViralEvent,
-  calculateSocialGrowth,
   generateBrandOffers
 } from '../utils/socialEngine'
 import {
   clampPlayerMoney,
-  clampBandHarmony,
-  clampMemberStamina,
-  clampMemberMood,
   clampPlayerFame,
   calculateFameLevel,
   calculateFameGain,
@@ -29,6 +27,7 @@ import {
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from '../utils/logger.js'
+import { calculatePostGigStateUpdates } from '../utils/postGigUtils'
 
 export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
   'Social options are unavailable right now.'
@@ -38,7 +37,6 @@ const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
 
-const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
 const OPPOSING_ALIGNMENT_MAP = {
   [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
   [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
@@ -199,11 +197,18 @@ export const usePostGigLogic = () => {
 
   const handlePostSelection = useCallback(
     option => {
-      // We pass gameState into resolvePost to allow for complex RNG derivations if needed
-      const gameState = { player, band, social }
-      let result
+      let updates;
       try {
-        result = resolvePost(option, gameState, secureRandom())
+        updates = calculatePostGigStateUpdates({
+          option,
+          player,
+          band,
+          social,
+          lastGigStats,
+          currentGig,
+          perfScore,
+          secureRandomValue: secureRandom()
+        })
       } catch (e) {
         logger.error('PostGig', 'Failed to resolve selected post', e)
         addToast(
@@ -215,108 +220,44 @@ export const usePostGigLogic = () => {
         return
       }
 
-      // Use checkViralEvent for bonus viral flag based on actual gig stats
-      // Pass context so trait bonuses (e.g. social_manager) are applied via calculateViralityScore
-      const isGigViral =
-        lastGigStats &&
-        checkViralEvent(lastGigStats, {
-          context: {
-            perfScore,
-            band,
-            venue: currentGig?.venue,
-            events: lastGigStats?.events
-          }
-        })
-      const gigViralBonus = isGigViral ? 1 : 0
+      const {
+        finalResult,
+        newBand,
+        hasBandUpdates,
+        appliedHarmonyDelta,
+        nextMoney,
+        appliedMoneyDelta,
+        updatedSocial
+      } = updates
 
-      // Use calculateSocialGrowth for platform-aware organic growth on top of post
-      const organicGrowth = calculateSocialGrowth(
-        result.platform,
-        perfScore,
-        social[result.platform] || 0,
-        isGigViral, // Use actual gig viral status, not post result.success
-        social.controversyLevel || 0,
-        social.loyalty || 0
-      )
-      const totalFollowers = result.followers + organicGrowth
-
-      const finalResult = { ...result, totalFollowers }
       setPostResult(finalResult)
-
-      // Prepare updated state objects
-      const newBand = { ...band }
-      let hasBandUpdates = false
-
-      if (result.harmonyChange) {
-        const prevHarmony = newBand.harmony ?? 1
-        const nextHarmony = clampBandHarmony(prevHarmony + result.harmonyChange)
-        const appliedDelta = nextHarmony - prevHarmony
-        newBand.harmony = nextHarmony
-        hasBandUpdates = true
-
-        if (appliedDelta !== 0) {
-          const sign = appliedDelta > 0 ? '+' : ''
-          addToast(
-            `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedDelta}`,
-            appliedDelta > 0 ? 'success' : 'error'
-          )
-        }
-      }
-      if (
-        result.allMembersMoodChange ||
-        result.allMembersStaminaChange ||
-        result.targetMember
-      ) {
-        newBand.members = newBand.members.map(m => {
-          const needsMoodUpdate =
-            result.moodChange &&
-            (result.allMembersMoodChange || m.name === result.targetMember)
-          const needsStaminaUpdate =
-            result.staminaChange &&
-            (result.allMembersStaminaChange || m.name === result.targetMember)
-
-          if (!needsMoodUpdate && !needsStaminaUpdate) {
-            return m
-          }
-
-          const updatedM = { ...m }
-          if (needsMoodUpdate) {
-            updatedM.mood = clampMemberMood(updatedM.mood + result.moodChange)
-          }
-          if (needsStaminaUpdate) {
-            updatedM.stamina = clampMemberStamina(
-              updatedM.stamina + result.staminaChange,
-              updatedM.staminaMax
-            )
-          }
-          return updatedM
-        })
-        hasBandUpdates = true
-      }
 
       if (hasBandUpdates) {
         updateBand(newBand)
       }
 
-      if (result.moneyChange) {
-        const prevMoney = player.money ?? 0
-        const nextMoney = clampPlayerMoney(prevMoney + result.moneyChange)
-        const appliedDelta = nextMoney - prevMoney
-
-        updatePlayer({ money: nextMoney })
-
-        if (appliedDelta !== 0) {
-          const sign = appliedDelta > 0 ? '+' : ''
-          addToast(
-            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedDelta}€`,
-            appliedDelta > 0 ? 'success' : 'error'
-          )
-        }
+      if (appliedHarmonyDelta !== 0) {
+        const sign = appliedHarmonyDelta > 0 ? '+' : ''
+        addToast(
+          `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedHarmonyDelta}`,
+          appliedHarmonyDelta > 0 ? 'success' : 'error'
+        )
       }
 
-      if (result.unlockTrait) {
-        unlockTrait(result.unlockTrait.memberId, result.unlockTrait.traitId)
-        const traitName = result.unlockTrait.traitId
+      if (appliedMoneyDelta !== 0) {
+        updatePlayer({ money: nextMoney })
+        const sign = appliedMoneyDelta > 0 ? '+' : ''
+        addToast(
+          `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedMoneyDelta}€`,
+          appliedMoneyDelta > 0 ? 'success' : 'error'
+        )
+      } else if (finalResult.moneyChange) {
+        updatePlayer({ money: nextMoney })
+      }
+
+      if (finalResult.unlockTrait) {
+        unlockTrait(finalResult.unlockTrait.memberId, finalResult.unlockTrait.traitId)
+        const traitName = finalResult.unlockTrait.traitId
           .replace(/_/g, ' ')
           .toUpperCase()
         addToast(
@@ -326,70 +267,6 @@ export const usePostGigLogic = () => {
           }),
           'success'
         )
-      }
-
-      const boundedZealotry = Math.max(
-        0,
-        Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
-      )
-
-      const updatedSocial = {
-        [result.platform]: Math.max(
-          0,
-          (social[result.platform] || 0) + totalFollowers
-        ),
-        viral: (social.viral || 0) + (result.success ? 1 : 0) + gigViralBonus,
-        lastGigDay: player.day,
-        controversyLevel: clampControversyLevel(
-          (social.controversyLevel || 0) + (result.controversyChange || 0)
-        ),
-        loyalty: Math.max(
-          0,
-          (social.loyalty || 0) + (result.loyaltyChange || 0)
-        ),
-        zealotry: boundedZealotry,
-        reputationCooldown:
-          result.reputationCooldownSet !== undefined
-            ? result.reputationCooldownSet
-            : social.reputationCooldown,
-        egoFocus: result.egoClear
-          ? null
-          : result.egoDrop
-            ? result.egoDrop
-            : social.egoFocus,
-        sponsorActive:
-          option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
-        trend: social.trend,
-        activeDeals: social.activeDeals,
-        influencers: social.influencers
-      }
-
-      // Handle Influencer Update
-      if (result.influencerUpdate) {
-        const { id, scoreChange } = result.influencerUpdate
-        const currentInfluencer = social.influencers?.[id]
-        if (currentInfluencer) {
-          updatedSocial.influencers = {
-            ...social.influencers,
-            [id]: {
-              ...currentInfluencer,
-              score: Math.min(
-                100,
-                Math.max(0, (currentInfluencer.score || 0) + scoreChange)
-              )
-            }
-          }
-        }
-      }
-
-      // Cross-posting Logic: 25% diminishing returns across other main platforms
-      if (result.success && totalFollowers > 0) {
-        const delta = Math.floor(totalFollowers * 0.25)
-        for (const p of CROSS_POSTING_PLATFORMS) {
-          if (p !== result.platform) {
-            updatedSocial[p] = Math.max(0, (social[p] || 0) + delta)
-          }
-        }
       }
 
       updateSocial(updatedSocial)

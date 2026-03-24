@@ -1,20 +1,12 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
+/*
+ * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability by extracting pure logic to `src/utils/rhythmGameLoopUtils.js`.
+ * (#2) Next Steps: N/A
+ * (#3) Found Errors + Solutions: N/A
+ */
 import { useCallback, useRef, useEffect } from 'react'
-import {
-  trySpawnProjectile,
-  processProjectiles,
-  createHecklerSession
-} from '../../utils/hecklerLogic'
-import {
-  getGigTimeMs,
-  getTransportState,
-  pauseAudio,
-  resumeAudio,
-  stopAudio
-} from '../../utils/audioEngine'
-import { buildGigStatsSnapshot } from '../../utils/gigStats'
-
-const NOTE_MISS_WINDOW_MS = 300
+import { createHecklerSession } from '../../utils/hecklerLogic'
+import { getTransportState } from '../../utils/audioEngine'
+import { processRhythmGameTick, finalizeGig } from '../../utils/rhythmGameLoopUtils'
 
 export const useRhythmGameLoop = ({
   gameStateRef,
@@ -33,6 +25,7 @@ export const useRhythmGameLoop = ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080
   })
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -52,132 +45,35 @@ export const useRhythmGameLoop = ({
 
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
-  const finalizeGig = useCallback(
+  const finalizeGigCallback = useCallback(
     stateRef => {
-      if (stateRef.hasSubmittedResults) return
-      stateRef.hasSubmittedResults = true
-      setLastGigStats(
-        buildGigStatsSnapshot(
-          stateRef.score,
-          stateRef.stats,
-          stateRef.toxicTimeTotal,
-          stateRef.songStats || []
-        )
-      )
-      stopAudio()
-      endGig()
+      finalizeGig(stateRef, setLastGigStats, endGig)
     },
     [endGig, setLastGigStats]
   )
 
   const update = useCallback(
     deltaMS => {
-      const stateRef = gameStateRef.current
       const transportState = getTransportState()
       const isTransportRunning = transportState === 'started'
 
-      if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
-        if (isTransportRunning && !stateRef.transportPausedByOverlay) {
-          pauseAudio()
-          stateRef.transportPausedByOverlay = true
-        }
-        return
-      }
-
-      if (stateRef.transportPausedByOverlay) {
-        if (transportState === 'paused') {
-          resumeAudio()
-        }
-        stateRef.transportPausedByOverlay = false
-      }
-
-      if (!isTransportRunning) {
-        return
-      }
-
-      const now = getGigTimeMs()
-      const duration = stateRef.totalDuration
-      const rawProgress =
-        duration > 0 ? Math.min(100, (now / duration) * 100) : 0
-      stateRef.progress = Math.max(0, rawProgress)
-
-      const currentInnerHeight = dimensionsRef.current.height
-      const currentInnerWidth = dimensionsRef.current.width
-
-      if (stateRef.projectiles.length > 0) {
-        stateRef.projectiles = processProjectiles(
-          hecklerSessionRef.current,
-          stateRef.projectiles,
-          deltaMS,
-          currentInnerHeight,
-          handleCollision
-        )
-      }
-
-      const newProjectile = trySpawnProjectile(
-        hecklerSessionRef.current,
-        { health: stateRef.health, combo: stateRef.combo },
-        stateRef.rng,
-        currentInnerWidth
-      )
-      if (newProjectile) {
-        stateRef.projectiles.push(newProjectile)
-      }
-
-      if (stateRef.isToxicMode) {
-        if (now > stateRef.toxicModeEndTime) {
-          setIsToxicMode(false)
-          stateRef.isToxicMode = false
-        } else {
-          stateRef.toxicTimeTotal += deltaMS
-        }
-      }
-
-      const isNearTrackEnd =
-        duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS
-
-      if (stateRef.setlistCompleted && isNearTrackEnd) {
-        finalizeGig(stateRef)
-        return
-      }
-
-      let missCount = 0
-      const notes = stateRef.notes
-      let i = stateRef.nextMissCheckIndex
-
-      while (i < notes.length) {
-        const note = notes[i]
-
-        if (note.time > now + NOTE_MISS_WINDOW_MS) {
-          break
-        }
-
-        if (!note.visible || note.hit) {
-          if (i === stateRef.nextMissCheckIndex) {
-            stateRef.nextMissCheckIndex++
-          }
-          i++
-          continue
-        }
-
-        if (now > note.time + NOTE_MISS_WINDOW_MS) {
-          note.visible = false
-          missCount++
-          if (i === stateRef.nextMissCheckIndex) {
-            stateRef.nextMissCheckIndex++
-          }
-        }
-
-        i++
-      }
-
-      if (missCount > 0) {
-        handleMiss(missCount, false)
-      }
+      processRhythmGameTick({
+        stateRef: gameStateRef.current,
+        isTransportRunning,
+        transportState,
+        activeEvent,
+        dimensionsRef,
+        hecklerSessionRef,
+        deltaMS,
+        handleCollision,
+        setIsToxicMode,
+        handleMiss,
+        finalizeGigCallback
+      })
     },
     [
       activeEvent,
-      finalizeGig,
+      finalizeGigCallback,
       gameStateRef,
       handleCollision,
       handleMiss,
