@@ -35,7 +35,8 @@ export const calculatePostGigStateUpdates = ({
         band,
         venue: currentGig?.venue,
         events: lastGigStats?.events
-      }
+      },
+      roll: secureRandomValue
     })
   const gigViralBonus = isGigViral ? 1 : 0
 
