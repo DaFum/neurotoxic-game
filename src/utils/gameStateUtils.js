@@ -8,7 +8,10 @@ import { EXPENSE_CONSTANTS } from './economyEngine.js'
  * @param {number} value - Candidate value.
  * @returns {number} Clamped value ensuring non-negative.
  */
-export const clampNonNegative = value => Math.max(0, value)
+export const clampNonNegative = value => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, value)
+}
 
 /**
  * Derives fame level from raw fame.
