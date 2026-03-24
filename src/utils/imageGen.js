@@ -68,6 +68,10 @@ export const fetchGenImageAsObjectUrl = description => {
  * Primarily used for testing or when memory pressure is high.
  * Must be awaited to ensure all pending blob generation promises are handled.
  *
+ * WARNING: Revoking these URLs will immediately break any active image elements
+ * or CSS backgrounds that are still currently rendering them. Only call this when
+ * you are certain the old images are no longer needed (e.g. between full game runs).
+ *
  * @returns {Promise<void>} Resolves when all object URLs are cleared.
  */
 export const clearImageCache = async () => {
