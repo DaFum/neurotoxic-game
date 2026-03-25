@@ -7,6 +7,7 @@ import {
   clampMemberMood,
   clampPlayerFame,
   calculateFameLevel,
+  clampBandHarmony,
   BALANCE_CONSTANTS
 } from './gameStateUtils.js'
 import { secureRandom } from './crypto.js'
@@ -30,6 +31,49 @@ import i18n from '../i18n.js'
  * @param {boolean} [params.eventAlreadyActive=false] - Whether an event is already active (to prevent stacking).
  * @param {Function} [params.rng=secureRandom] - RNG function for probabilistic outcomes.
  */
+/**
+ * Calculates new harmony value if band has harmony regen active.
+ * @param {object} band - The current band state.
+ * @returns {number|null} The new harmony value, or null if regen is not applicable.
+ */
+export const processHarmonyRegen = (band) => {
+  if (band?.harmonyRegenTravel) {
+    return clampBandHarmony((band.harmony ?? 0) + 5)
+  }
+  return null
+}
+
+/**
+ * Checks if the current node is a gig node.
+ * @param {object} node - The current node.
+ * @returns {boolean} True if the node is a GIG, FESTIVAL, or FINALE.
+ */
+export const isGigNode = (node) => {
+  return (
+    node?.type === 'GIG' ||
+    node?.type === 'FESTIVAL' ||
+    node?.type === 'FINALE'
+  )
+}
+
+/**
+ * Triggers travel events if applicable for the current node.
+ * @param {object} node - The current node.
+ * @param {Function} triggerEvent - The function to trigger events.
+ * @returns {boolean} True if a travel event was triggered.
+ */
+export const processTravelEvents = (node, triggerEvent) => {
+  if (isGigNode(node)) {
+    return false
+  }
+
+  let travelEventActive = triggerEvent('transport', 'travel')
+  if (!travelEventActive) {
+    travelEventActive = triggerEvent('band', 'travel')
+  }
+  return travelEventActive
+}
+
 export const handleNodeArrival = ({
   node,
   band,

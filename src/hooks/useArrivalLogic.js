@@ -1,8 +1,11 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
-import { clampBandHarmony } from '../utils/gameStateUtils'
-import { handleNodeArrival } from '../utils/arrivalUtils'
+import {
+  handleNodeArrival,
+  processHarmonyRegen,
+  isGigNode,
+  processTravelEvents
+} from '../utils/arrivalUtils'
 import { GAME_PHASES } from '../context/gameConstants'
 
 /**
@@ -38,25 +41,21 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
       saveGame(false)
 
       // 3. Harmony Regen (if applicable)
-      if (band?.harmonyRegenTravel) {
-        updateBand({ harmony: clampBandHarmony((band.harmony ?? 0) + 5) })
+      const newHarmony = processHarmonyRegen(band)
+      if (newHarmony !== null) {
+        updateBand({ harmony: newHarmony })
       }
 
       // 4. Trigger Events
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
       const currentNode = gameMap?.nodes[player.currentNodeId]
-      const isGigNode =
-        currentNode?.type === 'GIG' ||
-        currentNode?.type === 'FESTIVAL' ||
-        currentNode?.type === 'FINALE'
-
       let travelEventActive = false
-      if (!isGigNode) {
-        travelEventActive = triggerEvent('transport', 'travel')
-        if (!travelEventActive) {
-          travelEventActive = triggerEvent('band', 'travel')
-        }
+
+      // If there is NO current node (like in tests where player.currentNodeId does not map to gameMap.nodes),
+      // the original code still fell back to attempting to trigger an event if !isGigNode.
+      if (!isGigNode(currentNode)) {
+        travelEventActive = processTravelEvents(currentNode, triggerEvent)
       }
 
       // 5. Handle Node Arrival & Routing
@@ -79,7 +78,7 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
       }
 
       // Ensure we route to OVERWORLD if not a Gig/Festival/Finale where action is taken
-      if (!isGigNode) {
+      if (!isGigNode(currentNode)) {
         changeScene(GAME_PHASES.OVERWORLD)
       }
     } catch (e) {
