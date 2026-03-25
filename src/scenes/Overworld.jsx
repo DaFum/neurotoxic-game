@@ -49,7 +49,7 @@ export const Overworld = () => {
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
-  const { showHQ, openHQ, bandHQProps } = useBandHQModal()
+  const { showHQ, openHQ, closeHQ } = useBandHQModal()
   const { showQuests, openQuests, questsProps } = useQuestsModal()
   const { showStash, openStash, stashProps } = useContrabandStash()
   const {
@@ -343,7 +343,7 @@ export const Overworld = () => {
 
       <EventLog t={t} day={player.day} locationName={locationName} />
 
-      {showHQ && <BandHQ {...bandHQProps} />}
+      {showHQ && <BandHQ onClose={closeHQ} />}
       {showQuests && <QuestsModal {...questsProps} />}
       {showStash && <ContrabandStash {...stashProps} />}
       {showPirateRadio && (
