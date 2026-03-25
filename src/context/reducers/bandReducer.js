@@ -252,7 +252,8 @@ export const applyContrabandEffect = (band, item, memberId) => {
         instanceId: item.instanceId,
         effectType: item.effectType,
         value: item.value,
-        remainingDuration: item.duration
+        remainingDuration: item.duration,
+        ...(payload.memberId ? { memberId: payload.memberId } : {})
       }
     ]
   }
