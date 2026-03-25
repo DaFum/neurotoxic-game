@@ -28,7 +28,7 @@ export const MainMenu = () => {
 
   const { changeScene, loadGame, addToast, resetState, updatePlayer } =
     useGameState()
-  const { showHQ, openHQ, bandHQProps } = useBandHQModal()
+  const { showHQ, openHQ, closeHQ } = useBandHQModal()
   const isMountedRef = useRef(true)
   const [isStarting, setIsStarting] = useState(false)
   const [isLoadingGame, setIsLoadingGame] = useState(false)
@@ -249,7 +249,7 @@ export const MainMenu = () => {
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
-      {showHQ && <BandHQ {...bandHQProps} />}
+      {showHQ && <BandHQ onClose={closeHQ} />}
 
       <div className='relative z-10 flex flex-col items-center'>
         <motion.h1

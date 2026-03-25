@@ -13,51 +13,42 @@ import { UpgradesTab } from './bandhq/UpgradesTab'
 import { SetlistTab } from './bandhq/SetlistTab'
 import { SettingsTab } from './bandhq/SettingsTab'
 import { LeaderboardTab } from './bandhq/LeaderboardTab'
-import { AudioStatePropType, OnAudioChangePropType } from './shared/propTypes'
+import { useGameState } from '../context/GameState.jsx'
+import { useAudioControl } from '../hooks/useAudioControl.js'
 
 /**
  * BandHQ Component
  * Displays statistics and a shop for purchasing upgrades.
  *
  * @param {object} props
- * @param {object} props.player - The player state.
- * @param {object} props.band - The band state.
- * @param {object} props.social - The social stats.
  * @param {Function} props.onClose - Callback to close the HQ modal.
- * @param {Function} props.updatePlayer - Callback to update player state.
- * @param {Function} props.updateBand - Callback to update band state.
- * @param {Function} props.addToast - Callback to show notifications.
- * @param {object} props.settings - Global settings.
- * @param {Function} props.updateSettings - Update settings callback.
- * @param {Function} props.deleteSave - Delete save callback.
- * @param {Array} props.setlist - Current setlist.
- * @param {Function} props.setSetlist - Update setlist callback.
- * @param {object} props.audioState - Current audio state (musicVol, sfxVol, isMuted).
- * @param {Function} props.onAudioChange - Callback for audio changes.
  * @param {string} [props.className] - Optional custom class name.
  */
 export const BandHQ = ({
-  player,
-  band,
-  social,
   onClose,
-  updatePlayer,
-  updateBand,
-  addToast,
-  settings,
-  updateSettings,
-  deleteSave,
-  setlist,
-  setSetlist,
-  audioState,
-  onAudioChange,
-  activeQuests,
-  venueBlacklist,
-  reputationByRegion,
   className = ''
 }) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('STATS')
+
+  const {
+    player,
+    band,
+    social,
+    updatePlayer,
+    updateBand,
+    addToast,
+    settings,
+    updateSettings,
+    deleteSave,
+    setlist,
+    setSetlist,
+    activeQuests,
+    venueBlacklist,
+    reputationByRegion
+  } = useGameState()
+
+  const { audioState, handleAudioChange: onAudioChange } = useAudioControl()
   const [processingItemId, setProcessingItemId] = useState(null)
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
@@ -262,50 +253,6 @@ export const BandHQ = ({
 }
 
 BandHQ.propTypes = {
-  player: PropTypes.shape({
-    money: PropTypes.number,
-    fame: PropTypes.number,
-    day: PropTypes.number,
-    hqUpgrades: PropTypes.arrayOf(PropTypes.string),
-    van: PropTypes.shape({
-      fuel: PropTypes.number,
-      condition: PropTypes.number,
-      breakdownChance: PropTypes.number,
-      upgrades: PropTypes.arrayOf(PropTypes.string)
-    })
-  }).isRequired,
-  band: PropTypes.shape({
-    inventory: PropTypes.object,
-    inventorySlots: PropTypes.number,
-    harmony: PropTypes.number,
-    performance: PropTypes.object,
-    members: PropTypes.arrayOf(
-      PropTypes.shape({
-        name: PropTypes.string,
-        stamina: PropTypes.number,
-        mood: PropTypes.number
-      })
-    )
-  }).isRequired,
-  social: PropTypes.shape({
-    instagram: PropTypes.number,
-    tiktok: PropTypes.number,
-    youtube: PropTypes.number,
-    newsletter: PropTypes.number
-  }).isRequired,
   onClose: PropTypes.func.isRequired,
-  updatePlayer: PropTypes.func.isRequired,
-  updateBand: PropTypes.func.isRequired,
-  addToast: PropTypes.func.isRequired,
-  settings: PropTypes.object.isRequired,
-  updateSettings: PropTypes.func.isRequired,
-  deleteSave: PropTypes.func.isRequired,
-  setlist: PropTypes.array.isRequired,
-  setSetlist: PropTypes.func.isRequired,
-  audioState: AudioStatePropType.isRequired,
-  onAudioChange: OnAudioChangePropType.isRequired,
-  activeQuests: PropTypes.array,
-  venueBlacklist: PropTypes.array,
-  reputationByRegion: PropTypes.object,
   className: PropTypes.string
 }

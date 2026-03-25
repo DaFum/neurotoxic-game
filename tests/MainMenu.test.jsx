@@ -131,16 +131,12 @@ describe('MainMenu Component', () => {
     })
 
     it('renders Band HQ component when showHQ is true', () => {
-      const concreteBandHQProps = {
-        onClose: vi.fn(),
-        player: { id: 'test', name: 'tester' },
-        band: { harmony: 100 }
-      }
+      const mockCloseHQ = vi.fn()
 
       useBandHQModal.mockReturnValue({
         showHQ: true,
         openHQ: mockOpenHQ,
-        bandHQProps: concreteBandHQProps
+        closeHQ: mockCloseHQ
       })
 
       render(<MainMenu />)
@@ -149,7 +145,7 @@ describe('MainMenu Component', () => {
 
       const expectedCallArgs = BandHQ.mock.calls[0]
       expect(expectedCallArgs[0]).toEqual(
-        expect.objectContaining(concreteBandHQProps)
+        expect.objectContaining({ onClose: mockCloseHQ })
       )
     })
   })

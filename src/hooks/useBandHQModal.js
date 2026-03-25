@@ -1,65 +1,18 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
-import { useState, useCallback, useMemo } from 'react'
-import { useGameState } from '../context/GameState.jsx'
-import { useAudioControl } from './useAudioControl.js'
+import { useState, useCallback } from 'react'
 
 /**
- * Hook to manage BandHQ modal state and props.
+ * Hook to manage BandHQ modal state.
  * Used in MainMenu and Overworld scenes.
  */
 export const useBandHQModal = () => {
   const [showHQ, setShowHQ] = useState(false)
-  const gameState = useGameState()
-  const { audioState, handleAudioChange } = useAudioControl()
 
   const openHQ = useCallback(() => setShowHQ(true), [])
   const closeHQ = useCallback(() => setShowHQ(false), [])
 
-  const bandHQProps = useMemo(
-    () => ({
-      onClose: closeHQ,
-      player: gameState.player,
-      band: gameState.band,
-      social: gameState.social,
-      updatePlayer: gameState.updatePlayer,
-      updateBand: gameState.updateBand,
-      addToast: gameState.addToast,
-      settings: gameState.settings,
-      updateSettings: gameState.updateSettings,
-      deleteSave: gameState.deleteSave,
-      setlist: gameState.setlist,
-      setSetlist: gameState.setSetlist,
-      activeQuests: gameState.activeQuests,
-      venueBlacklist: gameState.venueBlacklist,
-      reputationByRegion: gameState.reputationByRegion,
-      audioState,
-      onAudioChange: handleAudioChange
-    }),
-    [
-      closeHQ,
-      gameState.player,
-      gameState.band,
-      gameState.social,
-      gameState.updatePlayer,
-      gameState.updateBand,
-      gameState.addToast,
-      gameState.settings,
-      gameState.updateSettings,
-      gameState.deleteSave,
-      gameState.setlist,
-      gameState.setSetlist,
-      gameState.activeQuests,
-      gameState.venueBlacklist,
-      gameState.reputationByRegion,
-      audioState,
-      handleAudioChange
-    ]
-  )
-
   return {
     showHQ,
     openHQ,
-    closeHQ,
-    bandHQProps
+    closeHQ
   }
 }

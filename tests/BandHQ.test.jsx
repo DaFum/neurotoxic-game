@@ -5,6 +5,37 @@ import { render, cleanup } from '@testing-library/react'
 
 // Mock react-i18next
 
+// Mock hooks
+vi.mock('../src/context/GameState.jsx', () => ({
+  useGameState: () => ({
+    player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
+    band: { members: [] },
+    social: { instagram: 0, tiktok: 0 },
+    updatePlayer: () => {},
+    updateBand: () => {},
+    addToast: () => {},
+    settings: {},
+    updateSettings: () => {},
+    deleteSave: () => {},
+    setlist: [],
+    setSetlist: () => {},
+    activeQuests: [],
+    venueBlacklist: [],
+    reputationByRegion: {}
+  })
+}))
+
+vi.mock('../src/hooks/useAudioControl.js', () => ({
+  useAudioControl: () => ({
+    audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
+    handleAudioChange: {
+      setMusic: () => {},
+      setSfx: () => {},
+      toggleMute: () => {}
+    }
+  })
+}))
+
 // Mock dependencies
 vi.mock('../src/data/hqItems.js', () => ({
   HQ_ITEMS: { gear: [], instruments: [] }
@@ -65,24 +96,7 @@ describe('BandHQ', () => {
 
   test('renders without crashing', () => {
     const props = {
-      player: { money: 100, fame: 50, day: 1, van: {} },
-      band: { members: [] },
-      social: { instagram: 0, tiktok: 0 },
-      onClose: () => {},
-      updatePlayer: () => {},
-      updateBand: () => {},
-      addToast: () => {},
-      settings: {},
-      updateSettings: () => {},
-      deleteSave: () => {},
-      setlist: [],
-      setSetlist: () => {},
-      audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
-      onAudioChange: {
-        setMusic: () => {},
-        setSfx: () => {},
-        toggleMute: () => {}
-      }
+      onClose: () => {}
     }
 
     const { container } = render(React.createElement(BandHQ, props))
