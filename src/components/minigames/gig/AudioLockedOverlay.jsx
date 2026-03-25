@@ -8,13 +8,23 @@ export const AudioLockedOverlay = memo(({ onInitializeAudio }) => {
 
   return (
     <div
+      role='alertdialog'
+      aria-modal='true'
+      aria-labelledby='audio-locked-title'
+      aria-describedby='audio-locked-desc'
       className='flex flex-col items-center justify-center w-full h-full bg-void-black relative'
       style={{ zIndex: 'var(--z-modal)' }}
     >
-      <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center">
+      <h2
+        id='audio-locked-title'
+        className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center"
+      >
         {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
       </h2>
-      <p className='text-ash-gray mb-8 font-mono max-w-md text-center'>
+      <p
+        id='audio-locked-desc'
+        className='text-ash-gray mb-8 font-mono max-w-md text-center'
+      >
         {t('ui:gig.audioOverride', {
           defaultValue: 'Audio Interface requires manual override.'
         })}
