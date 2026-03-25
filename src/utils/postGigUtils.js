@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted pure logic from usePostGigLogic into utility functions.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
- */
 import {
   checkViralEvent,
   calculateSocialGrowth,
@@ -15,6 +10,7 @@ import {
   clampMemberMood,
   clampControversyLevel
 } from './gameStateUtils'
+import { BRAND_ALIGNMENTS } from '../context/initialState'
 
 const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
 
@@ -174,5 +170,132 @@ export const calculatePostGigStateUpdates = ({
     nextMoney,
     appliedMoneyDelta,
     updatedSocial
+  }
+}
+
+const OPPOSING_ALIGNMENT_MAP = {
+  [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
+  [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
+  [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
+  [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
+}
+
+export const getAcceptDealMoneyUpdate = ({ deal, player }) => {
+  let appliedMoneyDelta = 0
+  let nextMoney = player.money ?? 0
+
+  if (deal.offer.upfront) {
+    const prevMoney = player.money ?? 0
+    nextMoney = clampPlayerMoney(prevMoney + deal.offer.upfront)
+    appliedMoneyDelta = nextMoney - prevMoney
+  }
+
+  return { nextMoney, appliedMoneyDelta }
+}
+
+export const getAcceptDealBandUpdateFactory = (deal) => {
+  return (prevBand) => {
+    if (!deal.offer.item) return prevBand
+    return {
+      ...prevBand,
+      inventory: { ...prevBand.inventory, [deal.offer.item]: true }
+    }
+  }
+}
+
+export const getAcceptDealSocialUpdateFactory = (deal) => {
+  return (prevSocial) => {
+    const updates = {}
+
+    if (deal.penalty) {
+      if (deal.penalty.loyalty) {
+        updates.loyalty = Math.max(
+          0,
+          (prevSocial.loyalty || 0) + deal.penalty.loyalty
+        )
+      }
+      if (deal.penalty.controversy) {
+        updates.controversyLevel = clampControversyLevel(
+          (prevSocial.controversyLevel || 0) + deal.penalty.controversy
+        )
+      }
+    }
+
+    if (deal.alignment) {
+      updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
+      const currentRep = updates.brandReputation[deal.alignment] || 0
+      updates.brandReputation[deal.alignment] = Math.min(
+        100,
+        currentRep + 5
+      )
+
+      const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
+      if (opposing) {
+        const oppRep = updates.brandReputation[opposing] || 0
+        updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
+      }
+    }
+
+    const prevDeals = prevSocial.activeDeals || []
+    updates.activeDeals = [
+      ...prevDeals,
+      { ...deal, remainingGigs: deal.offer.duration }
+    ]
+
+    return updates
+  }
+}
+
+export const getSpinStoryMoneyUpdate = ({ player }) => {
+  if (player.money < 200) {
+    return { success: false }
+  }
+
+  const prevMoney = player.money ?? 0
+  const nextMoney = clampPlayerMoney(prevMoney - 200)
+  const appliedDelta = nextMoney - prevMoney
+
+  return {
+    success: true,
+    nextMoney,
+    appliedDelta
+  }
+}
+
+export const getSpinStorySocialUpdateFactory = () => {
+  return (prevSocial) => ({
+    controversyLevel: clampControversyLevel((prevSocial.controversyLevel || 0) - 25)
+  })
+}
+
+export const calculateContinueStats = ({
+  player,
+  perfScore,
+  financials,
+  calculateFameGain,
+  calculateFameLevel,
+  clampPlayerFame,
+  BALANCE_CONSTANTS
+}) => {
+  const prevFame = player.fame ?? 0
+
+  let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
+  if (perfScore >= 62) {
+    const rawFameGain = 50 + Math.floor(perfScore * 1.5)
+    finalFameGain = calculateFameGain(
+      rawFameGain,
+      prevFame,
+      BALANCE_CONSTANTS.MAX_FAME_GAIN
+    )
+  }
+
+  const prevMoney = player.money ?? 0
+  const newMoney = clampPlayerMoney(prevMoney + financials.net)
+  const newFame = clampPlayerFame(prevFame + finalFameGain)
+
+  return {
+    newMoney,
+    newFame,
+    fameLevel: calculateFameLevel(newFame)
   }
 }
