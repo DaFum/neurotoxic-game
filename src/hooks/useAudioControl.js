@@ -1,7 +1,101 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
+
+export const executeAudioAction = (
+  manager,
+  methodName,
+  errorContext,
+  ...args
+) => {
+  try {
+    return manager[methodName](...args)
+  } catch (error) {
+    handleError(error, {
+      fallbackMessage: `useAudioControl.${errorContext} failed`,
+      silent: true
+    })
+    return undefined
+  }
+}
+
+export const createAudioHandlers = manager => ({
+  setMusic: val =>
+    executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
+  setSfx: val => executeAudioAction(manager, 'setSFXVolume', 'setSfx', val),
+  toggleMute: () => executeAudioAction(manager, 'toggleMute', 'toggleMute'),
+  stopMusic: () => executeAudioAction(manager, 'stopMusic', 'stopMusic'),
+  resumeMusic: () => {
+    const result = executeAudioAction(manager, 'resumeMusic', 'resumeMusic')
+    return result === undefined ? Promise.resolve(false) : result
+  }
+})
+
+export const getAudioSnapshot = (
+  manager,
+  hasNativeSubscribe,
+  fallbackSnapshotRef
+) => {
+  if (hasNativeSubscribe && typeof manager.getStateSnapshot === 'function') {
+    return manager.getStateSnapshot()
+  }
+
+  const nextSnapshot = {
+    musicVol: manager.musicVolume,
+    sfxVol: manager.sfxVolume,
+    isMuted: manager.muted,
+    isPlaying: manager.isPlaying,
+    currentSongId: manager.currentSongId ?? null
+  }
+
+  const previousSnapshot = fallbackSnapshotRef.current
+  if (
+    previousSnapshot &&
+    previousSnapshot.musicVol === nextSnapshot.musicVol &&
+    previousSnapshot.sfxVol === nextSnapshot.sfxVol &&
+    previousSnapshot.isMuted === nextSnapshot.isMuted &&
+    previousSnapshot.isPlaying === nextSnapshot.isPlaying &&
+    previousSnapshot.currentSongId === nextSnapshot.currentSongId
+  ) {
+    return previousSnapshot
+  }
+
+  fallbackSnapshotRef.current = nextSnapshot
+  return nextSnapshot
+}
+
+export const createAudioSubscriber = (
+  manager,
+  hasNativeSubscribe,
+  pollEvenWithSubscribe,
+  pollMs
+) => {
+  return listener => {
+    const unsubscribe = hasNativeSubscribe
+      ? manager.subscribe(listener)
+      : () => {}
+
+    if (hasNativeSubscribe && !pollEvenWithSubscribe) {
+      return unsubscribe
+    }
+
+    const pollId = setInterval(() => {
+      try {
+        listener()
+      } catch (error) {
+        handleError(error, {
+          fallbackMessage: 'useAudioControl polling listener failed',
+          silent: true
+        })
+      }
+    }, pollMs)
+
+    return () => {
+      clearInterval(pollId)
+      unsubscribe()
+    }
+  }
+}
 
 /**
  * Provides reactive audio controls backed by AudioManager.
@@ -23,61 +117,18 @@ export const useAudioControl = (selector, options = {}) => {
       : 1000
   const pollEvenWithSubscribe = options.pollEvenWithSubscribe === true
 
-  const getSnapshot = useCallback(() => {
-    if (hasNativeSubscribe && typeof manager.getStateSnapshot === 'function') {
-      return manager.getStateSnapshot()
-    }
-
-    const nextSnapshot = {
-      musicVol: manager.musicVolume,
-      sfxVol: manager.sfxVolume,
-      isMuted: manager.muted,
-      isPlaying: manager.isPlaying,
-      currentSongId: manager.currentSongId ?? null
-    }
-
-    const previousSnapshot = fallbackSnapshotRef.current
-    if (
-      previousSnapshot &&
-      previousSnapshot.musicVol === nextSnapshot.musicVol &&
-      previousSnapshot.sfxVol === nextSnapshot.sfxVol &&
-      previousSnapshot.isMuted === nextSnapshot.isMuted &&
-      previousSnapshot.isPlaying === nextSnapshot.isPlaying &&
-      previousSnapshot.currentSongId === nextSnapshot.currentSongId
-    ) {
-      return previousSnapshot
-    }
-
-    fallbackSnapshotRef.current = nextSnapshot
-    return nextSnapshot
-  }, [hasNativeSubscribe, manager])
+  const getSnapshot = useCallback(
+    () => getAudioSnapshot(manager, hasNativeSubscribe, fallbackSnapshotRef),
+    [hasNativeSubscribe, manager]
+  )
 
   const subscribe = useCallback(
-    listener => {
-      const unsubscribe = hasNativeSubscribe
-        ? manager.subscribe(listener)
-        : () => {}
-
-      if (hasNativeSubscribe && !pollEvenWithSubscribe) {
-        return unsubscribe
-      }
-
-      const pollId = setInterval(() => {
-        try {
-          listener()
-        } catch (error) {
-          handleError(error, {
-            fallbackMessage: 'useAudioControl polling listener failed',
-            silent: true
-          })
-        }
-      }, pollMs)
-
-      return () => {
-        clearInterval(pollId)
-        unsubscribe()
-      }
-    },
+    createAudioSubscriber(
+      manager,
+      hasNativeSubscribe,
+      pollEvenWithSubscribe,
+      pollMs
+    ),
     [hasNativeSubscribe, manager, pollEvenWithSubscribe, pollMs]
   )
 
@@ -96,71 +147,9 @@ export const useAudioControl = (selector, options = {}) => {
     getSelectedSnapshot
   )
 
-  const setMusic = useCallback(
-    val => {
-      try {
-        manager.setMusicVolume(val)
-      } catch (error) {
-        handleError(error, {
-          fallbackMessage: 'useAudioControl.setMusic failed',
-          silent: true
-        })
-      }
-    },
-    [manager]
-  )
-
-  const setSfx = useCallback(
-    val => {
-      try {
-        manager.setSFXVolume(val)
-      } catch (error) {
-        handleError(error, {
-          fallbackMessage: 'useAudioControl.setSfx failed',
-          silent: true
-        })
-      }
-    },
-    [manager]
-  )
-
-  const toggleMute = useCallback(() => {
-    try {
-      manager.toggleMute()
-    } catch (error) {
-      handleError(error, {
-        fallbackMessage: 'useAudioControl.toggleMute failed',
-        silent: true
-      })
-    }
-  }, [manager])
-
-  const stopMusic = useCallback(() => {
-    try {
-      manager.stopMusic()
-    } catch (error) {
-      handleError(error, {
-        fallbackMessage: 'useAudioControl.stopMusic failed',
-        silent: true
-      })
-    }
-  }, [manager])
-
-  const resumeMusic = useCallback(() => {
-    try {
-      return manager.resumeMusic()
-    } catch (error) {
-      handleError(error, {
-        fallbackMessage: 'useAudioControl.resumeMusic failed',
-        silent: true
-      })
-      return Promise.resolve(false)
-    }
-  }, [manager])
-
   const handleAudioChange = useMemo(
-    () => ({ setMusic, setSfx, toggleMute, stopMusic, resumeMusic }),
-    [setMusic, setSfx, toggleMute, stopMusic, resumeMusic]
+    () => createAudioHandlers(manager),
+    [manager]
   )
 
   return { audioState, handleAudioChange }
