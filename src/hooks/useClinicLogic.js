@@ -1,4 +1,3 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -7,6 +6,11 @@ import {
   CLINIC_CONFIG,
   calculateClinicCost
 } from '../context/gameConstants'
+import {
+  validateHealMember,
+  validateEnhanceMember,
+  calculateHealAmounts
+} from '../utils/clinicLogicUtils'
 
 export const useClinicLogic = () => {
   const { t } = useTranslation(['ui'])
@@ -39,27 +43,29 @@ export const useClinicLogic = () => {
   const healMember = useCallback(
     memberId => {
       const member = membersMap.get(memberId)
-      if (!member) return
 
-      if (player.money < healCostMoney) {
-        addToast(
-          t('ui:clinic.not_enough_money', {
-            defaultValue: 'Not enough money.'
-          }),
-          'error'
-        )
+      const validation = validateHealMember(
+        member,
+        player.money,
+        healCostMoney
+      )
+
+      if (!validation.isValid) {
+        if (!validation.silent) {
+          addToast(
+            t(validation.errorKey, {
+              defaultValue: validation.defaultMessage
+            }),
+            'error'
+          )
+        }
         return
       }
 
-      const currentStamina = member.stamina || 0
-      const healAmountApplied = Math.min(
+      const { healAmountApplied, moodAmountApplied } = calculateHealAmounts(
+        member,
         CLINIC_CONFIG.HEAL_STAMINA_GAIN,
-        100 - currentStamina
-      )
-      const currentMood = member.mood || 0
-      const moodAmountApplied = Math.min(
-        CLINIC_CONFIG.HEAL_MOOD_GAIN,
-        100 - currentMood
+        CLINIC_CONFIG.HEAL_MOOD_GAIN
       )
 
       clinicHeal({
@@ -85,19 +91,23 @@ export const useClinicLogic = () => {
   const enhanceMember = useCallback(
     (memberId, trait) => {
       const member = membersMap.get(memberId)
-      if (!member) return
 
-      // Intentional silent return: If the member already has the trait,
-      // do nothing (no clinicEnhance or toast).
-      if (member.traits && member.traits[trait]) return
+      const validation = validateEnhanceMember(
+        member,
+        trait,
+        player.fame,
+        enhanceCostFame
+      )
 
-      if (player.fame < enhanceCostFame) {
-        addToast(
-          t('ui:clinic.not_enough_fame', {
-            defaultValue: 'Not enough fame. The void demands sacrifice.'
-          }),
-          'error'
-        )
+      if (!validation.isValid) {
+        if (!validation.silent) {
+          addToast(
+            t(validation.errorKey, {
+              defaultValue: validation.defaultMessage
+            }),
+            'error'
+          )
+        }
         return
       }
 
