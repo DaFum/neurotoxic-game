@@ -1,6 +1,10 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useEffect, useRef, useCallback } from 'react'
 import { audioManager } from '../utils/AudioManager'
+import {
+  createKeyToLaneMap,
+  handleKeyDownLogic,
+  handleKeyUpLogic
+} from '../utils/gigInputUtils'
 
 /**
  * Manages user input for the Gig scene, including keyboard and touch events.
@@ -8,22 +12,13 @@ import { audioManager } from '../utils/AudioManager'
  * @param {Object} params
  * @param {Object} params.actions - Rhythm game actions (registerInput).
  * @param {Object} params.gameStateRef - Reference to the game state.
- * @param {Object} params.activeEvent - Current active event (e.g., Pause menu).
- * @param {Function} params.setActiveEvent - Function to set the active event.
- * @param {Function} params.changeScene - Function to change the scene.
- * @param {Function} params.addToast - Function to show toast notifications.
- * @param {Function} params.setLastGigStats - Function to set the last gig stats.
  * @param {Function} params.triggerBandAnimation - Callback to trigger band animation.
+ * @param {Function} params.onTogglePause - Callback to toggle the pause menu.
  * @returns {Object} - Input handlers.
  */
 export const useGigInput = ({
   actions,
   gameStateRef,
-  activeEvent,
-  setActiveEvent,
-  changeScene,
-  addToast,
-  setLastGigStats,
   triggerBandAnimation,
   onTogglePause
 }) => {
@@ -47,47 +42,27 @@ export const useGigInput = ({
       // Invalidate cache if the array reference changes or doesn't match
       if (currentLanes && currentLanes !== cachedLanesArray) {
         cachedLanesArray = currentLanes
-        keyToLaneMap.clear()
-        currentLanes.forEach((lane, index) => {
-          if (lane.key) {
-            keyToLaneMap.set(lane.key, index)
-          }
-        })
+        keyToLaneMap = createKeyToLaneMap(currentLanes)
       }
       return keyToLaneMap.get(key)
     }
 
-    /**
-     * Handles key press events for rhythm inputs and pause menu.
-     * @param {KeyboardEvent} e
-     */
-    const handleKeyDown = e => {
-      if (e.repeat) return
+    const handleKeyDown = e =>
+      handleKeyDownLogic({
+        e,
+        getLaneIndex,
+        actions,
+        triggerBandAnimation,
+        onTogglePause,
+        ensureAudioFromGesture
+      })
 
-      ensureAudioFromGesture()
-
-      if (e.key === 'Escape') {
-        onTogglePause?.()
-        return
-      }
-
-      const laneIndex = getLaneIndex(e.key)
-      if (laneIndex !== undefined) {
-        actions.registerInput(laneIndex, true)
-        triggerBandAnimation(laneIndex)
-      }
-    }
-
-    /**
-     * Handles key release events to stop input.
-     * @param {KeyboardEvent} e
-     */
-    const handleKeyUp = e => {
-      const laneIndex = getLaneIndex(e.key)
-      if (laneIndex !== undefined) {
-        actions.registerInput(laneIndex, false)
-      }
-    }
+    const handleKeyUp = e =>
+      handleKeyUpLogic({
+        e,
+        getLaneIndex,
+        actions
+      })
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
@@ -99,11 +74,6 @@ export const useGigInput = ({
   }, [
     actions,
     gameStateRef,
-    activeEvent,
-    setActiveEvent,
-    changeScene,
-    addToast,
-    setLastGigStats,
     ensureAudioFromGesture,
     triggerBandAnimation,
     onTogglePause
