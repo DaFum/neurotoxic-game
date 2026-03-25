@@ -367,19 +367,21 @@ const EFFECT_REVERTERS = {
       staminaMax: Math.max(0, (m.staminaMax || 100) - value)
     }))
   }),
-  stamina: (band, value) => ({
+  stamina: (band, value, effect) => ({
     ...band,
-    members: (band.members || []).map(m => ({
-      ...m,
-      stamina: clampMemberStamina((m.stamina || 0) - value, m.staminaMax)
-    }))
+    members: (band.members || []).map(m =>
+      m.id === effect.memberId
+        ? { ...m, stamina: clampMemberStamina((m.stamina || 0) - value, m.staminaMax) }
+        : m
+    )
   }),
-  mood: (band, value) => ({
+  mood: (band, value, effect) => ({
     ...band,
-    members: (band.members || []).map(m => ({
-      ...m,
-      mood: clampMemberMood((m.mood || 0) - value)
-    }))
+    members: (band.members || []).map(m =>
+      m.id === effect.memberId
+        ? { ...m, mood: clampMemberMood((m.mood || 0) - value) }
+        : m
+    )
   }),
   style: (band, value) => ({
     ...band,
@@ -443,7 +445,7 @@ const processContrabandExpiry = (band) => {
   expired.forEach(e => {
     const reverter = EFFECT_REVERTERS[e.effectType]
     if (reverter) {
-      nextBand = reverter(nextBand, e.value)
+      nextBand = reverter(nextBand, e.value, e)
     } else {
       logger.warn(
         'SystemReducer',
