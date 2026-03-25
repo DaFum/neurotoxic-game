@@ -38,11 +38,12 @@ export const validateEnhanceMember = (
 }
 
 export const calculateHealAmounts = (member, healStaminaGain, healMoodGain) => {
+  const maxStamina = Number.isFinite(member.staminaMax) ? member.staminaMax : 100
   const currentStamina = member.stamina || 0
-  const healAmountApplied = Math.min(healStaminaGain, 100 - currentStamina)
+  const healAmountApplied = Math.min(Math.max(0, healStaminaGain), Math.max(0, maxStamina - currentStamina))
 
   const currentMood = member.mood || 0
-  const moodAmountApplied = Math.min(healMoodGain, 100 - currentMood)
+  const moodAmountApplied = Math.min(Math.max(0, healMoodGain), Math.max(0, 100 - currentMood))
 
   return {
     healAmountApplied,
