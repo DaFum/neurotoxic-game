@@ -16,11 +16,7 @@ const VALID_CATEGORIES = new Set([
   'band',
   'gig',
   'financial',
-  'special',
-  'crisis',
-  'consequence',
-  'quest',
-  'relationship'
+  'special'
 ])
 
 // Validation Helper

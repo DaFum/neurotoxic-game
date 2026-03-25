@@ -67,7 +67,7 @@ const handleRecordBadShow = state => {
   ) {
     nextState = handleAddQuest(nextState, {
       id: QUEST_PROVE_YOURSELF,
-      label: 'PROVE YOURSELF',
+      label: 'quests:prove_yourself.label',
       deadline: nextState.player.day + 20,
       progress: 0,
       required: 4,

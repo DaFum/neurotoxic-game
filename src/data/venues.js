@@ -502,7 +502,8 @@ export const ALL_VENUES = [
 ]
 
 // Runtime schema validation
-ALL_VENUES.forEach(venue => {
+for (let i = ALL_VENUES.length - 1; i >= 0; i--) {
+  const venue = ALL_VENUES[i]
   if (
     typeof venue.id !== 'string' ||
     typeof venue.name !== 'string' ||
@@ -512,5 +513,13 @@ ALL_VENUES.forEach(venue => {
     typeof venue.y !== 'number'
   ) {
     console.error(`VenueValidation: Invalid venue schema for ${venue.id || 'unknown'}`, venue)
+    ALL_VENUES.splice(i, 1)
+    continue
   }
-})
+
+  // Enforce FESTIVAL rule
+  if (venue.capacity >= 1000 && venue.type !== 'FESTIVAL') {
+    console.warn(`VenueValidation: Correcting type to FESTIVAL for high-capacity venue ${venue.id}`)
+    venue.type = 'FESTIVAL'
+  }
+}

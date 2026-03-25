@@ -5,6 +5,8 @@ import { hasStateItem } from '../../utils/gameStateUtils.js'
  * Consequences Event Pool
  */
 
+import { QUEST_APOLOGY_TOUR } from '../questsConstants.js'
+
 export const CONSEQUENCE_EVENTS = [
   {
     id: 'consequences_venue_complaint',
@@ -207,7 +209,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         controversy >= 85 &&
         !hasStateItem(flags, 'cancel_quest_active') &&
-        !quests.some(q => q.id === 'quest_apology_tour')
+        !quests.some(q => q.id === QUEST_APOLOGY_TOUR)
       )
     },
     options: [
