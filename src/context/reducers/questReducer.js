@@ -5,6 +5,7 @@ import {
   calculateFameLevel,
   clampControversyLevel
 } from '../../utils/gameStateUtils.js'
+import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants.js'
 
 export const handleAddQuest = (state, quest) => {
   if (state.activeQuests?.some(q => q.id === quest.id)) return state
@@ -17,13 +18,13 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   if (questIndex === -1) return state
 
   const quest = state.activeQuests[questIndex]
-  let nextState = { ...state }
+  const nextState = { ...state }
 
   // Remove from activeQuests using toSpliced
   nextState.activeQuests = nextState.activeQuests.toSpliced(questIndex, 1)
 
   // Apply generic quest rewards
-  let generatedToasts = []
+  const generatedToasts = []
 
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
     const previousMoney = nextState.player?.money || 0
@@ -145,7 +146,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   nextState.toasts = [...(nextState.toasts || []), ...generatedToasts]
 
   // Hardcoded old quest logic
-  if (quest.id === 'quest_prove_yourself') {
+  if (quest.id === QUEST_PROVE_YOURSELF) {
     nextState.venueBlacklist = (nextState.venueBlacklist || []).slice(2) // clear 2
     nextState.player = {
       ...nextState.player,
@@ -160,7 +161,7 @@ export const handleAdvanceQuest = (
   state,
   { questId, amount = 1, randomIdx }
 ) => {
-  let nextState = { ...state }
+  const nextState = { ...state }
   let questCompleted = false
   if (!nextState.activeQuests) return state
 
@@ -182,12 +183,12 @@ export const handleAdvanceQuest = (
 }
 
 export const handleFailQuests = state => {
-  let nextState = { ...state }
+  const nextState = { ...state }
   if (!nextState.activeQuests) return state
 
   let hasExpired = false
-  let newActiveQuests = []
-  let newToasts = []
+  const newActiveQuests = []
+  const newToasts = []
 
   for (let i = 0; i < nextState.activeQuests.length; i++) {
     const quest = nextState.activeQuests[i]

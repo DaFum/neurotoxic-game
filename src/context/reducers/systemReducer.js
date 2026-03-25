@@ -344,6 +344,140 @@ export const handleRemoveToast = (state, payload) => {
   }
 }
 
+const EFFECT_REVERTERS = {
+  harmony: (band, value) => ({
+    ...band,
+    harmony: clampBandHarmony((band.harmony || 0) - value)
+  }),
+  guitar_difficulty: (band, value) => ({
+    ...band,
+    performance: {
+      ...band.performance,
+      guitarDifficulty: Math.max(0.1, (band.performance?.guitarDifficulty || 1) - value)
+    }
+  }),
+  luck: (band, value) => ({
+    ...band,
+    luck: Math.max(0, (band.luck || 0) - value)
+  }),
+  stamina_max: (band, value) => ({
+    ...band,
+    members: (band.members || []).map(m => ({
+      ...m,
+      staminaMax: Math.max(0, (m.staminaMax || 100) - value)
+    }))
+  }),
+  stamina: (band, value, effect) => ({
+    ...band,
+    members: (band.members || []).map(m =>
+      m.id === effect.memberId
+        ? { ...m, stamina: clampMemberStamina((m.stamina || 0) - value, m.staminaMax) }
+        : m
+    )
+  }),
+  mood: (band, value, effect) => ({
+    ...band,
+    members: (band.members || []).map(m =>
+      m.id === effect.memberId
+        ? { ...m, mood: clampMemberMood((m.mood || 0) - value) }
+        : m
+    )
+  }),
+  style: (band, value) => ({
+    ...band,
+    style: Math.max(0, (band.style || 0) - value)
+  }),
+  tour_success: (band, value) => ({
+    ...band,
+    tourSuccess: Math.max(0, (band.tourSuccess || 0) - value)
+  }),
+  gig_modifier: (band, value) => ({
+    ...band,
+    gigModifier: Math.max(0, (band.gigModifier || 0) - value)
+  }),
+  tempo: (band, value) => ({
+    ...band,
+    tempo: Math.max(0, (band.tempo || 0) - value)
+  }),
+  practice_gain: (band, value) => ({
+    ...band,
+    practiceGain: Math.max(0, (band.practiceGain || 0) - value)
+  }),
+  crit: (band, value) => ({
+    ...band,
+    crit: Math.max(0, (band.crit || 0) - value)
+  }),
+  affinity: (band, value) => ({
+    ...band,
+    affinity: Math.max(0, (band.affinity || 0) - value)
+  }),
+  crowd_control: (band, value) => ({
+    ...band,
+    crowdControl: Math.max(0, (band.crowdControl || 0) - value)
+  })
+}
+
+/**
+ * Processes contraband effect expiry and reversion as a pure function.
+ * @param {Object} band - The current band state
+ * @returns {Object} Updated band state
+ */
+const processContrabandExpiry = (band) => {
+  const activeEffects = band.activeContrabandEffects || []
+  const stillActive = []
+  const expired = []
+
+  for (let i = 0; i < activeEffects.length; i++) {
+    const updatedEffect = {
+      ...activeEffects[i],
+      remainingDuration: activeEffects[i].remainingDuration - 1
+    }
+    if (updatedEffect.remainingDuration > 0) {
+      stillActive.push(updatedEffect)
+    } else {
+      expired.push(updatedEffect)
+    }
+  }
+
+  let nextBand = { ...band }
+
+  // Revert expired effects
+  expired.forEach(e => {
+    const reverter = EFFECT_REVERTERS[e.effectType]
+    if (reverter) {
+      nextBand = reverter(nextBand, e.value, e)
+    } else {
+      logger.warn(
+        'SystemReducer',
+        `No reverter defined for expired effect type: ${e.effectType}`,
+        { value: e.value, effect: e }
+      )
+    }
+
+    // Unmark applied status in stash so relics can be used again
+    if (nextBand.stash) {
+      // Lazy clone stash once if needed
+      if (nextBand.stash === band.stash) {
+        nextBand.stash = Object.assign(Object.create(null), band.stash)
+      }
+      for (const itemKey in nextBand.stash) {
+        if (!Object.hasOwn(nextBand.stash, itemKey)) continue
+        const i = nextBand.stash[itemKey]
+        if (i.instanceId === e.instanceId) {
+          nextBand.stash[itemKey] = {
+            ...i,
+            applied: false
+          }
+          break
+        }
+      }
+    }
+  })
+
+  nextBand.activeContrabandEffects = stillActive
+  return nextBand
+}
+
 /**
  * Handles day advancement
  * @param {Object} state - Current state
@@ -376,115 +510,7 @@ export const handleAdvanceDay = (state, payload) => {
   )
 
   // --- Contraband expiry ---
-  const activeEffects = traitResult.band.activeContrabandEffects || []
-  const stillActive = []
-  const expired = []
-
-  for (let i = 0; i < activeEffects.length; i++) {
-    const updatedEffect = {
-      ...activeEffects[i],
-      remainingDuration: activeEffects[i].remainingDuration - 1
-    }
-    if (updatedEffect.remainingDuration > 0) {
-      stillActive.push(updatedEffect)
-    } else {
-      expired.push(updatedEffect)
-    }
-  }
-
-  let stashCloned = false
-
-  // Revert expired effects if needed
-  expired.forEach(e => {
-    // Revert the temporary state applied in bandReducer.js
-    if (e.effectType === 'harmony') {
-      traitResult.band.harmony = clampBandHarmony(
-        (traitResult.band.harmony || 0) - e.value
-      )
-    } else if (e.effectType === 'guitar_difficulty') {
-      traitResult.band.performance = {
-        ...traitResult.band.performance,
-        guitarDifficulty: Math.max(
-          0.1,
-          (traitResult.band.performance.guitarDifficulty || 1) - e.value
-        )
-      }
-    } else if (e.effectType === 'luck') {
-      traitResult.band.luck = Math.max(
-        0,
-        (traitResult.band.luck || 0) - e.value
-      )
-    } else if (e.effectType === 'stamina_max') {
-      traitResult.band.members = traitResult.band.members.map(m => ({
-        ...m,
-        staminaMax: Math.max(0, (m.staminaMax || 100) - e.value)
-      }))
-    } else if (e.effectType === 'style') {
-      traitResult.band.style = Math.max(
-        0,
-        (traitResult.band.style || 0) - e.value
-      )
-    } else if (e.effectType === 'tour_success') {
-      traitResult.band.tourSuccess = Math.max(
-        0,
-        (traitResult.band.tourSuccess || 0) - e.value
-      )
-    } else if (e.effectType === 'gig_modifier') {
-      traitResult.band.gigModifier = Math.max(
-        0,
-        (traitResult.band.gigModifier || 0) - e.value
-      )
-    } else if (e.effectType === 'tempo') {
-      traitResult.band.tempo = Math.max(
-        0,
-        (traitResult.band.tempo || 0) - e.value
-      )
-    } else if (e.effectType === 'practice_gain') {
-      traitResult.band.practiceGain = Math.max(
-        0,
-        (traitResult.band.practiceGain || 0) - e.value
-      )
-    } else if (e.effectType === 'crit') {
-      traitResult.band.crit = Math.max(
-        0,
-        (traitResult.band.crit || 0) - e.value
-      )
-    } else if (e.effectType === 'affinity') {
-      traitResult.band.affinity = Math.max(
-        0,
-        (traitResult.band.affinity || 0) - e.value
-      )
-    } else if (e.effectType === 'crowd_control') {
-      traitResult.band.crowdControl = Math.max(
-        0,
-        (traitResult.band.crowdControl || 0) - e.value
-      )
-    }
-
-    // Unmark applied status in stash so relics can be used again
-    if (traitResult.band.stash) {
-      if (!stashCloned) {
-        traitResult.band.stash = Object.assign(
-          Object.create(null),
-          traitResult.band.stash
-        )
-        stashCloned = true
-      }
-      for (const itemKey in traitResult.band.stash) {
-        if (!Object.hasOwn(traitResult.band.stash, itemKey)) continue
-        const i = traitResult.band.stash[itemKey]
-        if (i.instanceId === e.instanceId) {
-          traitResult.band.stash[itemKey] = {
-            ...i,
-            applied: false
-          }
-          break
-        }
-      }
-    }
-  })
-
-  traitResult.band.activeContrabandEffects = stillActive
+  const finalBandState = processContrabandExpiry(traitResult.band)
   // -------------------------
 
   const newTrend = generateDailyTrend(rng)
@@ -492,7 +518,7 @@ export const handleAdvanceDay = (state, payload) => {
   let nextState = {
     ...state,
     player: nextPlayer,
-    band: traitResult.band,
+    band: finalBandState,
     social: { ...social, trend: newTrend },
     eventCooldowns: [],
     toasts: traitResult.toasts

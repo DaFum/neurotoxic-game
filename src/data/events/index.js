@@ -36,10 +36,11 @@ const validateEvents = (events, categoryName = 'unknown') => {
     }
     ids.add(e.id)
     if (!VALID_CATEGORIES.has(e.category)) {
-      logger.warn(
+      logger.error(
         'EventValidation',
         `Invalid Event Category in ${categoryName}: ${e.category} for event ${e.id}`
       )
+      return false
     }
     return true
   })

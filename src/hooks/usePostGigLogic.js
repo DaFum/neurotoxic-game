@@ -14,6 +14,10 @@ import {
 } from '../utils/economyEngine'
 import { generatePostOptions, generateBrandOffers } from '../utils/socialEngine'
 import {
+  QUEST_APOLOGY_TOUR,
+  QUEST_EGO_MANAGEMENT
+} from '../data/questsConstants.js'
+import {
   clampPlayerMoney,
   clampPlayerFame,
   calculateFameLevel,
@@ -468,7 +472,7 @@ export const usePostGigLogic = () => {
 
     if (activeStoryFlags?.includes('cancel_quest_active')) {
       addQuest({
-        id: 'quest_apology_tour',
+        id: QUEST_APOLOGY_TOUR,
         label: 'ui:quests.postgig.apologyTour.title',
         description: 'ui:quests.postgig.apologyTour.description',
         deadline: player.day + 14,
@@ -484,7 +488,7 @@ export const usePostGigLogic = () => {
 
     if (activeStoryFlags?.includes('breakup_quest_active')) {
       addQuest({
-        id: 'quest_ego_management',
+        id: QUEST_EGO_MANAGEMENT,
         label: 'ui:quests.postgig.saveTheBand.title',
         description: 'ui:quests.postgig.saveTheBand.description',
         deadline: player.day + 5,

@@ -1,5 +1,6 @@
-// TODO: Review this file
-export const ALL_VENUES = [
+import { logger } from '../utils/logger.js'
+
+const RAW_VENUES = [
   // SACHSEN-ANHALT (Home)
   {
     id: 'stendal_proberaum',
@@ -500,3 +501,26 @@ export const ALL_VENUES = [
     price: 15
   }
 ]
+
+// Runtime schema validation without mutating the raw array directly
+export const ALL_VENUES = RAW_VENUES.filter(venue => {
+  if (
+    typeof venue.id !== 'string' ||
+    typeof venue.name !== 'string' ||
+    typeof venue.type !== 'string' ||
+    typeof venue.capacity !== 'number' ||
+    typeof venue.x !== 'number' ||
+    typeof venue.y !== 'number'
+  ) {
+    logger.error('VenueValidation', `Invalid venue schema for ${venue.id || 'unknown'}`, venue)
+    return false
+  }
+  return true
+}).map(venue => {
+  // Enforce FESTIVAL rule
+  if (venue.capacity >= 1000 && venue.type !== 'FESTIVAL') {
+    logger.warn('VenueValidation', `Correcting type to FESTIVAL for high-capacity venue ${venue.id}`)
+    return { ...venue, type: 'FESTIVAL' }
+  }
+  return venue
+})

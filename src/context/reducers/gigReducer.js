@@ -11,6 +11,11 @@ import {
   handleAdvanceQuest,
   handleCompleteQuest
 } from './questReducer.js'
+import {
+  QUEST_PROVE_YOURSELF,
+  QUEST_EGO_MANAGEMENT,
+  QUEST_APOLOGY_TOUR
+} from '../../data/questsConstants.js'
 
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
@@ -58,11 +63,11 @@ const handleRecordBadShow = state => {
 
   if (
     currentBadShows >= 3 &&
-    !nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself')
+    !nextState.activeQuests?.some(q => q.id === QUEST_PROVE_YOURSELF)
   ) {
     nextState = handleAddQuest(nextState, {
-      id: 'quest_prove_yourself',
-      label: 'PROVE YOURSELF',
+      id: QUEST_PROVE_YOURSELF,
+      label: 'ui:quests.proveYourself.title',
       deadline: nextState.player.day + 20,
       progress: 0,
       required: 4,
@@ -94,7 +99,7 @@ const handleRecordBadShow = state => {
 }
 
 const handleRecordGoodShow = state => {
-  let nextState = { ...state }
+  const nextState = { ...state }
 
   nextState.player = {
     ...nextState.player,
@@ -167,20 +172,20 @@ export const handleSetLastGigStats = (state, payload) => {
 
     nextState = handleRecordGoodShow(nextState)
     if (
-      nextState.activeQuests?.some(q => q.id === 'quest_apology_tour') &&
+      nextState.activeQuests?.some(q => q.id === QUEST_APOLOGY_TOUR) &&
       capacity <= 300
     ) {
       nextState = handleAdvanceQuest(nextState, {
-        questId: 'quest_apology_tour',
+        questId: QUEST_APOLOGY_TOUR,
         amount: 1
       })
     }
     if (
-      nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself') &&
+      nextState.activeQuests?.some(q => q.id === QUEST_PROVE_YOURSELF) &&
       capacity <= 150
     ) {
       nextState = handleAdvanceQuest(nextState, {
-        questId: 'quest_prove_yourself',
+        questId: QUEST_PROVE_YOURSELF,
         amount: 1
       })
     }
@@ -200,11 +205,11 @@ export const handleSetLastGigStats = (state, payload) => {
 
   // Ego management quest auto-complete
   const hasEgoQuest = nextState.activeQuests?.some(
-    q => q.id === 'quest_ego_management'
+    q => q.id === QUEST_EGO_MANAGEMENT
   )
   if (hasEgoQuest && nextState.band.harmony >= 50) {
     nextState = handleCompleteQuest(nextState, {
-      questId: 'quest_ego_management'
+      questId: QUEST_EGO_MANAGEMENT
     })
   }
 
