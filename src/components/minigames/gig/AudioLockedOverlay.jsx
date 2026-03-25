@@ -29,7 +29,7 @@ export const AudioLockedOverlay = memo(({ onInitializeAudio }) => {
           defaultValue: 'Audio Interface requires manual override.'
         })}
       </p>
-      <GlitchButton onClick={onInitializeAudio} className='scale-150'>
+      <GlitchButton onClick={onInitializeAudio} className='scale-150' autoFocus>
         {t('ui:gig.initializeAudio', { defaultValue: 'INITIALIZE AUDIO' })}
       </GlitchButton>
     </div>
