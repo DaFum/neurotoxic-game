@@ -48,11 +48,12 @@ describe('gigInputUtils', () => {
       const e = { repeat: false, key: 'Escape' }
       const ensureAudioFromGesture = mock.fn()
       const onTogglePause = mock.fn()
+      const actions = { registerInput: mock.fn() }
 
       handleKeyDownLogic({
         e,
         getLaneIndex: () => undefined,
-        actions: { registerInput: mock.fn() },
+        actions,
         triggerBandAnimation: mock.fn(),
         onTogglePause,
         ensureAudioFromGesture
@@ -60,6 +61,7 @@ describe('gigInputUtils', () => {
 
       assert.equal(ensureAudioFromGesture.mock.calls.length, 1)
       assert.equal(onTogglePause.mock.calls.length, 1)
+      assert.equal(actions.registerInput.mock.calls.length, 0)
     })
 
     test('registers input and triggers animation for valid lane', () => {

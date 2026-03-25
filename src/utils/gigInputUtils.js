@@ -7,11 +7,12 @@ export const createKeyToLaneMap = (currentLanes) => {
   const keyToLaneMap = new Map()
   if (!currentLanes) return keyToLaneMap
 
-  currentLanes.forEach((lane, index) => {
-    if (lane.key) {
-      keyToLaneMap.set(lane.key, index)
+  for (const index in currentLanes) {
+    const lane = currentLanes[index]
+    if (Object.hasOwn(lane, 'key')) {
+      keyToLaneMap.set(lane.key, Number(index))
     }
-  })
+  }
   return keyToLaneMap
 }
 
