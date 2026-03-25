@@ -44,11 +44,7 @@ export const useClinicLogic = () => {
     memberId => {
       const member = membersMap.get(memberId)
 
-      const validation = validateHealMember(
-        member,
-        player.money,
-        healCostMoney
-      )
+      const validation = validateHealMember(member, player.money, healCostMoney)
 
       if (!validation.isValid) {
         if (!validation.silent) {

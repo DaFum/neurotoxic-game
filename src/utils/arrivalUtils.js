@@ -36,7 +36,7 @@ import i18n from '../i18n.js'
  * @param {object} band - The current band state.
  * @returns {number|null} The new harmony value, or null if regen is not applicable.
  */
-export const processHarmonyRegen = (band) => {
+export const processHarmonyRegen = band => {
   if (band?.harmonyRegenTravel) {
     return clampBandHarmony((band.harmony ?? 0) + 5)
   }
@@ -48,11 +48,9 @@ export const processHarmonyRegen = (band) => {
  * @param {object} node - The current node.
  * @returns {boolean} True if the node is a GIG, FESTIVAL, or FINALE.
  */
-export const isGigNode = (node) => {
+export const isGigNode = node => {
   return (
-    node?.type === 'GIG' ||
-    node?.type === 'FESTIVAL' ||
-    node?.type === 'FINALE'
+    node?.type === 'GIG' || node?.type === 'FESTIVAL' || node?.type === 'FINALE'
   )
 }
 

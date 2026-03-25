@@ -16,5 +16,6 @@
 **Action:** Always ensure that any element acting as an interactive component has focus states, preferably using `focus-visible` styles like `focus-visible:ring-2 focus-visible:ring-toxic-green` to match this project's design language.
 
 ## 2024-05-14 - Keyboard Accessibility for Visually Hidden Inputs
+
 **Learning:** When using visually hidden accessible `<input>` elements (via `.sr-only`) that should trigger focus states on sibling elements, using Tailwind's `has-[:focus-visible]` on the parent wrapper fails to capture keyboard focus from the sibling input.
 **Action:** Use the `.peer` class on the hidden `<input>` and `.peer-focus-visible` classes on the custom visual sibling element to ensure keyboard focus indicators are correctly styled and displayed.

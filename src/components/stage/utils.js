@@ -47,7 +47,10 @@ const colorCache = new Map()
  * @param {string} tokenName - CSS custom property name (for example, "--toxic-green").
  * @returns {number} Pixi numeric hex color.
  */
-export const getPixiColorFromToken = (tokenName, defaultHexFallback = '#ffffff') => {
+export const getPixiColorFromToken = (
+  tokenName,
+  defaultHexFallback = '#ffffff'
+) => {
   const canReadCssVariables =
     typeof window !== 'undefined' &&
     typeof document !== 'undefined' &&
@@ -58,7 +61,7 @@ export const getPixiColorFromToken = (tokenName, defaultHexFallback = '#ffffff')
     return Number.parseInt(fallbackColor.slice(1), 16)
   }
 
-  const cacheKey = `${tokenName}-${defaultHexFallback}`;
+  const cacheKey = `${tokenName}-${defaultHexFallback}`
   if (colorCache.has(cacheKey)) {
     return colorCache.get(cacheKey)
   }
