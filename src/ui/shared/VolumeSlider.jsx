@@ -35,10 +35,10 @@ export const VolumeSlider = memo(function VolumeSlider({
         value={clampedValue}
         onChange={onChange}
         aria-label={label}
-        className='sr-only'
+        className='sr-only peer'
       />
       <div
-        className='flex gap-1 h-8 items-end cursor-pointer group has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-toxic-green has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-void-black -mx-1 px-1'
+        className='flex gap-1 h-8 items-end cursor-pointer group peer-focus-visible:ring-2 peer-focus-visible:ring-toxic-green peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-void-black -mx-1 px-1'
         role='presentation'
       >
         {segments.map(segment => {
