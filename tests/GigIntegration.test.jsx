@@ -534,7 +534,7 @@ vi.mock('tone', () => {
   }
 })
 
-vi.mock('../src/components/PixiStage.jsx', () => ({
+vi.mock('../src/components/PixiStage', () => ({
   PixiStage: () => <div data-testid='pixi-stage-mock'>Pixi Stage</div>
 }))
 
@@ -567,16 +567,16 @@ import { GameStateProvider } from '../src/context/GameState.jsx'
 
 describe('Gig Component Integration', () => {
   it('renders standard composition elements of the gig scene', async () => {
-    await act(async () => {
-      render(
-        <GameStateProvider>
-          <Gig />
-        </GameStateProvider>
-      )
-    })
+    render(
+      <GameStateProvider>
+        <Gig />
+      </GameStateProvider>
+    )
 
-    // Check if critical compositions are mounted correctly
-    expect(screen.getByTestId('pixi-stage-mock')).toBeInTheDocument()
+    // Wait for the lazy loaded component using findByTestId
+    const pixiStage = await screen.findByTestId('pixi-stage-mock', {}, { timeout: 3000 })
+    expect(pixiStage).toBeInTheDocument()
+
     // It should render some band member imagery
     expect(screen.getAllByRole('img').length).toBeGreaterThanOrEqual(3)
   })
