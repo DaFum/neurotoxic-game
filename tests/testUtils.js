@@ -53,6 +53,10 @@ export function teardownJSDOM() {
       delete globalThis[key]
     }
   }
+
+  if (globalThis.requestAnimationFrame) delete globalThis.requestAnimationFrame
+  if (globalThis.cancelAnimationFrame) delete globalThis.cancelAnimationFrame
+
   originalGlobalDescriptors = null
   dom = null
 }

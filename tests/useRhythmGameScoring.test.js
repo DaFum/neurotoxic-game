@@ -119,7 +119,7 @@ describe('useRhythmGameScoring', async () => {
   })
 
   test('initialization returns handlers', () => {
-    const { result } = renderHook(() =>
+    const { result, unmount } = renderHook(() =>
       useRhythmGameScoring({
         gameStateRef,
         setters,
@@ -131,6 +131,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(typeof result.current.handleHit, 'function')
     assert.equal(typeof result.current.handleMiss, 'function')
     assert.equal(typeof result.current.activateToxicMode, 'function')
+    unmount()
   })
 
   // Parametrized: handleHit valid hits with different multipliers

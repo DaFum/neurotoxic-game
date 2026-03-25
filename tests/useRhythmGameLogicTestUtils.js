@@ -151,6 +151,12 @@ export const mockRhythmGameLogicModules = () => {
       Trans: ({ i18nKey }) => i18nKey
     }
   })
+  mock.module('../src/utils/imageGen.js', {
+    namedExports: {
+      getGenImageUrl: mock.fn(() => 'mock-url'),
+      IMG_PROMPTS: {}
+    }
+  })
 }
 
 export const setupRhythmGameLogicTest = async () => {
