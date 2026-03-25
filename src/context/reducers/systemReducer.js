@@ -367,6 +367,20 @@ const EFFECT_REVERTERS = {
       staminaMax: Math.max(0, (m.staminaMax || 100) - value)
     }))
   }),
+  stamina: (band, value) => ({
+    ...band,
+    members: (band.members || []).map(m => ({
+      ...m,
+      stamina: clampMemberStamina((m.stamina || 0) - value, m.staminaMax)
+    }))
+  }),
+  mood: (band, value) => ({
+    ...band,
+    members: (band.members || []).map(m => ({
+      ...m,
+      mood: clampMemberMood((m.mood || 0) - value)
+    }))
+  }),
   style: (band, value) => ({
     ...band,
     style: Math.max(0, (band.style || 0) - value)
@@ -430,6 +444,12 @@ const processContrabandExpiry = (band) => {
     const reverter = EFFECT_REVERTERS[e.effectType]
     if (reverter) {
       nextBand = reverter(nextBand, e.value)
+    } else {
+      logger.warn(
+        'SystemReducer',
+        `No reverter defined for expired effect type: ${e.effectType}`,
+        { value: e.value, effect: e }
+      )
     }
 
     // Unmark applied status in stash so relics can be used again
