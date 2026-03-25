@@ -305,7 +305,10 @@ export const usePostGigLogic = () => {
   const handleAcceptDeal = useCallback(
     deal => {
       try {
-        const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({ deal, player })
+        const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({
+          deal,
+          player
+        })
 
         if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
@@ -381,7 +384,8 @@ export const usePostGigLogic = () => {
     const socialUpdateFactory = getSpinStorySocialUpdateFactory()
     updateSocial(socialUpdateFactory)
 
-    const moneyText = updates.appliedDelta !== 0 ? ` (${updates.appliedDelta}€)` : ''
+    const moneyText =
+      updates.appliedDelta !== 0 ? ` (${updates.appliedDelta}€)` : ''
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
         moneyText,

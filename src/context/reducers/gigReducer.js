@@ -16,6 +16,7 @@ import {
   QUEST_EGO_MANAGEMENT,
   QUEST_APOLOGY_TOUR
 } from '../../data/questsConstants.js'
+import { hasActiveQuest } from '../../utils/questUtils.js'
 
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
@@ -63,7 +64,7 @@ const handleRecordBadShow = state => {
 
   if (
     currentBadShows >= 3 &&
-    !nextState.activeQuests?.some(q => q.id === QUEST_PROVE_YOURSELF)
+    !hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF)
   ) {
     nextState = handleAddQuest(nextState, {
       id: QUEST_PROVE_YOURSELF,
@@ -172,7 +173,7 @@ export const handleSetLastGigStats = (state, payload) => {
 
     nextState = handleRecordGoodShow(nextState)
     if (
-      nextState.activeQuests?.some(q => q.id === QUEST_APOLOGY_TOUR) &&
+      hasActiveQuest(nextState.activeQuests, QUEST_APOLOGY_TOUR) &&
       capacity <= 300
     ) {
       nextState = handleAdvanceQuest(nextState, {
@@ -181,7 +182,7 @@ export const handleSetLastGigStats = (state, payload) => {
       })
     }
     if (
-      nextState.activeQuests?.some(q => q.id === QUEST_PROVE_YOURSELF) &&
+      hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF) &&
       capacity <= 150
     ) {
       nextState = handleAdvanceQuest(nextState, {
@@ -204,8 +205,9 @@ export const handleSetLastGigStats = (state, payload) => {
   }
 
   // Ego management quest auto-complete
-  const hasEgoQuest = nextState.activeQuests?.some(
-    q => q.id === QUEST_EGO_MANAGEMENT
+  const hasEgoQuest = hasActiveQuest(
+    nextState.activeQuests,
+    QUEST_EGO_MANAGEMENT
   )
   if (hasEgoQuest && nextState.band.harmony >= 50) {
     nextState = handleCompleteQuest(nextState, {

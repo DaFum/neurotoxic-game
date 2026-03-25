@@ -6,9 +6,10 @@ import {
   clampControversyLevel
 } from '../../utils/gameStateUtils.js'
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants.js'
+import { hasActiveQuest } from '../../utils/questUtils.js'
 
 export const handleAddQuest = (state, quest) => {
-  if (state.activeQuests?.some(q => q.id === quest.id)) return state
+  if (hasActiveQuest(state.activeQuests, quest.id)) return state
   return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
 }
 

@@ -3,7 +3,7 @@
  * @param {Array} currentLanes - The current lanes array from the game state.
  * @returns {Map<string, number>} A Map where keys are lane keys and values are lane indices.
  */
-export const createKeyToLaneMap = (currentLanes) => {
+export const createKeyToLaneMap = currentLanes => {
   const keyToLaneMap = new Map()
   if (!currentLanes) return keyToLaneMap
 
@@ -59,11 +59,7 @@ export const handleKeyDownLogic = ({
  * @param {Function} params.getLaneIndex - Function returning a lane index given a key string.
  * @param {Object} params.actions - Action dispatchers.
  */
-export const handleKeyUpLogic = ({
-  e,
-  getLaneIndex,
-  actions
-}) => {
+export const handleKeyUpLogic = ({ e, getLaneIndex, actions }) => {
   const laneIndex = getLaneIndex(e.key)
   if (laneIndex !== undefined) {
     actions.registerInput(laneIndex, false)

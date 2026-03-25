@@ -193,8 +193,8 @@ export const getAcceptDealMoneyUpdate = ({ deal, player }) => {
   return { nextMoney, appliedMoneyDelta }
 }
 
-export const getAcceptDealBandUpdateFactory = (deal) => {
-  return (prevBand) => {
+export const getAcceptDealBandUpdateFactory = deal => {
+  return prevBand => {
     if (!deal.offer.item) return prevBand
     return {
       ...prevBand,
@@ -203,8 +203,8 @@ export const getAcceptDealBandUpdateFactory = (deal) => {
   }
 }
 
-export const getAcceptDealSocialUpdateFactory = (deal) => {
-  return (prevSocial) => {
+export const getAcceptDealSocialUpdateFactory = deal => {
+  return prevSocial => {
     const updates = {}
 
     if (deal.penalty) {
@@ -224,10 +224,7 @@ export const getAcceptDealSocialUpdateFactory = (deal) => {
     if (deal.alignment) {
       updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
       const currentRep = updates.brandReputation[deal.alignment] || 0
-      updates.brandReputation[deal.alignment] = Math.min(
-        100,
-        currentRep + 5
-      )
+      updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
 
       const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
       if (opposing) {
@@ -263,8 +260,10 @@ export const getSpinStoryMoneyUpdate = ({ player }) => {
 }
 
 export const getSpinStorySocialUpdateFactory = () => {
-  return (prevSocial) => ({
-    controversyLevel: clampControversyLevel((prevSocial.controversyLevel || 0) - 25)
+  return prevSocial => ({
+    controversyLevel: clampControversyLevel(
+      (prevSocial.controversyLevel || 0) - 25
+    )
   })
 }
 

@@ -67,7 +67,7 @@ describe('gigInputUtils', () => {
     test('registers input and triggers animation for valid lane', () => {
       const e = { repeat: false, key: 's' }
       const ensureAudioFromGesture = mock.fn()
-      const getLaneIndex = mock.fn((key) => key === 's' ? 1 : undefined)
+      const getLaneIndex = mock.fn(key => (key === 's' ? 1 : undefined))
       const actions = { registerInput: mock.fn() }
       const triggerBandAnimation = mock.fn()
       const onTogglePause = mock.fn()
@@ -95,7 +95,7 @@ describe('gigInputUtils', () => {
   describe('handleKeyUpLogic', () => {
     test('registers false input for valid lane', () => {
       const e = { key: 'd' }
-      const getLaneIndex = mock.fn((key) => key === 'd' ? 2 : undefined)
+      const getLaneIndex = mock.fn(key => (key === 'd' ? 2 : undefined))
       const actions = { registerInput: mock.fn() }
 
       handleKeyUpLogic({
@@ -105,7 +105,10 @@ describe('gigInputUtils', () => {
       })
 
       assert.equal(actions.registerInput.mock.calls.length, 1)
-      assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [2, false])
+      assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [
+        2,
+        false
+      ])
     })
 
     test('does nothing for invalid lane', () => {
