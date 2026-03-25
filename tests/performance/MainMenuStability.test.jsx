@@ -20,7 +20,7 @@ vi.mock('../../src/hooks/useBandHQModal.js', () => ({
   useBandHQModal: () => ({
     showHQ: false,
     openHQ: openHQMock,
-    bandHQProps: {}
+    closeHQ: vi.fn()
   })
 }))
 const glitchButtonRender = vi.fn(({ children, onClick }) => {

@@ -23,7 +23,7 @@ vi.mock('../../src/hooks/useBandHQModal', () => ({
   useBandHQModal: () => ({
     showHQ: false,
     openHQ: vi.fn(),
-    bandHQProps: {}
+    closeHQ: vi.fn()
   })
 }))
 
