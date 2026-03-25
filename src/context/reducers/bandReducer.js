@@ -195,10 +195,7 @@ export const applyContrabandEffect = (band, item, memberId) => {
       }
       return m
     })
-    return newBand
-  }
-
-  if (item.effectType === 'harmony') {
+  } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony((newBand.harmony || 0) + item.value)
   } else if (item.effectType === 'luck') {
     newBand.luck = (newBand.luck || 0) + item.value
