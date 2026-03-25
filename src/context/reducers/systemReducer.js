@@ -367,22 +367,6 @@ const EFFECT_REVERTERS = {
       staminaMax: Math.max(0, (m.staminaMax || 100) - value)
     }))
   }),
-  stamina: (band, value, effect) => ({
-    ...band,
-    members: (band.members || []).map(m =>
-      m.id === effect.memberId
-        ? { ...m, stamina: clampMemberStamina((m.stamina || 0) - value, m.staminaMax) }
-        : m
-    )
-  }),
-  mood: (band, value, effect) => ({
-    ...band,
-    members: (band.members || []).map(m =>
-      m.id === effect.memberId
-        ? { ...m, mood: clampMemberMood((m.mood || 0) - value) }
-        : m
-    )
-  }),
   style: (band, value) => ({
     ...band,
     style: Math.max(0, (band.style || 0) - value)
