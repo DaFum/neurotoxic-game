@@ -9,10 +9,13 @@ let originalGlobalDescriptors
  */
 export function setupJSDOM() {
   originalGlobalDescriptors = new Map(
-    ['window', 'document', 'navigator'].map(key => [
-      key,
-      Object.getOwnPropertyDescriptor(globalThis, key)
-    ])
+    [
+      'window',
+      'document',
+      'navigator',
+      'requestAnimationFrame',
+      'cancelAnimationFrame'
+    ].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)])
   )
   dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost'
@@ -45,7 +48,13 @@ export function teardownJSDOM() {
   if (dom) {
     dom.window.close()
   }
-  for (const key of ['window', 'document', 'navigator']) {
+  for (const key of [
+    'window',
+    'document',
+    'navigator',
+    'requestAnimationFrame',
+    'cancelAnimationFrame'
+  ]) {
     const descriptor = originalGlobalDescriptors?.get(key)
     if (descriptor) {
       Object.defineProperty(globalThis, key, descriptor)
@@ -53,9 +62,6 @@ export function teardownJSDOM() {
       delete globalThis[key]
     }
   }
-
-  if (globalThis.requestAnimationFrame) delete globalThis.requestAnimationFrame
-  if (globalThis.cancelAnimationFrame) delete globalThis.cancelAnimationFrame
 
   originalGlobalDescriptors = null
   dom = null
