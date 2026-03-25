@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored handlePostSelection by extracting state manipulation to utils/postGigUtils.js.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
- */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -22,13 +17,19 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   calculateFameGain,
-  clampControversyLevel,
   BALANCE_CONSTANTS
 } from '../utils/gameStateUtils'
-import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from '../utils/logger.js'
-import { calculatePostGigStateUpdates } from '../utils/postGigUtils'
+import {
+  calculatePostGigStateUpdates,
+  getAcceptDealMoneyUpdate,
+  getAcceptDealBandUpdateFactory,
+  getAcceptDealSocialUpdateFactory,
+  getSpinStoryMoneyUpdate,
+  getSpinStorySocialUpdateFactory,
+  calculateContinueStats
+} from '../utils/postGigUtils'
 
 export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
   'Social options are unavailable right now.'
@@ -37,13 +38,6 @@ export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
-
-const OPPOSING_ALIGNMENT_MAP = {
-  [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
-  [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
-  [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
-  [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
-}
 
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
@@ -311,63 +305,19 @@ export const usePostGigLogic = () => {
   const handleAcceptDeal = useCallback(
     deal => {
       try {
-        let appliedMoneyDelta = 0
-        // Apply upfront bonuses
-        if (deal.offer.upfront) {
-          const prevMoney = player.money ?? 0
-          const nextMoney = clampPlayerMoney(prevMoney + deal.offer.upfront)
-          appliedMoneyDelta = nextMoney - prevMoney
+        const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({ deal, player })
+
+        if (appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
         }
+
         if (deal.offer.item) {
-          updateBand(prev => ({
-            inventory: { ...prev.inventory, [deal.offer.item]: true }
-          }))
+          const bandUpdateFactory = getAcceptDealBandUpdateFactory(deal)
+          updateBand(bandUpdateFactory)
         }
 
-        // Use functional update to ensure fresh state access
-        updateSocial(prevSocial => {
-          const updates = {}
-
-          // Apply penalties immediately if defined
-          if (deal.penalty) {
-            if (deal.penalty.loyalty)
-              updates.loyalty = Math.max(
-                0,
-                (prevSocial.loyalty || 0) + deal.penalty.loyalty
-              )
-            if (deal.penalty.controversy)
-              updates.controversyLevel = clampControversyLevel(
-                (prevSocial.controversyLevel || 0) + deal.penalty.controversy
-              )
-          }
-
-          // Update Brand Reputation
-          if (deal.alignment) {
-            updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
-            const currentRep = updates.brandReputation[deal.alignment] || 0
-            updates.brandReputation[deal.alignment] = Math.min(
-              100,
-              currentRep + 5
-            )
-
-            // Opposing alignments logic
-            const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
-            if (opposing) {
-              const oppRep = updates.brandReputation[opposing] || 0
-              updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
-            }
-          }
-
-          // Store active deal
-          const prevDeals = prevSocial.activeDeals || []
-          updates.activeDeals = [
-            ...prevDeals,
-            { ...deal, remainingGigs: deal.offer.duration }
-          ]
-
-          return updates
-        })
+        const socialUpdateFactory = getAcceptDealSocialUpdateFactory(deal)
+        updateSocial(socialUpdateFactory)
 
         const moneyText =
           appliedMoneyDelta !== 0 ? ` (+${appliedMoneyDelta}€)` : ''
@@ -414,7 +364,9 @@ export const usePostGigLogic = () => {
   }, [addToast, t])
 
   const handleSpinStory = useCallback(() => {
-    if (player.money < 200) {
+    const updates = getSpinStoryMoneyUpdate({ player })
+
+    if (!updates.success) {
       addToast(
         t('ui:postGig.notEnoughCashForPr', {
           defaultValue: 'Not enough cash for PR!'
@@ -424,16 +376,12 @@ export const usePostGigLogic = () => {
       return
     }
 
-    const prevMoney = player.money ?? 0
-    const nextMoney = clampPlayerMoney(prevMoney - 200)
-    const appliedDelta = nextMoney - prevMoney
+    updatePlayer({ money: updates.nextMoney })
 
-    updatePlayer({ money: nextMoney })
-    updateSocial(prev => ({
-      controversyLevel: clampControversyLevel((prev.controversyLevel || 0) - 25)
-    }))
+    const socialUpdateFactory = getSpinStorySocialUpdateFactory()
+    updateSocial(socialUpdateFactory)
 
-    const moneyText = appliedDelta !== 0 ? ` (${appliedDelta}€)` : ''
+    const moneyText = updates.appliedDelta !== 0 ? ` (${updates.appliedDelta}€)` : ''
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
         moneyText,
@@ -446,27 +394,21 @@ export const usePostGigLogic = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const prevFame = player.fame ?? 0
-
-    let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
-    if (perfScore >= 62) {
-      const rawFameGain = 50 + Math.floor(perfScore * 1.5)
-      finalFameGain = calculateFameGain(
-        rawFameGain,
-        prevFame,
-        BALANCE_CONSTANTS.MAX_FAME_GAIN
-      )
-    }
-
-    const prevMoney = player.money ?? 0
-    const newMoney = clampPlayerMoney(prevMoney + financials.net)
-
-    const newFame = clampPlayerFame(prevFame + finalFameGain)
+    const stats = calculateContinueStats({
+      player,
+      perfScore,
+      financials,
+      calculateFameGain,
+      calculateFameLevel,
+      clampPlayerFame,
+      clampPlayerMoney,
+      BALANCE_CONSTANTS
+    })
 
     updatePlayer({
-      money: newMoney,
-      fame: newFame,
-      fameLevel: calculateFameLevel(newFame),
+      money: stats.newMoney,
+      fame: stats.newFame,
+      fameLevel: stats.fameLevel,
       lastGigNodeId: player.currentNodeId
     })
 
@@ -562,7 +504,7 @@ export const usePostGigLogic = () => {
       })
     }
 
-    if (shouldTriggerBankruptcy(newMoney, financials.net)) {
+    if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
       addToast(
         t('ui:postGig.gameOverBankrupt', {
           defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
