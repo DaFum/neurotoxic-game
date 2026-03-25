@@ -5,6 +5,7 @@ import { secureRandom } from '../utils/crypto.js'
 import { handleError } from '../utils/errorHandler.js'
 import { hasTrait } from '../utils/traitLogic.js'
 import { QUEST_APOLOGY_TOUR } from './questsConstants.js'
+import { hasActiveQuest } from '../utils/questUtils.js'
 
 const getSecureRollOnce = (() => {
   let errorReported = false
@@ -121,7 +122,7 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.RISK, POST_BADGES.STORY],
     condition: ({ social, activeQuests }) =>
       (social?.reputationCooldown || 0) === 0 &&
-      (activeQuests || []).some(q => q.id === QUEST_APOLOGY_TOUR),
+      hasActiveQuest(activeQuests, QUEST_APOLOGY_TOUR),
     resolve: () => ({
       type: 'FIXED',
       success: true,

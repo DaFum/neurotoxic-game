@@ -6,6 +6,7 @@ import { hasStateItem } from '../../utils/gameStateUtils.js'
  */
 
 import { QUEST_APOLOGY_TOUR } from '../questsConstants.js'
+import { hasActiveQuest } from '../../utils/questUtils.js'
 
 export const CONSEQUENCE_EVENTS = [
   {
@@ -209,7 +210,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         controversy >= 85 &&
         !hasStateItem(flags, 'cancel_quest_active') &&
-        !quests.some(q => q.id === QUEST_APOLOGY_TOUR)
+        !hasActiveQuest(quests, QUEST_APOLOGY_TOUR)
       )
     },
     options: [
