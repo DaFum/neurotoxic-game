@@ -195,7 +195,12 @@ export const HQ_ITEMS = {
       currency: 'money',
       img: 'ITEM_GUITAR_CUSTOM',
       description: 'items:hq_inst_guitar_custom.description',
-      effect: { type: 'stat_modifier', target: 'performance', stat: 'guitarDifficulty', value: -0.15 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'performance',
+        stat: 'guitarDifficulty',
+        value: -0.15
+      }
     },
     {
       id: 'hq_inst_guitar_flying_v',
@@ -205,7 +210,12 @@ export const HQ_ITEMS = {
       currency: 'money',
       img: 'ITEM_GUITAR_V',
       description: 'items:hq_inst_guitar_flying_v.description',
-      effect: { type: 'stat_modifier', target: 'performance', stat: 'crowdDecay', value: -0.05 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'performance',
+        stat: 'crowdDecay',
+        value: -0.05
+      }
     },
     {
       id: 'hq_inst_bass_sansamp',
@@ -215,7 +225,12 @@ export const HQ_ITEMS = {
       currency: 'money',
       img: 'ITEM_BASS_PREAMP',
       description: 'items:hq_inst_bass_sansamp.description',
-      effect: { type: 'stat_modifier', target: 'performance', stat: 'crowdDecay', value: -0.1 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'performance',
+        stat: 'crowdDecay',
+        value: -0.1
+      }
     },
     // Drums
     {
@@ -257,7 +272,12 @@ export const HQ_ITEMS = {
       currency: 'money',
       img: 'ITEM_GUITAR_CHEAP',
       description: 'items:hq_inst_second_guitar.description',
-      effect: { type: 'stat_modifier', target: 'performance', stat: 'guitarDifficulty', value: 0.05 } // Makes it slightly harder
+      effect: {
+        type: 'stat_modifier',
+        target: 'performance',
+        stat: 'guitarDifficulty',
+        value: 0.05
+      } // Makes it slightly harder
     },
     {
       id: 'hq_inst_broken_drum_kit',
@@ -282,7 +302,12 @@ export const HQ_ITEMS = {
       currency: 'money',
       img: 'ITEM_PEDAL_CHEAP',
       description: 'items:hq_inst_bass_effect_pedal_cheap.description',
-      effect: { type: 'stat_modifier', target: 'performance', stat: 'crowdDecay', value: 0.05 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'performance',
+        stat: 'crowdDecay',
+        value: 0.05
+      }
     },
     // Weird Instruments
     {
@@ -293,7 +318,12 @@ export const HQ_ITEMS = {
       currency: 'money',
       img: 'ITEM_THEREMIN',
       description: 'items:hq_inst_theremin_doom.description',
-      effect: { type: 'stat_modifier', target: 'performance', stat: 'crowdDecay', value: -0.15 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'performance',
+        stat: 'crowdDecay',
+        value: -0.15
+      }
     },
     {
       id: 'hq_inst_didgeridoo',

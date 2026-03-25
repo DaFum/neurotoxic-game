@@ -353,7 +353,10 @@ const EFFECT_REVERTERS = {
     ...band,
     performance: {
       ...band.performance,
-      guitarDifficulty: Math.max(0.1, (band.performance?.guitarDifficulty || 1) - value)
+      guitarDifficulty: Math.max(
+        0.1,
+        (band.performance?.guitarDifficulty || 1) - value
+      )
     }
   }),
   luck: (band, value) => ({
@@ -406,7 +409,7 @@ const EFFECT_REVERTERS = {
  * @param {Object} band - The current band state
  * @returns {Object} Updated band state
  */
-const processContrabandExpiry = (band) => {
+const processContrabandExpiry = band => {
   const activeEffects = band.activeContrabandEffects || []
   const stillActive = []
   const expired = []

@@ -15,11 +15,12 @@ import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils.js'
  * @param {Object} state - The current game state.
  * @param {Object} payload - The action payload.
  * @param {Object} [payload.successToast] - Optional toast appended to state.toasts on success.
+ * @param {Function} [payload.getSuccessToast] - Optional factory for success toast appended to state.toasts.
  * @param {Function} memberUpdater - A function to apply updates to the target member.
  * @returns {Object} The updated state or the original state if validation fails.
  */
 const executeClinicAction = (state, payload, memberUpdater) => {
-  const { memberId, type, successToast } = payload
+  const { memberId, type, successToast, getSuccessToast } = payload
   const currentVisits = state.player?.clinicVisits || 0
   // Calculate costs directly from state
   const cost =
@@ -61,9 +62,12 @@ const executeClinicAction = (state, payload, memberUpdater) => {
     return state
   }
 
+  let memberUpdateResult = null
+
   const updatedMembers = state.band.members.map(member => {
     if (member.id !== memberId) return member
-    return memberUpdater(member)
+    memberUpdateResult = memberUpdater(member)
+    return memberUpdateResult.updatedMember || memberUpdateResult
   })
 
   const nextFame = clampPlayerFame(playerFame - fameCost)
@@ -83,8 +87,13 @@ const executeClinicAction = (state, payload, memberUpdater) => {
   }
 
   // Append success toast atomically so it only appears when the action succeeds
-  if (successToast) {
-    nextState.toasts = [...(state.toasts || []), successToast]
+  const finalSuccessToast =
+    successToast ||
+    (getSuccessToast && memberUpdateResult?.toastArgs
+      ? getSuccessToast(...memberUpdateResult.toastArgs)
+      : null)
+  if (finalSuccessToast) {
+    nextState.toasts = [...(state.toasts || []), finalSuccessToast]
   }
 
   return nextState
@@ -106,14 +115,28 @@ export const handleClinicHeal = (state, payload) => {
   const staminaGain = Number.isFinite(rawStamina) ? rawStamina : 0
   const moodGain = Number.isFinite(rawMood) ? rawMood : 0
 
-  return executeClinicAction(state, payload, member => ({
-    ...member,
-    stamina: clampMemberStamina(
-      (member.stamina || 0) + staminaGain,
+  return executeClinicAction(state, payload, member => {
+    const prevStamina = member.stamina || 0
+    const prevMood = member.mood || 0
+
+    const nextStamina = clampMemberStamina(
+      prevStamina + staminaGain,
       member.staminaMax
-    ),
-    mood: clampMemberMood((member.mood || 0) + moodGain)
-  }))
+    )
+    const nextMood = clampMemberMood(prevMood + moodGain)
+
+    const appliedStamina = nextStamina - prevStamina
+    const appliedMood = nextMood - prevMood
+
+    return {
+      updatedMember: {
+        ...member,
+        stamina: nextStamina,
+        mood: nextMood
+      },
+      toastArgs: [appliedStamina, appliedMood]
+    }
+  })
 }
 
 /**

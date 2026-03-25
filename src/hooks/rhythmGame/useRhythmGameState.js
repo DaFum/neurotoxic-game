@@ -25,15 +25,30 @@ function rhythmGameReducer(state, action) {
     case 'SET_HEALTH':
       return { ...state, health: resolvePayload(action.payload, state.health) }
     case 'SET_OVERLOAD':
-      return { ...state, overload: resolvePayload(action.payload, state.overload) }
+      return {
+        ...state,
+        overload: resolvePayload(action.payload, state.overload)
+      }
     case 'SET_IS_TOXIC_MODE':
-      return { ...state, isToxicMode: resolvePayload(action.payload, state.isToxicMode) }
+      return {
+        ...state,
+        isToxicMode: resolvePayload(action.payload, state.isToxicMode)
+      }
     case 'SET_IS_GAME_OVER':
-      return { ...state, isGameOver: resolvePayload(action.payload, state.isGameOver) }
+      return {
+        ...state,
+        isGameOver: resolvePayload(action.payload, state.isGameOver)
+      }
     case 'SET_IS_AUDIO_READY':
-      return { ...state, isAudioReady: resolvePayload(action.payload, state.isAudioReady) }
+      return {
+        ...state,
+        isAudioReady: resolvePayload(action.payload, state.isAudioReady)
+      }
     case 'SET_ACCURACY':
-      return { ...state, accuracy: resolvePayload(action.payload, state.accuracy) }
+      return {
+        ...state,
+        accuracy: resolvePayload(action.payload, state.accuracy)
+      }
     default:
       return state
   }
@@ -119,16 +134,24 @@ export const useRhythmGameState = () => {
     }
   }
 
-  const setters = useMemo(() => ({
-    setScore: (score) => dispatch({ type: 'SET_SCORE', payload: score }),
-    setCombo: (combo) => dispatch({ type: 'SET_COMBO', payload: combo }),
-    setHealth: (health) => dispatch({ type: 'SET_HEALTH', payload: health }),
-    setOverload: (overload) => dispatch({ type: 'SET_OVERLOAD', payload: overload }),
-    setIsToxicMode: (isToxicMode) => dispatch({ type: 'SET_IS_TOXIC_MODE', payload: isToxicMode }),
-    setIsGameOver: (isGameOver) => dispatch({ type: 'SET_IS_GAME_OVER', payload: isGameOver }),
-    setIsAudioReady: (isAudioReady) => dispatch({ type: 'SET_IS_AUDIO_READY', payload: isAudioReady }),
-    setAccuracy: (accuracy) => dispatch({ type: 'SET_ACCURACY', payload: accuracy })
-  }), [])
+  const setters = useMemo(
+    () => ({
+      setScore: score => dispatch({ type: 'SET_SCORE', payload: score }),
+      setCombo: combo => dispatch({ type: 'SET_COMBO', payload: combo }),
+      setHealth: health => dispatch({ type: 'SET_HEALTH', payload: health }),
+      setOverload: overload =>
+        dispatch({ type: 'SET_OVERLOAD', payload: overload }),
+      setIsToxicMode: isToxicMode =>
+        dispatch({ type: 'SET_IS_TOXIC_MODE', payload: isToxicMode }),
+      setIsGameOver: isGameOver =>
+        dispatch({ type: 'SET_IS_GAME_OVER', payload: isGameOver }),
+      setIsAudioReady: isAudioReady =>
+        dispatch({ type: 'SET_IS_AUDIO_READY', payload: isAudioReady }),
+      setAccuracy: accuracy =>
+        dispatch({ type: 'SET_ACCURACY', payload: accuracy })
+    }),
+    []
+  )
 
   return {
     gameStateRef,

@@ -574,7 +574,11 @@ describe('Gig Component Integration', () => {
     )
 
     // Wait for the lazy loaded component using findByTestId
-    const pixiStage = await screen.findByTestId('pixi-stage-mock', {}, { timeout: 3000 })
+    const pixiStage = await screen.findByTestId(
+      'pixi-stage-mock',
+      {},
+      { timeout: 3000 }
+    )
     expect(pixiStage).toBeInTheDocument()
 
     // It should render some band member imagery
