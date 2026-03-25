@@ -38,11 +38,6 @@ const { useGigInput } = await import('../src/hooks/useGigInput.js')
 describe('useGigInput', () => {
   let actions
   let gameStateRef
-  let activeEvent
-  let setActiveEvent
-  let changeScene
-  let addToast
-  let setLastGigStats
   let triggerBandAnimation
   let onTogglePause
 
@@ -58,11 +53,6 @@ describe('useGigInput', () => {
         hasSubmittedResults: false
       }
     }
-    activeEvent = null
-    setActiveEvent = mock.fn()
-    changeScene = mock.fn()
-    addToast = mock.fn()
-    setLastGigStats = mock.fn()
     triggerBandAnimation = mock.fn()
     onTogglePause = mock.fn()
 
@@ -80,11 +70,6 @@ describe('useGigInput', () => {
       useGigInput({
         actions,
         gameStateRef,
-        activeEvent,
-        setActiveEvent,
-        changeScene,
-        addToast,
-        setLastGigStats,
         triggerBandAnimation,
         onTogglePause
       })
@@ -106,11 +91,6 @@ describe('useGigInput', () => {
       useGigInput({
         actions,
         gameStateRef,
-        activeEvent,
-        setActiveEvent,
-        changeScene,
-        addToast,
-        setLastGigStats,
         triggerBandAnimation,
         onTogglePause
       })
@@ -129,11 +109,6 @@ describe('useGigInput', () => {
       useGigInput({
         actions,
         gameStateRef,
-        activeEvent,
-        setActiveEvent,
-        changeScene,
-        addToast,
-        setLastGigStats,
         triggerBandAnimation,
         onTogglePause
       })

@@ -159,11 +159,6 @@ export const Gig = () => {
   const { handleLaneInput } = useGigInput({
     actions,
     gameStateRef,
-    activeEvent,
-    setActiveEvent,
-    changeScene,
-    addToast,
-    setLastGigStats,
     triggerBandAnimation,
     onTogglePause: handleTogglePause
   })
