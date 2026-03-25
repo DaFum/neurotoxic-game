@@ -345,37 +345,10 @@ export const handleRemoveToast = (state, payload) => {
 }
 
 /**
- * Handles day advancement
- * @param {Object} state - Current state
- * @returns {Object} Updated state
+ * Processes contraband effect expiry and reversion.
+ * @param {Object} traitResult - The current trait result containing band state
  */
-export const handleAdvanceDay = (state, payload) => {
-  const rng = payload?.rng || Math.random
-  const { player, band, social, pendingFlags } = calculateDailyUpdates(
-    state,
-    rng
-  )
-
-  // Reset daily event counter immutably
-  const nextPlayer = { ...player, eventsTriggeredToday: 0 }
-
-  const nextBand = { ...band }
-  if (typeof nextBand.harmony === 'number') {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony)
-  }
-
-  // Check Social Unlocks
-  const socialUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social },
-    { type: 'SOCIAL_UPDATE' }
-  )
-
-  const traitResult = applyTraitUnlocks(
-    { band: nextBand, toasts: state.toasts },
-    socialUnlocks
-  )
-
-  // --- Contraband expiry ---
+const processContrabandExpiry = (traitResult) => {
   const activeEffects = traitResult.band.activeContrabandEffects || []
   const stillActive = []
   const expired = []
@@ -485,6 +458,41 @@ export const handleAdvanceDay = (state, payload) => {
   })
 
   traitResult.band.activeContrabandEffects = stillActive
+}
+
+/**
+ * Handles day advancement
+ * @param {Object} state - Current state
+ * @returns {Object} Updated state
+ */
+export const handleAdvanceDay = (state, payload) => {
+  const rng = payload?.rng || Math.random
+  const { player, band, social, pendingFlags } = calculateDailyUpdates(
+    state,
+    rng
+  )
+
+  // Reset daily event counter immutably
+  const nextPlayer = { ...player, eventsTriggeredToday: 0 }
+
+  const nextBand = { ...band }
+  if (typeof nextBand.harmony === 'number') {
+    nextBand.harmony = clampBandHarmony(nextBand.harmony)
+  }
+
+  // Check Social Unlocks
+  const socialUnlocks = checkTraitUnlocks(
+    { player: nextPlayer, band: nextBand, social },
+    { type: 'SOCIAL_UPDATE' }
+  )
+
+  const traitResult = applyTraitUnlocks(
+    { band: nextBand, toasts: state.toasts },
+    socialUnlocks
+  )
+
+  // --- Contraband expiry ---
+  processContrabandExpiry(traitResult)
   // -------------------------
 
   const newTrend = generateDailyTrend(rng)

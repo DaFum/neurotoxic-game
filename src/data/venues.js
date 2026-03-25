@@ -500,3 +500,17 @@ export const ALL_VENUES = [
     price: 15
   }
 ]
+
+// Runtime schema validation
+ALL_VENUES.forEach(venue => {
+  if (
+    typeof venue.id !== 'string' ||
+    typeof venue.name !== 'string' ||
+    typeof venue.type !== 'string' ||
+    typeof venue.capacity !== 'number' ||
+    typeof venue.x !== 'number' ||
+    typeof venue.y !== 'number'
+  ) {
+    console.error(`VenueValidation: Invalid venue schema for ${venue.id || 'unknown'}`, venue)
+  }
+})
