@@ -123,7 +123,7 @@ describe('useClinicLogic', () => {
     assert.equal(callArgs.type, 'heal')
     assert.equal(callArgs.staminaGain, CLINIC_CONFIG.HEAL_STAMINA_GAIN)
     assert.equal(callArgs.moodGain, CLINIC_CONFIG.HEAL_MOOD_GAIN)
-    assert.ok(callArgs.successToast)
+    assert.ok(callArgs.getSuccessToast)
   })
 
   test('healMember not enough money', () => {

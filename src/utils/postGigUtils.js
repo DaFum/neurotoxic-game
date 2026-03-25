@@ -274,6 +274,7 @@ export const calculateContinueStats = ({
   calculateFameGain,
   calculateFameLevel,
   clampPlayerFame,
+  clampPlayerMoney,
   BALANCE_CONSTANTS
 }) => {
   const prevFame = player.fame ?? 0

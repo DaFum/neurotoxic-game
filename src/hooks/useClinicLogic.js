@@ -8,8 +8,7 @@ import {
 } from '../context/gameConstants'
 import {
   validateHealMember,
-  validateEnhanceMember,
-  calculateHealAmounts
+  validateEnhanceMember
 } from '../utils/clinicLogicUtils'
 
 export const useClinicLogic = () => {
@@ -58,27 +57,23 @@ export const useClinicLogic = () => {
         return
       }
 
-      const { healAmountApplied, moodAmountApplied } = calculateHealAmounts(
-        member,
-        CLINIC_CONFIG.HEAL_STAMINA_GAIN,
-        CLINIC_CONFIG.HEAL_MOOD_GAIN
-      )
+      const toastId = crypto.randomUUID()
 
       clinicHeal({
         memberId,
         type: 'heal',
         staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
         moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN,
-        successToast: {
-          id: crypto.randomUUID(),
+        getSuccessToast: (appliedStamina, appliedMood) => ({
+          id: toastId,
           message: t('ui:clinic.heal_success', {
             defaultValue:
               '+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.',
-            stamina: healAmountApplied,
-            mood: moodAmountApplied
+            stamina: appliedStamina,
+            mood: appliedMood
           }),
           type: 'success'
-        }
+        })
       })
     },
     [player.money, healCostMoney, membersMap, clinicHeal, addToast, t]
