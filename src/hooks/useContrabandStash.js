@@ -1,7 +1,10 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
 import { useTranslation } from 'react-i18next'
+import {
+  validateStashItemSelection,
+  getStashItemUseMessage
+} from '../utils/contrabandStashUtils'
 
 /**
  * Hook to manage the Contraband Stash UI state and actions.
@@ -27,14 +30,11 @@ export const useContrabandStash = () => {
 
   const handleUseItem = useCallback(
     (instanceId, item) => {
-      // If it's a member-targeted effect but no member selected, error
-      if (
-        (item.effectType === 'stamina' || item.effectType === 'mood') &&
-        !selectedMember
-      ) {
+      const validation = validateStashItemSelection(item, selectedMember)
+      if (!validation.isValid) {
         addToast(
-          t('ui:stash.selectMemberFirst', {
-            defaultValue: 'Select a band member first!'
+          t(validation.errorKey, {
+            defaultValue: validation.defaultMessage
           }),
           'warning'
         )
@@ -43,17 +43,9 @@ export const useContrabandStash = () => {
 
       dispatchUseContraband(instanceId, item.id, selectedMember)
 
-      const translatedName = t(item.name, { defaultValue: item.name })
-      const messageAction =
-        item.type === 'consumable'
-          ? t('ui:stash.actionUsed', { defaultValue: 'Used' })
-          : t('ui:stash.actionApplied', { defaultValue: 'Applied' })
+      const message = getStashItemUseMessage(item, t)
       addToast(
-        t('ui:stash.itemUsed', {
-          itemName: translatedName,
-          action: messageAction,
-          defaultValue: `${messageAction} ${translatedName}!`
-        }),
+        t(message.key, message.options),
         'success'
       )
     },
