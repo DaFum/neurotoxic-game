@@ -1,7 +1,10 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/AudioManager'
+import {
+  checkHasBroadcastedToday,
+  validatePirateBroadcast
+} from '../utils/pirateRadioUtils'
 
 export const PIRATE_RADIO_CONFIG = {
   COST: 200,
@@ -18,12 +21,13 @@ export const usePirateRadio = () => {
   const openPirateRadio = useCallback(() => setShowPirateRadio(true), [])
   const closePirateRadio = useCallback(() => setShowPirateRadio(false), [])
 
-  const hasBroadcastedToday = social.lastPirateBroadcastDay === player.day
-
-  const canBroadcast =
-    !hasBroadcastedToday &&
-    player.money >= PIRATE_RADIO_CONFIG.COST &&
-    band.harmony >= PIRATE_RADIO_CONFIG.HARMONY_COST
+  const hasBroadcastedToday = checkHasBroadcastedToday(social, player.day)
+  const canBroadcast = validatePirateBroadcast(
+    social,
+    player,
+    band,
+    PIRATE_RADIO_CONFIG
+  )
 
   const triggerBroadcast = useCallback(() => {
     if (!canBroadcast) return
