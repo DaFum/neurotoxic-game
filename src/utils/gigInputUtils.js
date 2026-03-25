@@ -8,8 +8,10 @@ export const createKeyToLaneMap = (currentLanes) => {
   if (!currentLanes) return keyToLaneMap
 
   for (const index in currentLanes) {
+    if (!Object.hasOwn(currentLanes, index)) continue
+
     const lane = currentLanes[index]
-    if (Object.hasOwn(lane, 'key')) {
+    if (Object.hasOwn(lane, 'key') && Number.isInteger(Number(index))) {
       keyToLaneMap.set(lane.key, Number(index))
     }
   }
