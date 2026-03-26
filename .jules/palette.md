@@ -19,3 +19,6 @@
 
 **Learning:** When using visually hidden accessible `<input>` elements (via `.sr-only`) that should trigger focus states on sibling elements, using Tailwind's `has-[:focus-visible]` on the parent wrapper fails to capture keyboard focus from the sibling input.
 **Action:** Use the `.peer` class on the hidden `<input>` and `.peer-focus-visible` classes on the custom visual sibling element to ensure keyboard focus indicators are correctly styled and displayed.
+## 2025-02-18 - Tooltip Container Layout
+**Learning:** When conditionally wrapping full-width buttons in Tooltip components (which default to an inline-block layout), the wrapper can cause the inner button to shrink unexpectedly.
+**Action:** Pass layout classes like `className="w-full block"` explicitly to the Tooltip wrapper to preserve the full-width layout.

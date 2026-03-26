@@ -44,10 +44,7 @@ export const useContrabandStash = () => {
       dispatchUseContraband(instanceId, item.id, selectedMember)
 
       const message = getStashItemUseMessage(item, t)
-      addToast(
-        t(message.key, message.options),
-        'success'
-      )
+      addToast(t(message.key, message.options), 'success')
     },
     [dispatchUseContraband, selectedMember, addToast, t]
   )

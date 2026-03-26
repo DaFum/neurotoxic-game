@@ -99,12 +99,13 @@ describe('GameState Context - Core Actions', () => {
   })
 
   test('core state update actions (scene, player, band)', () => {
-    let callCount = 0;
+    let callCount = 0
     const action = gs => {
       if (callCount === 0) gs.changeScene(GAME_PHASES.GIG)
       if (callCount === 1) gs.updatePlayer({ money: 1500 })
       if (callCount === 2) gs.updateBand({ harmony: 85 })
-      if (callCount === 3) gs.updatePlayer(prev => ({ money: prev.money + 500 }))
+      if (callCount === 3)
+        gs.updatePlayer(prev => ({ money: prev.money + 500 }))
       callCount++
     }
 
@@ -117,7 +118,9 @@ describe('GameState Context - Core Actions', () => {
     const button = screen.getByText('Execute')
 
     act(() => button.click())
-    expect(screen.getByTestId('current-scene')).toHaveTextContent(GAME_PHASES.GIG)
+    expect(screen.getByTestId('current-scene')).toHaveTextContent(
+      GAME_PHASES.GIG
+    )
 
     act(() => button.click())
     expect(screen.getByTestId('player-money')).toHaveTextContent('1500')
@@ -125,7 +128,9 @@ describe('GameState Context - Core Actions', () => {
     act(() => button.click())
     expect(screen.getByTestId('band-harmony')).toHaveTextContent('85')
 
-    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
     act(() => button.click())
     const finalMoney = parseInt(screen.getByTestId('player-money').textContent)
     expect(finalMoney).toBe(initialMoney + 500)
@@ -246,11 +251,24 @@ describe('GameState Context - Save/Load', () => {
       return (
         <div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
-          <button type='button' onClick={() => gameState.saveGame(false)}>Save</button>
-          <button type='button' onClick={() => gameState.loadGame()}>Load</button>
-          <button type='button' onClick={() => gameState.deleteSave()}>Delete</button>
-          <button type='button' onClick={() => gameState.updatePlayer({ money: 5000 })}>Set Money</button>
-          <button type='button' onClick={() => gameState.resetState()}>Reset</button>
+          <button type='button' onClick={() => gameState.saveGame(false)}>
+            Save
+          </button>
+          <button type='button' onClick={() => gameState.loadGame()}>
+            Load
+          </button>
+          <button type='button' onClick={() => gameState.deleteSave()}>
+            Delete
+          </button>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 5000 })}
+          >
+            Set Money
+          </button>
+          <button type='button' onClick={() => gameState.resetState()}>
+            Reset
+          </button>
         </div>
       )
     }
@@ -295,18 +313,62 @@ describe('GameState Context - Gig Management', () => {
       return (
         <div>
           <div data-testid='scene'>{gameState.currentScene}</div>
-          <div data-testid='gig-name'>{gameState.currentGig?.name || 'none'}</div>
-          <div data-testid='setlist-count'>{gameState.setlist?.length || 0}</div>
-          <div data-testid='soundcheck'>{gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}</div>
+          <div data-testid='gig-name'>
+            {gameState.currentGig?.name || 'none'}
+          </div>
+          <div data-testid='setlist-count'>
+            {gameState.setlist?.length || 0}
+          </div>
+          <div data-testid='soundcheck'>
+            {gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}
+          </div>
 
-          <button type='button' onClick={() => gameState.startGig({ name: 'Test Venue' })}>Start</button>
-          <button type='button' onClick={() => gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])}>Set Setlist</button>
-          <button type='button' onClick={() => gameState.setGigModifiers({ soundcheck: true })}>Set Modifiers</button>
+          <button
+            type='button'
+            onClick={() => gameState.startGig({ name: 'Test Venue' })}
+          >
+            Start
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])
+            }
+          >
+            Set Setlist
+          </button>
+          <button
+            type='button'
+            onClick={() => gameState.setGigModifiers({ soundcheck: true })}
+          >
+            Set Modifiers
+          </button>
 
-          <button type='button' onClick={() => gameState.setCurrentGig({ id: 'test', isPractice: true })}>Set Practice Gig</button>
-          <button type='button' onClick={() => gameState.setCurrentGig({ id: 'test', isPractice: false })}>Set Normal Gig</button>
-          <button type='button' onClick={() => gameState.changeScene(GAME_PHASES.GIG)}>Set Gig Scene</button>
-          <button type='button' onClick={() => gameState.endGig()}>End Gig</button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.setCurrentGig({ id: 'test', isPractice: true })
+            }
+          >
+            Set Practice Gig
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.setCurrentGig({ id: 'test', isPractice: false })
+            }
+          >
+            Set Normal Gig
+          </button>
+          <button
+            type='button'
+            onClick={() => gameState.changeScene(GAME_PHASES.GIG)}
+          >
+            Set Gig Scene
+          </button>
+          <button type='button' onClick={() => gameState.endGig()}>
+            End Gig
+          </button>
         </div>
       )
     }
@@ -337,8 +399,6 @@ describe('GameState Context - Gig Management', () => {
     act(() => screen.getByText('Set Normal Gig').click())
     act(() => screen.getByText('End Gig').click())
     expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.POST_GIG)
-
-
   })
 })
 

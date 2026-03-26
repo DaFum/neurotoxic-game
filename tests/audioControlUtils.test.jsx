@@ -35,15 +35,27 @@ describe('audioControlUtils', () => {
   describe('executeAudioAction', () => {
     it('executes method successfully', () => {
       mockManager.setMusicVolume.mockReturnValue(true)
-      const result = executeAudioAction(mockManager, 'setMusicVolume', 'setMusic', 0.8)
+      const result = executeAudioAction(
+        mockManager,
+        'setMusicVolume',
+        'setMusic',
+        0.8
+      )
       expect(mockManager.setMusicVolume).toHaveBeenCalledWith(0.8)
       expect(result).toBe(true)
     })
 
     it('handles errors via handleError', () => {
       const error = new Error('Test error')
-      mockManager.setMusicVolume.mockImplementation(() => { throw error })
-      const result = executeAudioAction(mockManager, 'setMusicVolume', 'setMusic', 0.8)
+      mockManager.setMusicVolume.mockImplementation(() => {
+        throw error
+      })
+      const result = executeAudioAction(
+        mockManager,
+        'setMusicVolume',
+        'setMusic',
+        0.8
+      )
       expect(handleError).toHaveBeenCalledWith(error, {
         fallbackMessage: 'useAudioControl.setMusic failed',
         silent: true
@@ -75,7 +87,9 @@ describe('audioControlUtils', () => {
     })
 
     it('resumeMusic returns false when returning undefined (error case)', async () => {
-      mockManager.resumeMusic.mockImplementation(() => { throw new Error('fail') })
+      mockManager.resumeMusic.mockImplementation(() => {
+        throw new Error('fail')
+      })
       const handlers = createAudioHandlers(mockManager)
       const resumeResult = await handlers.resumeMusic()
       expect(resumeResult).toBe(false)

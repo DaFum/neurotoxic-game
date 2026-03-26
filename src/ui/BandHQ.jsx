@@ -24,10 +24,7 @@ import { useAudioControl } from '../hooks/useAudioControl.js'
  * @param {Function} props.onClose - Callback to close the HQ modal.
  * @param {string} [props.className] - Optional custom class name.
  */
-export const BandHQ = ({
-  onClose,
-  className = ''
-}) => {
+export const BandHQ = ({ onClose, className = '' }) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('STATS')
 
