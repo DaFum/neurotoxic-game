@@ -116,7 +116,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
 
   return (
     <div
-      className={`inline-block ${isFullWidth ? 'w-full block' : ''} ${className?.split(/\s+/).includes('absolute') ? '' : 'relative'} ${className}`}
+      className={`${isFullWidth ? 'block w-full' : 'inline-block'} ${className?.split(/\s+/).includes('absolute') ? '' : 'relative'} ${className}`}
     >
       {trigger}
       {isVisible && (
