@@ -130,7 +130,7 @@ export const clampBandHarmony = harmony => {
  */
 export const clampVanCondition = (condition) => {
   if (!Number.isFinite(condition)) return 0
-  return Math.max(0, Math.min(100, condition))
+  return Math.floor(Math.max(0, Math.min(100, condition)))
 }
 
 /**

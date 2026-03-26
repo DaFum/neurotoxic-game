@@ -425,12 +425,12 @@ test('eventEngine.applyResult handles combined mood and stamina in composite', (
 // Parametrized: van condition clamping
 const vanConditionVariants = [
   {
-    label: 'clamp to minimum 0',
+    label: 'raw delta -10',
     value: -10,
     expected: -10
   },
   {
-    label: 'clamp to maximum 100',
+    label: 'raw delta 150',
     value: 150,
     expected: 150
   }
