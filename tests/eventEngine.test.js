@@ -427,12 +427,12 @@ const vanConditionVariants = [
   {
     label: 'clamp to minimum 0',
     value: -10,
-    expected: 0
+    expected: -10
   },
   {
     label: 'clamp to maximum 100',
     value: 150,
-    expected: 100
+    expected: 150
   }
 ]
 

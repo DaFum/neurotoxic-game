@@ -1,6 +1,6 @@
 // TODO: Review this file
 import { logger } from '../../utils/logger.js'
-import { clampPlayerMoney, clampPlayerFame } from '../../utils/gameStateUtils.js'
+import { clampPlayerMoney, clampPlayerFame, calculateFameLevel } from '../../utils/gameStateUtils.js'
 import { ActionTypes } from '../actionTypes.js'
 
 /**
@@ -17,18 +17,21 @@ export const handleUpdatePlayer = (state, payload) => {
     typeof payload === 'function' ? payload(state.player) : payload
 
   const nextFame = clampPlayerFame(
-    'fame' in updates ? updates.fame : state.player.fame
+    updates != null && Object.hasOwn(updates, 'fame') ? updates.fame : state.player.fame
   )
 
   const nextMoney = clampPlayerMoney(
-    'money' in updates ? updates.money : state.player.money
+    updates != null && Object.hasOwn(updates, 'money') ? updates.money : state.player.money
   )
+
+  const nextFameLevel = updates != null && Object.hasOwn(updates, 'fameLevel') ? updates.fameLevel : calculateFameLevel(nextFame);
 
   const mergedPlayer = {
     ...state.player,
     ...updates,
     money: nextMoney,
-    fame: nextFame
+    fame: nextFame,
+    fameLevel: nextFameLevel
   }
 
   return { ...state, player: mergedPlayer }
