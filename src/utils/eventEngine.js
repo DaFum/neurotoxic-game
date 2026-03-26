@@ -19,7 +19,7 @@ import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
 import { bandHasTrait } from './traitLogic.js'
-import { clampVanFuel, calculateAppliedDelta } from './gameStateUtils.js'
+import { calculateAppliedDelta } from './gameStateUtils.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -218,9 +218,7 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
       delta.player.money = (delta.player.money || 0) + eff.value
     if (eff.resource === 'fuel') {
       delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.fuel = clampVanFuel(
-        (delta.player.van.fuel || 0) + eff.value
-      )
+      delta.player.van.fuel = (delta.player.van.fuel || 0) + eff.value
     }
   },
   /**
@@ -271,10 +269,7 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
     }
     if (eff.stat === 'van_condition') {
       delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.condition = Math.max(
-        0,
-        Math.min(100, (delta.player.van.condition || 0) + eff.value)
-      )
+      delta.player.van.condition = (delta.player.van.condition || 0) + eff.value
     }
     if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
       delta.player.fame = (delta.player.fame || 0) + eff.value
