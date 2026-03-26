@@ -66,7 +66,7 @@ describe('MainMenu Component', () => {
     useBandHQModal.mockReturnValue({
       showHQ: false,
       openHQ: mockOpenHQ,
-      bandHQProps: {}
+      closeHQ: vi.fn()
     })
   })
 

@@ -10,7 +10,9 @@ export const validatePirateBroadcast = (social, player, band, config) => {
 
   return (
     !hasBroadcastedToday &&
-    (player.money || 0) >= (config.COST || 0) &&
-    (band.harmony || 0) >= (config.HARMONY_COST || 0)
+    config.COST !== undefined &&
+    config.HARMONY_COST !== undefined &&
+    (player.money || 0) >= config.COST &&
+    (band.harmony || 0) >= config.HARMONY_COST
   )
 }

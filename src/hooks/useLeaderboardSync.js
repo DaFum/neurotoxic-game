@@ -3,14 +3,13 @@ import { logger } from '../utils/logger'
 
 /**
  * Validates if the player state is ready for leaderboard sync.
- * @param {object} player - The player state object.
+ * @param {string} playerId - The player's ID.
+ * @param {string} playerName - The player's name.
+ * @param {number} day - The current game day.
+ * @param {number} money - The player's current money.
  * @returns {boolean} True if valid.
  */
-export const isValidForSync = player => {
-  if (!player) return false
-
-  const { playerId, playerName, day, money } = player
-
+export const isValidForSync = (playerId, playerName, day, money) => {
   return (
     !!playerId &&
     !!playerName &&
@@ -39,12 +38,16 @@ export const calculateTotalFollowers = social => {
 
 /**
  * Creates the payload to be sent to the leaderboard API.
- * @param {object} player - The player state object.
+ * @param {string} playerId - The player's ID.
+ * @param {string} playerName - The player's name.
+ * @param {number} money - The player's money.
+ * @param {number} day - The current game day.
+ * @param {number} fame - The player's fame.
+ * @param {object} stats - The player's statistics.
  * @param {number} totalFollowers - The calculated total followers.
  * @returns {object} The payload object.
  */
-export const createSyncPayload = (player, totalFollowers) => {
-  const { playerId, playerName, money, day, fame, stats } = player
+export const createSyncPayload = (playerId, playerName, money, day, fame, stats, totalFollowers) => {
   const { totalDistance, conflictsResolved, stageDives } = stats || {}
 
   return {
@@ -90,7 +93,7 @@ export const useLeaderboardSync = state => {
 
   useEffect(() => {
     // 1. Strict Validation
-    if (!isValidForSync(player)) {
+    if (!isValidForSync(playerId, playerName, day, money)) {
       return
     }
 
@@ -103,7 +106,7 @@ export const useLeaderboardSync = state => {
 
       // 3. Sync Logic
       try {
-        const payload = createSyncPayload(player, totalFollowers)
+        const payload = createSyncPayload(playerId, playerName, money, day, fame, stats, totalFollowers)
 
         await syncLeaderboardStats(payload)
 

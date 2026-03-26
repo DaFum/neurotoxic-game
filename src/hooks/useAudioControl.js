@@ -122,13 +122,14 @@ export const useAudioControl = (selector, options = {}) => {
     [hasNativeSubscribe, manager]
   )
 
-  const subscribe = useCallback(
-    createAudioSubscriber(
-      manager,
-      hasNativeSubscribe,
-      pollEvenWithSubscribe,
-      pollMs
-    ),
+  const subscribe = useMemo(
+    () =>
+      createAudioSubscriber(
+        manager,
+        hasNativeSubscribe,
+        pollEvenWithSubscribe,
+        pollMs
+      ),
     [hasNativeSubscribe, manager, pollEvenWithSubscribe, pollMs]
   )
 
