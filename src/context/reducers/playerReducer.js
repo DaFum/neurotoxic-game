@@ -1,6 +1,6 @@
 // TODO: Review this file
 import { logger } from '../../utils/logger.js'
-import { clampPlayerMoney } from '../../utils/gameStateUtils.js'
+import { clampPlayerMoney, clampPlayerFame } from '../../utils/gameStateUtils.js'
 import { ActionTypes } from '../actionTypes.js'
 
 /**
@@ -15,6 +15,10 @@ export const handleUpdatePlayer = (state, payload) => {
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
 
+  const nextFame = clampPlayerFame(
+    'fame' in updates ? updates.fame : state.player.fame
+  )
+
   const nextMoney = clampPlayerMoney(
     'money' in updates ? updates.money : state.player.money
   )
@@ -22,7 +26,8 @@ export const handleUpdatePlayer = (state, payload) => {
   const mergedPlayer = {
     ...state.player,
     ...updates,
-    money: nextMoney
+    money: nextMoney,
+    fame: nextFame
   }
 
   return { ...state, player: mergedPlayer }

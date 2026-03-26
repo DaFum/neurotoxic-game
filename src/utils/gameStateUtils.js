@@ -121,6 +121,18 @@ export const clampBandHarmony = harmony => {
   return Math.max(1, Math.min(100, safeHarmony))
 }
 
+
+/**
+ * Clamps van condition to the allowed percentage (0-100).
+ *
+ * @param {number} condition - Candidate condition value.
+ * @returns {number} Clamped condition value.
+ */
+export const clampVanCondition = (condition) => {
+  if (!Number.isFinite(condition)) return 0
+  return Math.max(0, Math.min(100, condition))
+}
+
 /**
  * Clamps van fuel to the allowed capacity.
  *
@@ -243,13 +255,7 @@ export const calculateAppliedDelta = (state, delta) => {
         applied.player.van.fuel = nextFuel - (state.player?.van?.fuel || 0)
       }
       if (typeof delta.player.van.condition === 'number') {
-        const nextCondition = Math.max(
-          0,
-          Math.min(
-            100,
-            (state.player?.van?.condition || 0) + delta.player.van.condition
-          )
-        )
+        const nextCondition = clampVanCondition((state.player?.van?.condition || 0) + delta.player.van.condition)
         applied.player.van.condition =
           nextCondition - (state.player?.van?.condition || 0)
       }
@@ -429,10 +435,7 @@ export const applyEventDelta = (state, delta) => {
         nextVan.fuel = clampVanFuel(nextVan.fuel + delta.player.van.fuel)
       }
       if (typeof delta.player.van.condition === 'number') {
-        nextVan.condition = Math.max(
-          0,
-          Math.min(100, nextVan.condition + delta.player.van.condition)
-        )
+        nextVan.condition = clampVanCondition(nextVan.condition + delta.player.van.condition)
       }
       nextPlayer.van = nextVan
     }
