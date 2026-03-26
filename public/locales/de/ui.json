@@ -903,5 +903,9 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen"
+  "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "clinic.notEnoughMoney": "Nicht genug Geld",
+  "clinic.fullyHealed": "Bandmitglied ist bereits vollständig geheilt",
+  "clinic.notEnoughFame": "Nicht genug Ruhm",
+  "clinic.alreadyEnhanced": "Bandmitglied hat diese Erweiterung bereits"
 }

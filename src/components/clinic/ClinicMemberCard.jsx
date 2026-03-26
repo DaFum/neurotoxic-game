@@ -3,11 +3,31 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
+import React from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../ui/GlitchButton'
+import { Tooltip } from '../../ui/shared'
 import { CLINIC_CONFIG } from '../../context/gameConstants'
+
+const ActionButtonWrapper = ({ disabledReason, children }) => {
+  // eslint-disable-next-line @eslint-react/no-clone-element
+  const buttonWithDisabled = React.cloneElement(children, {
+    disabled: Boolean(disabledReason)
+  })
+
+  return disabledReason ? (
+    <Tooltip content={disabledReason}>{buttonWithDisabled}</Tooltip>
+  ) : (
+    buttonWithDisabled
+  )
+}
+
+ActionButtonWrapper.propTypes = {
+  disabledReason: PropTypes.string,
+  children: PropTypes.node.isRequired
+}
 
 export const ClinicMemberCard = ({
   member,
@@ -40,40 +60,60 @@ export const ClinicMemberCard = ({
       </div>
 
       <div className='flex flex-col gap-2 mt-auto'>
-        <GlitchButton
-          onClick={() => healMember(member.id)}
-          disabled={
-            player.money < healCostMoney ||
-            (member.stamina >= 100 &&
-              (CLINIC_CONFIG.HEAL_MOOD_GAIN === 0 || member.mood >= 100))
+        <ActionButtonWrapper
+          disabledReason={
+            player.money < healCostMoney
+              ? t('ui:clinic.notEnoughMoney', {
+                  defaultValue: 'Not enough money'
+                })
+              : member.stamina >= 100 &&
+                  (CLINIC_CONFIG.HEAL_MOOD_GAIN === 0 || member.mood >= 100)
+                ? t('ui:clinic.fullyHealed', {
+                    defaultValue: 'Member is already fully healed'
+                  })
+                : null
           }
-          variant='primary'
-          size='sm'
-          className='w-full text-xs py-1'
         >
-          {t('ui:clinic.heal_button', {
-            defaultValue: 'HEAL ({{cost}}€)',
-            cost: healCostMoney
-          })}
-        </GlitchButton>
+          <GlitchButton
+            onClick={() => healMember(member.id)}
+            variant='primary'
+            size='sm'
+            className='w-full text-xs py-1'
+          >
+            {t('ui:clinic.heal_button', {
+              defaultValue: 'HEAL ({{cost}}€)',
+              cost: healCostMoney
+            })}
+          </GlitchButton>
+        </ActionButtonWrapper>
 
-        <GlitchButton
-          onClick={() =>
-            enhanceMember(member.id, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
+        <ActionButtonWrapper
+          disabledReason={
+            player.fame < enhanceCostFame
+              ? t('ui:clinic.notEnoughFame', {
+                  defaultValue: 'Not enough fame'
+                })
+              : member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]
+                ? t('ui:clinic.alreadyEnhanced', {
+                    defaultValue: 'Member already has this enhancement'
+                  })
+                : null
           }
-          disabled={
-            player.fame < enhanceCostFame ||
-            !!member.traits?.[CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID]
-          }
-          variant='warning'
-          size='sm'
-          className='w-full text-xs py-1'
         >
-          {t('ui:clinic.enhance_button', {
-            defaultValue: 'GRAFT: CYBER LUNGS ({{fame}} Fame)',
-            fame: enhanceCostFame
-          })}
-        </GlitchButton>
+          <GlitchButton
+            onClick={() =>
+              enhanceMember(member.id, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
+            }
+            variant='warning'
+            size='sm'
+            className='w-full text-xs py-1'
+          >
+            {t('ui:clinic.enhance_button', {
+              defaultValue: 'GRAFT: CYBER LUNGS ({{fame}} Fame)',
+              fame: enhanceCostFame
+            })}
+          </GlitchButton>
+        </ActionButtonWrapper>
       </div>
     </motion.div>
   )

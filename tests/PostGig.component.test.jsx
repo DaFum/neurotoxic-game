@@ -264,7 +264,7 @@ describe('PostGig Component - Social Post Selection', () => {
     vi.restoreAllMocks()
   })
 
-    it('updates general social and band stats correctly when post is selected', async () => {
+  it('updates general social and band stats correctly when post is selected', async () => {
     vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
       success: true,
       followers: 50,
@@ -314,7 +314,10 @@ describe('PostGig Component - Social Post Selection', () => {
       })
 
       // Trait unlock
-      expect(mockUnlockTrait).toHaveBeenCalledWith('Member1', 'social_butterfly')
+      expect(mockUnlockTrait).toHaveBeenCalledWith(
+        'Member1',
+        'social_butterfly'
+      )
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('SOCIAL BUTTERFLY'),
         'success'
@@ -445,20 +448,29 @@ describe('PostGig Component - Brand Deals', () => {
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /^BRAND OFFERS$/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /^BRAND OFFERS$/i })
+      ).toBeInTheDocument()
     })
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({ money: 1500 }))
-      expect(mockAddToast).toHaveBeenCalledWith(expect.stringContaining('Mega Corp'), 'success')
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({ money: 1500 })
+      )
+      expect(mockAddToast).toHaveBeenCalledWith(
+        expect.stringContaining('Mega Corp'),
+        'success'
+      )
 
       // Check inventory item added
       const updateBandFn = getLastFunctionalUpdate(mockUpdateBand)
       expect(updateBandFn).toEqual(expect.any(Function))
-      expect(updateBandFn({ inventory: {} })).toEqual({ inventory: { special_guitar: true } })
+      expect(updateBandFn({ inventory: {} })).toEqual({
+        inventory: { special_guitar: true }
+      })
 
       // Check loyalty, controversy, reputation and active deals in one go
       const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
@@ -644,13 +656,17 @@ describe('PostGig Component - Complete Phase', () => {
   it('handles multiple continue effects correctly', async () => {
     vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
     useGameState.mockReturnValue(
-      createBaseState({ activeStoryFlags: ['cancel_quest_active', 'breakup_quest_active'] })
+      createBaseState({
+        activeStoryFlags: ['cancel_quest_active', 'breakup_quest_active']
+      })
     )
 
     render(<PostGig />)
     await proceedToSocialAndSelectPost()
 
-    const continueBtn = await screen.findByRole('button', { name: /back to tour/i })
+    const continueBtn = await screen.findByRole('button', {
+      name: /back to tour/i
+    })
     fireEvent.click(continueBtn)
 
     await waitFor(() => {
@@ -664,10 +680,19 @@ describe('PostGig Component - Complete Phase', () => {
 
       // Adds both quests
       expect(mockAddQuest).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'quest_apology_tour', deadline: 19, required: 3 })
+        expect.objectContaining({
+          id: 'quest_apology_tour',
+          deadline: 19,
+          required: 3
+        })
       )
       expect(mockAddQuest).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'quest_ego_management', deadline: 10, required: 1, failurePenalty: { type: 'game_over' } })
+        expect.objectContaining({
+          id: 'quest_ego_management',
+          deadline: 10,
+          required: 1,
+          failurePenalty: { type: 'game_over' }
+        })
       )
 
       // Saves and changes scene
@@ -687,11 +712,16 @@ describe('PostGig Component - Complete Phase', () => {
     render(<PostGig />)
     await proceedToSocialAndSelectPost()
 
-    const continueBtn = await screen.findByRole('button', { name: /back to tour/i })
+    const continueBtn = await screen.findByRole('button', {
+      name: /back to tour/i
+    })
     fireEvent.click(continueBtn)
 
     await waitFor(() => {
-      expect(mockAddToast).toHaveBeenCalledWith(expect.stringContaining('BANKRUPT'), 'error')
+      expect(mockAddToast).toHaveBeenCalledWith(
+        expect.stringContaining('BANKRUPT'),
+        'error'
+      )
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
     })
   })

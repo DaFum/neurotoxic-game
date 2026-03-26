@@ -87,9 +87,13 @@ export const Tooltip = ({ children, content, className = '' }) => {
     return ids.join(' ')
   })()
 
+  const isFullWidth =
+    typeof children.props.className === 'string' &&
+    children.props.className.split(' ').includes('w-full')
+
   const trigger = isDisabled ? (
     <span
-      className='inline-block'
+      className={`inline-block ${isFullWidth ? 'w-full' : ''}`}
       tabIndex={0}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -112,7 +116,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
 
   return (
     <div
-      className={`inline-block ${className?.split(/\s+/).includes('absolute') ? '' : 'relative'} ${className}`}
+      className={`${isFullWidth ? 'block w-full' : 'inline-block'} ${className?.split(/\s+/).includes('absolute') ? '' : 'relative'} ${className}`}
     >
       {trigger}
       {isVisible && (
