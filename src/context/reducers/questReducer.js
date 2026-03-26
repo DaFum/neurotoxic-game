@@ -1,5 +1,5 @@
 // TODO: Review this file
-import {
+import { clampPlayerFame,
   clampBandHarmony,
   clampPlayerMoney,
   calculateFameLevel,
@@ -61,7 +61,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     let rawFameReward = Number(quest.rewardData.fame)
     if (!Number.isFinite(rawFameReward)) rawFameReward = 0
     const previousFame = nextState.player.fame || 0
-    const newFame = Math.max(0, previousFame + rawFameReward)
+    const newFame = clampPlayerFame(previousFame + rawFameReward)
     const appliedDelta = newFame - previousFame
     nextState.player = {
       ...nextState.player,

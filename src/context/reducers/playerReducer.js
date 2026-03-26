@@ -5,7 +5,8 @@ import { ActionTypes } from '../actionTypes.js'
 
 /**
  * Handles player update actions
- * Clamps player.money to ensure it never goes negative
+ * Clamps player.money and player.fame to ensure they never go negative
+ * and correctly applied.
  * @param {Object} state - Current state
  * @param {Object} payload - Player updates
  * @returns {Object} Updated state
