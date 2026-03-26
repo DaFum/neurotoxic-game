@@ -435,7 +435,8 @@ export const applyEventDelta = (state, delta) => {
         nextVan.fuel = clampVanFuel(nextVan.fuel + delta.player.van.fuel)
       }
       if (typeof delta.player.van.condition === 'number') {
-        nextVan.condition = clampVanCondition(nextVan.condition + delta.player.van.condition)
+        const nextCondition = clampVanCondition(nextVan.condition + delta.player.van.condition)
+        nextVan.condition = nextCondition
       }
       nextPlayer.van = nextVan
     }
