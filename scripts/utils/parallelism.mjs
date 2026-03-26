@@ -2,7 +2,7 @@ import { availableParallelism } from 'node:os'
 
 export const computeWorkerCount = (
   envVarName,
-  fallbackCount = Math.max(1, availableParallelism() - 1)
+  fallbackCount = Math.max(1, availableParallelism())
 ) => {
   const rawEnv = process.env[envVarName] ?? `${fallbackCount}`
 

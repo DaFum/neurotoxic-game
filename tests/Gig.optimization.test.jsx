@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 
 // Mock dependencies before importing the component
 const getGenImageUrlMock = vi.fn(
@@ -122,7 +122,11 @@ describe('Gig Optimization', () => {
 
   test('calls getGenImageUrl multiple times on render', async () => {
     // Initial render
-    const { rerender } = render(React.createElement(Gig))
+    let rerender
+    await act(async () => {
+      const res = render(React.createElement(Gig))
+      rerender = res.rerender
+    })
 
     // Check initial calls
     // 1 for bgUrl + 3 for band members = 4 calls
@@ -147,7 +151,9 @@ describe('Gig Optimization', () => {
 
     // Re-rendering the component. In a real app, the hook would return a new object, triggering re-render.
     // Here we manually rerender.
-    rerender(React.createElement(Gig))
+    await act(async () => {
+      rerender(React.createElement(Gig))
+    })
 
     const afterReRenderCalls = getGenImageUrlMock.mock.calls.length
 
