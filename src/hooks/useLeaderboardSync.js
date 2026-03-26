@@ -43,13 +43,23 @@ export const calculateTotalFollowers = social => {
  * @param {number} money - The player's money.
  * @param {number} day - The current game day.
  * @param {number} fame - The player's fame.
- * @param {object} stats - The player's statistics.
+ * @param {number} totalDistance - The total distance traveled.
+ * @param {number} conflictsResolved - The total conflicts resolved.
+ * @param {number} stageDives - The total stage dives.
  * @param {number} totalFollowers - The calculated total followers.
  * @returns {object} The payload object.
  */
-export const createSyncPayload = (playerId, playerName, money, day, fame, stats, totalFollowers) => {
-  const { totalDistance, conflictsResolved, stageDives } = stats || {}
-
+export const createSyncPayload = (
+  playerId,
+  playerName,
+  money,
+  day,
+  fame,
+  totalDistance,
+  conflictsResolved,
+  stageDives,
+  totalFollowers
+) => {
   return {
     playerId,
     playerName,
@@ -106,7 +116,17 @@ export const useLeaderboardSync = state => {
 
       // 3. Sync Logic
       try {
-        const payload = createSyncPayload(playerId, playerName, money, day, fame, stats, totalFollowers)
+        const payload = createSyncPayload(
+          playerId,
+          playerName,
+          money,
+          day,
+          fame,
+          totalDistance,
+          conflictsResolved,
+          stageDives,
+          totalFollowers
+        )
 
         await syncLeaderboardStats(payload)
 
