@@ -391,7 +391,7 @@ describe('MainMenu Component', () => {
     it('opens, displays links, and closes socials modal', () => {
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:socials'))
+      fireEvent.click(screen.getByText('ui:socials').closest('button'))
 
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
@@ -415,7 +415,7 @@ describe('MainMenu Component', () => {
     it('opens, renders content, and closes features modal', () => {
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:features.button'))
+      fireEvent.click(screen.getByText('ui:features.button').closest('button'))
 
       const expectedItems = [
         'ui:features.title',
@@ -441,10 +441,10 @@ describe('MainMenu Component', () => {
     it('handles multiple modal opens and closes', () => {
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:socials'))
+      fireEvent.click(screen.getByText('ui:socials').closest('button'))
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
 
-      fireEvent.click(screen.getByText('ui:features.button'))
+      fireEvent.click(screen.getByText('ui:features.button').closest('button'))
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
     })
 
@@ -452,7 +452,7 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(true)
       render(<MainMenu />)
 
-      const loadButton = screen.getByText('ui:load_game')
+      const loadButton = screen.getByText('ui:load_game').closest('button')
       fireEvent.click(loadButton)
       fireEvent.click(loadButton)
       fireEvent.click(loadButton)

@@ -98,8 +98,15 @@ describe('GameState Context - Core Actions', () => {
     vi.restoreAllMocks()
   })
 
-  test('changeScene updates current scene', () => {
-    const action = gs => gs.changeScene(GAME_PHASES.GIG)
+  test('core state update actions (scene, player, band)', () => {
+    let callCount = 0;
+    const action = gs => {
+      if (callCount === 0) gs.changeScene(GAME_PHASES.GIG)
+      if (callCount === 1) gs.updatePlayer({ money: 1500 })
+      if (callCount === 2) gs.updateBand({ harmony: 85 })
+      if (callCount === 3) gs.updatePlayer(prev => ({ money: prev.money + 500 }))
+      callCount++
+    }
 
     render(
       <GameStateProvider>
@@ -108,67 +115,18 @@ describe('GameState Context - Core Actions', () => {
     )
 
     const button = screen.getByText('Execute')
-    act(() => {
-      button.click()
-    })
 
-    expect(screen.getByTestId('current-scene')).toHaveTextContent(
-      GAME_PHASES.GIG
-    )
-  })
+    act(() => button.click())
+    expect(screen.getByTestId('current-scene')).toHaveTextContent(GAME_PHASES.GIG)
 
-  test('updatePlayer modifies player state', () => {
-    const action = gs => gs.updatePlayer({ money: 1500 })
-
-    render(
-      <GameStateProvider>
-        <TestComponent action={action} />
-      </GameStateProvider>
-    )
-
-    const button = screen.getByText('Execute')
-    act(() => {
-      button.click()
-    })
-
+    act(() => button.click())
     expect(screen.getByTestId('player-money')).toHaveTextContent('1500')
-  })
 
-  test('updateBand modifies band state', () => {
-    const action = gs => gs.updateBand({ harmony: 85 })
-
-    render(
-      <GameStateProvider>
-        <TestComponent action={action} />
-      </GameStateProvider>
-    )
-
-    const button = screen.getByText('Execute')
-    act(() => {
-      button.click()
-    })
-
+    act(() => button.click())
     expect(screen.getByTestId('band-harmony')).toHaveTextContent('85')
-  })
 
-  test('updatePlayer with function callback works', () => {
-    const action = gs => gs.updatePlayer(prev => ({ money: prev.money + 500 }))
-
-    render(
-      <GameStateProvider>
-        <TestComponent action={action} />
-      </GameStateProvider>
-    )
-
-    const initialMoney = parseInt(
-      screen.getByTestId('player-money').textContent
-    )
-
-    const button = screen.getByText('Execute')
-    act(() => {
-      button.click()
-    })
-
+    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    act(() => button.click())
     const finalMoney = parseInt(screen.getByTestId('player-money').textContent)
     expect(finalMoney).toBe(initialMoney + 500)
   })
@@ -204,21 +162,7 @@ describe('GameState Context - Event System', () => {
     }
   })
 
-  test('setActiveEvent sets active event', () => {
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Set Event').click()
-    })
-
-    expect(screen.getByTestId('active-event')).toHaveTextContent('test-event')
-  })
-
-  test('setActiveEvent can clear event', () => {
+  test('setActiveEvent sets and clears active event', () => {
     render(
       <GameStateProvider>
         <TestComponent />
@@ -285,36 +229,7 @@ describe('GameState Context - Save/Load', () => {
     localStorage.clear()
   })
 
-  test('saveGame persists state to localStorage', () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <button type='button' onClick={() => gameState.saveGame(false)}>
-          Save
-        </button>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Save').click()
-    })
-
-    const saved = localStorage.getItem('neurotoxic_v3_save')
-    expect(saved).toBeTruthy()
-
-    const parsed = JSON.parse(saved)
-    expect(parsed).toHaveProperty('timestamp')
-    expect(parsed).toHaveProperty('player')
-    expect(parsed).toHaveProperty('band')
-  })
-
-  test('loadGame loads state from localStorage', async () => {
+  test('save/load/delete flow functionality', async () => {
     const mockSaveData = {
       timestamp: Date.now(),
       currentScene: GAME_PHASES.OVERWORLD,
@@ -326,16 +241,16 @@ describe('GameState Context - Save/Load', () => {
       settings: {}
     }
 
-    localStorage.setItem('neurotoxic_v3_save', JSON.stringify(mockSaveData))
-
     const TestComponent = () => {
       const gameState = useGameState()
       return (
         <div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
-          <button type='button' onClick={() => gameState.loadGame()}>
-            Load
-          </button>
+          <button type='button' onClick={() => gameState.saveGame(false)}>Save</button>
+          <button type='button' onClick={() => gameState.loadGame()}>Load</button>
+          <button type='button' onClick={() => gameState.deleteSave()}>Delete</button>
+          <button type='button' onClick={() => gameState.updatePlayer({ money: 5000 })}>Set Money</button>
+          <button type='button' onClick={() => gameState.resetState()}>Reset</button>
         </div>
       )
     }
@@ -346,94 +261,52 @@ describe('GameState Context - Save/Load', () => {
       </GameStateProvider>
     )
 
-    act(() => {
-      screen.getByText('Load').click()
-    })
+    act(() => screen.getByText('Save').click())
+    const saved = localStorage.getItem('neurotoxic_v3_save')
+    expect(saved).toBeTruthy()
+    const parsed = JSON.parse(saved)
+    expect(parsed).toHaveProperty('timestamp')
+    expect(parsed).toHaveProperty('player')
+    expect(parsed).toHaveProperty('band')
 
+    localStorage.setItem('neurotoxic_v3_save', JSON.stringify(mockSaveData))
+
+    act(() => screen.getByText('Load').click())
     await waitFor(() => {
       expect(screen.getByTestId('player-money')).toHaveTextContent('999')
     })
-  })
 
-  test('deleteSave removes save from localStorage', () => {
-    localStorage.setItem('neurotoxic_v3_save', 'test-data')
-
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <button type='button' onClick={() => gameState.deleteSave()}>
-          Delete
-        </button>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Delete').click()
-    })
-
+    act(() => screen.getByText('Delete').click())
     expect(localStorage.getItem('neurotoxic_v3_save')).toBeNull()
-  })
 
-  test('resetState clears state to initial values', () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <div>
-          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
-          <button
-            type='button'
-            onClick={() => gameState.updatePlayer({ money: 5000 })}
-          >
-            Set Money
-          </button>
-          <button type='button' onClick={() => gameState.resetState()}>
-            Reset
-          </button>
-        </div>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Set Money').click()
-    })
+    act(() => screen.getByText('Set Money').click())
     expect(screen.getByTestId('player-money')).toHaveTextContent('5000')
 
-    act(() => {
-      screen.getByText('Reset').click()
-    })
-
+    act(() => screen.getByText('Reset').click())
     const resetMoney = parseInt(screen.getByTestId('player-money').textContent)
     expect(resetMoney).toBeLessThan(5000)
   })
 })
 
 describe('GameState Context - Gig Management', () => {
-  test('startGig updates current gig', () => {
+  test('gig lifecycle actions work correctly', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid='gig-name'>
-            {gameState.currentGig?.name || 'none'}
-          </div>
-          <button
-            type='button'
-            onClick={() => gameState.startGig({ name: 'Test Venue' })}
-          >
-            Start
-          </button>
+          <div data-testid='scene'>{gameState.currentScene}</div>
+          <div data-testid='gig-name'>{gameState.currentGig?.name || 'none'}</div>
+          <div data-testid='setlist-count'>{gameState.setlist?.length || 0}</div>
+          <div data-testid='soundcheck'>{gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}</div>
+
+          <button type='button' onClick={() => gameState.startGig({ name: 'Test Venue' })}>Start</button>
+          <button type='button' onClick={() => gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])}>Set Setlist</button>
+          <button type='button' onClick={() => gameState.setGigModifiers({ soundcheck: true })}>Set Modifiers</button>
+
+          <button type='button' onClick={() => gameState.setCurrentGig({ id: 'test', isPractice: true })}>Set Practice Gig</button>
+          <button type='button' onClick={() => gameState.setCurrentGig({ id: 'test', isPractice: false })}>Set Normal Gig</button>
+          <button type='button' onClick={() => gameState.changeScene(GAME_PHASES.GIG)}>Set Gig Scene</button>
+          <button type='button' onClick={() => gameState.endGig()}>End Gig</button>
         </div>
       )
     }
@@ -444,161 +317,28 @@ describe('GameState Context - Gig Management', () => {
       </GameStateProvider>
     )
 
-    act(() => {
-      screen.getByText('Start').click()
-    })
-
+    act(() => screen.getByText('Start').click())
     expect(screen.getByTestId('gig-name')).toHaveTextContent('Test Venue')
-  })
 
-  test('setSetlist updates setlist', () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <div>
-          <div data-testid='setlist-count'>
-            {gameState.setlist?.length || 0}
-          </div>
-          <button
-            type='button'
-            onClick={() =>
-              gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])
-            }
-          >
-            Set
-          </button>
-        </div>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Set').click()
-    })
-
+    act(() => screen.getByText('Set Setlist').click())
     expect(screen.getByTestId('setlist-count')).toHaveTextContent('2')
-  })
 
-  test('endGig transitions to POST_GIG scene', async () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <div>
-          <div data-testid='scene'>{gameState.currentScene}</div>
-          <button
-            type='button'
-            onClick={() => {
-              gameState.setCurrentGig({ id: 'test', isPractice: false })
-            }}
-          >
-            Set Gig
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              gameState.endGig()
-            }}
-          >
-            End Gig
-          </button>
-        </div>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Set Gig').click()
-    })
-
-    act(() => {
-      screen.getByText('End Gig').click()
-    })
-
-    expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.POST_GIG)
-  })
-
-  test('endGig with practice mode goes to OVERWORLD', () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <div>
-          <div data-testid='scene'>{gameState.currentScene}</div>
-          <button
-            type='button'
-            onClick={() => {
-              gameState.setCurrentGig({ id: 'test', isPractice: true })
-            }}
-          >
-            Set Gig
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              gameState.endGig()
-            }}
-          >
-            End Gig
-          </button>
-        </div>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Set Gig').click()
-    })
-
-    act(() => {
-      screen.getByText('End Gig').click()
-    })
-
-    expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.OVERWORLD)
-  })
-
-  test('setGigModifiers updates modifiers', () => {
-    const TestComponent = () => {
-      const gameState = useGameState()
-      return (
-        <div>
-          <div data-testid='soundcheck'>
-            {gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}
-          </div>
-          <button
-            type='button'
-            onClick={() => gameState.setGigModifiers({ soundcheck: true })}
-          >
-            Toggle
-          </button>
-        </div>
-      )
-    }
-
-    render(
-      <GameStateProvider>
-        <TestComponent />
-      </GameStateProvider>
-    )
-
-    act(() => {
-      screen.getByText('Toggle').click()
-    })
-
+    act(() => screen.getByText('Set Modifiers').click())
     expect(screen.getByTestId('soundcheck')).toHaveTextContent('yes')
+
+    // endGig practice
+    act(() => screen.getByText('Set Gig Scene').click())
+    act(() => screen.getByText('Set Practice Gig').click())
+    act(() => screen.getByText('End Gig').click())
+    expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.OVERWORLD)
+
+    // endGig normal
+    act(() => screen.getByText('Set Gig Scene').click())
+    act(() => screen.getByText('Set Normal Gig').click())
+    act(() => screen.getByText('End Gig').click())
+    expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.POST_GIG)
+
+
   })
 })
 

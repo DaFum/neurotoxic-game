@@ -264,86 +264,41 @@ describe('PostGig Component - Social Post Selection', () => {
     vi.restoreAllMocks()
   })
 
-  it('updates social followers when post is selected', async () => {
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 50,
-      platform: 'instagram',
-      message: 'Post successful!'
-    })
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          instagram: expect.any(Number)
-        })
-      )
-    })
-  })
-
-  it('applies cross-posting when post is successful', async () => {
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 100,
-      platform: 'instagram',
-      message: 'Post successful!'
-    })
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tiktok: expect.any(Number),
-          youtube: expect.any(Number)
-        })
-      )
-    })
-  })
-
-  it('updates band harmony when post result includes harmonyChange', async () => {
+    it('updates general social and band stats correctly when post is selected', async () => {
     vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
       success: true,
       followers: 50,
       platform: 'instagram',
       harmonyChange: 10,
-      message: 'Band loved it!'
+      moodChange: 15,
+      allMembersMoodChange: true,
+      moneyChange: 200,
+      unlockTrait: { memberId: 'Member1', traitId: 'social_butterfly' },
+      influencerUpdate: { id: 'influencer1', scoreChange: 25 },
+      message: 'Post successful!'
     })
 
     render(<PostGig />)
-
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
+      // Followers update + influencer
+      expect(mockUpdateSocial).toHaveBeenCalledWith(
+        expect.objectContaining({
+          instagram: expect.any(Number),
+          influencers: {
+            influencer1: { score: 75 } // 50 + 25
+          }
+        })
+      )
+
+      // Band harmony and mood
       expect(mockUpdateBand).toHaveBeenCalledWith(
         expect.objectContaining({
           harmony: 60 // 50 + 10
         })
       )
-    })
-  })
 
-  it('updates band member mood when post result includes moodChange', async () => {
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 50,
-      platform: 'instagram',
-      moodChange: 15,
-      allMembersMoodChange: true,
-      message: 'Everyone is happy!'
-    })
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    await waitFor(() => {
       expect(mockUpdateBand).toHaveBeenCalledWith(
         expect.objectContaining({
           members: expect.arrayContaining([
@@ -351,6 +306,18 @@ describe('PostGig Component - Social Post Selection', () => {
             expect.objectContaining({ mood: 65 })
           ])
         })
+      )
+
+      // Player money
+      expect(mockUpdatePlayer).toHaveBeenCalledWith({
+        money: 700 // 500 + 200
+      })
+
+      // Trait unlock
+      expect(mockUnlockTrait).toHaveBeenCalledWith('Member1', 'social_butterfly')
+      expect(mockAddToast).toHaveBeenCalledWith(
+        expect.stringContaining('SOCIAL BUTTERFLY'),
+        'success'
       )
     })
   })
@@ -366,7 +333,6 @@ describe('PostGig Component - Social Post Selection', () => {
     })
 
     render(<PostGig />)
-
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
@@ -381,97 +347,28 @@ describe('PostGig Component - Social Post Selection', () => {
     })
   })
 
-  it('updates player money when post result includes moneyChange', async () => {
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 50,
-      platform: 'instagram',
-      moneyChange: 200,
-      message: 'Monetized post!'
-    })
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        money: 700 // 500 + 200
-      })
-    })
-  })
-
-  it('unlocks trait when post result includes unlockTrait', async () => {
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 50,
-      platform: 'instagram',
-      unlockTrait: { memberId: 'Member1', traitId: 'social_butterfly' },
-      message: 'Trait unlocked!'
-    })
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    await waitFor(() => {
-      expect(mockUnlockTrait).toHaveBeenCalledWith(
-        'Member1',
-        'social_butterfly'
-      )
-      expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('SOCIAL BUTTERFLY'),
-        'success'
-      )
-    })
-  })
-
-  it('updates influencer score when post result includes influencerUpdate', async () => {
-    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
-      success: true,
-      followers: 50,
-      platform: 'instagram',
-      influencerUpdate: { id: 'influencer1', scoreChange: 25 },
-      message: 'Influencer noticed!'
-    })
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          influencers: {
-            influencer1: { score: 75 } // 50 + 25
-          }
-        })
-      )
-    })
-  })
-
-  it('increments viral count when post is successful', async () => {
+  it('handles cross-platform posting correctly', async () => {
     vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
       success: true,
       followers: 100,
       platform: 'instagram',
-      message: 'Viral post!'
+      message: 'Cross-platform post!'
     })
 
     render(<PostGig />)
-
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
         expect.objectContaining({
-          viral: 1 // 0 + 1 for successful post
+          tiktok: expect.any(Number),
+          youtube: expect.any(Number)
         })
       )
     })
   })
 
-  it('adds viral bonus when gig triggers viral event', async () => {
+  it('adds viral bonus correctly', async () => {
     vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(true)
     vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
       success: true,
@@ -481,13 +378,33 @@ describe('PostGig Component - Social Post Selection', () => {
     })
 
     render(<PostGig />)
-
     await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
         expect.objectContaining({
           viral: 2 // 0 + 1 (success) + 1 (gig viral bonus)
+        })
+      )
+    })
+  })
+
+  it('increments viral count by exactly 1 without gig bonus', async () => {
+    vi.spyOn(socialEngine, 'checkViralEvent').mockReturnValue(false)
+    vi.spyOn(socialEngine, 'resolvePost').mockReturnValue({
+      success: true,
+      followers: 100,
+      platform: 'instagram',
+      message: 'Viral post!'
+    })
+
+    render(<PostGig />)
+    await proceedToSocialAndSelectPost()
+
+    await waitFor(() => {
+      expect(mockUpdateSocial).toHaveBeenCalledWith(
+        expect.objectContaining({
+          viral: 1 // 0 + 1 (success)
         })
       )
     })
@@ -513,176 +430,55 @@ describe('PostGig Component - Brand Deals', () => {
     vi.restoreAllMocks()
   })
 
-  it('accepts brand deal with upfront payment', async () => {
+  it('processes accepting a complex brand deal correctly', async () => {
     vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
       {
-        id: 'deal_1',
+        id: 'deal_mega',
         name: 'Mega Corp',
-        alignment: BRAND_ALIGNMENTS.CORPORATE,
-        offer: { upfront: 1000, duration: 3 },
-        penalty: { loyalty: -5, controversy: 10 }
-      }
-    ])
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    // Should now be in DEALS phase
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /^BRAND OFFERS$/i })
-      ).toBeInTheDocument()
-    })
-
-    // Accept the deal
-    const acceptBtn = await screen.findByRole('button', { name: /accept/i })
-    fireEvent.click(acceptBtn)
-
-    await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          money: 1500
-        })
-      )
-      expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('Mega Corp'),
-        'success'
-      )
-    })
-  })
-
-  it('accepts brand deal with item reward', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
-      {
-        id: 'deal_2',
-        name: 'Cool Brand',
-        alignment: BRAND_ALIGNMENTS.INDIE,
-        offer: { item: 'special_guitar', duration: 2 },
-        penalty: null
-      }
-    ])
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    const acceptBtn = await screen.findByRole('button', { name: /accept/i })
-    fireEvent.click(acceptBtn)
-
-    await waitFor(() => {
-      expect(mockUpdateBand).toHaveBeenCalledWith(expect.any(Function))
-    })
-
-    const updateBandFn = getLastFunctionalUpdate(mockUpdateBand)
-    expect(updateBandFn).toEqual(expect.any(Function))
-    expect(updateBandFn({ inventory: {} })).toEqual({
-      inventory: { special_guitar: true }
-    })
-  })
-
-  it('applies brand deal penalties to loyalty and controversy', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
-      {
-        id: 'deal_3',
-        name: 'Evil Corp',
         alignment: BRAND_ALIGNMENTS.EVIL,
-        offer: { upfront: 2000, duration: 5 },
+        offer: { upfront: 1000, duration: 5, item: 'special_guitar' },
         penalty: { loyalty: -15, controversy: 30 }
       }
     ])
 
     render(<PostGig />)
-
     await proceedToSocialAndSelectPost()
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /^BRAND OFFERS$/i })).toBeInTheDocument()
+    })
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
 
     await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
-    })
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({ money: 1500 }))
+      expect(mockAddToast).toHaveBeenCalledWith(expect.stringContaining('Mega Corp'), 'success')
 
-    // Get the update function and test it
-    const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
-    expect(updateFn).toEqual(expect.any(Function))
-    const prevSocial = {
-      loyalty: 50,
-      controversyLevel: 20,
-      brandReputation: { EVIL: 0 }
-    }
-    const result = updateFn(prevSocial)
+      // Check inventory item added
+      const updateBandFn = getLastFunctionalUpdate(mockUpdateBand)
+      expect(updateBandFn).toEqual(expect.any(Function))
+      expect(updateBandFn({ inventory: {} })).toEqual({ inventory: { special_guitar: true } })
 
-    expect(result.loyalty).toBe(35) // 50 - 15
-    expect(result.controversyLevel).toBe(50) // 20 + 30
-  })
-
-  it('updates brand reputation and reduces opposing alignment', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
-      {
-        id: 'deal_4',
-        name: 'Green Brand',
-        alignment: BRAND_ALIGNMENTS.SUSTAINABLE,
-        offer: { upfront: 500, duration: 2 },
-        penalty: null
+      // Check loyalty, controversy, reputation and active deals in one go
+      const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
+      expect(updateFn).toEqual(expect.any(Function))
+      const prevSocial = {
+        loyalty: 50,
+        controversyLevel: 20,
+        brandReputation: { EVIL: 0, SUSTAINABLE: 40 },
+        activeDeals: []
       }
-    ])
+      const result = updateFn(prevSocial)
 
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    const acceptBtn = await screen.findByRole('button', { name: /accept/i })
-    fireEvent.click(acceptBtn)
-
-    await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalled()
+      expect(result.loyalty).toBe(35) // 50 - 15
+      expect(result.controversyLevel).toBe(50) // 20 + 30
+      expect(result.brandReputation.EVIL).toBe(5) // 0 + 5
+      expect(result.brandReputation.SUSTAINABLE).toBe(37) // 40 - 3 (opposing)
+      expect(result.activeDeals).toEqual([
+        expect.objectContaining({ id: 'deal_mega', remainingGigs: 5 })
+      ])
     })
-
-    const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
-    expect(updateFn).toEqual(expect.any(Function))
-    const prevSocial = {
-      brandReputation: { SUSTAINABLE: 40, EVIL: 20 }
-    }
-    const result = updateFn(prevSocial)
-
-    expect(result.brandReputation.SUSTAINABLE).toBe(45) // 40 + 5
-    expect(result.brandReputation.EVIL).toBe(17) // 20 - 3
-  })
-
-  it('adds accepted deal to activeDeals', async () => {
-    vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([
-      {
-        id: 'deal_5',
-        name: 'Test Brand',
-        alignment: BRAND_ALIGNMENTS.CORPORATE,
-        offer: { upfront: 300, duration: 4 },
-        penalty: null
-      }
-    ])
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    const acceptBtn = await screen.findByRole('button', { name: /accept/i })
-    fireEvent.click(acceptBtn)
-
-    await waitFor(() => {
-      expect(mockUpdateSocial).toHaveBeenCalled()
-    })
-
-    const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
-    expect(updateFn).toEqual(expect.any(Function))
-    const prevSocial = { activeDeals: [] }
-    const result = updateFn(prevSocial)
-
-    expect(result.activeDeals).toEqual([
-      expect.objectContaining({
-        id: 'deal_5',
-        remainingGigs: 4
-      })
-    ])
   })
 
   it('rejects all deals and advances to COMPLETE phase', async () => {
@@ -845,23 +641,38 @@ describe('PostGig Component - Complete Phase', () => {
     expect(mockUpdateSocial).toHaveBeenCalledTimes(initialUpdateSocialCalls)
   })
 
-  it('updates player money and fame on continue', async () => {
-    render(<PostGig />)
+  it('handles multiple continue effects correctly', async () => {
+    vi.spyOn(economyEngine, 'shouldTriggerBankruptcy').mockReturnValue(false)
+    useGameState.mockReturnValue(
+      createBaseState({ activeStoryFlags: ['cancel_quest_active', 'breakup_quest_active'] })
+    )
 
+    render(<PostGig />)
     await proceedToSocialAndSelectPost()
 
-    const continueBtn = await screen.findByRole('button', {
-      name: /back to tour/i
-    })
+    const continueBtn = await screen.findByRole('button', { name: /back to tour/i })
     fireEvent.click(continueBtn)
 
     await waitFor(() => {
+      // Updates player
       expect(mockUpdatePlayer).toHaveBeenCalledWith(
         expect.objectContaining({
           money: 700, // 500 + 200 (net)
           fame: expect.any(Number)
         })
       )
+
+      // Adds both quests
+      expect(mockAddQuest).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'quest_apology_tour', deadline: 19, required: 3 })
+      )
+      expect(mockAddQuest).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'quest_ego_management', deadline: 10, required: 1, failurePenalty: { type: 'game_over' } })
+      )
+
+      // Saves and changes scene
+      expect(mockSaveGame).toHaveBeenCalledWith(false)
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
   })
 
@@ -874,87 +685,14 @@ describe('PostGig Component - Complete Phase', () => {
     })
 
     render(<PostGig />)
-
     await proceedToSocialAndSelectPost()
 
-    const continueBtn = await screen.findByRole('button', {
-      name: /back to tour/i
-    })
+    const continueBtn = await screen.findByRole('button', { name: /back to tour/i })
     fireEvent.click(continueBtn)
 
     await waitFor(() => {
-      expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('BANKRUPT'),
-        'error'
-      )
+      expect(mockAddToast).toHaveBeenCalledWith(expect.stringContaining('BANKRUPT'), 'error')
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
-    })
-  })
-
-  it('adds apology tour quest when cancel_quest_active flag is set', async () => {
-    useGameState.mockReturnValue(
-      createBaseState({ activeStoryFlags: ['cancel_quest_active'] })
-    )
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    const continueBtn = await screen.findByRole('button', {
-      name: /back to tour/i
-    })
-    fireEvent.click(continueBtn)
-
-    await waitFor(() => {
-      expect(mockAddQuest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'quest_apology_tour',
-          deadline: 19, // day 5 + 14
-          required: 3
-        })
-      )
-    })
-  })
-
-  it('adds ego management quest when breakup_quest_active flag is set', async () => {
-    useGameState.mockReturnValue(
-      createBaseState({ activeStoryFlags: ['breakup_quest_active'] })
-    )
-
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    const continueBtn = await screen.findByRole('button', {
-      name: /back to tour/i
-    })
-    fireEvent.click(continueBtn)
-
-    await waitFor(() => {
-      expect(mockAddQuest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'quest_ego_management',
-          deadline: 10, // day 5 + 5
-          required: 1,
-          failurePenalty: { type: 'game_over' }
-        })
-      )
-    })
-  })
-
-  it('saves game and returns to overworld on successful continue', async () => {
-    render(<PostGig />)
-
-    await proceedToSocialAndSelectPost()
-
-    const continueBtn = await screen.findByRole('button', {
-      name: /back to tour/i
-    })
-    fireEvent.click(continueBtn)
-
-    await waitFor(() => {
-      expect(mockSaveGame).toHaveBeenCalledWith(false)
-      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
   })
 })
