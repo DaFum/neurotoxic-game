@@ -17,6 +17,10 @@ vi.mock('../../src/utils/logger.js', () => ({
   }
 }))
 
+vi.mock('../../src/components/PixiStageController', () => ({
+  createPixiStageController: vi.fn()
+}))
+
 afterEach(cleanup)
 
 describe('PixiStage Performance Optimization', () => {
@@ -70,10 +74,6 @@ describe('PixiStage Performance Optimization', () => {
     const controllerFactory = vi.fn().mockReturnValue(mockController)
     const gameStateRef = { current: {} }
     const update = vi.fn()
-
-    vi.mock('../../src/components/PixiStageController', () => ({
-      createPixiStageController: vi.fn()
-    }))
 
     // We can't easily count internal renders of PixiStage without modifying it or using devtools.
     // However, we can verify that the controller's init/dispose are NOT called again.
