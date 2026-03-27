@@ -1,6 +1,7 @@
 // TODO: Review this file
 import { logger } from '../../utils/logger.js'
-import { clampVanCondition,
+import {
+  clampVanCondition,
   clampPlayerMoney,
   clampBandHarmony,
   clampVanFuel
@@ -68,7 +69,9 @@ export const handleCompleteTravelMinigame = (state, payload) => {
 
   const nextMoney = clampPlayerMoney(state.player.money - totalCost)
   const nextFuel = clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus)
-  const nextCondition = clampVanCondition(state.player.van.condition - conditionLoss)
+  const nextCondition = clampVanCondition(
+    state.player.van.condition - conditionLoss
+  )
 
   const nextPlayer = {
     ...state.player,
