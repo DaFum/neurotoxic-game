@@ -7,29 +7,15 @@ const mocks = vi.hoisted(() => ({
   stopAudio: vi.fn(),
   loggerWarn: vi.fn(),
   loggerError: vi.fn(),
-  getGigModifiers: vi.fn(() => ({})),
-  calculateGigPhysics: vi.fn(() => ({
-    multipliers: { drums: 1, guitar: 1, bass: 1 },
-    hasPerfektionist: false,
-    speedModifier: 1,
-    hitWindows: { guitar: 100, drums: 100, bass: 100 }
+  handleError: vi.fn(),
+  setupGigPhysics: vi.fn(() => ({
+    mergedModifiers: {},
+    speed: 500,
+    hitWindows: [100, 100, 100]
   })),
-  startMetalGenerator: vi.fn(async () => true),
-  playMidiFile: vi.fn(async () => true),
-  playSongFromData: vi.fn(async () => true),
-  hasAudioAsset: vi.fn(() => false),
-  startGigClock: vi.fn(),
-  startGigPlayback: vi.fn(async () => true),
-  getAudioContextTimeSec: vi.fn(() => 0),
-  getToneStartTimeSec: vi.fn(v => v),
-  getGigTimeMs: vi.fn(() => 0),
-  parseSongNotes: vi.fn(() => []),
-  generateNotesForSong: vi.fn(() => []),
-  resolveSongPlaybackWindow: vi.fn(() => ({
-    excerptStartMs: 0,
-    excerptDurationMs: 1000
-  })),
-  handleError: vi.fn()
+  resolveActiveSetlist: vi.fn(() => [{ id: 'song_1', name: 'Song 1' }]),
+  playSongSequence: vi.fn(async () => {}),
+  resetGigStateTracking: vi.fn()
 }))
 
 vi.mock('../src/utils/AudioManager', () => ({
@@ -40,16 +26,7 @@ vi.mock('../src/utils/AudioManager', () => ({
 }))
 
 vi.mock('../src/utils/audioEngine', () => ({
-  startMetalGenerator: mocks.startMetalGenerator,
-  playMidiFile: mocks.playMidiFile,
-  playSongFromData: mocks.playSongFromData,
-  hasAudioAsset: mocks.hasAudioAsset,
-  startGigClock: mocks.startGigClock,
-  startGigPlayback: mocks.startGigPlayback,
-  stopAudio: mocks.stopAudio,
-  getAudioContextTimeSec: mocks.getAudioContextTimeSec,
-  getToneStartTimeSec: mocks.getToneStartTimeSec,
-  getGigTimeMs: mocks.getGigTimeMs
+  stopAudio: mocks.stopAudio
 }))
 
 vi.mock('../src/utils/errorHandler', () => ({
@@ -61,22 +38,11 @@ vi.mock('../src/utils/logger', () => ({
   logger: { warn: mocks.loggerWarn, error: mocks.loggerError, info: vi.fn() }
 }))
 
-vi.mock('../src/utils/simulationUtils', () => ({
-  getGigModifiers: mocks.getGigModifiers,
-  calculateGigPhysics: mocks.calculateGigPhysics
-}))
-
-vi.mock('../src/utils/rhythmUtils', () => ({
-  parseSongNotes: mocks.parseSongNotes,
-  generateNotesForSong: mocks.generateNotesForSong
-}))
-
-vi.mock('../src/utils/audio/songUtils', () => ({
-  resolveSongPlaybackWindow: mocks.resolveSongPlaybackWindow
-}))
-
-vi.mock('../src/data/songs.js', () => ({
-  SONGS_DB: [{ id: 'song_1', name: 'Song 1', bpm: 120, duration: 60 }]
+vi.mock('../src/utils/rhythmGameAudioUtils.js', () => ({
+  setupGigPhysics: mocks.setupGigPhysics,
+  resolveActiveSetlist: mocks.resolveActiveSetlist,
+  playSongSequence: mocks.playSongSequence,
+  resetGigStateTracking: mocks.resetGigStateTracking
 }))
 
 import { useRhythmGameAudio } from '../src/hooks/rhythmGame/useRhythmGameAudio'
