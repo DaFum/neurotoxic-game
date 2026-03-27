@@ -9,44 +9,6 @@ import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 
 /**
- * Pure function to build the rhythm game stats snapshot.
- */
-export const buildRhythmGameStats = state => ({
-  score: state.score,
-  combo: state.combo,
-  health: state.health,
-  overload: state.overload,
-  isToxicMode: state.isToxicMode,
-  isGameOver: state.isGameOver,
-  isAudioReady: state.isAudioReady,
-  accuracy: state.accuracy
-})
-
-/**
- * Pure function to build the rhythm game actions map.
- */
-export const buildRhythmGameActions = (
-  registerInput,
-  activateToxicMode,
-  retryAudioInitialization
-) => ({
-  registerInput,
-  activateToxicMode,
-  retryAudioInitialization
-})
-
-/**
- * Pure function to handle rhythm game cleanup.
- */
-export const cleanupRhythmGame = gameStateRef => {
-  const currentState = gameStateRef.current
-  if (currentState) {
-    currentState.isGameOver = true
-  }
-  stopAudio()
-}
-
-/**
  * Provides rhythm game state, actions, and update loop for the gig scene.
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
@@ -116,11 +78,26 @@ export const useRhythmGameLogic = () => {
 
   // Cleanup hook to prevent memory leaks and sync audio state on unmount
   useEffect(() => {
-    return () => cleanupRhythmGame(gameStateRef)
+    const currentState = gameStateRef.current
+    return () => {
+      if (currentState) {
+        currentState.isGameOver = true
+      }
+      stopAudio()
+    }
   }, [gameStateRef])
 
   const stats = useMemo(
-    () => buildRhythmGameStats(state),
+    () => ({
+      score: state.score,
+      combo: state.combo,
+      health: state.health,
+      overload: state.overload,
+      isToxicMode: state.isToxicMode,
+      isGameOver: state.isGameOver,
+      isAudioReady: state.isAudioReady,
+      accuracy: state.accuracy
+    }),
     [
       state.score,
       state.combo,
@@ -134,12 +111,7 @@ export const useRhythmGameLogic = () => {
   )
 
   const actions = useMemo(
-    () =>
-      buildRhythmGameActions(
-        registerInput,
-        activateToxicMode,
-        retryAudioInitialization
-      ),
+    () => ({ registerInput, activateToxicMode, retryAudioInitialization }),
     [registerInput, activateToxicMode, retryAudioInitialization]
   )
 
