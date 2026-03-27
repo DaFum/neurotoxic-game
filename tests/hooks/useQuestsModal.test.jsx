@@ -57,31 +57,30 @@ describe('useQuestsModal', () => {
     })
   })
 
-  it('should pass through undefined or null activeQuests safely', () => {
-    return import('../../src/context/GameState.jsx').then(({ useGameState }) => {
-      // Mock undefined
-      useGameState.mockReturnValueOnce({
-        activeQuests: undefined,
-        player: { name: 'Test Player' }
-      })
-      const { result: res1 } = renderHook(() => useQuestsModal())
-      expect(res1.current.questsProps).toEqual({
-        onClose: expect.any(Function),
-        activeQuests: [],
-        player: { name: 'Test Player' }
-      })
+  it('should correctly pass through undefined or null activeQuests', () => {
+    // Override the mock for this specific test
+    vi.mocked(useGameState).mockReturnValueOnce({
+      player: { name: 'Test Player' },
+      activeQuests: undefined
+    })
 
-      // Mock null
-      useGameState.mockReturnValueOnce({
-        activeQuests: null,
-        player: { name: 'Test Player' }
-      })
-      const { result: res2 } = renderHook(() => useQuestsModal())
-      expect(res2.current.questsProps).toEqual({
-        onClose: expect.any(Function),
-        activeQuests: [],
-        player: { name: 'Test Player' }
-      })
+    const { result: resultUndefined } = renderHook(() => useQuestsModal())
+    expect(resultUndefined.current.questsProps).toEqual({
+      onClose: expect.any(Function),
+      player: { name: 'Test Player' },
+      activeQuests: []
+    })
+
+    vi.mocked(useGameState).mockReturnValueOnce({
+      player: { name: 'Test Player' },
+      activeQuests: null
+    })
+
+    const { result: resultNull } = renderHook(() => useQuestsModal())
+    expect(resultNull.current.questsProps).toEqual({
+      onClose: expect.any(Function),
+      player: { name: 'Test Player' },
+      activeQuests: []
     })
   })
 })

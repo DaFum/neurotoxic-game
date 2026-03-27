@@ -7,6 +7,6 @@
  */
 export const buildQuestsProps = (onClose, activeQuests, player) => ({
   onClose,
-  activeQuests: activeQuests || [],
+  activeQuests: activeQuests ?? [],
   player
 })

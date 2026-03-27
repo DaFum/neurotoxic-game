@@ -78,6 +78,9 @@ export const calculatePoints = (
     case LANE_INDICES.BASS:
       points *= bassScoreMult
       break
+    default:
+      console.error(`Unknown lane index: ${laneIndex}`)
+      break
   }
 
   // Guestlist Effect: +20% score

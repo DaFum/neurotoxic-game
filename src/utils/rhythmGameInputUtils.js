@@ -1,3 +1,4 @@
+export const DEBOUNCE_MS = 50;
 
 /**
  * Determines whether input can be processed based on the current game state.
@@ -47,7 +48,7 @@ export const processLaneInput = ({
   if (isDown) {
     const lastInputTime = lastInputTimes[laneIndex] ?? -Infinity
     // Debounce to prevent multiple hits within 50ms
-    if (now - lastInputTime < 50) return
+    if (now - lastInputTime < DEBOUNCE_MS) return
     lastInputTimes[laneIndex] = now
 
     handleHit(laneIndex)

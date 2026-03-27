@@ -1,9 +1,14 @@
 import assert from 'node:assert'
-import { test, describe } from 'node:test'
+import { test, describe, mock, beforeEach } from 'node:test'
 import { resolveActiveSetlist } from '../src/utils/rhythmGameAudioUtils.js'
+import { SONGS_BY_ID } from '../src/data/songs.js'
 
 describe('rhythmGameAudioUtils', () => {
   describe('resolveActiveSetlist', () => {
+    beforeEach(() => {
+      SONGS_BY_ID.clear()
+    })
+
     test('should return default jam if setlist is empty', () => {
       const setlist = []
       const result = resolveActiveSetlist(setlist)
@@ -26,6 +31,26 @@ describe('rhythmGameAudioUtils', () => {
       assert.strictEqual(result.length, 1)
       assert.strictEqual(result[0].id, 'custom')
       assert.deepStrictEqual(result[0].notes, [1, 2, 3])
+    })
+
+    test('should resolve string ref to known song in SONGS_BY_ID', () => {
+      SONGS_BY_ID.set('known', { id: 'known', name: 'Known Song', notes: [1, 2] })
+      const setlist = ['known']
+      const result = resolveActiveSetlist(setlist)
+      assert.strictEqual(result.length, 1)
+      assert.strictEqual(result[0].id, 'known')
+      assert.strictEqual(result[0].name, 'Known Song')
+      assert.deepStrictEqual(result[0].notes, [1, 2])
+    })
+
+    test('should resolve partial object to known song in SONGS_BY_ID', () => {
+      SONGS_BY_ID.set('partial', { id: 'partial', name: 'Partial Song', notes: [4, 5] })
+      const setlist = [{ id: 'partial' }]
+      const result = resolveActiveSetlist(setlist)
+      assert.strictEqual(result.length, 1)
+      assert.strictEqual(result[0].id, 'partial')
+      assert.strictEqual(result[0].name, 'Partial Song')
+      assert.deepStrictEqual(result[0].notes, [4, 5])
     })
   })
 })

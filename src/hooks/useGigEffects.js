@@ -154,7 +154,12 @@ export const useGigEffects = stats => {
     if (stats.isToxicMode) {
       rAF = requestAnimationFrame(animateChaos)
     } else {
-      applyChaosJitter(chaosContainerRef.current, false, null)
+      applyChaosJitter(chaosContainerRef.current, false, null, (error) => {
+        if (!secureRandomErrorReported) {
+          handleError(error, { severity: 'medium', silent: true })
+          secureRandomErrorReported = true
+        }
+      })
     }
 
     return () => cancelAnimationFrame(rAF)
