@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability by extracting pure logic to `src/utils/rhythmGameLoopUtils.js`.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
- */
 import { useCallback, useRef, useEffect } from 'react'
 import { createHecklerSession } from '../../utils/hecklerLogic'
 import {

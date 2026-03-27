@@ -1,4 +1,4 @@
-import { useReducer, useRef, useMemo } from 'react'
+import { useReducer, useRef, useMemo, useState } from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 
 const INITIAL_UI_STATE = {
@@ -126,13 +126,11 @@ export const useRhythmGameState = () => {
 
   // High-Frequency Game State (Ref)
   // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
-  const gameStateRef = useRef()
-  if (!gameStateRef.current) {
-    gameStateRef.current = {
-      ...structuredClone(INITIAL_GAME_STATE_REF),
-      rng: Math.random // Store RNG for consistency
-    }
-  }
+  const [initialRefValue] = useState(() => ({
+    ...structuredClone(INITIAL_GAME_STATE_REF),
+    rng: Math.random // Store RNG for consistency
+  }))
+  const gameStateRef = useRef(initialRefValue)
 
   const setters = useMemo(
     () => ({

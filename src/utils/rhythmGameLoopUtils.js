@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Extracted pure logic from useRhythmGameLoop into utility functions.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
- */
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 
