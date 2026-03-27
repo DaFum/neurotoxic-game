@@ -39,8 +39,6 @@ export const Gig = () => {
     currentGig,
     changeScene,
     addToast,
-    activeEvent,
-    setActiveEvent,
     setLastGigStats,
     band,
     endGig

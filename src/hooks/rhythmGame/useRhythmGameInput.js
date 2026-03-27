@@ -1,4 +1,3 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useRef } from 'react'
 import { getTransportState } from '../../utils/audioEngine'
 

@@ -1,9 +1,3 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
-/*
- * (#1) Actual Updates: Added useTranslation hook and passed t to useRhythmGameAudio contextActions for localized toasts.
- * (#2) Next Steps: Refactor logic to reduce cognitive complexity and improve testability.
- * (#3) Found Errors + Solutions: N/A
- */
 import { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
@@ -13,6 +7,44 @@ import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
 import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
+
+/**
+ * Pure function to build the rhythm game stats snapshot.
+ */
+export const buildRhythmGameStats = state => ({
+  score: state.score,
+  combo: state.combo,
+  health: state.health,
+  overload: state.overload,
+  isToxicMode: state.isToxicMode,
+  isGameOver: state.isGameOver,
+  isAudioReady: state.isAudioReady,
+  accuracy: state.accuracy
+})
+
+/**
+ * Pure function to build the rhythm game actions map.
+ */
+export const buildRhythmGameActions = (
+  registerInput,
+  activateToxicMode,
+  retryAudioInitialization
+) => ({
+  registerInput,
+  activateToxicMode,
+  retryAudioInitialization
+})
+
+/**
+ * Pure function to handle rhythm game cleanup.
+ */
+export const cleanupRhythmGame = gameStateRef => {
+  const currentState = gameStateRef.current
+  if (currentState) {
+    currentState.isGameOver = true
+  }
+  stopAudio()
+}
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
@@ -84,26 +116,11 @@ export const useRhythmGameLogic = () => {
 
   // Cleanup hook to prevent memory leaks and sync audio state on unmount
   useEffect(() => {
-    const currentState = gameStateRef.current
-    return () => {
-      if (currentState) {
-        currentState.isGameOver = true
-      }
-      stopAudio()
-    }
+    return () => cleanupRhythmGame(gameStateRef)
   }, [gameStateRef])
 
   const stats = useMemo(
-    () => ({
-      score: state.score,
-      combo: state.combo,
-      health: state.health,
-      overload: state.overload,
-      isToxicMode: state.isToxicMode,
-      isGameOver: state.isGameOver,
-      isAudioReady: state.isAudioReady,
-      accuracy: state.accuracy
-    }),
+    () => buildRhythmGameStats(state),
     [
       state.score,
       state.combo,
@@ -117,7 +134,12 @@ export const useRhythmGameLogic = () => {
   )
 
   const actions = useMemo(
-    () => ({ registerInput, activateToxicMode, retryAudioInitialization }),
+    () =>
+      buildRhythmGameActions(
+        registerInput,
+        activateToxicMode,
+        retryAudioInitialization
+      ),
     [registerInput, activateToxicMode, retryAudioInitialization]
   )
 
