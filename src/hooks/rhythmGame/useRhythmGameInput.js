@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { getTransportState } from '../../utils/audioEngine'
+import { getTransportState, getGigTimeMs } from '../../utils/audioEngine'
 
 /**
  * Determines whether input can be processed based on the current game state.
@@ -91,7 +91,7 @@ export const useRhythmGameInput = ({
       processLaneInput({
         laneIndex,
         isDown,
-        now: Date.now(),
+        now: getGigTimeMs(),
         state,
         lastInputTimes: lastInputTimesRef.current,
         handleHit
