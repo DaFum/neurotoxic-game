@@ -1,9 +1,8 @@
-// TODO: Review this file
 import { memo, useCallback } from 'react'
 import PropTypes from 'prop-types'
+import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils.js'
 
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
-const LANE_INDICES = [0, 1, 2]
 
 const LaneInputZone = memo(function LaneInputZone({ laneIndex, onLaneInput }) {
   const handleMouseDown = useCallback(
@@ -56,7 +55,7 @@ LaneInputZone.propTypes = {
 export const LaneInputArea = memo(function LaneInputArea({ onLaneInput }) {
   return (
     <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
-      {LANE_INDICES.map(laneIndex => (
+      {Object.values(LANE_INDICES).map(laneIndex => (
         <LaneInputZone
           key={LANE_NAMES[laneIndex]}
           laneIndex={laneIndex}

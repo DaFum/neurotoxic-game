@@ -1,9 +1,10 @@
 import assert from 'node:assert'
 import { test, describe, mock } from 'node:test'
+
 import {
   canProcessInput,
   processLaneInput
-} from '../src/hooks/rhythmGame/useRhythmGameInput.js'
+} from '../src/utils/rhythmGameInputUtils.js'
 
 describe('useRhythmGameInput Utils', () => {
   describe('canProcessInput', () => {

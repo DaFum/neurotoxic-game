@@ -1,6 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { useQuestsModal } from '../../src/hooks/useQuestsModal'
+import { useGameState } from '../../src/context/GameState.jsx'
 
 // Mock the GameState context
 vi.mock('../../src/context/GameState.jsx', () => ({
@@ -53,6 +54,33 @@ describe('useQuestsModal', () => {
         { id: 'quest2', label: 'Quest 2' }
       ],
       player: { name: 'Test Player' }
+    })
+  })
+
+  it('should correctly pass through undefined or null activeQuests', () => {
+    // Override the mock for this specific test
+    vi.mocked(useGameState).mockReturnValueOnce({
+      player: { name: 'Test Player' },
+      activeQuests: undefined
+    })
+
+    const { result: resultUndefined } = renderHook(() => useQuestsModal())
+    expect(resultUndefined.current.questsProps).toEqual({
+      onClose: expect.any(Function),
+      player: { name: 'Test Player' },
+      activeQuests: []
+    })
+
+    vi.mocked(useGameState).mockReturnValueOnce({
+      player: { name: 'Test Player' },
+      activeQuests: null
+    })
+
+    const { result: resultNull } = renderHook(() => useQuestsModal())
+    expect(resultNull.current.questsProps).toEqual({
+      onClose: expect.any(Function),
+      player: { name: 'Test Player' },
+      activeQuests: []
     })
   })
 })
