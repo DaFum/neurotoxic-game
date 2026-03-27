@@ -1,5 +1,6 @@
 // TODO: Review this file
-import { clampPlayerFame,
+import {
+  clampPlayerFame,
   clampBandHarmony,
   clampPlayerMoney,
   calculateFameLevel,

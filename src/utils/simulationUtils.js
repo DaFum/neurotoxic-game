@@ -12,7 +12,8 @@ import { hasTrait } from './traitLogic.js'
 import { secureRandom } from './crypto.js'
 import {
   clampPlayerMoney,
-  clampBandHarmony, clampVanCondition,
+  clampBandHarmony,
+  clampVanCondition,
   clampMemberStamina,
   clampMemberMood
 } from './gameStateUtils.js'
@@ -247,7 +248,9 @@ export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
-    nextPlayer.van.condition = clampVanCondition((nextPlayer.van.condition ?? 100) - 2)
+    nextPlayer.van.condition = clampVanCondition(
+      (nextPlayer.van.condition ?? 100) - 2
+    )
     // Increased breakdown chance when condition is low
     // Calculate base breakdown chance from upgrades every day to avoid compounding multipliers.
     const baseBreakdownChance = calcBaseBreakdownChance(
