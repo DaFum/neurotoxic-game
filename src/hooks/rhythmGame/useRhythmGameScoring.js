@@ -1,4 +1,3 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -16,6 +15,12 @@ import {
 } from '../../utils/audioEngine'
 import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
+import {
+  calculateDynamicHitWindow,
+  calculatePoints,
+  calculateFinalScore,
+  calculateMissImpact
+} from '../../utils/rhythmGameScoringUtils'
 
 /**
  * Handles scoring logic including hits, misses, toxic mode, and game over.
@@ -91,10 +96,17 @@ export const useRhythmGameScoring = ({
       setCombo(0)
       gameStateRef.current.combo = 0
 
-      // Calculate new overload and stats outside the setState callback
-      const penalty = isEmptyHit ? 2 : 5
+      const currentHealth = gameStateRef.current.health
       const currentOverload = gameStateRef.current.overload
-      const nextOverload = Math.max(0, currentOverload - penalty * count)
+
+      // Calculate new overload and stats outside the setState callback
+      const { nextOverload, nextHealth } = calculateMissImpact(
+        count,
+        isEmptyHit,
+        currentOverload,
+        currentHealth,
+        crowdDecay
+      )
 
       gameStateRef.current.overload = nextOverload
       const updatedStats = updateGigPerformanceStats(
@@ -120,17 +132,6 @@ export const useRhythmGameScoring = ({
       if (!isEmptyHit) {
         audioManager.playSFX('miss')
       }
-
-      // Dynamic decay based on stats (e.g. crowdDecay 1.0 -> 0.9 means 10% slower decay)
-      // Base decay is 2 for real misses, 1 for empty hits. Multiplier comes from state (default 1.0)
-      const basePenalty = isEmptyHit ? 1 : 2
-      const decayPerMiss = basePenalty * Math.max(0.1, crowdDecay)
-
-      const currentHealth = gameStateRef.current.health
-      const nextHealth = Math.max(
-        0,
-        Math.min(100, currentHealth - decayPerMiss * count)
-      )
 
       if (nextHealth <= 0 && !gameStateRef.current.isGameOver) {
         setIsGameOver(true)
@@ -194,16 +195,12 @@ export const useRhythmGameScoring = ({
       const elapsed = getGigTimeMs()
       const toxicModeActive = state.isToxicMode
 
-      let hitWindow = state.lanes[laneIndex].hitWindow
-      if (state.modifiers.hitWindowBonus)
-        hitWindow += state.modifiers.hitWindowBonus
-
-      // Dynamic Hit Window (Guitar Custom: easier to hit = larger window)
-      // e.g. guitarDifficulty 0.85 (15% reduction) -> Window / 0.85 (~1.17x larger)
-      if (laneIndex === 0) {
-        const difficultyFactor = Math.max(0.1, guitarDifficulty)
-        hitWindow /= difficultyFactor
-      }
+      const hitWindow = calculateDynamicHitWindow(
+        state.lanes[laneIndex].hitWindow,
+        state.modifiers.hitWindowBonus || 0,
+        laneIndex,
+        guitarDifficulty
+      )
 
       const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
 
@@ -233,38 +230,34 @@ export const useRhythmGameScoring = ({
           audioManager.playSFX('hit') // Fallback
         }
 
-        let points = 100
-        // Dynamic Score Multiplier (Drum Trigger: physics.multipliers.drums, e.g. 1.5x for blast_machine trait)
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to
         // the static performance value if audio hasn't initialized yet.
-        if (laneIndex === 1) {
-          points *= state.modifiers.drumMultiplier || drumMultiplier
-        }
-        if (laneIndex === 0) points *= state.modifiers.guitarScoreMult || 1.0
-        if (laneIndex === 2) points *= state.modifiers.bassScoreMult || 1.0
-
-        // Guestlist Effect: +20% score
-        if (state.modifiers.guestlist) points *= 1.2
-
-        const comboForScore = state.combo
-        let finalScore = points + comboForScore * 10
-        if (toxicModeActive) finalScore *= 4
+        const activeDrumMultiplier =
+          state.modifiers.drumMultiplier || drumMultiplier
+        const basePoints = calculatePoints(
+          laneIndex,
+          activeDrumMultiplier,
+          state.modifiers.guitarScoreMult || 1.0,
+          state.modifiers.bassScoreMult || 1.0,
+          state.modifiers.guestlist || false
+        )
 
         // Update hits immediately for accuracy calculation
         gameStateRef.current.stats.perfectHits++
 
-        // Perfektionist Trait (Matze): +15% score if accuracy > 85%
         const currentAccuracy = calculateAccuracy(
           gameStateRef.current.stats.perfectHits,
           gameStateRef.current.stats.misses
         )
         setAccuracy(currentAccuracy)
 
-        if (state.modifiers.hasPerfektionist && currentAccuracy > 85) {
-          finalScore *= 1.15
-        }
-
-        finalScore = Math.floor(finalScore)
+        const finalScore = calculateFinalScore(
+          basePoints,
+          state.combo,
+          toxicModeActive,
+          state.modifiers.hasPerfektionist || false,
+          currentAccuracy
+        )
 
         // Extract calculations outside state callbacks
         const nextScore = gameStateRef.current.score + finalScore
