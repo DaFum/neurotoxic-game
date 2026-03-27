@@ -1,6 +1,60 @@
-// TODO: Refactor logic to reduce cognitive complexity and improve testability
 import { useCallback, useRef } from 'react'
-import { getTransportState } from '../../utils/audioEngine'
+import { getTransportState, getGigTimeMs } from '../../utils/audioEngine'
+
+/**
+ * Determines whether input can be processed based on the current game state.
+ *
+ * @param {Object} state - Current game state.
+ * @param {Object|null} activeEvent - Active context event, if any.
+ * @param {string} transportState - Current audio transport state.
+ * @returns {boolean} True if input should be processed, false otherwise.
+ */
+export const canProcessInput = (state, activeEvent, transportState) => {
+  if (
+    activeEvent ||
+    state.songTransitioning ||
+    state.isGameOver ||
+    state.hasSubmittedResults
+  ) {
+    return false
+  }
+
+  return transportState === 'started'
+}
+
+/**
+ * Processes an input event for a specific lane.
+ *
+ * @param {Object} params - Input parameters.
+ * @param {number} params.laneIndex - Lane index.
+ * @param {boolean} params.isDown - Whether the input is pressed.
+ * @param {number} params.now - Current timestamp.
+ * @param {Object} params.state - Current game state.
+ * @param {Object} params.lastInputTimes - Reference object holding last input times.
+ * @param {Function} params.handleHit - Callback to handle a hit.
+ */
+export const processLaneInput = ({
+  laneIndex,
+  isDown,
+  now,
+  state,
+  lastInputTimes,
+  handleHit
+}) => {
+  if (laneIndex < 0 || laneIndex >= state.lanes.length) return
+
+  // Toggle the visual active state (this is read by the PixiJS game loop)
+  state.lanes[laneIndex].active = isDown
+
+  if (isDown) {
+    const lastInputTime = lastInputTimes[laneIndex] || 0
+    // Debounce to prevent multiple hits within 50ms
+    if (now - lastInputTime < 50) return
+    lastInputTimes[laneIndex] = now
+
+    handleHit(laneIndex)
+  }
+}
 
 /**
  * Handles user input for the rhythm game.
@@ -27,32 +81,21 @@ export const useRhythmGameInput = ({
    */
   const registerInput = useCallback(
     (laneIndex, isDown) => {
-      const now = Date.now()
-
       const state = gameStateRef.current
-      if (
-        activeEvent ||
-        state.songTransitioning ||
-        state.isGameOver ||
-        state.hasSubmittedResults
-      ) {
+      const transportState = getTransportState()
+
+      if (!canProcessInput(state, activeEvent, transportState)) {
         return
       }
-      const isTransportRunning = getTransportState() === 'started'
-      if (!isTransportRunning) return
 
-      if (laneIndex >= 0 && laneIndex < state.lanes.length) {
-        // Toggle the visual active state (this is read by the PixiJS game loop)
-        state.lanes[laneIndex].active = isDown
-
-        if (isDown) {
-          const lastInputTime = lastInputTimesRef.current[laneIndex] || 0
-          if (now - lastInputTime < 50) return
-          lastInputTimesRef.current[laneIndex] = now
-
-          handleHit(laneIndex)
-        }
-      }
+      processLaneInput({
+        laneIndex,
+        isDown,
+        now: getGigTimeMs(),
+        state,
+        lastInputTimes: lastInputTimesRef.current,
+        handleHit
+      })
     },
     [activeEvent, gameStateRef, handleHit]
   )
