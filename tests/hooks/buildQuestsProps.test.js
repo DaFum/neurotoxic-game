@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { buildQuestsProps } from '../../src/hooks/useQuestsModal.js'
+import { buildQuestsProps } from '../../src/hooks/buildQuestsProps.js'
 
 describe('buildQuestsProps', () => {
   it('should build props with provided values', () => {

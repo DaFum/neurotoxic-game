@@ -227,7 +227,7 @@ const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
   return success
 }
 
-export const playAudioForSong = async (
+const playAudioForSong = async (
   currentSong,
   notes,
   onSongEnded,
@@ -266,7 +266,7 @@ export const playAudioForSong = async (
   return finalNotes
 }
 
-export const handleSongEnded = (gameStateRef, currentSong, index) => {
+const handleSongEnded = (gameStateRef, currentSong, index) => {
   const currentState = gameStateRef.current
   if (!currentState) return
 

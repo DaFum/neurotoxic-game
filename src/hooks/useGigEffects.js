@@ -16,10 +16,13 @@ export const calculateChaosStyle = (isToxicMode, overload) => {
     style.filter = 'invert(0.1) contrast(1.5) saturate(2)'
     return style
   }
-  if (overload > 80) {
-    style.filter = `saturate(${1 + (overload - 50) / 25}) hue-rotate(${overload - 80}deg)`
-  } else if (overload > 50) {
-    style.filter = `saturate(${1 + (overload - 50) / 25})`
+  if (overload > 50) {
+    const saturation = 1 + (overload - 50) / 25
+    let filter = `saturate(${saturation})`
+    if (overload > 80) {
+      filter += ` hue-rotate(${overload - 80}deg)`
+    }
+    style.filter = filter
   }
   return style
 }
@@ -62,7 +65,7 @@ export const playBandMemberAnimation = (memberEl, existingAnim) => {
  *
  * @param {Element} containerEl - The DOM element to jitter
  * @param {boolean} isToxicMode - Whether chaos is active
- * @param {Function} getRandom - Random value generator (defaults to secureRandom)
+ * @param {Function} getRandom - Random value generator, required if `isToxicMode` is true.
  * @param {Function} onError - Callback when an error occurs
  * @returns {boolean} True if successful, False if an error occurred
  */
@@ -71,8 +74,9 @@ export const applyChaosJitter = (containerEl, isToxicMode, getRandom, onError) =
 
   try {
     if (isToxicMode) {
-      const x = getRandom() * 4 - 2
-      const y = getRandom() * 4 - 2
+      const JITTER_PIXELS = 2
+      const x = getRandom() * (JITTER_PIXELS * 2) - JITTER_PIXELS
+      const y = getRandom() * (JITTER_PIXELS * 2) - JITTER_PIXELS
       containerEl.style.transform = `translate(${x}px, ${y}px)`
     } else {
       containerEl.style.transform = 'none'
@@ -150,7 +154,7 @@ export const useGigEffects = stats => {
     if (stats.isToxicMode) {
       rAF = requestAnimationFrame(animateChaos)
     } else {
-      applyChaosJitter(chaosContainerRef.current, false, secureRandom)
+      applyChaosJitter(chaosContainerRef.current, false, null)
     }
 
     return () => cancelAnimationFrame(rAF)
