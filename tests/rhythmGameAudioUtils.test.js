@@ -1,12 +1,22 @@
 import assert from 'node:assert'
-import { test, describe, mock, beforeEach } from 'node:test'
+import { test, describe, beforeEach, afterEach } from 'node:test'
 import { resolveActiveSetlist } from '../src/utils/rhythmGameAudioUtils.js'
 import { SONGS_BY_ID } from '../src/data/songs.js'
 
 describe('rhythmGameAudioUtils', () => {
   describe('resolveActiveSetlist', () => {
+    let originalSongs;
+
     beforeEach(() => {
+      // Save original map state
+      originalSongs = new Map(SONGS_BY_ID)
       SONGS_BY_ID.clear()
+    })
+
+    afterEach(() => {
+      // Restore original map state
+      SONGS_BY_ID.clear()
+      originalSongs.forEach((value, key) => SONGS_BY_ID.set(key, value))
     })
 
     test('should return default jam if setlist is empty', () => {
