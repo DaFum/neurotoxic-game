@@ -111,7 +111,8 @@ const processEffectApplication = ({
   bandPatch,
   player,
   band,
-  t
+  t,
+  addToast
 }) => {
   if (!Object.hasOwn(effectHandlers, effect.type)) {
     handleError(
@@ -121,6 +122,7 @@ const processEffectApplication = ({
         currency: item.currency
       }),
       {
+        addToast,
         fallbackMessage: t('ui:shop.messages.unknownEffect', {
           defaultValue: 'Purchase failed: Unknown effect type.'
         })
@@ -262,7 +264,8 @@ export const usePurchaseLogic = ({
           bandPatch,
           player,
           band,
-          t
+          t,
+          addToast
         })
 
         if (!effectProcessResult.success) {
