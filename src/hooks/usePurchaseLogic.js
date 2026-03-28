@@ -81,8 +81,9 @@ const effectHandlers = {
     return { playerPatch: nextPlayerPatch }
   },
 
-  unlock_hq: ({ item, playerPatch, player, band, t, addToast }) => {
+  unlock_hq: ({ item, playerPatch, player, band, t }) => {
     const result = applyUnlockHQ(item, playerPatch, player, band)
+    const toasts = []
     if (result.messages) {
       result.messages.forEach(msg => {
         const toastMsg = msg.messageKey
@@ -91,10 +92,10 @@ const effectHandlers = {
               defaultValue: msg.fallback || msg.message || msg.messageKey
             })
           : msg.message
-        addToast(toastMsg, msg.type)
+        toasts.push({ msg: toastMsg, type: msg.type })
       })
     }
-    return { playerPatch: result.playerPatch, bandPatch: result.bandPatch }
+    return { playerPatch: result.playerPatch, bandPatch: result.bandPatch, toasts }
   },
 
   passive: ({ effect, playerPatch, player }) => {
@@ -110,12 +111,9 @@ const processEffectApplication = ({
   bandPatch,
   player,
   band,
-  t,
-  addToast
+  t
 }) => {
-  const handler = effectHandlers[effect.type]
-
-  if (!handler) {
+  if (!Object.hasOwn(effectHandlers, effect.type)) {
     handleError(
       new StateError(`Unknown effect type: ${effect.type}`, {
         effectType: effect.type,
@@ -123,7 +121,6 @@ const processEffectApplication = ({
         currency: item.currency
       }),
       {
-        addToast,
         fallbackMessage: t('ui:shop.messages.unknownEffect', {
           defaultValue: 'Purchase failed: Unknown effect type.'
         })
@@ -132,20 +129,22 @@ const processEffectApplication = ({
     return { success: false }
   }
 
+  const handler = effectHandlers[effect.type]
+
   const result = handler({
     effect,
     item,
     playerPatch: { ...playerPatch },
     player,
     band,
-    t,
-    addToast
+    t
   })
 
   return {
     success: true,
     playerPatch: result.playerPatch ?? playerPatch,
-    bandPatch: result.bandPatch ?? bandPatch
+    bandPatch: result.bandPatch ?? bandPatch,
+    toasts: result.toasts ?? []
   }
 }
 
@@ -263,8 +262,7 @@ export const usePurchaseLogic = ({
           bandPatch,
           player,
           band,
-          t,
-          addToast
+          t
         })
 
         if (!effectProcessResult.success) {
@@ -274,14 +272,20 @@ export const usePurchaseLogic = ({
         playerPatch = effectProcessResult.playerPatch
         bandPatch = effectProcessResult.bandPatch
 
+        if (effectProcessResult.toasts) {
+          effectProcessResult.toasts.forEach(toast => {
+            addToast(toast.msg, toast.type)
+          })
+        }
+
         // Consolidate ownership marking
         // Track non-consumable upgrades in van.upgrades for ownership detection
         // if they haven't already been handled by a specific effect type like 'unlock_upgrade'
-        // 'stat_modifier' items use 'oneTime' false to bypass this marking.
+        // Also exclude 'inventory_set' to allow re-purchasing consumed items (like strings).
         if (
           !isConsumable &&
           effect.type !== 'unlock_upgrade' &&
-          !(effect.type === 'stat_modifier' && item.oneTime === false)
+          effect.type !== 'inventory_set'
         ) {
           const vanState = playerPatch.van ?? player.van
           playerPatch.van = buildVanWithUpgrade(vanState, item.id)
