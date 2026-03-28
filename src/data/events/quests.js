@@ -1,4 +1,3 @@
-// TODO: Review this file
 export const QUEST_EVENTS = [
   {
     id: 'quest_trigger_pick_of_destiny',

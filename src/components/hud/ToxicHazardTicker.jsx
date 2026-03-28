@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { HazardTicker } from '../../ui/shared'

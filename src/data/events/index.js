@@ -1,4 +1,3 @@
-// TODO: Review this file
 // Aggregate all event categories
 import { TRANSPORT_EVENTS } from './transport.js'
 import { BAND_EVENTS } from './band.js'

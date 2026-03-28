@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 

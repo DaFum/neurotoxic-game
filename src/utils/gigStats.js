@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * @typedef {object} GigPerformanceStats
  * @property {number} perfectHits
