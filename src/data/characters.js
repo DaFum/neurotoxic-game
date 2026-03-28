@@ -1,4 +1,3 @@
-// TODO: Review this file
 // Detailed Character Definitions and Traits
 //
 // Trait Implementation Status:

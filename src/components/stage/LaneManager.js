@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Container, Graphics } from 'pixi.js'
 import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
 

@@ -1,4 +1,3 @@
-// TODO: Review this file
 // Module-level cache for Intl.NumberFormat instances to prevent repeated instantiation overhead
 const numberFormatters = new Map()
 

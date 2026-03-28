@@ -1,4 +1,3 @@
-// TODO: Review this file
 // Generates a directed acyclic graph (DAG) for the tour
 /*
  * #1 Updates:
