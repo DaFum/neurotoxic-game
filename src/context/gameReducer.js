@@ -62,6 +62,7 @@ import {
   handleAdvanceDay,
   handleAddUnlock
 } from './reducers/systemReducer.js'
+import { handleTradeVoidItem } from './reducers/tradeReducer.js'
 
 export { ActionTypes }
 
@@ -192,6 +193,9 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.CLINIC_ENHANCE:
       return handleClinicEnhance(state, action.payload)
+
+    case ActionTypes.TRADE_VOID_ITEM:
+      return handleTradeVoidItem(state, action.payload)
 
     default:
       return state

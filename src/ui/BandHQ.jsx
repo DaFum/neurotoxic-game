@@ -1,20 +1,24 @@
-// TODO: Review this file
 import { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
+
+import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
-import { handleError, GameError, StateError } from '../utils/errorHandler'
-import { StatsTab } from './bandhq/StatsTab'
-import { DetailedStatsTab } from './bandhq/DetailedStatsTab'
-import { ShopTab } from './bandhq/ShopTab'
-import { UpgradesTab } from './bandhq/UpgradesTab'
-import { SetlistTab } from './bandhq/SetlistTab'
-import { SettingsTab } from './bandhq/SettingsTab'
-import { LeaderboardTab } from './bandhq/LeaderboardTab'
+import { usePurchaseLogic } from '../hooks/usePurchaseLogic.js'
+import { handleError, GameError, StateError } from '../utils/errorHandler.js'
+
+import { StatsTab } from './bandhq/StatsTab.jsx'
+import { DetailedStatsTab } from './bandhq/DetailedStatsTab.jsx'
+import { ShopTab } from './bandhq/ShopTab.jsx'
+import { UpgradesTab } from './bandhq/UpgradesTab.jsx'
+import { SetlistTab } from './bandhq/SetlistTab.jsx'
+import { SettingsTab } from './bandhq/SettingsTab.jsx'
+import { LeaderboardTab } from './bandhq/LeaderboardTab.jsx'
+import { VoidTraderTab } from './bandhq/VoidTraderTab.jsx'
+
 import { useGameState } from '../context/GameState.jsx'
 import { useAudioControl } from '../hooks/useAudioControl.js'
+import { createTradeVoidItemAction } from '../context/actionCreators.js'
 
 /**
  * BandHQ Component
@@ -144,7 +148,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
             { id: 'UPGRADES', key: 'tabs.upgrades' },
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
-            { id: 'SETTINGS', key: 'tabs.settings' }
+            { id: 'SETTINGS', key: 'tabs.settings' },
+            ...(social.controversyLevel >= 30 ? [{ id: 'VOID', key: 'tabs.voidTrader', label: 'VOID TRADER' }] : [])
           ].map(tab => {
             const isActive = activeTab === tab.id
             return (
@@ -164,7 +169,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
                   }`}
               >
                 {isActive && <span className='text-xs'>▶</span>}
-                {t(tab.key)}
+                {tab.label || t(tab.key)}
               </button>
             )
           })}
@@ -232,6 +237,41 @@ export const BandHQ = ({ onClose, className = '' }) => {
             )}
 
             {activeTab === 'LEADERBOARD' && <LeaderboardTab />}
+
+            {activeTab === 'VOID' && social.controversyLevel >= 30 && (
+              <VoidTraderTab
+                player={player}
+                handleTrade={async (item) => {
+                  if (processingItemId) return;
+                  setProcessingItemId(item.id);
+                  try {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    // Check if player has enough fame
+                    const fameCost = item.rarity === 'epic' ? 1000 : 400;
+                    if (player.fame < fameCost) {
+                      throw new GameError(`Not enough fame. You need ${fameCost} fame.`, { context: { cost: fameCost } });
+                    }
+                    const successToast = {
+                      id: crypto.randomUUID(),
+                      message: `ui:toast.void_trade_success|${JSON.stringify({ itemName: `items:contraband.${item.id}.name` })}`,
+                      type: 'success'
+                    };
+                    updateBand(createTradeVoidItemAction({ contrabandId: item.id, fameCost, successToast }));
+                  } catch (err) {
+                    handleError(err, { addToast });
+                  } finally {
+                    setProcessingItemId(null);
+                  }
+                }}
+                isItemOwned={(item) => {
+                  return !!(band.stash && band.stash[item.id]);
+                }}
+                isItemDisabled={(item) => {
+                  const fameCost = item.rarity === 'epic' ? 1000 : 400;
+                  return player.fame < fameCost || (!!(band.stash && band.stash[item.id]) && !item.stackable);
+                }}
+              />
+            )}
 
             {activeTab === 'SETTINGS' && (
               <SettingsTab
