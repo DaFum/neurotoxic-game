@@ -19,7 +19,8 @@ export const clampNonNegative = value => {
  * @returns {number} Derived fame level.
  */
 export const calculateFameLevel = fame => {
-  return Math.floor(Math.max(0, typeof fame === 'number' ? fame : 0) / 100)
+  const clampedFame = clampNonNegative(fame)
+  return Math.floor(clampedFame / 100)
 }
 
 /**
@@ -411,7 +412,8 @@ export const applyEventDelta = (state, delta) => {
           : 0
 
     if (scoreDelta !== 0) {
-      nextPlayer.score = Math.max(0, (typeof nextPlayer.score === 'number' ? nextPlayer.score : 0) + scoreDelta)
+      const boundedScore = clampNonNegative(nextPlayer.score)
+      nextPlayer.score = boundedScore + scoreDelta
     }
 
     // Player Stats
@@ -423,10 +425,8 @@ export const applyEventDelta = (state, delta) => {
         if (isForbiddenKey(key)) continue
 
         if (typeof delta.player.stats[key] === 'number') {
-          nextPlayer.stats[key] = Math.max(
-            0,
-            (typeof nextPlayer.stats[key] === 'number' ? nextPlayer.stats[key] : 0) + delta.player.stats[key]
-          )
+          const boundedStat = clampNonNegative(nextPlayer.stats[key])
+          nextPlayer.stats[key] = boundedStat + delta.player.stats[key]
         } else if (
           typeof delta.player.stats[key] === 'string' ||
           typeof delta.player.stats[key] === 'boolean'
@@ -613,7 +613,8 @@ export const applyEventDelta = (state, delta) => {
       }
     }
     if (typeof delta.band.luck === 'number') {
-      nextBand.luck = Math.max(0, (typeof nextBand.luck === 'number' ? nextBand.luck : 0) + delta.band.luck)
+      const boundedLuck = clampNonNegative(nextBand.luck)
+      nextBand.luck = boundedLuck + delta.band.luck
     }
     nextState.band = nextBand
   }

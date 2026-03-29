@@ -1,3 +1,5 @@
+import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
+
 export const checkHasBroadcastedToday = (social, playerDay) => {
   if (!social || typeof playerDay !== 'number') return false
   return social.lastPirateBroadcastDay === playerDay
@@ -8,14 +10,14 @@ export const validatePirateBroadcast = (social, player, band, config) => {
 
   const hasBroadcastedToday = checkHasBroadcastedToday(social, player.day)
 
-  const currentMoney = typeof player.money === 'number' ? player.money : 0
-  const currentHarmony = typeof band.harmony === 'number' ? band.harmony : 0
+  const currentMoney = clampPlayerMoney(player.money)
+  const currentHarmony = clampBandHarmony(band.harmony)
 
   return (
     !hasBroadcastedToday &&
     config.COST !== undefined &&
     config.HARMONY_COST !== undefined &&
-    Math.max(0, currentMoney) >= config.COST &&
-    Math.max(0, currentHarmony) >= config.HARMONY_COST
+    currentMoney >= config.COST &&
+    currentHarmony >= config.HARMONY_COST
   )
 }
