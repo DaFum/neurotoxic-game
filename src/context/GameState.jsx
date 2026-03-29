@@ -66,7 +66,8 @@ import {
   createClinicHealAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction,
-  createMerchPressAction
+  createMerchPressAction,
+  createTradeVoidItemAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -542,6 +543,15 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  /**
+   * Dispatches a void trader item purchase action.
+   * @param {object} payload - The void trade payload.
+   */
+  const tradeVoidItem = useCallback(
+    payload => dispatch(createTradeVoidItemAction(payload)),
+    []
+  )
+
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -882,7 +892,8 @@ export const GameStateProvider = ({ children }) => {
       clinicHeal,
       clinicEnhance,
       pirateBroadcast,
-      merchPress
+      merchPress,
+      tradeVoidItem
     }),
     [
       changeScene,
@@ -921,7 +932,8 @@ export const GameStateProvider = ({ children }) => {
       clinicHeal,
       clinicEnhance,
       pirateBroadcast,
-      merchPress
+      merchPress,
+      tradeVoidItem
     ]
   )
 

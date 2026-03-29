@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
@@ -7,11 +8,13 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
   const { t } = useTranslation()
 
   // Filter for epic/rare contraband that are tradeable in the black market
-  const voidItems = [...(CONTRABAND_BY_RARITY.epic || []), ...(CONTRABAND_BY_RARITY.rare || [])].map(item => {
-    // Determine cost in Fame based on rarity
-    const fameCost = item.rarity === 'epic' ? 1000 : 400
-    return { ...item, fameCost }
-  })
+  const voidItems = useMemo(() => {
+    return [...(CONTRABAND_BY_RARITY.epic || []), ...(CONTRABAND_BY_RARITY.rare || [])].map(item => {
+      // Determine cost in Fame based on rarity
+      const fameCost = item.rarity === 'epic' ? 1000 : 400
+      return { ...item, fameCost }
+    })
+  }, [])
 
   return (
     <div className='flex flex-col flex-1 min-h-0'>
@@ -68,8 +71,8 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
 
               <div className='flex items-center justify-between mt-auto pt-4 border-t border-toxic-green/10'>
                 <div className='text-sm font-bold text-toxic-green tracking-widest flex items-center gap-2'>
-                  <span>COST:</span>
-                  <span>{item.fameCost} FAME</span>
+                  <span>{t('ui:hq.voidTrader.cost', { defaultValue: 'COST:' })}</span>
+                  <span>{item.fameCost} {t('ui:hq.voidTrader.fame', { defaultValue: 'FAME' })}</span>
                 </div>
                 <ActionButton
                   variant='primary'

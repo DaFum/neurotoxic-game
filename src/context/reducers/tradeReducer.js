@@ -46,10 +46,10 @@ export const handleTradeVoidItem = (state, payload) => {
   }
 
   if (successToast) {
-    nextState.toasts = [
-      ...(nextState.toasts || []),
-      successToast
-    ]
+    return {
+      ...nextState,
+      toasts: [...(nextState.toasts || []), successToast]
+    }
   }
 
   return nextState

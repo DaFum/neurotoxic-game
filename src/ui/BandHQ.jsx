@@ -18,7 +18,6 @@ import { VoidTraderTab } from './bandhq/VoidTraderTab.jsx'
 
 import { useGameState } from '../context/GameState.jsx'
 import { useAudioControl } from '../hooks/useAudioControl.js'
-import { createTradeVoidItemAction } from '../context/actionCreators.js'
 
 /**
  * BandHQ Component
@@ -38,6 +37,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
     social,
     updatePlayer,
     updateBand,
+    tradeVoidItem,
     addToast,
     settings,
     updateSettings,
@@ -149,7 +149,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
             { id: 'SETTINGS', key: 'tabs.settings' },
-            ...(social.controversyLevel >= 30 ? [{ id: 'VOID', key: 'tabs.voidTrader', label: 'VOID TRADER' }] : [])
+            ...(social.controversyLevel >= 30 ? [{ id: 'VOID', key: 'tabs.voidTrader' }] : [])
           ].map(tab => {
             const isActive = activeTab === tab.id
             return (
@@ -256,7 +256,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
                       message: `ui:toast.void_trade_success|${JSON.stringify({ itemName: `items:contraband.${item.id}.name` })}`,
                       type: 'success'
                     };
-                    updateBand(createTradeVoidItemAction({ contrabandId: item.id, fameCost, successToast }));
+                    tradeVoidItem({ contrabandId: item.id, fameCost, successToast });
                   } catch (err) {
                     handleError(err, { addToast });
                   } finally {
