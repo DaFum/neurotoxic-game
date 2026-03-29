@@ -3,7 +3,6 @@
  * (#2) Next Steps: Extract specific minigame UIs from this component.
  * (#3) Found Errors + Solutions: N/A
  */
-// TODO: Review this file
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'

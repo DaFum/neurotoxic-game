@@ -1,6 +1,5 @@
 import { hasStateItem } from '../../utils/gameStateUtils.js'
 
-// TODO: Review this file
 /**
  * Consequences Event Pool
  */

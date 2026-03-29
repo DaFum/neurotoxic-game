@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Log levels for the application.
  */
