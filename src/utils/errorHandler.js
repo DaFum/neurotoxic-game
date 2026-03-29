@@ -164,7 +164,13 @@ const sanitizeContextValue = (value, visited) => {
   if (Array.isArray(value)) {
     if (visited.has(value)) return '[REDACTED]'
     visited.add(value)
-    return value.map(item => sanitizeContextValue(item, visited))
+
+    // ⚡ Bolt Optimization: Use plain for loop instead of .map() to avoid array iteration overhead in recursive serializers
+    const result = new Array(value.length)
+    for (let i = 0; i < value.length; i++) {
+      result[i] = sanitizeContextValue(value[i], visited)
+    }
+    return result
   }
 
   if (isPlainObject(value)) {
