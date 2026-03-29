@@ -8,11 +8,14 @@ export const validatePirateBroadcast = (social, player, band, config) => {
 
   const hasBroadcastedToday = checkHasBroadcastedToday(social, player.day)
 
+  const currentMoney = typeof player.money === 'number' ? player.money : 0
+  const currentHarmony = typeof band.harmony === 'number' ? band.harmony : 0
+
   return (
     !hasBroadcastedToday &&
     config.COST !== undefined &&
     config.HARMONY_COST !== undefined &&
-    (player.money || 0) >= config.COST &&
-    (band.harmony || 0) >= config.HARMONY_COST
+    Math.max(0, currentMoney) >= config.COST &&
+    Math.max(0, currentHarmony) >= config.HARMONY_COST
   )
 }
