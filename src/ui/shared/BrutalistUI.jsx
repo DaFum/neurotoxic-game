@@ -693,7 +693,7 @@ export const BrutalToggle = memo(({ label, initialState = false }) => {
         type='button'
         onClick={toggle}
         aria-labelledby={labelId}
-        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-pressed={isOn}
       >
         <div
@@ -1214,7 +1214,7 @@ export const BrutalSlot = memo(({ label, item = null }) => {
       <Tooltip content={tooltipText}>
         <button
           type='button'
-          className='relative w-20 h-20 border-2 border-toxic-green/30 bg-shadow-black flex items-center justify-center group cursor-pointer hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+          className='relative w-20 h-20 border-2 border-toxic-green/30 bg-shadow-black flex items-center justify-center group cursor-pointer hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           aria-label={tooltipText}
         >
           {/* Corner Decals */}
