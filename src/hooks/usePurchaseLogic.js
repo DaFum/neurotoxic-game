@@ -250,7 +250,8 @@ export const usePurchaseLogic = ({
         if (
           item.currency === 'fame' &&
           !isConsumable &&
-          effect.type !== 'unlock_upgrade'
+          effect.type !== 'unlock_upgrade' &&
+          effect.type !== 'inventory_set'
         ) {
           const vanState = playerPatch.van ?? player.van
           playerPatch.van = buildVanWithUpgrade(vanState, item.id)

@@ -694,7 +694,7 @@ export const BrutalToggle = memo(({ label, initialState = false }) => {
         type='button'
         onClick={toggle}
         aria-labelledby={labelId}
-        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-pressed={isOn}
       >
         <div
