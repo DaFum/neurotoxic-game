@@ -302,6 +302,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
                 handleTrade={handleVoidTrade}
                 isItemOwned={isVoidItemOwned}
                 isItemDisabled={isVoidItemDisabled}
+                processingItemId={processingItemId}
               />
             )}
 

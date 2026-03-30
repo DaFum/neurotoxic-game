@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband.js'
 
-export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled }) => {
+export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled, processingItemId }) => {
   const { t } = useTranslation()
 
   // Filter for epic/rare contraband that are tradeable in the black market
@@ -39,7 +39,9 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black'>
         {voidItems.map(item => {
-          const disabled = isItemDisabled(item)
+          const isProcessingThis = processingItemId === item.id
+          const isAnyProcessing = !!processingItemId
+          const disabled = isItemDisabled(item) || isAnyProcessing
 
           return (
             <div
@@ -77,9 +79,11 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
                   disabled={disabled}
                   className='text-xs py-1 px-4 min-w-[120px]'
                 >
-                  {isItemOwned(item) && !item.stackable
-                    ? t('ui:shop.owned', { defaultValue: 'OWNED' })
-                    : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
+                  {isProcessingThis
+                    ? t('ui:loading', { defaultValue: 'PROCESSING...' })
+                    : isItemOwned(item) && !item.stackable
+                      ? t('ui:shop.owned', { defaultValue: 'OWNED' })
+                      : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
                 </ActionButton>
               </div>
             </div>
@@ -94,5 +98,6 @@ VoidTraderTab.propTypes = {
   player: PropTypes.object.isRequired,
   handleTrade: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
-  isItemDisabled: PropTypes.func.isRequired
+  isItemDisabled: PropTypes.func.isRequired,
+  processingItemId: PropTypes.string
 }

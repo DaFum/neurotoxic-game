@@ -53,11 +53,33 @@ describe('VoidTraderTab Component', () => {
         handleTrade={handleTrade}
         isItemOwned={isItemOwned}
         isItemDisabled={isItemDisabled}
+        processingItemId={null}
       />
     )
 
     const buttons = screen.getAllByRole('button', { name: /ui:hq.voidTrader.trade/i })
     fireEvent.click(buttons[0])
     expect(handleTrade).toHaveBeenCalled()
+  })
+
+  it('shows processing state and disables buttons when processingItemId is set', () => {
+    render(
+      <VoidTraderTab
+        player={player}
+        handleTrade={handleTrade}
+        isItemOwned={isItemOwned}
+        isItemDisabled={isItemDisabled}
+        processingItemId='c_phantom_strings'
+      />
+    )
+
+    const loadingButtons = screen.getAllByRole('button', { name: /ui:loading/i })
+    expect(loadingButtons.length).toBeGreaterThan(0)
+
+    // Check that all buttons are actually disabled, either because they are processing or because another item is processing
+    const allButtons = screen.getAllByRole('button')
+    allButtons.forEach(btn => {
+      expect(btn).toBeDisabled()
+    })
   })
 })
