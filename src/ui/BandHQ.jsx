@@ -71,7 +71,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
     if (activeTab === 'VOID' && social.controversyLevel < 30) {
       setActiveTab('STATS')
     }
-  }, [activeTab, social.controversyLevel, setActiveTab])
+  }, [activeTab, social.controversyLevel])
 
   const handleVoidTrade = useCallback(
     async item => {
@@ -114,9 +114,9 @@ export const BandHQ = ({ onClose, className = '' }) => {
 
   const isVoidItemOwned = useCallback(
     item => {
-      return !!(band.contraband && band.contraband[item.id])
+      return !!(band.stash && band.stash[item.id])
     },
-    [band.contraband]
+    [band.stash]
   )
 
   const isVoidItemDisabled = useCallback(
@@ -124,10 +124,10 @@ export const BandHQ = ({ onClose, className = '' }) => {
       const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
       return (
         player.fame < fameCost ||
-        (!!(band.contraband && band.contraband[item.id]) && !item.stackable)
+        (!!(band.stash && band.stash[item.id]) && !item.stackable)
       )
     },
-    [player.fame, band.contraband]
+    [player.fame, band.stash]
   )
 
   const handleBuyWithLock = async item => {

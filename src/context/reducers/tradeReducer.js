@@ -46,9 +46,14 @@ export const handleTradeVoidItem = (state, payload) => {
   }
 
   if (successToast) {
+    const actualDelta = currentFame - nextFame
+    const enrichedToast = {
+      ...successToast,
+      message: `${successToast.message} (-${actualDelta})`
+    }
     return {
       ...nextState,
-      toasts: [...(nextState.toasts || []), successToast]
+      toasts: [...(nextState.toasts || []), enrichedToast]
     }
   }
 
