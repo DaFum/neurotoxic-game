@@ -1,4 +1,4 @@
-import { useMemo, useState, Suspense, useCallback } from 'react'
+import { useMemo, useState, Suspense, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
@@ -67,13 +67,19 @@ export const BandHQ = ({ onClose, className = '' }) => {
   const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
 
+  useEffect(() => {
+    if (activeTab === 'VOID' && social.controversyLevel < 30) {
+      setActiveTab('STATS')
+    }
+  }, [activeTab, social.controversyLevel, setActiveTab])
+
   const handleVoidTrade = useCallback(
     async item => {
       if (processingItemId) return
       setProcessingItemId(item.id)
       try {
         await new Promise(resolve => setTimeout(resolve, 500))
-        const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000
+        const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
         if (player.fame < fameCost) {
           throw new GameError(
             t('ui:error.insufficient_fame', {
@@ -108,20 +114,20 @@ export const BandHQ = ({ onClose, className = '' }) => {
 
   const isVoidItemOwned = useCallback(
     item => {
-      return !!(band.stash && band.stash[item.id])
+      return !!(band.contraband && band.contraband[item.id])
     },
-    [band.stash]
+    [band.contraband]
   )
 
   const isVoidItemDisabled = useCallback(
     item => {
-      const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000
+      const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
       return (
         player.fame < fameCost ||
-        (!!(band.stash && band.stash[item.id]) && !item.stackable)
+        (!!(band.contraband && band.contraband[item.id]) && !item.stackable)
       )
     },
-    [player.fame, band.stash]
+    [player.fame, band.contraband]
   )
 
   const handleBuyWithLock = async item => {

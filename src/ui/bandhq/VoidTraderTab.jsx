@@ -11,7 +11,7 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
   const voidItems = useMemo(() => {
     return [...(CONTRABAND_BY_RARITY.epic || []), ...(CONTRABAND_BY_RARITY.rare || [])].map(item => {
       // Determine cost in Fame based on rarity
-      const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000
+      const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
       return { ...item, fameCost }
     })
   }, [])
@@ -82,7 +82,7 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
                   {isProcessingThis
                     ? t('ui:loading', { defaultValue: 'PROCESSING...' })
                     : isItemOwned(item) && !item.stackable
-                      ? t('ui:shop.owned', { defaultValue: 'OWNED' })
+                      ? t('ui:hq.owned', { defaultValue: 'OWNED' })
                       : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
                 </ActionButton>
               </div>
