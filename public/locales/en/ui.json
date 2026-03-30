@@ -852,7 +852,7 @@
   "toast.quest_complete_skill": "[{{name}}]: COMPLETE +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FAILED",
   "toast.three_disasters": "3 DISASTERS IN A ROW — Prove yourself in small venues first.",
-  "toast.void_trade_success": "[ACQUIRED]: {{itemName}}",
+  "toast.void_trade_success": "[ACQUIRED]: {{itemName}} (-{{fame}} Fame)",
   "toggle.off": "OFF",
   "toggle.on": "ON",
   "tour.endedPrematurely": "The tour has ended prematurely.",

@@ -90,7 +90,6 @@ export const BandHQ = ({ onClose, className = '' }) => {
           )
         }
         const successToast = {
-          id: crypto.randomUUID(),
           message: `ui:toast.void_trade_success|${JSON.stringify({
             itemName: `items:contraband.${item.id}.name`
           })}`,
@@ -122,9 +121,14 @@ export const BandHQ = ({ onClose, className = '' }) => {
   const isVoidItemDisabled = useCallback(
     item => {
       const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
+      const currentQuantity = band.stash?.[item.id]?.quantity || 0
+      const isMaxStacks =
+        item.stackable && item.maxStacks && currentQuantity >= item.maxStacks
+
       return (
         player.fame < fameCost ||
-        (!!(band.stash && band.stash[item.id]) && !item.stackable)
+        (!!(band.stash && band.stash[item.id]) && !item.stackable) ||
+        isMaxStacks
       )
     },
     [player.fame, band.stash]

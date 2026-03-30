@@ -852,7 +852,7 @@
   "toast.quest_complete_skill": "[{{name}}]: ABGESCHLOSSEN +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FEHLGESCHLAGEN",
   "toast.three_disasters": "3 DISASTER HINTEREINANDER — Beweist euch erst in kleinen Locations.",
-  "toast.void_trade_success": "[ERHALTEN]: {{itemName}}",
+  "toast.void_trade_success": "[ERHALTEN]: {{itemName}} (-{{fame}} Ruhm)",
   "toggle.off": "AUS",
   "toggle.on": "AN",
   "tour.endedPrematurely": "Die Tour endete vorzeitig.",

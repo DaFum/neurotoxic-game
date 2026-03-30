@@ -1,3 +1,4 @@
+// TODO: Review this file
 export const generateEffectText = (delta, t) => {
   if (!delta) return ''
   const lines = []

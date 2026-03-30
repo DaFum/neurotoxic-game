@@ -47,9 +47,22 @@ export const handleTradeVoidItem = (state, payload) => {
 
   if (successToast) {
     const actualDelta = currentFame - nextFame
+    let enrichedMessage = successToast.message
+
+    try {
+      if (typeof enrichedMessage === 'string' && enrichedMessage.includes('|')) {
+        const [key, jsonStr] = enrichedMessage.split('|')
+        const context = JSON.parse(jsonStr)
+        context.fame = actualDelta
+        enrichedMessage = `${key}|${JSON.stringify(context)}`
+      }
+    } catch (err) {
+      logger.warn('GameState', 'Failed to enrich successToast message', err)
+    }
+
     const enrichedToast = {
       ...successToast,
-      message: `${successToast.message} (-${actualDelta})`
+      message: enrichedMessage
     }
     return {
       ...nextState,
