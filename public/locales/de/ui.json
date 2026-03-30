@@ -211,6 +211,7 @@
   "enter_alias_desc": "Gib deinen Alias für das globale Untergrund-Netzwerk ein.",
   "enter_name_error": "Bitte gib einen Namen ein",
   "enter_name_placeholder": "NAME EINGEBEN...",
+  "error.insufficient_fame": "Nicht genug Ruhm. Du brauchst {{cost}} Ruhm.",
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
   "errors.audio_cleanup_failed": "Audio-Bereinigung fehlgeschlagen.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",

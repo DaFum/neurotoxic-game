@@ -375,6 +375,11 @@ export const CONTRABAND_RARITY_WEIGHTS = {
   epic: 1
 }
 
+export const VOID_TRADER_COSTS = {
+  epic: 1000,
+  rare: 400
+}
+
 /**
  * O(1) Lookup Map for Contraband Items
  * @type {Map<string, Object>}

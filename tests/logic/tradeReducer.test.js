@@ -21,6 +21,7 @@ describe('Trade Reducer', () => {
     const nextState = handleTradeVoidItem(initialState, payload)
     assert.strictEqual(nextState.player.fame, 100) // Fame should remain unchanged
     assert.deepStrictEqual(nextState.band.stash, {}) // Stash should remain empty
+    assert.deepStrictEqual(nextState.toasts, initialState.toasts) // Toasts should remain unchanged
   })
 
   it('should deduct fame and add item to stash on successful trade', () => {

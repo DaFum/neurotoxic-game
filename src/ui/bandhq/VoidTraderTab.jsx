@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
-import { CONTRABAND_BY_RARITY } from '../../data/contraband.js'
+import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband.js'
 
 export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled }) => {
   const { t } = useTranslation()
@@ -11,7 +11,7 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
   const voidItems = useMemo(() => {
     return [...(CONTRABAND_BY_RARITY.epic || []), ...(CONTRABAND_BY_RARITY.rare || [])].map(item => {
       // Determine cost in Fame based on rarity
-      const fameCost = item.rarity === 'epic' ? 1000 : 400
+      const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000
       return { ...item, fameCost }
     })
   }, [])
@@ -39,10 +39,7 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black'>
         {voidItems.map(item => {
-          const disabled =
-            isItemDisabled(item) ||
-            player.fame < item.fameCost ||
-            (!item.stackable && isItemOwned(item))
+          const disabled = isItemDisabled(item)
 
           return (
             <div
@@ -60,7 +57,7 @@ export const VoidTraderTab = ({ player, handleTrade, isItemOwned, isItemDisabled
                       {t(item.name)}
                     </h4>
                     <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 border ${item.rarity === 'epic' ? 'border-blood-red text-blood-red' : 'border-toxic-green text-toxic-green'}`}>
-                      {item.rarity}
+                      {t(`ui:rarity.${item.rarity}`, { defaultValue: item.rarity })}
                     </span>
                   </div>
                   <p className='text-xs text-ash-gray font-mono leading-relaxed line-clamp-3'>

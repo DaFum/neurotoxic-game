@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog.js'
+import { VOID_TRADER_COSTS } from '../data/contraband.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic.js'
 import { handleError, GameError, StateError } from '../utils/errorHandler.js'
@@ -17,6 +18,7 @@ import { LeaderboardTab } from './bandhq/LeaderboardTab.jsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.jsx'
 
 import { useGameState } from '../context/GameState.jsx'
+import { useCallback } from 'react'
 import { useAudioControl } from '../hooks/useAudioControl.js'
 
 /**
@@ -65,6 +67,46 @@ export const BandHQ = ({ onClose, className = '' }) => {
 
   const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
+
+  const handleVoidTrade = useCallback(
+    async item => {
+      if (processingItemId) return
+      setProcessingItemId(item.id)
+      try {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000
+        if (player.fame < fameCost) {
+          throw new GameError(
+            t('ui:error.insufficient_fame', {
+              defaultValue: `Not enough fame. You need ${fameCost} fame.`,
+              cost: fameCost
+            }),
+            { context: { cost: fameCost } }
+          )
+        }
+        const successToast = {
+          id: crypto.randomUUID(),
+          message: `ui:toast.void_trade_success|${JSON.stringify({
+            itemName: `items:contraband.${item.id}.name`
+          })}`,
+          type: 'success'
+        }
+        tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
+      } catch (err) {
+        handleError(err, { addToast })
+      } finally {
+        setProcessingItemId(null)
+      }
+    },
+    [
+      player.fame,
+      processingItemId,
+      setProcessingItemId,
+      tradeVoidItem,
+      addToast,
+      t
+    ]
+  )
 
   const handleBuyWithLock = async item => {
     if (processingItemId) return
@@ -241,33 +283,12 @@ export const BandHQ = ({ onClose, className = '' }) => {
             {activeTab === 'VOID' && social.controversyLevel >= 30 && (
               <VoidTraderTab
                 player={player}
-                handleTrade={async (item) => {
-                  if (processingItemId) return;
-                  setProcessingItemId(item.id);
-                  try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    // Check if player has enough fame
-                    const fameCost = item.rarity === 'epic' ? 1000 : 400;
-                    if (player.fame < fameCost) {
-                      throw new GameError(`Not enough fame. You need ${fameCost} fame.`, { context: { cost: fameCost } });
-                    }
-                    const successToast = {
-                      id: crypto.randomUUID(),
-                      message: `ui:toast.void_trade_success|${JSON.stringify({ itemName: `items:contraband.${item.id}.name` })}`,
-                      type: 'success'
-                    };
-                    tradeVoidItem({ contrabandId: item.id, fameCost, successToast });
-                  } catch (err) {
-                    handleError(err, { addToast });
-                  } finally {
-                    setProcessingItemId(null);
-                  }
-                }}
+                handleTrade={handleVoidTrade}
                 isItemOwned={(item) => {
                   return !!(band.stash && band.stash[item.id]);
                 }}
                 isItemDisabled={(item) => {
-                  const fameCost = item.rarity === 'epic' ? 1000 : 400;
+                  const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000;
                   return player.fame < fameCost || (!!(band.stash && band.stash[item.id]) && !item.stackable);
                 }}
               />

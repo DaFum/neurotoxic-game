@@ -1,17 +1,17 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { VoidTraderTab } from '../../src/ui/bandhq/VoidTraderTab.jsx'
-import React from 'react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: key => key }),
+  initReactI18next: { type: '3rdParty', init: () => {} }
 }))
 
 describe('VoidTraderTab Component', () => {
   const player = { fame: 2000 }
   const handleTrade = vi.fn()
-  const isItemOwned = vi.fn((item) => false)
-  const isItemDisabled = vi.fn((item) => false)
+  const isItemOwned = vi.fn(_item => false)
+  const isItemDisabled = vi.fn(_item => false)
 
   it('renders the Void Trader tab title', () => {
     render(
@@ -27,12 +27,18 @@ describe('VoidTraderTab Component', () => {
 
   it('disables trade button if fame is too low', () => {
     const poorPlayer = { fame: 100 }
+    // Update the mock to reflect the actual fame-based disabling logic now handled centrally in BandHQ
+    const _isItemDisabled = vi.fn(item => {
+      const fameCost = item.rarity === 'epic' ? 1000 : 400
+      return poorPlayer.fame < fameCost || (!item.stackable && isItemOwned(item))
+    })
+
     render(
       <VoidTraderTab
         player={poorPlayer}
         handleTrade={handleTrade}
         isItemOwned={isItemOwned}
-        isItemDisabled={isItemDisabled}
+        isItemDisabled={_isItemDisabled}
       />
     )
 

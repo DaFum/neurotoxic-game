@@ -211,6 +211,7 @@
   "enter_alias_desc": "Enter your alias for the global underground network.",
   "enter_name_error": "Please enter a name",
   "enter_name_placeholder": "ENTER NAME...",
+  "error.insufficient_fame": "Not enough fame. You need {{cost}} fame.",
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_cleanup_failed": "Audio cleanup failed.",
   "errors.audio_init_failed": "Audio initialization failed.",
