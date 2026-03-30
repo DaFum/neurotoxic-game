@@ -1,3 +1,4 @@
+// TODO: Review this file
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -436,6 +437,28 @@ export const createPirateBroadcastAction = payload => ({
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          successToast: payload.successToast
+            ? { ...payload.successToast, id: crypto.randomUUID() }
+            : undefined
+        }
+      : payload
+})
+
+/**
+ * Creates an action to trade fame for a void item (contraband).
+ * @param {Object} payload
+ * @param {string} payload.contrabandId - ID of the contraband item.
+ * @param {number} payload.fameCost - Cost in fame to purchase.
+ * @param {Object} [payload.successToast] - Optional toast on success.
+ * @returns {Object} Action object
+ */
+export const createTradeVoidItemAction = payload => ({
+  type: ActionTypes.TRADE_VOID_ITEM,
+  payload:
+    payload && typeof payload === 'object'
+      ? {
+          ...payload,
+          instanceId: crypto.randomUUID(),
           successToast: payload.successToast
             ? { ...payload.successToast, id: crypto.randomUUID() }
             : undefined

@@ -1,17 +1,22 @@
-import { useMemo, useState, Suspense } from 'react'
+import { useMemo, useState, Suspense, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
+
+import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog.js'
+import { VOID_TRADER_COSTS } from '../data/contraband.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
-import { handleError, GameError, StateError } from '../utils/errorHandler'
-import { StatsTab } from './bandhq/StatsTab'
-import { DetailedStatsTab } from './bandhq/DetailedStatsTab'
-import { ShopTab } from './bandhq/ShopTab'
-import { UpgradesTab } from './bandhq/UpgradesTab'
-import { SetlistTab } from './bandhq/SetlistTab'
-import { SettingsTab } from './bandhq/SettingsTab'
-import { LeaderboardTab } from './bandhq/LeaderboardTab'
+import { usePurchaseLogic } from '../hooks/usePurchaseLogic.js'
+import { handleError, GameError, StateError } from '../utils/errorHandler.js'
+
+import { StatsTab } from './bandhq/StatsTab.jsx'
+import { DetailedStatsTab } from './bandhq/DetailedStatsTab.jsx'
+import { ShopTab } from './bandhq/ShopTab.jsx'
+import { UpgradesTab } from './bandhq/UpgradesTab.jsx'
+import { SetlistTab } from './bandhq/SetlistTab.jsx'
+import { SettingsTab } from './bandhq/SettingsTab.jsx'
+import { LeaderboardTab } from './bandhq/LeaderboardTab.jsx'
+import { VoidTraderTab } from './bandhq/VoidTraderTab.jsx'
+
 import { useGameState } from '../context/GameState.jsx'
 import { useAudioControl } from '../hooks/useAudioControl.js'
 
@@ -33,6 +38,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
     social,
     updatePlayer,
     updateBand,
+    tradeVoidItem,
     addToast,
     settings,
     updateSettings,
@@ -60,6 +66,73 @@ export const BandHQ = ({ onClose, className = '' }) => {
 
   const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
+
+  useEffect(() => {
+    if (activeTab === 'VOID' && social.controversyLevel < 30) {
+      setActiveTab('STATS')
+    }
+  }, [activeTab, social.controversyLevel])
+
+  const handleVoidTrade = useCallback(
+    async item => {
+      if (processingItemId) return
+      setProcessingItemId(item.id)
+      try {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
+        if (player.fame < fameCost) {
+          throw new GameError(
+            t('ui:error.insufficient_fame', {
+              defaultValue: `Not enough fame. You need ${fameCost} fame.`,
+              cost: fameCost
+            }),
+            { context: { cost: fameCost } }
+          )
+        }
+        const successToast = {
+          message: `ui:toast.void_trade_success|${JSON.stringify({
+            itemName: `items:contraband.${item.id}.name`
+          })}`,
+          type: 'success'
+        }
+        tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
+      } catch (err) {
+        handleError(err, { addToast })
+      } finally {
+        setProcessingItemId(null)
+      }
+    },
+    [
+      player.fame,
+      processingItemId,
+      tradeVoidItem,
+      addToast,
+      t
+    ]
+  )
+
+  const isVoidItemOwned = useCallback(
+    item => {
+      return !!(band.stash && band.stash[item.id])
+    },
+    [band.stash]
+  )
+
+  const isVoidItemDisabled = useCallback(
+    item => {
+      const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
+      const currentQuantity = band.stash?.[item.id]?.quantity || 0
+      const isMaxStacks =
+        item.stackable && item.maxStacks && currentQuantity >= item.maxStacks
+
+      return (
+        player.fame < fameCost ||
+        (!!(band.stash && band.stash[item.id]) && !item.stackable) ||
+        isMaxStacks
+      )
+    },
+    [player.fame, band.stash]
+  )
 
   const handleBuyWithLock = async item => {
     if (processingItemId) return
@@ -143,7 +216,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
             { id: 'UPGRADES', key: 'tabs.upgrades' },
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
-            { id: 'SETTINGS', key: 'tabs.settings' }
+            { id: 'SETTINGS', key: 'tabs.settings' },
+            ...(social.controversyLevel >= 30 ? [{ id: 'VOID', key: 'tabs.voidTrader' }] : [])
           ].map(tab => {
             const isActive = activeTab === tab.id
             return (
@@ -231,6 +305,16 @@ export const BandHQ = ({ onClose, className = '' }) => {
             )}
 
             {activeTab === 'LEADERBOARD' && <LeaderboardTab />}
+
+            {activeTab === 'VOID' && social.controversyLevel >= 30 && (
+              <VoidTraderTab
+                player={player}
+                handleTrade={handleVoidTrade}
+                isItemOwned={isVoidItemOwned}
+                isItemDisabled={isVoidItemDisabled}
+                processingItemId={processingItemId}
+              />
+            )}
 
             {activeTab === 'SETTINGS' && (
               <SettingsTab

@@ -1,3 +1,4 @@
+// TODO: Review this file
 // Band Events
 export const BAND_EVENTS = [
   {

@@ -1,3 +1,4 @@
+// TODO: Review this file
 /**
  * Contraband & Relics Data Catalog
  * Artifacts gathered from the void during tour.
@@ -372,6 +373,11 @@ export const CONTRABAND_RARITY_WEIGHTS = {
   uncommon: 25,
   rare: 4,
   epic: 1
+}
+
+export const VOID_TRADER_COSTS = {
+  epic: 1000,
+  rare: 400
 }
 
 /**

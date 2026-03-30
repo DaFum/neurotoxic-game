@@ -1,3 +1,4 @@
+// TODO: Review this file
 export const SOCIAL_PLATFORMS = {
   INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.2 },
   TIKTOK: { id: 'tiktok', label: 'TikTok', multiplier: 1.5 }, // Volatile

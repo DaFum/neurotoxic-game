@@ -1,3 +1,4 @@
+// TODO: Refactor logic to reduce cognitive complexity and improve testability
 export const GRID_WIDTH = 12
 export const GRID_HEIGHT = 8 // Rows: 0 (Start), 1-6 (Road), 7 (Venue)
 

@@ -1,3 +1,4 @@
+// TODO: Review this file
 /**
  * Action Types Enum
  * Centralizes all action type strings to prevent typos.
@@ -48,5 +49,7 @@ export const ActionTypes = {
   CLINIC_ENHANCE: 'CLINIC_ENHANCE',
 
   PIRATE_BROADCAST: 'PIRATE_BROADCAST',
-  MERCH_PRESS: 'MERCH_PRESS'
+  MERCH_PRESS: 'MERCH_PRESS',
+
+  TRADE_VOID_ITEM: 'TRADE_VOID_ITEM'
 }

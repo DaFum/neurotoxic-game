@@ -71,3 +71,16 @@ After travel the band can get an item with specials to use.
   socialReducer.js: Added `handleMerchPress` enforcing bounds (money clamped >= 0, loyalty/controversy clamped 0-100, harmony clamped 1-100).
   useMerchPress.js: Custom hook to calculate scaling costs and returns based on the band's current stats (fame multiplier).
   MerchPressModal.jsx: Brutalist UI utilizing flex-box chaining to present the brutal math of the merch hustle.
+
+## 2026-03-29 - VOID TRADER BLACK MARKET
+
+**Feature:** Void Trader Tab (Contraband Shop)
+
+**Description:**
+
+- Lore Integration:
+  When the band becomes notorious enough (Controversy >= 30), a shady Void Trader approaches them in their HQ. This underground contact allows them to burn their hard-earned Fame for rare and epic contraband items that cannot be found anywhere else. It is a high-risk gamble that leans heavily into the Kranker Schrank aesthetic of underground, illicit activities.
+- State Impact:
+  actionTypes.js: Added `TRADE_VOID_ITEM`.
+  tradeReducer.js: New reducer strictly enforcing `fame` costs with `clampPlayerFame` and safely integrating into `gameReducer.js`.
+  BandHQ.jsx: Added `VoidTraderTab.jsx` integrated gracefully within the navigation, triggering only on `social.controversyLevel >= 30`. Uses Brutalist flex-box chaining.

@@ -1,3 +1,4 @@
+// TODO: Review this file
 import { bandHasTrait } from './traitLogic.js'
 import {
   clampPlayerMoney,
