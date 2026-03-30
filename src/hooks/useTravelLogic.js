@@ -386,7 +386,7 @@ export const useTravelLogic = ({
             return
           }
 
-          if ((band?.harmony ?? 0) <= 0) {
+          if ((band?.harmony ?? 0) <= 1) {
             addToast(
               i18n.t('ui:arrival.harmonyTooLowToPerform', {
                 defaultValue: "Band's harmony too low to perform!"

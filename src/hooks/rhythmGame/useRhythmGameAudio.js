@@ -358,7 +358,7 @@ export const useRhythmGameAudio = ({
     audioManager.stopMusic()
 
     // Harmony Guard
-    if (band.harmony <= 0) {
+    if (band.harmony <= 1) {
       logger.warn('RhythmGame', 'Band harmony too low to start gig.')
       setIsAudioReady(false)
       isInitializingRef.current = false

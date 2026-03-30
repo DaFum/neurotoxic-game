@@ -108,7 +108,7 @@ describe('useRhythmGameAudio', () => {
           }
         },
         setters: { setIsAudioReady },
-        contextState: { ...baseState, band: { harmony: 0 } },
+        contextState: { ...baseState, band: { harmony: 1 } },
         contextActions: { addToast: vi.fn() }
       })
     )
