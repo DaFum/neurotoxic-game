@@ -1,4 +1,4 @@
-import { useMemo, useState, Suspense } from 'react'
+import { useMemo, useState, Suspense, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
@@ -18,7 +18,6 @@ import { LeaderboardTab } from './bandhq/LeaderboardTab.jsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.jsx'
 
 import { useGameState } from '../context/GameState.jsx'
-import { useCallback } from 'react'
 import { useAudioControl } from '../hooks/useAudioControl.js'
 
 /**
@@ -101,11 +100,28 @@ export const BandHQ = ({ onClose, className = '' }) => {
     [
       player.fame,
       processingItemId,
-      setProcessingItemId,
       tradeVoidItem,
       addToast,
       t
     ]
+  )
+
+  const isVoidItemOwned = useCallback(
+    item => {
+      return !!(band.stash && band.stash[item.id])
+    },
+    [band.stash]
+  )
+
+  const isVoidItemDisabled = useCallback(
+    item => {
+      const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000
+      return (
+        player.fame < fameCost ||
+        (!!(band.stash && band.stash[item.id]) && !item.stackable)
+      )
+    },
+    [player.fame, band.stash]
   )
 
   const handleBuyWithLock = async item => {
@@ -211,7 +227,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
                   }`}
               >
                 {isActive && <span className='text-xs'>▶</span>}
-                {tab.label || t(tab.key)}
+                {t(tab.key)}
               </button>
             )
           })}
@@ -284,13 +300,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
               <VoidTraderTab
                 player={player}
                 handleTrade={handleVoidTrade}
-                isItemOwned={(item) => {
-                  return !!(band.stash && band.stash[item.id]);
-                }}
-                isItemDisabled={(item) => {
-                  const fameCost = VOID_TRADER_COSTS[item.rarity] || 1000;
-                  return player.fame < fameCost || (!!(band.stash && band.stash[item.id]) && !item.stackable);
-                }}
+                isItemOwned={isVoidItemOwned}
+                isItemDisabled={isVoidItemDisabled}
               />
             )}
 
