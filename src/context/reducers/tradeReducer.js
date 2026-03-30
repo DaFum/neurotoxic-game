@@ -42,7 +42,15 @@ export const handleTradeVoidItem = (state, payload) => {
   // addContrabandHelper returns unmodified state if item invalid or max stacks
   if (nextState === tempState) {
     logger.warn('GameState', 'Failed to add void item to stash (max stacks or invalid item)')
-    return state
+    const failureToast = {
+      id: instanceId || Date.now().toString(),
+      message: 'ui:shop.messages.purchaseFailed',
+      type: 'error'
+    }
+    return {
+      ...state,
+      toasts: [...(state.toasts || []), failureToast]
+    }
   }
 
   if (successToast) {
@@ -51,7 +59,9 @@ export const handleTradeVoidItem = (state, payload) => {
 
     try {
       if (typeof enrichedMessage === 'string' && enrichedMessage.includes('|')) {
-        const [key, jsonStr] = enrichedMessage.split('|')
+        const firstPipeIdx = enrichedMessage.indexOf('|')
+        const key = enrichedMessage.slice(0, firstPipeIdx)
+        const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
         const context = JSON.parse(jsonStr)
         context.fame = actualDelta
         enrichedMessage = `${key}|${JSON.stringify(context)}`
