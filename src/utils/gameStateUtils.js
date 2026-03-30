@@ -19,7 +19,8 @@ export const clampNonNegative = value => {
  * @returns {number} Derived fame level.
  */
 export const calculateFameLevel = fame => {
-  return Math.floor(Math.max(0, fame || 0) / 100)
+  const clampedFame = clampNonNegative(fame)
+  return Math.floor(clampedFame / 100)
 }
 
 /**
@@ -185,13 +186,15 @@ export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  */
 
 const calculateClampedStatDelta = (currentValue, deltaValue) => {
-  const nextValue = Math.max(0, (currentValue || 0) + deltaValue)
-  return nextValue - (currentValue || 0)
+  const baseValue = typeof currentValue === 'number' ? currentValue : 0
+  const nextValue = Math.max(0, baseValue + deltaValue)
+  return nextValue - baseValue
 }
 
 const calculateClampedControversyDelta = (currentValue, deltaValue) => {
-  const nextValue = clampControversyLevel((currentValue || 0) + deltaValue)
-  return nextValue - (currentValue || 0)
+  const baseValue = typeof currentValue === 'number' ? currentValue : 0
+  const nextValue = clampControversyLevel(baseValue + deltaValue)
+  return nextValue - baseValue
 }
 
 /**
@@ -223,7 +226,7 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.player) {
     if (typeof delta.player.money === 'number') {
-      const currentMoney = Math.max(0, state.player?.money || 0)
+      const currentMoney = Math.max(0, typeof state.player?.money === 'number' ? state.player.money : 0)
       const nextMoney = clampPlayerMoney(currentMoney + delta.player.money)
       applied.player.money = nextMoney - currentMoney
     }
@@ -231,7 +234,7 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.player.time = delta.player.time // time is unbounded
     }
     if (typeof delta.player.fame === 'number') {
-      const currentFame = Math.max(0, state.player?.fame || 0)
+      const currentFame = Math.max(0, typeof state.player?.fame === 'number' ? state.player.fame : 0)
       const nextFame = clampPlayerFame(currentFame + delta.player.fame)
       applied.player.fame = nextFame - currentFame
     }
@@ -242,23 +245,26 @@ export const calculateAppliedDelta = (state, delta) => {
           ? delta.score
           : 0
     if (scoreDelta !== 0) {
-      const nextScore = Math.max(0, (state.player?.score || 0) + scoreDelta)
-      applied.score = nextScore - (state.player?.score || 0)
+      const currentScore = typeof state.player?.score === 'number' ? state.player.score : 0
+      const nextScore = Math.max(0, currentScore + scoreDelta)
+      applied.score = nextScore - currentScore
     }
     if (delta.player.van) {
       applied.player.van = {}
       if (typeof delta.player.van.fuel === 'number') {
+        const currentFuel = typeof state.player?.van?.fuel === 'number' ? state.player.van.fuel : 0
         const nextFuel = clampVanFuel(
-          (state.player?.van?.fuel || 0) + delta.player.van.fuel
+          currentFuel + delta.player.van.fuel
         )
-        applied.player.van.fuel = nextFuel - (state.player?.van?.fuel || 0)
+        applied.player.van.fuel = nextFuel - currentFuel
       }
       if (typeof delta.player.van.condition === 'number') {
+        const currentCondition = typeof state.player?.van?.condition === 'number' ? state.player.van.condition : 0
         const nextCondition = clampVanCondition(
-          (state.player?.van?.condition || 0) + delta.player.van.condition
+          currentCondition + delta.player.van.condition
         )
         applied.player.van.condition =
-          nextCondition - (state.player?.van?.condition || 0)
+          nextCondition - currentCondition
       }
     }
     if (typeof delta.player.day === 'number') {
@@ -339,8 +345,9 @@ export const calculateAppliedDelta = (state, delta) => {
     }
 
     if (typeof delta.band.luck === 'number') {
-      const nextLuck = Math.max(0, (state.band?.luck || 0) + delta.band.luck)
-      applied.band.luck = nextLuck - (state.band?.luck || 0)
+      const currentLuck = typeof state.band?.luck === 'number' ? state.band.luck : 0
+      const nextLuck = Math.max(0, currentLuck + delta.band.luck)
+      applied.band.luck = nextLuck - currentLuck
     }
 
     if (typeof delta.band.skill === 'number') {
@@ -405,7 +412,8 @@ export const applyEventDelta = (state, delta) => {
           : 0
 
     if (scoreDelta !== 0) {
-      nextPlayer.score = Math.max(0, (nextPlayer.score || 0) + scoreDelta)
+      const boundedScore = clampNonNegative(nextPlayer.score)
+      nextPlayer.score = boundedScore + scoreDelta
     }
 
     // Player Stats
@@ -417,10 +425,8 @@ export const applyEventDelta = (state, delta) => {
         if (isForbiddenKey(key)) continue
 
         if (typeof delta.player.stats[key] === 'number') {
-          nextPlayer.stats[key] = Math.max(
-            0,
-            (nextPlayer.stats[key] || 0) + delta.player.stats[key]
-          )
+          const boundedStat = clampNonNegative(nextPlayer.stats[key])
+          nextPlayer.stats[key] = boundedStat + delta.player.stats[key]
         } else if (
           typeof delta.player.stats[key] === 'string' ||
           typeof delta.player.stats[key] === 'boolean'
@@ -607,7 +613,8 @@ export const applyEventDelta = (state, delta) => {
       }
     }
     if (typeof delta.band.luck === 'number') {
-      nextBand.luck = Math.max(0, (nextBand.luck || 0) + delta.band.luck)
+      const boundedLuck = clampNonNegative(nextBand.luck)
+      nextBand.luck = boundedLuck + delta.band.luck
     }
     nextState.band = nextBand
   }
