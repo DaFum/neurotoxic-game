@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Modal - A shared overlay component.
  * @module Modal

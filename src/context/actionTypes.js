@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Action Types Enum
  * Centralizes all action type strings to prevent typos.

@@ -1,4 +1,3 @@
-// TODO: Review this file
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'

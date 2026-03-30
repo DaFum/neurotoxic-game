@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Allowed Social Media Trends
  * @constant {string[]}

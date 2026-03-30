@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { safeStorageOperation } from './errorHandler.js'
 
 const UNLOCKS_KEY = 'neurotoxic_unlocks'

@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { hasTrait } from './traitLogic.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 

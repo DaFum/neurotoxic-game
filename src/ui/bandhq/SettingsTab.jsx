@@ -1,4 +1,3 @@
-// TODO: Review this file
 import PropTypes from 'prop-types'
 import { SettingsPanel } from '../shared'
 import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
