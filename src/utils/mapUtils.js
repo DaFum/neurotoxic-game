@@ -76,25 +76,27 @@ export const checkSoftlock = (gameMap, player, band = null) => {
   const currentFuel = player.van?.fuel ?? 0
   const currentNode = gameMap.nodes[player.currentNodeId]
 
+  if (!gameMap.connections) {
+    throw new TypeError('gameMap.connections is missing')
+  }
+
   let canReachAny = false
-  if (gameMap.connections) {
-    for (let i = 0; i < gameMap.connections.length; i++) {
-      const c = gameMap.connections[i]
-      if (c.from === player.currentNodeId) {
-        const n = gameMap.nodes[c.to]
-        if (n) {
-          const { fuelLiters } = calculateTravelExpenses(
-            n,
-            currentNode,
-            {
-              van: player.van
-            },
-            band
-          )
-          if (currentFuel >= fuelLiters) {
-            canReachAny = true
-            break
-          }
+  for (let i = 0; i < gameMap.connections.length; i++) {
+    const c = gameMap.connections[i]
+    if (c.from === player.currentNodeId) {
+      const n = gameMap.nodes[c.to]
+      if (n) {
+        const { fuelLiters } = calculateTravelExpenses(
+          n,
+          currentNode,
+          {
+            van: player.van
+          },
+          band
+        )
+        if (currentFuel >= fuelLiters) {
+          canReachAny = true
+          break
         }
       }
     }
