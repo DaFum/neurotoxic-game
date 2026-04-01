@@ -1,4 +1,4 @@
-import { useMemo, useState, Suspense, useCallback, useEffect } from 'react'
+import { useMemo, useState, Suspense, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
@@ -67,11 +67,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
   const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
 
-  useEffect(() => {
-    if (activeTab === 'VOID' && social.controversyLevel < 30) {
-      setActiveTab('STATS')
-    }
-  }, [activeTab, social.controversyLevel])
+  const currentTab = (activeTab === 'VOID' && social.controversyLevel < 30) ? 'STATS' : activeTab;
 
   const handleVoidTrade = useCallback(
     async item => {
@@ -219,7 +215,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
             { id: 'SETTINGS', key: 'tabs.settings' },
             ...(social.controversyLevel >= 30 ? [{ id: 'VOID', key: 'tabs.voidTrader' }] : [])
           ].map(tab => {
-            const isActive = activeTab === tab.id
+            const isActive = currentTab === tab.id
             return (
               <button
                 type='button'
@@ -246,8 +242,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
         {/* Content Area */}
         <div
           role='tabpanel'
-          id={`panel-${activeTab}`}
-          aria-labelledby={`tab-${activeTab}`}
+          id={`panel-${currentTab}`}
+          aria-labelledby={`tab-${currentTab}`}
           tabIndex={0}
           className='flex-1 min-h-0 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black focus-visible:outline-none touch-pan-y'
         >
@@ -258,11 +254,11 @@ export const BandHQ = ({ onClose, className = '' }) => {
               </div>
             }
           >
-            {activeTab === 'STATS' && (
+            {currentTab === 'STATS' && (
               <StatsTab player={player} band={band} social={social} />
             )}
 
-            {activeTab === 'DETAILS' && (
+            {currentTab === 'DETAILS' && (
               <DetailedStatsTab
                 player={player}
                 band={band}
@@ -273,7 +269,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
               />
             )}
 
-            {activeTab === 'SHOP' && (
+            {currentTab === 'SHOP' && (
               <ShopTab
                 player={player}
                 handleBuy={handleBuyWithLock}
@@ -284,7 +280,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
               />
             )}
 
-            {activeTab === 'UPGRADES' && (
+            {currentTab === 'UPGRADES' && (
               <UpgradesTab
                 player={player}
                 upgrades={unifiedUpgradeCatalog}
@@ -296,7 +292,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
               />
             )}
 
-            {activeTab === 'SETLIST' && (
+            {currentTab === 'SETLIST' && (
               <SetlistTab
                 setlist={setlist}
                 setSetlist={setSetlist}
@@ -304,9 +300,9 @@ export const BandHQ = ({ onClose, className = '' }) => {
               />
             )}
 
-            {activeTab === 'LEADERBOARD' && <LeaderboardTab />}
+            {currentTab === 'LEADERBOARD' && <LeaderboardTab />}
 
-            {activeTab === 'VOID' && social.controversyLevel >= 30 && (
+            {currentTab === 'VOID' && social.controversyLevel >= 30 && (
               <VoidTraderTab
                 player={player}
                 handleTrade={handleVoidTrade}
@@ -316,7 +312,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
               />
             )}
 
-            {activeTab === 'SETTINGS' && (
+            {currentTab === 'SETTINGS' && (
               <SettingsTab
                 settings={settings}
                 audioState={audioState}
