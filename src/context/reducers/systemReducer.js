@@ -98,11 +98,12 @@ const sanitizeBand = loadedBand => {
           if (!baseItem) return acc
           if (Object.hasOwn(item, '__proto__')) return acc
           const copy = { ...baseItem, ...item }
-          copy.remainingDuration =
-            Number.isFinite(item.remainingDuration) &&
-            item.remainingDuration > 0
-              ? item.remainingDuration
-              : copy.duration || null
+          copy.id = item.id // Ensure ID matches
+          if (Object.hasOwn(item, 'remainingDuration') && Number.isFinite(item.remainingDuration)) {
+            copy.remainingDuration = item.remainingDuration
+          } else {
+            copy.remainingDuration = copy.duration || null
+          }
           acc[item.id] = copy
           return acc
         }, defaultStash)
@@ -116,11 +117,12 @@ const sanitizeBand = loadedBand => {
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           if (Object.hasOwn(item, '__proto__')) continue
           const copy = { ...baseItem, ...item }
-          copy.remainingDuration =
-            Number.isFinite(item.remainingDuration) &&
-            item.remainingDuration > 0
-              ? item.remainingDuration
-              : copy.duration || null
+          copy.id = id // Ensure ID matches loop key to prevent divergence
+          if (Object.hasOwn(item, 'remainingDuration') && Number.isFinite(item.remainingDuration)) {
+            copy.remainingDuration = item.remainingDuration
+          } else {
+            copy.remainingDuration = copy.duration || null
+          }
           migrated[id] = copy
         }
         return migrated
