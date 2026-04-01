@@ -190,7 +190,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
           <button
             type='button'
             onClick={onClose}
-            className='px-6 py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono'
+            className='px-6 py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
           </button>
@@ -225,7 +225,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
                 id={`tab-${tab.id}`}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
+                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset
                   ${
                     isActive
                       ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)]'

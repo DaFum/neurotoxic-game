@@ -205,7 +205,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               <button
                 type='button'
                 onClick={handleContinue}
-                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
+                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
               </button>
