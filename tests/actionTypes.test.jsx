@@ -43,7 +43,8 @@ describe('ActionTypes', () => {
       'CLINIC_HEAL',
       'CLINIC_ENHANCE',
       'PIRATE_BROADCAST',
-      'MERCH_PRESS'
+      'MERCH_PRESS',
+      'TRADE_VOID_ITEM'
     ]
 
     expectedTypes.forEach(type => {

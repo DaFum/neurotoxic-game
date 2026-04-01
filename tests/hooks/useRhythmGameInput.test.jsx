@@ -4,7 +4,8 @@ import { useRhythmGameInput } from '../../src/hooks/rhythmGame/useRhythmGameInpu
 import * as audioEngine from '../../src/utils/audioEngine.js'
 
 vi.mock('../../src/utils/audioEngine.js', () => ({
-  getTransportState: vi.fn()
+  getTransportState: vi.fn(),
+  getGigTimeMs: vi.fn(() => 1000)
 }))
 
 describe('useRhythmGameInput', () => {
@@ -159,6 +160,8 @@ describe('useRhythmGameInput', () => {
   })
 
   it('debounces rapid inputs within 50ms', () => {
+    let currentTime = 1000
+    audioEngine.getGigTimeMs.mockImplementation(() => currentTime)
     const { result } = renderHook(() =>
       useRhythmGameInput({ gameStateRef, scoringActions, contextState })
     )
@@ -176,6 +179,7 @@ describe('useRhythmGameInput', () => {
     expect(scoringActions.handleHit).toHaveBeenCalledTimes(1)
 
     // Advance time by 49ms
+    currentTime += 49
     vi.advanceTimersByTime(49)
 
     // Third input at 49ms (should be ignored)
@@ -185,6 +189,7 @@ describe('useRhythmGameInput', () => {
     expect(scoringActions.handleHit).toHaveBeenCalledTimes(1)
 
     // Advance time to surpass 50ms limit
+    currentTime += 2
     vi.advanceTimersByTime(2)
 
     // Fourth input after 50ms (should succeed)
