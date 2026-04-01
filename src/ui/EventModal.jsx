@@ -205,7 +205,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               <button
                 type='button'
                 onClick={handleContinue}
-                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
+                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
               </button>
@@ -241,8 +241,8 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                         `${option.label}-${index}`
                       }
                       onClick={() => handleOptionSelect(option)}
-                      className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                        ${isDisabled ? 'border-ash-gray/20 text-ash-gray/20 cursor-not-allowed' : index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
+                      className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
+                        ${isDisabled ? 'border-ash-gray/20 text-ash-gray/20 cursor-not-allowed' : index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green focus-visible:ring-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'}
                       `}
                     >
                       <span>
