@@ -88,15 +88,18 @@ export const handleNodeArrival = ({
 }) => {
   switch (node.type) {
     case 'REST_STOP': {
-      const newMembers = (band?.members ?? []).map(m => {
+      const members = band?.members ?? []
+      const newMembers = new Array(members.length)
+      for (let i = 0; i < members.length; i++) {
+        const m = members[i]
         const newStamina = clampMemberStamina(m.stamina + 20, m.staminaMax)
         const newMood = clampMemberMood(m.mood + 10)
-        return {
+        newMembers[i] = {
           ...m,
           stamina: newStamina,
           mood: newMood
         }
-      })
+      }
       updateBand({ members: newMembers })
       addToast(
         i18n.t('ui:arrival.restedAtStop', {
