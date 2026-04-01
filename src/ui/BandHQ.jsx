@@ -225,11 +225,11 @@ export const BandHQ = ({ onClose, className = '' }) => {
                 id={`tab-${tab.id}`}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset
+                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
                   ${
                     isActive
-                      ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)]'
-                      : 'bg-void-black text-toxic-green hover:bg-toxic-green/10'
+                      ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)] focus-visible:ring-void-black'
+                      : 'bg-void-black text-toxic-green hover:bg-toxic-green/10 focus-visible:ring-toxic-green'
                   }`}
               >
                 {isActive && <span className='text-xs'>▶</span>}
