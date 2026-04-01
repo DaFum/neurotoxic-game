@@ -94,14 +94,16 @@ const sanitizeBand = loadedBand => {
         return loadedBand.stash.reduce((acc, item) => {
           if (!item || typeof item !== 'object' || Array.isArray(item))
             return acc
-          if (!CONTRABAND_BY_ID.has(item.id)) return acc
+          const baseItem = CONTRABAND_BY_ID.get(item.id)
+          if (!baseItem) return acc
           if (Object.hasOwn(item, '__proto__')) return acc
-          const copy = { ...item }
-          copy.remainingDuration =
-            Number.isFinite(item.remainingDuration) &&
-            item.remainingDuration > 0
-              ? item.remainingDuration
-              : item.duration || null
+          const copy = { ...baseItem, ...item }
+          copy.id = item.id // Ensure ID matches
+          if (Object.hasOwn(item, 'remainingDuration') && Number.isFinite(item.remainingDuration)) {
+            copy.remainingDuration = item.remainingDuration
+          } else {
+            copy.remainingDuration = copy.duration || null
+          }
           acc[item.id] = copy
           return acc
         }, defaultStash)
@@ -110,15 +112,17 @@ const sanitizeBand = loadedBand => {
         for (const id in loadedBand.stash) {
           if (!Object.hasOwn(loadedBand.stash, id)) continue
           const item = loadedBand.stash[id]
-          if (!CONTRABAND_BY_ID.has(id)) continue
+          const baseItem = CONTRABAND_BY_ID.get(id)
+          if (!baseItem) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...item }
-          copy.remainingDuration =
-            Number.isFinite(item.remainingDuration) &&
-            item.remainingDuration > 0
-              ? item.remainingDuration
-              : item.duration || null
+          const copy = { ...baseItem, ...item }
+          copy.id = id // Ensure ID matches loop key to prevent divergence
+          if (Object.hasOwn(item, 'remainingDuration') && Number.isFinite(item.remainingDuration)) {
+            copy.remainingDuration = item.remainingDuration
+          } else {
+            copy.remainingDuration = copy.duration || null
+          }
           migrated[id] = copy
         }
         return migrated

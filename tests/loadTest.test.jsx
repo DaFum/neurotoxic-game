@@ -3,7 +3,8 @@ import { renderHook } from '@testing-library/react'
 import { useRhythmGameInput } from '../src/hooks/rhythmGame/useRhythmGameInput.js'
 
 vi.mock('../src/utils/audioEngine', () => ({
-  getTransportState: vi.fn(() => 'started')
+  getTransportState: vi.fn(() => 'started'),
+  getGigTimeMs: vi.fn(() => 1000)
 }))
 
 describe('useRhythmGameInput - Load Test', () => {

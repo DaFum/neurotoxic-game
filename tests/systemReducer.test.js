@@ -114,6 +114,41 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test('hydrates contraband stash with static properties', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      player: {
+        money: 500,
+        fame: 100,
+        day: 5,
+        van: { fuel: 80 }
+      },
+      band: {
+        stash: {
+          c_void_energy: {
+            id: 'c_void_energy',
+            quantity: 2,
+            obtainedAt: 1
+          }
+        }
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+    const hydratedStash = nextState.band.stash
+
+    assert.ok(hydratedStash['c_void_energy'])
+    assert.equal(hydratedStash['c_void_energy'].id, 'c_void_energy')
+    assert.equal(hydratedStash['c_void_energy'].quantity, 2)
+    assert.equal(hydratedStash['c_void_energy'].obtainedAt, 1)
+
+    // Check for static properties from CONTRABAND_BY_ID
+    assert.ok(hydratedStash['c_void_energy'].name)
+    assert.ok(hydratedStash['c_void_energy'].effectType)
+    assert.ok(typeof hydratedStash['c_void_energy'].value === 'number')
+    assert.ok(hydratedStash['c_void_energy'].rarity)
+  })
+
   await t.test('handles missing or malformed loaded state gracefully', () => {
     const initialState = createInitialState()
     const loadedState = {
