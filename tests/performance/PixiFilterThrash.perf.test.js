@@ -1,10 +1,10 @@
 import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert/strict'
 
-// Counter for filter assignments
-let filterSetCount = 0
+const { MockPIXI, createMockManager, mockAudioEngine, filterTracker } = vi.hoisted(() => {
+  // Tracker for filter assignments
+  const filterTracker = { count: 0 }
 
-const { MockPIXI, createMockManager, mockAudioEngine } = vi.hoisted(() => {
   // Define Mock Classes
   const MockPIXI = {
     Application: class {
@@ -29,7 +29,7 @@ const { MockPIXI, createMockManager, mockAudioEngine } = vi.hoisted(() => {
         return this._filters
       }
       set filters(v) {
-        filterSetCount++
+        filterTracker.count++
         this._filters = v
       }
     },
@@ -53,7 +53,7 @@ const { MockPIXI, createMockManager, mockAudioEngine } = vi.hoisted(() => {
     getGigTimeMs: vi.fn(() => 1234)
   }
 
-  return { MockPIXI, createMockManager, mockAudioEngine }
+  return { MockPIXI, createMockManager, mockAudioEngine, filterTracker }
 })
 
 // Mock PIXI module
@@ -115,7 +115,7 @@ describe('PixiStageController Filter Performance', () => {
   let createPixiStageController
 
   beforeEach(async () => {
-    filterSetCount = 0 // Reset counter
+    filterTracker.count = 0 // Reset counter
 
     globalThis.window = {
       devicePixelRatio: 1,
@@ -166,13 +166,13 @@ describe('PixiStageController Filter Performance', () => {
       controller.handleTicker({ deltaMS: 16 })
     }
 
-    console.log(`Filter assignment count: ${filterSetCount}`)
+    console.log(`Filter assignment count: ${filterTracker.count}`)
 
     // With optimization, this should be very low (e.g. 1-5).
     // Without optimization, it is > 200.
     assert.ok(
-      filterSetCount <= 5,
-      `Expected <= 5 filter assignments, got ${filterSetCount}`
+      filterTracker.count <= 5,
+      `Expected <= 5 filter assignments, got ${filterTracker.count}`
     )
   })
 })

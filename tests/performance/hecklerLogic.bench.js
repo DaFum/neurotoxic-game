@@ -1,4 +1,4 @@
-import { processProjectiles } from '../../src/utils/hecklerLogic.js'
+import { processProjectiles, createHecklerSession } from '../../src/utils/hecklerLogic.js'
 
 const RUNS = 500
 const PROJECTILES_COUNT = 5000
@@ -32,7 +32,7 @@ console.log(
 const start = performance.now()
 
 for (let i = 0; i < RUNS; i++) {
-  processProjectiles(testCases[i], DELTA_MS, SCREEN_HEIGHT, () => {})
+  processProjectiles(createHecklerSession(), testCases[i], DELTA_MS, SCREEN_HEIGHT, () => {})
 }
 
 const end = performance.now()
