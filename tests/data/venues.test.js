@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { test, vi } from "vitest";
 import { ALL_VENUES } from '../../src/data/venues.js'
 
 test('ALL_VENUES data integrity', () => {

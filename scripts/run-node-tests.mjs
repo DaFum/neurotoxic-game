@@ -18,10 +18,41 @@ const commandArgs = [
   '--import',
   './tests/setup.mjs',
   ...(hasExplicitConcurrency ? [] : [`--test-concurrency=${testConcurrency}`]),
-  ...nodeTestArgs
 ]
 
-const result = spawnSync('node', commandArgs, {
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Exclude directories that have been migrated to vitest
+const getRemainingTestFiles = () => {
+  const allFiles = [];
+  const crawl = (dir) => {
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const normalizedPath = fullPath.replace(/\\/g, '/');
+      if (fs.statSync(fullPath).isDirectory()) {
+        crawl(fullPath);
+      } else if (normalizedPath.endsWith('.test.js') || normalizedPath.endsWith('.spec.js')) {
+        if (!normalizedPath.startsWith('tests/api/') && !normalizedPath.startsWith('tests/utils/') && !normalizedPath.startsWith('tests/data/')) {
+          allFiles.push(fullPath);
+        }
+      }
+    }
+  };
+  crawl('tests');
+  return allFiles;
+};
+
+// If running a specific file, don't use default exclusions since they only apply globally
+// We detect this by checking if the first arg is not an option flag
+const isSpecificFile = nodeTestArgs.length > 0 && !nodeTestArgs[0].startsWith('--')
+
+const finalArgs = isSpecificFile
+  ? [...commandArgs, ...nodeTestArgs]
+  : [...commandArgs, ...getRemainingTestFiles(), ...nodeTestArgs]
+
+const result = spawnSync('node', finalArgs, {
   stdio: 'inherit',
   env: process.env
 })

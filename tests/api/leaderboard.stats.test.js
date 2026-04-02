@@ -6,49 +6,51 @@
 // Proper cleanup is ensured via `afterEach` where `mockRedisClient.disconnect()` handles teardown, and
 // all mock counters are strictly reset in `beforeEach` (`mockFn.mock.resetCalls()`) rather than totally destroying the mock module.
 
-import { test, mock, describe, beforeEach, afterEach } from 'node:test'
+import { test, describe, beforeEach, afterEach, vi } from "vitest"
 import assert from 'node:assert'
 
 const mockMulti = {
-  zAdd: mock.fn(),
-  exec: mock.fn(() => Promise.resolve())
+  zAdd: vi.fn(),
+  exec: vi.fn(() => Promise.resolve())
 }
 
 const mockRedisClient = {
   isOpen: true,
-  zAdd: mock.fn(() => Promise.resolve()),
-  zRangeWithScores: mock.fn(() => Promise.resolve([])),
-  hmGet: mock.fn(() => Promise.resolve([])),
-  hSet: mock.fn(() => Promise.resolve()),
-  incr: mock.fn(() => Promise.resolve(1)),
-  expire: mock.fn(() => Promise.resolve()),
-  multi: mock.fn(() => mockMulti),
-  disconnect: mock.fn(() => Promise.resolve()),
-  on: mock.fn(),
-  connect: mock.fn(() => Promise.resolve())
+  zAdd: vi.fn(() => Promise.resolve()),
+  zRangeWithScores: vi.fn(() => Promise.resolve([])),
+  hmGet: vi.fn(() => Promise.resolve([])),
+  hSet: vi.fn(() => Promise.resolve()),
+  incr: vi.fn(() => Promise.resolve(1)),
+  expire: vi.fn(() => Promise.resolve()),
+  multi: vi.fn(() => mockMulti),
+  disconnect: vi.fn(() => Promise.resolve()),
+  on: vi.fn(),
+  connect: vi.fn(() => Promise.resolve())
 }
 
 // Since stats.js imports the client directly as the default export of lib/redis.js
-mock.module('../../lib/redis.js', { defaultExport: mockRedisClient })
+vi.mock('../../lib/redis.js', () => ({
+  default: mockRedisClient
+}))
 
 describe('Leaderboard Stats API', () => {
   let statsModule
 
   beforeEach(async () => {
     mockRedisClient.isOpen = true
-    mockRedisClient.incr.mock.resetCalls()
-    mockRedisClient.expire.mock.resetCalls()
-    mockRedisClient.zAdd.mock.resetCalls()
-    mockRedisClient.zRangeWithScores.mock.resetCalls()
-    mockRedisClient.hmGet.mock.resetCalls()
-    mockRedisClient.hSet.mock.resetCalls()
-    mockRedisClient.incr.mock.resetCalls()
-    mockRedisClient.expire.mock.resetCalls()
-    mockRedisClient.disconnect.mock.resetCalls()
-    mockRedisClient.on.mock.resetCalls()
-    mockRedisClient.connect.mock.resetCalls()
-    mockMulti.zAdd.mock.resetCalls()
-    mockMulti.exec.mock.resetCalls()
+    mockRedisClient.incr.mockClear()
+    mockRedisClient.expire.mockClear()
+    mockRedisClient.zAdd.mockClear()
+    mockRedisClient.zRangeWithScores.mockClear()
+    mockRedisClient.hmGet.mockClear()
+    mockRedisClient.hSet.mockClear()
+    mockRedisClient.incr.mockClear()
+    mockRedisClient.expire.mockClear()
+    mockRedisClient.disconnect.mockClear()
+    mockRedisClient.on.mockClear()
+    mockRedisClient.connect.mockClear()
+    mockMulti.zAdd.mockClear()
+    mockMulti.exec.mockClear()
 
     // Import module once properly
     statsModule = await import('../../api/leaderboard/stats.js')
@@ -74,14 +76,14 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
       success: true
     })
 
@@ -103,15 +105,15 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+    assert.strictEqual(res.status.mock.calls[0][0], 400)
     assert.deepStrictEqual(
-      res.json.mock.calls[0].arguments[0].error,
+      res.json.mock.calls[0][0].error,
       'Missing required fields'
     )
   })
@@ -127,15 +129,15 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+    assert.strictEqual(res.status.mock.calls[0][0], 400)
     assert.deepStrictEqual(
-      res.json.mock.calls[0].arguments[0].error,
+      res.json.mock.calls[0][0].error,
       'Invalid playerName length'
     )
   })
@@ -149,31 +151,31 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
-    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() =>
+    mockRedisClient.zRangeWithScores.mockImplementationOnce(() =>
       Promise.resolve([
         { value: 'band1', score: 100 },
         { value: 'band2', score: 50 }
       ])
     )
 
-    mockRedisClient.hmGet.mock.mockImplementationOnce(() =>
+    mockRedisClient.hmGet.mockImplementationOnce(() =>
       Promise.resolve(['Band One', 'Band Two'])
     )
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-    assert.strictEqual(res.json.mock.calls[0].arguments[0].length, 2)
-    assert.strictEqual(res.json.mock.calls[0].arguments[0][0].playerId, 'band1')
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
+    assert.strictEqual(res.json.mock.calls[0][0].length, 2)
+    assert.strictEqual(res.json.mock.calls[0][0][0].playerId, 'band1')
     assert.strictEqual(
-      res.json.mock.calls[0].arguments[0][0].playerName,
+      res.json.mock.calls[0][0][0].playerName,
       'Band One'
     )
-    assert.strictEqual(res.json.mock.calls[0].arguments[0][0].score, 100)
+    assert.strictEqual(res.json.mock.calls[0][0][0].score, 100)
   })
 
   test('GET handles invalid stat type', async () => {
@@ -184,15 +186,15 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+    assert.strictEqual(res.status.mock.calls[0][0], 400)
     assert.deepStrictEqual(
-      res.json.mock.calls[0].arguments[0].error,
+      res.json.mock.calls[0][0].error,
       'Invalid stat requested'
     )
   })
@@ -204,15 +206,15 @@ describe('Leaderboard Stats API', () => {
       body: undefined
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+    assert.strictEqual(res.status.mock.calls[0][0], 400)
     assert.deepStrictEqual(
-      res.json.mock.calls[0].arguments[0].error,
+      res.json.mock.calls[0][0].error,
       'Missing required fields'
     )
   })
@@ -233,27 +235,27 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
+    assert.strictEqual(res.status.mock.calls[0][0], 200)
 
     // Verify clampStat worked
     const zAddCalls = mockMulti.zAdd.mock.calls
-    const fameCall = zAddCalls.find(call => call.arguments[0] === 'lb:fame')
+    const fameCall = zAddCalls.find(call => call[0] === 'lb:fame')
     const followersCall = zAddCalls.find(
-      call => call.arguments[0] === 'lb:followers'
+      call => call[0] === 'lb:followers'
     )
     const distanceCall = zAddCalls.find(
-      call => call.arguments[0] === 'lb:distance'
+      call => call[0] === 'lb:distance'
     )
 
-    assert.strictEqual(fameCall.arguments[1].score, 0)
-    assert.strictEqual(followersCall.arguments[1].score, 999999999999) // MAX_STAT_VALUE
-    assert.strictEqual(distanceCall.arguments[1].score, 0)
+    assert.strictEqual(fameCall[1].score, 0)
+    assert.strictEqual(followersCall[1].score, 999999999999) // MAX_STAT_VALUE
+    assert.strictEqual(distanceCall[1].score, 0)
   })
 
   test('GET enforces limit constraints', async () => {
@@ -265,11 +267,11 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
-    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() =>
+    mockRedisClient.zRangeWithScores.mockImplementationOnce(() =>
       Promise.resolve([])
     )
 
@@ -277,7 +279,7 @@ describe('Leaderboard Stats API', () => {
 
     // Limit index is 99 because zRangeWithScores is inclusive (0 to limit - 1)
     assert.strictEqual(
-      mockRedisClient.zRangeWithScores.mock.calls[0].arguments[2],
+      mockRedisClient.zRangeWithScores.mock.calls[0][2],
       99
     )
   })
@@ -287,24 +289,24 @@ describe('Leaderboard Stats API', () => {
       method: 'DELETE'
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res),
-      setHeader: mock.fn(),
-      end: mock.fn()
+      status: vi.fn(() => res),
+      json: vi.fn(() => res),
+      setHeader: vi.fn(),
+      end: vi.fn()
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.setHeader.mock.calls[0].arguments[0], 'Allow')
-    assert.deepStrictEqual(res.setHeader.mock.calls[0].arguments[1], [
+    assert.strictEqual(res.setHeader.mock.calls[0][0], 'Allow')
+    assert.deepStrictEqual(res.setHeader.mock.calls[0][1], [
       'GET',
       'POST'
     ])
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
+    assert.strictEqual(res.status.mock.calls[0][0], 405)
   })
 
   test('POST rate limit exceeded returns 429', async () => {
-    mockRedisClient.incr.mock.mockImplementationOnce(() => Promise.resolve(6))
+    mockRedisClient.incr.mockImplementationOnce(() => Promise.resolve(6))
 
     const req = {
       method: 'POST',
@@ -316,14 +318,14 @@ describe('Leaderboard Stats API', () => {
       }
     }
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
+      status: vi.fn(() => res),
+      json: vi.fn(() => res)
     }
 
     await statsModule.default(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 429)
-    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+    assert.strictEqual(res.status.mock.calls[0][0], 429)
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
       error: 'Too many requests'
     })
   })

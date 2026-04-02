@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, vi } from "vitest";
 import assert from 'node:assert'
 import { handleError, StateError } from '../../src/utils/errorHandler.js'
 

@@ -6,25 +6,25 @@
 // 2) Deterministic promise resolution preventing asynchronous open handles or leakage.
 // 3) Proper test setup isolation using mock counter resets in `beforeEach` without cache busting the mocked modules.
 
-import { test, mock, describe, beforeEach, afterEach } from 'node:test'
+import { test, describe, beforeEach, afterEach, vi } from "vitest"
 import assert from 'node:assert'
 
 const mockClient = {
   isOpen: true,
-  connect: mock.fn(() => Promise.resolve()),
-  hSet: mock.fn(() => Promise.resolve()),
-  zAdd: mock.fn(() => Promise.resolve()),
-  zRangeWithScores: mock.fn(() => Promise.resolve([])),
-  hmGet: mock.fn(() => Promise.resolve([])),
-  incr: mock.fn(() => Promise.resolve(1)),
-  expire: mock.fn(() => Promise.resolve()),
-  disconnect: mock.fn(() => Promise.resolve()),
-  on: mock.fn()
+  connect: vi.fn(() => Promise.resolve()),
+  hSet: vi.fn(() => Promise.resolve()),
+  zAdd: vi.fn(() => Promise.resolve()),
+  zRangeWithScores: vi.fn(() => Promise.resolve([])),
+  hmGet: vi.fn(() => Promise.resolve([])),
+  incr: vi.fn(() => Promise.resolve(1)),
+  expire: vi.fn(() => Promise.resolve()),
+  disconnect: vi.fn(() => Promise.resolve()),
+  on: vi.fn()
 }
 
-mock.module('../../lib/redis.js', {
-  defaultExport: mockClient
-})
+vi.mock('../../lib/redis.js', () => ({
+  default: mockClient
+}))
 
 describe('Leaderboard API - Song', () => {
   let handler
@@ -35,16 +35,16 @@ describe('Leaderboard API - Song', () => {
     handler = module.default
 
     mockClient.isOpen = true
-    mockClient.connect.mock.resetCalls()
-    mockClient.incr.mock.resetCalls()
-    mockClient.expire.mock.resetCalls()
-    mockClient.hSet.mock.resetCalls()
-    mockClient.zAdd.mock.resetCalls()
-    mockClient.zRangeWithScores.mock.resetCalls()
-    mockClient.hmGet.mock.resetCalls()
-    mockClient.incr.mock.resetCalls()
-    mockClient.expire.mock.resetCalls()
-    mockClient.disconnect.mock.resetCalls()
+    mockClient.connect.mockClear()
+    mockClient.incr.mockClear()
+    mockClient.expire.mockClear()
+    mockClient.hSet.mockClear()
+    mockClient.zAdd.mockClear()
+    mockClient.zRangeWithScores.mockClear()
+    mockClient.hmGet.mockClear()
+    mockClient.incr.mockClear()
+    mockClient.expire.mockClear()
+    mockClient.disconnect.mockClear()
   })
 
   afterEach(async () => {
@@ -53,10 +53,10 @@ describe('Leaderboard API - Song', () => {
 
   const createRes = () => {
     const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res),
-      setHeader: mock.fn(),
-      end: mock.fn()
+      status: vi.fn(() => res),
+      json: vi.fn(() => res),
+      setHeader: vi.fn(),
+      end: vi.fn()
     }
     return res
   }
@@ -75,8 +75,8 @@ describe('Leaderboard API - Song', () => {
 
         await handler(req, res)
 
-        assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-        assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+        assert.strictEqual(res.status.mock.calls[0][0], 400)
+        assert.deepStrictEqual(res.json.mock.calls[0][0], {
           error: 'Invalid payload structure: expected object'
         })
       }
@@ -97,8 +97,8 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Missing required fields'
       })
     })
@@ -118,8 +118,8 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Invalid score value'
       })
     })
@@ -139,8 +139,8 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Invalid playerName length'
       })
     })
@@ -160,8 +160,8 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Invalid playerId format'
       })
     })
@@ -181,8 +181,8 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Invalid songId format'
       })
     })
@@ -203,26 +203,26 @@ describe('Leaderboard API - Song', () => {
       await handler(req, res)
 
       assert.strictEqual(mockClient.hSet.mock.calls.length, 1)
-      assert.deepStrictEqual(mockClient.hSet.mock.calls[0].arguments, [
+      assert.deepStrictEqual(mockClient.hSet.mock.calls[0], [
         'players',
         { player1: 'Player One' }
       ])
 
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 1)
-      assert.deepStrictEqual(mockClient.zAdd.mock.calls[0].arguments, [
+      assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
         'lb:song:song1',
         { score: 1000, value: 'player1' },
         { GT: true }
       ])
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         success: true
       })
     })
 
     test('rate limit exceeded returns 429', async () => {
-      mockClient.incr.mock.mockImplementationOnce(() => Promise.resolve(6))
+      mockClient.incr.mockImplementationOnce(() => Promise.resolve(6))
 
       const req = {
         method: 'POST',
@@ -238,14 +238,14 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 429)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 429)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Too many requests'
       })
     })
 
     test('internal server error returns 500 for POST', async () => {
-      mockClient.hSet.mock.mockImplementationOnce(() => {
+      mockClient.hSet.mockImplementationOnce(() => {
         return Promise.reject(new Error('Redis down'))
       })
 
@@ -271,8 +271,8 @@ describe('Leaderboard API - Song', () => {
         console.error = originalConsoleError
       }
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 500)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 500)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Internal Server Error'
       })
     })
@@ -288,8 +288,8 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Missing songId'
       })
     })
@@ -303,14 +303,14 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Invalid songId format'
       })
     })
 
     test('returns empty array if no results', async () => {
-      mockClient.zRangeWithScores.mock.mockImplementationOnce(async () => [])
+      mockClient.zRangeWithScores.mockImplementationOnce(async () => [])
 
       const req = {
         method: 'GET',
@@ -321,17 +321,17 @@ describe('Leaderboard API - Song', () => {
       await handler(req, res)
 
       assert.strictEqual(mockClient.zRangeWithScores.mock.calls.length, 1)
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], [])
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], [])
     })
 
     test('returns formatted leaderboard', async () => {
-      mockClient.zRangeWithScores.mock.mockImplementationOnce(async () => [
+      mockClient.zRangeWithScores.mockImplementationOnce(async () => [
         { score: 1000, value: 'player1' },
         { score: 500, value: 'player2' }
       ])
 
-      mockClient.hmGet.mock.mockImplementationOnce(async () => [
+      mockClient.hmGet.mockImplementationOnce(async () => [
         'Player One',
         'Player Two'
       ])
@@ -346,29 +346,29 @@ describe('Leaderboard API - Song', () => {
 
       assert.strictEqual(mockClient.zRangeWithScores.mock.calls.length, 1)
       assert.deepStrictEqual(
-        mockClient.zRangeWithScores.mock.calls[0].arguments,
+        mockClient.zRangeWithScores.mock.calls[0],
         ['lb:song:song1', 0, 1, { REV: true }]
       )
 
       assert.strictEqual(mockClient.hmGet.mock.calls.length, 1)
-      assert.deepStrictEqual(mockClient.hmGet.mock.calls[0].arguments, [
+      assert.deepStrictEqual(mockClient.hmGet.mock.calls[0], [
         'players',
         ['player1', 'player2']
       ])
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], [
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], [
         { rank: 1, playerId: 'player1', playerName: 'Player One', score: 1000 },
         { rank: 2, playerId: 'player2', playerName: 'Player Two', score: 500 }
       ])
     })
 
     test('handles missing player names fallback to Unknown', async () => {
-      mockClient.zRangeWithScores.mock.mockImplementationOnce(async () => [
+      mockClient.zRangeWithScores.mockImplementationOnce(async () => [
         { score: 1000, value: 'player1' }
       ])
 
-      mockClient.hmGet.mock.mockImplementationOnce(async () => [null])
+      mockClient.hmGet.mockImplementationOnce(async () => [null])
 
       const req = {
         method: 'GET',
@@ -378,14 +378,14 @@ describe('Leaderboard API - Song', () => {
 
       await handler(req, res)
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], [
+      assert.strictEqual(res.status.mock.calls[0][0], 200)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], [
         { rank: 1, playerId: 'player1', playerName: 'Unknown', score: 1000 }
       ])
     })
 
     test('internal server error returns 500 for GET', async () => {
-      mockClient.zRangeWithScores.mock.mockImplementationOnce(() => {
+      mockClient.zRangeWithScores.mockImplementationOnce(() => {
         return Promise.reject(new Error('Redis down'))
       })
 
@@ -405,8 +405,8 @@ describe('Leaderboard API - Song', () => {
         console.error = originalConsoleError
       }
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 500)
-      assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      assert.strictEqual(res.status.mock.calls[0][0], 500)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
         error: 'Internal Server Error'
       })
     })
@@ -420,14 +420,14 @@ describe('Leaderboard API - Song', () => {
       await handler(req, res)
 
       assert.strictEqual(res.setHeader.mock.calls.length, 1)
-      assert.deepStrictEqual(res.setHeader.mock.calls[0].arguments, [
+      assert.deepStrictEqual(res.setHeader.mock.calls[0], [
         'Allow',
         ['GET', 'POST']
       ])
 
-      assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
+      assert.strictEqual(res.status.mock.calls[0][0], 405)
       assert.strictEqual(res.end.mock.calls.length, 1)
-      assert.deepStrictEqual(res.end.mock.calls[0].arguments, [
+      assert.deepStrictEqual(res.end.mock.calls[0], [
         'Method PUT Not Allowed'
       ])
     })
@@ -436,7 +436,7 @@ describe('Leaderboard API - Song', () => {
   describe('Connection handling', () => {
     test('connects to redis if not open', async () => {
       mockClient.isOpen = false
-      mockClient.zRangeWithScores.mock.mockImplementationOnce(async () => [])
+      mockClient.zRangeWithScores.mockImplementationOnce(async () => [])
 
       const req = { method: 'GET', query: { songId: 'song1' } }
       const res = createRes()
