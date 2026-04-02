@@ -35,14 +35,8 @@ import { PauseOverlay } from '../components/minigames/gig/PauseOverlay'
  */
 export const Gig = () => {
   const { t } = useTranslation()
-  const {
-    currentGig,
-    changeScene,
-    addToast,
-    setLastGigStats,
-    band,
-    endGig
-  } = useGameState()
+  const { currentGig, changeScene, addToast, setLastGigStats, band, endGig } =
+    useGameState()
 
   const [isPaused, setIsPaused] = useState(false)
   const hasInteractedRef = useRef(false)

@@ -1,16 +1,14 @@
-import { test, mock } from 'node:test'
+import { test, vi } from 'vitest'
 import assert from 'node:assert'
 
 // Mock the transport events module
-mock.module('../../../src/data/events/transport.js', {
-  namedExports: {
-    TRANSPORT_EVENTS: [
-      { id: 'valid_event', category: 'transport', description: 'Valid Event' },
-      { category: 'transport', description: 'Missing ID' }, // Invalid: Missing ID
-      { id: 'valid_event', category: 'transport', description: 'Duplicate ID' } // Invalid: Duplicate ID
-    ]
-  }
-})
+vi.mock('../../../src/data/events/transport.js', () => ({
+  TRANSPORT_EVENTS: [
+    { id: 'valid_event', category: 'transport', description: 'Valid Event' },
+    { category: 'transport', description: 'Missing ID' }, // Invalid: Missing ID
+    { id: 'valid_event', category: 'transport', description: 'Duplicate ID' } // Invalid: Duplicate ID
+  ]
+}))
 
 // Dynamic import to ensure mock is applied
 const { EVENTS_DB } = await import('../../../src/data/events/index.js')

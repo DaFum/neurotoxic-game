@@ -2,10 +2,10 @@
 
 ## Critical Commands
 
-- Logic tests (`node:test`): `pnpm run test`
-- UI tests (Vitest): `pnpm run test:ui`
-- Run single logic test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`
-- Run single UI test: `pnpm dlx vitest run tests/<file>.test.jsx`
+- Remaining legacy logic tests (`node:test`): `pnpm run test`
+- UI and migrated logic tests (Vitest): `pnpm run test:ui`
+- Run single logic test (`node:test`): `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`
+- Run single UI or migrated logic test (Vitest): `pnpm dlx vitest run tests/<file>.test.js(x)`
 
 ## Architecture Constraints
 
@@ -19,7 +19,7 @@
 
 ## Testing
 
-- `node:test` for `.js` logic files; `vitest` exclusively for `.jsx` React/UI components. Do not mix.
+- We are migrating to Vitest. `.js` logic files in `tests/api`, `tests/utils`, `tests/data`, `tests/security`, `tests/logic`, `tests/social`, `tests/hooks`, and `tests/performance` now use `vitest`. The remaining `.js` files still use `node:test`. `vitest` is used exclusively for `.jsx` React/UI components. Do not mix runners in the same file.
 - In Vitest: mock `window.localStorage.setItem` wrapped in `try/finally`. For `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup Maps (e.g., `SONGS_BY_ID`) in mocked data.
 

@@ -7,8 +7,27 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/vitest.setup.js'],
-    // ONLY include .jsx files for now, as .js files remain with node:test
-    include: ['tests/**/*.test.jsx', 'tests/**/*.spec.jsx'],
+    // Include the refactored .js directories, leaving the rest for node:test
+    include: [
+      'tests/**/*.test.jsx',
+      'tests/**/*.spec.jsx',
+      'tests/api/**/*.test.js',
+      'tests/api/**/*.spec.js',
+      'tests/utils/**/*.test.js',
+      'tests/utils/**/*.spec.js',
+      'tests/data/**/*.test.js',
+      'tests/data/**/*.spec.js',
+      'tests/security/**/*.test.js',
+      'tests/security/**/*.spec.js',
+      'tests/logic/**/*.test.js',
+      'tests/logic/**/*.spec.js',
+      'tests/social/**/*.test.js',
+      'tests/social/**/*.spec.js',
+      'tests/hooks/**/*.test.js',
+      'tests/hooks/**/*.spec.js',
+      'tests/performance/**/*.test.js',
+      'tests/performance/**/*.spec.js'
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html']

@@ -1,7 +1,10 @@
 import { useCallback, useRef } from 'react'
 import { getTransportState, getGigTimeMs } from '../../utils/audioEngine.js'
 
-import { canProcessInput, processLaneInput } from '../../utils/rhythmGameInputUtils.js'
+import {
+  canProcessInput,
+  processLaneInput
+} from '../../utils/rhythmGameInputUtils.js'
 
 /**
  * Handles user input for the rhythm game.

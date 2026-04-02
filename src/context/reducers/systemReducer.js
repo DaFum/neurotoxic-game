@@ -99,7 +99,10 @@ const sanitizeBand = loadedBand => {
           if (Object.hasOwn(item, '__proto__')) return acc
           const copy = { ...baseItem, ...item }
           copy.id = item.id // Ensure ID matches
-          if (Object.hasOwn(item, 'remainingDuration') && Number.isFinite(item.remainingDuration)) {
+          if (
+            Object.hasOwn(item, 'remainingDuration') &&
+            Number.isFinite(item.remainingDuration)
+          ) {
             copy.remainingDuration = item.remainingDuration
           } else {
             copy.remainingDuration = copy.duration || null
@@ -118,7 +121,10 @@ const sanitizeBand = loadedBand => {
           if (Object.hasOwn(item, '__proto__')) continue
           const copy = { ...baseItem, ...item }
           copy.id = id // Ensure ID matches loop key to prevent divergence
-          if (Object.hasOwn(item, 'remainingDuration') && Number.isFinite(item.remainingDuration)) {
+          if (
+            Object.hasOwn(item, 'remainingDuration') &&
+            Number.isFinite(item.remainingDuration)
+          ) {
             copy.remainingDuration = item.remainingDuration
           } else {
             copy.remainingDuration = copy.duration || null

@@ -98,65 +98,71 @@ describe('useGigEffects', () => {
 })
 
 describe('calculateChaosStyle', async () => {
-  const { calculateChaosStyle } = await import('../src/hooks/useGigEffects.js');
+  const { calculateChaosStyle } = await import('../src/hooks/useGigEffects.js')
 
   test('returns full chaos style for toxic mode', () => {
-    const style = calculateChaosStyle(true, 0);
-    assert.equal(style.filter, 'invert(0.1) contrast(1.5) saturate(2)');
-  });
+    const style = calculateChaosStyle(true, 0)
+    assert.equal(style.filter, 'invert(0.1) contrast(1.5) saturate(2)')
+  })
 
   test('returns subtle hue shift for overload > 80', () => {
-    const style = calculateChaosStyle(false, 90);
-    assert.ok(style.filter.includes('hue-rotate(10deg)'));
-    assert.ok(style.filter.includes('saturate('));
-  });
+    const style = calculateChaosStyle(false, 90)
+    assert.ok(style.filter.includes('hue-rotate(10deg)'))
+    assert.ok(style.filter.includes('saturate('))
+  })
 
   test('returns saturate shift for overload > 50', () => {
-    const style = calculateChaosStyle(false, 60);
-    assert.ok(style.filter.includes('saturate('));
-    assert.ok(!style.filter.includes('hue-rotate'));
-  });
+    const style = calculateChaosStyle(false, 60)
+    assert.ok(style.filter.includes('saturate('))
+    assert.ok(!style.filter.includes('hue-rotate'))
+  })
 
   test('returns empty style for low overload', () => {
-    const style = calculateChaosStyle(false, 40);
-    assert.deepEqual(style, {});
-  });
-});
+    const style = calculateChaosStyle(false, 40)
+    assert.deepEqual(style, {})
+  })
+})
 
 describe('applyChaosJitter', async () => {
-  beforeEach(() => { setupJSDOM() })
-  afterEach(() => { teardownJSDOM() })
-  const { applyChaosJitter } = await import('../src/hooks/useGigEffects.js');
+  beforeEach(() => {
+    setupJSDOM()
+  })
+  afterEach(() => {
+    teardownJSDOM()
+  })
+  const { applyChaosJitter } = await import('../src/hooks/useGigEffects.js')
 
   test('applies translate transform in toxic mode', () => {
-    const el = document.createElement('div');
-    const mockRandom = () => 0.5; // Returns 0 (0.5 * 4 - 2 = 0)
+    const el = document.createElement('div')
+    const mockRandom = () => 0.5 // Returns 0 (0.5 * 4 - 2 = 0)
 
-    const result = applyChaosJitter(el, true, mockRandom);
+    const result = applyChaosJitter(el, true, mockRandom)
 
-    assert.equal(result, true);
-    assert.equal(el.style.transform, 'translate(0px, 0px)');
-  });
+    assert.equal(result, true)
+    assert.equal(el.style.transform, 'translate(0px, 0px)')
+  })
 
   test('removes transform when not in toxic mode', () => {
-    const el = document.createElement('div');
-    el.style.transform = 'translate(10px, 10px)';
+    const el = document.createElement('div')
+    el.style.transform = 'translate(10px, 10px)'
 
-    const result = applyChaosJitter(el, false, () => 0);
+    const result = applyChaosJitter(el, false, () => 0)
 
-    assert.equal(result, true);
-    assert.equal(el.style.transform, 'none');
-  });
+    assert.equal(result, true)
+    assert.equal(el.style.transform, 'none')
+  })
 
   test('handles errors gracefully', () => {
-    const el = document.createElement('div');
-    const mockRandom = () => { throw new Error('Random error'); };
-    const mockOnError = mock.fn();
+    const el = document.createElement('div')
+    const mockRandom = () => {
+      throw new Error('Random error')
+    }
+    const mockOnError = mock.fn()
 
-    const result = applyChaosJitter(el, true, mockRandom, mockOnError);
+    const result = applyChaosJitter(el, true, mockRandom, mockOnError)
 
-    assert.equal(result, false);
-    assert.equal(el.style.transform, 'none');
-    assert.equal(mockOnError.mock.callCount(), 1);
-  });
-});
+    assert.equal(result, false)
+    assert.equal(el.style.transform, 'none')
+    assert.equal(mockOnError.mock.callCount(), 1)
+  })
+})

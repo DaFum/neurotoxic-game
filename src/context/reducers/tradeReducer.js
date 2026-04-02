@@ -1,5 +1,8 @@
 import { logger } from '../../utils/logger.js'
-import { clampPlayerFame, calculateFameLevel } from '../../utils/gameStateUtils.js'
+import {
+  clampPlayerFame,
+  calculateFameLevel
+} from '../../utils/gameStateUtils.js'
 import { addContrabandHelper } from './bandReducer.js'
 
 /**
@@ -41,7 +44,10 @@ export const handleTradeVoidItem = (state, payload) => {
 
   // addContrabandHelper returns unmodified state if item invalid or max stacks
   if (nextState === tempState) {
-    logger.warn('GameState', 'Failed to add void item to stash (max stacks or invalid item)')
+    logger.warn(
+      'GameState',
+      'Failed to add void item to stash (max stacks or invalid item)'
+    )
     const failureToast = {
       id: instanceId || Date.now().toString(),
       message: 'ui:shop.messages.purchaseFailed',
@@ -58,7 +64,10 @@ export const handleTradeVoidItem = (state, payload) => {
     let enrichedMessage = successToast.message
 
     try {
-      if (typeof enrichedMessage === 'string' && enrichedMessage.includes('|')) {
+      if (
+        typeof enrichedMessage === 'string' &&
+        enrichedMessage.includes('|')
+      ) {
         const firstPipeIdx = enrichedMessage.indexOf('|')
         const key = enrichedMessage.slice(0, firstPipeIdx)
         const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)

@@ -12,10 +12,7 @@ import {
 import { handleError, AudioError } from './errorHandler.js'
 import { logger } from './logger.js'
 import { SONGS_DB, SONGS_BY_ID } from '../data/songs.js'
-import {
-  calculateGigPhysics,
-  getGigModifiers
-} from './simulationUtils.js'
+import { calculateGigPhysics, getGigModifiers } from './simulationUtils.js'
 import { generateNotesForSong, parseSongNotes } from './rhythmUtils.js'
 import { resolveSongPlaybackWindow } from './audio/songUtils.js'
 
@@ -227,12 +224,7 @@ const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
   return success
 }
 
-const playAudioForSong = async (
-  currentSong,
-  notes,
-  onSongEnded,
-  rng
-) => {
+const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
   let bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
 
   if (!bgAudioStarted) {

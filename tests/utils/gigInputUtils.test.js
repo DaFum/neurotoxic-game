@@ -1,4 +1,4 @@
-import { test, describe, mock } from 'node:test'
+import { test, describe, vi } from 'vitest'
 import assert from 'node:assert/strict'
 import {
   createKeyToLaneMap,
@@ -28,15 +28,15 @@ describe('gigInputUtils', () => {
   describe('handleKeyDownLogic', () => {
     test('ignores repeated events', () => {
       const e = { repeat: true, key: 'a' }
-      const ensureAudioFromGesture = mock.fn()
-      const actions = { registerInput: mock.fn() }
+      const ensureAudioFromGesture = vi.fn()
+      const actions = { registerInput: vi.fn() }
 
       handleKeyDownLogic({
         e,
         getLaneIndex: () => 0,
         actions,
-        triggerBandAnimation: mock.fn(),
-        onTogglePause: mock.fn(),
+        triggerBandAnimation: vi.fn(),
+        onTogglePause: vi.fn(),
         ensureAudioFromGesture
       })
 
@@ -46,15 +46,15 @@ describe('gigInputUtils', () => {
 
     test('calls ensureAudioFromGesture and handles Escape', () => {
       const e = { repeat: false, key: 'Escape' }
-      const ensureAudioFromGesture = mock.fn()
-      const onTogglePause = mock.fn()
-      const actions = { registerInput: mock.fn() }
+      const ensureAudioFromGesture = vi.fn()
+      const onTogglePause = vi.fn()
+      const actions = { registerInput: vi.fn() }
 
       handleKeyDownLogic({
         e,
         getLaneIndex: () => undefined,
         actions,
-        triggerBandAnimation: mock.fn(),
+        triggerBandAnimation: vi.fn(),
         onTogglePause,
         ensureAudioFromGesture
       })
@@ -66,11 +66,11 @@ describe('gigInputUtils', () => {
 
     test('registers input and triggers animation for valid lane', () => {
       const e = { repeat: false, key: 's' }
-      const ensureAudioFromGesture = mock.fn()
-      const getLaneIndex = mock.fn(key => (key === 's' ? 1 : undefined))
-      const actions = { registerInput: mock.fn() }
-      const triggerBandAnimation = mock.fn()
-      const onTogglePause = mock.fn()
+      const ensureAudioFromGesture = vi.fn()
+      const getLaneIndex = vi.fn(key => (key === 's' ? 1 : undefined))
+      const actions = { registerInput: vi.fn() }
+      const triggerBandAnimation = vi.fn()
+      const onTogglePause = vi.fn()
 
       handleKeyDownLogic({
         e,
@@ -85,18 +85,18 @@ describe('gigInputUtils', () => {
       assert.equal(onTogglePause.mock.calls.length, 0)
 
       assert.equal(actions.registerInput.mock.calls.length, 1)
-      assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [1, true])
+      assert.deepEqual(actions.registerInput.mock.calls[0], [1, true])
 
       assert.equal(triggerBandAnimation.mock.calls.length, 1)
-      assert.deepEqual(triggerBandAnimation.mock.calls[0].arguments, [1])
+      assert.deepEqual(triggerBandAnimation.mock.calls[0], [1])
     })
   })
 
   describe('handleKeyUpLogic', () => {
     test('registers false input for valid lane', () => {
       const e = { key: 'd' }
-      const getLaneIndex = mock.fn(key => (key === 'd' ? 2 : undefined))
-      const actions = { registerInput: mock.fn() }
+      const getLaneIndex = vi.fn(key => (key === 'd' ? 2 : undefined))
+      const actions = { registerInput: vi.fn() }
 
       handleKeyUpLogic({
         e,
@@ -105,16 +105,13 @@ describe('gigInputUtils', () => {
       })
 
       assert.equal(actions.registerInput.mock.calls.length, 1)
-      assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [
-        2,
-        false
-      ])
+      assert.deepEqual(actions.registerInput.mock.calls[0], [2, false])
     })
 
     test('does nothing for invalid lane', () => {
       const e = { key: 'unknown' }
-      const getLaneIndex = mock.fn(() => undefined)
-      const actions = { registerInput: mock.fn() }
+      const getLaneIndex = vi.fn(() => undefined)
+      const actions = { registerInput: vi.fn() }
 
       handleKeyUpLogic({
         e,

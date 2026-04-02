@@ -42,7 +42,10 @@ export const calculateDynamicHitWindow = (
 
   // Dynamic Hit Window (Guitar Custom: easier to hit = larger window)
   if (laneIndex === LANE_INDICES.GUITAR) {
-    const difficultyFactor = Math.max(CONSTANTS.GUITAR_MIN_DIFFICULTY, guitarDifficulty)
+    const difficultyFactor = Math.max(
+      CONSTANTS.GUITAR_MIN_DIFFICULTY,
+      guitarDifficulty
+    )
     hitWindow /= difficultyFactor
   }
 
@@ -109,7 +112,10 @@ export const calculateFinalScore = (
   if (toxicModeActive) finalScore *= CONSTANTS.TOXIC_MODE_SCORE_MULTIPLIER
 
   // Perfektionist Trait: +15% score if accuracy > 85%
-  if (hasPerfektionist && currentAccuracy > CONSTANTS.PERFEKTIONIST_ACCURACY_THRESHOLD) {
+  if (
+    hasPerfektionist &&
+    currentAccuracy > CONSTANTS.PERFEKTIONIST_ACCURACY_THRESHOLD
+  ) {
     finalScore *= CONSTANTS.PERFEKTIONIST_BONUS_MULTIPLIER
   }
 
@@ -133,12 +139,17 @@ export const calculateMissImpact = (
   crowdDecay = 1.0
 ) => {
   // Overload penalty
-  const penalty = isEmptyHit ? CONSTANTS.EMPTY_HIT_OVERLOAD_PENALTY : CONSTANTS.NOTE_MISS_OVERLOAD_PENALTY
+  const penalty = isEmptyHit
+    ? CONSTANTS.EMPTY_HIT_OVERLOAD_PENALTY
+    : CONSTANTS.NOTE_MISS_OVERLOAD_PENALTY
   const nextOverload = Math.max(0, currentOverload - penalty * count)
 
   // Health decay
-  const basePenalty = isEmptyHit ? CONSTANTS.EMPTY_HIT_HEALTH_DECAY : CONSTANTS.NOTE_MISS_HEALTH_DECAY
-  const decayPerMiss = basePenalty * Math.max(CONSTANTS.MIN_CROWD_DECAY, crowdDecay)
+  const basePenalty = isEmptyHit
+    ? CONSTANTS.EMPTY_HIT_HEALTH_DECAY
+    : CONSTANTS.NOTE_MISS_HEALTH_DECAY
+  const decayPerMiss =
+    basePenalty * Math.max(CONSTANTS.MIN_CROWD_DECAY, crowdDecay)
   const nextHealth = Math.max(
     0,
     Math.min(CONSTANTS.MAX_HEALTH, currentHealth - decayPerMiss * count)

@@ -1,4 +1,4 @@
-export const DEBOUNCE_MS = 50;
+export const DEBOUNCE_MS = 50
 
 /**
  * Determines whether input can be processed based on the current game state.

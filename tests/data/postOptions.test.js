@@ -1,4 +1,4 @@
-import test from 'node:test'
+import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { POST_OPTIONS } from '../../src/data/postOptions.js'
 import { SOCIAL_PLATFORMS } from '../../src/data/platforms.js'

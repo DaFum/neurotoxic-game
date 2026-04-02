@@ -42,9 +42,19 @@ test('skills-manifest.json parses as valid JSON', async () => {
 test('skills-manifest.json has required meta fields', async () => {
   const { meta } = await readAgentJson('skills-manifest.json')
   assert.ok(meta, 'meta field present')
-  assert.strictEqual(typeof meta.total_skills, 'number', 'meta.total_skills is number')
-  assert.ok(meta.categories && typeof meta.categories === 'object', 'meta.categories is object')
-  assert.ok(typeof meta.generated_date === 'string', 'meta.generated_date is string')
+  assert.strictEqual(
+    typeof meta.total_skills,
+    'number',
+    'meta.total_skills is number'
+  )
+  assert.ok(
+    meta.categories && typeof meta.categories === 'object',
+    'meta.categories is object'
+  )
+  assert.ok(
+    typeof meta.generated_date === 'string',
+    'meta.generated_date is string'
+  )
 })
 
 test('skills-manifest.json reports exactly 30 total skills', async () => {
@@ -179,7 +189,10 @@ test('skills-dependencies.json parses as valid JSON', async () => {
 test('skills-dependencies.json has meta and dependencies fields', async () => {
   const deps = await readAgentJson('skills-dependencies.json')
   assert.ok(deps.meta && typeof deps.meta === 'object', 'meta field present')
-  assert.ok(deps.dependencies && typeof deps.dependencies === 'object', 'dependencies field present')
+  assert.ok(
+    deps.dependencies && typeof deps.dependencies === 'object',
+    'dependencies field present'
+  )
 })
 
 test('skills-dependencies.json meta.total_skills is 30', async () => {
@@ -200,7 +213,8 @@ test('skills-dependencies.json each entry has depends_on, routing_triggers, rela
       `"${name}" depends_on must be an array`
     )
     assert.ok(
-      typeof entry.routing_triggers === 'object' && !Array.isArray(entry.routing_triggers),
+      typeof entry.routing_triggers === 'object' &&
+        !Array.isArray(entry.routing_triggers),
       `"${name}" routing_triggers must be a plain object`
     )
     assert.ok(
@@ -260,7 +274,11 @@ test('skills-dependencies.json skills with no relationships have empty related_s
       [],
       `"${name}" should have no related_skills`
     )
-    assert.deepEqual(entry.depends_on, [], `"${name}" should have no depends_on`)
+    assert.deepEqual(
+      entry.depends_on,
+      [],
+      `"${name}" should have no depends_on`
+    )
   }
 })
 
@@ -279,7 +297,15 @@ test('audio-config.json has required top-level fields', async () => {
   const config = await readAgentJson(
     'skills/audio-debugger-ambient-vs-gig/assets/audio-config.json'
   )
-  for (const field of ['schema', 'version', 'description', 'contexts', 'audioContextState', 'commonIssues', 'transitions']) {
+  for (const field of [
+    'schema',
+    'version',
+    'description',
+    'contexts',
+    'audioContextState',
+    'commonIssues',
+    'transitions'
+  ]) {
     assert.ok(
       Object.prototype.hasOwnProperty.call(config, field),
       `audio-config.json missing field "${field}"`
@@ -291,8 +317,14 @@ test('audio-config.json contexts has both ambient and gig entries', async () => 
   const { contexts } = await readAgentJson(
     'skills/audio-debugger-ambient-vs-gig/assets/audio-config.json'
   )
-  assert.ok(contexts.ambient && typeof contexts.ambient === 'object', 'ambient context present')
-  assert.ok(contexts.gig && typeof contexts.gig === 'object', 'gig context present')
+  assert.ok(
+    contexts.ambient && typeof contexts.ambient === 'object',
+    'ambient context present'
+  )
+  assert.ok(
+    contexts.gig && typeof contexts.gig === 'object',
+    'gig context present'
+  )
 })
 
 test('audio-config.json ambient context has correct numeric properties', async () => {
@@ -335,9 +367,18 @@ test('audio-config.json each commonIssue has symptom, causes array, and fix', as
   )
   for (const issue of commonIssues) {
     assert.ok(typeof issue.symptom === 'string', `issue missing symptom string`)
-    assert.ok(Array.isArray(issue.causes), `issue "${issue.symptom}" causes must be array`)
-    assert.ok(issue.causes.length >= 1, `issue "${issue.symptom}" causes must not be empty`)
-    assert.ok(typeof issue.fix === 'string', `issue "${issue.symptom}" missing fix string`)
+    assert.ok(
+      Array.isArray(issue.causes),
+      `issue "${issue.symptom}" causes must be array`
+    )
+    assert.ok(
+      issue.causes.length >= 1,
+      `issue "${issue.symptom}" causes must not be empty`
+    )
+    assert.ok(
+      typeof issue.fix === 'string',
+      `issue "${issue.symptom}" missing fix string`
+    )
   }
 })
 
@@ -369,7 +410,9 @@ test('audio-config.json "Ambient/Gig transition fails" issue has exactly 3 cause
   const { commonIssues } = await readAgentJson(
     'skills/audio-debugger-ambient-vs-gig/assets/audio-config.json'
   )
-  const issue = commonIssues.find(i => i.symptom === 'Ambient/Gig transition fails')
+  const issue = commonIssues.find(
+    i => i.symptom === 'Ambient/Gig transition fails'
+  )
   assert.ok(issue, '"Ambient/Gig transition fails" issue found')
   assert.strictEqual(issue.causes.length, 3)
   assert.ok(issue.causes.includes('Fade timing conflict'))
@@ -383,8 +426,14 @@ test('audio-config.json transitions has ambientToGig and gigToAmbient', async ()
   )
   assert.ok(transitions.ambientToGig, 'ambientToGig transition present')
   assert.ok(transitions.gigToAmbient, 'gigToAmbient transition present')
-  assert.ok(Array.isArray(transitions.ambientToGig.steps), 'ambientToGig.steps is array')
-  assert.ok(Array.isArray(transitions.gigToAmbient.steps), 'gigToAmbient.steps is array')
+  assert.ok(
+    Array.isArray(transitions.ambientToGig.steps),
+    'ambientToGig.steps is array'
+  )
+  assert.ok(
+    Array.isArray(transitions.gigToAmbient.steps),
+    'gigToAmbient.steps is array'
+  )
 })
 
 // ---------------------------------------------------------------------------
@@ -402,7 +451,13 @@ test('action-types.json has required top-level fields', async () => {
   const at = await readAgentJson(
     'skills/state-safety-action-creator-guard/assets/action-types.json'
   )
-  for (const field of ['schema', 'description', 'source', 'actionTypes', 'enforcementRules']) {
+  for (const field of [
+    'schema',
+    'description',
+    'source',
+    'actionTypes',
+    'enforcementRules'
+  ]) {
     assert.ok(
       Object.prototype.hasOwnProperty.call(at, field),
       `action-types.json missing field "${field}"`
@@ -439,7 +494,10 @@ test('action-types.json UPDATE_PLAYER payload has delta and keys fields', async 
   const action = actionTypes.find(a => a.type === 'UPDATE_PLAYER')
   assert.ok(action, 'UPDATE_PLAYER action found')
   assert.ok(action.payload.delta, 'UPDATE_PLAYER payload has delta')
-  assert.ok(Array.isArray(action.payload.keys), 'UPDATE_PLAYER payload.keys is array')
+  assert.ok(
+    Array.isArray(action.payload.keys),
+    'UPDATE_PLAYER payload.keys is array'
+  )
   assert.ok(action.payload.keys.includes('money'), 'keys includes money')
   assert.ok(action.payload.keys.includes('fuel'), 'keys includes fuel')
 })
@@ -486,7 +544,10 @@ test('action-types.json LOAD_GAME invariants is an array with at least 2 entries
   const action = actionTypes.find(a => a.type === 'LOAD_GAME')
   assert.ok(action, 'LOAD_GAME found')
   assert.ok(Array.isArray(action.invariants), 'LOAD_GAME invariants is array')
-  assert.ok(action.invariants.length >= 2, 'LOAD_GAME has at least 2 invariants')
+  assert.ok(
+    action.invariants.length >= 2,
+    'LOAD_GAME has at least 2 invariants'
+  )
 })
 
 test('action-types.json ADD_TOAST and REMOVE_TOAST are both present', async () => {
@@ -502,7 +563,10 @@ test('action-types.json enforcementRules has the three invariant rules', async (
   const { enforcementRules } = await readAgentJson(
     'skills/state-safety-action-creator-guard/assets/action-types.json'
   )
-  assert.ok(enforcementRules.moneyNeverNegative, 'moneyNeverNegative rule present')
+  assert.ok(
+    enforcementRules.moneyNeverNegative,
+    'moneyNeverNegative rule present'
+  )
   assert.ok(enforcementRules.harmonyBounded, 'harmonyBounded rule present')
   assert.ok(enforcementRules.fuelNonNegative, 'fuelNonNegative rule present')
 })
@@ -543,9 +607,14 @@ test('all changed SKILL.md files have parseable YAML frontmatter', async () => {
     try {
       fm = await readSkillFrontmatter(skillName)
     } catch (err) {
-      assert.fail(`Failed to parse frontmatter for "${skillName}": ${err.message}`)
+      assert.fail(
+        `Failed to parse frontmatter for "${skillName}": ${err.message}`
+      )
     }
-    assert.ok(fm !== null && typeof fm === 'object', `${skillName} frontmatter is object`)
+    assert.ok(
+      fm !== null && typeof fm === 'object',
+      `${skillName} frontmatter is object`
+    )
   }
 })
 
@@ -651,7 +720,9 @@ test('agents-md-writer frontmatter has correct category and keywords', async () 
 })
 
 test('audio-debugger-ambient-vs-gig frontmatter has correct category and keywords', async () => {
-  const { metadata } = await readSkillFrontmatter('audio-debugger-ambient-vs-gig')
+  const { metadata } = await readSkillFrontmatter(
+    'audio-debugger-ambient-vs-gig'
+  )
   assert.strictEqual(metadata.category, 'audio')
   assert.strictEqual(metadata.maturity, 'stable')
   assert.deepEqual(metadata.keywords, ['audio', 'debug', 'tone.js', 'playback'])
@@ -684,7 +755,11 @@ test('refactor-with-safety frontmatter has refactoring category and stable matur
 test('SKILL.md frontmatter license field is a non-empty string for all changed skills', async () => {
   for (const skillName of CHANGED_SKILLS) {
     const fm = await readSkillFrontmatter(skillName)
-    assert.strictEqual(typeof fm.license, 'string', `${skillName} license must be string`)
+    assert.strictEqual(
+      typeof fm.license,
+      'string',
+      `${skillName} license must be string`
+    )
     assert.ok(fm.license.length > 0, `${skillName} license must not be empty`)
   }
 })
@@ -730,7 +805,10 @@ test('react-performance-optimization SKILL.md starts with a YAML frontmatter blo
     'SKILL.md'
   )
   const content = await fs.readFile(skillPath, 'utf-8')
-  assert.ok(content.startsWith('---\n'), 'file starts with YAML frontmatter opening ---')
+  assert.ok(
+    content.startsWith('---\n'),
+    'file starts with YAML frontmatter opening ---'
+  )
   const closingIdx = content.indexOf('\n---\n', 4)
   assert.ok(closingIdx > 0, 'file has closing --- for frontmatter')
 })
@@ -748,11 +826,29 @@ test('react-performance-optimization SKILL.md frontmatter contains required fiel
   const rawFrontmatter = content.slice(4, frontmatterEnd)
   // Verify required field names exist as line-starts in the raw frontmatter
   assert.ok(/^name:/m.test(rawFrontmatter), 'frontmatter has name field')
-  assert.ok(/^description:/m.test(rawFrontmatter), 'frontmatter has description field')
-  assert.ok(/^compatibility:/m.test(rawFrontmatter), 'frontmatter has compatibility field')
-  assert.ok(/^metadata:/m.test(rawFrontmatter), 'frontmatter has metadata field')
-  assert.ok(/^\s+version:/m.test(rawFrontmatter), 'frontmatter has metadata.version')
-  assert.ok(/^\s+category:/m.test(rawFrontmatter), 'frontmatter has metadata.category')
-  assert.ok(/^\s+maturity:/m.test(rawFrontmatter), 'frontmatter has metadata.maturity')
+  assert.ok(
+    /^description:/m.test(rawFrontmatter),
+    'frontmatter has description field'
+  )
+  assert.ok(
+    /^compatibility:/m.test(rawFrontmatter),
+    'frontmatter has compatibility field'
+  )
+  assert.ok(
+    /^metadata:/m.test(rawFrontmatter),
+    'frontmatter has metadata field'
+  )
+  assert.ok(
+    /^\s+version:/m.test(rawFrontmatter),
+    'frontmatter has metadata.version'
+  )
+  assert.ok(
+    /^\s+category:/m.test(rawFrontmatter),
+    'frontmatter has metadata.category'
+  )
+  assert.ok(
+    /^\s+maturity:/m.test(rawFrontmatter),
+    'frontmatter has metadata.maturity'
+  )
   assert.ok(/^license:/m.test(rawFrontmatter), 'frontmatter has license field')
 })

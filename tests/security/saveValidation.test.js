@@ -1,4 +1,4 @@
-import test from 'node:test'
+import { test } from 'vitest'
 import assert from 'node:assert/strict'
 import { validateSaveData } from '../../src/utils/saveValidator.js'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'

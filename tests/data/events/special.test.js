@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it } from 'vitest'
 import assert from 'node:assert'
 import { SPECIAL_EVENTS } from '../../../src/data/events/special.js'
 

@@ -8,34 +8,36 @@ import { useId, memo } from 'react'
 import { formatNumber } from '../utils/numberUtils.js'
 
 // Helper component for accessible SVGs
-const BaseIcon = memo(({
-  className = '',
-  viewBox = '0 0 24 24',
-  title,
-  fill = 'currentColor',
-  children,
-  ...props
-}) => {
-  const titleId = useId()
-  const isDecorative = !title || title.trim() === ''
-  return (
-    <svg
-      aria-hidden={isDecorative ? 'true' : undefined}
-      focusable={isDecorative ? 'false' : undefined}
-      role={isDecorative ? 'presentation' : 'img'}
-      aria-labelledby={isDecorative ? undefined : titleId}
-      fill={fill}
-      xmlns='http://www.w3.org/2000/svg'
-      preserveAspectRatio='xMidYMid meet'
-      {...props}
-      className={className}
-      viewBox={viewBox}
-    >
-      {!isDecorative && <title id={titleId}>{title}</title>}
-      {children}
-    </svg>
-  )
-})
+const BaseIcon = memo(
+  ({
+    className = '',
+    viewBox = '0 0 24 24',
+    title,
+    fill = 'currentColor',
+    children,
+    ...props
+  }) => {
+    const titleId = useId()
+    const isDecorative = !title || title.trim() === ''
+    return (
+      <svg
+        aria-hidden={isDecorative ? 'true' : undefined}
+        focusable={isDecorative ? 'false' : undefined}
+        role={isDecorative ? 'presentation' : 'img'}
+        aria-labelledby={isDecorative ? undefined : titleId}
+        fill={fill}
+        xmlns='http://www.w3.org/2000/svg'
+        preserveAspectRatio='xMidYMid meet'
+        {...props}
+        className={className}
+        viewBox={viewBox}
+      >
+        {!isDecorative && <title id={titleId}>{title}</title>}
+        {children}
+      </svg>
+    )
+  }
+)
 
 const IconStar = memo(({ className = '', title }) => (
   <BaseIcon className={className} title={title}>
