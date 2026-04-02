@@ -72,10 +72,12 @@ const calculateTicketIncome = (
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
+  const baseCapacity = Math.max(0, gigData.capacity || 0)
+  const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
   const fameRatio = Math.min(
     1.0,
     playerFame /
-      (gigData.capacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+      (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
   )
   let fillRate =
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
@@ -114,8 +116,8 @@ const calculateTicketIncome = (
 
   fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
 
-  const ticketsSold = Math.floor(gigData.capacity * fillRate)
-  const revenue = ticketsSold * gigData.price
+  const ticketsSold = Math.floor(baseCapacity * fillRate)
+  const revenue = ticketsSold * (Math.max(0, gigData.price) || 0)
 
   return {
     revenue,
@@ -124,7 +126,7 @@ const calculateTicketIncome = (
       labelKey: 'economy:gigIncome.ticketSales.label',
       value: revenue,
       detailKey: 'economy:gigIncome.ticketSales.detail',
-      detailParams: { sold: ticketsSold, capacity: gigData.capacity }
+      detailParams: { sold: ticketsSold, capacity: baseCapacity }
     }
   }
 }
@@ -178,13 +180,14 @@ const calculateMerchIncome = (
     buyRate -= missPenalty
   }
 
-  const totalInventory =
+  const totalInventory = Math.max(0,
     (bandInventory?.shirts || 0) +
     (bandInventory?.hoodies || 0) +
     (bandInventory?.cds || 0) +
     (bandInventory?.patches || 0) +
     (bandInventory?.vinyl || 0)
-  const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate))
+  )
+  const potentialBuyers = Math.floor(Math.max(0, ticketsSold) * Math.max(0, buyRate))
   const buyers = Math.min(potentialBuyers, totalInventory)
 
   // Average Spend per buyer (simplified mix)
@@ -348,7 +351,7 @@ const calculateVenueSplit = (ticketsRevenue, gigData) => {
     gigData.diff >= 5 ? 0.7 : { 3: 0.2, 4: 0.4 }[gigData.diff] || 0
 
   if (splitRate > 0) {
-    const splitAmount = Math.floor(ticketsRevenue * splitRate)
+    const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * splitRate)
     return {
       amount: splitAmount,
       expenseItem: {
