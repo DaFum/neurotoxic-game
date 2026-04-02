@@ -72,7 +72,8 @@ const calculateTicketIncome = (
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
-  const safeCapacity = gigData.capacity || 1 // Prevent division by zero
+  const baseCapacity = Math.max(0, gigData.capacity || 0)
+  const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
   const fameRatio = Math.min(
     1.0,
     playerFame /
@@ -115,8 +116,8 @@ const calculateTicketIncome = (
 
   fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
 
-  const ticketsSold = Math.floor(gigData.capacity * fillRate)
-  const revenue = ticketsSold * gigData.price
+  const ticketsSold = Math.floor(baseCapacity * fillRate)
+  const revenue = ticketsSold * (Math.max(0, gigData.price) || 0)
 
   return {
     revenue,
@@ -125,7 +126,7 @@ const calculateTicketIncome = (
       labelKey: 'economy:gigIncome.ticketSales.label',
       value: revenue,
       detailKey: 'economy:gigIncome.ticketSales.detail',
-      detailParams: { sold: ticketsSold, capacity: gigData.capacity }
+      detailParams: { sold: ticketsSold, capacity: baseCapacity }
     }
   }
 }
@@ -192,8 +193,8 @@ const calculateMerchIncome = (
   // Average Spend per buyer (simplified mix)
   const merchAvgRevenue = 25 // Shirt + Sticker
   const merchAvgCost = 10
-  const merchRevenue = Math.max(0, buyers * merchAvgRevenue)
-  const merchCost = Math.max(0, buyers * merchAvgCost)
+  const merchRevenue = buyers * merchAvgRevenue
+  const merchCost = buyers * merchAvgCost
 
   breakdownItems.push({
     labelKey: 'economy:gigIncome.merchSales.label',
