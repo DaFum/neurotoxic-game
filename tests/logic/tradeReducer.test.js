@@ -41,8 +41,14 @@ describe('Trade Reducer', () => {
     const nextState = handleTradeVoidItem(initialState, payload)
 
     assert.strictEqual(nextState.player.fame, 1000)
-    assert.ok(nextState.band.stash['c_phantom_strings'], 'Item should be in stash')
-    assert.strictEqual(nextState.band.stash['c_phantom_strings'].instanceId, '123')
+    assert.ok(
+      nextState.band.stash['c_phantom_strings'],
+      'Item should be in stash'
+    )
+    assert.strictEqual(
+      nextState.band.stash['c_phantom_strings'].instanceId,
+      '123'
+    )
     assert.strictEqual(nextState.toasts.length, 1)
   })
 

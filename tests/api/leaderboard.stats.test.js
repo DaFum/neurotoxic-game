@@ -1,12 +1,12 @@
 // 🟢🧪⚙️ NEXUS ENCAPSULATES ALL OPTIMIZED TEST ARTIFACTS W '🟢🧪⚙️'s 🟢🧪⚙️
 // Async handling strategy:
-// This test suite leverages Native Node.js test runner mocking capabilities.
-// Redis external I/O operations are strictly mocked by intercepting the `lib/redis.js` import using `mock.module()`.
+// This test suite leverages Vitest mocking capabilities.
+// Redis external I/O operations are strictly mocked by intercepting the `lib/redis.js` import using `vi.mock()`.
 // Since our Redis mock methods return resolved Promises and are explicitly awaited, we avoid dangling event loop ticks.
 // Proper cleanup is ensured via `afterEach` where `mockRedisClient.disconnect()` handles teardown, and
-// all mock counters are strictly reset in `beforeEach` (`mockFn.mock.resetCalls()`) rather than totally destroying the mock module.
+// all mock counters are strictly reset in `beforeEach`.
 
-import { test, describe, beforeEach, afterEach, vi } from "vitest"
+import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
 
 const mockMulti = {
@@ -44,8 +44,6 @@ describe('Leaderboard Stats API', () => {
     mockRedisClient.zRangeWithScores.mockClear()
     mockRedisClient.hmGet.mockClear()
     mockRedisClient.hSet.mockClear()
-    mockRedisClient.incr.mockClear()
-    mockRedisClient.expire.mockClear()
     mockRedisClient.disconnect.mockClear()
     mockRedisClient.on.mockClear()
     mockRedisClient.connect.mockClear()
@@ -171,10 +169,7 @@ describe('Leaderboard Stats API', () => {
     assert.strictEqual(res.status.mock.calls[0][0], 200)
     assert.strictEqual(res.json.mock.calls[0][0].length, 2)
     assert.strictEqual(res.json.mock.calls[0][0][0].playerId, 'band1')
-    assert.strictEqual(
-      res.json.mock.calls[0][0][0].playerName,
-      'Band One'
-    )
+    assert.strictEqual(res.json.mock.calls[0][0][0].playerName, 'Band One')
     assert.strictEqual(res.json.mock.calls[0][0][0].score, 100)
   })
 
@@ -246,12 +241,8 @@ describe('Leaderboard Stats API', () => {
     // Verify clampStat worked
     const zAddCalls = mockMulti.zAdd.mock.calls
     const fameCall = zAddCalls.find(call => call[0] === 'lb:fame')
-    const followersCall = zAddCalls.find(
-      call => call[0] === 'lb:followers'
-    )
-    const distanceCall = zAddCalls.find(
-      call => call[0] === 'lb:distance'
-    )
+    const followersCall = zAddCalls.find(call => call[0] === 'lb:followers')
+    const distanceCall = zAddCalls.find(call => call[0] === 'lb:distance')
 
     assert.strictEqual(fameCall[1].score, 0)
     assert.strictEqual(followersCall[1].score, 999999999999) // MAX_STAT_VALUE
@@ -278,10 +269,7 @@ describe('Leaderboard Stats API', () => {
     await statsModule.default(req, res)
 
     // Limit index is 99 because zRangeWithScores is inclusive (0 to limit - 1)
-    assert.strictEqual(
-      mockRedisClient.zRangeWithScores.mock.calls[0][2],
-      99
-    )
+    assert.strictEqual(mockRedisClient.zRangeWithScores.mock.calls[0][2], 99)
   })
 
   test('Rejects unsupported HTTP methods', async () => {
@@ -298,10 +286,7 @@ describe('Leaderboard Stats API', () => {
     await statsModule.default(req, res)
 
     assert.strictEqual(res.setHeader.mock.calls[0][0], 'Allow')
-    assert.deepStrictEqual(res.setHeader.mock.calls[0][1], [
-      'GET',
-      'POST'
-    ])
+    assert.deepStrictEqual(res.setHeader.mock.calls[0][1], ['GET', 'POST'])
     assert.strictEqual(res.status.mock.calls[0][0], 405)
   })
 

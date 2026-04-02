@@ -17,36 +17,66 @@ const commandArgs = [
   '--experimental-test-module-mocks',
   '--import',
   './tests/setup.mjs',
-  ...(hasExplicitConcurrency ? [] : [`--test-concurrency=${testConcurrency}`]),
+  ...(hasExplicitConcurrency ? [] : [`--test-concurrency=${testConcurrency}`])
 ]
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from 'node:fs'
+import path from 'node:path'
 
 // Exclude directories that have been migrated to vitest
 const getRemainingTestFiles = () => {
-  const allFiles = [];
-  const crawl = (dir) => {
-    const items = fs.readdirSync(dir);
+  const allFiles = []
+  const crawl = dir => {
+    const items = fs.readdirSync(dir)
     for (const item of items) {
-      const fullPath = path.join(dir, item);
-      const normalizedPath = fullPath.replace(/\\/g, '/');
+      const fullPath = path.join(dir, item)
+      const normalizedPath = fullPath.replace(/\\/g, '/')
       if (fs.statSync(fullPath).isDirectory()) {
-        crawl(fullPath);
-      } else if (normalizedPath.endsWith('.test.js') || normalizedPath.endsWith('.spec.js')) {
-        if (!normalizedPath.startsWith('tests/api/') && !normalizedPath.startsWith('tests/utils/') && !normalizedPath.startsWith('tests/data/')) {
-          allFiles.push(fullPath);
+        crawl(fullPath)
+      } else if (
+        normalizedPath.endsWith('.test.js') ||
+        normalizedPath.endsWith('.spec.js')
+      ) {
+        if (
+          !normalizedPath.startsWith('tests/api/') &&
+          !normalizedPath.startsWith('tests/utils/') &&
+          !normalizedPath.startsWith('tests/data/')
+        ) {
+          allFiles.push(fullPath)
         }
       }
     }
-  };
-  crawl('tests');
-  return allFiles;
-};
+  }
+  crawl('tests')
+  return allFiles
+}
 
-// If running a specific file, don't use default exclusions since they only apply globally
-// We detect this by checking if the first arg is not an option flag
-const isSpecificFile = nodeTestArgs.length > 0 && !nodeTestArgs[0].startsWith('--')
+const EXCLUDED_TEST_DIRS = ['tests/api', 'tests/utils', 'tests/data']
+const isPathInExcludedDir = testPath => {
+  const resolved = path.resolve(testPath)
+  const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
+  return EXCLUDED_TEST_DIRS.some(
+    dir => relative === dir || relative.startsWith(`${dir}/`)
+  )
+}
+
+// Detect specific test file arguments (positional, non-flag JS test files)
+const specificTestFileArgs = nodeTestArgs.filter(
+  arg =>
+    !arg.startsWith('--') &&
+    (arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs'))
+)
+
+// Prevent running Vitest-migrated tests with node:test
+const hasExcludedSpecificFile = specificTestFileArgs.some(isPathInExcludedDir)
+if (hasExcludedSpecificFile) {
+  console.error(
+    'Tests under tests/api, tests/utils, and tests/data are run with Vitest. Use the Vitest runner instead of node:test for these files.'
+  )
+  process.exit(1)
+}
+
+const isSpecificFile = specificTestFileArgs.length > 0
 
 const finalArgs = isSpecificFile
   ? [...commandArgs, ...nodeTestArgs]

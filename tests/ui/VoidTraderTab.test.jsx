@@ -30,7 +30,9 @@ describe('VoidTraderTab Component', () => {
     // Update the mock to reflect the actual fame-based disabling logic now handled centrally in BandHQ
     const _isItemDisabled = vi.fn(item => {
       const fameCost = item.rarity === 'epic' ? 1000 : 400
-      return poorPlayer.fame < fameCost || (!item.stackable && isItemOwned(item))
+      return (
+        poorPlayer.fame < fameCost || (!item.stackable && isItemOwned(item))
+      )
     })
 
     render(
@@ -42,7 +44,9 @@ describe('VoidTraderTab Component', () => {
       />
     )
 
-    const buttons = screen.getAllByRole('button', { name: /ui:hq.voidTrader.trade/i })
+    const buttons = screen.getAllByRole('button', {
+      name: /ui:hq.voidTrader.trade/i
+    })
     expect(buttons[0]).toBeDisabled()
   })
 
@@ -57,7 +61,9 @@ describe('VoidTraderTab Component', () => {
       />
     )
 
-    const buttons = screen.getAllByRole('button', { name: /ui:hq.voidTrader.trade/i })
+    const buttons = screen.getAllByRole('button', {
+      name: /ui:hq.voidTrader.trade/i
+    })
     fireEvent.click(buttons[0])
     expect(handleTrade).toHaveBeenCalled()
   })
@@ -73,7 +79,9 @@ describe('VoidTraderTab Component', () => {
       />
     )
 
-    const loadingButtons = screen.getAllByRole('button', { name: /ui:loading/i })
+    const loadingButtons = screen.getAllByRole('button', {
+      name: /ui:loading/i
+    })
     expect(loadingButtons.length).toBeGreaterThan(0)
 
     // Check that all buttons are actually disabled, either because they are processing or because another item is processing

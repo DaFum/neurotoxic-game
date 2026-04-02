@@ -1,12 +1,12 @@
 // 🟢🧪⚙️ NEXUS ENCAPSULATES ALL OPTIMIZED TEST ARTIFACTS W '🟢🧪⚙️'s 🟢🧪⚙️
 // Async handling strategy:
-// Uses native Node test runner capabilities to hermetically intercept `lib/redis.js` external dependencies.
+// Uses Vitest mocking capabilities to hermetically intercept `lib/redis.js` external dependencies.
 // Redis calls are simulated by mock functions returning explicit resolved/rejected promises. This ensures:
 // 1) Test isolation and parallel execution safety.
 // 2) Deterministic promise resolution preventing asynchronous open handles or leakage.
-// 3) Proper test setup isolation using mock counter resets in `beforeEach` without cache busting the mocked modules.
+// 3) Proper test setup isolation using mock counter resets in `beforeEach`.
 
-import { test, describe, beforeEach, afterEach, vi } from "vitest"
+import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
 
 const mockClient = {
@@ -42,8 +42,6 @@ describe('Leaderboard API - Song', () => {
     mockClient.zAdd.mockClear()
     mockClient.zRangeWithScores.mockClear()
     mockClient.hmGet.mockClear()
-    mockClient.incr.mockClear()
-    mockClient.expire.mockClear()
     mockClient.disconnect.mockClear()
   })
 
@@ -345,10 +343,12 @@ describe('Leaderboard API - Song', () => {
       await handler(req, res)
 
       assert.strictEqual(mockClient.zRangeWithScores.mock.calls.length, 1)
-      assert.deepStrictEqual(
-        mockClient.zRangeWithScores.mock.calls[0],
-        ['lb:song:song1', 0, 1, { REV: true }]
-      )
+      assert.deepStrictEqual(mockClient.zRangeWithScores.mock.calls[0], [
+        'lb:song:song1',
+        0,
+        1,
+        { REV: true }
+      ])
 
       assert.strictEqual(mockClient.hmGet.mock.calls.length, 1)
       assert.deepStrictEqual(mockClient.hmGet.mock.calls[0], [
@@ -427,9 +427,7 @@ describe('Leaderboard API - Song', () => {
 
       assert.strictEqual(res.status.mock.calls[0][0], 405)
       assert.strictEqual(res.end.mock.calls.length, 1)
-      assert.deepStrictEqual(res.end.mock.calls[0], [
-        'Method PUT Not Allowed'
-      ])
+      assert.deepStrictEqual(res.end.mock.calls[0], ['Method PUT Not Allowed'])
     })
   })
 

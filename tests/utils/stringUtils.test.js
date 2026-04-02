@@ -1,4 +1,4 @@
-import { describe, it, vi } from "vitest";
+import { describe, it } from 'vitest'
 import assert from 'node:assert'
 import { hashString } from '../../src/utils/stringUtils.js'
 

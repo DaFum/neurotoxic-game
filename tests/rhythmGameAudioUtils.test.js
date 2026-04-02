@@ -5,7 +5,7 @@ import { SONGS_BY_ID } from '../src/data/songs.js'
 
 describe('rhythmGameAudioUtils', () => {
   describe('resolveActiveSetlist', () => {
-    let originalSongs;
+    let originalSongs
 
     beforeEach(() => {
       // Save original map state
@@ -44,7 +44,11 @@ describe('rhythmGameAudioUtils', () => {
     })
 
     test('should resolve string ref to known song in SONGS_BY_ID', () => {
-      SONGS_BY_ID.set('known', { id: 'known', name: 'Known Song', notes: [1, 2] })
+      SONGS_BY_ID.set('known', {
+        id: 'known',
+        name: 'Known Song',
+        notes: [1, 2]
+      })
       const setlist = ['known']
       const result = resolveActiveSetlist(setlist)
       assert.strictEqual(result.length, 1)
@@ -54,7 +58,11 @@ describe('rhythmGameAudioUtils', () => {
     })
 
     test('should resolve partial object to known song in SONGS_BY_ID', () => {
-      SONGS_BY_ID.set('partial', { id: 'partial', name: 'Partial Song', notes: [4, 5] })
+      SONGS_BY_ID.set('partial', {
+        id: 'partial',
+        name: 'Partial Song',
+        notes: [4, 5]
+      })
       const setlist = [{ id: 'partial' }]
       const result = resolveActiveSetlist(setlist)
       assert.strictEqual(result.length, 1)

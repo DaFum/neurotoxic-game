@@ -226,7 +226,10 @@ export const calculateAppliedDelta = (state, delta) => {
 
   if (delta.player) {
     if (typeof delta.player.money === 'number') {
-      const currentMoney = Math.max(0, typeof state.player?.money === 'number' ? state.player.money : 0)
+      const currentMoney = Math.max(
+        0,
+        typeof state.player?.money === 'number' ? state.player.money : 0
+      )
       const nextMoney = clampPlayerMoney(currentMoney + delta.player.money)
       applied.player.money = nextMoney - currentMoney
     }
@@ -234,7 +237,10 @@ export const calculateAppliedDelta = (state, delta) => {
       applied.player.time = delta.player.time // time is unbounded
     }
     if (typeof delta.player.fame === 'number') {
-      const currentFame = Math.max(0, typeof state.player?.fame === 'number' ? state.player.fame : 0)
+      const currentFame = Math.max(
+        0,
+        typeof state.player?.fame === 'number' ? state.player.fame : 0
+      )
       const nextFame = clampPlayerFame(currentFame + delta.player.fame)
       applied.player.fame = nextFame - currentFame
     }
@@ -245,26 +251,30 @@ export const calculateAppliedDelta = (state, delta) => {
           ? delta.score
           : 0
     if (scoreDelta !== 0) {
-      const currentScore = typeof state.player?.score === 'number' ? state.player.score : 0
+      const currentScore =
+        typeof state.player?.score === 'number' ? state.player.score : 0
       const nextScore = Math.max(0, currentScore + scoreDelta)
       applied.score = nextScore - currentScore
     }
     if (delta.player.van) {
       applied.player.van = {}
       if (typeof delta.player.van.fuel === 'number') {
-        const currentFuel = typeof state.player?.van?.fuel === 'number' ? state.player.van.fuel : 0
-        const nextFuel = clampVanFuel(
-          currentFuel + delta.player.van.fuel
-        )
+        const currentFuel =
+          typeof state.player?.van?.fuel === 'number'
+            ? state.player.van.fuel
+            : 0
+        const nextFuel = clampVanFuel(currentFuel + delta.player.van.fuel)
         applied.player.van.fuel = nextFuel - currentFuel
       }
       if (typeof delta.player.van.condition === 'number') {
-        const currentCondition = typeof state.player?.van?.condition === 'number' ? state.player.van.condition : 0
+        const currentCondition =
+          typeof state.player?.van?.condition === 'number'
+            ? state.player.van.condition
+            : 0
         const nextCondition = clampVanCondition(
           currentCondition + delta.player.van.condition
         )
-        applied.player.van.condition =
-          nextCondition - currentCondition
+        applied.player.van.condition = nextCondition - currentCondition
       }
     }
     if (typeof delta.player.day === 'number') {
@@ -345,7 +355,8 @@ export const calculateAppliedDelta = (state, delta) => {
     }
 
     if (typeof delta.band.luck === 'number') {
-      const currentLuck = typeof state.band?.luck === 'number' ? state.band.luck : 0
+      const currentLuck =
+        typeof state.band?.luck === 'number' ? state.band.luck : 0
       const nextLuck = Math.max(0, currentLuck + delta.band.luck)
       applied.band.luck = nextLuck - currentLuck
     }

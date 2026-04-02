@@ -1,4 +1,4 @@
-import { test, describe, vi } from "vitest"
+import { test, describe, vi } from 'vitest'
 import assert from 'node:assert/strict'
 import {
   createKeyToLaneMap,
@@ -105,10 +105,7 @@ describe('gigInputUtils', () => {
       })
 
       assert.equal(actions.registerInput.mock.calls.length, 1)
-      assert.deepEqual(actions.registerInput.mock.calls[0], [
-        2,
-        false
-      ])
+      assert.deepEqual(actions.registerInput.mock.calls[0], [2, false])
     })
 
     test('does nothing for invalid lane', () => {

@@ -1,4 +1,4 @@
-import { test, vi } from "vitest"
+import { test, vi } from 'vitest'
 import assert from 'node:assert'
 
 // Mock the transport events module

@@ -67,7 +67,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
   const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
 
-  const currentTab = (activeTab === 'VOID' && social.controversyLevel < 30) ? 'STATS' : activeTab;
+  const currentTab =
+    activeTab === 'VOID' && social.controversyLevel < 30 ? 'STATS' : activeTab
 
   const handleVoidTrade = useCallback(
     async item => {
@@ -98,13 +99,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
         setProcessingItemId(null)
       }
     },
-    [
-      player.fame,
-      processingItemId,
-      tradeVoidItem,
-      addToast,
-      t
-    ]
+    [player.fame, processingItemId, tradeVoidItem, addToast, t]
   )
 
   const isVoidItemOwned = useCallback(
@@ -213,7 +208,9 @@ export const BandHQ = ({ onClose, className = '' }) => {
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
             { id: 'SETTINGS', key: 'tabs.settings' },
-            ...(social.controversyLevel >= 30 ? [{ id: 'VOID', key: 'tabs.voidTrader' }] : [])
+            ...(social.controversyLevel >= 30
+              ? [{ id: 'VOID', key: 'tabs.voidTrader' }]
+              : [])
           ].map(tab => {
             const isActive = currentTab === tab.id
             return (

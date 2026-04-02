@@ -69,7 +69,12 @@ export const playBandMemberAnimation = (memberEl, existingAnim) => {
  * @param {Function} onError - Callback when an error occurs
  * @returns {boolean} True if successful, False if an error occurred
  */
-export const applyChaosJitter = (containerEl, isToxicMode, getRandom, onError) => {
+export const applyChaosJitter = (
+  containerEl,
+  isToxicMode,
+  getRandom,
+  onError
+) => {
   if (!containerEl) return true
 
   try {
@@ -137,7 +142,7 @@ export const useGigEffects = stats => {
         chaosContainerRef.current,
         stats.isToxicMode,
         secureRandom,
-        (error) => {
+        error => {
           cancelAnimationFrame(rAF)
           if (!secureRandomErrorReported) {
             handleError(error, { severity: 'medium', silent: true })
@@ -154,7 +159,7 @@ export const useGigEffects = stats => {
     if (stats.isToxicMode) {
       rAF = requestAnimationFrame(animateChaos)
     } else {
-      applyChaosJitter(chaosContainerRef.current, false, null, (error) => {
+      applyChaosJitter(chaosContainerRef.current, false, null, error => {
         if (!secureRandomErrorReported) {
           handleError(error, { severity: 'medium', silent: true })
           secureRandomErrorReported = true

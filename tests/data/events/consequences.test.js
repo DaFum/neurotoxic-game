@@ -1,4 +1,4 @@
-import { describe, it, vi } from "vitest";
+import { describe, it } from 'vitest'
 import assert from 'node:assert'
 import { CONSEQUENCE_EVENTS } from '../../../src/data/events/consequences.js'
 
