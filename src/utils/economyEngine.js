@@ -72,10 +72,11 @@ const calculateTicketIncome = (
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
+  const safeCapacity = gigData.capacity || 1 // Prevent division by zero
   const fameRatio = Math.min(
     1.0,
     playerFame /
-      (gigData.capacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+      (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
   )
   let fillRate =
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
@@ -178,20 +179,21 @@ const calculateMerchIncome = (
     buyRate -= missPenalty
   }
 
-  const totalInventory =
+  const totalInventory = Math.max(0,
     (bandInventory?.shirts || 0) +
     (bandInventory?.hoodies || 0) +
     (bandInventory?.cds || 0) +
     (bandInventory?.patches || 0) +
     (bandInventory?.vinyl || 0)
-  const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate))
+  )
+  const potentialBuyers = Math.floor(Math.max(0, ticketsSold) * Math.max(0, buyRate))
   const buyers = Math.min(potentialBuyers, totalInventory)
 
   // Average Spend per buyer (simplified mix)
   const merchAvgRevenue = 25 // Shirt + Sticker
   const merchAvgCost = 10
-  const merchRevenue = buyers * merchAvgRevenue
-  const merchCost = buyers * merchAvgCost
+  const merchRevenue = Math.max(0, buyers * merchAvgRevenue)
+  const merchCost = Math.max(0, buyers * merchAvgCost)
 
   breakdownItems.push({
     labelKey: 'economy:gigIncome.merchSales.label',
@@ -348,7 +350,7 @@ const calculateVenueSplit = (ticketsRevenue, gigData) => {
     gigData.diff >= 5 ? 0.7 : { 3: 0.2, 4: 0.4 }[gigData.diff] || 0
 
   if (splitRate > 0) {
-    const splitAmount = Math.floor(ticketsRevenue * splitRate)
+    const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * splitRate)
     return {
       amount: splitAmount,
       expenseItem: {
