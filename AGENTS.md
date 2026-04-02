@@ -19,8 +19,8 @@
 
 ## Testing
 
-- The testing policy strictly enforces `node:test` for all pure `.js` logic and data test files. Vitest is strictly reserved for `.jsx` React/UI components and React hooks (e.g., files matching `tests/**/*.test.{jsx,js}` where React context is required). Pure logic must be extracted from hooks and tested with `node:test`. Do not mix runners in the same file.
-- In Vitest: mock `window.localStorage.setItem` wrapped in `try/finally`. For `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
+- Follow the repository runner split: use `pnpm run test` / `node:test` for the remaining legacy logic tests, and use `pnpm run test:ui` / Vitest for React/UI components, React hooks, and the migrated test directories (including pure `.js` suites now covered by Vitest). Do not assume all pure `.js` tests belong to `node:test`; use the runner already configured for that test's directory. Do not mix runners in the same file.
+- For tests run with Vitest: mock `window.localStorage.setItem` wrapped in `try/finally`. For `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup Maps (e.g., `SONGS_BY_ID`) in mocked data.
 
 ## Style & Conventions

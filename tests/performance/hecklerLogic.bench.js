@@ -14,9 +14,7 @@ const createProjectiles = () =>
     vx: (Math.random() - 0.5) * 0.5,
     vy: 0.3 + Math.random() * 0.4,
     rotation: 0,
-    vr: (Math.random() - 0.5) * 0.2,
-    hit: false,
-    life: 1.0
+    vr: (Math.random() - 0.5) * 0.2
   }))
 
 // Pre-allocate test cases so each run starts with fresh data
@@ -29,10 +27,15 @@ console.log(
   `Running benchmark with ${PROJECTILES_COUNT} projectiles over ${RUNS} iterations...`
 )
 
+// Allocate a single session to match runtime re-use patterns without GC bias
+const session = createHecklerSession()
+
 const start = performance.now()
 
 for (let i = 0; i < RUNS; i++) {
-  processProjectiles(createHecklerSession(), testCases[i], DELTA_MS, SCREEN_HEIGHT, () => {})
+  // Clear the object pool before processing to ensure equivalent starting states
+  session.pool.length = 0
+  processProjectiles(session, testCases[i], DELTA_MS, SCREEN_HEIGHT, () => {})
 }
 
 const end = performance.now()

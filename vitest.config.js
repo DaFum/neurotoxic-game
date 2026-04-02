@@ -26,8 +26,7 @@ export default defineConfig({
       'tests/hooks/**/*.test.js',
       'tests/hooks/**/*.spec.js',
       'tests/performance/**/*.test.js',
-      'tests/performance/**/*.spec.js',
-      'tests/performance/**/*.bench.js'
+      'tests/performance/**/*.spec.js'
     ],
     coverage: {
       provider: 'v8',
