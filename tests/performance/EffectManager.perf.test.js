@@ -1,4 +1,4 @@
-import { test, describe, before, after, mock } from 'node:test'
+import { test, describe, beforeAll, afterAll, vi } from 'vitest'
 import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 // Mock PIXI
@@ -33,33 +33,37 @@ const PIXI = {
   Texture: { WHITE: {} }
 }
 
-mock.module('pixi.js', { defaultExport: PIXI, namedExports: PIXI })
-
-// Mock other utils
-mock.module('../../src/utils/imageGen.js', {
-  namedExports: { getGenImageUrl: () => '', IMG_PROMPTS: {} }
-})
-mock.module('../../src/utils/logger.js', {
-  namedExports: { logger: { warn: () => {} } }
-})
-mock.module('../../src/components/stage/utils.js', {
-  namedExports: {
-    loadTexture: async () => ({}),
-    loadTextures: async () => ({}),
-    getPixiColorFromToken: () => 0
+vi.mock('pixi.js', () => {
+  return {
+    ...PIXI,
+    default: PIXI
   }
 })
+
+// Mock other utils
+vi.mock('../../src/utils/imageGen.js', () => ({
+  getGenImageUrl: () => '',
+  IMG_PROMPTS: {}
+}))
+vi.mock('../../src/utils/logger.js', () => ({
+  logger: { warn: () => {} }
+}))
+vi.mock('../../src/components/stage/utils.js', () => ({
+  loadTexture: async () => ({}),
+  loadTextures: async () => ({}),
+  getPixiColorFromToken: () => 0
+}))
 
 describe('EffectManager Performance', () => {
   let EffectManager
 
-  before(async () => {
+  beforeAll(async () => {
     setupJSDOM()
     const module = await import('../../src/components/stage/EffectManager.js')
     EffectManager = module.EffectManager
   })
 
-  after(() => {
+  afterAll(() => {
     teardownJSDOM()
   })
 

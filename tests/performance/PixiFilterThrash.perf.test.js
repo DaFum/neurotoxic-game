@@ -1,4 +1,4 @@
-import { test, mock, describe, beforeEach, afterEach } from 'node:test'
+import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert/strict'
 
 // Counter for filter assignments
@@ -9,8 +9,8 @@ const MockPIXI = {
   Application: class {
     constructor() {
       this.canvas = 'canvas'
-      this.stage = { addChild: mock.fn() }
-      this.ticker = { add: mock.fn(), remove: mock.fn(), stop: mock.fn() }
+      this.stage = { addChild: vi.fn() }
+      this.ticker = { add: vi.fn(), remove: vi.fn(), stop: vi.fn() }
     }
     init() {
       return Promise.resolve()
@@ -39,10 +39,10 @@ const MockPIXI = {
 }
 
 // Mock PIXI module
-mock.module('pixi.js', {
-  defaultExport: MockPIXI,
-  namedExports: {
+vi.mock('pixi.js', () => {
+  return {
     ...MockPIXI,
+    default: MockPIXI,
     Assets: {
       load: () => Promise.resolve(),
       unload: () => Promise.resolve()
@@ -59,58 +59,48 @@ mock.module('pixi.js', {
 
 // Mock Managers (factory approach for fresh instances)
 const createMockManager = () => ({
-  init: mock.fn(),
-  loadAssets: mock.fn(),
-  update: mock.fn(),
-  dispose: mock.fn(),
+  init: vi.fn(),
+  loadAssets: vi.fn(),
+  update: vi.fn(),
+  dispose: vi.fn(),
   container: 'rhythmContainer',
   layout: 'layout'
 })
 
-mock.module('../../src/components/stage/CrowdManager.js', {
-  namedExports: {
-    CrowdManager: class {
-      constructor() {
-        Object.assign(this, createMockManager())
-      }
+vi.mock('../../src/components/stage/CrowdManager.js', () => ({
+  CrowdManager: class {
+    constructor() {
+      Object.assign(this, createMockManager())
     }
   }
-})
-mock.module('../../src/components/stage/LaneManager.js', {
-  namedExports: {
-    LaneManager: class {
-      constructor() {
-        Object.assign(this, createMockManager())
-      }
+}))
+vi.mock('../../src/components/stage/LaneManager.js', () => ({
+  LaneManager: class {
+    constructor() {
+      Object.assign(this, createMockManager())
     }
   }
-})
-mock.module('../../src/components/stage/EffectManager.js', {
-  namedExports: {
-    EffectManager: class {
-      constructor() {
-        Object.assign(this, createMockManager())
-      }
+}))
+vi.mock('../../src/components/stage/EffectManager.js', () => ({
+  EffectManager: class {
+    constructor() {
+      Object.assign(this, createMockManager())
     }
   }
-})
-mock.module('../../src/components/stage/NoteManager.js', {
-  namedExports: {
-    NoteManager: class {
-      constructor() {
-        Object.assign(this, createMockManager())
-      }
+}))
+vi.mock('../../src/components/stage/NoteManager.js', () => ({
+  NoteManager: class {
+    constructor() {
+      Object.assign(this, createMockManager())
     }
   }
-})
+}))
 
 const mockAudioEngine = {
-  getGigTimeMs: mock.fn(() => 1234)
+  getGigTimeMs: vi.fn(() => 1234)
 }
 
-mock.module('../../src/utils/audioEngine.js', {
-  namedExports: mockAudioEngine
-})
+vi.mock('../../src/utils/audioEngine.js', () => mockAudioEngine)
 
 describe('PixiStageController Filter Performance', () => {
   let controller
@@ -125,8 +115,8 @@ describe('PixiStageController Filter Performance', () => {
 
     globalThis.window = {
       devicePixelRatio: 1,
-      addEventListener: mock.fn(),
-      removeEventListener: mock.fn()
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn()
     }
 
     // Re-import to apply mocks
@@ -134,7 +124,7 @@ describe('PixiStageController Filter Performance', () => {
       await import('../../src/components/PixiStageController.js')
     createPixiStageController = controllerModule.createPixiStageController
 
-    containerRef = { current: { appendChild: mock.fn() } }
+    containerRef = { current: { appendChild: vi.fn() } }
     gameStateRef = {
       current: {
         lanes: [],
@@ -142,7 +132,7 @@ describe('PixiStageController Filter Performance', () => {
         modifiers: {}
       }
     }
-    updateRef = { current: mock.fn() }
+    updateRef = { current: vi.fn() }
     statsRef = { current: { combo: 10, isToxicMode: false } }
 
     controller = createPixiStageController({

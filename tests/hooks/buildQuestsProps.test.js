@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test'
+import { describe, it, vi } from 'vitest'
 import assert from 'node:assert'
 import { buildQuestsProps } from '../../src/hooks/buildQuestsProps.js'
 

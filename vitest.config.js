@@ -22,7 +22,11 @@ export default defineConfig({
       'tests/logic/**/*.test.js',
       'tests/logic/**/*.spec.js',
       'tests/social/**/*.test.js',
-      'tests/social/**/*.spec.js'
+      'tests/social/**/*.spec.js',
+      'tests/hooks/**/*.test.js',
+      'tests/hooks/**/*.spec.js',
+      'tests/performance/**/*.test.js',
+      'tests/performance/**/*.spec.js'
     ],
     coverage: {
       provider: 'v8',
