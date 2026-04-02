@@ -16,7 +16,13 @@ export default defineConfig({
       'tests/utils/**/*.test.js',
       'tests/utils/**/*.spec.js',
       'tests/data/**/*.test.js',
-      'tests/data/**/*.spec.js'
+      'tests/data/**/*.spec.js',
+      'tests/security/**/*.test.js',
+      'tests/security/**/*.spec.js',
+      'tests/logic/**/*.test.js',
+      'tests/logic/**/*.spec.js',
+      'tests/social/**/*.test.js',
+      'tests/social/**/*.spec.js'
     ],
     coverage: {
       provider: 'v8',

@@ -1,4 +1,4 @@
-import test from 'node:test'
+import { test, beforeEach, describe } from 'vitest'
 import assert from 'node:assert/strict'
 
 // Mock localStorage globally for the test file
@@ -19,11 +19,11 @@ const mockStorage = {
 }
 global.localStorage = mockStorage
 
-test('Unlock Manager Security', async t => {
+describe('Unlock Manager Security', async () => {
   // Dynamic import to ensure global.localStorage is ready
   const { addUnlock } = await import('../../src/utils/unlockManager.js')
 
-  t.beforeEach(() => {
+  beforeEach(() => {
     mockStorage.clear()
   })
 
@@ -38,7 +38,7 @@ test('Unlock Manager Security', async t => {
     }
   }
 
-  await t.test('addUnlock sanitizes before adding', async () => {
+  test('addUnlock sanitizes before adding', async () => {
     mockStorage.setItem('neurotoxic_unlocks', JSON.stringify(['valid', 123]))
     const result = addUnlock('new_item')
     assert.equal(result, true)
@@ -47,20 +47,20 @@ test('Unlock Manager Security', async t => {
     assert.deepEqual(stored, ['valid', 'new_item'])
   })
 
-  await t.test('addUnlock prevents duplicates', async () => {
+  test('addUnlock prevents duplicates', async () => {
     addUnlock('item1')
     const result = addUnlock('item1')
     assert.equal(result, false) // Should return false as it wasn't added
     assert.deepEqual(readStorage(), ['item1'])
   })
 
-  await t.test('addUnlock adds multiple unique items', async () => {
+  test('addUnlock adds multiple unique items', async () => {
     addUnlock('item1')
     addUnlock('item2')
     assert.deepEqual(readStorage(), ['item1', 'item2'])
   })
 
-  await t.test('addUnlock rejects non-string inputs', async () => {
+  test('addUnlock rejects non-string inputs', async () => {
     const result = addUnlock(123)
     assert.equal(result, false)
     assert.deepEqual(readStorage(), [])

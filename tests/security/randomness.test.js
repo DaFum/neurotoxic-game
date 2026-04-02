@@ -1,5 +1,22 @@
-import test, { mock } from 'node:test'
+import { test, vi } from 'vitest'
 import assert from 'node:assert/strict'
+
+// Define the mock before imports
+vi.mock('../../src/utils/crypto.js', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    secureRandom: vi.fn(actual.secureRandom) // Default to actual implementation
+  }
+})
+
+vi.mock('../../src/utils/logger.js', () => ({
+  logger: { debug: vi.fn(), error: vi.fn() },
+  LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
+}))
+vi.mock('../../src/data/events/index.js', () => ({
+  EVENTS_DB: { travel: [{ id: 'test', trigger: 'travel', chance: 0.5 }] }
+}))
 
 // Import secureRandom
 import {
@@ -16,7 +33,7 @@ test('secureRandom returns values in [0, 1)', () => {
 
 test('secureRandom utilizes crypto.getRandomValues', () => {
   const originalGetRandomValues = globalThis.crypto.getRandomValues
-  const mockGetRandomValues = mock.fn(arr => {
+  const mockGetRandomValues = vi.fn(arr => {
     arr[0] = 2147483648 // Half of 2^32
     return arr
   })
@@ -34,25 +51,8 @@ test('secureRandom utilizes crypto.getRandomValues', () => {
 })
 
 test('eventEngine uses secureRandom for event selection', async () => {
-  // We mock secureRandom before importing eventEngine
-  mock.module('../../src/utils/crypto.js', {
-    namedExports: {
-      secureRandom: mock.fn(() => 0.1)
-    }
-  })
-
-  // Mock other dependencies
-  mock.module('../../src/utils/logger.js', {
-    namedExports: {
-      logger: { debug: mock.fn(), error: mock.fn() },
-      LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
-    }
-  })
-  mock.module('../../src/data/events/index.js', {
-    namedExports: {
-      EVENTS_DB: { travel: [{ id: 'test', trigger: 'travel', chance: 0.5 }] }
-    }
-  })
+  // Set mock return value specifically for this test
+  secureRandom.mockReturnValue(0.1)
 
   const { eventEngine } = await import('../../src/utils/eventEngine.js')
   const { secureRandom: mockedSecureRandom } =
@@ -68,7 +68,7 @@ test('eventEngine uses secureRandom for event selection', async () => {
     pendingEvents: []
   }
 
-  mockedSecureRandom.mock.resetCalls()
+  mockedSecureRandom.mockClear()
   eventEngine.checkEvent('travel', state)
 
   // checkEvent calls selectEvent

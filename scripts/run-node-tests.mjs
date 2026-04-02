@@ -40,7 +40,10 @@ const getRemainingTestFiles = () => {
         if (
           !normalizedPath.startsWith('tests/api/') &&
           !normalizedPath.startsWith('tests/utils/') &&
-          !normalizedPath.startsWith('tests/data/')
+          !normalizedPath.startsWith('tests/data/') &&
+          !normalizedPath.startsWith('tests/security/') &&
+          !normalizedPath.startsWith('tests/logic/') &&
+          !normalizedPath.startsWith('tests/social/')
         ) {
           allFiles.push(fullPath)
         }
@@ -51,7 +54,7 @@ const getRemainingTestFiles = () => {
   return allFiles
 }
 
-const EXCLUDED_TEST_DIRS = ['tests/api', 'tests/utils', 'tests/data']
+const EXCLUDED_TEST_DIRS = ['tests/api', 'tests/utils', 'tests/data', 'tests/security', 'tests/logic', 'tests/social']
 const isPathInExcludedDir = testPath => {
   const resolved = path.resolve(testPath)
   const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
@@ -71,7 +74,7 @@ const specificTestFileArgs = nodeTestArgs.filter(
 const hasExcludedSpecificFile = specificTestFileArgs.some(isPathInExcludedDir)
 if (hasExcludedSpecificFile) {
   console.error(
-    'Tests under tests/api, tests/utils, and tests/data are run with Vitest. Use the Vitest runner instead of node:test for these files.'
+    'Tests under the migrated directories are run with Vitest. Use the Vitest runner instead of node:test for these files.'
   )
   process.exit(1)
 }
