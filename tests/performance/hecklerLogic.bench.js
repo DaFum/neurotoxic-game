@@ -1,4 +1,4 @@
-import { updateProjectiles } from '../../src/utils/hecklerLogic.js'
+import { processProjectiles } from '../../src/utils/hecklerLogic.js'
 
 const RUNS = 500
 const PROJECTILES_COUNT = 5000
@@ -8,12 +8,15 @@ const SCREEN_HEIGHT = 1080
 // Create random projectiles
 const createProjectiles = () =>
   Array.from({ length: PROJECTILES_COUNT }, () => ({
+    id: Math.random().toString(),
     x: Math.random() * 1920,
     y: Math.random() * 1200, // Some on screen, some off (height is 1080, buffer is 100)
     vx: (Math.random() - 0.5) * 0.5,
     vy: 0.3 + Math.random() * 0.4,
     rotation: 0,
-    vr: (Math.random() - 0.5) * 0.2
+    vr: (Math.random() - 0.5) * 0.2,
+    hit: false,
+    life: 1.0
   }))
 
 // Pre-allocate test cases so each run starts with fresh data
@@ -29,7 +32,7 @@ console.log(
 const start = performance.now()
 
 for (let i = 0; i < RUNS; i++) {
-  updateProjectiles(testCases[i], DELTA_MS, SCREEN_HEIGHT)
+  processProjectiles(testCases[i], DELTA_MS, SCREEN_HEIGHT, () => {})
 }
 
 const end = performance.now()

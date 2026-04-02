@@ -4,39 +4,57 @@ import assert from 'node:assert/strict'
 // Counter for filter assignments
 let filterSetCount = 0
 
-// Define Mock Classes
-const MockPIXI = {
-  Application: class {
-    constructor() {
-      this.canvas = 'canvas'
-      this.stage = { addChild: vi.fn() }
-      this.ticker = { add: vi.fn(), remove: vi.fn(), stop: vi.fn() }
+const { MockPIXI, createMockManager, mockAudioEngine } = vi.hoisted(() => {
+  // Define Mock Classes
+  const MockPIXI = {
+    Application: class {
+      constructor() {
+        this.canvas = 'canvas'
+        this.stage = { addChild: vi.fn() }
+        this.ticker = { add: vi.fn(), remove: vi.fn(), stop: vi.fn() }
+      }
+      init() {
+        return Promise.resolve()
+      }
+      destroy() {}
+    },
+    Container: class {
+      constructor() {
+        this._filters = []
+      }
+      addChild() {}
+      destroy() {}
+      removeChildren() {}
+      get filters() {
+        return this._filters
+      }
+      set filters(v) {
+        filterSetCount++
+        this._filters = v
+      }
+    },
+    ColorMatrixFilter: class {
+      destroy() {}
+      hue() {}
     }
-    init() {
-      return Promise.resolve()
-    }
-    destroy() {}
-  },
-  Container: class {
-    constructor() {
-      this._filters = []
-    }
-    addChild() {}
-    destroy() {}
-    removeChildren() {}
-    get filters() {
-      return this._filters
-    }
-    set filters(v) {
-      filterSetCount++
-      this._filters = v
-    }
-  },
-  ColorMatrixFilter: class {
-    destroy() {}
-    hue() {}
   }
-}
+
+  // Mock Managers (factory approach for fresh instances)
+  const createMockManager = () => ({
+    init: vi.fn(),
+    loadAssets: vi.fn(),
+    update: vi.fn(),
+    dispose: vi.fn(),
+    container: 'rhythmContainer',
+    layout: 'layout'
+  })
+
+  const mockAudioEngine = {
+    getGigTimeMs: vi.fn(() => 1234)
+  }
+
+  return { MockPIXI, createMockManager, mockAudioEngine }
+})
 
 // Mock PIXI module
 vi.mock('pixi.js', () => {
@@ -55,16 +73,6 @@ vi.mock('pixi.js', () => {
       EMPTY: {}
     }
   }
-})
-
-// Mock Managers (factory approach for fresh instances)
-const createMockManager = () => ({
-  init: vi.fn(),
-  loadAssets: vi.fn(),
-  update: vi.fn(),
-  dispose: vi.fn(),
-  container: 'rhythmContainer',
-  layout: 'layout'
 })
 
 vi.mock('../../src/components/stage/CrowdManager.js', () => ({
@@ -95,10 +103,6 @@ vi.mock('../../src/components/stage/NoteManager.js', () => ({
     }
   }
 }))
-
-const mockAudioEngine = {
-  getGigTimeMs: vi.fn(() => 1234)
-}
 
 vi.mock('../../src/utils/audioEngine.js', () => mockAudioEngine)
 

@@ -65,11 +65,22 @@ const isPathInExcludedDir = testPath => {
   )
 }
 
+// Detect specific test file arguments by filtering out options and their values
+const filteredArgs = []
+for (let i = 0; i < nodeTestArgs.length; i++) {
+  const arg = nodeTestArgs[i]
+  // If the argument is an option that expects a path (e.g. --import, -r, --require),
+  // skip it and the following value.
+  if (arg === '--import' || arg === '-r' || arg === '--require') {
+    i++ // Skip the value
+  } else if (!arg.startsWith('-')) {
+    filteredArgs.push(arg)
+  }
+}
+
 // Detect specific test file arguments (positional, non-flag JS test files)
-const specificTestFileArgs = nodeTestArgs.filter(
-  arg =>
-    !arg.startsWith('--') &&
-    (arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs'))
+const specificTestFileArgs = filteredArgs.filter(
+  arg => arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs')
 )
 
 // Prevent running Vitest-migrated tests with node:test

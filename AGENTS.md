@@ -19,7 +19,7 @@
 
 ## Testing
 
-- We are migrating to Vitest. `.js` logic files in `tests/api`, `tests/utils`, `tests/data`, `tests/security`, `tests/logic`, `tests/social`, `tests/hooks`, and `tests/performance` now use `vitest`. The remaining `.js` files still use `node:test`. `vitest` is used exclusively for `.jsx` React/UI components. Do not mix runners in the same file.
+- The testing policy strictly enforces `node:test` for all pure `.js` logic and data test files. Vitest is strictly reserved for `.jsx` React/UI components and React hooks (e.g., files matching `tests/**/*.test.{jsx,js}` where React context is required). Pure logic must be extracted from hooks and tested with `node:test`. Do not mix runners in the same file.
 - In Vitest: mock `window.localStorage.setItem` wrapped in `try/finally`. For `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup Maps (e.g., `SONGS_BY_ID`) in mocked data.
 
