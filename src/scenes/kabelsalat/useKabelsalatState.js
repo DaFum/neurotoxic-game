@@ -66,15 +66,13 @@ export const useKabelsalatState = () => {
     ) {
       timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
-          if (prev <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current)
-            if (!finishedRef.current && !isWinningRef.current) {
-              finishedRef.current = true
-              setIsGameOver(true)
-            }
-            return 0
+          if (prev > 1) return prev - 1
+          if (timerRef.current) clearInterval(timerRef.current)
+          if (!finishedRef.current && !isWinningRef.current) {
+            finishedRef.current = true
+            setIsGameOver(true)
           }
-          return prev - 1
+          return 0
         })
       }, 1000)
     }
