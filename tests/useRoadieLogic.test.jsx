@@ -1,4 +1,4 @@
-import { describe, it as test, beforeEach, afterEach, vi as mock } from 'vitest'
+import { describe, it as test, beforeEach, afterEach, vi as mock, expect } from 'vitest'
 
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { renderHook, act, cleanup } from '@testing-library/react'
@@ -92,7 +92,7 @@ describe('useRoadieLogic', () => {
     mock.advanceTimersByTime(1000)
     const beforeDeliverCount = mockPlaySFX.mock.calls.length
     act(() => { result.current.actions.move(0, 1) })
-    expect(game.playerPos.y, GRID_HEIGHT - 1)
+    expect(game.playerPos.y).toBe(GRID_HEIGHT - 1)
     expect(game.carrying).toBe(null)
     expect(game.itemsDelivered.length).toBe(1)
 
