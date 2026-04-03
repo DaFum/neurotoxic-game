@@ -90,10 +90,6 @@ describe('useArrivalLogic', () => {
       band: { harmony: 50 }
     })
 
-    mockGameState.startGig.mockImplementationOnce(() => {
-      throw new Error('Gig Failed To Start')
-    })
-
     act(() => { result.current.handleArrivalSequence() })
 
     expect(mockGameState.startGig.mock.calls.length).toBe(1)
@@ -176,11 +172,11 @@ describe('useArrivalLogic', () => {
       throw new Error('Test Error')
     })
 
-    assert.throws(() => {
+    expect(() => {
       act(() => {
         result.current.handleArrivalSequence()
       })
-    }, /Test Error/)
+    }).toThrow(/Test Error/)
 
     expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
 
@@ -314,10 +310,6 @@ describe('useArrivalLogic', () => {
         }
       },
       band: { harmony: 50 }
-    })
-
-    mockGameState.startGig.mockImplementationOnce(() => {
-      throw new Error('Gig Failed To Start')
     })
 
     act(() => {
