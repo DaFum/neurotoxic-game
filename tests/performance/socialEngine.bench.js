@@ -1,4 +1,4 @@
-import { suite, test, vi } from 'vitest'
+import { suite, test } from 'vitest'
 import assert from 'node:assert'
 import { generateBrandOffers } from '../../src/utils/socialEngine.js'
 
