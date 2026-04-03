@@ -526,31 +526,31 @@ export const applyEventDelta = (state, delta) => {
             const isM1 = change.member1 === member.name
             const isM2 = change.member2 === member.name
 
-            if (isM1 || isM2) {
-              const other = isM1 ? change.member2 : change.member1
-              if (isForbiddenKey(other)) continue
+            if (!isM1 && !isM2) continue
 
-              let amount = change.change
-              // Apply traits
-              if (amount < 0 && hasGrudgeHolder) amount *= 1.5
-              if (amount > 0 && hasPeacemaker) amount *= 1.5
-              if (amount < 0 && hasPeacemaker) amount *= 0.5
+            const other = isM1 ? change.member2 : change.member1
+            if (isForbiddenKey(other)) continue
 
-              const relSource =
-                newRelationships || nextMember.relationships || {}
-              const oldExists = Object.hasOwn(relSource, other)
-              const currentScore = relSource[other] ?? 50
-              const newScore = Math.max(
-                0,
-                Math.min(100, Math.round(currentScore + amount))
-              )
+            let amount = change.change
+            // Apply traits
+            if (amount < 0 && hasGrudgeHolder) amount *= 1.5
+            if (amount > 0 && hasPeacemaker) amount *= 1.5
+            if (amount < 0 && hasPeacemaker) amount *= 0.5
 
-              if (oldExists || newScore !== 50) {
-                if (!newRelationships) {
-                  newRelationships = { ...(nextMember.relationships || {}) }
-                }
-                newRelationships[other] = newScore
+            const relSource =
+              newRelationships || nextMember.relationships || {}
+            const oldExists = Object.hasOwn(relSource, other)
+            const currentScore = relSource[other] ?? 50
+            const newScore = Math.max(
+              0,
+              Math.min(100, Math.round(currentScore + amount))
+            )
+
+            if (oldExists || newScore !== 50) {
+              if (!newRelationships) {
+                newRelationships = { ...(nextMember.relationships || {}) }
               }
+              newRelationships[other] = newScore
             }
           }
 
