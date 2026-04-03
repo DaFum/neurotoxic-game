@@ -56,6 +56,11 @@ export const useKabelsalatState = () => {
     return []
   }, [isShocked])
 
+  const timeLeftRef = useRef(timeLeft)
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
   // Timer Logic
   useEffect(() => {
     if (
@@ -70,18 +75,17 @@ export const useKabelsalatState = () => {
           return
         }
 
-        setTimeLeft(prev => {
-          if (prev > 1) {
-            return prev - 1
-          } else {
-            if (timerRef.current) clearInterval(timerRef.current)
-            if (!finishedRef.current && !isWinningRef.current) {
-              finishedRef.current = true
-              setIsGameOver(true)
-            }
-            return 0
-          }
-        })
+        const current = timeLeftRef.current
+        const nextTimeLeft = current - 1
+
+        if (nextTimeLeft <= 0) {
+          if (timerRef.current) clearInterval(timerRef.current)
+          finishedRef.current = true
+          setIsGameOver(true)
+          setTimeLeft(0)
+        } else {
+          setTimeLeft(nextTimeLeft)
+        }
       }, 1000)
     }
     return () => {
@@ -101,11 +105,6 @@ export const useKabelsalatState = () => {
       return () => clearTimeout(animTimer)
     }
   }, [connections])
-
-  const timeLeftRef = useRef(timeLeft)
-  useEffect(() => {
-    timeLeftRef.current = timeLeft
-  }, [timeLeft])
 
   const handleGameEnd = useCallback(
     (delay, isPowered) => {

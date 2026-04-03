@@ -561,34 +561,26 @@ export const applyEventDelta = (state, delta) => {
 
           for (let j = 0; j < relationshipChange.length; j++) {
             const change = relationshipChange[j]
-            const isM1 = change.member1 === member.name
-            const isM2 = change.member2 === member.name
+            const relSource = newRelationships || nextMember.relationships || {}
 
-            if (!isM1 && !isM2) continue
-
-            const other = isM1 ? change.member2 : change.member1
-            if (isForbiddenKey(other)) continue
-
-            let amount = change.change
-            // Apply traits
-            if (amount < 0 && hasGrudgeHolder) amount *= RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER
-            if (amount > 0 && hasPeacemaker) amount *= RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER
-            if (amount < 0 && hasPeacemaker) amount *= RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER
-
-            const relSource =
-              newRelationships || nextMember.relationships || {}
-            const oldExists = Object.hasOwn(relSource, other)
-            const currentScore = relSource[other] ?? RELATIONSHIP_DEFAULT_SCORE
-            const newScore = Math.max(
-              RELATIONSHIP_MIN_SCORE,
-              Math.min(RELATIONSHIP_MAX_SCORE, Math.round(currentScore + amount))
+            const result = calculateMemberRelationshipChange(
+              change,
+              member.name,
+              hasGrudgeHolder,
+              hasPeacemaker,
+              relSource
             )
 
-            if (oldExists || newScore !== RELATIONSHIP_DEFAULT_SCORE) {
-              if (!newRelationships) {
-                newRelationships = { ...(nextMember.relationships || {}) }
+            if (result) {
+              const { other, newScore } = result
+              const oldExists = Object.hasOwn(relSource, other)
+
+              if (oldExists || newScore !== RELATIONSHIP_DEFAULT_SCORE) {
+                if (!newRelationships) {
+                  newRelationships = { ...(nextMember.relationships || {}) }
+                }
+                newRelationships[other] = newScore
               }
-              newRelationships[other] = newScore
             }
           }
 

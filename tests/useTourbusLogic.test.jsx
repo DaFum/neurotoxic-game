@@ -41,16 +41,16 @@ describe('getHitDamage', () => {
 
   test('returns HIT_DAMAGE_ARMOR when van_armor upgrade is present', () => {
     mockHasUpgrade.mockImplementation((_, type) => type === 'van_armor')
-    expect(getHitDamage([])).toBe(HIT_DAMAGE_ARMOR)
+    expect(getHitDamage([])).toBe(2)
   })
 
   test('returns HIT_DAMAGE_BULLBAR when van_bullbar upgrade is present', () => {
     mockHasUpgrade.mockImplementation((_, type) => type === 'van_bullbar')
-    expect(getHitDamage([])).toBe(HIT_DAMAGE_BULLBAR)
+    expect(getHitDamage([])).toBe(5)
   })
 
   test('returns HIT_DAMAGE_BASE when no damage reduction upgrades are present', () => {
-    expect(getHitDamage([])).toBe(HIT_DAMAGE_BASE)
+    expect(getHitDamage([])).toBe(10)
   })
 })
 

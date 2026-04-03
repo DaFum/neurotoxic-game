@@ -14,32 +14,18 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
     toggleSong(song)
   }, [isLocked, song, toggleSong])
 
-  const handleKeyDown = useCallback(
-    e => {
-      if (isLocked) return
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        toggleSong(song)
-      }
-    },
-    [isLocked, song, toggleSong]
-  )
-
   return (
-    <div
-      role='button'
-      tabIndex={isLocked ? -1 : 0}
+    <button
       aria-label={t('ui:pregig.selectSong', { name: song.name })}
       aria-pressed={!!isSelected}
-      aria-disabled={isLocked}
+      disabled={isLocked}
       onClick={handleToggle}
-      onKeyDown={handleKeyDown}
-      className={`p-3 border-2 flex justify-between items-center transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
+      className={`p-3 border-2 flex justify-between items-center transition-all w-full text-left ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
         ${
           isSelected
             ? 'border-toxic-green bg-toxic-green/10 text-toxic-green shadow-[0_0_8px_var(--color-toxic-green-20)]'
             : isLocked
-              ? 'border-blood-red/30 bg-blood-red/10 text-blood-red/50'
+              ? 'border-blood-red/30 bg-blood-red/10 text-blood-red/50 opacity-50'
               : 'border-ash-gray/20 hover:border-star-white/40 text-ash-gray'
         }`}
     >
@@ -78,7 +64,7 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
           </span>
         )}
       </div>
-    </div>
+    </button>
   )
 })
 
