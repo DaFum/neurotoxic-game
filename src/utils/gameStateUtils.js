@@ -399,6 +399,37 @@ export const calculateAppliedDelta = (state, delta) => {
   return applied
 }
 
+/**
+ * Calculates the relationship change between members.
+ *
+ * @param {object} change - The relationship change data.
+ * @param {string} memberName - The name of the member being evaluated.
+ * @param {boolean} hasGrudgeHolder - If the member has grudge_holder trait.
+ * @param {boolean} hasPeacemaker - If the member has peacemaker trait.
+ * @param {object} currentRelationships - The current relationships of the member.
+ * @returns {object|null} The calculated change or null if none.
+ */
+export const calculateMemberRelationshipChange = (change, memberName, hasGrudgeHolder, hasPeacemaker, currentRelationships) => {
+  const isM1 = change.member1 === memberName
+  const isM2 = change.member2 === memberName
+
+  if (!isM1 && !isM2) return null
+
+  const other = isM1 ? change.member2 : change.member1
+  if (isForbiddenKey(other)) return null
+
+  let amount = change.change
+  // Apply traits
+  if (amount < 0 && hasGrudgeHolder) amount *= 1.5
+  if (amount > 0 && hasPeacemaker) amount *= 1.5
+  if (amount < 0 && hasPeacemaker) amount *= 0.5
+
+  const currentScore = currentRelationships[other] ?? 50
+  const newScore = Math.max(0, Math.min(100, Math.round(currentScore + amount)))
+
+  return { other, newScore }
+}
+
 export const applyEventDelta = (state, delta) => {
   const nextState = { ...state }
 
