@@ -479,32 +479,31 @@ export const usePostGigLogic = () => {
           songData.songId
         )?.leaderboardId
 
-        if (leaderboardSongId) {
-          fetch('/api/leaderboard/song', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              playerId: player.playerId,
-              playerName: player.playerName,
-              songId: leaderboardSongId,
-              score: songData.score,
-              accuracy: songData.accuracy
-            })
+        if (!leaderboardSongId) return
+
+        fetch('/api/leaderboard/song', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerId: player.playerId,
+            playerName: player.playerName,
+            songId: leaderboardSongId,
+            score: songData.score,
+            accuracy: songData.accuracy
           })
-            .then(async res => {
-              if (!res.ok) {
-                const err = await res.text()
-                throw new Error(`HTTP ${res.status}: ${err}`)
-              }
-            })
-            .catch(err =>
-              logger.error(
-                'PostGig',
-                `Score submit failed for ${leaderboardSongId}`,
-                err
-              )
+        })
+          .then(async res => {
+            if (res.ok) return
+            const err = await res.text()
+            throw new Error(`HTTP ${res.status}: ${err}`)
+          })
+          .catch(err =>
+            logger.error(
+              'PostGig',
+              `Score submit failed for ${leaderboardSongId}`,
+              err
             )
-        }
+          )
       })
     }
 

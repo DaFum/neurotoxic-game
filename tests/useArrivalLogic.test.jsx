@@ -1,4 +1,10 @@
-import { describe, it as test, beforeEach, afterEach, expect, vi as mock } from 'vitest'
+import {
+  describe,
+  it as test,
+  beforeEach,
+  afterEach,
+  expect
+} from 'vitest'
 
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { act, cleanup } from '@testing-library/react'
@@ -34,10 +40,14 @@ describe('useArrivalLogic', () => {
     // 2. Save Game
     expect(mockGameState.saveGame.mock.calls.length).toBe(1)
     // 3. Trigger Events
-    expect(mockGameState.triggerEvent.mock.calls.length).toBeGreaterThanOrEqual(1)
+    expect(mockGameState.triggerEvent.mock.calls.length).toBeGreaterThanOrEqual(
+      1
+    )
     // 4. Default Routing (no current node found -> OVERWORLD)
     expect(mockGameState.changeScene.mock.calls.length).toBe(1)
-    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(GAME_PHASES.OVERWORLD)
+    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(
+      GAME_PHASES.OVERWORLD
+    )
   })
 
   test('applies harmony regen if upgrade active', () => {
@@ -76,11 +86,7 @@ describe('useArrivalLogic', () => {
     expect(updateArg.members[0].mood).toBe(60)
     expect(updateArg.members[0].stamina).toBe(70)
 
-    expect(
-      mockGameState.addToast.mock.calls.some(c =>
-        c[0].includes('Rested')
-      )
-    )
+    expect(mockGameState.addToast.mock.calls.some(c => c[0].includes('Rested')))
   })
 
   test('handles GIG node with sufficient harmony', () => {
@@ -90,7 +96,9 @@ describe('useArrivalLogic', () => {
       band: { harmony: 50 }
     })
 
-    act(() => { result.current.handleArrivalSequence() })
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
 
     expect(mockGameState.startGig.mock.calls.length).toBe(1)
     expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
@@ -112,11 +120,11 @@ describe('useArrivalLogic', () => {
 
     expect(mockGameState.startGig.mock.calls.length).toBe(0)
     expect(mockGameState.changeScene.mock.calls.length).toBe(1)
-    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(GAME_PHASES.OVERWORLD)
+    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(
+      GAME_PHASES.OVERWORLD
+    )
     expect(
-      mockGameState.addToast.mock.calls.some(c =>
-        c[0].includes('cancelled')
-      )
+      mockGameState.addToast.mock.calls.some(c => c[0].includes('cancelled'))
     )
   })
 
@@ -142,9 +150,7 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.startGig.mock.calls.length).toBe(0)
     expect(mockGameState.changeScene.mock.calls.length).toBe(1)
     expect(
-      mockGameState.addToast.mock.calls.some(c =>
-        c[0].includes('cancelled')
-      )
+      mockGameState.addToast.mock.calls.some(c => c[0].includes('cancelled'))
     )
     // Should apply fame penalty
     expect(mockGameState.updatePlayer.mock.calls.length).toBe(1)
@@ -215,9 +221,7 @@ describe('useArrivalLogic', () => {
     })
 
     expect(
-      mockGameState.triggerEvent.mock.calls.some(
-        c => c[0] === 'special'
-      ),
+      mockGameState.triggerEvent.mock.calls.some(c => c[0] === 'special'),
       'triggerEvent should be called with "special"'
     ).toBe(true)
   })
