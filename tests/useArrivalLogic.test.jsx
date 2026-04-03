@@ -219,7 +219,7 @@ describe('useArrivalLogic', () => {
         c => c[0] === 'special'
       ),
       'triggerEvent should be called with "special"'
-    )
+    ).toBe(true)
   })
 
   test('handles SPECIAL node when nothing happens', () => {
@@ -310,6 +310,10 @@ describe('useArrivalLogic', () => {
         }
       },
       band: { harmony: 50 }
+    })
+
+    mockGameState.startGig.mockImplementationOnce(() => {
+      throw new Error('Gig Failed To Start')
     })
 
     act(() => {
