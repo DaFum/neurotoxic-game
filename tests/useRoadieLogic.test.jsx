@@ -1,5 +1,5 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { describe, it as test, beforeEach, afterEach, vi as mock } from 'vitest'
+
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -13,14 +13,10 @@ const mockUseGameState = mock.fn(() => ({
   changeScene: mockChangeScene
 }))
 
-mock.module('../src/context/GameState', {
-  namedExports: { useGameState: mockUseGameState }
-})
+mock.mock('../src/context/GameState', () => ({ useGameState: mockUseGameState }))
 
 const mockPlaySFX = mock.fn()
-mock.module('../src/utils/AudioManager', {
-  namedExports: { audioManager: { playSFX: mockPlaySFX } }
-})
+mock.mock('../src/utils/AudioManager', () => ({ audioManager: { playSFX: mockPlaySFX } }))
 
 const { useRoadieLogic } = await import('../src/hooks/minigames/useRoadieLogic.js')
 const { GRID_WIDTH, GRID_HEIGHT } = await import('../src/hooks/minigames/constants.js')
@@ -28,17 +24,17 @@ const { GRID_WIDTH, GRID_HEIGHT } = await import('../src/hooks/minigames/constan
 describe('useRoadieLogic', () => {
   beforeEach(() => {
     setupJSDOM()
-    mockCompleteRoadieMinigame.mock.resetCalls()
-    mockChangeScene.mock.resetCalls()
-    mockPlaySFX.mock.resetCalls()
-    mock.timers.enable({ apis: ['Date', 'setTimeout'] })
+    mockCompleteRoadieMinigame.mockClear()
+    mockChangeScene.mockClear()
+    mockPlaySFX.mockClear()
+    mock.useFakeTimers()
   })
 
   afterEach(() => {
     cleanup()
     teardownJSDOM()
-    mock.timers.reset()
-    mock.reset()
+    mock.useRealTimers()
+    mock.clearAllMocks()
   })
 
   test('handles initialization, movement, interactions, and completion properly', () => {
@@ -46,63 +42,63 @@ describe('useRoadieLogic', () => {
     const game = result.current.gameStateRef.current
 
     // 1. Initialization
-    assert.deepEqual(game.playerPos, { x: 6, y: 0 })
-    assert.equal(game.equipmentDamage, 0)
-    assert.equal(game.isGameOver, false)
-    assert.ok(game.carrying)
-    assert.equal(result.current.uiState.itemsRemaining, 2)
+    expect(game.playerPos).toEqual({ x: 6, y: 0 })
+    expect(game.equipmentDamage).toBe(0)
+    expect(game.isGameOver).toBe(false)
+    expect(game.carrying).toBeTruthy()
+    expect(result.current.uiState.itemsRemaining).toBe(2)
 
-    mock.timers.tick(1000)
+    mock.advanceTimersByTime(1000)
 
     // 2. Movement and bounds
     act(() => { result.current.actions.move(1, 0) })
-    assert.deepEqual(game.playerPos, { x: 7, y: 0 })
-    mock.timers.tick(1000)
+    expect(game.playerPos).toEqual({ x: 7, y: 0 })
+    mock.advanceTimersByTime(1000)
 
     act(() => { result.current.actions.move(-1, 0) })
-    assert.deepEqual(game.playerPos, { x: 6, y: 0 })
-    mock.timers.tick(1000)
+    expect(game.playerPos).toEqual({ x: 6, y: 0 })
+    mock.advanceTimersByTime(1000)
 
 
     game.playerPos.x = 0
     act(() => { result.current.actions.move(-1, 0) })
-    assert.deepEqual(game.playerPos, { x: 0, y: 0 })
-    mock.timers.tick(1000)
+    expect(game.playerPos).toEqual({ x: 0, y: 0 })
+    mock.advanceTimersByTime(1000)
 
     // Right Boundary
     game.playerPos.x = GRID_WIDTH - 1
     act(() => { result.current.actions.move(1, 0) })
-    assert.deepEqual(game.playerPos, { x: GRID_WIDTH - 1, y: 0 })
-    mock.timers.tick(1000)
+    expect(game.playerPos).toEqual({ x: GRID_WIDTH - 1, y: 0 })
+    mock.advanceTimersByTime(1000)
 
     // Up Boundary
     game.playerPos.y = 0
     act(() => { result.current.actions.move(0, -1) })
-    assert.deepEqual(game.playerPos, { x: GRID_WIDTH - 1, y: 0 })
-    mock.timers.tick(1000)
+    expect(game.playerPos).toEqual({ x: GRID_WIDTH - 1, y: 0 })
+    mock.advanceTimersByTime(1000)
 
     // Down Boundary
     game.playerPos.y = GRID_HEIGHT - 1
     act(() => { result.current.actions.move(0, 1) })
-    assert.deepEqual(game.playerPos, { x: GRID_WIDTH - 1, y: GRID_HEIGHT - 1 })
-    mock.timers.tick(1000)
+    expect(game.playerPos).toEqual({ x: GRID_WIDTH - 1, y: GRID_HEIGHT - 1 })
+    mock.advanceTimersByTime(1000)
 
 
     // 3. Deliver item at venue
     game.carrying = { id: 'amp', type: 'AMP', weight: 2 }
     game.itemsDelivered = []
-    mockPlaySFX.mock.resetCalls()
+    mockPlaySFX.mockClear()
     game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
-    mock.timers.tick(1000)
+    mock.advanceTimersByTime(1000)
     const beforeDeliverCount = mockPlaySFX.mock.calls.length
     act(() => { result.current.actions.move(0, 1) })
-    assert.equal(game.playerPos.y, GRID_HEIGHT - 1)
-    assert.equal(game.carrying, null)
-    assert.equal(game.itemsDelivered.length, 1)
+    expect(game.playerPos.y, GRID_HEIGHT - 1)
+    expect(game.carrying).toBe(null)
+    expect(game.itemsDelivered.length).toBe(1)
 
-    assert.equal(mockPlaySFX.mock.calls[beforeDeliverCount].arguments[0], 'deliver')
+    expect(mockPlaySFX.mock.calls[beforeDeliverCount][0]).toBe('deliver')
 
-    mock.timers.tick(1000)
+    mock.advanceTimersByTime(1000)
 
     // 4. Pick up item at start
     game.carrying = null
@@ -110,38 +106,38 @@ describe('useRoadieLogic', () => {
     const beforePickupCount = mockPlaySFX.mock.calls.length
 
     act(() => { result.current.actions.move(0, -1) })
-    assert.equal(game.playerPos.y, 0)
-    assert.ok(game.carrying)
+    expect(game.playerPos.y).toBe(0)
+    expect(game.carrying).toBeTruthy()
 
-    assert.equal(mockPlaySFX.mock.calls.length, beforePickupCount + 1)
-    assert.equal(mockPlaySFX.mock.calls[beforePickupCount].arguments[0], 'pickup')
-    mock.timers.tick(1000)
+    expect(mockPlaySFX.mock.calls.length).toBe(beforePickupCount + 1)
+    expect(mockPlaySFX.mock.calls[beforePickupCount][0]).toBe('pickup')
+    mock.advanceTimersByTime(1000)
 
     // 5. Spawn traffic
     game.traffic = []
     for (let i = 0; i < 30; i++) {
       act(() => { result.current.update(100) })
     }
-    assert.ok(game.traffic.length > 0)
+    expect(game.traffic.length).toBeGreaterThan(0)
 
     // 6. Handle collision and damage
     game.playerPos = { x: 6, y: 1 }
     game.traffic = [{ id: 'test-car', row: 1, x: 6.0, speed: 0, width: 1.5 }]
     const playSFXCallCountBeforeCrash = mockPlaySFX.mock.calls.length
     act(() => { result.current.update(16) })
-    assert.equal(game.equipmentDamage, 10)
-    assert.deepEqual(game.playerPos, { x: 6, y: 0 })
-    assert.equal(mockPlaySFX.mock.calls.length, playSFXCallCountBeforeCrash + 1)
-    assert.equal(mockPlaySFX.mock.calls[playSFXCallCountBeforeCrash].arguments[0], 'crash')
+    expect(game.equipmentDamage).toBe(10)
+    expect(game.playerPos).toEqual({ x: 6, y: 0 })
+    expect(mockPlaySFX.mock.calls.length).toBe(playSFXCallCountBeforeCrash + 1)
+    expect(mockPlaySFX.mock.calls[playSFXCallCountBeforeCrash][0]).toBe('crash')
 
     // 7. Trigger game over on completion
     game.itemsToDeliver = []
     game.carrying = { id: 'last-item', weight: 1 }
     game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
-    mock.timers.tick(1000)
+    mock.advanceTimersByTime(1000)
     act(() => { result.current.actions.move(0, 1) })
-    assert.equal(game.isGameOver, true)
-    assert.equal(mockCompleteRoadieMinigame.mock.calls.length, 1)
+    expect(game.isGameOver).toBe(true)
+    expect(mockCompleteRoadieMinigame.mock.calls.length).toBe(1)
 
     unmount()
   })

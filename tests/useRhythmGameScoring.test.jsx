@@ -97,6 +97,7 @@ describe('useRhythmGameScoring', () => {
     // Basic valid hit
     act(() => { hitResult = result.current.handleHit(0) })
     expect(hitResult).toBe(true)
+    expect(setters.setAccuracy).toHaveBeenCalled()
     expect(gameStateRef.current.score).toBe(100)
     expect(gameStateRef.current.combo).toBe(1)
     expect(gameStateRef.current.stats.perfectHits).toBe(1)
@@ -112,6 +113,7 @@ describe('useRhythmGameScoring', () => {
     mockRhythmUtils.checkHit.mockImplementationOnce(() => null)
     act(() => { hitResult = result.current.handleHit(0) })
     expect(hitResult).toBe(false)
+    expect(setters.setAccuracy).toHaveBeenCalled()
     expect(gameStateRef.current.combo).toBe(0)
     expect(gameStateRef.current.health).toBe(99)
 
@@ -120,6 +122,7 @@ describe('useRhythmGameScoring', () => {
     gameStateRef.current.health = 50;
     act(() => { result.current.handleMiss(1, false) })
     expect(gameStateRef.current.combo).toBe(0)
+    expect(setters.setAccuracy).toHaveBeenCalled()
     expect(gameStateRef.current.health).toBe(48)
 
     // Game Over via health depletion
@@ -138,6 +141,7 @@ describe('useRhythmGameScoring', () => {
 
     act(() => { result.current.activateToxicMode() })
     expect(gameStateRef.current.isToxicMode).toBe(true)
+    expect(gameStateRef.current.toxicModeEndTime).toBe(11000) // mockedGetGigTimeMs (1000) + 10000
     expect(contextActions.addToast.mock.calls.some(c => c[0] === 'ui:gig.toasts.toxicOverload')).toBe(true)
 
     gameStateRef.current.health = 50;
@@ -208,6 +212,7 @@ describe('useRhythmGameScoring', () => {
   test('handleMiss triggers game over timeout toast', () => {
     vi.useFakeTimers()
     try {
+      mockAudioEngine.getPlayRequestId.mockReturnValue('mock-req')
       gameStateRef.current.health = 1
       const { result, unmount } = renderHook(() => useRhythmGameScoring({ gameStateRef, setters, performance: {}, contextActions }))
 
@@ -215,9 +220,17 @@ describe('useRhythmGameScoring', () => {
       expect(gameStateRef.current.isGameOver).toBe(true)
 
       contextActions.addToast.mockClear()
+      // Mock snapshot return
+      const mockSnapshot = { score: 100, requestId: 'mock-req' }
+      mockGigStats.buildGigStatsSnapshot.mockReturnValue(mockSnapshot)
+      mockAudioEngine.getPlayRequestId.mockReturnValue('mock-req')
+
       act(() => { vi.advanceTimersByTime(4000) })
+
       expect(contextActions.addToast.mock.calls[0][0]).toBe('ui:gig.toasts.gigFailed')
+      expect(mockGigStats.buildGigStatsSnapshot).toHaveBeenCalled()
       expect(contextActions.setLastGigStats).toHaveBeenCalledTimes(1)
+      expect(contextActions.setLastGigStats).toHaveBeenCalledWith(mockSnapshot)
       expect(contextActions.endGig).toHaveBeenCalledTimes(1)
 
       unmount()

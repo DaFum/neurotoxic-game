@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import {
   usePostGigLogic,
@@ -260,21 +260,21 @@ describe('usePostGigLogic', () => {
       socialEngine.resolvePost.mockReturnValueOnce({ success: true, followers: 50, platform: 'instagram', egoDrop: 'Member2' })
       act(() => { result.current.handlePostSelection(result.current.postOptions[0]) })
       let updateFn = mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
-      let updatedSocial = typeof updateFn === 'function' ? updateFn({}) : updateFn
+      let updatedSocial = typeof updateFn === 'function' ? updateFn(getBaseState().social) : updateFn
       expect(updatedSocial).toEqual(expect.objectContaining({ egoFocus: 'Member2' }))
 
       // All members stamina change clamping
       socialEngine.resolvePost.mockReturnValueOnce({ success: true, followers: 50, platform: 'instagram', moodChange: 100, staminaChange: -100, allMembersMoodChange: true, allMembersStaminaChange: true })
       act(() => { result.current.handlePostSelection(result.current.postOptions[0]) })
       let updateBandFn = mockUpdateBand.mock.calls[mockUpdateBand.mock.calls.length - 1][0]
-      let updatedBand = typeof updateBandFn === 'function' ? updateBandFn({}) : updateBandFn
+      let updatedBand = typeof updateBandFn === 'function' ? updateBandFn(getBaseState().band) : updateBandFn
       expect(updatedBand).toEqual(expect.objectContaining({ members: expect.arrayContaining([expect.objectContaining({ mood: 100, stamina: 0 }), expect.objectContaining({ mood: 100, stamina: 0 })]) }))
 
       // Ego Clear
       socialEngine.resolvePost.mockReturnValueOnce({ success: true, followers: 50, platform: 'instagram', egoClear: true })
       act(() => { result.current.handlePostSelection(result.current.postOptions[0]) })
       let egoClearFn = mockUpdateSocial.mock.calls[mockUpdateSocial.mock.calls.length - 1][0]
-      let egoClearedSocial = typeof egoClearFn === 'function' ? egoClearFn({ egoFocus: 'Member1' }) : egoClearFn
+      let egoClearedSocial = typeof egoClearFn === 'function' ? egoClearFn({ ...getBaseState().social, egoFocus: 'Member1' }) : egoClearFn
       expect(egoClearedSocial).toEqual(expect.objectContaining({ egoFocus: null }))
     })
 
