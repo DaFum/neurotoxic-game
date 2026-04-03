@@ -70,22 +70,18 @@ export const useKabelsalatState = () => {
       !finishedRef.current
     ) {
       timerRef.current = setInterval(() => {
-        if (finishedRef.current || isWinningRef.current) {
-          if (timerRef.current) clearInterval(timerRef.current)
-          return
-        }
-
-        const current = timeLeftRef.current
-        const nextTimeLeft = current - 1
-
-        if (nextTimeLeft <= 0) {
-          if (timerRef.current) clearInterval(timerRef.current)
-          finishedRef.current = true
-          setIsGameOver(true)
-          setTimeLeft(0)
-        } else {
-          setTimeLeft(nextTimeLeft)
-        }
+        setTimeLeft(prev => {
+          const nextTimeLeft = prev - 1
+          if (nextTimeLeft <= 0) {
+            if (timerRef.current) clearInterval(timerRef.current)
+            if (!finishedRef.current && !isWinningRef.current) {
+              finishedRef.current = true
+              setIsGameOver(true)
+            }
+            return 0
+          }
+          return nextTimeLeft
+        })
       }, 1000)
     }
     return () => {
@@ -95,12 +91,17 @@ export const useKabelsalatState = () => {
 
   // Process success scenario
   useEffect(() => {
-    if (Object.keys(connections).length === Object.keys(SOCKET_DEFS).length) {
+    if (
+      !finishedRef.current &&
+      Object.keys(connections).length === Object.keys(SOCKET_DEFS).length
+    ) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true
 
       const animTimer = setTimeout(() => {
-        setIsPoweredOn(true)
+        if (!finishedRef.current) {
+          setIsPoweredOn(true)
+        }
       }, 600)
       return () => clearTimeout(animTimer)
     }

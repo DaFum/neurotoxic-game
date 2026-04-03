@@ -16,6 +16,7 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
 
   return (
     <button
+      type='button'
       aria-label={t('ui:pregig.selectSong', { name: song.name })}
       aria-pressed={!!isSelected}
       disabled={isLocked}
