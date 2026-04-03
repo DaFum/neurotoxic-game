@@ -54,17 +54,12 @@ const generateChatterId = () => {
     // Try the next generator
   }
 
-  try {
-    const id = secureRandom().toString(36).substring(2)
-    if (id) return id
-  } catch {
-    // Try the next generator
-  }
-
-  // Fallback to Math.random() if secureRandom is unavailable
   let roll
   try {
     roll = secureRandom()
+    const id = roll.toString(36).substring(2)
+    if (id) return id
+    return '0-' + roll
   } catch (error) {
     if (!secureRandomFallbackWarned) {
       secureRandomFallbackWarned = true
@@ -75,7 +70,7 @@ const generateChatterId = () => {
     }
     roll = Math.random()
   }
-  return `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
+  return 'fallback-' + Date.now().toString(36) + '-' + roll.toString(36).substring(2)
 }
 
 export const useChatterLogic = (gameState, t) => {

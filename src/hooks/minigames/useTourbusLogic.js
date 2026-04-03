@@ -11,15 +11,24 @@ export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
 export const TARGET_DISTANCE = 2500
 
+export const HIT_DAMAGE_BASE = 10
+export const HIT_DAMAGE_ARMOR = 2
+export const HIT_DAMAGE_BULLBAR = 5
+
+/**
+ * Calculates damage taken from a hit, applying mitigation from upgrades.
+ * Prioritizes Armor over Bullbar.
+ */
 export const getHitDamage = (upgrades) => {
   if (hasUpgrade(upgrades, 'van_armor')) {
-    return 2
+    return HIT_DAMAGE_ARMOR
   }
   if (hasUpgrade(upgrades, 'van_bullbar')) {
-    return 5
+    return HIT_DAMAGE_BULLBAR
   }
-  return 10
+  return HIT_DAMAGE_BASE
 }
+
 export const useTourbusLogic = () => {
   const { player, completeTravelMinigame } = useGameState()
 
