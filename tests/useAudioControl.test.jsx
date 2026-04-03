@@ -95,141 +95,81 @@ describe('useAudioControl hook', () => {
     cleanup()
   })
 
-  it('initializes with values from audioManager', () => {
+  it('handles audio state updates correctly (setMusic, setSfx, toggleMute)', async () => {
     const { result } = renderHook(() => useAudioControl())
 
+    // Initial
     expect(result.current.audioState.musicVol).toBe(0.5)
     expect(result.current.audioState.sfxVol).toBe(0.5)
     expect(result.current.audioState.isMuted).toBe(false)
-  })
 
-  it('setMusic updates music volume and state', () => {
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.setMusic(0.8)
-    })
-
+    // setMusic
+    act(() => { result.current.handleAudioChange.setMusic(0.8) })
     expect(audioManager.setMusicVolume).toHaveBeenCalledWith(0.8)
     expect(result.current.audioState.musicVol).toBe(0.8)
-  })
 
-  it('setMusic does not update state if manager returns false', () => {
-    audioManager.setMusicVolume.mockImplementation(() => false)
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.setMusic(0.8)
-    })
-
-    expect(audioManager.setMusicVolume).toHaveBeenCalled()
-    expect(result.current.audioState.musicVol).toBe(0.5)
-  })
-
-  it('setMusic handles exceptions', () => {
-    const error = new Error('Music error')
-    audioManager.setMusicVolume.mockImplementation(() => {
-      throw error
-    })
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.setMusic(0.8)
-    })
-
-    expect(handleError).toHaveBeenCalledWith(error, expect.any(Object))
-    expect(result.current.audioState.musicVol).toBe(0.5)
-  })
-
-  it('setSfx updates sfx volume and state', () => {
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.setSfx(0.2)
-    })
-
+    // setSfx
+    act(() => { result.current.handleAudioChange.setSfx(0.2) })
     expect(audioManager.setSFXVolume).toHaveBeenCalledWith(0.2)
     expect(result.current.audioState.sfxVol).toBe(0.2)
-  })
 
-  it('setSfx handles exceptions', () => {
-    const error = new Error('SFX error')
-    audioManager.setSFXVolume.mockImplementation(() => {
-      throw error
-    })
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.setSfx(0.2)
-    })
-
-    expect(handleError).toHaveBeenCalledWith(error, expect.any(Object))
-    expect(result.current.audioState.sfxVol).toBe(0.5)
-  })
-
-  it('toggleMute toggles mute state', () => {
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.toggleMute()
-    })
-
+    // toggleMute
+    act(() => { result.current.handleAudioChange.toggleMute() })
     expect(audioManager.toggleMute).toHaveBeenCalled()
     expect(result.current.audioState.isMuted).toBe(true)
-
-    act(() => {
-      result.current.handleAudioChange.toggleMute()
-    })
-
+    act(() => { result.current.handleAudioChange.toggleMute() })
     expect(result.current.audioState.isMuted).toBe(false)
-  })
 
-  it('resumeMusic delegates through hook action', async () => {
-    const { result } = renderHook(() => useAudioControl())
+    // stopMusic / resumeMusic
+    act(() => { result.current.handleAudioChange.stopMusic() })
+    expect(audioManager.stopMusic).toHaveBeenCalled()
 
-    await act(async () => {
-      await result.current.handleAudioChange.resumeMusic()
-    })
-
+    await act(async () => { await result.current.handleAudioChange.resumeMusic() })
     expect(audioManager.resumeMusic).toHaveBeenCalled()
   })
 
-  it('stopMusic delegates through hook action', () => {
+  it('handles exceptions and failures gracefully', () => {
     const { result } = renderHook(() => useAudioControl())
 
-    act(() => {
-      result.current.handleAudioChange.stopMusic()
-    })
+    // setMusic failure
+    audioManager.setMusicVolume.mockImplementationOnce(() => false)
+    act(() => { result.current.handleAudioChange.setMusic(0.8) })
+    expect(result.current.audioState.musicVol).toBe(0.5)
 
-    expect(audioManager.stopMusic).toHaveBeenCalled()
+    // setMusic exception
+    const error1 = new Error('Music error')
+    audioManager.setMusicVolume.mockImplementationOnce(() => { throw error1 })
+    act(() => { result.current.handleAudioChange.setMusic(0.8) })
+    expect(handleError).toHaveBeenCalledWith(error1, expect.any(Object))
+
+    // setSfx exception
+    const error2 = new Error('SFX error')
+    audioManager.setSFXVolume.mockImplementationOnce(() => { throw error2 })
+    act(() => { result.current.handleAudioChange.setSfx(0.2) })
+    expect(handleError).toHaveBeenCalledWith(error2, expect.any(Object))
+
+    // toggleMute exception
+    const error3 = new Error('Mute error')
+    audioManager.toggleMute.mockImplementationOnce(() => { throw error3 })
+    act(() => { result.current.handleAudioChange.toggleMute() })
+    expect(handleError).toHaveBeenCalledWith(error3, expect.any(Object))
   })
 
-  it('inline selector remains stable across rerenders', () => {
+  it('handles external state synchronization and selectors', () => {
     const { result, rerender } = renderHook(() =>
-      useAudioControl(
-        state => state.currentSongId === 'ambient' && state.isPlaying
-      )
+      useAudioControl(state => state.currentSongId === 'ambient' && state.isPlaying)
     )
 
+    // Inline selector remains stable
     expect(result.current.audioState).toBe(false)
     rerender()
     expect(result.current.audioState).toBe(false)
-  })
 
-  it('selector receives focused state updates', () => {
-    const { result } = renderHook(() =>
-      useAudioControl(
-        state => state.currentSongId === 'ambient' && state.isPlaying
-      )
-    )
-
-    expect(result.current.audioState).toBe(false)
-
+    // Selector receives focused updates
     act(() => {
       audioManager.currentSongId = 'ambient'
       audioManager.emitChange()
     })
-
     expect(result.current.audioState).toBe(true)
   })
 
@@ -247,9 +187,6 @@ describe('useAudioControl hook', () => {
 
     expect(first.result.current.audioState.isMuted).toBe(true)
     expect(second.result.current.audioState.isMuted).toBe(true)
-
-    first.unmount()
-    second.unmount()
   })
 
   it('polling fallback updates state when subscribe is unavailable', () => {
@@ -274,20 +211,5 @@ describe('useAudioControl hook', () => {
       audioManager.subscribe = originalSubscribe
       vi.useRealTimers()
     }
-  })
-
-  it('toggleMute handles exceptions', () => {
-    const error = new Error('Mute error')
-    audioManager.toggleMute.mockImplementation(() => {
-      throw error
-    })
-    const { result } = renderHook(() => useAudioControl())
-
-    act(() => {
-      result.current.handleAudioChange.toggleMute()
-    })
-
-    expect(handleError).toHaveBeenCalledWith(error, expect.any(Object))
-    expect(result.current.audioState.isMuted).toBe(false)
   })
 })

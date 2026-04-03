@@ -89,17 +89,11 @@ describe('useArrivalLogic', () => {
   test('handles GIG node with sufficient harmony', () => {
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
-      gameMap: {
-        nodes: {
-          node_start: { type: 'GIG', venue }
-        }
-      },
+      gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 }
     })
 
-    act(() => {
-      result.current.handleArrivalSequence()
-    })
+    act(() => { result.current.handleArrivalSequence() })
 
     assert.equal(mockGameState.startGig.mock.calls.length, 1)
     assert.deepEqual(mockGameState.startGig.mock.calls[0].arguments[0], venue)
