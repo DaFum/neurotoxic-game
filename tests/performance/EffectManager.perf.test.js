@@ -2,7 +2,7 @@ import { test, describe, beforeAll, afterAll, vi } from 'vitest'
 import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 // Mock PIXI
-const PIXI = {
+const PIXI = vi.hoisted(() => ({
   Container: class {
     constructor() {
       this.children = []
@@ -31,7 +31,7 @@ const PIXI = {
     destroy() {}
   },
   Texture: { WHITE: {} }
-}
+}))
 
 vi.mock('pixi.js', () => {
   return {

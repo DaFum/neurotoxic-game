@@ -1,4 +1,4 @@
-import { updateProjectiles } from '../../src/utils/hecklerLogic.js'
+import { processProjectiles, createHecklerSession } from '../../src/utils/hecklerLogic.js'
 
 const RUNS = 500
 const PROJECTILES_COUNT = 5000
@@ -8,6 +8,7 @@ const SCREEN_HEIGHT = 1080
 // Create random projectiles
 const createProjectiles = () =>
   Array.from({ length: PROJECTILES_COUNT }, () => ({
+    id: Math.random().toString(),
     x: Math.random() * 1920,
     y: Math.random() * 1200, // Some on screen, some off (height is 1080, buffer is 100)
     vx: (Math.random() - 0.5) * 0.5,
@@ -26,10 +27,15 @@ console.log(
   `Running benchmark with ${PROJECTILES_COUNT} projectiles over ${RUNS} iterations...`
 )
 
+// Allocate a single session to match runtime re-use patterns without GC bias
+const session = createHecklerSession()
+
 const start = performance.now()
 
 for (let i = 0; i < RUNS; i++) {
-  updateProjectiles(testCases[i], DELTA_MS, SCREEN_HEIGHT)
+  // Clear the object pool before processing to ensure equivalent starting states
+  session.pool.length = 0
+  processProjectiles(session, testCases[i], DELTA_MS, SCREEN_HEIGHT, () => {})
 }
 
 const end = performance.now()
