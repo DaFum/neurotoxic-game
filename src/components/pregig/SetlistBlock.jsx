@@ -33,6 +33,19 @@ export const SetlistBlock = ({
           const isLocked =
             player?.stats?.proveYourselfMode && song.difficulty > 2
 
+          const handleToggle = () => {
+            if (isLocked) return
+            toggleSong(song)
+          }
+
+          const handleKeyDown = e => {
+            if (isLocked) return
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              toggleSong(song)
+            }
+          }
+
           return (
             <div
               key={song.id}
@@ -41,15 +54,8 @@ export const SetlistBlock = ({
               aria-label={t('ui:pregig.selectSong', { name: song.name })}
               aria-pressed={!!isSelected}
               aria-disabled={isLocked}
-              onClick={() => {
-                if (!isLocked) toggleSong(song)
-              }}
-              onKeyDown={e => {
-                if (!isLocked && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault()
-                  toggleSong(song)
-                }
-              }}
+              onClick={handleToggle}
+              onKeyDown={handleKeyDown}
               className={`p-3 border-2 flex justify-between items-center transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
                 ${
                   isSelected
