@@ -1,5 +1,5 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { describe, it as test, beforeEach, afterEach, vi as mock, expect } from 'vitest'
+
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
@@ -9,19 +9,13 @@ const mockUseGameState = mock.fn(() => ({
   completeTravelMinigame: mock.fn()
 }))
 
-mock.module('../src/context/GameState', {
-  namedExports: { useGameState: mockUseGameState }
-})
+mock.mock('../src/context/GameState', () => ({ useGameState: mockUseGameState }))
 
 const mockPlaySFX = mock.fn()
-mock.module('../src/utils/AudioManager', {
-  namedExports: { audioManager: { playSFX: mockPlaySFX } }
-})
+mock.mock('../src/utils/AudioManager', () => ({ audioManager: { playSFX: mockPlaySFX } }))
 
 const mockHasUpgrade = mock.fn(() => false)
-mock.module('../src/utils/upgradeUtils', {
-  namedExports: { hasUpgrade: mockHasUpgrade }
-})
+mock.mock('../src/utils/upgradeUtils', () => ({ hasUpgrade: mockHasUpgrade }))
 
 const { useTourbusLogic, BASE_SPEED, MAX_SPEED, SPAWN_RATE_MS, TARGET_DISTANCE } = await import('../src/hooks/minigames/useTourbusLogic.js')
 const { LANE_COUNT, BUS_Y_PERCENT } = await import('../src/hooks/minigames/constants.js')
@@ -29,15 +23,15 @@ const { LANE_COUNT, BUS_Y_PERCENT } = await import('../src/hooks/minigames/const
 describe('useTourbusLogic', () => {
   beforeEach(() => {
     setupJSDOM()
-    mockUseGameState.mock.mockImplementation(() => ({ player: { van: { upgrades: [] } }, completeTravelMinigame: mock.fn() }))
-    mockPlaySFX.mock.resetCalls()
-    mockHasUpgrade.mock.mockImplementation(() => false)
+    mockUseGameState.mockImplementation(() => ({ player: { van: { upgrades: [] } }, completeTravelMinigame: mock.fn() }))
+    mockPlaySFX.mockClear()
+    mockHasUpgrade.mockImplementation(() => false)
   })
 
   afterEach(() => {
     cleanup()
     teardownJSDOM()
-    mock.reset()
+    mock.clearAllMocks()
   })
 
   test('spawn rate maintains constant density and movements clamp correctly', () => {
@@ -45,46 +39,46 @@ describe('useTourbusLogic', () => {
     const game = result.current.gameStateRef.current
 
     // Spawn rate
-    assert.equal(game.speed, BASE_SPEED)
+    expect(game.speed).toBe(BASE_SPEED)
     game.lastSpawnTime = 0
     game.obstacles = []
 
     act(() => { result.current.update(SPAWN_RATE_MS - 10) })
-    assert.equal(game.obstacles.length, 0)
+    expect(game.obstacles.length).toBe(0)
     act(() => { result.current.update(20) })
-    assert.equal(game.obstacles.length, 1)
+    expect(game.obstacles.length).toBe(1)
 
     // Max speed
     game.distance = TARGET_DISTANCE * 0.8
     game.obstacles = []
     game.lastSpawnTime = 0
     act(() => { result.current.update(0) })
-    assert.equal(game.speed, MAX_SPEED)
+    expect(game.speed).toBe(MAX_SPEED)
     const expectedRate = (BASE_SPEED * SPAWN_RATE_MS) / MAX_SPEED
     act(() => { result.current.update(expectedRate - 25) })
-    assert.equal(game.obstacles.length, 0)
+    expect(game.obstacles.length).toBe(0)
     act(() => { result.current.update(50) })
-    assert.equal(game.obstacles.length, 1)
+    expect(game.obstacles.length).toBe(1)
 
     // Movement
-    assert.equal(game.busLane, 1)
+    expect(game.busLane).toBe(1)
     act(() => { result.current.actions.moveLeft() })
-    assert.equal(game.busLane, 0)
+    expect(game.busLane).toBe(0)
     act(() => { result.current.actions.moveLeft() })
-    assert.equal(game.busLane, 0) // Clamped
+    expect(game.busLane).toBe(0) // Clamped
     act(() => { result.current.actions.moveRight() })
-    assert.equal(game.busLane, 1)
+    expect(game.busLane).toBe(1)
     act(() => { result.current.actions.moveRight() })
-    assert.equal(game.busLane, 2)
+    expect(game.busLane).toBe(2)
     act(() => { result.current.actions.moveRight() })
-    assert.equal(game.busLane, LANE_COUNT - 1)
+    expect(game.busLane).toBe(LANE_COUNT - 1)
 
     unmount()
   })
 
   test('collision, items, off-screen cleanup, and game completion work correctly', () => {
     const completeMock = mock.fn()
-    mockUseGameState.mock.mockImplementation(() => ({
+    mockUseGameState.mockImplementation(() => ({
       player: { van: { upgrades: [] } },
       completeTravelMinigame: completeMock
     }))
@@ -102,25 +96,25 @@ describe('useTourbusLogic', () => {
 
     act(() => { result.current.update(16) })
 
-    assert.equal(game.damage, 10) // 10 from obstacle
-    assert.deepEqual(game.itemsCollected, ['FUEL'])
-    assert.equal(mockPlaySFX.mock.calls.length, 2)
+    expect(game.damage).toBe(10) // 10 from obstacle
+    expect(game.itemsCollected).toEqual(['FUEL'])
+    expect(mockPlaySFX.mock.calls.length).toBe(2)
     // Check specific sfx calls (not necessarily array-ordering sensitive, but here they run left-to-right on array map or iteration, let's just check they both exist. Actually, let's check array exactly to match request)
-    assert.deepEqual(
-      mockPlaySFX.mock.calls.map(call => call.arguments[0]).sort(),
+    expect(
+      mockPlaySFX.mock.calls.map(call => call[0]).sort(),
       ['crash', 'pickup'].sort()
     )
-    assert.equal(game.obstacles.length, 2) // "gone" is removed
-    assert.equal(game.obstacles.some(o => o.id === 'gone'), false)
-    assert.equal(game.obstacles.find(o => o.id === 'obs1')?.collided, true)
-    assert.equal(game.obstacles.find(o => o.id === 'fuel1')?.collided, true)
+    expect(game.obstacles.length).toBe(2) // "gone" is removed
+    expect(game.obstacles.some(o => o.id === 'gone')).toBe(false)
+    expect(game.obstacles.find(o => o.id === 'obs1')?.collided).toBe(true)
+    expect(game.obstacles.find(o => o.id === 'fuel1')?.collided).toBe(true)
 
     // Game Completion
     game.distance = TARGET_DISTANCE
     act(() => { result.current.update(16) })
-    assert.equal(game.isGameOver, true)
-    assert.equal(completeMock.mock.calls.length, 1)
-    assert.deepEqual(completeMock.mock.calls[0].arguments, [10, ['FUEL']])
+    expect(game.isGameOver).toBe(true)
+    expect(completeMock.mock.calls.length).toBe(1)
+    expect(completeMock.mock.calls[0]).toEqual([10, ['FUEL']])
 
     unmount()
   })
@@ -130,18 +124,18 @@ describe('useTourbusLogic', () => {
     const game = result.current.gameStateRef.current
 
     // Bullbar (reduces to 5)
-    mockHasUpgrade.mock.mockImplementation((_, type) => type === 'van_bullbar')
+    mockHasUpgrade.mockImplementation((_, type) => type === 'van_bullbar')
     game.obstacles = [{ id: 'obs1', lane: 1, y: BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
     game.damage = 0
     act(() => { result.current.update(16) })
-    assert.equal(game.damage, 5)
+    expect(game.damage).toBe(5)
 
     // Armor (reduces to 2) - armor takes precedence
-    mockHasUpgrade.mock.mockImplementation((_, type) => type === 'van_armor' || type === 'van_bullbar')
+    mockHasUpgrade.mockImplementation((_, type) => type === 'van_armor' || type === 'van_bullbar')
     game.obstacles = [{ id: 'obs2', lane: 1, y: BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
     game.damage = 0
     act(() => { result.current.update(16) })
-    assert.equal(game.damage, 2)
+    expect(game.damage).toBe(2)
 
     unmount()
   })
