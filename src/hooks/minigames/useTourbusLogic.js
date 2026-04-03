@@ -11,6 +11,15 @@ export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
 export const TARGET_DISTANCE = 2500
 
+export const getHitDamage = (upgrades) => {
+  if (hasUpgrade(upgrades, 'van_armor')) {
+    return 2
+  }
+  if (hasUpgrade(upgrades, 'van_bullbar')) {
+    return 5
+  }
+  return 10
+}
 export const useTourbusLogic = () => {
   const { player, completeTravelMinigame } = useGameState()
 
@@ -134,13 +143,7 @@ export const useTourbusLogic = () => {
           obs.collided = true
           if (obs.type === 'OBSTACLE') {
             // Damage Mitigation
-            let hitDamage = 10
-            // Prioritize Armor (2) over Bullbar (5)
-            if (hasUpgrade(upgradesRef.current, 'van_armor')) {
-              hitDamage = 2
-            } else if (hasUpgrade(upgradesRef.current, 'van_bullbar')) {
-              hitDamage = 5
-            }
+            const hitDamage = getHitDamage(upgradesRef.current)
 
             game.damage = Math.max(0, Math.min(100, game.damage + hitDamage))
             audioManager.playSFX('crash') // Play SFX immediately on collision
