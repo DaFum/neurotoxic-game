@@ -42,16 +42,17 @@ export const setMockGameState = overrides => {
 }
 
 export const resetMockGameState = () => {
-  mockUseGameState.mockClear()
+  mockUseGameState.mockReset()
+  mockUseGameState.mockImplementation(() => mockGameState)
 
-  mockGameState.advanceDay.mockClear()
-  mockGameState.saveGame.mockClear()
-  mockGameState.updateBand.mockClear()
-  mockGameState.updatePlayer.mockClear()
-  mockGameState.triggerEvent.mockClear()
-  mockGameState.startGig.mockClear()
-  mockGameState.changeScene.mockClear()
-  mockGameState.addToast.mockClear()
+  mockGameState.advanceDay.mockReset()
+  mockGameState.saveGame.mockReset()
+  mockGameState.updateBand.mockReset()
+  mockGameState.updatePlayer.mockReset()
+  mockGameState.triggerEvent.mockReset()
+  mockGameState.startGig.mockReset()
+  mockGameState.changeScene.mockReset()
+  mockGameState.addToast.mockReset()
 
   mockGameState.band = { harmony: 50, harmonyRegenTravel: false, members: [] }
   mockGameState.gameMap = { nodes: {} }

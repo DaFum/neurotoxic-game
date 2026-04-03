@@ -76,8 +76,14 @@ const createMockSetters = gameStateRef => ({
 describe('useRhythmGameScoring', () => {
   let useRhythmGameScoring, gameStateRef, setters, contextActions
 
+  let originalLocalStorageSetItem
+
   beforeEach(async () => {
+    originalLocalStorageSetItem = window.localStorage.setItem
+    window.localStorage.setItem = vi.fn()
+
     setupJSDOM()
+
     vi.clearAllMocks()
 
     gameStateRef = { current: createMockGameState() }
@@ -92,8 +98,14 @@ describe('useRhythmGameScoring', () => {
   })
 
   afterEach(() => {
-    cleanup()
-    teardownJSDOM()
+    try {
+      cleanup()
+      teardownJSDOM()
+    } finally {
+      if (originalLocalStorageSetItem) {
+        window.localStorage.setItem = originalLocalStorageSetItem
+      }
+    }
   })
 
   test('initializes and handles various hit/miss scenarios efficiently', () => {
@@ -190,7 +202,7 @@ describe('useRhythmGameScoring', () => {
     gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
     mockGigStats.calculateAccuracy.mockImplementationOnce(() => 90)
     act(() => { result.current.handleHit(0) })
-    expect(gameStateRef.current.score).toBe(115)
+    expect(gameStateRef.current.score).toBe(114)
 
     gameStateRef.current.score = 0;
     gameStateRef.current.combo = 0;
@@ -206,7 +218,7 @@ describe('useRhythmGameScoring', () => {
     gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
     mockGigStats.calculateAccuracy.mockImplementationOnce(() => 86)
     act(() => { result.current.handleHit(0) })
-    expect(gameStateRef.current.score).toBe(115)
+    expect(gameStateRef.current.score).toBe(114)
 
     gameStateRef.current.score = 0;
     gameStateRef.current.combo = 0;

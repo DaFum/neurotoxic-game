@@ -119,7 +119,7 @@ export const calculateFinalScore = (
     finalScore *= CONSTANTS.PERFEKTIONIST_BONUS_MULTIPLIER
   }
 
-  return Math.round(finalScore)
+  return Math.floor(finalScore)
 }
 
 /**

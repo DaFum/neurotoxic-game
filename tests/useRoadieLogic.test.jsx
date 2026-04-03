@@ -138,6 +138,9 @@ describe('useRoadieLogic', () => {
     act(() => { result.current.actions.move(0, 1) })
     expect(game.isGameOver).toBe(true)
     expect(mockCompleteRoadieMinigame.mock.calls.length).toBe(1)
+    expect(mockCompleteRoadieMinigame.mock.calls[0][0]).toBe(10) // equipmentDamage
+
+    expect(mockChangeScene.mock.calls.length).toBe(0) // Routing is deferred to useArrivalLogic
 
     unmount()
   })
