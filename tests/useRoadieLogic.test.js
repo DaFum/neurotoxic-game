@@ -89,20 +89,32 @@ describe('useRoadieLogic', () => {
 
 
     // 3. Deliver item at venue
+    game.carrying = { id: 'amp', type: 'AMP', weight: 2 }
+    game.itemsDelivered = []
+    mockPlaySFX.mock.resetCalls()
     game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
+    mock.timers.tick(1000)
+    const beforeDeliverCount = mockPlaySFX.mock.calls.length
     act(() => { result.current.actions.move(0, 1) })
     assert.equal(game.playerPos.y, GRID_HEIGHT - 1)
     assert.equal(game.carrying, null)
     assert.equal(game.itemsDelivered.length, 1)
-    assert.equal(mockPlaySFX.mock.calls[0].arguments[0], 'deliver')
+
+    assert.equal(mockPlaySFX.mock.calls[beforeDeliverCount].arguments[0], 'deliver')
+
     mock.timers.tick(1000)
 
     // 4. Pick up item at start
+    game.carrying = null
     game.playerPos = { x: 6, y: 1 }
+    const beforePickupCount = mockPlaySFX.mock.calls.length
+
     act(() => { result.current.actions.move(0, -1) })
     assert.equal(game.playerPos.y, 0)
     assert.ok(game.carrying)
-    assert.equal(mockPlaySFX.mock.calls[1].arguments[0], 'pickup')
+
+    assert.equal(mockPlaySFX.mock.calls.length, beforePickupCount + 1)
+    assert.equal(mockPlaySFX.mock.calls[beforePickupCount].arguments[0], 'pickup')
     mock.timers.tick(1000)
 
     // 5. Spawn traffic

@@ -15,7 +15,7 @@ vi.mock('../src/context/GameState', () => ({ useGameState: vi.fn() }))
 vi.mock('../src/utils/economyEngine', () => ({ calculateGigFinancials: vi.fn(), shouldTriggerBankruptcy: vi.fn() }))
 vi.mock('../src/utils/socialEngine', () => ({ generatePostOptions: vi.fn(), resolvePost: vi.fn(), checkViralEvent: vi.fn(), calculateSocialGrowth: vi.fn(), generateBrandOffers: vi.fn() }))
 vi.mock('../src/utils/crypto', () => ({ secureRandom: vi.fn() }))
-vi.mock('../src/data/songs', () => ({ SONGS_DB: [{ id: 'test_song', leaderboardId: 'test-song', name: 'Test Song' }], SONGS_BY_ID: { test_song: { id: 'test_song', leaderboardId: 'test-song', name: 'Test Song' } } }))
+vi.mock('../src/data/songs', () => ({ SONGS_DB: [{ id: 'test_song', leaderboardId: 'test-song', name: 'Test Song' }], SONGS_BY_ID: new Map([['test_song', { id: 'test_song', leaderboardId: 'test-song', name: 'Test Song' }]]) }))
 vi.mock('../src/utils/logger.js', () => ({ logger: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() }, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 } }))
 vi.mock('react-i18next', () => ({ initReactI18next: { type: '3rdParty', init: () => {} }, useTranslation: () => ({ t: (key, options) => { const template = options?.defaultValue || key; if (!options) return template; return template.replace(/\{\{(\w+)\}\}/g, (_, token) => String(options[token] ?? `{{${token}}}`)); } }) }))
 
@@ -129,7 +129,7 @@ describe('usePostGigLogic', () => {
       await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
 
       // Success (Basic post)
-      socialEngine.resolvePost.mockReturnValueOnce({ success: true, platform: 'instagram', followers: 100, moneyChange: 200, harmonyChange: 15, moodChange: 20, allMembersMoodChange: true, moneyChange: 300, unlockTrait: { memberId: 'Member1', traitId: 'social_butterfly' } })
+      socialEngine.resolvePost.mockReturnValueOnce({ success: true, platform: 'instagram', followers: 100, moneyChange: 300, harmonyChange: 15, moodChange: 20, allMembersMoodChange: true, unlockTrait: { memberId: 'Member1', traitId: 'social_butterfly' } })
       act(() => { result.current.handlePostSelection(result.current.postOptions[0]) })
 
       expect(mockUpdateSocial).toHaveBeenCalledWith(expect.objectContaining({ instagram: expect.any(Number), viral: 1 }))
