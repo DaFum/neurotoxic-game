@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
   trySpawnProjectile: vi.fn(),
-  processProjectiles: vi.fn(v => v),
+  processProjectiles: vi.fn((_, projectiles) => projectiles),
   checkCollisions: vi.fn(v => v),
   getGigTimeMs: vi.fn(() => 0),
   getTransportState: vi.fn(() => 'started'),
