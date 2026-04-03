@@ -79,10 +79,10 @@ describe('useRhythmGameScoring', () => {
   let originalLocalStorageSetItem
 
   beforeEach(async () => {
+    setupJSDOM()
+
     originalLocalStorageSetItem = window.localStorage.setItem
     window.localStorage.setItem = vi.fn()
-
-    setupJSDOM()
 
     vi.clearAllMocks()
 

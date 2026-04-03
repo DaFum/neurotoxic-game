@@ -90,6 +90,10 @@ describe('useArrivalLogic', () => {
       band: { harmony: 50 }
     })
 
+    mockGameState.startGig.mockImplementationOnce(() => {
+      throw new Error('Gig Failed To Start')
+    })
+
     act(() => { result.current.handleArrivalSequence() })
 
     expect(mockGameState.startGig.mock.calls.length).toBe(1)
@@ -302,9 +306,6 @@ describe('useArrivalLogic', () => {
   })
 
   test('handles startGig error during GIG node gracefully', () => {
-    mockGameState.startGig.mockImplementationOnce(() => {
-      throw new Error('Gig Failed To Start')
-    })
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
@@ -313,6 +314,10 @@ describe('useArrivalLogic', () => {
         }
       },
       band: { harmony: 50 }
+    })
+
+    mockGameState.startGig.mockImplementationOnce(() => {
+      throw new Error('Gig Failed To Start')
     })
 
     act(() => {
