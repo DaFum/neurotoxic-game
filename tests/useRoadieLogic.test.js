@@ -115,9 +115,12 @@ describe('useRoadieLogic', () => {
     // 6. Handle collision and damage
     game.playerPos = { x: 6, y: 1 }
     game.traffic = [{ id: 'test-car', row: 1, x: 6.0, speed: 0, width: 1.5 }]
+    const playSFXCallCountBeforeCrash = mockPlaySFX.mock.calls.length
     act(() => { result.current.update(16) })
     assert.equal(game.equipmentDamage, 10)
     assert.deepEqual(game.playerPos, { x: 6, y: 0 })
+    assert.equal(mockPlaySFX.mock.calls.length, playSFXCallCountBeforeCrash + 1)
+    assert.equal(mockPlaySFX.mock.calls[playSFXCallCountBeforeCrash].arguments[0], 'crash')
 
     // 7. Trigger game over on completion
     game.itemsToDeliver = []

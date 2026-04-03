@@ -59,20 +59,26 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(typeof result.current.handleHit, 'function')
     assert.equal(typeof result.current.handleMiss, 'function')
 
+    let hitResult;
+
     // Basic valid hit (No multiplier, lane 0)
-    act(() => { result.current.handleHit(0) })
+    act(() => { hitResult = result.current.handleHit(0) })
+    assert.equal(hitResult, true)
     assert.equal(gameStateRef.current.score, 100)
     assert.equal(gameStateRef.current.combo, 1)
     assert.equal(gameStateRef.current.stats.perfectHits, 1)
 
     // Valid hit with multiplier (Lane 1, drumMultiplier 1.5)
-    act(() => { result.current.handleHit(1) })
-    assert.equal(gameStateRef.current.score, 260) // 100 + 150 (combo + multiplier)
+    act(() => { hitResult = result.current.handleHit(1) })
+    assert.equal(hitResult, true)
+    assert.equal(gameStateRef.current.score, 260) // 100 + 150 + 10 combo
     assert.equal(gameStateRef.current.combo, 2)
+    assert.equal(gameStateRef.current.stats.perfectHits, 2)
 
     // Invalid hit (Miss via invalid hit)
     mockRhythmUtils.checkHit.mock.mockImplementationOnce(() => null)
-    act(() => { result.current.handleHit(0) })
+    act(() => { hitResult = result.current.handleHit(0) })
+    assert.equal(hitResult, false)
     assert.equal(gameStateRef.current.combo, 0)
     assert.equal(gameStateRef.current.health, 99) // 100 - 1
 
@@ -88,6 +94,8 @@ describe('useRhythmGameScoring', async () => {
     act(() => { result.current.handleMiss(1, false) })
     assert.equal(gameStateRef.current.health, 0)
     assert.equal(gameStateRef.current.isGameOver, true)
+    assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1)
+    assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'ui:gig.toasts.bandCollapsed')
 
     unmount()
   })
@@ -98,6 +106,7 @@ describe('useRhythmGameScoring', async () => {
     // Manual activation
     act(() => { result.current.activateToxicMode() })
     assert.equal(gameStateRef.current.isToxicMode, true)
+    assert.equal(contextActions.addToast.mock.calls.some(c => c.arguments[0] === 'ui:gig.toasts.toxicOverload'), true)
 
     // Toxic scoring
     gameStateRef.current.health = 50;
@@ -110,46 +119,63 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.isToxicMode, true)
 
     // Deactivates on real miss
+    contextActions.addToast.mock.resetCalls()
     act(() => { result.current.handleMiss(1, false) })
     assert.equal(gameStateRef.current.isToxicMode, false)
-    assert.equal(contextActions.addToast.mock.calls[1].arguments[0], 'ui:gig.toasts.toxicModeLost')
+    assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'ui:gig.toasts.toxicModeLost')
 
     // Auto-trigger on overload
+    contextActions.addToast.mock.resetCalls()
     gameStateRef.current.overload = 96
     act(() => { result.current.handleHit(0) })
     assert.equal(gameStateRef.current.isToxicMode, true)
     assert.equal(gameStateRef.current.overload, 0)
+    assert.equal(contextActions.addToast.mock.calls.some(c => c.arguments[0] === 'ui:gig.toasts.toxicOverload'), true)
 
     unmount()
   })
 
   test('applies game modifiers correctly (Guestlist, Perfektionist)', () => {
-    // We combine the guestlist and perfektionist trait variations into one sequential test
-    const { result, unmount, rerender } = renderHook(() => useRhythmGameScoring({ gameStateRef, setters, performance: {}, contextActions }))
+    const { result, unmount } = renderHook(() => useRhythmGameScoring({ gameStateRef, setters, performance: {}, contextActions }))
 
     // Guestlist
     gameStateRef.current.modifiers = { guestlist: true }
     act(() => { result.current.handleHit(0) })
     assert.equal(gameStateRef.current.score, 120) // 100 * 1.2
 
-    // Reset
+    // Reset state for Perfektionist
     gameStateRef.current.score = 0;
     gameStateRef.current.combo = 0;
-    gameStateRef.current.modifiers = {};
-    gameStateRef.current.modifiers = {};
 
-    // Perfektionist (Bonus)
+    // Perfektionist (Bonus 90%)
     gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
     mockGigStats.calculateAccuracy.mock.mockImplementationOnce(() => 90)
+    act(() => { result.current.handleHit(0) })
+    assert.equal(gameStateRef.current.score, 114) // Original expected score was 114 (100 * 1.14 Perfektionist)
+
+    gameStateRef.current.score = 0;
+    gameStateRef.current.combo = 0;
+
+    // Perfektionist (No Bonus 85% boundary)
+    gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
+    mockGigStats.calculateAccuracy.mock.mockImplementationOnce(() => 85)
+    act(() => { result.current.handleHit(0) })
+    assert.equal(gameStateRef.current.score, 100)
+
+    gameStateRef.current.score = 0;
+    gameStateRef.current.combo = 0;
+
+    // Perfektionist (Bonus 86% boundary)
+    gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
+    mockGigStats.calculateAccuracy.mock.mockImplementationOnce(() => 86)
     act(() => { result.current.handleHit(0) })
     assert.equal(gameStateRef.current.score, 114)
 
     gameStateRef.current.score = 0;
     gameStateRef.current.combo = 0;
-    gameStateRef.current.modifiers = {};
-    gameStateRef.current.modifiers = {};
 
-    // Perfektionist (No Bonus)
+    // Perfektionist (No Bonus 80%)
+    gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
     mockGigStats.calculateAccuracy.mock.mockImplementationOnce(() => 80)
     act(() => { result.current.handleHit(0) })
     assert.equal(gameStateRef.current.score, 100)
@@ -159,19 +185,22 @@ describe('useRhythmGameScoring', async () => {
 
   test('handleMiss triggers game over timeout toast', () => {
     mock.timers.enable({ apis: ['setTimeout'] })
-    gameStateRef.current.health = 1
-    const { result, unmount } = renderHook(() => useRhythmGameScoring({ gameStateRef, setters, performance: {}, contextActions }))
+    try {
+      gameStateRef.current.health = 1
+      const { result, unmount } = renderHook(() => useRhythmGameScoring({ gameStateRef, setters, performance: {}, contextActions }))
 
-    act(() => { result.current.handleMiss(1, false) })
-    assert.equal(gameStateRef.current.isGameOver, true)
+      act(() => { result.current.handleMiss(1, false) })
+      assert.equal(gameStateRef.current.isGameOver, true)
 
-    contextActions.addToast.mock.resetCalls()
-    act(() => { mock.timers.tick(4000) })
-    assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'ui:gig.toasts.gigFailed')
-    assert.equal(contextActions.setLastGigStats.mock.calls.length, 1)
-    assert.equal(contextActions.endGig.mock.calls.length, 1)
+      contextActions.addToast.mock.resetCalls()
+      act(() => { mock.timers.tick(4000) })
+      assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'ui:gig.toasts.gigFailed')
+      assert.equal(contextActions.setLastGigStats.mock.calls.length, 1)
+      assert.equal(contextActions.endGig.mock.calls.length, 1)
 
-    mock.timers.reset()
-    unmount()
+      unmount()
+    } finally {
+      mock.timers.reset()
+    }
   })
 })

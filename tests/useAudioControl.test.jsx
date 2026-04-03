@@ -120,12 +120,24 @@ describe('useAudioControl hook', () => {
     act(() => { result.current.handleAudioChange.toggleMute() })
     expect(result.current.audioState.isMuted).toBe(false)
 
-    // stopMusic / resumeMusic
+    // State transitions: play -> stop -> resume -> stop (idempotent)
+    act(() => {
+      audioManager.currentSongId = 'ambient'
+      audioManager.emitChange()
+    })
+    expect(result.current.audioState.isPlaying).toBe(true)
+
     act(() => { result.current.handleAudioChange.stopMusic() })
     expect(audioManager.stopMusic).toHaveBeenCalled()
+    expect(result.current.audioState.isPlaying).toBe(false)
+
+    act(() => { result.current.handleAudioChange.stopMusic() }) // Idempotent check
+    expect(audioManager.stopMusic).toHaveBeenCalledTimes(2)
+    expect(result.current.audioState.isPlaying).toBe(false)
 
     await act(async () => { await result.current.handleAudioChange.resumeMusic() })
     expect(audioManager.resumeMusic).toHaveBeenCalled()
+    expect(result.current.audioState.isPlaying).toBe(true)
   })
 
   it('handles exceptions and failures gracefully', () => {

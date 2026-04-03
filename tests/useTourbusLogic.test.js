@@ -105,8 +105,15 @@ describe('useTourbusLogic', () => {
     assert.equal(game.damage, 10) // 10 from obstacle
     assert.deepEqual(game.itemsCollected, ['FUEL'])
     assert.equal(mockPlaySFX.mock.calls.length, 2)
+    // Check specific sfx calls (not necessarily array-ordering sensitive, but here they run left-to-right on array map or iteration, let's just check they both exist. Actually, let's check array exactly to match request)
+    assert.deepEqual(
+      mockPlaySFX.mock.calls.map(call => call.arguments[0]).sort(),
+      ['crash', 'pickup'].sort()
+    )
     assert.equal(game.obstacles.length, 2) // "gone" is removed
     assert.equal(game.obstacles.some(o => o.id === 'gone'), false)
+    assert.equal(game.obstacles.find(o => o.id === 'obs1')?.collided, true)
+    assert.equal(game.obstacles.find(o => o.id === 'fuel1')?.collided, true)
 
     // Game Completion
     game.distance = TARGET_DISTANCE
