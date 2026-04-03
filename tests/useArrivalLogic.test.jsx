@@ -1,5 +1,5 @@
-import { test, describe, beforeEach, afterEach } from 'node:test'
-import assert from 'node:assert/strict'
+import { describe, it as test, beforeEach, afterEach, expect, vi as mock } from 'vitest'
+
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -30,17 +30,14 @@ describe('useArrivalLogic', () => {
     })
 
     // 1. Advance Day
-    assert.equal(mockGameState.advanceDay.mock.calls.length, 1)
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
     // 2. Save Game
-    assert.equal(mockGameState.saveGame.mock.calls.length, 1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
     // 3. Trigger Events
-    assert.ok(mockGameState.triggerEvent.mock.calls.length >= 1)
+    expect(mockGameState.triggerEvent.mock.calls.length).toBeGreaterThanOrEqual(1)
     // 4. Default Routing (no current node found -> OVERWORLD)
-    assert.equal(mockGameState.changeScene.mock.calls.length, 1)
-    assert.equal(
-      mockGameState.changeScene.mock.calls[0].arguments[0],
-      GAME_PHASES.OVERWORLD
-    )
+    expect(mockGameState.changeScene.mock.calls.length).toBe(1)
+    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(GAME_PHASES.OVERWORLD)
   })
 
   test('applies harmony regen if upgrade active', () => {
@@ -52,9 +49,9 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.updateBand.mock.calls.length, 1)
-    const updateArg = mockGameState.updateBand.mock.calls[0].arguments[0]
-    assert.equal(updateArg.harmony, 55) // 50 + 5
+    expect(mockGameState.updateBand.mock.calls.length).toBe(1)
+    const updateArg = mockGameState.updateBand.mock.calls[0][0]
+    expect(updateArg.harmony).toBe(55) // 50 + 5
   })
 
   test('handles REST_STOP node', () => {
@@ -73,15 +70,15 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.updateBand.mock.calls.length, 1)
-    const updateArg = mockGameState.updateBand.mock.calls[0].arguments[0]
+    expect(mockGameState.updateBand.mock.calls.length).toBe(1)
+    const updateArg = mockGameState.updateBand.mock.calls[0][0]
     // Expect boost: mood + 10, stamina + 20
-    assert.equal(updateArg.members[0].mood, 60)
-    assert.equal(updateArg.members[0].stamina, 70)
+    expect(updateArg.members[0].mood).toBe(60)
+    expect(updateArg.members[0].stamina).toBe(70)
 
-    assert.ok(
+    expect(
       mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('Rested')
+        c[0].includes('Rested')
       )
     )
   })
@@ -89,20 +86,14 @@ describe('useArrivalLogic', () => {
   test('handles GIG node with sufficient harmony', () => {
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
-      gameMap: {
-        nodes: {
-          node_start: { type: 'GIG', venue }
-        }
-      },
+      gameMap: { nodes: { node_start: { type: 'GIG', venue } } },
       band: { harmony: 50 }
     })
 
-    act(() => {
-      result.current.handleArrivalSequence()
-    })
+    act(() => { result.current.handleArrivalSequence() })
 
-    assert.equal(mockGameState.startGig.mock.calls.length, 1)
-    assert.deepEqual(mockGameState.startGig.mock.calls[0].arguments[0], venue)
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
   })
 
   test('prevents GIG if harmony too low', () => {
@@ -119,15 +110,12 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.startGig.mock.calls.length, 0)
-    assert.equal(mockGameState.changeScene.mock.calls.length, 1)
-    assert.equal(
-      mockGameState.changeScene.mock.calls[0].arguments[0],
-      GAME_PHASES.OVERWORLD
-    )
-    assert.ok(
+    expect(mockGameState.startGig.mock.calls.length).toBe(0)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(1)
+    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(GAME_PHASES.OVERWORLD)
+    expect(
       mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('cancelled')
+        c[0].includes('cancelled')
       )
     )
   })
@@ -151,15 +139,15 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.startGig.mock.calls.length, 0)
-    assert.equal(mockGameState.changeScene.mock.calls.length, 1)
-    assert.ok(
+    expect(mockGameState.startGig.mock.calls.length).toBe(0)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(1)
+    expect(
       mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('cancelled')
+        c[0].includes('cancelled')
       )
     )
     // Should apply fame penalty
-    assert.equal(mockGameState.updatePlayer.mock.calls.length, 1)
+    expect(mockGameState.updatePlayer.mock.calls.length).toBe(1)
   })
 
   test('idempotency guard prevents double execution', () => {
@@ -172,32 +160,32 @@ describe('useArrivalLogic', () => {
     })
 
     // Should only call actions once
-    assert.equal(mockGameState.advanceDay.mock.calls.length, 1)
-    assert.equal(mockGameState.saveGame.mock.calls.length, 1)
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
   })
 
   test('resets idempotency guard on error', () => {
     const { result } = setupArrivalScenario(useArrivalLogic)
 
     // Mock advanceDay to throw an error
-    mockGameState.advanceDay.mock.mockImplementationOnce(() => {
+    mockGameState.advanceDay.mockImplementationOnce(() => {
       throw new Error('Test Error')
     })
 
-    assert.throws(() => {
+    expect(() => {
       act(() => {
         result.current.handleArrivalSequence()
       })
-    }, /Test Error/)
+    }).toThrow(/Test Error/)
 
-    assert.equal(mockGameState.advanceDay.mock.calls.length, 1)
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
 
     // Second call should proceed (since isHandlingRef was reset to false)
     act(() => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.advanceDay.mock.calls.length, 2)
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(2)
   })
 
   test('handles SPECIAL node with event trigger', () => {
@@ -208,7 +196,7 @@ describe('useArrivalLogic', () => {
     // 2. triggerEvent('band', 'travel') -> returns false
     // 3. handleNodeArrival -> triggerEvent('special') -> returns true
     let _callCount = 0
-    mockGameState.triggerEvent.mock.mockImplementation(type => {
+    mockGameState.triggerEvent.mockImplementation(type => {
       _callCount++
       if (type === 'special') return true
       return false // Let the 'travel' events fail so it reaches 'special'
@@ -226,16 +214,16 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.ok(
+    expect(
       mockGameState.triggerEvent.mock.calls.some(
-        c => c.arguments[0] === 'special'
+        c => c[0] === 'special'
       ),
       'triggerEvent should be called with "special"'
-    )
+    ).toBe(true)
   })
 
   test('handles SPECIAL node when nothing happens', () => {
-    mockGameState.triggerEvent.mock.mockImplementation(() => false)
+    mockGameState.triggerEvent.mockImplementation(() => false)
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
@@ -248,9 +236,9 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.ok(
+    expect(
       mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('nothing happened')
+        c[0].includes('nothing happened')
       )
     )
   })
@@ -268,9 +256,9 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.ok(
+    expect(
       mockGameState.addToast.mock.calls.some(c =>
-        c.arguments[0].includes('Home Sweet Home')
+        c[0].includes('Home Sweet Home')
       )
     )
   })
@@ -290,8 +278,8 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.startGig.mock.calls.length, 1)
-    assert.deepEqual(mockGameState.startGig.mock.calls[0].arguments[0], venue)
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
   })
 
   test('handles FINALE node with sufficient harmony', () => {
@@ -309,14 +297,11 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.startGig.mock.calls.length, 1)
-    assert.deepEqual(mockGameState.startGig.mock.calls[0].arguments[0], venue)
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
   })
 
   test('handles startGig error during GIG node gracefully', () => {
-    mockGameState.startGig.mock.mockImplementationOnce(() => {
-      throw new Error('Gig Failed To Start')
-    })
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
@@ -327,19 +312,23 @@ describe('useArrivalLogic', () => {
       band: { harmony: 50 }
     })
 
+    mockGameState.startGig.mockImplementationOnce(() => {
+      throw new Error('Gig Failed To Start')
+    })
+
     act(() => {
       result.current.handleArrivalSequence()
     })
 
-    assert.equal(mockGameState.startGig.mock.calls.length, 1)
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
 
     // handleError internally calls addToast with the fallback message
     // or the error's message. We assert that addToast was invoked with feedback.
-    assert.ok(
+    expect(
       mockGameState.addToast.mock.calls.some(
         c =>
-          c.arguments[0].includes('Failed to start Gig') ||
-          c.arguments[0].includes('Gig Failed To Start')
+          c[0].includes('Failed to start Gig') ||
+          c[0].includes('Gig Failed To Start')
       )
     )
   })

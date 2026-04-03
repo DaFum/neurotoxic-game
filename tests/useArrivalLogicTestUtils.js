@@ -1,22 +1,22 @@
-import { mock } from 'node:test'
+import { vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 
 // Mocks
 const mockGameState = {
-  advanceDay: mock.fn(),
-  saveGame: mock.fn(),
-  updateBand: mock.fn(),
-  updatePlayer: mock.fn(),
-  triggerEvent: mock.fn(),
-  startGig: mock.fn(),
-  changeScene: mock.fn(),
-  addToast: mock.fn(),
+  advanceDay: vi.fn(),
+  saveGame: vi.fn(),
+  updateBand: vi.fn(),
+  updatePlayer: vi.fn(),
+  triggerEvent: vi.fn(),
+  startGig: vi.fn(),
+  changeScene: vi.fn(),
+  addToast: vi.fn(),
   band: { harmony: 50, harmonyRegenTravel: false, members: [] },
   gameMap: { nodes: {} },
   player: { currentNodeId: 'node_start' }
 }
 
-const mockUseGameState = mock.fn(() => mockGameState)
+const mockUseGameState = vi.fn(() => mockGameState)
 
 export const setMockGameState = overrides => {
   // Simple deep merge for known structures or just use overrides if structure is simple
@@ -34,16 +34,17 @@ export const setMockGameState = overrides => {
 }
 
 export const resetMockGameState = () => {
-  mockUseGameState.mock.resetCalls()
+  mockUseGameState.mockReset()
+  mockUseGameState.mockImplementation(() => mockGameState)
 
-  mockGameState.advanceDay.mock.resetCalls()
-  mockGameState.saveGame.mock.resetCalls()
-  mockGameState.updateBand.mock.resetCalls()
-  mockGameState.updatePlayer.mock.resetCalls()
-  mockGameState.triggerEvent.mock.resetCalls()
-  mockGameState.startGig.mock.resetCalls()
-  mockGameState.changeScene.mock.resetCalls()
-  mockGameState.addToast.mock.resetCalls()
+  mockGameState.advanceDay.mockReset()
+  mockGameState.saveGame.mockReset()
+  mockGameState.updateBand.mockReset()
+  mockGameState.updatePlayer.mockReset()
+  mockGameState.triggerEvent.mockReset()
+  mockGameState.startGig.mockReset()
+  mockGameState.changeScene.mockReset()
+  mockGameState.addToast.mockReset()
 
   mockGameState.band = { harmony: 50, harmonyRegenTravel: false, members: [] }
   mockGameState.gameMap = { nodes: {} }
@@ -51,45 +52,40 @@ export const resetMockGameState = () => {
 }
 
 // Mock modules - Correct path specifier
-mock.module('../src/context/GameState.jsx', {
-  namedExports: {
+vi.mock('../src/context/GameState.jsx', () => ({
     useGameState: mockUseGameState
-  }
-})
+}))
 
 // Mock utils
-mock.module('../src/utils/gameStateUtils.js', {
-  namedExports: {
-    // Correct clamp: 1 to 100
-    clampBandHarmony: val => {
-      if (!Number.isFinite(val)) return 1
-      return Math.max(1, Math.min(100, Math.floor(val)))
-    },
-    clampMemberStamina: (val, max = 100) => {
-      if (!Number.isFinite(val)) return 0
-      const resolvedMax = Number.isFinite(max) ? max : 100
-      return Math.max(0, Math.min(resolvedMax, Math.floor(val)))
-    },
-    clampMemberMood: val => {
-      if (!Number.isFinite(val)) return 0
-      return Math.max(0, Math.min(100, Math.floor(val)))
-    },
-    clampPlayerFame: val => {
-      if (!Number.isFinite(val)) return 0
-      return Math.max(0, Math.floor(val))
-    },
-    calculateFameLevel: val => {
-      if (!Number.isFinite(val)) return 0
-      return Math.floor(Math.max(0, val) / 1000)
-    },
-    BALANCE_CONSTANTS: {
-      FAME_LOSS_BAD_GIG: 4,
-      MAX_FAME_GAIN: 500,
-      LOW_HARMONY_THRESHOLD: 15,
-      LOW_HARMONY_CANCELLATION_CHANCE: 0.25
-    }
+vi.mock('../src/utils/gameStateUtils.js', () => ({
+  clampBandHarmony: val => {
+    if (!Number.isFinite(val)) return 1
+    return Math.max(1, Math.min(100, Math.floor(val)))
+  },
+  clampMemberStamina: (val, max = 100) => {
+    if (!Number.isFinite(val)) return 0
+    const resolvedMax = Number.isFinite(max) ? max : 100
+    return Math.max(0, Math.min(resolvedMax, Math.floor(val)))
+  },
+  clampMemberMood: val => {
+    if (!Number.isFinite(val)) return 0
+    return Math.max(0, Math.min(100, Math.floor(val)))
+  },
+  clampPlayerFame: val => {
+    if (!Number.isFinite(val)) return 0
+    return Math.max(0, Math.floor(val))
+  },
+  calculateFameLevel: val => {
+    if (!Number.isFinite(val)) return 0
+    return Math.floor(Math.max(0, val) / 1000)
+  },
+  BALANCE_CONSTANTS: {
+    FAME_LOSS_BAD_GIG: 4,
+    MAX_FAME_GAIN: 500,
+    LOW_HARMONY_THRESHOLD: 15,
+    LOW_HARMONY_CANCELLATION_CHANCE: 0.25
   }
-})
+}))
 
 export const setupArrivalLogicTest = async () => {
   const { useArrivalLogic } = await import('../src/hooks/useArrivalLogic.js')
