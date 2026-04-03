@@ -240,59 +240,64 @@ class RoadieStageController extends BaseStageController {
     }
   }
 
+  _getOrCreateCarSprite(car) {
+    let sprite = this.carSprites.get(car.id)
+    if (sprite) return sprite
+
+    if (this.textures.cars.length > 0) {
+      let textureHash = car.textureHash
+      if (!Number.isFinite(textureHash)) {
+        textureHash = hashString(String(car.id ?? ''))
+      }
+      const texIndex =
+        Math.floor(Math.abs(textureHash)) % this.textures.cars.length
+      sprite = new Sprite(this.textures.cars[texIndex])
+      sprite.anchor.set(0.5)
+    } else {
+      sprite = new Graphics()
+      sprite.rect(-30, -20, 60, 40)
+      sprite.fill(this.colors.bloodRed)
+    }
+
+    this.container.addChild(sprite)
+    this.carSprites.set(car.id, sprite)
+    return sprite
+  }
+
   _renderTraffic(state, cellW, cellH) {
-    if (Array.isArray(state.traffic)) {
-      this.currentIds.clear()
-      for (const car of state.traffic) {
-        this.currentIds.add(car.id)
-        let sprite = this.carSprites.get(car.id)
-        if (!sprite) {
-          // Pick stable car texture based on hash of ID
-          if (this.textures.cars.length > 0) {
-            let textureHash = car.textureHash
-            if (!Number.isFinite(textureHash)) {
-              textureHash = hashString(String(car.id ?? ''))
-            }
-            const texIndex =
-              Math.floor(Math.abs(textureHash)) % this.textures.cars.length
-            sprite = new Sprite(this.textures.cars[texIndex])
-            sprite.anchor.set(0.5)
-          } else {
-            sprite = new Graphics()
-            sprite.rect(-30, -20, 60, 40)
-            sprite.fill(this.colors.bloodRed)
-          }
-          this.container.addChild(sprite)
-          this.carSprites.set(car.id, sprite)
-        }
+    if (!Array.isArray(state.traffic)) return
 
-        sprite.x = (car.x + car.width / 2) * cellW
-        sprite.y = (car.row + 0.5) * cellH
+    this.currentIds.clear()
+    for (const car of state.traffic) {
+      this.currentIds.add(car.id)
+      const sprite = this._getOrCreateCarSprite(car)
 
-        // Flip if moving left
-        if (car.speed < 0) {
-          sprite.scale.x = -Math.abs(sprite.scale.x)
-        } else {
-          sprite.scale.x = Math.abs(sprite.scale.x)
-        }
+      sprite.x = (car.x + car.width / 2) * cellW
+      sprite.y = (car.row + 0.5) * cellH
 
-        // Adjust Scale if texture — constrain both width AND height
-        if (sprite instanceof Sprite && sprite.texture?.width > 0) {
-          const targetW = car.width * cellW
-          const targetH = cellH * 0.7
-          const scale = Math.min(
-            targetW / sprite.texture.width,
-            targetH / sprite.texture.height
-          )
-          sprite.scale.set(
-            Math.abs(scale) * Math.sign(sprite.scale.x),
-            Math.abs(scale)
-          )
-        } else {
-          // Fallback or Graphics
-          sprite.width = car.width * cellW
-          sprite.height = cellH * 0.7
-        }
+      // Flip if moving left
+      if (car.speed < 0) {
+        sprite.scale.x = -Math.abs(sprite.scale.x)
+      } else {
+        sprite.scale.x = Math.abs(sprite.scale.x)
+      }
+
+      // Adjust Scale if texture — constrain both width AND height
+      if (sprite instanceof Sprite && sprite.texture?.width > 0) {
+        const targetW = car.width * cellW
+        const targetH = cellH * 0.7
+        const scale = Math.min(
+          targetW / sprite.texture.width,
+          targetH / sprite.texture.height
+        )
+        sprite.scale.set(
+          Math.abs(scale) * Math.sign(sprite.scale.x),
+          Math.abs(scale)
+        )
+      } else {
+        // Fallback or Graphics
+        sprite.width = car.width * cellW
+        sprite.height = cellH * 0.7
       }
     }
   }
