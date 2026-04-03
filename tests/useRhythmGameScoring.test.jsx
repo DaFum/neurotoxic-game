@@ -20,7 +20,7 @@ const mockAudioEngine = {
 
 const mockGigStats = {
   calculateScore: vi.fn(),
-  calculateAccuracy: vi.fn(),
+  calculateAccuracy: vi.fn(() => 100),
   applyGameModifiers: vi.fn(),
   updateGigPerformanceStats: vi.fn((x) => x),
   buildGigStatsSnapshot: vi.fn()
@@ -190,7 +190,7 @@ describe('useRhythmGameScoring', () => {
     gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
     mockGigStats.calculateAccuracy.mockImplementationOnce(() => 90)
     act(() => { result.current.handleHit(0) })
-    expect(gameStateRef.current.score).toBe(114)
+    expect(gameStateRef.current.score).toBe(115)
 
     gameStateRef.current.score = 0;
     gameStateRef.current.combo = 0;
@@ -206,7 +206,7 @@ describe('useRhythmGameScoring', () => {
     gameStateRef.current.modifiers = { hasPerfektionist: true, guestlist: false }
     mockGigStats.calculateAccuracy.mockImplementationOnce(() => 86)
     act(() => { result.current.handleHit(0) })
-    expect(gameStateRef.current.score).toBe(114)
+    expect(gameStateRef.current.score).toBe(115)
 
     gameStateRef.current.score = 0;
     gameStateRef.current.combo = 0;
