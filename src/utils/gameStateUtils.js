@@ -554,20 +554,34 @@ export const applyEventDelta = (state, delta) => {
 
           for (let j = 0; j < relationshipChange.length; j++) {
             const change = relationshipChange[j]
-            const relSource = newRelationships || nextMember.relationships || {}
+            const isM1 = change.member1 === member.name
+            const isM2 = change.member2 === member.name
 
-            const result = calculateMemberRelationshipChange(change, member.name, hasGrudgeHolder, hasPeacemaker, relSource)
+            if (!isM1 && !isM2) continue
 
-            if (result) {
-              const { other, newScore } = result
-              const oldExists = Object.hasOwn(relSource, other)
+            const other = isM1 ? change.member2 : change.member1
+            if (isForbiddenKey(other)) continue
 
-              if (oldExists || newScore !== 50) {
-                if (!newRelationships) {
-                  newRelationships = { ...(nextMember.relationships || {}) }
-                }
-                newRelationships[other] = newScore
+            let amount = change.change
+            // Apply traits
+            if (amount < 0 && hasGrudgeHolder) amount *= 1.5
+            if (amount > 0 && hasPeacemaker) amount *= 1.5
+            if (amount < 0 && hasPeacemaker) amount *= 0.5
+
+            const relSource =
+              newRelationships || nextMember.relationships || {}
+            const oldExists = Object.hasOwn(relSource, other)
+            const currentScore = relSource[other] ?? 50
+            const newScore = Math.max(
+              0,
+              Math.min(100, Math.round(currentScore + amount))
+            )
+
+            if (oldExists || newScore !== 50) {
+              if (!newRelationships) {
+                newRelationships = { ...(nextMember.relationships || {}) }
               }
+              newRelationships[other] = newScore
             }
           }
 
