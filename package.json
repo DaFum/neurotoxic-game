@@ -44,7 +44,7 @@
     "tone": "15.5.6"
   },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "3.0.0",
+    "@eslint-react/eslint-plugin": "4.2.3",
     "@eslint/js": "10.0.1",
     "@iarna/toml": "2.2.5",
     "@playwright/test": "^1.58.2",
