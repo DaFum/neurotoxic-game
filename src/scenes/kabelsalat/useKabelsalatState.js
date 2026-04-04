@@ -5,7 +5,7 @@ import { GAME_PHASES } from '../../context/gameConstants.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { loadTexture } from '../../components/stage/utils.js'
 import { logger } from '../../utils/logger.js'
-import { secureRandom } from '../../utils/crypto.js'
+import { secureRandom, getSafeRandom } from '../../utils/crypto.js'
 import {
   CABLE_MAP,
   SOCKET_DEFS,
@@ -32,15 +32,15 @@ export const useKabelsalatState = () => {
     return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
   }, [connections])
 
-  const randomFnRef = useRef(Math.random)
+  const randomFnRef = useRef(getSafeRandom)
 
   useEffect(() => {
     try {
       secureRandom()
       randomFnRef.current = secureRandom
     } catch (e) {
-      logger.warn('secureRandom unavailable, falling back to Math.random()', e)
-      randomFnRef.current = Math.random
+      logger.warn('secureRandom unavailable, falling back to getSafeRandom()', e)
+      randomFnRef.current = getSafeRandom
     }
   }, [])
 

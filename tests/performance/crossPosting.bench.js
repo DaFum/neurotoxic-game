@@ -1,4 +1,5 @@
 import { performance } from 'node:perf_hooks'
+import assert from 'node:assert'
 
 const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
 const social = { instagram: 100, tiktok: 200, youtube: 300 }
@@ -57,21 +58,30 @@ function runUnrolledApproach(iterations) {
 const RUNS = 1_000_000
 
 // Warmup
-runOldApproach(10000)
-runForOfApproach(10000)
-runUnrolledApproach(10000)
+const resOld = runOldApproach(10000)
+const resForOf = runForOfApproach(10000)
+const resUnrolled = runUnrolledApproach(10000)
+
+// Correctness Check
+assert.deepStrictEqual(resOld, resForOf, 'ForOf approach diverges from Old approach')
+assert.deepStrictEqual(resOld, resUnrolled, 'Unrolled approach diverges from Old approach')
+
+let sink // Sink to prevent dead code elimination
 
 const startOld = performance.now()
-runOldApproach(RUNS)
+sink = runOldApproach(RUNS)
 const timeOld = performance.now() - startOld
+if (sink.instagram < 0) console.log(sink) // Read sink
 
 const startForOf = performance.now()
-runForOfApproach(RUNS)
+sink = runForOfApproach(RUNS)
 const timeForOf = performance.now() - startForOf
+if (sink.instagram < 0) console.log(sink) // Read sink
 
 const startUnrolled = performance.now()
-runUnrolledApproach(RUNS)
+sink = runUnrolledApproach(RUNS)
 const timeUnrolled = performance.now() - startUnrolled
+if (sink.instagram < 0) console.log(sink) // Read sink
 
 console.log(`Old Approach Time: ${timeOld.toFixed(2)}ms`)
 console.log(`For...of Approach Time: ${timeForOf.toFixed(2)}ms`)

@@ -10,6 +10,11 @@ let batchArray = null
 let batchIndex = BATCH_SIZE
 let secureRandomErrorReported = false
 
+const lut = []
+for (let i = 0; i < 256; i++) {
+  lut[i] = (i < 16 ? '0' : '') + i.toString(16)
+}
+
 /**
  * Returns a cryptographically secure random number between 0 and 1.
  * Throws an error if the Crypto API is not available.
@@ -76,9 +81,39 @@ export const getSafeUUID = () => {
     // Fall through to fallback
   }
 
-  // Fallback UUID-like string
-  const roll = getSafeRandom()
-  return `${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
+  // Fallback RFC4122 v4 UUID
+  const buffer = new Uint8Array(16)
+  for (let i = 0; i < 16; i++) {
+    buffer[i] = Math.floor(getSafeRandom() * 256)
+  }
+
+  // Set version to 4
+  buffer[6] = (buffer[6] & 0x0f) | 0x40
+  // Set variant to RFC4122
+  buffer[8] = (buffer[8] & 0x3f) | 0x80
+
+  return (
+    lut[buffer[0]] +
+    lut[buffer[1]] +
+    lut[buffer[2]] +
+    lut[buffer[3]] +
+    '-' +
+    lut[buffer[4]] +
+    lut[buffer[5]] +
+    '-' +
+    lut[buffer[6]] +
+    lut[buffer[7]] +
+    '-' +
+    lut[buffer[8]] +
+    lut[buffer[9]] +
+    '-' +
+    lut[buffer[10]] +
+    lut[buffer[11]] +
+    lut[buffer[12]] +
+    lut[buffer[13]] +
+    lut[buffer[14]] +
+    lut[buffer[15]]
+  )
 }
 
 /**

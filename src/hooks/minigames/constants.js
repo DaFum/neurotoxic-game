@@ -3,6 +3,10 @@ export const ROADIE_GRID_WIDTH = 12
 export const ROADIE_GRID_HEIGHT = 8 // Rows: 0 (Start), 1-6 (Road), 7 (Venue)
 export const ROADIE_MOVE_COOLDOWN_BASE = 120 // ms
 
+// Backward compatibility aliases for ROADIE grid constants
+export const GRID_WIDTH = ROADIE_GRID_WIDTH
+export const GRID_HEIGHT = ROADIE_GRID_HEIGHT
+
 // Tourbus Minigame Constants
 export const TOURBUS_LANE_COUNT = 3
 export const TOURBUS_BUS_Y_PERCENT = 85 // Bus position in % of screen height

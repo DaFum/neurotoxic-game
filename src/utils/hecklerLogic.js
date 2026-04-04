@@ -1,5 +1,5 @@
 // TODO: Review this file
-import { secureRandom } from './crypto.js'
+import { getSafeRandom } from './crypto.js'
 
 /**
  * Updates the state of active projectiles.
@@ -90,7 +90,7 @@ export const processProjectiles = (
 /**
  * Determines if a new projectile should be spawned and generates it.
  * @param {object} stats - Game stats (health, combo).
- * @param {Function} [random=Math.random] - Random number generator.
+ * @param {Function} [random=getSafeRandom] - Random number generator.
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */
@@ -99,7 +99,7 @@ const MAX_PROJECTILE_POOL_SIZE = 64
 export const trySpawnProjectile = (
   session,
   stats,
-  random = secureRandom,
+  random = getSafeRandom,
   screenWidth = 1920
 ) => {
   // Adaptive difficulty AI tuning based on stats

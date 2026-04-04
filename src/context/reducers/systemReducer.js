@@ -23,6 +23,7 @@ import {
 } from '../initialState.js'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants.js'
 import { handleFailQuests } from './questReducer.js'
+import { getSafeRandom } from '../../utils/crypto.js'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
@@ -481,7 +482,7 @@ const processContrabandExpiry = band => {
  * @returns {Object} Updated state
  */
 export const handleAdvanceDay = (state, payload) => {
-  const rng = payload?.rng || Math.random
+  const rng = payload?.rng || getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
     rng

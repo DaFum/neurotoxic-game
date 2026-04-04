@@ -102,7 +102,7 @@ describe('useTourbusLogic', () => {
     act(() => { result.current.actions.moveRight() })
     expect(game.busLane).toBe(2)
     act(() => { result.current.actions.moveRight() })
-    expect(game.busLane).toBe(LANE_COUNT - 1)
+    expect(game.busLane).toBe(TOURBUS_LANE_COUNT - 1)
 
     unmount()
   })
@@ -120,8 +120,8 @@ describe('useTourbusLogic', () => {
     // Collisions
     game.busLane = 1
     game.obstacles = [
-      { id: 'obs1', lane: 1, y: BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false },
-      { id: 'fuel1', lane: 1, y: BUS_Y_PERCENT + 1, type: 'FUEL', collided: false },
+      { id: 'obs1', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false },
+      { id: 'fuel1', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'FUEL', collided: false },
       { id: 'gone', lane: 0, y: 120, type: 'OBSTACLE' }
     ]
 
@@ -156,14 +156,14 @@ describe('useTourbusLogic', () => {
 
     // Bullbar (reduces to 5)
     mockHasUpgrade.mockImplementation((_, type) => type === 'van_bullbar')
-    game.obstacles = [{ id: 'obs1', lane: 1, y: BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
+    game.obstacles = [{ id: 'obs1', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
     game.damage = 0
     act(() => { result.current.update(16) })
     expect(game.damage).toBe(5)
 
     // Armor (reduces to 2) - armor takes precedence
     mockHasUpgrade.mockImplementation((_, type) => type === 'van_armor' || type === 'van_bullbar')
-    game.obstacles = [{ id: 'obs2', lane: 1, y: BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
+    game.obstacles = [{ id: 'obs2', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
     game.damage = 0
     act(() => { result.current.update(16) })
     expect(game.damage).toBe(2)
