@@ -7,10 +7,12 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/AudioManager'
-import { GRID_WIDTH, GRID_HEIGHT } from './constants'
+import {
+  ROADIE_GRID_WIDTH,
+  ROADIE_GRID_HEIGHT,
+  ROADIE_MOVE_COOLDOWN_BASE
+} from './constants'
 import { hashString } from '../../utils/stringUtils'
-
-export const MOVE_COOLDOWN_BASE = 120 // ms (Faster base movement)
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
 // Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
@@ -65,7 +67,7 @@ export function spawnTraffic(game, deltaMS) {
         id,
         textureHash: Math.abs(hashString(id)),
         row: spawner.row,
-        x: spawner.speed > 0 ? -1 : GRID_WIDTH,
+        x: spawner.speed > 0 ? -1 : ROADIE_GRID_WIDTH,
         speed: spawner.speed,
         width: 1.5
       })
@@ -89,7 +91,7 @@ export function processTraffic(game, deltaMS, onCrash) {
 
     let keep = false
     if (car.speed > 0) {
-      if (car.x < GRID_WIDTH + 2) keep = true
+      if (car.x < ROADIE_GRID_WIDTH + 2) keep = true
     } else {
       if (car.x > -2) keep = true
     }
@@ -120,7 +122,7 @@ export function handlePickup(game) {
 }
 
 export function handleDelivery(game, onGameOver) {
-  if (game.playerPos.y === GRID_HEIGHT - 1 && game.carrying) {
+  if (game.playerPos.y === ROADIE_GRID_HEIGHT - 1 && game.carrying) {
     game.itemsDelivered.push(game.carrying)
     game.carrying = null
     audioManager.playSFX('deliver')
@@ -180,12 +182,18 @@ export const useRoadieLogic = () => {
 
       const now = Date.now()
       const weight = game.carrying ? game.carrying.weight : 1
-      const cooldown = MOVE_COOLDOWN_BASE * weight
+      const cooldown = ROADIE_MOVE_COOLDOWN_BASE * weight
 
       if (now - game.lastMoveTime < cooldown) return
 
-      const newX = Math.max(0, Math.min(GRID_WIDTH - 1, game.playerPos.x + dx))
-      const newY = Math.max(0, Math.min(GRID_HEIGHT - 1, game.playerPos.y + dy))
+      const newX = Math.max(
+        0,
+        Math.min(ROADIE_GRID_WIDTH - 1, game.playerPos.x + dx)
+      )
+      const newY = Math.max(
+        0,
+        Math.min(ROADIE_GRID_HEIGHT - 1, game.playerPos.y + dy)
+      )
 
       game.playerPos = { x: newX, y: newY }
       game.lastMoveTime = now
