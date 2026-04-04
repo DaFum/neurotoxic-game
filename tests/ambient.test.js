@@ -179,19 +179,19 @@ describe('ambient.js', () => {
       assert.equal(result, true)
       assert.equal(mockPlayMidiFileInternal.mock.calls.length, 1)
       const args = mockPlayMidiFileInternal.mock.calls[0].arguments
-      assert.equal(args[0], 'test1.mid')
-      assert.equal(args[1], 0) // offset
-      assert.equal(args[2], false) // loop
-      assert.equal(args[3], 0) // extra delay
-      assert.equal(args[4].useCleanPlayback, true)
-      assert.equal(typeof args[4].onEnded, 'function')
+      assert.equal(args[0].filename, 'test1.mid')
+      assert.equal(args[0].offset, 0) // offset
+      assert.equal(args[0].loop, false) // loop
+      assert.equal(args[0].delay, 0) // extra delay
+      assert.equal(args[0].options.useCleanPlayback, true)
+      assert.equal(typeof args[0].options.onEnded, 'function')
     })
 
     test('onEnded chaining bails out if playRequestId changed', async () => {
       await playRandomAmbientMidi([], () => 0)
 
       const onEnded =
-        mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
+        mockPlayMidiFileInternal.mock.calls[0].arguments[0].options.onEnded
 
       // Change req id
       mockAudioState.playRequestId = 3
@@ -209,7 +209,7 @@ describe('ambient.js', () => {
       await playRandomAmbientMidi([], () => 0)
 
       const onEnded =
-        mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
+        mockPlayMidiFileInternal.mock.calls[0].arguments[0].options.onEnded
 
       // Do not change reqId
       const prevCalls = mockPlayMidiFileInternal.mock.calls.length

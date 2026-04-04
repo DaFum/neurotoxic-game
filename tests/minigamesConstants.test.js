@@ -17,6 +17,8 @@ test('minigames/constants - exports expected values', () => {
 
 test('minigames/constants - exactly expected constants are exported', () => {
   const expectedKeys = [
+    'GRID_HEIGHT',
+    'GRID_WIDTH',
     'ROADIE_GRID_WIDTH',
     'ROADIE_GRID_HEIGHT',
     'ROADIE_MOVE_COOLDOWN_BASE',

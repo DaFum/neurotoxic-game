@@ -494,14 +494,16 @@ function scheduleMidiTransport(midi, params) {
  * @param {number} [params.options.startTimeSec] - Absolute Tone.js time to start playback.
  * @param {number|null} [params.ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFileInternal({
-  filename,
-  offset = 0,
-  loop = false,
-  delay = 0,
-  options = {},
-  ownedRequestId = null
-}) {
+export async function playMidiFileInternal(params) {
+  const {
+    filename,
+    offset = 0,
+    loop = false,
+    delay = 0,
+    options = {},
+    ownedRequestId = null
+  } = params
+
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
 

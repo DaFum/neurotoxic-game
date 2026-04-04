@@ -155,16 +155,15 @@ export const calculatePostGigStateUpdates = ({
   if (result.success && totalFollowers > 0) {
     const delta = Math.floor(totalFollowers * 0.25)
 
-    // Convert object values to an array for iteration
-    const platforms = Object.values(SOCIAL_PLATFORMS)
+    for (const key in SOCIAL_PLATFORMS) {
+      if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
+        const platformId = SOCIAL_PLATFORMS[key].id
 
-    for (let i = 0; i < platforms.length; i++) {
-      const platformId = platforms[i].id
-
-      // Do not cross-post to the platform that triggered the update,
-      // and do not cross-post to the newsletter, which is treated differently.
-      if (platformId !== result.platform && platformId !== 'newsletter') {
-        updatedSocial[platformId] = Math.max(0, (social[platformId] || 0) + delta)
+        // Do not cross-post to the platform that triggered the update,
+        // and do not cross-post to the newsletter, which is treated differently.
+        if (platformId !== result.platform && platformId !== SOCIAL_PLATFORMS.NEWSLETTER.id) {
+          updatedSocial[platformId] = Math.max(0, (social[platformId] || 0) + delta)
+        }
       }
     }
   }

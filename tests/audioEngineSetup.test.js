@@ -35,11 +35,15 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
 
   await t.test(
     'getRawAudioContext returns Tone context rawContext or Tone context',
-    () => {
+    async () => {
       const rawContext = getRawAudioContext()
       if (!rawContext) return t.skip('getRawAudioContext not mocking correctly')
       assert.ok(rawContext !== undefined)
       assert.strictEqual(rawContext, mockTone.getContext().rawContext)
+
+      // Ensure that getRawAudioContext is correctly exported from the main hub
+      const audioEngineModule = await import('../src/utils/audioEngine.js')
+      assert.strictEqual(audioEngineModule.getRawAudioContext, getRawAudioContext)
     }
   )
 

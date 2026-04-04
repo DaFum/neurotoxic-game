@@ -9,6 +9,7 @@
 
 export { setupAudio } from './audio/setup.js'
 export {
+  getRawAudioContext,
   ensureAudioContext,
   getAudioContextTimeSec,
   getToneStartTimeSec

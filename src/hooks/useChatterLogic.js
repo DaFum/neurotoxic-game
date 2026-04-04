@@ -12,7 +12,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter'
-import { getSafeRandom } from '../utils/crypto.js'
+import { getSafeRandom, getSafeUUID } from '../utils/crypto.js'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -43,10 +43,7 @@ const generateChatterId = () => {
     // Try the next generator
   }
 
-  const roll = getSafeRandom()
-  const id = roll.toString(36).substring(2)
-  if (id) return id
-  return 'fallback-' + Date.now().toString(36) + '-' + roll.toString(36).substring(2)
+  return getSafeUUID()
 }
 
 export const useChatterLogic = (gameState, t) => {

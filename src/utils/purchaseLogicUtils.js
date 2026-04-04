@@ -197,7 +197,7 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
  * @param {Object} item - Item to purchase
  * @param {Object} player - Player state
  * @param {Object} band - Band state
- * @returns {Object} { isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number }
+ * @returns {Object} { isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number, effect?: Object }
  */
 export const validatePurchase = (item, player, band) => {
   const effect = getPrimaryEffect(item)

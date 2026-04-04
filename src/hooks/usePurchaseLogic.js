@@ -62,10 +62,13 @@ allGearItems.forEach(item => {
 const getGearCount = (inventory, lookup) => {
   let count = 0
   const inv = inventory || {}
-  for (const [key, value] of Object.entries(inv)) {
-    const isOwned = value === true || (typeof value === 'number' && value > 0)
-    if (isOwned && lookup.has(key)) {
-      count++
+  for (const key in inv) {
+    if (Object.hasOwn(inv, key)) {
+      const value = inv[key]
+      const isOwned = value === true || (typeof value === 'number' && value > 0)
+      if (isOwned && lookup.has(key)) {
+        count++
+      }
     }
   }
   return count

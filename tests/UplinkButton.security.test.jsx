@@ -7,7 +7,7 @@ test('UplinkButton should not allow javascript: URLs', () => {
   render(
     <UplinkButton
       title='Malicious Link'
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-script-url
       url={maliciousUrl}
       subtitle='XSS'
       type='exploit'
@@ -51,7 +51,7 @@ test('UplinkButton should prevent default action for unsafe URLs on click', () =
   render(
     <UplinkButton
       title='Unsafe Link'
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-script-url
       url="javascript:alert('XSS')"
       subtitle='Unsafe'
       type='exploit'

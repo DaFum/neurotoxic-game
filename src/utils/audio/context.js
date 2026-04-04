@@ -53,7 +53,10 @@ export async function ensureAudioContext() {
       // On iOS Safari the 'interrupted' state requires the native AudioContext resume
       if (earlyState === 'interrupted') {
         try {
-          getRawAudioContext().resume()
+          const resumePromise = getRawAudioContext().resume()
+          if (resumePromise && resumePromise.catch) {
+            resumePromise.catch(() => {})
+          }
         } catch (_e) {
           // Best-effort; full recovery follows below
         }
@@ -63,7 +66,14 @@ export async function ensureAudioContext() {
     }
   }
 
-  if (!audioState.isSetup) await setupAudio()
+  if (!audioState.isSetup) {
+    try {
+      await setupAudio()
+    } catch (error) {
+      logger.error('AudioEngine', 'setupAudio failed', error)
+      return false
+    }
+  }
 
   const getAudioState = () => {
     let rawContextState = null
