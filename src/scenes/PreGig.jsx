@@ -9,7 +9,7 @@ import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
-import { secureRandom } from '../utils/crypto.js'
+import { getSafeRandom, getSafeUUID } from '../utils/crypto.js'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
@@ -216,7 +216,7 @@ export const PreGig = () => {
     try {
       await audioManager.ensureAudioContext()
       // Safe access for ID
-      const gigId = currentGig?.id || `gig_${crypto.randomUUID()}`
+      const gigId = currentGig?.id || `gig_${getSafeUUID()}`
 
       // Simple streak breaker using sessionStorage with fallback
       let lastMinigame = lastMinigameFallback
@@ -236,14 +236,7 @@ export const PreGig = () => {
         roadieChance = 0.75 // Increase chance if Kabelsalat played last
       }
 
-      let randomVal
-      try {
-        randomVal = secureRandom()
-      } catch (err) {
-        handleError(err, { silent: true, severity: 'medium' })
-        // Fallback to Math.random()
-        randomVal = Math.random()
-      }
+      const randomVal = getSafeRandom()
 
       const chosenGame = randomVal < roadieChance ? 'roadie' : 'kabelsalat'
 

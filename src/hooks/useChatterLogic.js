@@ -12,9 +12,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter'
-import { secureRandom } from '../utils/crypto.js'
-
-let secureRandomFallbackWarned = false
+import { getSafeRandom, getSafeUUID } from '../utils/crypto.js'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -31,52 +29,13 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
     }
   }
   if (memberNames.length > 0) {
-    let roll
-    try {
-      roll = secureRandom()
-    } catch (error) {
-      console.warn(
-        'Crypto API not available, falling back to Math.random',
-        error
-      )
-      roll = Math.random()
-    }
+    const roll = getSafeRandom()
     return memberNames[Math.floor(roll * memberNames.length)]
   }
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
 
-const generateChatterId = () => {
-  try {
-    const uuid = (globalThis.crypto || window?.crypto)?.randomUUID()
-    if (uuid) return uuid
-  } catch {
-    // Try the next generator
-  }
-
-  try {
-    const id = secureRandom().toString(36).substring(2)
-    if (id) return id
-  } catch {
-    // Try the next generator
-  }
-
-  // Fallback to Math.random() if secureRandom is unavailable
-  let roll
-  try {
-    roll = secureRandom()
-  } catch (error) {
-    if (!secureRandomFallbackWarned) {
-      secureRandomFallbackWarned = true
-      console.warn(
-        'secureRandom() failed, falling back to Math.random().',
-        error
-      )
-    }
-    roll = Math.random()
-  }
-  return `fallback-${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
-}
+const generateChatterId = () => getSafeUUID()
 
 export const useChatterLogic = (gameState, t) => {
   const stateRef = useRef(gameState)
@@ -96,16 +55,8 @@ export const useChatterLogic = (gameState, t) => {
 
     const scheduleNext = () => {
       if (!active) return
-      let delay
-      try {
-        delay = secureRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-      } catch (error) {
-        console.warn(
-          'Crypto API not available, falling back to Math.random',
-          error
-        )
-        delay = Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-      }
+      const delay =
+        getSafeRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
 
       timeoutId = setTimeout(() => {
         if (!active) return

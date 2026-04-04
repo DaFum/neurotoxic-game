@@ -1,8 +1,6 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react'
-import { secureRandom } from '../utils/crypto.js'
+import { getSafeRandom } from '../utils/crypto.js'
 import { handleError } from '../utils/errorHandler.js'
-
-let secureRandomErrorReported = false
 
 /**
  * Calculates chaos visual filter styles based on stats.
@@ -141,13 +139,10 @@ export const useGigEffects = stats => {
       const isSuccess = applyChaosJitter(
         chaosContainerRef.current,
         stats.isToxicMode,
-        secureRandom,
+        getSafeRandom,
         error => {
           cancelAnimationFrame(rAF)
-          if (!secureRandomErrorReported) {
-            handleError(error, { severity: 'medium', silent: true })
-            secureRandomErrorReported = true
-          }
+          handleError(error, { severity: 'medium', silent: true })
         }
       )
 
@@ -160,10 +155,7 @@ export const useGigEffects = stats => {
       rAF = requestAnimationFrame(animateChaos)
     } else {
       applyChaosJitter(chaosContainerRef.current, false, null, error => {
-        if (!secureRandomErrorReported) {
-          handleError(error, { severity: 'medium', silent: true })
-          secureRandomErrorReported = true
-        }
+        handleError(error, { severity: 'medium', silent: true })
       })
     }
 
