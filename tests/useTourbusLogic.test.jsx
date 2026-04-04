@@ -17,8 +17,42 @@ mock.mock('../src/utils/AudioManager', () => ({ audioManager: { playSFX: mockPla
 const mockHasUpgrade = mock.fn(() => false)
 mock.mock('../src/utils/upgradeUtils', () => ({ hasUpgrade: mockHasUpgrade }))
 
-const { useTourbusLogic, BASE_SPEED, MAX_SPEED, SPAWN_RATE_MS, TARGET_DISTANCE } = await import('../src/hooks/minigames/useTourbusLogic.js')
+const {
+  useTourbusLogic,
+  BASE_SPEED,
+  MAX_SPEED,
+  SPAWN_RATE_MS,
+  TARGET_DISTANCE,
+  getHitDamage,
+  HIT_DAMAGE_BASE,
+  HIT_DAMAGE_ARMOR,
+  HIT_DAMAGE_BULLBAR
+} = await import('../src/hooks/minigames/useTourbusLogic.js')
 const { LANE_COUNT, BUS_Y_PERCENT } = await import('../src/hooks/minigames/constants.js')
+
+describe('getHitDamage', () => {
+  beforeEach(() => {
+    mockHasUpgrade.mockImplementation(() => false)
+  })
+
+  afterEach(() => {
+    mock.clearAllMocks()
+  })
+
+  test('returns HIT_DAMAGE_ARMOR when van_armor upgrade is present', () => {
+    mockHasUpgrade.mockImplementation((_, type) => type === 'van_armor')
+    expect(getHitDamage([])).toBe(2)
+  })
+
+  test('returns HIT_DAMAGE_BULLBAR when van_bullbar upgrade is present', () => {
+    mockHasUpgrade.mockImplementation((_, type) => type === 'van_bullbar')
+    expect(getHitDamage([])).toBe(5)
+  })
+
+  test('returns HIT_DAMAGE_BASE when no damage reduction upgrades are present', () => {
+    expect(getHitDamage([])).toBe(10)
+  })
+})
 
 describe('useTourbusLogic', () => {
   beforeEach(() => {
