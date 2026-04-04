@@ -72,12 +72,12 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
-  return playMidiFileInternal(
+  return playMidiFileInternal({
     filename,
-    offsetSeconds,
-    false,
-    0,
-    {
+    offset: offsetSeconds,
+    loop: false,
+    delay: 0,
+    options: {
       useCleanPlayback: true,
       onEnded: () => {
         if (reqId !== audioState.playRequestId) {
@@ -100,8 +100,8 @@ export async function playRandomAmbientMidi(
         })
       }
     },
-    reqId
-  )
+    ownedRequestId: reqId
+  })
 }
 
 /**
