@@ -29,7 +29,7 @@ const { skipIfImportFailed } = await importAudioEngine()
 test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t => {
   if (skipIfImportFailed(t)) return
 
-  const setupModule = await import('../src/utils/audio/setup.js')
+  const setupModule = await import('../src/utils/audio/context.js')
   const { getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec } =
     setupModule
 
@@ -216,7 +216,7 @@ test('setupAudio and disposeAudio', async t => {
   })
 
   await t.test('safeDispose swallows disposal errors', async () => {
-    const setupModule = await import('../src/utils/audio/setup.js')
+    const setupModule = await import('../src/utils/audio/dispose.js')
     const { safeDispose } = setupModule
     const failingNode = {
       dispose: () => {

@@ -7,14 +7,13 @@
  * REFACTORED: Implementation logic has been moved to src/utils/audio/*.
  */
 
+export { setupAudio } from './audio/setup.js'
 export {
-  setupAudio,
   ensureAudioContext,
   getAudioContextTimeSec,
-  getToneStartTimeSec,
-  disposeAudio,
-  safeDispose
-} from './audio/setup.js'
+  getToneStartTimeSec
+} from './audio/context.js'
+export { disposeAudio, safeDispose } from './audio/dispose.js'
 
 export { hasAudioAsset, loadAudioBuffer } from './audio/assets.js'
 

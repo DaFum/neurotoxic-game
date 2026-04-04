@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
 import { logger } from '../src/utils/logger.js'
-import { safeDispose } from '../src/utils/audio/setup.js'
+import { safeDispose } from '../src/utils/audio/dispose.js'
 
 test('safeDispose', async t => {
   await t.test('returns null when node is null', () => {
