@@ -70,14 +70,17 @@ export const useKabelsalatState = () => {
       !finishedRef.current
     ) {
       timerRef.current = setInterval(() => {
+        if (finishedRef.current || isWinningRef.current) {
+          if (timerRef.current) clearInterval(timerRef.current)
+          return
+        }
+
         setTimeLeft(prev => {
-          const nextTimeLeft = prev - 1
+          const nextTimeLeft = Math.max(0, prev - 1)
           if (nextTimeLeft <= 0) {
             if (timerRef.current) clearInterval(timerRef.current)
-            if (!finishedRef.current && !isWinningRef.current) {
-              finishedRef.current = true
-              setIsGameOver(true)
-            }
+            finishedRef.current = true
+            setIsGameOver(true)
             return 0
           }
           return nextTimeLeft
@@ -254,7 +257,7 @@ export const useKabelsalatState = () => {
 
   const handleCableClick = useCallback(
     cableId => {
-      if (isShocked || isPoweredOn || isGameOver) return
+      if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
       // Performance: use Object iteration to find and remove connections in one pass
       let connectionSocketId
@@ -291,7 +294,7 @@ export const useKabelsalatState = () => {
 
   const handleSocketClick = useCallback(
     socketId => {
-      if (isShocked || isPoweredOn || isGameOver || !selectedCable) return
+      if (isShocked || isPoweredOn || isGameOver || isWinningRef.current || !selectedCable) return
       if (connections[socketId]) return
 
       const targetSocket = SOCKET_DEFS[socketId]

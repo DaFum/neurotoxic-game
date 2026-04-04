@@ -14,7 +14,7 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
     toggleSong(song)
   }, [isLocked, song, toggleSong])
 
-  return (
+  const buttonContent = (
     <button
       type='button'
       aria-label={t('ui:pregig.selectSong', { name: song.name })}
@@ -67,6 +67,12 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
       </div>
     </button>
   )
+
+  if (isLocked) {
+    return <span tabIndex={0} style={{ display: 'block' }}>{buttonContent}</span>
+  }
+
+  return buttonContent
 })
 
 SongRow.displayName = 'SongRow'
