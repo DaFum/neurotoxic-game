@@ -8,22 +8,7 @@ import {
 } from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
-import { secureRandom } from '../../utils/crypto.js'
-
-let secureRandomErrorReported = false
-
-const safeRandom = () => {
-  try {
-    return secureRandom()
-  } catch (error) {
-    if (!secureRandomErrorReported) {
-      secureRandomErrorReported = true
-      handleError(error, { silent: true, severity: 'medium' })
-    }
-    // Fallback if secureRandom fails
-    return Math.random()
-  }
-}
+import { getSafeRandom } from '../../utils/crypto.js'
 
 export class CrowdManager {
   /**
@@ -76,14 +61,14 @@ export class CrowdManager {
 
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =
-        CROWD_LAYOUT.minRadius + safeRandom() * CROWD_LAYOUT.radiusVariance
+        CROWD_LAYOUT.minRadius + getSafeRandom() * CROWD_LAYOUT.radiusVariance
 
       const crowd = this._createCrowdMember(radius, fallbackColor)
 
       crowd.tint = mutedColor
-      crowd.x = safeRandom() * this.app.screen.width
+      crowd.x = getSafeRandom() * this.app.screen.width
       crowd.y =
-        safeRandom() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
+        getSafeRandom() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
       crowd.baseY = crowd.y
       crowd.radius = radius
       crowd.currentFillColor = mutedColor

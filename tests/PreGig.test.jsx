@@ -38,7 +38,9 @@ vi.mock('../src/ui/GigModifierButton', () => ({
 
 // Mock utility functions
 vi.mock('../src/utils/crypto.js', () => ({
-  secureRandom: vi.fn(() => 0.5)
+  secureRandom: vi.fn(() => 0.5),
+  getSafeRandom: vi.fn(() => 0.5),
+  getSafeUUID: vi.fn(() => 'mock-uuid')
 }))
 vi.mock('../src/utils/simulationUtils', () => ({
   getGigModifiers: vi.fn(() => ({ activeEffects: [] }))
@@ -83,6 +85,7 @@ vi.mock('../src/context/GameState', () => ({
 // Import PreGig after mocks
 const { PreGig, _resetLastMinigameFallback } =
   await import('../src/scenes/PreGig.jsx')
+const { getSafeRandom } = await import('../src/utils/crypto.js')
 
 describe('PreGig', () => {
   beforeEach(() => {
@@ -140,7 +143,7 @@ describe('PreGig', () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
 
     // Test Roadie Minigame (secureRandom < 0.5)
-    vi.mocked(secureRandom).mockReturnValue(0.4)
+    vi.mocked(getSafeRandom).mockReturnValue(0.4)
 
     const { findByText } = render(React.createElement(PreGig))
 
@@ -158,7 +161,7 @@ describe('PreGig', () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
 
     // Test Kabelsalat Minigame (secureRandom >= 0.5)
-    vi.mocked(secureRandom).mockReturnValue(0.6)
+    vi.mocked(getSafeRandom).mockReturnValue(0.6)
 
     const { findByText } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)
@@ -177,7 +180,7 @@ describe('PreGig', () => {
     sessionStorage.setItem('neurotoxic_last_minigame', 'roadie')
 
     // 0.3 is >= 0.25 threshold, so Kabelsalat should be picked
-    vi.mocked(secureRandom).mockReturnValue(0.3)
+    vi.mocked(getSafeRandom).mockReturnValue(0.3)
 
     const { findByText } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)
@@ -196,7 +199,7 @@ describe('PreGig', () => {
     sessionStorage.setItem('neurotoxic_last_minigame', 'kabelsalat')
 
     // 0.6 is < 0.75 threshold, so Roadie should be picked
-    vi.mocked(secureRandom).mockReturnValue(0.6)
+    vi.mocked(getSafeRandom).mockReturnValue(0.6)
 
     const { findByText } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)

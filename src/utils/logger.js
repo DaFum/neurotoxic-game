@@ -88,8 +88,9 @@ export class Logger {
    * @private
    */
   _format(level, channel, message, data) {
+    const crypto = globalThis.crypto || window?.crypto
     return {
-      id: crypto.randomUUID(),
+      id: crypto?.randomUUID?.() || Date.now().toString(36),
       timestamp: new Date().toISOString(),
       level,
       channel,
