@@ -165,7 +165,14 @@ const sanitizeContextValue = (value, visited) => {
   if (Array.isArray(value)) {
     if (visited.has(value)) return '[REDACTED]'
     visited.add(value)
-    return value.map(item => sanitizeContextValue(item, visited))
+    // ⚡ BOLT OPTIMIZATION: Replaced .map() with pre-allocated array and for loop
+    // Reduces function allocation and call overhead during recursive traversal
+    const len = value.length
+    const result = new Array(len)
+    for (let i = 0; i < len; i++) {
+      result[i] = sanitizeContextValue(value[i], visited)
+    }
+    return result
   }
 
   if (isPlainObject(value)) {
