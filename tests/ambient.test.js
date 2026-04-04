@@ -70,7 +70,7 @@ const mockEnsureAudioContext = mock.fn(async () => {
   if (ensureAudioDeferred) return ensureAudioDeferred.promise
   return true
 })
-mock.module('../src/utils/audio/setup.js', {
+mock.module('../src/utils/audio/context.js', {
   namedExports: { ensureAudioContext: mockEnsureAudioContext }
 })
 

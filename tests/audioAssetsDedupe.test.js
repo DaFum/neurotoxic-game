@@ -53,7 +53,7 @@ const mockContext = {
     }
   })
 }
-mock.module('../src/utils/audio/setup.js', {
+mock.module('../src/utils/audio/context.js', {
   namedExports: {
     getRawAudioContext: () => mockContext
   }

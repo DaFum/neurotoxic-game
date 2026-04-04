@@ -17,7 +17,7 @@ vi.mock('../../../src/utils/audio/state.js', () => ({
   audioState: mocks.mockAudioState
 }))
 
-vi.mock('../../../src/utils/audio/setup.js', () => ({
+vi.mock('../../../src/utils/audio/context.js', () => ({
   getRawAudioContext: () => mocks.mockGetRawAudioContextReturn
 }))
 

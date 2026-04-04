@@ -1,7 +1,7 @@
 // TODO: Review this file
 import { logger } from '../logger.js'
 import { audioState } from './state.js'
-import { getRawAudioContext } from './setup.js'
+import { getRawAudioContext } from './context.js'
 
 /**
  * Creates and wires a buffer source to the music bus.

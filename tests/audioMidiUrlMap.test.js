@@ -31,7 +31,7 @@ mock.module('../src/utils/audio/playbackUtils.js', {
 })
 
 // Mock other dependencies to avoid side effects
-mock.module('../src/utils/audio/setup.js', {
+mock.module('../src/utils/audio/context.js', {
   namedExports: { getRawAudioContext: () => ({}) }
 })
 mock.module('../src/utils/audio/state.js', {
