@@ -82,33 +82,38 @@ export const getSafeUUID = () => {
   }
 
   // Fallback RFC4122 v4 UUID
-  const d0 = (getSafeRandom() * 0xffffffff) | 0
-  const d1 = (getSafeRandom() * 0xffffffff) | 0
-  const d2 = (getSafeRandom() * 0xffffffff) | 0
-  const d3 = (getSafeRandom() * 0xffffffff) | 0
-  const uuid =
-    lut[d0 & 0xff] +
-    lut[(d0 >> 8) & 0xff] +
-    lut[(d0 >> 16) & 0xff] +
-    lut[(d0 >> 24) & 0xff] +
-    '-' +
-    lut[d1 & 0xff] +
-    lut[(d1 >> 8) & 0xff] +
-    '-' +
-    lut[((d1 >> 16) & 0x0f) | 0x40] +
-    lut[(d1 >> 24) & 0xff] +
-    '-' +
-    lut[(d2 & 0x3f) | 0x80] +
-    lut[(d2 >> 8) & 0xff] +
-    '-' +
-    lut[(d2 >> 16) & 0xff] +
-    lut[(d2 >> 24) & 0xff] +
-    lut[d3 & 0xff] +
-    lut[(d3 >> 8) & 0xff] +
-    lut[(d3 >> 16) & 0xff] +
-    lut[(d3 >> 24) & 0xff]
+  const buffer = new Uint8Array(16)
+  for (let i = 0; i < 16; i++) {
+    buffer[i] = Math.floor(getSafeRandom() * 256)
+  }
 
-  return uuid
+  // Set version to 4
+  buffer[6] = (buffer[6] & 0x0f) | 0x40
+  // Set variant to RFC4122
+  buffer[8] = (buffer[8] & 0x3f) | 0x80
+
+  return (
+    lut[buffer[0]] +
+    lut[buffer[1]] +
+    lut[buffer[2]] +
+    lut[buffer[3]] +
+    '-' +
+    lut[buffer[4]] +
+    lut[buffer[5]] +
+    '-' +
+    lut[buffer[6]] +
+    lut[buffer[7]] +
+    '-' +
+    lut[buffer[8]] +
+    lut[buffer[9]] +
+    '-' +
+    lut[buffer[10]] +
+    lut[buffer[11]] +
+    lut[buffer[12]] +
+    lut[buffer[13]] +
+    lut[buffer[14]] +
+    lut[buffer[15]]
+  )
 }
 
 /**
