@@ -6,9 +6,9 @@ import { getPixiColorFromToken, loadTextures } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import {
-  LANE_COUNT,
-  BUS_Y_PERCENT,
-  BUS_HEIGHT_PERCENT
+  TOURBUS_LANE_COUNT,
+  TOURBUS_BUS_Y_PERCENT,
+  TOURBUS_BUS_HEIGHT_PERCENT
 } from '../../hooks/minigames/constants'
 
 class TourbusStageController extends BaseStageController {
@@ -92,7 +92,7 @@ class TourbusStageController extends BaseStageController {
   drawRoad() {
     const width = this.app.screen.width
     const height = this.app.screen.height
-    this.laneWidth = width / LANE_COUNT
+    this.laneWidth = width / TOURBUS_LANE_COUNT
 
     // Clear previous
     this.roadContainer.removeChildren().forEach(c => c.destroy())
@@ -117,7 +117,7 @@ class TourbusStageController extends BaseStageController {
       this.roadContainer.addChild(bg)
 
       // Draw lane dividers
-      for (let i = 1; i < LANE_COUNT; i++) {
+      for (let i = 1; i < TOURBUS_LANE_COUNT; i++) {
         const line = new Graphics()
         line.rect(i * this.laneWidth - 2, 0, 4, height)
         line.fill({ color: getPixiColorFromToken('--ash-gray'), alpha: 0.3 })
@@ -142,7 +142,7 @@ class TourbusStageController extends BaseStageController {
     // Scale bus to fit lane width AND a max height
     const targetW = this.laneWidth * 0.6
     // Visual height slightly larger than collision box for aesthetics
-    const targetH = height * ((BUS_HEIGHT_PERCENT + 5) / 100)
+    const targetH = height * ((TOURBUS_BUS_HEIGHT_PERCENT + 5) / 100)
     const texW = this.busSprite.texture?.width || this.busSprite.width || 60
     const texH = this.busSprite.texture?.height || this.busSprite.height || 80
     const busScale = Math.min(targetW / texW, targetH / texH)
@@ -163,7 +163,8 @@ class TourbusStageController extends BaseStageController {
 
       this.busSprite.x += (targetX - this.busSprite.x) * lerpFactor
       // Position bottom of bus at bottom of collision box
-      this.busSprite.y = height * ((BUS_Y_PERCENT + BUS_HEIGHT_PERCENT) / 100)
+      this.busSprite.y =
+        height * ((TOURBUS_BUS_Y_PERCENT + TOURBUS_BUS_HEIGHT_PERCENT) / 100)
 
       // Wobble effect based on accumulated deterministic time
       // Wrap at the exact period of sin(x/100) to prevent float precision loss on long sessions

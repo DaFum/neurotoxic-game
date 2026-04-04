@@ -2,14 +2,17 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
 import { hasUpgrade } from '../../utils/upgradeUtils'
-import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from './constants'
+import {
+  TOURBUS_LANE_COUNT,
+  TOURBUS_BUS_Y_PERCENT,
+  TOURBUS_BUS_HEIGHT_PERCENT,
+  TOURBUS_BASE_SPEED,
+  TOURBUS_MAX_SPEED,
+  TOURBUS_SPAWN_RATE_MS,
+  TOURBUS_TARGET_DISTANCE
+} from './constants'
 import { secureRandom } from '../../utils/crypto.js'
 import { handleError } from '../../utils/errorHandler.js'
-
-export const BASE_SPEED = 0.05 // relative units per ms
-export const MAX_SPEED = 0.12
-export const SPAWN_RATE_MS = 1500
-export const TARGET_DISTANCE = 2500
 
 export const getHitDamage = (upgrades) => {
   if (hasUpgrade(upgrades, 'van_armor')) {
@@ -28,7 +31,7 @@ export const useTourbusLogic = () => {
     busLane: 1, // 0, 1, 2
     obstacles: [], // { id, lane, y (0-100), type }
     distance: 0,
-    speed: BASE_SPEED,
+    speed: TOURBUS_BASE_SPEED,
     lastSpawnTime: 0,
     isGameOver: false,
     damage: 0,
@@ -59,7 +62,7 @@ export const useTourbusLogic = () => {
   const moveRight = useCallback(() => {
     if (gameStateRef.current.isGameOver) return
     gameStateRef.current.busLane = Math.min(
-      LANE_COUNT - 1,
+      TOURBUS_LANE_COUNT - 1,
       gameStateRef.current.busLane + 1
     )
   }, [])
@@ -77,16 +80,17 @@ export const useTourbusLogic = () => {
 
       // Progression: Speed increases with distance
       // Reach Max Speed at 80% of target distance
-      const progress = Math.min(1, game.distance / (TARGET_DISTANCE * 0.8))
-      game.speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress
+      const progress = Math.min(1, game.distance / (TOURBUS_TARGET_DISTANCE * 0.8))
+      game.speed =
+        TOURBUS_BASE_SPEED + (TOURBUS_MAX_SPEED - TOURBUS_BASE_SPEED) * progress
 
       // Spawn Rate scales with speed to maintain constant spatial density.
-      // Rate = (BASE_SPEED * SPAWN_RATE_MS) / currentSpeed
+      // Rate = (TOURBUS_BASE_SPEED * TOURBUS_SPAWN_RATE_MS) / currentSpeed
       // We maintain a density where obstacles appear at consistent distances relative to speed.
       // We also apply a clamp (600ms) to ensure it doesn't get unplayably fast if speed were to spike.
       const currentSpawnRate = Math.max(
         600,
-        (BASE_SPEED * SPAWN_RATE_MS) / game.speed
+        (TOURBUS_BASE_SPEED * TOURBUS_SPAWN_RATE_MS) / game.speed
       )
 
       // Move Distance
@@ -109,7 +113,7 @@ export const useTourbusLogic = () => {
         const safeRandomType = getSafeRandom()
         const safeRandomId = getSafeRandom()
 
-        const lane = Math.floor(safeRandomLane * LANE_COUNT)
+        const lane = Math.floor(safeRandomLane * TOURBUS_LANE_COUNT)
         const type = safeRandomType > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
         game.obstacles.push({
           id: `${time}-${safeRandomId}`,
@@ -136,8 +140,8 @@ export const useTourbusLogic = () => {
 
         if (
           !obs.collided &&
-          obs.y > BUS_Y_PERCENT &&
-          obs.y < BUS_Y_PERCENT + BUS_HEIGHT_PERCENT &&
+          obs.y > TOURBUS_BUS_Y_PERCENT &&
+          obs.y < TOURBUS_BUS_Y_PERCENT + TOURBUS_BUS_HEIGHT_PERCENT &&
           obs.lane === game.busLane
         ) {
           obs.collided = true
@@ -161,7 +165,7 @@ export const useTourbusLogic = () => {
       gameStateRef.current.obstacles = survivingObstacles
 
       // Check Win/Loss
-      if (game.distance >= TARGET_DISTANCE && !game.isGameOver) {
+      if (game.distance >= TOURBUS_TARGET_DISTANCE && !game.isGameOver) {
         game.isGameOver = true
         completeTravelMinigame(game.damage, game.itemsCollected)
       }
@@ -214,12 +218,12 @@ export const useTourbusLogic = () => {
       if (import.meta.env?.DEV && e.code === 'KeyP' && e.shiftKey) {
         e.preventDefault()
         if (gameStateRef.current.isGameOver) return
-        gameStateRef.current.distance = TARGET_DISTANCE
+        gameStateRef.current.distance = TOURBUS_TARGET_DISTANCE
         gameStateRef.current.isGameOver = true
         completeTravelMinigame(0, [])
         setUiState(prev => ({
           ...prev,
-          distance: TARGET_DISTANCE,
+          distance: TOURBUS_TARGET_DISTANCE,
           isGameOver: true
         }))
       }
