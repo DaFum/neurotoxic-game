@@ -1,7 +1,7 @@
-// TODO: Review this file
 /**
  * Centralized Error Handling System
  * Provides custom error types, error logging, and error recovery utilities.
+ * Note: The recursive context sanitizer has been modernized.
  * @module errorHandler
  */
 
