@@ -126,7 +126,7 @@ mock.module('../src/utils/audio/midiUtils.js', {
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
-const { playNoteAtTime } = await import('../src/utils/audio/midiPlayback.js')
+const { playNoteAtTime } = await import('../src/utils/audio/midiNotePlayback.js')
 
 // --- Tests ---
 

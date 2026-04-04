@@ -76,7 +76,7 @@ mock.module('../src/utils/audio/setup.js', {
 
 // Mock midi playback
 const mockPlayMidiFileInternal = mock.fn(async () => true)
-mock.module('../src/utils/audio/midiPlayback.js', {
+mock.module('../src/utils/audio/midiFilePlayback.js', {
   namedExports: { playMidiFileInternal: mockPlayMidiFileInternal }
 })
 

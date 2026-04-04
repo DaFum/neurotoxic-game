@@ -43,11 +43,9 @@ export {
 
 export { startMetalGenerator } from './audio/proceduralMetal.js'
 
-export {
-  playSongFromData,
-  playMidiFile,
-  playNoteAtTime
-} from './audio/midiPlayback.js'
+export { playNoteAtTime } from './audio/midiNotePlayback.js'
+export { playSongFromData } from './audio/midiSongPlayback.js'
+export { playMidiFile } from './audio/midiFilePlayback.js'
 
 export { playRandomAmbientMidi, playRandomAmbientOgg } from './audio/ambient.js'
 
