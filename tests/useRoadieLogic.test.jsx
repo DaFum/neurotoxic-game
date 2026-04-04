@@ -19,7 +19,7 @@ const mockPlaySFX = mock.fn()
 mock.mock('../src/utils/AudioManager', () => ({ audioManager: { playSFX: mockPlaySFX } }))
 
 const { useRoadieLogic } = await import('../src/hooks/minigames/useRoadieLogic.js')
-const { GRID_WIDTH, GRID_HEIGHT } = await import('../src/hooks/minigames/constants.js')
+const { ROADIE_GRID_WIDTH: GRID_WIDTH, ROADIE_GRID_HEIGHT: GRID_HEIGHT } = await import('../src/hooks/minigames/constants.js')
 
 describe('useRoadieLogic', () => {
   beforeEach(() => {
