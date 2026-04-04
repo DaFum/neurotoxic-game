@@ -12,8 +12,6 @@ import {
 } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 
-const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
-
 export const calculatePostGigStateUpdates = ({
   option,
   player,
@@ -155,10 +153,14 @@ export const calculatePostGigStateUpdates = ({
 
   if (result.success && totalFollowers > 0) {
     const delta = Math.floor(totalFollowers * 0.25)
-    for (const p of CROSS_POSTING_PLATFORMS) {
-      if (p !== result.platform) {
-        updatedSocial[p] = Math.max(0, (social[p] || 0) + delta)
-      }
+    if (result.platform !== 'instagram') {
+      updatedSocial.instagram = Math.max(0, (social.instagram || 0) + delta)
+    }
+    if (result.platform !== 'tiktok') {
+      updatedSocial.tiktok = Math.max(0, (social.tiktok || 0) + delta)
+    }
+    if (result.platform !== 'youtube') {
+      updatedSocial.youtube = Math.max(0, (social.youtube || 0) + delta)
     }
   }
 

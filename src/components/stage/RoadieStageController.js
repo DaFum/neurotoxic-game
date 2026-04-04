@@ -1,7 +1,10 @@
 // TODO: Review this file
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
-import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
+import {
+  ROADIE_GRID_WIDTH,
+  ROADIE_GRID_HEIGHT
+} from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
 import { logger } from '../../utils/logger.js'
@@ -59,8 +62,8 @@ class RoadieStageController extends BaseStageController {
     // Compute cell dimensions for sprite sizing
     const screenW = this.app.screen.width
     const screenH = this.app.screen.height
-    const cellW = screenW / GRID_WIDTH
-    const cellH = screenH / GRID_HEIGHT
+    const cellW = screenW / ROADIE_GRID_WIDTH
+    const cellH = screenH / ROADIE_GRID_HEIGHT
 
     // Player Sprite
     if (this.textures.roadie) {
@@ -137,7 +140,7 @@ class RoadieStageController extends BaseStageController {
     // Use screen width for better drawing
     const width = this.app ? this.app.screen.width : 2000
     const height = this.app ? this.app.screen.height : 600
-    const cellH = height / GRID_HEIGHT // dynamic height
+    const cellH = height / ROADIE_GRID_HEIGHT // dynamic height
 
     // Start zone (row 0)
     g.rect(0, 0, width, cellH)
@@ -175,8 +178,8 @@ class RoadieStageController extends BaseStageController {
 
     const screenW = this.app.screen.width
     const screenH = this.app.screen.height
-    const cellW = screenW / GRID_WIDTH
-    const cellH = screenH / GRID_HEIGHT
+    const cellW = screenW / ROADIE_GRID_WIDTH
+    const cellH = screenH / ROADIE_GRID_HEIGHT
 
     this._updatePlayerPosition(state, cellW, cellH)
     this._updateCarryingVisuals(state, cellW, cellH)

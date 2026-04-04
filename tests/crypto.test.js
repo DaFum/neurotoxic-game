@@ -2,7 +2,9 @@ import { test, describe, beforeEach, afterEach } from 'node:test'
 import { strict as assert } from 'node:assert'
 import {
   secureRandom,
-  resetSecureRandomBatchForTesting
+  resetSecureRandomBatchForTesting,
+  getSafeRandom,
+  getSafeUUID
 } from '../src/utils/crypto.js'
 
 describe('secureRandom', () => {
@@ -119,5 +121,80 @@ describe('secureRandom', () => {
     assert.throws(() => {
       secureRandom()
     }, /Cryptographically secure random number generation is not supported in this environment./)
+  })
+
+  test('getSafeRandom should use secureRandom when available', () => {
+    const mockCrypto = {
+      getRandomValues: array => {
+        array[0] = 1234567890
+        return array
+      }
+    }
+
+    Object.defineProperty(globalThis, 'crypto', {
+      value: mockCrypto,
+      configurable: true
+    })
+
+    const result = getSafeRandom()
+    assert.equal(result, 1234567890 / 4294967296)
+  })
+
+  test('getSafeRandom should fall back to Math.random when crypto is unavailable', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {
+        randomUUID: () => 'logger-uuid'
+      },
+      configurable: true
+    })
+
+    // Mock getRandomValues as missing
+    Object.defineProperty(globalThis.crypto, 'getRandomValues', {
+      value: undefined,
+      configurable: true
+    })
+
+    const originalMathRandom = Math.random
+    Math.random = () => 0.123
+    try {
+      const result = getSafeRandom()
+      assert.equal(result, 0.123)
+    } finally {
+      Math.random = originalMathRandom
+    }
+  })
+
+  test('getSafeUUID should use crypto.randomUUID when available', () => {
+    const mockCrypto = {
+      randomUUID: () => 'test-uuid-123'
+    }
+
+    Object.defineProperty(globalThis, 'crypto', {
+      value: mockCrypto,
+      configurable: true
+    })
+
+    const result = getSafeUUID()
+    assert.equal(result, 'test-uuid-123')
+  })
+
+  test('getSafeUUID should fall back when randomUUID is unavailable', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {
+        // Mock only what logger needs to not crash during the fallback path
+        randomUUID: () => 'logger-uuid'
+      },
+      configurable: true
+    })
+
+    // Mock randomUUID as missing specifically for getSafeUUID
+    Object.defineProperty(globalThis.crypto, 'randomUUID', {
+      value: undefined,
+      configurable: true
+    })
+
+    const result = getSafeUUID()
+    assert.ok(typeof result === 'string')
+    assert.ok(result.length > 0)
   })
 })

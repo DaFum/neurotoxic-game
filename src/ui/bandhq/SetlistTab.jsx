@@ -122,7 +122,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
               <button
                 type='button'
                 onClick={() => toggleSongInSetlist(song.id)}
-                className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all
+                className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
                   ${
                     selected
                       ? 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black'

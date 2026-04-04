@@ -39,3 +39,8 @@
 
 **Learning:** Custom toggle buttons built with generic elements (`<button>` and `<span>`) lack implicit label associations, causing screen readers to announce them merely as "toggle, pressed" without context. This pattern is common in the brutalist UI components.
 **Action:** When implementing custom form controls or toggles alongside visual labels, always use `useId()` and link them explicitly via `aria-labelledby` on the interactive element pointing to the `id` of the visual text container.
+
+## 2025-05-19 - Keyboard Accessibility for List Items as Buttons
+
+**Learning:** In custom list interfaces (like the song selection list in SetlistTab), utilizing `<button>` elements is great for interactivity, but if they lack `focus-visible` styles, keyboard users cannot track their current selection while tabbing through the list. This breaks navigation for non-mouse users.
+**Action:** Always ensure that any interactive list items or toggle buttons contain explicit `focus-visible` outline styles (e.g., `focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to clearly demarcate the active keyboard focus.

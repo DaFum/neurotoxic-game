@@ -12,9 +12,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter'
-import { secureRandom } from '../utils/crypto.js'
-
-let secureRandomFallbackWarned = false
+import { getSafeRandom, getSafeUUID } from '../utils/crypto.js'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -31,16 +29,7 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
     }
   }
   if (memberNames.length > 0) {
-    let roll
-    try {
-      roll = secureRandom()
-    } catch (error) {
-      console.warn(
-        'Crypto API not available, falling back to Math.random',
-        error
-      )
-      roll = Math.random()
-    }
+    const roll = getSafeRandom()
     return memberNames[Math.floor(roll * memberNames.length)]
   }
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
@@ -91,16 +80,8 @@ export const useChatterLogic = (gameState, t) => {
 
     const scheduleNext = () => {
       if (!active) return
-      let delay
-      try {
-        delay = secureRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-      } catch (error) {
-        console.warn(
-          'Crypto API not available, falling back to Math.random',
-          error
-        )
-        delay = Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-      }
+      const delay =
+        getSafeRandom() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
 
       timeoutId = setTimeout(() => {
         if (!active) return
