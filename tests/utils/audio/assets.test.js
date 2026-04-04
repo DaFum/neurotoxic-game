@@ -1,16 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock import.meta.glob since it's a Vite specific feature
-if (!import.meta.glob) {
-  import.meta.glob = () => ({})
-}
-
-const mockAudioBufferCache = new Map()
-
 // Hoist variables for use inside vi.mock
 const mocks = vi.hoisted(() => {
   return {
-    mockResolveAssetUrlReturn: { url: 'mock/path/test.ogg', source: 'bundle' },
+    mockResolveAssetUrlReturn: { url: 'mock/path/test.ogg', source: 'bundled' },
     mockBaseAssetPathReturn: { publicBasePath: '/' },
     mockGetRawAudioContextReturn: null,
     mockAudioState: {
@@ -24,7 +17,7 @@ vi.mock('../../../src/utils/audio/state.js', () => ({
   audioState: mocks.mockAudioState
 }))
 
-vi.mock('../../../src/utils/audio/setup.js', () => ({
+vi.mock('../../../src/utils/audio/context.js', () => ({
   getRawAudioContext: () => mocks.mockGetRawAudioContextReturn
 }))
 
@@ -39,16 +32,13 @@ vi.mock('../../../src/utils/logger.js', () => ({
 vi.mock('../../../src/utils/audio/playbackUtils.js', () => ({
   buildAssetUrlMap: () => ({}),
   resolveAssetUrl: () => mocks.mockResolveAssetUrlReturn,
-  PATH_PREFIX_REGEX: /^\/?(?:assets\/)?/,
+  PATH_PREFIX_REGEX: /^\.?\//,
   getBaseAssetPath: () => mocks.mockBaseAssetPathReturn
 }))
 
 // Import assets AFTER setting up mocks
 import { loadAudioBuffer } from '../../../src/utils/audio/assets.js'
 import {
-  AUDIO_BUFFER_LOAD_TIMEOUT_MS,
-  AUDIO_BUFFER_DECODE_TIMEOUT_MS,
-  MAX_AUDIO_BUFFER_CACHE_SIZE,
   MAX_AUDIO_BUFFER_BYTE_SIZE
 } from '../../../src/utils/audio/constants.js'
 
@@ -56,8 +46,9 @@ describe('loadAudioBuffer tests', () => {
   const originalFetch = global.fetch
 
   beforeEach(() => {
-    mocks.mockResolveAssetUrlReturn = { url: 'mock/path/test.ogg', source: 'bundle' }
+    mocks.mockResolveAssetUrlReturn = { url: 'mock/path/test.ogg', source: 'bundled' }
     mocks.mockBaseAssetPathReturn = { publicBasePath: '/' }
+    mocks.mockGetRawAudioContextReturn = null
     mocks.mockAudioState.audioBufferCache.clear()
     mocks.mockAudioState.currentCacheByteSize = 0
     global.fetch = originalFetch
@@ -175,7 +166,7 @@ describe('loadAudioBuffer tests', () => {
   })
 
   it('Returns null on fetch timeout (AbortError)', async () => {
-    global.fetch = vi.fn().mockImplementation((url, options) => {
+    global.fetch = vi.fn().mockImplementation(() => {
       const err = new Error('The operation was aborted')
       err.name = 'AbortError'
       return Promise.reject(err)

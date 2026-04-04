@@ -193,6 +193,110 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
 }
 
 /**
+ * Validates whether the item can be purchased.
+ * @param {Object} item - Item to purchase
+ * @param {Object} player - Player state
+ * @param {Object} band - Band state
+ * @returns {Object} { isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number }
+ */
+export const validatePurchase = (item, player, band) => {
+  const effect = getPrimaryEffect(item)
+  if (!effect) {
+    return { isValid: false, errorType: 'missing_effect' }
+  }
+
+  const payingWithFame = item.currency === 'fame'
+  const startingMoney = player.money ?? 0
+  const startingFame = player.fame ?? 0
+  const currencyValue = payingWithFame ? startingFame : startingMoney
+  const finalCost = getAdjustedCost(item, band)
+
+  const isConsumable = effect.type === 'inventory_add'
+  const isOwned = isItemOwned(item, player, band)
+
+  if (isOwned && !isConsumable) {
+    return { isValid: false, errorType: 'already_owned' }
+  }
+
+  if (currencyValue < finalCost) {
+    return { isValid: false, errorType: 'insufficient_funds' }
+  }
+
+  return {
+    isValid: true,
+    finalCost,
+    isConsumable,
+    payingWithFame,
+    startingCurrency: currencyValue,
+    effect
+  }
+}
+
+/**
+ * Registry of effect handlers to process different purchase effect types
+ */
+export const EFFECT_HANDLERS = {
+  inventory_set: (effect, _item, _playerPatch, _player, band) => {
+    return { bandPatch: applyInventorySet(effect, band.inventory) }
+  },
+
+  inventory_add: (effect, _item, _playerPatch, _player, band) => {
+    return { bandPatch: applyInventoryAdd(effect, band.inventory) }
+  },
+
+  stat_modifier: (effect, item, playerPatch, player, band) => {
+    const result = applyStatModifier(effect, playerPatch, player, band)
+    let nextPlayerPatch = result.playerPatch
+
+    if (item.oneTime !== false) {
+      const vanState = nextPlayerPatch.van ?? player.van
+      nextPlayerPatch.van = buildVanWithUpgrade(vanState, item.id)
+    }
+    return { playerPatch: nextPlayerPatch, bandPatch: result.bandPatch }
+  },
+
+  unlock_upgrade: (effect, item, playerPatch, player, _band) => {
+    const vanState = playerPatch.van ?? player.van
+    const nextPlayerPatch = applyUnlockUpgrade(effect, item, playerPatch, vanState)
+    return { playerPatch: nextPlayerPatch }
+  },
+
+  unlock_hq: (_effect, item, playerPatch, player, band) => {
+    return applyUnlockHQ(item, playerPatch, player, band)
+  },
+
+  passive: (effect, item, playerPatch, player, _band) => {
+    const result = applyPassive(effect, playerPatch, player)
+    let nextPlayerPatch = result.playerPatch
+
+    // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
+    const vanState = nextPlayerPatch.van ?? player.van
+    nextPlayerPatch.van = buildVanWithUpgrade(vanState, item.id)
+
+    return { playerPatch: nextPlayerPatch, bandPatch: result.bandPatch }
+  }
+}
+
+/**
+ * Processes a purchase effect using the corresponding handler.
+ * @param {Object} effect - Primary effect of the item
+ * @param {Object} item - Item being purchased
+ * @param {Object} initialPlayerPatch - Player patch after cost deduction
+ * @param {Object} player - Player state
+ * @param {Object} band - Band state
+ * @returns {Object} { playerPatch, bandPatch, messages, errorType }
+ */
+export const processPurchaseEffect = (effect, item, initialPlayerPatch, player, band) => {
+  const handler = EFFECT_HANDLERS[effect.type]
+
+  if (!handler) {
+    return { errorType: 'unknown_effect', effectType: effect.type }
+  }
+
+  return handler(effect, item, initialPlayerPatch, player, band)
+}
+
+/**
  * Applies unlock upgrade effect
  * @param {Object} effect - Effect configuration
  * @param {Object} item - Item being purchased

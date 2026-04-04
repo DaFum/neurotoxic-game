@@ -6,7 +6,7 @@ import {
   PATH_PREFIX_REGEX,
   getBaseAssetPath
 } from './playbackUtils.js'
-import { getRawAudioContext } from './setup.js'
+import { getRawAudioContext } from './context.js'
 import { audioState } from './state.js'
 import {
   AUDIO_BUFFER_LOAD_TIMEOUT_MS,

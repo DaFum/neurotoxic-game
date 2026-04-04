@@ -4,7 +4,7 @@ import * as ToneJsMidi from '@tonejs/midi'
 import { logger } from '../logger.js'
 import { audioState } from './state.js'
 import { MIN_NOTE_DURATION, MAX_NOTE_DURATION } from './constants.js'
-import { ensureAudioContext } from './setup.js'
+import { ensureAudioContext } from './context.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
 import { midiUrlMap } from './assets.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
@@ -482,25 +482,26 @@ function scheduleMidiTransport(midi, params) {
 
 /**
  * Plays a MIDI file from a URL.
- * @param {string} filename - The filename of the MIDI (key in url map).
- * @param {number} [offset=0] - Start offset in seconds.
- * @param {boolean} [loop=false] - Whether to loop the playback.
- * @param {number} [delay=0] - Delay in seconds before starting playback.
- * @param {object} [options] - Playback options.
- * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
- * @param {Function} [options.onEnded] - Callback invoked after playback ends.
- * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
- * @param {number|null} [ownedRequestId=null] - Internal request ownership override.
+ * @param {object} params - Parameters for playback.
+ * @param {string} params.filename - The filename of the MIDI (key in url map).
+ * @param {number} [params.offset=0] - Start offset in seconds.
+ * @param {boolean} [params.loop=false] - Whether to loop the playback.
+ * @param {number} [params.delay=0] - Delay in seconds before starting playback.
+ * @param {object} [params.options] - Playback options.
+ * @param {boolean} [params.options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
+ * @param {Function} [params.options.onEnded] - Callback invoked after playback ends.
+ * @param {number} [params.options.stopAfterSeconds] - Optional playback duration limit in seconds.
+ * @param {number} [params.options.startTimeSec] - Absolute Tone.js time to start playback.
+ * @param {number|null} [params.ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFileInternal(
+export async function playMidiFileInternal({
   filename,
   offset = 0,
   loop = false,
   delay = 0,
   options = {},
   ownedRequestId = null
-) {
+}) {
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
 
@@ -575,5 +576,5 @@ export async function playMidiFile(
   delay = 0,
   options = {}
 ) {
-  return playMidiFileInternal(filename, offset, loop, delay, options)
+  return playMidiFileInternal({ filename, offset, loop, delay, options })
 }

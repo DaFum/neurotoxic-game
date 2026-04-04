@@ -1,7 +1,7 @@
 // TODO: Review this file
 import * as Tone from 'tone'
 import { audioState } from './state.js'
-import { ensureAudioContext } from './setup.js'
+import { ensureAudioContext } from './context.js'
 import {
   stopTransportAndClear,
   cleanupTransportEvents

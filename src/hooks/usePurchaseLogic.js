@@ -18,12 +18,8 @@ import {
   buildVanWithUpgrade,
   isItemOwned,
   canAfford,
-  applyInventorySet,
-  applyInventoryAdd,
-  applyStatModifier,
-  applyUnlockUpgrade,
-  applyUnlockHQ,
-  applyPassive
+  validatePurchase,
+  processPurchaseEffect
 } from '../utils/purchaseLogicUtils.js'
 import {
   clampPlayerMoney,
@@ -56,6 +52,45 @@ allGearItems.forEach(item => {
     }
   }
 })
+
+/**
+ * Helper to calculate the current gear count in band inventory
+ * @param {Object} inventory - Band inventory
+ * @param {Map} lookup - Gear lookup map
+ * @returns {number} Gear count
+ */
+const getGearCount = (inventory, lookup) => {
+  let count = 0
+  const inv = inventory || {}
+  for (const [key, value] of Object.entries(inv)) {
+    const isOwned = value === true || (typeof value === 'number' && value > 0)
+    if (isOwned && lookup.has(key)) {
+      count++
+    }
+  }
+  return count
+}
+
+/**
+ * Helper to process and display toasts from trait unlocks
+ * @param {Array} toasts - Array of toast objects
+ * @param {Function} addToast - Toast function
+ * @param {Function} t - Translation function
+ */
+const processTraitToasts = (toasts, addToast, t) => {
+  toasts.forEach(toastItem => {
+    const safeOptions = toastItem.options
+      ? translateContextKeys(toastItem.options, t)
+      : {}
+    const toastMsg = toastItem.messageKey
+      ? t(toastItem.messageKey, {
+          ...safeOptions,
+          defaultValue: toastItem.message
+        })
+      : toastItem.message
+    addToast(toastMsg, toastItem.type)
+  })
+}
 
 export const usePurchaseLogic = ({
   player,
@@ -98,152 +133,91 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     item => {
       try {
-        const effect = getPrimaryEffect(item)
-        if (!effect) {
-          handleError(
-            new StateError('Purchase item is missing a primary effect', {
-              itemId: item?.id,
-              itemName: item?.name
-            }),
-            {
-              addToast,
-              fallbackMessage: t('ui:shop.messages.invalidData', {
-                defaultValue: 'Purchase failed: Invalid upgrade data.'
-              })
-            }
-          )
+        const validation = validatePurchase(item, player, band)
+
+        if (!validation.isValid) {
+          if (validation.errorType === 'missing_effect') {
+            handleError(
+              new StateError('Purchase item is missing a primary effect', {
+                itemId: item?.id,
+                itemName: item?.name
+              }),
+              {
+                addToast,
+                fallbackMessage: t('ui:shop.messages.invalidData', {
+                  defaultValue: 'Purchase failed: Invalid upgrade data.'
+                })
+              }
+            )
+          } else if (validation.errorType === 'already_owned') {
+            addToast(
+              t('ui:shop.messages.alreadyOwned', {
+                itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+              }),
+              'warning'
+            )
+          } else if (validation.errorType === 'insufficient_funds') {
+            const payingWithFame = item.currency === 'fame'
+            addToast(
+              t('ui:shop.messages.notEnough', {
+                currency: payingWithFame
+                  ? t('ui:shop.messages.fame')
+                  : t('ui:shop.messages.money'),
+                itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+              }),
+              'error'
+            )
+          }
           return false
         }
 
-        const payingWithFame = item.currency === 'fame'
+        const { effect, finalCost, isConsumable, payingWithFame, startingCurrency } = validation
 
-        const startingMoney = player.money ?? 0
-        const startingFame = player.fame ?? 0
-        const currencyValue = payingWithFame ? startingFame : startingMoney
-        const finalCost = getAdjustedCost(item, band)
-
-        const isConsumable = effect.type === 'inventory_add'
-        const isOwned = isItemOwned(item, player, band)
-
-        if (isOwned && !isConsumable) {
-          addToast(
-            t('ui:shop.messages.alreadyOwned', {
-              itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
-            }),
-            'warning'
-          )
-          return false
-        }
-
-        if (currencyValue < finalCost) {
-          addToast(
-            t('ui:shop.messages.notEnough', {
-              currency: payingWithFame
-                ? t('ui:shop.messages.fame')
-                : t('ui:shop.messages.money'),
-              itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
-            }),
-            'error'
-          )
-          return false
-        }
-
-        // Build patches
-        let playerPatch
+        // Build initial patches
+        let initialPlayerPatch
         if (payingWithFame) {
-          const newFame = clampPlayerFame(startingFame - finalCost)
-          playerPatch = {
+          const newFame = clampPlayerFame(startingCurrency - finalCost)
+          initialPlayerPatch = {
             fame: newFame,
             fameLevel: calculateFameLevel(newFame)
           }
         } else {
-          const newMoney = clampPlayerMoney(startingMoney - finalCost)
-          playerPatch = { money: newMoney }
+          const newMoney = clampPlayerMoney(startingCurrency - finalCost)
+          initialPlayerPatch = { money: newMoney }
         }
 
-        let bandPatch = null
+        const effectResult = processPurchaseEffect(effect, item, initialPlayerPatch, player, band)
 
-        // Apply effect based on type
-        switch (effect.type) {
-          case 'inventory_set': {
-            const result = applyInventorySet(effect, band.inventory)
-            bandPatch = result
-            break
-          }
-
-          case 'inventory_add': {
-            const result = applyInventoryAdd(effect, band.inventory)
-            bandPatch = result
-            break
-          }
-
-          case 'stat_modifier': {
-            const result = applyStatModifier(effect, playerPatch, player, band)
-            playerPatch = result.playerPatch
-            bandPatch = result.bandPatch
-
-            if (item.oneTime !== false) {
-              const vanState = playerPatch.van ?? player.van
-              playerPatch.van = buildVanWithUpgrade(vanState, item.id)
-            }
-            break
-          }
-
-          case 'unlock_upgrade': {
-            const vanState = playerPatch.van ?? player.van
-            playerPatch = applyUnlockUpgrade(
-              effect,
-              item,
-              playerPatch,
-              vanState
-            )
-            break
-          }
-
-          case 'unlock_hq': {
-            const result = applyUnlockHQ(item, playerPatch, player, band)
-            playerPatch = result.playerPatch
-            bandPatch = result.bandPatch
-            if (result.messages) {
-              result.messages.forEach(msg => {
-                const toastMsg = msg.messageKey
-                  ? t(msg.messageKey, {
-                      ...(msg.options || {}),
-                      defaultValue:
-                        msg.fallback || msg.message || msg.messageKey
-                    })
-                  : msg.message
-                addToast(toastMsg, msg.type)
+        if (effectResult.errorType === 'unknown_effect') {
+          handleError(
+            new StateError(`Unknown effect type: ${effectResult.effectType}`, {
+              effectType: effectResult.effectType,
+              itemId: item.id,
+              currency: item.currency
+            }),
+            {
+              addToast,
+              fallbackMessage: t('ui:shop.messages.unknownEffect', {
+                defaultValue: 'Purchase failed: Unknown effect type.'
               })
             }
-            break
-          }
+          )
+          return false
+        }
 
-          case 'passive': {
-            const result = applyPassive(effect, playerPatch, player)
-            playerPatch = result.playerPatch
-            bandPatch = result.bandPatch
-            // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
-            const vanState = playerPatch.van ?? player.van
-            playerPatch.van = buildVanWithUpgrade(vanState, item.id)
-            break
-          }
+        let playerPatch = effectResult.playerPatch || initialPlayerPatch
+        let bandPatch = effectResult.bandPatch || null
 
-          default:
-            handleError(
-              new StateError(`Unknown effect type: ${effect.type}`, {
-                effectType: effect.type,
-                itemId: item.id,
-                currency: item.currency
-              }),
-              {
-                addToast,
-                fallbackMessage: t('ui:shop.messages.unknownEffect', {
-                  defaultValue: 'Purchase failed: Unknown effect type.'
+        if (effectResult.messages) {
+          effectResult.messages.forEach(msg => {
+            const toastMsg = msg.messageKey
+              ? t(msg.messageKey, {
+                  ...(msg.options || {}),
+                  defaultValue: msg.fallback || msg.message || msg.messageKey
                 })
-              }
-            )
-            return false
+              : msg.message
+            addToast(toastMsg, msg.type)
+          })
         }
 
         // Ensure fame-based upgrades are tracked in van.upgrades for ownership detection
@@ -272,17 +246,7 @@ export const usePurchaseLogic = ({
           inventory: { ...band.inventory, ...(bandPatch?.inventory || {}) }
         }
 
-        // Count ONLY gear items for gear_nerd check
-        // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
-        let gearCount = 0
-        const inv = nextBand.inventory || {}
-        for (const [key, value] of Object.entries(inv)) {
-          const isOwned =
-            value === true || (typeof value === 'number' && value > 0)
-          if (isOwned && GEAR_LOOKUP.has(key)) {
-            gearCount++
-          }
-        }
+        const gearCount = getGearCount(nextBand.inventory, GEAR_LOOKUP)
 
         const purchaseUnlocks = checkTraitUnlocks(
           { player: nextPlayer, band: nextBand, social: {} },
@@ -301,19 +265,7 @@ export const usePurchaseLogic = ({
             members: traitResult.band.members
           })
 
-          // Show generated toasts
-          traitResult.toasts.forEach(toastItem => {
-            const safeOptions = toastItem.options
-              ? translateContextKeys(toastItem.options, t)
-              : {}
-            const toastMsg = toastItem.messageKey
-              ? t(toastItem.messageKey, {
-                  ...safeOptions,
-                  defaultValue: toastItem.message
-                })
-              : toastItem.message
-            addToast(toastMsg, toastItem.type)
-          })
+          processTraitToasts(traitResult.toasts, addToast, t)
         } else {
           // No unlocks — apply original bandPatch if it existed
           if (bandPatch) updateBand(bandPatch)

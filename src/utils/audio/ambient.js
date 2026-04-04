@@ -6,7 +6,7 @@ import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import { selectRandomItem } from './selectionUtils.js'
 import { secureRandom } from '../crypto.js'
-import { ensureAudioContext } from './setup.js'
+import { ensureAudioContext } from './context.js'
 import { playMidiFileInternal } from './midiPlayback.js'
 import { SONGS_DB, SONGS_BY_MID } from '../../data/songs.js'
 
@@ -72,12 +72,12 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
-  return playMidiFileInternal(
+  return playMidiFileInternal({
     filename,
-    offsetSeconds,
-    false,
-    0,
-    {
+    offset: offsetSeconds,
+    loop: false,
+    delay: 0,
+    options: {
       useCleanPlayback: true,
       onEnded: () => {
         if (reqId !== audioState.playRequestId) {
@@ -100,8 +100,8 @@ export async function playRandomAmbientMidi(
         })
       }
     },
-    reqId
-  )
+    ownedRequestId: reqId
+  })
 }
 
 /**

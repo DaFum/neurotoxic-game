@@ -110,6 +110,13 @@ export const BALANCE_CONSTANTS = {
   LOW_HARMONY_CANCELLATION_CHANCE: 0.25
 }
 
+export const RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER = 1.5
+export const RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER = 1.5
+export const RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER = 0.5
+export const RELATIONSHIP_DEFAULT_SCORE = 50
+export const RELATIONSHIP_MIN_SCORE = 0
+export const RELATIONSHIP_MAX_SCORE = 100
+
 /**
  * Clamps band harmony to the canonical gameplay range.
  *
@@ -420,12 +427,12 @@ export const calculateMemberRelationshipChange = (change, memberName, hasGrudgeH
 
   let amount = change.change
   // Apply traits
-  if (amount < 0 && hasGrudgeHolder) amount *= 1.5
-  if (amount > 0 && hasPeacemaker) amount *= 1.5
-  if (amount < 0 && hasPeacemaker) amount *= 0.5
+  if (amount < 0 && hasGrudgeHolder) amount *= RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER
+  if (amount > 0 && hasPeacemaker) amount *= RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER
+  if (amount < 0 && hasPeacemaker) amount *= RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER
 
-  const currentScore = currentRelationships[other] ?? 50
-  const newScore = Math.max(0, Math.min(100, Math.round(currentScore + amount)))
+  const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
+  const newScore = Math.max(RELATIONSHIP_MIN_SCORE, Math.min(RELATIONSHIP_MAX_SCORE, Math.round(currentScore + amount)))
 
   return { other, newScore }
 }
@@ -554,34 +561,26 @@ export const applyEventDelta = (state, delta) => {
 
           for (let j = 0; j < relationshipChange.length; j++) {
             const change = relationshipChange[j]
-            const isM1 = change.member1 === member.name
-            const isM2 = change.member2 === member.name
+            const relSource = newRelationships || nextMember.relationships || {}
 
-            if (!isM1 && !isM2) continue
-
-            const other = isM1 ? change.member2 : change.member1
-            if (isForbiddenKey(other)) continue
-
-            let amount = change.change
-            // Apply traits
-            if (amount < 0 && hasGrudgeHolder) amount *= 1.5
-            if (amount > 0 && hasPeacemaker) amount *= 1.5
-            if (amount < 0 && hasPeacemaker) amount *= 0.5
-
-            const relSource =
-              newRelationships || nextMember.relationships || {}
-            const oldExists = Object.hasOwn(relSource, other)
-            const currentScore = relSource[other] ?? 50
-            const newScore = Math.max(
-              0,
-              Math.min(100, Math.round(currentScore + amount))
+            const result = calculateMemberRelationshipChange(
+              change,
+              member.name,
+              hasGrudgeHolder,
+              hasPeacemaker,
+              relSource
             )
 
-            if (oldExists || newScore !== 50) {
-              if (!newRelationships) {
-                newRelationships = { ...(nextMember.relationships || {}) }
+            if (result) {
+              const { other, newScore } = result
+              const oldExists = Object.hasOwn(relSource, other)
+
+              if (oldExists || newScore !== RELATIONSHIP_DEFAULT_SCORE) {
+                if (!newRelationships) {
+                  newRelationships = { ...(nextMember.relationships || {}) }
+                }
+                newRelationships[other] = newScore
               }
-              newRelationships[other] = newScore
             }
           }
 

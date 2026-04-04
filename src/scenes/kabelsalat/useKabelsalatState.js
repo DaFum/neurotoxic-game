@@ -56,6 +56,11 @@ export const useKabelsalatState = () => {
     return []
   }, [isShocked])
 
+  const timeLeftRef = useRef(timeLeft)
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
   // Timer Logic
   useEffect(() => {
     if (
@@ -65,14 +70,20 @@ export const useKabelsalatState = () => {
       !finishedRef.current
     ) {
       timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev > 1) return prev - 1
+        if (finishedRef.current || isWinningRef.current) {
           if (timerRef.current) clearInterval(timerRef.current)
-          if (!finishedRef.current && !isWinningRef.current) {
+          return
+        }
+
+        setTimeLeft(prev => {
+          const nextTimeLeft = Math.max(0, prev - 1)
+          if (nextTimeLeft <= 0) {
+            if (timerRef.current) clearInterval(timerRef.current)
             finishedRef.current = true
             setIsGameOver(true)
+            return 0
           }
-          return 0
+          return nextTimeLeft
         })
       }, 1000)
     }
@@ -83,21 +94,21 @@ export const useKabelsalatState = () => {
 
   // Process success scenario
   useEffect(() => {
-    if (Object.keys(connections).length === Object.keys(SOCKET_DEFS).length) {
+    if (
+      !finishedRef.current &&
+      Object.keys(connections).length === Object.keys(SOCKET_DEFS).length
+    ) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true
 
       const animTimer = setTimeout(() => {
-        setIsPoweredOn(true)
+        if (!finishedRef.current) {
+          setIsPoweredOn(true)
+        }
       }, 600)
       return () => clearTimeout(animTimer)
     }
   }, [connections])
-
-  const timeLeftRef = useRef(timeLeft)
-  useEffect(() => {
-    timeLeftRef.current = timeLeft
-  }, [timeLeft])
 
   const handleGameEnd = useCallback(
     (delay, isPowered) => {
@@ -246,7 +257,7 @@ export const useKabelsalatState = () => {
 
   const handleCableClick = useCallback(
     cableId => {
-      if (isShocked || isPoweredOn || isGameOver) return
+      if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
       // Performance: use Object iteration to find and remove connections in one pass
       let connectionSocketId
@@ -283,7 +294,7 @@ export const useKabelsalatState = () => {
 
   const handleSocketClick = useCallback(
     socketId => {
-      if (isShocked || isPoweredOn || isGameOver || !selectedCable) return
+      if (isShocked || isPoweredOn || isGameOver || isWinningRef.current || !selectedCable) return
       if (connections[socketId]) return
 
       const targetSocket = SOCKET_DEFS[socketId]

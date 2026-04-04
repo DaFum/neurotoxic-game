@@ -2,9 +2,9 @@ import assert from 'node:assert'
 import { test, mock } from 'node:test'
 
 // In order to properly mock the audio context for createAndConnectBufferSource,
-// we just mock setup.js using module mocking
+// we just mock context.js using module mocking
 
-mock.module('../src/utils/audio/setup.js', {
+mock.module('../src/utils/audio/context.js', {
   namedExports: {
     getRawAudioContext: () => {
       return (
