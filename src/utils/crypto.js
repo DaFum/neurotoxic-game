@@ -10,6 +10,11 @@ let batchArray = null
 let batchIndex = BATCH_SIZE
 let secureRandomErrorReported = false
 
+const lut = []
+for (let i = 0; i < 256; i++) {
+  lut[i] = (i < 16 ? '0' : '') + i.toString(16)
+}
+
 /**
  * Returns a cryptographically secure random number between 0 and 1.
  * Throws an error if the Crypto API is not available.
@@ -76,10 +81,34 @@ export const getSafeUUID = () => {
     // Fall through to fallback
   }
 
-  // Fallback UUID-like string
-  const roll1 = getSafeRandom()
-  const roll2 = getSafeRandom()
-  return `${Date.now().toString(36)}-${roll1.toString(36).substring(2)}-${roll2.toString(36).substring(2)}`
+  // Fallback RFC4122 v4 UUID
+  const d0 = (getSafeRandom() * 0xffffffff) | 0
+  const d1 = (getSafeRandom() * 0xffffffff) | 0
+  const d2 = (getSafeRandom() * 0xffffffff) | 0
+  const d3 = (getSafeRandom() * 0xffffffff) | 0
+  const uuid =
+    lut[d0 & 0xff] +
+    lut[(d0 >> 8) & 0xff] +
+    lut[(d0 >> 16) & 0xff] +
+    lut[(d0 >> 24) & 0xff] +
+    '-' +
+    lut[d1 & 0xff] +
+    lut[(d1 >> 8) & 0xff] +
+    '-' +
+    lut[((d1 >> 16) & 0x0f) | 0x40] +
+    lut[(d1 >> 24) & 0xff] +
+    '-' +
+    lut[(d2 & 0x3f) | 0x80] +
+    lut[(d2 >> 8) & 0xff] +
+    '-' +
+    lut[(d2 >> 16) & 0xff] +
+    lut[(d2 >> 24) & 0xff] +
+    lut[d3 & 0xff] +
+    lut[(d3 >> 8) & 0xff] +
+    lut[(d3 >> 16) & 0xff] +
+    lut[(d3 >> 24) & 0xff]
+
+  return uuid
 }
 
 /**

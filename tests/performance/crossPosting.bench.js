@@ -71,10 +71,12 @@ let sink // Sink to prevent dead code elimination
 const startOld = performance.now()
 sink = runOldApproach(RUNS)
 const timeOld = performance.now() - startOld
+if (sink.instagram < 0) console.log(sink) // Read sink
 
 const startForOf = performance.now()
 sink = runForOfApproach(RUNS)
 const timeForOf = performance.now() - startForOf
+if (sink.instagram < 0) console.log(sink) // Read sink
 
 const startUnrolled = performance.now()
 sink = runUnrolledApproach(RUNS)

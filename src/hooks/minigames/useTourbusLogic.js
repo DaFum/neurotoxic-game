@@ -11,7 +11,7 @@ import {
   TOURBUS_SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE
 } from './constants'
-import { secureRandom } from '../../utils/crypto.js'
+import { getSafeRandom } from '../../utils/crypto.js'
 import { handleError } from '../../utils/errorHandler.js'
 
 // Re-export constants for backward compatibility and tests
@@ -107,14 +107,6 @@ export const useTourbusLogic = () => {
       // Spawn Obstacles
       game.lastSpawnTime += deltaMS
       while (game.lastSpawnTime >= currentSpawnRate) {
-        const getSafeRandom = () => {
-          try {
-            return secureRandom()
-          } catch (err) {
-            handleError(err, { severity: 'medium', silent: true })
-            return Math.random()
-          }
-        }
 
         const time = performance.now()
         const safeRandomLane = getSafeRandom()

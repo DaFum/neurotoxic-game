@@ -1,5 +1,5 @@
 // TODO: Review this file
-import { secureRandom } from './crypto.js'
+import { getSafeRandom } from './crypto.js'
 
 /**
  * Updates the state of active projectiles.
@@ -99,7 +99,7 @@ const MAX_PROJECTILE_POOL_SIZE = 64
 export const trySpawnProjectile = (
   session,
   stats,
-  random = secureRandom,
+  random = getSafeRandom,
   screenWidth = 1920
 ) => {
   // Adaptive difficulty AI tuning based on stats

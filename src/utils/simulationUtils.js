@@ -9,7 +9,7 @@ import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
 import { hasTrait } from './traitLogic.js'
-import { secureRandom } from './crypto.js'
+import { secureRandom, getSafeRandom } from './crypto.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -210,7 +210,7 @@ export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 60
 export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 2
 export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
-export const calculateDailyUpdates = (currentState, rng = secureRandom) => {
+export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
   const nextPlayer = {
     ...currentState.player,
     day: currentState.player.day + 1

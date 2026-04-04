@@ -11,6 +11,7 @@ import {
   clampControversyLevel
 } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
+import { SOCIAL_PLATFORMS } from '../data/platforms.js'
 
 export const calculatePostGigStateUpdates = ({
   option,
@@ -153,17 +154,18 @@ export const calculatePostGigStateUpdates = ({
 
   if (result.success && totalFollowers > 0) {
     const delta = Math.floor(totalFollowers * 0.25)
-    // Unrolled fast-path for cross-posting updates.
-    // NOTE: The platforms hardcoded below must stay synchronized with the canonical
-    // list in src/data/platforms.js (SOCIAL_PLATFORMS).
-    if (result.platform !== 'instagram') {
-      updatedSocial.instagram = Math.max(0, (social.instagram || 0) + delta)
-    }
-    if (result.platform !== 'tiktok') {
-      updatedSocial.tiktok = Math.max(0, (social.tiktok || 0) + delta)
-    }
-    if (result.platform !== 'youtube') {
-      updatedSocial.youtube = Math.max(0, (social.youtube || 0) + delta)
+
+    // Convert object values to an array for iteration
+    const platforms = Object.values(SOCIAL_PLATFORMS)
+
+    for (let i = 0; i < platforms.length; i++) {
+      const platformId = platforms[i].id
+
+      // Do not cross-post to the platform that triggered the update,
+      // and do not cross-post to the newsletter, which is treated differently.
+      if (platformId !== result.platform && platformId !== 'newsletter') {
+        updatedSocial[platformId] = Math.max(0, (social[platformId] || 0) + delta)
+      }
     }
   }
 
