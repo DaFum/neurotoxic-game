@@ -20,16 +20,14 @@ export const useBloodBank = () => {
     }
   }, [player?.fameLevel])
 
-  // Need at least enough harmony to not completely shatter (must be > harmonyCost)
-  // And enough stamina to survive the drain
-  const minStaminaRequired = config.staminaCost + 10
-
   const canDonate = useMemo(() => {
     if (!band || !band.members) return false
     const hasEnoughHarmony = band.harmony > config.harmonyCost
+    // Need enough stamina to survive the drain
+    const minStaminaRequired = config.staminaCost + 10
     const allMembersHaveStamina = band.members.every(m => (m.stamina || 0) >= minStaminaRequired)
     return hasEnoughHarmony && allMembersHaveStamina
-  }, [band, config.harmonyCost, minStaminaRequired])
+  }, [band, config.harmonyCost, config.staminaCost])
 
   const triggerDonate = useCallback(() => {
     if (!canDonate) return

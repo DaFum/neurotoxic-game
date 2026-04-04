@@ -444,13 +444,22 @@ export const createPirateBroadcastAction = payload => ({
       : payload
 })
 
-export const bloodBankDonate = payload => ({
+/**
+ * Creates an action to donate blood to the void clinic.
+ * @param {Object} payload
+ * @param {number} payload.moneyGain - The money gained.
+ * @param {number} payload.harmonyCost - The harmony lost.
+ * @param {number} payload.staminaCost - The stamina lost per member.
+ * @param {number} payload.controversyGain - The controversy gained.
+ * @param {Object} [payload.successToast] - Optional toast on success.
+ * @returns {Object} Action object
+ */
+export const createBloodBankDonateAction = payload => ({
   type: ActionTypes.BLOOD_BANK_DONATE,
   payload:
     payload && typeof payload === 'object'
       ? {
           ...payload,
-          instanceId: crypto.randomUUID(),
           successToast: payload.successToast
             ? { ...payload.successToast, id: crypto.randomUUID() }
             : undefined

@@ -68,7 +68,7 @@ import {
   createPirateBroadcastAction,
   createMerchPressAction,
   createTradeVoidItemAction,
-  bloodBankDonate as createBloodBankDonateAction
+  createBloodBankDonateAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 

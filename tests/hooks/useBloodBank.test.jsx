@@ -47,6 +47,22 @@ describe('useBloodBank', () => {
     expect(result.current.canDonate).toBe(true)
   })
 
+  it('determines canDonate to be false when harmony equals the cost boundary exactly', () => {
+    GameStateContext.useGameState.mockReturnValue({
+      bloodBankDonate: mockBloodBankDonate,
+      player: { fameLevel: 1 },
+      band: {
+        harmony: 15, // exactly the cost, but requires > cost
+        members: [
+          { id: 'm1', stamina: 100 }
+        ]
+      }
+    })
+
+    const { result } = renderHook(() => useBloodBank())
+    expect(result.current.canDonate).toBe(false)
+  })
+
   it('determines canDonate to be false when harmony is too low', () => {
     GameStateContext.useGameState.mockReturnValue({
       bloodBankDonate: mockBloodBankDonate,

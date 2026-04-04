@@ -3,11 +3,35 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 
+import { useEffect, useRef } from 'react'
+
 export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
   const { t } = useTranslation(['ui'])
+  const modalRef = useRef(null)
+
+  useEffect(() => {
+    if (modalRef.current) {
+      modalRef.current.focus()
+    }
+  }, [])
+
+  const handleKeyDown = e => {
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      onClose()
+    }
+  }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+    <div
+      ref={modalRef}
+      className='fixed inset-0 z-50 flex items-center justify-center p-4 outline-none focus-visible:outline-none'
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby='blood-bank-title'
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+    >
       {/* Backdrop */}
       <div
         className='fixed inset-0 z-30 bg-void-black/90 backdrop-blur-sm'
@@ -28,7 +52,7 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
           {/* Header */}
           <div className='flex justify-between items-center p-6 border-b-4 border-blood-red bg-void-black/80'>
             <div>
-              <h2 className="text-4xl text-blood-red font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase">
+              <h2 id='blood-bank-title' className="text-4xl text-blood-red font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase">
                 {t('ui:blood_bank.title', { defaultValue: 'THE VOID CLINIC' })}
               </h2>
               <p className='text-ash-gray text-sm font-mono uppercase tracking-widest mt-1'>
@@ -73,15 +97,15 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
                   {t('ui:blood_bank.cost', { defaultValue: 'THE TOLL' })}
                 </h3>
                 <div className='flex justify-between items-center text-sm font-mono'>
-                  <span className='text-ash-gray'>BAND HARMONY</span>
+                  <span className='text-ash-gray'>{t('ui:blood_bank.cost_harmony', { defaultValue: 'BAND HARMONY' })}</span>
                   <span className='text-blood-red font-bold'>-{config.harmonyCost}</span>
                 </div>
                 <div className='flex justify-between items-center text-sm font-mono'>
-                  <span className='text-ash-gray'>STAMINA (ALL)</span>
+                  <span className='text-ash-gray'>{t('ui:blood_bank.cost_stamina', { defaultValue: 'STAMINA (ALL)' })}</span>
                   <span className='text-blood-red font-bold'>-{config.staminaCost}</span>
                 </div>
                 <div className='flex justify-between items-center text-sm font-mono'>
-                  <span className='text-ash-gray'>CONTROVERSY</span>
+                  <span className='text-ash-gray'>{t('ui:blood_bank.cost_controversy', { defaultValue: 'CONTROVERSY' })}</span>
                   <span className='text-blood-red font-bold'>+{config.controversyGain}</span>
                 </div>
               </div>

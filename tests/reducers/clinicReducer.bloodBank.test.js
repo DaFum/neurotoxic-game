@@ -56,6 +56,22 @@ describe('handleBloodBankDonate Reducer', () => {
     assert.strictEqual(result.toasts[0].message, 'Donation Success')
   })
 
+  test('clamps harmony to minimum of 1', () => {
+    const initialState = getInitialState()
+    initialState.band.harmony = 10
+
+    const payload = {
+      moneyGain: 100,
+      harmonyCost: 50, // 10 - 50 = -40 => should clamp to 1
+      staminaCost: 0,
+      controversyGain: 0
+    }
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    assert.strictEqual(result.band.harmony, 1)
+  })
+
   test('returns original state and warns if missing band or player state', () => {
     const initialState = {
       player: { money: 100 }
