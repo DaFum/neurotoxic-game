@@ -6,7 +6,9 @@ import {
   clampPlayerFame,
   clampMemberMood,
   clampMemberStamina,
-  calculateFameLevel
+  calculateFameLevel,
+  clampBandHarmony,
+  clampControversyLevel
 } from '../../utils/gameStateUtils.js'
 import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils.js'
 
@@ -137,6 +139,73 @@ export const handleClinicHeal = (state, payload) => {
       toastArgs: [appliedStamina, appliedMood]
     }
   })
+}
+
+/**
+ * Handles the blood bank donation logic, trading stamina and harmony for money.
+ * @param {Object} state - The current game state.
+ * @param {Object} payload - The payload containing the requested changes.
+ * @param {number} payload.moneyGain - The amount of money to gain.
+ * @param {number} payload.harmonyCost - The harmony to lose.
+ * @param {number} payload.staminaCost - The stamina to lose per member.
+ * @param {number} payload.controversyGain - The controversy to gain.
+ * @param {Object} [payload.successToast] - Optional toast on success.
+ * @returns {Object} The updated game state.
+ */
+export const handleBloodBankDonate = (state, payload) => {
+  if (!state.player || !state.band || !state.social) {
+    logger.warn('ClinicReducer', 'Missing player, band, or social state for blood bank')
+    return state
+  }
+
+  const { moneyGain = 0, harmonyCost = 0, staminaCost = 0, controversyGain = 0, successToast } = payload
+
+  // Validate members array
+  if (!Array.isArray(state.band.members) || state.band.members.length === 0) {
+    logger.warn('ClinicReducer', 'band.members is missing or empty')
+    return state
+  }
+
+  const currentMoney = Number.isFinite(state.player.money) ? state.player.money : 0
+  const nextMoney = clampPlayerMoney(currentMoney + moneyGain)
+
+  const currentHarmony = Number.isFinite(state.band.harmony) ? state.band.harmony : 50
+  const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
+
+  const currentControversy = Number.isFinite(state.social.controversyLevel) ? state.social.controversyLevel : 0
+  const nextControversy = clampControversyLevel(currentControversy + controversyGain)
+
+  // Apply stamina drain to all members
+  const updatedMembers = state.band.members.map(member => {
+    const prevStamina = member.stamina || 0
+    return {
+      ...member,
+      stamina: clampMemberStamina(prevStamina - staminaCost, member.staminaMax)
+    }
+  })
+
+  const nextState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney
+    },
+    band: {
+      ...state.band,
+      harmony: nextHarmony,
+      members: updatedMembers
+    },
+    social: {
+      ...state.social,
+      controversyLevel: nextControversy
+    }
+  }
+
+  if (successToast) {
+    nextState.toasts = [...(state.toasts || []), successToast]
+  }
+
+  return nextState
 }
 
 /**

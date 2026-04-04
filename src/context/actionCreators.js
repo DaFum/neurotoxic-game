@@ -444,6 +444,20 @@ export const createPirateBroadcastAction = payload => ({
       : payload
 })
 
+export const bloodBankDonate = payload => ({
+  type: ActionTypes.BLOOD_BANK_DONATE,
+  payload:
+    payload && typeof payload === 'object'
+      ? {
+          ...payload,
+          instanceId: crypto.randomUUID(),
+          successToast: payload.successToast
+            ? { ...payload.successToast, id: crypto.randomUUID() }
+            : undefined
+        }
+      : payload
+})
+
 /**
  * Creates an action to trade fame for a void item (contraband).
  * @param {Object} payload

@@ -1,0 +1,91 @@
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
+import { handleBloodBankDonate } from '../../src/context/reducers/clinicReducer.js'
+
+describe('handleBloodBankDonate Reducer', () => {
+  const getInitialState = () => ({
+    player: {
+      money: 100
+    },
+    band: {
+      harmony: 80,
+      members: [
+        { id: 'm1', stamina: 80, staminaMax: 100 },
+        { id: 'm2', stamina: 50, staminaMax: 100 }
+      ]
+    },
+    social: {
+      controversyLevel: 10
+    },
+    toasts: []
+  })
+
+  test('successfully applies donation effects and clamps correctly', () => {
+    const initialState = getInitialState()
+
+    // Set members stamina close to 0 to test clamping
+    initialState.band.members[1].stamina = 10
+
+    const payload = {
+      moneyGain: 200,
+      harmonyCost: 30,
+      staminaCost: 20,
+      controversyGain: 5,
+      successToast: { message: 'Donation Success', type: 'success' }
+    }
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    // Player money should increase (100 + 200)
+    assert.strictEqual(result.player.money, 300)
+
+    // Band harmony should decrease (80 - 30)
+    assert.strictEqual(result.band.harmony, 50)
+
+    // Social controversy should increase (10 + 5)
+    assert.strictEqual(result.social.controversyLevel, 15)
+
+    // Members stamina should decrease, and clamp at 0
+    // m1: 80 - 20 = 60
+    assert.strictEqual(result.band.members[0].stamina, 60)
+    // m2: 10 - 20 = -10 => 0
+    assert.strictEqual(result.band.members[1].stamina, 0)
+
+    // Toast should be added
+    assert.strictEqual(result.toasts.length, 1)
+    assert.strictEqual(result.toasts[0].message, 'Donation Success')
+  })
+
+  test('returns original state and warns if missing band or player state', () => {
+    const initialState = {
+      player: { money: 100 }
+      // Missing band and social
+    }
+
+    const payload = {
+      moneyGain: 100
+    }
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    // Should return the unmodified state object
+    assert.strictEqual(result, initialState)
+  })
+
+  test('returns original state and warns if band members are missing', () => {
+    const initialState = {
+      player: { money: 100 },
+      band: { harmony: 100, members: [] }, // empty members
+      social: { controversyLevel: 10 }
+    }
+
+    const payload = {
+      moneyGain: 100
+    }
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    // Should return the unmodified state object
+    assert.strictEqual(result, initialState)
+  })
+})

@@ -7,6 +7,7 @@ import { useQuestsModal } from '../hooks/useQuestsModal'
 import { useContrabandStash } from '../hooks/useContrabandStash'
 import { usePirateRadio } from '../hooks/usePirateRadio'
 import { useMerchPress } from '../hooks/useMerchPress'
+import { useBloodBank } from '../hooks/useBloodBank'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
@@ -19,6 +20,7 @@ import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'
 import { PirateRadioModal } from '../ui/PirateRadioModal'
 import { MerchPressModal } from '../ui/MerchPressModal'
+import { BloodBankModal } from '../ui/BloodBankModal'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { calculateEffectiveTicketPrice } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
@@ -70,6 +72,15 @@ export const Overworld = () => {
     canPress,
     config: merchPressConfig
   } = useMerchPress()
+
+  const {
+    showBloodBank,
+    openBloodBank,
+    closeBloodBank,
+    triggerDonate,
+    canDonate,
+    config: bloodBankConfig
+  } = useBloodBank()
 
   const {
     isTraveling,
@@ -307,6 +318,7 @@ export const Overworld = () => {
         openQuests={openQuests}
         openPirateRadio={openPirateRadio}
         openMerchPress={openMerchPress}
+        openBloodBank={openBloodBank}
         openHQ={openHQ}
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
@@ -361,6 +373,14 @@ export const Overworld = () => {
           onPress={triggerPress}
           canPress={canPress}
           config={merchPressConfig}
+        />
+      )}
+      {showBloodBank && (
+        <BloodBankModal
+          onClose={closeBloodBank}
+          onDonate={triggerDonate}
+          canDonate={canDonate}
+          config={bloodBankConfig}
         />
       )}
     </div>
