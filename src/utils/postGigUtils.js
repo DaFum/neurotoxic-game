@@ -153,6 +153,9 @@ export const calculatePostGigStateUpdates = ({
 
   if (result.success && totalFollowers > 0) {
     const delta = Math.floor(totalFollowers * 0.25)
+    // Unrolled fast-path for cross-posting updates.
+    // NOTE: The platforms hardcoded below must stay synchronized with the canonical
+    // list in src/data/platforms.js (SOCIAL_PLATFORMS).
     if (result.platform !== 'instagram') {
       updatedSocial.instagram = Math.max(0, (social.instagram || 0) + delta)
     }

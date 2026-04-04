@@ -90,7 +90,7 @@ export const processProjectiles = (
 /**
  * Determines if a new projectile should be spawned and generates it.
  * @param {object} stats - Game stats (health, combo).
- * @param {Function} [random=Math.random] - Random number generator.
+ * @param {Function} [random=getSafeRandom] - Random number generator.
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */

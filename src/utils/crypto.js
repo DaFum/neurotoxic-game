@@ -77,8 +77,9 @@ export const getSafeUUID = () => {
   }
 
   // Fallback UUID-like string
-  const roll = getSafeRandom()
-  return `${Date.now().toString(36)}-${roll.toString(36).substring(2)}`
+  const roll1 = getSafeRandom()
+  const roll2 = getSafeRandom()
+  return `${Date.now().toString(36)}-${roll1.toString(36).substring(2)}-${roll2.toString(36).substring(2)}`
 }
 
 /**

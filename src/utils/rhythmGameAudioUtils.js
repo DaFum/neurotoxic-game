@@ -15,6 +15,7 @@ import { SONGS_DB, SONGS_BY_ID } from '../data/songs.js'
 import { calculateGigPhysics, getGigModifiers } from './simulationUtils.js'
 import { generateNotesForSong, parseSongNotes } from './rhythmUtils.js'
 import { resolveSongPlaybackWindow } from './audio/songUtils.js'
+import { getSafeRandom } from './crypto.js'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
@@ -330,7 +331,7 @@ export const playSongSequence = async (
 
   const currentSong = activeSetlist[index]
   let notes = []
-  const rng = Math.random
+  const rng = getSafeRandom
   gameStateRef.current.rng = rng
 
   gameStateRef.current.setlistCompleted = false

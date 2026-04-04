@@ -33,7 +33,15 @@ vi.mock('react-i18next', () => ({
       if (key === 'report.amount_negative') return `-€${options?.amount ?? 0}`
       if (key === 'report.amount_with_currency')
         return `€${options?.amount ?? 0}`
-      return key
+      const template = options?.defaultValue || key
+      if (!options || typeof options !== 'object') return template
+
+      // Do not try to replace if it is not a string
+      if (typeof template !== 'string') return template
+
+      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+        String(options[token] ?? `{{${token}}}`)
+      )
     },
     i18n: {
       language: 'en',

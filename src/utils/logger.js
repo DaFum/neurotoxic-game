@@ -1,4 +1,6 @@
 // TODO: Review this file
+import { getSafeUUID } from './crypto.js'
+
 /**
  * Log levels for the application.
  */
@@ -88,9 +90,8 @@ export class Logger {
    * @private
    */
   _format(level, channel, message, data) {
-    const crypto = globalThis.crypto || window?.crypto
     return {
-      id: crypto?.randomUUID?.() || Date.now().toString(36),
+      id: getSafeUUID(),
       timestamp: new Date().toISOString(),
       level,
       channel,

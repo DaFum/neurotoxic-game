@@ -1,5 +1,6 @@
 import { useReducer, useRef, useMemo, useState } from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
+import { getSafeRandom } from '../../utils/crypto'
 
 const INITIAL_UI_STATE = {
   score: 0,
@@ -128,7 +129,7 @@ export const useRhythmGameState = () => {
   // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
   const [initialRefValue] = useState(() => ({
     ...structuredClone(INITIAL_GAME_STATE_REF),
-    rng: Math.random // Store RNG for consistency
+    rng: getSafeRandom // Store RNG for consistency
   }))
   const gameStateRef = useRef(initialRefValue)
 

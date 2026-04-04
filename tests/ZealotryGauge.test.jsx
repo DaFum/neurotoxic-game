@@ -3,21 +3,6 @@ import { describe, it, expect, vi } from 'vitest'
 import { ZealotryGauge } from '../src/components/postGig/ZealotryGauge'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../src/utils/economyEngine'
 
-// Mock i18next
-vi.mock('react-i18next', () => ({
-  initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({
-    t: (key, options) => {
-      const template = options?.defaultValue || key
-      if (!options) return template
-
-      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
-        String(options[token] ?? `{{${token}}}`)
-      )
-    }
-  })
-}))
-
 // Mock imageGen
 vi.mock('../src/utils/imageGen.js', () => ({
   getGenImageUrl: vi.fn(() => 'mock-image-url'),
@@ -41,10 +26,11 @@ describe('ZealotryGauge', () => {
     expect(screen.getByText('CULT ZEALOTRY')).toBeInTheDocument()
 
     // Find the progress bar div. It's the one with bg-blood-red class.
-    const bar = screen
-      .getByText('50%')
-      .closest('.flex-1')
-      .querySelector('.bg-blood-red')
+    const percentageText = screen.getByText('50%')
+    const containerDiv = percentageText.closest('.flex-1')
+    expect(containerDiv).not.toBeNull()
+    const bar = containerDiv.querySelector('.bg-blood-red')
+    expect(bar).not.toBeNull()
     expect(bar).toHaveStyle({ width: '50%' })
   })
 
@@ -71,8 +57,12 @@ describe('ZealotryGauge', () => {
 
   it('clamps the progress bar width to 100%', () => {
     render(<ZealotryGauge zealotryLevel={150} />)
-    expect(screen.getByText('150%')).toBeInTheDocument()
-    const bar = screen.getByText('150%').closest('.flex-1').querySelector('.bg-blood-red')
+    const percentageText = screen.getByText('150%')
+    expect(percentageText).toBeInTheDocument()
+    const containerDiv = percentageText.closest('.flex-1')
+    expect(containerDiv).not.toBeNull()
+    const bar = containerDiv.querySelector('.bg-blood-red')
+    expect(bar).not.toBeNull()
     expect(bar).toHaveStyle({ width: '100%' })
   })
 })
