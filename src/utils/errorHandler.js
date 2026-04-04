@@ -1,7 +1,9 @@
-// TODO: Review this file
 /**
  * Centralized Error Handling System
  * Provides custom error types, error logging, and error recovery utilities.
+ * Note: The recursive context sanitizer redacts sensitive keys, blocks
+ * prototype-pollution keys such as __proto__/constructor/prototype, and
+ * safely handles cyclic structures via WeakSet.
  * @module errorHandler
  */
 
