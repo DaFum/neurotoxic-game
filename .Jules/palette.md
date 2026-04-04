@@ -44,3 +44,8 @@
 
 **Learning:** In custom list interfaces (like the song selection list in SetlistTab), utilizing `<button>` elements is great for interactivity, but if they lack `focus-visible` styles, keyboard users cannot track their current selection while tabbing through the list. This breaks navigation for non-mouse users.
 **Action:** Always ensure that any interactive list items or toggle buttons contain explicit `focus-visible` outline styles (e.g., `focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to clearly demarcate the active keyboard focus.
+
+## 2025-05-19 - Visual Feedback for Disabled Interactive Elements
+
+**Learning:** When interactive elements like ActionButton accept a `disabled` prop but lack visual styling to indicate that state, users may repeatedly attempt to interact with them, assuming a bug when nothing happens. Scaling on hover while disabled further exacerbates this confusion.
+**Action:** Always pair `disabled` logic with explicit visual cues (e.g., `disabled:opacity-50 disabled:cursor-not-allowed`) and ensure conflicting interactive styles (like hover scaling) are overridden in the disabled state.
