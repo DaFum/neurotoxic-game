@@ -166,7 +166,7 @@ describe('loadAudioBuffer tests', () => {
   })
 
   it('Returns null on fetch timeout (AbortError)', async () => {
-    global.fetch = vi.fn().mockImplementation((url, options) => {
+    global.fetch = vi.fn().mockImplementation(() => {
       const err = new Error('The operation was aborted')
       err.name = 'AbortError'
       return Promise.reject(err)

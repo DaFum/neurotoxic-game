@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
-import { secureRandom } from '../src/utils/crypto.js'
 
 // Mocks
 

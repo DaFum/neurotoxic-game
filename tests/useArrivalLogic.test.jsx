@@ -1,4 +1,4 @@
-import { describe, it as test, beforeEach, afterEach, expect, vi as mock } from 'vitest'
+import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
 
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { act, cleanup } from '@testing-library/react'

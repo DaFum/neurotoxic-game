@@ -23,12 +23,9 @@ const {
   MAX_SPEED,
   SPAWN_RATE_MS,
   TARGET_DISTANCE,
-  getHitDamage,
-  HIT_DAMAGE_BASE,
-  HIT_DAMAGE_ARMOR,
-  HIT_DAMAGE_BULLBAR
+  getHitDamage
 } = await import('../src/hooks/minigames/useTourbusLogic.js')
-const { LANE_COUNT, BUS_Y_PERCENT } = await import('../src/hooks/minigames/constants.js')
+const { TOURBUS_LANE_COUNT: LANE_COUNT, TOURBUS_BUS_Y_PERCENT: BUS_Y_PERCENT } = await import('../src/hooks/minigames/constants.js')
 
 describe('getHitDamage', () => {
   beforeEach(() => {
