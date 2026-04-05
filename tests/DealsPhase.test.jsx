@@ -54,7 +54,7 @@ test('DealsPhase renders no deals message if empty', () => {
   const handleSkip = vi.fn()
   render(<DealsPhase offers={[]} onSkip={handleSkip} onAccept={vi.fn()} />)
 
-  fireEvent.click(screen.getByText('ui:deals.rejectAll'))
+  fireEvent.click(screen.getByText('Reject All Offers & Continue >'))
   expect(handleSkip).toHaveBeenCalledTimes(1)
 })
 
@@ -75,12 +75,12 @@ test('DealsPhase renders offers and handles negotiation', async () => {
 
   expect(screen.getByText('Test Deal')).toBeInTheDocument()
 
-  const negotiateBtn = screen.getByText('ui:deals.negotiate')
+  const negotiateBtn = screen.getByText('NEGOTIATE')
   fireEvent.click(negotiateBtn)
 
   expect(screen.getByTestId('modal')).toBeInTheDocument()
 
-  const aggressiveBtn = screen.getByText('ui:deals.aggressive')
+  const aggressiveBtn = screen.getByText('AGGRESSIVE (High Risk)')
   fireEvent.click(aggressiveBtn)
 
   expect(screen.getByText('Deal accepted!')).toBeInTheDocument()
@@ -93,7 +93,7 @@ test('DealsPhase renders offers and handles negotiation', async () => {
     expect(screen.queryByTestId('modal')).not.toBeInTheDocument()
   })
 
-  const acceptListBtn = screen.getAllByText('ui:deals.accept')[0]
+  const acceptListBtn = screen.getAllByText('ACCEPT')[0]
   fireEvent.click(acceptListBtn)
 
   expect(handleAccept).toHaveBeenCalledWith(
@@ -119,12 +119,12 @@ test('DealsPhase handles negotiation error gracefully', async () => {
 
   render(<DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={vi.fn()} />)
 
-  const negotiateBtn = screen.getByText('ui:deals.negotiate')
+  const negotiateBtn = screen.getByText('NEGOTIATE')
   fireEvent.click(negotiateBtn)
 
   expect(screen.getByTestId('modal')).toBeInTheDocument()
 
-  const safeBtn = screen.getByText('ui:deals.safe')
+  const safeBtn = screen.getByText('SAFE (Low Risk)')
   fireEvent.click(safeBtn)
 
   expect(handleError).toHaveBeenCalledWith(
@@ -157,7 +157,7 @@ test('DealsPhase handles accept deal error gracefully', async () => {
     <DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={handleAccept} />
   )
 
-  const acceptBtn = screen.getByText('ui:deals.accept')
+  const acceptBtn = screen.getByText('ACCEPT')
   fireEvent.click(acceptBtn)
 
   await waitFor(() => {

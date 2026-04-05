@@ -22,7 +22,7 @@ describe('Credits Scene', () => {
         <Credits />
       </GameStateProvider>
     )
-    expect(getByText('ui:credits')).toBeInTheDocument()
+    expect(getByText('CREDITS')).toBeInTheDocument()
     expect(getByText('VOCAL CODE VOMIT')).toBeInTheDocument()
   })
 
@@ -33,9 +33,8 @@ describe('Credits Scene', () => {
       </GameStateProvider>
     )
 
-    // Initial scene might be OVERWORLD or MENU based on initial state, but let's click RETURN
-    // (mocked as returning the i18n key)
-    const returnBtn = getByText('ui:creditsScreen.return')
+    // Initial scene might be OVERWORLD or MENU based on initial state, but we can still click RETURN.
+    const returnBtn = getByText('RETURN')
     fireEvent.click(returnBtn)
 
     // Check if the scene updated to MENU

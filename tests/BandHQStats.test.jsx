@@ -85,9 +85,10 @@ describe('BandHQ Stats Discrepancy', () => {
     )
     const statBoxes = getAllByTestId('stat-box')
     const followersBox = statBoxes.find(
-      box =>
-        box.querySelector('[data-testid="stat-label"]').textContent ===
-        'ui:stats.followers'
+      box => {
+        const text = box.querySelector('[data-testid="stat-label"]')?.textContent
+        return text === 'Followers'
+      }
     )
 
     expect(followersBox).toBeTruthy()
@@ -98,7 +99,7 @@ describe('BandHQ Stats Discrepancy', () => {
     unmount()
 
     const { container } = render(<DetailedStatsTab {...props} />)
-    const totalReachLabel = getByText('ui:stats.totalReach')
+    const totalReachLabel = getByText('Total Reach')
     const detailRow = totalReachLabel.closest('.flex')
 
     expect(detailRow).toBeTruthy()
@@ -109,6 +110,6 @@ describe('BandHQ Stats Discrepancy', () => {
     expect(statsTabValue).toBe(expectedReach)
     expect(detailedStatsTabValue).toBe(expectedReach)
     expect(statsTabValue).toBe(detailedStatsTabValue)
-    expect(container.textContent).toContain('ui:stats.totalReach')
+    expect(container.textContent).toContain('Total Reach')
   })
 })

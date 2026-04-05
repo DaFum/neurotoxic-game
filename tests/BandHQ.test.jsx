@@ -102,6 +102,6 @@ describe('BandHQ', () => {
     const { container } = render(React.createElement(BandHQ, props))
     expect(container.querySelector('h2')).toBeTruthy()
     // "BAND HQ" is the default fallback or key, adjust if needed
-    expect(container.textContent).toContain('hq.title')
+    expect(container.textContent).toContain('BAND HQ')
   })
 })

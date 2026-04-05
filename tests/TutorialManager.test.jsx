@@ -105,7 +105,7 @@ describe('TutorialManager', () => {
     render(<TutorialManager />)
 
     const skipButton = screen.getByRole('button', {
-      name: /ui:tutorial.skipAll/i
+      name: /SKIP ALL/i
     })
     await user.click(skipButton)
 
@@ -256,7 +256,7 @@ describe('TutorialManager', () => {
 
     const dialog = container.querySelector('[role="dialog"]')
     expect(dialog).toBeTruthy()
-    expect(dialog?.getAttribute('aria-label')).toBe('ui:tutorial.ariaLabel')
+    expect(dialog?.getAttribute('aria-label')).toBe('Tutorial')
   })
 
   test('handles missing player.tutorialStep gracefully', async () => {
