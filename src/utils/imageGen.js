@@ -154,6 +154,8 @@ export const IMG_PROMPTS = {
   // HQ
   BAND_HQ_BG:
     'messy punk rehearsal room band posters beer crates amplifiers instruments pixel art cozy grunge',
+  BLOOD_BANK_BG:
+    'grimy underground clinic blood bags medical tubes dark scary hospital aesthetic brutalist horror',
 
   // Events
   EVENT_POLICE: 'german police car night flashing blue lights pixel art gritty',

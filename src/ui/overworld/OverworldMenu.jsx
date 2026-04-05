@@ -17,6 +17,7 @@ export const OverworldMenu = React.memo(
     openQuests,
     openPirateRadio,
     openMerchPress,
+    openBloodBank,
     openHQ,
     handleRefuel,
     handleRepair,
@@ -66,6 +67,14 @@ export const OverworldMenu = React.memo(
                 size='sm'
               >
                 [{t('ui:merch_press.button', { defaultValue: 'MERCH PRESS' })}]
+              </GlitchButton>
+              <GlitchButton
+                onClick={openBloodBank}
+                disabled={isTraveling}
+                variant='danger'
+                size='sm'
+              >
+                [{t('ui:blood_bank.button', { defaultValue: 'VOID CLINIC' })}]
               </GlitchButton>
               <GlitchButton
                 onClick={openHQ}

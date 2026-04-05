@@ -67,7 +67,8 @@ import {
   createClinicEnhanceAction,
   createPirateBroadcastAction,
   createMerchPressAction,
-  createTradeVoidItemAction
+  createTradeVoidItemAction,
+  createBloodBankDonateAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -552,6 +553,15 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  /**
+   * Dispatches a blood bank donation action.
+   * @param {object} payload - The blood bank donation payload.
+   */
+  const bloodBankDonate = useCallback(
+    payload => dispatch(createBloodBankDonateAction(payload)),
+    []
+  )
+
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -893,7 +903,8 @@ export const GameStateProvider = ({ children }) => {
       clinicEnhance,
       pirateBroadcast,
       merchPress,
-      tradeVoidItem
+      tradeVoidItem,
+      bloodBankDonate
     }),
     [
       changeScene,
@@ -933,7 +944,8 @@ export const GameStateProvider = ({ children }) => {
       clinicEnhance,
       pirateBroadcast,
       merchPress,
-      tradeVoidItem
+      tradeVoidItem,
+      bloodBankDonate
     ]
   )
 

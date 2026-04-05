@@ -44,7 +44,8 @@ import {
 } from './reducers/minigameReducer.js'
 import {
   handleClinicHeal,
-  handleClinicEnhance
+  handleClinicEnhance,
+  handleBloodBankDonate
 } from './reducers/clinicReducer.js'
 import {
   handleAddQuest,
@@ -196,6 +197,9 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.TRADE_VOID_ITEM:
       return handleTradeVoidItem(state, action.payload)
+
+    case ActionTypes.BLOOD_BANK_DONATE:
+      return handleBloodBankDonate(state, action.payload)
 
     default:
       return state

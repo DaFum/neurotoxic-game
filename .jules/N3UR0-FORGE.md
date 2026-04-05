@@ -84,3 +84,17 @@ After travel the band can get an item with specials to use.
   actionTypes.js: Added `TRADE_VOID_ITEM`.
   tradeReducer.js: New reducer strictly enforcing `fame` costs with `clampPlayerFame` and safely integrating into `gameReducer.js`.
   BandHQ.jsx: Added `VoidTraderTab.jsx` integrated gracefully within the navigation, triggering only on `social.controversyLevel >= 30`. Uses Brutalist flex-box chaining.
+
+## 2026-04-04 - BLOOD BANK (VOID CLINIC)
+
+**Feature:** Blood Bank (Void Clinic) System
+
+**Description:**
+
+- Lore Integration:
+  To survive the grueling tour and fund their brutalist lifestyle, the band resorts to selling their own blood in sketchy underground clinics. It is a desperate measure for quick cash, draining their stamina and shared harmony while increasing their controversy.
+- State Impact:
+  actionTypes.js: Added `BLOOD_BANK_DONATE`.
+  clinicReducer.js: Added `handleBloodBankDonate` enforcing bounds (money clamped >= 0, harmony clamped 1-100, stamina > 0).
+  useBloodBank.js: Custom hook to calculate dynamic scaling costs and manage modal.
+  BloodBankModal.jsx: Brutalist UI utilizing flex-box chaining.
