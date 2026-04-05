@@ -6,7 +6,7 @@ describe('CreditHeader Component', () => {
   test('renders the credit header with translated text and appropriate styling', () => {
     const { getByText } = render(<CreditHeader />)
 
-    // We expect the mock translation key to be rendered, as per vitest.setup.js
+    // The Vitest i18n mock renders the provided defaultValue, so this asserts the fallback heading text.
     const heading = getByText('CREDITS')
     expect(heading).toBeInTheDocument()
 

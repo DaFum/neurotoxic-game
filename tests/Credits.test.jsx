@@ -33,8 +33,7 @@ describe('Credits Scene', () => {
       </GameStateProvider>
     )
 
-    // Initial scene might be OVERWORLD or MENU based on initial state, but let's click RETURN
-    // (mocked as returning the i18n key)
+    // Initial scene might be OVERWORLD or MENU based on initial state, but we can still click RETURN.
     const returnBtn = getByText('RETURN')
     fireEvent.click(returnBtn)
 

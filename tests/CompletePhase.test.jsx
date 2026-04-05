@@ -75,8 +75,10 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByText('1000', { exact: false })).toBeTruthy()
-    expect(screen.getByText('Instagram')).toBeTruthy()
+    const followersEl = screen.getByText((content, element) => {
+      return element.textContent === '+1000 FollowersInstagram'
+    })
+    expect(followersEl).toBeTruthy()
   })
 
   test('displays negative follower count without plus sign', async () => {
@@ -95,7 +97,10 @@ describe('CompletePhase', () => {
       />
     )
 
-    expect(screen.getByText('-100 Followers')).toBeTruthy()
+    const followersEl = screen.getByText((content, element) => {
+      return element.textContent === '-100 FollowersInstagram'
+    })
+    expect(followersEl).toBeTruthy()
   })
 
   test('shows money change when present', async () => {
@@ -215,7 +220,7 @@ describe('CompletePhase', () => {
     )
 
     const spinButton = screen.queryByRole('button', {
-      name: /ui:postGig.spinStory/i
+      name: /Spin Story/i
     })
     expect(spinButton).toBeFalsy()
   })
