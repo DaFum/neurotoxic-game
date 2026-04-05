@@ -22,10 +22,6 @@ export {
   TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE
 } from './constants'
 
-export const BASE_SPEED = 0.05 // relative units per ms
-export const MAX_SPEED = 0.12
-export const SPAWN_RATE_MS = 1500
-export const TARGET_DISTANCE = 2500
 
 export const HIT_DAMAGE_BASE = 10
 export const HIT_DAMAGE_ARMOR = 2

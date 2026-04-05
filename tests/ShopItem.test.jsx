@@ -75,7 +75,7 @@ describe('ShopItem', () => {
   it('calls onBuy when clicking Buy button', () => {
     const onBuy = vi.fn()
     const { getByText } = render(<ShopItem {...defaultProps} onBuy={onBuy} />)
-    fireEvent.click(getByText('ui:hq.buy'))
+    fireEvent.click(getByText('BUY'))
     expect(onBuy).toHaveBeenCalledWith(mockItem)
   })
 
@@ -84,7 +84,7 @@ describe('ShopItem', () => {
     const { getByText } = render(
       <ShopItem {...defaultProps} isDisabled={true} onBuy={onBuy} />
     )
-    const button = getByText('ui:hq.buy').closest('button')
+    const button = getByText('BUY').closest('button')
     expect(button).toBeDisabled()
     fireEvent.click(button)
     expect(onBuy).not.toHaveBeenCalled()
@@ -95,7 +95,7 @@ describe('ShopItem', () => {
       type: 'inventory_set'
     })
     const { getByText } = render(<ShopItem {...defaultProps} isOwned={true} />)
-    expect(getByText('ui:hq.owned')).toBeInTheDocument()
+    expect(getByText('OWNED')).toBeInTheDocument()
   })
 
   it('shows BUY when isOwned is true but item is consumable', () => {
@@ -103,7 +103,7 @@ describe('ShopItem', () => {
       type: 'inventory_add'
     })
     const { getByText } = render(<ShopItem {...defaultProps} isOwned={true} />)
-    expect(getByText('ui:hq.buy')).toBeInTheDocument()
+    expect(getByText('BUY')).toBeInTheDocument()
   })
 
   it('shows loading state on button when processingItemId matches', () => {
@@ -118,7 +118,7 @@ describe('ShopItem', () => {
     const { getByText } = render(
       <ShopItem {...defaultProps} onBuy={onBuy} processingItemId='other-item' />
     )
-    const button = getByText('ui:hq.buy').closest('button')
+    const button = getByText('BUY').closest('button')
     expect(button).toBeDisabled()
     fireEvent.click(button)
     expect(onBuy).not.toHaveBeenCalled()

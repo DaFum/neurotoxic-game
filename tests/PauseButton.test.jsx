@@ -14,7 +14,7 @@ describe('PauseButton', () => {
       <PauseButton onTogglePause={mockToggle} isGameOver={false} />
     )
 
-    let button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    let button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button).toBeTruthy()
     expect(button.className).toContain('focus-visible:outline-none')
     expect(button.className).toContain('focus-visible:ring-2')
@@ -22,7 +22,7 @@ describe('PauseButton', () => {
     expect(button.disabled).toBe(false)
 
     rerender(<PauseButton onTogglePause={mockToggle} isGameOver={true} />)
-    button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button.disabled).toBe(true)
   })
 
@@ -33,7 +33,7 @@ describe('PauseButton', () => {
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
 
-    const button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    const button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button).toBeTruthy()
 
     // Check SVG icon is present
@@ -49,7 +49,7 @@ describe('PauseButton', () => {
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
 
-    const button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    const button = screen.getByRole('button', { name: 'Pause Game' })
     await user.click(button)
 
     expect(mockToggle).toHaveBeenCalledOnce()
@@ -62,7 +62,7 @@ describe('PauseButton', () => {
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={true} />)
 
-    const button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    const button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button.disabled).toBe(true)
   })
 
@@ -73,7 +73,7 @@ describe('PauseButton', () => {
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
 
-    const button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    const button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button.disabled).toBe(false)
   })
 
@@ -112,7 +112,7 @@ describe('PauseButton', () => {
     // Component should handle missing prop gracefully
     render(<PauseButton isGameOver={false} />)
 
-    const button = screen.getByRole('button', { name: 'ui:gig.pauseAria' })
+    const button = screen.getByRole('button', { name: 'Pause Game' })
     expect(button).toBeTruthy()
   })
 })
