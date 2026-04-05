@@ -52,7 +52,10 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
           {/* Header */}
           <div className='flex justify-between items-center p-6 border-b-4 border-blood-red bg-void-black/80'>
             <div>
-              <h2 id='blood-bank-title' className="text-4xl text-blood-red font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase">
+              <h2
+                id='blood-bank-title'
+                className="text-4xl text-blood-red font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-blood-red)] uppercase"
+              >
                 {t('ui:blood_bank.title', { defaultValue: 'THE VOID CLINIC' })}
               </h2>
               <p className='text-ash-gray text-sm font-mono uppercase tracking-widest mt-1'>
@@ -75,7 +78,8 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
             <div className='border border-blood-red/50 p-4 bg-void-black/80'>
               <p className='text-ash-gray font-mono leading-relaxed text-sm'>
                 {t('ui:blood_bank.description', {
-                  defaultValue: 'Desperate times call for desperate measures. Sell your blood to the underground clinic. It pays well, but the physical and mental toll on the band is severe.'
+                  defaultValue:
+                    'Desperate times call for desperate measures. Sell your blood to the underground clinic. It pays well, but the physical and mental toll on the band is severe.'
                 })}
               </p>
             </div>
@@ -97,16 +101,34 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
                   {t('ui:blood_bank.cost', { defaultValue: 'THE TOLL' })}
                 </h3>
                 <div className='flex justify-between items-center text-sm font-mono'>
-                  <span className='text-ash-gray'>{t('ui:blood_bank.cost_harmony', { defaultValue: 'BAND HARMONY' })}</span>
-                  <span className='text-blood-red font-bold'>-{config.harmonyCost}</span>
+                  <span className='text-ash-gray'>
+                    {t('ui:blood_bank.cost_harmony', {
+                      defaultValue: 'BAND HARMONY'
+                    })}
+                  </span>
+                  <span className='text-blood-red font-bold'>
+                    -{config.harmonyCost}
+                  </span>
                 </div>
                 <div className='flex justify-between items-center text-sm font-mono'>
-                  <span className='text-ash-gray'>{t('ui:blood_bank.cost_stamina', { defaultValue: 'STAMINA (ALL)' })}</span>
-                  <span className='text-blood-red font-bold'>-{config.staminaCost}</span>
+                  <span className='text-ash-gray'>
+                    {t('ui:blood_bank.cost_stamina', {
+                      defaultValue: 'STAMINA (ALL)'
+                    })}
+                  </span>
+                  <span className='text-blood-red font-bold'>
+                    -{config.staminaCost}
+                  </span>
                 </div>
                 <div className='flex justify-between items-center text-sm font-mono'>
-                  <span className='text-ash-gray'>{t('ui:blood_bank.cost_controversy', { defaultValue: 'CONTROVERSY' })}</span>
-                  <span className='text-blood-red font-bold'>+{config.controversyGain}</span>
+                  <span className='text-ash-gray'>
+                    {t('ui:blood_bank.cost_controversy', {
+                      defaultValue: 'CONTROVERSY'
+                    })}
+                  </span>
+                  <span className='text-blood-red font-bold'>
+                    +{config.controversyGain}
+                  </span>
                 </div>
               </div>
             </div>
@@ -116,7 +138,8 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
               <div className='mt-2 p-3 border border-blood-red/50 bg-blood-red/10 text-center'>
                 <p className='text-blood-red text-xs font-mono uppercase tracking-wider animate-pulse'>
                   {t('ui:blood_bank.warning', {
-                    defaultValue: 'WARNING: BAND IS TOO WEAK TO SURVIVE DONATION.'
+                    defaultValue:
+                      'WARNING: BAND IS TOO WEAK TO SURVIVE DONATION.'
                   })}
                 </p>
               </div>

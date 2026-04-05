@@ -38,15 +38,16 @@ vi.mock('../../../src/utils/audio/playbackUtils.js', () => ({
 
 // Import assets AFTER setting up mocks
 import { loadAudioBuffer } from '../../../src/utils/audio/assets.js'
-import {
-  MAX_AUDIO_BUFFER_BYTE_SIZE
-} from '../../../src/utils/audio/constants.js'
+import { MAX_AUDIO_BUFFER_BYTE_SIZE } from '../../../src/utils/audio/constants.js'
 
 describe('loadAudioBuffer tests', () => {
   const originalFetch = global.fetch
 
   beforeEach(() => {
-    mocks.mockResolveAssetUrlReturn = { url: 'mock/path/test.ogg', source: 'bundled' }
+    mocks.mockResolveAssetUrlReturn = {
+      url: 'mock/path/test.ogg',
+      source: 'bundled'
+    }
     mocks.mockBaseAssetPathReturn = { publicBasePath: '/' }
     mocks.mockGetRawAudioContextReturn = null
     mocks.mockAudioState.audioBufferCache.clear()
@@ -110,7 +111,9 @@ describe('loadAudioBuffer tests', () => {
     })
 
     mocks.mockGetRawAudioContextReturn = {
-      decodeAudioData: vi.fn().mockRejectedValue(new Error('Generic decode error'))
+      decodeAudioData: vi
+        .fn()
+        .mockRejectedValue(new Error('Generic decode error'))
     }
 
     const result = await loadAudioBuffer('decode_error.ogg')
@@ -185,7 +188,9 @@ describe('loadAudioBuffer tests', () => {
     })
 
     mocks.mockGetRawAudioContextReturn = {
-      decodeAudioData: vi.fn().mockRejectedValue(new Error('AUDIO_DECODE_TIMEOUT'))
+      decodeAudioData: vi
+        .fn()
+        .mockRejectedValue(new Error('AUDIO_DECODE_TIMEOUT'))
     }
 
     const result = await loadAudioBuffer('decode_timeout.ogg')
@@ -199,10 +204,11 @@ describe('loadAudioBuffer tests', () => {
 
     global.fetch = vi.fn().mockImplementation(() => {
       return new Promise(resolve => {
-        resolveFetch = () => resolve({
-          ok: true,
-          arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(8))
-        })
+        resolveFetch = () =>
+          resolve({
+            ok: true,
+            arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(8))
+          })
       })
     })
 

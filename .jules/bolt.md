@@ -52,6 +52,8 @@
 
 **Learning:** Array iteration methods like `.some()` introduce function allocation and call overhead on each tick. When performing sanitization recursively across highly nested objects (e.g., `sanitizeContextValue` walking through thousands of `GameState` keys on error), this overhead adds up quickly compared to a basic `for` loop.
 **Action:** Use plain `for` loops instead of array iteration methods inside deeply recursive operations or hot traversal code.
+
 ## 2024-04-02 - structuredClone Overhead
+
 **Learning:** `structuredClone` has significant overhead (~660ms vs ~10ms for 100k iterations) when used for duplicating simple nested objects on hot paths, like in `negotiateDeal`.
 **Action:** Use manual shallow copying with object spread syntax (`{ ...obj, nested: { ...obj.nested } }`) instead of `structuredClone` when deep cloning is not strictly necessary or when only specific nested objects are mutated.

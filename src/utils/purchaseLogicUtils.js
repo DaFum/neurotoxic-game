@@ -257,7 +257,12 @@ export const EFFECT_HANDLERS = {
 
   unlock_upgrade: (effect, item, playerPatch, player, _band) => {
     const vanState = playerPatch.van ?? player.van
-    const nextPlayerPatch = applyUnlockUpgrade(effect, item, playerPatch, vanState)
+    const nextPlayerPatch = applyUnlockUpgrade(
+      effect,
+      item,
+      playerPatch,
+      vanState
+    )
     return { playerPatch: nextPlayerPatch }
   },
 
@@ -286,7 +291,13 @@ export const EFFECT_HANDLERS = {
  * @param {Object} band - Band state
  * @returns {Object} { playerPatch, bandPatch, messages, errorType }
  */
-export const processPurchaseEffect = (effect, item, initialPlayerPatch, player, band) => {
+export const processPurchaseEffect = (
+  effect,
+  item,
+  initialPlayerPatch,
+  player,
+  band
+) => {
   const handler = EFFECT_HANDLERS[effect.type]
 
   if (!handler) {

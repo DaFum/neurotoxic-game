@@ -63,8 +63,16 @@ const resForOf = runForOfApproach(10000)
 const resUnrolled = runUnrolledApproach(10000)
 
 // Correctness Check
-assert.deepStrictEqual(resOld, resForOf, 'ForOf approach diverges from Old approach')
-assert.deepStrictEqual(resOld, resUnrolled, 'Unrolled approach diverges from Old approach')
+assert.deepStrictEqual(
+  resOld,
+  resForOf,
+  'ForOf approach diverges from Old approach'
+)
+assert.deepStrictEqual(
+  resOld,
+  resUnrolled,
+  'Unrolled approach diverges from Old approach'
+)
 
 let sink // Sink to prevent dead code elimination
 

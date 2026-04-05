@@ -37,14 +37,21 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
     'getRawAudioContext returns Tone context rawContext or Tone context',
     async subtest => {
       const rawContext = getRawAudioContext()
-      if (!rawContext) return subtest.skip('getRawAudioContext not mocking correctly')
+      if (!rawContext)
+        return subtest.skip('getRawAudioContext not mocking correctly')
       assert.ok(rawContext !== undefined)
       assert.strictEqual(rawContext, mockTone.getContext().rawContext)
 
       // Ensure that getRawAudioContext is correctly exported from the main hub
       const audioEngineModule = await import('../src/utils/audioEngine.js')
-      assert.strictEqual(typeof audioEngineModule.getRawAudioContext, 'function')
-      assert.strictEqual(audioEngineModule.getRawAudioContext(), getRawAudioContext())
+      assert.strictEqual(
+        typeof audioEngineModule.getRawAudioContext,
+        'function'
+      )
+      assert.strictEqual(
+        audioEngineModule.getRawAudioContext(),
+        getRawAudioContext()
+      )
     }
   )
 
@@ -81,7 +88,9 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
         e.name === 'TypeError' ||
         /currentTime|readonly|not configurable|Cannot redefine/i.test(e.message)
       ) {
-        return subtest.skip('Cannot mock context.currentTime in this environment')
+        return subtest.skip(
+          'Cannot mock context.currentTime in this environment'
+        )
       }
       throw e
     } finally {
@@ -99,25 +108,28 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
     }
   })
 
-  await t.test('getToneStartTimeSec adds lookAhead to raw time', async subtest => {
-    const ToneModule = await import('tone')
-    const mockToneLocal = ToneModule.default || ToneModule.Tone || ToneModule
-    const context = mockToneLocal.getContext()
-    const originalLookAhead = context.lookAhead
+  await t.test(
+    'getToneStartTimeSec adds lookAhead to raw time',
+    async subtest => {
+      const ToneModule = await import('tone')
+      const mockToneLocal = ToneModule.default || ToneModule.Tone || ToneModule
+      const context = mockToneLocal.getContext()
+      const originalLookAhead = context.lookAhead
 
-    try {
-      context.lookAhead = 0.15
-      const time = getToneStartTimeSec(10)
+      try {
+        context.lookAhead = 0.15
+        const time = getToneStartTimeSec(10)
 
-      if (context.lookAhead !== 0.15 || typeof time !== 'number') {
-        subtest.skip('mock lookAhead not applied')
-      } else {
-        assert.strictEqual(time, 10.15)
+        if (context.lookAhead !== 0.15 || typeof time !== 'number') {
+          subtest.skip('mock lookAhead not applied')
+        } else {
+          assert.strictEqual(time, 10.15)
+        }
+      } finally {
+        context.lookAhead = originalLookAhead
       }
-    } finally {
-      context.lookAhead = originalLookAhead
     }
-  })
+  )
 })
 
 test('setupAudio and disposeAudio', async t => {

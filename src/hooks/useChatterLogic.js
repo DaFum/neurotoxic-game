@@ -35,7 +35,6 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
 
-
 export const useChatterLogic = (gameState, t) => {
   const stateRef = useRef(gameState)
   const [messages, setMessages] = useState([])

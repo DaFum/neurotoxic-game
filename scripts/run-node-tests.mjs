@@ -56,7 +56,16 @@ const getRemainingTestFiles = () => {
   return allFiles
 }
 
-const EXCLUDED_TEST_DIRS = ['tests/api', 'tests/utils', 'tests/data', 'tests/security', 'tests/logic', 'tests/social', 'tests/hooks', 'tests/performance']
+const EXCLUDED_TEST_DIRS = [
+  'tests/api',
+  'tests/utils',
+  'tests/data',
+  'tests/security',
+  'tests/logic',
+  'tests/social',
+  'tests/hooks',
+  'tests/performance'
+]
 const isPathInExcludedDir = testPath => {
   const resolved = path.resolve(testPath)
   const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')

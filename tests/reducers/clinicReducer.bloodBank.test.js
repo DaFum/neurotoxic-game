@@ -8,7 +8,8 @@ mock.module('../../src/utils/logger.js', {
   }
 })
 
-const { handleBloodBankDonate } = await import('../../src/context/reducers/clinicReducer.js')
+const { handleBloodBankDonate } =
+  await import('../../src/context/reducers/clinicReducer.js')
 
 describe('handleBloodBankDonate Reducer', () => {
   const getInitialState = () => ({

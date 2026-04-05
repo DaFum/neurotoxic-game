@@ -104,20 +104,28 @@ describe('useAudioControl hook', () => {
     expect(result.current.audioState.isMuted).toBe(false)
 
     // setMusic
-    act(() => { result.current.handleAudioChange.setMusic(0.8) })
+    act(() => {
+      result.current.handleAudioChange.setMusic(0.8)
+    })
     expect(audioManager.setMusicVolume).toHaveBeenCalledWith(0.8)
     expect(result.current.audioState.musicVol).toBe(0.8)
 
     // setSfx
-    act(() => { result.current.handleAudioChange.setSfx(0.2) })
+    act(() => {
+      result.current.handleAudioChange.setSfx(0.2)
+    })
     expect(audioManager.setSFXVolume).toHaveBeenCalledWith(0.2)
     expect(result.current.audioState.sfxVol).toBe(0.2)
 
     // toggleMute
-    act(() => { result.current.handleAudioChange.toggleMute() })
+    act(() => {
+      result.current.handleAudioChange.toggleMute()
+    })
     expect(audioManager.toggleMute).toHaveBeenCalled()
     expect(result.current.audioState.isMuted).toBe(true)
-    act(() => { result.current.handleAudioChange.toggleMute() })
+    act(() => {
+      result.current.handleAudioChange.toggleMute()
+    })
     expect(result.current.audioState.isMuted).toBe(false)
 
     // State transitions: play -> stop -> resume -> stop (idempotent)
@@ -127,15 +135,21 @@ describe('useAudioControl hook', () => {
     })
     expect(result.current.audioState.isPlaying).toBe(true)
 
-    act(() => { result.current.handleAudioChange.stopMusic() })
+    act(() => {
+      result.current.handleAudioChange.stopMusic()
+    })
     expect(audioManager.stopMusic).toHaveBeenCalled()
     expect(result.current.audioState.isPlaying).toBe(false)
 
-    act(() => { result.current.handleAudioChange.stopMusic() }) // Idempotent check
+    act(() => {
+      result.current.handleAudioChange.stopMusic()
+    }) // Idempotent check
     expect(audioManager.stopMusic).toHaveBeenCalledTimes(2)
     expect(result.current.audioState.isPlaying).toBe(false)
 
-    await act(async () => { await result.current.handleAudioChange.resumeMusic() })
+    await act(async () => {
+      await result.current.handleAudioChange.resumeMusic()
+    })
     expect(audioManager.resumeMusic).toHaveBeenCalled()
     expect(result.current.audioState.isPlaying).toBe(true)
   })
@@ -145,31 +159,47 @@ describe('useAudioControl hook', () => {
 
     // setMusic failure
     audioManager.setMusicVolume.mockImplementationOnce(() => false)
-    act(() => { result.current.handleAudioChange.setMusic(0.8) })
+    act(() => {
+      result.current.handleAudioChange.setMusic(0.8)
+    })
     expect(result.current.audioState.musicVol).toBe(0.5)
 
     // setMusic exception
     const error1 = new Error('Music error')
-    audioManager.setMusicVolume.mockImplementationOnce(() => { throw error1 })
-    act(() => { result.current.handleAudioChange.setMusic(0.8) })
+    audioManager.setMusicVolume.mockImplementationOnce(() => {
+      throw error1
+    })
+    act(() => {
+      result.current.handleAudioChange.setMusic(0.8)
+    })
     expect(handleError).toHaveBeenCalledWith(error1, expect.any(Object))
 
     // setSfx exception
     const error2 = new Error('SFX error')
-    audioManager.setSFXVolume.mockImplementationOnce(() => { throw error2 })
-    act(() => { result.current.handleAudioChange.setSfx(0.2) })
+    audioManager.setSFXVolume.mockImplementationOnce(() => {
+      throw error2
+    })
+    act(() => {
+      result.current.handleAudioChange.setSfx(0.2)
+    })
     expect(handleError).toHaveBeenCalledWith(error2, expect.any(Object))
 
     // toggleMute exception
     const error3 = new Error('Mute error')
-    audioManager.toggleMute.mockImplementationOnce(() => { throw error3 })
-    act(() => { result.current.handleAudioChange.toggleMute() })
+    audioManager.toggleMute.mockImplementationOnce(() => {
+      throw error3
+    })
+    act(() => {
+      result.current.handleAudioChange.toggleMute()
+    })
     expect(handleError).toHaveBeenCalledWith(error3, expect.any(Object))
   })
 
   it('handles external state synchronization and selectors', () => {
     const { result, rerender } = renderHook(() =>
-      useAudioControl(state => state.currentSongId === 'ambient' && state.isPlaying)
+      useAudioControl(
+        state => state.currentSongId === 'ambient' && state.isPlaying
+      )
     )
 
     // Inline selector remains stable

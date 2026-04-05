@@ -155,7 +155,9 @@ export const usePurchaseLogic = ({
           } else if (validation.errorType === 'already_owned') {
             addToast(
               t('ui:shop.messages.alreadyOwned', {
-                itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+                itemName: t(`items:${item.id}.name`, {
+                  defaultValue: item.name
+                })
               }),
               'warning'
             )
@@ -166,7 +168,9 @@ export const usePurchaseLogic = ({
                 currency: payingWithFame
                   ? t('ui:shop.messages.fame')
                   : t('ui:shop.messages.money'),
-                itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+                itemName: t(`items:${item.id}.name`, {
+                  defaultValue: item.name
+                })
               }),
               'error'
             )
@@ -174,7 +178,13 @@ export const usePurchaseLogic = ({
           return false
         }
 
-        const { effect, finalCost, isConsumable, payingWithFame, startingCurrency } = validation
+        const {
+          effect,
+          finalCost,
+          isConsumable,
+          payingWithFame,
+          startingCurrency
+        } = validation
 
         // Build initial patches
         let initialPlayerPatch
@@ -189,7 +199,13 @@ export const usePurchaseLogic = ({
           initialPlayerPatch = { money: newMoney }
         }
 
-        const effectResult = processPurchaseEffect(effect, item, initialPlayerPatch, player, band)
+        const effectResult = processPurchaseEffect(
+          effect,
+          item,
+          initialPlayerPatch,
+          player,
+          band
+        )
 
         if (effectResult.errorType === 'unknown_effect') {
           handleError(

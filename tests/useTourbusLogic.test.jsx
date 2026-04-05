@@ -1,4 +1,11 @@
-import { describe, it as test, beforeEach, afterEach, vi as mock, expect } from 'vitest'
+import {
+  describe,
+  it as test,
+  beforeEach,
+  afterEach,
+  vi as mock,
+  expect
+} from 'vitest'
 
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -9,10 +16,14 @@ const mockUseGameState = mock.fn(() => ({
   completeTravelMinigame: mock.fn()
 }))
 
-mock.mock('../src/context/GameState', () => ({ useGameState: mockUseGameState }))
+mock.mock('../src/context/GameState', () => ({
+  useGameState: mockUseGameState
+}))
 
 const mockPlaySFX = mock.fn()
-mock.mock('../src/utils/AudioManager', () => ({ audioManager: { playSFX: mockPlaySFX } }))
+mock.mock('../src/utils/AudioManager', () => ({
+  audioManager: { playSFX: mockPlaySFX }
+}))
 
 const mockHasUpgrade = mock.fn(() => false)
 mock.mock('../src/utils/upgradeUtils', () => ({ hasUpgrade: mockHasUpgrade }))
@@ -25,7 +36,8 @@ const {
   TARGET_DISTANCE,
   getHitDamage
 } = await import('../src/hooks/minigames/useTourbusLogic.js')
-const { TOURBUS_LANE_COUNT, TOURBUS_BUS_Y_PERCENT } = await import('../src/hooks/minigames/constants.js')
+const { TOURBUS_LANE_COUNT, TOURBUS_BUS_Y_PERCENT } =
+  await import('../src/hooks/minigames/constants.js')
 
 describe('getHitDamage', () => {
   beforeEach(() => {
@@ -54,7 +66,10 @@ describe('getHitDamage', () => {
 describe('useTourbusLogic', () => {
   beforeEach(() => {
     setupJSDOM()
-    mockUseGameState.mockImplementation(() => ({ player: { van: { upgrades: [] } }, completeTravelMinigame: mock.fn() }))
+    mockUseGameState.mockImplementation(() => ({
+      player: { van: { upgrades: [] } },
+      completeTravelMinigame: mock.fn()
+    }))
     mockPlaySFX.mockClear()
     mockHasUpgrade.mockImplementation(() => false)
   })
@@ -74,34 +89,54 @@ describe('useTourbusLogic', () => {
     game.lastSpawnTime = 0
     game.obstacles = []
 
-    act(() => { result.current.update(SPAWN_RATE_MS - 10) })
+    act(() => {
+      result.current.update(SPAWN_RATE_MS - 10)
+    })
     expect(game.obstacles.length).toBe(0)
-    act(() => { result.current.update(20) })
+    act(() => {
+      result.current.update(20)
+    })
     expect(game.obstacles.length).toBe(1)
 
     // Max speed
     game.distance = TARGET_DISTANCE * 0.8
     game.obstacles = []
     game.lastSpawnTime = 0
-    act(() => { result.current.update(0) })
+    act(() => {
+      result.current.update(0)
+    })
     expect(game.speed).toBe(MAX_SPEED)
     const expectedRate = (BASE_SPEED * SPAWN_RATE_MS) / MAX_SPEED
-    act(() => { result.current.update(expectedRate - 25) })
+    act(() => {
+      result.current.update(expectedRate - 25)
+    })
     expect(game.obstacles.length).toBe(0)
-    act(() => { result.current.update(50) })
+    act(() => {
+      result.current.update(50)
+    })
     expect(game.obstacles.length).toBe(1)
 
     // Movement
     expect(game.busLane).toBe(1)
-    act(() => { result.current.actions.moveLeft() })
+    act(() => {
+      result.current.actions.moveLeft()
+    })
     expect(game.busLane).toBe(0)
-    act(() => { result.current.actions.moveLeft() })
+    act(() => {
+      result.current.actions.moveLeft()
+    })
     expect(game.busLane).toBe(0) // Clamped
-    act(() => { result.current.actions.moveRight() })
+    act(() => {
+      result.current.actions.moveRight()
+    })
     expect(game.busLane).toBe(1)
-    act(() => { result.current.actions.moveRight() })
+    act(() => {
+      result.current.actions.moveRight()
+    })
     expect(game.busLane).toBe(2)
-    act(() => { result.current.actions.moveRight() })
+    act(() => {
+      result.current.actions.moveRight()
+    })
     expect(game.busLane).toBe(TOURBUS_LANE_COUNT - 1)
 
     unmount()
@@ -120,12 +155,26 @@ describe('useTourbusLogic', () => {
     // Collisions
     game.busLane = 1
     game.obstacles = [
-      { id: 'obs1', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false },
-      { id: 'fuel1', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'FUEL', collided: false },
+      {
+        id: 'obs1',
+        lane: 1,
+        y: TOURBUS_BUS_Y_PERCENT + 1,
+        type: 'OBSTACLE',
+        collided: false
+      },
+      {
+        id: 'fuel1',
+        lane: 1,
+        y: TOURBUS_BUS_Y_PERCENT + 1,
+        type: 'FUEL',
+        collided: false
+      },
       { id: 'gone', lane: 0, y: 120, type: 'OBSTACLE' }
     ]
 
-    act(() => { result.current.update(16) })
+    act(() => {
+      result.current.update(16)
+    })
 
     expect(game.damage).toBe(10) // 10 from obstacle
     expect(game.itemsCollected).toEqual(['FUEL'])
@@ -142,7 +191,9 @@ describe('useTourbusLogic', () => {
 
     // Game Completion
     game.distance = TARGET_DISTANCE
-    act(() => { result.current.update(16) })
+    act(() => {
+      result.current.update(16)
+    })
     expect(game.isGameOver).toBe(true)
     expect(completeMock.mock.calls.length).toBe(1)
     expect(completeMock.mock.calls[0]).toEqual([10, ['FUEL']])
@@ -156,16 +207,38 @@ describe('useTourbusLogic', () => {
 
     // Bullbar (reduces to 5)
     mockHasUpgrade.mockImplementation((_, type) => type === 'van_bullbar')
-    game.obstacles = [{ id: 'obs1', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
+    game.obstacles = [
+      {
+        id: 'obs1',
+        lane: 1,
+        y: TOURBUS_BUS_Y_PERCENT + 1,
+        type: 'OBSTACLE',
+        collided: false
+      }
+    ]
     game.damage = 0
-    act(() => { result.current.update(16) })
+    act(() => {
+      result.current.update(16)
+    })
     expect(game.damage).toBe(5)
 
     // Armor (reduces to 2) - armor takes precedence
-    mockHasUpgrade.mockImplementation((_, type) => type === 'van_armor' || type === 'van_bullbar')
-    game.obstacles = [{ id: 'obs2', lane: 1, y: TOURBUS_BUS_Y_PERCENT + 1, type: 'OBSTACLE', collided: false }]
+    mockHasUpgrade.mockImplementation(
+      (_, type) => type === 'van_armor' || type === 'van_bullbar'
+    )
+    game.obstacles = [
+      {
+        id: 'obs2',
+        lane: 1,
+        y: TOURBUS_BUS_Y_PERCENT + 1,
+        type: 'OBSTACLE',
+        collided: false
+      }
+    ]
     game.damage = 0
-    act(() => { result.current.update(16) })
+    act(() => {
+      result.current.update(16)
+    })
     expect(game.damage).toBe(2)
 
     unmount()

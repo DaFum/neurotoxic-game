@@ -668,26 +668,26 @@ test('calculateEffectiveTicketPrice handles discounts correctly', async t => {
     )
   })
 
-test('calculateGigFinancials handles zero capacity venue with zero fame safely', () => {
-  // Verifies the specific regression case where capacity=0 and fame=0 creates 0/0 NaN cascades
-  const result = calculateGigFinancials({
-    gigData: { capacity: 0, price: 10, pay: 0 },
-    performanceScore: 100,
-    modifiers: {},
-    bandInventory: { shirts: 50 },
-    playerState: { fame: 0 }
-  })
+  test('calculateGigFinancials handles zero capacity venue with zero fame safely', () => {
+    // Verifies the specific regression case where capacity=0 and fame=0 creates 0/0 NaN cascades
+    const result = calculateGigFinancials({
+      gigData: { capacity: 0, price: 10, pay: 0 },
+      performanceScore: 100,
+      modifiers: {},
+      bandInventory: { shirts: 50 },
+      playerState: { fame: 0 }
+    })
 
-  // We should have 0 tickets, 0 revenue, and no NaNs
-  assert.equal(result.income.total, 0)
-  assert.equal(result.net, 0)
-  assert.equal(result.expenses.total, 0)
-  const ticketItem = result.income.breakdown.find(
-    i => i.labelKey === 'economy:gigIncome.ticketSales.label'
-  )
-  assert.equal(ticketItem.value, 0)
-  assert.equal(ticketItem.detailParams.sold, 0)
-})
+    // We should have 0 tickets, 0 revenue, and no NaNs
+    assert.equal(result.income.total, 0)
+    assert.equal(result.net, 0)
+    assert.equal(result.expenses.total, 0)
+    const ticketItem = result.income.breakdown.find(
+      i => i.labelKey === 'economy:gigIncome.ticketSales.label'
+    )
+    assert.equal(ticketItem.value, 0)
+    assert.equal(ticketItem.detailParams.sold, 0)
+  })
 
   await t.test('returns original price if price <= 10', () => {
     const gig = { price: 10 }

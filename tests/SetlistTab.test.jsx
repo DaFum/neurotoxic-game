@@ -85,7 +85,9 @@ describe('SetlistTab', () => {
     expect(setSetlist.mock.calls[0][0]).toEqual([{ id: SONGS_DB[0].id }])
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe('Selected 01 Kranker Schrank for Band HQ.')
+    expect(addToast.mock.calls[0][0]).toBe(
+      'Selected 01 Kranker Schrank for Band HQ.'
+    )
     expect(addToast.mock.calls[0][1]).toBe('success')
   })
 
@@ -109,7 +111,9 @@ describe('SetlistTab', () => {
     expect(setSetlist.mock.calls[0][0]).toEqual([])
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe('Removed 01 Kranker Schrank from Band HQ.')
+    expect(addToast.mock.calls[0][0]).toBe(
+      'Removed 01 Kranker Schrank from Band HQ.'
+    )
     expect(addToast.mock.calls[0][1]).toBe('info')
   })
 
@@ -179,7 +183,9 @@ describe('SetlistTab', () => {
     expect(mockChangeScene.mock.calls.length).toBe(0)
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe('Select at least one song to practice!')
+    expect(addToast.mock.calls[0][0]).toBe(
+      'Select at least one song to practice!'
+    )
     expect(addToast.mock.calls[0][1]).toBe('warning')
   })
 })

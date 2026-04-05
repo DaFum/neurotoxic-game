@@ -34,7 +34,11 @@ export default async function handler(req, res) {
         return res.status(429).json({ error: 'Too many requests' })
       }
 
-      if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+      if (
+        !req.body ||
+        typeof req.body !== 'object' ||
+        Array.isArray(req.body)
+      ) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
