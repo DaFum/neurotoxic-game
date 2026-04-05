@@ -106,22 +106,28 @@ export function setupBass() {
   audioState.bass.volume.value = 0
 }
 
+export function buildDrumKit(bus, kickOverrides = {}) {
+  const safeKickOverrides = kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
+  return {
+    kick: new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 6,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 },
+      ...safeKickOverrides
+    }).connect(bus),
+    snare: createLayeredSnare(bus),
+    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(bus),
+    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(bus)
+  }
+}
+
 export function setupDrums() {
   // Drum bus with own reverb send
   audioState.drumBus = new Tone.Gain(1).connect(audioState.musicGain)
   audioState.drumBus.connect(audioState.reverbSend)
 
-  audioState.drumKit = {
-    kick: new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 6,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
-    }).connect(audioState.drumBus),
-    snare: createLayeredSnare(audioState.drumBus),
-    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(audioState.drumBus),
-    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(audioState.drumBus)
-  }
+  audioState.drumKit = buildDrumKit(audioState.drumBus)
 
   // Level Mixing (more balanced)
   audioState.drumKit.kick.volume.value = 2
@@ -172,17 +178,9 @@ export function setupMidiChain() {
   }).connect(audioState.midiDryBus)
   audioState.midiBass.volume.value = -3
 
-  audioState.midiDrumKit = {
-    kick: new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 6,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
-    }).connect(audioState.midiDryBus),
-    snare: createLayeredSnare(audioState.midiDryBus),
-    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(audioState.midiDryBus),
-    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(audioState.midiDryBus)
-  }
+  audioState.midiDrumKit = buildDrumKit(audioState.midiDryBus, {
+    envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
+  })
 
   // MIDI drum levels
   audioState.midiDrumKit.kick.volume.value = 2
