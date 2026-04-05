@@ -261,8 +261,10 @@ export const useKabelsalatState = () => {
 
       // Performance: use Object iteration to find and remove connections in one pass
       let connectionSocketId
-      for (const key in connections) {
-        if (Object.hasOwn(connections, key) && connections[key] === cableId) {
+      const connectionKeys = Object.keys(connections)
+      for (let i = 0; i < connectionKeys.length; i++) {
+        const key = connectionKeys[i]
+        if (connections[key] === cableId) {
           connectionSocketId = key
           break
         }
@@ -271,8 +273,10 @@ export const useKabelsalatState = () => {
       if (connectionSocketId) {
         setConnections(prev => {
           let socketIdToRemove
-          for (const key in prev) {
-            if (Object.hasOwn(prev, key) && prev[key] === cableId) {
+          const prevKeys = Object.keys(prev)
+          for (let i = 0; i < prevKeys.length; i++) {
+            const key = prevKeys[i]
+            if (prev[key] === cableId) {
               socketIdToRemove = key
               break
             }
