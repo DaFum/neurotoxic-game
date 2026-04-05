@@ -152,13 +152,14 @@ export const handleClinicHeal = (state, payload) => {
  * @param {Object} [payload.successToast] - Optional toast on success.
  * @returns {Object} The updated game state.
  */
-export const handleBloodBankDonate = (state, payload) => {
+export const handleBloodBankDonate = (state, payload = {}) => {
   if (!state.player || !state.band || !state.social) {
     logger.warn('ClinicReducer', 'Missing player, band, or social state for blood bank')
     return state
   }
 
-  const { moneyGain = 0, harmonyCost = 0, staminaCost = 0, controversyGain = 0, successToast } = payload
+  const safePayload = payload || {}
+  const { moneyGain = 0, harmonyCost = 0, staminaCost = 0, controversyGain = 0, successToast } = safePayload
 
   // Validate members array
   if (!Array.isArray(state.band.members) || state.band.members.length === 0) {
@@ -175,12 +176,15 @@ export const handleBloodBankDonate = (state, payload) => {
   const currentControversy = Number.isFinite(state.social.controversyLevel) ? state.social.controversyLevel : 0
   const nextControversy = clampControversyLevel(currentControversy + controversyGain)
 
-  // Apply stamina drain to all members
+  // Apply stamina drain to all members and calculate actual loss
+  let totalStaminaLost = 0
   const updatedMembers = state.band.members.map(member => {
     const prevStamina = member.stamina || 0
+    const nextStamina = clampMemberStamina(prevStamina - staminaCost, member.staminaMax)
+    totalStaminaLost += (prevStamina - nextStamina)
     return {
       ...member,
-      stamina: clampMemberStamina(prevStamina - staminaCost, member.staminaMax)
+      stamina: nextStamina
     }
   })
 
@@ -205,8 +209,6 @@ export const handleBloodBankDonate = (state, payload) => {
     const deltaMoney = nextMoney - currentMoney
     const deltaHarmony = currentHarmony - nextHarmony // Expressed as a positive cost
     const deltaControversy = nextControversy - currentControversy
-    // Stamina loss is uniform but bounded per member; we'll report the requested nominal cost
-    // or you could compute an average delta if strictly required. Let's provide the actual deltas.
 
     nextState.toasts = [
       ...(state.toasts || []),
@@ -217,7 +219,7 @@ export const handleBloodBankDonate = (state, payload) => {
           deltaMoney,
           deltaHarmony,
           deltaControversy,
-          deltaStamina: staminaCost
+          deltaStamina: totalStaminaLost
         }
       }
     ]
