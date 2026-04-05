@@ -561,7 +561,7 @@
   "blood_bank.warning": "WARNUNG: BAND IST ZU SCHWACH, UM DIE SPENDE ZU ÜBERLEBEN.",
   "blood_bank.action": "BLUT SPENDEN",
   "blood_bank.button": "BLUTBANK",
-  "blood_bank.success_toast": "Blut erfolgreich gespendet",
+  "blood_bank.success_toast": "Blut erfolgreich gespendet. Ertrag +{{deltaMoney}}€, Tribut -{{deltaHarmony}} Harmonie, -{{deltaStamina}} Ausdauer. Kontroverse +{{deltaControversy}}.",
   "pirate_radio.button": "PIRATENSENDER",
   "pirate_radio.controversy_gain": "KONTROVERSE",
   "pirate_radio.cooldown": "IM ABKLINGEN",

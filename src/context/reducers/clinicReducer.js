@@ -202,7 +202,25 @@ export const handleBloodBankDonate = (state, payload) => {
   }
 
   if (successToast) {
-    nextState.toasts = [...(state.toasts || []), successToast]
+    const deltaMoney = nextMoney - currentMoney
+    const deltaHarmony = currentHarmony - nextHarmony // Expressed as a positive cost
+    const deltaControversy = nextControversy - currentControversy
+    // Stamina loss is uniform but bounded per member; we'll report the requested nominal cost
+    // or you could compute an average delta if strictly required. Let's provide the actual deltas.
+
+    nextState.toasts = [
+      ...(state.toasts || []),
+      {
+        ...successToast,
+        options: {
+          ...successToast.options,
+          deltaMoney,
+          deltaHarmony,
+          deltaControversy,
+          deltaStamina: staminaCost
+        }
+      }
+    ]
   }
 
   return nextState

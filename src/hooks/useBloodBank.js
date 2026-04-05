@@ -21,7 +21,7 @@ export const useBloodBank = () => {
   }, [player?.fameLevel])
 
   const canDonate = useMemo(() => {
-    if (!band || !band.members) return false
+    if (!band || !band.members || band.members.length === 0) return false
     const hasEnoughHarmony = band.harmony > config.harmonyCost
     // Need enough stamina to survive the drain
     const minStaminaRequired = config.staminaCost + 10

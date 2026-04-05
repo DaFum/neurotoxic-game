@@ -561,7 +561,7 @@
   "blood_bank.warning": "WARNING: BAND IS TOO WEAK TO SURVIVE DONATION.",
   "blood_bank.action": "DONATE BLOOD",
   "blood_bank.button": "BLOOD BANK",
-  "blood_bank.success_toast": "Blood donated successfully",
+  "blood_bank.success_toast": "Blood donated successfully. Gain +{{deltaMoney}}€, Cost -{{deltaHarmony}} Harmony, -{{deltaStamina}} Stamina. Controversy +{{deltaControversy}}.",
   "pirate_radio.button": "PIRATE RADIO",
   "pirate_radio.controversy_gain": "CONTROVERSY",
   "pirate_radio.cooldown": "ON COOLDOWN",

@@ -54,6 +54,14 @@ describe('handleBloodBankDonate Reducer', () => {
     // Toast should be added
     assert.strictEqual(result.toasts.length, 1)
     assert.strictEqual(result.toasts[0].message, 'Donation Success')
+
+    // Check actual deltas passed to toast
+    const options = result.toasts[0].options
+    assert.ok(options)
+    assert.strictEqual(options.deltaMoney, 200)
+    assert.strictEqual(options.deltaHarmony, 30) // 80 - 50
+    assert.strictEqual(options.deltaControversy, 5) // 15 - 10
+    assert.strictEqual(options.deltaStamina, 20)
   })
 
   test('clamps harmony to minimum of 1', () => {
