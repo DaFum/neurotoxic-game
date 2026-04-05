@@ -122,4 +122,5 @@ export function disposeAudio() {
   audioState.masterLimiter = safeDispose(audioState.masterLimiter)
 
   audioState.isSetup = false
+  audioState.setupError = null
 }

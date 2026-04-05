@@ -35,16 +35,6 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
 
-const generateChatterId = () => {
-  try {
-    const uuid = (globalThis.crypto || window?.crypto)?.randomUUID()
-    if (uuid) return uuid
-  } catch {
-    // Try the next generator
-  }
-
-  return getSafeUUID()
-}
 
 export const useChatterLogic = (gameState, t) => {
   const stateRef = useRef(gameState)
@@ -78,7 +68,7 @@ export const useChatterLogic = (gameState, t) => {
           const members = currentState.band?.members
           const speaker = resolveSpeaker(fixedSpeaker, members, t)
 
-          const id = generateChatterId()
+          const id = getSafeUUID()
 
           const newMessage = {
             id: String(id),

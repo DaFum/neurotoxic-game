@@ -68,7 +68,7 @@ export async function ensureAudioContext() {
 
   if (!audioState.isSetup) {
     if (audioState.setupError) {
-      return false
+      audioState.setupError = null
     }
     try {
       await setupAudio()

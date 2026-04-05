@@ -43,7 +43,8 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
 
       // Ensure that getRawAudioContext is correctly exported from the main hub
       const audioEngineModule = await import('../src/utils/audioEngine.js')
-      assert.strictEqual(audioEngineModule.getRawAudioContext, getRawAudioContext)
+      assert.strictEqual(typeof audioEngineModule.getRawAudioContext, 'function')
+      assert.strictEqual(audioEngineModule.getRawAudioContext(), getRawAudioContext())
     }
   )
 
@@ -76,7 +77,13 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
         assert.strictEqual(time, 42.5)
       }
     } catch (e) {
-      return subtest.skip('Cannot mock context.currentTime in this environment')
+      if (
+        e.name === 'TypeError' ||
+        /currentTime|readonly|not configurable|Cannot redefine/i.test(e.message)
+      ) {
+        return subtest.skip('Cannot mock context.currentTime in this environment')
+      }
+      throw e
     } finally {
       if (!context.rawContext) {
         Object.defineProperty(context, 'currentTime', {
