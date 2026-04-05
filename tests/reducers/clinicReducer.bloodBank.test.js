@@ -120,4 +120,30 @@ describe('handleBloodBankDonate Reducer', () => {
     // Should return the unmodified state object
     assert.strictEqual(result, initialState)
   })
+
+  test('clamps player money to 0 when negative moneyGain drives it below zero', () => {
+    const initialState = getInitialState()
+    const payload = {
+      moneyGain: -200
+    }
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    // 100 - 200 = -100, clamped to 0
+    assert.strictEqual(result.player.money, 0)
+  })
+
+  test('applies default payload values when payload is empty', () => {
+    const initialState = getInitialState()
+    const payload = {}
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    // Unchanged assertions
+    assert.strictEqual(result.player.money, 100)
+    assert.strictEqual(result.band.harmony, 80)
+    assert.strictEqual(result.social.controversyLevel, 10)
+    assert.strictEqual(result.band.members[0].stamina, 80)
+    assert.strictEqual(result.band.members[1].stamina, 50)
+  })
 })
