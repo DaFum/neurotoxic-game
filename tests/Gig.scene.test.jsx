@@ -151,7 +151,7 @@ describe('Gig Scene Component', () => {
       render(<Gig />)
 
       expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('ui:pregig.toasts.noGig'),
+        expect.stringContaining('No gig active! Returning to map.'),
         'error'
       )
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
@@ -286,7 +286,7 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      expect(screen.getByText(/ui:gig.pause_title/i)).toBeInTheDocument()
+      expect(screen.getByText(/PAUSED/i)).toBeInTheDocument()
     })
 
     test('pauses audio when pause is toggled on', () => {
@@ -299,7 +299,7 @@ describe('Gig Scene Component', () => {
 
       expect(pauseAudio).toHaveBeenCalled()
       expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('ui:gig.paused'),
+        expect.stringContaining('PAUSED'),
         'info'
       )
     })
@@ -313,14 +313,14 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      const resumeButton = screen.getByText(/ui:gig.resume/i)
+      const resumeButton = screen.getByText(/RESUME/i)
       act(() => {
         fireEvent.click(resumeButton)
       })
 
       expect(resumeAudio).toHaveBeenCalled()
       expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('ui:gig.resumed'),
+        expect.stringContaining('RESUMED'),
         'info'
       )
     })
@@ -333,8 +333,8 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      expect(screen.getByText(/ui:gig.resume/i)).toBeInTheDocument()
-      expect(screen.getByText(/ui:gig.quit/i)).toBeInTheDocument()
+      expect(screen.getByText(/RESUME/i)).toBeInTheDocument()
+      expect(screen.getByText(/QUIT GIG/i)).toBeInTheDocument()
     })
   })
 
@@ -347,7 +347,7 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      const quitButton = screen.getByText(/ui:gig.quit/i)
+      const quitButton = screen.getByText(/QUIT GIG/i)
       await act(async () => {
         fireEvent.click(quitButton)
       })
@@ -374,7 +374,7 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      const quitButton = screen.getByText(/ui:gig.quit/i)
+      const quitButton = screen.getByText(/QUIT GIG/i)
       await act(async () => {
         fireEvent.click(quitButton)
       })
@@ -396,7 +396,7 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      const quitButton = screen.getByText(/ui:gig.quit/i)
+      const quitButton = screen.getByText(/QUIT GIG/i)
       await act(async () => {
         fireEvent.click(quitButton)
       })
@@ -432,7 +432,7 @@ describe('Gig Scene Component', () => {
         fireEvent.click(pauseButton)
       })
 
-      const quitButton = screen.getByText(/ui:gig.quit/i)
+      const quitButton = screen.getByText(/QUIT GIG/i)
       await act(async () => {
         fireEvent.click(quitButton)
       })
@@ -459,9 +459,9 @@ describe('Gig Scene Component', () => {
 
       render(<Gig />)
 
-      expect(screen.getByText(/ui:gig.systemLocked/i)).toBeInTheDocument()
-      expect(screen.getByText(/ui:gig.audioOverride/i)).toBeInTheDocument()
-      expect(screen.getByText(/ui:gig.initializeAudio/i)).toBeInTheDocument()
+      expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
+      expect(screen.getByText(/Audio Interface requires manual override./i)).toBeInTheDocument()
+      expect(screen.getByText(/INITIALIZE AUDIO/i)).toBeInTheDocument()
     })
 
     test('initialize audio button calls ensureAudioContext', async () => {
@@ -479,7 +479,7 @@ describe('Gig Scene Component', () => {
 
       render(<Gig />)
 
-      const initButton = screen.getByText(/ui:gig.initializeAudio/i)
+      const initButton = screen.getByText(/INITIALIZE AUDIO/i)
       await act(async () => {
         fireEvent.click(initButton)
       })

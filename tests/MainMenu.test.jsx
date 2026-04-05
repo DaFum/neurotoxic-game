@@ -99,7 +99,7 @@ describe('MainMenu Component', () => {
       })
 
       expect(mockLoadGame).toHaveBeenCalled()
-      expect(mockAddToast).toHaveBeenCalledWith('ui:no_save_found', 'error')
+      expect(mockAddToast).toHaveBeenCalledWith('No save found', 'error')
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
@@ -230,7 +230,7 @@ describe('MainMenu Component', () => {
       fireEvent.change(input, { target: { value: '' } })
       fireEvent.click(screen.getByText('ui:confirm_identity'))
 
-      expect(mockAddToast).toHaveBeenCalledWith('ui:enter_name_error', 'error')
+      expect(mockAddToast).toHaveBeenCalledWith('Please enter a name', 'error')
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 
@@ -243,7 +243,7 @@ describe('MainMenu Component', () => {
       fireEvent.change(input, { target: { value: '   ' } })
       fireEvent.click(screen.getByText('ui:confirm_identity'))
 
-      expect(mockAddToast).toHaveBeenCalledWith('ui:enter_name_error', 'error')
+      expect(mockAddToast).toHaveBeenCalledWith('Please enter a name', 'error')
       expect(mockChangeScene).not.toHaveBeenCalled()
     })
 

@@ -26,7 +26,9 @@ test('minigames/constants - exactly expected constants are exported', () => {
     'TOURBUS_BASE_SPEED',
     'TOURBUS_MAX_SPEED',
     'TOURBUS_SPAWN_RATE_MS',
-    'TOURBUS_TARGET_DISTANCE'
+    'TOURBUS_TARGET_DISTANCE',
+    'GRID_WIDTH',
+    'GRID_HEIGHT'
   ]
   assert.deepEqual(Object.keys(constants).sort(), expectedKeys.sort())
 })
