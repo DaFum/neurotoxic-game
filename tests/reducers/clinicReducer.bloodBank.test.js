@@ -69,7 +69,11 @@ describe('handleBloodBankDonate Reducer', () => {
     assert.strictEqual(options.deltaMoney, 200)
     assert.strictEqual(options.deltaHarmony, 30) // 80 - 50
     assert.strictEqual(options.deltaControversy, 5) // 15 - 10
-    assert.strictEqual(options.deltaStamina, 20)
+    // deltaStamina should be the average actual loss:
+    // m1: 80 -> 60 = 20 lost
+    // m2: 10 -> 0 = 10 lost
+    // average = 15
+    assert.strictEqual(options.deltaStamina, 15)
   })
 
   test('clamps harmony to minimum of 1', () => {
@@ -119,5 +123,37 @@ describe('handleBloodBankDonate Reducer', () => {
 
     // Should return the unmodified state object
     assert.strictEqual(result, initialState)
+  })
+
+  test('clamps player money to 0 when negative moneyGain drives it below zero', () => {
+    const initialState = getInitialState()
+    const payload = {
+      moneyGain: -200
+    }
+
+    const result = handleBloodBankDonate(initialState, payload)
+
+    // 100 - 200 = -100, clamped to 0
+    assert.strictEqual(result.player.money, 0)
+  })
+
+  test('applies default payload values when payload is empty or undefined', () => {
+    const initialState = getInitialState()
+
+    // Test with empty object
+    let result = handleBloodBankDonate(initialState, {})
+    assert.strictEqual(result.player.money, 100)
+    assert.strictEqual(result.band.harmony, 80)
+    assert.strictEqual(result.social.controversyLevel, 10)
+    assert.strictEqual(result.band.members[0].stamina, 80)
+    assert.strictEqual(result.band.members[1].stamina, 50)
+
+    // Test with undefined
+    result = handleBloodBankDonate(initialState, undefined)
+    assert.strictEqual(result.player.money, 100)
+
+    // Test with null
+    result = handleBloodBankDonate(initialState, null)
+    assert.strictEqual(result.player.money, 100)
   })
 })

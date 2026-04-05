@@ -71,7 +71,7 @@ export const useChatterLogic = (gameState, t) => {
           const id = getSafeUUID()
 
           const newMessage = {
-            id: String(id),
+            id,
             text,
             speaker,
             type,
