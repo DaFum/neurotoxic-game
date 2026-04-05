@@ -1,6 +1,14 @@
-import { test, describe } from 'node:test'
+import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
-import { handleBloodBankDonate } from '../../src/context/reducers/clinicReducer.js'
+
+mock.module('../../src/utils/logger.js', {
+  namedExports: {
+    logger: { warn: mock.fn(), info: mock.fn(), debug: mock.fn() },
+    LOG_LEVELS: { ERROR: 0, WARN: 1, INFO: 2, DEBUG: 3 }
+  }
+})
+
+const { handleBloodBankDonate } = await import('../../src/context/reducers/clinicReducer.js')
 
 describe('handleBloodBankDonate Reducer', () => {
   const getInitialState = () => ({
