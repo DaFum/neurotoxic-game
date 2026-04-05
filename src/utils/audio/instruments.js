@@ -107,13 +107,14 @@ export function setupBass() {
 }
 
 export function buildDrumKit(bus, kickOverrides = {}) {
+  const safeKickOverrides = kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
   return {
     kick: new Tone.MembraneSynth({
       pitchDecay: 0.05,
       octaves: 6,
       oscillator: { type: 'sine' },
       envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 },
-      ...kickOverrides
+      ...safeKickOverrides
     }).connect(bus),
     snare: createLayeredSnare(bus),
     hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(bus),
