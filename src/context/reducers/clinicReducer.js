@@ -209,7 +209,6 @@ export const handleBloodBankDonate = (state, payload = {}) => {
     const deltaMoney = nextMoney - currentMoney
     const deltaHarmony = currentHarmony - nextHarmony // Expressed as a positive cost
     const deltaControversy = nextControversy - currentControversy
-    const averageStaminaLost = Math.round(totalStaminaLost / state.band.members.length)
 
     nextState.toasts = [
       ...(state.toasts || []),
@@ -220,7 +219,7 @@ export const handleBloodBankDonate = (state, payload = {}) => {
           deltaMoney,
           deltaHarmony,
           deltaControversy,
-          deltaStamina: averageStaminaLost
+          deltaStamina: totalStaminaLost
         }
       }
     ]
