@@ -1,11 +1,15 @@
 // TODO: Review this file
+import React from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 
-export const ShopItem = ({
+// ⚡ Bolt Optimization: Wrapped ShopItem in React.memo
+// Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
+// (e.g. player money updates) if the item's specific props haven't changed.
+export const ShopItem = React.memo(({
   item,
   isOwned,
   isDisabled,
@@ -85,7 +89,9 @@ export const ShopItem = ({
       </div>
     </div>
   )
-}
+})
+
+ShopItem.displayName = 'ShopItem'
 
 ShopItem.propTypes = {
   item: PropTypes.shape({
