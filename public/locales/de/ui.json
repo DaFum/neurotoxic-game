@@ -631,6 +631,7 @@
   "pregig.effects.toxic": "TOXISCH (Harmonie < 20): Starkes Zittern & Hartes Timing",
   "pregig.initializing": "INITIALISIERE...",
   "pregig.locked": "GESPERRT (Beweise dich)",
+  "pregig.songLockedReason": "Song difficulty too high for current mode",
   "pregig.modifiers.catering.desc": "Kontert müde Band",
   "pregig.modifiers.catering.label": "Catering / Energie",
   "pregig.modifiers.guestlist.desc": "+VIP-Punkte",

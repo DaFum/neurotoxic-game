@@ -53,9 +53,7 @@ describe('useBloodBank', () => {
       player: { fameLevel: 1 },
       band: {
         harmony: 15, // exactly the cost, but requires > cost
-        members: [
-          { id: 'm1', stamina: 100 }
-        ]
+        members: [{ id: 'm1', stamina: 100 }]
       }
     })
 
@@ -69,9 +67,7 @@ describe('useBloodBank', () => {
       player: { fameLevel: 1 },
       band: {
         harmony: 10, // <= 15
-        members: [
-          { id: 'm1', stamina: 100 }
-        ]
+        members: [{ id: 'm1', stamina: 100 }]
       }
     })
 

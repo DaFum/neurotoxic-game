@@ -250,7 +250,9 @@ class RoadieStageController extends BaseStageController {
     if (this.textures.cars.length > 0) {
       let textureHash = car.textureHash
       if (!Number.isFinite(textureHash)) {
-        textureHash = hashString(String(car.id ?? `car_${car.row}_${car.speed}`))
+        textureHash = hashString(
+          String(car.id ?? `car_${car.row}_${car.speed}`)
+        )
       }
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length

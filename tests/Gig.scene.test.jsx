@@ -460,7 +460,9 @@ describe('Gig Scene Component', () => {
       render(<Gig />)
 
       expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
-      expect(screen.getByText(/Audio Interface requires manual override./i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Audio Interface requires manual override./i)
+      ).toBeInTheDocument()
       expect(screen.getByText(/INITIALIZE AUDIO/i)).toBeInTheDocument()
     })
 

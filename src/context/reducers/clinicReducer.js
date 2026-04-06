@@ -154,12 +154,21 @@ export const handleClinicHeal = (state, payload) => {
  */
 export const handleBloodBankDonate = (state, payload = {}) => {
   if (!state.player || !state.band || !state.social) {
-    logger.warn('ClinicReducer', 'Missing player, band, or social state for blood bank')
+    logger.warn(
+      'ClinicReducer',
+      'Missing player, band, or social state for blood bank'
+    )
     return state
   }
 
   const safePayload = payload || {}
-  const { moneyGain = 0, harmonyCost = 0, staminaCost = 0, controversyGain = 0, successToast } = safePayload
+  const {
+    moneyGain = 0,
+    harmonyCost = 0,
+    staminaCost = 0,
+    controversyGain = 0,
+    successToast
+  } = safePayload
 
   // Validate members array
   if (!Array.isArray(state.band.members) || state.band.members.length === 0) {
@@ -167,21 +176,32 @@ export const handleBloodBankDonate = (state, payload = {}) => {
     return state
   }
 
-  const currentMoney = Number.isFinite(state.player.money) ? state.player.money : 0
+  const currentMoney = Number.isFinite(state.player.money)
+    ? state.player.money
+    : 0
   const nextMoney = clampPlayerMoney(currentMoney + moneyGain)
 
-  const currentHarmony = Number.isFinite(state.band.harmony) ? state.band.harmony : 50
+  const currentHarmony = Number.isFinite(state.band.harmony)
+    ? state.band.harmony
+    : 50
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
 
-  const currentControversy = Number.isFinite(state.social.controversyLevel) ? state.social.controversyLevel : 0
-  const nextControversy = clampControversyLevel(currentControversy + controversyGain)
+  const currentControversy = Number.isFinite(state.social.controversyLevel)
+    ? state.social.controversyLevel
+    : 0
+  const nextControversy = clampControversyLevel(
+    currentControversy + controversyGain
+  )
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
   const updatedMembers = state.band.members.map(member => {
     const prevStamina = member.stamina || 0
-    const nextStamina = clampMemberStamina(prevStamina - staminaCost, member.staminaMax)
-    totalStaminaLost += (prevStamina - nextStamina)
+    const nextStamina = clampMemberStamina(
+      prevStamina - staminaCost,
+      member.staminaMax
+    )
+    totalStaminaLost += prevStamina - nextStamina
     return {
       ...member,
       stamina: nextStamina

@@ -631,6 +631,7 @@
   "pregig.effects.toxic": "TOXIC (Harmony < 20): Severe Jitter & Strict Timing",
   "pregig.initializing": "INITIALIZING...",
   "pregig.locked": "LOCKED (Prove Yourself)",
+  "pregig.songLockedReason": "Song difficulty too high for current mode",
   "pregig.modifiers.catering.desc": "Counters Tired Band Penalty",
   "pregig.modifiers.catering.label": "Catering / Energy",
   "pregig.modifiers.guestlist.desc": "+VIP Score",

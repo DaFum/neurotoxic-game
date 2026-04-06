@@ -3,10 +3,7 @@ import * as Tone from 'tone'
 import { logger } from '../logger.js'
 import { audioState } from './state.js'
 import { ensureAudioContext } from './context.js'
-import {
-  getRawAudioContext,
-  getAudioContextTimeSec
-} from './context.js'
+import { getRawAudioContext, getAudioContextTimeSec } from './context.js'
 import { loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import {

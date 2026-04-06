@@ -161,8 +161,14 @@ export const calculatePostGigStateUpdates = ({
 
         // Do not cross-post to the platform that triggered the update,
         // and do not cross-post to the newsletter, which is treated differently.
-        if (platformId !== result.platform && platformId !== SOCIAL_PLATFORMS.NEWSLETTER.id) {
-          updatedSocial[platformId] = Math.max(0, (social[platformId] || 0) + delta)
+        if (
+          platformId !== result.platform &&
+          platformId !== SOCIAL_PLATFORMS.NEWSLETTER.id
+        ) {
+          updatedSocial[platformId] = Math.max(
+            0,
+            (social[platformId] || 0) + delta
+          )
         }
       }
     }

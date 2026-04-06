@@ -22,7 +22,6 @@ export {
   TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE
 } from './constants'
 
-
 export const HIT_DAMAGE_BASE = 10
 export const HIT_DAMAGE_ARMOR = 2
 export const HIT_DAMAGE_BULLBAR = 5
@@ -31,7 +30,7 @@ export const HIT_DAMAGE_BULLBAR = 5
  * Calculates damage taken from a hit, applying mitigation from upgrades.
  * Prioritizes Armor over Bullbar.
  */
-export const getHitDamage = (upgrades) => {
+export const getHitDamage = upgrades => {
   if (hasUpgrade(upgrades, 'van_armor')) {
     return HIT_DAMAGE_ARMOR
   }
@@ -98,7 +97,10 @@ export const useTourbusLogic = () => {
 
       // Progression: Speed increases with distance
       // Reach Max Speed at 80% of target distance
-      const progress = Math.min(1, game.distance / (TOURBUS_TARGET_DISTANCE * 0.8))
+      const progress = Math.min(
+        1,
+        game.distance / (TOURBUS_TARGET_DISTANCE * 0.8)
+      )
       game.speed =
         TOURBUS_BASE_SPEED + (TOURBUS_MAX_SPEED - TOURBUS_BASE_SPEED) * progress
 
@@ -117,7 +119,6 @@ export const useTourbusLogic = () => {
       // Spawn Obstacles
       game.lastSpawnTime += deltaMS
       while (game.lastSpawnTime >= currentSpawnRate) {
-
         const time = performance.now()
         const safeRandomLane = getSafeRandom()
         const safeRandomType = getSafeRandom()

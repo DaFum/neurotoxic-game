@@ -76,8 +76,7 @@ const calculateTicketIncome = (
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
   const fameRatio = Math.min(
     1.0,
-    playerFame /
-      (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+    playerFame / (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
   )
   let fillRate =
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
@@ -180,14 +179,17 @@ const calculateMerchIncome = (
     buyRate -= missPenalty
   }
 
-  const totalInventory = Math.max(0,
+  const totalInventory = Math.max(
+    0,
     (bandInventory?.shirts || 0) +
-    (bandInventory?.hoodies || 0) +
-    (bandInventory?.cds || 0) +
-    (bandInventory?.patches || 0) +
-    (bandInventory?.vinyl || 0)
+      (bandInventory?.hoodies || 0) +
+      (bandInventory?.cds || 0) +
+      (bandInventory?.patches || 0) +
+      (bandInventory?.vinyl || 0)
   )
-  const potentialBuyers = Math.floor(Math.max(0, ticketsSold) * Math.max(0, buyRate))
+  const potentialBuyers = Math.floor(
+    Math.max(0, ticketsSold) * Math.max(0, buyRate)
+  )
   const buyers = Math.min(potentialBuyers, totalInventory)
 
   // Average Spend per buyer (simplified mix)

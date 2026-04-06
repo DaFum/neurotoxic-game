@@ -39,7 +39,10 @@ export const useKabelsalatState = () => {
       secureRandom()
       randomFnRef.current = secureRandom
     } catch (e) {
-      logger.warn('secureRandom unavailable, falling back to getSafeRandom()', e)
+      logger.warn(
+        'secureRandom unavailable, falling back to getSafeRandom()',
+        e
+      )
       randomFnRef.current = getSafeRandom
     }
   }, [])
@@ -298,7 +301,14 @@ export const useKabelsalatState = () => {
 
   const handleSocketClick = useCallback(
     socketId => {
-      if (isShocked || isPoweredOn || isGameOver || isWinningRef.current || !selectedCable) return
+      if (
+        isShocked ||
+        isPoweredOn ||
+        isGameOver ||
+        isWinningRef.current ||
+        !selectedCable
+      )
+        return
       if (connections[socketId]) return
 
       const targetSocket = SOCKET_DEFS[socketId]

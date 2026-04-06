@@ -25,7 +25,9 @@ export const useBloodBank = () => {
     const hasEnoughHarmony = band.harmony > config.harmonyCost
     // Need enough stamina to survive the drain
     const minStaminaRequired = config.staminaCost + 10
-    const allMembersHaveStamina = band.members.every(m => (m.stamina || 0) >= minStaminaRequired)
+    const allMembersHaveStamina = band.members.every(
+      m => (m.stamina || 0) >= minStaminaRequired
+    )
     return hasEnoughHarmony && allMembersHaveStamina
   }, [band, config.harmonyCost, config.staminaCost])
 
