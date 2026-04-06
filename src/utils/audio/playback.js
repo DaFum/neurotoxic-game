@@ -538,7 +538,10 @@ export function stopAudio() {
  */
 export function pauseAudio() {
   if (Tone.getTransport().state === 'started') {
-    Tone.getTransport().pause()
+    const p = Tone.getTransport().pause()
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {})
+    }
   }
   pauseGigPlayback()
 }
@@ -549,7 +552,10 @@ export function pauseAudio() {
  */
 export function resumeAudio() {
   if (Tone.getTransport().state === 'paused') {
-    Tone.getTransport().start()
+    const p = Tone.getTransport().start()
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {})
+    }
   }
   return resumeGigPlayback()
 }
