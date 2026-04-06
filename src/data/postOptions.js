@@ -711,10 +711,8 @@ export const POST_OPTIONS = [
       // ⚡ Bolt Optimization: Replace Object.values().some() with for...in loop
       // Avoids O(N) array allocation overhead and enables early return when a match is found.
       for (const id in influencers) {
-        if (
-          Object.hasOwn(influencers, id) &&
-          isValidAndAffordableInfluencer(influencers[id], player.money)
-        ) {
+        if (!Object.hasOwn(influencers, id)) continue
+        if (isValidAndAffordableInfluencer(influencers[id], player.money)) {
           return true
         }
       }
@@ -726,10 +724,8 @@ export const POST_OPTIONS = [
       // Filter by affordability
       const affordableIds = []
       for (const id in influencers) {
-        if (
-          Object.hasOwn(influencers, id) &&
-          isValidAndAffordableInfluencer(influencers[id], player.money)
-        ) {
+        if (!Object.hasOwn(influencers, id)) continue
+        if (isValidAndAffordableInfluencer(influencers[id], player.money)) {
           affordableIds.push(id)
         }
       }
