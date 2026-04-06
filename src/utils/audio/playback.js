@@ -535,41 +535,47 @@ export function stopAudio() {
 
 /**
  * Pauses the audio transport.
+ * @returns {Promise<void>} Resolves when pause is complete.
  */
-export function pauseAudio() {
+export async function pauseAudio() {
   try {
     if (Tone.getTransport().state === 'started') {
       const p = Tone.getTransport().pause()
-      if (p && typeof p.catch === 'function') {
-        p.catch(err => {
-          logger.warn('AudioEngine', 'Failed to pause audio transport', err)
-        })
+      if (p && typeof p.then === 'function') {
+        await p
       }
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to pause audio transport', err)
   }
-  pauseGigPlayback()
+  try {
+    pauseGigPlayback()
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to pause gig playback', err)
+  }
 }
 
 /**
  * Resumes the audio transport.
- * @returns {boolean} Propagates resumeGigPlayback() boolean result.
+ * @returns {Promise<boolean>} Resolves to the boolean result of resumeGigPlayback() when resume is complete.
  */
-export function resumeAudio() {
+export async function resumeAudio() {
   try {
     if (Tone.getTransport().state === 'paused') {
       const p = Tone.getTransport().start()
-      if (p && typeof p.catch === 'function') {
-        p.catch(err => {
-          logger.warn('AudioEngine', 'Failed to resume audio transport', err)
-        })
+      if (p && typeof p.then === 'function') {
+        await p
       }
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
   }
-  return resumeGigPlayback()
+  try {
+    return resumeGigPlayback()
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to resume gig playback', err)
+    return false
+  }
 }
 
 /**

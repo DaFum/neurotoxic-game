@@ -115,8 +115,18 @@ const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const checkPrototypePollution = obj => {
   if (typeof obj !== 'object' || obj === null) return
 
+  if (Object.hasOwn(obj, '__proto__')) {
+    throw new StateError(`Prototype pollution detected: __proto__`)
+  }
+  if (Object.hasOwn(obj, 'constructor')) {
+    throw new StateError(`Prototype pollution detected: constructor`)
+  }
+  if (Object.hasOwn(obj, 'prototype')) {
+    throw new StateError(`Prototype pollution detected: prototype`)
+  }
+
   for (const key in obj) {
-    if (!Object.hasOwn(obj, key)) continue;
+    if (!Object.hasOwn(obj, key)) continue
     if (BANNED_KEYS.has(key)) {
       throw new StateError(`Prototype pollution detected: ${key}`)
     }
@@ -160,7 +170,9 @@ const validateBand = band => {
             `band.members[${index}].relationships must be an object`
           )
         }
-        Object.entries(member.relationships).forEach(([relKey, relVal]) => {
+        for (const relKey in member.relationships) {
+          if (!Object.hasOwn(member.relationships, relKey)) continue
+          const relVal = member.relationships[relKey]
           if (BANNED_KEYS.has(relKey)) {
             throw new StateError(
               `band.members[${index}].relationships.${relKey} is a reserved key`
@@ -171,7 +183,7 @@ const validateBand = band => {
               `band.members[${index}].relationships.${relKey} must be a finite number in [0, 100]`
             )
           }
-        })
+        }
       }
     })
   }
@@ -191,7 +203,7 @@ const validateSocial = social => {
   if (!isPlainObject(social)) throw new StateError('social must be an object')
 
   for (const key in social) {
-    if (!Object.hasOwn(social, key)) continue;
+    if (!Object.hasOwn(social, key)) continue
     const val = social[key]
     if (key === 'lastGigDay' && val === null) continue
     if (key === 'lastPirateBroadcastDay' && val === null) continue
@@ -224,7 +236,7 @@ const validateSocial = social => {
       if (!isPlainObject(val))
         throw new StateError('social.brandReputation must be an object')
       for (const align in val) {
-        if (!Object.hasOwn(val, align)) continue;
+        if (!Object.hasOwn(val, align)) continue
         const score = val[align]
         if (typeof score !== 'number')
           throw new StateError(`brandReputation.${align} must be a number`)
@@ -236,7 +248,7 @@ const validateSocial = social => {
       if (!isPlainObject(val))
         throw new StateError('social.influencers must be an object')
       for (const id in val) {
-        if (!Object.hasOwn(val, id)) continue;
+        if (!Object.hasOwn(val, id)) continue
         const influencer = val[id]
         if (!isPlainObject(influencer))
           throw new StateError(`social.influencers.${id} must be an object`)
