@@ -39,12 +39,15 @@ export const processRhythmGameTick = ({
       try {
         const res = pauseAudio()
         if (res && typeof res.catch === 'function') {
-          res.catch(() => {})
+          res.then(() => {
+            stateRef.transportPausedByOverlay = true
+          }).catch(() => {})
+        } else {
+          stateRef.transportPausedByOverlay = true
         }
-      } catch (err) {
+      } catch (_err) {
         // Ignore audio errors
       }
-      stateRef.transportPausedByOverlay = true
     }
     return
   }
@@ -54,13 +57,18 @@ export const processRhythmGameTick = ({
       try {
         const res = resumeAudio()
         if (res && typeof res.catch === 'function') {
-          res.catch(() => {})
+          res.then(() => {
+            stateRef.transportPausedByOverlay = false
+          }).catch(() => {})
+        } else {
+          stateRef.transportPausedByOverlay = false
         }
-      } catch (err) {
+      } catch (_err) {
         // Ignore audio errors
       }
+    } else {
+      stateRef.transportPausedByOverlay = false
     }
-    stateRef.transportPausedByOverlay = false
   }
 
   if (!isTransportRunning) {
