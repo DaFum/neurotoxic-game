@@ -416,13 +416,7 @@ export const calculateAppliedDelta = (state, delta) => {
  * @param {object} currentRelationships - The current relationships of the member.
  * @returns {object|null} The calculated change or null if none.
  */
-export const calculateMemberRelationshipChange = (
-  change,
-  memberName,
-  hasGrudgeHolder,
-  hasPeacemaker,
-  currentRelationships
-) => {
+export const calculateMemberRelationshipChange = (change, memberName, hasGrudgeHolder, hasPeacemaker, currentRelationships) => {
   const isM1 = change.member1 === memberName
   const isM2 = change.member2 === memberName
 
@@ -433,12 +427,15 @@ export const calculateMemberRelationshipChange = (
 
   let amount = change.change
   // Apply traits
-  if (amount < 0 && hasGrudgeHolder)
+  if (amount < 0 && hasGrudgeHolder) {
     amount *= RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER
-  if (amount > 0 && hasPeacemaker)
+  }
+  if (amount > 0 && hasPeacemaker) {
     amount *= RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER
-  if (amount < 0 && hasPeacemaker)
+  }
+  if (amount < 0 && hasPeacemaker) {
     amount *= RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER
+  }
 
   const currentScore = currentRelationships[other] ?? RELATIONSHIP_DEFAULT_SCORE
   const newScore = Math.max(

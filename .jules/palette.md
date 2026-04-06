@@ -6,4 +6,4 @@
 ## 2025-02-28 - Tooltip for Locked Songs in Pre-Gig Setlist
 
 **Learning:** Locked items (like songs) in list selections often lack context as to _why_ they are locked, especially when the locking condition is tied to a specific game mode (e.g., 'Prove Yourself' mode). While adding a tooltip directly to a disabled `<button>` is tempting, it often fails accessibility and interaction tests because disabled elements do not trigger mouse or keyboard events reliably across browsers.
-**Action:** Always wrap disabled interactive elements in a focusable container (like a `<span tabIndex={0}>`) if they need to trigger a tooltip, ensuring the reason for the disabled state is accessible to both mouse and keyboard users.
+**Action:** Pass the disabled control directly into `Tooltip` (e.g., `Tooltip` children) and let `Tooltip` supply the focusable wrapper for disabled elements, rather than manually wrapping controls in a `<span tabIndex={0}>` at call sites. This ensures the reason for the disabled state is accessible without duplicate wrapper logic.

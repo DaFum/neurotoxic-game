@@ -71,10 +71,8 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
 
   if (isLocked) {
     return (
-      <Tooltip text={t('ui:pregig.songLockedReason')} position='top'>
-        <span tabIndex={0} style={{ display: 'block' }}>
-          {buttonContent}
-        </span>
+      <Tooltip content={t('ui:pregig.songLockedReason')}>
+        {buttonContent}
       </Tooltip>
     )
   }
