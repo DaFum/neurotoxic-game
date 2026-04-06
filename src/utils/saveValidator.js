@@ -115,9 +115,8 @@ const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const checkPrototypePollution = obj => {
   if (typeof obj !== 'object' || obj === null) return
 
-  const keys = Object.keys(obj)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
+  for (const key in obj) {
+    if (!Object.hasOwn(obj, key)) continue;
     if (BANNED_KEYS.has(key)) {
       throw new StateError(`Prototype pollution detected: ${key}`)
     }
@@ -191,9 +190,8 @@ const validateBand = band => {
 const validateSocial = social => {
   if (!isPlainObject(social)) throw new StateError('social must be an object')
 
-  const keys = Object.keys(social)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
+  for (const key in social) {
+    if (!Object.hasOwn(social, key)) continue;
     const val = social[key]
     if (key === 'lastGigDay' && val === null) continue
     if (key === 'lastPirateBroadcastDay' && val === null) continue
@@ -225,9 +223,8 @@ const validateSocial = social => {
     if (key === 'brandReputation') {
       if (!isPlainObject(val))
         throw new StateError('social.brandReputation must be an object')
-      const alignKeys = Object.keys(val)
-      for (let j = 0; j < alignKeys.length; j++) {
-        const align = alignKeys[j]
+      for (const align in val) {
+        if (!Object.hasOwn(val, align)) continue;
         const score = val[align]
         if (typeof score !== 'number')
           throw new StateError(`brandReputation.${align} must be a number`)
@@ -238,9 +235,8 @@ const validateSocial = social => {
     if (key === 'influencers') {
       if (!isPlainObject(val))
         throw new StateError('social.influencers must be an object')
-      const idKeys = Object.keys(val)
-      for (let j = 0; j < idKeys.length; j++) {
-        const id = idKeys[j]
+      for (const id in val) {
+        if (!Object.hasOwn(val, id)) continue;
         const influencer = val[id]
         if (!isPlainObject(influencer))
           throw new StateError(`social.influencers.${id} must be an object`)

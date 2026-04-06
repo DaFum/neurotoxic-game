@@ -113,9 +113,8 @@ const sanitizeBand = loadedBand => {
         }, defaultStash)
       } else if (loadedBand?.stash && typeof loadedBand.stash === 'object') {
         const migrated = Object.create(null)
-        const keys = Object.keys(loadedBand.stash)
-        for (let i = 0; i < keys.length; i++) {
-          const id = keys[i]
+        for (const id in loadedBand.stash) {
+          if (!Object.hasOwn(loadedBand.stash, id)) continue
           const item = loadedBand.stash[id]
           const baseItem = CONTRABAND_BY_ID.get(id)
           if (!baseItem) continue
@@ -459,9 +458,8 @@ const processContrabandExpiry = band => {
       if (nextBand.stash === band.stash) {
         nextBand.stash = Object.assign(Object.create(null), band.stash)
       }
-      const keys = Object.keys(nextBand.stash)
-      for (let i = 0; i < keys.length; i++) {
-        const itemKey = keys[i]
+      for (const itemKey in nextBand.stash) {
+        if (!Object.hasOwn(nextBand.stash, itemKey)) continue
         const item = nextBand.stash[itemKey]
         if (item.instanceId === e.instanceId) {
           nextBand.stash[itemKey] = {
