@@ -46,6 +46,15 @@ describe('SetlistTab', () => {
     const selectButtons = queryAllByText('SELECT')
     expect(selectButtons).toBeTruthy()
     expect(selectButtons.length).toBe(SONGS_DB.length)
+
+    // Check accessibility attributes for unselected song
+    expect(selectButtons[0].getAttribute('aria-pressed')).toBe('false')
+    // In vitest env, the mock translation function returns the exact string or the default value.
+    // In vitest setup react-i18next mock is typically configured to return the key or English fallback.
+    // Let's assert based on expected mock behavior or just ensure the attribute exists and is truthy.
+    expect(selectButtons[0].getAttribute('aria-label')).toBeTruthy()
+    // It should contain the song name
+    expect(selectButtons[0].getAttribute('aria-label')).toContain(SONGS_DB[0].name)
   })
 
   it('renders correctly with a selected song', () => {
@@ -63,7 +72,14 @@ describe('SetlistTab', () => {
 
     expect(getByText(/SELECTED:/))
     expect(getByText('1')).toBeTruthy()
-    expect(getByText('ACTIVE')).toBeTruthy()
+
+    const activeButton = getByText('ACTIVE')
+    expect(activeButton).toBeTruthy()
+
+    // Check accessibility attributes for selected song
+    expect(activeButton.getAttribute('aria-pressed')).toBe('true')
+    expect(activeButton.getAttribute('aria-label')).toBeTruthy()
+    expect(activeButton.getAttribute('aria-label')).toContain(selectedSong.name)
 
     // Other songs should still have SELECT
     const selectButtons = queryAllByText('SELECT')
