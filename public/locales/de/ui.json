@@ -380,6 +380,8 @@
   "hq.selected": "AUSGEWÄHLT",
   "hq.song_active": "AKTIV",
   "hq.song_select": "AUSWÄHLEN",
+  "hq.song_select_aria": "{{name}} zur Setlist hinzufügen",
+  "hq.song_deselect_aria": "{{name}} aus Setlist entfernen",
   "hq.start_practice": "PROBE STARTEN",
   "hq.title": "BAND HQ",
   "hq.voidTrader.title": "DER LEEREN-HÄNDLER",
