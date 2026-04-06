@@ -125,7 +125,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
     [player.fame, band.stash]
   )
 
-  const handleBuyWithLock = async item => {
+  const handleBuyWithLock = useCallback(async item => {
     if (processingItemId) return
     setProcessingItemId(item.id)
     try {
@@ -149,7 +149,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
     } finally {
       setProcessingItemId(null)
     }
-  }
+  }, [processingItemId, handleBuy, addToast])
 
   return (
     <div

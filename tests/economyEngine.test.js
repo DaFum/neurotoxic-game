@@ -668,7 +668,7 @@ test('calculateEffectiveTicketPrice handles discounts correctly', async t => {
     )
   })
 
-  test('calculateGigFinancials handles zero capacity venue with zero fame safely', () => {
+  await t.test('calculateGigFinancials handles zero capacity venue with zero fame safely', async t => {
     // Verifies the specific regression case where capacity=0 and fame=0 creates 0/0 NaN cascades
     const result = calculateGigFinancials({
       gigData: { capacity: 0, price: 10, pay: 0 },

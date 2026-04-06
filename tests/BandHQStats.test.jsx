@@ -84,10 +84,7 @@ describe('BandHQ Stats Discrepancy', () => {
       <StatsTab {...props} />
     )
     const statBoxes = getAllByTestId('stat-box')
-    const followersBox = statBoxes.find(box => {
-      const text = box.querySelector('[data-testid="stat-label"]')?.textContent
-      return text === 'Followers'
-    })
+    const followersBox = statBoxes.find(box => box.querySelector('[data-testid="stat-label"]')?.textContent === 'Followers')
 
     expect(followersBox).toBeTruthy()
     const statsTabValue = parseLocalizedNumber(
