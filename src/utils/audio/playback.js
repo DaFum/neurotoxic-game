@@ -535,29 +535,54 @@ export function stopAudio() {
 
 /**
  * Pauses the audio transport.
+ * @returns {Promise<void>} Resolves when pause is complete.
  */
 export function pauseAudio() {
-  if (Tone.getTransport().state === 'started') {
-    const p = Tone.getTransport().pause()
-    if (p && typeof p.catch === 'function') {
-      p.catch(() => {})
+  return new Promise((resolve, reject) => {
+    try {
+      if (Tone.getTransport().state === 'started') {
+        const p = Tone.getTransport().pause()
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            pauseGigPlayback()
+            resolve()
+          }).catch(err => {
+            reject(err)
+          })
+          return
+        }
+      }
+      pauseGigPlayback()
+      resolve()
+    } catch (err) {
+      reject(err)
     }
-  }
-  pauseGigPlayback()
+  })
 }
 
 /**
  * Resumes the audio transport.
- * @returns {boolean} Propagates resumeGigPlayback() boolean result.
+ * @returns {Promise<boolean>} Resolves to true when resume is complete, propagates resumeGigPlayback() boolean result.
  */
 export function resumeAudio() {
-  if (Tone.getTransport().state === 'paused') {
-    const p = Tone.getTransport().start()
-    if (p && typeof p.catch === 'function') {
-      p.catch(() => {})
+  return new Promise((resolve, reject) => {
+    try {
+      if (Tone.getTransport().state === 'paused') {
+        const p = Tone.getTransport().start()
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            resolve(resumeGigPlayback())
+          }).catch(err => {
+            reject(err)
+          })
+          return
+        }
+      }
+      resolve(resumeGigPlayback())
+    } catch (err) {
+      reject(err)
     }
-  }
-  return resumeGigPlayback()
+  })
 }
 
 /**

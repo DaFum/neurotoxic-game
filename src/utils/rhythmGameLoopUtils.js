@@ -37,13 +37,12 @@ export const processRhythmGameTick = ({
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
     if (isTransportRunning && !stateRef.transportPausedByOverlay) {
       try {
+        stateRef.transportPausedByOverlay = true
         const res = pauseAudio()
         if (res && typeof res.catch === 'function') {
-          res.then(() => {
-            stateRef.transportPausedByOverlay = true
-          }).catch(() => {})
-        } else {
-          stateRef.transportPausedByOverlay = true
+          res.catch(() => {
+            stateRef.transportPausedByOverlay = false
+          })
         }
       } catch (_err) {
         // Ignore audio errors
@@ -55,13 +54,12 @@ export const processRhythmGameTick = ({
   if (stateRef.transportPausedByOverlay) {
     if (transportState === 'paused') {
       try {
+        stateRef.transportPausedByOverlay = false
         const res = resumeAudio()
         if (res && typeof res.catch === 'function') {
-          res.then(() => {
-            stateRef.transportPausedByOverlay = false
-          }).catch(() => {})
-        } else {
-          stateRef.transportPausedByOverlay = false
+          res.catch(() => {
+            stateRef.transportPausedByOverlay = true
+          })
         }
       } catch (_err) {
         // Ignore audio errors
