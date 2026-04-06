@@ -1,5 +1,6 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
+import { logger } from './logger'
 
 const NOTE_MISS_WINDOW_MS = 300
 
@@ -40,12 +41,13 @@ export const processRhythmGameTick = ({
         stateRef.transportPausedByOverlay = true
         const res = pauseAudio()
         if (res && typeof res.catch === 'function') {
-          res.catch(() => {
+          res.catch(err => {
+            logger.debug('RhythmGameLoop', 'Failed to pause audio via overlay', err)
             stateRef.transportPausedByOverlay = false
           })
         }
-      } catch (_err) {
-        // Ignore audio errors
+      } catch (err) {
+        logger.debug('RhythmGameLoop', 'Sync error pausing audio via overlay', err)
       }
     }
     return
@@ -57,12 +59,13 @@ export const processRhythmGameTick = ({
         stateRef.transportPausedByOverlay = false
         const res = resumeAudio()
         if (res && typeof res.catch === 'function') {
-          res.catch(() => {
+          res.catch(err => {
+            logger.debug('RhythmGameLoop', 'Failed to resume audio via overlay', err)
             stateRef.transportPausedByOverlay = true
           })
         }
-      } catch (_err) {
-        // Ignore audio errors
+      } catch (err) {
+        logger.debug('RhythmGameLoop', 'Sync error resuming audio via overlay', err)
       }
     } else {
       stateRef.transportPausedByOverlay = false

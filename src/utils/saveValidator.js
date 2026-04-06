@@ -115,6 +115,16 @@ const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const checkPrototypePollution = obj => {
   if (typeof obj !== 'object' || obj === null) return
 
+  if (Object.hasOwn(obj, '__proto__')) {
+    throw new StateError(`Prototype pollution detected: __proto__`)
+  }
+  if (Object.hasOwn(obj, 'constructor')) {
+    throw new StateError(`Prototype pollution detected: constructor`)
+  }
+  if (Object.hasOwn(obj, 'prototype')) {
+    throw new StateError(`Prototype pollution detected: prototype`)
+  }
+
   for (const key in obj) {
     if (!Object.hasOwn(obj, key)) continue
     if (BANNED_KEYS.has(key)) {

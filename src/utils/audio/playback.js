@@ -537,52 +537,37 @@ export function stopAudio() {
  * Pauses the audio transport.
  * @returns {Promise<void>} Resolves when pause is complete.
  */
-export function pauseAudio() {
-  return new Promise((resolve, reject) => {
-    try {
-      if (Tone.getTransport().state === 'started') {
-        const p = Tone.getTransport().pause()
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            pauseGigPlayback()
-            resolve()
-          }).catch(err => {
-            reject(err)
-          })
-          return
-        }
+export async function pauseAudio() {
+  try {
+    if (Tone.getTransport().state === 'started') {
+      const p = Tone.getTransport().pause()
+      if (p && typeof p.then === 'function') {
+        await p
       }
-      pauseGigPlayback()
-      resolve()
-    } catch (err) {
-      reject(err)
     }
-  })
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to pause audio transport', err)
+  }
+  pauseGigPlayback()
 }
 
 /**
  * Resumes the audio transport.
- * @returns {Promise<boolean>} Resolves to true when resume is complete, propagates resumeGigPlayback() boolean result.
+ * @returns {Promise<boolean>} Resolves to the boolean result of resumeGigPlayback() when resume is complete.
  */
-export function resumeAudio() {
-  return new Promise((resolve, reject) => {
-    try {
-      if (Tone.getTransport().state === 'paused') {
-        const p = Tone.getTransport().start()
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            resolve(resumeGigPlayback())
-          }).catch(err => {
-            reject(err)
-          })
-          return
-        }
+export async function resumeAudio() {
+  try {
+    if (Tone.getTransport().state === 'paused') {
+      const p = Tone.getTransport().start()
+      if (p && typeof p.then === 'function') {
+        await p
       }
-      resolve(resumeGigPlayback())
-    } catch (err) {
-      reject(err)
     }
-  })
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to resume audio transport', err)
+    return false
+  }
+  return resumeGigPlayback()
 }
 
 /**
