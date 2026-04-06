@@ -380,6 +380,8 @@
   "hq.selected": "SELECTED",
   "hq.song_active": "ACTIVE",
   "hq.song_select": "SELECT",
+  "hq.song_select_aria": "Add {{name}} to setlist",
+  "hq.song_deselect_aria": "Remove {{name}} from setlist",
   "hq.start_practice": "START PRACTICE",
   "hq.title": "BAND HQ",
   "hq.voidTrader.title": "THE VOID TRADER",
