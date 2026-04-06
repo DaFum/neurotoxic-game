@@ -55,3 +55,13 @@
 ## 2024-04-02 - structuredClone Overhead
 **Learning:** `structuredClone` has significant overhead (~660ms vs ~10ms for 100k iterations) when used for duplicating simple nested objects on hot paths, like in `negotiateDeal`.
 **Action:** Use manual shallow copying with object spread syntax (`{ ...obj, nested: { ...obj.nested } }`) instead of `structuredClone` when deep cloning is not strictly necessary or when only specific nested objects are mutated.
+
+## 2024-05-28 - Component List Memoization
+
+**Learning:** Mapping arrays of complex sub-components without `React.memo` (like `ShopItem` inside `ShopTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
+**Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
+
+## 2024-05-28 - Loop Unrolling Tradeoffs
+
+**Learning:** Unrolling loops across configuration objects (e.g., `SOCIAL_PLATFORMS`) provides minor speed improvements but introduces significant maintainability regressions by hardcoding dynamic keys.
+**Action:** Never unroll iterations that loop over configuration data or sources of truth. Reserve loop unrolling for pure computational arrays of fixed size.
