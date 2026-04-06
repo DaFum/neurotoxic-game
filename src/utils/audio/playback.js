@@ -537,11 +537,17 @@ export function stopAudio() {
  * Pauses the audio transport.
  */
 export function pauseAudio() {
-  if (Tone.getTransport().state === 'started') {
-    const p = Tone.getTransport().pause()
-    if (p && typeof p.catch === 'function') {
-      p.catch(() => {})
+  try {
+    if (Tone.getTransport().state === 'started') {
+      const p = Tone.getTransport().pause()
+      if (p && typeof p.catch === 'function') {
+        p.catch(err => {
+          logger.warn('AudioEngine', 'Failed to pause audio transport', err)
+        })
+      }
     }
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to pause audio transport', err)
   }
   pauseGigPlayback()
 }
@@ -551,11 +557,17 @@ export function pauseAudio() {
  * @returns {boolean} Propagates resumeGigPlayback() boolean result.
  */
 export function resumeAudio() {
-  if (Tone.getTransport().state === 'paused') {
-    const p = Tone.getTransport().start()
-    if (p && typeof p.catch === 'function') {
-      p.catch(() => {})
+  try {
+    if (Tone.getTransport().state === 'paused') {
+      const p = Tone.getTransport().start()
+      if (p && typeof p.catch === 'function') {
+        p.catch(err => {
+          logger.warn('AudioEngine', 'Failed to resume audio transport', err)
+        })
+      }
     }
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to resume audio transport', err)
   }
   return resumeGigPlayback()
 }

@@ -89,10 +89,12 @@ export class CrowdManager {
       crowd.anchor.set(0.5)
       crowd.width = radius * 2.5 // Adjust scale to match circle size approx
       crowd.height = radius * 2.5
+      crowd.isSprite = true
     } else {
       crowd = new Graphics()
       crowd.circle(0, 0, radius)
       crowd.fill(fallbackColor)
+      crowd.isSprite = false
     }
     return crowd
   }
@@ -110,35 +112,20 @@ export class CrowdManager {
       shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
 
     for (let i = 0; i < this.crowdMembers.length; i++) {
-      this._updateMember(
-        this.crowdMembers[i],
-        yOffset,
-        targetTexture,
-        nextColor
-      )
-    }
-  }
+      const member = this.crowdMembers[i]
+      member.y = member.baseY - yOffset
 
-  /**
-   * @param {Sprite|Graphics} member
-   * @param {number} yOffset
-   * @param {Texture|null} targetTexture
-   * @param {number} nextColor
-   * @private
-   */
-  _updateMember(member, yOffset, targetTexture, nextColor) {
-    member.y = member.baseY - yOffset
-
-    // Texture swapping logic
-    if (member instanceof Sprite) {
-      if (targetTexture && member.texture !== targetTexture) {
-        member.texture = targetTexture
+      // Texture swapping logic
+      if (member.isSprite) {
+        if (targetTexture && member.texture !== targetTexture) {
+          member.texture = targetTexture
+        }
       }
-    }
 
-    if (member.currentFillColor !== nextColor) {
-      member.currentFillColor = nextColor
-      member.tint = nextColor
+      if (member.currentFillColor !== nextColor) {
+        member.currentFillColor = nextColor
+        member.tint = nextColor
+      }
     }
   }
 
