@@ -548,7 +548,11 @@ export async function pauseAudio() {
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to pause audio transport', err)
   }
-  pauseGigPlayback()
+  try {
+    pauseGigPlayback()
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to pause gig playback', err)
+  }
 }
 
 /**
@@ -565,9 +569,13 @@ export async function resumeAudio() {
     }
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
+  }
+  try {
+    return resumeGigPlayback()
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to resume gig playback', err)
     return false
   }
-  return resumeGigPlayback()
 }
 
 /**
