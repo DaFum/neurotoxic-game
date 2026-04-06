@@ -37,6 +37,9 @@ vi.mock('tone', () => {
       connect() {
         return this
       }
+      chain() {
+        return this
+      }
       toDestination() {
         return this
       }
@@ -67,6 +70,9 @@ vi.mock('tone', () => {
       connect() {
         return this
       }
+      chain() {
+        return this
+      }
       toDestination() {
         return this
       }
@@ -77,6 +83,9 @@ vi.mock('tone', () => {
         this.volume = { value: 0 }
       }
       connect() {
+        return this
+      }
+      chain() {
         return this
       }
       toDestination() {
@@ -172,6 +181,9 @@ vi.mock('tone', () => {
     Gain: class {
       constructor() {
         this.gain = { rampTo: vi.fn(), value: 1 }
+      }
+      chain() {
+        return this
       }
       connect() {
         return this

@@ -191,6 +191,7 @@ vi.mock('tone', async () => {
     // Add other used Tone components as needed
     Gain: vi.fn().mockImplementation(() => ({
       connect: vi.fn(),
+      chain: vi.fn(),
       disconnect: vi.fn(),
       toDestination: vi.fn(),
       gain: { value: 1, rampTo: vi.fn() }
