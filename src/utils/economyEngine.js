@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Review economyEngine.js for feature completeness of financial models, and perform balance testing on expenses/income calculations.
 import { logger } from './logger.js'
 import { bandHasTrait } from './traitLogic.js'
 import { calculateZealotryEffects } from './socialEngine.js'
@@ -76,7 +76,7 @@ const calculateTicketIncome = (
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
   // Sublinear power scaling for fame to make late-game arenas fill more smoothly
-  // fame^0.85 provides diminishing returns without hard flatlining early
+  // Uses Math.pow(playerFame, 0.85) to provide diminishing returns (power-law scaling, not logarithmic)
   const fameRatio = Math.min(
     1.0,
     Math.pow(Math.max(0, playerFame), 0.85) / (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)

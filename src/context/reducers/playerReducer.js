@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Review playerReducer.js for completeness (ADD_PLAYER, REMOVE_PLAYER, UPDATE_PLAYER) and verify edge cases are handled in the switch.
 import { logger } from '../../utils/logger.js'
 import {
   clampPlayerMoney,
@@ -26,11 +26,11 @@ export const handleUpdatePlayer = (state, payload) => {
       : state.player.fame
   )
 
-  const nextMoney = Math.max(0, clampPlayerMoney(
+  const nextMoney = clampPlayerMoney(
     updates != null && Object.hasOwn(updates, 'money')
       ? updates.money
       : state.player.money
-  ))
+  )
 
   const nextFameLevel =
     updates != null && Object.hasOwn(updates, 'fameLevel')

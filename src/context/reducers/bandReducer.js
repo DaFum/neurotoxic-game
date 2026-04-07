@@ -1,4 +1,4 @@
-// TODO: Review this file
+// TODO: Review bandReducer.js for unhandled action types and ensure all state mutations are pure.
 import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
@@ -23,7 +23,7 @@ export const handleUpdateBand = (state, payload) => {
   let nextHarmony = state.band.harmony
   if ('harmony' in updates) {
     // Explicit bounds check mandated by [STATE_SAFETY] critical rules
-    nextHarmony = Math.max(1, Math.min(100, clampBandHarmony(updates.harmony)))
+    nextHarmony = clampBandHarmony(updates.harmony)
   }
 
   const mergedBand = {
