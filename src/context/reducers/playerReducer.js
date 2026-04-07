@@ -26,11 +26,11 @@ export const handleUpdatePlayer = (state, payload) => {
       : state.player.fame
   )
 
-  const nextMoney = clampPlayerMoney(
+  const nextMoney = Math.max(0, clampPlayerMoney(
     updates != null && Object.hasOwn(updates, 'money')
       ? updates.money
       : state.player.money
-  )
+  ))
 
   const nextFameLevel =
     updates != null && Object.hasOwn(updates, 'fameLevel')

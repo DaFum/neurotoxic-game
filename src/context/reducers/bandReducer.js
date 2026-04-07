@@ -22,7 +22,8 @@ export const handleUpdateBand = (state, payload) => {
 
   let nextHarmony = state.band.harmony
   if ('harmony' in updates) {
-    nextHarmony = clampBandHarmony(updates.harmony)
+    // Explicit bounds check mandated by [STATE_SAFETY] critical rules
+    nextHarmony = Math.max(1, Math.min(100, clampBandHarmony(updates.harmony)))
   }
 
   const mergedBand = {

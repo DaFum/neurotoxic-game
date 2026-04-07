@@ -115,6 +115,8 @@ const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const checkPrototypePollution = obj => {
   if (typeof obj !== 'object' || obj === null) return
 
+  // Explicitly check for forbidden keys before iterating to prevent bypasses
+  // via non-enumerable properties (as recorded in Memory)
   if (Object.hasOwn(obj, '__proto__')) {
     throw new StateError(`Prototype pollution detected: __proto__`)
   }
@@ -125,6 +127,7 @@ const checkPrototypePollution = obj => {
     throw new StateError(`Prototype pollution detected: prototype`)
   }
 
+  // Iterate over properties to recursively check nested objects
   for (const key in obj) {
     if (!Object.hasOwn(obj, key)) continue
     if (BANNED_KEYS.has(key)) {

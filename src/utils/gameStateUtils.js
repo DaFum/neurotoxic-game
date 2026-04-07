@@ -1,6 +1,7 @@
 // TODO: Review this file
 import { hasTrait } from './traitLogic.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
+import { logger } from './logger.js'
 
 /**
  * Clamps a value to be at least 0.
@@ -210,11 +211,18 @@ const calculateClampedControversyDelta = (currentValue, deltaValue) => {
  * @returns {object} New object with filtered properties.
  */
 const copyFilteredProperties = source => {
-  if (!source) return {}
-  const destination = {}
-  const keys = Object.keys(source)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
+  if (!source) return Object.create(null)
+
+  // Explicit check for prototype pollution before copying properties
+  if (Object.hasOwn(source, '__proto__') || Object.hasOwn(source, 'constructor') || Object.hasOwn(source, 'prototype')) {
+      logger?.warn?.('Security', 'Blocked attempt to copy prototype properties in copyFilteredProperties')
+  }
+
+  // Create an object with no prototype to safely copy properties into
+  const destination = Object.create(null)
+
+  for (const key in source) {
+    if (!Object.hasOwn(source, key)) continue
     if (!isForbiddenKey(key)) {
       destination[key] = source[key]
     }
