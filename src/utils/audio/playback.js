@@ -570,10 +570,23 @@ export async function resumeAudio() {
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
   }
+
   try {
-    return resumeGigPlayback()
+    // If the gig is already playing, we don't need to try and resume it.
+    // The inner resumeGigPlayback also has this check, but this prevents duplicate triggers from multiple rapid resumeAudio calls.
+    if (!audioState.gigIsPaused) return true
+
+    // Flag that we are resuming to prevent race conditions internally during async context
+    audioState.gigIsPaused = false
+
+    const success = resumeGigPlayback()
+    if (!success) {
+      audioState.gigIsPaused = true // Revert if failed
+    }
+    return success
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume gig playback', err)
+    audioState.gigIsPaused = true // Revert if failed
     return false
   }
 }
