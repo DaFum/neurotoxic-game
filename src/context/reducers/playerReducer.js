@@ -1,4 +1,4 @@
-// TODO: Review playerReducer.js for completeness (ADD_PLAYER, REMOVE_PLAYER, UPDATE_PLAYER) and verify edge cases are handled in the switch.
+// TODO: Review playerReducer.js for completeness (UPDATE_PLAYER) and verify edge cases are handled in the switch.
 import { logger } from '../../utils/logger.js'
 import {
   clampPlayerMoney,
