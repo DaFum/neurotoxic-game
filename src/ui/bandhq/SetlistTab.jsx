@@ -127,11 +127,11 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                   selected
                     ? t('ui:hq.song_deselect_aria', {
                         name: song.name,
-                        defaultValue: `Remove ${song.name} from setlist`
+                        defaultValue: 'Remove {{name}} from setlist'
                       })
                     : t('ui:hq.song_select_aria', {
                         name: song.name,
-                        defaultValue: `Add ${song.name} to setlist`
+                        defaultValue: 'Add {{name}} to setlist'
                       })
                 }
                 className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
