@@ -203,7 +203,6 @@ export async function playSongFromData(song, delay = 0, options = {}) {
 
   const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
   const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
-  Tone.getTransport().bpm.value = bpm
 
   if (!validateSongReady(song)) return false
 
@@ -221,6 +220,8 @@ export async function playSongFromData(song, delay = 0, options = {}) {
     activeTempoMap
   )
   if (!processingResult) return false
+
+  Tone.getTransport().bpm.value = bpm
   const { events, lastTime } = processingResult
 
   audioState.part = createSongPart(events)

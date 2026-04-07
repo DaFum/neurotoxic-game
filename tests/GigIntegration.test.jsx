@@ -139,6 +139,9 @@ vi.mock('tone', () => {
       }
     },
     Delay: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -151,6 +154,9 @@ vi.mock('tone', () => {
       }
     },
     EQ3: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -239,6 +245,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     Distortion: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -248,6 +257,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     Chorus: class {
+      chain() {
+        return this
+      }
       constructor() {
         this.volume = { value: 0 }
       }
@@ -263,6 +275,9 @@ vi.mock('tone', () => {
       }
     },
     Filter: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -272,6 +287,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     AutoWah: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -281,6 +299,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     Tremolo: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -290,6 +311,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     Phaser: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -299,6 +323,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     BitCrusher: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -308,6 +335,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     PingPongDelay: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -317,6 +347,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     Vibrato: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -326,6 +359,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     FeedbackDelay: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
@@ -485,6 +521,9 @@ vi.mock('tone', () => {
       dispose() {}
     },
     Chebyshev: class {
+      chain() {
+        return this
+      }
       connect() {
         return this
       }
