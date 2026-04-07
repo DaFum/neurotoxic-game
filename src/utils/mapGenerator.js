@@ -527,7 +527,24 @@ export class MapGenerator {
       return [arr[idx1], arr[idx2]]
     }
 
-    // For larger k, a partial Fisher-Yates shuffle
+    // Sparse Fisher-Yates shuffle using Map to avoid O(n) copy for small k relative to n
+    if (k < n / 4) {
+      const result = []
+      const swaps = new Map()
+      for (let i = 0; i < k; i++) {
+        const j = i + Math.floor(this.random() * (n - i))
+
+        // Retrieve values, falling back to original array if not swapped
+        const valI = swaps.has(i) ? swaps.get(i) : arr[i]
+        const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
+
+        result.push(valJ)
+        swaps.set(j, valI) // Only need to track what goes into j, since we don't read i again
+      }
+      return result
+    }
+
+    // For large k, full shallow copy is more efficient than Map overhead
     const shuffled = [...arr]
     for (let i = 0; i < k; i++) {
       const j = i + Math.floor(this.random() * (n - i))

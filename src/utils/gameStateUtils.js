@@ -215,7 +215,7 @@ const copyFilteredProperties = source => {
 
   // Explicit check for prototype pollution before copying properties
   if (Object.hasOwn(source, '__proto__') || Object.hasOwn(source, 'constructor') || Object.hasOwn(source, 'prototype')) {
-      logger?.warn?.('Security', 'Blocked attempt to copy prototype properties in copyFilteredProperties')
+    logger?.warn?.('Security', 'Blocked attempt to copy prototype properties in copyFilteredProperties')
   }
 
   // Create an object with no prototype to safely copy properties into

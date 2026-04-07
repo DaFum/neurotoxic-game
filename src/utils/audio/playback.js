@@ -576,9 +576,6 @@ export async function resumeAudio() {
     // The inner resumeGigPlayback also has this check, but this prevents duplicate triggers from multiple rapid resumeAudio calls.
     if (!audioState.gigIsPaused) return true
 
-    // Flag that we are resuming to prevent race conditions internally during async context
-    audioState.gigIsPaused = false
-
     const success = resumeGigPlayback()
     if (!success) {
       audioState.gigIsPaused = true // Revert if failed
