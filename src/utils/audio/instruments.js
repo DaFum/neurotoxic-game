@@ -36,18 +36,19 @@ export function createLayeredSnare(bus) {
 }
 
 export function setupMasterChain() {
+  // Nodes
   // Limiter prevents clipping, Compressor glues the mix
   audioState.masterLimiter = new Tone.Limiter(-3).toDestination()
-  audioState.masterComp = new Tone.Compressor(-18, 4).connect(
-    audioState.masterLimiter
-  )
-  audioState.musicGain = new Tone.Gain(1).connect(audioState.masterComp)
+  audioState.masterComp = new Tone.Compressor(-18, 4)
+  audioState.musicGain = new Tone.Gain(1)
 
-  // Global reverb send for natural space
-  audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
-    audioState.musicGain
-  )
-  audioState.reverbSend = new Tone.Gain(0.3).connect(audioState.reverb)
+  // Global reverb for natural space
+  audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })
+  audioState.reverbSend = new Tone.Gain(0.3)
+
+  // Signal Routing
+  audioState.musicGain.chain(audioState.masterComp, audioState.masterLimiter)
+  audioState.reverbSend.chain(audioState.reverb, audioState.musicGain)
 }
 
 export function setupGuitar() {

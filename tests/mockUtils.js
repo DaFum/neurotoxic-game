@@ -67,6 +67,9 @@ export class MockGain {
   connect() {
     return this
   }
+  chain() {
+    return this
+  }
   dispose() {}
 }
 
