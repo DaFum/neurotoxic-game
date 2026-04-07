@@ -43,7 +43,7 @@ const resolveTemplateString = (str, context) => {
 
   return str.replace(TEMPLATE_REGEX, (match, key) => {
     // Reject forbidden keys immediately
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    if (/^(?:__proto__|constructor|prototype)$/i.test(key)) {
       return match
     }
 
