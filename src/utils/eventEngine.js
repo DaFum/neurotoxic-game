@@ -42,6 +42,11 @@ const resolveTemplateString = (str, context) => {
   let lowerKeysMap = null
 
   return str.replace(TEMPLATE_REGEX, (match, key) => {
+    // Reject forbidden keys immediately
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      return match
+    }
+
     // Fast path: exact case match
     if (typeof context[key] === 'string') {
       return context[key]
@@ -50,10 +55,6 @@ const resolveTemplateString = (str, context) => {
     // Fallback: case-insensitive match (as the original implementation used 'gi')
     if (!lowerKeysMap) {
       lowerKeysMap = Object.create(null)
-
-      const hasProto = Object.hasOwn(context, '__proto__')
-      const hasConstructor = Object.hasOwn(context, 'constructor')
-      const hasPrototype = Object.hasOwn(context, 'prototype')
 
       for (const k in context) {
         if (!Object.hasOwn(context, k)) continue
