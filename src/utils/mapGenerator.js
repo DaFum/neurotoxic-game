@@ -4,14 +4,15 @@
  * #1 Updates:
  * - Refactored index-based `for` loops (previously converted from `forEach` closures) to `for...of` loops across multiple map generation steps to improve readability while maintaining the performance benefits of avoiding closure allocations.
  * - Hoisted constant definitions (`padding = 10`) outside the main simulation iteration loop in `resolveOverlaps`.
+ * - Optimized `pickRandomSubset` to avoid shallow copying the source array when picking small subsets (k = 1 or k = 2), avoiding heap allocations in hot loops.
  *
  * #2 Next Steps:
  * - Monitor performance for exceptionally large maps (depth > 50).
  * - Consider WebWorker offloading if `resolveOverlaps` becomes a bottleneck on mobile.
  *
  * #3 Errors + Solutions:
- * - Issue: Previously, `forEach` closure allocations were negatively impacting performance during deep map generation. The initial fix used indexed `for` loops.
- * - Solution: Transitioned from indexed `for` loops to `for...of` loops to achieve the best balance between V8 execution performance and code clarity.
+ * - Issue: `pickRandomSubset` was performing a shallow copy of the entire array via the spread operator `[...arr]` on every invocation, causing performance bottlenecks in hot loops.
+ * - Solution: Added fast-paths for `k = 1` and `k = 2` that select random elements directly via index calculation, avoiding array spreading and memory allocations entirely for the most common use cases.
  */
 
 import { ALL_VENUES } from '../data/venues.js'
@@ -513,8 +514,20 @@ export class MapGenerator {
   pickRandomSubset(arr, count) {
     const n = arr.length
     const k = Math.min(count, n)
-    // For small k relative to n, a partial Fisher-Yates shuffle is faster
-    // as it only requires O(k) swaps instead of O(n) swaps.
+    if (k <= 0) return []
+
+    if (k === 1) {
+      return [arr[Math.floor(this.random() * n)]]
+    }
+
+    if (k === 2) {
+      const idx1 = Math.floor(this.random() * n)
+      let idx2 = Math.floor(this.random() * (n - 1))
+      if (idx2 >= idx1) idx2++
+      return [arr[idx1], arr[idx2]]
+    }
+
+    // For larger k, a partial Fisher-Yates shuffle
     const shuffled = [...arr]
     for (let i = 0; i < k; i++) {
       const j = i + Math.floor(this.random() * (n - i))
