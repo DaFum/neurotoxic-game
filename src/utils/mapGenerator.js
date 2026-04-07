@@ -12,7 +12,7 @@
  *
  * #3 Errors + Solutions:
  * - Issue: `pickRandomSubset` was performing a shallow copy of the entire array via the spread operator `[...arr]` on every invocation, causing performance bottlenecks in hot loops.
- * - Solution: Added fast-paths for `k = 1` and `k = 2` that select random elements directly via index calculation, avoiding array spreading and memory allocations entirely for the most common use cases.
+ * - Solution: Added fast-paths for `k = 1` and `k = 2` that select random elements directly via index calculation, avoiding a full shallow copy of the source array for the most common use cases while still allocating the returned subset array.
  */
 
 import { ALL_VENUES } from '../data/venues.js'
