@@ -98,10 +98,10 @@ const eventPoolMapCache = new WeakMap()
 const getEventMapForPool = pool => {
   let map = eventPoolMapCache.get(pool)
   if (!map) {
-    map = new Map()
+    map = Object.create(null)
     for (let i = 0; i < pool.length; i++) {
       if (pool[i].id) {
-        map.set(pool[i].id, pool[i])
+        map[pool[i].id] = pool[i]
       }
     }
     eventPoolMapCache.set(pool, map)
@@ -125,7 +125,7 @@ const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
   // 1. Pending Events (Highest Priority)
   if (gameState.pendingEvents && gameState.pendingEvents.length > 0) {
     const nextEventId = gameState.pendingEvents[0]
-    const pendingEvent = getEventMapForPool(pool).get(nextEventId)
+    const pendingEvent = getEventMapForPool(pool)[nextEventId]
     if (pendingEvent) {
       return pendingEvent
     }
