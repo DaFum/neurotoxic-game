@@ -1,4 +1,5 @@
 // TODO: Review this file
+import { HQ_ITEMS } from '../data/hqItems.js'
 import { bandHasTrait } from './traitLogic.js'
 import {
   clampPlayerMoney,
@@ -17,6 +18,41 @@ import {
 export const getPrimaryEffect = item => {
   if (!item) return undefined
   return item.effects?.[0] ?? item.effect
+}
+
+// Pre-compute gear lookup for O(1) checks during purchases
+export const GEAR_LOOKUP = new Map()
+const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
+
+allGearItems.forEach(item => {
+  if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
+    GEAR_LOOKUP.set(item.id, item)
+    const e = getPrimaryEffect(item)
+    if (e?.item) {
+      GEAR_LOOKUP.set(e.item, item)
+    }
+  }
+})
+
+/**
+ * Helper to calculate the current gear count in band inventory
+ * @param {Object} inventory - Band inventory
+ * @param {Map} lookup - Gear lookup map
+ * @returns {number} Gear count
+ */
+export const getGearCount = (inventory, lookup) => {
+  let count = 0
+  const inv = inventory || {}
+  for (const key in inv) {
+    if (Object.hasOwn(inv, key)) {
+      const value = inv[key]
+      const isOwned = value === true || (typeof value === 'number' && value > 0)
+      if (isOwned && lookup.has(key)) {
+        count++
+      }
+    }
+  }
+  return count
 }
 
 /**

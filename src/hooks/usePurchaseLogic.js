@@ -10,9 +10,10 @@ import { useTranslation } from 'react-i18next'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
-import { HQ_ITEMS } from '../data/hqItems.js'
 import { translateContextKeys } from '../utils/translationUtils.js'
 import {
+  GEAR_LOOKUP,
+  getGearCount,
   getPrimaryEffect,
   getAdjustedCost,
   buildVanWithUpgrade,
@@ -39,41 +40,6 @@ export { getPrimaryEffect } // Re-export for backward compatibility if needed, t
  * @param {Function} params.addToast - Toast notification function
  * @returns {Object} Purchase handlers and utilities
  */
-// Pre-compute gear lookup for O(1) checks during purchases
-const GEAR_LOOKUP = new Map()
-const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
-
-allGearItems.forEach(item => {
-  if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
-    GEAR_LOOKUP.set(item.id, item)
-    const e = getPrimaryEffect(item)
-    if (e?.item) {
-      GEAR_LOOKUP.set(e.item, item)
-    }
-  }
-})
-
-/**
- * Helper to calculate the current gear count in band inventory
- * @param {Object} inventory - Band inventory
- * @param {Map} lookup - Gear lookup map
- * @returns {number} Gear count
- */
-const getGearCount = (inventory, lookup) => {
-  let count = 0
-  const inv = inventory || {}
-  for (const key in inv) {
-    if (Object.hasOwn(inv, key)) {
-      const value = inv[key]
-      const isOwned = value === true || (typeof value === 'number' && value > 0)
-      if (isOwned && lookup.has(key)) {
-        count++
-      }
-    }
-  }
-  return count
-}
-
 /**
  * Helper to process and display toasts from trait unlocks
  * @param {Array} toasts - Array of toast objects
