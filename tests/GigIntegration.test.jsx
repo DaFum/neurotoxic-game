@@ -100,6 +100,9 @@ vi.mock('tone', () => {
       connect() {
         return this
       }
+      chain() {
+        return this
+      }
       toDestination() {
         return this
       }
@@ -107,6 +110,9 @@ vi.mock('tone', () => {
     },
     Compressor: class {
       connect() {
+        return this
+      }
+      chain() {
         return this
       }
       toDestination() {

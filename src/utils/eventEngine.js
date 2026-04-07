@@ -100,9 +100,7 @@ const getEventMapForPool = pool => {
   if (!map) {
     map = Object.create(null)
     for (let i = 0; i < pool.length; i++) {
-      if (pool[i].id) {
-        map[pool[i].id] = pool[i]
-      }
+      map[pool[i].id] = pool[i]
     }
     eventPoolMapCache.set(pool, map)
   }
