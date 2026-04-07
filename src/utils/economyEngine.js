@@ -75,8 +75,8 @@ const calculateTicketIncome = (
   const baseCapacity = Math.max(0, gigData.capacity || 0)
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
-  // Exponential scaling for fame to make late-game arenas fill more smoothly
-  // log(fame) mapping provides diminishing returns but avoids hard flatlining early
+  // Sublinear power scaling for fame to make late-game arenas fill more smoothly
+  // fame^0.85 provides diminishing returns without hard flatlining early
   const fameRatio = Math.min(
     1.0,
     Math.pow(Math.max(0, playerFame), 0.85) / (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)

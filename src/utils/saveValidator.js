@@ -115,8 +115,8 @@ const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const checkPrototypePollution = obj => {
   if (typeof obj !== 'object' || obj === null) return
 
-  // Explicitly check for forbidden keys before iterating to prevent bypasses
-  // via non-enumerable properties (as recorded in Memory)
+  // Explicitly reject forbidden own-properties before iterating because
+  // non-enumerable keys are not guaranteed to be visited by the for...in loop below.
   if (Object.hasOwn(obj, '__proto__')) {
     throw new StateError(`Prototype pollution detected: __proto__`)
   }
