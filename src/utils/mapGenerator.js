@@ -300,10 +300,8 @@ export class MapGenerator {
       // Forward pass: ensure everyone connects forward
       for (const node of currentLayer) {
         // Pick 1-2 random targets in next layer
-        const targets = this.pickRandomSubset(
-          nextLayer,
-          Math.floor(this.random() * 2) + 1
-        )
+        const numTargets = Math.floor(this.random() * 2) + 1
+        const targets = this.pickRandomSubset(nextLayer, numTargets)
         for (const target of targets) {
           map.connections.push({ from: node.id, to: target.id })
           connectedToIds.add(target.id)
@@ -520,7 +518,9 @@ export class MapGenerator {
     const shuffled = [...arr]
     for (let i = 0; i < k; i++) {
       const j = i + Math.floor(this.random() * (n - i))
-      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      const temp = shuffled[i]
+      shuffled[i] = shuffled[j]
+      shuffled[j] = temp
     }
     return shuffled.slice(0, k)
   }
