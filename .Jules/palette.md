@@ -49,3 +49,8 @@
 
 **Learning:** When interactive elements like ActionButton accept a `disabled` prop but lack visual styling to indicate that state, users may repeatedly attempt to interact with them, assuming a bug when nothing happens. Scaling on hover while disabled further exacerbates this confusion.
 **Action:** Always pair `disabled` logic with explicit visual cues (e.g., `disabled:opacity-50 disabled:cursor-not-allowed`) and ensure conflicting interactive styles (like hover scaling) are overridden in the disabled state.
+
+## 2026-04-07 - Focus Rings on Form Inputs
+
+**Learning:** Native `<select>` elements in this app were often styled with `focus:outline-none` which removed default focus indicators without replacing them, making keyboard navigation inaccessible.
+**Action:** Always verify that `focus-visible:ring-2 focus-visible:ring-toxic-green` is applied to form inputs when `focus:outline-none` is used.

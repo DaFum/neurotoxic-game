@@ -108,7 +108,8 @@ export function setupBass() {
 }
 
 export function buildDrumKit(bus, kickOverrides = {}) {
-  const safeKickOverrides = kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
+  const safeKickOverrides =
+    kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
   return {
     kick: new Tone.MembraneSynth({
       pitchDecay: 0.05,

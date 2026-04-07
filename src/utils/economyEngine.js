@@ -79,7 +79,8 @@ const calculateTicketIncome = (
   // Uses Math.pow(playerFame, 0.85) to provide diminishing returns (power-law scaling, not logarithmic)
   const fameRatio = Math.min(
     1.0,
-    Math.pow(Math.max(0, playerFame), 0.85) / (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+    Math.pow(Math.max(0, playerFame), 0.85) /
+      (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
   )
   let fillRate =
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
@@ -146,7 +147,7 @@ const calculateMerchIncome = (
 ) => {
   // Better baseline merch conversion.
   // Smoothly scales from 10% to 40% based on performance
-  let buyRate = 0.10 + (performanceScore / 100) * 0.30
+  let buyRate = 0.1 + (performanceScore / 100) * 0.3
   const breakdownItems = []
 
   if (performanceScore >= 95) {

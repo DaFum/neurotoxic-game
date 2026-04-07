@@ -214,8 +214,15 @@ const copyFilteredProperties = source => {
   if (!source) return Object.create(null)
 
   // Explicit check for prototype pollution before copying properties
-  if (Object.hasOwn(source, '__proto__') || Object.hasOwn(source, 'constructor') || Object.hasOwn(source, 'prototype')) {
-    logger?.warn?.('Security', 'Blocked attempt to copy prototype properties in copyFilteredProperties')
+  if (
+    Object.hasOwn(source, '__proto__') ||
+    Object.hasOwn(source, 'constructor') ||
+    Object.hasOwn(source, 'prototype')
+  ) {
+    logger?.warn?.(
+      'Security',
+      'Blocked attempt to copy prototype properties in copyFilteredProperties'
+    )
   }
 
   // Create an object with no prototype to safely copy properties into
@@ -424,7 +431,13 @@ export const calculateAppliedDelta = (state, delta) => {
  * @param {object} currentRelationships - The current relationships of the member.
  * @returns {object|null} The calculated change or null if none.
  */
-export const calculateMemberRelationshipChange = (change, memberName, hasGrudgeHolder, hasPeacemaker, currentRelationships) => {
+export const calculateMemberRelationshipChange = (
+  change,
+  memberName,
+  hasGrudgeHolder,
+  hasPeacemaker,
+  currentRelationships
+) => {
   const isM1 = change.member1 === memberName
   const isM2 = change.member2 === memberName
 

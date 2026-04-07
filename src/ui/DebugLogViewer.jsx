@@ -70,7 +70,7 @@ export const DebugLogViewer = ({ className = '' }) => {
             <select
               value={filterLevel}
               onChange={e => setFilterLevel(parseInt(e.target.value))}
-              className='bg-void-black text-star-white border-2 border-ash-gray px-1'
+              className='bg-void-black text-star-white border-2 border-ash-gray px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors cursor-pointer'
             >
               <option value={LOG_LEVELS.DEBUG}>DEBUG</option>
               <option value={LOG_LEVELS.INFO}>INFO</option>
