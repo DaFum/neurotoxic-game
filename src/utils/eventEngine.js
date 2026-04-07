@@ -27,7 +27,6 @@ import { calculateAppliedDelta } from './gameStateUtils.js'
 
 const TEMPLATE_REGEX = /\{([^}]+)\}/gi
 
-const contextMapCache = new WeakMap()
 const toLowerCaseCache = Object.create(null)
 
 /**
@@ -50,27 +49,27 @@ const resolveTemplateString = (str, context) => {
 
     // Fallback: case-insensitive match (as the original implementation used 'gi')
     if (!lowerKeysMap) {
-      lowerKeysMap = contextMapCache.get(context)
-      if (!lowerKeysMap) {
-        lowerKeysMap = Object.create(null)
-        const keys = Object.keys(context)
-        for (let i = 0; i < keys.length; i++) {
-          const k = keys[i]
-          if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
-            continue
-          }
+      lowerKeysMap = Object.create(null)
 
-          let lk = toLowerCaseCache[k]
-          if (lk === undefined) {
-            lk = k.toLowerCase()
-            toLowerCaseCache[k] = lk
-          }
+      const hasProto = Object.hasOwn(context, '__proto__')
+      const hasConstructor = Object.hasOwn(context, 'constructor')
+      const hasPrototype = Object.hasOwn(context, 'prototype')
 
-          if (lowerKeysMap[lk] === undefined) {
-            lowerKeysMap[lk] = k
-          }
+      for (const k in context) {
+        if (!Object.hasOwn(context, k)) continue
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
+          continue
         }
-        contextMapCache.set(context, lowerKeysMap)
+
+        let lk = toLowerCaseCache[k]
+        if (lk === undefined) {
+          lk = k.toLowerCase()
+          toLowerCaseCache[k] = lk
+        }
+
+        if (lowerKeysMap[lk] === undefined) {
+          lowerKeysMap[lk] = k
+        }
       }
     }
 
@@ -100,7 +99,9 @@ const getEventMapForPool = pool => {
   if (!map) {
     map = Object.create(null)
     for (let i = 0; i < pool.length; i++) {
-      map[pool[i].id] = pool[i]
+      if (pool[i].id) {
+        map[pool[i].id] = pool[i]
+      }
     }
     eventPoolMapCache.set(pool, map)
   }

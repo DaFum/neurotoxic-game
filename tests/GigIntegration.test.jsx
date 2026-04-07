@@ -127,6 +127,9 @@ vi.mock('tone', () => {
       connect() {
         return this
       }
+      chain() {
+        return this
+      }
       toDestination() {
         return this
       }
