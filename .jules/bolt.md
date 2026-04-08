@@ -67,3 +67,8 @@
 
 **Learning:** Unrolling loops across configuration objects (e.g., `SOCIAL_PLATFORMS`) provides minor speed improvements but introduces significant maintainability regressions by hardcoding dynamic keys.
 **Action:** Never unroll iterations that loop over configuration data or sources of truth. Reserve loop unrolling for pure computational arrays of fixed size.
+
+## 2025-05-28 - Component List Memoization
+
+**Learning:** Mapping arrays of complex sub-components without `React.memo` (like `SongRow` inside `SetlistTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
+**Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
