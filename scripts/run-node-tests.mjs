@@ -34,6 +34,14 @@ const EXCLUDED_TEST_DIRS = [
   'tests/performance'
 ]
 
+const isPathInExcludedDir = testPath => {
+  const resolved = path.resolve(testPath)
+  const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
+  return EXCLUDED_TEST_DIRS.some(
+    dir => relative === dir || relative.startsWith(`${dir}/`)
+  )
+}
+
 // Exclude directories that have been migrated to vitest
 const getRemainingTestFiles = () => {
   const allFiles = []
@@ -48,7 +56,7 @@ const getRemainingTestFiles = () => {
         normalizedPath.endsWith('.test.js') ||
         normalizedPath.endsWith('.spec.js')
       ) {
-        if (!EXCLUDED_TEST_DIRS.some(excludedDir => normalizedPath.startsWith(`${excludedDir}/`))) {
+        if (!isPathInExcludedDir(normalizedPath)) {
           allFiles.push(fullPath)
         }
       }
@@ -56,13 +64,6 @@ const getRemainingTestFiles = () => {
   }
   crawl('tests')
   return allFiles
-}
-const isPathInExcludedDir = testPath => {
-  const resolved = path.resolve(testPath)
-  const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
-  return EXCLUDED_TEST_DIRS.some(
-    dir => relative === dir || relative.startsWith(`${dir}/`)
-  )
 }
 
 // Detect specific test file arguments by filtering out options and their values

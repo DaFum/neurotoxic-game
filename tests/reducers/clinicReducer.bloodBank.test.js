@@ -126,7 +126,7 @@ describe('handleBloodBankDonate Reducer', () => {
     assert.strictEqual(result, initialState)
   })
 
-  test('clamps player money to 0 when negative moneyGain drives it below zero', () => {
+  test('does not reduce money when moneyGain is negative (money remains unchanged)', () => {
     const initialState = getInitialState()
     const payload = {
       moneyGain: -200
