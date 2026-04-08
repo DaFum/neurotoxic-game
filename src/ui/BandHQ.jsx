@@ -151,7 +151,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
         setProcessingItemId(null)
       }
     },
-    [processingItemId, handleBuy, addToast]
+    [processingItemId, handleBuy, addToast, t]
   )
 
   return (
