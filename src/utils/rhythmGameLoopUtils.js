@@ -42,12 +42,20 @@ export const processRhythmGameTick = ({
         const res = pauseAudio()
         if (res && typeof res.catch === 'function') {
           res.catch(err => {
-            logger.debug('RhythmGameLoop', 'Failed to pause audio via overlay', err)
+            logger.debug(
+              'RhythmGameLoop',
+              'Failed to pause audio via overlay',
+              err
+            )
             stateRef.transportPausedByOverlay = false
           })
         }
       } catch (err) {
-        logger.debug('RhythmGameLoop', 'Sync error pausing audio via overlay', err)
+        logger.debug(
+          'RhythmGameLoop',
+          'Sync error pausing audio via overlay',
+          err
+        )
       }
     }
     return
@@ -60,12 +68,20 @@ export const processRhythmGameTick = ({
         const res = resumeAudio()
         if (res && typeof res.catch === 'function') {
           res.catch(err => {
-            logger.debug('RhythmGameLoop', 'Failed to resume audio via overlay', err)
+            logger.debug(
+              'RhythmGameLoop',
+              'Failed to resume audio via overlay',
+              err
+            )
             stateRef.transportPausedByOverlay = true
           })
         }
       } catch (err) {
-        logger.debug('RhythmGameLoop', 'Sync error resuming audio via overlay', err)
+        logger.debug(
+          'RhythmGameLoop',
+          'Sync error resuming audio via overlay',
+          err
+        )
       }
     } else {
       stateRef.transportPausedByOverlay = false

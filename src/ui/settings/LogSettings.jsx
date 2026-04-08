@@ -30,7 +30,7 @@ export const LogSettings = memo(function LogSettings({
           id='logLevelSelect'
           value={logLevel ?? LOG_LEVELS.DEBUG}
           onChange={handleLogLevelSelect}
-          className='bg-void-black text-toxic-green border-2 border-toxic-green p-1 font-mono focus:outline-none'
+          className='bg-void-black text-toxic-green border-2 border-toxic-green p-1 font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors cursor-pointer'
         >
           {Object.entries(LOG_LEVELS).map(([key, value]) => (
             <option key={key} value={value}>

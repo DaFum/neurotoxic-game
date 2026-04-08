@@ -125,31 +125,34 @@ export const BandHQ = ({ onClose, className = '' }) => {
     [player.fame, band.stash]
   )
 
-  const handleBuyWithLock = useCallback(async item => {
-    if (processingItemId) return
-    setProcessingItemId(item.id)
-    try {
-      // Artificial delay for UX lifted from ShopItem
-      await new Promise(resolve => setTimeout(resolve, 500))
-      await handleBuy(item)
-    } catch (err) {
-      if (err instanceof GameError || err instanceof StateError) {
-        handleError(err, { addToast })
-      } else {
-        handleError(
-          new GameError('Purchase failed', {
-            context: {
-              originalError: err?.message,
-              stack: err?.stack
-            }
-          }),
-          { addToast }
-        )
+  const handleBuyWithLock = useCallback(
+    async item => {
+      if (processingItemId) return
+      setProcessingItemId(item.id)
+      try {
+        // Artificial delay for UX lifted from ShopItem
+        await new Promise(resolve => setTimeout(resolve, 500))
+        await handleBuy(item)
+      } catch (err) {
+        if (err instanceof GameError || err instanceof StateError) {
+          handleError(err, { addToast })
+        } else {
+          handleError(
+            new GameError('Purchase failed', {
+              context: {
+                originalError: err?.message,
+                stack: err?.stack
+              }
+            }),
+            { addToast }
+          )
+        }
+      } finally {
+        setProcessingItemId(null)
       }
-    } finally {
-      setProcessingItemId(null)
-    }
-  }, [processingItemId, handleBuy, addToast])
+    },
+    [processingItemId, handleBuy, addToast]
+  )
 
   return (
     <div
