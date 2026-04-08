@@ -1,5 +1,5 @@
 // TODO: Review this file
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
@@ -19,10 +19,10 @@ export const ShopItem = React.memo(
     const isProcessingThis = processingItemId === item.id
     const isAnyProcessing = !!processingItemId
 
-    const handlePurchase = () => {
+    const handlePurchase = useCallback(() => {
       if (isDisabled || isPurchased || isAnyProcessing) return
       onBuy(item)
-    }
+    }, [isDisabled, isPurchased, isAnyProcessing, onBuy, item])
 
     return (
       <div

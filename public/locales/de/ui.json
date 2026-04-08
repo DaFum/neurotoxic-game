@@ -376,6 +376,7 @@
   "hq.leave": "VERLASSEN [ESC]",
   "hq.owned": "BESITZT",
   "hq.practice_desc": "Übung macht den Meister.",
+  "hq.purchaseFailed": "Kauf fehlgeschlagen",
   "hq.sectionsLabel": "Band HQ Bereiche",
   "hq.selected": "AUSGEWÄHLT",
   "hq.song_active": "AKTIV",
