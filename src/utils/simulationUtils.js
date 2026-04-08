@@ -9,7 +9,7 @@ import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
 import { hasTrait } from './traitLogic.js'
-import { secureRandom, getSafeRandom } from './crypto.js'
+import { getSafeRandom } from './crypto.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
