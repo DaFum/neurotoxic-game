@@ -114,8 +114,8 @@ const executeClinicAction = (state, payload, memberUpdater) => {
 export const handleClinicHeal = (state, payload) => {
   const rawStamina = payload.staminaGain
   const rawMood = payload.moodGain
-  const staminaGain = Number.isFinite(rawStamina) ? rawStamina : 0
-  const moodGain = Number.isFinite(rawMood) ? rawMood : 0
+  const staminaGain = Math.max(0, Number.isFinite(rawStamina) ? rawStamina : 0)
+  const moodGain = Math.max(0, Number.isFinite(rawMood) ? rawMood : 0)
 
   return executeClinicAction(state, payload, member => {
     const prevStamina = member.stamina || 0
@@ -162,13 +162,11 @@ export const handleBloodBankDonate = (state, payload = {}) => {
   }
 
   const safePayload = payload || {}
-  const {
-    moneyGain = 0,
-    harmonyCost = 0,
-    staminaCost = 0,
-    controversyGain = 0,
-    successToast
-  } = safePayload
+  const moneyGain = Number(safePayload.moneyGain) || 0
+  const harmonyCost = Number(safePayload.harmonyCost) || 0
+  const staminaCost = Number(safePayload.staminaCost) || 0
+  const controversyGain = Number(safePayload.controversyGain) || 0
+  const successToast = safePayload.successToast
 
   // Validate members array
   if (!Array.isArray(state.band.members) || state.band.members.length === 0) {

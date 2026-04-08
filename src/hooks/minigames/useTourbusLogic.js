@@ -12,7 +12,6 @@ import {
   TOURBUS_TARGET_DISTANCE
 } from './constants'
 import { getSafeRandom } from '../../utils/crypto.js'
-import { handleError } from '../../utils/errorHandler.js'
 
 // Re-export constants for backward compatibility and tests
 export {
