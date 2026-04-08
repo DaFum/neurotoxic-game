@@ -87,40 +87,42 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { setCurrentGig, changeScene } = useGameState()
 
   const toggleSongInSetlist = useCallback((songId) => {
-    const currentIndex = setlist.findIndex(
-      s => (typeof s === 'string' ? s : s.id) === songId
-    )
-
     const songObj = SONGS_BY_ID.get(songId)
     const songName = songObj ? songObj.name : songId
     const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
-    let newSetlist
-    if (currentIndex >= 0) {
-      newSetlist = [...setlist]
-      newSetlist.splice(currentIndex, 1)
-      addToast(
-        t('ui:bandhq.setlist.songRemoved', {
-          defaultValue: 'Removed {{song}} from {{venue}}.',
-          song: songName,
-          venue: venueName
-        }),
-        'info'
+    setSetlist(prevSetlist => {
+      const currentIndex = prevSetlist.findIndex(
+        s => (typeof s === 'string' ? s : s.id) === songId
       )
-    } else {
-      // Currently allow 1 active song for MVP flow
-      newSetlist = [{ id: songId }]
-      addToast(
-        t('ui:bandhq.setlist.songSelected', {
-          defaultValue: 'Selected {{song}} for {{venue}}.',
-          song: songName,
-          venue: venueName
-        }),
-        'success'
-      )
-    }
-    setSetlist(newSetlist)
-  }, [setlist, setSetlist, addToast, t])
+
+      let newSetlist
+      if (currentIndex >= 0) {
+        newSetlist = [...prevSetlist]
+        newSetlist.splice(currentIndex, 1)
+        addToast(
+          t('ui:bandhq.setlist.songRemoved', {
+            defaultValue: 'Removed {{song}} from {{venue}}.',
+            song: songName,
+            venue: venueName
+          }),
+          'info'
+        )
+      } else {
+        // Currently allow 1 active song for MVP flow
+        newSetlist = [{ id: songId }]
+        addToast(
+          t('ui:bandhq.setlist.songSelected', {
+            defaultValue: 'Selected {{song}} for {{venue}}.',
+            song: songName,
+            venue: venueName
+          }),
+          'success'
+        )
+      }
+      return newSetlist
+    })
+  }, [setSetlist, addToast, t])
 
   const isSongSelected = songId => {
     return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
