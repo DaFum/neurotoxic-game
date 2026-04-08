@@ -52,5 +52,5 @@
 
 ## 2026-04-07 - Focus Rings on Form Inputs
 
-**Learning:** Native `<select>` elements in this app were often styled with `focus:outline-none` which removed default focus indicators without replacing them, making keyboard navigation inaccessible.
-**Action:** Always verify that `focus-visible:ring-2 focus-visible:ring-toxic-green` is applied to form inputs when `focus:outline-none` is used.
+**Learning:** Form controls (e.g., `<input>`, `<textarea>`, `<select>`, `contenteditable`) in this app were often styled with `focus:outline-none` which removed default focus indicators without replacing them, making keyboard navigation inaccessible.
+**Action:** Always verify that `focus-visible:ring-2 focus-visible:ring-toxic-green` is applied to form inputs when `focus:outline-none` is used on these named controls.

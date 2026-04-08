@@ -23,6 +23,17 @@ const commandArgs = [
 import fs from 'node:fs'
 import path from 'node:path'
 
+const EXCLUDED_TEST_DIRS = [
+  'tests/api',
+  'tests/utils',
+  'tests/data',
+  'tests/security',
+  'tests/logic',
+  'tests/social',
+  'tests/hooks',
+  'tests/performance'
+]
+
 // Exclude directories that have been migrated to vitest
 const getRemainingTestFiles = () => {
   const allFiles = []
@@ -37,16 +48,7 @@ const getRemainingTestFiles = () => {
         normalizedPath.endsWith('.test.js') ||
         normalizedPath.endsWith('.spec.js')
       ) {
-        if (
-          !normalizedPath.startsWith('tests/api/') &&
-          !normalizedPath.startsWith('tests/utils/') &&
-          !normalizedPath.startsWith('tests/data/') &&
-          !normalizedPath.startsWith('tests/security/') &&
-          !normalizedPath.startsWith('tests/logic/') &&
-          !normalizedPath.startsWith('tests/social/') &&
-          !normalizedPath.startsWith('tests/hooks/') &&
-          !normalizedPath.startsWith('tests/performance/')
-        ) {
+        if (!EXCLUDED_TEST_DIRS.some(excludedDir => normalizedPath.startsWith(`${excludedDir}/`))) {
           allFiles.push(fullPath)
         }
       }
@@ -55,17 +57,6 @@ const getRemainingTestFiles = () => {
   crawl('tests')
   return allFiles
 }
-
-const EXCLUDED_TEST_DIRS = [
-  'tests/api',
-  'tests/utils',
-  'tests/data',
-  'tests/security',
-  'tests/logic',
-  'tests/social',
-  'tests/hooks',
-  'tests/performance'
-]
 const isPathInExcludedDir = testPath => {
   const resolved = path.resolve(testPath)
   const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')

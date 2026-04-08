@@ -431,13 +431,7 @@ export const calculateAppliedDelta = (state, delta) => {
  * @param {object} currentRelationships - The current relationships of the member.
  * @returns {object|null} The calculated change or null if none.
  */
-export const calculateMemberRelationshipChange = (
-  change,
-  memberName,
-  hasGrudgeHolder,
-  hasPeacemaker,
-  currentRelationships
-) => {
+export const calculateMemberRelationshipChange = (change, memberName, hasGrudgeHolder, hasPeacemaker, currentRelationships) => {
   const isM1 = change.member1 === memberName
   const isM2 = change.member2 === memberName
 

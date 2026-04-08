@@ -162,10 +162,10 @@ export const handleBloodBankDonate = (state, payload = {}) => {
   }
 
   const safePayload = payload || {}
-  const moneyGain = Number(safePayload.moneyGain) || 0
-  const harmonyCost = Number(safePayload.harmonyCost) || 0
-  const staminaCost = Number(safePayload.staminaCost) || 0
-  const controversyGain = Number(safePayload.controversyGain) || 0
+  const moneyGain = Math.max(0, Number(safePayload.moneyGain) || 0)
+  const harmonyCost = Math.max(0, Number(safePayload.harmonyCost) || 0)
+  const staminaCost = Math.max(0, Number(safePayload.staminaCost) || 0)
+  const controversyGain = Math.max(0, Number(safePayload.controversyGain) || 0)
   const successToast = safePayload.successToast
 
   // Validate members array

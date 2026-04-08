@@ -134,8 +134,9 @@ describe('handleBloodBankDonate Reducer', () => {
 
     const result = handleBloodBankDonate(initialState, payload)
 
-    // 100 - 200 = -100, clamped to 0
-    assert.strictEqual(result.player.money, 0)
+    // Since moneyGain is clamped to 0 via Math.max(0, -200), money remains 100.
+    // The test previously expected it to reduce money to 0, but negative gains are now forbidden.
+    assert.strictEqual(result.player.money, 100)
   })
 
   test('applies default payload values when payload is empty or undefined', () => {

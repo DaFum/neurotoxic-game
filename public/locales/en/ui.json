@@ -376,6 +376,7 @@
   "hq.leave": "LEAVE [ESC]",
   "hq.owned": "OWNED",
   "hq.practice_desc": "Practice makes perfect.",
+  "hq.purchaseFailed": "Purchase failed",
   "hq.sectionsLabel": "Band HQ Sections",
   "hq.selected": "SELECTED",
   "hq.song_active": "ACTIVE",
