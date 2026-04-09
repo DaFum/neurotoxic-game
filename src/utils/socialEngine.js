@@ -40,7 +40,7 @@ export const calculateViralityScore = (
     if (gigEvents instanceof Set) {
       hasStageDiver = gigEvents.has('stage_diver')
       hasInfluencer = gigEvents.has('influencer_spotted')
-    } else {
+    } else if (Array.isArray(gigEvents)) {
       for (const e of gigEvents) {
         if (e === 'stage_diver') hasStageDiver = true
         if (e === 'influencer_spotted') hasInfluencer = true
