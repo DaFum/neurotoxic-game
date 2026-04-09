@@ -523,11 +523,15 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const totalFollowers =
     (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
-  // Create an O(1) set of active deal IDs
-  const activeDealIds = new Set()
-  if (social.activeDeals) {
-    for (const d of social.activeDeals) {
-      activeDealIds.add(d.id)
+  // Create an O(1) set of active deal IDs only if there are active deals
+  let activeDealIds = null
+  const activeDeals = social.activeDeals
+  const hasActiveDeals = activeDeals && activeDeals.length > 0
+
+  if (hasActiveDeals) {
+    activeDealIds = new Set()
+    for (let i = 0; i < activeDeals.length; i++) {
+      activeDealIds.add(activeDeals[i].id)
     }
   }
 
@@ -562,7 +566,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
       continue
 
     // Check if already active
-    if (activeDealIds.has(deal.id)) continue
+    if (hasActiveDeals && activeDealIds.has(deal.id)) continue
 
     eligibleDeals.push(deal)
   }
