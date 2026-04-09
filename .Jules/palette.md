@@ -59,3 +59,7 @@
 
 **Learning:** Empty states in modals (like having no active quests) that only provide a text description ("No active quests") can leave users feeling stuck or unsure of how to progress. Adding an explicit Call-to-Action button directly within the empty state transforms a dead-end into a helpful bridge.
 **Action:** When designing or updating empty states, always consider if there is a primary action the user should take to resolve the empty state, and provide a clear, actionable button (e.g., "FIND GIGS") to guide them there.
+
+## 2026-04-09 - Focus Indicators on Extracted Components
+**Learning:** Interactive elements extracted into their own components (like `SetlistBlock` or `PreGigStartButton`) often lose inherited global focus styles or omit explicit `focus-visible` rings, breaking keyboard navigation flow on critical screens like the Pre-Gig setup.
+**Action:** When creating new interactive components or refactoring large UI blocks, ensure explicit `focus-visible` utility classes (e.g., `focus-visible:outline-none focus-visible:ring-2`) are applied to the outermost `button` or interactive container.
