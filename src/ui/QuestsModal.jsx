@@ -209,7 +209,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                 {t('ui:quests.empty')}
               </p>
               <GlitchButton variant='primary' size='sm' onClick={onClose}>
-                {t('ui:quests.closeLabel')}
+                {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
               </GlitchButton>
             </div>
           ) : (
@@ -316,7 +316,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
           {/* Footer */}
           <div className='mt-8 flex justify-center'>
             <GlitchButton variant='primary' size='md' onClick={onClose}>
-              {t('ui:quests.closeLabel')}
+              {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
             </GlitchButton>
           </div>
         </motion.div>
