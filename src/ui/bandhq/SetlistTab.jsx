@@ -1,5 +1,5 @@
 // TODO: Review this file
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
@@ -87,7 +87,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { setCurrentGig, changeScene } = useGameState()
 
   const latestSetlist = useRef(setlist)
-  useEffect(() => {
+  useLayoutEffect(() => {
     latestSetlist.current = setlist
   }, [setlist])
 
