@@ -125,14 +125,8 @@ const processEffectMessages = (messages, addToast, t) => {
 }
 
 const processPurchaseUnlocks = (
-  item,
-  player,
-  band,
-  playerPatch,
-  bandPatch,
-  updateBand,
-  addToast,
-  t
+  { item, player, band, playerPatch, bandPatch },
+  { updateBand, addToast, t }
 ) => {
   const nextPlayer = {
     ...player,
@@ -152,6 +146,7 @@ const processPurchaseUnlocks = (
     { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
   )
 
+  let finalBandPatch = bandPatch
   if (purchaseUnlocks.length > 0) {
     const traitResult = applyTraitUnlocks(
       { band: nextBand, toasts: [] },
@@ -159,15 +154,16 @@ const processPurchaseUnlocks = (
     )
 
     // Apply combined band patch with trait unlock members
-    updateBand({
+    finalBandPatch = {
       ...(bandPatch || {}),
       members: traitResult.band.members
-    })
+    }
 
     processTraitToasts(traitResult.toasts, addToast, t)
-  } else {
-    // No unlocks — apply original bandPatch if it existed
-    if (bandPatch) updateBand(bandPatch)
+  }
+
+  if (finalBandPatch) {
+    updateBand(finalBandPatch)
   }
 }
 
@@ -282,14 +278,8 @@ export const usePurchaseLogic = ({
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
-          item,
-          player,
-          band,
-          playerPatch,
-          bandPatch,
-          updateBand,
-          addToast,
-          t
+          { item, player, band, playerPatch, bandPatch },
+          { updateBand, addToast, t }
         )
 
         // Player update was already called above

@@ -209,7 +209,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                 {t('ui:quests.empty')}
               </p>
               <GlitchButton variant='primary' size='sm' onClick={onClose}>
-                {t('ui:quests.findMore', { defaultValue: 'FIND GIGS' })}
+                {t('ui:quests.closeLabel')}
               </GlitchButton>
             </div>
           ) : (
