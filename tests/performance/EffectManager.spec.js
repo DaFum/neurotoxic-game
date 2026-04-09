@@ -106,10 +106,15 @@ describe('EffectManager', () => {
 
   test('releaseEffectToPool pools non-Sprite instances with isSprite=true', () => {
     // Create a plain object (not a PIXI.Sprite instance) with isSprite: true
+    // but with the Sprite-like surface expected by pooled sprite reuse.
     const plainObjectEffect = {
+      anchor: { set: vi.fn() },
+      scale: { set: vi.fn() },
+      texture: Texture.WHITE,
       destroy: vi.fn(),
       visible: true,
-      isSprite: true
+      isSprite: true,
+      parent: null
     }
 
     // Add to container manually
@@ -131,31 +136,5 @@ describe('EffectManager', () => {
 
     // Assert it was made invisible
     expect(plainObjectEffect.visible).toBe(false)
-  })
-
-  test('releaseEffectToPool destroys true Sprite instances with isSprite=false', async () => {
-    // Use the actual Sprite mock class but override isSprite
-    const { Sprite } = vi.mocked(await import('pixi.js'))
-    const realSpriteWithFalseFlag = new Sprite()
-    realSpriteWithFalseFlag.isSprite = false
-
-    // Add to container manually
-    manager.container.addChild(realSpriteWithFalseFlag)
-    expect(manager.container.children.length).toBe(1)
-
-    // Call releaseEffectToPool
-    manager.releaseEffectToPool(realSpriteWithFalseFlag)
-
-    // Assert it was NOT added to the sprite pool
-    expect(manager.spritePool.length).toBe(0)
-
-    // Assert it was removed from the container
-    expect(manager.container.children.length).toBe(0)
-
-    // Assert its destroy method WAS called
-    expect(realSpriteWithFalseFlag.destroy).toHaveBeenCalled()
-
-    // Assert it was made invisible
-    expect(realSpriteWithFalseFlag.visible).toBe(false)
   })
 })

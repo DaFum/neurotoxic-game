@@ -20,7 +20,7 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
       type='button'
       aria-label={t('ui:pregig.selectSong', { name: song.name })}
       aria-pressed={!!isSelected}
-      disabled={isLocked}
+      aria-disabled={isLocked}
       onClick={handleToggle}
       className={`p-3 border-2 flex justify-between items-center transition-all w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
         ${
