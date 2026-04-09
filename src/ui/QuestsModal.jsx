@@ -203,11 +203,14 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
 
           {/* Quests List */}
           {activeQuests.length === 0 ? (
-            <div className='text-center py-12'>
+            <div className='text-center py-12 flex flex-col items-center'>
               <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
-              <p className='text-ash-gray font-mono italic'>
+              <p className='text-ash-gray font-mono italic mb-6'>
                 {t('ui:quests.empty')}
               </p>
+              <GlitchButton variant='primary' size='sm' onClick={onClose}>
+                {t('ui:quests.findMore', { defaultValue: 'FIND GIGS' })}
+              </GlitchButton>
             </div>
           ) : (
             <div className='space-y-6'>

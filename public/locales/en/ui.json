@@ -666,6 +666,7 @@
   "quests.days.plural": "Days Left",
   "quests.days.singular": "Day Left",
   "quests.empty": "No active quests. Hit the road to find some!",
+  "quests.findMore": "FIND GIGS",
   "quests.moneyReward": "+€{{amount}}",
   "quests.postgig.apologyTour.description": "Play 3 gigs to repair your image after the cancellation backlash.",
   "quests.postgig.apologyTour.title": "APOLOGY TOUR",

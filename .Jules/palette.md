@@ -53,4 +53,9 @@
 ## 2026-04-07 - Focus Rings on Form Inputs
 
 **Learning:** Form controls (e.g., `<input>`, `<textarea>`, `<select>`, `contenteditable`) in this app were often styled with `focus:outline-none` which removed default focus indicators without replacing them, making keyboard navigation inaccessible.
-Always verify that `focus-visible:ring-2 focus-visible:ring-toxic-green` is applied to form controls when `focus:outline-none` is used on these named elements.
+**Action:** Always verify that `focus-visible:ring-2 focus-visible:ring-toxic-green` is applied to form controls when `focus:outline-none` is used on these named elements.
+
+## 2026-04-08 - Empty State Call to Actions
+
+**Learning:** Empty states in modals (like having no active quests) that only provide a text description ("No active quests") can leave users feeling stuck or unsure of how to progress. Adding an explicit Call-to-Action button directly within the empty state transforms a dead-end into a helpful bridge.
+**Action:** When designing or updating empty states, always consider if there is a primary action the user should take to resolve the empty state, and provide a clear, actionable button (e.g., "FIND GIGS") to guide them there.
