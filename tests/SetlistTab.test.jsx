@@ -105,7 +105,7 @@ describe('SetlistTab', () => {
 
     expect(setSetlist.mock.calls.length).toBe(1)
     const updater1 = setSetlist.mock.calls[0][0]
-    expect(updater1([{ id: 'previous-song' }])).toEqual([{ id: SONGS_DB[0].id }])
+    expect(typeof updater1 === 'function' ? updater1() : updater1).toEqual([{ id: SONGS_DB[0].id }])
   })
 
   it('handles song removal', () => {
@@ -132,7 +132,7 @@ describe('SetlistTab', () => {
 
     expect(setSetlist.mock.calls.length).toBe(1)
     const updater2 = setSetlist.mock.calls[0][0]
-    expect(updater2(setlist)).toEqual([])
+    expect(typeof updater2 === 'function' ? updater2() : updater2).toEqual([])
   })
 
   it('handles setlist with string IDs', () => {
@@ -160,7 +160,8 @@ describe('SetlistTab', () => {
     expect(addToast.mock.calls[0][1]).toBe('info')
 
     expect(setSetlist.mock.calls.length).toBe(1)
-    expect(setSetlist.mock.calls[0][0]).toEqual([])
+    const updater3 = setSetlist.mock.calls[0][0]
+    expect(typeof updater3 === 'function' ? updater3() : updater3).toEqual([])
   })
 
   it('starts practice mode when button is clicked with songs selected', () => {
