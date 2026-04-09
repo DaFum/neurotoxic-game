@@ -98,7 +98,9 @@ describe('SetlistTab', () => {
     fireEvent.click(selectButtons[0])
 
     expect(setSetlist.mock.calls.length).toBe(1)
-    expect(setSetlist.mock.calls[0][0]).toEqual([{ id: SONGS_DB[0].id }])
+    const updater = setSetlist.mock.calls[0][0]
+    expect(typeof updater).toBe('function')
+    expect(updater([])).toEqual([{ id: SONGS_DB[0].id }])
 
     expect(addToast.mock.calls.length).toBe(1)
     expect(addToast.mock.calls[0][0]).toBe(
@@ -124,7 +126,9 @@ describe('SetlistTab', () => {
     fireEvent.click(activeButton)
 
     expect(setSetlist.mock.calls.length).toBe(1)
-    expect(setSetlist.mock.calls[0][0]).toEqual([])
+    const updater = setSetlist.mock.calls[0][0]
+    expect(typeof updater).toBe('function')
+    expect(updater(setlist)).toEqual([])
 
     expect(addToast.mock.calls.length).toBe(1)
     expect(addToast.mock.calls[0][0]).toBe(
@@ -152,7 +156,9 @@ describe('SetlistTab', () => {
     fireEvent.click(activeButton)
 
     expect(setSetlist.mock.calls.length).toBe(1)
-    expect(setSetlist.mock.calls[0][0]).toEqual([])
+    const updater = setSetlist.mock.calls[0][0]
+    expect(typeof updater).toBe('function')
+    expect(updater(setlist)).toEqual([])
   })
 
   it('starts practice mode when button is clicked with songs selected', () => {
