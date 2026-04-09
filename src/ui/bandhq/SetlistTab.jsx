@@ -1,5 +1,5 @@
 // TODO: Review this file
-import React, { useCallback } from 'react'
+import React, { useCallback, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
@@ -86,6 +86,11 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameState()
 
+  const latestSetlist = useRef(setlist)
+  useLayoutEffect(() => {
+    latestSetlist.current = setlist
+  }, [setlist])
+
   const isSongSelected = useCallback(
     songId => {
       return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
@@ -99,7 +104,11 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
-      const isSelected = isSongSelected(songId)
+      const currentList = latestSetlist.current
+      const currentIndex = currentList.findIndex(
+        s => (typeof s === 'string' ? s : s.id) === songId
+      )
+      const isSelected = currentIndex >= 0
 
       if (isSelected) {
         addToast(
@@ -121,22 +130,19 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
         )
       }
 
-      const currentIndex = setlist.findIndex(
-        s => (typeof s === 'string' ? s : s.id) === songId
-      )
-
       let nextSetlist
-      if (currentIndex >= 0) {
-        nextSetlist = [...setlist]
+      if (isSelected) {
+        nextSetlist = [...currentList]
         nextSetlist.splice(currentIndex, 1)
       } else {
         // Currently allow 1 active song for MVP flow
         nextSetlist = [{ id: songId }]
       }
+      latestSetlist.current = nextSetlist
 
       setSetlist(nextSetlist)
     },
-    [setSetlist, setlist, addToast, t, isSongSelected]
+    [setSetlist, addToast, t]
   )
 
   return (

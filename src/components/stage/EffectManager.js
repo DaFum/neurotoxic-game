@@ -57,6 +57,7 @@ export class EffectManager {
     // Create sprite, using generic texture if specific one is missing/not loaded
     // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
     const effect = new Sprite(texture || Texture.WHITE)
+    effect.isSprite = true
     effect.anchor.set(0.5)
     return effect
   }
@@ -156,7 +157,7 @@ export class EffectManager {
     effect.visible = false
 
     // Only pool Sprites (legacy graphics would be destroyed if they existed)
-    if (effect instanceof Sprite) {
+    if (effect.isSprite) {
       if (this.spritePool.length < EffectManager.MAX_POOL_SIZE) {
         this.spritePool.push(effect)
       } else {
