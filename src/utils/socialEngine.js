@@ -526,7 +526,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   // Create an O(1) set of active deal IDs only if there are active deals
   let activeDealIds = null
   const activeDeals = social.activeDeals
-  const hasActiveDeals = activeDeals && activeDeals.length > 0
+const hasActiveDeals = !!activeDeals?.length;
 
   if (hasActiveDeals) {
     activeDealIds = new Set()
