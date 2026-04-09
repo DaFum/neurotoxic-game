@@ -5,8 +5,20 @@ import { EffectManager } from '../../src/components/stage/EffectManager'
 vi.mock('pixi.js', () => {
   class Container {
     constructor() { this.children = [] }
-    addChild(c) { this.children.push(c) }
-    removeChild(c) { const i = this.children.indexOf(c); if(i !== -1) this.children.splice(i, 1) }
+    addChild(c) {
+      if (c.parent) {
+        c.parent.removeChild(c)
+      }
+      c.parent = this
+      this.children.push(c)
+    }
+    removeChild(c) {
+      const i = this.children.indexOf(c)
+      if (i !== -1) {
+        c.parent = null
+        this.children.splice(i, 1)
+      }
+    }
     destroy() {}
   }
   class _Sprite {
@@ -90,5 +102,60 @@ describe('EffectManager', () => {
 
     // Assert it was made invisible
     expect(nonSpriteEffect.visible).toBe(false)
+  })
+
+  test('releaseEffectToPool pools non-Sprite instances with isSprite=true', () => {
+    // Create a plain object (not a PIXI.Sprite instance) with isSprite: true
+    const plainObjectEffect = {
+      destroy: vi.fn(),
+      visible: true,
+      isSprite: true
+    }
+
+    // Add to container manually
+    manager.container.addChild(plainObjectEffect)
+    expect(manager.container.children.length).toBe(1)
+
+    // Call releaseEffectToPool
+    manager.releaseEffectToPool(plainObjectEffect)
+
+    // Assert it WAS added to the sprite pool
+    expect(manager.spritePool.length).toBe(1)
+    expect(manager.spritePool[0]).toBe(plainObjectEffect)
+
+    // Assert it was removed from the container
+    expect(manager.container.children.length).toBe(0)
+
+    // Assert its destroy method was NOT called
+    expect(plainObjectEffect.destroy).not.toHaveBeenCalled()
+
+    // Assert it was made invisible
+    expect(plainObjectEffect.visible).toBe(false)
+  })
+
+  test('releaseEffectToPool destroys true Sprite instances with isSprite=false', async () => {
+    // Use the actual Sprite mock class but override isSprite
+    const { Sprite } = vi.mocked(await import('pixi.js'))
+    const realSpriteWithFalseFlag = new Sprite()
+    realSpriteWithFalseFlag.isSprite = false
+
+    // Add to container manually
+    manager.container.addChild(realSpriteWithFalseFlag)
+    expect(manager.container.children.length).toBe(1)
+
+    // Call releaseEffectToPool
+    manager.releaseEffectToPool(realSpriteWithFalseFlag)
+
+    // Assert it was NOT added to the sprite pool
+    expect(manager.spritePool.length).toBe(0)
+
+    // Assert it was removed from the container
+    expect(manager.container.children.length).toBe(0)
+
+    // Assert its destroy method WAS called
+    expect(realSpriteWithFalseFlag.destroy).toHaveBeenCalled()
+
+    // Assert it was made invisible
+    expect(realSpriteWithFalseFlag.visible).toBe(false)
   })
 })
