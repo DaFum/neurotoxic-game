@@ -86,20 +86,22 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameState()
 
-  const toggleSongInSetlist = useCallback((songId) => {
-    const songObj = SONGS_BY_ID.get(songId)
-    const songName = songObj ? songObj.name : songId
-    const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
+  const isSongSelected = useCallback(
+    songId => {
+      return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
+    },
+    [setlist]
+  )
 
-    setSetlist(prevSetlist => {
-      const currentIndex = prevSetlist.findIndex(
-        s => (typeof s === 'string' ? s : s.id) === songId
-      )
+  const toggleSongInSetlist = useCallback(
+    songId => {
+      const songObj = SONGS_BY_ID.get(songId)
+      const songName = songObj ? songObj.name : songId
+      const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
-      let newSetlist
-      if (currentIndex >= 0) {
-        newSetlist = [...prevSetlist]
-        newSetlist.splice(currentIndex, 1)
+      const isSelected = isSongSelected(songId)
+
+      if (isSelected) {
         addToast(
           t('ui:bandhq.setlist.songRemoved', {
             defaultValue: 'Removed {{song}} from {{venue}}.',
@@ -109,8 +111,6 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
           'info'
         )
       } else {
-        // Currently allow 1 active song for MVP flow
-        newSetlist = [{ id: songId }]
         addToast(
           t('ui:bandhq.setlist.songSelected', {
             defaultValue: 'Selected {{song}} for {{venue}}.',
@@ -120,13 +120,24 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
           'success'
         )
       }
-      return newSetlist
-    })
-  }, [setSetlist, addToast, t])
 
-  const isSongSelected = songId => {
-    return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
-  }
+      const currentIndex = setlist.findIndex(
+        s => (typeof s === 'string' ? s : s.id) === songId
+      )
+
+      let nextSetlist
+      if (currentIndex >= 0) {
+        nextSetlist = [...setlist]
+        nextSetlist.splice(currentIndex, 1)
+      } else {
+        // Currently allow 1 active song for MVP flow
+        nextSetlist = [{ id: songId }]
+      }
+
+      setSetlist(nextSetlist)
+    },
+    [setSetlist, setlist, addToast, t, isSongSelected]
+  )
 
   return (
     <div>
