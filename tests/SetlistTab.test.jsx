@@ -99,7 +99,7 @@ describe('SetlistTab', () => {
 
     expect(setSetlist.mock.calls.length).toBe(1)
     const updater1 = setSetlist.mock.calls[0][0]
-    expect(updater1([])).toEqual([{ id: SONGS_DB[0].id }])
+    expect(updater1([{ id: 'previous-song' }])).toEqual([{ id: SONGS_DB[0].id }])
 
     expect(addToast.mock.calls.length).toBe(1)
     expect(addToast.mock.calls[0][0]).toBe(
@@ -156,6 +156,12 @@ describe('SetlistTab', () => {
     expect(setSetlist.mock.calls.length).toBe(1)
     const updater3 = setSetlist.mock.calls[0][0]
     expect(updater3(setlist)).toEqual([])
+
+    expect(addToast.mock.calls.length).toBe(1)
+    expect(addToast.mock.calls[0][0]).toBe(
+      'Removed 01 Kranker Schrank from Band HQ.'
+    )
+    expect(addToast.mock.calls[0][1]).toBe('info')
   })
 
   it('starts practice mode when button is clicked with songs selected', () => {
