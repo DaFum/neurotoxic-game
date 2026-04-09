@@ -22,7 +22,7 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
       aria-pressed={!!isSelected}
       disabled={isLocked}
       onClick={handleToggle}
-      className={`p-3 border-2 flex justify-between items-center transition-all w-full text-left ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
+      className={`p-3 border-2 flex justify-between items-center transition-all w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
         ${
           isSelected
             ? 'border-toxic-green bg-toxic-green/10 text-toxic-green shadow-[0_0_8px_var(--color-toxic-green-20)]'
