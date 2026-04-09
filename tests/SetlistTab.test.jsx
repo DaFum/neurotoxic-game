@@ -107,6 +107,42 @@ describe('SetlistTab', () => {
     expect(setSetlist.mock.calls[0][0]).toEqual([{ id: SONGS_DB[0].id }])
   })
 
+  it('handles rapid double-click race condition', () => {
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
+    const { queryAllByText } = render(
+      <SetlistTab setlist={[]} setSetlist={setSetlist} addToast={addToast} />
+    )
+
+    const selectButtons = queryAllByText('SELECT')
+
+    // Simulate rapid double click before React can re-render and update the setlist prop
+    fireEvent.click(selectButtons[0])
+    fireEvent.click(selectButtons[0])
+
+    expect(addToast.mock.calls.length).toBe(2)
+
+    // First click should select
+    expect(addToast.mock.calls[0][0]).toBe(
+      'Selected 01 Kranker Schrank for Band HQ.'
+    )
+    expect(addToast.mock.calls[0][1]).toBe('success')
+
+    // Second click should remove
+    expect(addToast.mock.calls[1][0]).toBe(
+      'Removed 01 Kranker Schrank from Band HQ.'
+    )
+    expect(addToast.mock.calls[1][1]).toBe('info')
+
+    expect(setSetlist.mock.calls.length).toBe(2)
+
+    // First call sets it
+    expect(setSetlist.mock.calls[0][0]).toEqual([{ id: SONGS_DB[0].id }])
+
+    // Second call removes it
+    expect(setSetlist.mock.calls[1][0]).toEqual([])
+  })
+
   it('handles song removal', () => {
     const selectedSong = SONGS_DB[0]
     const setlist = [{ id: selectedSong.id }]
