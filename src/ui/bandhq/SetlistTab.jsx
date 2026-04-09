@@ -121,23 +121,22 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
         )
       }
 
-      setSetlist(prevSetlist => {
-        const currentIndex = prevSetlist.findIndex(
-          s => (typeof s === 'string' ? s : s.id) === songId
-        )
+      const currentIndex = setlist.findIndex(
+        s => (typeof s === 'string' ? s : s.id) === songId
+      )
 
-        let newSetlist
-        if (currentIndex >= 0) {
-          newSetlist = [...prevSetlist]
-          newSetlist.splice(currentIndex, 1)
-        } else {
-          // Currently allow 1 active song for MVP flow
-          newSetlist = [{ id: songId }]
-        }
-        return newSetlist
-      })
+      let nextSetlist
+      if (currentIndex >= 0) {
+        nextSetlist = [...setlist]
+        nextSetlist.splice(currentIndex, 1)
+      } else {
+        // Currently allow 1 active song for MVP flow
+        nextSetlist = [{ id: songId }]
+      }
+
+      setSetlist(nextSetlist)
     },
-    [setSetlist, addToast, t, isSongSelected]
+    [setSetlist, setlist, addToast, t, isSongSelected]
   )
 
   return (

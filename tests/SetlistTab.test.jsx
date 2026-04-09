@@ -160,8 +160,7 @@ describe('SetlistTab', () => {
     expect(addToast.mock.calls[0][1]).toBe('info')
 
     expect(setSetlist.mock.calls.length).toBe(1)
-    const updater3 = setSetlist.mock.calls[0][0]
-    expect(updater3(setlist)).toEqual([])
+    expect(setSetlist.mock.calls[0][0]).toEqual([])
   })
 
   it('starts practice mode when button is clicked with songs selected', () => {
