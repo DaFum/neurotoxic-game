@@ -138,12 +138,15 @@ export const BandHQ = ({ onClose, className = '' }) => {
           handleError(err, { addToast })
         } else {
           handleError(
-            new GameError(t('ui:hq.purchaseFailed', { defaultValue: 'Purchase failed' }), {
-              context: {
-                originalError: err?.message,
-                stack: err?.stack
+            new GameError(
+              t('ui:hq.purchaseFailed', { defaultValue: 'Purchase failed' }),
+              {
+                context: {
+                  originalError: err?.message,
+                  stack: err?.stack
+                }
               }
-            }),
+            ),
             { addToast }
           )
         }

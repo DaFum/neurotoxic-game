@@ -33,8 +33,7 @@ const SongRow = React.memo(({ song, selected, toggleSongInSetlist, t }) => {
             {song.difficulty}/7
           </span>
           <span>
-            {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}:{' '}
-            {song.bpm}
+            {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
           </span>
           <span>
             {t('ui:bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}

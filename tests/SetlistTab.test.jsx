@@ -105,7 +105,9 @@ describe('SetlistTab', () => {
 
     expect(setSetlist.mock.calls.length).toBe(1)
     const updater1 = setSetlist.mock.calls[0][0]
-    expect(updater1([{ id: 'previous-song' }])).toEqual([{ id: SONGS_DB[0].id }])
+    expect(updater1([{ id: 'previous-song' }])).toEqual([
+      { id: SONGS_DB[0].id }
+    ])
   })
 
   it('handles song removal', () => {

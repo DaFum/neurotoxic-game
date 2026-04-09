@@ -257,6 +257,7 @@ class RoadieStageController extends BaseStageController {
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
       sprite = new Sprite(this.textures.cars[texIndex])
+      sprite.isSprite = true
       sprite.anchor.set(0.5)
     } else {
       sprite = new Graphics()
@@ -288,7 +289,7 @@ class RoadieStageController extends BaseStageController {
       }
 
       // Adjust Scale if texture — constrain both width AND height
-      if (sprite instanceof Sprite && sprite.texture?.width > 0) {
+      if (sprite.isSprite && sprite.texture?.width > 0) {
         const targetW = car.width * cellW
         const targetH = cellH * 0.7
         const scale = Math.min(
