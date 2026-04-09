@@ -33,20 +33,15 @@ export const calculateViralityScore = (
   if (venue?.name?.includes('Kaminstube')) baseChance *= 1.5 // Historical
 
   // Event Multiplier (e.g. "Stage Diver", "Influencer")
-  const isSet = gigEvents instanceof Set
-  if (
-    gigEvents != null &&
-    (isSet ? gigEvents.has('stage_diver') : gigEvents.includes('stage_diver'))
-  ) {
-    baseChance *= 2.0
-  }
-  if (
-    gigEvents != null &&
-    (isSet
-      ? gigEvents.has('influencer_spotted')
-      : gigEvents.includes('influencer_spotted'))
-  ) {
-    baseChance *= 3.0
+  if (gigEvents != null) {
+    // ⚡ Optimization: Convert array to Set for O(1) lookups instead of multiple O(N) array traversals
+    const eventsSet = gigEvents instanceof Set ? gigEvents : new Set(gigEvents)
+    if (eventsSet.has('stage_diver')) {
+      baseChance *= 2.0
+    }
+    if (eventsSet.has('influencer_spotted')) {
+      baseChance *= 3.0
+    }
   }
 
   // Social Manager Trait: +15% virality chance
