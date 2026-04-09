@@ -34,14 +34,21 @@ export const calculateViralityScore = (
 
   // Event Multiplier (e.g. "Stage Diver", "Influencer")
   if (gigEvents != null) {
-    // ⚡ Optimization: Convert array to Set for O(1) lookups instead of multiple O(N) array traversals
-    const eventsSet = gigEvents instanceof Set ? gigEvents : new Set(gigEvents)
-    if (eventsSet.has('stage_diver')) {
-      baseChance *= 2.0
+    // ⚡ Optimization: Single pass traversal to avoid multiple O(N) lookups and Set allocation overhead
+    let hasStageDiver = false
+    let hasInfluencer = false
+    if (gigEvents instanceof Set) {
+      hasStageDiver = gigEvents.has('stage_diver')
+      hasInfluencer = gigEvents.has('influencer_spotted')
+    } else {
+      for (const e of gigEvents) {
+        if (e === 'stage_diver') hasStageDiver = true
+        if (e === 'influencer_spotted') hasInfluencer = true
+        if (hasStageDiver && hasInfluencer) break
+      }
     }
-    if (eventsSet.has('influencer_spotted')) {
-      baseChance *= 3.0
-    }
+    if (hasStageDiver) baseChance *= 2.0
+    if (hasInfluencer) baseChance *= 3.0
   }
 
   // Social Manager Trait: +15% virality chance
