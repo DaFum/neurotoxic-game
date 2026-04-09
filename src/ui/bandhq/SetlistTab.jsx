@@ -1,5 +1,5 @@
 // TODO: Review this file
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
@@ -87,9 +87,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { setCurrentGig, changeScene } = useGameState()
 
   const latestSetlist = useRef(setlist)
-  useEffect(() => {
-    latestSetlist.current = setlist
-  }, [setlist])
+  latestSetlist.current = setlist
 
   const isSongSelected = useCallback(
     songId => {
@@ -140,9 +138,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       }
       latestSetlist.current = nextSetlist
 
-      // Use functional updater to satisfy the original API expectation in tests,
-      // though the state itself is synced via the ref
-      setSetlist(() => nextSetlist)
+      setSetlist(nextSetlist)
     },
     [setSetlist, addToast, t]
   )
