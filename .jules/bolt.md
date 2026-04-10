@@ -76,3 +76,8 @@
 
 **Learning:** In high-frequency paths like PixiJS render loops (e.g., `RoadieStageController.js`, `EffectManager.js`), using `instanceof Sprite` checks introduces significant overhead due to prototype chain traversal.
 **Action:** Replace `instanceof` checks with direct boolean property lookups by assigning `.isSprite = true` upon object instantiation.
+
+## 2025-05-28 - Array Allocations in Random Utilities
+
+**Learning:** Using `[...arr]` shallow-copying inside generic random sub-set utility methods like `pickRandomSubset` is highly detrimental for performance and GC when array sizes scale or frequency is high, and had been bottlenecking performance.
+**Action:** When implementing generic subset or shuffling algorithms, always prefer direct index lookups (for k=1, k=2) or Sparse Fisher-Yates with Map (for small subsets relative to array length) rather than unconditionally shallow-copying the entire source array.
