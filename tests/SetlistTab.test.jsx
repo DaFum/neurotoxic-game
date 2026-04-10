@@ -90,8 +90,9 @@ describe('SetlistTab', () => {
   it('handles song selection (replaces setlist)', () => {
     const setSetlist = vi.fn()
     const addToast = vi.fn()
+    const initialSetlist = [{ id: 'previous-song' }]
     const { queryAllByText } = render(
-      <SetlistTab setlist={[]} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab setlist={initialSetlist} setSetlist={setSetlist} addToast={addToast} />
     )
 
     const selectButtons = queryAllByText('SELECT')

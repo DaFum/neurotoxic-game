@@ -12,6 +12,7 @@ export const PreGigStartButton = React.memo(
   ({ t, isStarting, isSetlistEmpty, onStartShow }) => {
     return (
       <motion.button
+        type='button'
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
