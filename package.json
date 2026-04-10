@@ -88,13 +88,7 @@
   },
   "pnpm": {
     "overrides": {
-      "lodash": "4.18.1",
-      "jsdom": "29.0.2",
-      "eslint": "10.2.0",
-      "postcss": "8.5.9",
-      "react-i18next": "17.0.2",
-      "i18next": "26.0.4",
-      "lucide-react": "1.8.0"
+      "lodash": "4.18.1"
     }
   }
 }
