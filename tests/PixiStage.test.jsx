@@ -174,14 +174,17 @@ describe('PixiStage', () => {
   test('uses default controller factory when not provided', async () => {
     const originalConsoleError = console.error
     console.error = () => {}
-    // Should not crash when using default factory
-    render(<PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />)
+    try {
+      // Should not crash when using default factory
+      render(<PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />)
 
-    await waitFor(() => {
-      // Just verify it renders without error
-      expect(true).toBe(true)
-    })
-    console.error = originalConsoleError
+      await waitFor(() => {
+        // Just verify it renders without error
+        expect(true).toBe(true)
+      })
+    } finally {
+      console.error = originalConsoleError
+    }
   })
 
   test('containerRef is attached to DOM element', async () => {

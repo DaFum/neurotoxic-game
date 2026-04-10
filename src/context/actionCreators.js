@@ -6,6 +6,7 @@
  */
 
 import { ActionTypes } from './actionTypes.js'
+import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
 
 /**
  * Creates a scene change action
@@ -22,11 +23,13 @@ export const createChangeSceneAction = scene => ({
  * @param {Object} updates - Player state updates
  * @returns {Object} Action object
  */
-import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
-
 export const createUpdatePlayerAction = updates => {
   let safeUpdates = updates
-  if (updates && typeof updates === 'object' && 'money' in updates) {
+  if (
+    updates &&
+    typeof updates === 'object' &&
+    Object.hasOwn(updates, 'money')
+  ) {
     safeUpdates = {
       ...updates,
       money: clampPlayerMoney(updates.money)
@@ -45,7 +48,11 @@ export const createUpdatePlayerAction = updates => {
  */
 export const createUpdateBandAction = updates => {
   let safeUpdates = updates
-  if (updates && typeof updates === 'object' && 'harmony' in updates) {
+  if (
+    updates &&
+    typeof updates === 'object' &&
+    Object.hasOwn(updates, 'harmony')
+  ) {
     safeUpdates = {
       ...updates,
       harmony: clampBandHarmony(updates.harmony)

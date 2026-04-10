@@ -23,7 +23,7 @@ class TourbusStageController extends BaseStageController {
 
     // Performance optimization: Pre-allocate Maps/Sets
     this.obstacleMap = new Map()
-    this.currentIds = new Set()
+    this.currentIds = this.currentIds || new Set()
 
     // Animation state
     this.wobbleTime = 0

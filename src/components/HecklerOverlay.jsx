@@ -52,7 +52,8 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
   // Cache for created DOM nodes, keyed by projectile ID
   const nodeCacheRef = useRef(new Map())
   // Persistent Set to avoid GC allocations during O(1) lookups
-  const seenIdsRef = useRef(new Set())
+  const seenIdsRef = useRef(null)
+  if (!seenIdsRef.current) seenIdsRef.current = new Set()
 
   useEffect(() => {
     let rAF

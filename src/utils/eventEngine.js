@@ -111,9 +111,18 @@ const getEventMapForPool = pool => {
 
 const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
-  const cooldownsSet = new Set(gameState.eventCooldowns || [])
-  const flagsSet = new Set(gameState.activeStoryFlags || [])
-  const pendingSet = new Set(gameState.pendingEvents || [])
+  const cooldownsSet =
+    gameState.eventCooldowns && gameState.eventCooldowns.length > 0
+      ? new Set(gameState.eventCooldowns)
+      : new Set()
+  const flagsSet =
+    gameState.activeStoryFlags && gameState.activeStoryFlags.length > 0
+      ? new Set(gameState.activeStoryFlags)
+      : new Set()
+  const pendingSet =
+    gameState.pendingEvents && gameState.pendingEvents.length > 0
+      ? new Set(gameState.pendingEvents)
+      : new Set()
 
   const optimizedState = {
     ...gameState,

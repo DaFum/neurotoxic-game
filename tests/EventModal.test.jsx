@@ -86,40 +86,44 @@ test('EventModal renders event details and handles click flow', async () => {
 test('EventModal handles resolveEventChoice error by showing fallback preview', async () => {
   const originalConsoleError = console.error
   console.error = () => {}
-  const { resolveEventChoice } = await import('../src/utils/eventEngine')
-  resolveEventChoice.mockImplementationOnce(() => {
-    throw new Error('Test preview error')
-  })
-
-  const mockEvent = {
-    id: 'test_event_error',
-    title: 'Test Event',
-    description: 'This is a test event.',
-    options: [{ label: 'Option Error' }]
-  }
-  const handleSelect = vi.fn()
-
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
-
-  fireEvent.click(screen.getByText('Option Error'))
-
-  // It should show outcome fallback instead of dispatching immediately
-  expect(handleSelect).not.toHaveBeenCalled()
-
-  await waitFor(() => {
-    // Uses the generic error key
-    expect(screen.getByText('ui:event_error')).toBeInTheDocument()
-  })
-
-  const continueButton = screen.getByText(/CONTINUE/i)
-  fireEvent.click(continueButton)
-
-  // It should call handleSelect with the raw option, since preview failed
-  expect(handleSelect).toHaveBeenCalledWith(
-    expect.objectContaining({
-      label: 'Option Error'
+  try {
+    const { resolveEventChoice } = await import('../src/utils/eventEngine')
+    resolveEventChoice.mockImplementationOnce(() => {
+      throw new Error('Test preview error')
     })
-  )
+
+    const mockEvent = {
+      id: 'test_event_error',
+      title: 'Test Event',
+      description: 'This is a test event.',
+      options: [{ label: 'Option Error' }]
+    }
+    const handleSelect = vi.fn()
+
+    render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+    fireEvent.click(screen.getByText('Option Error'))
+
+    // It should show outcome fallback instead of dispatching immediately
+    expect(handleSelect).not.toHaveBeenCalled()
+
+    await waitFor(() => {
+      // Uses the generic error key
+      expect(screen.getByText('ui:event_error')).toBeInTheDocument()
+    })
+
+    const continueButton = screen.getByText(/CONTINUE/i)
+    fireEvent.click(continueButton)
+
+    // It should call handleSelect with the raw option, since preview failed
+    expect(handleSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: 'Option Error'
+      })
+    )
+  } finally {
+    console.error = originalConsoleError
+  }
 })
 
 test('EventModal handles keyboard selection', async () => {
