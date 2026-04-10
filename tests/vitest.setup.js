@@ -185,6 +185,9 @@ vi.mock('tone', async () => {
       state: 'suspended',
       lookAhead: 0
     },
+    getDestination: () => ({
+      mute: false
+    }),
     start: vi.fn().mockResolvedValue(),
     now: vi.fn().mockReturnValue(0),
     loaded: vi.fn().mockResolvedValue(true),

@@ -5,6 +5,9 @@ import { handleError, StateError } from '../../src/utils/errorHandler.js'
 describe('errorHandler', () => {
   describe('handleError', () => {
     it('calls addToast on ErrorSeverity.HIGH', () => {
+      const originalConsoleError = console.error
+      console.error = () => {}
+
       let addToastCalled = false
       let toastType = null
       const mockAddToast = (message, type) => {
@@ -16,9 +19,14 @@ describe('errorHandler', () => {
 
       assert.strictEqual(addToastCalled, true)
       assert.strictEqual(toastType, 'error')
+
+      console.error = originalConsoleError
     })
 
     it('suppresses toast when silent option is true', () => {
+      const originalConsoleError = console.error
+      console.error = () => {}
+
       let addToastCalled = false
       const mockAddToast = () => {
         addToastCalled = true
@@ -30,9 +38,14 @@ describe('errorHandler', () => {
       })
 
       assert.strictEqual(addToastCalled, false)
+
+      console.error = originalConsoleError
     })
 
     it('uses fallbackMessage for non-Error instances without a message property', () => {
+      const originalConsoleError = console.error
+      console.error = () => {}
+
       let addToastCalled = false
       let toastMessage = null
       const mockAddToast = message => {
@@ -46,9 +59,14 @@ describe('errorHandler', () => {
       )
       assert.strictEqual(addToastCalled, true)
       assert.strictEqual(toastMessage, 'Fallback message used')
+
+      console.error = originalConsoleError
     })
 
     it('catches and falls back when internal mechanisms throw an error', () => {
+      const originalConsoleError = console.error
+      console.error = () => {}
+
       const originalFetch = global.fetch
       const originalWindow = global.window
 
@@ -66,6 +84,7 @@ describe('errorHandler', () => {
       } finally {
         global.fetch = originalFetch
         global.window = originalWindow
+        console.error = originalConsoleError
       }
     })
   })

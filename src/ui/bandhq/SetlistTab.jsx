@@ -33,8 +33,7 @@ const SongRow = React.memo(({ song, selected, toggleSongInSetlist, t }) => {
             {song.difficulty}/7
           </span>
           <span>
-            {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}:{' '}
-            {song.bpm}
+            {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
           </span>
           <span>
             {t('ui:bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
@@ -86,9 +85,9 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameState()
 
-  const latestSetlist = useRef(setlist)
+  const latestSetlistRef = useRef(setlist)
   useLayoutEffect(() => {
-    latestSetlist.current = setlist
+    latestSetlistRef.current = setlist
   }, [setlist])
 
   const isSongSelected = useCallback(
@@ -104,7 +103,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
-      const currentList = latestSetlist.current
+      const currentList = latestSetlistRef.current
       const currentIndex = currentList.findIndex(
         s => (typeof s === 'string' ? s : s.id) === songId
       )
@@ -138,7 +137,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
         // Currently allow 1 active song for MVP flow
         nextSetlist = [{ id: songId }]
       }
-      latestSetlist.current = nextSetlist
+      latestSetlistRef.current = nextSetlist
 
       setSetlist(nextSetlist)
     },

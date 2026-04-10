@@ -84,6 +84,8 @@ test('EventModal renders event details and handles click flow', async () => {
 })
 
 test('EventModal handles resolveEventChoice error by showing fallback preview', async () => {
+  const originalConsoleError = console.error
+  console.error = () => {}
   const { resolveEventChoice } = await import('../src/utils/eventEngine')
   resolveEventChoice.mockImplementationOnce(() => {
     throw new Error('Test preview error')
