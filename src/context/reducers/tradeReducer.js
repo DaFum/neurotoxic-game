@@ -92,16 +92,36 @@ export const handleTradeVoidItem = (state, payload) => {
             "'": '&#39;'
           }
 
-          for (const prop in rawContext) {
-            if (!Object.hasOwn(rawContext, prop)) continue
-            if (isForbiddenKey(prop)) continue
+          const rawContext = parsedContext
 
-            let value = rawContext[prop]
-            if (typeof value === 'string') {
-              value = value.replace(/[&<>"']/g, match => escapeMap[match])
-            }
-            safeContext[prop] = value
+          const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
           }
+
+          const sanitizeContextValue = value => {
+            if (typeof value === 'string') {
+              return value.replace(/[&<>"']/g, match => escapeMap[match])
+            }
+            if (Array.isArray(value)) {
+              return value.map(item => sanitizeContextValue(item))
+            }
+            if (value !== null && typeof value === 'object') {
+              const out = Object.create(null)
+              for (const prop in value) {
+                if (!Object.hasOwn(value, prop)) continue
+                if (isForbiddenKey(prop)) continue
+                out[prop] = sanitizeContextValue(value[prop])
+              }
+              return out
+            }
+            return value
+          }
+
+          const safeContext = sanitizeContextValue(rawContext)
 
           safeContext.fame = actualDelta
           enrichedMessage = `${key}|${JSON.stringify(safeContext)}`
