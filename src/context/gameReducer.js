@@ -8,13 +8,7 @@
 import { ActionTypes } from './actionTypes.js'
 import { handleChangeScene } from './reducers/sceneReducer.js'
 import { handleUpdatePlayer } from './reducers/playerReducer.js'
-import {
-  handleUpdateBand,
-  handleConsumeItem,
-  handleUnlockTrait,
-  handleAddContraband,
-  handleUseContraband
-} from './reducers/bandReducer.js'
+import { bandReducer } from './reducers/bandReducer.js'
 import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
@@ -82,13 +76,11 @@ export const gameReducer = (state, action) => {
       return handleUpdatePlayer(state, action.payload)
 
     case ActionTypes.UPDATE_BAND:
-      return handleUpdateBand(state, action.payload)
-
     case ActionTypes.ADD_CONTRABAND:
-      return handleAddContraband(state, action.payload)
-
     case ActionTypes.USE_CONTRABAND:
-      return handleUseContraband(state, action.payload)
+    case ActionTypes.CONSUME_ITEM:
+    case ActionTypes.UNLOCK_TRAIT:
+      return bandReducer(state, action)
 
     case ActionTypes.UPDATE_SOCIAL:
       return handleUpdateSocial(state, action.payload)
@@ -135,9 +127,6 @@ export const gameReducer = (state, action) => {
     case ActionTypes.POP_PENDING_EVENT:
       return handlePopPendingEvent(state)
 
-    case ActionTypes.CONSUME_ITEM:
-      return handleConsumeItem(state, action.payload)
-
     case ActionTypes.ADVANCE_DAY:
       return handleAdvanceDay(state, action.payload)
 
@@ -161,9 +150,6 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.COMPLETE_KABELSALAT_MINIGAME:
       return handleCompleteKabelsalatMinigame(state, action.payload)
-
-    case ActionTypes.UNLOCK_TRAIT:
-      return handleUnlockTrait(state, action.payload)
 
     case ActionTypes.PIRATE_BROADCAST:
       return handlePirateBroadcast(state, action.payload)
