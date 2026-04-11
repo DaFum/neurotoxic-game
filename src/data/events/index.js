@@ -46,24 +46,45 @@ const validateEvents = (events, categoryName = 'unknown') => {
   })
 }
 
+const categorizeEvents = events => {
+  const band = []
+  const financial = []
+  const special = []
+
+  for (let i = 0; i < events.length; i++) {
+    const e = events[i]
+    if (e.category === 'band') {
+      band.push(e)
+    } else if (e.category === 'financial') {
+      financial.push(e)
+    } else if (e.category === 'special') {
+      special.push(e)
+    }
+  }
+
+  return { band, financial, special }
+}
+
 // Split crisis events into their respective category pools
-const crisisBand = CRISIS_EVENTS.filter(e => e.category === 'band')
-const crisisFinancial = CRISIS_EVENTS.filter(e => e.category === 'financial')
-const crisisSpecial = CRISIS_EVENTS.filter(e => e.category === 'special')
+const {
+  band: crisisBand,
+  financial: crisisFinancial,
+  special: crisisSpecial
+} = categorizeEvents(CRISIS_EVENTS)
 
 // Split quest events into their respective category pools
-const questBand = QUEST_EVENTS.filter(e => e.category === 'band')
-const questFinancial = QUEST_EVENTS.filter(e => e.category === 'financial')
-const questSpecial = QUEST_EVENTS.filter(e => e.category === 'special')
+const {
+  band: questBand,
+  financial: questFinancial,
+  special: questSpecial
+} = categorizeEvents(QUEST_EVENTS)
 
 // Split consequence events into their respective category pools
-const consequenceBand = CONSEQUENCE_EVENTS.filter(e => e.category === 'band')
-const consequenceFinancial = CONSEQUENCE_EVENTS.filter(
-  e => e.category === 'financial'
-)
-const consequenceSpecial = CONSEQUENCE_EVENTS.filter(
-  e => e.category === 'special'
-)
+const {
+  band: consequenceBand,
+  financial: consequenceFinancial,
+  special: consequenceSpecial
+} = categorizeEvents(CONSEQUENCE_EVENTS)
 
 export const EVENTS_DB = {
   transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
