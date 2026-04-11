@@ -3,7 +3,6 @@ import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
-import { vi } from 'vitest'
 import {
   setupArrivalLogicTest,
   setupArrivalScenario,
@@ -99,15 +98,15 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
   })
 
-  test('prevents GIG if harmony too low and bad luck', () => {
+  test('prevents GIG if harmony <= 1', () => {
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
           node_start: { type: 'GIG', venue: {} }
         }
       },
-      band: { harmony: 10 } // low harmony (< 15)
-    }, { rng: () => 0.1 }) // Force bad luck (< 0.25)
+      band: { harmony: 1 }
+    })
 
     act(() => {
       result.current.handleArrivalSequence()

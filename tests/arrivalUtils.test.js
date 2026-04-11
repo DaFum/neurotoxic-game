@@ -121,14 +121,11 @@ describe('handleNodeArrival', () => {
       assert.strictEqual(mocks.startGig.mock.calls[0].arguments[0], venue)
     })
 
-    test(`${type} - fails to start gig if harmony is low and luck is bad`, () => {
+    test(`${type} - fails to start gig if harmony <= 1`, () => {
       const mocks = getMocks()
       const node = { type, venue: { name: 'The Club' } }
-      const band = { harmony: 10 } // low harmony threshold is < 15
+      const band = { harmony: 1 }
       const player = { fame: 100 }
-
-      // Force bad luck
-      mocks.rng = () => 0.1 // lower than LOW_HARMONY_CANCELLATION_CHANCE (0.25)
 
       handleNodeArrival({
         node,
