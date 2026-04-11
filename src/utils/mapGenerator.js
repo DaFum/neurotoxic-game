@@ -515,7 +515,9 @@ export class MapGenerator {
    */
   pickRandomSubset(arr, count) {
     const n = arr.length
-    const k = Math.min(count, n)
+    const countInt = Math.floor(count)
+    if (!Number.isFinite(countInt)) return []
+    const k = Math.min(countInt, n)
     if (k <= 0) return []
 
     if (k === 1) {
