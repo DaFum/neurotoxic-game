@@ -50,7 +50,7 @@ describe('travelLogicUtils', () => {
       assert.strictEqual(result.nextBand.harmony, 55)
     })
 
-    test('clumps next money and fuel to non-negative', () => {
+    test('clamps next money and fuel to non-negative', () => {
       const player = { money: 50, van: { fuel: 5 } }
       const band = {}
       const node = { id: 'node_1', venue: 'venue_1' }
