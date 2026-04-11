@@ -30,7 +30,8 @@ const validateEffect = (effect, eventId, idx) => {
         `Composite effect must have a non-empty effects array at index ${idx} for event ${eventId}`
       )
     }
-    effect.effects.forEach((childEffect, childIdx) => {
+    for (let childIdx = 0; childIdx < effect.effects.length; childIdx++) {
+      const childEffect = effect.effects[childIdx]
       try {
         validateEffect(childEffect, eventId, idx)
       } catch (err) {
@@ -39,7 +40,7 @@ const validateEffect = (effect, eventId, idx) => {
           { cause: err }
         )
       }
-    })
+    }
   } else if (effect.type === 'skillCheck') {
     for (const effectName of ['success', 'failure']) {
       const nestedEffect = effect[effectName]
@@ -114,7 +115,8 @@ export const validateCrisisEvent = event => {
     throw new Error(`Event ${event.id} must have at least one option`)
   }
 
-  event.options.forEach((opt, idx) => {
+  for (let idx = 0; idx < event.options.length; idx++) {
+    const opt = event.options[idx]
     if (typeof opt.label !== 'string' || !opt.label.startsWith('events:')) {
       throw new Error(
         `Invalid option label at index ${idx} for event ${event.id}`
@@ -159,7 +161,7 @@ export const validateCrisisEvent = event => {
       validateEffect(success, event.id, idx)
       validateEffect(failure, event.id, idx)
     }
-  })
+  }
 
   return true
 }
