@@ -257,10 +257,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -283,10 +295,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -934,5 +958,25 @@
   "clinic.notEnoughMoney": "Not enough money",
   "clinic.fullyHealed": "Member is already fully healed",
   "clinic.notEnoughFame": "Not enough fame",
-  "clinic.alreadyEnhanced": "Member already has this enhancement"
+  "clinic.alreadyEnhanced": "Member already has this enhancement",
+  "minigames.amp.title": "AMP_CALIBRATION",
+  "minigames.amp.rulesTitle": "CALIBRATION_PROTOCOL",
+  "minigames.amp.rules.time": "Match the frequency within the time limit.",
+  "minigames.amp.rules.penalty": "High errors cause extreme stress and lose the gig.",
+  "minigames.amp.status": "Status",
+  "minigames.amp.statusPending": "FEEDBACK DETECTED",
+  "minigames.amp.statusConnected": "MATCHED",
+  "minigames.amp.statusFailed": "EAR DRUMS BLOWN",
+  "minigames.amp.success": "CALIBRATION COMPLETE",
+  "minigames.amp.systemShock": "FEEDBACK LOOP",
+  "minigames.amp.timeUp": "TIME'S UP",
+  "minigames.amp.managerMad": "The feedback destroyed the speakers.",
+  "minigames.amp.ampsReady": "The tone is clean. Ready to shred.",
+  "minigames.amp.tMinus": "T-MINUS",
+  "minigames.amp.timeValue": "{{count}}s",
+  "minigames.amp.timeValue_one": "{{count}}s",
+  "minigames.amp.timeValue_other": "{{count}}s",
+  "minigames.amp.hud.target": "TARGET: {{freq}}Hz",
+  "minigames.amp.hud.current": "ACTUAL: {{freq}}Hz",
+  "minigames.amp.hud.match": "MATCH: {{pct}}%"
 }

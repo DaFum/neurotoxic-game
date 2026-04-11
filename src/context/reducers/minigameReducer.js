@@ -10,7 +10,8 @@ import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
-  calculateKabelsalatMinigameResult
+  calculateKabelsalatMinigameResult,
+  calculateAmpCalibrationResult
 } from '../../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
@@ -167,6 +168,49 @@ export const handleStartRoadieMinigame = (state, payload) => {
       gigId: gigId,
       equipmentRemaining: DEFAULT_EQUIPMENT_COUNT
     }
+  }
+}
+
+export const handleStartAmpCalibration = (state, payload) => {
+  const { gigId } = payload
+  logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
+  return {
+    ...state,
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+    minigame: {
+      ...DEFAULT_MINIGAME_STATE,
+      active: true,
+      type: MINIGAME_TYPES.AMP_CALIBRATION,
+      gigId: gigId
+    }
+  }
+}
+
+export const handleCompleteAmpCalibration = (state, payload) => {
+  const { score } = payload
+  logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
+
+  // Apply Results
+  const { stress, reward } = calculateAmpCalibrationResult(score, state.band)
+
+  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
+  const nextMoney = clampPlayerMoney(state.player.money + reward)
+
+  const nextBand = {
+    ...state.band,
+    harmony: nextHarmony
+  }
+
+  const nextPlayer = {
+    ...state.player,
+    money: nextMoney
+  }
+
+  return {
+    ...state,
+    band: nextBand,
+    player: nextPlayer,
+    minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
 

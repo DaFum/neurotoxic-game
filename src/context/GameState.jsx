@@ -58,6 +58,8 @@ import {
   createCompleteRoadieMinigameAction,
   createStartKabelsalatMinigameAction,
   createCompleteKabelsalatMinigameAction,
+  createStartAmpCalibrationAction,
+  createCompleteAmpCalibrationAction,
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
@@ -492,6 +494,19 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  const startAmpCalibration = useCallback(
+    gigId =>
+      startTransition(() =>
+        dispatch(createStartAmpCalibrationAction(gigId))
+      ),
+    []
+  )
+
+  const completeAmpCalibration = useCallback(
+    score => dispatch(createCompleteAmpCalibrationAction(score)),
+    []
+  )
+
   const unlockTrait = useCallback(
     (memberId, traitId) => dispatch(createUnlockTraitAction(memberId, traitId)),
     []
@@ -894,6 +909,8 @@ export const GameStateProvider = ({ children }) => {
       completeRoadieMinigame,
       startKabelsalatMinigame,
       completeKabelsalatMinigame,
+      startAmpCalibration,
+      completeAmpCalibration,
       unlockTrait,
       endGig,
       addQuest,
@@ -935,6 +952,8 @@ export const GameStateProvider = ({ children }) => {
       completeRoadieMinigame,
       startKabelsalatMinigame,
       completeKabelsalatMinigame,
+      startAmpCalibration,
+      completeAmpCalibration,
       unlockTrait,
       endGig,
       addQuest,

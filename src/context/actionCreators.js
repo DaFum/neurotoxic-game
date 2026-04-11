@@ -312,6 +312,26 @@ export const createCompleteKabelsalatMinigameAction = results => ({
 })
 
 /**
+ * Action creator to start Amp Calibration minigame
+ * @param {string} gigId - Target gig
+ * @returns {Object} Action object
+ */
+export const createStartAmpCalibrationAction = gigId => ({
+  type: ActionTypes.START_AMP_CALIBRATION,
+  payload: { gigId }
+})
+
+/**
+ * Action creator to complete Amp Calibration minigame
+ * @param {number} score
+ * @returns {Object} Action object
+ */
+export const createCompleteAmpCalibrationAction = score => ({
+  type: ActionTypes.COMPLETE_AMP_CALIBRATION,
+  payload: { score }
+})
+
+/**
  * Creates unlock trait action
  * @param {Object} payload - { memberId, traitId }
  * @returns {Object} Action object
