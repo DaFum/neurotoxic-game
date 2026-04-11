@@ -195,6 +195,7 @@ test('systemReducer - LOAD_GAME', async t => {
 
     // Prototype keys should be stripped
     assert.equal(Object.hasOwn(hydratedStash, '__proto__'), false)
+    assert.equal(hydratedStash['c_rusty_strings'], undefined)
   })
 
   await t.test('handles missing or malformed loaded state gracefully', () => {
