@@ -120,7 +120,7 @@ const calculateTicketIncome = (
   fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
 
   const ticketsSold = Math.floor(baseCapacity * fillRate)
-  const revenue = ticketsSold * (Math.max(0, gigData.price) || 0)
+  const revenue = Math.max(0, ticketsSold * (Math.max(0, gigData.price) || 0))
 
   return {
     revenue,
@@ -377,12 +377,13 @@ const calculateVenueSplit = (ticketsRevenue, gigData) => {
  * Calculates guarantee / base pay.
  */
 const calculateGuarantee = gigData => {
-  if (gigData.pay > 0) {
+  const pay = Math.max(0, gigData.pay || 0)
+  if (pay > 0) {
     return {
-      amount: gigData.pay,
+      amount: pay,
       incomeItem: {
         labelKey: 'economy:gigIncome.guarantee.label',
-        value: gigData.pay,
+        value: pay,
         detailKey: 'economy:gigIncome.guarantee.detail'
       }
     }
@@ -396,8 +397,9 @@ const calculateGuarantee = gigData => {
 const calculateBarCut = (ticketsSold, modifiers) => {
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
   const barPercent = Math.round(barRate * 100)
-  const barRevenue = Math.floor(
-    ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate
+  const barRevenue = Math.max(
+    0,
+    Math.floor(ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate)
   )
   return {
     revenue: barRevenue,

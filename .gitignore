@@ -40,3 +40,5 @@ coverage/
 
 # PID files
 *.pid
+*.diff
+diff*.txt

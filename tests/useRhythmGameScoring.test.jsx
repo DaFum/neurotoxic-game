@@ -47,6 +47,7 @@ vi.mock('react-i18next', () => ({
 }))
 vi.mock('tone', () => ({
   getContext: vi.fn(() => ({ rawContext: {} })),
+  getDestination: vi.fn(() => ({ mute: false })),
   Transport: {},
   start: vi.fn()
 }))
