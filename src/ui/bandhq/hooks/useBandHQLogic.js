@@ -1,9 +1,9 @@
 /**
- * (#1) Actual Updates: Extracted void trade, purchase lock, and void item ownership/disabled logic from BandHQ.jsx into a reusable hook.
+ * (#1) Actual Updates: Extracted void trade, purchase lock, and void item ownership/disabled logic from BandHQ.jsx into a reusable hook. Added synchronous ref-based lock alongside processingItemId state to prevent rapid re-entry race conditions.
  * (#2) Next Steps: Consider adding unit tests for handleVoidTrade and handleBuyWithLock edge cases.
  * (#3) Found Errors + Solutions: Fixed stash quantity property name from `.quantity` to `.stacks` to match bandReducer data model.
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband.js'
 import {
@@ -21,10 +21,12 @@ export const useBandHQLogic = ({
 }) => {
   const { t } = useTranslation()
   const [processingItemId, setProcessingItemId] = useState(null)
+  const processingItemIdRef = useRef(null)
 
   const handleVoidTrade = useCallback(
     async item => {
-      if (processingItemId) return
+      if (processingItemIdRef.current !== null) return
+      processingItemIdRef.current = item.id
       setProcessingItemId(item.id)
       try {
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -48,10 +50,11 @@ export const useBandHQLogic = ({
       } catch (err) {
         handleError(err, { addToast })
       } finally {
+        processingItemIdRef.current = null
         setProcessingItemId(null)
       }
     },
-    [player.fame, processingItemId, tradeVoidItem, addToast, t]
+    [player.fame, tradeVoidItem, addToast, t]
   )
 
   const isVoidItemOwned = useCallback(
@@ -79,7 +82,8 @@ export const useBandHQLogic = ({
 
   const handleBuyWithLock = useCallback(
     async item => {
-      if (processingItemId) return
+      if (processingItemIdRef.current !== null) return
+      processingItemIdRef.current = item.id
       setProcessingItemId(item.id)
       try {
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -102,10 +106,11 @@ export const useBandHQLogic = ({
           )
         }
       } finally {
+        processingItemIdRef.current = null
         setProcessingItemId(null)
       }
     },
-    [processingItemId, handleBuy, addToast, t]
+    [handleBuy, addToast, t]
   )
 
   return {
