@@ -54,7 +54,7 @@ const categorizeEvents = events => {
     if (Object.hasOwn(result, e.category)) {
       result[e.category].push(e)
     } else {
-      logger.error('EventCategorization', `Event ${e.id || 'unknown'} has invalid or unhandled category: ${e.category}`)
+      logger.error('EventCategorization', `Event ${e.id || 'unknown'} has invalid or unhandled category: ${e.category}`, e)
     }
   }
 
