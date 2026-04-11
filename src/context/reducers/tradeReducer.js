@@ -72,30 +72,40 @@ export const handleTradeVoidItem = (state, payload) => {
         const firstPipeIdx = enrichedMessage.indexOf('|')
         const key = enrichedMessage.slice(0, firstPipeIdx)
         const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
-        const rawContext = JSON.parse(jsonStr)
-        const safeContext = {}
+        const parsedContext = JSON.parse(jsonStr)
+        const isPlainObject =
+          parsedContext !== null &&
+          typeof parsedContext === 'object' &&
+          !Array.isArray(parsedContext) &&
+          (Object.getPrototypeOf(parsedContext) === Object.prototype ||
+            Object.getPrototypeOf(parsedContext) === null)
 
-        const escapeMap = {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }
+        if (isPlainObject) {
+          const rawContext = parsedContext
+          const safeContext = Object.create(null)
 
-        for (const prop in rawContext) {
-          if (!Object.hasOwn(rawContext, prop)) continue
-          if (isForbiddenKey(prop)) continue
-
-          let value = rawContext[prop]
-          if (typeof value === 'string') {
-            value = value.replace(/[&<>"']/g, match => escapeMap[match])
+          const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
           }
-          safeContext[prop] = value
-        }
 
-        safeContext.fame = actualDelta
-        enrichedMessage = `${key}|${JSON.stringify(safeContext)}`
+          for (const prop in rawContext) {
+            if (!Object.hasOwn(rawContext, prop)) continue
+            if (isForbiddenKey(prop)) continue
+
+            let value = rawContext[prop]
+            if (typeof value === 'string') {
+              value = value.replace(/[&<>"']/g, match => escapeMap[match])
+            }
+            safeContext[prop] = value
+          }
+
+          safeContext.fame = actualDelta
+          enrichedMessage = `${key}|${JSON.stringify(safeContext)}`
+        }
       }
     } catch (err) {
       logger.warn('GameState', 'Failed to enrich successToast message', err)
