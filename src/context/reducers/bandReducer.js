@@ -22,7 +22,7 @@ export const handleUpdateBand = (state, payload) => {
   logger.debug('GameState', 'Update Band', payload)
   const updates = typeof payload === 'function' ? payload(state.band) : payload
 
-  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates) || Object.keys(updates).some(isForbiddenKey)) {
     return state
   }
 
@@ -53,7 +53,7 @@ export const handleUnlockTrait = (state, payload) => {
   }
 
   const { memberId, traitId } = payload
-  if (!memberId || !traitId) return state
+  if (!memberId || !traitId || isForbiddenKey(memberId) || isForbiddenKey(traitId)) return state
 
   const traitResult = applyTraitUnlocks(state, [{ memberId, traitId }])
 
@@ -296,9 +296,7 @@ export const handleUseContraband = (state, payload) => {
 
   if (
     !Object.hasOwn(stash, contrabandId) ||
-    contrabandId === '__proto__' ||
-    contrabandId === 'prototype' ||
-    contrabandId === 'constructor'
+    isForbiddenKey(contrabandId)
   ) {
     return state
   }

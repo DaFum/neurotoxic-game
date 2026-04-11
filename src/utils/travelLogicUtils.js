@@ -26,7 +26,7 @@ export const getTravelArrivalUpdates = ({
 
   let nextBand = null
   if (band?.harmonyRegenTravel) {
-    nextBand = { harmony: clampBandHarmony((band.harmony ?? 0) + 5) }
+    nextBand = { ...band, harmony: clampBandHarmony((band.harmony ?? 0) + 5) }
   }
 
   return { nextPlayer, nextBand }
