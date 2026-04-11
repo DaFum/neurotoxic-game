@@ -136,7 +136,6 @@ export const handleNodeArrival = ({
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
-      // Chaos Tour fix: Show cancellation check
       const harmony = band?.harmony ?? 0
 
       // Show cancellation check: Deterministic for zero harmony, probabilistic for low harmony (Chaos Tour Mechanic)
