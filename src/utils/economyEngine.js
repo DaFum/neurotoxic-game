@@ -1,4 +1,3 @@
-// TODO: Review economyEngine.js for feature completeness of financial models, and perform balance testing on expenses/income calculations.
 import { logger } from './logger.js'
 import { bandHasTrait } from './traitLogic.js'
 import { calculateZealotryEffects } from './socialEngine.js'
@@ -56,8 +55,8 @@ export const EXPENSE_CONSTANTS = {
 
 const TICKET_SALES_CONSTANTS = {
   BASE_DRAW_RATIO: 0.3,
-  FAME_CAPACITY_SCALER: 8,
-  FAME_FILL_WEIGHT: 0.8
+  FAME_CAPACITY_SCALER: 10,
+  FAME_FILL_WEIGHT: 0.7
 }
 
 /**
