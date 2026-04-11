@@ -11,6 +11,14 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const { player, band } = useGameState()
 
   const isAffordable = (player?.money || 0) >= (config.cost || 0)
+  const hasEnoughHarmony = (band?.harmony || 0) >= (config.harmonyCostOnFail || 0)
+
+  let disabledReason = null
+  if (!isAffordable) {
+    disabledReason = t('ui:clinic.not_enough_money', { defaultValue: 'Not enough money' })
+  } else if (!hasEnoughHarmony) {
+    disabledReason = t('ui:pregig.toasts.harmonyLow', { defaultValue: 'Band harmony too low!' })
+  }
 
   return (
     <AnimatePresence>
@@ -179,18 +187,13 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                 [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
               </GlitchButton>
               {!canPress ? (
-                <span
-                  role='button'
-                  tabIndex={0}
-                  aria-disabled='true'
-                  aria-label={t('ui:merch_press.confirm', {
-                    defaultValue: 'START PRESS'
-                  })}
-                >
+                <Tooltip content={disabledReason}>
                   <GlitchButton
                     variant='danger'
                     onClick={onPress}
                     disabled={true}
+                    aria-disabled='true'
+                    tabIndex={-1}
                     className='uppercase'
                   >
                     [{' '}
@@ -199,7 +202,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                     })}{' '}
                     ]
                   </GlitchButton>
-                </span>
+                </Tooltip>
               ) : (
                 <GlitchButton
                   variant='warning'
