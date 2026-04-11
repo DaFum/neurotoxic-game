@@ -55,11 +55,12 @@ test('pickRandomSubset', async t => {
   })
 
   await t.test('handles fractional count by flooring it', () => {
-    const input = [1, 2, 3, 4, 5]
-    // 2.9 should be floored to 2.
-    // If it was not floored, the array size creation logic might break if we used `new Array(2.9)`.
-    const result = pickRandomSubset(input, 2.9)
-    assert.strictEqual(result.length, 2)
+    const input = Array.from({ length: 20 }, (_, index) => index + 1)
+    // 4.9 should be floored to 4.
+    // With n = 20 and k = 4, this also exercises the sparse Fisher–Yates path (k < n / 4),
+    // which is where a prior regression could throw from `new Array(4.9)` if count was not floored.
+    const result = pickRandomSubset(input, 4.9)
+    assert.strictEqual(result.length, 4)
   })
 
   await t.test('uses provided RNG for deterministic shuffling (k=2 fast-path)', () => {

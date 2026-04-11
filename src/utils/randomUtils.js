@@ -15,6 +15,8 @@ export const pickRandomSubset = (arr, count, rng = secureRandom) => {
   if (!arr || arr.length === 0) return []
   const n = arr.length
   const countInt = Math.floor(count)
+
+  if (!Number.isFinite(countInt)) return []
   const k = Math.min(countInt, n)
 
   if (k <= 0) return []
