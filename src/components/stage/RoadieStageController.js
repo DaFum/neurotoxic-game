@@ -19,7 +19,7 @@ class RoadieStageController extends BaseStageController {
     this.playerSprite = null
     this.itemSprite = null
     this.carSprites = new Map()
-    this.currentIds = this.currentIds || new Set() // Reuse Set to avoid GC
+    this.currentIds = new Set() // Reuse Set to avoid GC
     this.effectManager = null
 
     this._flashTimeout = null
