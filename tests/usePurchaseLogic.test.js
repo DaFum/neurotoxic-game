@@ -6,7 +6,7 @@ import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 // Initialize i18n to prevent Suspense fallback from returning null
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import { usePurchaseLogic } from '../src/hooks/usePurchaseLogic.js'
+import { usePurchaseLogic } from '../src/ui/bandhq/hooks/usePurchaseLogic.js'
 
 describe('usePurchaseLogic', () => {
   beforeEach(async () => {

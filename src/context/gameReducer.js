@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Game Reducer Module
  * Handles all state mutations through a centralized reducer pattern.
@@ -62,132 +61,75 @@ import { handleTradeVoidItem } from './reducers/tradeReducer.js'
 export { ActionTypes }
 
 /**
+ * Maps action types to their respective handler functions.
+ * Using a map provides O(1) lookup instead of a long switch statement.
+ * @type {Object.<string, Function>}
+ */
+const reducerMap = {
+  [ActionTypes.CHANGE_SCENE]: handleChangeScene,
+  [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
+  [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
+  [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
+  [ActionTypes.SET_MAP]: handleSetMap,
+  [ActionTypes.SET_GIG]: handleSetGig,
+  [ActionTypes.START_GIG]: handleStartGig,
+  [ActionTypes.SET_SETLIST]: handleSetSetlist,
+  [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats,
+  [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent,
+  [ActionTypes.ADD_TOAST]: handleAddToast,
+  [ActionTypes.REMOVE_TOAST]: handleRemoveToast,
+  [ActionTypes.SET_GIG_MODIFIERS]: handleSetGigModifiers,
+  [ActionTypes.LOAD_GAME]: handleLoadGame,
+  [ActionTypes.RESET_STATE]: handleResetState,
+  [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta,
+  [ActionTypes.POP_PENDING_EVENT]: (state) => handlePopPendingEvent(state),
+  [ActionTypes.ADVANCE_DAY]: handleAdvanceDay,
+  [ActionTypes.ADD_COOLDOWN]: handleAddCooldown,
+  [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame,
+  [ActionTypes.COMPLETE_TRAVEL_MINIGAME]: handleCompleteTravelMinigame,
+  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame,
+  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame,
+  [ActionTypes.START_KABELSALAT_MINIGAME]: handleStartKabelsalatMinigame,
+  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
+  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
+  [ActionTypes.MERCH_PRESS]: handleMerchPress,
+  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
+  [ActionTypes.ADD_QUEST]: handleAddQuest,
+  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
+  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest,
+  [ActionTypes.FAIL_QUESTS]: (state) => handleFailQuests(state),
+  [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
+  [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
+  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
+  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
+  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate
+}
+
+/**
  * Main state reducer for the game.
+ * Uses a map-based dispatcher or delegates to sub-reducers.
  * @param {Object} state - Current state
  * @param {Object} action - Action with type and payload
  * @returns {Object} New state
  */
 export const gameReducer = (state, action) => {
-  switch (action.type) {
-    case ActionTypes.CHANGE_SCENE:
-      return handleChangeScene(state, action.payload)
-
-    case ActionTypes.UPDATE_PLAYER:
-      return handleUpdatePlayer(state, action.payload)
-
-    case ActionTypes.UPDATE_BAND:
-    case ActionTypes.ADD_CONTRABAND:
-    case ActionTypes.USE_CONTRABAND:
-    case ActionTypes.CONSUME_ITEM:
-    case ActionTypes.UNLOCK_TRAIT:
-      return bandReducer(state, action)
-
-    case ActionTypes.UPDATE_SOCIAL:
-      return handleUpdateSocial(state, action.payload)
-
-    case ActionTypes.UPDATE_SETTINGS:
-      return handleUpdateSettings(state, action.payload)
-
-    case ActionTypes.SET_MAP:
-      return handleSetMap(state, action.payload)
-
-    case ActionTypes.SET_GIG:
-      return handleSetGig(state, action.payload)
-
-    case ActionTypes.START_GIG:
-      return handleStartGig(state, action.payload)
-
-    case ActionTypes.SET_SETLIST:
-      return handleSetSetlist(state, action.payload)
-
-    case ActionTypes.SET_LAST_GIG_STATS:
-      return handleSetLastGigStats(state, action.payload)
-
-    case ActionTypes.SET_ACTIVE_EVENT:
-      return handleSetActiveEvent(state, action.payload)
-
-    case ActionTypes.ADD_TOAST:
-      return handleAddToast(state, action.payload)
-
-    case ActionTypes.REMOVE_TOAST:
-      return handleRemoveToast(state, action.payload)
-
-    case ActionTypes.SET_GIG_MODIFIERS:
-      return handleSetGigModifiers(state, action.payload)
-
-    case ActionTypes.LOAD_GAME:
-      return handleLoadGame(state, action.payload)
-
-    case ActionTypes.RESET_STATE:
-      return handleResetState(state, action.payload)
-
-    case ActionTypes.APPLY_EVENT_DELTA:
-      return handleApplyEventDelta(state, action.payload)
-
-    case ActionTypes.POP_PENDING_EVENT:
-      return handlePopPendingEvent(state)
-
-    case ActionTypes.ADVANCE_DAY:
-      return handleAdvanceDay(state, action.payload)
-
-    case ActionTypes.ADD_COOLDOWN:
-      return handleAddCooldown(state, action.payload)
-
-    case ActionTypes.START_TRAVEL_MINIGAME:
-      return handleStartTravelMinigame(state, action.payload)
-
-    case ActionTypes.COMPLETE_TRAVEL_MINIGAME:
-      return handleCompleteTravelMinigame(state, action.payload)
-
-    case ActionTypes.START_ROADIE_MINIGAME:
-      return handleStartRoadieMinigame(state, action.payload)
-
-    case ActionTypes.COMPLETE_ROADIE_MINIGAME:
-      return handleCompleteRoadieMinigame(state, action.payload)
-
-    case ActionTypes.START_KABELSALAT_MINIGAME:
-      return handleStartKabelsalatMinigame(state, action.payload)
-
-    case ActionTypes.COMPLETE_KABELSALAT_MINIGAME:
-      return handleCompleteKabelsalatMinigame(state, action.payload)
-
-    case ActionTypes.PIRATE_BROADCAST:
-      return handlePirateBroadcast(state, action.payload)
-
-    case ActionTypes.MERCH_PRESS:
-      return handleMerchPress(state, action.payload)
-
-    case ActionTypes.ADD_VENUE_BLACKLIST:
-      return handleAddVenueBlacklist(state, action.payload)
-
-    case ActionTypes.ADD_QUEST:
-      return handleAddQuest(state, action.payload)
-
-    case ActionTypes.ADVANCE_QUEST:
-      return handleAdvanceQuest(state, action.payload)
-
-    case ActionTypes.COMPLETE_QUEST:
-      return handleCompleteQuest(state, action.payload)
-
-    case ActionTypes.FAIL_QUESTS:
-      return handleFailQuests(state)
-
-    case ActionTypes.ADD_UNLOCK:
-      return handleAddUnlock(state, action.payload)
-
-    case ActionTypes.CLINIC_HEAL:
-      return handleClinicHeal(state, action.payload)
-
-    case ActionTypes.CLINIC_ENHANCE:
-      return handleClinicEnhance(state, action.payload)
-
-    case ActionTypes.TRADE_VOID_ITEM:
-      return handleTradeVoidItem(state, action.payload)
-
-    case ActionTypes.BLOOD_BANK_DONATE:
-      return handleBloodBankDonate(state, action.payload)
-
-    default:
-      return state
+  // Delegate band actions to the bandReducer
+  if (
+    action.type === ActionTypes.UPDATE_BAND ||
+    action.type === ActionTypes.ADD_CONTRABAND ||
+    action.type === ActionTypes.USE_CONTRABAND ||
+    action.type === ActionTypes.CONSUME_ITEM ||
+    action.type === ActionTypes.UNLOCK_TRAIT
+  ) {
+    return bandReducer(state, action)
   }
+
+  // Dispatch using the O(1) reducer map
+  if (Object.hasOwn(reducerMap, action.type)) {
+    const handler = reducerMap[action.type]
+    return handler(state, action.payload)
+  }
+
+  // Fallback
+  return state
 }
