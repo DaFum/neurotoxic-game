@@ -92,12 +92,13 @@ const sanitizeBand = loadedBand => {
         DEFAULT_BAND_STATE.stash
       )
       if (Array.isArray(loadedBand?.stash)) {
-        return loadedBand.stash.reduce((acc, item) => {
-          if (!item || typeof item !== 'object' || Array.isArray(item))
-            return acc
+        const stashArr = loadedBand.stash
+        for (let i = 0; i < stashArr.length; i++) {
+          const item = stashArr[i]
+          if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           const baseItem = CONTRABAND_BY_ID.get(item.id)
-          if (!baseItem) return acc
-          if (Object.hasOwn(item, '__proto__')) return acc
+          if (!baseItem) continue
+          if (Object.hasOwn(item, '__proto__')) continue
           const copy = { ...baseItem, ...item }
           copy.id = item.id // Ensure ID matches
           if (
@@ -108,9 +109,9 @@ const sanitizeBand = loadedBand => {
           } else {
             copy.remainingDuration = copy.duration || null
           }
-          acc[item.id] = copy
-          return acc
-        }, defaultStash)
+          defaultStash[item.id] = copy
+        }
+        return defaultStash
       } else if (loadedBand?.stash && typeof loadedBand.stash === 'object') {
         const migrated = Object.create(null)
         for (const id in loadedBand.stash) {
