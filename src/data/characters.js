@@ -1,22 +1,3 @@
-// TODO: Review this file
-// Detailed Character Definitions and Traits
-//
-// Trait Implementation Status:
-// - blast_machine (Marius): Implemented
-// - perfektionist (Matze): Implemented
-// - gear_nerd (Matze): Implemented (Repair discount + Shop discount)
-// - party_animal (Marius): Partially Implemented (Fridge interaction)
-// - bandleader (Lars): Implemented
-// - social_manager (Lars): Implemented
-// - virtuoso (Matze): Implemented
-// - road_warrior (Lars): Implemented
-// - tech_wizard (Matze): Implemented
-// - showman (Marius): Implemented
-// - melodic_genius (Lars): Implemented
-// - grudge_holder (Matze): Implemented
-// - peacemaker (Lars): Implemented
-// - cyber_lungs (Clinic NPC): Implemented (Stamina regen bonus)
-//
 export const CHARACTERS = {
   MATZE: {
     id: 'matze',
