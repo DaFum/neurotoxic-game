@@ -99,7 +99,11 @@ const handlePurchaseValidationError = (validation, item, addToast, t) => {
   }
 }
 
-const buildInitialPlayerPatch = (payingWithFame, startingCurrency, finalCost) => {
+const buildInitialPlayerPatch = (
+  payingWithFame,
+  startingCurrency,
+  finalCost
+) => {
   if (payingWithFame) {
     const newFame = clampPlayerFame(startingCurrency - finalCost)
     return {

@@ -4,7 +4,9 @@ import { EffectManager } from '../../src/components/stage/EffectManager'
 
 vi.mock('pixi.js', () => {
   class Container {
-    constructor() { this.children = [] }
+    constructor() {
+      this.children = []
+    }
     addChild(c) {
       if (c.parent) {
         c.parent.removeChild(c)
@@ -46,7 +48,9 @@ describe('EffectManager', () => {
     manager.init()
 
     // Mock texture resolution to avoid needing actual Pixi app context
-    manager.textureManager.resolveHitTexture = vi.fn().mockReturnValue(Texture.WHITE)
+    manager.textureManager.resolveHitTexture = vi
+      .fn()
+      .mockReturnValue(Texture.WHITE)
   })
 
   test('releaseEffectToPool pools sprites correctly', () => {

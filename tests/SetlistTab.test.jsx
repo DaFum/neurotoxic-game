@@ -92,7 +92,11 @@ describe('SetlistTab', () => {
     const addToast = vi.fn()
     const initialSetlist = [{ id: 'previous-song' }]
     const { queryAllByText } = render(
-      <SetlistTab setlist={initialSetlist} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab
+        setlist={initialSetlist}
+        setSetlist={setSetlist}
+        addToast={addToast}
+      />
     )
 
     const selectButtons = queryAllByText('SELECT')

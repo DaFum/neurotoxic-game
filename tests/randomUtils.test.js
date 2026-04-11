@@ -63,109 +63,121 @@ test('pickRandomSubset', async t => {
     assert.strictEqual(result.length, 4)
   })
 
-  await t.test('uses provided RNG for deterministic shuffling (k=2 fast-path)', () => {
-    const input = ['a', 'b', 'c', 'd']
-    // input.length = 4
-    // count = 2
-    // k = 2
-    // n = 4
-    // For k=2:
-    // j1 = Math.floor(rng() * 4)
-    // j2 = Math.floor(rng() * 3)
-    let rngCallCount = 0
-    const mockRng = () => {
-      rngCallCount++
-      if (rngCallCount === 1) return 0.5 // j1 = floor(0.5 * 4) = 2. input[2] = 'c'
-      if (rngCallCount === 2) return 0.5 // j2 = floor(0.5 * 3) = 1.
-      return 0
+  await t.test(
+    'uses provided RNG for deterministic shuffling (k=2 fast-path)',
+    () => {
+      const input = ['a', 'b', 'c', 'd']
+      // input.length = 4
+      // count = 2
+      // k = 2
+      // n = 4
+      // For k=2:
+      // j1 = Math.floor(rng() * 4)
+      // j2 = Math.floor(rng() * 3)
+      let rngCallCount = 0
+      const mockRng = () => {
+        rngCallCount++
+        if (rngCallCount === 1) return 0.5 // j1 = floor(0.5 * 4) = 2. input[2] = 'c'
+        if (rngCallCount === 2) return 0.5 // j2 = floor(0.5 * 3) = 1.
+        return 0
+      }
+
+      const result = pickRandomSubset(input, 2, mockRng)
+
+      // j1 = 2
+      // j2 = 1
+      // j2 !== j1, so result is [input[j2], input[j1]] = ['b', 'c']
+      assert.deepStrictEqual(result, ['b', 'c'])
+      assert.strictEqual(rngCallCount, 2)
     }
+  )
 
-    const result = pickRandomSubset(input, 2, mockRng)
+  await t.test(
+    'uses provided RNG for deterministic shuffling (k=1 fast-path)',
+    () => {
+      const input = ['a', 'b', 'c', 'd']
+      let rngCallCount = 0
+      const mockRng = () => {
+        rngCallCount++
+        return 0.5 // Math.floor(0.5 * 4) = 2 -> 'c'
+      }
 
-    // j1 = 2
-    // j2 = 1
-    // j2 !== j1, so result is [input[j2], input[j1]] = ['b', 'c']
-    assert.deepStrictEqual(result, ['b', 'c'])
-    assert.strictEqual(rngCallCount, 2)
-  })
+      const result = pickRandomSubset(input, 1, mockRng)
 
-  await t.test('uses provided RNG for deterministic shuffling (k=1 fast-path)', () => {
-    const input = ['a', 'b', 'c', 'd']
-    let rngCallCount = 0
-    const mockRng = () => {
-      rngCallCount++
-      return 0.5 // Math.floor(0.5 * 4) = 2 -> 'c'
+      assert.deepStrictEqual(result, ['c'])
+      assert.strictEqual(rngCallCount, 1)
     }
+  )
 
-    const result = pickRandomSubset(input, 1, mockRng)
+  await t.test(
+    'uses provided RNG for deterministic shuffling (sparse Fisher-Yates, k < n/4)',
+    () => {
+      const input = Array.from({ length: 20 }, (_, i) => i) // [0, 1, ..., 19]
+      // k = 4, n = 20
+      // 4 < 20 / 4 => 4 < 5, so it takes the sparse Fisher-Yates path
+      let rngCallCount = 0
+      const mockRng = () => {
+        rngCallCount++
+        // For i=0, targetIdx=19, j=Math.floor(rng * 20). rng=0.0 -> j=0
+        if (rngCallCount === 1) return 0.0
 
-    assert.deepStrictEqual(result, ['c'])
-    assert.strictEqual(rngCallCount, 1)
-  })
+        // For i=1, targetIdx=18, j=Math.floor(rng * 19). rng=0.5 -> j=9
+        if (rngCallCount === 2) return 0.5
 
-  await t.test('uses provided RNG for deterministic shuffling (sparse Fisher-Yates, k < n/4)', () => {
-    const input = Array.from({ length: 20 }, (_, i) => i) // [0, 1, ..., 19]
-    // k = 4, n = 20
-    // 4 < 20 / 4 => 4 < 5, so it takes the sparse Fisher-Yates path
-    let rngCallCount = 0
-    const mockRng = () => {
-      rngCallCount++
-      // For i=0, targetIdx=19, j=Math.floor(rng * 20). rng=0.0 -> j=0
-      if (rngCallCount === 1) return 0.0
+        // For i=2, targetIdx=17, j=Math.floor(rng * 18). rng=0.1 -> j=1
+        if (rngCallCount === 3) return 0.1
 
-      // For i=1, targetIdx=18, j=Math.floor(rng * 19). rng=0.5 -> j=9
-      if (rngCallCount === 2) return 0.5
+        // For i=3, targetIdx=16, j=Math.floor(rng * 17). rng=0.9 -> j=15
+        if (rngCallCount === 4) return 0.9
 
-      // For i=2, targetIdx=17, j=Math.floor(rng * 18). rng=0.1 -> j=1
-      if (rngCallCount === 3) return 0.1
+        return 0
+      }
 
-      // For i=3, targetIdx=16, j=Math.floor(rng * 17). rng=0.9 -> j=15
-      if (rngCallCount === 4) return 0.9
+      const result = pickRandomSubset(input, 4, mockRng)
 
-      return 0
+      // Expected sequence:
+      // i=0: targetIdx=19, j=0. valTarget=19, valJ=0. result[3] = 0. swaps.set(0, 19).
+      // i=1: targetIdx=18, j=9. valTarget=18, valJ=9. result[2] = 9. swaps.set(9, 18).
+      // i=2: targetIdx=17, j=1. valTarget=17, valJ=1. result[1] = 1. swaps.set(1, 17).
+      // i=3: targetIdx=16, j=15. valTarget=16, valJ=15. result[0] = 15. swaps.set(15, 16).
+      // result = [15, 1, 9, 0]
+
+      assert.deepStrictEqual(result, [15, 1, 9, 0])
+      assert.strictEqual(rngCallCount, 4)
     }
+  )
 
-    const result = pickRandomSubset(input, 4, mockRng)
+  await t.test(
+    'uses provided RNG for deterministic shuffling (partial Fisher-Yates copy, k >= n/4)',
+    () => {
+      const input = ['a', 'b', 'c', 'd', 'e']
+      // count = 3, n = 5, k = 3
+      // 3 < 5/4 is false, falls back to copy+partial shuffle
+      let rngCallCount = 0
+      const mockRng = () => {
+        rngCallCount++
+        // i=4, j=Math.floor(rng * 5)
+        if (rngCallCount === 1) return 0.0 // j=0
 
-    // Expected sequence:
-    // i=0: targetIdx=19, j=0. valTarget=19, valJ=0. result[3] = 0. swaps.set(0, 19).
-    // i=1: targetIdx=18, j=9. valTarget=18, valJ=9. result[2] = 9. swaps.set(9, 18).
-    // i=2: targetIdx=17, j=1. valTarget=17, valJ=1. result[1] = 1. swaps.set(1, 17).
-    // i=3: targetIdx=16, j=15. valTarget=16, valJ=15. result[0] = 15. swaps.set(15, 16).
-    // result = [15, 1, 9, 0]
+        // i=3, j=Math.floor(rng * 4)
+        if (rngCallCount === 2) return 0.5 // j=2
 
-    assert.deepStrictEqual(result, [15, 1, 9, 0])
-    assert.strictEqual(rngCallCount, 4)
-  })
+        // i=2, j=Math.floor(rng * 3)
+        if (rngCallCount === 3) return 0.9 // j=2
 
-  await t.test('uses provided RNG for deterministic shuffling (partial Fisher-Yates copy, k >= n/4)', () => {
-    const input = ['a', 'b', 'c', 'd', 'e']
-    // count = 3, n = 5, k = 3
-    // 3 < 5/4 is false, falls back to copy+partial shuffle
-    let rngCallCount = 0
-    const mockRng = () => {
-      rngCallCount++
-      // i=4, j=Math.floor(rng * 5)
-      if (rngCallCount === 1) return 0.0 // j=0
+        return 0
+      }
 
-      // i=3, j=Math.floor(rng * 4)
-      if (rngCallCount === 2) return 0.5 // j=2
+      const result = pickRandomSubset(input, 3, mockRng)
 
-      // i=2, j=Math.floor(rng * 3)
-      if (rngCallCount === 3) return 0.9 // j=2
+      // Original: ['a', 'b', 'c', 'd', 'e']
+      // i=4, j=0: swap('e', 'a') -> ['e', 'b', 'c', 'd', 'a']
+      // i=3, j=2: swap('d', 'c') -> ['e', 'b', 'd', 'c', 'a']
+      // i=2, j=2: swap('d', 'd') -> ['e', 'b', 'd', 'c', 'a']
+      // result = slice(5-3) = slice(2) -> ['d', 'c', 'a']
 
-      return 0
+      assert.deepStrictEqual(result, ['d', 'c', 'a'])
+      assert.strictEqual(rngCallCount, 3)
     }
-
-    const result = pickRandomSubset(input, 3, mockRng)
-
-    // Original: ['a', 'b', 'c', 'd', 'e']
-    // i=4, j=0: swap('e', 'a') -> ['e', 'b', 'c', 'd', 'a']
-    // i=3, j=2: swap('d', 'c') -> ['e', 'b', 'd', 'c', 'a']
-    // i=2, j=2: swap('d', 'd') -> ['e', 'b', 'd', 'c', 'a']
-    // result = slice(5-3) = slice(2) -> ['d', 'c', 'a']
-
-    assert.deepStrictEqual(result, ['d', 'c', 'a'])
-    assert.strictEqual(rngCallCount, 3)
-  })
+  )
 })

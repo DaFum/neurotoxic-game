@@ -1,7 +1,8 @@
 import { logger } from '../../utils/logger.js'
 import {
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  isForbiddenKey
 } from '../../utils/gameStateUtils.js'
 import { addContrabandHelper } from './bandReducer.js'
 
@@ -71,9 +72,30 @@ export const handleTradeVoidItem = (state, payload) => {
         const firstPipeIdx = enrichedMessage.indexOf('|')
         const key = enrichedMessage.slice(0, firstPipeIdx)
         const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
-        const context = JSON.parse(jsonStr)
-        context.fame = actualDelta
-        enrichedMessage = `${key}|${JSON.stringify(context)}`
+        const rawContext = JSON.parse(jsonStr)
+        const safeContext = {}
+
+        const escapeMap = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }
+
+        for (const prop in rawContext) {
+          if (!Object.hasOwn(rawContext, prop)) continue
+          if (isForbiddenKey(prop)) continue
+
+          let value = rawContext[prop]
+          if (typeof value === 'string') {
+            value = value.replace(/[&<>"']/g, match => escapeMap[match])
+          }
+          safeContext[prop] = value
+        }
+
+        safeContext.fame = actualDelta
+        enrichedMessage = `${key}|${JSON.stringify(safeContext)}`
       }
     } catch (err) {
       logger.warn('GameState', 'Failed to enrich successToast message', err)

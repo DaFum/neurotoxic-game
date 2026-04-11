@@ -133,11 +133,7 @@ export const PirateRadioModal = ({
         </div>
 
         <div className='flex flex-col sm:flex-row gap-4 pt-4 border-t-2 border-toxic-green/50 shrink-0'>
-          <GlitchButton
-            variant='primary'
-            onClick={onClose}
-            className='flex-1'
-          >
+          <GlitchButton variant='primary' onClick={onClose} className='flex-1'>
             [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
           </GlitchButton>
           <GlitchButton
