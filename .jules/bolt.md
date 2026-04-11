@@ -82,3 +82,8 @@
 
 **Learning:** Using `[...arr]` shallow-copying inside generic random sub-set utility methods like `pickRandomSubset` is highly detrimental for performance and GC when array sizes scale or frequency is high, and had been bottlenecking performance.
 **Action:** When implementing generic subset or shuffling algorithms, always prefer direct index lookups (for k=1, k=2) or Sparse Fisher-Yates with Map (for small subsets relative to array length) rather than unconditionally shallow-copying the entire source array.
+
+## 2023-10-27 - Map Iteration Overhead in requestAnimationFrame
+
+**Learning:** Using `map.forEach()` inside high-frequency update loops like `requestAnimationFrame` (e.g., `HecklerOverlay.jsx`) creates unnecessary closure allocations on every frame, which can contribute to garbage collection pauses.
+**Action:** Always prefer `for (const key of map.keys())` over `map.forEach()` in hot rendering loops to eliminate function allocation overhead.

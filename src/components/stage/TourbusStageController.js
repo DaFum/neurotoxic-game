@@ -187,7 +187,8 @@ class TourbusStageController extends BaseStageController {
   _updateObstacles(state, height) {
     this.currentIds.clear()
 
-    state.obstacles.forEach(obs => {
+    for (let i = 0, len = state.obstacles.length; i < len; i++) {
+      const obs = state.obstacles[i]
       this.currentIds.add(obs.id)
       let sprite = this.obstacleMap.get(obs.id)
 
@@ -248,7 +249,7 @@ class TourbusStageController extends BaseStageController {
         sprite.hasExploded = false
         sprite.alpha = 1
       }
-    })
+    }
   }
 
   _cleanupObstacles() {
