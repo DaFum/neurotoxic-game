@@ -152,10 +152,11 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                             )
                           : 0
                       }
+                      max={100}
                       color={
                         isAffordable
-                          ? 'var(--color-toxic-green)'
-                          : 'var(--color-blood-red)'
+                          ? 'bg-toxic-green'
+                          : 'bg-blood-red'
                       }
                     />
                   </div>
@@ -170,7 +171,8 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                     </div>
                     <ProgressBar
                       value={band?.harmony || 0}
-                      color={hasEnoughHarmony ? 'var(--color-toxic-green)' : 'var(--color-blood-red)'}
+                      max={100}
+                      color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'}
                     />
                   </div>
                 </div>
