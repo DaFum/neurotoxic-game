@@ -440,7 +440,8 @@ const processContrabandExpiry = band => {
   let nextBand = { ...band }
 
   // Revert expired effects
-  expired.forEach(e => {
+  for (let i = 0; i < expired.length; i++) {
+    const e = expired[i]
     const reverter = EFFECT_REVERTERS[e.effectType]
     if (reverter) {
       nextBand = reverter(nextBand, e.value, e)
@@ -470,7 +471,7 @@ const processContrabandExpiry = band => {
         }
       }
     }
-  })
+  }
 
   nextBand.activeContrabandEffects = stillActive
   return nextBand
