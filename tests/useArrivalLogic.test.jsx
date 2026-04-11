@@ -98,14 +98,14 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
   })
 
-  test('prevents GIG if harmony too low', () => {
+  test('prevents GIG if harmony <= 1', () => {
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
         nodes: {
           node_start: { type: 'GIG', venue: {} }
         }
       },
-      band: { harmony: 0 }
+      band: { harmony: 1 }
     })
 
     act(() => {

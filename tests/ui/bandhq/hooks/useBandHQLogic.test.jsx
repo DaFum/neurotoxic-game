@@ -1,12 +1,13 @@
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useBandHQLogic } from '../../../src/ui/bandhq/hooks/useBandHQLogic.js'
+import { useBandHQLogic } from '../../../../src/ui/bandhq/hooks/useBandHQLogic.js'
 
 // Mock react-i18next so `t()` function works
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: key => key
-  })
+  }),
+  initReactI18next: { type: '3rdParty', init: () => {} }
 }))
 
 describe('useBandHQLogic sync locking', () => {
@@ -38,9 +39,13 @@ describe('useBandHQLogic sync locking', () => {
     const item = { id: 'test_item', rarity: 'common' }
 
     // First call
-    const promise1 = result.current.handleVoidTrade(item)
-    // Second call synchronously
-    const promise2 = result.current.handleVoidTrade(item)
+    let promise1
+    let promise2
+    act(() => {
+      promise1 = result.current.handleVoidTrade(item)
+      // Second call synchronously
+      promise2 = result.current.handleVoidTrade(item)
+    })
 
     // Should only register processing item ID once
     expect(result.current.processingItemId).toBe('test_item')
@@ -79,9 +84,13 @@ describe('useBandHQLogic sync locking', () => {
     const item = { id: 'test_buy_item' }
 
     // First call
-    const promise1 = result.current.handleBuyWithLock(item)
-    // Second call synchronously
-    const promise2 = result.current.handleBuyWithLock(item)
+    let promise1
+    let promise2
+    act(() => {
+      promise1 = result.current.handleBuyWithLock(item)
+      // Second call synchronously
+      promise2 = result.current.handleBuyWithLock(item)
+    })
 
     expect(result.current.processingItemId).toBe('test_buy_item')
 
