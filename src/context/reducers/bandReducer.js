@@ -103,6 +103,7 @@ export const handleConsumeItem = (state, payload) => {
  */
 export const addContrabandHelper = (state, payload) => {
   const { contrabandId, instanceId } = payload
+  if (isForbiddenKey(contrabandId)) return state
   const item = CONTRABAND_BY_ID.get(contrabandId)
   if (!item) return state
 

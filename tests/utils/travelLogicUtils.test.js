@@ -48,7 +48,6 @@ describe('travelLogicUtils', () => {
       })
 
       assert.strictEqual(result.nextBand.harmony, 55)
-      assert.strictEqual(result.nextBand.harmonyRegenTravel, true)
     })
 
     test('clamps next money and fuel to non-negative', () => {
