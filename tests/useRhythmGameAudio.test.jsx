@@ -62,6 +62,32 @@ describe('useRhythmGameAudio', () => {
     vi.clearAllMocks()
   })
 
+  it('handles non-finite harmony gracefully', () => {
+    const setIsAudioReady = vi.fn()
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: {
+          current: {
+            lanes: [{}, {}, {}],
+            hasSubmittedResults: false,
+            isGameOver: false
+          }
+        },
+        setters: { setIsAudioReady },
+        contextState: { ...baseState, band: { harmony: NaN } },
+        contextActions: { addToast: vi.fn(), t: vi.fn() }
+      })
+    )
+
+    // Should not throw, should warn, and harmony should be clamped to default (100) or at least finite
+    expect(mocks.loggerWarn).toHaveBeenCalledWith(
+      'RhythmGame',
+      'Band harmony too low to start gig.'
+    )
+    expect(setIsAudioReady).toHaveBeenCalledWith(false)
+  })
+
   it('fails fast on low harmony and sets audio not ready', () => {
     const setIsAudioReady = vi.fn()
 

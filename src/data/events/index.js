@@ -47,22 +47,16 @@ const validateEvents = (events, categoryName = 'unknown') => {
 }
 
 const categorizeEvents = events => {
-  const band = []
-  const financial = []
-  const special = []
+  const result = { band: [], financial: [], special: [] }
 
   for (let i = 0; i < events.length; i++) {
     const e = events[i]
-    if (e.category === 'band') {
-      band.push(e)
-    } else if (e.category === 'financial') {
-      financial.push(e)
-    } else if (e.category === 'special') {
-      special.push(e)
+    if (result[e.category]) {
+      result[e.category].push(e)
     }
   }
 
-  return { band, financial, special }
+  return result
 }
 
 // Split crisis events into their respective category pools
