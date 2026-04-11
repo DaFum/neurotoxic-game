@@ -1,12 +1,13 @@
-// TODO: Review bandReducer.js for unhandled action types and ensure all state mutations are pure.
 import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
   clampMemberMood,
   clampMemberStamina,
-  applyInventoryItemDelta
+  applyInventoryItemDelta,
+  isForbiddenKey
 } from '../../utils/gameStateUtils.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
+import { ActionTypes } from '../actionTypes.js'
 import { CONTRABAND_BY_ID } from '../../data/contraband.js'
 
 /**
@@ -17,8 +18,13 @@ import { CONTRABAND_BY_ID } from '../../data/contraband.js'
  * @returns {Object} Updated state
  */
 export const handleUpdateBand = (state, payload) => {
+  if (!payload) return state
   logger.debug('GameState', 'Update Band', payload)
   const updates = typeof payload === 'function' ? payload(state.band) : payload
+
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+    return state
+  }
 
   let nextHarmony = state.band.harmony
   if ('harmony' in updates) {
@@ -42,7 +48,13 @@ export const handleUpdateBand = (state, payload) => {
  * @returns {Object} Updated state
  */
 export const handleUnlockTrait = (state, payload) => {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return state
+  }
+
   const { memberId, traitId } = payload
+  if (!memberId || !traitId) return state
+
   const traitResult = applyTraitUnlocks(state, [{ memberId, traitId }])
 
   return {
@@ -60,6 +72,15 @@ export const handleUnlockTrait = (state, payload) => {
  */
 export const handleConsumeItem = (state, payload) => {
   const itemType = payload
+  if (
+    !itemType ||
+    typeof itemType !== 'string' ||
+    isForbiddenKey(itemType) ||
+    itemType.length === 0
+  ) {
+    return state
+  }
+
   const nextBand = { ...state.band }
   // Deep clone inventory
   nextBand.inventory = { ...state.band.inventory }
@@ -307,4 +328,28 @@ export const handleUseContraband = (state, payload) => {
 
   newBand.stash = newStash
   return { ...state, band: newBand }
+}
+
+/**
+ * Reducer for band actions.
+ * Extracts the subset of actions specific to the band context.
+ * @param {Object} state - Current state
+ * @param {Object} action - Action with type and payload
+ * @returns {Object} New state
+ */
+export const bandReducer = (state, action) => {
+  switch (action.type) {
+    case ActionTypes.UPDATE_BAND:
+      return handleUpdateBand(state, action.payload)
+    case ActionTypes.UNLOCK_TRAIT:
+      return handleUnlockTrait(state, action.payload)
+    case ActionTypes.CONSUME_ITEM:
+      return handleConsumeItem(state, action.payload)
+    case ActionTypes.ADD_CONTRABAND:
+      return handleAddContraband(state, action.payload)
+    case ActionTypes.USE_CONTRABAND:
+      return handleUseContraband(state, action.payload)
+    default:
+      return state
+  }
 }
