@@ -164,13 +164,13 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       <span className='text-ash-gray uppercase'>
                         {t('ui:stats.harmony', { defaultValue: 'HARMONY' })}
                       </span>
-                      <span className='text-toxic-green'>
+                      <span className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}>
                         {band?.harmony || 0}%
                       </span>
                     </div>
                     <ProgressBar
                       value={band?.harmony || 0}
-                      color='var(--color-toxic-green)'
+                      color={hasEnoughHarmony ? 'var(--color-toxic-green)' : 'var(--color-blood-red)'}
                     />
                   </div>
                 </div>
