@@ -50,7 +50,7 @@ vi.mock('../src/utils/imageGen.js', () => ({
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
 }))
-vi.mock('../src/hooks/usePurchaseLogic.js', () => ({
+vi.mock('../src/ui/bandhq/hooks/usePurchaseLogic.js', () => ({
   usePurchaseLogic: () => ({
     handleBuy: () => {},
     isItemOwned: () => false,

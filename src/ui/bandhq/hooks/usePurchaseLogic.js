@@ -6,10 +6,10 @@
 
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { handleError, StateError } from '../utils/errorHandler.js'
-import { checkTraitUnlocks } from '../utils/unlockCheck.js'
-import { applyTraitUnlocks } from '../utils/traitUtils.js'
-import { translateContextKeys } from '../utils/translationUtils.js'
+import { handleError, StateError } from '../../../utils/errorHandler.js'
+import { checkTraitUnlocks } from '../../../utils/unlockCheck.js'
+import { applyTraitUnlocks } from '../../../utils/traitUtils.js'
+import { translateContextKeys } from '../../../utils/translationUtils.js'
 import {
   GEAR_LOOKUP,
   getGearCount,
@@ -20,12 +20,12 @@ import {
   canAfford,
   validatePurchase,
   processPurchaseEffect
-} from '../utils/purchaseLogicUtils.js'
+} from '../../../utils/purchaseLogicUtils.js'
 import {
   clampPlayerMoney,
   clampPlayerFame,
   calculateFameLevel
-} from '../utils/gameStateUtils.js'
+} from '../../../utils/gameStateUtils.js'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
 

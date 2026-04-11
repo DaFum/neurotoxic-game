@@ -55,7 +55,7 @@ export const useBandHQLogic = ({
   const isVoidItemDisabled = useCallback(
     item => {
       const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
-      const currentQuantity = band.stash?.[item.id]?.quantity || 0
+      const currentQuantity = band.stash?.[item.id]?.stacks || 0
       const isMaxStacks =
         item.stackable && item.maxStacks && currentQuantity >= item.maxStacks
 

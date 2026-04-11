@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic.js'
+import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic.js'
 import { useBandHQLogic } from './bandhq/hooks/useBandHQLogic.js'
 
 import { StatsTab } from './bandhq/StatsTab.jsx'

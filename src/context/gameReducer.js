@@ -125,8 +125,8 @@ export const gameReducer = (state, action) => {
   }
 
   // Dispatch using the O(1) reducer map
-  const handler = reducerMap[action.type]
-  if (handler) {
+  if (Object.hasOwn(reducerMap, action.type)) {
+    const handler = reducerMap[action.type]
     return handler(state, action.payload)
   }
 
