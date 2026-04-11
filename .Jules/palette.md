@@ -75,6 +75,10 @@
 **Learning:** In a heavily componentized brutalist React app where `<button>` elements are often reused in different layout contexts (e.g., `HUD.jsx`, `ToggleRadio.jsx`, `GigModifierButton.jsx`), omitting the `type="button"` attribute leaves them vulnerable to accidentally triggering implicit form submissions if an ancestor component wraps them in a `<form>`. This can lead to unhandled page reloads or broken state.
 **Action:** Always explicitly declare `type="button"` on interactive components like toggles, tabs, and action buttons that do not orchestrate data submission.
 
+## 2026-06-05 - Focus rings on interactive inner elements
+
+**Learning:** When components like `GigModifiersBlock` use interactive nested buttons (like "Band Meeting") without explicit `focus-visible` styling, keyboard users lack visual feedback for navigation.
+**Action:** When extracting or creating new interactive blocks that use generic HTML `<button>` inside them, always explicitly apply `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-<color> focus-visible:ring-offset-2 focus-visible:ring-offset-void-black` on the button elements.
 ## 2025-02-18 - Tooltip Container Layout
 
 **Learning:** When conditionally wrapping full-width components (like buttons) in a `Tooltip` component (which defaults to an `inline-block` layout), the wrapper can cause the inner button to shrink unexpectedly. Passing class names from the parent can lead to class conflicts (e.g. `block` vs `inline-block` in Tailwind).

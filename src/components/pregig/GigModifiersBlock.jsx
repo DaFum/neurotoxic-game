@@ -40,7 +40,7 @@ export const GigModifiersBlock = ({
           <button
             type='button'
             onClick={handleBandMeeting}
-            className='w-full flex justify-between items-center p-3 border-2 border-warning-yellow/30 hover:border-warning-yellow text-warning-yellow/70 hover:text-warning-yellow transition-all group'
+            className='w-full flex justify-between items-center p-3 border-2 border-warning-yellow/30 hover:border-warning-yellow text-warning-yellow/70 hover:text-warning-yellow transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
           >
             <span className='flex flex-col text-left'>
               <span className='font-bold text-sm'>
