@@ -1,7 +1,8 @@
 import { logger } from '../../utils/logger.js'
 import {
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  isForbiddenKey
 } from '../../utils/gameStateUtils.js'
 import { addContrabandHelper } from './bandReducer.js'
 
@@ -71,9 +72,60 @@ export const handleTradeVoidItem = (state, payload) => {
         const firstPipeIdx = enrichedMessage.indexOf('|')
         const key = enrichedMessage.slice(0, firstPipeIdx)
         const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
-        const context = JSON.parse(jsonStr)
-        context.fame = actualDelta
-        enrichedMessage = `${key}|${JSON.stringify(context)}`
+        const parsedContext = JSON.parse(jsonStr)
+        const isPlainObject =
+          parsedContext !== null &&
+          typeof parsedContext === 'object' &&
+          !Array.isArray(parsedContext) &&
+          (Object.getPrototypeOf(parsedContext) === Object.prototype ||
+            Object.getPrototypeOf(parsedContext) === null)
+
+        if (isPlainObject) {
+          const rawContext = parsedContext
+          const safeContext = Object.create(null)
+
+          const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+          }
+
+          const rawContext = parsedContext
+
+          const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+          }
+
+          const sanitizeContextValue = value => {
+            if (typeof value === 'string') {
+              return value.replace(/[&<>"']/g, match => escapeMap[match])
+            }
+            if (Array.isArray(value)) {
+              return value.map(item => sanitizeContextValue(item))
+            }
+            if (value !== null && typeof value === 'object') {
+              const out = Object.create(null)
+              for (const prop in value) {
+                if (!Object.hasOwn(value, prop)) continue
+                if (isForbiddenKey(prop)) continue
+                out[prop] = sanitizeContextValue(value[prop])
+              }
+              return out
+            }
+            return value
+          }
+
+          const safeContext = sanitizeContextValue(rawContext)
+
+          safeContext.fame = actualDelta
+          enrichedMessage = `${key}|${JSON.stringify(safeContext)}`
+        }
       }
     } catch (err) {
       logger.warn('GameState', 'Failed to enrich successToast message', err)

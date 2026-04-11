@@ -11,12 +11,15 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const { player, band } = useGameState()
 
   const isAffordable = (player?.money || 0) >= (config.cost || 0)
-  const hasEnoughHarmony = (band?.harmony || 0) >= (config.harmonyCostOnFail || 0)
+  const hasEnoughHarmony =
+    (band?.harmony || 0) >= (config.harmonyCostOnFail || 0)
 
   const disabledReason = !isAffordable
     ? t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
     : !hasEnoughHarmony
-      ? t('ui:merch_press.not_enough_harmony', { defaultValue: 'Not enough harmony' })
+      ? t('ui:merch_press.not_enough_harmony', {
+          defaultValue: 'Not enough harmony'
+        })
       : null
 
   return (
@@ -153,11 +156,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       }
                       max={100}
                       showValue={false}
-                      color={
-                        isAffordable
-                          ? 'bg-toxic-green'
-                          : 'bg-blood-red'
-                      }
+                      color={isAffordable ? 'bg-toxic-green' : 'bg-blood-red'}
                     />
                   </div>
                   <div>
@@ -165,7 +164,9 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       <span className='text-ash-gray uppercase'>
                         {t('ui:stats.harmony', { defaultValue: 'HARMONY' })}
                       </span>
-                      <span className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}>
+                      <span
+                        className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}
+                      >
                         {band?.harmony || 0}%
                       </span>
                     </div>
@@ -173,7 +174,9 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       value={band?.harmony || 0}
                       max={100}
                       showValue={false}
-                      color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'}
+                      color={
+                        hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'
+                      }
                     />
                   </div>
                 </div>

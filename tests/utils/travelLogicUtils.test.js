@@ -88,19 +88,19 @@ describe('travelLogicUtils', () => {
     })
 
     test('clamps harmony when regenerating', () => {
-       const player = { money: 1000, van: { fuel: 50 } }
-       const band = { harmony: 98, harmonyRegenTravel: true }
-       const node = { id: 'node_1', venue: 'venue_1' }
+      const player = { money: 1000, van: { fuel: 50 } }
+      const band = { harmony: 98, harmonyRegenTravel: true }
+      const node = { id: 'node_1', venue: 'venue_1' }
 
-       const result = getTravelArrivalUpdates({
-         player,
-         band,
-         node,
-         fuelLiters: 5,
-         totalCost: 50
-       })
+      const result = getTravelArrivalUpdates({
+        player,
+        band,
+        node,
+        fuelLiters: 5,
+        totalCost: 50
+      })
 
-       assert.strictEqual(result.nextBand.harmony, 100)
+      assert.strictEqual(result.nextBand.harmony, 100)
     })
   })
 })

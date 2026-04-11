@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { handleConsumeItem, handleUseContraband, handleAddContraband } from '../src/context/reducers/bandReducer.js'
+import {
+  handleConsumeItem,
+  handleUseContraband,
+  handleAddContraband
+} from '../src/context/reducers/bandReducer.js'
 
 describe('bandReducer Security - Prototype Pollution', () => {
   it('should reject forbidden keys in handleConsumeItem', () => {

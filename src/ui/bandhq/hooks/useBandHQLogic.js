@@ -6,7 +6,11 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband.js'
-import { handleError, GameError, StateError } from '../../../utils/errorHandler.js'
+import {
+  handleError,
+  GameError,
+  StateError
+} from '../../../utils/errorHandler.js'
 
 export const useBandHQLogic = ({
   player,
@@ -85,12 +89,15 @@ export const useBandHQLogic = ({
           handleError(err, { addToast })
         } else {
           handleError(
-            new GameError(t('ui:hq.purchaseFailed', { defaultValue: 'Purchase failed' }), {
-              context: {
-                originalError: err?.message,
-                stack: err?.stack
+            new GameError(
+              t('ui:hq.purchaseFailed', { defaultValue: 'Purchase failed' }),
+              {
+                context: {
+                  originalError: err?.message,
+                  stack: err?.stack
+                }
               }
-            }),
+            ),
             { addToast }
           )
         }

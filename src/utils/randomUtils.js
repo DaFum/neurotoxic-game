@@ -41,7 +41,9 @@ export const pickRandomSubset = (arr, count, rng = secureRandom) => {
       const targetIdx = n - 1 - i
       const j = Math.floor(rng() * (targetIdx + 1))
 
-      const valTarget = swaps.has(targetIdx) ? swaps.get(targetIdx) : arr[targetIdx]
+      const valTarget = swaps.has(targetIdx)
+        ? swaps.get(targetIdx)
+        : arr[targetIdx]
       const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
 
       // Place the chosen element at the correct spot in the result
