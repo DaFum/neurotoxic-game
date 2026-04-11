@@ -169,6 +169,10 @@ test('systemReducer - LOAD_GAME', async t => {
             id: 'invalid_item',
             quantity: 1
           },
+          {
+            id: '__proto__',
+            quantity: 1
+          },
           null,
           []
         ]
@@ -191,6 +195,9 @@ test('systemReducer - LOAD_GAME', async t => {
 
     // Invalid items should be filtered out
     assert.equal(hydratedStash['invalid_item'], undefined)
+
+    // Prototype keys should be stripped
+    assert.equal(Object.hasOwn(hydratedStash, '__proto__'), false)
   })
 
   await t.test('handles missing or malformed loaded state gracefully', () => {

@@ -51,7 +51,7 @@ const categorizeEvents = events => {
 
   for (let i = 0; i < events.length; i++) {
     const e = events[i]
-    if (result[e.category]) {
+    if (Object.hasOwn(result, e.category)) {
       result[e.category].push(e)
     }
   }

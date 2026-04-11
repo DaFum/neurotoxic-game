@@ -80,7 +80,7 @@ describe('useRhythmGameAudio', () => {
       })
     )
 
-    // Should not throw, should warn, and harmony should be clamped to default (100) or at least finite
+    // Should not throw, should warn, and non-finite harmony should be clamped to 1 (triggering low harmony guard)
     expect(mocks.loggerWarn).toHaveBeenCalledWith(
       'RhythmGame',
       'Band harmony too low to start gig.'
