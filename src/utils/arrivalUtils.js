@@ -136,13 +136,13 @@ export const handleNodeArrival = ({
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
-      const harmony = band?.harmony ?? 0
+      const harmony = clampBandHarmony(band?.harmony)
 
-      // Show cancellation check: Deterministic for zero harmony, probabilistic for low harmony (Chaos Tour Mechanic)
+      // Show cancellation check: probabilistic for low harmony (Chaos Tour Mechanic)
       const isLowHarmony = harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD
       const luckCheck =
         rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
-      const shouldCancel = harmony <= 0 || (isLowHarmony && luckCheck)
+      const shouldCancel = isLowHarmony && luckCheck
 
       if (shouldCancel) {
         addToast(

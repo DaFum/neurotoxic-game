@@ -82,17 +82,6 @@ export const handleTradeVoidItem = (state, payload) => {
 
         if (isPlainObject) {
           const rawContext = parsedContext
-          const safeContext = Object.create(null)
-
-          const escapeMap = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-          }
-
-          const rawContext = parsedContext
 
           const escapeMap = {
             '&': '&amp;',
@@ -121,10 +110,10 @@ export const handleTradeVoidItem = (state, payload) => {
             return value
           }
 
-          const safeContext = sanitizeContextValue(rawContext)
+          const finalSafeContext = sanitizeContextValue(rawContext)
 
-          safeContext.fame = actualDelta
-          enrichedMessage = `${key}|${JSON.stringify(safeContext)}`
+          finalSafeContext.fame = actualDelta
+          enrichedMessage = `${key}|${JSON.stringify(finalSafeContext)}`
         }
       }
     } catch (err) {
