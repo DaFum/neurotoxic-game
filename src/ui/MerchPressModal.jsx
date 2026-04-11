@@ -13,12 +13,11 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const isAffordable = (player?.money || 0) >= (config.cost || 0)
   const hasEnoughHarmony = (band?.harmony || 0) >= (config.harmonyCostOnFail || 0)
 
-  let disabledReason = null
-  if (!isAffordable) {
-    disabledReason = t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
-  } else if (!hasEnoughHarmony) {
-    disabledReason = t('ui:merch_press.not_enough_harmony', { defaultValue: 'Not enough harmony' })
-  }
+  const disabledReason = !isAffordable
+    ? t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
+    : !hasEnoughHarmony
+      ? t('ui:merch_press.not_enough_harmony', { defaultValue: 'Not enough harmony' })
+      : null
 
   return (
     <AnimatePresence>

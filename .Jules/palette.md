@@ -1,29 +1,27 @@
 # Palette's Journal
 
-## 2025-05-18 - Adding Weight to Instant Actions
+## 2024-03-14 - Custom Toggle Switch Accessibility
 
-**Learning:** Instant state changes (like purchasing items) can feel trivial or leave users unsure if the action registered. Adding a deliberate loading state with a micro-delay (500ms) provides necessary feedback, confirms the action's significance, and prevents accidental double-clicks.
-**Action:** Implement `isLoading` states on primary transactional buttons, even if the underlying logic is synchronous, to enhance perceived value and user confidence.
+**Learning:** Custom toggle buttons built with generic elements (`<button>` and `<span>`) lack implicit label associations, causing screen readers to announce them merely as "toggle, pressed" without context. This pattern is common in the brutalist UI components.
+**Action:** When implementing custom form controls or toggles alongside visual labels, always use `useId()` and link them explicitly via `aria-labelledby` on the interactive element pointing to the `id` of the visual text container.
 
-## 2026-06-03 - Semantics of Custom Tabs
+## 2024-04-10 - Tooltips on Disabled Buttons
+**Learning:** React disabled elements (`disabled={true}`) swallow pointer events by default, making hover-based tooltips fail. When wrapping disabled buttons with tooltips to explain their disabled state, do not wrap them in semantically incorrect `<span>` tags just to capture hover. Instead, apply `aria-disabled='true'` and `tabIndex={-1}` to the interactive element, and handle the disabled logical check internally within the element or via the Tooltip component without natively disabling the DOM element, OR ensure the Tooltip component wraps elements intelligently as needed. (In this repo, our custom `Tooltip` component gracefully handles standard disabled buttons and `aria-disabled='true'`).
+**Action:** Use `aria-disabled='true'` alongside explicit `Tooltip` components to explain why actions are disabled, avoiding native `disabled={true}` if necessary for hover, but if the component library supports it, avoid extra nested `span` containers. In this codebase, the custom `Tooltip` component detects `aria-disabled` and injects its own hoverable wrapper intelligently, so we can just use `Tooltip` directly around the disabled element without polluting the DOM.
 
-**Learning:** When using buttons for navigation within a single view (like tabs), visual styling isn't enough for screen readers. Without `role="tab"`, `role="tablist"`, and `aria-selected`, users relying on assistive technology lose context of their location and the relationship between the controls and the content.
-**Action:** Always wrap custom tab-like navigation in `role="tablist"` and link tabs to their content panels using `aria-controls` and `aria-labelledby` to create a robust, navigable structure.
-
-## 2026-06-03 - D-Pad Accessibility on Mobile Devices
-
-**Learning:** Icon-only navigation buttons like the Mobile D-Pad (▲, ▼, ◄, ►) must have `aria-label` attributes to be accessible to screen readers, which might misinterpret or ignore the visual text symbols.
-**Action:** Add descriptive `aria-label`s such as 'Move Up', 'Move Left', 'Move Down', and 'Move Right' to these buttons.
-
-## 2026-06-04 - Preventing accidental form submissions in interactive buttons
-
-**Learning:** In a heavily componentized brutalist React app where `<button>` elements are often reused in different layout contexts (e.g., `HUD.jsx`, `ToggleRadio.jsx`, `GigModifierButton.jsx`), omitting the `type="button"` attribute leaves them vulnerable to accidentally triggering implicit form submissions if an ancestor component wraps them in a `<form>`. This can lead to unhandled page reloads or broken state.
-**Action:** Always explicitly declare `type="button"` on interactive components like toggles, tabs, and action buttons that do not orchestrate data submission.
+## 2024-04-10 - Merch Press Disabled State
+**Learning:** `MerchPressModal` had a generic `<span role="button">` wrapping its disabled button, and its disabled reason was incomplete (only checking `isAffordable`, completely missing `harmonyCostOnFail`).
+**Action:** Ensure all constraints for an action are evaluated when presenting the disabled reason (e.g., both funds and harmony).
 
 ## 2024-05-24 - Invisible native elements need visible focus proxies
 
 **Learning:** When using visually hidden native inputs (like `<input type="range" className="sr-only">`) to drive custom UI (like volume slider segments), keyboard users lose all focus indicators because the focused element is invisible. Tabbing through the UI leaves the user lost.
 **Action:** When hiding a native interactive element (`sr-only`), always use a CSS pseudo-class selector (e.g. Tailwind's `has-[:focus-visible]:ring-2`) on the visible container to act as a proxy focus indicator.
+
+## 2025-05-18 - Adding Weight to Instant Actions
+
+**Learning:** Instant state changes (like purchasing items) can feel trivial or leave users unsure if the action registered. Adding a deliberate loading state with a micro-delay (500ms) provides necessary feedback, confirms the action's significance, and prevents accidental double-clicks.
+**Action:** Implement `isLoading` states on primary transactional buttons, even if the underlying logic is synchronous, to enhance perceived value and user confidence.
 
 ## 2025-05-18 - Invisible Context for Icon-Only Buttons
 
@@ -34,11 +32,6 @@
 
 **Learning:** Relying solely on `hover:` utilities to indicate interactivity can make components completely inaccessible to keyboard users, especially if the default browser focus ring is disabled or insufficient against the background.
 **Action:** Whenever introducing custom `hover:` states (like changing background color or border), always explicitly pair them with `focus-visible:` utilities (like `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-color`) to ensure keyboard navigability.
-
-## 2024-03-14 - Custom Toggle Switch Accessibility
-
-**Learning:** Custom toggle buttons built with generic elements (`<button>` and `<span>`) lack implicit label associations, causing screen readers to announce them merely as "toggle, pressed" without context. This pattern is common in the brutalist UI components.
-**Action:** When implementing custom form controls or toggles alongside visual labels, always use `useId()` and link them explicitly via `aria-labelledby` on the interactive element pointing to the `id` of the visual text container.
 
 ## 2025-05-19 - Keyboard Accessibility for List Items as Buttons
 
@@ -64,10 +57,17 @@
 **Learning:** Interactive elements extracted into their own components (like `SetlistBlock` or `PreGigStartButton`) often lose inherited global focus styles or omit explicit `focus-visible` rings, breaking keyboard navigation flow on critical screens like the Pre-Gig setup.
 **Action:** When creating new interactive components or refactoring large UI blocks, ensure explicit `focus-visible` utility classes (e.g., `focus-visible:outline-none focus-visible:ring-2`) are applied to the outermost `button` or interactive container.
 
-## 2024-04-10 - Tooltips on Disabled Buttons
-**Learning:** React disabled elements (`disabled={true}`) swallow pointer events by default, making hover-based tooltips fail. When wrapping disabled buttons with tooltips to explain their disabled state, do not wrap them in semantically incorrect `<span>` tags just to capture hover. Instead, apply `aria-disabled='true'` and `tabIndex={-1}` to the interactive element, and handle the disabled logical check internally within the element or via the Tooltip component without natively disabling the DOM element, OR ensure the Tooltip component wraps elements intelligently as needed. (In this repo, our custom `Tooltip` component gracefully handles standard disabled buttons and `aria-disabled='true'`).
-**Action:** Use `aria-disabled='true'` alongside explicit `Tooltip` components to explain why actions are disabled, avoiding native `disabled={true}` if necessary for hover, but if the component library supports it, avoid extra nested `span` containers. In this codebase, the custom `Tooltip` component detects `aria-disabled` and injects its own hoverable wrapper intelligently, so we can just use `Tooltip` directly around the disabled element without polluting the DOM.
+## 2026-06-03 - Semantics of Custom Tabs
 
-## 2024-04-10 - Merch Press Disabled State
-**Learning:** `MerchPressModal` had a generic `<span role="button">` wrapping its disabled button, and its disabled reason was incomplete (only checking `isAffordable`, completely missing `harmonyCostOnFail`).
-**Action:** Ensure all constraints for an action are evaluated when presenting the disabled reason (e.g., both funds and harmony).
+**Learning:** When using buttons for navigation within a single view (like tabs), visual styling isn't enough for screen readers. Without `role="tab"`, `role="tablist"`, and `aria-selected`, users relying on assistive technology lose context of their location and the relationship between the controls and the content.
+**Action:** Always wrap custom tab-like navigation in `role="tablist"` and link tabs to their content panels using `aria-controls` and `aria-labelledby` to create a robust, navigable structure.
+
+## 2026-06-03 - D-Pad Accessibility on Mobile Devices
+
+**Learning:** Icon-only navigation buttons like the Mobile D-Pad (▲, ▼, ◄, ►) must have `aria-label` attributes to be accessible to screen readers, which might misinterpret or ignore the visual text symbols.
+**Action:** Add descriptive `aria-label`s such as 'Move Up', 'Move Left', 'Move Down', and 'Move Right' to these buttons.
+
+## 2026-06-04 - Preventing accidental form submissions in interactive buttons
+
+**Learning:** In a heavily componentized brutalist React app where `<button>` elements are often reused in different layout contexts (e.g., `HUD.jsx`, `ToggleRadio.jsx`, `GigModifierButton.jsx`), omitting the `type="button"` attribute leaves them vulnerable to accidentally triggering implicit form submissions if an ancestor component wraps them in a `<form>`. This can lead to unhandled page reloads or broken state.
+**Action:** Always explicitly declare `type="button"` on interactive components like toggles, tabs, and action buttons that do not orchestrate data submission.
