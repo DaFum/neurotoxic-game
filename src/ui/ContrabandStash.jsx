@@ -232,7 +232,7 @@ export const ContrabandStash = ({
         </div>
 
         <div className='mt-8 flex justify-end shrink-0'>
-          <GlitchButton onClick={onClose} variant='secondary'>
+          <GlitchButton onClick={onClose} variant='primary'>
             {t('ui:contraband.close', { defaultValue: 'CLOSE STASH' })}
           </GlitchButton>
         </div>

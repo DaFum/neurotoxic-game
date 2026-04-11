@@ -181,7 +181,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
             {/* Actions */}
             <div className='mt-8 flex justify-end gap-4'>
               <GlitchButton
-                variant='secondary'
+                variant='primary'
                 onClick={onClose}
                 className='uppercase'
               >

@@ -134,7 +134,7 @@ export const PirateRadioModal = ({
 
         <div className='flex flex-col sm:flex-row gap-4 pt-4 border-t-2 border-toxic-green/50 shrink-0'>
           <GlitchButton
-            variant='secondary'
+            variant='primary'
             onClick={onClose}
             className='flex-1'
           >
