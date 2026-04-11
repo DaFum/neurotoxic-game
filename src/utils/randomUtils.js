@@ -18,6 +18,37 @@ export const pickRandomSubset = (arr, count, rng = secureRandom) => {
 
   if (k <= 0) return []
 
+  // Fast-path: pick 1 element without array copy
+  if (k === 1) {
+    return [arr[Math.floor(rng() * n)]]
+  }
+
+  // Fast-path: pick 2 elements without array copy
+  if (k === 2) {
+    const j1 = Math.floor(rng() * n)
+    const j2 = Math.floor(rng() * (n - 1))
+    return [j2 === j1 ? arr[n - 1] : arr[j2], arr[j1]]
+  }
+
+  // Sparse Fisher-Yates shuffle using Map to avoid O(n) copy for small k relative to n
+  if (k < n / 4) {
+    const result = new Array(k)
+    const swaps = new Map()
+    for (let i = 0; i < k; i++) {
+      const targetIdx = n - 1 - i
+      const j = Math.floor(rng() * (targetIdx + 1))
+
+      const valTarget = swaps.has(targetIdx) ? swaps.get(targetIdx) : arr[targetIdx]
+      const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
+
+      // Place the chosen element at the correct spot in the result
+      result[k - 1 - i] = valJ
+      // Record what took its place in the remaining pool
+      swaps.set(j, valTarget)
+    }
+    return result
+  }
+
   // Create a copy so we don't mutate the original array
   const shuffled = [...arr]
 
