@@ -30,8 +30,9 @@ const validateEffect = (effect, eventId, idx) => {
         `Composite effect must have a non-empty effects array at index ${idx} for event ${eventId}`
       )
     }
-    for (let childIdx = 0; childIdx < effect.effects.length; childIdx++) {
-      const childEffect = effect.effects[childIdx]
+    const effects = effect.effects
+    for (let childIdx = 0, len = effects.length; childIdx < len; childIdx++) {
+      const childEffect = effects[childIdx]
       try {
         validateEffect(childEffect, eventId, idx)
       } catch (err) {
@@ -115,8 +116,9 @@ export const validateCrisisEvent = event => {
     throw new Error(`Event ${event.id} must have at least one option`)
   }
 
-  for (let idx = 0; idx < event.options.length; idx++) {
-    const opt = event.options[idx]
+  const options = event.options
+  for (let idx = 0, len = options.length; idx < len; idx++) {
+    const opt = options[idx]
     if (typeof opt.label !== 'string' || !opt.label.startsWith('events:')) {
       throw new Error(
         `Invalid option label at index ${idx} for event ${event.id}`

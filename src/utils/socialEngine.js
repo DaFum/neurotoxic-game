@@ -138,9 +138,10 @@ export const generatePostOptions = (
 
   // 1a. Forced Sponsor Post Override
   // Check if there are active deals of type SPONSORSHIP.
+  const socialState = gameState.social
   let hasActiveSponsor = false
-  const activeDeals = gameState.social?.activeDeals
-  if (activeDeals) {
+  if (!socialState?.sponsorActive && socialState?.activeDeals) {
+    const activeDeals = socialState.activeDeals
     for (let i = 0; i < activeDeals.length; i++) {
       if (activeDeals[i].type === 'SPONSORSHIP') {
         hasActiveSponsor = true
@@ -148,7 +149,7 @@ export const generatePostOptions = (
       }
     }
   }
-  if (gameState.social?.sponsorActive || hasActiveSponsor) {
+  if (socialState?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
