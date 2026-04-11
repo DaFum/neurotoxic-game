@@ -546,6 +546,8 @@
   "merch_press.subtitle": "BOOTLEG OPERATION",
   "merch_press.description": "Print bootleg shirts and press illegal vinyls in the basement. High risk, high reward.",
   "merch_press.cost_label": "COST",
+  "merch_press.not_enough_money": "Not enough money",
+  "merch_press.not_enough_harmony": "Not enough harmony",
   "merch_press.gain_label": "GAINS",
   "merch_press.risk_warning": "WARNING: {{risk}}% CHANCE OF EQUIPMENT FAILURE (-{{harmonyCostOnFail}} HARMONY)",
   "merch_press.current_stats": "CURRENT RESOURCES",

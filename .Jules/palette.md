@@ -5,3 +5,11 @@
 ## 2024-04-10 - Merch Press Disabled State
 **Learning:** `MerchPressModal` had a generic `<span role="button">` wrapping its disabled button, and its disabled reason was incomplete (only checking `isAffordable`, completely missing `harmonyCostOnFail`).
 **Action:** Ensure all constraints for an action are evaluated when presenting the disabled reason (e.g., both funds and harmony).
+
+## 2024-04-10 - Tooltips on Disabled Buttons
+**Learning:** React disabled elements (`disabled={true}`) swallow pointer events by default, making hover-based tooltips fail. When wrapping disabled buttons with tooltips to explain their disabled state, do not wrap them in semantically incorrect `<span>` tags just to capture hover. Instead, apply `aria-disabled='true'` and `tabIndex={-1}` to the interactive element, and handle the disabled logical check internally within the element or via the Tooltip component without natively disabling the DOM element, OR ensure the Tooltip component wraps elements intelligently as needed. (In this repo, our custom `Tooltip` component gracefully handles standard disabled buttons and `aria-disabled='true'`).
+**Action:** Use `aria-disabled='true'` alongside explicit `Tooltip` components to explain why actions are disabled, avoiding native `disabled={true}` if necessary for hover, but if the component library supports it, avoid extra nested `span` containers. In this codebase, the custom `Tooltip` component detects `aria-disabled` and injects its own hoverable wrapper intelligently, so we can just use `Tooltip` directly around the disabled element without polluting the DOM.
+
+## 2024-04-10 - Merch Press Disabled State
+**Learning:** `MerchPressModal` had a generic `<span role="button">` wrapping its disabled button, and its disabled reason was incomplete (only checking `isAffordable`, completely missing `harmonyCostOnFail`).
+**Action:** Ensure all constraints for an action are evaluated when presenting the disabled reason (e.g., both funds and harmony).

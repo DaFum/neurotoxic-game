@@ -15,9 +15,9 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
 
   let disabledReason = null
   if (!isAffordable) {
-    disabledReason = t('ui:clinic.not_enough_money', { defaultValue: 'Not enough money' })
+    disabledReason = t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
   } else if (!hasEnoughHarmony) {
-    disabledReason = t('ui:pregig.toasts.harmonyLow', { defaultValue: 'Band harmony too low!' })
+    disabledReason = t('ui:merch_press.not_enough_harmony', { defaultValue: 'Not enough harmony' })
   }
 
   return (
