@@ -56,7 +56,8 @@ export function handleCrash(game, onGameOver) {
 }
 
 export function spawnTraffic(game, deltaMS) {
-  game.spawners.forEach(spawner => {
+  for (let i = 0, len = game.spawners.length; i < len; i++) {
+    const spawner = game.spawners[i]
     spawner.timer += deltaMS
     while (spawner.timer > spawner.rate) {
       spawner.timer -= spawner.rate
@@ -72,7 +73,7 @@ export function spawnTraffic(game, deltaMS) {
         width: 1.5
       })
     }
-  })
+  }
 }
 
 export function processTraffic(game, deltaMS, onCrash) {

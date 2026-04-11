@@ -32,12 +32,13 @@ function updateOverlayNodes(projectiles, nodeCache, seenIds, container) {
   // after the loop above (either pre-existing or newly created). Therefore, if
   // sizes match, there are exactly zero stale nodes to remove.
   if (nodeCache.size > seenIds.size) {
-    nodeCache.forEach((node, id) => {
+    for (const id of nodeCache.keys()) {
       if (!seenIds.has(id)) {
+        const node = nodeCache.get(id)
         container.removeChild(node)
         nodeCache.delete(id)
       }
-    })
+    }
   }
 }
 
