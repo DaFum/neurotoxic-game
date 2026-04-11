@@ -1,6 +1,9 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
 
+// Set dummy API key for tests
+process.env.VITE_POLLINATIONS_API_KEY = 'test_key'
+
 test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
   const { getGenImageUrl } = await import('../src/utils/imageGen.js')
 

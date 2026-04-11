@@ -2,7 +2,7 @@
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
-const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
+const KEY = process.env.VITE_POLLINATIONS_API_KEY
 
 /**
  * Generates a URL string for a procedurally generated image.

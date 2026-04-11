@@ -3,13 +3,19 @@ import react from '@vitejs/plugin-react'
 import viteCompression from 'vite-plugin-compression'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
-  ],
-  base: './',
-  build: {
+export default defineConfig(({ mode }) => {
+  return {
+    plugins: [
+      react(),
+      viteCompression({ algorithm: 'brotliCompress', ext: '.br' })
+    ],
+    define: {
+      'process.env.VITE_POLLINATIONS_API_KEY': JSON.stringify(
+        process.env.VITE_POLLINATIONS_API_KEY
+      )
+    },
+    base: './',
+    build: {
     // Keep temporarily for deployment, PixiJS imports have been refactored
     chunkSizeWarningLimit: 600,
     rolldownOptions: {
@@ -49,6 +55,7 @@ export default defineConfig({
           ]
         }
       }
+    }
     }
   }
 })
