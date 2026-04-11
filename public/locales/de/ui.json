@@ -546,6 +546,8 @@
   "merch_press.subtitle": "BOOTLEG BETRIEB",
   "merch_press.description": "Drucke Bootleg-Shirts und presse illegales Vinyl im Keller. Hohes Risiko, hoher Gewinn.",
   "merch_press.cost_label": "KOSTEN",
+  "merch_press.not_enough_money": "Nicht genug Geld",
+  "merch_press.not_enough_harmony": "Nicht genug Harmonie",
   "merch_press.gain_label": "GEWINN",
   "merch_press.risk_warning": "WARNUNG: {{risk}}% RISIKO FÜR EQUIPMENT-AUSFALL (-{{harmonyCostOnFail}} HARMONIE)",
   "merch_press.current_stats": "AKTUELLE RESSOURCEN",

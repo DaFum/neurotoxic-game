@@ -149,14 +149,12 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
           {/* Footer Actions */}
           <div className='p-6 border-t-4 border-blood-red bg-void-black/80 flex justify-end gap-4'>
             <ActionButton
-              variant='secondary'
               onClick={onClose}
               className='min-w-[120px]'
             >
               {t('ui:cancel', { defaultValue: 'CANCEL' })}
             </ActionButton>
             <ActionButton
-              variant='primary'
               onClick={onDonate}
               disabled={!canDonate}
               className={`min-w-[160px] ${canDonate ? 'bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)]' : ''}`}

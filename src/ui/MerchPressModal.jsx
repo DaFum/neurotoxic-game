@@ -11,6 +11,13 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const { player, band } = useGameState()
 
   const isAffordable = (player?.money || 0) >= (config.cost || 0)
+  const hasEnoughHarmony = (band?.harmony || 0) >= (config.harmonyCostOnFail || 0)
+
+  const disabledReason = !isAffordable
+    ? t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
+    : !hasEnoughHarmony
+      ? t('ui:merch_press.not_enough_harmony', { defaultValue: 'Not enough harmony' })
+      : null
 
   return (
     <AnimatePresence>
@@ -144,10 +151,12 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                             )
                           : 0
                       }
+                      max={100}
+                      showValue={false}
                       color={
                         isAffordable
-                          ? 'var(--color-toxic-green)'
-                          : 'var(--color-blood-red)'
+                          ? 'bg-toxic-green'
+                          : 'bg-blood-red'
                       }
                     />
                   </div>
@@ -156,13 +165,15 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       <span className='text-ash-gray uppercase'>
                         {t('ui:stats.harmony', { defaultValue: 'HARMONY' })}
                       </span>
-                      <span className='text-toxic-green'>
+                      <span className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}>
                         {band?.harmony || 0}%
                       </span>
                     </div>
                     <ProgressBar
                       value={band?.harmony || 0}
-                      color='var(--color-toxic-green)'
+                      max={100}
+                      showValue={false}
+                      color={hasEnoughHarmony ? 'bg-toxic-green' : 'bg-blood-red'}
                     />
                   </div>
                 </div>
@@ -172,25 +183,20 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
             {/* Actions */}
             <div className='mt-8 flex justify-end gap-4'>
               <GlitchButton
-                variant='secondary'
+                variant='primary'
                 onClick={onClose}
                 className='uppercase'
               >
                 [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
               </GlitchButton>
               {!canPress ? (
-                <span
-                  role='button'
-                  tabIndex={0}
-                  aria-disabled='true'
-                  aria-label={t('ui:merch_press.confirm', {
-                    defaultValue: 'START PRESS'
-                  })}
-                >
+                <Tooltip content={disabledReason}>
                   <GlitchButton
                     variant='danger'
                     onClick={onPress}
                     disabled={true}
+                    aria-disabled='true'
+                    tabIndex={-1}
                     className='uppercase'
                   >
                     [{' '}
@@ -199,7 +205,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                     })}{' '}
                     ]
                   </GlitchButton>
-                </span>
+                </Tooltip>
               ) : (
                 <GlitchButton
                   variant='warning'
