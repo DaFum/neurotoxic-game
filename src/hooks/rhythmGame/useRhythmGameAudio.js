@@ -3,6 +3,7 @@ import { audioManager } from '../../utils/AudioManager'
 import { stopAudio } from '../../utils/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
+import { clampBandHarmony } from '../../utils/gameStateUtils.js'
 import {
   setupGigPhysics,
   resolveActiveSetlist,
@@ -52,8 +53,10 @@ export const useRhythmGameAudio = ({
     // Mute ambient radio to prevent audio overlap
     audioManager.stopMusic()
 
+    const currentHarmony = clampBandHarmony(band.harmony)
+
     // Harmony Guard
-    if (band.harmony <= 1) {
+    if (currentHarmony <= 1) {
       logger.warn('RhythmGame', 'Band harmony too low to start gig.')
       setIsAudioReady(false)
       isInitializingRef.current = false
