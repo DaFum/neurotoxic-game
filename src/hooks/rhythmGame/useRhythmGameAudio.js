@@ -50,24 +50,22 @@ export const useRhythmGameAudio = ({
     const isAborted = () =>
       signal.aborted || abortControllerRef.current !== controller
 
-    // Mute ambient radio to prevent audio overlap
-    audioManager.stopMusic()
-
-    const currentHarmony = clampBandHarmony(band.harmony)
-
-    // Harmony Guard
-    if (currentHarmony <= 1) {
-      logger.warn('RhythmGame', 'Band harmony too low to start gig.')
-      setIsAudioReady(false)
-      isInitializingRef.current = false
-      return
-    }
-
     try {
+      // Mute ambient radio to prevent audio overlap
+      audioManager.stopMusic()
+
+      const currentHarmony = clampBandHarmony(band?.harmony)
+
+      // Harmony Guard
+      if (currentHarmony <= 1) {
+        logger.warn('RhythmGame', 'Band harmony too low to start gig.')
+        setIsAudioReady(false)
+        return
+      }
+
       const audioUnlocked = await audioManager.ensureAudioContext()
 
       if (isAborted()) {
-        isInitializingRef.current = false
         return
       }
 
@@ -77,12 +75,10 @@ export const useRhythmGameAudio = ({
           'Audio Context blocked. Waiting for user gesture.'
         )
         setIsAudioReady(false)
-        isInitializingRef.current = false
         return
       }
       setIsAudioReady(true)
       hasInitializedRef.current = true
-      isInitializingRef.current = false
 
       // Reset cross-song tracking state for a new gig
       resetGigStateTracking(gameStateRef)
@@ -95,12 +91,11 @@ export const useRhythmGameAudio = ({
         gigModifiers,
         currentGig?.songId,
         gameMap,
-        player.currentNodeId,
+        player?.currentNodeId,
         setlistFirstId
       )
       if (!physicsSetup) {
         hasInitializedRef.current = false
-        isInitializingRef.current = false
         return
       }
 
@@ -114,7 +109,6 @@ export const useRhythmGameAudio = ({
 
       if (isAborted()) {
         setIsAudioReady(false)
-        isInitializingRef.current = false
         return
       }
 
@@ -123,7 +117,6 @@ export const useRhythmGameAudio = ({
       }
     } catch (error) {
       if (isAborted()) {
-        isInitializingRef.current = false
         return
       }
 
@@ -132,20 +125,23 @@ export const useRhythmGameAudio = ({
         fallbackMessage: 'Gig initialization failed!'
       })
       setIsAudioReady(false)
-      isInitializingRef.current = false
       hasInitializedRef.current = false
+    } finally {
+      isInitializingRef.current = false
     }
   }, [
-    band,
-    gameMap,
-    player.currentNodeId,
-    setlist,
-    gigModifiers,
+    band?.members?.length,
+    band?.harmony,
+    gameMap?.nodes ? Object.keys(gameMap.nodes).length : 0,
+    player?.currentNodeId,
+    setlist?.length,
+    currentGig?.songId,
+    // Stringify gigModifiers to ensure referential stability
+    JSON.stringify(gigModifiers),
     addToast,
     t,
     gameStateRef,
-    setIsAudioReady,
-    currentGig?.songId
+    setIsAudioReady
   ])
 
   useEffect(() => {
