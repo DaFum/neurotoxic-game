@@ -7,22 +7,28 @@ export class AmpStageController extends BaseStageController {
     super(options)
 
     this.waveGraphics = null
+    this.bg = null
     this.targetFreq = 500
     this.currentFreq = 500
     this.time = 0
   }
 
   async setup() {
+    this.bg = new PIXI.Graphics()
+    this.container.addChildAt(this.bg, 0)
+
     this.waveGraphics = new PIXI.Graphics()
     this.container.addChild(this.waveGraphics)
 
-    // Background
-    const bg = new PIXI.Graphics()
-    bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
-    bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
-    this.container.addChildAt(bg, 0)
-
+    this.drawBackground()
     this.drawWaves()
+  }
+
+  drawBackground() {
+    if (!this.bg || !this.app) return
+    this.bg.clear()
+    this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
+    this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
   }
 
   update(dt) {
@@ -77,7 +83,20 @@ export class AmpStageController extends BaseStageController {
   }
 
   draw() {
+    this.drawBackground()
     this.drawWaves()
+  }
+
+  dispose() {
+    if (this.waveGraphics) {
+      this.waveGraphics.destroy()
+      this.waveGraphics = null
+    }
+    if (this.bg) {
+      this.bg.destroy()
+      this.bg = null
+    }
+    super.dispose()
   }
 }
 

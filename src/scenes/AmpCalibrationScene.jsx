@@ -5,8 +5,6 @@ import { createAmpStageController } from '../components/stage/AmpStageController
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { AmpHUD } from '../components/minigames/amp/AmpHUD'
 import { AmpControls } from '../components/minigames/amp/AmpControls'
-import { useGameState } from '../context/GameState'
-import { GAME_PHASES } from '../context/gameConstants'
 
 export const AmpCalibrationScene = () => {
   const { t } = useTranslation(['ui'])
@@ -39,7 +37,8 @@ export const AmpCalibrationScene = () => {
   const renderCompletionStats = useCallback(
     () =>
       t('minigames.amp.completion.stability', {
-        defaultValue: `Stability Achieved: ${Math.floor(score)}%`
+        defaultValue: `Stability Achieved: ${Math.floor(score)}%`,
+        score: Math.floor(score)
       }),
     [t, score]
   )

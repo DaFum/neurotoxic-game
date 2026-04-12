@@ -983,5 +983,9 @@
   "minigames.amp.hud.stability": "STABILITY:",
   "minigames.amp.completion.title": "AMP CALIBRATED",
   "minigames.amp.completion.button": "START GIG",
-  "minigames.amp.completion.stability": "Stability Achieved: {{score}}%"
+  "minigames.amp.completion.stability": "Stability Achieved: {{score}}%",
+  "minigames.amp.controls.min": "0Hz",
+  "minigames.amp.controls.max": "1000Hz",
+  "minigames.amp.controls.dialAria": "Frequency Dial",
+  "minigames.amp.controls.instruction": "TUNE THE FREQUENCY"
 }
