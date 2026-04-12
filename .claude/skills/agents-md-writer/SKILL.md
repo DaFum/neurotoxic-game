@@ -1,6 +1,10 @@
 ---
 name: agents-md-writer
 description: Write high-quality AGENTS.md, CLAUDE.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents — including any mention of "AGENTS.md", "CLAUDE.md", "CODEX.md", "GEMINI.md", ".cursorrules", "copilot-instructions.md", "context file for agents", "agent instructions", "coding agent setup", or requests like "help my AI agent understand this repo". Also trigger when users say things like "initialize agent config", "set up Claude Code for my project", "write instructions for Codex/Copilot", "make my repo AI-friendly", "migrate my .cursorrules", "sync my AI config across tools", or "validate my AGENTS.md". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, and covers the full multi-tool ecosystem including Claude Code, Codex, Copilot, Cursor, Gemini CLI, Jules, and Windsurf.
+user-invocable: true
+metadata:
+  scope: user
+  version: "1.0.0"
 ---
 
 # AGENTS.md Writer
@@ -22,16 +26,16 @@ The key insight: **less is more**. Only include information that an agent cannot
 
 AGENTS.md is now an open standard stewarded by the Agentic AI Foundation under the Linux Foundation. Every major AI coding tool reads context files, but each has its own native format:
 
-| Tool           | Native file                       | Reads AGENTS.md?         |
-| -------------- | --------------------------------- | ------------------------ |
-| Claude Code    | `CLAUDE.md`                       | Via import or workaround |
-| OpenAI Codex   | `AGENTS.md`                       | Native                   |
-| GitHub Copilot | `.github/copilot-instructions.md` | Yes                      |
-| Cursor         | `.cursor/rules/*.mdc`             | Yes                      |
-| Google Jules   | `JULES.md`                        | Yes                      |
-| Gemini CLI     | `GEMINI.md`                       | Via config               |
-| Windsurf       | `.windsurfrules`                  | Yes                      |
-| Amp            | `AGENTS.md`                       | Native                   |
+| Tool | Native file | Reads AGENTS.md? |
+|------|------------|-------------------|
+| Claude Code | `CLAUDE.md` | Via import or workaround |
+| OpenAI Codex | `AGENTS.md` | Native |
+| GitHub Copilot | `.github/copilot-instructions.md` | Yes |
+| Cursor | `.cursor/rules/*.mdc` | Yes |
+| Google Jules | `JULES.md` | Yes |
+| Gemini CLI | `GEMINI.md` | Via config |
+| Windsurf | `.windsurfrules` | Yes |
+| Amp | `AGENTS.md` | Native |
 
 **The practical strategy**: Write core instructions in **AGENTS.md** (broadest compatibility), then use tool-specific files only for features that AGENTS.md can't provide. See "Choosing Your File Strategy" below.
 
@@ -51,7 +55,6 @@ If the user provides a repo path (local or GitHub URL), explore it. If they desc
 ## The Golden Rule
 
 > **Include ONLY information that meets ALL of these criteria:**
->
 > 1. An agent cannot easily discover it by reading the codebase
 > 2. Getting it wrong would cause a build failure, test failure, or style violation
 > 3. It is specific and actionable (not vague guidance)
@@ -66,23 +69,18 @@ Use this structure. Every section is optional — include only sections that hav
 # [Project Name] — Agent Instructions
 
 ## Critical Commands
-
 [Only non-obvious commands. Skip if standard tools work as expected.]
 
 ## Architecture Constraints
-
 [Only hard rules that aren't enforceable by linters/CI. Skip if none exist.]
 
 ## Testing
-
 [Only if the test setup is non-standard or requires specific steps.]
 
 ## Style & Conventions
-
 [Only conventions NOT enforced by existing tooling. Skip if linters handle it.]
 
 ## Gotchas
-
 [Non-obvious pitfalls specific to this codebase. Skip if none exist.]
 ```
 
@@ -93,33 +91,27 @@ Use this structure. Every section is optional — include only sections that hav
 Include commands ONLY if they differ from what an agent would naturally try.
 
 **INCLUDE:**
-
 - Custom build commands (if `make build` or standard tools don't work)
 - Non-standard test invocations (e.g., `uv run pytest --tb=short -q` instead of just `pytest`)
 - Required environment setup that isn't in README (e.g., `source .venv/bin/activate && pre-commit install`)
 - Specific dependency installation that's unusual (e.g., `pdm install -G :all` instead of `pip install -e .`)
 
 **DO NOT INCLUDE:**
-
 - `git clone`, `cd`, `pip install` — agents know these
 - Standard `pytest` or `npm test` invocations (agents try these by default)
 - Commands documented in README.md or CONTRIBUTING.md
 
 **Good example:**
-
 ```markdown
 ## Critical Commands
-
 - Install: `uv sync --all-extras` (do NOT use pip)
 - Test: `uv run pytest tests/ --tb=short -q` (must use uv, not bare pytest)
 - Lint before committing: `uv run ruff check --fix . && uv run ruff format .`
 ```
 
 **Bad example (DO NOT write like this):**
-
 ```markdown
 ## Commands
-
 - Clone: `git clone https://github.com/org/repo.git`
 - Install dependencies: `pip install -r requirements.txt`
 - Run tests: `pytest`
@@ -131,13 +123,11 @@ Include commands ONLY if they differ from what an agent would naturally try.
 Include hard architectural rules that aren't discoverable from code structure alone.
 
 **INCLUDE:**
-
 - "All database access must go through the `db/` layer — never import ORM models directly in API handlers"
 - "New API endpoints require a migration file in `migrations/` AND an entry in `openapi.yaml`"
 - "This monorepo uses workspace references — never add cross-package dependencies to root package.json"
 
 **DO NOT INCLUDE:**
-
 - Directory descriptions ("src/ contains source code, tests/ contains tests") — agents can see this
 - Design pattern explanations — agents understand common patterns
 - Language or framework basics
@@ -145,14 +135,12 @@ Include hard architectural rules that aren't discoverable from code structure al
 ### Testing
 
 **INCLUDE:**
-
 - Non-standard test commands or required environment variables
 - "Integration tests require a running Postgres — use `docker compose up -d db` first"
 - "Always run `make generate` before testing if you modified any `.proto` files"
 - Specific test file naming conventions if non-standard
 
 **DO NOT INCLUDE:**
-
 - "Run tests to make sure your changes work" — agents do this by default
 - Standard test runner usage
 - Obvious things like "tests are in the tests/ directory"
@@ -162,13 +150,11 @@ Include hard architectural rules that aren't discoverable from code structure al
 Only include conventions that automated tooling does NOT enforce.
 
 **INCLUDE:**
-
 - "Commit messages must follow Conventional Commits: `type(scope): description`"
 - "All new public functions need a Google-style docstring with Args, Returns, and Raises sections"
 - "Error messages must be user-facing — write them in complete sentences, not technical jargon"
 
 **DO NOT INCLUDE:**
-
 - Formatting rules (ruff/black/prettier handle this)
 - Import ordering (isort/ruff handle this)
 - Type annotation requirements (mypy/pyright handle this)
@@ -179,7 +165,6 @@ Only include conventions that automated tooling does NOT enforce.
 This is often the most valuable section. Include non-obvious things that would waste an agent's time.
 
 **INCLUDE:**
-
 - "The `config.py` file is auto-generated — edit `config.yaml` instead"
 - "Tests in `tests/integration/` are flaky on CI — if they fail locally, retry once before investigating"
 - "The `legacy/` directory is frozen — never modify files there, create wrappers instead"
@@ -206,13 +191,11 @@ These are backed by research findings that show they actively hurt performance:
 Ask the user which tools they use, then apply this decision tree:
 
 **Single-tool teams:**
-
 - Claude Code only → `CLAUDE.md`
 - Codex only → `AGENTS.md`
 - Cursor only → `.cursor/rules/*.mdc` (but consider AGENTS.md for future-proofing)
 
 **Multi-tool teams (recommended approach):**
-
 1. Write core instructions in **AGENTS.md** (universal standard, broadest compatibility)
 2. Symlink for tools that don't natively read AGENTS.md:
    ```bash
@@ -222,17 +205,14 @@ Ask the user which tools they use, then apply this decision tree:
    mkdir -p .cursor/rules && ln -sfn ../../AGENTS.md .cursor/rules/main.mdc
    ```
 3. Add a **CLAUDE.md** only if you need Claude Code-specific features (nested files, imports, hooks). In the simplest case, CLAUDE.md can just import the shared file:
-
    ```markdown
    @AGENTS.md
 
    ## Claude-Specific
-
    [Any Claude Code-only instructions here]
    ```
 
 **Always add `.gitignore` entries** for personal/local files:
-
 ```
 CLAUDE.local.md
 ```
@@ -299,7 +279,7 @@ If the user has existing config files, read `references/migration-guide.md` for 
 After writing a context file, run the bundled validation script to catch common problems:
 
 ```bash
-python scripts/validate_context_file.py <path-to-context-file> [--readme <path-to-readme>]
+python .agents/skills/agents-md-writer/scripts/validate_context_file.py <path-to-context-file> [--readme <path-to-readme>]
 ```
 
 The validator checks for: codebase overviews, directory listings, README duplication, generic advice, technology descriptions, excessive word count, vague instructions, and discoverable commands.
@@ -313,7 +293,7 @@ If the user provides a repo path, run validation automatically after generating 
 3. **Identify non-obvious requirements** — things that meet the Golden Rule
 4. **Draft the file** — aim for 200-400 words, use the structure template
 5. **Review against "What to NEVER Include"** — remove anything that fails
-6. **Run the validator** — `python scripts/validate_context_file.py <file>`
+6. **Run the validator** — `python .agents/skills/agents-md-writer/scripts/validate_context_file.py <file>`
 7. **Check each line**: "Would an agent fail without this specific instruction?" If no, cut it.
 8. **Set up multi-tool strategy** — symlinks, imports, tool-specific files as needed
 9. **Save the file(s)** to the repo root
@@ -339,18 +319,15 @@ Before finalizing, verify:
 # myproject — Agent Instructions
 
 ## Critical Commands
-
 - Install: `uv sync --all-extras`
 - Test: `uv run pytest tests/ -x --tb=short`
 - Lint: `uv run ruff check --fix . && uv run ruff format .`
 
 ## Testing
-
 - Run `docker compose up -d` before integration tests (tests/integration/)
 - Generate test fixtures with `python scripts/gen_fixtures.py` after modifying any schema
 
 ## Gotchas
-
 - `src/generated/` is auto-generated from protobuf — edit `.proto` files in `proto/` instead
 - The `LEGACY_MODE` env var must be unset for new tests (some old tests set it)
 - Python 3.12+ required — `match` statements are used throughout
@@ -373,12 +350,10 @@ project-root/
 ```
 
 CLAUDE.md contents:
-
 ```markdown
 @AGENTS.md
 
 ## Claude-Specific
-
 - Run `uv run pre-commit run --all-files` before committing
 ```
 
@@ -388,18 +363,15 @@ CLAUDE.md contents:
 # MyProject
 
 ## Overview
-
 MyProject is a web application built with FastAPI and PostgreSQL...
 
 ## Project Structure
-
 - `src/` — Source code
   - `src/api/` — API endpoints
   - `src/models/` — Database models
-    ...
+...
 
 ## Development Guidelines
-
 - Write clean, readable code
 - Follow PEP 8 style guidelines
 - Add type hints to all functions
