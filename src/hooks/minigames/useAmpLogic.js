@@ -7,7 +7,7 @@ export function useAmpLogic() {
   const { completeAmpCalibration } = useGameState()
 
   const [dialValue, setDialValue] = useState(500)
-  const [targetValue, setTargetValue] = useState(500)
+  const [targetValue, setTargetValue] = useState(() => Math.floor(Math.random() * 800) + 100)
   const [timeLeft, setTimeLeft] = useState(MINIGAME_DURATION)
   const [score, setScore] = useState(100)
   const [isGameOver, setIsGameOver] = useState(false)
@@ -27,11 +27,6 @@ export function useAmpLogic() {
     targetValueRef.current = targetValue
   }, [targetValue])
 
-  // Initialize Target
-  useEffect(() => {
-    setTargetValue(Math.floor(Math.random() * 800) + 100)
-  }, [])
-
   const handleComplete = useCallback(() => {
     if (isCompleteRef.current) return
     isCompleteRef.current = true
@@ -41,7 +36,7 @@ export function useAmpLogic() {
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback((deltaMS) => {
-    if (isCompleteRef.current) return
+    if (isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0) return
 
     const deltaSec = deltaMS / 1000
 
