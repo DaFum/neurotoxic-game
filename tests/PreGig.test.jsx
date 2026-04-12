@@ -150,7 +150,7 @@ describe('PreGig', () => {
     fireEvent.click(startBtn)
 
     // Needs to wait for async click handler
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await new Promise(resolve => setTimeout(resolve, 10))
 
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
@@ -166,7 +166,7 @@ describe('PreGig', () => {
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await new Promise(resolve => setTimeout(resolve, 10))
 
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
@@ -185,7 +185,7 @@ describe('PreGig', () => {
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await new Promise(resolve => setTimeout(resolve, 10))
 
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
@@ -204,7 +204,7 @@ describe('PreGig', () => {
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await new Promise(resolve => setTimeout(resolve, 10))
 
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
@@ -264,7 +264,7 @@ describe('PreGig', () => {
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await new Promise(resolve => setTimeout(resolve, 10))
 
     expect(mockUseGameState.addToast).not.toHaveBeenCalledWith(
       'ui:pregig.toasts.harmonyLow',
@@ -323,7 +323,7 @@ describe('PreGig', () => {
 
       await expect(async () => {
         fireEvent.click(startBtn)
-        await new Promise(resolve => setTimeout(resolve, 0))
+        await new Promise(resolve => setTimeout(resolve, 10))
       }).not.toThrow()
     } finally {
       sessionStorage.setItem = originalSetItem
