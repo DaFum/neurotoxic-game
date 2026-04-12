@@ -60,11 +60,15 @@ export class AmpStageController extends BaseStageController {
   }
 
   drawWaves() {
-    if (!this.waveGraphics || !this.app) return
+    if (!this.waveGraphics || !this.app || !this.app.screen) return
 
     this.waveGraphics.clear()
+
     const width = this.app.screen.width
     const height = this.app.screen.height
+
+    if (width <= 0 || height <= 0) return
+
     const centerY = height / 2
 
     // Determine if frequencies match within tolerance
