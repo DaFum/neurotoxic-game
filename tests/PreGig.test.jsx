@@ -137,12 +137,12 @@ describe('PreGig', () => {
     expect(callArgs).toEqual({ soundcheck: true })
   })
 
-  test('gives both minigames a 50% chance to start', async () => {
+  test('gives all minigames a 33% chance to start', async () => {
     // We need to set up a valid setlist so the start button is enabled
     mockUseGameState.setlist = [{ id: 'song1' }]
 
     // Test Roadie Minigame (secureRandom < 0.5)
-    vi.mocked(getSafeRandom).mockReturnValue(0.4)
+    vi.mocked(getSafeRandom).mockReturnValue(0.2)
 
     const { findByText } = render(React.createElement(PreGig))
 
@@ -156,11 +156,11 @@ describe('PreGig', () => {
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
   })
 
-  test('gives kabelsalat minigame a 50% chance to start', async () => {
+  test('gives kabelsalat minigame a 33% chance to start', async () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
 
     // Test Kabelsalat Minigame (secureRandom >= 0.5)
-    vi.mocked(getSafeRandom).mockReturnValue(0.6)
+    vi.mocked(getSafeRandom).mockReturnValue(0.5)
 
     const { findByText } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)
@@ -198,7 +198,7 @@ describe('PreGig', () => {
     sessionStorage.setItem('neurotoxic_last_minigame', 'kabelsalat')
 
     // 0.6 is < 0.75 threshold, so Roadie should be picked
-    vi.mocked(getSafeRandom).mockReturnValue(0.6)
+    vi.mocked(getSafeRandom).mockReturnValue(0.2)
 
     const { findByText } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)
