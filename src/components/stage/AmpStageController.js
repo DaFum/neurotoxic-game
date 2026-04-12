@@ -65,7 +65,16 @@ export class AmpStageController extends BaseStageController {
     const height = this.app.screen.height
     const centerY = height / 2
 
-    // Draw Target Wave (Red-ish)
+    // Determine if frequencies match within tolerance
+    const tolerance = 50
+    const diff = Math.abs(this.targetFreq - this.currentFreq)
+    const isMatching = diff <= tolerance
+
+    const targetColor = isMatching
+      ? getPixiColorFromToken('--toxic-green')
+      : getPixiColorFromToken('--blood-red')
+
+    // Draw Target Wave
     this.waveGraphics.moveTo(0, centerY)
 
     const targetPeriod = width / (this.targetFreq / 50 + 1)
@@ -73,9 +82,9 @@ export class AmpStageController extends BaseStageController {
       const y = centerY + Math.sin(x / targetPeriod + this.time) * 100
       this.waveGraphics.lineTo(x, y)
     }
-    this.waveGraphics.stroke({ width: 2, color: getPixiColorFromToken('--blood-red'), alpha: 0.5 })
+    this.waveGraphics.stroke({ width: 2, color: targetColor, alpha: isMatching ? 0.8 : 0.5 })
 
-    // Draw Current Wave (Green)
+    // Draw Current Wave (Always Green)
     this.waveGraphics.moveTo(0, centerY)
 
     const currentPeriod = width / (this.currentFreq / 50 + 1)
@@ -93,11 +102,11 @@ export class AmpStageController extends BaseStageController {
 
   dispose() {
     if (this.waveGraphics) {
-      this.waveGraphics.destroy()
+      this.waveGraphics.destroy({ children: true })
       this.waveGraphics = null
     }
     if (this.bg) {
-      this.bg.destroy()
+      this.bg.destroy({ children: true })
       this.bg = null
     }
     super.dispose()

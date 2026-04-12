@@ -13,6 +13,14 @@ export const AmpControls = memo(function AmpControls({
     setDialValue(Number(e.target.value))
   }, [setDialValue])
 
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowLeft') {
+      setDialValue(prev => Math.max(0, prev - 10))
+    } else if (e.key === 'ArrowRight') {
+      setDialValue(prev => Math.min(1000, prev + 10))
+    }
+  }, [setDialValue])
+
   return (
     <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-4 w-full max-w-md px-4'>
       <div className='flex justify-between w-full text-toxic-green font-mono text-sm'>
@@ -25,6 +33,7 @@ export const AmpControls = memo(function AmpControls({
         max="1000"
         value={dialValue}
         onChange={handleDialChange}
+        onKeyDown={handleKeyDown}
         className="w-full h-4 bg-void-black border-2 border-toxic-green appearance-none cursor-pointer
                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-12 [&::-webkit-slider-thumb]:bg-toxic-green
                    [&::-moz-range-thumb]:w-8 [&::-moz-range-thumb]:h-12 [&::-moz-range-thumb]:bg-toxic-green [&::-moz-range-thumb]:border-none [&::-moz-range-track]:bg-transparent
