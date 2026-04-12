@@ -2,12 +2,12 @@ import { expect, test } from 'vitest'
 
 import { act, render } from '@testing-library/react'
 import { useEffect } from 'react'
+import {
+  GameStateProvider,
+  useGameState
+} from '../../src/context/GameState.jsx'
 
 test('GameState context functions stability', async _t => {
-  // Dynamic import to ensure globals are set
-  const { GameStateProvider, useGameState } =
-    await import('../../src/context/GameState.jsx')
-
   let renderCount = 0
   let changeSceneRef = null
 

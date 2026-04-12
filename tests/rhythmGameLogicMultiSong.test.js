@@ -98,22 +98,37 @@ mock.module('../src/utils/hecklerLogic.js', {
     trySpawnProjectile: mock.fn(() => null)
   }
 })
+const _GameError = class GameError extends Error {}
 mock.module('../src/utils/errorHandler.js', {
   namedExports: {
     handleError: mock.fn(),
-    GameError: class GameError extends Error {},
-    AudioError: class AudioError extends GameError {},
-    StateError: class StateError extends GameError {}
+    GameError: _GameError,
+    AudioError: class AudioError extends _GameError {},
+    StateError: class StateError extends _GameError {}
   }
 })
 mock.module('../src/utils/logger.js', {
   namedExports: {
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
-    logger: { debug: mock.fn(), info: mock.fn(), warn: mock.fn(), error: mock.fn() }
+    logger: {
+      debug: mock.fn(),
+      info: mock.fn(),
+      warn: mock.fn(),
+      error: mock.fn()
+    }
   }
 })
 mock.module('../src/data/songs.js', {
   namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
+})
+// Stable t function prevents initializeGigState from being recreated on each render
+const _stableT = key => key
+mock.module('react-i18next', {
+  namedExports: {
+    useTranslation: () => ({ t: _stableT, i18n: { language: 'en' } }),
+    Trans: ({ i18nKey }) => i18nKey,
+    initReactI18next: { type: '3rdParty', init: () => {} }
+  }
 })
 
 describe('useRhythmGameLogic Multi-Song Support', () => {

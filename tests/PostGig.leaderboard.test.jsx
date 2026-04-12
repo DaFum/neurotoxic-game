@@ -6,6 +6,44 @@ import { GAME_PHASES } from '../src/context/gameConstants'
 import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
 
+// Mock lazy-loaded phase components to prevent Suspense timeout in tests
+vi.mock('../src/components/postGig/ReportPhase', () => ({
+  ReportPhase: ({ onNext }) => (
+    <div>
+      <button onClick={onNext}>Continue to Socials</button>
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/SocialPhase', () => ({
+  SocialPhase: ({ options, onSelect }) => (
+    <div>
+      {options.map(opt => (
+        <button key={opt.id} onClick={() => onSelect(opt)}>
+          {opt.name}
+        </button>
+      ))}
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/DealsPhase', () => ({
+  DealsPhase: ({ onSkip }) => (
+    <div>
+      <button onClick={onSkip}>Skip Deals</button>
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/CompletePhase', () => ({
+  CompletePhase: ({ result, onContinue }) => (
+    <div>
+      {result && <div>{result.message}</div>}
+      <button onClick={onContinue}>Back to Tour &gt;</button>
+    </div>
+  )
+}))
+
 // Mock dependencies
 
 const mocks = vi.hoisted(() => ({

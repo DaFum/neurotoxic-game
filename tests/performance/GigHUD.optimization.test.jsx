@@ -1,69 +1,63 @@
 import { afterEach, expect, test, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
-import React from 'react'
 
 // Mock dependencies
 vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
 
-// Mock sub-components with tracking
-// We must wrap mocks in React.memo to simulate the real components behavior,
-// otherwise they will re-render on every parent render regardless of props.
-const ScoreDisplaySpy = vi.fn(() => <div data-testid='score-display' />)
-const ScoreDisplayMock = React.memo(ScoreDisplaySpy)
+// Create spies with vi.hoisted so they're accessible in vi.mock factories
+// (vi.mock factories are hoisted before const declarations, causing TDZ otherwise)
+const ScoreDisplaySpy = vi.hoisted(() => vi.fn(() => null))
+const HealthBarSpy = vi.hoisted(() => vi.fn(() => null))
+const ComboDisplaySpy = vi.hoisted(() => vi.fn(() => null))
+const OverloadMeterSpy = vi.hoisted(() => vi.fn(() => null))
+const LaneInputAreaSpy = vi.hoisted(() => vi.fn(() => null))
+const ControlsHintSpy = vi.hoisted(() => vi.fn(() => null))
+const PauseButtonSpy = vi.hoisted(() => vi.fn(() => null))
+const ToxicModeFlashSpy = vi.hoisted(() => vi.fn(() => null))
+const GameOverOverlaySpy = vi.hoisted(() => vi.fn(() => null))
 
-const HealthBarSpy = vi.fn(() => <div data-testid='health-bar' />)
-const HealthBarMock = React.memo(HealthBarSpy)
+// Use async factories so we can import React for React.memo wrapping,
+// which is needed to simulate the real components' memoization behaviour.
+vi.mock('../../src/components/hud/ScoreDisplay.jsx', async () => {
+  const { default: React } = await import('react')
+  return { ScoreDisplay: React.memo(ScoreDisplaySpy) }
+})
+vi.mock('../../src/components/hud/HealthBar.jsx', async () => {
+  const { default: React } = await import('react')
+  return { HealthBar: React.memo(HealthBarSpy) }
+})
+vi.mock('../../src/components/hud/ComboDisplay.jsx', async () => {
+  const { default: React } = await import('react')
+  return { ComboDisplay: React.memo(ComboDisplaySpy) }
+})
+vi.mock('../../src/components/hud/OverloadMeter.jsx', async () => {
+  const { default: React } = await import('react')
+  return { OverloadMeter: React.memo(OverloadMeterSpy) }
+})
+vi.mock('../../src/components/hud/LaneInputArea.jsx', async () => {
+  const { default: React } = await import('react')
+  return { LaneInputArea: React.memo(LaneInputAreaSpy) }
+})
+vi.mock('../../src/components/hud/ControlsHint.jsx', async () => {
+  const { default: React } = await import('react')
+  return { ControlsHint: React.memo(ControlsHintSpy) }
+})
+vi.mock('../../src/components/hud/PauseButton.jsx', async () => {
+  const { default: React } = await import('react')
+  return { PauseButton: React.memo(PauseButtonSpy) }
+})
+vi.mock('../../src/components/hud/ToxicModeFlash.jsx', async () => {
+  const { default: React } = await import('react')
+  return { ToxicModeFlash: React.memo(ToxicModeFlashSpy) }
+})
+vi.mock('../../src/components/hud/GameOverOverlay.jsx', async () => {
+  const { default: React } = await import('react')
+  return { GameOverOverlay: React.memo(GameOverOverlaySpy) }
+})
 
-const ComboDisplaySpy = vi.fn(() => <div data-testid='combo-display' />)
-const ComboDisplayMock = React.memo(ComboDisplaySpy)
-
-const OverloadMeterSpy = vi.fn(() => <div data-testid='overload-meter' />)
-const OverloadMeterMock = React.memo(OverloadMeterSpy)
-
-const LaneInputAreaSpy = vi.fn(() => <div data-testid='lane-input-area' />)
-const LaneInputAreaMock = React.memo(LaneInputAreaSpy)
-
-const ControlsHintSpy = vi.fn(() => <div data-testid='controls-hint' />)
-const ControlsHintMock = React.memo(ControlsHintSpy)
-
-const PauseButtonSpy = vi.fn(() => <div data-testid='pause-button' />)
-const PauseButtonMock = React.memo(PauseButtonSpy)
-
-const ToxicModeFlashSpy = vi.fn(() => <div data-testid='toxic-mode-flash' />)
-const ToxicModeFlashMock = React.memo(ToxicModeFlashSpy)
-
-const GameOverOverlaySpy = vi.fn(() => <div data-testid='game-over-overlay' />)
-const GameOverOverlayMock = React.memo(GameOverOverlaySpy)
-
-vi.mock('../../src/components/hud/ScoreDisplay.jsx', () => ({
-  ScoreDisplay: ScoreDisplayMock
-}))
-vi.mock('../../src/components/hud/HealthBar.jsx', () => ({
-  HealthBar: HealthBarMock
-}))
-vi.mock('../../src/components/hud/ComboDisplay.jsx', () => ({
-  ComboDisplay: ComboDisplayMock
-}))
-vi.mock('../../src/components/hud/OverloadMeter.jsx', () => ({
-  OverloadMeter: OverloadMeterMock
-}))
-vi.mock('../../src/components/hud/LaneInputArea.jsx', () => ({
-  LaneInputArea: LaneInputAreaMock
-}))
-vi.mock('../../src/components/hud/ControlsHint.jsx', () => ({
-  ControlsHint: ControlsHintMock
-}))
-vi.mock('../../src/components/hud/PauseButton.jsx', () => ({
-  PauseButton: PauseButtonMock
-}))
-vi.mock('../../src/components/hud/ToxicModeFlash.jsx', () => ({
-  ToxicModeFlash: ToxicModeFlashMock
-}))
-vi.mock('../../src/components/hud/GameOverOverlay.jsx', () => ({
-  GameOverOverlay: GameOverOverlayMock
-}))
+import { GigHUD } from '../../src/components/GigHUD.jsx'
 
 afterEach(() => {
   cleanup()
@@ -71,8 +65,6 @@ afterEach(() => {
 })
 
 test('GigHUD: updates only relevant components when props change', async () => {
-  const { GigHUD } = await import('../../src/components/GigHUD.jsx')
-
   const initialStats = {
     score: 1000,
     combo: 10,
