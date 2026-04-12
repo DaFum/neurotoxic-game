@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
+import { AMP_CALIBRATION_TOLERANCE } from '../../context/gameConstants'
 
 export class AmpStageController extends BaseStageController {
   constructor(options) {
@@ -72,9 +73,8 @@ export class AmpStageController extends BaseStageController {
     const centerY = height / 2
 
     // Determine if frequencies match within tolerance
-    const tolerance = 50
     const diff = Math.abs(this.targetFreq - this.currentFreq)
-    const isMatching = diff <= tolerance
+    const isMatching = diff <= AMP_CALIBRATION_TOLERANCE
 
     const targetColor = isMatching
       ? getPixiColorFromToken('--toxic-green')

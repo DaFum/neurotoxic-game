@@ -22,6 +22,8 @@ export const MINIGAME_TYPES = {
   AMP_CALIBRATION: 'AMP_CALIBRATION'
 }
 
+export const AMP_CALIBRATION_TOLERANCE = 50
+
 export const DEFAULT_MINIGAME_STATE = {
   active: false,
   type: null,
