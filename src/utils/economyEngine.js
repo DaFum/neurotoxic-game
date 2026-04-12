@@ -698,6 +698,37 @@ export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {
 }
 
 /**
+ * Calculates outcome for Amp Calibration minigame
+ * @param {number} score - 0 to 100
+ * @param {Object} bandState
+ * @returns {Object} { stress, reward }
+ */
+export const calculateAmpCalibrationResult = (score, bandState) => {
+  let numScore = Number(score)
+  if (!Number.isFinite(numScore)) {
+    numScore = 0
+  }
+  const safeScore = Math.max(0, Math.min(100, numScore))
+  let stress = 0
+  let reward = 0
+
+  if (safeScore < 50) {
+    // Failure or poor performance
+    stress = Math.floor((50 - safeScore) / 2)
+  } else {
+    // Success
+    reward = Math.floor(safeScore)
+
+    // Tech Wizard trait increases rewards
+    if (bandHasTrait(bandState, 'tech_wizard')) {
+      reward = Math.floor(reward * 1.5)
+    }
+  }
+
+  return { stress, reward }
+}
+
+/**
  * Calculates outcome for Kabelsalat minigame
  * @param {Object} results - { isPoweredOn: boolean, timeLeft: number }
  * @param {Object} bandState

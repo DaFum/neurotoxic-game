@@ -18,8 +18,11 @@ export const GAME_PHASES = Object.freeze({
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
   ROADIE: 'ROADIE',
-  KABELSALAT: 'KABELSALAT'
+  KABELSALAT: 'KABELSALAT',
+  AMP_CALIBRATION: 'AMP_CALIBRATION'
 }
+
+export const AMP_CALIBRATION_TOLERANCE = 50
 
 export const DEFAULT_MINIGAME_STATE = {
   active: false,

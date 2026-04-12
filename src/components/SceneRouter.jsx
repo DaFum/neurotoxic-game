@@ -51,6 +51,12 @@ const KabelsalatScene = lazy(
     'KabelsalatScene'
   )
 )
+const AmpCalibrationScene = lazy(
+  createNamedLazyLoader(
+    () => import('../scenes/AmpCalibrationScene.jsx'),
+    'AmpCalibrationScene'
+  )
+)
 const Settings = lazy(
   createNamedLazyLoader(() => import('../scenes/Settings.jsx'), 'Settings')
 )
@@ -93,11 +99,13 @@ export function SceneRouter({ currentScene, minigameType }) {
     case GAME_PHASES.PRE_GIG:
       return <PreGig />
     case GAME_PHASES.PRE_GIG_MINIGAME:
-      return minigameType === MINIGAME_TYPES.KABELSALAT ? (
-        <KabelsalatScene />
-      ) : (
-        <RoadieRunScene />
-      )
+      if (minigameType === MINIGAME_TYPES.KABELSALAT) {
+        return <KabelsalatScene />
+      }
+      if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
+        return <AmpCalibrationScene />
+      }
+      return <RoadieRunScene />
     case GAME_PHASES.GIG:
     case GAME_PHASES.PRACTICE:
       return <Gig />

@@ -94,6 +94,7 @@ export const PreGig = () => {
     addToast,
     startRoadieMinigame,
     startKabelsalatMinigame,
+    startAmpCalibration,
     isScreenshotMode
   } = useGameState()
   const [isStarting, setIsStarting] = useState(false)
@@ -228,17 +229,29 @@ export const PreGig = () => {
         // Ignore SecurityError or other storage errors
       }
 
-      let roadieChance = 0.5
-
-      if (lastMinigame === 'roadie') {
-        roadieChance = 0.25 // Reduce chance if played last
-      } else if (lastMinigame === 'kabelsalat') {
-        roadieChance = 0.75 // Increase chance if Kabelsalat played last
+      // Define weights for the three minigames
+      let weights = {
+        roadie: 1,
+        kabelsalat: 1,
+        amp: 1
       }
 
-      const randomVal = getSafeRandom()
+      // Reduce the weight of the last played minigame to prevent frequent repeats
+      if (lastMinigame && weights[lastMinigame] !== undefined) {
+        weights[lastMinigame] = 0.2
+      }
 
-      const chosenGame = randomVal < roadieChance ? 'roadie' : 'kabelsalat'
+      const totalWeight = weights.roadie + weights.kabelsalat + weights.amp
+      const randomVal = getSafeRandom() * totalWeight
+
+      let chosenGame = 'roadie'
+      if (randomVal < weights.roadie) {
+        chosenGame = 'roadie'
+      } else if (randomVal < weights.roadie + weights.kabelsalat) {
+        chosenGame = 'kabelsalat'
+      } else {
+        chosenGame = 'amp'
+      }
 
       lastMinigameFallback = chosenGame
       try {
@@ -249,8 +262,10 @@ export const PreGig = () => {
 
       if (chosenGame === 'roadie') {
         startRoadieMinigame(gigId)
-      } else {
+      } else if (chosenGame === 'kabelsalat') {
         startKabelsalatMinigame(gigId)
+      } else {
+        startAmpCalibration(gigId)
       }
     } catch (err) {
       setIsStarting(false)
@@ -263,6 +278,7 @@ export const PreGig = () => {
     currentGig?.id,
     startRoadieMinigame,
     startKabelsalatMinigame,
+    startAmpCalibration,
     t,
     addToast
   ])

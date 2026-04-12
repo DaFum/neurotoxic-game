@@ -33,7 +33,9 @@ import {
   handleStartRoadieMinigame,
   handleCompleteRoadieMinigame,
   handleStartKabelsalatMinigame,
-  handleCompleteKabelsalatMinigame
+  handleCompleteKabelsalatMinigame,
+  handleStartAmpCalibration,
+  handleCompleteAmpCalibration
 } from './reducers/minigameReducer.js'
 import {
   handleClinicHeal,
@@ -91,6 +93,8 @@ const reducerMap = {
   [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame,
   [ActionTypes.START_KABELSALAT_MINIGAME]: handleStartKabelsalatMinigame,
   [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
+  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration,
+  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
   [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,

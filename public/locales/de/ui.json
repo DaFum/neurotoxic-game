@@ -257,10 +257,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -283,10 +295,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -934,5 +958,35 @@
   "clinic.notEnoughMoney": "Nicht genug Geld",
   "clinic.fullyHealed": "Bandmitglied ist bereits vollständig geheilt",
   "clinic.notEnoughFame": "Nicht genug Ruhm",
-  "clinic.alreadyEnhanced": "Bandmitglied hat diese Erweiterung bereits"
+  "clinic.alreadyEnhanced": "Bandmitglied hat diese Erweiterung bereits",
+  "minigames.amp.title": "AMP_KALIBRIERUNG",
+  "minigames.amp.rulesTitle": "KALIBRIERUNGS_PROTOKOLL",
+  "minigames.amp.rules.time": "Passe die Frequenz innerhalb der Zeit an.",
+  "minigames.amp.rules.penalty": "Hohe Abweichungen verursachen extremen Stress.",
+  "minigames.amp.status": "Status",
+  "minigames.amp.statusPending": "RÜCKKOPPLUNG DETEKTIERT",
+  "minigames.amp.statusConnected": "ANGEPASST",
+  "minigames.amp.statusFailed": "TROMMELFELL GEPLATZT",
+  "minigames.amp.success": "KALIBRIERUNG ABGESCHLOSSEN",
+  "minigames.amp.systemShock": "RÜCKKOPPLUNGSSCHLEIFE",
+  "minigames.amp.timeUp": "ZEIT ABGELAUFEN",
+  "minigames.amp.managerMad": "Die Rückkopplung hat die Boxen zerstört.",
+  "minigames.amp.ampsReady": "Der Ton ist sauber. Bereit zum Schreddern.",
+  "minigames.amp.tMinus": "T-MINUS",
+  "minigames.amp.timeValue": "{{count}}s",
+  "minigames.amp.timeValue_one": "{{count}}s",
+  "minigames.amp.timeValue_other": "{{count}}s",
+  "minigames.amp.hud.target": "ZIEL: {{freq}}Hz",
+  "minigames.amp.hud.current": "IST: {{freq}}Hz",
+  "minigames.amp.hud.match": "ÜBEREINSTIMMUNG: {{pct}}%",
+  "minigames.amp.hud.time": "ZEIT:",
+  "minigames.amp.hud.stability": "STABILITÄT:",
+  "minigames.amp.completion.title": "AMP KALIBRIERT",
+  "minigames.amp.completion.button": "GIG STARTEN",
+  "minigames.amp.completion.stability": "Erreichte Stabilität: {{score}}%",
+  "minigames.amp.controls.min": "0Hz",
+  "minigames.amp.controls.max": "1000Hz",
+  "minigames.amp.controls.dialAria": "Frequenzregler",
+  "minigames.amp.controls.instruction": "PASSE DIE FREQUENZ AN",
+  "minigames.amp.controls.dialValue": "{{value}} Hz"
 }
