@@ -54,31 +54,33 @@ jobs:
             const fs = require('fs');
             const marker = '<!-- test-results-node: do-not-edit -->';
             const raw = fs.readFileSync('test-output.txt', 'utf8');
+            const MAX_FAILURES = 50;
 
             // node:test TAP output marks failures with "not ok" lines
             const failLines = raw.split('\n').filter(l =>
               /^not ok\b/.test(l) || /^\s+✖|FAIL/.test(l)
             );
 
-            const truncated = raw.length > 30000
-              ? raw.slice(raw.length - 30000)
-              : raw;
+            const totalFails = failLines.length;
+            const shownFails = failLines.slice(0, MAX_FAILURES);
 
             let body = `${marker}\n`;
             body += `## ❌ Node.js Tests Failed\n\n`;
-            if (failLines.length) {
-              body += `**Failed tests (${failLines.length}):**\n\`\`\`\n`;
-              body += failLines.join('\n');
+            if (shownFails.length) {
+              body += `**Failed tests (${totalFails}):**\n\`\`\`\n`;
+              body += shownFails.join('\n');
+              if (totalFails > MAX_FAILURES) {
+                body += `\n… and ${totalFails - MAX_FAILURES} more failures omitted`;
+              }
               body += `\n\`\`\`\n\n`;
             }
-            body += `<details><summary>Full output (last 30 000 chars)</summary>\n\n`;
-            body += `\`\`\`\n${truncated}\n\`\`\`\n</details>\n`;
+            body += `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full output.\n`;
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const issue_number = context.issue.number;
 
-            const { data: comments } = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
               issue_number,
@@ -143,31 +145,33 @@ jobs:
             const fs = require('fs');
             const marker = '<!-- test-results-vitest: do-not-edit -->';
             const raw = fs.readFileSync('vitest-output.txt', 'utf8');
+            const MAX_FAILURES = 50;
 
             // Vitest marks failures with FAIL and ✕/× lines
             const failLines = raw.split('\n').filter(l =>
               /FAIL\s/.test(l) || /^\s+[✕×✗]/.test(l) || /AssertionError|Error:/.test(l)
             );
 
-            const truncated = raw.length > 30000
-              ? raw.slice(raw.length - 30000)
-              : raw;
+            const totalFails = failLines.length;
+            const shownFails = failLines.slice(0, MAX_FAILURES);
 
             let body = `${marker}\n`;
             body += `## ❌ Vitest Failed\n\n`;
-            if (failLines.length) {
-              body += `**Failed tests (${failLines.length}):**\n\`\`\`\n`;
-              body += failLines.join('\n');
+            if (shownFails.length) {
+              body += `**Failed tests (${totalFails}):**\n\`\`\`\n`;
+              body += shownFails.join('\n');
+              if (totalFails > MAX_FAILURES) {
+                body += `\n… and ${totalFails - MAX_FAILURES} more failures omitted`;
+              }
               body += `\n\`\`\`\n\n`;
             }
-            body += `<details><summary>Full output (last 30 000 chars)</summary>\n\n`;
-            body += `\`\`\`\n${truncated}\n\`\`\`\n</details>\n`;
+            body += `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full output.\n`;
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const issue_number = context.issue.number;
 
-            const { data: comments } = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
               issue_number,
