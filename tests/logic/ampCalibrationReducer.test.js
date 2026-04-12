@@ -1,5 +1,4 @@
-import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import { describe, it, expect } from 'vitest'
 import {
   handleStartAmpCalibration,
   handleCompleteAmpCalibration
@@ -16,11 +15,11 @@ describe('minigameReducer - Amp Calibration', () => {
     const payload = { gigId: 'gig_test_1' }
     const result = handleStartAmpCalibration(initialState, payload)
 
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
-    assert.strictEqual(result.minigame.active, true)
-    assert.strictEqual(result.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
-    assert.strictEqual(result.minigame.gigId, 'gig_test_1')
-    assert.strictEqual(result.minigame.score, 0)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(true)
+    expect(result.minigame.type).toBe(MINIGAME_TYPES.AMP_CALIBRATION)
+    expect(result.minigame.gigId).toBe('gig_test_1')
+    expect(result.minigame.score).toBe(0)
   })
 
   it('should complete minigame and clamp bad scores with high stress penalty', () => {
@@ -34,14 +33,14 @@ describe('minigameReducer - Amp Calibration', () => {
     // A low score (< 50) means stress penalty
     const result = handleCompleteAmpCalibration(state, { score: 10 })
 
-    assert.strictEqual(result.minigame.active, false)
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(false)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
 
     // Low score: stress goes up (harmony goes down)
     // economyEngine says: < 50 score -> stress = Math.floor((50 - 10) / 2) = 20
-    assert.strictEqual(result.band.harmony, Math.max(1, 50 - 20))
+    expect(result.band.harmony).toBe(Math.max(1, 50 - 20))
     // < 50 score -> reward = 0
-    assert.strictEqual(result.player.money, 100)
+    expect(result.player.money).toBe(100)
   })
 
   it('should complete minigame and award bonus for perfect score', () => {
@@ -55,13 +54,13 @@ describe('minigameReducer - Amp Calibration', () => {
     // A perfect score (100) means no stress, high reward
     const result = handleCompleteAmpCalibration(state, { score: 100 })
 
-    assert.strictEqual(result.minigame.active, false)
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(false)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
 
     // Perfect score (100) -> stress = 0
-    assert.strictEqual(result.band.harmony, 50)
+    expect(result.band.harmony).toBe(50)
     // 100 score -> reward = 100
-    assert.strictEqual(result.player.money, 200)
+    expect(result.player.money).toBe(200)
   })
 
   it('should complete minigame and clamp upper bounds properly', () => {
@@ -75,13 +74,13 @@ describe('minigameReducer - Amp Calibration', () => {
     // 80 score -> reward = 80
     const result = handleCompleteAmpCalibration(state, { score: 80 })
 
-    assert.strictEqual(result.minigame.active, false)
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(false)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
 
     // harmony remains at 95 (no stress, no healing)
-    assert.strictEqual(result.band.harmony, 95)
+    expect(result.band.harmony).toBe(95)
     // 100 + 80 = 180 money
-    assert.strictEqual(result.player.money, 180)
+    expect(result.player.money).toBe(180)
   })
 
   it('should complete minigame and act appropriately on exact threshold score (50)', () => {
@@ -94,13 +93,13 @@ describe('minigameReducer - Amp Calibration', () => {
 
     const result = handleCompleteAmpCalibration(state, { score: 50 })
 
-    assert.strictEqual(result.minigame.active, false)
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(false)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
 
     // 50 score -> stress = 0
-    assert.strictEqual(result.band.harmony, 50)
+    expect(result.band.harmony).toBe(50)
     // 50 score -> reward = 50
-    assert.strictEqual(result.player.money, 150)
+    expect(result.player.money).toBe(150)
   })
 
   it('should clamp harmony to 1 when stress drops it below 1', () => {
@@ -114,10 +113,10 @@ describe('minigameReducer - Amp Calibration', () => {
     // score: 10 -> stress = 20. 5 - 20 = -15 -> clamps to 1
     const result = handleCompleteAmpCalibration(state, { score: 10 })
 
-    assert.strictEqual(result.minigame.active, false)
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(false)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
 
-    assert.strictEqual(result.band.harmony, 1)
+    expect(result.band.harmony).toBe(1)
   })
 
   it('should apply Tech Wizard trait reward multiplier', () => {
@@ -134,9 +133,9 @@ describe('minigameReducer - Amp Calibration', () => {
     // score 100 -> base reward 100 -> tech wizard 1.5x -> 150
     const result = handleCompleteAmpCalibration(state, { score: 100 })
 
-    assert.strictEqual(result.minigame.active, false)
-    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.minigame.active).toBe(false)
+    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
 
-    assert.strictEqual(result.player.money, 250)
+    expect(result.player.money).toBe(250)
   })
 })

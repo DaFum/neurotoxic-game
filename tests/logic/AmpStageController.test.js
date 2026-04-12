@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createAmpStageController } from '../../src/components/stage/AmpStageController'
+import * as PIXI from 'pixi.js'
 
 // Mock dependencies
 vi.mock('pixi.js', () => {
@@ -71,17 +72,24 @@ describe('AmpStageController', () => {
     })
   })
 
+  afterEach(() => {
+    if (controller) {
+      controller.dispose()
+    }
+    vi.clearAllMocks()
+  })
+
   it('setup initializes bg and waveGraphics', async () => {
     await controller.init()
 
-    expect(controller.bg).toBeDefined()
-    expect(controller.waveGraphics).toBeDefined()
+    expect(controller.bg).toBeInstanceOf(PIXI.Graphics)
+    expect(controller.waveGraphics).toBeInstanceOf(PIXI.Graphics)
   })
 
   it('update applies sanitized values and draws waves', async () => {
     await controller.init()
 
-    expect(controller.targetFreq).toBe(500)
+    expect(controller.targetFreq).toBe(600) // Initial sync inside setup reads the gameStateRef
 
     controller.handleTicker({ deltaMS: 16 })
 

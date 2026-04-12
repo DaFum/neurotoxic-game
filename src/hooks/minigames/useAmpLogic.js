@@ -14,7 +14,7 @@ export function useAmpLogic() {
 
   const isCompleteRef = useRef(false)
   const accumulatedScoreRef = useRef(0)
-  const ticksRef = useRef(0)
+  const accumulatedMsRef = useRef(0)
   const dialValueRef = useRef(dialValue)
   const targetValueRef = useRef(targetValue)
   const gameStateRef = useRef(null)
@@ -65,10 +65,10 @@ export function useAmpLogic() {
     const diff = Math.abs(dialValueRef.current - targetValueRef.current)
     const currentScore = Math.max(0, 100 - (diff / 10)) // Max difference 1000 = 0 score
 
-    accumulatedScoreRef.current += currentScore
-    ticksRef.current += 1
+    accumulatedScoreRef.current += currentScore * deltaMS
+    accumulatedMsRef.current += deltaMS
 
-    setScore(accumulatedScoreRef.current / Math.max(1, ticksRef.current))
+    setScore(accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current))
   }, [handleComplete])
 
   const finishCalledRef = useRef(false)
@@ -77,7 +77,7 @@ export function useAmpLogic() {
     if (finishCalledRef.current) return
     finishCalledRef.current = true
 
-    const finalScore = accumulatedScoreRef.current / Math.max(1, ticksRef.current)
+    const finalScore = accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
     completeAmpCalibration(finalScore)
   }, [completeAmpCalibration])
 

@@ -20,19 +20,12 @@ export class AmpStageController extends BaseStageController {
     this.waveGraphics = new PIXI.Graphics()
     this.container.addChild(this.waveGraphics)
 
+    this.syncState()
     this.drawBackground()
     this.drawWaves()
   }
 
-  drawBackground() {
-    if (!this.bg || !this.app) return
-    this.bg.clear()
-    this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
-    this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
-  }
-
-  update(dt) {
-    // Read state from gameStateRef directly
+  syncState() {
     if (this.gameStateRef && this.gameStateRef.current) {
       const state = this.gameStateRef.current
       if (state.targetValue !== undefined) {
@@ -48,6 +41,17 @@ export class AmpStageController extends BaseStageController {
         }
       }
     }
+  }
+
+  drawBackground() {
+    if (!this.bg || !this.app) return
+    this.bg.clear()
+    this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
+    this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
+  }
+
+  update(dt) {
+    this.syncState()
 
     this.time += dt * 0.1
     this.drawWaves()
