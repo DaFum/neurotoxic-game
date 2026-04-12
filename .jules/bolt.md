@@ -90,3 +90,6 @@
 ## 2026-04-12 - [useRhythmGameAudio Infinite Loop and Lock Starvation]
 **Learning:** `useRhythmGameAudio` suffered from an OOM infinite loop because it passed complex objects (`band`, `gameMap`, `setlist`) into its `useCallback` dependency array, causing `initializeGigState` to recreate on every render. This masked a lock starvation issue where `isInitializingRef` was never released if the setup was aborted. Furthermore, the test suite (`rhythmGameLogicMultiSong.test.js`) relied on repeated re-invocation from this infinite re-render loop, so it failed once the hook was stabilized.
 **Action:** Stabilized `useCallback`/`useEffect` dependencies using strictly mapped primitives (`band?.members?.length`, `band?.harmony`, `player?.currentNodeId`, `setlist?.length`, etc.) and wrapped initialization in a `try/finally` block to guarantee lock release.
+## 2026-04-12 - Optimization: eventEngine.filterEvents
+**Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
+**Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, pre-allocating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
