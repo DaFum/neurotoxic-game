@@ -1,10 +1,6 @@
 ---
 name: agents-md-writer
 description: Write high-quality AGENTS.md, CLAUDE.md, or CODEX.md context files for code repositories. Use this skill whenever the user asks to create, write, generate, improve, or review a repository context file for coding agents — including any mention of "AGENTS.md", "CLAUDE.md", "CODEX.md", "GEMINI.md", ".cursorrules", "copilot-instructions.md", "context file for agents", "agent instructions", "coding agent setup", or requests like "help my AI agent understand this repo". Also trigger when users say things like "initialize agent config", "set up Claude Code for my project", "write instructions for Codex/Copilot", "make my repo AI-friendly", "migrate my .cursorrules", "sync my AI config across tools", or "validate my AGENTS.md". This skill is informed by peer-reviewed research on what actually helps coding agents solve tasks, and covers the full multi-tool ecosystem including Claude Code, Codex, Copilot, Cursor, Gemini CLI, Jules, and Windsurf.
-user-invocable: true
-metadata:
-  scope: user
-  version: "1.0.0"
 ---
 
 # AGENTS.md Writer
@@ -279,7 +275,7 @@ If the user has existing config files, read `references/migration-guide.md` for 
 After writing a context file, run the bundled validation script to catch common problems:
 
 ```bash
-python .agents/skills/agents-md-writer/scripts/validate_context_file.py <path-to-context-file> [--readme <path-to-readme>]
+python scripts/validate_context_file.py <path-to-context-file> [--readme <path-to-readme>]
 ```
 
 The validator checks for: codebase overviews, directory listings, README duplication, generic advice, technology descriptions, excessive word count, vague instructions, and discoverable commands.
@@ -293,7 +289,7 @@ If the user provides a repo path, run validation automatically after generating 
 3. **Identify non-obvious requirements** — things that meet the Golden Rule
 4. **Draft the file** — aim for 200-400 words, use the structure template
 5. **Review against "What to NEVER Include"** — remove anything that fails
-6. **Run the validator** — `python .agents/skills/agents-md-writer/scripts/validate_context_file.py <file>`
+6. **Run the validator** — `python scripts/validate_context_file.py <file>`
 7. **Check each line**: "Would an agent fail without this specific instruction?" If no, cut it.
 8. **Set up multi-tool strategy** — symlinks, imports, tool-specific files as needed
 9. **Save the file(s)** to the repo root
