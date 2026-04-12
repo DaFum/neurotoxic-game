@@ -91,7 +91,7 @@ export const useRhythmGameAudio = ({
         gigModifiers,
         currentGig?.songId,
         gameMap,
-        player?.currentNodeId,
+        player.currentNodeId,
         setlistFirstId
       )
       if (!physicsSetup) {

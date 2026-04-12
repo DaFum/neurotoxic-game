@@ -84,7 +84,6 @@ const mockErrorHandler = {
   }
 }
 const mockLogger = {
-  debug: mock.fn(),
   info: mock.fn(),
   warn: mock.fn(),
   error: mock.fn()
@@ -134,14 +133,10 @@ export const mockRhythmGameLogicModules = () => {
     namedExports: mockHecklerLogic
   })
   mock.module('../src/utils/errorHandler.js', {
-    namedExports: {
-      ...mockErrorHandler,
-      GameError: class GameError extends Error {},
-      StateError: class StateError extends Error {}
-    }
+    namedExports: { ...mockErrorHandler, StateError: class StateError extends Error {}, GameError: class GameError extends Error {} }
   })
   mock.module('../src/utils/logger.js', {
-    namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 } }
+    namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 } }
   })
   mock.module('../src/data/songs.js', {
     namedExports: {
