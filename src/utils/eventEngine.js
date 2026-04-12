@@ -612,19 +612,28 @@ export const eventEngine = {
   },
 
   selectEvent: selectEvent,
-  filterEvents: (pool, trigger, state) =>
-    pool.filter(e => {
+  filterEvents: (pool, trigger, state) => {
+    const result = []
+    for (let i = 0, len = pool.length; i < len; i++) {
+      const e = pool[i]
       // Match exact trigger OR 'random' events (eligible at any trigger point)
-      if (trigger && e.trigger !== trigger && e.trigger !== 'random')
-        return false
-      if (!e.condition) return true
+      if (trigger && e.trigger !== trigger && e.trigger !== 'random') {
+        continue
+      }
+      if (!e.condition) {
+        result.push(e)
+        continue
+      }
       try {
-        return e.condition(state)
+        if (e.condition(state)) {
+          result.push(e)
+        }
       } catch (err) {
         logger.error('EventEngine', `Condition failed for event ${e.id}`, err)
-        return false
       }
-    })
+    }
+    return result
+  }
 }
 
 /**
