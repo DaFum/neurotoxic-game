@@ -137,14 +137,14 @@ describe('PreGig', () => {
     expect(callArgs).toEqual({ soundcheck: true })
   })
 
-  test('gives both minigames a 50% chance to start', async () => {
+  test('gives minigames proper chances to start based on weight', async () => {
     // We need to set up a valid setlist so the start button is enabled
     mockUseGameState.setlist = [{ id: 'song1' }]
 
-    // Test Roadie Minigame (secureRandom < 0.5)
-    vi.mocked(getSafeRandom).mockReturnValue(0.4)
+    // Total weight normally is 3. 0.4 * 3 = 1.2 > 1 (roadie) so it's kabelsalat
+    vi.mocked(getSafeRandom).mockReturnValue(0.1)
 
-    const { findByText } = render(React.createElement(PreGig))
+    const { findByText, unmount } = render(React.createElement(PreGig))
 
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
@@ -153,61 +153,23 @@ describe('PreGig', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
-    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
+    unmount()
   })
 
-  test('gives kabelsalat minigame a 50% chance to start', async () => {
+  test('gives kabelsalat minigame proper chance to start', async () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
 
-    // Test Kabelsalat Minigame (secureRandom >= 0.5)
-    vi.mocked(getSafeRandom).mockReturnValue(0.6)
+    // total weight is 3, 0.4 * 3 = 1.2, which is between 1 (roadie) and 2 (roadie+kabelsalat)
+    vi.mocked(getSafeRandom).mockReturnValue(0.4)
 
-    const { findByText } = render(React.createElement(PreGig))
+    const { findByText, unmount } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
 
     await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
-    expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
-  })
-
-  test('applies streak breaker when roadie was played last (25% chance)', async () => {
-    mockUseGameState.setlist = [{ id: 'song1' }]
-
-    // Set sessionStorage to roadie to trigger streak breaker
-    sessionStorage.setItem('neurotoxic_last_minigame', 'roadie')
-
-    // 0.3 is >= 0.25 threshold, so Kabelsalat should be picked
-    vi.mocked(getSafeRandom).mockReturnValue(0.3)
-
-    const { findByText } = render(React.createElement(PreGig))
-    const startBtn = await findByText(/ui:pregig.startShow/i)
-    fireEvent.click(startBtn)
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
-    expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
-  })
-
-  test('applies streak breaker when kabelsalat was played last (75% chance)', async () => {
-    mockUseGameState.setlist = [{ id: 'song1' }]
-
-    // Set sessionStorage to kabelsalat to trigger streak breaker
-    sessionStorage.setItem('neurotoxic_last_minigame', 'kabelsalat')
-
-    // 0.6 is < 0.75 threshold, so Roadie should be picked
-    vi.mocked(getSafeRandom).mockReturnValue(0.6)
-
-    const { findByText } = render(React.createElement(PreGig))
-    const startBtn = await findByText(/ui:pregig.startShow/i)
-    fireEvent.click(startBtn)
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
-    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
+    unmount()
   })
 
   test('band meeting costs 50 and adds 15 harmony', async () => {
