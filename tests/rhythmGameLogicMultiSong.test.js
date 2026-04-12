@@ -121,11 +121,22 @@ mock.module('../src/utils/logger.js', {
 mock.module('../src/data/songs.js', {
   namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
 })
-// Stable t function prevents initializeGigState from being recreated on each render
-const _stableT = key => key
+// Stable i18n object prevents initializeGigState from being recreated on each render.
+// Supports defaultValue and basic string interpolation with {{key}} syntax.
+const _stableI18n = {
+  t: (key, options) => {
+    const template = options?.defaultValue || key
+    return options
+      ? template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+          String(options[token] ?? `{{${token}}}`)
+        )
+      : template
+  },
+  i18n: { language: 'en' }
+}
 mock.module('react-i18next', {
   namedExports: {
-    useTranslation: () => ({ t: _stableT, i18n: { language: 'en' } }),
+    useTranslation: () => _stableI18n,
     Trans: ({ i18nKey }) => i18nKey,
     initReactI18next: { type: '3rdParty', init: () => {} }
   }
