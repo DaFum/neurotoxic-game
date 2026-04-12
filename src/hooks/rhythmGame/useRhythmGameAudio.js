@@ -39,7 +39,6 @@ export const useRhythmGameAudio = ({
    * Initializes gig physics and note data once per gig.
    */
   const initializeGigState = useCallback(async () => {
-    console.log('initializeGigState started', { hasInit: hasInitializedRef.current, isInit: isInitializingRef.current });
     // Prevent double initialization
     if (hasInitializedRef.current || isInitializingRef.current) {
       return
@@ -51,23 +50,22 @@ export const useRhythmGameAudio = ({
     const isAborted = () =>
       signal.aborted || abortControllerRef.current !== controller
 
-    // Mute ambient radio to prevent audio overlap
-    audioManager.stopMusic()
-
-    const currentHarmony = clampBandHarmony(band.harmony)
-
-    // Harmony Guard
-    if (currentHarmony <= 1) {
-      logger.warn('RhythmGame', 'Band harmony too low to start gig.')
-      setIsAudioReady(false)
-      return
-    }
-
     try {
+      // Mute ambient radio to prevent audio overlap
+      audioManager.stopMusic()
+
+      const currentHarmony = clampBandHarmony(band?.harmony)
+
+      // Harmony Guard
+      if (currentHarmony <= 1) {
+        logger.warn('RhythmGame', 'Band harmony too low to start gig.')
+        setIsAudioReady(false)
+        return
+      }
+
       const audioUnlocked = await audioManager.ensureAudioContext()
 
       if (isAborted()) {
-        console.log('isAborted 1');
         return
       }
 
@@ -81,7 +79,6 @@ export const useRhythmGameAudio = ({
       }
       setIsAudioReady(true)
       hasInitializedRef.current = true
-      console.log('hasInitializedRef set to true');
 
       // Reset cross-song tracking state for a new gig
       resetGigStateTracking(gameStateRef)
@@ -133,13 +130,14 @@ export const useRhythmGameAudio = ({
       isInitializingRef.current = false
     }
   }, [
-    band?.id,
+    band?.members?.length,
     band?.harmony,
-    gameMap?.id,
+    gameMap?.nodes ? Object.keys(gameMap.nodes).length : 0,
     player?.currentNodeId,
     setlist?.length,
     currentGig?.songId,
-    gigModifiers,
+    // Stringify gigModifiers to ensure referential stability
+    JSON.stringify(gigModifiers),
     addToast,
     t,
     gameStateRef,
