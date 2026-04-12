@@ -1,0 +1,196 @@
+name: Tests
+run-name: Tests - PR #${{ github.event.pull_request.number }}
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: ['main']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  node-tests:
+    name: Node.js Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run node:test suite
+        id: run-tests
+        run: |
+          pnpm test 2>&1 | tee test-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment failed tests on PR
+        if: ${{ always() && steps.run-tests.outputs.exit_code != '0' && github.event_name == 'pull_request' }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- test-results-node: do-not-edit -->';
+            const raw = fs.readFileSync('test-output.txt', 'utf8');
+
+            // node:test TAP output marks failures with "not ok" lines
+            const failLines = raw.split('\n').filter(l =>
+              /^not ok\b/.test(l) || /^\s+✖|FAIL/.test(l)
+            );
+
+            const truncated = raw.length > 30000
+              ? raw.slice(raw.length - 30000)
+              : raw;
+
+            let body = `${marker}\n`;
+            body += `## ❌ Node.js Tests Failed\n\n`;
+            if (failLines.length) {
+              body += `**Failed tests (${failLines.length}):**\n\`\`\`\n`;
+              body += failLines.join('\n');
+              body += `\n\`\`\`\n\n`;
+            }
+            body += `<details><summary>Full output (last 30 000 chars)</summary>\n\n`;
+            body += `\`\`\`\n${truncated}\n\`\`\`\n</details>\n`;
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.issue.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Fail if tests failed
+        if: ${{ always() && steps.run-tests.outputs.exit_code != '0' }}
+        run: exit 1
+
+  vitest:
+    name: Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Vitest suite
+        id: run-vitest
+        run: |
+          pnpm test:ui 2>&1 | tee vitest-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment failed tests on PR
+        if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' && github.event_name == 'pull_request' }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- test-results-vitest: do-not-edit -->';
+            const raw = fs.readFileSync('vitest-output.txt', 'utf8');
+
+            // Vitest marks failures with FAIL and ✕/× lines
+            const failLines = raw.split('\n').filter(l =>
+              /FAIL\s/.test(l) || /^\s+[✕×✗]/.test(l) || /AssertionError|Error:/.test(l)
+            );
+
+            const truncated = raw.length > 30000
+              ? raw.slice(raw.length - 30000)
+              : raw;
+
+            let body = `${marker}\n`;
+            body += `## ❌ Vitest Failed\n\n`;
+            if (failLines.length) {
+              body += `**Failed tests (${failLines.length}):**\n\`\`\`\n`;
+              body += failLines.join('\n');
+              body += `\n\`\`\`\n\n`;
+            }
+            body += `<details><summary>Full output (last 30 000 chars)</summary>\n\n`;
+            body += `\`\`\`\n${truncated}\n\`\`\`\n</details>\n`;
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.issue.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Fail if tests failed
+        if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' }}
+        run: exit 1
