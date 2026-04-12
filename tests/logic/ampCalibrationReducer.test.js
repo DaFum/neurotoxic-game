@@ -83,4 +83,60 @@ describe('minigameReducer - Amp Calibration', () => {
     // 100 + 80 = 180 money
     assert.strictEqual(result.player.money, 180)
   })
+
+  it('should complete minigame and act appropriately on exact threshold score (50)', () => {
+    const state = {
+      minigame: { active: true, type: MINIGAME_TYPES.AMP_CALIBRATION },
+      currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+      band: { harmony: 50 },
+      player: { money: 100 }
+    }
+
+    const result = handleCompleteAmpCalibration(state, { score: 50 })
+
+    assert.strictEqual(result.minigame.active, false)
+    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+
+    // 50 score -> stress = 0
+    assert.strictEqual(result.band.harmony, 50)
+    // 50 score -> reward = 50
+    assert.strictEqual(result.player.money, 150)
+  })
+
+  it('should clamp harmony to 1 when stress drops it below 1', () => {
+    const state = {
+      minigame: { active: true, type: MINIGAME_TYPES.AMP_CALIBRATION },
+      currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+      band: { harmony: 5 },
+      player: { money: 100 }
+    }
+
+    // score: 10 -> stress = 20. 5 - 20 = -15 -> clamps to 1
+    const result = handleCompleteAmpCalibration(state, { score: 10 })
+
+    assert.strictEqual(result.minigame.active, false)
+    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+
+    assert.strictEqual(result.band.harmony, 1)
+  })
+
+  it('should apply Tech Wizard trait reward multiplier', () => {
+    const state = {
+      minigame: { active: true, type: MINIGAME_TYPES.AMP_CALIBRATION },
+      currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+      band: {
+        harmony: 50,
+        members: [{ id: 'player1', traits: { 'tech_wizard': true } }]
+      },
+      player: { money: 100 }
+    }
+
+    // score 100 -> base reward 100 -> tech wizard 1.5x -> 150
+    const result = handleCompleteAmpCalibration(state, { score: 100 })
+
+    assert.strictEqual(result.minigame.active, false)
+    assert.strictEqual(result.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+
+    assert.strictEqual(result.player.money, 250)
+  })
 })

@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import * as Tone from 'tone'
 import { useGameState } from '../../context/GameState'
 
 const MINIGAME_DURATION = 15
@@ -11,33 +10,26 @@ export function useAmpLogic() {
   const [targetValue, setTargetValue] = useState(500)
   const [timeLeft, setTimeLeft] = useState(MINIGAME_DURATION)
   const [score, setScore] = useState(100)
+  const [isGameOver, setIsGameOver] = useState(false)
 
-  const synthRef = useRef(null)
   const isCompleteRef = useRef(false)
   const accumulatedScoreRef = useRef(0)
   const ticksRef = useRef(0)
+  const dialValueRef = useRef(dialValue)
+  const targetValueRef = useRef(targetValue)
+  const gameStateRef = useRef(null)
 
-  // Initialize Audio
   useEffect(() => {
-    synthRef.current = new Tone.Oscillator(500, "sine").toDestination()
-    // Need user interaction to start audio, so we start it muted or low
-    synthRef.current.volume.value = -20
+    dialValueRef.current = dialValue
+  }, [dialValue])
 
-    // We only start if Tone context is running. The game engine handles this globally,
-    // but we can try to start it just in case.
-    if (Tone.context.state === 'running') {
-      synthRef.current.start()
-    }
+  useEffect(() => {
+    targetValueRef.current = targetValue
+  }, [targetValue])
 
-    // Set initial random target
+  // Initialize Target
+  useEffect(() => {
     setTargetValue(Math.floor(Math.random() * 800) + 100)
-
-    return () => {
-      if (synthRef.current) {
-        synthRef.current.stop()
-        synthRef.current.dispose()
-      }
-    }
   }, [])
 
   // Game Loop
@@ -62,43 +54,40 @@ export function useAmpLogic() {
         })
       }
 
+      // Time-driven tick for score accumulation
+      const diff = Math.abs(dialValueRef.current - targetValueRef.current)
+      const currentScore = Math.max(0, 100 - (diff / 10)) // Max difference 1000 = 0 score
+
+      accumulatedScoreRef.current += currentScore
+      ticksRef.current += 1
+
+      setScore(accumulatedScoreRef.current / Math.max(1, ticksRef.current))
+
     }, 100)
 
     return () => clearInterval(interval)
   }, [])
 
-  // Update logic and audio
-  useEffect(() => {
-    if (synthRef.current) {
-      synthRef.current.frequency.rampTo(dialValue, 0.1)
-    }
-
-    // Calculate difference
-    const diff = Math.abs(dialValue - targetValue)
-    const currentScore = Math.max(0, 100 - (diff / 10)) // Max difference 1000 = 0 score
-
-    accumulatedScoreRef.current += currentScore
-    ticksRef.current += 1
-
-    setScore(accumulatedScoreRef.current / ticksRef.current)
-
-  }, [dialValue, targetValue])
-
   const handleComplete = useCallback(() => {
     if (isCompleteRef.current) return
     isCompleteRef.current = true
 
-    if (synthRef.current) {
-      synthRef.current.stop()
-    }
+    setIsGameOver(true)
+  }, [])
 
+  // Function called by PixiStage component to get latest state for rendering
+  const update = useCallback(() => {
+    // If you need per-frame updates beyond what is in the controller
+  }, [])
+
+  const finishMinigame = useCallback(() => {
     const finalScore = accumulatedScoreRef.current / Math.max(1, ticksRef.current)
     completeAmpCalibration(finalScore)
   }, [completeAmpCalibration])
 
-  // Function called by PixiStage component to get latest state for rendering
-  const update = useCallback(() => {
-    return {
+  // Keep gameStateRef up to date for Stage Controller
+  useEffect(() => {
+    gameStateRef.current = {
       dialValue,
       targetValue
     }
@@ -110,7 +99,9 @@ export function useAmpLogic() {
     targetValue,
     timeLeft,
     score,
+    isGameOver,
     update,
-    handleComplete
+    finishMinigame,
+    gameStateRef
   }
 }

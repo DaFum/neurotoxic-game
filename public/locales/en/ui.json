@@ -978,5 +978,10 @@
   "minigames.amp.timeValue_other": "{{count}}s",
   "minigames.amp.hud.target": "TARGET: {{freq}}Hz",
   "minigames.amp.hud.current": "ACTUAL: {{freq}}Hz",
-  "minigames.amp.hud.match": "MATCH: {{pct}}%"
+  "minigames.amp.hud.match": "MATCH: {{pct}}%",
+  "minigames.amp.hud.time": "TIME:",
+  "minigames.amp.hud.stability": "STABILITY:",
+  "minigames.amp.completion.title": "AMP CALIBRATED",
+  "minigames.amp.completion.button": "START GIG",
+  "minigames.amp.completion.stability": "Stability Achieved: {{score}}%"
 }

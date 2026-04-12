@@ -1,83 +1,84 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
+import { BaseStageController } from './BaseStageController'
 
-export const createAmpStageController = () => {
-  let app = null
-  let container = null
-  let waveGraphics = null
+export class AmpStageController extends BaseStageController {
+  constructor(options) {
+    super(options)
 
-  // State
-  let targetFreq = 500
-  let currentFreq = 500
-  let time = 0
+    this.waveGraphics = null
+    this.targetFreq = 500
+    this.currentFreq = 500
+    this.time = 0
+  }
 
-  const init = async pixiApp => {
-    app = pixiApp
-    container = new PIXI.Container()
-    app.stage.addChild(container)
-
-    waveGraphics = new PIXI.Graphics()
-    container.addChild(waveGraphics)
+  async setup() {
+    this.waveGraphics = new PIXI.Graphics()
+    this.container.addChild(this.waveGraphics)
 
     // Background
     const bg = new PIXI.Graphics()
-    bg.rect(0, 0, app.screen.width, app.screen.height)
-    bg.fill({ color: getPixiColorFromToken('void-black'), alpha: 1 })
-    container.addChildAt(bg, 0)
+    bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
+    bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
+    this.container.addChildAt(bg, 0)
 
-    // Initial draw
-    drawWaves()
+    this.drawWaves()
   }
 
-  const updateState = newState => {
-    if (newState.targetValue !== undefined) {
-      targetFreq = newState.targetValue
+  update(dt) {
+    // Read state from gameStateRef directly
+    if (this.gameStateRef && this.gameStateRef.current) {
+      const state = this.gameStateRef.current
+      if (state.targetValue !== undefined) {
+        let sanitizedTarget = Number(state.targetValue)
+        if (Number.isFinite(sanitizedTarget)) {
+          this.targetFreq = Math.max(0, Math.min(1000, sanitizedTarget))
+        }
+      }
+      if (state.dialValue !== undefined) {
+        let sanitizedCurrent = Number(state.dialValue)
+        if (Number.isFinite(sanitizedCurrent)) {
+          this.currentFreq = Math.max(0, Math.min(1000, sanitizedCurrent))
+        }
+      }
     }
-    if (newState.dialValue !== undefined) {
-      currentFreq = newState.dialValue
-    }
+
+    this.time += dt * 0.1
+    this.drawWaves()
   }
 
-  const drawWaves = () => {
-    if (!waveGraphics || !app) return
+  drawWaves() {
+    if (!this.waveGraphics || !this.app) return
 
-    waveGraphics.clear()
-    const width = app.screen.width
-    const height = app.screen.height
+    this.waveGraphics.clear()
+    const width = this.app.screen.width
+    const height = this.app.screen.height
     const centerY = height / 2
 
     // Draw Target Wave (Red-ish)
-    waveGraphics.moveTo(0, centerY)
-    waveGraphics.stroke({ width: 2, color: getPixiColorFromToken('blood-red'), alpha: 0.5 })
+    this.waveGraphics.moveTo(0, centerY)
+    this.waveGraphics.stroke({ width: 2, color: getPixiColorFromToken('--blood-red'), alpha: 0.5 })
 
-    const targetPeriod = width / (targetFreq / 50 + 1)
+    const targetPeriod = width / (this.targetFreq / 50 + 1)
     for (let x = 0; x < width; x += 5) {
-      const y = centerY + Math.sin(x / targetPeriod + time) * 100
-      waveGraphics.lineTo(x, y)
+      const y = centerY + Math.sin(x / targetPeriod + this.time) * 100
+      this.waveGraphics.lineTo(x, y)
     }
 
     // Draw Current Wave (Green)
-    waveGraphics.moveTo(0, centerY)
-    waveGraphics.stroke({ width: 4, color: getPixiColorFromToken('toxic-green'), alpha: 0.8 })
+    this.waveGraphics.moveTo(0, centerY)
+    this.waveGraphics.stroke({ width: 4, color: getPixiColorFromToken('--toxic-green'), alpha: 0.8 })
 
-    const currentPeriod = width / (currentFreq / 50 + 1)
+    const currentPeriod = width / (this.currentFreq / 50 + 1)
     for (let x = 0; x < width; x += 5) {
-      const y = centerY + Math.sin(x / currentPeriod + time) * 100
-      waveGraphics.lineTo(x, y)
+      const y = centerY + Math.sin(x / currentPeriod + this.time) * 100
+      this.waveGraphics.lineTo(x, y)
     }
   }
 
-  const tick = delta => {
-    time += delta * 0.1
-    drawWaves()
+  draw() {
+    this.drawWaves()
   }
-
-  const cleanup = () => {
-    if (container && !container.destroyed) {
-      container.destroy({ children: true })
-    }
-    app = null
-  }
-
-  return { init, updateState, tick, cleanup }
 }
+
+export const createAmpStageController = params => new AmpStageController(params)

@@ -704,7 +704,11 @@ export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {
  * @returns {Object} { stress, reward }
  */
 export const calculateAmpCalibrationResult = (score, bandState) => {
-  const safeScore = Math.max(0, Math.min(100, score))
+  let numScore = Number(score)
+  if (!Number.isFinite(numScore)) {
+    numScore = 0
+  }
+  const safeScore = Math.max(0, Math.min(100, numScore))
   let stress = 0
   let reward = 0
 
