@@ -206,10 +206,17 @@ export const handleCompleteAmpCalibration = (state, payload) => {
     money: nextMoney
   }
 
+  const nextModifiers = { ...state.gigModifiers }
+  if (stress > 0) {
+    logger.warn('GameState', 'Amp Calibration failed: damaged_gear active')
+    nextModifiers.damaged_gear = true
+  }
+
   return {
     ...state,
     band: nextBand,
     player: nextPlayer,
+    gigModifiers: nextModifiers,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }

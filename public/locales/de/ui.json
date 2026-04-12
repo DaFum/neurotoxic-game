@@ -987,5 +987,6 @@
   "minigames.amp.controls.min": "0Hz",
   "minigames.amp.controls.max": "1000Hz",
   "minigames.amp.controls.dialAria": "Frequenzregler",
-  "minigames.amp.controls.instruction": "PASSE DIE FREQUENZ AN"
+  "minigames.amp.controls.instruction": "PASSE DIE FREQUENZ AN",
+  "minigames.amp.controls.dialValue": "{{value}} Hz"
 }
