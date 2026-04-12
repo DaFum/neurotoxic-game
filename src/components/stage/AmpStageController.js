@@ -28,16 +28,18 @@ export class AmpStageController extends BaseStageController {
   syncState() {
     if (this.gameStateRef && this.gameStateRef.current) {
       const state = this.gameStateRef.current
-      if (state.targetValue !== undefined) {
-        let sanitizedTarget = Number(state.targetValue)
+      if (Object.hasOwn(state, 'targetValue')) {
+        const sanitizedTarget = Number(state.targetValue)
         if (Number.isFinite(sanitizedTarget)) {
-          this.targetFreq = Math.max(0, Math.min(1000, sanitizedTarget))
+          const boundedTargetFreq = Math.max(0, Math.min(1000, sanitizedTarget))
+          this.targetFreq = boundedTargetFreq
         }
       }
-      if (state.dialValue !== undefined) {
-        let sanitizedCurrent = Number(state.dialValue)
+      if (Object.hasOwn(state, 'dialValue')) {
+        const sanitizedCurrent = Number(state.dialValue)
         if (Number.isFinite(sanitizedCurrent)) {
-          this.currentFreq = Math.max(0, Math.min(1000, sanitizedCurrent))
+          const boundedCurrentFreq = Math.max(0, Math.min(1000, sanitizedCurrent))
+          this.currentFreq = boundedCurrentFreq
         }
       }
     }

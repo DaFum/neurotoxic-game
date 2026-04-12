@@ -15,14 +15,16 @@ export const AmpControls = memo(function AmpControls({
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'ArrowLeft') {
+      e.preventDefault()
       setDialValue(prev => Math.max(0, prev - 10))
     } else if (e.key === 'ArrowRight') {
+      e.preventDefault()
       setDialValue(prev => Math.min(1000, prev + 10))
     }
   }, [setDialValue])
 
   return (
-    <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-4 w-full max-w-md px-4'>
+    <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-(--z-hud) flex flex-col items-center gap-4 w-full max-w-md px-4'>
       <div className='flex justify-between w-full text-toxic-green font-mono text-sm'>
         <span>{t('minigames.amp.controls.min', { defaultValue: '0Hz' })}</span>
         <span>{t('minigames.amp.controls.max', { defaultValue: '1000Hz' })}</span>
@@ -31,6 +33,7 @@ export const AmpControls = memo(function AmpControls({
         type="range"
         min="0"
         max="1000"
+        step="10"
         value={dialValue}
         onChange={handleDialChange}
         onKeyDown={handleKeyDown}
