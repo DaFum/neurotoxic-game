@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createAmpStageController } from '../../src/components/stage/AmpStageController'
-import * as PIXI from 'pixi.js'
 
 // Mock dependencies
 vi.mock('pixi.js', () => {

@@ -71,7 +71,12 @@ export function useAmpLogic() {
     setScore(accumulatedScoreRef.current / Math.max(1, ticksRef.current))
   }, [handleComplete])
 
+  const finishCalledRef = useRef(false)
+
   const finishMinigame = useCallback(() => {
+    if (finishCalledRef.current) return
+    finishCalledRef.current = true
+
     const finalScore = accumulatedScoreRef.current / Math.max(1, ticksRef.current)
     completeAmpCalibration(finalScore)
   }, [completeAmpCalibration])

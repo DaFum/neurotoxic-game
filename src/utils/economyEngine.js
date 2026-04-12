@@ -698,8 +698,8 @@ export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {
 }
 
 /**
- * Calculates outcome for Kabelsalat minigame
- * @param {Object} results - { isPoweredOn: boolean, timeLeft: number }
+ * Calculates outcome for Amp Calibration minigame
+ * @param {number} score - 0 to 100
  * @param {Object} bandState
  * @returns {Object} { stress, reward }
  */
@@ -728,6 +728,12 @@ export const calculateAmpCalibrationResult = (score, bandState) => {
   return { stress, reward }
 }
 
+/**
+ * Calculates outcome for Kabelsalat minigame
+ * @param {Object} results - { isPoweredOn: boolean, timeLeft: number }
+ * @param {Object} bandState
+ * @returns {Object} { stress, reward }
+ */
 export const calculateKabelsalatMinigameResult = (results, bandState) => {
   let stress = 0
   let reward = 0

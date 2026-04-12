@@ -63,23 +63,23 @@ export class AmpStageController extends BaseStageController {
 
     // Draw Target Wave (Red-ish)
     this.waveGraphics.moveTo(0, centerY)
-    this.waveGraphics.stroke({ width: 2, color: getPixiColorFromToken('--blood-red'), alpha: 0.5 })
 
     const targetPeriod = width / (this.targetFreq / 50 + 1)
     for (let x = 0; x < width; x += 5) {
       const y = centerY + Math.sin(x / targetPeriod + this.time) * 100
       this.waveGraphics.lineTo(x, y)
     }
+    this.waveGraphics.stroke({ width: 2, color: getPixiColorFromToken('--blood-red'), alpha: 0.5 })
 
     // Draw Current Wave (Green)
     this.waveGraphics.moveTo(0, centerY)
-    this.waveGraphics.stroke({ width: 4, color: getPixiColorFromToken('--toxic-green'), alpha: 0.8 })
 
     const currentPeriod = width / (this.currentFreq / 50 + 1)
     for (let x = 0; x < width; x += 5) {
       const y = centerY + Math.sin(x / currentPeriod + this.time) * 100
       this.waveGraphics.lineTo(x, y)
     }
+    this.waveGraphics.stroke({ width: 4, color: getPixiColorFromToken('--toxic-green'), alpha: 0.8 })
   }
 
   draw() {
