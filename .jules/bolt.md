@@ -87,3 +87,6 @@
 
 **Learning:** Using `map.forEach()` inside high-frequency update loops like `requestAnimationFrame` (e.g., `HecklerOverlay.jsx`) creates unnecessary closure allocations on every frame, which can contribute to garbage collection pauses.
 **Action:** Always prefer `for (const key of map.keys())` over `map.forEach()` in hot rendering loops to eliminate function allocation overhead.
+## 2025-02-23 - [useRhythmGameAudio Infinite Loop and Lock Starvation]
+**Learning:** `useRhythmGameAudio` suffered from an OOM infinite loop because it passed complex objects (`band`, `gameMap`, `setlist`) into its `useCallback` dependency array, causing `initializeGigState` to recreate on every render. This masked a lock starvation issue where `isInitializingRef` was never released if the setup was aborted. Furthermore, the test suite (`rhythmGameLogicMultiSong.test.js`) was secretly relying on this infinite re-render loop to advance its own asynchronous microtask queue, which caused it to fail once the hook was stabilized.
+**Action:** Stabilized `useCallback`/`useEffect` dependencies using strictly mapped primitives (`band?.id`, `player?.currentNodeId`, `setlist?.length`, etc.) and wrapped initialization in a `try/finally` block to guarantee lock release.

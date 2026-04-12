@@ -133,10 +133,10 @@ export const mockRhythmGameLogicModules = () => {
     namedExports: mockHecklerLogic
   })
   mock.module('../src/utils/errorHandler.js', {
-    namedExports: mockErrorHandler
+    namedExports: { ...mockErrorHandler, StateError: class StateError extends Error {}, GameError: class GameError extends Error {} }
   })
   mock.module('../src/utils/logger.js', {
-    namedExports: { logger: mockLogger }
+    namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 } }
   })
   mock.module('../src/data/songs.js', {
     namedExports: {

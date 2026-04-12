@@ -101,11 +101,14 @@ mock.module('../src/utils/hecklerLogic.js', {
 mock.module('../src/utils/errorHandler.js', {
   namedExports: {
     handleError: mock.fn(),
-    AudioError: class extends Error {}
+    AudioError: class extends Error {},
+    StateError: class StateError extends Error {},
+    GameError: class GameError extends Error {}
   }
 })
 mock.module('../src/utils/logger.js', {
   namedExports: {
+    LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 },
     logger: { info: mock.fn(), warn: mock.fn(), error: mock.fn() }
   }
 })
