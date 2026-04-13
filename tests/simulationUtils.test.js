@@ -215,21 +215,26 @@ test('calculateGigPhysics returns physics object', () => {
 })
 
 test('calculateGigPhysics calculates hit windows based on skill', () => {
+  // buildBandState: Matze skill=5, Marius skill=4, Lars skill=3
+  // formula: 120 + skill * 4
   const band = buildBandState()
   const song = { bpm: 120 }
   const physics = calculateGigPhysics(band, song)
 
-  assert.ok(
-    physics.hitWindows.guitar >= 120,
-    'Guitar hit window should be at least 120ms'
+  assert.equal(
+    physics.hitWindows.guitar,
+    120 + 5 * 4,
+    'Guitar: 120 + skill(5) * 4 = 140ms'
   )
-  assert.ok(
-    physics.hitWindows.drums >= 120,
-    'Drums hit window should be at least 120ms'
+  assert.equal(
+    physics.hitWindows.drums,
+    120 + 4 * 4,
+    'Drums:  120 + skill(4) * 4 = 136ms'
   )
-  assert.ok(
-    physics.hitWindows.bass >= 120,
-    'Bass hit window should be at least 120ms'
+  assert.equal(
+    physics.hitWindows.bass,
+    120 + 3 * 4,
+    'Bass:   120 + skill(3) * 4 = 132ms'
   )
 })
 
@@ -501,47 +506,73 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
 })
 
 test('calculateDailyUpdates applies wealth-scaled expense drain at 8% chance', () => {
-  // rng returns 0.07 (< 0.08 -> fires) then 0.01 (drainRate = 0.015 + 0.01*0.015 = 0.01515)
-  let callCount = 0
-  const mockRng = () => [0.07, 0.01][callCount++] ?? 0.5
+  // With social={viral:0} and no newsletter/youtube, the first rng() call in
+  // calculateDailyUpdates is the drain trigger (newsletter short-circuits at 0).
+  // seq[0] = drain trigger (0.07 < 0.08 → fires)
+  // seq[1] = drainRate   (0.01 → 0.015 + 0.01*0.015 = 0.01515)
+  const seq = [0.07, 0.01]
+  let i = 0
+  const mockRng = () => seq[i++] ?? 0.5
+
   const currentState = {
     player: { day: 1, money: 5000, van: null },
     band: { members: [], harmony: 50 },
     social: { viral: 0 }
   }
 
-  const { player: baselinePlayer } = calculateDailyUpdates(currentState, () => 0.5)
+  // Baseline: drain does not fire (rng always 0.99 ≥ 0.08)
+  const { player: baseline } = calculateDailyUpdates(currentState, () => 0.99)
   const { player } = calculateDailyUpdates(currentState, mockRng)
 
-  // Compare against the post-dailyCost baseline so the test fails if the drain does not fire.
+  // After daily cost (70), money = 4930. taxableWealth = 4930-2000 = 2930.
+  // expense = round(2930 * 0.01515) = 44. Drained money = 4886 < baseline 4930.
   assert.ok(
-    player.money < baselinePlayer.money,
-    'Money should be lower than the no-drain baseline when the drain triggers'
+    player.money < baseline.money,
+    'Money should be lower than no-drain baseline when drain triggers'
+  )
+})
+
+test('calculateDailyUpdates skips wealth-scaled drain at exactly €2000', () => {
+  // At the boundary (money === 2000 after daily costs) the drain must NOT fire.
+  // rng always returns 0.01 (would trigger drain if eligible).
+  const triggerRng = () => 0.01
+  const skipRng = () => 0.99
+  const currentState = {
+    player: { day: 1, money: 2000, van: null },
+    band: { members: [], harmony: 50 },
+    social: { viral: 0 }
+  }
+  const triggerResult = calculateDailyUpdates(currentState, triggerRng)
+  const skipResult = calculateDailyUpdates(currentState, skipRng)
+  // money === 2000 means money > 2000 is false → no drain, regardless of RNG
+  assert.equal(
+    triggerResult.player.money,
+    skipResult.player.money,
+    'No drain when money equals the threshold'
   )
 })
 
 test('calculateDailyUpdates skips wealth-scaled drain when money < 2000', () => {
-  const triggerDrainRng = () => 0.01  // would trigger drain by chance if eligible
-  const skipDrainRng = () => 0.99
+  const triggerRng = () => 0.01
+  const skipRng = () => 0.99
   const currentState = {
     player: { day: 1, money: 1000, van: null },
     band: { members: [], harmony: 50 },
     social: { viral: 0 }
   }
-  const triggerResult = calculateDailyUpdates(currentState, triggerDrainRng)
-  const skipResult = calculateDailyUpdates(currentState, skipDrainRng)
-  // Below the threshold, only dailyCost should apply, regardless of drain chance.
+  const triggerResult = calculateDailyUpdates(currentState, triggerRng)
+  const skipResult = calculateDailyUpdates(currentState, skipRng)
   assert.equal(
     triggerResult.player.money,
     skipResult.player.money,
-    'Wealth-scaled drain should be skipped entirely when money is below 2000'
+    'Wealth-scaled drain must be skipped when money is below the threshold'
   )
 })
 
 test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
   // Set sponsorActive=true, instagram >= 5000, controversy < 60
   // rng must not trigger sponsorship drop (> 0.5 for controversy path)
-  const mockRng = () => 0.9  // no newsletter perk, no sponsor drop
+  const mockRng = () => 0.9 // no newsletter perk, no sponsor drop
   const currentState = {
     player: { day: 1, money: 1000, fame: 200, fameLevel: 2, van: null },
     band: { members: [], harmony: 50 },
@@ -557,20 +588,42 @@ test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
   stateNoSponsor.social.sponsorActive = false
 
   const { player } = calculateDailyUpdates(currentState, mockRng)
-  const { player: playerNoSponsor } = calculateDailyUpdates(stateNoSponsor, mockRng)
+  const { player: playerNoSponsor } = calculateDailyUpdates(
+    stateNoSponsor,
+    mockRng
+  )
 
   // scaledPayout = min(800, max(180, round(200 * 2))) = min(800, max(180, 400)) = 400
-  assert.equal(player.money, playerNoSponsor.money + 400, 'Sponsor payout should add exactly 400')
+  assert.equal(
+    player.money,
+    playerNoSponsor.money + 400,
+    'Sponsor payout should add exactly 400'
+  )
 })
 
 test('calculateDailyUpdates does not pay sponsor when sponsorActive is false', () => {
   const mockRng = () => 0.9
-  const currentState = {
+  const baseState = {
     player: { day: 1, money: 1000, fame: 200, fameLevel: 2, van: null },
     band: { members: [], harmony: 50 },
-    social: { viral: 0, sponsorActive: false, instagram: 6000, controversyLevel: 0 }
+    social: { viral: 0, instagram: 6000, controversyLevel: 0 }
   }
-  const { player: noSponsor } = calculateDailyUpdates(currentState, mockRng)
-  // Without sponsor, money = 1000 - dailyCost only
-  assert.ok(noSponsor.money < 1000, 'No payout when sponsor inactive')
+  const withSponsor = {
+    ...baseState,
+    social: { ...baseState.social, sponsorActive: true }
+  }
+  const withoutSponsor = {
+    ...baseState,
+    social: { ...baseState.social, sponsorActive: false }
+  }
+
+  const { player: sponsored } = calculateDailyUpdates(withSponsor, mockRng)
+  const { player: unsponsored } = calculateDailyUpdates(withoutSponsor, mockRng)
+
+  // The exact difference must be the scaled payout (400 at fame=200)
+  assert.equal(
+    sponsored.money - unsponsored.money,
+    400,
+    'Sponsor payout should add exactly 400 (min(800, max(180, 200*2)))'
+  )
 })

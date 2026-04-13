@@ -10,6 +10,7 @@ import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
 import * as crypto from '../src/utils/crypto'
 import { GAME_PHASES } from '../src/context/gameConstants'
+import { BALANCE_CONSTANTS } from '../src/utils/gameStateUtils'
 
 vi.mock('../src/context/GameState', () => ({ useGameState: vi.fn() }))
 vi.mock('../src/utils/economyEngine', () => ({
@@ -675,12 +676,17 @@ describe('usePostGigLogic', () => {
       GameState.useGameState.mockReturnValue(baseState)
       const { result } = renderHook(() => usePostGigLogic())
       await waitFor(() => expect(result.current.financials).toBeTruthy())
-      act(() => { result.current.handleContinue() })
+      act(() => {
+        result.current.handleContinue()
+      })
       // perfScore = clamp(25000/500, 30, 100) = 50 -> bad gig
       // missPenalty = round((13 - 8) * 0.5) = 3
       // finalFameGain = -FAME_LOSS_BAD_GIG - 3
       const expectedMissPenalty = Math.round((13 - 8) * 0.5)
-      const expectedFame = baseState.player.fame - 12 - expectedMissPenalty
+      const expectedFame =
+        baseState.player.fame -
+        BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG -
+        expectedMissPenalty
       expect(mockUpdatePlayer).toHaveBeenCalledWith(
         expect.objectContaining({ fame: expectedFame })
       )

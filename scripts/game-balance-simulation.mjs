@@ -765,7 +765,8 @@ const maybeApplyWealthScaledExpense = (state, rng, counters) => {
   if (money < 2000) return // No drain below a floor — protects struggling bands
 
   const drainRate = 0.015 + rng() * 0.015 // 1.5% – 3.0%
-  const expense = Math.round(money * drainRate)
+  const taxableWealth = money - 2000
+  const expense = Math.round(taxableWealth * drainRate)
   state.player.money = clampPlayerMoney(money - expense)
   counters.wealthDrainEvents = (counters.wealthDrainEvents || 0) + 1
 }
