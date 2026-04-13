@@ -98,14 +98,14 @@ export const SCENARIOS = [
     initialOverrides: {
       player: { money: 500, fame: 0 },
       band: { harmony: 80 },
-      social: { controversyLevel: 0, loyalty: 5, zealotry: 0 }
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
   {
     id: 'bootstrap_struggle',
     name: 'Bootstrap Struggle',
     description:
-      'Wenig Startkapital, fragile Stimmung, seltene Premium-Modifikatoren.',
+      'Seltene Gigs, geringe Modifier-Nutzung, schlechte Wartungsdisziplin – testet eine träge, resourcenarme Spielweise.',
     gigGapDays: 4,
     ticketDiscountChance: 0.2,
     eventIntensity: 0.5,
@@ -120,16 +120,9 @@ export const SCENARIOS = [
       guestlist: 0.03
     },
     initialOverrides: {
-      player: { money: 240, fame: 0 },
-      band: {
-        harmony: 64,
-        members: [
-          { mood: 65, stamina: 82 },
-          { mood: 58, stamina: 76 },
-          { mood: 61, stamina: 80 }
-        ]
-      },
-      social: { controversyLevel: 0, loyalty: 3, zealotry: 0 }
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
   {
@@ -151,16 +144,16 @@ export const SCENARIOS = [
       guestlist: 0.25
     },
     initialOverrides: {
-      player: { money: 650, fame: 0 },
-      band: { harmony: 78 },
-      social: { controversyLevel: 8, loyalty: 10, zealotry: 12 }
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
   {
     id: 'scandal_recovery',
     name: 'Scandal Recovery',
     description:
-      'Start mit hoher Kontroverse; Fokus auf Stabilisierung statt Maximalgewinn.',
+      'Konservative Tour unter hohem Event-Druck: seltene Modifikatoren, hohe Ereignisdichte.',
     gigGapDays: 3,
     ticketDiscountChance: 0.22,
     eventIntensity: 0.75,
@@ -175,23 +168,16 @@ export const SCENARIOS = [
       guestlist: 0.05
     },
     initialOverrides: {
-      player: { money: 450, fame: 0 },
-      band: {
-        harmony: 58,
-        members: [
-          { mood: 56, stamina: 75 },
-          { mood: 53, stamina: 72 },
-          { mood: 55, stamina: 74 }
-        ]
-      },
-      social: { controversyLevel: 72, loyalty: 34, zealotry: 8 }
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
   {
     id: 'festival_push',
     name: 'Festival Push',
     description:
-      'Späteres Midgame/Endgame-Setup mit Fokus auf große Venues und Premiumpreise.',
+      'Seltene Gigs mit Premium-Modifikatorpaket und starken Traits – testet Qualität-über-Quantität-Strategie.',
     gigGapDays: 3,
     ticketDiscountChance: 0.02,
     eventIntensity: 0.4,
@@ -206,9 +192,9 @@ export const SCENARIOS = [
       guestlist: 0.4
     },
     initialOverrides: {
-      player: { money: 1400, fame: 150 },
-      band: { harmony: 86 },
-      social: { controversyLevel: 10, loyalty: 28, zealotry: 40 }
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
   {
@@ -230,23 +216,16 @@ export const SCENARIOS = [
       guestlist: 0.22
     },
     initialOverrides: {
-      player: { money: 380, fame: 0 },
-      band: {
-        harmony: 49,
-        members: [
-          { mood: 52, stamina: 68 },
-          { mood: 47, stamina: 70 },
-          { mood: 45, stamina: 66 }
-        ]
-      },
-      social: { controversyLevel: 46, loyalty: 12, zealotry: 5 }
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
   {
     id: 'cult_hypergrowth',
     name: 'Cult Hypergrowth',
     description:
-      'Zealotry-getriebene Fanbasis, starke Monetarisierung bei höherem Risiko.',
+      'Maximaler Promo-Einsatz und Social-Traits – testet aggressiven Fanbase-Aufbau und Monetarisierung.',
     gigGapDays: 2,
     ticketDiscountChance: 0,
     eventIntensity: 0.55,
@@ -261,9 +240,9 @@ export const SCENARIOS = [
       guestlist: 0.35
     },
     initialOverrides: {
-      player: { money: 900, fame: 150 },
-      band: { harmony: 82 },
-      social: { controversyLevel: 18, loyalty: 36, zealotry: 82 }
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   }
 ]
@@ -1355,54 +1334,56 @@ const fmtEur = n => `€${fmt(n)}`
 const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
+  // All scenarios start from the real game-default state (€500, fame 0, harmony 80).
+  // Targets calibrated to 75-day runs with uniform starting conditions (2026-04-13).
   baseline_touring: {
     bankruptcyMax: 5,
-    moneyMin: 8000,
-    moneyMax: 350000,
+    moneyMin: 80000,
+    moneyMax: 400000,
     fameMin: 200,
     fameMax: 500
   },
   bootstrap_struggle: {
-    bankruptcyMax: 99,
-    moneyMin: 0,
-    moneyMax: 20000,
-    fameMin: 0,
-    fameMax: 250
+    bankruptcyMax: 20,
+    moneyMin: 3000,
+    moneyMax: 50000,
+    fameMin: 120,
+    fameMax: 320
   },
   aggressive_marketing: {
-    bankruptcyMax: 10,
-    moneyMin: 5000,
+    bankruptcyMax: 5,
+    moneyMin: 50000,
     moneyMax: 200000,
     fameMin: 200,
-    fameMax: 450
+    fameMax: 430
   },
   scandal_recovery: {
-    bankruptcyMax: 70,
-    moneyMin: 0,
-    moneyMax: 50000,
-    fameMin: 0,
-    fameMax: 350
-  },
-  festival_push: {
     bankruptcyMax: 15,
     moneyMin: 10000,
+    moneyMax: 120000,
+    fameMin: 150,
+    fameMax: 360
+  },
+  festival_push: {
+    bankruptcyMax: 10,
+    moneyMin: 20000,
     moneyMax: 150000,
-    fameMin: 250,
-    fameMax: 550
+    fameMin: 200,
+    fameMax: 460
   },
   chaos_tour: {
-    bankruptcyMax: 20,
-    moneyMin: 0,
-    moneyMax: 100000,
-    fameMin: 150,
-    fameMax: 450
-  },
-  cult_hypergrowth: {
-    bankruptcyMax: 10,
-    moneyMin: 5000,
+    bankruptcyMax: 15,
+    moneyMin: 30000,
     moneyMax: 200000,
     fameMin: 200,
-    fameMax: 500
+    fameMax: 430
+  },
+  cult_hypergrowth: {
+    bankruptcyMax: 5,
+    moneyMin: 50000,
+    moneyMax: 200000,
+    fameMin: 200,
+    fameMax: 380
   }
 }
 
