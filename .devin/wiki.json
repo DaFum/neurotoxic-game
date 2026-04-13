@@ -13,7 +13,7 @@
       "author": "Architecture"
     },
     {
-      "content": "Always include constraints and risks: React 19.2.4 + Vite 7.3.1 + Tailwind v4.1.18 are version-pinned — DO NOT upgrade. Tailwind v4 syntax rules from docs/TAILWIND_V4_PATTERNS.md require bg-(--void-black) not bg-[var(--void-black)]. CSS variable color policy enforced in src/index.css. State safety rules: player.money >= 0 and band.harmony > 0. AudioContext gesture constraints via ensureAudioContext(). localStorage tampering risk partially mitigated via safeStorageOperation (runtime storage exception handling) plus loadGame() state validation/clamping in src/context/GameState.jsx and schema checks in src/utils/saveValidator.js.",
+      "content": "Always include constraints and risks: React 19.2.4 + Vite 7.3.1 + Tailwind v4.1.18 are version-pinned — DO NOT upgrade. Tailwind v4 syntax rules from docs/CODEBASE_DOCS_MASTER.md require bg-(--void-black) not bg-[var(--void-black)]. CSS variable color policy enforced in src/index.css. State safety rules: player.money >= 0 and band.harmony > 0. AudioContext gesture constraints via ensureAudioContext(). localStorage tampering risk partially mitigated via safeStorageOperation (runtime storage exception handling) plus loadGame() state validation/clamping in src/context/GameState.jsx and schema checks in src/utils/saveValidator.js.",
       "author": "Quality"
     },
     {
@@ -21,7 +21,7 @@
       "author": "Quality"
     },
     {
-      "content": "Every src/ subdirectory has an AGENTS.md file (src/context/AGENTS.md, src/hooks/AGENTS.md, src/scenes/AGENTS.md, src/utils/AGENTS.md, src/components/AGENTS.md, src/data/AGENTS.md, src/ui/AGENTS.md) containing domain-specific coding guidance and constraints. The root AGENTS.md routes contributors to the correct nested file. Always consult the relevant AGENTS.md before modifying code in that directory. Additionally, docs/ARCHITECTURE.md and docs/STATE_TRANSITIONS.md provide system-level diagrams and state machine documentation respectively.",
+      "content": "Every src/ subdirectory has an AGENTS.md file (src/context/AGENTS.md, src/hooks/AGENTS.md, src/scenes/AGENTS.md, src/utils/AGENTS.md, src/components/AGENTS.md, src/data/AGENTS.md, src/ui/AGENTS.md) containing domain-specific coding guidance and constraints. The root AGENTS.md routes contributors to the correct nested file. Always consult the relevant AGENTS.md before modifying code in that directory. Additionally, docs/CODEBASE_DOCS_MASTER.md provides both system-level diagrams and state-machine documentation.",
       "author": "Architecture"
     },
     {
@@ -36,7 +36,7 @@
   "pages": [
     {
       "title": "Overview",
-      "purpose": "Build the canonical landing page for the documentation set, linking docs/ARCHITECTURE.md, docs/STATE_TRANSITIONS.md, README.md setup commands, src/context/GameState.jsx, src/context/gameReducer.js, src/utils/AudioManager.js, src/utils/audio/ modules, src/hooks/useRhythmGameLogic.js, src/scenes/Gig.jsx, and src/components/PixiStageController.js so contributors can jump from concept to implementation in one hop.",
+      "purpose": "Build the canonical landing page for the documentation set, linking docs/CODEBASE_DOCS_MASTER.md (Architecture + State sections), README.md setup commands, src/context/GameState.jsx, src/context/gameReducer.js, src/utils/AudioManager.js, src/utils/audio/ modules, src/hooks/useRhythmGameLogic.js, src/scenes/Gig.jsx, and src/components/PixiStageController.js so contributors can jump from concept to implementation in one hop.",
       "page_notes": [
         {
           "content": "Explain the full gameplay loop as implemented by src/scenes/Overworld.jsx -> src/scenes/PreGig.jsx -> src/scenes/Gig.jsx -> src/scenes/PostGig.jsx with scene changes initiated through GameState actions. The game cycles through strategic overworld decisions (travel, purchases, event responses), pre-gig preparation (setlist selection, gear checks), rhythm performance execution (3-lane note-highway gameplay), and post-gig results calculation (money/fame/harmony updates, event outcomes). Each scene is a React component that consumes useGameState() context and dispatches typed actions through ActionTypes defined in gameReducer.js.",
@@ -81,7 +81,7 @@
       "parent": "Overview",
       "page_notes": [
         {
-          "content": "Reference docs/STATE_TRANSITIONS.md for the canonical state-machine narrative and note differences if implementation diverges. The state machine defines legal transitions between scenes, entry/exit conditions, and data dependencies. Any discrepancies between the documented state machine and the actual gameReducer.js implementation should be flagged as technical debt. The scene flow is deterministic except for event-triggered interruptions (which insert modal overlays but do not change the underlying scene state).",
+          "content": "Reference docs/CODEBASE_DOCS_MASTER.md for the canonical state-machine narrative and note differences if implementation diverges. The state machine defines legal transitions between scenes, entry/exit conditions, and data dependencies. Any discrepancies between the documented state machine and the actual gameReducer.js implementation should be flagged as technical debt. The scene flow is deterministic except for event-triggered interruptions (which insert modal overlays but do not change the underlying scene state).",
           "author": "Architecture"
         },
         {
@@ -334,7 +334,7 @@
     },
     {
       "title": "UI System & Visual Language",
-      "purpose": "Document design-system primitives in src/ui/ and src/ui/shared/: GlitchButton (primary brutalist button), HUD (persistent top-bar overlay), EventModal (full-screen narrative event modal), ToastOverlay (temporary notification system), CrashHandler (error boundary), BandHQ (band management interface), DebugLogViewer (development debugging panel), SettingsPanel, VolumeSlider, and shared StatBox/ProgressBar components. Tie implementation to src/index.css tokens (--toxic-green #00FF41, --void-black #0A0A0A, --blood-red #CC0000, --ash-gray #3A3A3A, --warning-yellow #FFCC00), typography variables (--font-display for Metal Mania, --font-ui for Courier New monospace), CRT toggle behavior, and Tailwind v4 utility patterns from docs/TAILWIND_V4_PATTERNS.md.",
+      "purpose": "Document design-system primitives in src/ui/ and src/ui/shared/: GlitchButton (primary brutalist button), HUD (persistent top-bar overlay), EventModal (full-screen narrative event modal), ToastOverlay (temporary notification system), CrashHandler (error boundary), BandHQ (band management interface), DebugLogViewer (development debugging panel), SettingsPanel, VolumeSlider, and shared StatBox/ProgressBar components. Tie implementation to src/index.css tokens (--toxic-green #00FF41, --void-black #0A0A0A, --blood-red #CC0000, --ash-gray #3A3A3A, --warning-yellow #FFCC00), typography variables (--font-display for Metal Mania, --font-ui for Courier New monospace), CRT toggle behavior, and Tailwind v4 utility patterns from docs/CODEBASE_DOCS_MASTER.md.",
       "parent": "Overview",
       "page_notes": [
         {
@@ -386,7 +386,7 @@
     },
     {
       "title": "Security & Threat Model",
-      "purpose": "Map risks from neurotoxic-game-threat-model.md and security_best_practices_report.md to code-level controls: AudioContext autoplay restrictions handled by ensureAudioContext() flows, localStorage tampering exposure with exception-safe access via safeStorageOperation and validation/repair checks in loadGame() (src/context/GameState.jsx) plus saveValidator.js schema checks, reducer-safe defaults for malformed data, and scene-level fail-safe behavior to prevent hard crashes during startup/load/resume paths.",
+      "purpose": "Map risks from the Security and Threat Model sections in docs/CODEBASE_DOCS_MASTER.md to code-level controls: AudioContext autoplay restrictions handled by ensureAudioContext() flows, localStorage tampering exposure with exception-safe access via safeStorageOperation and validation/repair checks in loadGame() (src/context/GameState.jsx) plus saveValidator.js schema checks, reducer-safe defaults for malformed data, and scene-level fail-safe behavior to prevent hard crashes during startup/load/resume paths.",
       "parent": "Overview",
       "page_notes": [
         {
@@ -423,7 +423,7 @@
       "parent": "Overview",
       "page_notes": [
         {
-          "content": "Add a concise pre-PR checklist that mirrors AGENTS.md requirements and references docs/CODING_STANDARDS.md. Include release-readiness checks for documentation freshness in docs/ and AGENTS.md when architecture changes.",
+          "content": "Add a concise pre-PR checklist that mirrors AGENTS.md requirements and references docs/CODEBASE_DOCS_MASTER.md. Include release-readiness checks for documentation freshness in docs/ and AGENTS.md when architecture changes.",
           "author": "Quality"
         }
       ]
