@@ -72,44 +72,53 @@ const GameOverOverlaySpy = vi.hoisted(() =>
   ))
 )
 
+// Helper: wraps a spy with React.memo inside an async factory.
+// Function declarations are hoisted, so this is available when vi.mock factories run.
+function makeReactMemoMock(exportName, spy) {
+  return async () => {
+    const { default: React } = await import('react')
+    return { [exportName]: React.memo(spy) }
+  }
+}
+
 // Use async factories so we can import React for React.memo wrapping,
 // which is needed to simulate the real components' memoization behaviour.
-vi.mock('../../src/components/hud/ScoreDisplay.jsx', async () => {
-  const { default: React } = await import('react')
-  return { ScoreDisplay: React.memo(ScoreDisplaySpy) }
-})
-vi.mock('../../src/components/hud/HealthBar.jsx', async () => {
-  const { default: React } = await import('react')
-  return { HealthBar: React.memo(HealthBarSpy) }
-})
-vi.mock('../../src/components/hud/ComboDisplay.jsx', async () => {
-  const { default: React } = await import('react')
-  return { ComboDisplay: React.memo(ComboDisplaySpy) }
-})
-vi.mock('../../src/components/hud/OverloadMeter.jsx', async () => {
-  const { default: React } = await import('react')
-  return { OverloadMeter: React.memo(OverloadMeterSpy) }
-})
-vi.mock('../../src/components/hud/LaneInputArea.jsx', async () => {
-  const { default: React } = await import('react')
-  return { LaneInputArea: React.memo(LaneInputAreaSpy) }
-})
-vi.mock('../../src/components/hud/ControlsHint.jsx', async () => {
-  const { default: React } = await import('react')
-  return { ControlsHint: React.memo(ControlsHintSpy) }
-})
-vi.mock('../../src/components/hud/PauseButton.jsx', async () => {
-  const { default: React } = await import('react')
-  return { PauseButton: React.memo(PauseButtonSpy) }
-})
-vi.mock('../../src/components/hud/ToxicModeFlash.jsx', async () => {
-  const { default: React } = await import('react')
-  return { ToxicModeFlash: React.memo(ToxicModeFlashSpy) }
-})
-vi.mock('../../src/components/hud/GameOverOverlay.jsx', async () => {
-  const { default: React } = await import('react')
-  return { GameOverOverlay: React.memo(GameOverOverlaySpy) }
-})
+vi.mock(
+  '../../src/components/hud/ScoreDisplay.jsx',
+  makeReactMemoMock('ScoreDisplay', ScoreDisplaySpy)
+)
+vi.mock(
+  '../../src/components/hud/HealthBar.jsx',
+  makeReactMemoMock('HealthBar', HealthBarSpy)
+)
+vi.mock(
+  '../../src/components/hud/ComboDisplay.jsx',
+  makeReactMemoMock('ComboDisplay', ComboDisplaySpy)
+)
+vi.mock(
+  '../../src/components/hud/OverloadMeter.jsx',
+  makeReactMemoMock('OverloadMeter', OverloadMeterSpy)
+)
+vi.mock(
+  '../../src/components/hud/LaneInputArea.jsx',
+  makeReactMemoMock('LaneInputArea', LaneInputAreaSpy)
+)
+vi.mock(
+  '../../src/components/hud/ControlsHint.jsx',
+  makeReactMemoMock('ControlsHint', ControlsHintSpy)
+)
+vi.mock(
+  '../../src/components/hud/PauseButton.jsx',
+  makeReactMemoMock('PauseButton', PauseButtonSpy)
+)
+vi.mock(
+  '../../src/components/hud/ToxicModeFlash.jsx',
+  makeReactMemoMock('ToxicModeFlash', ToxicModeFlashSpy)
+)
+vi.mock(
+  '../../src/components/hud/GameOverOverlay.jsx',
+  makeReactMemoMock('GameOverOverlay', GameOverOverlaySpy)
+)
 
 import { GigHUD } from '../../src/components/GigHUD.jsx'
 
