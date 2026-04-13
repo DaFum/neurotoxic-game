@@ -1091,7 +1091,9 @@ const runSingleSimulation = (scenario, seed) => {
         instagramFollowers: state.social.instagram,
         regionRep: Math.round(
           (state.player.fame - state.social.controversyLevel) * 0.4
-        )
+        ),
+        daysSinceLastGig: state.player.day - (state.social.lastGigDay ?? state.player.day),
+        lastGigDifficulty: state.social.lastGigDifficulty ?? null
       }
     })
 
@@ -1288,6 +1290,9 @@ const getEconomyInsight = s => {
   if (s.avgLowestMoney < 300) {
     return '⚠️ Kritische Liquiditätslücken – Kostenreserve erhöhen.'
   }
+  if (s.avgRefuels + s.avgRepairs > 15) {
+    return '⚠️ Hohe Wartungskosten – Van-Disziplin und Modifier-Effizienz prüfen.'
+  }
   if (s.avgGigNet > 4000 && s.avgSponsorPayouts > 50) {
     return '✅ Starke Doppel-Einnahmen: Gig-Netto + Sponsoring-Basis.'
   }
@@ -1296,9 +1301,6 @@ const getEconomyInsight = s => {
   }
   if (s.avgSponsorPayouts > 40) {
     return '✅ Sponsoring als stabiler Einkommensanker etabliert.'
-  }
-  if (s.avgRefuels + s.avgRepairs > 15) {
-    return '⚠️ Hohe Wartungskosten – Van-Disziplin und Modifier-Effizienz prüfen.'
   }
   return '✅ Ausgewogenes Einnahmen-Ausgaben-Profil.'
 }
