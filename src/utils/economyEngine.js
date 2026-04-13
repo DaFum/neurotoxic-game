@@ -21,7 +21,7 @@ export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
-    BASE_COST: 55
+    BASE_COST: 70
   },
   TRANSPORT: {
     FUEL_PER_100KM: 12, // Liters
@@ -91,7 +91,7 @@ export const calculateTicketIncome = (
   if (modifiers.promo) fillRate += 0.22
 
   // Soundcheck Boost (word-of-mouth from quality prep)
-  if (modifiers.soundcheck) fillRate += 0.20
+  if (modifiers.soundcheck) fillRate += 0.2
 
   const gigDifficulty = gigData.diff ?? gigData.difficulty
   const daysSinceLastGig = context.daysSinceLastGig

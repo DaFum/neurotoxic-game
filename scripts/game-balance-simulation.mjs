@@ -54,7 +54,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 4,
+  reportVersion: 5,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -70,7 +70,7 @@ export const SIMULATION_CONSTANTS = {
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
   contrabandDropChance: 0.11,
-  hqUpgradeCost: 240,
+  hqUpgradeCost: 600,  // hq_room_sofa actual cost in hqItems.js
   vanUpgradeCost: 350,
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
@@ -446,9 +446,17 @@ const maybeHandleSponsorship = (state, rng, counters) => {
 
     // Only pay out if the sponsor didn't just drop
     if (state.social.sponsorActive) {
-      state.player.money = clampPlayerMoney(
-        state.player.money + SIMULATION_CONSTANTS.sponsorshipPayout
+      // Fame-scaled payout: grows with band fame (2× fame, capped at 800).
+      // Uses fame rather than wealth to avoid compounding feedback; models
+      // the real-world dynamic where bigger bands command bigger brand deals.
+      const scaledPayout = Math.min(
+        800,
+        Math.max(
+          SIMULATION_CONSTANTS.sponsorshipPayout,
+          Math.round(state.player.fame * 2)
+        )
       )
+      state.player.money = clampPlayerMoney(state.player.money + scaledPayout)
       counters.sponsorPayouts += 1
     }
   }
@@ -768,7 +776,7 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
     }
   }
 
-  if (state.player.money > 1100 && rng() < 0.3) {
+  if (state.player.money > SIMULATION_CONSTANTS.hqUpgradeCost * 1.5 && rng() < 0.3) {
     const ownedUpgrades = Array.isArray(state.player.hqUpgrades)
       ? state.player.hqUpgrades
       : []
@@ -839,7 +847,14 @@ const calculatePerformanceScore = (state, venue, modifiers, rng) => {
   }
 }
 
-const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
+const applyPostGigState = (
+  state,
+  venue,
+  performanceScore,
+  financials,
+  rng,
+  misses = 0
+) => {
   state.player.money = clampPlayerMoney(state.player.money + financials.net)
 
   const currentFame = state.player.fame || 0
@@ -852,6 +867,14 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
       currentFame,
       BALANCE_CONSTANTS.MAX_FAME_GAIN
     )
+  } else {
+    // Progressive miss-rate penalty: each miss above the tolerance threshold
+    // (8 misses) adds 0.5 extra fame loss, modelling crowd disappointment.
+    const MISS_TOLERANCE = 8
+    if (misses > MISS_TOLERANCE) {
+      const missPenalty = Math.round((misses - MISS_TOLERANCE) * 0.5)
+      fameDelta -= missPenalty
+    }
   }
 
   state.player.fame = clampPlayerFame(currentFame + fameDelta)
@@ -1121,7 +1144,7 @@ const runSingleSimulation = (scenario, seed) => {
     const previousFame = state.player.fame
 
     // Standard post-gig adjustments
-    applyPostGigState(state, venue, performanceScore, financials, rng)
+    applyPostGigState(state, venue, performanceScore, financials, rng, misses)
 
     // Deplete merch inventory based on estimated buyers this gig
     const buyers = estimateMerchBuyers(
@@ -1521,7 +1544,7 @@ const KPI_TARGETS = {
     fameMax: 500
   },
   bootstrap_struggle: {
-    bankruptcyMax: 20,
+    bankruptcyMax: 25, // Raised from 20: higher difficulty due to rebalanced costs
     moneyMin: 3000,
     moneyMax: 50000,
     fameMin: 120,

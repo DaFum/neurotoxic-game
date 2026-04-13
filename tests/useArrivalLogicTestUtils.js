@@ -80,7 +80,7 @@ vi.mock('../src/utils/gameStateUtils.js', () => ({
     return Math.floor(Math.max(0, val) / 1000)
   },
   BALANCE_CONSTANTS: {
-    FAME_LOSS_BAD_GIG: 4,
+    FAME_LOSS_BAD_GIG: 12,
     MAX_FAME_GAIN: 500,
     LOW_HARMONY_THRESHOLD: 15,
     LOW_HARMONY_CANCELLATION_CHANCE: 0.25
