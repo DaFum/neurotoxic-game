@@ -140,7 +140,7 @@ describe('secureRandom', () => {
     assert.equal(result, 1234567890 / 4294967296)
   })
 
-  test('getSafeRandom should fall back to Math.random when crypto is unavailable', () => {
+  test('getSafeRandom should throw an error when crypto is unavailable', () => {
     Object.defineProperty(globalThis, 'crypto', {
       value: {
         randomUUID: () => 'logger-uuid'
@@ -154,14 +154,9 @@ describe('secureRandom', () => {
       configurable: true
     })
 
-    const originalMathRandom = Math.random
-    Math.random = () => 0.123
-    try {
-      const result = getSafeRandom()
-      assert.equal(result, 0.123)
-    } finally {
-      Math.random = originalMathRandom
-    }
+    assert.throws(() => {
+      getSafeRandom()
+    }, /Cryptographically secure random number generation is not supported in this environment./)
   })
 
   test('getSafeUUID should use crypto.randomUUID when available', () => {
@@ -182,7 +177,13 @@ describe('secureRandom', () => {
     Object.defineProperty(globalThis, 'crypto', {
       value: {
         // Mock only what logger needs to not crash during the fallback path
-        randomUUID: () => 'logger-uuid'
+        randomUUID: () => 'logger-uuid',
+        getRandomValues: array => {
+          for (let i = 0; i < array.length; i++) {
+            array[i] = 1234567890
+          }
+          return array
+        }
       },
       configurable: true
     })
