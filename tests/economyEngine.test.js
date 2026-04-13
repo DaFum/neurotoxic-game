@@ -7,7 +7,14 @@ import {
   calculateFuelCost,
   calculateRefuelCost,
   calculateRepairCost,
-  EXPENSE_CONSTANTS
+  EXPENSE_CONSTANTS,
+  calculateTicketIncome,
+  calculateMerchIncome,
+  calculateVenueSplit,
+  calculateGuarantee,
+  calculateBarCut,
+  calculateSponsorshipBonuses,
+  calculateGigExpenses
 } from '../src/utils/economyEngine.js'
 
 const buildGigData = (overrides = {}) => ({
@@ -770,4 +777,41 @@ test('calculateGigFinancials uses effective price', () => {
     Math.abs(discountAvgPrice - 10) < 0.1,
     'Discount price should be ~10'
   )
+})
+
+test('calculateTicketIncome gracefully handles missing/undefined params', () => {
+  const result = calculateTicketIncome(undefined, undefined, undefined, undefined)
+  assert.ok(result.revenue >= 0)
+  assert.ok(result.ticketsSold >= 0)
+})
+
+test('calculateMerchIncome gracefully handles missing/undefined params', () => {
+  const result = calculateMerchIncome(undefined, undefined, undefined, undefined, undefined, undefined)
+  assert.ok(result.revenue >= 0)
+  assert.ok(result.cost >= 0)
+})
+
+test('calculateVenueSplit gracefully handles missing/undefined params', () => {
+  const result = calculateVenueSplit(undefined, undefined)
+  assert.ok(result.amount >= 0)
+})
+
+test('calculateGuarantee gracefully handles missing/undefined params', () => {
+  const result = calculateGuarantee(undefined)
+  assert.ok(result.amount >= 0)
+})
+
+test('calculateBarCut gracefully handles missing/undefined params', () => {
+  const result = calculateBarCut(undefined, undefined)
+  assert.ok(result.revenue >= 0)
+})
+
+test('calculateSponsorshipBonuses gracefully handles missing/undefined params', () => {
+  const result = calculateSponsorshipBonuses(undefined)
+  assert.ok(result.totalBonus >= 0)
+})
+
+test('calculateGigExpenses gracefully handles missing/undefined params', () => {
+  const result = calculateGigExpenses(undefined)
+  assert.ok(result.total >= 0)
 })
