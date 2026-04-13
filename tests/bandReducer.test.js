@@ -49,6 +49,19 @@ describe('bandReducer', () => {
       nextState = handleUpdateBand(baseState, payload)
       assert.strictEqual(nextState.band.harmony, 1)
     })
+
+    it('should safely ignore invalid payloads', () => {
+      const invalidPayloads = [null, undefined, [], 'string', 123]
+
+      invalidPayloads.forEach(payload => {
+        const nextState = handleUpdateBand(baseState, payload)
+        assert.strictEqual(
+          nextState,
+          baseState,
+          `Payload ${JSON.stringify(payload)} should be ignored`
+        )
+      })
+    })
   })
 
   describe('handleConsumeItem', () => {

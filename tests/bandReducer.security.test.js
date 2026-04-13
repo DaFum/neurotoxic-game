@@ -1,12 +1,39 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  handleUpdateBand,
   handleConsumeItem,
   handleUseContraband,
   handleAddContraband
 } from '../src/context/reducers/bandReducer.js'
 
 describe('bandReducer Security - Prototype Pollution', () => {
+  it('should reject forbidden keys in handleUpdateBand', () => {
+    const baseState = {
+      band: {
+        harmony: 50
+      }
+    }
+
+    const forbiddenKeys = ['__proto__', 'constructor', 'prototype']
+
+    forbiddenKeys.forEach(key => {
+      const payload = { [key]: { polluted: true } }
+      const nextState = handleUpdateBand(baseState, payload)
+
+      assert.strictEqual(
+        nextState,
+        baseState,
+        `Payload with forbidden key ${key} should be rejected`
+      )
+      assert.strictEqual(
+        Object.prototype.polluted,
+        undefined,
+        `Key ${key} should not pollute prototype`
+      )
+    })
+  })
+
   it('should reject forbidden keys in handleConsumeItem', () => {
     const baseState = {
       band: {
