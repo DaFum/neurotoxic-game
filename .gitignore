@@ -31,11 +31,7 @@ test*_output.txt
 
 # Playwright screenshots
 output/playwright/**/*.png
-screenshots/scenes/
-screenshots/flow/
-screenshots/before/
-screenshots/after/
-screenshots/injected/
+screenshots/
 coverage/
 
 # PID files
