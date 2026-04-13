@@ -8,15 +8,33 @@ vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
 
 // Create spies with vi.hoisted so they're accessible in vi.mock factories
 // (vi.mock factories are hoisted before const declarations, causing TDZ otherwise)
-const ScoreDisplaySpy = vi.hoisted(() => vi.fn(() => null))
-const HealthBarSpy = vi.hoisted(() => vi.fn(() => null))
-const ComboDisplaySpy = vi.hoisted(() => vi.fn(() => null))
-const OverloadMeterSpy = vi.hoisted(() => vi.fn(() => null))
-const LaneInputAreaSpy = vi.hoisted(() => vi.fn(() => null))
-const ControlsHintSpy = vi.hoisted(() => vi.fn(() => null))
-const PauseButtonSpy = vi.hoisted(() => vi.fn(() => null))
-const ToxicModeFlashSpy = vi.hoisted(() => vi.fn(() => null))
-const GameOverOverlaySpy = vi.hoisted(() => vi.fn(() => null))
+const ScoreDisplaySpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='score-display' />)
+)
+const HealthBarSpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='health-bar' />)
+)
+const ComboDisplaySpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='combo-display' />)
+)
+const OverloadMeterSpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='overload-meter' />)
+)
+const LaneInputAreaSpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='lane-input-area' />)
+)
+const ControlsHintSpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='controls-hint' />)
+)
+const PauseButtonSpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='pause-button' />)
+)
+const ToxicModeFlashSpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='toxic-mode-flash' />)
+)
+const GameOverOverlaySpy = vi.hoisted(() =>
+  vi.fn(() => <div data-testid='game-over-overlay' />)
+)
 
 // Use async factories so we can import React for React.memo wrapping,
 // which is needed to simulate the real components' memoization behaviour.
