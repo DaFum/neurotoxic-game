@@ -15,7 +15,8 @@ import {
   clampBandHarmony,
   clampVanCondition,
   clampMemberStamina,
-  clampMemberMood
+  clampMemberMood,
+  BALANCE_CONSTANTS
 } from './gameStateUtils.js'
 
 /**
@@ -247,12 +248,19 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
   const nextMoney = clampPlayerMoney(nextPlayer.money - dailyCost)
   nextPlayer.money = nextMoney
 
-  // Wealth-Scaled Daily Expense Drain (8% daily chance, only on money above €2000)
-  // Only the surplus above €2000 is taxed so the threshold feels like a floor,
-  // not a cliff: a player at €2100 loses ~€2–3, not ~€32–63.
-  if (nextPlayer.money > 2000 && rng() < 0.08) {
-    const drainRate = 0.015 + rng() * 0.015 // 1.5–3.0%
-    const taxableWealth = nextPlayer.money - 2000
+  // Wealth-Scaled Daily Expense Drain — only surplus above threshold is taxed
+  // so the threshold feels like a floor, not a cliff.
+  if (
+    nextPlayer.money > BALANCE_CONSTANTS.WEALTH_DRAIN_THRESHOLD &&
+    rng() < BALANCE_CONSTANTS.WEALTH_DRAIN_CHANCE
+  ) {
+    const drainRate =
+      BALANCE_CONSTANTS.WEALTH_DRAIN_MIN_RATE +
+      rng() *
+        (BALANCE_CONSTANTS.WEALTH_DRAIN_MAX_RATE -
+          BALANCE_CONSTANTS.WEALTH_DRAIN_MIN_RATE)
+    const taxableWealth =
+      nextPlayer.money - BALANCE_CONSTANTS.WEALTH_DRAIN_THRESHOLD
     const expense = Math.round(taxableWealth * drainRate)
     nextPlayer.money = clampPlayerMoney(nextPlayer.money - expense)
   }
@@ -387,8 +395,11 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
   // Fame-Scaled Sponsor Daily Payout
   if (nextSocial.sponsorActive) {
     const scaledPayout = Math.min(
-      800,
-      Math.max(180, Math.round((nextPlayer.fame ?? 0) * 2))
+      BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_CAP,
+      Math.max(
+        BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_FLOOR,
+        Math.round((nextPlayer.fame ?? 0) * 2)
+      )
     )
     nextPlayer.money = clampPlayerMoney(nextPlayer.money + scaledPayout)
   }

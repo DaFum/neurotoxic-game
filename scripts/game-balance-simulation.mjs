@@ -422,45 +422,6 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
   return eventsApplied
 }
 
-const maybeHandleSponsorship = (state, rng, counters) => {
-  if (
-    !state.social.sponsorActive &&
-    state.social.instagram > 5000 &&
-    (state.social.controversyLevel || 0) < 60 && // Must be below 60 to sign
-    rng() < 0.08
-  ) {
-    state.social.sponsorActive = true
-    counters.sponsorSignings += 1
-  }
-
-  if (state.social.sponsorActive) {
-    // Immediate drop if controversy is extreme
-    if ((state.social.controversyLevel || 0) >= 80) {
-      state.social.sponsorActive = false
-      counters.sponsorDrops += 1
-    } else if ((state.social.controversyLevel || 0) >= 60 && rng() < 0.5) {
-      // High chance to drop if controversial
-      state.social.sponsorActive = false
-      counters.sponsorDrops += 1
-    }
-
-    // Only pay out if the sponsor didn't just drop
-    if (state.social.sponsorActive) {
-      // Fame-scaled payout: grows with band fame (2× fame, capped at 800).
-      // Uses fame rather than wealth to avoid compounding feedback; models
-      // the real-world dynamic where bigger bands command bigger brand deals.
-      const scaledPayout = Math.min(
-        800,
-        Math.max(
-          SIMULATION_CONSTANTS.sponsorshipPayout,
-          Math.round(state.player.fame * 2)
-        )
-      )
-      state.player.money = clampPlayerMoney(state.player.money + scaledPayout)
-      counters.sponsorPayouts += 1
-    }
-  }
-}
 
 const maybeShiftSocialTrend = (state, rng, counters) => {
   if (rng() >= SIMULATION_CONSTANTS.trendShiftChance) return
@@ -755,21 +716,6 @@ const runMinigameLayer = (state, scenario, rng, counters) => {
   counters.kabelsalatMinigames += 1
 }
 
-// Wealth-scaled periodic expense: models structural costs (equipment replacement,
-// venue deposits, gear insurance) that grow with band success. Fires at ~8% daily
-// probability and drains 1.5–3% of current money, creating a meaningful sink for
-// bands that have accumulated large reserves without addressing the Netto/Reise ratio.
-const maybeApplyWealthScaledExpense = (state, rng, counters) => {
-  if (rng() >= 0.08) return
-  const money = state.player.money
-  if (money < 2000) return // No drain below a floor — protects struggling bands
-
-  const drainRate = 0.015 + rng() * 0.015 // 1.5% – 3.0%
-  const taxableWealth = money - 2000
-  const expense = Math.round(taxableWealth * drainRate)
-  state.player.money = clampPlayerMoney(money - expense)
-  counters.wealthDrainEvents = (counters.wealthDrainEvents || 0) + 1
-}
 
 const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
@@ -962,8 +908,7 @@ const runSingleSimulation = (scenario, seed) => {
     brandDealsActivated: 0,
     postPulses: 0,
     contrabandDrops: 0,
-    catalogUpgrades: 0,
-    wealthDrainEvents: 0
+    catalogUpgrades: 0
   }
 
   let totalGigNet = 0
@@ -992,6 +937,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
+    const wasSponsorActive = state.social.sponsorActive
     const updates = calculateDailyUpdates(state, rng)
     state = {
       ...state,
@@ -999,6 +945,11 @@ const runSingleSimulation = (scenario, seed) => {
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
     }
+
+    // Track sponsor lifecycle events surfaced by calculateDailyUpdates
+    if (!wasSponsorActive && state.social.sponsorActive) counters.sponsorSignings += 1
+    if (wasSponsorActive && !state.social.sponsorActive) counters.sponsorDrops += 1
+    if (state.social.sponsorActive) counters.sponsorPayouts += 1
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -1031,9 +982,7 @@ const runSingleSimulation = (scenario, seed) => {
     maybeActivateBrandDeal(state, rng, counters)
     maybeApplyPostPulse(state, rng, counters)
     maybeApplyContrabandDrop(state, rng, counters)
-    maybeHandleSponsorship(state, rng, counters)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
-    maybeApplyWealthScaledExpense(state, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
 
     if (willRest) {

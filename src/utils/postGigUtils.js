@@ -8,7 +8,8 @@ import {
   clampBandHarmony,
   clampMemberStamina,
   clampMemberMood,
-  clampControversyLevel
+  clampControversyLevel,
+  BALANCE_CONSTANTS
 } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
@@ -303,10 +304,12 @@ export const calculateContinueStats = ({
     )
   } else {
     // Progressive miss-penalty on bad gigs
-    const MISS_TOLERANCE = 8
     const missCount = misses ?? 0
-    if (missCount > MISS_TOLERANCE) {
-      const missPenalty = Math.round((missCount - MISS_TOLERANCE) * 0.5)
+    if (missCount > BALANCE_CONSTANTS.MISS_TOLERANCE) {
+      const missPenalty = Math.round(
+        (missCount - BALANCE_CONSTANTS.MISS_TOLERANCE) *
+          BALANCE_CONSTANTS.MISS_PENALTY_RATE
+      )
       finalFameGain -= missPenalty
     }
   }
