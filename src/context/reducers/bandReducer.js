@@ -357,6 +357,7 @@ export const bandReducer = (state, action) => {
     case ActionTypes.USE_CONTRABAND:
       return handleUseContraband(state, action.payload)
     default:
+      logger.warn('GameState', `Unhandled action type in bandReducer: ${action.type}`)
       return state
   }
 }
