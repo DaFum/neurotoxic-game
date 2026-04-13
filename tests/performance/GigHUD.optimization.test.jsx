@@ -9,31 +9,67 @@ vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
 // Create spies with vi.hoisted so they're accessible in vi.mock factories
 // (vi.mock factories are hoisted before const declarations, causing TDZ otherwise)
 const ScoreDisplaySpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='score-display' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='score-display' {...props}>
+      {children}
+    </div>
+  ))
 )
 const HealthBarSpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='health-bar' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='health-bar' {...props}>
+      {children}
+    </div>
+  ))
 )
 const ComboDisplaySpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='combo-display' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='combo-display' {...props}>
+      {children}
+    </div>
+  ))
 )
 const OverloadMeterSpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='overload-meter' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='overload-meter' {...props}>
+      {children}
+    </div>
+  ))
 )
 const LaneInputAreaSpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='lane-input-area' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='lane-input-area' {...props}>
+      {children}
+    </div>
+  ))
 )
 const ControlsHintSpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='controls-hint' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='controls-hint' {...props}>
+      {children}
+    </div>
+  ))
 )
 const PauseButtonSpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='pause-button' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='pause-button' {...props}>
+      {children}
+    </div>
+  ))
 )
 const ToxicModeFlashSpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='toxic-mode-flash' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='toxic-mode-flash' {...props}>
+      {children}
+    </div>
+  ))
 )
 const GameOverOverlaySpy = vi.hoisted(() =>
-  vi.fn(() => <div data-testid='game-over-overlay' />)
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='game-over-overlay' {...props}>
+      {children}
+    </div>
+  ))
 )
 
 // Use async factories so we can import React for React.memo wrapping,
