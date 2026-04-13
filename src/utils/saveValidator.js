@@ -209,6 +209,7 @@ const validateSocial = social => {
     if (!Object.hasOwn(social, key)) continue
     const val = social[key]
     if (key === 'lastGigDay' && val === null) continue
+    if (key === 'lastGigDifficulty' && val === null) continue
     if (key === 'lastPirateBroadcastDay' && val === null) continue
     if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue

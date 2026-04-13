@@ -120,7 +120,9 @@ export const usePostGigLogic = () => {
         zealotry: social?.zealotry || 0,
         discountedTickets: activeStoryFlags?.includes(
           'discounted_tickets_active'
-        )
+        ),
+        daysSinceLastGig: player?.day - (social?.lastGigDay ?? player?.day),
+        lastGigDifficulty: social?.lastGigDifficulty || null
       }
     })
     return result
