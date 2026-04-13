@@ -54,7 +54,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 3,
+  reportVersion: 4,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -931,7 +931,26 @@ const runSingleSimulation = (scenario, seed) => {
   let lowestMoney = state.player.money
   const timeline = []
 
+  // Day-waypoint snapshots (money at start of day, before daily costs)
+  let moneyAtDay20 = 0
+  let moneyAtDay40 = 0
+  let moneyAtDay60 = 0
+
+  // Per-gig metric accumulators for calibration analysis
+  let totalTravelCostGigs = 0
+  let totalHitWindowSum = 0
+  let totalMissesSum = 0
+  let totalPerfScoreSum = 0
+  let gigScoreLow = 0  // score < 50
+  let gigScoreMid = 0  // score 50–70
+  let gigScoreHigh = 0 // score > 70
+
   for (let day = 1; day <= SIMULATION_CONSTANTS.daysPerRun; day++) {
+    // Snapshot money at start of day (before any spending)
+    if (day === 20) moneyAtDay20 = state.player.money
+    if (day === 40) moneyAtDay40 = state.player.money
+    if (day === 60) moneyAtDay60 = state.player.money
+
     const moneyBeforeDay = state.player.money
     const updates = calculateDailyUpdates(state, rng)
     state = {
@@ -1012,6 +1031,7 @@ const runSingleSimulation = (scenario, seed) => {
     const totalTravelCost = travel.totalCost + safeFuelCost
 
     state.player.money = clampPlayerMoney(state.player.money - totalTravelCost)
+    totalTravelCostGigs += totalTravelCost
     state.player.van.fuel = clampVanFuel(
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
@@ -1119,6 +1139,20 @@ const runSingleSimulation = (scenario, seed) => {
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
 
+    // Accumulate per-gig calibration metrics
+    totalHitWindowSum +=
+      Math.round(
+        (physics.hitWindows.guitar +
+          physics.hitWindows.drums +
+          physics.hitWindows.bass) /
+          3
+      ) || 0
+    totalMissesSum += misses
+    totalPerfScoreSum += performanceScore
+    if (performanceScore < 50) gigScoreLow++
+    else if (performanceScore <= 70) gigScoreMid++
+    else gigScoreHigh++
+
     timeline.push({
       day: state.player.day,
       venueId: venue.id,
@@ -1156,6 +1190,16 @@ const runSingleSimulation = (scenario, seed) => {
     peakMoney,
     lowestMoney,
     timeline,
+    moneyAtDay20,
+    moneyAtDay40,
+    moneyAtDay60,
+    totalTravelCostGigs,
+    totalHitWindowSum,
+    totalMissesSum,
+    totalPerfScoreSum,
+    gigScoreLow,
+    gigScoreMid,
+    gigScoreHigh,
     ...counters
   }
 }
@@ -1193,6 +1237,16 @@ const summarizeScenario = runs => {
       acc.postPulses += run.postPulses
       acc.contrabandDrops += run.contrabandDrops
       acc.catalogUpgrades += run.catalogUpgrades
+      acc.moneyAtDay20 += run.moneyAtDay20 || 0
+      acc.moneyAtDay40 += run.moneyAtDay40 || 0
+      acc.moneyAtDay60 += run.moneyAtDay60 || 0
+      acc.totalTravelCostGigs += run.totalTravelCostGigs || 0
+      acc.totalHitWindowSum += run.totalHitWindowSum || 0
+      acc.totalMissesSum += run.totalMissesSum || 0
+      acc.totalPerfScoreSum += run.totalPerfScoreSum || 0
+      acc.gigScoreLow += run.gigScoreLow || 0
+      acc.gigScoreMid += run.gigScoreMid || 0
+      acc.gigScoreHigh += run.gigScoreHigh || 0
       return acc
     },
     {
@@ -1225,7 +1279,17 @@ const summarizeScenario = runs => {
       brandDealsActivated: 0,
       postPulses: 0,
       contrabandDrops: 0,
-      catalogUpgrades: 0
+      catalogUpgrades: 0,
+      moneyAtDay20: 0,
+      moneyAtDay40: 0,
+      moneyAtDay60: 0,
+      totalTravelCostGigs: 0,
+      totalHitWindowSum: 0,
+      totalMissesSum: 0,
+      totalPerfScoreSum: 0,
+      gigScoreLow: 0,
+      gigScoreMid: 0,
+      gigScoreHigh: 0
     }
   )
 
@@ -1265,7 +1329,49 @@ const summarizeScenario = runs => {
     avgPostPulses: Number((totals.postPulses / count).toFixed(2)),
     avgContrabandDrops: Number((totals.contrabandDrops / count).toFixed(2)),
     avgCatalogUpgrades: Number((totals.catalogUpgrades / count).toFixed(2)),
-    sampleSize: count
+    sampleSize: count,
+    // Progression curve
+    avgMoneyAtDay20: Math.round(totals.moneyAtDay20 / count),
+    avgMoneyAtDay40: Math.round(totals.moneyAtDay40 / count),
+    avgMoneyAtDay60: Math.round(totals.moneyAtDay60 / count),
+    // Gig calibration
+    avgTravelCostPerGig: Math.round(
+      totals.totalTravelCostGigs / Math.max(1, totals.gigsPlayed)
+    ),
+    avgHitWindow: Math.round(
+      totals.totalHitWindowSum / Math.max(1, totals.gigsPlayed)
+    ),
+    avgMissesPerGig: Number(
+      (totals.totalMissesSum / Math.max(1, totals.gigsPlayed)).toFixed(1)
+    ),
+    avgPerformanceScore: Math.round(
+      totals.totalPerfScoreSum / Math.max(1, totals.gigsPlayed)
+    ),
+    gigScorePctLow: Number(
+      ((totals.gigScoreLow / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
+    ),
+    gigScorePctMid: Number(
+      ((totals.gigScoreMid / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
+    ),
+    gigScorePctHigh: Number(
+      ((totals.gigScoreHigh / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
+    ),
+    // Income structure & sink analysis
+    gigNetToTravelRatio: Number(
+      (totals.totalGigNet / Math.max(1, totals.totalTravelCostGigs)).toFixed(1)
+    ),
+    gigsToAffordHqUpgrade: Number(
+      (
+        SIMULATION_CONSTANTS.hqUpgradeCost /
+        Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
+      ).toFixed(2)
+    ),
+    gigsToAffordVanUpgrade: Number(
+      (
+        SIMULATION_CONSTANTS.vanUpgradeCost /
+        Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
+      ).toFixed(2)
+    )
   }
 }
 
@@ -1527,6 +1633,40 @@ const checkKpi = (id, summary) => {
   return checks
 }
 
+const getProgressionInsight = s => {
+  if (s.avgMoneyAtDay20 > 15000)
+    return '⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen.'
+  if (s.avgMoneyAtDay20 > 8000)
+    return '⚠️ Schnelle Kapitalakkumulation – Daily-Kosten oder Upgrade-Preise prüfen.'
+  if (s.avgMoneyAtDay20 < 800 && s.bankruptcyRate > 5)
+    return '⚠️ Liquiditätsprobleme in Frühphase – Einstiegspuffer erhöhen.'
+  return '✅ Kapitalaufbau im erwarteten Korridor.'
+}
+
+const getGigCalibrationInsight = s => {
+  if (s.avgHitWindow > 180)
+    return '⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich.'
+  if (s.avgMissesPerGig > 10 && s.avgPerformanceScore > 60)
+    return '⚠️ Hohe Fehlerrate ohne Score-Penalty – Miss-Strafkopplung prüfen.'
+  if (s.gigScorePctLow < 5)
+    return '⚠️ Kaum schlechte Gigs – Fame-Verlust-Druck zu gering.'
+  if (s.gigScorePctHigh > 70)
+    return '⚠️ Zu viele Top-Gigs – Skill-Ceiling zu niedrig.'
+  return '✅ Gig-Performance im erwarteten Kalibrierungsbereich.'
+}
+
+const getIncomeStructureInsight = s => {
+  if (s.gigNetToTravelRatio > 30)
+    return '⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig.'
+  if (s.gigNetToTravelRatio > 15)
+    return '⚠️ Reisekosten zu gering – Travel-Kostendruck erhöhen.'
+  if (s.gigsToAffordHqUpgrade < 0.05)
+    return '⚠️ HQ-Upgrade in <0.05 Gigs amortisiert – Preis deutlich erhöhen.'
+  if (s.gigsToAffordVanUpgrade < 0.1)
+    return '⚠️ Van-Upgrade zu günstig – Preis anpassen.'
+  return '✅ Einkommensstruktur akzeptabel.'
+}
+
 const buildMarkdownReport = payload => {
   const lines = []
   const snap = payload.appFeatureSnapshot
@@ -1619,6 +1759,54 @@ const buildMarkdownReport = payload => {
     const upgrades = Number((s.avgHqUpgrades + s.avgVanUpgrades).toFixed(2))
     lines.push(
       `| ${scenario.name} | ${fmtEur(s.avgPeakMoney)} | ${fmtEur(s.avgLowestMoney)} | ${fmtEur(s.avgGigNet)} | ${s.avgSponsorPayouts} | ${s.avgBrandDealsActivated} | ${upgrades} | ${s.avgRefuels} | ${s.avgRepairs} | ${getEconomyInsight(s)} |`
+    )
+  }
+  lines.push('')
+
+  // ── Progression Curve ─────────────────────────────────────────────────────
+  lines.push('## Kapital-Progressionskurve')
+  lines.push('')
+  lines.push(
+    '| Szenario | Ø Geld Tag 20 | Ø Geld Tag 40 | Ø Geld Tag 60 | Ø Endgeld | Bewertung |'
+  )
+  lines.push('|---|---:|---:|---:|---:|---|')
+
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    lines.push(
+      `| ${scenario.name} | ${fmtEur(s.avgMoneyAtDay20)} | ${fmtEur(s.avgMoneyAtDay40)} | ${fmtEur(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
+    )
+  }
+  lines.push('')
+
+  // ── Income Structure ──────────────────────────────────────────────────────
+  lines.push('## Einkommensstruktur & Sink-Analyse')
+  lines.push('')
+  lines.push(
+    '| Szenario | Ø Gig-Netto | Ø Reisekosten/Gig | Netto/Reise-Ratio | Gigs f. HQ-Upgrade | Gigs f. Van-Upgrade | Bewertung |'
+  )
+  lines.push('|---|---:|---:|---:|---:|---:|---|')
+
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    lines.push(
+      `| ${scenario.name} | ${fmtEur(s.avgGigNet)} | ${fmtEur(s.avgTravelCostPerGig)} | ${s.gigNetToTravelRatio}× | ${s.gigsToAffordHqUpgrade} | ${s.gigsToAffordVanUpgrade} | ${getIncomeStructureInsight(s)} |`
+    )
+  }
+  lines.push('')
+
+  // ── Gig Calibration ───────────────────────────────────────────────────────
+  lines.push('## Gig-Performance-Kalibrierung')
+  lines.push('')
+  lines.push(
+    '| Szenario | Ø Hit-Window (ms) | Ø Misses/Gig | Ø Score | Score <50% | Score 50–70% | Score >70% | Bewertung |'
+  )
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---|')
+
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    lines.push(
+      `| ${scenario.name} | ${s.avgHitWindow} | ${s.avgMissesPerGig} | ${s.avgPerformanceScore} | ${s.gigScorePctLow}% | ${s.gigScorePctMid}% | ${s.gigScorePctHigh}% | ${getGigCalibrationInsight(s)} |`
     )
   }
   lines.push('')

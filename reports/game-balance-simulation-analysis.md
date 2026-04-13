@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-04-13T14:20:17.615Z
+Erstellt am: 2026-04-13T14:43:47.631Z
 
 ## Simulationseinstellungen
 
@@ -60,6 +60,42 @@ Erstellt am: 2026-04-13T14:20:17.615Z
 | Festival Push | €104.206 | €333 | €5.788 | 48.57 | 3.11 | 1.95 | 3.45 | 5.94 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
 | Chaos Tour | €125.793 | €419 | €4.687 | 54.43 | 3.35 | 1.97 | 5.06 | 7.76 | ✅ Starke Doppel-Einnahmen: Gig-Netto + Sponsoring-Basis. |
 | Cult Hypergrowth | €154.360 | €421 | €5.323 | 57.88 | 3.48 | 1.99 | 5.79 | 7.48 | ✅ Starke Doppel-Einnahmen: Gig-Netto + Sponsoring-Basis. |
+
+## Kapital-Progressionskurve
+
+| Szenario | Ø Geld Tag 20 | Ø Geld Tag 40 | Ø Geld Tag 60 | Ø Endgeld | Bewertung |
+|---|---:|---:|---:|---:|---|
+| Baseline Touring | €52.811 | €138.628 | €241.761 | €326.145 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
+| Bootstrap Struggle | €4.317 | €9.284 | €15.427 | €21.548 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Aggressive Marketing | €27.761 | €65.198 | €116.713 | €163.385 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
+| Scandal Recovery | €10.428 | €23.422 | €35.843 | €52.793 | ⚠️ Schnelle Kapitalakkumulation – Daily-Kosten oder Upgrade-Preise prüfen. |
+| Festival Push | €14.711 | €36.420 | €67.380 | €104.091 | ⚠️ Schnelle Kapitalakkumulation – Daily-Kosten oder Upgrade-Preise prüfen. |
+| Chaos Tour | €20.587 | €46.862 | €86.933 | €125.529 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
+| Cult Hypergrowth | €29.619 | €65.402 | €112.563 | €154.155 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
+
+## Einkommensstruktur & Sink-Analyse
+
+| Szenario | Ø Gig-Netto | Ø Reisekosten/Gig | Netto/Reise-Ratio | Gigs f. HQ-Upgrade | Gigs f. Van-Upgrade | Bewertung |
+|---|---:|---:|---:|---:|---:|---|
+| Baseline Touring | €5.549 | €95 | 58.4× | 0.04 | 0.06 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Bootstrap Struggle | €2.970 | €82 | 36.3× | 0.08 | 0.12 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Aggressive Marketing | €5.664 | €94 | 60.3× | 0.04 | 0.06 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Scandal Recovery | €3.400 | €91 | 37.5× | 0.07 | 0.1 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Festival Push | €5.788 | €93 | 62.3× | 0.04 | 0.06 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Chaos Tour | €4.687 | €94 | 50.1× | 0.05 | 0.07 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Cult Hypergrowth | €5.323 | €94 | 56.8× | 0.05 | 0.07 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+
+## Gig-Performance-Kalibrierung
+
+| Szenario | Ø Hit-Window (ms) | Ø Misses/Gig | Ø Score | Score <50% | Score 50–70% | Score >70% | Bewertung |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Baseline Touring | 190 | 7 | 59 | 13.7% | 79% | 7.3% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
+| Bootstrap Struggle | 190 | 7.4 | 56 | 24% | 70.1% | 6% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
+| Aggressive Marketing | 190 | 6.9 | 59 | 13.8% | 74.6% | 11.5% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
+| Scandal Recovery | 195 | 7.3 | 57 | 20.6% | 72% | 7.3% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
+| Festival Push | 190 | 5.8 | 66 | 5.2% | 62.7% | 32.1% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
+| Chaos Tour | 190 | 6.9 | 60 | 14.8% | 72.2% | 12.9% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
+| Cult Hypergrowth | 190 | 7.2 | 57 | 20.3% | 72.3% | 7.4% | ⚠️ Hit-Window >180ms – Rhythmusmechanik zu zugänglich. |
 
 ## Bandgesundheit im Detail
 

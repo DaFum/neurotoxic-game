@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-13T14:20:17.615Z",
+  "generatedAt": "2026-04-13T14:43:47.631Z",
   "constants": {
-    "reportVersion": 3,
+    "reportVersion": 4,
     "runsPerScenario": 260,
     "daysPerRun": 75,
     "homeVenueId": "stendal_proberaum",
@@ -436,7 +436,20 @@
         "avgPostPulses": 13.31,
         "avgContrabandDrops": 8.33,
         "avgCatalogUpgrades": 14.93,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 52811,
+        "avgMoneyAtDay40": 138628,
+        "avgMoneyAtDay60": 241761,
+        "avgTravelCostPerGig": 95,
+        "avgHitWindow": 190,
+        "avgMissesPerGig": 7,
+        "avgPerformanceScore": 59,
+        "gigScorePctLow": 13.7,
+        "gigScorePctMid": 79,
+        "gigScorePctHigh": 7.3,
+        "gigNetToTravelRatio": 58.4,
+        "gigsToAffordHqUpgrade": 0.04,
+        "gigsToAffordVanUpgrade": 0.06
       },
       "sampleTimeline": [
         {
@@ -626,7 +639,20 @@
         "avgPostPulses": 12.58,
         "avgContrabandDrops": 7.77,
         "avgCatalogUpgrades": 12.7,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 4317,
+        "avgMoneyAtDay40": 9284,
+        "avgMoneyAtDay60": 15427,
+        "avgTravelCostPerGig": 82,
+        "avgHitWindow": 190,
+        "avgMissesPerGig": 7.4,
+        "avgPerformanceScore": 56,
+        "gigScorePctLow": 24,
+        "gigScorePctMid": 70.1,
+        "gigScorePctHigh": 6,
+        "gigNetToTravelRatio": 36.3,
+        "gigsToAffordHqUpgrade": 0.08,
+        "gigsToAffordVanUpgrade": 0.12
       },
       "sampleTimeline": [
         {
@@ -816,7 +842,20 @@
         "avgPostPulses": 13.7,
         "avgContrabandDrops": 8.47,
         "avgCatalogUpgrades": 14.82,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 27761,
+        "avgMoneyAtDay40": 65198,
+        "avgMoneyAtDay60": 116713,
+        "avgTravelCostPerGig": 94,
+        "avgHitWindow": 190,
+        "avgMissesPerGig": 6.9,
+        "avgPerformanceScore": 59,
+        "gigScorePctLow": 13.8,
+        "gigScorePctMid": 74.6,
+        "gigScorePctHigh": 11.5,
+        "gigNetToTravelRatio": 60.3,
+        "gigsToAffordHqUpgrade": 0.04,
+        "gigsToAffordVanUpgrade": 0.06
       },
       "sampleTimeline": [
         {
@@ -1006,7 +1045,20 @@
         "avgPostPulses": 13.29,
         "avgContrabandDrops": 8.44,
         "avgCatalogUpgrades": 14.17,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 10428,
+        "avgMoneyAtDay40": 23422,
+        "avgMoneyAtDay60": 35843,
+        "avgTravelCostPerGig": 91,
+        "avgHitWindow": 195,
+        "avgMissesPerGig": 7.3,
+        "avgPerformanceScore": 57,
+        "gigScorePctLow": 20.6,
+        "gigScorePctMid": 72,
+        "gigScorePctHigh": 7.3,
+        "gigNetToTravelRatio": 37.5,
+        "gigsToAffordHqUpgrade": 0.07,
+        "gigsToAffordVanUpgrade": 0.1
       },
       "sampleTimeline": [
         {
@@ -1196,7 +1248,20 @@
         "avgPostPulses": 13.35,
         "avgContrabandDrops": 7.6,
         "avgCatalogUpgrades": 14.25,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 14711,
+        "avgMoneyAtDay40": 36420,
+        "avgMoneyAtDay60": 67380,
+        "avgTravelCostPerGig": 93,
+        "avgHitWindow": 190,
+        "avgMissesPerGig": 5.8,
+        "avgPerformanceScore": 66,
+        "gigScorePctLow": 5.2,
+        "gigScorePctMid": 62.7,
+        "gigScorePctHigh": 32.1,
+        "gigNetToTravelRatio": 62.3,
+        "gigsToAffordHqUpgrade": 0.04,
+        "gigsToAffordVanUpgrade": 0.06
       },
       "sampleTimeline": [
         {
@@ -1386,7 +1451,20 @@
         "avgPostPulses": 13.57,
         "avgContrabandDrops": 8.13,
         "avgCatalogUpgrades": 14.8,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 20587,
+        "avgMoneyAtDay40": 46862,
+        "avgMoneyAtDay60": 86933,
+        "avgTravelCostPerGig": 94,
+        "avgHitWindow": 190,
+        "avgMissesPerGig": 6.9,
+        "avgPerformanceScore": 60,
+        "gigScorePctLow": 14.8,
+        "gigScorePctMid": 72.2,
+        "gigScorePctHigh": 12.9,
+        "gigNetToTravelRatio": 50.1,
+        "gigsToAffordHqUpgrade": 0.05,
+        "gigsToAffordVanUpgrade": 0.07
       },
       "sampleTimeline": [
         {
@@ -1576,7 +1654,20 @@
         "avgPostPulses": 13.7,
         "avgContrabandDrops": 8.68,
         "avgCatalogUpgrades": 15.01,
-        "sampleSize": 260
+        "sampleSize": 260,
+        "avgMoneyAtDay20": 29619,
+        "avgMoneyAtDay40": 65402,
+        "avgMoneyAtDay60": 112563,
+        "avgTravelCostPerGig": 94,
+        "avgHitWindow": 190,
+        "avgMissesPerGig": 7.2,
+        "avgPerformanceScore": 57,
+        "gigScorePctLow": 20.3,
+        "gigScorePctMid": 72.3,
+        "gigScorePctHigh": 7.4,
+        "gigNetToTravelRatio": 56.8,
+        "gigsToAffordHqUpgrade": 0.05,
+        "gigsToAffordVanUpgrade": 0.07
       },
       "sampleTimeline": [
         {
