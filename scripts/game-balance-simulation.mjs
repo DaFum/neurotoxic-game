@@ -1036,7 +1036,7 @@ const runSingleSimulation = (scenario, seed) => {
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
 
-    // Chaos Tour fix: Show cancellation check (happens BEFORE minigames)
+    // Show cancellation check (happens BEFORE minigames)
     const isCancelled =
       state.band.harmony < 15 &&
       rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
