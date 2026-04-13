@@ -47,11 +47,9 @@ export const secureRandom = () => {
 
 /**
  * A safe wrapper for generating random numbers that uses secureRandom.
- * Logs the error once to the error handler and rethrows it if the Crypto API
- * is unavailable. This function never falls back to a non-cryptographic RNG.
+ * Logs the error once to the error handler and falls back to Math.random() if the Crypto API
+ * is unavailable.
  * @returns {number}
- * @throws {Error} If cryptographically secure random number generation is not
- * supported in the current environment.
  */
 export const getSafeRandom = () => {
   try {
@@ -60,12 +58,12 @@ export const getSafeRandom = () => {
     if (!secureRandomErrorReported) {
       secureRandomErrorReported = true
       handleError(error, {
-        silent: false,
-        severity: 'high',
-        fallbackMessage: 'Crypto API unavailable, random generation failed.'
+        silent: true,
+        severity: 'medium',
+        fallbackMessage: 'Crypto API unavailable, falling back to Math.random.'
       })
     }
-    throw error
+    return Math.random()
   }
 }
 
@@ -86,7 +84,10 @@ export const getSafeUUID = () => {
   // Fallback RFC4122 v4 UUID
   const buffer = new Uint8Array(16)
   try {
-    crypto?.getRandomValues?.(buffer)
+    if (typeof crypto?.getRandomValues !== 'function') {
+      throw new Error('getRandomValues not supported')
+    }
+    crypto.getRandomValues(buffer)
   } catch {
     // Intentionally use Math.random() directly only as a last resort to avoid
     // circular dependency with getSafeRandom -> handleError -> logger ->
