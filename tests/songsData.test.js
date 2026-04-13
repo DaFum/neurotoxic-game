@@ -1,7 +1,7 @@
-import { test, describe, mock } from 'node:test'
+import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
+import { transformSongsData } from '../src/data/songs.js'
 
-// Mock the JSON import
 const mockRhythmSongs = {
   'Test Song 1': {
     name: 'Test Song 1',
@@ -48,25 +48,15 @@ const mockRhythmSongs = {
   }
 }
 
-mock.module('../src/assets/rhythm_songs.json', {
-  defaultExport: mockRhythmSongs
-})
-
 describe('songs.js', () => {
-  let SONGS_DB
+  const SONGS_DB = transformSongsData(mockRhythmSongs)
 
-  test('transforms JSON to SONGS_DB array', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('transforms JSON to SONGS_DB array', () => {
     assert.ok(Array.isArray(SONGS_DB))
     assert.ok(SONGS_DB.length > 0)
   })
 
-  test('each song has required fields', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('each song has required fields', () => {
     SONGS_DB.forEach(song => {
       assert.ok(song.id, 'song should have id')
       assert.ok(song.leaderboardId, 'song should have leaderboardId')
@@ -86,18 +76,12 @@ describe('songs.js', () => {
     })
   })
 
-  test('uses JSON key as stable ID', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('uses JSON key as stable ID', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     assert.equal(song1.id, 'Test Song 1')
   })
 
-  test('creates API-safe leaderboardId from key', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('creates API-safe leaderboardId from key', () => {
     const specialSong = SONGS_DB.find(s => s.name === 'Song With Special Chars')
     assert.ok(specialSong)
     // Should replace special chars with underscores
@@ -109,29 +93,20 @@ describe('songs.js', () => {
     assert.ok(!specialSong.leaderboardId.endsWith('_'))
   })
 
-  test('calculates duration from last note time if needed', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('calculates duration from last note time if needed', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     // Should use durationMs (30000ms = 30s) or calculated from last note + buffer
     assert.ok(song1.duration >= 30)
   })
 
-  test('clamps difficulty to 1-7 range', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('clamps difficulty to 1-7 range', () => {
     SONGS_DB.forEach(song => {
       assert.ok(song.difficulty >= 1, `${song.name} difficulty should be >= 1`)
       assert.ok(song.difficulty <= 7, `${song.name} difficulty should be <= 7`)
     })
   })
 
-  test('derives intensity from difficulty', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('derives intensity from difficulty', () => {
     const song1 = SONGS_DB.find(s => s.difficulty === 3)
     assert.equal(song1?.intensity, 'MEDIUM')
 
@@ -139,19 +114,13 @@ describe('songs.js', () => {
     assert.equal(song2?.intensity, 'HIGH')
   })
 
-  test('handles missing optional fields gracefully', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('handles missing optional fields gracefully', () => {
     const songNoOgg = SONGS_DB.find(s => s.name === 'Test Song 2')
     assert.ok(songNoOgg)
     assert.equal(songNoOgg.sourceOgg, null)
   })
 
-  test('filters out invalid notes (non-finite tick values)', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('filters out invalid notes (non-finite tick values)', () => {
     SONGS_DB.forEach(song => {
       song.notes.forEach(note => {
         assert.ok(
@@ -162,30 +131,19 @@ describe('songs.js', () => {
     })
   })
 
-  test('handles invalid BPM by clamping to minimum 1', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('handles invalid BPM by clamping to minimum 1', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(edgeSong.bpm >= 1)
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(edgeSong.bpm >= 1)
   })
 
-  test('handles invalid TPB by clamping to minimum 1', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('handles invalid TPB by clamping to minimum 1', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(edgeSong.tpb >= 1)
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(edgeSong.tpb >= 1)
   })
 
-  test('clamps crowdAppeal to 1-10 range', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('clamps crowdAppeal to 1-10 range', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         song.crowdAppeal >= 1,
@@ -198,10 +156,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('validates song duration', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('validates song duration', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         Number.isInteger(song.duration),
@@ -214,10 +169,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('validates song energy', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('validates song energy', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         typeof song.energy === 'object' && song.energy !== null,
@@ -234,10 +186,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('validates song tempo fields', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('validates song tempo fields', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         Number.isFinite(song.bpm) && song.bpm >= 1,
@@ -250,10 +199,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('validates song notes', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('validates song notes', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         Array.isArray(song.notes),
@@ -281,91 +227,61 @@ describe('songs.js', () => {
     })
   })
 
-  test('calculates staminaDrain based on difficulty', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('calculates staminaDrain based on difficulty', () => {
     SONGS_DB.forEach(song => {
       assert.ok(typeof song.staminaDrain === 'number')
       assert.ok(song.staminaDrain > 0)
     })
   })
 
-  test('provides default tags if missing', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('provides default tags if missing', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(Array.isArray(edgeSong.tags))
-      assert.ok(edgeSong.tags.includes('Metal'))
-      assert.ok(edgeSong.tags.includes('Instrumental'))
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(Array.isArray(edgeSong.tags))
+    assert.ok(edgeSong.tags.includes('Metal'))
+    assert.ok(edgeSong.tags.includes('Instrumental'))
   })
 
-  test('preserves original notes array', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('preserves original notes array', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     assert.equal(song1.notes.length, 2)
     assert.equal(song1.notes[0].t, 100)
     assert.equal(song1.notes[1].t, 200)
   })
 
-  test('preserves tempoMap', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('preserves tempoMap', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     assert.ok(Array.isArray(song1.tempoMap))
     assert.equal(song1.tempoMap.length, 1)
   })
 
-  test('includes sourceMid and sourceOgg fields', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('includes sourceMid and sourceOgg fields', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     assert.equal(song1.sourceMid, 'test1.mid')
     assert.equal(song1.sourceOgg, 'test1.ogg')
   })
 
-  test('includes excerpt timing fields', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('includes excerpt timing fields', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     assert.equal(song1.excerptStartMs, 5000)
     assert.equal(song1.excerptEndMs, 35000)
     assert.equal(song1.excerptDurationMs, 30000)
   })
 
-  test('calculates excerptDurationMs from durationMs if not provided', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('calculates excerptDurationMs from durationMs if not provided', () => {
     const songNoExcerpt = SONGS_DB.find(s => s.name === 'Test Song 2')
-    if (songNoExcerpt && songNoExcerpt.excerptDurationMs !== null) {
-      assert.ok(songNoExcerpt.excerptDurationMs >= 0)
-    }
+    assert.ok(songNoExcerpt, 'Test Song 2 fixture missing')
+    assert.equal(songNoExcerpt.excerptDurationMs, null)
   })
 
-  test('handles array-like notes field that is not an array', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('handles array-like notes field that is not an array', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(Array.isArray(edgeSong.notes))
-      assert.equal(edgeSong.notes.length, 0)
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(Array.isArray(edgeSong.notes))
+    assert.equal(edgeSong.notes.length, 0)
   })
 
-  test('creates energy curve from difficulty', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('creates energy curve from difficulty', () => {
     SONGS_DB.forEach(song => {
       assert.ok(song.energy)
       assert.ok(typeof song.energy.peak === 'number')
@@ -374,10 +290,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('name and title are both populated', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('name and title are both populated', () => {
     SONGS_DB.forEach(song => {
       assert.ok(song.name)
       assert.ok(song.title)
@@ -385,10 +298,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('calculates last note time correctly for duration', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('calculates last note time correctly for duration', () => {
     const song1 = SONGS_DB.find(s => s.name === 'Test Song 1')
     // Last note at tick 200, tpb 480, bpm 120
     // duration in seconds = (200 / 480) * (60 / 120) = 0.208s
@@ -396,29 +306,20 @@ describe('songs.js', () => {
     assert.ok(song1.duration >= 4)
   })
 
-  test('handles negative or zero difficulty gracefully', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('handles negative or zero difficulty gracefully', () => {
     SONGS_DB.forEach(song => {
       // Difficulty should be clamped to at least 1
       assert.ok(song.difficulty >= 1)
     })
   })
 
-  test('leaderboardId is lowercase', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('leaderboardId is lowercase', () => {
     SONGS_DB.forEach(song => {
       assert.equal(song.leaderboardId, song.leaderboardId.toLowerCase())
     })
   })
 
-  test('leaderboardId contains only allowed characters', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('leaderboardId contains only allowed characters', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         /^[a-z0-9_-]+$/.test(song.leaderboardId),
@@ -427,10 +328,7 @@ describe('songs.js', () => {
     })
   })
 
-  test('leaderboardId max length is 64 characters', async () => {
-    const mod = await import('../src/data/songs.js')
-    SONGS_DB = mod.SONGS_DB
-
+  test('leaderboardId max length is 64 characters', () => {
     SONGS_DB.forEach(song => {
       assert.ok(
         song.leaderboardId.length <= 64,

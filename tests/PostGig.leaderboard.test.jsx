@@ -6,6 +6,78 @@ import { GAME_PHASES } from '../src/context/gameConstants'
 import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
 
+// Mock lazy-loaded phase components to prevent Suspense timeout in tests
+vi.mock('../src/components/postGig/ReportPhase', () => ({
+  ReportPhase: ({ financials, onNext, ...layoutProps }) => (
+    <div data-testid='mock-report-phase' {...layoutProps}>
+      <button type='button' onClick={onNext}>
+        Continue to Socials
+      </button>
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/SocialPhase', () => ({
+  SocialPhase: ({
+    options = [],
+    onSelect,
+    trend,
+    zealotryLevel,
+    ...layoutProps
+  }) => (
+    <div
+      data-testid='mock-social-phase'
+      data-trend={trend}
+      data-zealotry-level={zealotryLevel}
+      {...layoutProps}
+    >
+      {options.map(opt => (
+        <button type='button' key={opt.id} onClick={() => onSelect(opt)}>
+          {opt.name}
+        </button>
+      ))}
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/DealsPhase', () => ({
+  DealsPhase: ({ offers = [], onAccept, onSkip, ...layoutProps }) => (
+    <div data-testid='mock-deals-phase' {...layoutProps}>
+      {offers[0] && (
+        <button type='button' onClick={() => onAccept(offers[0])}>
+          Accept First Deal
+        </button>
+      )}
+      <button type='button' onClick={onSkip}>
+        Skip Deals
+      </button>
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/CompletePhase', () => ({
+  CompletePhase: ({
+    result,
+    onContinue,
+    onSpinStory,
+    player,
+    social,
+    ...layoutProps
+  }) => (
+    <div data-testid='mock-complete-phase' {...layoutProps}>
+      {result && <div>{result.message}</div>}
+      {player && (
+        <button type='button' onClick={onSpinStory}>
+          Spin Story
+        </button>
+      )}
+      <button type='button' onClick={onContinue}>
+        Back to Tour &gt;
+      </button>
+    </div>
+  )
+}))
+
 // Mock dependencies
 
 const mocks = vi.hoisted(() => ({

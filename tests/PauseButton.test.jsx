@@ -1,13 +1,12 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { PauseButton } from '../src/components/hud/PauseButton.jsx'
 
 afterEach(cleanup)
 
 describe('PauseButton', () => {
   test('renders pause button with correct accessibility and focus classes', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
     const { rerender } = render(
@@ -27,8 +26,6 @@ describe('PauseButton', () => {
   })
 
   test('renders pause button with correct icon', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
@@ -42,8 +39,6 @@ describe('PauseButton', () => {
   })
 
   test('calls onTogglePause when clicked', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
     const user = userEvent.setup()
 
@@ -56,8 +51,6 @@ describe('PauseButton', () => {
   })
 
   test('is disabled when game is over', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={true} />)
@@ -67,8 +60,6 @@ describe('PauseButton', () => {
   })
 
   test('is enabled when game is not over', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
     render(<PauseButton onTogglePause={mockToggle} isGameOver={false} />)
@@ -78,8 +69,6 @@ describe('PauseButton', () => {
   })
 
   test('applies correct styling when game is over', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
     const { container } = render(
@@ -92,8 +81,6 @@ describe('PauseButton', () => {
   })
 
   test('does not have disabled styles when game is active', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
     const mockToggle = vi.fn()
 
     const { container } = render(
@@ -106,9 +93,6 @@ describe('PauseButton', () => {
   })
 
   test('renders without onTogglePause prop (should not crash)', async () => {
-    const { PauseButton } =
-      await import('../src/components/hud/PauseButton.jsx')
-
     // Component should handle missing prop gracefully
     render(<PauseButton isGameOver={false} />)
 

@@ -2,86 +2,93 @@
 // Music Library
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 
-// Transform the JSON object into an array and map to the expected structure
-export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
-  // Calculate duration based on the last note tick to ensure the song doesn't end prematurely
-  let lastNoteTick = 0
-  const validNotes = []
-  if (Array.isArray(song.notes)) {
-    for (let i = 0; i < song.notes.length; i++) {
-      const note = song.notes[i]
-      if (Number.isFinite(note.t)) {
-        validNotes.push(note)
-        if (note.t > lastNoteTick) {
-          lastNoteTick = note.t
+/**
+ * Transform a raw rhythm_songs JSON object into the SONGS_DB array format.
+ * Exported so tests can invoke the transformation with controlled fixture data
+ * without needing to mock the JSON module.
+ */
+export function transformSongsData(rawSongs) {
+  return Object.entries(rawSongs).map(([key, song]) => {
+    let lastNoteTick = 0
+    const validNotes = []
+    if (Array.isArray(song.notes)) {
+      for (let i = 0; i < song.notes.length; i++) {
+        const note = song.notes[i]
+        if (
+          note !== null &&
+          typeof note === 'object' &&
+          Number.isFinite(note.t)
+        ) {
+          validNotes.push(note)
+          if (note.t > lastNoteTick) {
+            lastNoteTick = note.t
+          }
         }
       }
     }
-  }
 
-  const tpb = Math.max(1, song.tpb || 480)
-  const bpm = Math.max(1, song.bpm || 120)
-  // duration in seconds = (ticks / tpb) * (60 / bpm)
-  const lastNoteTimeSeconds = (lastNoteTick / tpb) * (60 / bpm)
+    const tpb = Math.max(1, song.tpb || 480)
+    const bpm = Math.max(1, song.bpm || 120)
+    const lastNoteTimeSeconds = (lastNoteTick / tpb) * (60 / bpm)
+    const duration = Math.ceil(
+      Math.max((song.durationMs || 0) / 1000, lastNoteTimeSeconds + 4)
+    )
 
-  // Use the max of defined duration or last note time, plus a 4s buffer for decay
-  const duration = Math.ceil(
-    Math.max((song.durationMs || 0) / 1000, lastNoteTimeSeconds + 4)
-  )
+    return {
+      id: key,
+      leaderboardId: key
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 64),
+      name: song.name,
+      title: song.name,
+      duration: duration,
+      difficulty: Math.max(1, Math.min(7, song.difficultyRank || 2)),
+      intensity:
+        (song.difficultyRank || 2) > 5
+          ? 'EXTREME'
+          : (song.difficultyRank || 2) > 3
+            ? 'HIGH'
+            : (song.difficultyRank || 2) > 2
+              ? 'MEDIUM'
+              : 'LOW',
+      bpm: bpm,
+      tags: song.tags || ['Metal', 'Instrumental'],
+      notePattern: song.notePattern || 'standard',
+      crowdAppeal: Number.isFinite(Number(song.crowdAppeal))
+        ? Math.min(10, Math.max(1, Number(song.crowdAppeal)))
+        : Math.min(
+            10,
+            Math.max(1, Math.ceil((song.difficultyRank || 2) * 1.5))
+          ),
+      staminaDrain: Number.isFinite(Number(song.staminaDrain))
+        ? Number(song.staminaDrain)
+        : 10 + (song.difficultyRank || 2) * 2,
+      energy: { peak: Math.min(100, 60 + (song.difficultyRank || 2) * 5) },
+      notes: validNotes,
+      tempoMap: song.tempoMap || [],
+      tpb: tpb,
+      sourceMid: song.sourceMid,
+      sourceOgg: song.sourceOgg || null,
+      excerptStartMs: song.excerptStartMs || 0,
+      excerptEndMs: Number.isFinite(song.excerptEndMs)
+        ? song.excerptEndMs
+        : null,
+      durationMs: Number.isFinite(song.durationMs) ? song.durationMs : null,
+      excerptDurationMs: Number.isFinite(song.excerptDurationMs)
+        ? Math.max(0, song.excerptDurationMs)
+        : Number.isFinite(song.durationMs)
+          ? Math.max(0, song.durationMs)
+          : null
+    }
+  })
+}
 
-  return {
-    id: key, // Use JSON key as ID for stability
-    // leaderboardId: API-safe slug derived from the JSON key.
-    // The raw key may contain spaces/special chars that the leaderboard API
-    // rejects (^[a-zA-Z0-9_-]+$, max 64 chars). This slug is stable as long
-    // as the JSON keys don't change, and is the only field used for API calls.
-    leaderboardId: key
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_+|_+$/g, '')
-      .slice(0, 64),
-    name: song.name,
-    title: song.name, // Alias for UI consistency if needed
-    duration: duration,
-    difficulty: Math.max(1, Math.min(7, song.difficultyRank || 2)), // Clamp 1-7
-    intensity:
-      (song.difficultyRank || 2) > 5
-        ? 'EXTREME'
-        : (song.difficultyRank || 2) > 3
-          ? 'HIGH'
-          : (song.difficultyRank || 2) > 2
-            ? 'MEDIUM'
-            : 'LOW',
-    bpm: bpm,
-    tags: song.tags || ['Metal', 'Instrumental'],
-    notePattern: song.notePattern || 'standard',
-    crowdAppeal: Number.isFinite(Number(song.crowdAppeal))
-      ? Math.min(10, Math.max(1, Number(song.crowdAppeal)))
-      : Math.min(10, Math.max(1, Math.ceil((song.difficultyRank || 2) * 1.5))),
-    staminaDrain: Number.isFinite(Number(song.staminaDrain))
-      ? Number(song.staminaDrain)
-      : 10 + (song.difficultyRank || 2) * 2,
-
-    // Fake energy curve based on difficulty for now, as it's not in the JSON
-    energy: { peak: Math.min(100, 60 + (song.difficultyRank || 2) * 5) },
-
-    // Raw data for the game engine
-    notes: validNotes,
-    tempoMap: song.tempoMap || [],
-    tpb: tpb,
-    sourceMid: song.sourceMid,
-    sourceOgg: song.sourceOgg || null,
-    excerptStartMs: song.excerptStartMs || 0,
-    excerptEndMs: Number.isFinite(song.excerptEndMs) ? song.excerptEndMs : null,
-    durationMs: Number.isFinite(song.durationMs) ? song.durationMs : null,
-    excerptDurationMs: Number.isFinite(song.excerptDurationMs)
-      ? Math.max(0, song.excerptDurationMs)
-      : Number.isFinite(song.durationMs)
-        ? Math.max(0, song.durationMs)
-        : null
-  }
-})
+// transformSongsData is the single source of truth for the shape.
+// Runtime uses it here; tests import and call it directly with fixture data.
+export const SONGS_DB = transformSongsData(rhythmSongs)
 
 // Pre-computed maps for O(1) lookups
 export const SONGS_BY_ID = new Map(SONGS_DB.map(song => [song.id, song]))

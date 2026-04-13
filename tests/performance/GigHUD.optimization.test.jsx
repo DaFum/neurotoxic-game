@@ -1,69 +1,126 @@
 import { afterEach, expect, test, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
-import React from 'react'
 
 // Mock dependencies
 vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
 
-// Mock sub-components with tracking
-// We must wrap mocks in React.memo to simulate the real components behavior,
-// otherwise they will re-render on every parent render regardless of props.
-const ScoreDisplaySpy = vi.fn(() => <div data-testid='score-display' />)
-const ScoreDisplayMock = React.memo(ScoreDisplaySpy)
+// Create spies with vi.hoisted so they're accessible in vi.mock factories
+// (vi.mock factories are hoisted before const declarations, causing TDZ otherwise)
+const ScoreDisplaySpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='score-display' {...props}>
+      {children}
+    </div>
+  ))
+)
+const HealthBarSpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='health-bar' {...props}>
+      {children}
+    </div>
+  ))
+)
+const ComboDisplaySpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='combo-display' {...props}>
+      {children}
+    </div>
+  ))
+)
+const OverloadMeterSpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='overload-meter' {...props}>
+      {children}
+    </div>
+  ))
+)
+const LaneInputAreaSpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='lane-input-area' {...props}>
+      {children}
+    </div>
+  ))
+)
+const ControlsHintSpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='controls-hint' {...props}>
+      {children}
+    </div>
+  ))
+)
+const PauseButtonSpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='pause-button' {...props}>
+      {children}
+    </div>
+  ))
+)
+const ToxicModeFlashSpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='toxic-mode-flash' {...props}>
+      {children}
+    </div>
+  ))
+)
+const GameOverOverlaySpy = vi.hoisted(() =>
+  vi.fn(({ children, ...props }) => (
+    <div data-testid='game-over-overlay' {...props}>
+      {children}
+    </div>
+  ))
+)
 
-const HealthBarSpy = vi.fn(() => <div data-testid='health-bar' />)
-const HealthBarMock = React.memo(HealthBarSpy)
+// Helper: wraps a spy with React.memo inside an async factory.
+// Function declarations are hoisted, so this is available when vi.mock factories run.
+function makeReactMemoMock(exportName, spy) {
+  return async () => {
+    const { default: React } = await import('react')
+    return { [exportName]: React.memo(spy) }
+  }
+}
 
-const ComboDisplaySpy = vi.fn(() => <div data-testid='combo-display' />)
-const ComboDisplayMock = React.memo(ComboDisplaySpy)
+// Use async factories so we can import React for React.memo wrapping,
+// which is needed to simulate the real components' memoization behaviour.
+vi.mock(
+  '../../src/components/hud/ScoreDisplay.jsx',
+  makeReactMemoMock('ScoreDisplay', ScoreDisplaySpy)
+)
+vi.mock(
+  '../../src/components/hud/HealthBar.jsx',
+  makeReactMemoMock('HealthBar', HealthBarSpy)
+)
+vi.mock(
+  '../../src/components/hud/ComboDisplay.jsx',
+  makeReactMemoMock('ComboDisplay', ComboDisplaySpy)
+)
+vi.mock(
+  '../../src/components/hud/OverloadMeter.jsx',
+  makeReactMemoMock('OverloadMeter', OverloadMeterSpy)
+)
+vi.mock(
+  '../../src/components/hud/LaneInputArea.jsx',
+  makeReactMemoMock('LaneInputArea', LaneInputAreaSpy)
+)
+vi.mock(
+  '../../src/components/hud/ControlsHint.jsx',
+  makeReactMemoMock('ControlsHint', ControlsHintSpy)
+)
+vi.mock(
+  '../../src/components/hud/PauseButton.jsx',
+  makeReactMemoMock('PauseButton', PauseButtonSpy)
+)
+vi.mock(
+  '../../src/components/hud/ToxicModeFlash.jsx',
+  makeReactMemoMock('ToxicModeFlash', ToxicModeFlashSpy)
+)
+vi.mock(
+  '../../src/components/hud/GameOverOverlay.jsx',
+  makeReactMemoMock('GameOverOverlay', GameOverOverlaySpy)
+)
 
-const OverloadMeterSpy = vi.fn(() => <div data-testid='overload-meter' />)
-const OverloadMeterMock = React.memo(OverloadMeterSpy)
-
-const LaneInputAreaSpy = vi.fn(() => <div data-testid='lane-input-area' />)
-const LaneInputAreaMock = React.memo(LaneInputAreaSpy)
-
-const ControlsHintSpy = vi.fn(() => <div data-testid='controls-hint' />)
-const ControlsHintMock = React.memo(ControlsHintSpy)
-
-const PauseButtonSpy = vi.fn(() => <div data-testid='pause-button' />)
-const PauseButtonMock = React.memo(PauseButtonSpy)
-
-const ToxicModeFlashSpy = vi.fn(() => <div data-testid='toxic-mode-flash' />)
-const ToxicModeFlashMock = React.memo(ToxicModeFlashSpy)
-
-const GameOverOverlaySpy = vi.fn(() => <div data-testid='game-over-overlay' />)
-const GameOverOverlayMock = React.memo(GameOverOverlaySpy)
-
-vi.mock('../../src/components/hud/ScoreDisplay.jsx', () => ({
-  ScoreDisplay: ScoreDisplayMock
-}))
-vi.mock('../../src/components/hud/HealthBar.jsx', () => ({
-  HealthBar: HealthBarMock
-}))
-vi.mock('../../src/components/hud/ComboDisplay.jsx', () => ({
-  ComboDisplay: ComboDisplayMock
-}))
-vi.mock('../../src/components/hud/OverloadMeter.jsx', () => ({
-  OverloadMeter: OverloadMeterMock
-}))
-vi.mock('../../src/components/hud/LaneInputArea.jsx', () => ({
-  LaneInputArea: LaneInputAreaMock
-}))
-vi.mock('../../src/components/hud/ControlsHint.jsx', () => ({
-  ControlsHint: ControlsHintMock
-}))
-vi.mock('../../src/components/hud/PauseButton.jsx', () => ({
-  PauseButton: PauseButtonMock
-}))
-vi.mock('../../src/components/hud/ToxicModeFlash.jsx', () => ({
-  ToxicModeFlash: ToxicModeFlashMock
-}))
-vi.mock('../../src/components/hud/GameOverOverlay.jsx', () => ({
-  GameOverOverlay: GameOverOverlayMock
-}))
+import { GigHUD } from '../../src/components/GigHUD.jsx'
 
 afterEach(() => {
   cleanup()
@@ -71,8 +128,6 @@ afterEach(() => {
 })
 
 test('GigHUD: updates only relevant components when props change', async () => {
-  const { GigHUD } = await import('../../src/components/GigHUD.jsx')
-
   const initialStats = {
     score: 1000,
     combo: 10,
