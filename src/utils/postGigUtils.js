@@ -284,6 +284,7 @@ export const calculateContinueStats = ({
   player,
   perfScore,
   financials,
+  misses,
   calculateFameGain,
   calculateFameLevel,
   clampPlayerFame,
@@ -300,6 +301,14 @@ export const calculateContinueStats = ({
       prevFame,
       BALANCE_CONSTANTS.MAX_FAME_GAIN
     )
+  } else {
+    // Progressive miss-penalty on bad gigs
+    const MISS_TOLERANCE = 8
+    const missCount = misses ?? 0
+    if (missCount > MISS_TOLERANCE) {
+      const missPenalty = Math.round((missCount - MISS_TOLERANCE) * 0.5)
+      finalFameGain -= missPenalty
+    }
   }
 
   const prevMoney = player.money ?? 0

@@ -247,6 +247,13 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
   const nextMoney = clampPlayerMoney(nextPlayer.money - dailyCost)
   nextPlayer.money = nextMoney
 
+  // Wealth-Scaled Daily Expense Drain (8% daily chance, only if money >= 2000)
+  if (nextPlayer.money >= 2000 && rng() < 0.08) {
+    const drainRate = 0.015 + rng() * 0.015  // 1.5–3.0%
+    const expense = Math.round(nextPlayer.money * drainRate)
+    nextPlayer.money = clampPlayerMoney(nextPlayer.money - expense)
+  }
+
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
@@ -372,6 +379,12 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
     } else if (controversySnapshot >= 60 && rng() < 0.5) {
       nextSocial.sponsorActive = false // High chance to drop
     }
+  }
+
+  // Fame-Scaled Sponsor Daily Payout
+  if (nextSocial.sponsorActive) {
+    const scaledPayout = Math.min(800, Math.max(180, Math.round((nextPlayer.fame ?? 0) * 2)))
+    nextPlayer.money = clampPlayerMoney(nextPlayer.money + scaledPayout)
   }
 
   // TikTok Viral Surge Perk
