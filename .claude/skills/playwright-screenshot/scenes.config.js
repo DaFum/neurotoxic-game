@@ -183,7 +183,7 @@ export const FIXTURES = {
   'pre-gig-minigame-amp': {
     description: 'Pre-gig Amp Calibration minigame',
     currentScene: 'PRE_GIG_MINIGAME',
-    gamePhase: 'PRE_GIQ_MINIGAME',
+    gamePhase: 'PRE_GIG_MINIGAME',
     minigameType: 'AMP_CALIBRATION',
     minigameData: { active: true, type: 'AMP_CALIBRATION' }
   },

@@ -68,6 +68,9 @@ export const calculateTicketIncome = (
   modifiers = {},
   context = {}
 ) => {
+  gigData = gigData || {}
+  modifiers = modifiers || {}
+  context = context || {}
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~8x capacity to fill it easily
@@ -144,6 +147,10 @@ export const calculateMerchIncome = (
   bandInventory = {},
   context = {}
 ) => {
+  gigStats = gigStats || {}
+  modifiers = modifiers || {}
+  bandInventory = bandInventory || {}
+  context = context || {}
   // Better baseline merch conversion.
   // Smoothly scales from 10% to 40% based on performance
   let buyRate = 0.1 + (performanceScore / 100) * 0.3
@@ -229,6 +236,8 @@ export const calculateMerchIncome = (
  * @returns {number} The calculated distance.
  */
 export const calculateDistance = (nodeA, nodeB = null) => {
+  nodeA = nodeA || {}
+  nodeB = nodeB || {}
   const x1 = typeof nodeA?.x === 'number' ? nodeA.x : (nodeA?.venue?.x ?? 50)
   const y1 = typeof nodeA?.y === 'number' ? nodeA.y : (nodeA?.venue?.y ?? 50)
 
@@ -341,8 +350,10 @@ export const calculateRepairCost = currentCondition => {
  * @param {object} context - Context object containing flags like discountedTickets.
  * @returns {number} The effective ticket price.
  */
-export const calculateEffectiveTicketPrice = (gigData, context = {}) => {
+export const calculateEffectiveTicketPrice = (gigData = {}, context = {}) => {
   if (!gigData) return 0
+  gigData = gigData || {}
+  context = context || {}
   let price = gigData.price || 0
   if (context.discountedTickets && price > 10) {
     price = Math.floor(price * 0.5)
@@ -355,6 +366,7 @@ export const calculateEffectiveTicketPrice = (gigData, context = {}) => {
  */
 const VENUE_SPLIT_RATES = { 3: 0.2, 4: 0.4 }
 export const calculateVenueSplit = (ticketsRevenue = 0, gigData = {}) => {
+  gigData = gigData || {}
   const splitRate =
     gigData.diff >= 5
       ? 0.7
@@ -381,6 +393,7 @@ export const calculateVenueSplit = (ticketsRevenue = 0, gigData = {}) => {
  * Calculates guarantee / base pay.
  */
 export const calculateGuarantee = (gigData = {}) => {
+  gigData = gigData || {}
   const pay = Math.max(0, gigData.pay || 0)
   if (pay > 0) {
     return {
@@ -399,6 +412,7 @@ export const calculateGuarantee = (gigData = {}) => {
  * Calculates bar cut revenue.
  */
 export const calculateBarCut = (ticketsSold = 0, modifiers = {}) => {
+  modifiers = modifiers || {}
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
   const barPercent = Math.round(barRate * 100)
   const barRevenue = Math.max(
@@ -424,6 +438,7 @@ export const calculateBarCut = (ticketsSold = 0, modifiers = {}) => {
  * Calculates sponsorship bonuses.
  */
 export const calculateSponsorshipBonuses = (gigStats = {}) => {
+  gigStats = gigStats || {}
   const bonuses = []
   let totalBonus = 0
 
@@ -455,6 +470,7 @@ export const calculateSponsorshipBonuses = (gigStats = {}) => {
  * Calculates expenses for the gig.
  */
 export const calculateGigExpenses = (modifiers = {}) => {
+  modifiers = modifiers || {}
   const expenses = { total: 0, breakdown: [] }
 
   // Operational Expenses (Modifiers)
