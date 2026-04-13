@@ -2,13 +2,14 @@
 /**
  * screenshot-comprehensive.js
  *
- * Comprehensive screenshot capture script for ALL Neurotoxic scenes, minigames, and overlays.
+ * COMPREHENSIVE screenshot capture script for ALL Neurotoxic scenes, minigames, and overlays.
  *
  * This script combines:
- * 1. Natural game flow capture (INTRO → MENU → OVERWORLD → GIG → POSTGIG)
+ * 1. Natural game flow capture (INTRO → MENU → OVERWORLD → MINIGAMES → GIG → POSTGIG)
  * 2. State injection for hard-to-reach scenes (GAMEOVER, CLINIC, EVENT_MODAL)
- * 3. Robust error handling with graceful fallbacks
- * 4. All UI overlays and modals
+ * 3. All minigame variants (Tourbus, Roadie Run, Kabelsalat, Amp Calibration)
+ * 4. PixiJS canvas scenes
+ * 5. UI overlays and modals
  *
  * Usage:
  *   node .claude/skills/playwright-screenshot/scripts/screenshot-comprehensive.js
@@ -16,10 +17,11 @@
  * Options (env vars):
  *   BASE_URL=http://localhost:5173      App URL (default)
  *   OUT_DIR=screenshots/comprehensive   Output directory (default)
- *   SKIP_NATURAL_FLOW=false             Skip natural game flow and go straight to state injection
+ *   SKIP_NATURAL_FLOW=false             Skip natural game flow
+ *   SKIP_MINIGAMES=false                Skip minigame captures
  *   SKIP_STATE_INJECTION=false          Skip state injection scenes
  *
- * Expected output: 16+ PNG screenshots covering all scenes, minigames, and overlays
+ * Expected output: 20+ PNG screenshots covering all scenes and minigames
  */
 
 /* eslint-disable no-undef */
@@ -31,6 +33,7 @@ import { SCENES, FIXTURES, getFixture } from '../scenes.config.js'
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/comprehensive')
 const SKIP_NATURAL_FLOW = process.env.SKIP_NATURAL_FLOW === 'true'
+const SKIP_MINIGAMES = process.env.SKIP_MINIGAMES === 'true'
 const SKIP_STATE_INJECTION = process.env.SKIP_STATE_INJECTION === 'true'
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -123,6 +126,7 @@ const BASE_STATE = {
     equipment: 'standard',
     audience: 'sober'
   },
+  minigame: { active: false, type: null, targetDestination: null },
   currentGig: null,
   globalSettings: { language: 'en', crtEnabled: true }
 }
@@ -142,6 +146,8 @@ async function injectSave(page, fixture) {
         Object.assign(state.player, fixtureData.playerOverride)
       if (fixtureData.bandOverride)
         Object.assign(state.band, fixtureData.bandOverride)
+      if (fixtureData.minigameData)
+        Object.assign(state.minigame, fixtureData.minigameData)
       if (fixtureData.songId)
         state.currentGig = {
           songId: fixtureData.songId,
@@ -173,7 +179,7 @@ async function injectSave(page, fixture) {
 let screenshotCount = 0
 
 async function snap(page, name, opts = {}) {
-  const { delay = 500, timeout = 60000, element = null, waitFor = null } = opts
+  const { delay = 500, timeout = 60000, waitFor = null } = opts
 
   screenshotCount++
   const paddedNum = String(screenshotCount).padStart(2, '0')
@@ -181,20 +187,12 @@ async function snap(page, name, opts = {}) {
   const filepath = `${OUT_DIR}/${filename}`
 
   try {
-    // Wait for custom condition if provided
     if (waitFor) {
       await waitFor(page)
     }
 
-    // Wait for animation/render to settle
     await page.waitForTimeout(delay)
-
-    // Take screenshot
-    if (element) {
-      await element.screenshot({ path: filepath, timeout })
-    } else {
-      await page.screenshot({ path: filepath, timeout })
-    }
+    await page.screenshot({ path: filepath, timeout })
 
     console.log(`  ✓ ${filename}`)
     return filepath
@@ -230,7 +228,7 @@ async function captureNaturalFlow(page) {
   } catch (_e) {
     // continue
   }
-  await page.waitForTimeout(500) // ensure menu is rendered
+  await page.waitForTimeout(500)
   await snap(page, 'menu', { delay: 800 })
 
   // 03. BAND IDENTITY (required before game)
@@ -288,55 +286,56 @@ async function captureNaturalFlow(page) {
     return // Can't continue without OVERWORLD
   }
 
-  // 07. OVERWORLD - NODE SELECTION
-  console.log('→ OVERWORLD Node Selection')
+  // 07. PREGIG
+  console.log('→ PREGIG')
   try {
+    // Try to select a node and start travel
     const nodes = page.getByRole('button', {
       name: /Travel to (Goldgrube|MTC|Die Distille|Stadtfest|Deichbrand|Wacken)/i
     })
-    const visible = await nodes
+    const nodeVisible = await nodes
       .first()
       .waitFor({ state: 'visible', timeout: 2000 })
       .then(() => true)
       .catch(() => false)
-    if (visible) {
+
+    if (nodeVisible) {
       await nodes.first().click()
-      await snap(page, 'overworld-node-select', { delay: 800 })
-      // Click the node again to start travel
+      await page.waitForTimeout(300)
+
+      // Start travel (confirm)
       await nodes.first().click()
+      await page.waitForTimeout(500)
+
+      // Wait for TRAVEL_MINIGAME canvas
+      const canvasVisible = await page
+        .locator('canvas')
+        .waitFor({ timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+
+      if (canvasVisible && !SKIP_MINIGAMES) {
+        // We're in travel minigame, skip it
+        await page.keyboard.press('Shift+P')
+        await page
+          .locator('canvas')
+          .waitFor({ state: 'hidden', timeout: 3000 })
+          .catch(() => {})
+        await page.waitForTimeout(800)
+      }
     }
-  } catch (_e) {
-    console.log('    (skipped)')
-  }
 
-  // 08. TRAVEL MINIGAME
-  console.log('→ TRAVEL MINIGAME')
-  try {
-    await page.locator('canvas').waitFor({ timeout: 10000 })
-    await snap(page, 'travel-minigame', { delay: 1000 })
-    // Skip minigame
-    await page.keyboard.press('Shift+P')
+    // Now wait for PREGIG
     await page
-      .locator('canvas')
-      .waitFor({ state: 'hidden', timeout: 3000 })
-      .catch(() => {})
-  } catch (_e) {
-    console.log('    (skipped)')
-  }
-
-  // 09. PREGIG
-  console.log('→ PREGIG')
-  try {
-    await page
-      .getByRole('heading', { name: /preparation/i })
+      .getByRole('heading', { name: /preparation|modifier/i })
       .waitFor({ timeout: 5000 })
     await snap(page, 'pregig', { delay: 1200 })
   } catch (_e) {
-    console.log('    (skipped)')
+    console.log(`    (skipped: ${_e.message})`)
   }
 
-  // 10. PRE_GIG MINIGAME
-  console.log('→ PRE_GIG MINIGAME')
+  // 08. PRE_GIQ_MINIGAME
+  console.log('→ PRE_GIQ MINIGAME')
   try {
     const startBtn = page.getByRole('button', { name: /start show/i })
     const visible = await startBtn
@@ -355,10 +354,10 @@ async function captureNaturalFlow(page) {
         .catch(() => {})
     }
   } catch (_e) {
-    console.log('    (skipped)')
+    console.log(`    (skipped: ${_e.message})`)
   }
 
-  // 11. GIG (PixiJS canvas)
+  // 09. GIG (PixiJS canvas)
   console.log('→ GIG Scene')
   try {
     await page.locator('canvas').waitFor({ timeout: 15000 })
@@ -370,10 +369,10 @@ async function captureNaturalFlow(page) {
       .waitFor({ state: 'hidden', timeout: 3000 })
       .catch(() => {})
   } catch (_e) {
-    console.log('    (skipped)')
+    console.log(`    (skipped: ${_e.message})`)
   }
 
-  // 12. POSTGIG
+  // 10. POSTGIG
   console.log('→ POSTGIG')
   try {
     await page
@@ -381,24 +380,69 @@ async function captureNaturalFlow(page) {
       .waitFor({ timeout: 5000 })
     await snap(page, 'postgig', { delay: 1000 })
   } catch (_e) {
-    console.log('    (skipped)')
+    console.log(`    (skipped: ${_e.message})`)
   }
+}
 
-  // 13. POSTGIG SOCIAL
-  console.log('→ POSTGIG Social Media')
-  try {
-    const continueBtn = page.getByRole('button', { name: /continue|next/i })
-    const visible = await continueBtn
-      .first()
-      .waitFor({ state: 'visible', timeout: 2000 })
-      .then(() => true)
-      .catch(() => false)
-    if (visible) {
-      await continueBtn.first().click()
-      await snap(page, 'postgig-social', { delay: 800 })
+/**
+ * Capture minigame variants via state injection
+ */
+async function captureMinigames(page) {
+  console.log('\n📍 PHASE 2: MINIGAME VARIANTS\n')
+
+  const minigames = [
+    {
+      key: 'travel-minigame',
+      name: 'TRAVEL_MINIGAME (Tourbus)'
+    },
+    {
+      key: 'pre-gig-minigame-roadie',
+      name: 'PRE_GIQ_MINIGAME (Roadie Run)'
+    },
+    {
+      key: 'pre-gig-minigame-kabelsalat',
+      name: 'PRE_GIQ_MINIGAME (Kabelsalat)'
+    },
+    {
+      key: 'pre-gig-minigame-amp',
+      name: 'PRE_GIQ_MINIGAME (Amp Calibration)'
+    },
+    {
+      key: 'gig',
+      name: 'GIG Scene'
     }
-  } catch (_e) {
-    console.log('    (skipped)')
+  ]
+
+  for (const { key, name } of minigames) {
+    console.log(`→ ${name}`)
+    try {
+      const fixture = getFixture(key)
+      if (!fixture) {
+        console.log(`    (fixture '${key}' not found)`)
+        continue
+      }
+
+      // Inject state
+      await page.goto(BASE_URL, { waitUntil: 'commit' })
+      await injectSave(page, fixture)
+      await page.reload({ waitUntil: 'commit', timeout: 30000 })
+      await page.waitForTimeout(1000)
+
+      // All minigames and gig use canvas
+      const canvasVisible = await page
+        .locator('canvas')
+        .waitFor({ timeout: 10000 })
+        .then(() => true)
+        .catch(() => false)
+
+      if (canvasVisible) {
+        await snap(page, key, { delay: 1500 })
+      } else {
+        console.log(`    (canvas not visible)`)
+      }
+    } catch (err) {
+      console.log(`    (failed: ${err.message})`)
+    }
   }
 }
 
@@ -406,14 +450,15 @@ async function captureNaturalFlow(page) {
  * Capture scenes via state injection (hard-to-reach scenes)
  */
 async function captureStateInjected(page) {
-  console.log('\n📍 PHASE 2: STATE INJECTION SCENES\n')
+  console.log('\n📍 PHASE 3: STATE INJECTION SCENES\n')
 
   const fixturesToCapture = [
     { key: 'overworld', name: 'Overworld (injected)' },
     { key: 'pregig', name: 'PreGig (injected)' },
     { key: 'postgig', name: 'PostGig (injected)' },
     { key: 'gameover', name: 'GameOver' },
-    { key: 'clinic', name: 'Clinic' }
+    { key: 'clinic', name: 'Clinic' },
+    { key: 'event-modal', name: 'Event Modal (Overworld)' }
   ]
 
   for (const { key, name } of fixturesToCapture) {
@@ -425,24 +470,27 @@ async function captureStateInjected(page) {
         continue
       }
 
-      // Inject state - inject BEFORE navigation
       await page.goto(BASE_URL, { waitUntil: 'commit' })
       await injectSave(page, fixture)
-
-      // Reload to load the injected state
       await page.reload({ waitUntil: 'commit', timeout: 30000 })
 
       // Scene-specific wait strategies
       let waited = false
 
-      if (key === 'overworld') {
+      if (key === 'event-modal') {
+        try {
+          await page.getByRole('dialog').waitFor({ timeout: 3000 })
+          waited = true
+        } catch (_e) {
+          console.log(`    (dialog not found)`)
+        }
+      } else if (key === 'overworld') {
         try {
           await page
             .getByRole('heading', { name: /tour plan|overworld/i })
             .waitFor({ timeout: 3000 })
           waited = true
         } catch (_e) {
-          // fallback: wait for SVG elements (tour map)
           await page
             .locator('svg')
             .first()
@@ -450,59 +498,13 @@ async function captureStateInjected(page) {
             .catch(() => {})
           waited = true
         }
-      } else if (key === 'pregig') {
-        try {
-          await page
-            .getByRole('heading', { name: /preparation/i })
-            .waitFor({ timeout: 3000 })
-          waited = true
-        } catch (_e) {
-          await page
-            .locator('[class*="pregig"], [class*="preparation"]')
-            .first()
-            .waitFor({ timeout: 3000 })
-            .catch(() => {})
-          waited = true
-        }
-      } else if (key === 'postgig') {
-        try {
-          await page
-            .getByRole('heading', { name: /gig report|result/i })
-            .waitFor({ timeout: 3000 })
-          waited = true
-        } catch (_e) {
-          await page
-            .locator('[class*="postgig"], [class*="report"]')
-            .first()
-            .waitFor({ timeout: 3000 })
-            .catch(() => {})
-          waited = true
-        }
-      } else if (key === 'gameover') {
-        try {
-          await page
-            .getByRole('heading', { name: /game over|bankrupt/i })
-            .waitFor({ timeout: 3000 })
-          waited = true
-        } catch (_e) {
-          await page
-            .locator('[class*="gameover"]')
-            .first()
-            .waitFor({ timeout: 3000 })
-            .catch(() => {})
-          waited = true
-        }
-      } else if (key === 'clinic') {
-        // Clinic is complex - just wait for content to render
-        await page.waitForTimeout(1000)
+      } else {
+        await page.waitForTimeout(800)
         waited = true
       }
 
       if (waited) {
-        // Capture
         await snap(page, key, { delay: 600 })
-      } else {
-        console.log(`    (skipped: scene not detected)`)
       }
     } catch (err) {
       console.log(`    (failed: ${err.message})`)
@@ -514,17 +516,13 @@ async function captureStateInjected(page) {
  * Capture additional UI overlays and states
  */
 async function captureUIOverlays(page) {
-  console.log('\n📍 PHASE 3: UI OVERLAYS & SPECIAL STATES\n')
+  console.log('\n📍 PHASE 4: UI OVERLAYS & SPECIAL STATES\n')
 
-  // Fresh page for UI captures
-  console.log('→ Band HQ Modal (fresh)')
+  console.log('→ Band HQ Full + Tabs')
   try {
     await page.goto(BASE_URL, { waitUntil: 'commit' })
-
-    // Wait for page to settle
     await page.waitForTimeout(800)
 
-    // Skip intro if needed
     const skipBtn = page.getByRole('button', { name: /skip/i })
     const skipVisible = await skipBtn.isVisible().catch(() => false)
     if (skipVisible) {
@@ -532,7 +530,6 @@ async function captureUIOverlays(page) {
       await page.waitForTimeout(800)
     }
 
-    // Open Band HQ
     const bandHqBtn = page.getByRole('button', { name: /band hq/i })
     const btnVisible = await bandHqBtn
       .isVisible({ timeout: 3000 })
@@ -542,8 +539,10 @@ async function captureUIOverlays(page) {
       await page.waitForTimeout(600)
       await snap(page, 'band-hq-full', { delay: 400 })
 
-      // Try to click Settings tab
-      const settingsTab = page.getByRole('tab', { name: /settings|gear|cog/i })
+      // Settings tab
+      const settingsTab = page.getByRole('tab', {
+        name: /settings|gear|cog/i
+      })
       const settingsVisible = await settingsTab.isVisible().catch(() => false)
       if (settingsVisible) {
         await settingsTab.click()
@@ -551,9 +550,9 @@ async function captureUIOverlays(page) {
         await snap(page, 'band-hq-settings', { delay: 300 })
       }
 
-      // Try to click Characters/Members tab
+      // Characters tab
       const charactersTab = page.getByRole('tab', {
-        name: /character|member|band|member/i
+        name: /character|member|band/i
       })
       const charVisible = await charactersTab.isVisible().catch(() => false)
       if (charVisible) {
@@ -562,7 +561,6 @@ async function captureUIOverlays(page) {
         await snap(page, 'band-hq-characters', { delay: 300 })
       }
 
-      // Close Band HQ
       const closeBtn = page.getByRole('button', {
         name: /close|leave|back|esc/i
       })
@@ -570,8 +568,6 @@ async function captureUIOverlays(page) {
       if (closeVisible) {
         await closeBtn.click()
       }
-    } else {
-      console.log('    (band hq button not visible)')
     }
   } catch (err) {
     console.log(`    (skipped: ${err.message})`)
@@ -585,8 +581,11 @@ async function captureUIOverlays(page) {
 async function main() {
   await mkdir(OUT_DIR, { recursive: true })
 
-  console.log('🎬 Comprehensive Neurotoxic Screenshot Capture\n')
+  console.log('🎬 COMPREHENSIVE Neurotoxic Screenshot Capture\n')
   console.log(`📁 Output: ${OUT_DIR}\n`)
+  console.log(
+    `Settings: Skip Natural=${SKIP_NATURAL_FLOW} | Skip Minigames=${SKIP_MINIGAMES} | Skip Injection=${SKIP_STATE_INJECTION}\n`
+  )
 
   const browser = await launchBrowserWithFallback({
     headless: true,
@@ -609,6 +608,10 @@ async function main() {
   try {
     if (!SKIP_NATURAL_FLOW) {
       await captureNaturalFlow(page)
+    }
+
+    if (!SKIP_MINIGAMES) {
+      await captureMinigames(page)
     }
 
     if (!SKIP_STATE_INJECTION) {
