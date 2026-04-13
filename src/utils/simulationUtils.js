@@ -206,8 +206,8 @@ export const calculateGigPhysics = (bandState, song) => {
  * @param {Function} [rng=getSafeRandom] - Random number generator for determinism.
  * @returns {object} The updated parts of state (player, band, social).
  */
-export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 60
-export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 2
+export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
+export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
 export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {

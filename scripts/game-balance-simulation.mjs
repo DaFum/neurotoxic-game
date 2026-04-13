@@ -151,7 +151,7 @@ export const SCENARIOS = [
       guestlist: 0.25
     },
     initialOverrides: {
-      player: { money: 650, fame: 20 },
+      player: { money: 650, fame: 0 },
       band: { harmony: 78 },
       social: { controversyLevel: 8, loyalty: 10, zealotry: 12 }
     }
@@ -175,7 +175,7 @@ export const SCENARIOS = [
       guestlist: 0.05
     },
     initialOverrides: {
-      player: { money: 450, fame: 30 },
+      player: { money: 450, fame: 0 },
       band: {
         harmony: 58,
         members: [
@@ -206,7 +206,7 @@ export const SCENARIOS = [
       guestlist: 0.4
     },
     initialOverrides: {
-      player: { money: 1400, fame: 120 },
+      player: { money: 1400, fame: 150 },
       band: { harmony: 86 },
       social: { controversyLevel: 10, loyalty: 28, zealotry: 40 }
     }
@@ -230,7 +230,7 @@ export const SCENARIOS = [
       guestlist: 0.22
     },
     initialOverrides: {
-      player: { money: 380, fame: 16 },
+      player: { money: 380, fame: 0 },
       band: {
         harmony: 49,
         members: [
@@ -261,7 +261,7 @@ export const SCENARIOS = [
       guestlist: 0.35
     },
     initialOverrides: {
-      player: { money: 900, fame: 70 },
+      player: { money: 900, fame: 150 },
       band: { harmony: 82 },
       social: { controversyLevel: 18, loyalty: 36, zealotry: 82 }
     }
