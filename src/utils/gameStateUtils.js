@@ -71,8 +71,8 @@ export const calculateFameGain = (rawGain, currentFame, maxGain = 500) => {
   let fameGain = Math.min(maxGain, rawGain)
   const prevFame = currentFame ?? 0
 
-  if (fameGain > 0 && prevFame > 50) {
-    const diminishingMultiplier = Math.exp(-(prevFame - 50) * 0.01)
+  if (fameGain > 0 && prevFame > 100) {
+    const diminishingMultiplier = Math.exp(-(prevFame - 100) * 0.007)
     fameGain = Math.max(1, Math.round(fameGain * diminishingMultiplier))
   }
 
@@ -729,7 +729,7 @@ export const applyEventDelta = (state, delta) => {
         if (typeof value === 'string') {
           nextSocial[key] = value
         }
-      } else if (key === 'lastGigDay') {
+      } else if (key === 'lastGigDay' || key === 'lastGigDifficulty') {
         if (
           value === null ||
           (typeof value === 'number' && Number.isFinite(value))

@@ -120,6 +120,7 @@ export const DEFAULT_SOCIAL_STATE = {
   newsletter: 0,
   viral: 0,
   lastGigDay: null,
+  lastGigDifficulty: null,
   lastPirateBroadcastDay: null,
   controversyLevel: 0,
   loyalty: 0,

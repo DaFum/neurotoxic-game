@@ -102,6 +102,14 @@ export const usePostGigLogic = () => {
     }
   }, [currentGig, activeEvent, triggerEvent])
 
+  const gigContextRef = useRef(null)
+  if (!gigContextRef.current && currentGig && social && player) {
+    gigContextRef.current = {
+      daysSinceLastGig: player.day - (social.lastGigDay ?? player.day),
+      lastGigDifficulty: social.lastGigDifficulty ?? null
+    }
+  }
+
   // Derive financials purely without triggering a re-render loop
   const financials = useMemo(() => {
     if (!currentGig || !lastGigStats) return null
@@ -120,7 +128,9 @@ export const usePostGigLogic = () => {
         zealotry: social?.zealotry || 0,
         discountedTickets: activeStoryFlags?.includes(
           'discounted_tickets_active'
-        )
+        ),
+        daysSinceLastGig: gigContextRef.current?.daysSinceLastGig ?? 0,
+        lastGigDifficulty: gigContextRef.current?.lastGigDifficulty ?? null
       }
     })
     return result

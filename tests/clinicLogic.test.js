@@ -31,8 +31,8 @@ test('clinicReducer', async t => {
 
       const nextState = handleClinicHeal(state, payload)
 
-      // Cost at 0 visits = 150 money
-      assert.equal(nextState.player.money, 350)
+      // Cost at 0 visits = 280 money
+      assert.equal(nextState.player.money, 220)
       assert.equal(nextState.player.clinicVisits, 1)
       assert.equal(nextState.band.members[0].stamina, 100)
       assert.equal(nextState.band.members[0].mood, 60)
