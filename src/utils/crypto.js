@@ -46,9 +46,9 @@ export const secureRandom = () => {
 }
 
 /**
- * A safe wrapper for generating random numbers that prefers secureRandom
- * but falls back to Math.random() if the Crypto API is unavailable.
- * Log the fallback once to the error handler.
+ * A safe wrapper for generating random numbers that prefers secureRandom.
+ * Throws an error if the Crypto API is unavailable.
+ * Log the error once to the error handler.
  * @returns {number}
  */
 export const getSafeRandom = () => {
@@ -58,12 +58,12 @@ export const getSafeRandom = () => {
     if (!secureRandomErrorReported) {
       secureRandomErrorReported = true
       handleError(error, {
-        silent: true,
-        severity: 'medium',
-        fallbackMessage: 'Crypto API unavailable, falling back to Math.random()'
+        silent: false,
+        severity: 'high',
+        fallbackMessage: 'Crypto API unavailable, random generation failed.'
       })
     }
-    return Math.random()
+    throw error
   }
 }
 
