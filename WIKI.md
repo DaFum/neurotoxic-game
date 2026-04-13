@@ -5,16 +5,11 @@ This file is the quick-entry wiki hub for the NEUROTOXIC codebase.
 ## Core Documentation
 
 - [README](README.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [State Transitions](docs/STATE_TRANSITIONS.md)
-- [Coding Standards](docs/CODING_STANDARDS.md)
-- [Tailwind v4 Patterns](docs/TAILWIND_V4_PATTERNS.md)
-- [Agent Knowledge Update](docs/agent_knowledge_update.md)
+- [Codebase Docs Master](docs/CODEBASE_DOCS_MASTER.md)
 
 ## Exploration Reports
 
-- [Game Codebase Exploration](docs/Game_Codebase_Exploration_Report.md)
-- [System & State Management Exploration](docs/System_&_State_Management_Exploration_Report.md)
+- [Codebase Docs Master](docs/CODEBASE_DOCS_MASTER.md)
 
 ## Agent & Instruction Sources
 
@@ -24,10 +19,9 @@ This file is the quick-entry wiki hub for the NEUROTOXIC codebase.
 
 ## Security
 
-- [Threat Model](docs/neurotoxic-game-threat-model.md)
-- [Security Best Practices Report](docs/security_best_practices_report.md)
+- [Codebase Docs Master](docs/CODEBASE_DOCS_MASTER.md)
 
-_Last updated: 2026-03-14._
+_Last updated: 2026-04-13._
 
 ## Localization & Review Update
 

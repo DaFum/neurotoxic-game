@@ -192,7 +192,7 @@ This document is now maintained as a high-signal map instead of a frozen code du
 - The consolidated `docs/CODEBASE_DOCS_MASTER.md` now serves as the source-of-truth index for domain pointers.
 
 ## Suggested exploration workflow
-1. Start with the `ARCHITECTURE.md` section inside `docs/CODEBASE_DOCS_MASTER.md`.
+1. Start with the Architecture section of this document.
 2. Trace action from `actionCreators` → reducer map → domain reducer.
 3. Verify runtime constants in `gameConstants`, `economyEngine`, and `initialState`.
 
@@ -342,13 +342,62 @@ _Last updated: 2026-04-13._
 - Run `pnpm run test:all` before PR finalization.
 - Respect pinned package versions and Node engine floor.
 - Keep EN/DE localization updates paired.
-- Keep actionTypes/reducer/actionCreator triplet synchronized for new actions.
-- Keep PreGig modifier costs sourced only from `MODIFIER_COSTS`.
-- Arrival routing logic belongs to `useArrivalLogic`.
-- Audio timing source for gig logic: `audioEngine.getGigTimeMs()`.
+- Synchronize the actionTypes/reducer/actionCreator triplet when adding new actions.
+- Source PreGig modifier costs exclusively from `MODIFIER_COSTS`.
+- Place arrival routing logic in `useArrivalLogic`.
+- Use `audioEngine.getGigTimeMs()` as the audio timing source for gig logic.
 
 ## Documentation maintenance policy
 When runtime behavior changes, update the relevant section in this consolidated `docs/CODEBASE_DOCS_MASTER.md` in the same change.
+
+## Consolidation detail retention (for onboarding depth)
+The consolidation to one file is intentional, but detailed implementation context remains important for onboarding and audits. This subsection preserves higher-detail reference material that was previously spread across multiple docs.
+
+### Event object schema (runtime-aligned)
+```js
+{
+  id: string,
+  category: 'transport' | 'band' | 'gig' | 'financial' | 'special',
+  title: string,
+  description: string,
+  trigger: string,
+  chance: number,
+  condition?: (gameState) => boolean,
+  options: [
+    {
+      label: string,
+      effect?: { type: string, ... },
+      skillCheck?: {
+        stat: string,
+        threshold: number,
+        success: object,
+        failure: object
+      },
+      outcomeText: string,
+      nextEventId?: string
+    }
+  ]
+}
+```
+
+### Economy chain (worked summary)
+- `calculateGigFinancials` combines ticket revenue, merch revenue/cost, bar share, guarantees/bonuses, and expenses.
+- Attendance is influenced by fame, modifiers (`promo`, `soundcheck`), controversy penalties, region reputation, and price sensitivity.
+- Merch uses performance-sensitive conversion, miss penalties, optional modifier boosts, and inventory caps.
+- Canonical modifier costs are defined once in `MODIFIER_COSTS` and must not be duplicated.
+
+### Trait/system implementation matrix (quick reference)
+- Trait definitions: `src/data/characters.js`
+- Runtime trait storage/normalization: `src/context/initialState.js` + `normalizeTraitMap`
+- Unlock action path: `UNLOCK_TRAIT` via context actions/reducers
+- Cross-system usage: economy (`road_warrior`), social/viral modifiers, rhythm/performance modifiers, and event resolution side effects.
+
+### Post-option and crisis integration pointers
+- Post-gig option outcomes and social side effects should be validated against `socialEngine` behavior and event consequence flows.
+- Crisis mechanics should be reviewed across:
+  - `src/data/events/crisis.js`
+  - `src/data/events/index.js`
+  - reducer/application flows that touch `controversyLevel`, `loyalty`, quests, and blacklist behavior.
 
 
 
@@ -508,5 +557,4 @@ _Last reviewed: 2026-04-13._
 3. Avoid introducing direct Tone.js or PIXI usage in restricted layers.
 4. Keep EN/DE locale files synchronized with UI text additions.
 5. Re-check threat assumptions when adding external APIs or backend components.
-
 
