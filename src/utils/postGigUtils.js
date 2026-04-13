@@ -114,6 +114,7 @@ export const calculatePostGigStateUpdates = ({
     ),
     viral: (social.viral || 0) + (result.success ? 1 : 0) + gigViralBonus,
     lastGigDay: player.day,
+    lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
     controversyLevel: clampControversyLevel(
       (social.controversyLevel || 0) + (result.controversyChange || 0)
     ),

@@ -38,27 +38,27 @@ test('calculateFameGain returns correct diminishing returns', () => {
   assert.strictEqual(
     calculateFameGain(100, 0, 500),
     100,
-    'Below 50 fame, raw gain is uncapped'
+    'Below 100 fame, raw gain is uncapped'
   )
   assert.strictEqual(
     calculateFameGain(600, 0, 500),
     500,
-    'Below 50 fame, max gain is strictly applied'
+    'Below 100 fame, max gain is strictly applied'
   )
 
-  // At 100 current fame, multiplier is exp(-50 * 0.01) = exp(-0.5) = 0.6065
-  // Raw 100 => 61
+  // At 200 current fame, multiplier is exp(-100 * 0.007) = exp(-0.7) = 0.4965
+  // Raw 100 => 50
   assert.strictEqual(
-    calculateFameGain(100, 100, 500),
-    61,
-    'At 100 fame, gain is diminished (~60%)'
+    calculateFameGain(100, 200, 500),
+    50,
+    'At 200 fame, gain is diminished (~50%)'
   )
 
-  // At 500 current fame, multiplier is exp(-450 * 0.01) = exp(-4.5) = 0.0111
-  // Raw 100 => 1
+  // At 500 current fame, multiplier is exp(-400 * 0.007) = exp(-2.8) = 0.0608
+  // Raw 100 => 6
   assert.strictEqual(
     calculateFameGain(100, 500, 500),
-    1,
+    6,
     'At 500 fame, gain is heavily diminished'
   )
 })

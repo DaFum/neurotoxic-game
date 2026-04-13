@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   calculateGigFinancials,
+  calculateTicketIncome,
   calculateEffectiveTicketPrice,
   calculateTravelExpenses,
   calculateFuelCost,
@@ -660,6 +661,60 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
     Math.abs(res2.fuelLiters - 10.2) < 1e-6,
     'fuelLiters within tolerance'
   )
+})
+
+test('calculateTicketIncome gig frequency penalty', async t => {
+  await t.test('applies penalty if gig is same diff and within 4 days', () => {
+    const gigData = { capacity: 100, price: 10, diff: 3 }
+    const playerFame = 500
+    const modifiers = {}
+
+    // Valid context triggering penalty
+    const contextPenalty = {
+      lastGigDifficulty: 3,
+      daysSinceLastGig: 2
+    }
+    const resultPenalty = calculateTicketIncome(gigData, playerFame, modifiers, contextPenalty)
+
+    // Context bypassing penalty (different diff)
+    const contextDifferentDiff = {
+      lastGigDifficulty: 2,
+      daysSinceLastGig: 2
+    }
+    const resultDifferentDiff = calculateTicketIncome(gigData, playerFame, modifiers, contextDifferentDiff)
+
+    // Context bypassing penalty (days >= 4)
+    const contextOldGig = {
+      lastGigDifficulty: 3,
+      daysSinceLastGig: 5
+    }
+    const resultOldGig = calculateTicketIncome(gigData, playerFame, modifiers, contextOldGig)
+
+    // Context bypassing penalty (invalid daysSinceLastGig)
+    const contextInvalidDays = {
+      lastGigDifficulty: 3,
+      daysSinceLastGig: 0
+    }
+    const resultInvalidDays = calculateTicketIncome(gigData, playerFame, modifiers, contextInvalidDays)
+
+    assert.ok(
+      resultPenalty.ticketsSold < resultDifferentDiff.ticketsSold,
+      'Penalty should reduce tickets sold compared to different difficulty'
+    )
+    assert.ok(
+      resultPenalty.ticketsSold < resultOldGig.ticketsSold,
+      'Penalty should reduce tickets sold compared to an old gig'
+    )
+    assert.ok(
+      resultPenalty.ticketsSold < resultInvalidDays.ticketsSold,
+      'Penalty should not apply if daysSinceLastGig is 0'
+    )
+    assert.strictEqual(
+      resultDifferentDiff.ticketsSold,
+      resultOldGig.ticketsSold,
+      'Bypassing penalty by diff or days should yield same result'
+    )
+  })
 })
 
 test('calculateEffectiveTicketPrice handles discounts correctly', async t => {

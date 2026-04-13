@@ -21,7 +21,7 @@ export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
-    BASE_COST: 40
+    BASE_COST: 55
   },
   TRANSPORT: {
     FUEL_PER_100KM: 12, // Liters
@@ -88,10 +88,24 @@ export const calculateTicketIncome = (
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
 
   // Promo Boost
-  if (modifiers.promo) fillRate += 0.15
+  if (modifiers.promo) fillRate += 0.22
 
   // Soundcheck Boost (word-of-mouth from quality prep)
-  if (modifiers.soundcheck) fillRate += 0.15
+  if (modifiers.soundcheck) fillRate += 0.20
+
+  const gigDifficulty = gigData.diff ?? gigData.difficulty
+  const daysSinceLastGig = context.daysSinceLastGig
+  const hasValidDaysSinceLastGig =
+    Number.isFinite(daysSinceLastGig) && daysSinceLastGig > 0
+
+  // Gig frequency vs quality gap penalty
+  if (
+    context.lastGigDifficulty === gigDifficulty &&
+    hasValidDaysSinceLastGig &&
+    daysSinceLastGig < 4
+  ) {
+    fillRate -= 0.15
+  }
 
   // Controversy attendance penalty: -1% per point above 40, max -30%
   const controversyLevel = context.controversyLevel || 0
