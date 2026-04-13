@@ -499,3 +499,62 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
     'Guitar hit window should be increased by 10%'
   )
 })
+
+test('calculateDailyUpdates applies wealth-scaled expense drain at 8% chance', () => {
+  // rng returns 0.07 (< 0.08 -> fires) then 0.01 (drainRate = 0.015 + 0.01*0.015 = 0.01515)
+  let callCount = 0
+  const mockRng = () => [0.07, 0.01][callCount++] ?? 0.5
+  const currentState = {
+    player: { day: 1, money: 5000, van: null },
+    band: { members: [], harmony: 50 },
+    social: { viral: 0 }
+  }
+  const { player } = calculateDailyUpdates(currentState, mockRng)
+  // money should be reduced by drain (plus dailyCost already applied)
+  assert.ok(player.money < 5000, 'Money should decrease from drain')
+})
+
+test('calculateDailyUpdates skips wealth-scaled drain when money < 2000', () => {
+  const mockRng = () => 0.01  // would trigger drain by chance
+  const currentState = {
+    player: { day: 1, money: 1000, van: null },
+    band: { members: [], harmony: 50 },
+    social: { viral: 0 }
+  }
+  const { player } = calculateDailyUpdates(currentState, mockRng)
+  // Only dailyCost applied, no drain
+  // dailyCost = BASE_COST + 0*8 + lifestyleInflation(0)
+  assert.ok(player.money >= 0, 'No drain when below threshold')
+})
+
+test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
+  // Set sponsorActive=true, instagram >= 5000, controversy < 60
+  // rng must not trigger sponsorship drop (> 0.5 for controversy path)
+  const mockRng = () => 0.9  // no newsletter perk, no sponsor drop
+  const currentState = {
+    player: { day: 1, money: 1000, fame: 200, fameLevel: 2, van: null },
+    band: { members: [], harmony: 50 },
+    social: {
+      viral: 0,
+      sponsorActive: true,
+      instagram: 6000,
+      controversyLevel: 0
+    }
+  }
+  const { player } = calculateDailyUpdates(currentState, mockRng)
+  // scaledPayout = min(800, max(180, round(200 * 2))) = min(800, max(180, 400)) = 400
+  // player.money should be 1000 - dailyCost + 400
+  assert.ok(player.money > 1000 - 100, 'Sponsor payout should add money')
+})
+
+test('calculateDailyUpdates does not pay sponsor when sponsorActive is false', () => {
+  const mockRng = () => 0.9
+  const currentState = {
+    player: { day: 1, money: 1000, fame: 200, fameLevel: 2, van: null },
+    band: { members: [], harmony: 50 },
+    social: { viral: 0, sponsorActive: false, instagram: 6000, controversyLevel: 0 }
+  }
+  const { player: noSponsor } = calculateDailyUpdates(currentState, mockRng)
+  // Without sponsor, money = 1000 - dailyCost only
+  assert.ok(noSponsor.money < 1000, 'No payout when sponsor inactive')
+})

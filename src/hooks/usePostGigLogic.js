@@ -412,6 +412,7 @@ export const usePostGigLogic = () => {
       player,
       perfScore,
       financials,
+      misses: lastGigStats?.misses ?? 0,
       calculateFameGain,
       calculateFameLevel,
       clampPlayerFame,

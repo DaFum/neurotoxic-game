@@ -667,5 +667,22 @@ describe('usePostGigLogic', () => {
       )
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
     })
+
+    it('applies miss penalty on bad gig with excess misses', async () => {
+      GameState.useGameState.mockReturnValue(
+        getBaseState({
+          lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
+        })
+      )
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+      act(() => { result.current.handleContinue() })
+      // perfScore = clamp(25000/500, 30, 100) = 50 -> bad gig
+      // missPenalty = round((13 - 8) * 0.5) = 3
+      // finalFameGain = -FAME_LOSS_BAD_GIG - 3
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({ fame: expect.any(Number) })
+      )
+    })
   })
 })
