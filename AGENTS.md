@@ -19,13 +19,19 @@
 
 ## Testing
 
-- Follow the repository runner split: use `pnpm run test` / `node:test` for the remaining legacy logic tests, and use `pnpm run test:ui` / Vitest for React/UI components, React hooks, and the migrated test directories (including pure `.js` suites now covered by Vitest). Do not assume all pure `.js` tests belong to `node:test`; use the runner already configured for that test's directory. Do not mix runners in the same file.
-- For tests run with Vitest: mock `window.localStorage.setItem` wrapped in `try/finally`. For `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
+- Runner is chosen per directory, not per file extension. Check which runner the sibling tests use — pure `.js` suites may live in either. Never mix runners in one file.
+- Vitest: mock `window.localStorage.setItem` inside `try/finally`; for `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup Maps (e.g., `SONGS_BY_ID`) in mocked data.
 
 ## Style & Conventions
 
-- Commits must use Conventional Commits (e.g., `feat:`, `fix:`).
+- Commits must use Conventional Commits (`feat:`, `fix:`, etc.).
+
+## PR & Workflow
+
+- Use `pnpm` exclusively — never `npm` or `yarn`.
+- Run `pnpm run test:all` before finalizing any PR.
+- Prefer targeted refactoring (e.g., CLI tools like `sed`) over global formatting to minimize PR noise.
 
 ## Gotchas
 
