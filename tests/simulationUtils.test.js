@@ -509,22 +509,33 @@ test('calculateDailyUpdates applies wealth-scaled expense drain at 8% chance', (
     band: { members: [], harmony: 50 },
     social: { viral: 0 }
   }
+
+  const { player: baselinePlayer } = calculateDailyUpdates(currentState, () => 0.5)
   const { player } = calculateDailyUpdates(currentState, mockRng)
-  // money should be reduced by drain (plus dailyCost already applied)
-  assert.ok(player.money < 5000, 'Money should decrease from drain')
+
+  // Compare against the post-dailyCost baseline so the test fails if the drain does not fire.
+  assert.ok(
+    player.money < baselinePlayer.money,
+    'Money should be lower than the no-drain baseline when the drain triggers'
+  )
 })
 
 test('calculateDailyUpdates skips wealth-scaled drain when money < 2000', () => {
-  const mockRng = () => 0.01  // would trigger drain by chance
+  const triggerDrainRng = () => 0.01  // would trigger drain by chance if eligible
+  const skipDrainRng = () => 0.99
   const currentState = {
     player: { day: 1, money: 1000, van: null },
     band: { members: [], harmony: 50 },
     social: { viral: 0 }
   }
-  const { player } = calculateDailyUpdates(currentState, mockRng)
-  // Only dailyCost applied, no drain
-  // dailyCost = BASE_COST + 0*8 + lifestyleInflation(0)
-  assert.ok(player.money >= 0, 'No drain when below threshold')
+  const triggerResult = calculateDailyUpdates(currentState, triggerDrainRng)
+  const skipResult = calculateDailyUpdates(currentState, skipDrainRng)
+  // Below the threshold, only dailyCost should apply, regardless of drain chance.
+  assert.equal(
+    triggerResult.player.money,
+    skipResult.player.money,
+    'Wealth-scaled drain should be skipped entirely when money is below 2000'
+  )
 })
 
 test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
@@ -541,10 +552,15 @@ test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
       controversyLevel: 0
     }
   }
+
+  const stateNoSponsor = JSON.parse(JSON.stringify(currentState))
+  stateNoSponsor.social.sponsorActive = false
+
   const { player } = calculateDailyUpdates(currentState, mockRng)
+  const { player: playerNoSponsor } = calculateDailyUpdates(stateNoSponsor, mockRng)
+
   // scaledPayout = min(800, max(180, round(200 * 2))) = min(800, max(180, 400)) = 400
-  // player.money should be 1000 - dailyCost + 400
-  assert.ok(player.money > 1000 - 100, 'Sponsor payout should add money')
+  assert.equal(player.money, playerNoSponsor.money + 400, 'Sponsor payout should add exactly 400')
 })
 
 test('calculateDailyUpdates does not pay sponsor when sponsorActive is false', () => {

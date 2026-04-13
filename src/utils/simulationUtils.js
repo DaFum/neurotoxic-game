@@ -248,7 +248,7 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
   nextPlayer.money = nextMoney
 
   // Wealth-Scaled Daily Expense Drain (8% daily chance, only if money >= 2000)
-  if (rng() < 0.08 && nextPlayer.money >= 2000) {
+  if (nextPlayer.money >= 2000 && rng() < 0.08) {
     const drainRate = 0.015 + rng() * 0.015  // 1.5–3.0%
     const expense = Math.round(nextPlayer.money * drainRate)
     nextPlayer.money = clampPlayerMoney(nextPlayer.money - expense)
