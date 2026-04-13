@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-04-13T15:14:45.005Z
+Erstellt am: 2026-04-13T16:05:45.609Z
 
 ## Simulationseinstellungen
 
@@ -65,13 +65,13 @@ Erstellt am: 2026-04-13T15:14:45.005Z
 
 | Szenario | Ø Geld Tag 20 | Ø Geld Tag 40 | Ø Geld Tag 60 | Ø Endgeld | Bewertung |
 |---|---:|---:|---:|---:|---|
-| Baseline Touring | €46.555 | €104.263 | €164.928 | €212.755 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
+| Baseline Touring | €46.555 | €104.263 | €164.928 | €212.755 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Bootstrap Struggle | €3.002 | €6.152 | €9.857 | €13.291 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Aggressive Marketing | €26.966 | €61.325 | €101.069 | €134.003 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
-| Scandal Recovery | €8.632 | €19.196 | €32.571 | €48.666 | ⚠️ Schnelle Kapitalakkumulation – Daily-Kosten oder Upgrade-Preise prüfen. |
-| Festival Push | €15.432 | €39.851 | €70.709 | €105.688 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
-| Chaos Tour | €18.694 | €44.852 | €77.558 | €105.490 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
-| Cult Hypergrowth | €26.943 | €60.654 | €98.103 | €127.269 | ⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen. |
+| Aggressive Marketing | €26.966 | €61.325 | €101.069 | €134.003 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Scandal Recovery | €8.632 | €19.196 | €32.571 | €48.666 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Festival Push | €15.432 | €39.851 | €70.709 | €105.688 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Chaos Tour | €18.694 | €44.852 | €77.558 | €105.490 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Cult Hypergrowth | €26.943 | €60.654 | €98.103 | €127.269 | ✅ Kapitalaufbau im erwarteten Korridor. |
 
 ## Einkommensstruktur & Sink-Analyse
 

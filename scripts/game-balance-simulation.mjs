@@ -1674,9 +1674,12 @@ const checkKpi = (id, summary) => {
 }
 
 const getProgressionInsight = s => {
-  if (s.avgMoneyAtDay20 > 15000)
+  // Thresholds calibrated to the post-Round-3 economy (2026-04-13):
+  // With €3,500 gig-net and daily frequency, Baseline Touring reaches ~€46k by day 20.
+  // €70k+ would indicate a genuinely pathological sink failure; €55k+ is notable but not critical.
+  if (s.avgMoneyAtDay20 > 70000)
     return '⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen.'
-  if (s.avgMoneyAtDay20 > 8000)
+  if (s.avgMoneyAtDay20 > 55000)
     return '⚠️ Schnelle Kapitalakkumulation – Daily-Kosten oder Upgrade-Preise prüfen.'
   if (s.avgMoneyAtDay20 < 800 && s.bankruptcyRate > 5)
     return '⚠️ Liquiditätsprobleme in Frühphase – Einstiegspuffer erhöhen.'
