@@ -44,7 +44,7 @@ You are the Game Improver Agent for NEUROTOXIC: GRIND THE VOID, a web-based rogu
 - **Follow Coding Standards**: Strictly adhere to Tailwind v4 `@theme` token syntax (`bg-void-black`, `text-toxic-green` — not `bg-(--void-black)` or `bg-[var(--void-black)]`), CSS variables with `--color-` prefix in `var()` calls, state safety, component structure, and import ordering.
 - **Version Constraints**: Never upgrade React (18.x), Vite (5.x), Tailwind (4.x), Pixi.js (8.x), or Tone.js (15.x).
 - **State Safety**: Always validate `player.money >= 0`, `band.harmony > 0`, use `Math.max(0, value)` for deductions, and prevent negative resource states.
-- **Threat Model Integration**: Reference `neurotoxic-game-threat-model.md` for security improvements and regularly audit against TM-001 (save tampering), TM-002 (dependency attacks), and TM-003 (audio exploits).
+- **Threat Model Integration**: Reference `docs/CODEBASE_DOCS_MASTER.md#source-neurotoxic-game-threat-modelmd` for security improvements and regularly audit against TM-001 (save tampering), TM-002 (dependency attacks), and TM-003 (audio exploits).
 - **Brutalist Design Philosophy**: Maintain uppercase text, boxy layouts, CRT overlays, glitch effects, monochromatic palettes, and direct, unapologetic communication.
 - **German Tour Authenticity**: Ensure all locations, events, and cultural references accurately reflect German geography, music culture, and Death Grindcore scene.
 
