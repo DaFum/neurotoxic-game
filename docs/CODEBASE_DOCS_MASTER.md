@@ -40,7 +40,7 @@ _Last verified against code: 2026-04-13._
 - `useArrivalLogic` owns arrival routing behavior.
 
 ## Documentation policy
-This file intentionally tracks architecture at the system level. Fine-grained behavior is documented in focused docs in this folder.
+This section is retained for architecture context inside the consolidated `docs/CODEBASE_DOCS_MASTER.md`, which is the single documentation source-of-truth.
 
 
 
@@ -189,10 +189,10 @@ This document is now maintained as a high-signal map instead of a frozen code du
 
 ## What changed vs older exploration versions
 - Older report sections with long inline code excerpts were removed to reduce drift risk.
-- Current docs in `docs/` now define source-of-truth file pointers per domain.
+- The consolidated `docs/CODEBASE_DOCS_MASTER.md` now serves as the source-of-truth index for domain pointers.
 
 ## Suggested exploration workflow
-1. Start with `docs/ARCHITECTURE.md`.
+1. Start with the `ARCHITECTURE.md` section inside `docs/CODEBASE_DOCS_MASTER.md`.
 2. Trace action from `actionCreators` → reducer map → domain reducer.
 3. Verify runtime constants in `gameConstants`, `economyEngine`, and `initialState`.
 
@@ -330,6 +330,13 @@ Trait effects are referenced by economy, social, rhythm, and event systems depen
 
 _Last updated: 2026-04-13._
 
+## Agent scope, limitations, and usage
+- **Scope:** Agents are responsible for code-synced maintenance tasks (docs, tests, refactors, and targeted feature/bug updates) that can be traced to repository source-of-truth modules and existing guardrails.
+- **Limitations:** Agents must not introduce unpinned dependency drift, must keep within repository-visible data boundaries, must preserve localization pairing (EN/DE updates together), and must respect workflow/runtime constraints (including command/runtime timeouts in automation contexts).
+- **Do-not-modify boundaries (unless explicitly required):** avoid broad, unrelated rewrites; avoid bypassing canonical constants such as `MODIFIER_COSTS`; avoid re-routing ownership logic that belongs to dedicated flows such as `useArrivalLogic`.
+- **When to use agents vs manual changes:** use agents for structured, repeatable, test-backed changes (documentation sync, localized content updates, reducer/action wiring, and targeted refactors). Prefer manual handling for highly ambiguous product direction or content decisions that require nuanced editorial judgment.
+- **Contributor criteria:** if an agent change touches runtime behavior, run `pnpm run test:all`, verify canonical references (for example `MODIFIER_COSTS` and `useArrivalLogic`), and update this master documentation whenever behavior changes.
+
 ## Repository truths to prioritize
 - Use pnpm scripts only.
 - Run `pnpm run test:all` before PR finalization.
@@ -341,7 +348,7 @@ _Last updated: 2026-04-13._
 - Audio timing source for gig logic: `audioEngine.getGigTimeMs()`.
 
 ## Documentation maintenance policy
-When runtime behavior changes, update the corresponding focused doc in this `docs/` directory in the same change.
+When runtime behavior changes, update the relevant section in this consolidated `docs/CODEBASE_DOCS_MASTER.md` in the same change.
 
 
 
@@ -360,7 +367,7 @@ _Last verified: 2026-04-13._
 - Group-level cohesion is tracked by `band.harmony`.
 
 ## Social system
-- Core social state: `instagram`, `tiktok`, `youtube`, `newsletter`, `viral`, `controversyLevel`, `loyalty`, `zealotry`, `trend`, `activeDeals`, `brandReputation`.
+- Core social state: Instagram (`instagram`), TikTok (`tiktok`), YouTube (`youtube`), `newsletter`, `viral`, `controversyLevel`, `loyalty`, `zealotry`, `trend`, `activeDeals`, `brandReputation`.
 - Social calculations and side effects run through `src/utils/socialEngine.js` and event outcomes.
 
 ## Upgrade systems
