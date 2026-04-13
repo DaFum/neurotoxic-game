@@ -133,16 +133,14 @@ describe('songs.js', () => {
 
   test('handles invalid BPM by clamping to minimum 1', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(edgeSong.bpm >= 1)
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(edgeSong.bpm >= 1)
   })
 
   test('handles invalid TPB by clamping to minimum 1', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(edgeSong.tpb >= 1)
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(edgeSong.tpb >= 1)
   })
 
   test('clamps crowdAppeal to 1-10 range', () => {
@@ -238,11 +236,10 @@ describe('songs.js', () => {
 
   test('provides default tags if missing', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(Array.isArray(edgeSong.tags))
-      assert.ok(edgeSong.tags.includes('Metal'))
-      assert.ok(edgeSong.tags.includes('Instrumental'))
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(Array.isArray(edgeSong.tags))
+    assert.ok(edgeSong.tags.includes('Metal'))
+    assert.ok(edgeSong.tags.includes('Instrumental'))
   })
 
   test('preserves original notes array', () => {
@@ -273,17 +270,15 @@ describe('songs.js', () => {
 
   test('calculates excerptDurationMs from durationMs if not provided', () => {
     const songNoExcerpt = SONGS_DB.find(s => s.name === 'Test Song 2')
-    if (songNoExcerpt && songNoExcerpt.excerptDurationMs !== null) {
-      assert.ok(songNoExcerpt.excerptDurationMs >= 0)
-    }
+    assert.ok(songNoExcerpt, 'Test Song 2 fixture missing')
+    assert.equal(songNoExcerpt.excerptDurationMs, null)
   })
 
   test('handles array-like notes field that is not an array', () => {
     const edgeSong = SONGS_DB.find(s => s.name === 'Edge Case')
-    if (edgeSong) {
-      assert.ok(Array.isArray(edgeSong.notes))
-      assert.equal(edgeSong.notes.length, 0)
-    }
+    assert.ok(edgeSong, 'Edge Case fixture missing')
+    assert.ok(Array.isArray(edgeSong.notes))
+    assert.equal(edgeSong.notes.length, 0)
   })
 
   test('creates energy curve from difficulty', () => {
