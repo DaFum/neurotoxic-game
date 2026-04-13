@@ -85,10 +85,16 @@ export const getSafeUUID = () => {
 
   // Fallback RFC4122 v4 UUID
   const buffer = new Uint8Array(16)
-  for (let i = 0; i < 16; i++) {
-    // Intentionally use Math.random() directly to avoid circular dependency
-    // with getSafeRandom -> handleError -> logger -> getSafeUUID -> getSafeRandom
-    buffer[i] = Math.floor(Math.random() * 256)
+  try {
+    crypto?.getRandomValues?.(buffer)
+  } catch {
+    // Intentionally use Math.random() directly only as a last resort to avoid
+    // circular dependency with getSafeRandom -> handleError -> logger ->
+    // getSafeUUID -> getSafeRandom while preserving cryptographic randomness
+    // when crypto.getRandomValues() is available.
+    for (let i = 0; i < 16; i++) {
+      buffer[i] = Math.floor(Math.random() * 256)
+    }
   }
 
   // Set version to 4
