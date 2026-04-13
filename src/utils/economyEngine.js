@@ -90,10 +90,16 @@ export const calculateTicketIncome = (
   // Soundcheck Boost (word-of-mouth from quality prep)
   if (modifiers.soundcheck) fillRate += 0.20
 
+  const gigDifficulty = gigData.diff ?? gigData.difficulty
+  const daysSinceLastGig = context.daysSinceLastGig
+  const hasValidDaysSinceLastGig =
+    Number.isFinite(daysSinceLastGig) && daysSinceLastGig > 0
+
   // Gig frequency vs quality gap penalty
   if (
-    context.lastGigDifficulty === gigData.diff &&
-    context.daysSinceLastGig < 4
+    context.lastGigDifficulty === gigDifficulty &&
+    hasValidDaysSinceLastGig &&
+    daysSinceLastGig < 4
   ) {
     fillRate -= 0.15
   }

@@ -209,7 +209,11 @@ const validateSocial = social => {
     if (!Object.hasOwn(social, key)) continue
     const val = social[key]
     if (key === 'lastGigDay' && val === null) continue
-    if (key === 'lastGigDifficulty' && val === null) continue
+    if (key === 'lastGigDifficulty') {
+      if (val === null) continue
+      if (typeof val === 'number' && Number.isFinite(val)) continue
+      throw new StateError(`Invalid social property format: ${key}`)
+    }
     if (key === 'lastPirateBroadcastDay' && val === null) continue
     if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue
