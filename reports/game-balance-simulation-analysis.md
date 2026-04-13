@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-04-13T16:05:45.609Z
+Erstellt am: 2026-04-13T16:14:32.678Z
 
 ## Simulationseinstellungen
 
@@ -77,13 +77,13 @@ Erstellt am: 2026-04-13T16:05:45.609Z
 
 | Szenario | Ø Gig-Netto | Ø Reisekosten/Gig | Netto/Reise-Ratio | Gigs f. HQ-Upgrade | Gigs f. Van-Upgrade | Bewertung |
 |---|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €3.515 | €92 | 38.3× | 0.17 | 0.1 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
-| Bootstrap Struggle | €2.443 | €78 | 31.5× | 0.25 | 0.14 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
-| Aggressive Marketing | €4.332 | €90 | 48.2× | 0.14 | 0.08 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
-| Scandal Recovery | €2.854 | €86 | 33.2× | 0.21 | 0.12 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
-| Festival Push | €4.807 | €93 | 51.8× | 0.12 | 0.07 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
-| Chaos Tour | €3.516 | €90 | 39.2× | 0.17 | 0.1 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
-| Cult Hypergrowth | €4.185 | €88 | 47.6× | 0.14 | 0.08 | ⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig. |
+| Baseline Touring | €3.515 | €92 | 38.3× | 0.17 | 0.1 | ✅ Einkommensstruktur akzeptabel. |
+| Bootstrap Struggle | €2.443 | €78 | 31.5× | 0.25 | 0.14 | ✅ Einkommensstruktur akzeptabel. |
+| Aggressive Marketing | €4.332 | €90 | 48.2× | 0.14 | 0.08 | ✅ Einkommensstruktur akzeptabel. |
+| Scandal Recovery | €2.854 | €86 | 33.2× | 0.21 | 0.12 | ✅ Einkommensstruktur akzeptabel. |
+| Festival Push | €4.807 | €93 | 51.8× | 0.12 | 0.07 | ✅ Einkommensstruktur akzeptabel. |
+| Chaos Tour | €3.516 | €90 | 39.2× | 0.17 | 0.1 | ✅ Einkommensstruktur akzeptabel. |
+| Cult Hypergrowth | €4.185 | €88 | 47.6× | 0.14 | 0.08 | ✅ Einkommensstruktur akzeptabel. |
 
 ## Gig-Performance-Kalibrierung
 

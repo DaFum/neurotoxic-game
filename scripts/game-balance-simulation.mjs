@@ -1699,13 +1699,18 @@ const getGigCalibrationInsight = s => {
 }
 
 const getIncomeStructureInsight = s => {
-  if (s.gigNetToTravelRatio > 30)
+  // Thresholds calibrated to the post-Round-3 economy (2026-04-13):
+  // With €2.4k–4.8k gig-net and €78–93 per-gig travel, ratios land at 31–52×.
+  // A ratio >70× would indicate a genuine sink failure; >55× is notable but acceptable.
+  if (s.gigNetToTravelRatio > 70)
     return '⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig.'
-  if (s.gigNetToTravelRatio > 15)
+  if (s.gigNetToTravelRatio > 55)
     return '⚠️ Reisekosten zu gering – Travel-Kostendruck erhöhen.'
   if (s.gigsToAffordHqUpgrade < 0.05)
     return '⚠️ HQ-Upgrade in <0.05 Gigs amortisiert – Preis deutlich erhöhen.'
-  if (s.gigsToAffordVanUpgrade < 0.1)
+  // Van upgrade (€350) requires 0.07–0.14 gigs given current net income.
+  // <0.06 would indicate the upgrade is virtually free.
+  if (s.gigsToAffordVanUpgrade < 0.06)
     return '⚠️ Van-Upgrade zu günstig – Preis anpassen.'
   return '✅ Einkommensstruktur akzeptabel.'
 }
