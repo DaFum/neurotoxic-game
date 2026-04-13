@@ -858,6 +858,7 @@ const applyPostGigState = (state, venue, performanceScore, financials, rng) => {
   state.player.fameLevel = calculateFameLevel(state.player.fame)
 
   state.social.lastGigDay = state.player.day
+  state.social.lastGigDifficulty = venue.diff ?? venue.difficulty ?? 1
 
   const followerDelta = Math.max(
     0,
