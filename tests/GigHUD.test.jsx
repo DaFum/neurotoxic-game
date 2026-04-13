@@ -6,12 +6,12 @@ import { render, cleanup } from '@testing-library/react'
 vi.mock('../src/components/HecklerOverlay.jsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
+
+import { GigHUD } from '../src/components/GigHUD.jsx'
+
 afterEach(cleanup)
 
 test('GigHUD: renders toxic border flash element when isToxicMode is true', async () => {
-  // Dynamic import is needed when using vi.mock
-  const { GigHUD } = await import('../src/components/GigHUD.jsx')
-
   const stats = {
     score: 1000,
     combo: 10,
@@ -36,8 +36,6 @@ test('GigHUD: renders toxic border flash element when isToxicMode is true', asyn
 })
 
 test('GigHUD: does not render toxic border flash element when isToxicMode is false', async () => {
-  const { GigHUD } = await import('../src/components/GigHUD.jsx')
-
   const stats = {
     score: 1000,
     combo: 10,

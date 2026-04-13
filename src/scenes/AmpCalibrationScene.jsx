@@ -33,17 +33,14 @@ export const AmpCalibrationScene = () => {
     [update, gameStateRef]
   )
 
-  const onComplete = useCallback(
-    () => {
-      finishMinigame()
-      changeScene(GAME_PHASES.GIG)
-    },
-    [finishMinigame, changeScene]
-  )
+  const onComplete = useCallback(() => {
+    finishMinigame()
+    changeScene(GAME_PHASES.GIG)
+  }, [finishMinigame, changeScene])
 
   const renderCompletionStats = useCallback(
     () =>
-      t('minigames.amp.completion.stability', {
+      t('ui:minigames.amp.completion.stability', {
         defaultValue: `Stability Achieved: ${Math.floor(score)}%`,
         score: Math.floor(score)
       }),
@@ -56,15 +53,16 @@ export const AmpCalibrationScene = () => {
       logic={logic}
       uiState={{ timeLeft, score, isGameOver }}
       onComplete={onComplete}
-      completionTitle={t('minigames.amp.completion.title', { defaultValue: 'AMP CALIBRATED' })}
-      completionButtonText={t('minigames.amp.completion.button', { defaultValue: 'START GIG' })}
+      completionTitle={t('ui:minigames.amp.completion.title', {
+        defaultValue: 'AMP CALIBRATED'
+      })}
+      completionButtonText={t('ui:minigames.amp.completion.button', {
+        defaultValue: 'START GIG'
+      })}
       renderCompletionStats={renderCompletionStats}
     >
       <AmpHUD timeLeft={timeLeft} score={score} />
-      <AmpControls
-        dialValue={dialValue}
-        setDialValue={setDialValue}
-      />
+      <AmpControls dialValue={dialValue} setDialValue={setDialValue} />
     </MinigameSceneFrame>
   )
 }

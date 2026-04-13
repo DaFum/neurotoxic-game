@@ -6,11 +6,12 @@ import { render, fireEvent, cleanup } from '@testing-library/react'
 vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
+
+import { GigHUD } from '../../src/components/GigHUD.jsx'
+
 afterEach(cleanup)
 
 test('GigHUD: renders lane inputs and handles interactions', async () => {
-  const { GigHUD } = await import('../../src/components/GigHUD.jsx')
-
   const stats = {
     score: 0,
     combo: 0,
