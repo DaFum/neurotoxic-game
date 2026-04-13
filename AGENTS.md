@@ -27,6 +27,12 @@
 
 - Commits must use Conventional Commits (`feat:`, `fix:`, etc.).
 
+## PR & Workflow
+
+- Use `pnpm` exclusively — never `npm` or `yarn`.
+- Run `pnpm run test:all` before finalizing any PR.
+- Prefer targeted refactoring (e.g., CLI tools like `sed`) over global formatting to minimize PR noise.
+
 ## Gotchas
 
 - `songs.js` is excluded from ESLint — do not lint-fix it.

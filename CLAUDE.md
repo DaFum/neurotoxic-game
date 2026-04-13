@@ -4,9 +4,7 @@
 
 ## Claude-Specific
 
-- Use `pnpm` exclusively — never `npm` or `yarn`.
-- Run `pnpm run test:all` before finalizing any PR.
-- Prefer targeted refactoring over global formatting to minimize PR noise.
+For repo-wide workflow, testing, package management, and PR guidance, see `AGENTS.md` — it is the single source of truth. This file provides only Claude Code-specific supplements.
 
 ## Testing Supplements
 
