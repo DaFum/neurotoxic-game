@@ -63,9 +63,9 @@ export const TICKET_SALES_CONSTANTS = {
  * Calculates ticket sales revenue and attendance.
  */
 export const calculateTicketIncome = (
-  gigData,
-  playerFame,
-  modifiers,
+  gigData = {},
+  playerFame = 0,
+  modifiers = {},
   context = {}
 ) => {
   // Base draw is ~30%. Fame fills the rest.
@@ -137,11 +137,11 @@ export const calculateTicketIncome = (
  * Calculates merch sales revenue and costs.
  */
 export const calculateMerchIncome = (
-  ticketsSold,
-  performanceScore,
-  gigStats,
-  modifiers,
-  bandInventory,
+  ticketsSold = 0,
+  performanceScore = 0,
+  gigStats = {},
+  modifiers = {},
+  bandInventory = {},
   context = {}
 ) => {
   // Better baseline merch conversion.
@@ -353,13 +353,13 @@ export const calculateEffectiveTicketPrice = (gigData, context = {}) => {
 /**
  * Calculates venue split / promoter cut.
  */
-export const calculateVenueSplit = (ticketsRevenue, gigData) => {
-  const diffMap = { 3: 0.2, 4: 0.4 }
+const VENUE_SPLIT_RATES = { 3: 0.2, 4: 0.4 }
+export const calculateVenueSplit = (ticketsRevenue = 0, gigData = {}) => {
   const splitRate =
     gigData.diff >= 5
       ? 0.7
-      : Object.hasOwn(diffMap, gigData.diff)
-        ? diffMap[gigData.diff]
+      : Object.hasOwn(VENUE_SPLIT_RATES, gigData.diff)
+        ? VENUE_SPLIT_RATES[gigData.diff]
         : 0
 
   if (splitRate > 0) {
@@ -380,7 +380,7 @@ export const calculateVenueSplit = (ticketsRevenue, gigData) => {
 /**
  * Calculates guarantee / base pay.
  */
-export const calculateGuarantee = gigData => {
+export const calculateGuarantee = (gigData = {}) => {
   const pay = Math.max(0, gigData.pay || 0)
   if (pay > 0) {
     return {
@@ -398,7 +398,7 @@ export const calculateGuarantee = gigData => {
 /**
  * Calculates bar cut revenue.
  */
-export const calculateBarCut = (ticketsSold, modifiers) => {
+export const calculateBarCut = (ticketsSold = 0, modifiers = {}) => {
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
   const barPercent = Math.round(barRate * 100)
   const barRevenue = Math.max(
@@ -423,7 +423,7 @@ export const calculateBarCut = (ticketsSold, modifiers) => {
 /**
  * Calculates sponsorship bonuses.
  */
-export const calculateSponsorshipBonuses = gigStats => {
+export const calculateSponsorshipBonuses = (gigStats = {}) => {
   const bonuses = []
   let totalBonus = 0
 
@@ -454,7 +454,7 @@ export const calculateSponsorshipBonuses = gigStats => {
 /**
  * Calculates expenses for the gig.
  */
-export const calculateGigExpenses = modifiers => {
+export const calculateGigExpenses = (modifiers = {}) => {
   const expenses = { total: 0, breakdown: [] }
 
   // Operational Expenses (Modifiers)
@@ -674,8 +674,8 @@ export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
   let fuelItems = 0
   if (Array.isArray(itemsCollected)) {
-    for (let i = 0, len = itemsCollected.length; i < len; i++) {
-      if (itemsCollected[i] === 'FUEL') fuelItems++
+    for (const item of itemsCollected) {
+      if (item === 'FUEL') fuelItems++
     }
   }
   const fuelBonus = fuelItems * 0.5

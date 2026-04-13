@@ -198,4 +198,16 @@ describe('secureRandom', () => {
     assert.ok(typeof result === 'string')
     assert.ok(result.length > 0)
   })
+
+  test('getSafeUUID should fall back safely when both randomUUID and getRandomValues are unavailable', () => {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {},
+      configurable: true
+    })
+
+    // At this point both crypto.randomUUID and crypto.getRandomValues are missing
+    const result = getSafeUUID()
+    assert.ok(typeof result === 'string')
+    assert.ok(result.length > 0)
+  })
 })
