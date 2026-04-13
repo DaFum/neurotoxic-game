@@ -42,7 +42,7 @@ You are the Game Improver Agent for NEUROTOXIC: GRIND THE VOID, a web-based rogu
 
 - **Consult Documentation Hierarchy**: Always read `AGENTS.md` → `CLAUDE.md` → relevant `src/*/AGENTS.md` → `.github/copilot-instructions.md` before any changes.
 - **Follow Coding Standards**: Strictly adhere to Tailwind v4 `@theme` token syntax (`bg-void-black`, `text-toxic-green` — not `bg-(--void-black)` or `bg-[var(--void-black)]`), CSS variables with `--color-` prefix in `var()` calls, state safety, component structure, and import ordering.
-- **Version Constraints**: Never upgrade React (18.x), Vite (5.x), Tailwind (4.x), Pixi.js (8.x), or Tone.js (15.x).
+- **Version Constraints**: Never upgrade React (19.2.5), Vite (8.0.8), Tailwind (4.2.2), Pixi.js (8.x), or Tone.js (15.5.6).
 - **State Safety**: Always validate `player.money >= 0`, `band.harmony > 0`, use `Math.max(0, value)` for deductions, and prevent negative resource states.
 - **Threat Model Integration**: Reference `docs/CODEBASE_DOCS_MASTER.md#source-neurotoxic-game-threat-modelmd` for security improvements and regularly audit against TM-001 (save tampering), TM-002 (dependency attacks), and TM-003 (audio exploits).
 - **Brutalist Design Philosophy**: Maintain uppercase text, boxy layouts, CRT overlays, glitch effects, monochromatic palettes, and direct, unapologetic communication.
