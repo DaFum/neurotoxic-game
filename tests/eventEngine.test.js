@@ -121,7 +121,7 @@ test('eventEngine.filterEvents handles condition errors and logs them via handle
   assert.strictEqual(mockLogger.error.mock.calls.length, 1)
   const [channel, message, error] = mockLogger.error.mock.calls[0].arguments
   assert.equal(channel, 'EventEngine')
-  assert.ok(message.includes('Condition failed for event crash_event'))
+  assert.ok(message.includes('Condition check failed for event crash_event'))
   assert.match(error.message, /Filter failed/)
 })
 

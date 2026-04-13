@@ -98,14 +98,6 @@ mock.module('../src/utils/hecklerLogic.js', {
     trySpawnProjectile: mock.fn(() => null)
   }
 })
-mock.module('../src/utils/errorHandler.js', {
-  namedExports: {
-    handleError: mock.fn(),
-    GameError: class GameError extends Error {},
-    AudioError: class AudioError extends GameError {},
-    StateError: class StateError extends GameError {}
-  }
-})
 mock.module('../src/utils/logger.js', {
   namedExports: {
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
@@ -328,7 +320,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       }
     )
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result, unmount } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
       await new Promise(r => setImmediate(r))
     })

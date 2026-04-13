@@ -77,9 +77,11 @@ class TourbusStageController extends BaseStageController {
 
       const loaded = await loadTextures(urls)
 
-      Object.keys(loaded).forEach(key => {
+      const keys = Object.keys(loaded)
+      for (let i = 0, len = keys.length; i < len; i++) {
+        const key = keys[i]
         if (loaded[key]) this.textures[key] = loaded[key]
-      })
+      }
     } catch (e) {
       logger.warn('TourbusStageController', 'Failed to load assets', e)
     }
@@ -95,7 +97,10 @@ class TourbusStageController extends BaseStageController {
     this.laneWidth = width / TOURBUS_LANE_COUNT
 
     // Clear previous
-    this.roadContainer.removeChildren().forEach(c => c.destroy())
+    const children = this.roadContainer.removeChildren()
+    for (let i = 0, len = children.length; i < len; i++) {
+      children[i].destroy()
+    }
 
     // Use TilingSprite if texture loaded AND source is valid, else Graphics fallback.
     // Image-element textures may have sources that crash TilingSprite (_resolution null).

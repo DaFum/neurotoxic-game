@@ -75,7 +75,8 @@ const mockUseGameState = {
   updateBand: vi.fn(),
   addToast: vi.fn(),
   startRoadieMinigame: vi.fn(),
-  startKabelsalatMinigame: vi.fn()
+  startKabelsalatMinigame: vi.fn(),
+  startAmpCalibration: vi.fn()
 }
 
 vi.mock('../src/context/GameState', () => ({
@@ -141,7 +142,7 @@ describe('PreGig', () => {
     // We need to set up a valid setlist so the start button is enabled
     mockUseGameState.setlist = [{ id: 'song1' }]
 
-    // Total weight normally is 3. 0.4 * 3 = 1.2 > 1 (roadie) so it's kabelsalat
+    // Total weight normally is 3. 0.1 * 3 = 0.3 < 1, so it's roadie
     vi.mocked(getSafeRandom).mockReturnValue(0.1)
 
     const { findByText, unmount } = render(React.createElement(PreGig))
@@ -153,6 +154,8 @@ describe('PreGig', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
+    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
+    expect(mockUseGameState.startAmpCalibration).toHaveBeenCalledTimes(0)
     unmount()
   })
 
@@ -170,6 +173,25 @@ describe('PreGig', () => {
 
     expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
     expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
+    expect(mockUseGameState.startAmpCalibration).toHaveBeenCalledTimes(0)
+  })
+
+  test('gives amp calibration minigame a 33% chance to start', async () => {
+    mockUseGameState.setlist = [{ id: 'song1' }]
+
+    // Test Amp Calibration Minigame (secureRandom >= 0.66)
+    // 0.8 * 3 = 2.4 > 2, so it's amp calibration
+    vi.mocked(getSafeRandom).mockReturnValue(0.8)
+
+    const { findByText } = render(React.createElement(PreGig))
+    const startBtn = await findByText(/ui:pregig.startShow/i)
+    fireEvent.click(startBtn)
+
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(mockUseGameState.startAmpCalibration).toHaveBeenCalledTimes(1)
+    expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
+    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
   })
 
   test('applies streak breaker when roadie was played last (25% chance)', async () => {

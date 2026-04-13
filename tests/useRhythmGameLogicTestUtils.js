@@ -133,8 +133,9 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/utils/hecklerLogic.js', {
     namedExports: mockHecklerLogic
   })
+  class MockGameError extends Error {}
   mock.module('../src/utils/errorHandler.js', {
-    namedExports: { ...mockErrorHandler, GameError: class GameError extends Error {}, StateError: class StateError extends GameError {} }
+    namedExports: { ...mockErrorHandler, GameError: MockGameError, StateError: class MockStateError extends MockGameError {}, AudioError: class MockAudioError extends MockGameError {} }
   })
   mock.module('../src/utils/logger.js', {
     namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 } }
@@ -149,7 +150,8 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('react-i18next', {
     namedExports: {
       useTranslation: mockUseTranslation,
-      Trans: ({ i18nKey }) => i18nKey
+      Trans: ({ i18nKey }) => i18nKey,
+      initReactI18next: { type: '3rdParty', init: () => {} }
     }
   })
   mock.module('../src/utils/imageGen.js', {
