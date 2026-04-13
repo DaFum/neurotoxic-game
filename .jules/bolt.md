@@ -92,4 +92,4 @@
 **Action:** Stabilized `useCallback`/`useEffect` dependencies using strictly mapped primitives (`band?.members?.length`, `band?.harmony`, `player?.currentNodeId`, `setlist?.length`, etc.) and wrapped initialization in a `try/finally` block to guarantee lock release.
 ## 2026-04-12 - Optimization: eventEngine.filterEvents
 **Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
-**Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, pre-allocating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
+**Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, creating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.

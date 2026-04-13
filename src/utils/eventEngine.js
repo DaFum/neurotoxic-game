@@ -612,7 +612,7 @@ export const eventEngine = {
   },
 
   selectEvent: selectEvent,
-  filterEvents: (pool, trigger, state) => {
+  filterEvents(pool, trigger, state) {
     const result = []
     for (let i = 0, len = pool.length; i < len; i++) {
       const e = pool[i]
@@ -629,7 +629,7 @@ export const eventEngine = {
           result.push(e)
         }
       } catch (err) {
-        logger.error('EventEngine', `Condition failed for event ${e.id}`, err)
+        this.handleError(err, e.id)
       }
     }
     return result

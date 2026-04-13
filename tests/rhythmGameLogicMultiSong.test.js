@@ -354,7 +354,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       }
     )
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result, unmount } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
       await new Promise(r => setImmediate(r))
     })

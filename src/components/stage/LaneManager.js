@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Container, Graphics } from 'pixi.js'
 import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
 
@@ -131,13 +130,15 @@ export class LaneManager {
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
 
-    this.gameStateRef.current.lanes.forEach((lane, index) => {
+    const lanes = this.gameStateRef.current.lanes
+    for (let index = 0, len = lanes.length; index < len; index++) {
+      const lane = lanes[index]
       const laneX = startX + index * (laneWidth + LANE_GAP)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
 
       this._createLaneGraphics(lane, index, laneX)
-    })
+    }
   }
 
   _createLaneGraphics(lane, index, laneX) {
@@ -201,9 +202,10 @@ export class LaneManager {
     }
     const startX = this.laneLayout.startX
 
-    this.gameStateRef.current.lanes.forEach((lane, index) => {
-      lane.renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
-    })
+    const lanes = this.gameStateRef.current.lanes
+    for (let index = 0, len = lanes.length; index < len; index++) {
+      lanes[index].renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
+    }
     return true
   }
 
