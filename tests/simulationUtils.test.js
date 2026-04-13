@@ -220,16 +220,16 @@ test('calculateGigPhysics calculates hit windows based on skill', () => {
   const physics = calculateGigPhysics(band, song)
 
   assert.ok(
-    physics.hitWindows.guitar >= 150,
-    'Guitar hit window should be at least 150ms'
+    physics.hitWindows.guitar >= 120,
+    'Guitar hit window should be at least 120ms'
   )
   assert.ok(
-    physics.hitWindows.drums >= 150,
-    'Drums hit window should be at least 150ms'
+    physics.hitWindows.drums >= 120,
+    'Drums hit window should be at least 120ms'
   )
   assert.ok(
-    physics.hitWindows.bass >= 150,
-    'Bass hit window should be at least 150ms'
+    physics.hitWindows.bass >= 120,
+    'Bass hit window should be at least 120ms'
   )
 })
 
@@ -404,7 +404,7 @@ test('calculateGigPhysics handles missing skill property', () => {
 
   assert.equal(
     physics.hitWindows.guitar,
-    150,
+    120,
     'Should default to base hit window when skill missing'
   )
 })

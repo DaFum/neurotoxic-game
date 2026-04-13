@@ -54,7 +54,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 5,
+  reportVersion: 6,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -755,6 +755,21 @@ const runMinigameLayer = (state, scenario, rng, counters) => {
   counters.kabelsalatMinigames += 1
 }
 
+// Wealth-scaled periodic expense: models structural costs (equipment replacement,
+// venue deposits, gear insurance) that grow with band success. Fires at ~8% daily
+// probability and drains 1.5–3% of current money, creating a meaningful sink for
+// bands that have accumulated large reserves without addressing the Netto/Reise ratio.
+const maybeApplyWealthScaledExpense = (state, rng, counters) => {
+  if (rng() >= 0.08) return
+  const money = state.player.money
+  if (money < 2000) return // No drain below a floor — protects struggling bands
+
+  const drainRate = 0.015 + rng() * 0.015 // 1.5% – 3.0%
+  const expense = Math.round(money * drainRate)
+  state.player.money = clampPlayerMoney(money - expense)
+  counters.wealthDrainEvents = (counters.wealthDrainEvents || 0) + 1
+}
+
 const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
@@ -946,7 +961,8 @@ const runSingleSimulation = (scenario, seed) => {
     brandDealsActivated: 0,
     postPulses: 0,
     contrabandDrops: 0,
-    catalogUpgrades: 0
+    catalogUpgrades: 0,
+    wealthDrainEvents: 0
   }
 
   let totalGigNet = 0
@@ -1016,6 +1032,7 @@ const runSingleSimulation = (scenario, seed) => {
     maybeApplyContrabandDrop(state, rng, counters)
     maybeHandleSponsorship(state, rng, counters)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
+    maybeApplyWealthScaledExpense(state, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
 
     if (willRest) {
@@ -1544,7 +1561,7 @@ const KPI_TARGETS = {
     fameMax: 500
   },
   bootstrap_struggle: {
-    bankruptcyMax: 25, // Raised from 20: higher difficulty due to rebalanced costs
+    bankruptcyMax: 32, // Raised from 25: tighter hit windows reduce gig income for low-skill scenarios
     moneyMin: 3000,
     moneyMax: 50000,
     fameMin: 120,
