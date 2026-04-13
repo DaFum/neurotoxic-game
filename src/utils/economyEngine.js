@@ -171,7 +171,7 @@ export const calculateMerchIncome = (
   const breakdownItems = []
 
   if (performanceScore >= 95) {
-    buyRate *= 1.5 // S-Rank Bonus
+    buyRate *= 1.25 // S-Rank Bonus
     breakdownItems.push({
       labelKey: 'economy:gigIncome.hypeBonus.label',
       value: 0,
@@ -378,7 +378,7 @@ export const calculateEffectiveTicketPrice = (gigData = {}, context = {}) => {
 /**
  * Calculates venue split / promoter cut.
  */
-const VENUE_SPLIT_RATES = { 3: 0.2, 4: 0.4 }
+const VENUE_SPLIT_RATES = { 3: 0.35, 4: 0.55 }
 export const calculateVenueSplit = (ticketsRevenue = 0, gigData = {}) => {
   gigData = gigData || {}
   const splitRate =
