@@ -22,6 +22,9 @@
 - Runner is chosen per directory, not per file extension. Check which runner the sibling tests use — pure `.js` suites may live in either. Never mix runners in one file.
 - Vitest: mock `window.localStorage.setItem` inside `try/finally`; for `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup Maps (e.g., `SONGS_BY_ID`) in mocked data.
+
+## Style & Conventions
+
 - Commits must use Conventional Commits (`feat:`, `fix:`, etc.).
 
 ## Gotchas
