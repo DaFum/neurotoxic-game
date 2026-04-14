@@ -1,3 +1,4 @@
+import { hasActiveSponsorship } from './gameStateUtils'
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A
@@ -287,9 +288,6 @@ for (const key in SOCIAL_PLATFORMS) {
 }
 
 
-export const hasActiveSponsorship = (socialState) => {
-  return (socialState?.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
-}
 
 export const calculateSocialGrowth = (
   platform,

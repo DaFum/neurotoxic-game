@@ -805,3 +805,7 @@ export const hasStateItem = (collection, item) => {
     ? collection.has(item)
     : (collection || []).includes(item)
 }
+
+export const hasActiveSponsorship = (socialState) => {
+  return (socialState?.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
+}
