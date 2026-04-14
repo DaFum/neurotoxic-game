@@ -5,7 +5,7 @@ import { createAmpStageController } from '../components/stage/AmpStageController
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { AmpHUD } from '../components/minigames/amp/AmpHUD'
 import { AmpControls } from '../components/minigames/amp/AmpControls'
-import { useGameState } from '../context/GameState'
+import { useGameState, useGameDispatch } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
 export const AmpCalibrationScene = () => {
@@ -22,6 +22,7 @@ export const AmpCalibrationScene = () => {
   } = useAmpLogic()
 
   const { changeScene } = useGameState()
+  const dispatch = useGameDispatch()
 
   const controllerFactory = useMemo(() => createAmpStageController, [])
 
@@ -35,8 +36,14 @@ export const AmpCalibrationScene = () => {
 
   const onComplete = useCallback(() => {
     finishMinigame()
+
+    // Erzwingt das Schließen des Minispiel-Overlays/States
+    if (dispatch) {
+      dispatch({ type: 'COMPLETE_MINIGAME' })
+    }
+
     changeScene(GAME_PHASES.GIG)
-  }, [finishMinigame, changeScene])
+  }, [finishMinigame, changeScene, dispatch])
 
   const renderCompletionStats = useCallback(
     () =>
