@@ -371,39 +371,6 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
     )
   }
 
-  // Sponsor Trigger Metric
-  if (
-    !nextSocial.sponsorActive &&
-    (nextSocial.instagram || 0) > 5000 &&
-    controversySnapshot < 60 && // Won't sign if controversy is too high
-    rng() < 0.1
-  ) {
-    nextSocial.sponsorActive = true
-  } else if (nextSocial.sponsorActive) {
-    // If organic followers drop below milestone, they drop the sponsorship
-    if ((nextSocial.instagram || 0) < 5000) {
-      nextSocial.sponsorActive = false
-    }
-    // Sponsorship Drops due to high controversy (Immediate or high chance if severe)
-    else if (controversySnapshot >= 80) {
-      nextSocial.sponsorActive = false // Immediate drop
-    } else if (controversySnapshot >= 60 && rng() < 0.5) {
-      nextSocial.sponsorActive = false // High chance to drop
-    }
-  }
-
-  // Fame-Scaled Sponsor Daily Payout
-  if (nextSocial.sponsorActive) {
-    const scaledPayout = Math.min(
-      BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_CAP,
-      Math.max(
-        BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_FLOOR,
-        Math.round((nextPlayer.fame ?? 0) * 2)
-      )
-    )
-    nextPlayer.money = clampPlayerMoney(nextPlayer.money + scaledPayout)
-  }
-
   // TikTok Viral Surge Perk
   if ((nextSocial.tiktok || 0) > 10000 && rng() < 0.05) {
     nextSocial.viral += 1 // Free viral token

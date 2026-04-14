@@ -217,7 +217,6 @@ const validateSocial = social => {
     if (key === 'lastPirateBroadcastDay' && val === null) continue
     if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue
-    if (key === 'sponsorActive' && typeof val === 'boolean') continue
 
     if (key === 'trend') {
       if (typeof val === 'string' && ALLOWED_TRENDS_SET.has(val)) continue

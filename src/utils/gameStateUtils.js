@@ -744,10 +744,6 @@ export const applyEventDelta = (state, delta) => {
         if (value === null || typeof value === 'string') {
           nextSocial[key] = value
         }
-      } else if (key === 'sponsorActive') {
-        if (typeof value === 'boolean') {
-          nextSocial[key] = value
-        }
       } else if (key === 'trend') {
         if (typeof value === 'string') {
           nextSocial[key] = value

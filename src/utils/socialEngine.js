@@ -140,7 +140,7 @@ export const generatePostOptions = (
   // Check if there are active deals of type SPONSORSHIP.
   const socialState = gameState.social
   let hasActiveSponsor = false
-  if (!socialState?.sponsorActive && socialState?.activeDeals) {
+  if (socialState?.activeDeals) {
     const activeDeals = socialState.activeDeals
     for (let i = 0; i < activeDeals.length; i++) {
       if (activeDeals[i].type === 'SPONSORSHIP') {
@@ -149,7 +149,7 @@ export const generatePostOptions = (
       }
     }
   }
-  if (socialState?.sponsorActive || hasActiveSponsor) {
+  if (hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
@@ -532,15 +532,12 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
   // Create an O(1) set of active deal IDs only if there are active deals
-  let activeDealIds = null
-  const activeDeals = social.activeDeals
+    const activeDeals = social.activeDeals
   const hasActiveDeals = !!activeDeals?.length
 
   if (hasActiveDeals) {
-    activeDealIds = new Set()
-    for (let i = 0; i < activeDeals.length; i++) {
-      activeDealIds.add(activeDeals[i].id)
-    }
+    // A player can hold only ONE deal at a time. No offers appear if a deal is already active.
+    return []
   }
 
   // Filter available deals
@@ -573,8 +570,6 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     )
       continue
 
-    // Check if already active
-    if (hasActiveDeals && activeDealIds.has(deal.id)) continue
 
     eligibleDeals.push(deal)
   }
@@ -595,7 +590,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   let found = 0
   const n = pool.length
 
-  for (let i = n - 1; i >= 0 && found < 2; i--) {
+  for (let i = n - 1; i >= 0 && found < 3; i--) {
     const j = Math.floor(rng() * (i + 1))
     ;[pool[i], pool[j]] = [pool[j], pool[i]]
     const deal = pool[i]

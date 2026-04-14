@@ -1,0 +1,8 @@
+Refactor brand deals to use activeDeals array
+
+- Removed `sponsorActive` boolean from state and logic.
+- Integrated `BRAND_DEALS` data into post-gig flow.
+- Restricted `generateBrandOffers` to empty if an active deal exists.
+- Cleared all pending offers on deal acceptance in `usePostGigLogic`.
+- Connected `comm_sellout_ad` to `activeDeals` and implemented `remainingGigs` decrement.
+- Updated `economyEngine.js` to extract perGig payout from active SPONSORSHIP deals.

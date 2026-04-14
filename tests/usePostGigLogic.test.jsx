@@ -620,9 +620,7 @@ describe('usePostGigLogic', () => {
       act(() => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({ sponsorActive: false })
-      )
+      expect(mockUpdateSocial).toHaveBeenCalledWith(expect.objectContaining({ activeDeals: [] }))
     })
 
     it('returns early from handleContinue if financials are null', async () => {

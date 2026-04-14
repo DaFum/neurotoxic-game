@@ -98,7 +98,6 @@ const createBaseState = (overrides = {}) => ({
     loyalty: 50,
     reputationCooldown: 0,
     egoFocus: null,
-    sponsorActive: false,
     activeDeals: [],
     influencers: { influencer1: { score: 50 } },
     brandReputation: {}
@@ -567,7 +566,6 @@ describe('PostGig Component - Complete Phase', () => {
           loyalty: 50,
           reputationCooldown: 0,
           egoFocus: null,
-          sponsorActive: false,
           activeDeals: [],
           influencers: {},
           brandReputation: {}
@@ -624,7 +622,6 @@ describe('PostGig Component - Complete Phase', () => {
           loyalty: 50,
           reputationCooldown: 0,
           egoFocus: null,
-          sponsorActive: false,
           activeDeals: [],
           influencers: {},
           brandReputation: {}

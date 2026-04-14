@@ -653,6 +653,22 @@ export const calculateGigFinancials = ({
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 
+
+  // Active Deal Per-Gig Payout
+  const activeDeals = playerState?.social?.activeDeals || []
+  if (activeDeals.length > 0) {
+    const activeDeal = activeDeals[0]
+    if (activeDeal.type === 'SPONSORSHIP' && activeDeal.offer && activeDeal.offer.perGig) {
+      const perGigPayout = activeDeal.offer.perGig
+      report.income.breakdown.push({
+        labelKey: 'economy:gigIncome.brandSponsor.label',
+        value: perGigPayout,
+        detailKey: 'economy:gigIncome.brandSponsor.detail'
+      })
+      report.income.total += perGigPayout
+    }
+  }
+
   // 6. Sponsorship Bonuses
   const sponsorshipBonuses = calculateSponsorshipBonuses(gigStats)
   if (sponsorshipBonuses.incomeItems.length > 0) {
