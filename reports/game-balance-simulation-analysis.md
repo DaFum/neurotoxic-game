@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-04-14T11:10:13.227Z
+Erstellt am: 2026-04-14T12:03:55.255Z
 
 ## Simulationseinstellungen
 
@@ -41,13 +41,16 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 
 | Szenario | Startkapital | Startfame | Ø Endgeld | Peak-Drop | S2I-Ratio | Cap-Hits | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €500 | 0 | €40.364 | 0% | 0.32 | 0% | 351 | 3 | 50 | 0.55 | 57.81 | 17.19 | 0% | €1.735 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Bootstrap Struggle | €500 | 0 | €1.225 | 0% | 0.12 | 0% | 167 | 1 | 58 | 0.21 | 4.83 | 2.57 | 80% | €1.260 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
-| Aggressive Marketing | €500 | 0 | €27.368 | 0% | 0.23 | 0% | 369 | 3 | 54 | 0.61 | 27.08 | 9.3 | 1.92% | €1.843 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Scandal Recovery | €500 | 0 | €13.109 | 0% | 0.18 | 0% | 283 | 2 | 56 | 0.46 | 14.37 | 7.39 | 18.46% | €1.451 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
-| Festival Push | €500 | 0 | €22.865 | 0% | 0.15 | 0% | 431 | 4 | 55 | 0.44 | 15.86 | 6.79 | 11.92% | €2.165 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Chaos Tour | €500 | 0 | €25.832 | 0% | 0.22 | 0% | 380 | 3 | 54 | 0.62 | 26.85 | 9.65 | 1.54% | €1.701 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Cult Hypergrowth | €500 | 0 | €26.477 | 0% | 0.24 | 0% | 333 | 3 | 54 | 0.51 | 27.16 | 9.2 | 1.92% | €1.741 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Baseline Touring | €500 | 0 | €40.364 | 62.1% | 0.32 | 0.7% | 351 | 3 | 50 | 0.55 | 57.81 | 17.19 | 0% | €1.735 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Bootstrap Struggle | €500 | 0 | €1.225 | 39.1% | 0.12 | 0% | 167 | 1 | 58 | 0.21 | 4.83 | 2.57 | 80% | €1.260 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
+| Aggressive Marketing | €500 | 0 | €27.368 | 40.9% | 0.23 | 1.1% | 369 | 3 | 54 | 0.61 | 27.08 | 9.3 | 1.92% | €1.843 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Scandal Recovery | €500 | 0 | €13.109 | 40% | 0.18 | 0% | 283 | 2 | 56 | 0.46 | 14.37 | 7.39 | 18.46% | €1.451 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
+| Festival Push | €500 | 0 | €22.865 | 34.4% | 0.15 | 2.8% | 431 | 4 | 55 | 0.44 | 15.86 | 6.79 | 11.92% | €2.165 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Chaos Tour | €500 | 0 | €25.832 | 42.2% | 0.22 | 1% | 380 | 3 | 54 | 0.62 | 26.85 | 9.65 | 1.54% | €1.701 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Cult Hypergrowth | €500 | 0 | €26.477 | 37.8% | 0.24 | 0.3% | 333 | 3 | 54 | 0.51 | 27.16 | 9.2 | 1.92% | €1.741 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Early Game Probe (Fame 0–50) | €500 | 0 | €6.324 | 26.2% | 0.11 | 0% | 218 | 2 | 50 | 0.72 | 7.9 | 1.98 | 2.31% | €1.461 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Mid Game Probe (Fame 60–150) | €1.500 | 60 | €16.838 | 27.6% | 0.17 | 0% | 307 | 3 | 53 | 0.56 | 14.87 | 5.09 | 0.38% | €1.655 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Late Game Probe (Fame 175+) | €5.000 | 175 | €28.549 | 19.5% | 0.26 | 0.3% | 335 | 3 | 53 | 0.42 | 23.53 | 6.47 | 0% | €1.767 | ✅ Szenario liegt im robusten Simulationskorridor. |
 
 ## Wirtschaft im Detail
 
@@ -60,6 +63,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | €25.767 | €267 | €2.165 | 43.69 | 2.9 | 1.01 | 2.85 | 5.18 | ⚠️ Kritische Liquiditätslücken – Kostenreserve erhöhen. |
 | Chaos Tour | €30.085 | €385 | €1.701 | 54.06 | 3.56 | 1.11 | 4.81 | 7.31 | ✅ Sponsoring als stabiler Einkommensanker etabliert. |
 | Cult Hypergrowth | €32.760 | €392 | €1.741 | 54.11 | 3.28 | 1.22 | 5.17 | 7 | ✅ Sponsoring als stabiler Einkommensanker etabliert. |
+| Early Game Probe (Fame 0–50) | €6.822 | €387 | €1.461 | 2.52 | 0.75 | 0.95 | 1.1 | 1.87 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Mid Game Probe (Fame 60–150) | €17.710 | €1.202 | €1.655 | 22.06 | 1.74 | 1 | 2.65 | 3.9 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Late Game Probe (Fame 175+) | €30.921 | €4.767 | €1.767 | 18.07 | 1.24 | 1.07 | 4.3 | 4.26 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
 
 ## Kapital-Progressionskurve
 
@@ -72,6 +78,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | €4.138 | €9.017 | €16.019 | €22.865 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Chaos Tour | €5.628 | €13.641 | €21.395 | €25.832 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Cult Hypergrowth | €7.114 | €16.310 | €24.966 | €26.477 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Early Game Probe (Fame 0–50) | €5.216 | €0 | €0 | €6.324 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Mid Game Probe (Fame 60–150) | €7.796 | €15.979 | €0 | €16.838 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Late Game Probe (Fame 175+) | €21.803 | €0 | €0 | €28.549 | ✅ Kapitalaufbau im erwarteten Korridor. |
 
 ## Einkommensstruktur & Sink-Analyse
 
@@ -84,6 +93,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | €2.165 | €271 | 8× | 11.55 | 0.69 | ✅ Einkommensstruktur akzeptabel. |
 | Chaos Tour | €1.701 | €326 | 5.2× | 14.7 | 0.88 | ✅ Einkommensstruktur akzeptabel. |
 | Cult Hypergrowth | €1.741 | €368 | 4.7× | 14.36 | 0.86 | ✅ Einkommensstruktur akzeptabel. |
+| Early Game Probe (Fame 0–50) | €1.461 | €116 | 12.6× | 17.11 | 1.03 | ✅ Einkommensstruktur akzeptabel. |
+| Mid Game Probe (Fame 60–150) | €1.655 | €230 | 7.2× | 15.11 | 0.91 | ✅ Einkommensstruktur akzeptabel. |
+| Late Game Probe (Fame 175+) | €1.767 | €415 | 4.3× | 14.15 | 0.85 | ✅ Einkommensstruktur akzeptabel. |
 
 ## Gig-Performance-Kalibrierung
 
@@ -96,6 +108,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | 152 | 5.8 | 66 | 4.9% | 63.3% | 31.8% | ⚠️ Kaum schlechte Gigs – Fame-Verlust-Druck zu gering. |
 | Chaos Tour | 152 | 6.8 | 60 | 12% | 76.4% | 11.5% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 | Cult Hypergrowth | 152 | 7.2 | 58 | 17.1% | 76.4% | 6.4% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Early Game Probe (Fame 0–50) | 152 | 7.3 | 57 | 22.4% | 67.7% | 9.9% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Mid Game Probe (Fame 60–150) | 157 | 7.2 | 58 | 18% | 75.7% | 6.4% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Late Game Probe (Fame 175+) | 157 | 7.1 | 58 | 15.4% | 76.5% | 8% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 
 ## Bandgesundheit im Detail
 
@@ -108,6 +123,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | 55 | 6.79 | 0.93 | 0.05 | 7.28 | 12.07 | ✅ Bandgesundheit im akzeptablen Bereich. |
 | Chaos Tour | 54 | 9.65 | 0.99 | 0.01 | 8.11 | 13.32 | ✅ Bandgesundheit im akzeptablen Bereich. |
 | Cult Hypergrowth | 54 | 9.2 | 0.98 | 0 | 8.27 | 12.85 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Early Game Probe (Fame 0–50) | 50 | 1.98 | 0.45 | 0 | 2.15 | 3.52 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Mid Game Probe (Fame 60–150) | 53 | 5.09 | 0.96 | 0 | 4.13 | 7.33 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Late Game Probe (Fame 175+) | 53 | 6.47 | 0.95 | 0 | 3.47 | 5.28 | ✅ Bandgesundheit im akzeptablen Bereich. |
 
 ## Events & Social im Detail
 
@@ -120,6 +138,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | 0.28 | 1.59 | 1.38 | 0.3 | 8.2 | 12.6 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 | Chaos Tour | 0.66 | 4 | 3.54 | 1.03 | 8.64 | 13.97 | ✅ Gesunde Event-Verteilung. |
 | Cult Hypergrowth | 0.46 | 2.24 | 2.04 | 0.65 | 9.13 | 14.39 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| Early Game Probe (Fame 0–50) | 0.07 | 0.34 | 0.25 | 0.1 | 2.35 | 3.18 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
+| Mid Game Probe (Fame 60–150) | 0.14 | 0.91 | 0.83 | 0.21 | 4.96 | 8.48 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
+| Late Game Probe (Fame 175+) | 0.19 | 0.79 | 0.75 | 0.52 | 3.65 | 6.52 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 
 ## Minigame-Abdeckung im Detail
 
@@ -132,6 +153,9 @@ Erstellt am: 2026-04-14T11:10:13.227Z
 | Festival Push | 15.86 | 15.86 | 15.86 | 47.58 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
 | Chaos Tour | 26.85 | 26.85 | 26.85 | 80.55 | ✅ Gute Minigame-Frequenz – ausreichend Spielinteraktion. |
 | Cult Hypergrowth | 27.16 | 27.16 | 27.16 | 81.48 | ✅ Gute Minigame-Frequenz – ausreichend Spielinteraktion. |
+| Early Game Probe (Fame 0–50) | 7.9 | 7.9 | 7.9 | 23.7 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Mid Game Probe (Fame 60–150) | 14.87 | 14.87 | 14.87 | 44.61 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| Late Game Probe (Fame 175+) | 23.53 | 23.53 | 23.53 | 70.59 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
 
 ## Cross-Szenario-Vergleich (Höchstwerte)
 

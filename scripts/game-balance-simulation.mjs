@@ -245,6 +245,82 @@ export const SCENARIOS = [
       band: { harmony: 80 },
       social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
+  },
+  // ── Phase probes: fixed fame starting points, short runs ──────────────────
+  {
+    id: 'early_game_probe',
+    name: 'Early Game Probe (Fame 0–50)',
+    description:
+      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Validiert Survival-Rate >95%, Gig-Netto €200–800 und niedrige Logistikkosten.',
+    gigGapDays: 2,
+    ticketDiscountChance: 0.12,
+    eventIntensity: 0.3,
+    maintenanceDiscipline: 0.55,
+    minigameSkill: 0.48,
+    traitPack: [],
+    modifierBias: {
+      promo: 0.12,
+      merch: 0.18,
+      catering: 0.08,
+      soundcheck: 0.08,
+      guestlist: 0.03
+    },
+    daysOverride: 20,
+    initialOverrides: {
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
+  },
+  {
+    id: 'mid_game_probe',
+    name: 'Mid Game Probe (Fame 60–150)',
+    description:
+      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Validiert Time-to-Upgrade (3–5 Gigs für €2.000) und Management-Cut-Wachstum.',
+    gigGapDays: 2,
+    ticketDiscountChance: 0.08,
+    eventIntensity: 0.4,
+    maintenanceDiscipline: 0.65,
+    minigameSkill: 0.55,
+    traitPack: ['bandleader'],
+    modifierBias: {
+      promo: 0.28,
+      merch: 0.25,
+      catering: 0.12,
+      soundcheck: 0.18,
+      guestlist: 0.08
+    },
+    daysOverride: 40,
+    initialOverrides: {
+      player: { money: 1500, fame: 60 },
+      band: { harmony: 75 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
+  },
+  {
+    id: 'late_game_probe',
+    name: 'Late Game Probe (Fame 175+)',
+    description:
+      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Validiert Logistik-Kostenexplosion als Sink und Cap-Hit-Rate <15%.',
+    gigGapDays: 1,
+    ticketDiscountChance: 0.04,
+    eventIntensity: 0.5,
+    maintenanceDiscipline: 0.72,
+    minigameSkill: 0.65,
+    traitPack: ['bandleader', 'gear_nerd'],
+    modifierBias: {
+      promo: 0.55,
+      merch: 0.45,
+      catering: 0.25,
+      soundcheck: 0.4,
+      guestlist: 0.2
+    },
+    daysOverride: 30,
+    initialOverrides: {
+      player: { money: 5000, fame: 175 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
   }
 ]
 
@@ -888,8 +964,7 @@ const runSingleSimulation = (scenario, seed) => {
 
   const counters = {
     gigsPlayed: 0,
-      maxPeakToTroughDrop: 0,
-    bankrupt: false,
+      bankrupt: false,
     sponsorSignings: 0,
     sponsorPayouts: 0,
     sponsorDrops: 0,
@@ -934,7 +1009,8 @@ const runSingleSimulation = (scenario, seed) => {
   let gigScoreMid = 0  // score 50–70
   let gigScoreHigh = 0 // score > 70
 
-  for (let day = 1; day <= SIMULATION_CONSTANTS.daysPerRun; day++) {
+  const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
+  for (let day = 1; day <= daysToRun; day++) {
     // Snapshot money at start of day (before any spending)
     if (day === 20) moneyAtDay20 = state.player.money
     if (day === 40) moneyAtDay40 = state.player.money
@@ -1130,6 +1206,7 @@ const runSingleSimulation = (scenario, seed) => {
     currentNode = venue
     counters.gigsPlayed += 1
     totalGigNet += financials.net
+    if (financials.net >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
 
@@ -1214,7 +1291,7 @@ const summarizeScenario = runs => {
       acc.finalControversy += run.finalControversy
       acc.totalGigNet += run.totalGigNet
       acc.gigsPlayed += run.gigsPlayed
-      acc.maxPeakToTroughDrop += run.maxPeakToTroughDrop
+      acc.maxPeakToTroughDrop = (acc.maxPeakToTroughDrop || 0) + (run.maxPeakToTroughDrop || 0)
       acc.peakMoney += run.peakMoney
       acc.lowestMoney += run.lowestMoney
       acc.bankruptcies += run.bankrupt ? 1 : 0
@@ -1293,7 +1370,8 @@ const summarizeScenario = runs => {
       totalPerfScoreSum: 0,
       gigScoreLow: 0,
       gigScoreMid: 0,
-      gigScoreHigh: 0
+      gigScoreHigh: 0,
+      maxPeakToTroughDrop: 0
     }
   )
 
@@ -1306,7 +1384,7 @@ const summarizeScenario = runs => {
     avgPeakMoney: Math.round(totals.peakMoney / count),
     avgLowestMoney: Math.round(totals.lowestMoney / count),
     avgGigsPlayed: Number((totals.gigsPlayed / count).toFixed(2)),
-    avgPeakToTroughDrop: Number((totals.maxPeakToTroughDrop / count * 100 || 0).toFixed(1)),
+    avgPeakToTroughDrop: totals.maxPeakToTroughDrop ? Number((totals.maxPeakToTroughDrop * 100 / count).toFixed(1)) : 0,
     gigCapHits: Number((totals.gigCapHits / Math.max(1, totals.gigsPlayed) * 100).toFixed(1)),
     avgGigNet: Math.round(totals.totalGigNet / Math.max(1, totals.gigsPlayed)),
     bankruptcyRate: Number(((totals.bankruptcies / count) * 100).toFixed(2)),
