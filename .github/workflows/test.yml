@@ -82,7 +82,7 @@ jobs:
           path: ${{ matrix.target == 'node' && 'test-output-node.txt' || 'test-output-vitest.txt' }}
 
       - name: Comment failed tests on PR (sticky)
-        if: ${{ always() && steps.run-tests.outputs.exit_code != '0' && github.event_name == 'pull_request' }}
+        if: ${{ always() && steps.run-tests.conclusion == 'failure' && github.event_name == 'pull_request' }}
         uses: actions/github-script@v9
         with:
           script: |
