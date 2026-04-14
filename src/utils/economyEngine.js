@@ -54,10 +54,12 @@ export const EXPENSE_CONSTANTS = {
 }
 
 export const TICKET_SALES_CONSTANTS = {
-  BASE_DRAW_RATIO: 0.5,
+  BASE_DRAW_RATIO: 0.2,
   FAME_CAPACITY_SCALER: 10,
-  FAME_FILL_WEIGHT: 0.7
+  FAME_FILL_WEIGHT: 0.55
 }
+
+export const MANAGEMENT_CUT_RATE = 0.15
 
 /**
  * Calculates ticket sales revenue and attendance.
@@ -77,12 +79,12 @@ export const calculateTicketIncome = (
   const baseCapacity = Math.max(0, gigData.capacity || 0)
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
-  // Sublinear power scaling for fame to make late-game arenas fill more smoothly
-  // Uses Math.pow(playerFame, 0.7) to provide diminishing returns (power-law scaling, not logarithmic)
+  // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
+  // Denominator scales with venue capacity so large venues require proportionally more fame.
   const fameRatio = Math.min(
     1.0,
-    Math.pow(Math.max(0, playerFame), 0.7) /
-      (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+    Math.log(Math.max(0, playerFame) + 1) /
+      Math.log(safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER + 1)
   )
   let fillRate =
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
@@ -652,6 +654,18 @@ export const calculateGigFinancials = ({
   if (sponsorshipBonuses.incomeItems.length > 0) {
     report.income.breakdown.push(...sponsorshipBonuses.incomeItems)
     report.income.total += sponsorshipBonuses.totalBonus
+  }
+
+  // 7. Management Cut (percentage-based income sink that scales with success)
+  const managementCut = Math.floor(report.income.total * MANAGEMENT_CUT_RATE)
+  if (managementCut > 0) {
+    report.expenses.breakdown.push({
+      labelKey: 'economy:gigExpenses.managementFee.label',
+      value: managementCut,
+      detailKey: 'economy:gigExpenses.managementFee.detail',
+      detailParams: { rate: Math.round(MANAGEMENT_CUT_RATE * 100) }
+    })
+    report.expenses.total += managementCut
   }
 
   report.net = report.income.total - report.expenses.total

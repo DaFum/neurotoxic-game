@@ -4,6 +4,8 @@
   "gigExpenses.catering.label": "Catering / Energy",
   "gigExpenses.guestList.detail": "VIP Treatment (+Bar Revenue, +Score)",
   "gigExpenses.guestList.label": "Guest List",
+  "gigExpenses.managementFee.detail": "{{rate}}% of Gross Income",
+  "gigExpenses.managementFee.label": "Management Fee",
   "gigExpenses.merchRestock.detail": "COGS",
   "gigExpenses.merchRestock.label": "Merch Restock",
   "gigExpenses.merchStand.detail": "Better Display",
