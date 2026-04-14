@@ -38,14 +38,6 @@ export const handleUpdateSocial = (state, payload) => {
     updates.zealotry = Math.max(0, Math.min(100, Number(updates.zealotry) || 0))
   }
 
-  if (
-    updates.sponsorActive !== undefined &&
-    typeof updates.sponsorActive !== 'boolean'
-  ) {
-    logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
-    delete updates.sponsorActive
-  }
-
   if (updates.activeDeals !== undefined) {
     if (!Array.isArray(updates.activeDeals)) {
       logger.warn('GameState', 'Invalid activeDeals update (must be array)')

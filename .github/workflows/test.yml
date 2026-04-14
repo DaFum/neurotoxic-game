@@ -1,5 +1,5 @@
 name: Tests
-run-name: "Tests - ${{ github.event_name }}"
+run-name: Tests - PR #${{ github.event.pull_request.number || github.run_id }}
 
 on:
   pull_request:
@@ -14,22 +14,21 @@ concurrency:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
+  actions: read
+
+env:
+  MAX_FAILURE_LINES: '500'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-  tests:
-    name: "Run tests: ${{ matrix.target }}"
+  node-tests:
+    name: Node.js Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [node, vitest]
-
-    env:
-      MAX_FAILURE_LINES: '500'
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (merge ref)
         uses: actions/checkout@v6
 
       - name: Install pnpm
@@ -37,7 +36,7 @@ jobs:
         with:
           version: 9
 
-      - name: Setup Node
+      - name: Use Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '22.13.0'
@@ -46,55 +45,48 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
+      - name: Run node:test suite
         id: run-tests
         shell: bash
         run: |
-          set -o pipefail
-          if [ "${{ matrix.target }}" = "node" ]; then
-            cmd="pnpm test"
-            out="test-output-node.txt"
-          else
-            cmd="pnpm test:ui"
-            out="test-output-vitest.txt"
-          fi
-
-          echo "Running: $cmd"
-          # tee so we have a file and still see logs; allow the command to exit non-zero
           rc=0
-          $cmd 2>&1 | tee "$out" || rc=$?
-          echo "exit_code=${rc}" >> "$GITHUB_OUTPUT"
+          pnpm test 2>&1 | tee test-output-node.txt || rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
 
-      - name: Upload test log artifact
+      - name: Upload test log artifact (node)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-output-${{ matrix.target }}
-          path: ${{ matrix.target == 'node' && 'test-output-node.txt' || 'test-output-vitest.txt' }}
+          name: test-output-node
+          path: test-output-node.txt
 
-      - name: Comment failed tests on PR (sticky)
-        if: ${{ always() && steps.run-tests.outputs.exit_code != '0' && github.event_name == 'pull_request' }}
+      - name: Comment failed tests on PR (node) — update existing sticky comment
+        if: ${{ always() && steps.run-tests.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
         uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
-            const target = '${{ matrix.target }}';
-            const file = target === 'node' ? 'test-output-node.txt' : 'test-output-vitest.txt';
-            const marker = `<!-- test-results-${{ matrix.target }}: do-not-edit -->`;
-            const raw = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+            const marker = '<!-- test-results-node: do-not-edit -->';
+            const raw = fs.existsSync('test-output-node.txt') ? fs.readFileSync('test-output-node.txt', 'utf8') : '';
             const max = parseInt(process.env.MAX_FAILURE_LINES || '500', 10);
-            const tailLines = raw.split('\n').slice(-max);
 
-            const body = [
+            const failLines = raw.split('\n').filter(l =>
+              /^not ok\b/.test(l) || /^\s+✖|FAIL\b/.test(l) || /AssertionError|Error:/.test(l)
+            );
+
+            const totalFails = failLines.length;
+            const shown = failLines.slice(-max);
+
+            let body = [
               marker,
-              `## ❌ ${target} tests failed`,
+              `## ❌ Node.js tests failed`,
               '',
-              'Showing last output lines (full log is attached to the run):',
+              'Showing relevant failure lines (full log is attached to the workflow run):',
               '```',
-              tailLines.join('\n'),
+              shown.join('\n'),
               '```',
               '',
-              `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for the full details.`
+              `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full output.`
             ].join('\n\n');
 
             const owner = context.repo.owner;
@@ -125,7 +117,105 @@ jobs:
               });
             }
 
-      - name: Fail job if tests failed
+      - name: Fail if tests failed
         if: ${{ always() && steps.run-tests.outputs.exit_code != '0' }}
         run: exit 1
-        
+
+  vitest:
+    name: Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository (merge ref)
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Vitest suite
+        id: run-vitest
+        shell: bash
+        run: |
+          rc=0
+          pnpm test:ui 2>&1 | tee test-output-vitest.txt || rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Upload test log artifact (vitest)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output-vitest
+          path: test-output-vitest.txt
+
+      - name: Comment failed tests on PR (vitest) — update existing sticky comment
+        if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- test-results-vitest: do-not-edit -->';
+            const raw = fs.existsSync('test-output-vitest.txt') ? fs.readFileSync('test-output-vitest.txt', 'utf8') : '';
+            const max = parseInt(process.env.MAX_FAILURE_LINES || '500', 10);
+
+            const failLines = raw.split('\n').filter(l =>
+              /FAIL\b/.test(l) || /^\s+[✕×✗]/.test(l) || /AssertionError|Error:/.test(l)
+            );
+
+            const totalFails = failLines.length;
+            const shown = failLines.slice(-max);
+
+            let body = [
+              marker,
+              `## ❌ Vitest tests failed`,
+              '',
+              'Showing relevant failure lines (full log is attached to the workflow run):',
+              '```',
+              shown.join('\n'),
+              '```',
+              '',
+              `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full output.`
+            ].join('\n\n');
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Fail if tests failed
+        if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' }}
+        run: exit 1

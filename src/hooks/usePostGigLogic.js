@@ -130,7 +130,8 @@ export const usePostGigLogic = () => {
           'discounted_tickets_active'
         ),
         daysSinceLastGig: gigContextRef.current?.daysSinceLastGig ?? 0,
-        lastGigDifficulty: gigContextRef.current?.lastGigDifficulty ?? null
+        lastGigDifficulty: gigContextRef.current?.lastGigDifficulty ?? null,
+        social
       }
     })
     return result
@@ -343,14 +344,9 @@ export const usePostGigLogic = () => {
           'success'
         )
 
-        // Remove processed deal and check if more remain
-        setBrandOffers(prev => {
-          const remaining = prev.filter(o => o.id !== deal.id)
-          if (remaining.length === 0) {
-            setPhase('COMPLETE')
-          }
-          return remaining
-        })
+        // Exclusivity: clear all offers and go to complete
+        setBrandOffers([])
+        setPhase('COMPLETE')
       } catch (e) {
         logger.error('PostGig', 'Failed to accept deal', e)
         addToast(

@@ -1,3 +1,4 @@
+import { hasActiveSponsorship } from '../utils/gameStateUtils'
 // TODO: Review this file
 import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
@@ -616,16 +617,25 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
-    condition: ({ social }) => (social?.instagram ?? 0) > 5000,
-    resolve: () => ({
-      type: 'FIXED',
-      success: true,
-      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-      followers: 0,
-      moneyChange: 500,
-      loyaltyChange: -10,
-      message: 'You got paid. The fans are calling you sellouts.'
-    })
+    condition: ({ social }) => hasActiveSponsorship(social),
+    resolve: (gameState) => {
+      let payout = 500
+      if (gameState?.social?.activeDeals) {
+        const deal = gameState.social.activeDeals.find(d => d.type === 'SPONSORSHIP')
+        if (deal && deal.offer && deal.offer.perGig) {
+          payout = deal.offer.perGig
+        }
+      }
+      return {
+        type: 'FIXED',
+        success: true,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 0,
+        moneyChange: payout,
+        loyaltyChange: 0, // Loyalty penalty is now applied dynamically in postGigUtils based on the specific deal
+        message: 'You got paid. The fans are calling you sellouts.'
+      }
+    }
   },
   {
     id: 'comm_tour_merch',

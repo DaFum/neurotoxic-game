@@ -53,26 +53,5 @@ describe('Crisis Management Integration', () => {
       // Under stress, it should be -1 more => -3 total (mood goes to 77)
       assert.strictEqual(band.members[0].mood, 77)
     })
-
-    it('should drop sponsor with 20% chance if controversy is >= 80', () => {
-      const state = createInitialState()
-      state.social.controversyLevel = 85
-      state.social.sponsorActive = true
-      state.social.instagram = 10000 // must be >= 5000 to avoid early drop from follower threshold
-
-      // rng() drop is now immediate if controversy >= 80
-      const rngDrop = () => 0.1
-      const resultDropped = calculateDailyUpdates(state, rngDrop)
-      assert.strictEqual(resultDropped.social.sponsorActive, false)
-
-      const state2 = createInitialState()
-      state2.social.controversyLevel = 60
-      state2.social.sponsorActive = true
-      state2.social.instagram = 10000
-
-      // rng() < 0.5 drops sponsor if >= 60 and < 80
-      const resultKept = calculateDailyUpdates(state2, () => 0.6)
-      assert.strictEqual(resultKept.social.sponsorActive, true)
-    })
   })
 })

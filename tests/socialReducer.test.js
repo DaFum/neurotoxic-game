@@ -16,7 +16,6 @@ describe('socialReducer', () => {
       social: {
         loyalty: 0,
         trend: 'none',
-        sponsorActive: false,
         activeDeals: []
       },
       venueBlacklist: [],
@@ -48,12 +47,7 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.loyalty, 20)
     })
 
-    it('should ignore invalid sponsorActive updates', () => {
-      const payload = { sponsorActive: 'yes' } // must be boolean
-      const nextState = handleUpdateSocial(baseState, payload)
 
-      assert.strictEqual(nextState.social.sponsorActive, false) // unchanged
-    })
 
     it('should filter invalid deals from activeDeals', () => {
       const payload = {
@@ -78,20 +72,17 @@ describe('socialReducer', () => {
       baseState.social = {
         trend: 'none',
         loyalty: 10,
-        sponsorActive: false,
         activeDeals: []
       }
       const payload = {
         trend: ALLOWED_TRENDS[1],
         loyalty: 50,
-        sponsorActive: true,
         activeDeals: [{ id: 'deal1', remainingGigs: 5 }]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.trend, ALLOWED_TRENDS[1])
       assert.strictEqual(nextState.social.loyalty, 50)
-      assert.strictEqual(nextState.social.sponsorActive, true)
       assert.strictEqual(nextState.social.activeDeals.length, 1)
       assert.strictEqual(nextState.social.activeDeals[0].id, 'deal1')
     })
@@ -137,14 +128,6 @@ describe('socialReducer', () => {
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.deepStrictEqual(nextState.social.activeDeals, [])
-    })
-
-    it('should accept valid sponsorActive boolean values', () => {
-      const nextState1 = handleUpdateSocial(baseState, { sponsorActive: true })
-      assert.strictEqual(nextState1.social.sponsorActive, true)
-
-      const nextState2 = handleUpdateSocial(baseState, { sponsorActive: false })
-      assert.strictEqual(nextState2.social.sponsorActive, false)
     })
   })
 
@@ -255,12 +238,7 @@ describe('socialReducer', () => {
   })
 
   describe('handleUpdateSocial - additional edge cases', () => {
-    it('should accept valid boolean sponsorActive', () => {
-      const payload = { sponsorActive: true }
-      const nextState = handleUpdateSocial(baseState, payload)
 
-      assert.strictEqual(nextState.social.sponsorActive, true)
-    })
 
     it('should validate activeDeals is an array', () => {
       const payload = { activeDeals: 'not-an-array' }
@@ -283,14 +261,12 @@ describe('socialReducer', () => {
       const payload = {
         trend: ALLOWED_TRENDS[0],
         loyalty: 50,
-        sponsorActive: true,
         activeDeals: [{ id: 'deal1', remainingGigs: 2 }]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.trend, ALLOWED_TRENDS[0])
       assert.strictEqual(nextState.social.loyalty, 50)
-      assert.strictEqual(nextState.social.sponsorActive, true)
       assert.strictEqual(nextState.social.activeDeals.length, 1)
     })
 

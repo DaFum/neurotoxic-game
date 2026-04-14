@@ -40,7 +40,6 @@ const createRandomGameState = () => ({
     loyalty: Math.floor(Math.random() * 100),
     controversyLevel: Math.floor(Math.random() * 150),
     egoFocus: Math.random() > 0.8 ? 'Matze' : null,
-    sponsorActive: Math.random() > 0.9,
     viral: Math.floor(Math.random() * 3)
   },
   lastGigStats: {

@@ -1,3 +1,4 @@
+import { hasActiveSponsorship } from './gameStateUtils'
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A
@@ -139,17 +140,8 @@ export const generatePostOptions = (
   // 1a. Forced Sponsor Post Override
   // Check if there are active deals of type SPONSORSHIP.
   const socialState = gameState.social
-  let hasActiveSponsor = false
-  if (!socialState?.sponsorActive && socialState?.activeDeals) {
-    const activeDeals = socialState.activeDeals
-    for (let i = 0; i < activeDeals.length; i++) {
-      if (activeDeals[i].type === 'SPONSORSHIP') {
-        hasActiveSponsor = true
-        break
-      }
-    }
-  }
-  if (socialState?.sponsorActive || hasActiveSponsor) {
+  const hasActiveSponsor = hasActiveSponsorship(socialState)
+  if (hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
@@ -294,6 +286,8 @@ for (const key in SOCIAL_PLATFORMS) {
     PLATFORMS_BY_ID[p.id] = p
   }
 }
+
+
 
 export const calculateSocialGrowth = (
   platform,
@@ -531,16 +525,13 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const totalFollowers =
     (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
-  // Create an O(1) set of active deal IDs only if there are active deals
-  let activeDealIds = null
+  // Fetch active deals
   const activeDeals = social.activeDeals
   const hasActiveDeals = !!activeDeals?.length
 
   if (hasActiveDeals) {
-    activeDealIds = new Set()
-    for (let i = 0; i < activeDeals.length; i++) {
-      activeDealIds.add(activeDeals[i].id)
-    }
+    // A player can hold only ONE deal at a time. If any deal type is active (e.g., SPONSORSHIP, ENDORSEMENT, RECORD_DEAL) the system blocks new offers.
+    return []
   }
 
   // Filter available deals
@@ -573,13 +564,11 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     )
       continue
 
-    // Check if already active
-    if (hasActiveDeals && activeDealIds.has(deal.id)) continue
 
     eligibleDeals.push(deal)
   }
 
-  // Pick up to 2 random offers, weighted by reputation
+  // Pick up to 3 random offers, weighted by reputation
   const offers = []
 
   // Logic: Reputation increases the "chance" check.
@@ -595,7 +584,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   let found = 0
   const n = pool.length
 
-  for (let i = n - 1; i >= 0 && found < 2; i--) {
+  for (let i = n - 1; i >= 0 && found < 3; i--) {
     const j = Math.floor(rng() * (i + 1))
     ;[pool[i], pool[j]] = [pool[j], pool[i]]
     const deal = pool[i]

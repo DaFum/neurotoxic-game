@@ -127,7 +127,6 @@ export const DEFAULT_SOCIAL_STATE = {
   zealotry: 0,
   reputationCooldown: 0,
   egoFocus: null,
-  sponsorActive: false,
   trend: 'NEUTRAL', // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
   activeDeals: [], // List of { id, remainingGigs, ... }
   brandReputation: {}, // { [ALIGNMENT]: 0-100 }

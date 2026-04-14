@@ -9,9 +9,9 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampControversyLevel,
-  BALANCE_CONSTANTS
-} from './gameStateUtils'
+  } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
+import { BRAND_DEALS_BY_ID } from '../data/brandDeals.js'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
 
 export const calculatePostGigStateUpdates = ({
@@ -108,6 +108,7 @@ export const calculatePostGigStateUpdates = ({
     Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
   )
 
+
   const updatedSocial = {
     [result.platform]: Math.max(
       0,
@@ -130,12 +131,35 @@ export const calculatePostGigStateUpdates = ({
       : result.egoDrop
         ? result.egoDrop
         : social.egoFocus,
-    sponsorActive:
-      option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
     trend: social.trend,
     activeDeals: social.activeDeals,
     influencers: social.influencers
   }
+
+  // Automatically decrement all active deals every gig
+  if (updatedSocial.activeDeals && updatedSocial.activeDeals.length > 0) {
+    updatedSocial.activeDeals = updatedSocial.activeDeals
+      .map(deal => ({ ...deal, remainingGigs: (deal.remainingGigs || 1) - 1 }))
+      .filter(deal => deal.remainingGigs > 0)
+  }
+
+  // Handle comm_sellout_ad
+  if (option.id === 'comm_sellout_ad' && social.activeDeals && social.activeDeals.length > 0) {
+    // Apply penalty from the sponsorship deal
+    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP')
+    if (!deal) return { finalResult, newBand, hasBandUpdates, appliedHarmonyDelta, nextMoney, appliedMoneyDelta, updatedSocial }
+
+    const template = BRAND_DEALS_BY_ID.get(deal.id)
+    if (template && template.penalty) {
+      if (template.penalty.controversy) {
+        updatedSocial.controversyLevel = clampControversyLevel((updatedSocial.controversyLevel || 0) + template.penalty.controversy)
+      }
+      if (template.penalty.loyalty) {
+        updatedSocial.loyalty = Math.max(0, (updatedSocial.loyalty || 0) + template.penalty.loyalty)
+      }
+    }
+  }
+
 
   if (result.influencerUpdate) {
     const { id, scoreChange } = result.influencerUpdate
@@ -249,7 +273,6 @@ export const getAcceptDealSocialUpdateFactory = deal => {
 
     const prevDeals = prevSocial.activeDeals || []
     updates.activeDeals = [
-      ...prevDeals,
       { ...deal, remainingGigs: deal.offer.duration }
     ]
 

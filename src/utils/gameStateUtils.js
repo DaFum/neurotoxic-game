@@ -744,10 +744,6 @@ export const applyEventDelta = (state, delta) => {
         if (value === null || typeof value === 'string') {
           nextSocial[key] = value
         }
-      } else if (key === 'sponsorActive') {
-        if (typeof value === 'boolean') {
-          nextSocial[key] = value
-        }
       } else if (key === 'trend') {
         if (typeof value === 'string') {
           nextSocial[key] = value
@@ -808,4 +804,8 @@ export const hasStateItem = (collection, item) => {
   return collection instanceof Set
     ? collection.has(item)
     : (collection || []).includes(item)
+}
+
+export const hasActiveSponsorship = (socialState) => {
+  return (socialState?.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
 }

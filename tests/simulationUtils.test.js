@@ -569,61 +569,6 @@ test('calculateDailyUpdates skips wealth-scaled drain when money < 2000', () => 
   )
 })
 
-test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
-  // Set sponsorActive=true, instagram >= 5000, controversy < 60
-  // rng must not trigger sponsorship drop (> 0.5 for controversy path)
-  const mockRng = () => 0.9 // no newsletter perk, no sponsor drop
-  const currentState = {
-    player: { day: 1, money: 1000, fame: 200, fameLevel: 2, van: null },
-    band: { members: [], harmony: 50 },
-    social: {
-      viral: 0,
-      sponsorActive: true,
-      instagram: 6000,
-      controversyLevel: 0
-    }
-  }
 
-  const stateNoSponsor = JSON.parse(JSON.stringify(currentState))
-  stateNoSponsor.social.sponsorActive = false
 
-  const { player } = calculateDailyUpdates(currentState, mockRng)
-  const { player: playerNoSponsor } = calculateDailyUpdates(
-    stateNoSponsor,
-    mockRng
-  )
 
-  // scaledPayout = min(350, max(180, round(200 * 2))) = min(350, 400) = 350
-  assert.equal(
-    player.money,
-    playerNoSponsor.money + 350,
-    'Sponsor payout should add exactly 350'
-  )
-})
-
-test('calculateDailyUpdates does not pay sponsor when sponsorActive is false', () => {
-  const mockRng = () => 0.9
-  const baseState = {
-    player: { day: 1, money: 1000, fame: 200, fameLevel: 2, van: null },
-    band: { members: [], harmony: 50 },
-    social: { viral: 0, instagram: 6000, controversyLevel: 0 }
-  }
-  const withSponsor = {
-    ...baseState,
-    social: { ...baseState.social, sponsorActive: true }
-  }
-  const withoutSponsor = {
-    ...baseState,
-    social: { ...baseState.social, sponsorActive: false }
-  }
-
-  const { player: sponsored } = calculateDailyUpdates(withSponsor, mockRng)
-  const { player: unsponsored } = calculateDailyUpdates(withoutSponsor, mockRng)
-
-  // The exact difference must be the scaled payout (350 at fame=200, capped at SPONSORSHIP_PAYOUT_CAP)
-  assert.equal(
-    sponsored.money - unsponsored.money,
-    350,
-    'Sponsor payout should add exactly 350 (min(350, max(180, 200*2)))'
-  )
-})

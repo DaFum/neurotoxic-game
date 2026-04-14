@@ -115,7 +115,6 @@ describe('Playwright Screenshot Fixtures', () => {
       'zealotry',
       'reputationCooldown',
       'egoFocus',
-      'sponsorActive',
       'trend',
       'activeDeals',
       'brandReputation',
