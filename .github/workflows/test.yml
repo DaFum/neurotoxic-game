@@ -1,5 +1,5 @@
 name: Tests
-run-name: Tests - ${{ github.event_name }}
+run-name: "Tests - ${{ github.event_name }}"
 
 on:
   pull_request:
@@ -26,8 +26,7 @@ jobs:
         target: [node, vitest]
 
     env:
-      PNPM_CACHE_KEY: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-      MAX_FAILURE_LINES: 500
+      MAX_FAILURE_LINES: '500'
 
     steps:
       - name: Checkout repository
@@ -50,7 +49,9 @@ jobs:
           path: |
             ~/.pnpm-store
             ~/.cache/pnpm
-          key: ${{ env.PNPM_CACHE_KEY }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -62,11 +63,15 @@ jobs:
           set -o pipefail
           if [ "${{ matrix.target }}" = "node" ]; then
             cmd="pnpm test"
+            out="test-output-node.txt"
           else
             cmd="pnpm test:ui"
+            out="test-output-vitest.txt"
           fi
+
           echo "Running: $cmd"
-          $cmd 2>&1 | tee test-output-${{ matrix.target }}.txt || true
+          # tee so we have a file and still see logs; allow the command to exit non-zero
+          $cmd 2>&1 | tee "$out" || true
           echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Upload test log artifact
@@ -74,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-output-${{ matrix.target }}
-          path: test-output-${{ matrix.target }}.txt
+          path: ${{ matrix.target == 'node' && 'test-output-node.txt' || 'test-output-vitest.txt' }}
 
       - name: Comment failed tests on PR (sticky)
         if: ${{ always() && steps.run-tests.outputs.exit_code != '0' && github.event_name == 'pull_request' }}
@@ -82,14 +87,16 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            const target = '${{ matrix.target }}';
+            const file = target === 'node' ? 'test-output-node.txt' : 'test-output-vitest.txt';
             const marker = `<!-- test-results-${{ matrix.target }}: do-not-edit -->`;
-            const raw = fs.existsSync('test-output-${{ matrix.target }}.txt')
-              ? fs.readFileSync('test-output-${{ matrix.target }}.txt', 'utf8')
-              : '';
-            const tailLines = raw.split('\n').slice(-parseInt(process.env.MAX_FAILURE_LINES || '500'));
+            const raw = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+            const max = parseInt(process.env.MAX_FAILURE_LINES || '500', 10);
+            const tailLines = raw.split('\n').slice(-max);
+
             const body = [
               marker,
-              `## ❌ ${{ matrix.target }} tests failed`,
+              `## ❌ ${target} tests failed`,
               '',
               'Showing last output lines (full log is attached to the run):',
               '```',
