@@ -6,6 +6,8 @@
   "gigExpenses.guestList.label": "Guest List",
   "gigExpenses.managementFee.detail": "{{rate}}% of Gross Income",
   "gigExpenses.managementFee.label": "Management Fee",
+  "gigExpenses.overageFee.detail": "Venue contract limit",
+  "gigExpenses.overageFee.label": "Revenue Cap",
   "gigExpenses.merchRestock.detail": "COGS",
   "gigExpenses.merchRestock.label": "Merch Restock",
   "gigExpenses.merchStand.detail": "Better Display",

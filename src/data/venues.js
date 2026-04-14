@@ -139,10 +139,10 @@ const RAW_VENUES = [
     x: 55,
     y: 57,
     type: 'VENUE',
-    capacity: 850,
-    pay: 1300,
+    capacity: 700,
+    pay: 1000,
     diff: 4,
-    price: 22
+    price: 20
   },
   {
     id: 'leipzig_agra',
@@ -183,10 +183,10 @@ const RAW_VENUES = [
     x: 65,
     y: 57,
     type: 'VENUE',
-    capacity: 800,
-    pay: 1200,
+    capacity: 650,
+    pay: 900,
     diff: 4,
-    price: 20
+    price: 18
   },
 
   // NIEDERSACHSEN
@@ -297,10 +297,10 @@ const RAW_VENUES = [
     x: 34,
     y: 20,
     type: 'FESTIVAL',
-    capacity: 1000,
-    pay: 1600,
+    capacity: 650,
+    pay: 900,
     diff: 4,
-    price: 25
+    price: 20
   },
   {
     id: 'hamburg_logo',
@@ -385,10 +385,10 @@ const RAW_VENUES = [
     x: 20,
     y: 45,
     type: 'VENUE',
-    capacity: 800,
-    pay: 1300,
+    capacity: 650,
+    pay: 1000,
     diff: 4,
-    price: 22
+    price: 20
   },
   {
     id: 'dortmund_junkyard',
@@ -440,10 +440,10 @@ const RAW_VENUES = [
     x: 45,
     y: 70,
     type: 'VENUE',
-    capacity: 800,
-    pay: 1200,
+    capacity: 650,
+    pay: 900,
     diff: 4,
-    price: 20
+    price: 18
   },
   {
     id: 'rostock_mau',
@@ -473,10 +473,10 @@ const RAW_VENUES = [
     x: 10,
     y: 70,
     type: 'FESTIVAL',
-    capacity: 1000,
-    pay: 1600,
+    capacity: 650,
+    pay: 900,
     diff: 4,
-    price: 22
+    price: 18
   },
   {
     id: 'freiburg_jazzhaus',

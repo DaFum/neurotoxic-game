@@ -54,12 +54,13 @@ export const EXPENSE_CONSTANTS = {
 }
 
 export const TICKET_SALES_CONSTANTS = {
-  BASE_DRAW_RATIO: 0.2,
+  BASE_DRAW_RATIO: 0.4,
   FAME_CAPACITY_SCALER: 10,
   FAME_FILL_WEIGHT: 0.55
 }
 
 export const MANAGEMENT_CUT_RATE = 0.15
+export const MAX_GIG_NET = 7500
 
 /**
  * Calculates ticket sales revenue and attendance.
@@ -656,19 +657,32 @@ export const calculateGigFinancials = ({
     report.income.total += sponsorshipBonuses.totalBonus
   }
 
-  // 7. Management Cut (percentage-based income sink that scales with success)
-  const managementCut = Math.floor(report.income.total * MANAGEMENT_CUT_RATE)
+  // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
+  const effectiveCutRate = MANAGEMENT_CUT_RATE * Math.min(1, playerFame / 200)
+  const managementCut = Math.floor(report.income.total * effectiveCutRate)
   if (managementCut > 0) {
     report.expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.managementFee.label',
       value: managementCut,
       detailKey: 'economy:gigExpenses.managementFee.detail',
-      detailParams: { rate: Math.round(MANAGEMENT_CUT_RATE * 100) }
+      detailParams: { rate: Math.round(effectiveCutRate * 100) }
     })
     report.expenses.total += managementCut
   }
 
   report.net = report.income.total - report.expenses.total
+
+  // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
+  if (report.net > MAX_GIG_NET) {
+    const overageFee = report.net - MAX_GIG_NET
+    report.expenses.breakdown.push({
+      labelKey: 'economy:gigExpenses.overageFee.label',
+      value: overageFee,
+      detailKey: 'economy:gigExpenses.overageFee.detail'
+    })
+    report.expenses.total += overageFee
+    report.net = MAX_GIG_NET
+  }
 
   logger.info('Economy', 'Gig Report Generated', {
     net: report.net,
