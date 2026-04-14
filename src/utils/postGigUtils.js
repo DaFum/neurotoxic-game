@@ -8,7 +8,8 @@ import {
   clampBandHarmony,
   clampMemberStamina,
   clampMemberMood,
-  clampControversyLevel
+  clampControversyLevel,
+  BALANCE_CONSTANTS
 } from './gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
@@ -284,6 +285,7 @@ export const calculateContinueStats = ({
   player,
   perfScore,
   financials,
+  misses,
   calculateFameGain,
   calculateFameLevel,
   clampPlayerFame,
@@ -300,10 +302,27 @@ export const calculateContinueStats = ({
       prevFame,
       BALANCE_CONSTANTS.MAX_FAME_GAIN
     )
+  } else {
+    // Progressive miss-penalty on bad gigs
+    const missCount = misses ?? 0
+    if (missCount > BALANCE_CONSTANTS.MISS_TOLERANCE) {
+      const excessMisses = missCount - BALANCE_CONSTANTS.MISS_TOLERANCE
+      const missPenalty = Math.round(
+        excessMisses * BALANCE_CONSTANTS.MISS_PENALTY_RATE
+      )
+      finalFameGain -= missPenalty
+    }
   }
 
   const prevMoney = player.money ?? 0
-  const newMoney = clampPlayerMoney(prevMoney + financials.net)
+  // Direct money deduction for excess misses (scaled to new economy at €1,700 avg gig net)
+  const missCount = misses ?? 0
+  const excessMisses = Math.max(0, missCount - BALANCE_CONSTANTS.MISS_TOLERANCE)
+  const missMoneyPenalty =
+    excessMisses * (BALANCE_CONSTANTS.MISS_MONEY_PENALTY ?? 0)
+  const newMoney = clampPlayerMoney(
+    prevMoney + financials.net - missMoneyPenalty
+  )
   const newFame = clampPlayerFame(prevFame + finalFameGain)
 
   return {

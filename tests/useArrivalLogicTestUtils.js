@@ -77,13 +77,22 @@ vi.mock('../src/utils/gameStateUtils.js', () => ({
   },
   calculateFameLevel: val => {
     if (!Number.isFinite(val)) return 0
-    return Math.floor(Math.max(0, val) / 1000)
+    return Math.floor(Math.max(0, val) / 100)
   },
   BALANCE_CONSTANTS: {
-    FAME_LOSS_BAD_GIG: 4,
+    FAME_LOSS_BAD_GIG: 12,
     MAX_FAME_GAIN: 500,
     LOW_HARMONY_THRESHOLD: 15,
-    LOW_HARMONY_CANCELLATION_CHANCE: 0.25
+    LOW_HARMONY_CANCELLATION_CHANCE: 0.25,
+    MISS_TOLERANCE: 8,
+    MISS_PENALTY_RATE: 1.5,
+    MISS_MONEY_PENALTY: 15,
+    SPONSORSHIP_PAYOUT_FLOOR: 180,
+    SPONSORSHIP_PAYOUT_CAP: 350,
+    WEALTH_DRAIN_THRESHOLD: 2000,
+    WEALTH_DRAIN_CHANCE: 0.12,
+    WEALTH_DRAIN_MIN_RATE: 0.015,
+    WEALTH_DRAIN_MAX_RATE: 0.05
   }
 }))
 

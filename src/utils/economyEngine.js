@@ -21,7 +21,7 @@ export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
-    BASE_COST: 55
+    BASE_COST: 70
   },
   TRANSPORT: {
     FUEL_PER_100KM: 12, // Liters
@@ -54,10 +54,14 @@ export const EXPENSE_CONSTANTS = {
 }
 
 export const TICKET_SALES_CONSTANTS = {
-  BASE_DRAW_RATIO: 0.3,
+  BASE_DRAW_RATIO: 0.4,
   FAME_CAPACITY_SCALER: 10,
-  FAME_FILL_WEIGHT: 0.7
+  FAME_FILL_WEIGHT: 0.55
 }
+
+export const MANAGEMENT_CUT_RATE = 0.15
+export const MAX_GIG_NET = 7500
+export const GLOBAL_PAYOUT_NERF = 0.5
 
 /**
  * Calculates ticket sales revenue and attendance.
@@ -77,12 +81,12 @@ export const calculateTicketIncome = (
   const baseCapacity = Math.max(0, gigData.capacity || 0)
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
-  // Sublinear power scaling for fame to make late-game arenas fill more smoothly
-  // Uses Math.pow(playerFame, 0.85) to provide diminishing returns (power-law scaling, not logarithmic)
+  // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
+  // Denominator scales with venue capacity so large venues require proportionally more fame.
   const fameRatio = Math.min(
     1.0,
-    Math.pow(Math.max(0, playerFame), 0.85) /
-      (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+    Math.log(Math.max(0, playerFame) + 1) /
+      Math.log(safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER + 1)
   )
   let fillRate =
     baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
@@ -91,7 +95,7 @@ export const calculateTicketIncome = (
   if (modifiers.promo) fillRate += 0.22
 
   // Soundcheck Boost (word-of-mouth from quality prep)
-  if (modifiers.soundcheck) fillRate += 0.20
+  if (modifiers.soundcheck) fillRate += 0.2
 
   const gigDifficulty = gigData.diff ?? gigData.difficulty
   const daysSinceLastGig = context.daysSinceLastGig
@@ -171,7 +175,7 @@ export const calculateMerchIncome = (
   const breakdownItems = []
 
   if (performanceScore >= 95) {
-    buyRate *= 1.5 // S-Rank Bonus
+    buyRate *= 1.25 // S-Rank Bonus
     breakdownItems.push({
       labelKey: 'economy:gigIncome.hypeBonus.label',
       value: 0,
@@ -328,8 +332,11 @@ export const calculateTravelExpenses = (
   let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
 
   // Logistics/Crew scaling with fame and distance (exponential)
-  // Adjusted base scalar to 0.15 so early game distances don't drain the bank completely
-  const logisticsCost = Math.floor(dist * 0.15 * Math.pow(1.2, fameLevel))
+  // Scaling dynamically with fameLevel to introduce stronger sinks for higher fame without
+  // crushing early game.
+  const logisticsCost =
+    Math.floor(dist * 0.05 * Math.pow(1.4, fameLevel)) +
+    Math.floor((playerState?.money || 0) * 0.02)
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }
@@ -378,7 +385,7 @@ export const calculateEffectiveTicketPrice = (gigData = {}, context = {}) => {
 /**
  * Calculates venue split / promoter cut.
  */
-const VENUE_SPLIT_RATES = { 3: 0.2, 4: 0.4 }
+const VENUE_SPLIT_RATES = { 3: 0.35, 4: 0.55 }
 export const calculateVenueSplit = (ticketsRevenue = 0, gigData = {}) => {
   gigData = gigData || {}
   const splitRate =
@@ -653,7 +660,34 @@ export const calculateGigFinancials = ({
     report.income.total += sponsorshipBonuses.totalBonus
   }
 
-  report.net = report.income.total - report.expenses.total
+  // 7. Management Cut (fame-progressive: 0% at fame=0, full 15% at fame≥200)
+  const effectiveCutRate = MANAGEMENT_CUT_RATE * Math.min(1, playerFame / 200)
+  const managementCut = Math.floor(report.income.total * effectiveCutRate)
+  if (managementCut > 0) {
+    report.expenses.breakdown.push({
+      labelKey: 'economy:gigExpenses.managementFee.label',
+      value: managementCut,
+      detailKey: 'economy:gigExpenses.managementFee.detail',
+      detailParams: { rate: Math.round(effectiveCutRate * 100) }
+    })
+    report.expenses.total += managementCut
+  }
+
+  report.net = Math.floor(
+    (report.income.total - report.expenses.total) * GLOBAL_PAYOUT_NERF
+  )
+
+  // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
+  if (report.net > MAX_GIG_NET) {
+    const overageFee = report.net - MAX_GIG_NET
+    report.expenses.breakdown.push({
+      labelKey: 'economy:gigExpenses.overageFee.label',
+      value: overageFee,
+      detailKey: 'economy:gigExpenses.overageFee.detail'
+    })
+    report.expenses.total += overageFee
+    report.net = MAX_GIG_NET
+  }
 
   logger.info('Economy', 'Gig Report Generated', {
     net: report.net,

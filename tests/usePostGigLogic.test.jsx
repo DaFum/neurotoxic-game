@@ -10,6 +10,7 @@ import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
 import * as crypto from '../src/utils/crypto'
 import { GAME_PHASES } from '../src/context/gameConstants'
+import { BALANCE_CONSTANTS } from '../src/utils/gameStateUtils'
 
 vi.mock('../src/context/GameState', () => ({ useGameState: vi.fn() }))
 vi.mock('../src/utils/economyEngine', () => ({
@@ -666,6 +667,29 @@ describe('usePostGigLogic', () => {
         'error'
       )
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GAMEOVER)
+    })
+
+    it('applies miss penalty on bad gig with excess misses', async () => {
+      const baseState = getBaseState({
+        lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
+      })
+      GameState.useGameState.mockReturnValue(baseState)
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+      act(() => {
+        result.current.handleContinue()
+      })
+      // perfScore = clamp(25000/500, 30, 100) = 50 -> bad gig
+      // missPenalty = round((13 - 8) * 1.5) = 8  (MISS_PENALTY_RATE = 1.5)
+      // finalFameGain = -FAME_LOSS_BAD_GIG - 8
+      const expectedMissPenalty = Math.round((13 - 8) * 1.5)
+      const expectedFame =
+        baseState.player.fame -
+        BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG -
+        expectedMissPenalty
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({ fame: expectedFame })
+      )
     })
   })
 })

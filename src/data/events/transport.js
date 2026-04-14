@@ -1,4 +1,6 @@
 // TODO: Review this file
+import { computeStashBustRisk } from '../../utils/contrabandUtils.js'
+
 // Transport Events
 export const TRANSPORT_EVENTS = [
   {
@@ -214,6 +216,64 @@ export const TRANSPORT_EVENTS = [
           }
         },
         outcomeText: 'events:police_control.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'police_contraband',
+    category: 'transport',
+    title: 'events:police_contraband.title',
+    description: 'events:police_contraband.desc',
+    trigger: 'travel',
+    // Fires at 10% chance when carrying uncommon+ contraband.
+    // The condition gates eligibility; the chance field provides final probability.
+    chance: 0.1,
+    condition: state => {
+      const { bustChance, highestRiskItemId, highestRarity } =
+        computeStashBustRisk(state.band?.stash)
+      if (bustChance <= 0 || !highestRiskItemId) return null
+      return { riskItemId: highestRiskItemId, rarity: highestRarity }
+    },
+    options: [
+      {
+        // Surrender the item and pay a fine — guaranteed resolution
+        label: 'events:police_contraband.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stash_confiscate' },
+            { type: 'resource', resource: 'money', value: -200 },
+            { type: 'stat', stat: 'time', value: -1 }
+          ]
+        },
+        outcomeText: 'events:police_contraband.opt1.outcome'
+      },
+      {
+        // Try to conceal — luck check
+        label: 'events:police_contraband.opt2.label',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 5,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'mood', value: 15 },
+              { type: 'stat', stat: 'controversyLevel', value: 5 }
+            ],
+            description: 'events:police_contraband.opt2.d_success'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stash_confiscate' },
+              { type: 'resource', resource: 'money', value: -450 },
+              { type: 'stat', stat: 'controversyLevel', value: 30 },
+              { type: 'stat', stat: 'time', value: -3 }
+            ],
+            description: 'events:police_contraband.opt2.d_failure'
+          }
+        },
+        outcomeText: 'events:police_contraband.opt2.outcome'
       }
     ]
   },

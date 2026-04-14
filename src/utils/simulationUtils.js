@@ -15,7 +15,8 @@ import {
   clampBandHarmony,
   clampVanCondition,
   clampMemberStamina,
-  clampMemberMood
+  clampMemberMood,
+  BALANCE_CONSTANTS
 } from './gameStateUtils.js'
 
 /**
@@ -102,7 +103,9 @@ export const calculateGigPhysics = (bandState, song) => {
   const isTechnicalSong = (song.difficulty || 2) > 3
 
   // 1. Hit Windows based on Skill
-  // Formula: Base 150ms + (Skill * 5ms)
+  // Formula: Base 120ms + (Skill * 4ms)
+  // Tightened from 150+5×skill (190ms at skill 8) to 120+4×skill (~152ms at skill 8)
+  // to raise the skill floor and make misses more impactful.
   let matze, Marius, Lars
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
@@ -114,9 +117,9 @@ export const calculateGigPhysics = (bandState, song) => {
   const getMemberSkill = member =>
     member?.baseStats?.skill ?? member?.skill ?? 0
   const hitWindows = {
-    guitar: 150 + getMemberSkill(matze) * 5,
-    drums: 150 + getMemberSkill(Marius) * 5,
-    bass: 150 + getMemberSkill(Lars) * 5
+    guitar: 120 + getMemberSkill(matze) * 4,
+    drums: 120 + getMemberSkill(Marius) * 4,
+    bass: 120 + getMemberSkill(Lars) * 4
   }
 
   // Virtuoso Trait (Matze): +10% Hit Window
@@ -245,6 +248,23 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
   const nextMoney = clampPlayerMoney(nextPlayer.money - dailyCost)
   nextPlayer.money = nextMoney
 
+  // Wealth-Scaled Daily Expense Drain — only surplus above threshold is taxed
+  // so the threshold feels like a floor, not a cliff.
+  if (
+    nextPlayer.money > BALANCE_CONSTANTS.WEALTH_DRAIN_THRESHOLD &&
+    rng() < BALANCE_CONSTANTS.WEALTH_DRAIN_CHANCE
+  ) {
+    const drainRate =
+      BALANCE_CONSTANTS.WEALTH_DRAIN_MIN_RATE +
+      rng() *
+        (BALANCE_CONSTANTS.WEALTH_DRAIN_MAX_RATE -
+          BALANCE_CONSTANTS.WEALTH_DRAIN_MIN_RATE)
+    const taxableWealth =
+      nextPlayer.money - BALANCE_CONSTANTS.WEALTH_DRAIN_THRESHOLD
+    const expense = Math.round(taxableWealth * drainRate)
+    nextPlayer.money = clampPlayerMoney(nextPlayer.money - expense)
+  }
+
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
@@ -370,6 +390,18 @@ export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
     } else if (controversySnapshot >= 60 && rng() < 0.5) {
       nextSocial.sponsorActive = false // High chance to drop
     }
+  }
+
+  // Fame-Scaled Sponsor Daily Payout
+  if (nextSocial.sponsorActive) {
+    const scaledPayout = Math.min(
+      BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_CAP,
+      Math.max(
+        BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_FLOOR,
+        Math.round((nextPlayer.fame ?? 0) * 2)
+      )
+    )
+    nextPlayer.money = clampPlayerMoney(nextPlayer.money + scaledPayout)
   }
 
   // TikTok Viral Surge Perk

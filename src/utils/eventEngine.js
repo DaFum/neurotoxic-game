@@ -343,6 +343,14 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
   quest: (eff, delta) => {
     if (!delta.flags.addQuest) delta.flags.addQuest = []
     delta.flags.addQuest.push(eff.quest)
+  },
+  stash_confiscate: (eff, delta, context) => {
+    // itemId can be provided explicitly on the effect or inherited from event context
+    const itemId = eff.itemId || context?.riskItemId
+    if (typeof itemId === 'string' && itemId.length > 0) {
+      if (!delta.band.stashRemove) delta.band.stashRemove = []
+      delta.band.stashRemove.push(itemId)
+    }
   }
 })
 

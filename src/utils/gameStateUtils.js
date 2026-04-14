@@ -105,10 +105,22 @@ export const clampPlayerMoney = money => {
 
 // Shared Balance Constants
 export const BALANCE_CONSTANTS = {
-  FAME_LOSS_BAD_GIG: 4,
+  FAME_LOSS_BAD_GIG: 12,
   MAX_FAME_GAIN: 500,
   LOW_HARMONY_THRESHOLD: 15,
-  LOW_HARMONY_CANCELLATION_CHANCE: 0.25
+  LOW_HARMONY_CANCELLATION_CHANCE: 0.25,
+  // Miss-penalty on bad gigs (perfScore < 62)
+  MISS_TOLERANCE: 8,
+  MISS_PENALTY_RATE: 1.5, // fame loss per excess miss (was 0.5)
+  MISS_MONEY_PENALTY: 15, // €15 per excess miss (direct money deduction)
+  // Sponsor daily payout range (fame-scaled)
+  SPONSORSHIP_PAYOUT_FLOOR: 180,
+  SPONSORSHIP_PAYOUT_CAP: 350,
+  // Wealth-scaled daily drain thresholds
+  WEALTH_DRAIN_THRESHOLD: 2000,
+  WEALTH_DRAIN_CHANCE: 0.12,
+  WEALTH_DRAIN_MIN_RATE: 0.015,
+  WEALTH_DRAIN_MAX_RATE: 0.05
 }
 
 export const RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER = 1.5
@@ -683,6 +695,17 @@ export const applyEventDelta = (state, delta) => {
         )
       }
     }
+
+    if (delta.band.stashRemove && Array.isArray(delta.band.stashRemove)) {
+      nextBand.stash = Object.assign(Object.create(null), nextBand.stash || {})
+      for (let i = 0; i < delta.band.stashRemove.length; i++) {
+        const itemId = delta.band.stashRemove[i]
+        if (typeof itemId === 'string' && !isForbiddenKey(itemId)) {
+          delete nextBand.stash[itemId]
+        }
+      }
+    }
+
     if (typeof delta.band.luck === 'number') {
       const boundedLuck = clampNonNegative(nextBand.luck)
       nextBand.luck = boundedLuck + delta.band.luck

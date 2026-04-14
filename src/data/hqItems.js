@@ -191,7 +191,7 @@ export const HQ_ITEMS = {
       id: 'hq_inst_guitar_custom',
       name: 'items:hq_inst_guitar_custom.name',
       category: 'INSTRUMENT',
-      cost: 2500, // High-end instrument
+      cost: 15000, // High-end instrument
       currency: 'money',
       img: 'ITEM_GUITAR_CUSTOM',
       description: 'items:hq_inst_guitar_custom.description',
@@ -606,7 +606,7 @@ export const HQ_ITEMS = {
       id: 'hq_room_beer_pipeline',
       name: 'items:hq_room_beer_pipeline.name',
       category: 'HQ',
-      cost: 2000, // Luxury installation
+      cost: 25000, // Luxury installation
       currency: 'money',
       img: 'ITEM_HQ_PIPELINE',
       description: 'items:hq_room_beer_pipeline.description',
