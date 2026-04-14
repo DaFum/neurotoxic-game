@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-14T12:03:55.255Z",
+  "generatedAt": "2026-04-14T14:10:53.341Z",
   "constants": {
     "reportVersion": 6,
     "runsPerScenario": 260,
@@ -12,7 +12,6 @@
     "harmonyGainGoodGig": 2,
     "harmonyLossBadGig": 5,
     "sponsorshipPayout": 180,
-    "randomEventCashSwing": 140,
     "brandDealEvalChance": 0.14,
     "postPulseChance": 0.18,
     "trendShiftChance": 0.12,
@@ -381,13 +380,13 @@
     "scenarios": 10,
     "eventsDb": {
       "transport": {
-        "count": 22,
+        "count": 23,
         "sampleEventIds": [
           "van_breakdown_tire",
           "van_breakdown_engine",
           "van_critical_failure",
           "police_control",
-          "wrong_turn"
+          "police_contraband"
         ],
         "triggers": [
           "travel"

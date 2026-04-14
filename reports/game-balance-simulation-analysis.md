@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-04-14T12:03:55.255Z
+Erstellt am: 2026-04-14T14:10:53.341Z
 
 ## Simulationseinstellungen
 
@@ -19,7 +19,7 @@ Erstellt am: 2026-04-14T12:03:55.255Z
 |---|---:|
 | Venues (gesamt) | 45 |
 | Event-Kategorien | 5 |
-| Events gesamt | 121 |
+| Events gesamt | 122 |
 | Brand Deals | 4 |
 | Post Options | 32 |
 | Contraband-Items | 27 |
@@ -31,7 +31,7 @@ Erstellt am: 2026-04-14T12:03:55.255Z
 
 | Kategorie | Events | Trigger-Typen |
 |---|---:|---|
-| transport | 22 | travel |
+| transport | 23 | travel |
 | band | 40 | random, post_gig, travel |
 | gig | 19 | gig_mid, gig_intro |
 | financial | 27 | random, post_gig |
