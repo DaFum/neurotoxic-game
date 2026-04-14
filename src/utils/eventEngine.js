@@ -598,8 +598,9 @@ export const eventEngine = {
 
     if (result.type === 'composite') {
       // ⚡ Optimization: Standard for loop instead of .forEach to avoid callback allocation
-      for (let i = 0, len = result.effects.length; i < len; i++) {
-        processEffect(result.effects[i], delta, context, gameState)
+      const effects = result.effects
+      for (let i = 0, len = effects.length; i < len; i++) {
+        processEffect(effects[i], delta, context, gameState)
       }
     } else {
       processEffect(result, delta, context, gameState)
