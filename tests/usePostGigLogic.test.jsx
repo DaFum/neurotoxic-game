@@ -598,10 +598,16 @@ describe('usePostGigLogic', () => {
             loyalty: 50,
             reputationCooldown: 0,
             egoFocus: null,
-            activeDeals: [],
+            activeDeals: [{
+              id: 'test_brand',
+              type: 'SPONSORSHIP',
+              name: 'Test Brand',
+              offer: { upfront: 100, duration: 1, perGig: 50 },
+              remainingGigs: 1,
+              penalty: { controversy: 5, loyalty: -5 }
+            }],
             influencers: {},
-            brandReputation: {},
-            sponsorActive: true
+            brandReputation: {}
           }
         })
       )

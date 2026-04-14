@@ -1016,7 +1016,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
-    const wasSponsorActive = state.social.sponsorActive
+    const hadSponsor = (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
     const updates = calculateDailyUpdates(state, rng)
     state = {
       ...state,
@@ -1026,9 +1026,10 @@ const runSingleSimulation = (scenario, seed) => {
     }
 
     // Track sponsor lifecycle events surfaced by calculateDailyUpdates
-    if (!wasSponsorActive && state.social.sponsorActive) counters.sponsorSignings += 1
-    if (wasSponsorActive && !state.social.sponsorActive) counters.sponsorDrops += 1
-    if (state.social.sponsorActive) counters.sponsorPayouts += 1
+    const hasSponsor = (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
+    if (!hadSponsor && hasSponsor) counters.sponsorSignings += 1
+    if (hadSponsor && !hasSponsor) counters.sponsorDrops += 1
+    if (hasSponsor) counters.sponsorPayouts += 1
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -1132,7 +1133,7 @@ const runSingleSimulation = (scenario, seed) => {
         money: state.player.money,
         fame: state.player.fame,
         controversyLevel: state.social.controversyLevel,
-        sponsorActive: state.social.sponsorActive,
+        sponsorActive: (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP'),
         cancelled: true
       })
 
@@ -1174,6 +1175,7 @@ const runSingleSimulation = (scenario, seed) => {
         peakHype: Math.round(performanceScore + rng() * 12)
       },
       context: {
+        social: state.social,
         discountedTickets: rng() < scenario.ticketDiscountChance,
         controversyLevel: state.social.controversyLevel,
         loyalty: state.social.loyalty,
@@ -1248,7 +1250,7 @@ const runSingleSimulation = (scenario, seed) => {
       money: state.player.money,
       fame: state.player.fame,
       controversyLevel: state.social.controversyLevel,
-      sponsorActive: state.social.sponsorActive
+      sponsorActive: (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
     })
 
     if (shouldTriggerBankruptcy(state.player.money, financials.net)) {

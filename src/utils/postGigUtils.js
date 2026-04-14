@@ -136,9 +136,17 @@ export const calculatePostGigStateUpdates = ({
     influencers: social.influencers
   }
 
+  // Automatically decrement all active deals every gig
+  if (updatedSocial.activeDeals && updatedSocial.activeDeals.length > 0) {
+    updatedSocial.activeDeals = updatedSocial.activeDeals
+      .map(deal => ({ ...deal, remainingGigs: (deal.remainingGigs || 1) - 1 }))
+      .filter(deal => deal.remainingGigs > 0)
+  }
+
   // Handle comm_sellout_ad
   if (option.id === 'comm_sellout_ad' && social.activeDeals && social.activeDeals.length > 0) {
-    const deal = social.activeDeals[0]
+    // Apply penalty from the sponsorship deal
+    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP') || social.activeDeals[0]
     const template = BRAND_DEALS_BY_ID.get(deal.id)
     if (template && template.penalty) {
       if (template.penalty.controversy) {
@@ -147,14 +155,6 @@ export const calculatePostGigStateUpdates = ({
       if (template.penalty.loyalty) {
         updatedSocial.loyalty = Math.max(0, (updatedSocial.loyalty || 0) + template.penalty.loyalty)
       }
-    }
-
-    // Decrement remainingGigs
-    const remainingGigs = (deal.remainingGigs || 1) - 1
-    if (remainingGigs <= 0) {
-      updatedSocial.activeDeals = []
-    } else {
-      updatedSocial.activeDeals = [{ ...deal, remainingGigs }]
     }
   }
 
@@ -271,7 +271,6 @@ export const getAcceptDealSocialUpdateFactory = deal => {
 
     const prevDeals = prevSocial.activeDeals || []
     updates.activeDeals = [
-      ...prevDeals,
       { ...deal, remainingGigs: deal.offer.duration }
     ]
 

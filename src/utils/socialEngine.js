@@ -139,16 +139,7 @@ export const generatePostOptions = (
   // 1a. Forced Sponsor Post Override
   // Check if there are active deals of type SPONSORSHIP.
   const socialState = gameState.social
-  let hasActiveSponsor = false
-  if (socialState?.activeDeals) {
-    const activeDeals = socialState.activeDeals
-    for (let i = 0; i < activeDeals.length; i++) {
-      if (activeDeals[i].type === 'SPONSORSHIP') {
-        hasActiveSponsor = true
-        break
-      }
-    }
-  }
+  const hasActiveSponsor = hasActiveSponsorship(socialState)
   if (hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     if (sponsorIdx !== -1) {
@@ -293,6 +284,11 @@ for (const key in SOCIAL_PLATFORMS) {
     const p = SOCIAL_PLATFORMS[key]
     PLATFORMS_BY_ID[p.id] = p
   }
+}
+
+
+export const hasActiveSponsorship = (socialState) => {
+  return (socialState?.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
 }
 
 export const calculateSocialGrowth = (
@@ -531,7 +527,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const totalFollowers =
     (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
-  // Create an O(1) set of active deal IDs only if there are active deals
+  // A player can hold only ONE deal at a time.
     const activeDeals = social.activeDeals
   const hasActiveDeals = !!activeDeals?.length
 
@@ -574,7 +570,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     eligibleDeals.push(deal)
   }
 
-  // Pick up to 2 random offers, weighted by reputation
+  // Pick up to 3 random offers, weighted by reputation
   const offers = []
 
   // Logic: Reputation increases the "chance" check.

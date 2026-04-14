@@ -655,9 +655,9 @@ export const calculateGigFinancials = ({
 
 
   // Active Deal Per-Gig Payout
-  const activeDeals = playerState?.social?.activeDeals || []
-  if (activeDeals.length > 0) {
-    const activeDeal = activeDeals[0]
+  const activeDeals = context?.social?.activeDeals || []
+  for (let i = 0; i < activeDeals.length; i++) {
+    const activeDeal = activeDeals[i]
     if (activeDeal.type === 'SPONSORSHIP' && activeDeal.offer && activeDeal.offer.perGig) {
       const perGigPayout = activeDeal.offer.perGig
       report.income.breakdown.push({
