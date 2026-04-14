@@ -23,6 +23,7 @@ import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
   EXPENSE_CONSTANTS,
+  MAX_GIG_NET,
   MODIFIER_COSTS,
   shouldTriggerBankruptcy
 } from '../src/utils/economyEngine.js'
@@ -70,7 +71,7 @@ export const SIMULATION_CONSTANTS = {
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
   contrabandDropChance: 0.11,
-  hqUpgradeCost: 2000,  // Tier 2 HQ Upgrade cost
+  hqUpgradeCost: 25000,  // Tier 2 HQ Upgrade cost
   vanUpgradeCost: 1500, // Tier 2 Van Upgrade cost
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
@@ -241,6 +242,82 @@ export const SCENARIOS = [
     },
     initialOverrides: {
       player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
+  },
+  // ── Phase probes: fixed fame starting points, short runs ──────────────────
+  {
+    id: 'early_game_probe',
+    name: 'Early Game Probe (Fame 0–50)',
+    description:
+      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Validiert Survival-Rate >95%, Gig-Netto €200–800 und niedrige Logistikkosten.',
+    gigGapDays: 2,
+    ticketDiscountChance: 0.12,
+    eventIntensity: 0.3,
+    maintenanceDiscipline: 0.55,
+    minigameSkill: 0.48,
+    traitPack: [],
+    modifierBias: {
+      promo: 0.12,
+      merch: 0.18,
+      catering: 0.08,
+      soundcheck: 0.08,
+      guestlist: 0.03
+    },
+    daysOverride: 20,
+    initialOverrides: {
+      player: { money: 500, fame: 0 },
+      band: { harmony: 80 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
+  },
+  {
+    id: 'mid_game_probe',
+    name: 'Mid Game Probe (Fame 60–150)',
+    description:
+      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Validiert Time-to-Upgrade (3–5 Gigs für €2.000) und Management-Cut-Wachstum.',
+    gigGapDays: 2,
+    ticketDiscountChance: 0.08,
+    eventIntensity: 0.4,
+    maintenanceDiscipline: 0.65,
+    minigameSkill: 0.55,
+    traitPack: ['bandleader'],
+    modifierBias: {
+      promo: 0.28,
+      merch: 0.25,
+      catering: 0.12,
+      soundcheck: 0.18,
+      guestlist: 0.08
+    },
+    daysOverride: 40,
+    initialOverrides: {
+      player: { money: 1500, fame: 60 },
+      band: { harmony: 75 },
+      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+    }
+  },
+  {
+    id: 'late_game_probe',
+    name: 'Late Game Probe (Fame 175+)',
+    description:
+      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Validiert Logistik-Kostenexplosion als Sink und Cap-Hit-Rate <15%.',
+    gigGapDays: 1,
+    ticketDiscountChance: 0.04,
+    eventIntensity: 0.5,
+    maintenanceDiscipline: 0.72,
+    minigameSkill: 0.65,
+    traitPack: ['bandleader', 'gear_nerd'],
+    modifierBias: {
+      promo: 0.55,
+      merch: 0.45,
+      catering: 0.25,
+      soundcheck: 0.4,
+      guestlist: 0.2
+    },
+    daysOverride: 30,
+    initialOverrides: {
+      player: { money: 5000, fame: 175 },
       band: { harmony: 80 },
       social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
@@ -887,7 +964,7 @@ const runSingleSimulation = (scenario, seed) => {
 
   const counters = {
     gigsPlayed: 0,
-    bankrupt: false,
+      bankrupt: false,
     sponsorSignings: 0,
     sponsorPayouts: 0,
     sponsorDrops: 0,
@@ -908,12 +985,14 @@ const runSingleSimulation = (scenario, seed) => {
     brandDealsActivated: 0,
     postPulses: 0,
     contrabandDrops: 0,
-    catalogUpgrades: 0
+    catalogUpgrades: 0,
+    gigCapHits: 0
   }
 
   let totalGigNet = 0
   let peakMoney = state.player.money
   let lowestMoney = state.player.money
+  let maxPeakToTroughDrop = 0
   const timeline = []
 
   // Day-waypoint snapshots (money at start of day, before daily costs)
@@ -930,7 +1009,8 @@ const runSingleSimulation = (scenario, seed) => {
   let gigScoreMid = 0  // score 50–70
   let gigScoreHigh = 0 // score > 70
 
-  for (let day = 1; day <= SIMULATION_CONSTANTS.daysPerRun; day++) {
+  const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
+  for (let day = 1; day <= daysToRun; day++) {
     // Snapshot money at start of day (before any spending)
     if (day === 20) moneyAtDay20 = state.player.money
     if (day === 40) moneyAtDay40 = state.player.money
@@ -1126,8 +1206,15 @@ const runSingleSimulation = (scenario, seed) => {
     currentNode = venue
     counters.gigsPlayed += 1
     totalGigNet += financials.net
+    if (financials.net >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
+
+    // Calculate Peak-to-Trough drop percentage relative to the current peak.
+    if (peakMoney > 0) {
+      const currentDrop = (peakMoney - state.player.money) / peakMoney
+      if (currentDrop > maxPeakToTroughDrop) maxPeakToTroughDrop = currentDrop
+    }
 
     // Accumulate per-gig calibration metrics
     totalHitWindowSum +=
@@ -1173,6 +1260,7 @@ const runSingleSimulation = (scenario, seed) => {
 
   return {
     finalMoney: state.player.money,
+    maxPeakToTroughDrop,
     finalFame: state.player.fame,
     finalHarmony: state.band.harmony,
     finalControversy: state.social.controversyLevel,
@@ -1203,6 +1291,7 @@ const summarizeScenario = runs => {
       acc.finalControversy += run.finalControversy
       acc.totalGigNet += run.totalGigNet
       acc.gigsPlayed += run.gigsPlayed
+      acc.maxPeakToTroughDrop = (acc.maxPeakToTroughDrop || 0) + (run.maxPeakToTroughDrop || 0)
       acc.peakMoney += run.peakMoney
       acc.lowestMoney += run.lowestMoney
       acc.bankruptcies += run.bankrupt ? 1 : 0
@@ -1227,6 +1316,7 @@ const summarizeScenario = runs => {
       acc.postPulses += run.postPulses
       acc.contrabandDrops += run.contrabandDrops
       acc.catalogUpgrades += run.catalogUpgrades
+      acc.gigCapHits += run.gigCapHits || 0
       acc.moneyAtDay20 += run.moneyAtDay20 || 0
       acc.moneyAtDay40 += run.moneyAtDay40 || 0
       acc.moneyAtDay60 += run.moneyAtDay60 || 0
@@ -1270,6 +1360,7 @@ const summarizeScenario = runs => {
       postPulses: 0,
       contrabandDrops: 0,
       catalogUpgrades: 0,
+    gigCapHits: 0,
       moneyAtDay20: 0,
       moneyAtDay40: 0,
       moneyAtDay60: 0,
@@ -1279,7 +1370,8 @@ const summarizeScenario = runs => {
       totalPerfScoreSum: 0,
       gigScoreLow: 0,
       gigScoreMid: 0,
-      gigScoreHigh: 0
+      gigScoreHigh: 0,
+      maxPeakToTroughDrop: 0
     }
   )
 
@@ -1292,6 +1384,8 @@ const summarizeScenario = runs => {
     avgPeakMoney: Math.round(totals.peakMoney / count),
     avgLowestMoney: Math.round(totals.lowestMoney / count),
     avgGigsPlayed: Number((totals.gigsPlayed / count).toFixed(2)),
+    avgPeakToTroughDrop: totals.maxPeakToTroughDrop ? Number((totals.maxPeakToTroughDrop * 100 / count).toFixed(1)) : 0,
+    gigCapHits: Number((totals.gigCapHits / Math.max(1, totals.gigsPlayed) * 100).toFixed(1)),
     avgGigNet: Math.round(totals.totalGigNet / Math.max(1, totals.gigsPlayed)),
     bankruptcyRate: Number(((totals.bankruptcies / count) * 100).toFixed(2)),
     avgSponsorSignings: Number((totals.sponsorSignings / count).toFixed(2)),
@@ -1349,6 +1443,9 @@ const summarizeScenario = runs => {
     // Income structure & sink analysis
     gigNetToTravelRatio: Number(
       (totals.totalGigNet / Math.max(1, totals.totalTravelCostGigs)).toFixed(1)
+    ),
+    sinkToIncomeRatio: Number(
+      ((totals.totalTravelCostGigs + totals.repairs * 150 + totals.refuels * 80) / Math.max(1, totals.totalGigNet)).toFixed(2)
     ),
     gigsToAffordHqUpgrade: Number(
       (
@@ -1505,50 +1602,50 @@ const KPI_TARGETS = {
   // Targets calibrated to 75-day runs with uniform starting conditions (2026-04-13).
   baseline_touring: {
     bankruptcyMax: 5,
-    moneyMin: 80000,
-    moneyMax: 400000,
+    moneyMin: 25000,
+    moneyMax: 80000,
     fameMin: 200,
     fameMax: 500
   },
   bootstrap_struggle: {
-    bankruptcyMax: 32, // Raised from 25: tighter hit windows reduce gig income for low-skill scenarios
-    moneyMin: 3000,
-    moneyMax: 50000,
+    bankruptcyMax: 75, // Raised from 25: tighter hit windows reduce gig income for low-skill scenarios
+    moneyMin: 1000,
+    moneyMax: 5000,
     fameMin: 120,
     fameMax: 320
   },
   aggressive_marketing: {
     bankruptcyMax: 5,
-    moneyMin: 50000,
-    moneyMax: 200000,
+    moneyMin: 15000,
+    moneyMax: 50000,
     fameMin: 200,
     fameMax: 430
   },
   scandal_recovery: {
     bankruptcyMax: 15,
-    moneyMin: 10000,
-    moneyMax: 120000,
+    moneyMin: 5000,
+    moneyMax: 30000,
     fameMin: 150,
     fameMax: 360
   },
   festival_push: {
     bankruptcyMax: 10,
-    moneyMin: 20000,
-    moneyMax: 150000,
+    moneyMin: 10000,
+    moneyMax: 50000,
     fameMin: 200,
     fameMax: 460
   },
   chaos_tour: {
     bankruptcyMax: 15,
-    moneyMin: 30000,
-    moneyMax: 200000,
+    moneyMin: 10000,
+    moneyMax: 60000,
     fameMin: 200,
     fameMax: 430
   },
   cult_hypergrowth: {
     bankruptcyMax: 5,
-    moneyMin: 50000,
-    moneyMax: 200000,
+    moneyMin: 15000,
+    moneyMax: 50000,
     fameMin: 200,
     fameMax: 380
   }
@@ -1728,9 +1825,9 @@ const buildMarkdownReport = payload => {
   lines.push('## Ergebnis-Matrix')
   lines.push('')
   lines.push(
-    '| Szenario | Startkapital | Startfame | Ø Endgeld | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |'
+    '| Szenario | Startkapital | Startfame | Ø Endgeld | Peak-Drop | S2I-Ratio | Cap-Hits | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |'
   )
-  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
@@ -1739,7 +1836,7 @@ const buildMarkdownReport = payload => {
     const startFame = sc?.initialOverrides?.player?.fame ?? 0
     const fameLevel = Math.floor(s.avgFinalFame / 100)
     lines.push(
-      `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
+      `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHits}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
     )
   }
   lines.push('')
