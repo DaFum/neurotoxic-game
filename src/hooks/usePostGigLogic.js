@@ -130,7 +130,8 @@ export const usePostGigLogic = () => {
           'discounted_tickets_active'
         ),
         daysSinceLastGig: gigContextRef.current?.daysSinceLastGig ?? 0,
-        lastGigDifficulty: gigContextRef.current?.lastGigDifficulty ?? null
+        lastGigDifficulty: gigContextRef.current?.lastGigDifficulty ?? null,
+        social
       }
     })
     return result

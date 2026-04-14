@@ -525,12 +525,12 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const totalFollowers =
     (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
-  // A player can hold only ONE deal at a time.
-    const activeDeals = social.activeDeals
+  // Fetch active deals
+  const activeDeals = social.activeDeals
   const hasActiveDeals = !!activeDeals?.length
 
   if (hasActiveDeals) {
-    // A player can hold only ONE deal at a time. No offers appear if a deal is already active.
+    // A player can hold only ONE deal at a time. If any deal type is active (e.g., SPONSORSHIP, ENDORSEMENT, RECORD_DEAL) the system blocks new offers.
     return []
   }
 

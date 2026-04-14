@@ -146,7 +146,9 @@ export const calculatePostGigStateUpdates = ({
   // Handle comm_sellout_ad
   if (option.id === 'comm_sellout_ad' && social.activeDeals && social.activeDeals.length > 0) {
     // Apply penalty from the sponsorship deal
-    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP') || social.activeDeals[0]
+    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP')
+    if (!deal) return { finalResult, newBand, hasBandUpdates, appliedHarmonyDelta, nextMoney, appliedMoneyDelta, updatedSocial }
+
     const template = BRAND_DEALS_BY_ID.get(deal.id)
     if (template && template.penalty) {
       if (template.penalty.controversy) {

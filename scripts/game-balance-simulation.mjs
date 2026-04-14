@@ -1016,7 +1016,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
-    const hadSponsor = (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
+    const hadSponsor = hasActiveSponsorship(state.social)
     const updates = calculateDailyUpdates(state, rng)
     state = {
       ...state,
@@ -1026,7 +1026,7 @@ const runSingleSimulation = (scenario, seed) => {
     }
 
     // Track sponsor lifecycle events surfaced by calculateDailyUpdates
-    const hasSponsor = (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
+    const hasSponsor = hasActiveSponsorship(state.social)
     if (!hadSponsor && hasSponsor) counters.sponsorSignings += 1
     if (hadSponsor && !hasSponsor) counters.sponsorDrops += 1
     if (hasSponsor) counters.sponsorPayouts += 1
@@ -1133,7 +1133,7 @@ const runSingleSimulation = (scenario, seed) => {
         money: state.player.money,
         fame: state.player.fame,
         controversyLevel: state.social.controversyLevel,
-        sponsorActive: (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP'),
+        sponsorActive: hasActiveSponsorship(state.social),
         cancelled: true
       })
 
@@ -1250,7 +1250,7 @@ const runSingleSimulation = (scenario, seed) => {
       money: state.player.money,
       fame: state.player.fame,
       controversyLevel: state.social.controversyLevel,
-      sponsorActive: (state.social.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
+      sponsorActive: hasActiveSponsorship(state.social)
     })
 
     if (shouldTriggerBankruptcy(state.player.money, financials.net)) {
