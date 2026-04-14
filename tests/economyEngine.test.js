@@ -9,6 +9,7 @@ import {
   calculateRefuelCost,
   calculateRepairCost,
   EXPENSE_CONSTANTS,
+  calculateTicketIncome,
   calculateMerchIncome,
   calculateVenueSplit,
   calculateGuarantee,
