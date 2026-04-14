@@ -30,7 +30,7 @@ export const AmpControls = memo(function AmpControls({
   )
 
   return (
-    <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-[var(--z-hud)] flex flex-col items-center gap-4 w-full max-w-md px-4'>
+    <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-(--z-hud) flex flex-col items-center gap-4 w-full max-w-md px-4'>
       <div className='flex justify-between w-full text-toxic-green font-mono text-sm'>
         <span>
           {t('ui:minigames.amp.controls.min', { defaultValue: '0Hz' })}

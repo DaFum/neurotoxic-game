@@ -30,7 +30,7 @@ export const TutorialManager = () => {
           role='dialog'
           aria-label={t('ui:tutorial.ariaLabel', { defaultValue: 'Tutorial' })}
           aria-modal='true'
-          className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[var(--z-tutorial)] w-full max-w-md'
+          className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-(--z-tutorial) w-full max-w-md'
         >
           <div className='bg-void-black/95 border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'>
             <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>
