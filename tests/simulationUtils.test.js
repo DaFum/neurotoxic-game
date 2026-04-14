@@ -593,11 +593,11 @@ test('calculateDailyUpdates pays out sponsor income scaled by fame', () => {
     mockRng
   )
 
-  // scaledPayout = min(800, max(180, round(200 * 2))) = min(800, max(180, 400)) = 400
+  // scaledPayout = min(350, max(180, round(200 * 2))) = min(350, 400) = 350
   assert.equal(
     player.money,
-    playerNoSponsor.money + 400,
-    'Sponsor payout should add exactly 400'
+    playerNoSponsor.money + 350,
+    'Sponsor payout should add exactly 350'
   )
 })
 
@@ -620,10 +620,10 @@ test('calculateDailyUpdates does not pay sponsor when sponsorActive is false', (
   const { player: sponsored } = calculateDailyUpdates(withSponsor, mockRng)
   const { player: unsponsored } = calculateDailyUpdates(withoutSponsor, mockRng)
 
-  // The exact difference must be the scaled payout (400 at fame=200)
+  // The exact difference must be the scaled payout (350 at fame=200, capped at SPONSORSHIP_PAYOUT_CAP)
   assert.equal(
     sponsored.money - unsponsored.money,
-    400,
-    'Sponsor payout should add exactly 400 (min(800, max(180, 200*2)))'
+    350,
+    'Sponsor payout should add exactly 350 (min(350, max(180, 200*2)))'
   )
 })
