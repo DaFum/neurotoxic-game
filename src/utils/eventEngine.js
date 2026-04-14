@@ -597,9 +597,10 @@ export const eventEngine = {
     const delta = { player: {}, band: {}, social: {}, flags: {} }
 
     if (result.type === 'composite') {
-      result.effects.forEach(eff => {
-        processEffect(eff, delta, context, gameState)
-      })
+      // ⚡ Optimization: Standard for loop instead of .forEach to avoid callback allocation
+      for (let i = 0, len = result.effects.length; i < len; i++) {
+        processEffect(result.effects[i], delta, context, gameState)
+      }
     } else {
       processEffect(result, delta, context, gameState)
     }
