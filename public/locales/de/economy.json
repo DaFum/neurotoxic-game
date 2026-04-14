@@ -4,6 +4,8 @@
   "gigExpenses.catering.label": "Catering / Energie",
   "gigExpenses.guestList.detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)",
   "gigExpenses.guestList.label": "Gästeliste",
+  "gigExpenses.managementFee.detail": "{{rate}}% der Bruttoeinnahmen",
+  "gigExpenses.managementFee.label": "Management-Gebühr",
   "gigExpenses.merchRestock.detail": "Warenkosten",
   "gigExpenses.merchRestock.label": "Merch-Nachbestellung",
   "gigExpenses.merchStand.detail": "Bessere Präsentation",
