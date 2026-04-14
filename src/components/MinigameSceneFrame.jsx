@@ -78,7 +78,7 @@ export const MinigameSceneFrame = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className='fixed inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
+          className='fixed inset-0 z-[var(--z-modal)] flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
           role='dialog'
           aria-modal='true'
           aria-labelledby='completion-title'
