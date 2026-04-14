@@ -66,7 +66,6 @@ export const SIMULATION_CONSTANTS = {
   harmonyGainGoodGig: 2,
   harmonyLossBadGig: 5,
   sponsorshipPayout: 180,
-  randomEventCashSwing: 140,
   brandDealEvalChance: 0.14,
   postPulseChance: 0.18,
   trendShiftChance: 0.12,

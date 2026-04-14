@@ -10,6 +10,48 @@ export const LUCK_MOD_PER_POINT = 0.005
 export const MAX_DROP_CHANCE = 0.5
 
 /**
+ * Per-rarity bust chance when stopped by police during travel.
+ * Common items are harmless; epic items are high-risk.
+ */
+export const BUST_CHANCE_BY_RARITY = {
+  common: 0,
+  uncommon: 0.05,
+  rare: 0.15,
+  epic: 0.3
+}
+
+/**
+ * Finds the highest-risk contraband item in band.stash.
+ * Returns the item ID and rarity with the greatest bust potential.
+ * @param {Object|null} stash - band.stash dictionary (keyed by item id)
+ * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: string|null }}
+ */
+export function computeStashBustRisk(stash) {
+  if (!stash || typeof stash !== 'object') {
+    return { bustChance: 0, highestRiskItemId: null, highestRarity: null }
+  }
+
+  let highestChance = 0
+  let highestRiskItemId = null
+  let highestRarity = null
+
+  const keys = Object.keys(stash)
+  for (let i = 0; i < keys.length; i++) {
+    const itemId = keys[i]
+    const item = stash[itemId]
+    if (!item || typeof item.rarity !== 'string') continue
+    const chance = BUST_CHANCE_BY_RARITY[item.rarity] ?? 0
+    if (chance > highestChance) {
+      highestChance = chance
+      highestRiskItemId = itemId
+      highestRarity = item.rarity
+    }
+  }
+
+  return { bustChance: highestChance, highestRiskItemId, highestRarity }
+}
+
+/**
  * Picks a random rarity based on weights.
  * @param {Function} [rng=secureRandom]
  * @returns {string} rarity tier
