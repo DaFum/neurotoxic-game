@@ -61,6 +61,7 @@ export const TICKET_SALES_CONSTANTS = {
 
 export const MANAGEMENT_CUT_RATE = 0.15
 export const MAX_GIG_NET = 7500
+export const GLOBAL_PAYOUT_NERF = 0.5
 
 /**
  * Calculates ticket sales revenue and attendance.
@@ -333,7 +334,9 @@ export const calculateTravelExpenses = (
   // Logistics/Crew scaling with fame and distance (exponential)
   // Scaling dynamically with fameLevel to introduce stronger sinks for higher fame without
   // crushing early game.
-  const logisticsCost = Math.floor(dist * 0.05 * Math.pow(1.4, fameLevel))
+  const logisticsCost =
+    Math.floor(dist * 0.05 * Math.pow(1.4, fameLevel)) +
+    Math.floor((playerState?.money || 0) * 0.02)
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }
@@ -670,7 +673,9 @@ export const calculateGigFinancials = ({
     report.expenses.total += managementCut
   }
 
-  report.net = report.income.total - report.expenses.total
+  report.net = Math.floor(
+    (report.income.total - report.expenses.total) * GLOBAL_PAYOUT_NERF
+  )
 
   // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
   if (report.net > MAX_GIG_NET) {

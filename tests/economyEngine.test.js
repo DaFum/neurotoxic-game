@@ -71,8 +71,8 @@ test('calculateGigFinancials handles base case with ticket sales and guarantee',
   )
   assert.equal(
     result.net,
-    result.income.total - result.expenses.total,
-    'Net should equal income minus expenses'
+    Math.floor((result.income.total - result.expenses.total) * 0.5),
+    'Net should equal income minus expenses divided by 2'
   )
 })
 
@@ -526,11 +526,11 @@ test('calculateGigFinancials net profit matches income minus expenses', () => {
     gigStats: buildGigStats()
   })
 
-  const calculatedNet = result.income.total - result.expenses.total
+  const calculatedNet = Math.floor((result.income.total - result.expenses.total) * 0.5)
   assert.equal(
     result.net,
     calculatedNet,
-    'Net should be exactly income minus expenses'
+    'Net should be exactly income minus expenses divided by 2'
   )
 })
 
@@ -563,7 +563,7 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   // Fuel: (20 / 100) * 12 = 2.4 liters
   // Fuel Cost: floor(2.4 * 1.75) = 4
   // Food Cost: 3 * 8 = 24
-  // Logistics cost: dist 20 * 0.05 * (1 + 0) = 1
+  // Logistics cost: dist 20 * 0.05 * (1 + 0) + floor(0 * 0.02) = 1 + 0 = 1
   // Total Cost: 24 (food) + 1 = 25
   // Fuel is separate in calculateTravelExpenses logic (dist, fuelLiters, totalCost)
   // where totalCost only includes food + logistics, not fuel cost.
