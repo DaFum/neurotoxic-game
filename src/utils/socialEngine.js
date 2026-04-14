@@ -564,6 +564,26 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     )
       continue
 
+    // Check controversy limits
+    if (
+      deal.requirements.maxControversy !== undefined &&
+      (social.controversy || 0) > deal.requirements.maxControversy
+    )
+      continue
+
+    if (
+      deal.requirements.minControversy !== undefined &&
+      (social.controversy || 0) < deal.requirements.minControversy
+    )
+      continue
+
+    // Check zealotry min limit (added per requirement)
+    if (
+      deal.requirements.minZealotry !== undefined &&
+      (social.zealotry || 0) < deal.requirements.minZealotry
+    )
+      continue
+
 
     eligibleDeals.push(deal)
   }
