@@ -1,6 +1,6 @@
 // TODO: Review this file
 import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants.js'
-import { logger } from '../../utils/logger'
+import { logger } from '../../utils/logger.js'
 import {
   clampPlayerMoney,
   clampPlayerFame,

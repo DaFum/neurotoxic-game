@@ -54,7 +54,7 @@ export const EXPENSE_CONSTANTS = {
 }
 
 export const TICKET_SALES_CONSTANTS = {
-  BASE_DRAW_RATIO: 0.3,
+  BASE_DRAW_RATIO: 0.5,
   FAME_CAPACITY_SCALER: 10,
   FAME_FILL_WEIGHT: 0.7
 }
@@ -78,10 +78,10 @@ export const calculateTicketIncome = (
   const safeCapacity = Math.max(1, baseCapacity) // Prevent division by zero or negative
 
   // Sublinear power scaling for fame to make late-game arenas fill more smoothly
-  // Uses Math.pow(playerFame, 0.85) to provide diminishing returns (power-law scaling, not logarithmic)
+  // Uses Math.pow(playerFame, 0.7) to provide diminishing returns (power-law scaling, not logarithmic)
   const fameRatio = Math.min(
     1.0,
-    Math.pow(Math.max(0, playerFame), 0.85) /
+    Math.pow(Math.max(0, playerFame), 0.7) /
       (safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
   )
   let fillRate =
@@ -328,8 +328,9 @@ export const calculateTravelExpenses = (
   let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
 
   // Logistics/Crew scaling with fame and distance (exponential)
-  // Adjusted base scalar to 0.15 so early game distances don't drain the bank completely
-  const logisticsCost = Math.floor(dist * 0.15 * Math.pow(1.2, fameLevel))
+  // Scaling dynamically with fameLevel to introduce stronger sinks for higher fame without
+  // crushing early game.
+  const logisticsCost = Math.floor(dist * 0.05 * Math.pow(1.4, fameLevel))
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }

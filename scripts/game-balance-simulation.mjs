@@ -70,8 +70,8 @@ export const SIMULATION_CONSTANTS = {
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
   contrabandDropChance: 0.11,
-  hqUpgradeCost: 600,  // hq_room_sofa actual cost in hqItems.js
-  vanUpgradeCost: 350,
+  hqUpgradeCost: 2000,  // Tier 2 HQ Upgrade cost
+  vanUpgradeCost: 1500, // Tier 2 Van Upgrade cost
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
 }
@@ -742,16 +742,16 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
     const ownedUpgrades = Array.isArray(state.player.hqUpgrades)
       ? state.player.hqUpgrades
       : []
-    if (!ownedUpgrades.includes('hq_room_sofa')) {
+    if (!ownedUpgrades.includes('hq_room_beer_pipeline')) {
       state.player.money = clampPlayerMoney(
         state.player.money - SIMULATION_CONSTANTS.hqUpgradeCost
       )
-      state.player.hqUpgrades = [...ownedUpgrades, 'hq_room_sofa']
+      state.player.hqUpgrades = [...ownedUpgrades, 'hq_room_beer_pipeline']
       counters.hqUpgrades += 1
     }
   }
 
-  if (state.player.money > 1500 && rng() < 0.2) {
+  if (state.player.money > SIMULATION_CONSTANTS.vanUpgradeCost * 1.5 && rng() < 0.2) {
     const ownedVanUpgrades = Array.isArray(state.player.van?.upgrades)
       ? state.player.van.upgrades
       : []
