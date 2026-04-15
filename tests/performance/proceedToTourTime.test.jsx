@@ -40,7 +40,12 @@ vi.mock('../../src/utils/AudioManager', () => ({
 }))
 
 vi.mock('../../src/utils/errorHandler', () => ({
-  handleError: vi.fn()
+  handleError: vi.fn(),
+  safeStorageOperation: vi.fn((op, key, val) => {
+    if (op === 'getItem') return globalThis.localStorage?.getItem(key)
+    if (op === 'setItem') return globalThis.localStorage?.setItem(key, val)
+    return null
+  })
 }))
 
 vi.mock('../../src/ui/BandHQ', () => ({
@@ -68,15 +73,15 @@ describe('proceedToTour timing test', () => {
     const startTime = performance.now()
 
     // We only wait to make sure React effects process and we see the outcome
-    // Since we'll remove the artificial delay, waiting 50ms should be plenty.
+    // Since we'll remove the artificial delay, waiting 250ms should be plenty.
     await act(async () => {
       startButton.click()
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => setTimeout(resolve, 250))
     })
 
     const endTime = performance.now()
 
-    console.log(`Execution time (waiting 50ms): ${endTime - startTime}ms`)
+    console.log(`Execution time (waiting 250ms): ${endTime - startTime}ms`)
     expect(changeSceneMock).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 })

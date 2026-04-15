@@ -32,7 +32,11 @@ mock.module('../src/data/events/index.js', {
 
 const mockSecureRandom = mock.fn(() => 0.5)
 mock.module('../src/utils/crypto.js', {
-  namedExports: { secureRandom: mockSecureRandom }
+  namedExports: {
+    secureRandom: mockSecureRandom,
+    getSafeRandom: mockSecureRandom,
+    getSafeUUID: () => 'mock-uuid-test'
+  }
 })
 
 // Import module under test after mocking

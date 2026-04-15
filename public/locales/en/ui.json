@@ -614,7 +614,8 @@
     "socialPhase": {
       "altZealotryCult": "Zealotry Cult"
     },
-    "stamina": "Stamina"
+    "stamina": "Stamina",
+    "processing": "Processing..."
   },
   "postGig.acceptedDeal": "Accepted deal: {{dealName}}",
   "postGig.backToTour": "Back to Tour >",

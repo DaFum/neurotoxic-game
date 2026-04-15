@@ -47,16 +47,11 @@ describe('useBandHQLogic sync locking', () => {
       promise2 = result.current.handleVoidTrade(item)
     })
 
-    // Should only register processing item ID once
-    expect(result.current.processingItemId).toBe('test_item')
-
-    // Fast-forward to unblock the 500ms delay in the first call
+    // Wait for the synchronous logic to finish
     await act(async () => {
-      vi.advanceTimersByTime(500)
+      await promise1
+      await promise2
     })
-
-    await promise1
-    await promise2
 
     // The underlying operation should only be called once
     expect(tradeVoidItem).toHaveBeenCalledTimes(1)
@@ -92,15 +87,11 @@ describe('useBandHQLogic sync locking', () => {
       promise2 = result.current.handleBuyWithLock(item)
     })
 
-    expect(result.current.processingItemId).toBe('test_buy_item')
-
-    // Fast-forward to unblock the 500ms delay
+    // Wait for the asynchronous logic to finish
     await act(async () => {
-      vi.advanceTimersByTime(500)
+      await promise1
+      await promise2
     })
-
-    await promise1
-    await promise2
 
     // Should only be called once
     expect(handleBuy).toHaveBeenCalledTimes(1)

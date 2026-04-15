@@ -28,9 +28,18 @@ vi.mock('../src/utils/AudioManager', () => ({
   }
 }))
 
-vi.mock('../src/utils/errorHandler', () => ({
-  handleError: vi.fn()
-}))
+vi.mock('../src/utils/errorHandler', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    handleError: vi.fn(),
+    safeStorageOperation: vi.fn((op, key, val) => {
+      if (op === 'getItem') return globalThis.localStorage?.getItem(key)
+      if (op === 'setItem') return globalThis.localStorage?.setItem(key, val)
+      return null
+    })
+  }
+})
 
 // Mock BandHQ component to avoid deep dependencies
 vi.mock('../src/ui/BandHQ', () => ({

@@ -139,7 +139,7 @@ export const useKabelsalatState = () => {
                 const fallbackStateError = new Error(
                   'Failed to complete minigame (import error)'
                 )
-                console.error(fallback, fallbackStateError)
+                logger.error('Kabelsalat', fallback, fallbackStateError)
               } catch (_e) {
                 // Ignore fallback error
               }

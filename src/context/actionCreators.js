@@ -6,6 +6,7 @@
  */
 
 import { ActionTypes } from './actionTypes.js'
+import { getSafeUUID } from '../utils/crypto.js'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
 
 /**
@@ -152,7 +153,7 @@ export const createSetActiveEventAction = event => ({
  */
 export const createAddToastAction = (message, type = 'info') => ({
   type: ActionTypes.ADD_TOAST,
-  payload: { id: crypto.randomUUID(), message, type }
+  payload: { id: getSafeUUID(), message, type }
 })
 
 /**
@@ -416,7 +417,7 @@ export const createAddContrabandAction = contrabandId => ({
   type: ActionTypes.ADD_CONTRABAND,
   payload: {
     contrabandId,
-    instanceId: crypto.randomUUID()
+    instanceId: getSafeUUID()
   }
 })
 
@@ -485,7 +486,7 @@ export const createPirateBroadcastAction = payload => ({
       ? {
           ...payload,
           successToast: payload.successToast
-            ? { ...payload.successToast, id: crypto.randomUUID() }
+            ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
         }
       : payload
@@ -508,7 +509,7 @@ export const createBloodBankDonateAction = payload => ({
       ? {
           ...payload,
           successToast: payload.successToast
-            ? { ...payload.successToast, id: crypto.randomUUID() }
+            ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
         }
       : payload
@@ -528,9 +529,9 @@ export const createTradeVoidItemAction = payload => ({
     payload && typeof payload === 'object'
       ? {
           ...payload,
-          instanceId: crypto.randomUUID(),
+          instanceId: getSafeUUID(),
           successToast: payload.successToast
-            ? { ...payload.successToast, id: crypto.randomUUID() }
+            ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
         }
       : payload
@@ -554,7 +555,7 @@ export const createMerchPressAction = payload => ({
       ? {
           ...payload,
           successToast: payload.successToast
-            ? { ...payload.successToast, id: crypto.randomUUID() }
+            ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
         }
       : payload

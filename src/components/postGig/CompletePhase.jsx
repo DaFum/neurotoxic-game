@@ -10,7 +10,8 @@ export const CompletePhase = ({
   onContinue,
   onSpinStory,
   player,
-  social
+  social,
+  isProcessingAction = false
 }) => {
   const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
@@ -91,7 +92,8 @@ export const CompletePhase = ({
           {hasPR && isHighControversy && onSpinStory && (
             <ActionButton
               onClick={onSpinStory}
-              className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red'
+              disabled={isProcessingAction}
+              className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red disabled:opacity-50'
             >
               {t('ui:postGig.spinStory', {
                 defaultValue: 'Spin Story (-200€, -25 Controversy)'
@@ -101,10 +103,14 @@ export const CompletePhase = ({
 
           <ActionButton
             onClick={onContinue}
+            disabled={isProcessingAction}
             variant='primary'
-            className='px-8 py-3 text-void-black'
+            className='px-8 py-3 text-void-black disabled:opacity-50'
           >
-            {t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
+            {isProcessingAction
+              ? t('ui:postGig.processing', { defaultValue: 'Processing...' })
+              : t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })
+            }
           </ActionButton>
         </motion.div>
       </motion.div>
@@ -129,5 +135,6 @@ CompletePhase.propTypes = {
   onContinue: PropTypes.func.isRequired,
   onSpinStory: PropTypes.func,
   player: PropTypes.object,
-  social: PropTypes.object
+  social: PropTypes.object,
+  isProcessingAction: PropTypes.bool
 }

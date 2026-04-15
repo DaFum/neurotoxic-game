@@ -1,5 +1,7 @@
 // TODO: Review this file
 import { CHARACTERS } from '../data/characters.js'
+import { logger } from '../utils/logger.js'
+import { getSafeUUID } from '../utils/crypto.js'
 
 /**
  * Pre-calculated lookup for character trait definitions.
@@ -20,9 +22,7 @@ for (const charKey in CHARACTERS) {
     for (const trait of traits) {
       TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
       if (TRAIT_DEFS_BY_ID.has(trait.id)) {
-        console.warn(
-          `Duplicate trait ID found during initialization: ${trait.id}`
-        )
+        logger.warn('traitUtils', `Duplicate trait ID found during initialization: ${trait.id}`)
       }
       TRAIT_DEFS_BY_ID.set(trait.id, trait)
     }
@@ -138,7 +138,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
 
     // Add toast with a unique ID
     nextToasts.push({
-      id: `trait-${crypto.randomUUID()}`,
+      id: `trait-${getSafeUUID()}`,
       messageKey: 'ui:shop.messages.traitUnlocked',
       options: { traitName: traitDef.name, memberId: u.memberId },
       message: `Unlocked Trait: ${traitDef.name} (${u.memberId})`,

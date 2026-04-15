@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
+import { logger } from '../utils/logger.js'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
@@ -69,7 +70,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
         }
       })
     } catch (error) {
-      console.error('Failed to preview event outcome:', error)
+      logger.error('EventModal', 'Failed to preview event outcome', error)
       setPreviewError(true)
       setOutcome({ option })
     }

@@ -11,6 +11,7 @@ vi.mock('../src/utils/logger', () => ({
   }
 }))
 
+vi.mock('../src/utils/errorHandler.js', () => ({ safeStorageOperation: vi.fn((op, key, val) => op === 'getItem' ? localStorage.getItem(key) : localStorage.setItem(key, val)) }))
 describe('useLeaderboardSync', () => {
   const mockFetch = vi.fn()
 
