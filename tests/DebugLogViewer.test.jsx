@@ -147,19 +147,24 @@ describe('DebugLogViewer', () => {
     expect(screen.queryByText('NEUROTOXIC DEBUGGER')).not.toBeInTheDocument()
   })
 
-  test('dumps logs to console', () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  test('copies logs to clipboard', async () => {
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue()
+      }
+    })
+    const clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText')
     try {
       render(<DebugLogViewer />)
       fireEvent.keyDown(window, { key: '`', ctrlKey: true })
 
-      const dumpButton = screen.getByText('DUMP TO CONSOLE')
-      fireEvent.click(dumpButton)
+      const copyButton = screen.getByText('COPY LOGS')
+      fireEvent.click(copyButton)
 
       expect(loggerMock.dump).toHaveBeenCalled()
-      expect(consoleSpy).toHaveBeenCalled()
+      expect(clipboardSpy).toHaveBeenCalled()
     } finally {
-      consoleSpy.mockRestore()
+      clipboardSpy.mockRestore()
     }
   })
 
