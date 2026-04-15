@@ -807,5 +807,5 @@ export const hasStateItem = (collection, item) => {
 }
 
 export const hasActiveSponsorship = (socialState) => {
-  return (socialState?.activeDeals || []).some(d => d.type === 'SPONSORSHIP')
+  return (socialState?.activeDeals || []).some(d => d.type === 'SPONSORSHIP' && Number(d.remainingGigs) > 0)
 }

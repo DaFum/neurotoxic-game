@@ -619,21 +619,16 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
     condition: ({ social }) => hasActiveSponsorship(social),
     resolve: (gameState) => {
-      let payout = 500
-      if (gameState?.social?.activeDeals) {
-        const deal = gameState.social.activeDeals.find(d => d.type === 'SPONSORSHIP')
-        if (deal && deal.offer && deal.offer.perGig) {
-          payout = deal.offer.perGig
-        }
-      }
       return {
         type: 'FIXED',
         success: true,
         platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 0,
-        moneyChange: payout,
+        moneyChange: 0,
         loyaltyChange: 0, // Loyalty penalty is now applied dynamically in postGigUtils based on the specific deal
-        message: 'You got paid. The fans are calling you sellouts.'
+        message: i18n.t('ui:postOptions.selloutMessage', {
+          defaultValue: 'You got paid. The fans are calling you sellouts.'
+        })
       }
     }
   },

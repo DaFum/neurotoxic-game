@@ -1,0 +1,84 @@
+name: 'Post Test Failure Comment'
+description: 'Posts a comment on the PR with test failure details'
+
+inputs:
+  marker:
+    description: 'The HTML comment marker to identify the comment block'
+    required: true
+  file:
+    description: 'The path to the test output file'
+    required: true
+  regex:
+    description: 'The regex used to match failure lines (as a string literal)'
+    required: true
+  max:
+    description: 'Maximum number of failure lines to show'
+    required: true
+  header:
+    description: 'The markdown header for the comment'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Comment failed tests on PR — update existing sticky comment
+      uses: actions/github-script@v9
+      env:
+        MARKER: ${{ inputs.marker }}
+        FILE_PATH: ${{ inputs.file }}
+        REGEX: ${{ inputs.regex }}
+        MAX_LINES: ${{ inputs.max }}
+        HEADER: ${{ inputs.header }}
+      with:
+        script: |
+          const fs = require('fs');
+          const marker = process.env.MARKER;
+          const raw = fs.existsSync(process.env.FILE_PATH) ? fs.readFileSync(process.env.FILE_PATH, 'utf8') : '';
+          const max = parseInt(process.env.MAX_LINES || '500', 10);
+
+          // Using new RegExp() with the string passed via env var
+          const regexObj = new RegExp(process.env.REGEX);
+
+          const failLines = raw.split('\n').filter(l => regexObj.test(l));
+
+          const shown = failLines.slice(-max);
+
+          let body = [
+            marker,
+            process.env.HEADER,
+            '',
+            'Showing relevant failure lines (full log is attached to the workflow run):',
+            '```',
+            shown.join('\n'),
+            '```',
+            '',
+            `See the [CI logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for full output.`
+          ].join('\n\n');
+
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const issue_number = context.issue.number;
+
+          const comments = await github.paginate(github.rest.issues.listComments, {
+            owner,
+            repo,
+            issue_number,
+          });
+
+          const existing = comments.find(c => c.body && c.body.includes(marker));
+
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner,
+              repo,
+              comment_id: existing.id,
+              body,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            });
+          }

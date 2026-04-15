@@ -42,7 +42,8 @@ import {
   clampPlayerMoney,
   clampVanFuel,
   BALANCE_CONSTANTS,
-  applyEventDelta
+  applyEventDelta,
+  hasActiveSponsorship
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -531,6 +532,12 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     100,
     (state.social.controversyLevel || 0) + (candidate.penalty?.controversy || 0)
   )
+
+  state.social.activeDeals = [
+    ...(state.social.activeDeals || []),
+    { ...candidate, remainingGigs: candidate.offer?.duration || 1 }
+  ]
+
   counters.brandDealsActivated += 1
 }
 
@@ -1029,7 +1036,6 @@ const runSingleSimulation = (scenario, seed) => {
     const hasSponsor = hasActiveSponsorship(state.social)
     if (!hadSponsor && hasSponsor) counters.sponsorSignings += 1
     if (hadSponsor && !hasSponsor) counters.sponsorDrops += 1
-    if (hasSponsor) counters.sponsorPayouts += 1
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -1203,6 +1209,10 @@ const runSingleSimulation = (scenario, seed) => {
       previousFame
     )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
+
+    if (hasActiveSponsorship(state.social)) {
+      counters.sponsorPayouts += 1
+    }
 
     currentNode = venue
     counters.gigsPlayed += 1
