@@ -93,3 +93,7 @@
 ## 2026-04-12 - Optimization: eventEngine.filterEvents
 **Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
 **Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, creating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
+
+## 2025-04-15 - [Heckler Overlay Rendering Optimization]
+**Learning:** In a high-frequency animation loop using `requestAnimationFrame`, modifying DOM properties like `node.style.top` and `node.style.left` causes layout thrashing and triggers layout and paint operations which are slow.
+**Action:** Always prefer `node.style.transform` with `translate3d(x, y, 0)` for positional animations as it utilizes hardware acceleration and avoids triggering costly layout recalculations.
