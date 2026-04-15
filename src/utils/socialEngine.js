@@ -1,4 +1,4 @@
-import { hasActiveSponsorship } from './gameStateUtils'
+import { hasActiveSponsorship } from './gameStateUtils.js'
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A

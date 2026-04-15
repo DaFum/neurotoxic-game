@@ -37,7 +37,13 @@ runs:
           const max = parseInt(process.env.MAX_LINES || '500', 10);
 
           // Using new RegExp() with the string passed via env var
-          const regexObj = new RegExp(process.env.REGEX);
+          let regexObj;
+          try {
+            regexObj = new RegExp(process.env.REGEX);
+          } catch (error) {
+            core.setFailed(`Invalid regex pattern provided: "${process.env.REGEX}". Error: ${error.message}`);
+            return;
+          }
 
           const failLines = raw.split('\n').filter(l => regexObj.test(l));
 
@@ -58,6 +64,11 @@ runs:
           const owner = context.repo.owner;
           const repo = context.repo.repo;
           const issue_number = context.issue.number;
+
+          if (!issue_number) {
+            console.log('Not in a PR context (issue number is undefined). Skipping comment logic.');
+            return;
+          }
 
           const comments = await github.paginate(github.rest.issues.listComments, {
             owner,

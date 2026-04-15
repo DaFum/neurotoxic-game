@@ -989,5 +989,6 @@
   "minigames.amp.controls.dialAria": "Frequency Dial",
   "minigames.amp.controls.instruction": "TUNE THE FREQUENCY",
   "minigames.amp.controls.dialValue": "{{value}} Hz",
-  "postOptions.selloutMessage": "You got paid. The fans are calling you sellouts."
+  "postOptions.selloutMessage": "You got paid. The fans are calling you sellouts.",
+  "postOptions.selloutName": "Shameless Sellout Sponsorship"
 }

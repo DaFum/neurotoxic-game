@@ -1,4 +1,4 @@
-import { hasActiveSponsorship } from '../utils/gameStateUtils'
+import { hasActiveSponsorship } from '../utils/gameStateUtils.js'
 // TODO: Review this file
 import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
@@ -613,7 +613,7 @@ export const POST_OPTIONS = [
   // --- CATEGORY: COMMERCIAL & MERCH ---
   {
     id: 'comm_sellout_ad',
-    name: 'Shameless Sellout Sponsorship',
+    name: i18n.t('ui:postOptions.selloutName', { defaultValue: 'Shameless Sellout Sponsorship' }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],

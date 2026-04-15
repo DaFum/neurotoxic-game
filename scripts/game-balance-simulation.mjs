@@ -533,10 +533,16 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     (state.social.controversyLevel || 0) + (candidate.penalty?.controversy || 0)
   )
 
-  state.social.activeDeals = [
-    ...(state.social.activeDeals || []),
-    { ...candidate, remainingGigs: candidate.offer?.duration || 1 }
-  ]
+  const deals = state.social.activeDeals ? [...state.social.activeDeals] : []
+  const existingIdx = deals.findIndex(d => d.id === candidate.id)
+
+  const dealEntry = { ...candidate, remainingGigs: candidate.offer?.duration || 1 }
+  if (existingIdx >= 0) {
+    deals[existingIdx] = dealEntry
+  } else {
+    deals.push(dealEntry)
+  }
+  state.social.activeDeals = deals
 
   counters.brandDealsActivated += 1
 }
@@ -1210,8 +1216,16 @@ const runSingleSimulation = (scenario, seed) => {
     )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
-    if (hasActiveSponsorship(state.social)) {
-      counters.sponsorPayouts += 1
+    if (state.social.activeDeals && state.social.activeDeals.length > 0) {
+      const updatedDeals = state.social.activeDeals
+        .map(d => ({ ...d, remainingGigs: d.remainingGigs - 1 }))
+        .filter(d => d.remainingGigs > 0)
+
+      state.social.activeDeals = updatedDeals
+
+      if (hasActiveSponsorship(state.social)) {
+        counters.sponsorPayouts += 1
+      }
     }
 
     currentNode = venue
