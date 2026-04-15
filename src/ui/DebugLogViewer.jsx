@@ -91,10 +91,16 @@ export const DebugLogViewer = ({ className = '' }) => {
             </button>
             <button
               type='button'
-              onClick={() => logger.clear()}
+              onClick={() =>
+                navigator.clipboard
+                  .writeText(logger.dump())
+                  .catch(e =>
+                    logger.error('DebugLogViewer', 'Failed to copy logs', e)
+                  )
+              }
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
-              CLEAR
+              COPY LOGS
             </button>
           </div>
           <button

@@ -1,4 +1,6 @@
 import fs from 'node:fs/promises'
+import { hasActiveSponsorship } from '../src/utils/gameStateUtils.js';
+
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -38,11 +40,13 @@ import {
   clampMemberStamina,
   clampPlayerFame,
   calculateFameLevel,
+  hasActiveSponsorship,
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,
   BALANCE_CONSTANTS,
-  applyEventDelta
+  applyEventDelta,
+  hasActiveSponsorship
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -507,6 +511,18 @@ const maybeShiftSocialTrend = (state, rng, counters) => {
 }
 
 const maybeActivateBrandDeal = (state, rng, counters) => {
+  // Determine if player has an active deal using the same logic as the game
+  const currentlyHasDeal = (state.social.activeDeals || []).length > 0
+
+  if (currentlyHasDeal) {
+    // Determine chance to randomly drop deal
+    if (rng() < 0.05) {
+       state.social.activeDeals = []
+       counters.sponsorDrops += 1
+    }
+    return
+  }
+
   if (rng() >= SIMULATION_CONSTANTS.brandDealEvalChance) return
   const candidate = BRAND_DEALS[Math.floor(rng() * BRAND_DEALS.length)]
   if (!candidate) return
@@ -520,6 +536,11 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
 
   if (!meetsFollowers || !meetsTrend) return
 
+  state.social.activeDeals = state.social.activeDeals || []
+  if (!state.social.activeDeals.includes(candidate.id)) {
+    state.social.activeDeals.push(candidate.id)
+  }
+
   state.player.money = clampPlayerMoney(
     state.player.money + (candidate.offer?.upfront || 0)
   )
@@ -531,6 +552,18 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     100,
     (state.social.controversyLevel || 0) + (candidate.penalty?.controversy || 0)
   )
+
+  const deals = state.social.activeDeals ? [...state.social.activeDeals] : []
+  const existingIdx = deals.findIndex(d => d.id === candidate.id)
+
+  const dealEntry = { ...candidate, remainingGigs: candidate.offer?.duration || 1 }
+  if (existingIdx >= 0) {
+    deals[existingIdx] = dealEntry
+  } else {
+    deals.push(dealEntry)
+  }
+  state.social.activeDeals = deals
+
   counters.brandDealsActivated += 1
 }
 
@@ -1029,7 +1062,6 @@ const runSingleSimulation = (scenario, seed) => {
     const hasSponsor = hasActiveSponsorship(state.social)
     if (!hadSponsor && hasSponsor) counters.sponsorSignings += 1
     if (hadSponsor && !hasSponsor) counters.sponsorDrops += 1
-    if (hasSponsor) counters.sponsorPayouts += 1
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -1133,7 +1165,7 @@ const runSingleSimulation = (scenario, seed) => {
         money: state.player.money,
         fame: state.player.fame,
         controversyLevel: state.social.controversyLevel,
-        sponsorActive: hasActiveSponsorship(state.social),
+        sponsorActive: (state.social.activeDeals.length > 0),
         cancelled: true
       })
 
@@ -1204,6 +1236,18 @@ const runSingleSimulation = (scenario, seed) => {
     )
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
+    if (state.social.activeDeals && state.social.activeDeals.length > 0) {
+      const updatedDeals = state.social.activeDeals
+        .map(d => ({ ...d, remainingGigs: d.remainingGigs - 1 }))
+        .filter(d => d.remainingGigs > 0)
+
+      state.social.activeDeals = updatedDeals
+
+      if (hasActiveSponsorship(state.social)) {
+        counters.sponsorPayouts += 1
+      }
+    }
+
     currentNode = venue
     counters.gigsPlayed += 1
     totalGigNet += financials.net
@@ -1250,7 +1294,7 @@ const runSingleSimulation = (scenario, seed) => {
       money: state.player.money,
       fame: state.player.fame,
       controversyLevel: state.social.controversyLevel,
-      sponsorActive: hasActiveSponsorship(state.social)
+      sponsorActive: (state.social.activeDeals.length > 0)
     })
 
     if (shouldTriggerBankruptcy(state.player.money, financials.net)) {

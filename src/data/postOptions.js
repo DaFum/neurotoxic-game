@@ -1,4 +1,4 @@
-import { hasActiveSponsorship } from '../utils/gameStateUtils'
+import { hasActiveSponsorship } from '../utils/gameStateUtils.js'
 // TODO: Review this file
 import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
@@ -602,15 +602,17 @@ export const POST_OPTIONS = [
   // --- CATEGORY: COMMERCIAL & MERCH ---
   {
     id: 'comm_sellout_ad',
-    name: 'Shameless Sellout Sponsorship',
+    name: i18n.t('ui:postOptions.selloutName', { defaultValue: 'Shameless Sellout Sponsorship' }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
     condition: ({ social }) => hasActiveSponsorship(social),
-    resolve: (gameState) => {
+    resolve: gameState => {
       let payout = 500
       if (gameState?.social?.activeDeals) {
-        const deal = gameState.social.activeDeals.find(d => d.type === 'SPONSORSHIP')
+        const deal = gameState.social.activeDeals.find(
+          d => d.type === 'SPONSORSHIP'
+        )
         if (deal && deal.offer && deal.offer.perGig) {
           payout = deal.offer.perGig
         }
@@ -620,9 +622,11 @@ export const POST_OPTIONS = [
         success: true,
         platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 0,
-        moneyChange: payout,
+        moneyChange: 0,
         loyaltyChange: 0, // Loyalty penalty is now applied dynamically in postGigUtils based on the specific deal
-        message: 'You got paid. The fans are calling you sellouts.'
+        message: i18n.t('ui:postOptions.selloutMessage', {
+          defaultValue: 'You got paid. The fans are calling you sellouts.'
+        })
       }
     }
   },

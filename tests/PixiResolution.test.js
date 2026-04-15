@@ -130,13 +130,17 @@ mock.module('../src/components/stage/NoteManager.js', {
   }
 })
 
-describe('Pixi Resolution Capping', () => {
-  let createPixiStageController
-  let createTourbusStageController
-  let createRoadieStageController
-  let getOptimalResolution
+const { getOptimalResolution } =
+  await import('../src/components/stage/utils.js')
+const { createPixiStageController } =
+  await import('../src/components/PixiStageController.js')
+const { createTourbusStageController } =
+  await import('../src/components/stage/TourbusStageController.js')
+const { createRoadieStageController } =
+  await import('../src/components/stage/RoadieStageController.js')
 
-  beforeEach(async () => {
+describe('Pixi Resolution Capping', () => {
+  beforeEach(() => {
     globalThis.window = {
       devicePixelRatio: 1,
       addEventListener: mock.fn(),
@@ -148,19 +152,6 @@ describe('Pixi Resolution Capping', () => {
     globalThis.document = {
       documentElement: {}
     }
-
-    const [utilsModule, controllerModule, tourbusModule, roadieModule] =
-      await Promise.all([
-        import('../src/components/stage/utils.js'),
-        import('../src/components/PixiStageController.js'),
-        import('../src/components/stage/TourbusStageController.js'),
-        import('../src/components/stage/RoadieStageController.js')
-      ])
-
-    getOptimalResolution = utilsModule.getOptimalResolution
-    createPixiStageController = controllerModule.createPixiStageController
-    createTourbusStageController = tourbusModule.createTourbusStageController
-    createRoadieStageController = roadieModule.createRoadieStageController
   })
 
   afterEach(() => {

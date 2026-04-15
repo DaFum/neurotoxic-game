@@ -62,60 +62,13 @@ jobs:
 
       - name: Comment failed tests on PR (node) — update existing sticky comment
         if: ${{ always() && steps.run-tests.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: actions/github-script@v9
+        uses: ./.github/actions/post-test-failure-comment
         with:
-          script: |
-            const fs = require('fs');
-            const marker = '<!-- test-results-node: do-not-edit -->';
-            const raw = fs.existsSync('test-output-node.txt') ? fs.readFileSync('test-output-node.txt', 'utf8') : '';
-            const max = parseInt(process.env.MAX_FAILURE_LINES || '500', 10);
-
-            const failLines = raw.split('\n').filter(l =>
-              /^not ok\b/.test(l) || /^\s+✖|FAIL\b/.test(l) || /AssertionError|Error:/.test(l)
-            );
-
-            const totalFails = failLines.length;
-            const shown = failLines.slice(-max);
-
-            let body = [
-              marker,
-              `## ❌ Node.js tests failed`,
-              '',
-              'Showing relevant failure lines (full log is attached to the workflow run):',
-              '```',
-              shown.join('\n'),
-              '```',
-              '',
-              `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full output.`
-            ].join('\n\n');
-
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const issue_number = context.issue.number;
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner,
-              repo,
-              issue_number,
-            });
-
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body,
-              });
-            }
+          marker: '<!-- test-results-node: do-not-edit -->'
+          file: 'test-output-node.txt'
+          regex: '^not ok\b|^\s+✖|FAIL\b|AssertionError|Error:'
+          max: ${{ env.MAX_FAILURE_LINES }}
+          header: '## ❌ Node.js tests failed'
 
       - name: Fail if tests failed
         if: ${{ always() && steps.run-tests.outputs.exit_code != '0' }}
@@ -161,60 +114,13 @@ jobs:
 
       - name: Comment failed tests on PR (vitest) — update existing sticky comment
         if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: actions/github-script@v9
+        uses: ./.github/actions/post-test-failure-comment
         with:
-          script: |
-            const fs = require('fs');
-            const marker = '<!-- test-results-vitest: do-not-edit -->';
-            const raw = fs.existsSync('test-output-vitest.txt') ? fs.readFileSync('test-output-vitest.txt', 'utf8') : '';
-            const max = parseInt(process.env.MAX_FAILURE_LINES || '500', 10);
-
-            const failLines = raw.split('\n').filter(l =>
-              /FAIL\b/.test(l) || /^\s+[✕×✗]/.test(l) || /AssertionError|Error:/.test(l)
-            );
-
-            const totalFails = failLines.length;
-            const shown = failLines.slice(-max);
-
-            let body = [
-              marker,
-              `## ❌ Vitest tests failed`,
-              '',
-              'Showing relevant failure lines (full log is attached to the workflow run):',
-              '```',
-              shown.join('\n'),
-              '```',
-              '',
-              `See the [CI logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full output.`
-            ].join('\n\n');
-
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const issue_number = context.issue.number;
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner,
-              repo,
-              issue_number,
-            });
-
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body,
-              });
-            }
+          marker: '<!-- test-results-vitest: do-not-edit -->'
+          file: 'test-output-vitest.txt'
+          regex: 'FAIL\b|^\s+[✕×✗]|AssertionError|Error:'
+          max: ${{ env.MAX_FAILURE_LINES }}
+          header: '## ❌ Vitest tests failed'
 
       - name: Fail if tests failed
         if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' }}

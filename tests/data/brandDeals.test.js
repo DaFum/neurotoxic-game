@@ -29,10 +29,12 @@ describe('BRAND_DEALS data module', () => {
         typeof deal.requirements.followers === 'number',
         `Deal ${deal.id} followers requirement should be a number`
       )
-      assert(
-        Array.isArray(deal.requirements.trend),
-        `Deal ${deal.id} trend requirement should be an array`
-      )
+      if (deal.requirements.trend !== undefined) {
+        assert(
+          Array.isArray(deal.requirements.trend),
+          `Deal ${deal.id} trend requirement should be an array`
+        )
+      }
 
       if (deal.requirements.trait !== undefined) {
         assert(

@@ -1,4 +1,4 @@
-import { hasActiveSponsorship } from './gameStateUtils'
+import { hasActiveSponsorship } from './gameStateUtils.js'
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A
@@ -287,8 +287,6 @@ for (const key in SOCIAL_PLATFORMS) {
   }
 }
 
-
-
 export const calculateSocialGrowth = (
   platform,
   performance,
@@ -499,6 +497,19 @@ export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
     return `${pick(prefixes)}${pick(suffixes)} ${pick(types)}`
   }
 
+  if (alignment === BRAND_ALIGNMENTS.GOOD) {
+    const prefixes = ['Noble', 'Brave', 'Valiant', 'Bright', 'Radiant']
+    const suffixes = ['Hearts', 'Souls', 'Shield', 'Light', 'Path']
+    const types = ['Apparel', 'Charity', 'Fund', 'Trust', 'Foundation']
+    return `${pick(prefixes)} ${pick(suffixes)} ${pick(types)}`
+  }
+
+  if (alignment === BRAND_ALIGNMENTS.NEUTRAL) {
+    const prefixes = ['Standard', 'General', 'Prime', 'Apex', 'Solid']
+    const suffixes = ['Goods', 'Works', 'Tech', 'Systems', 'Solutions']
+    return `${pick(prefixes)} ${pick(suffixes)}`
+  }
+
   return baseName
 }
 
@@ -560,10 +571,29 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     // Check zealotry limits
     if (
       deal.requirements.maxZealotry &&
-      (social.zealotry || 0) >= deal.requirements.maxZealotry
+      (social.zealotry || 0) > deal.requirements.maxZealotry
     )
       continue
 
+    // Check controversy limits
+    if (
+      deal.requirements.maxControversy !== undefined &&
+      (social.controversyLevel || 0) > deal.requirements.maxControversy
+    )
+      continue
+
+    if (
+      deal.requirements.minControversy !== undefined &&
+      (social.controversyLevel || 0) < deal.requirements.minControversy
+    )
+      continue
+
+    // Check zealotry min limit (added per requirement)
+    if (
+      deal.requirements.minZealotry !== undefined &&
+      (social.zealotry || 0) < deal.requirements.minZealotry
+    )
+      continue
 
     eligibleDeals.push(deal)
   }

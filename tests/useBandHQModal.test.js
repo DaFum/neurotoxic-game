@@ -1,4 +1,4 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import { test, describe, before, after, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -33,19 +33,19 @@ mock.module('../src/hooks/useAudioControl.js', {
   }
 })
 
-describe('useBandHQModal', () => {
-  let useBandHQModal
+const { useBandHQModal } = await import('../src/hooks/useBandHQModal.js')
 
-  beforeEach(async () => {
+describe('useBandHQModal', () => {
+  before(() => {
     setupJSDOM()
-    // Dynamic import to ensure mocks are applied
-    const module = await import('../src/hooks/useBandHQModal.js')
-    useBandHQModal = module.useBandHQModal
+  })
+
+  after(() => {
+    teardownJSDOM()
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
   test('toggles modal state correctly', () => {

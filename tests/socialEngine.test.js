@@ -150,12 +150,27 @@ test('generatePostOptions returns array of exactly 3 options', () => {
 test('generatePostOptions forces sponsor post if activeDeals has SPONSORSHIP', () => {
   const sponsoredState = {
     ...mockGameState,
-    social: { ...mockGameState.social, activeDeals: [{ id: 'brand_deal_1', type: 'SPONSORSHIP' }], instagram: 6000 }
+    social: {
+      ...mockGameState.social,
+      activeDeals: ['energy_drink_cx'],
+      instagram: 6000
+    }
   }
   const options = generatePostOptions({}, sponsoredState)
 
   const sponsorOpt = options.find(opt => opt.id === 'comm_sellout_ad')
   assert.ok(sponsorOpt, 'Should include forced sponsor ad')
+})
+
+test('generatePostOptions does NOT force sponsor post if remainingGigs is 0', () => {
+  const sponsoredState = {
+    ...mockGameState,
+    social: { ...mockGameState.social, activeDeals: [{ id: 'brand_deal_1', type: 'SPONSORSHIP', remainingGigs: 0 }], instagram: 6000 }
+  }
+  const options = generatePostOptions({}, sponsoredState)
+
+  const sponsorOpt = options.find(opt => opt.id === 'comm_sellout_ad')
+  assert.equal(sponsorOpt, undefined, 'Should NOT include forced sponsor ad if remainingGigs is 0')
 })
 
 test('generatePostOptions all have required properties', () => {

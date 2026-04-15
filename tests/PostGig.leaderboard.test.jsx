@@ -61,7 +61,6 @@ vi.mock('../src/components/postGig/CompletePhase', () => ({
     onContinue,
     onSpinStory,
     player,
-    social,
     ...layoutProps
   }) => (
     <div data-testid='mock-complete-phase' {...layoutProps}>

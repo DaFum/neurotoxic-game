@@ -59,8 +59,7 @@ describe('MainMenu Component', () => {
   const mockOpenHQ = vi.fn()
 
   beforeEach(() => {
-    vi.useFakeTimers()
-    vi.clearAllMocks()
+        vi.clearAllMocks()
     localStorage.clear()
     vi.stubGlobal('crypto', { randomUUID: vi.fn(() => 'mock-uuid-1234') })
 
@@ -80,9 +79,7 @@ describe('MainMenu Component', () => {
   })
 
   afterEach(() => {
-    vi.runOnlyPendingTimers()
-    vi.useRealTimers()
-    vi.restoreAllMocks()
+            vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })
 
@@ -91,9 +88,7 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(true)
       render(<MainMenu />)
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:load_game'))
-      })
+      fireEvent.click(screen.getByText('ui:load_game'))
 
       expect(mockLoadGame).toHaveBeenCalled()
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
@@ -103,9 +98,7 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(false)
       render(<MainMenu />)
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:load_game'))
-      })
+      fireEvent.click(screen.getByText('ui:load_game'))
 
       expect(mockLoadGame).toHaveBeenCalled()
       expect(mockAddToast).toHaveBeenCalledWith('No save found', 'error')
@@ -185,9 +178,7 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:start_game'))
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:mainMenu.existingSave.load'))
-      })
+      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.load'))
 
       expect(mockLoadGame).toHaveBeenCalled()
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
@@ -198,9 +189,7 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:start_game'))
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:mainMenu.existingSave.startNew'))
-      })
+      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.startNew'))
 
       expect(mockResetState).toHaveBeenCalled()
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
@@ -363,9 +352,7 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:start_game'))
-      })
+      fireEvent.click(screen.getByText('ui:start_game'))
 
       expect(mockResetState).toHaveBeenCalled()
       expect(mockUpdatePlayer).toHaveBeenCalledWith({
@@ -540,9 +527,7 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:start_game'))
-      })
+      fireEvent.click(screen.getByText('ui:start_game'))
 
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
@@ -556,10 +541,8 @@ describe('MainMenu Component', () => {
       const loadButton = screen.getByText('ui:load_game')
       const startButton = screen.getByText('ui:start_game')
 
-      await act(async () => {
-        fireEvent.click(loadButton)
-        fireEvent.click(startButton)
-      })
+      fireEvent.click(loadButton)
+      fireEvent.click(startButton)
 
       expect(mockChangeScene).toHaveBeenCalled()
     })
@@ -570,18 +553,14 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:start_game'))
-      })
+      fireEvent.click(screen.getByText('ui:start_game'))
 
       expect(mockUpdatePlayer).toHaveBeenCalledWith({
         playerId: 'test-id',
         playerName: 'TestPlayer'
       })
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:start_game'))
-      })
+      fireEvent.click(screen.getByText('ui:start_game'))
 
       expect(mockUpdatePlayer).toHaveBeenCalledTimes(2)
     })
@@ -638,9 +617,7 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      await act(async () => {
-        fireEvent.click(screen.getByText('ui:load_game'))
-      })
+      fireEvent.click(screen.getByText('ui:load_game'))
 
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
