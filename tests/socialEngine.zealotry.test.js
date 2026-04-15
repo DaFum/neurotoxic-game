@@ -54,7 +54,7 @@ describe('generateBrandOffers with Zealotry', () => {
     assert.strictEqual(
       shredDealHigh,
       undefined,
-      'Should NOT find Blood Bank promo deal when zealotry is high (>= 40)'
+      'Should NOT find Blood Bank promo deal when zealotry is high (> 40)'
     )
   })
 })
