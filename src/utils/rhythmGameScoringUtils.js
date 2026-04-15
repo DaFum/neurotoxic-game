@@ -85,7 +85,7 @@ export const calculatePoints = (
       break
     default:
       logger.error('rhythmGameScoringUtils', `Unknown lane index: ${laneIndex}`)
-      break
+      throw new Error(`Unknown lane index: ${laneIndex}`)
   }
 
   // Guestlist Effect: +20% score

@@ -142,11 +142,14 @@ export const usePostGigLogic = () => {
     gigModifiers,
     band.inventory,
     player,
+    social,
     social?.controversyLevel,
     social?.loyalty,
     social?.zealotry,
     reputationByRegion,
-    activeStoryFlags
+    activeStoryFlags,
+    gigContextRef.current?.daysSinceLastGig,
+    gigContextRef.current?.lastGigDifficulty
   ])
 
   // Derive post options purely without triggering a re-render loop

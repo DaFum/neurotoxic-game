@@ -219,13 +219,12 @@ describe('socialReducer', () => {
       assert.ok(nextState.venueBlacklist.includes('venue_3'))
     })
 
-    it('should generate string toast IDs', () => {
+    it('should assign the provided deterministic toast ID', () => {
       baseState.social.loyalty = 10
       const nextState1 = handleAddVenueBlacklist(baseState, { venueId: 'venue_1', toastId: 'test_toast_venue_1' })
 
-      // Toast ID should be a UUID string
-      assert.strictEqual(typeof nextState1.toasts[0].id, 'string')
-      assert.ok(nextState1.toasts[0].id.length > 0)
+      // Toast ID should match the provided payload
+      assert.strictEqual(nextState1.toasts[0].id, 'test_toast_venue_1')
     })
 
     it('should include venue label in blacklist toast message', () => {
