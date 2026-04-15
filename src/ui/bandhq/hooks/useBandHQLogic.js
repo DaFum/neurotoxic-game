@@ -24,7 +24,7 @@ export const useBandHQLogic = ({
   const processingItemIdRef = useRef(null)
 
   const handleVoidTrade = useCallback(
-    async item => {
+    item => {
       if (processingItemIdRef.current !== null) return
       processingItemIdRef.current = item.id
       setProcessingItemId(item.id)
@@ -45,7 +45,7 @@ export const useBandHQLogic = ({
           })}`,
           type: 'success'
         }
-        await tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
+        tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
       } catch (err) {
         handleError(err, { addToast })
       } finally {

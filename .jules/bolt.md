@@ -97,3 +97,7 @@
 
 **Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for *every single test file* in the worker process, leading to severe redundant initialization delays.
 **Action:** Split test suites into separate Vitest projects (`node` and `jsdom` environments) based on their actual requirements. For `jsdom` projects, always wrap heavy, one-time global mock initializations in `setupFiles` with a `globalThis.__SETUP_DONE__` guard so they are only executed once per worker process.
+
+## 2025-04-15 - [Heckler Overlay Rendering Optimization]
+**Learning:** In a high-frequency animation loop using `requestAnimationFrame`, modifying DOM properties like `node.style.top` and `node.style.left` causes layout thrashing and triggers layout and paint operations which are slow.
+**Action:** Always prefer `node.style.transform` with `translate3d(x, y, 0)` for positional animations as it utilizes hardware acceleration and avoids triggering costly layout recalculations.

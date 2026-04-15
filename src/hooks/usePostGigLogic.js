@@ -142,11 +142,14 @@ export const usePostGigLogic = () => {
     gigModifiers,
     band.inventory,
     player,
+    social,
     social?.controversyLevel,
     social?.loyalty,
     social?.zealotry,
     reputationByRegion,
-    activeStoryFlags
+    activeStoryFlags,
+    gigContextRef.current?.daysSinceLastGig,
+    gigContextRef.current?.lastGigDifficulty
   ])
 
   // Derive post options purely without triggering a re-render loop
@@ -182,7 +185,7 @@ export const usePostGigLogic = () => {
       errorHandledRef.current = true // mark handled
       setPostOptionsError(true)
     }
-  }, [postOptions]) // trigger when postOptions updates
+  }, []) // trigger when postOptions updates
 
 
   // Handle post options generation error side effects purely in an effect
@@ -547,9 +550,13 @@ export const usePostGigLogic = () => {
         }),
         'error'
       )
+      isProcessingActionRef.current = false
+      setIsProcessingAction(false)
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       window.setTimeout(() => {
+        isProcessingActionRef.current = false
+        setIsProcessingAction(false)
         saveGame(false)
         changeScene(GAME_PHASES.OVERWORLD)
       }, 0)

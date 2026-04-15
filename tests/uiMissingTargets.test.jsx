@@ -1,5 +1,6 @@
+import { logger } from '../src/utils/logger.js';
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, within, act } from '@testing-library/react'
 import GigModifierButton from '../src/ui/GigModifierButton'
 import { SettingsTab } from '../src/ui/bandhq/SettingsTab'
 import { ShopItem } from '../src/ui/bandhq/ShopItem'

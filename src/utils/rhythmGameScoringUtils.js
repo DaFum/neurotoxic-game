@@ -3,6 +3,8 @@ import { logger } from './logger.js'
  * Pure functions for rhythm game scoring logic.
  */
 
+import { logger } from './logger.js'
+
 export const LANE_INDICES = {
   GUITAR: 0,
   DRUMS: 1,
@@ -84,7 +86,7 @@ export const calculatePoints = (
       break
     default:
       logger.error('rhythmGameScoringUtils', `Unknown lane index: ${laneIndex}`)
-      break
+      throw new Error(`Unknown lane index: ${laneIndex}`)
   }
 
   // Guestlist Effect: +20% score

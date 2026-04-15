@@ -1630,13 +1630,14 @@ export const ToxicChatter = memo(() => {
         'ui:chatter.random4',
         'ui:chatter.random5'
       ]
+      const uuid = getSafeUUID()
       const randomHate = newHate[Math.floor(secureRandom() * newHate.length)]
       setMessages(prev => {
         const updated = [
           ...prev,
           {
-            id: getSafeUUID(),
-            user: `USER_${getSafeUUID().split('-')[0].toUpperCase()}`,
+            id: uuid,
+            user: `USER_${uuid.split('-')[0].toUpperCase()}`,
             text: randomHate,
             type: 'hate'
           }

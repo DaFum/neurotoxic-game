@@ -1,6 +1,4 @@
 import fs from 'node:fs/promises'
-import { hasActiveSponsorship } from '../src/utils/gameStateUtils.js';
-
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -45,8 +43,7 @@ import {
   clampPlayerMoney,
   clampVanFuel,
   BALANCE_CONSTANTS,
-  applyEventDelta,
-
+  applyEventDelta
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -1279,7 +1276,7 @@ const runSingleSimulation = (scenario, seed) => {
       money: state.player.money,
       fame: state.player.fame,
       controversyLevel: state.social.controversyLevel,
-      sponsorActive: (state.social.activeDeals.length > 0)
+      sponsorActive: hasActiveSponsorship(state.social)
     })
 
     if (shouldTriggerBankruptcy(state.player.money, financials.net)) {

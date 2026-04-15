@@ -27,7 +27,7 @@ vi.mock('../src/utils/AudioManager', () => ({
   }
 }))
 
-vi.mock('../src/utils/errorHandler.js', () => ({ safeStorageOperation: vi.fn((op, key, val) => op === 'getItem' ? localStorage.getItem(key) : localStorage.setItem(key, val)) }))
+vi.mock('../src/utils/errorHandler.js', () => ({ safeStorageOperation: vi.fn((op, fn, fallback = null) => { try { return fn() } catch { return fallback } }) }))
 describe('MainMenu Identity Flow', () => {
   const mockUpdatePlayer = vi.fn()
   const mockChangeScene = vi.fn()
