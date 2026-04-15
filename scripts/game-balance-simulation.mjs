@@ -536,11 +536,6 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
 
   if (!meetsFollowers || !meetsTrend) return
 
-  state.social.activeDeals = state.social.activeDeals || []
-  if (!state.social.activeDeals.includes(candidate.id)) {
-    state.social.activeDeals.push(candidate.id)
-  }
-
   state.player.money = clampPlayerMoney(
     state.player.money + (candidate.offer?.upfront || 0)
   )
@@ -553,16 +548,10 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     (state.social.controversyLevel || 0) + (candidate.penalty?.controversy || 0)
   )
 
-  const deals = state.social.activeDeals ? [...state.social.activeDeals] : []
-  const existingIdx = deals.findIndex(d => d.id === candidate.id)
-
-  const dealEntry = { ...candidate, remainingGigs: candidate.offer?.duration || 1 }
-  if (existingIdx >= 0) {
-    deals[existingIdx] = dealEntry
-  } else {
-    deals.push(dealEntry)
-  }
-  state.social.activeDeals = deals
+  // Enforce single active deal to match live game behaviour
+  state.social.activeDeals = [
+    { ...candidate, remainingGigs: candidate.offer?.duration || 1 }
+  ]
 
   counters.brandDealsActivated += 1
 }
@@ -1049,7 +1038,6 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
-    const hadSponsor = hasActiveSponsorship(state.social)
     const updates = calculateDailyUpdates(state, rng)
     state = {
       ...state,
@@ -1057,11 +1045,6 @@ const runSingleSimulation = (scenario, seed) => {
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
     }
-
-    // Track sponsor lifecycle events surfaced by calculateDailyUpdates
-    const hasSponsor = hasActiveSponsorship(state.social)
-    if (!hadSponsor && hasSponsor) counters.sponsorSignings += 1
-    if (hadSponsor && !hasSponsor) counters.sponsorDrops += 1
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -1091,7 +1074,11 @@ const runSingleSimulation = (scenario, seed) => {
       (counters.eventsApplied || 0) +
       applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
     maybeShiftSocialTrend(state, rng, counters)
+    const hadSponsorBeforeActivation = hasActiveSponsorship(state.social)
     maybeActivateBrandDeal(state, rng, counters)
+    if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
+      counters.sponsorSignings += 1
+    }
     maybeApplyPostPulse(state, rng, counters)
     maybeApplyContrabandDrop(state, rng, counters)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
@@ -1165,7 +1152,7 @@ const runSingleSimulation = (scenario, seed) => {
         money: state.player.money,
         fame: state.player.fame,
         controversyLevel: state.social.controversyLevel,
-        sponsorActive: (state.social.activeDeals.length > 0),
+        sponsorActive: hasActiveSponsorship(state.social),
         cancelled: true
       })
 
@@ -1237,15 +1224,13 @@ const runSingleSimulation = (scenario, seed) => {
     state.band.inventory = depleteInventory(state.band.inventory, buyers)
 
     if (state.social.activeDeals && state.social.activeDeals.length > 0) {
-      const updatedDeals = state.social.activeDeals
-        .map(d => ({ ...d, remainingGigs: d.remainingGigs - 1 }))
-        .filter(d => d.remainingGigs > 0)
-
-      state.social.activeDeals = updatedDeals
-
+      // Count payout before decrementing so the final gig's payout is captured
       if (hasActiveSponsorship(state.social)) {
         counters.sponsorPayouts += 1
       }
+      state.social.activeDeals = state.social.activeDeals
+        .map(d => ({ ...d, remainingGigs: d.remainingGigs - 1 }))
+        .filter(d => d.remainingGigs > 0)
     }
 
     currentNode = venue

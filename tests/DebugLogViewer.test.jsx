@@ -162,7 +162,9 @@ describe('DebugLogViewer', () => {
       fireEvent.click(copyButton)
 
       expect(loggerMock.dump).toHaveBeenCalled()
-      expect(clipboardSpy).toHaveBeenCalled()
+      expect(clipboardSpy).toHaveBeenCalledWith(
+        loggerMock.dump.mock.results[0].value
+      )
     } finally {
       clipboardSpy.mockRestore()
     }
