@@ -38,7 +38,7 @@ import {
   clampMemberStamina,
   clampPlayerFame,
   calculateFameLevel,
-  hasActiveSponsorship,
+
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,

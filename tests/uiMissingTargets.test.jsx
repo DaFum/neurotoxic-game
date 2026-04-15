@@ -202,9 +202,7 @@ describe('UI missing-target smoke/branch tests', () => {
     fireEvent.keyDown(window, { key: '`', ctrlKey: true })
     expect(await screen.findByText('NEUROTOXIC DEBUGGER')).toBeInTheDocument()
 
-
-
-    act(() => { logger.clear() });
+    fireEvent.click(screen.getByText('ui:action_clear'))
     fireEvent.click(screen.getByLabelText('Close log'))
   })
 

@@ -1,3 +1,4 @@
+import { logger } from './logger.js'
 /**
  * Pure functions for rhythm game scoring logic.
  */

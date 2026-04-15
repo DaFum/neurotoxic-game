@@ -4,8 +4,18 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   test: {
+    silent: 'passed-only',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html']
+    },
+    // Keep test timeout at the vitest 5s default (fail fast on slow tests)
+    testTimeout: 5000,
+    // Isolate each test to prevent state pollution
+    isolate: true,
+    pool: 'threads',
+    globals: true, // Need this for jest-dom expect to work
     environment: 'jsdom',
-    globals: true,
     setupFiles: ['./tests/vitest.setup.js'],
     // Include the refactored .js directories, leaving the rest for node:test
     include: [
@@ -28,13 +38,5 @@ export default defineConfig({
       'tests/performance/**/*.test.js',
       'tests/performance/**/*.spec.js'
     ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html']
-    },
-    // Keep test timeout at the vitest 5s default (fail fast on slow tests)
-    testTimeout: 5000,
-    // Isolate each test to prevent state pollution
-    isolate: true
   }
 })
