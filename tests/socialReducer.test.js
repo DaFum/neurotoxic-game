@@ -134,7 +134,7 @@ describe('socialReducer', () => {
   describe('handleAddVenueBlacklist', () => {
     it('should add to venueBlacklist and show error toast if loyalty < 30', () => {
       baseState.social.loyalty = 10
-      const nextState = handleAddVenueBlacklist(baseState, 'venue_123')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_123', toastId: 'test_toast_id' })
 
       assert.ok(nextState.venueBlacklist.includes('venue_123'))
       assert.strictEqual(nextState.social.loyalty, 10) // unchanged
@@ -147,7 +147,7 @@ describe('socialReducer', () => {
 
     it('should prevent blacklisting and deduct 15 loyalty if loyalty >= 30', () => {
       baseState.social.loyalty = 30
-      const nextState = handleAddVenueBlacklist(baseState, 'venue_123')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_123', toastId: 'test_toast_id' })
 
       assert.ok(!nextState.venueBlacklist.includes('venue_123'))
       assert.strictEqual(nextState.social.loyalty, 15) // 30 - 15
@@ -160,7 +160,7 @@ describe('socialReducer', () => {
 
     it('should blacklist at loyalty exactly 29', () => {
       baseState.social.loyalty = 29
-      const nextState = handleAddVenueBlacklist(baseState, 'venue_edge')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_edge', toastId: 'test_toast_venue_edge' })
 
       assert.ok(nextState.venueBlacklist.includes('venue_edge'))
       assert.strictEqual(nextState.social.loyalty, 29)
@@ -169,7 +169,7 @@ describe('socialReducer', () => {
     it('should preserve existing blacklist entries', () => {
       baseState.venueBlacklist = ['existing_venue']
       baseState.social.loyalty = 10
-      const nextState = handleAddVenueBlacklist(baseState, 'new_venue')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'new_venue', toastId: 'test_toast_new_venue' })
 
       assert.strictEqual(nextState.venueBlacklist.length, 2)
       assert.ok(nextState.venueBlacklist.includes('existing_venue'))
@@ -179,7 +179,7 @@ describe('socialReducer', () => {
     it('should handle undefined venueBlacklist gracefully', () => {
       delete baseState.venueBlacklist
       baseState.social.loyalty = 10
-      const nextState = handleAddVenueBlacklist(baseState, 'venue_123')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_123', toastId: 'test_toast_id' })
 
       assert.ok(Array.isArray(nextState.venueBlacklist))
       assert.ok(nextState.venueBlacklist.includes('venue_123'))
@@ -190,7 +190,7 @@ describe('socialReducer', () => {
       const originalLoyalty = baseState.social.loyalty
       const originalBlacklist = [...baseState.venueBlacklist]
 
-      handleAddVenueBlacklist(baseState, 'venue_test')
+      handleAddVenueBlacklist(baseState, { venueId: 'venue_test', toastId: 'test_toast_venue_test' })
 
       assert.strictEqual(baseState.social.loyalty, originalLoyalty)
       assert.deepStrictEqual(baseState.venueBlacklist, originalBlacklist)
@@ -199,13 +199,13 @@ describe('socialReducer', () => {
     it('should handle boundary at exactly 30 loyalty', () => {
       // At 30, should defend
       baseState.social.loyalty = 30
-      let nextState = handleAddVenueBlacklist(baseState, 'venue_test')
+      let nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_test', toastId: 'test_toast_venue_test' })
       assert.ok(!nextState.venueBlacklist.includes('venue_test'))
       assert.strictEqual(nextState.social.loyalty, 15)
 
       // At 29, should blacklist
       baseState.social.loyalty = 29
-      nextState = handleAddVenueBlacklist(baseState, 'venue_test')
+      nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_test', toastId: 'test_toast_venue_test' })
       assert.ok(nextState.venueBlacklist.includes('venue_test'))
       assert.strictEqual(nextState.social.loyalty, 29)
     })
@@ -213,7 +213,7 @@ describe('socialReducer', () => {
     it('should handle multiple venues in blacklist', () => {
       baseState.social.loyalty = 10
       baseState.venueBlacklist = ['venue_1', 'venue_2']
-      const nextState = handleAddVenueBlacklist(baseState, 'venue_3')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'venue_3', toastId: 'test_toast_venue_3' })
 
       assert.strictEqual(nextState.venueBlacklist.length, 3)
       assert.ok(nextState.venueBlacklist.includes('venue_3'))
@@ -221,7 +221,7 @@ describe('socialReducer', () => {
 
     it('should generate string toast IDs', () => {
       baseState.social.loyalty = 10
-      const nextState1 = handleAddVenueBlacklist(baseState, 'venue_1')
+      const nextState1 = handleAddVenueBlacklist(baseState, { venueId: 'venue_1', toastId: 'test_toast_venue_1' })
 
       // Toast ID should be a UUID string
       assert.strictEqual(typeof nextState1.toasts[0].id, 'string')
@@ -230,7 +230,7 @@ describe('socialReducer', () => {
 
     it('should include venue label in blacklist toast message', () => {
       baseState.social.loyalty = 10
-      const nextState = handleAddVenueBlacklist(baseState, 'club_berlin')
+      const nextState = handleAddVenueBlacklist(baseState, { venueId: 'club_berlin', toastId: 'test_toast_club_berlin' })
 
       const toast = nextState.toasts.find(t => t.type === 'error')
       assert.ok(toast.message.includes('venues:club_berlin.name'))

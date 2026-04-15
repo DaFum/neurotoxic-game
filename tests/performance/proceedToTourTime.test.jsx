@@ -41,11 +41,7 @@ vi.mock('../../src/utils/AudioManager', () => ({
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
-  safeStorageOperation: vi.fn((op, key, val) => {
-    if (op === 'getItem') return globalThis.localStorage?.getItem(key)
-    if (op === 'setItem') return globalThis.localStorage?.setItem(key, val)
-    return null
-  })
+  safeStorageOperation: vi.fn((op, fn, fallback = null) => { try { return fn() } catch { return fallback } })
 }))
 
 vi.mock('../../src/ui/BandHQ', () => ({

@@ -1,6 +1,4 @@
-// TODO: Review this file
 import { logger } from '../../utils/logger.js'
-import { getSafeUUID } from '../../utils/crypto.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
 import {
   clampPlayerMoney,
@@ -65,7 +63,7 @@ export const handleUpdateSocial = (state, payload) => {
   return { ...state, social: { ...state.social, ...updates } }
 }
 
-export const handleAddVenueBlacklist = (state, venueId) => {
+export const handleAddVenueBlacklist = (state, { venueId, toastId }) => {
   let nextState = { ...state }
   // Intentional design: If loyalty is high enough (>= 30), loyal fans will defend the band
   // and prevent the venue from blacklisting them, at the cost of 15 loyalty points.
@@ -77,7 +75,7 @@ export const handleAddVenueBlacklist = (state, venueId) => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: getSafeUUID(),
+        id: toastId,
         message: `ui:toast.fans_defended`,
         type: 'info'
       }
@@ -87,7 +85,7 @@ export const handleAddVenueBlacklist = (state, venueId) => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: getSafeUUID(),
+        id: toastId,
         message: `ui:toast.blacklisted|${JSON.stringify({ venueLabel: `venues:${venueId}.name` })}`,
         type: 'error'
       }

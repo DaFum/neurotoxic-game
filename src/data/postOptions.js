@@ -1,9 +1,7 @@
 import { hasActiveSponsorship } from '../utils/gameStateUtils.js'
-// TODO: Review this file
 import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
-import { secureRandom, getSafeRandom } from '../utils/crypto.js'
-import { handleError } from '../utils/errorHandler.js'
+import { getSafeRandom } from '../utils/crypto.js'
 import { hasTrait } from '../utils/traitLogic.js'
 import { QUEST_APOLOGY_TOUR } from './questsConstants.js'
 import { hasActiveQuest } from '../utils/questUtils.js'
@@ -602,21 +600,12 @@ export const POST_OPTIONS = [
   // --- CATEGORY: COMMERCIAL & MERCH ---
   {
     id: 'comm_sellout_ad',
-    name: 'Shameless Sellout Sponsorship',
+    name: i18n.t('ui:postOptions.comm_sellout_ad.name', { defaultValue: 'Shameless Sellout Sponsorship' }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
     condition: ({ social }) => hasActiveSponsorship(social),
-    resolve: gameState => {
-      let payout = 500
-      if (gameState?.social?.activeDeals) {
-        const deal = gameState.social.activeDeals.find(
-          d => d.type === 'SPONSORSHIP'
-        )
-        if (deal && deal.offer && deal.offer.perGig) {
-          payout = deal.offer.perGig
-        }
-      }
+    resolve: () => {
       return {
         type: 'FIXED',
         success: true,

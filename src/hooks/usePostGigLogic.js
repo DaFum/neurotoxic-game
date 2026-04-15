@@ -182,7 +182,7 @@ export const usePostGigLogic = () => {
       errorHandledRef.current = true // mark handled
       setPostOptionsError(true)
     }
-  }, [postOptions]) // trigger when postOptions updates
+  }, []) // trigger when postOptions updates
 
 
   // Handle post options generation error side effects purely in an effect
@@ -547,9 +547,13 @@ export const usePostGigLogic = () => {
         }),
         'error'
       )
+      isProcessingActionRef.current = false
+      setIsProcessingAction(false)
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       window.setTimeout(() => {
+        isProcessingActionRef.current = false
+        setIsProcessingAction(false)
         saveGame(false)
         changeScene(GAME_PHASES.OVERWORLD)
       }, 0)
