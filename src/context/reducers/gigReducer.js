@@ -148,10 +148,11 @@ export const handleSetLastGigStats = (state, payload) => {
         `Regional reputation loss in ${location} due to poor gig performance (-10)`
       )
       if ((nextState.reputationByRegion[location] || 0) <= -30) {
-        nextState = handleAddVenueBlacklist(
-          nextState,
-          state.currentGig?.venue?.id || 'unknown_venue'
-        )
+        const gigVenueId = state.currentGig?.venue?.id || 'unknown_venue'
+        nextState = handleAddVenueBlacklist(nextState, {
+          venueId: gigVenueId,
+          toastId: `${gigVenueId}-blacklisted`
+        })
       }
     }
     nextState = handleRecordBadShow(nextState)

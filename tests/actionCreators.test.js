@@ -360,10 +360,9 @@ describe('Action Creators', () => {
   describe('createAddVenueBlacklistAction', () => {
     it('creates correct action', () => {
       const action = createAddVenueBlacklistAction('venue_1')
-      assert.deepStrictEqual(action, {
-        type: ActionTypes.ADD_VENUE_BLACKLIST,
-        payload: 'venue_1'
-      })
+      assert.strictEqual(action.type, ActionTypes.ADD_VENUE_BLACKLIST)
+      assert.strictEqual(action.payload.venueId, 'venue_1')
+      assert.ok(typeof action.payload.toastId === 'string')
     })
   })
 

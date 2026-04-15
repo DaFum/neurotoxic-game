@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -350,7 +349,7 @@ export const createUnlockTraitAction = (memberId, traitId) => ({
  */
 export const createAddVenueBlacklistAction = venueId => ({
   type: ActionTypes.ADD_VENUE_BLACKLIST,
-  payload: venueId
+  payload: { venueId, toastId: getSafeUUID() }
 })
 
 /**

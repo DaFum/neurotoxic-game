@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, before, after, test, mock } from 'node:test'
 import React from 'react'
-import { cleanup, render, fireEvent } from '@testing-library/react'
+import { cleanup, render, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
   mockAudioManager,

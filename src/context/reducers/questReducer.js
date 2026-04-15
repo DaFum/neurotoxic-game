@@ -1,5 +1,3 @@
-// TODO: Review this file
-import { getSafeUUID } from '../../utils/crypto.js'
 import {
 clampPlayerFame,
   clampBandHarmony,
@@ -39,7 +37,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     if (appliedDelta !== 0) {
       generatedToasts.push({
-        id: `${getSafeUUID()}-${questId}-money`,
+        id: `${questId}-money`,
         message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
         type: 'success'
       })
@@ -55,7 +53,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       }
     }
     generatedToasts.push({
-      id: `${getSafeUUID()}-${questId}-item`,
+      id: `${questId}-item`,
       message: `ui:toast.quest_complete_item|${JSON.stringify({ name: quest.label })}`,
       type: 'success'
     })
@@ -72,7 +70,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     if (appliedDelta !== 0) {
       generatedToasts.push({
-        id: `${getSafeUUID()}-${questId}-fame`,
+        id: `${questId}-fame`,
         message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
         type: 'success'
       })
@@ -105,7 +103,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 
       nextState.band = { ...nextState.band, members }
       generatedToasts.push({
-        id: `${getSafeUUID()}-${questId}-skill`,
+        id: `${questId}-skill`,
         message: `ui:toast.quest_complete_skill|${JSON.stringify({ name: quest.label, member: members[memberIdx].name })}`,
         type: 'success'
       })
@@ -122,7 +120,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     if (appliedDelta !== 0) {
       generatedToasts.push({
-        id: `${getSafeUUID()}-${questId}-harmony`,
+        id: `${questId}-harmony`,
         message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
         type: 'success'
       })
@@ -131,7 +129,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 
   if (generatedToasts.length === 0) {
     generatedToasts.push({
-      id: `${getSafeUUID()}-${questId}-generic`,
+      id: `${questId}-generic`,
       message: `ui:toast.quest_complete|${JSON.stringify({ name: quest.label })}`,
       type: 'success'
     })
@@ -217,7 +215,7 @@ export const handleFailQuests = state => {
         }
       }
       newToasts.push({
-        id: `${getSafeUUID()}-${quest.id}`,
+        id: `${quest.id}-fail`,
         message: `ui:toast.quest_failed|${JSON.stringify({ name: quest.label })}`,
         type: 'error'
       })
