@@ -613,7 +613,7 @@ export const POST_OPTIONS = [
   // --- CATEGORY: COMMERCIAL & MERCH ---
   {
     id: 'comm_sellout_ad',
-    name: 'Shameless Sellout Sponsorship',
+    name: i18n.t('ui:postOptions.selloutName', { defaultValue: 'Shameless Sellout Sponsorship' }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
@@ -633,9 +633,11 @@ export const POST_OPTIONS = [
         success: true,
         platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 0,
-        moneyChange: payout,
+        moneyChange: 0,
         loyaltyChange: 0, // Loyalty penalty is now applied dynamically in postGigUtils based on the specific deal
-        message: 'You got paid. The fans are calling you sellouts.'
+        message: i18n.t('ui:postOptions.selloutMessage', {
+          defaultValue: 'You got paid. The fans are calling you sellouts.'
+        })
       }
     }
   },
