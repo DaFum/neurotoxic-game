@@ -35,6 +35,7 @@ runs:
           const marker = process.env.MARKER;
           const raw = fs.existsSync(process.env.FILE_PATH) ? fs.readFileSync(process.env.FILE_PATH, 'utf8') : '';
           const max = parseInt(process.env.MAX_LINES || '500', 10);
+          const GITHUB_COMMENT_LIMIT = 65536;
 
           // Using new RegExp() with the string passed via env var
           let regexObj;
@@ -61,6 +62,12 @@ runs:
             `See the [CI logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for full output.`
           ].join('\n\n');
 
+          // Enforce GitHub comment size limit; truncate body with a clear notice
+          if (body.length > GITHUB_COMMENT_LIMIT) {
+            const suffix = '\n\n...[truncated — see CI logs for full output]';
+            body = body.slice(0, GITHUB_COMMENT_LIMIT - suffix.length) + suffix;
+          }
+
           const owner = context.repo.owner;
           const repo = context.repo.repo;
           const issue_number = context.issue.number;
@@ -76,7 +83,8 @@ runs:
             issue_number,
           });
 
-          const existing = comments.find(c => c.body && c.body.includes(marker));
+          // Match only comments created by this action (first line must equal the marker exactly)
+          const existing = comments.find(c => c.body && c.body.split('\n')[0] === marker);
 
           if (existing) {
             await github.rest.issues.updateComment({

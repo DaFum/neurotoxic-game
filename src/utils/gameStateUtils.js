@@ -806,16 +806,15 @@ export const hasStateItem = (collection, item) => {
     : (collection || []).includes(item)
 }
 
-import { BRAND_DEALS_BY_ID } from '../data/brandDeals.js'
-
 /**
- * Checks if the player has an active sponsorship brand deal.
+ * Checks if the player has an active, non-expired sponsorship brand deal.
+ * activeDeals stores deal objects with { id, type, remainingGigs, ... }.
+ * Deals with remainingGigs <= 0 are considered expired even if not yet filtered.
  * @param {object} socialState
  * @returns {boolean}
  */
 export const hasActiveSponsorship = socialState => {
-  return (socialState?.activeDeals || []).some(id => {
-    const deal = BRAND_DEALS_BY_ID.get(id)
-    return deal && deal.type === 'SPONSORSHIP'
-  })
+  return (socialState?.activeDeals || []).some(
+    d => d.type === 'SPONSORSHIP' && (d.remainingGigs ?? 1) > 0
+  )
 }

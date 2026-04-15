@@ -582,9 +582,13 @@ export const calculateGigFinancials = ({
     net: 0
   }
 
+  // Normalize context: some callers flatten social fields to top-level while
+  // also passing the full social sub-object. Support both shapes defensively.
+  const ctxSocial = context?.social ?? {}
+
   // 1. Ticket Sales
   // Apply automated promo from zealotry to tickets
-  const zealotry = context.zealotry || 0
+  const zealotry = context.zealotry ?? ctxSocial.zealotry ?? 0
   const effectiveModifiers = { ...modifiers }
   if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     effectiveModifiers.promo = true
@@ -653,12 +657,15 @@ export const calculateGigFinancials = ({
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 
-
   // Active Deal Per-Gig Payout
-  const activeDeals = context?.social?.activeDeals || []
+  const activeDeals = ctxSocial.activeDeals ?? []
   for (let i = 0; i < activeDeals.length; i++) {
     const activeDeal = activeDeals[i]
-    if (activeDeal.type === 'SPONSORSHIP' && activeDeal.offer && activeDeal.offer.perGig) {
+    if (
+      activeDeal.type === 'SPONSORSHIP' &&
+      activeDeal.offer &&
+      activeDeal.offer.perGig
+    ) {
       const perGigPayout = activeDeal.offer.perGig
       report.income.breakdown.push({
         labelKey: 'economy:gigIncome.brandSponsor.label',

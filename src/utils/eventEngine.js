@@ -56,8 +56,7 @@ const resolveTemplateString = (str, context) => {
     if (!lowerKeysMap) {
       lowerKeysMap = Object.create(null)
 
-      for (const k in context) {
-        if (!Object.hasOwn(context, k)) continue
+      for (const k of Object.keys(context)) {
         if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
           continue
         }

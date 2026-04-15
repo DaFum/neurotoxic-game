@@ -991,5 +991,6 @@
   "minigames.amp.controls.instruction": "PASSE DIE FREQUENZ AN",
   "minigames.amp.controls.dialValue": "{{value}} Hz",
   "postOptions.selloutMessage": "Du wurdest bezahlt. Die Fans nennen euch Sellouts.",
-  "postOptions.selloutName": "Schamloser Sellout-Sponsor"
+  "postOptions.selloutName": "Schamloser Sellout-Sponsor",
+  "postOptions.comm_sellout_ad.name": "Schamloser Sellout-Sponsor"
 }

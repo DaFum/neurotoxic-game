@@ -602,7 +602,7 @@ export const POST_OPTIONS = [
   // --- CATEGORY: COMMERCIAL & MERCH ---
   {
     id: 'comm_sellout_ad',
-    name: i18n.t('ui:postOptions.selloutName', { defaultValue: 'Shameless Sellout Sponsorship' }),
+    name: 'Shameless Sellout Sponsorship',
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
