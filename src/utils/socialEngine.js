@@ -1,4 +1,4 @@
-import { hasActiveSponsorship } from './gameStateUtils'
+import { hasActiveSponsorship } from './gameStateUtils.js'
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A
@@ -287,8 +287,6 @@ for (const key in SOCIAL_PLATFORMS) {
   }
 }
 
-
-
 export const calculateSocialGrowth = (
   platform,
   performance,
@@ -563,7 +561,6 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
       (social.zealotry || 0) >= deal.requirements.maxZealotry
     )
       continue
-
 
     eligibleDeals.push(deal)
   }

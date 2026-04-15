@@ -1,4 +1,12 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import {
+  test,
+  describe,
+  before,
+  after,
+  beforeEach,
+  afterEach,
+  mock
+} from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -41,8 +49,15 @@ describe('useGigInput', () => {
   let triggerBandAnimation
   let onTogglePause
 
-  beforeEach(() => {
+  before(() => {
     setupJSDOM()
+  })
+
+  after(() => {
+    teardownJSDOM()
+  })
+
+  beforeEach(() => {
     actions = { registerInput: mock.fn() }
     gameStateRef = {
       current: {
@@ -62,11 +77,10 @@ describe('useGigInput', () => {
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
-  test('handleLaneInput calls registerInput and triggerBandAnimation', () => {
-    const { result } = renderHook(() =>
+  const renderUseGigInput = () =>
+    renderHook(() =>
       useGigInput({
         actions,
         gameStateRef,
@@ -74,6 +88,9 @@ describe('useGigInput', () => {
         onTogglePause
       })
     )
+
+  test('handleLaneInput calls registerInput and triggerBandAnimation', () => {
+    const { result } = renderUseGigInput()
 
     act(() => {
       result.current.handleLaneInput(0, true)
@@ -87,14 +104,7 @@ describe('useGigInput', () => {
   })
 
   test('Escape key toggles pause menu', () => {
-    renderHook(() =>
-      useGigInput({
-        actions,
-        gameStateRef,
-        triggerBandAnimation,
-        onTogglePause
-      })
-    )
+    renderUseGigInput()
 
     act(() => {
       const event = new window.KeyboardEvent('keydown', { key: 'Escape' })
@@ -105,14 +115,7 @@ describe('useGigInput', () => {
   })
 
   test('Lane key triggers input', () => {
-    renderHook(() =>
-      useGigInput({
-        actions,
-        gameStateRef,
-        triggerBandAnimation,
-        onTogglePause
-      })
-    )
+    renderUseGigInput()
 
     act(() => {
       const event = new window.KeyboardEvent('keydown', { key: 'a' }) // lane 0

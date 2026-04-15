@@ -1,4 +1,4 @@
-import { test, describe, beforeEach, afterEach } from 'node:test'
+import { test, describe, before, after, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -21,6 +21,14 @@ const {
 const { useTravelLogic } = await setupTravelLogicTest()
 
 describe('useTravelLogic', () => {
+  before(() => {
+    setupJSDOM()
+  })
+
+  after(() => {
+    teardownJSDOM()
+  })
+
   beforeEach(() => {
     mockCalculateTravelExpenses.mock.resetCalls()
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
@@ -34,13 +42,10 @@ describe('useTravelLogic', () => {
     mockLogger.error.mock.resetCalls()
     mockLogger.debug.mock.resetCalls()
     mockHandleError.mock.resetCalls()
-
-    setupJSDOM()
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
   test('initial state', () => {

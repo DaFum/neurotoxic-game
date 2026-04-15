@@ -150,7 +150,11 @@ test('generatePostOptions returns array of exactly 3 options', () => {
 test('generatePostOptions forces sponsor post if activeDeals has SPONSORSHIP', () => {
   const sponsoredState = {
     ...mockGameState,
-    social: { ...mockGameState.social, activeDeals: [{ id: 'brand_deal_1', type: 'SPONSORSHIP' }], instagram: 6000 }
+    social: {
+      ...mockGameState.social,
+      activeDeals: ['energy_drink_cx'],
+      instagram: 6000
+    }
   }
   const options = generatePostOptions({}, sponsoredState)
 

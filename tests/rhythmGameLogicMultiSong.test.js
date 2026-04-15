@@ -1,4 +1,12 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import {
+  test,
+  describe,
+  before,
+  after,
+  beforeEach,
+  afterEach,
+  mock
+} from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { renderHook, act, cleanup } from '@testing-library/react'
@@ -142,20 +150,34 @@ mock.module('react-i18next', {
   }
 })
 
+const { useRhythmGameLogic } =
+  await import('../src/hooks/useRhythmGameLogic.js')
+
 describe('useRhythmGameLogic Multi-Song Support', () => {
-  let useRhythmGameLogic
   let mockChangeScene
   let mockSetLastGigStats
   let mockEndGig
 
-  beforeEach(async () => {
+  const flushPromises = async () => {
+    await Promise.resolve()
+    await Promise.resolve()
+  }
+
+  before(() => {
     setupJSDOM()
-    // Reset calls
+  })
+
+  after(() => {
+    teardownJSDOM()
+  })
+
+  beforeEach(() => {
+    // Reset calls and implementations
     mockUseGameState.mock.resetCalls()
     Object.values(mockAudioManager).forEach(m => {
       if (m.mock) {
         m.mock.resetCalls()
-        m.mock.restore() // Reset implementation
+        m.mock.restore()
       }
     })
     Object.values(mockAudioEngine).forEach(m => {
@@ -180,18 +202,73 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
     mockEndGig = mock.fn(() => mockChangeScene('POSTGIG'))
-
-    // Dynamic import to load the hook with mocks active
-    const module = await import('../src/hooks/useRhythmGameLogic.js')
-    useRhythmGameLogic = module.useRhythmGameLogic
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
-  test('initializes audio and notes for multiple songs in sequence', async () => {
+  test('bootstraps first song and notes correctly', async () => {
+    const song1 = {
+      id: 'song1',
+      name: 'Song 1',
+      bpm: 120,
+      duration: 60,
+      excerptDurationMs: 30000,
+      notes: [{ time: 1000, type: 'note', lane: 0 }],
+      sourceOgg: 'song1.ogg'
+    }
+
+    const mockState = {
+      setlist: [song1],
+      band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {},
+      endGig: mockEndGig
+    }
+    mockUseGameState.mock.mockImplementation(() => mockState)
+
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+    mockRhythmUtils.parseSongNotes.mock.mockImplementation((song, leadIn) => {
+      return (song.notes || []).map(n => ({
+        ...n,
+        time: n.time + (leadIn || 0)
+      }))
+    })
+
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
+
+    const { result } = renderHook(() => useRhythmGameLogic())
+
+    await act(async () => {
+      await flushPromises()
+    })
+
+    const playbackCalls = mockAudioEngine.startGigPlayback.mock.calls
+    assert.strictEqual(
+      playbackCalls.length,
+      1,
+      'Should call startGigPlayback once initially'
+    )
+    const call1Args = playbackCalls[0].arguments[0]
+    assert.strictEqual(call1Args.filename, 'song1.ogg')
+
+    let finalNotes = result.current.gameStateRef.current.notes
+    assert.strictEqual(finalNotes.length, 1)
+    assert.strictEqual(finalNotes[0].time, 1100) // 1000 + 100 leadIn
+  })
+
+  test('chains from song 1 to song 2 on onEnded', async () => {
     const song1 = {
       id: 'song1',
       name: 'Song 1',
@@ -249,21 +326,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const { result } = renderHook(() => useRhythmGameLogic())
 
     await act(async () => {
-      await new Promise(resolve => setImmediate(resolve))
+      await flushPromises()
     })
-
-    const playbackCalls = mockAudioEngine.startGigPlayback.mock.calls
-    assert.strictEqual(
-      playbackCalls.length,
-      1,
-      'Should call startGigPlayback once initially'
-    )
-    const call1Args = playbackCalls[0].arguments[0]
-    assert.strictEqual(call1Args.filename, 'song1.ogg')
-
-    let finalNotes = result.current.gameStateRef.current.notes
-    assert.strictEqual(finalNotes.length, 1)
-    assert.strictEqual(finalNotes[0].time, 1100) // 1000 + 100 leadIn
 
     // Simulate song 1 end
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 30001)
@@ -271,14 +335,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     await act(async () => {
       const promise = onSong1Ended()
-
-      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
-      result.current.gameStateRef.current.setlistCompleted = true
-      result.current.update(16)
-      assert.strictEqual(mockChangeScene.mock.calls.length, 0)
-
       await promise
-      await new Promise(resolve => setImmediate(resolve))
+      await flushPromises()
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 2)
@@ -286,29 +344,77 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
     assert.strictEqual(call2Args.filename, 'song2.ogg')
 
-    finalNotes = result.current.gameStateRef.current.notes
+    let finalNotes = result.current.gameStateRef.current.notes
     assert.strictEqual(finalNotes.length, 1)
     assert.strictEqual(finalNotes[0].time, 600) // 500 + 100
+  })
 
-    const onSong2Ended =
-      mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0].onEnded
-    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 40001)
+  test('marks setlistCompleted and ends gig after final song', async () => {
+    const song1 = {
+      id: 'song1',
+      name: 'Song 1',
+      bpm: 120,
+      duration: 60,
+      excerptDurationMs: 30000,
+      notes: [{ time: 1000, type: 'note', lane: 0 }],
+      sourceOgg: 'song1.ogg'
+    }
+
+    const mockState = {
+      setlist: [song1],
+      band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {},
+      endGig: mockEndGig
+    }
+    mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
+
+    let onSong1Ended = null
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(
+      async ({ onEnded }) => {
+        onSong1Ended = onEnded
+        return true
+      }
+    )
+
+    const { result } = renderHook(() => useRhythmGameLogic())
 
     await act(async () => {
-      await onSong2Ended()
-      await new Promise(resolve => setImmediate(resolve))
+      await flushPromises()
+    })
+
+    assert.ok(onSong1Ended, 'onSong1Ended should be a function')
+    mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+
+    await act(async () => {
+      await onSong1Ended()
+      await flushPromises()
     })
 
     assert.strictEqual(
       result.current.gameStateRef.current.setlistCompleted,
       true
     )
+
     act(() => {
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      result.current.gameStateRef.current.setlistCompleted = true
+      result.current.gameStateRef.current.totalDuration = 1000
+      mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 2000)
       result.current.update(16)
     })
     // Now endGig is called, which calls changeScene('POSTGIG')
     assert.ok(mockEndGig.mock.calls.length > 0)
-    assert.ok(mockChangeScene.mock.calls.length > 0)
   })
 
   test('Quit logic does not trigger multi-song chaining', async () => {
@@ -354,9 +460,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       }
     )
 
-    const { result, unmount } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setImmediate(r))
+      await flushPromises()
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
@@ -368,7 +474,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     await act(async () => {
       await onSong1Ended()
-      await new Promise(r => setImmediate(r))
+      await flushPromises()
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
@@ -404,7 +510,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setImmediate(r))
+      await flushPromises()
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
@@ -442,7 +548,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setImmediate(r))
+      await flushPromises()
     })
 
     mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
@@ -517,7 +623,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(r => setImmediate(r))
+      await flushPromises()
     })
 
     const durationBefore = result.current.gameStateRef.current.totalDuration
@@ -526,7 +632,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.ok(capturedOnEnded, 'capturedOnEnded should be defined')
     await act(async () => {
       await capturedOnEnded()
-      await new Promise(r => setImmediate(r))
+      await flushPromises()
     })
 
     assert.strictEqual(

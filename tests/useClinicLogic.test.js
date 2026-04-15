@@ -1,4 +1,12 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import {
+  test,
+  describe,
+  before,
+  after,
+  beforeEach,
+  afterEach,
+  mock
+} from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -47,12 +55,18 @@ mock.module('react-i18next', {
   }
 })
 
+const { useClinicLogic } = await import('../src/hooks/useClinicLogic.js')
+
 describe('useClinicLogic', () => {
-  let useClinicLogic
-
-  beforeEach(async () => {
+  before(() => {
     setupJSDOM()
+  })
 
+  after(() => {
+    teardownJSDOM()
+  })
+
+  beforeEach(() => {
     // Reset mocks
     mockUseGameState.mock.resetCalls()
     mockChangeScene.mock.resetCalls()
@@ -86,15 +100,10 @@ describe('useClinicLogic', () => {
         randomUUID: () => 'test-uuid-1234'
       }
     }
-
-    // Dynamic import to ensure mocks are applied
-    const module = await import('../src/hooks/useClinicLogic.js')
-    useClinicLogic = module.useClinicLogic
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
   test('initializes with correct costs', () => {
