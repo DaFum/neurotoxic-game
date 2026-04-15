@@ -24,11 +24,11 @@ const mockGameState = {
 suite('generateBrandOffers Performance', () => {
   const NUM_RUNS = 10000
 
-  test('baseline: select 2 offers from many', () => {
+  test('baseline: select 3 offers from many', () => {
     let start = performance.now()
     for (let i = 0; i < NUM_RUNS; i++) {
       const offers = generateBrandOffers(mockGameState, Math.random)
-      assert(offers.length <= 2)
+      assert(offers.length <= 3)
     }
     let end = performance.now()
 

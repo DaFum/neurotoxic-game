@@ -41,6 +41,10 @@ const getAlignmentBadge = alignment => {
       return '🎸 INDIE'
     case BRAND_ALIGNMENTS.SUSTAINABLE:
       return '🌱 ECO'
+    case BRAND_ALIGNMENTS.GOOD:
+      return '🕊️ GOOD'
+    case BRAND_ALIGNMENTS.NEUTRAL:
+      return '⚖️ NEUTRAL'
     default:
       return '❓ UNKNOWN'
   }
@@ -56,6 +60,10 @@ const getAlignmentColor = alignment => {
       return 'text-hot-pink'
     case BRAND_ALIGNMENTS.SUSTAINABLE:
       return 'text-warning-yellow'
+    case BRAND_ALIGNMENTS.GOOD:
+      return 'text-pure-white'
+    case BRAND_ALIGNMENTS.NEUTRAL:
+      return 'text-ash-gray'
     default:
       return 'text-ash-gray'
   }
