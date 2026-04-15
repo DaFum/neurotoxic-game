@@ -38,6 +38,7 @@ import {
   clampMemberStamina,
   clampPlayerFame,
   calculateFameLevel,
+  hasActiveSponsorship,
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,
@@ -508,6 +509,18 @@ const maybeShiftSocialTrend = (state, rng, counters) => {
 }
 
 const maybeActivateBrandDeal = (state, rng, counters) => {
+  // Determine if player has an active deal using the same logic as the game
+  const currentlyHasDeal = (state.social.activeDeals || []).length > 0
+
+  if (currentlyHasDeal) {
+    // Determine chance to randomly drop deal
+    if (rng() < 0.05) {
+       state.social.activeDeals = []
+       counters.sponsorDrops += 1
+    }
+    return
+  }
+
   if (rng() >= SIMULATION_CONSTANTS.brandDealEvalChance) return
   const candidate = BRAND_DEALS[Math.floor(rng() * BRAND_DEALS.length)]
   if (!candidate) return
@@ -520,6 +533,11 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     trendReq.length === 0 || trendReq.includes(state.social.trend || 'NEUTRAL')
 
   if (!meetsFollowers || !meetsTrend) return
+
+  state.social.activeDeals = state.social.activeDeals || []
+  if (!state.social.activeDeals.includes(candidate.id)) {
+    state.social.activeDeals.push(candidate.id)
+  }
 
   state.player.money = clampPlayerMoney(
     state.player.money + (candidate.offer?.upfront || 0)

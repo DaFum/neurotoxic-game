@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict'
-import { afterEach, beforeEach, test, mock } from 'node:test'
+import { afterEach, beforeEach, before, after, test, mock } from 'node:test'
 import React from 'react'
-import { cleanup, render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { cleanup, render, fireEvent } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
   mockAudioManager,
@@ -12,6 +11,19 @@ import {
 
 const { MainMenu, mockUseGameState } = await setupMainMenuAudioTest()
 
+const flushPromises = async () => {
+  await Promise.resolve()
+  await Promise.resolve()
+}
+
+before(() => {
+  setupJSDOM()
+})
+
+after(() => {
+  teardownJSDOM()
+})
+
 beforeEach(() => {
   mockAudioManager.ensureAudioContext.mock.resetCalls()
   mockAudioManager.startAmbient.mock.resetCalls()
@@ -19,7 +31,6 @@ beforeEach(() => {
     createMockGameState({ canLoad: true })
   )
 
-  setupJSDOM()
   globalThis.localStorage = {
     getItem: mock.fn(key => {
       if (key === 'neurotoxic_player_id') return '123'
@@ -33,29 +44,26 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
-  teardownJSDOM()
 })
 
 test('MainMenu starts ambient audio when starting a tour', async () => {
   const { getByRole } = render(React.createElement(MainMenu))
-  const user = userEvent.setup({ document: globalThis.document })
 
-  await user.click(getByRole('button', { name: /start tour/i }))
+  fireEvent.click(getByRole('button', { name: /start tour/i }))
 
-  await waitFor(() => {
-    assert.equal(mockAudioManager.startAmbient.mock.calls.length, 1)
-    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
-  })
+  await flushPromises()
+
+  assert.equal(mockAudioManager.startAmbient.mock.calls.length, 1)
+  assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
 })
 
 test('MainMenu starts ambient audio when loading a save', async () => {
   const { getByRole } = render(React.createElement(MainMenu))
-  const user = userEvent.setup({ document: globalThis.document })
 
-  await user.click(getByRole('button', { name: /load game/i }))
+  fireEvent.click(getByRole('button', { name: /load game/i }))
 
-  await waitFor(() => {
-    assert.equal(mockAudioManager.startAmbient.mock.calls.length, 1)
-    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
-  })
+  await flushPromises()
+
+  assert.equal(mockAudioManager.startAmbient.mock.calls.length, 1)
+  assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
 })

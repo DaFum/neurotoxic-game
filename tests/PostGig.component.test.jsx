@@ -485,7 +485,8 @@ describe('PostGig Component - Brand Deals', () => {
       expect(result.loyalty).toBe(35) // 50 - 15
       expect(result.controversyLevel).toBe(50) // 20 + 30
       expect(result.brandReputation.EVIL).toBe(5) // 0 + 5
-      expect(result.brandReputation.SUSTAINABLE).toBe(37) // 40 - 3 (opposing)
+      expect(result.brandReputation.SUSTAINABLE).toBe(40) // 40
+      expect(result.brandReputation.GOOD).toBe(0) // GOOD opposes EVIL
       expect(result.activeDeals).toEqual([
         expect.objectContaining({ id: 'deal_mega', remainingGigs: 5 })
       ])
