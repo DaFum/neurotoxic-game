@@ -1,6 +1,7 @@
 // TODO: Review this file
+import { getSafeUUID } from '../utils/crypto.js'
 import {
-  createContext,
+createContext,
   use,
   useReducer,
   useEffect,
@@ -457,7 +458,7 @@ export const GameStateProvider = ({ children }) => {
   const completeTravelMinigame = useCallback((damageTaken, itemsCollected) => {
     const rngValue = secureRandom()
     const contrabandId = pickRandomContraband(secureRandom)
-    const instanceId = crypto.randomUUID()
+    const instanceId = getSafeUUID()
     dispatch(
       createCompleteTravelMinigameAction(
         damageTaken,

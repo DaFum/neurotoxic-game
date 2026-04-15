@@ -24,7 +24,10 @@ vi.mock('../src/utils/socialEngine', () => ({
   calculateSocialGrowth: vi.fn(),
   generateBrandOffers: vi.fn()
 }))
-vi.mock('../src/utils/crypto', () => ({ secureRandom: vi.fn() }))
+vi.mock('../src/utils/crypto', () => ({
+  secureRandom: vi.fn(),
+  getSafeRandom: vi.fn(() => 0.5)
+}))
 vi.mock('../src/data/songs', () => ({
   SONGS_DB: [
     { id: 'test_song', leaderboardId: 'test-song', name: 'Test Song' }

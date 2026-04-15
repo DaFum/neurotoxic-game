@@ -1,7 +1,7 @@
 // TODO: Review this file
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter.js'
 import { VENUE_CHATTER_LOOKUP } from './venueChatter.js'
-import { secureRandom } from '../../utils/crypto.js'
+import { getSafeRandom } from '../../utils/crypto.js'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
@@ -78,19 +78,7 @@ export const getRandomChatter = state => {
     totalWeight += pool[i].weight || 1
   }
 
-  let roll
-  try {
-    roll = secureRandom() * totalWeight
-  } catch (error) {
-    console.error(
-      'Crypto API not available, secure random is strictly required.',
-      error
-    )
-    throw new Error(
-      'Secure random is strictly required for chatter weight roll',
-      { cause: error }
-    )
-  }
+  let roll = getSafeRandom() * totalWeight
 
   let item = pool[pool.length - 1]
 

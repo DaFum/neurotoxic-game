@@ -82,7 +82,7 @@ export const calculatePoints = (
       points *= bassScoreMult
       break
     default:
-      console.error(`Unknown lane index: ${laneIndex}`)
+      logger.error('rhythmGameScoringUtils', `Unknown lane index: ${laneIndex}`)
       break
   }
 

@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { logger } from '../../utils/logger.js'
+import { getSafeUUID } from '../../utils/crypto.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState.js'
@@ -89,7 +90,7 @@ const handleRecordBadShow = state => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: crypto.randomUUID(),
+        id: getSafeUUID(),
         message: 'ui:toast.three_disasters',
         type: 'error'
       }

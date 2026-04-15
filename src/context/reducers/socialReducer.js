@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { logger } from '../../utils/logger.js'
+import { getSafeUUID } from '../../utils/crypto.js'
 import { ALLOWED_TRENDS } from '../../data/socialTrends.js'
 import {
   clampPlayerMoney,
@@ -76,7 +77,7 @@ export const handleAddVenueBlacklist = (state, venueId) => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: crypto.randomUUID(),
+        id: getSafeUUID(),
         message: `ui:toast.fans_defended`,
         type: 'info'
       }
@@ -86,7 +87,7 @@ export const handleAddVenueBlacklist = (state, venueId) => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: crypto.randomUUID(),
+        id: getSafeUUID(),
         message: `ui:toast.blacklisted|${JSON.stringify({ venueLabel: `venues:${venueId}.name` })}`,
         type: 'error'
       }

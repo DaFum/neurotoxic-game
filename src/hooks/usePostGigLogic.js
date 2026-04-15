@@ -166,14 +166,24 @@ export const usePostGigLogic = () => {
     try {
       return generatePostOptions(currentGig, gameStateForPosts)
     } catch (e) {
+      // Store the error fact silently inside ref,
+      // which we will read in the useEffect below.
       if (!errorHandledRef.current) {
-        errorHandledRef.current = true
-        logger.error('PostGig', 'Failed to generate post options', e)
-        setPostOptionsError(true)
+        errorHandledRef.current = e
       }
       return []
     }
   }, [currentGig, lastGigStats, player, band, social, activeEvent])
+
+  // Process any error that happened during post option generation
+  useEffect(() => {
+    if (errorHandledRef.current && errorHandledRef.current !== true) {
+      logger.error('PostGig', 'Failed to generate post options', errorHandledRef.current)
+      errorHandledRef.current = true // mark handled
+      setPostOptionsError(true)
+    }
+  }, [postOptions]) // trigger when postOptions updates
+
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {
@@ -187,6 +197,7 @@ export const usePostGigLogic = () => {
         type: 'ERROR',
         success: false,
         platform: 'none',
+        totalFollowers: 0,
         followers: 0,
         moneyChange: 0,
         message: fallbackMsg
@@ -372,7 +383,14 @@ export const usePostGigLogic = () => {
     )
   }, [addToast, t])
 
+  const isProcessingActionRef = useRef(false)
+  const [isProcessingAction, setIsProcessingAction] = useState(false)
+
   const handleSpinStory = useCallback(() => {
+    if (isProcessingActionRef.current) return
+    isProcessingActionRef.current = true
+    setIsProcessingAction(true)
+
     const updates = getSpinStoryMoneyUpdate({ player })
 
     if (!updates.success) {
@@ -382,6 +400,8 @@ export const usePostGigLogic = () => {
         }),
         'error'
       )
+      isProcessingActionRef.current = false
+      setIsProcessingAction(false)
       return
     }
 
@@ -399,10 +419,15 @@ export const usePostGigLogic = () => {
       }),
       'success'
     )
+    isProcessingActionRef.current = false
+    setIsProcessingAction(false)
   }, [player, updatePlayer, updateSocial, addToast, t])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
+    if (isProcessingActionRef.current) return
+    isProcessingActionRef.current = true
+    setIsProcessingAction(true)
 
     const stats = calculateContinueStats({
       player,
@@ -560,6 +585,7 @@ export const usePostGigLogic = () => {
     phaseTitleDefault,
     social,
     player,
+    isProcessingAction,
     handlePostSelection,
     handleAcceptDeal,
     handleRejectDeals,

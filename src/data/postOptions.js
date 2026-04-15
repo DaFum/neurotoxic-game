@@ -2,26 +2,15 @@ import { hasActiveSponsorship } from '../utils/gameStateUtils'
 // TODO: Review this file
 import { SOCIAL_PLATFORMS } from './platforms.js'
 import i18n from '../i18n.js'
-import { secureRandom } from '../utils/crypto.js'
+import { secureRandom, getSafeRandom } from '../utils/crypto.js'
 import { handleError } from '../utils/errorHandler.js'
 import { hasTrait } from '../utils/traitLogic.js'
 import { QUEST_APOLOGY_TOUR } from './questsConstants.js'
 import { hasActiveQuest } from '../utils/questUtils.js'
 
-const getSecureRollOnce = (() => {
-  let errorReported = false
-  return () => {
-    try {
-      return secureRandom()
-    } catch (e) {
-      if (!errorReported) {
-        errorReported = true
-        handleError(e, { severity: 'medium', silent: true })
-      }
-      return secureRandom()
-    }
-  }
-})()
+const getSecureRollOnce = () => {
+  return getSafeRandom()
+}
 
 const POST_BADGES = {
   RISK: '⚠️',

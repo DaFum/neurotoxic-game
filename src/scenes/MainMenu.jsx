@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { safeStorageOperation } from '../utils/errorHandler.js'
+import { getSafeUUID } from '../utils/crypto.js'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
@@ -110,8 +112,8 @@ export const MainMenu = () => {
     resetState()
 
     // Re-apply identity after reset (since reset clears state to default)
-    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
-    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
+    const savedPlayerId = safeStorageOperation('getItem', 'neurotoxic_player_id')
+    const savedPlayerName = safeStorageOperation('getItem', 'neurotoxic_player_name')
     if (savedPlayerId && savedPlayerName) {
       updatePlayer({
         playerId: savedPlayerId,
@@ -127,8 +129,8 @@ export const MainMenu = () => {
 
   const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
-    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
-    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
+    const savedPlayerId = safeStorageOperation('getItem', 'neurotoxic_player_id')
+    const savedPlayerName = safeStorageOperation('getItem', 'neurotoxic_player_name')
 
     if (!savedPlayerId || !savedPlayerName) {
       setShowNameInput(true)
@@ -143,7 +145,7 @@ export const MainMenu = () => {
   }, [proceedToTour, updatePlayer])
 
   const handleStartTour = useCallback(() => {
-    const savedGameExists = !!localStorage.getItem('neurotoxic_v3_save')
+    const savedGameExists = !!safeStorageOperation('getItem', 'neurotoxic_v3_save')
     if (savedGameExists) {
       setShowExistingSavePrompt(true)
       return
@@ -163,11 +165,11 @@ export const MainMenu = () => {
       return
     }
 
-    const newId = crypto.randomUUID()
+    const newId = getSafeUUID()
     const newName = playerNameInput.trim()
 
-    localStorage.setItem('neurotoxic_player_id', newId)
-    localStorage.setItem('neurotoxic_player_name', newName)
+    safeStorageOperation('setItem', 'neurotoxic_player_id', newId)
+    safeStorageOperation('setItem', 'neurotoxic_player_name', newName)
 
     updatePlayer({
       playerId: newId,

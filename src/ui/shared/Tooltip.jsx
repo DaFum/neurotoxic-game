@@ -6,6 +6,7 @@ import React, {
   isValidElement,
   useCallback
 } from 'react'
+import { logger } from '../../utils/logger.js'
 import PropTypes from 'prop-types'
 
 /**
@@ -66,10 +67,10 @@ export const Tooltip = ({ children, content, className = '' }) => {
 
   React.useEffect(() => {
     if (!isValid) {
-      console.warn('Tooltip children must be a single valid React element.')
+      logger.warn('Tooltip', 'Tooltip children must be a single valid React element.')
     } else if (isFragment) {
-      console.warn(
-        'Tooltip children must be a single valid React element and not a Fragment.'
+      logger.warn(
+        'Tooltip', 'Tooltip children must be a single valid React element and not a Fragment.'
       )
     }
   }, [isValid, isFragment])

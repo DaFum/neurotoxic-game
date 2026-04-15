@@ -29,7 +29,6 @@ export const useBandHQLogic = ({
       processingItemIdRef.current = item.id
       setProcessingItemId(item.id)
       try {
-        await new Promise(resolve => setTimeout(resolve, 500))
         const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
         if (player.fame < fameCost) {
           throw new GameError(
@@ -46,7 +45,7 @@ export const useBandHQLogic = ({
           })}`,
           type: 'success'
         }
-        tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
+        await tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
       } catch (err) {
         handleError(err, { addToast })
       } finally {
@@ -86,7 +85,6 @@ export const useBandHQLogic = ({
       processingItemIdRef.current = item.id
       setProcessingItemId(item.id)
       try {
-        await new Promise(resolve => setTimeout(resolve, 500))
         await handleBuy(item)
       } catch (err) {
         if (err instanceof GameError || err instanceof StateError) {

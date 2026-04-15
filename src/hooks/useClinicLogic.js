@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { getSafeUUID } from '../utils/crypto.js'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import {
@@ -57,7 +58,7 @@ export const useClinicLogic = () => {
         return
       }
 
-      const toastId = crypto.randomUUID()
+      const toastId = getSafeUUID()
 
       clinicHeal({
         memberId,
@@ -107,7 +108,7 @@ export const useClinicLogic = () => {
         type: 'enhance',
         trait,
         successToast: {
-          id: crypto.randomUUID(),
+          id: getSafeUUID(),
           message: t('ui:clinic.enhance_success', {
             defaultValue: 'Flesh upgraded.'
           }),

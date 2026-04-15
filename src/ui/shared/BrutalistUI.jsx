@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
+import { getSafeUUID } from '../../utils/crypto.js'
 import { secureRandom } from '../../utils/crypto.js'
 
 export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
@@ -1634,8 +1635,8 @@ export const ToxicChatter = memo(() => {
         const updated = [
           ...prev,
           {
-            id: crypto.randomUUID(),
-            user: `USER_${crypto.randomUUID().split('-')[0].toUpperCase()}`,
+            id: getSafeUUID(),
+            user: `USER_${getSafeUUID().split('-')[0].toUpperCase()}`,
             text: randomHate,
             type: 'hate'
           }

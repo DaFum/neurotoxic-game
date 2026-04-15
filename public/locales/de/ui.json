@@ -614,7 +614,8 @@
     "socialPhase": {
       "altZealotryCult": "Zealot-Kult"
     },
-    "stamina": "Ausdauer"
+    "stamina": "Ausdauer",
+    "processing": "Verarbeitung..."
   },
   "postGig.acceptedDeal": "Deal angenommen: {{dealName}}",
   "postGig.backToTour": "Zurück zur Tour >",

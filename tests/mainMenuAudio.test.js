@@ -37,10 +37,19 @@ afterEach(() => {
 })
 
 test('MainMenu starts ambient audio when starting a tour', async () => {
-  const { getByRole } = render(React.createElement(MainMenu))
+  const { getByRole, queryByRole, queryByPlaceholderText } = render(React.createElement(MainMenu))
   const user = userEvent.setup({ document: globalThis.document })
 
   await user.click(getByRole('button', { name: /start tour/i }))
+
+  const confirmBtn = queryByRole('button', { name: /confirm/i })
+  if (confirmBtn) {
+     const input = queryByPlaceholderText(/enter your name/i) || queryByPlaceholderText(/ui:enter_name_placeholder/i)
+     if (input) {
+       await user.type(input, 'TestName')
+     }
+     await user.click(confirmBtn)
+  }
 
   await waitFor(() => {
     assert.equal(mockAudioManager.startAmbient.mock.calls.length, 1)
