@@ -33,28 +33,38 @@ describe('generateBrandOffers with Zealotry', () => {
         members: [{ traits: { virtuoso: { id: 'virtuoso' } } }]
       }
     }
-    const offersLow = generateBrandOffers(gameStateLowZealotry, () => 0.01) // Always highest roll for guaranteed pass
 
-    const shredDealLow = offersLow.find(o => o.id === 'blood_bank_promo')
-    assert.ok(shredDealLow, 'Should find Blood Bank promo deal when zealotry is low')
+
+    let shredDealLow;
+    for (let i = 0; i < 100; i++) {
+      const offers = generateBrandOffers(gameStateLowZealotry, Math.random)
+      const found = offers.find(o => o.id === 'guitar_brand_shred')
+      if (found) shredDealLow = found;
+    }
+    assert.ok(shredDealLow, 'Should find ShredMaster deal when zealotry is low')
 
     const gameStateHighZealotry = {
       social: {
         instagram: 10000,
         trend: 'MUSIC',
-        zealotry: 50
+        zealotry: 30
       },
       band: {
         members: [{ traits: { virtuoso: { id: 'virtuoso' } } }]
       }
     }
-    const offersHigh = generateBrandOffers(gameStateHighZealotry, () => 0.01)
 
-    const shredDealHigh = offersHigh.find(o => o.id === 'blood_bank_promo')
+
+    let shredDealHigh;
+    for (let i = 0; i < 100; i++) {
+      const offers = generateBrandOffers(gameStateHighZealotry, Math.random)
+      const found = offers.find(o => o.id === 'guitar_brand_shred')
+      if (found) shredDealHigh = found;
+    }
     assert.strictEqual(
       shredDealHigh,
       undefined,
-      'Should NOT find Blood Bank promo deal when zealotry is high (> 40)'
+      'Should NOT find ShredMaster deal when zealotry is high (> 20)'
     )
   })
 })
