@@ -36,14 +36,22 @@ vi.mock('../../../src/utils/audio/playbackUtils.js', () => ({
   getBaseAssetPath: () => mocks.mockBaseAssetPathReturn
 }))
 
-// Import assets AFTER setting up mocks
-import { loadAudioBuffer } from '../../../src/utils/audio/assets.js'
-import { MAX_AUDIO_BUFFER_BYTE_SIZE } from '../../../src/utils/audio/constants.js'
-
 describe('loadAudioBuffer tests', () => {
+  let loadAudioBuffer;
+  let MAX_AUDIO_BUFFER_BYTE_SIZE;
+
   const originalFetch = global.fetch
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules() // clear any loaded module cache
+    vi.unmock('../../../src/utils/audio/assets.js')
+
+    // Import assets AFTER setting up mocks, dynamically
+    const assetsModule = await import('../../../src/utils/audio/assets.js')
+    const constantsModule = await import('../../../src/utils/audio/constants.js')
+    loadAudioBuffer = assetsModule.loadAudioBuffer
+    MAX_AUDIO_BUFFER_BYTE_SIZE = constantsModule.MAX_AUDIO_BUFFER_BYTE_SIZE
+
     mocks.mockResolveAssetUrlReturn = {
       url: 'mock/path/test.ogg',
       source: 'bundled'

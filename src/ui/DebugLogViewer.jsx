@@ -1,6 +1,7 @@
 // TODO: Review this file
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
 
 export const DebugLogViewer = ({ className = '' }) => {
@@ -8,6 +9,7 @@ export const DebugLogViewer = ({ className = '' }) => {
   const [logs, setLogs] = useState([])
   const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
   const bottomRef = useRef(null)
+  const { t } = useTranslation()
 
   // Keyboard Toggle
   useEffect(() => {
@@ -109,7 +111,7 @@ export const DebugLogViewer = ({ className = '' }) => {
               }}
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
-              CLEAR
+              {t('ui:action_clear')}
             </button>
           </div>
           <button

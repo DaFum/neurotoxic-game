@@ -160,6 +160,7 @@
   "decryptor.unlocked_aria": "Decryptor Unlocked",
   "delete_save": "DELETE SAVE",
   "delete_warning": "WARNING: This action is irreversible. All tour progress will be lost.",
+  "action_clear": "CLEAR",
   "detailedStats.active": "Active",
   "detailedStats.bandMembers": "BAND MEMBERS",
   "detailedStats.blacklisted": "BLACKLISTED VENUES",

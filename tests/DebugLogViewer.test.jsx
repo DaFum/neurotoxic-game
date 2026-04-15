@@ -129,7 +129,7 @@ describe('DebugLogViewer', () => {
     render(<DebugLogViewer />)
     fireEvent.keyDown(window, { key: '`', ctrlKey: true })
 
-    const clearButton = screen.getByText('CLEAR')
+    const clearButton = screen.getByText('ui:action_clear')
     fireEvent.click(clearButton)
 
     expect(loggerMock.clear).toHaveBeenCalled()

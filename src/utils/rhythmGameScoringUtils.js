@@ -1,3 +1,4 @@
+import { logger } from './logger.js'
 /**
  * Pure functions for rhythm game scoring logic.
  */
@@ -82,7 +83,7 @@ export const calculatePoints = (
       points *= bassScoreMult
       break
     default:
-      console.error('rhythmGameScoringUtils', `Unknown lane index: ${laneIndex}`)
+      logger.error('rhythmGameScoringUtils', `Unknown lane index: ${laneIndex}`)
       break
   }
 
