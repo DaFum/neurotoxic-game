@@ -34,8 +34,8 @@ vi.mock('../src/data/songs', () => ({
 
 // Mock lazy-loaded phase components to prevent Suspense timeout and speed up rendering
 vi.mock('../src/components/postGig/ReportPhase', () => ({
-  ReportPhase: ({ onNext }) => (
-    <div data-testid='mock-report-phase'>
+  ReportPhase: ({ financials, onNext, ...layoutProps }) => (
+    <div data-testid='mock-report-phase' {...layoutProps}>
       <button type='button' onClick={onNext}>
         Continue to Socials
       </button>
@@ -44,8 +44,8 @@ vi.mock('../src/components/postGig/ReportPhase', () => ({
 }))
 
 vi.mock('../src/components/postGig/SocialPhase', () => ({
-  SocialPhase: ({ options = [], onSelect }) => (
-    <div data-testid='mock-social-phase'>
+  SocialPhase: ({ options = [], onSelect, trend, zealotryLevel, ...layoutProps }) => (
+    <div data-testid='mock-social-phase' {...layoutProps}>
       {options.map(opt => (
         <button type='button' key={opt.id} onClick={() => onSelect(opt)}>
           {opt.name}
@@ -56,8 +56,8 @@ vi.mock('../src/components/postGig/SocialPhase', () => ({
 }))
 
 vi.mock('../src/components/postGig/DealsPhase', () => ({
-  DealsPhase: ({ offers = [], onAccept, onSkip }) => (
-    <div data-testid='mock-deals-phase'>
+  DealsPhase: ({ offers = [], onAccept, onSkip, ...layoutProps }) => (
+    <div data-testid='mock-deals-phase' {...layoutProps}>
       {offers[0] && (
         <button type='button' onClick={() => onAccept(offers[0])}>
           Accept First Deal
@@ -71,8 +71,8 @@ vi.mock('../src/components/postGig/DealsPhase', () => ({
 }))
 
 vi.mock('../src/components/postGig/CompletePhase', () => ({
-  CompletePhase: ({ onContinue, onSpinStory, player }) => (
-    <div data-testid='mock-complete-phase'>
+  CompletePhase: ({ onContinue, onSpinStory, player, social, result, ...layoutProps }) => (
+    <div data-testid='mock-complete-phase' {...layoutProps}>
       {player && (
         <button type='button' onClick={onSpinStory}>
           spin

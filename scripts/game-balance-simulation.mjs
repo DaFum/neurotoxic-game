@@ -1,4 +1,6 @@
 import fs from 'node:fs/promises'
+import { hasActiveSponsorship } from '../src/utils/gameStateUtils.js';
+
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -1016,7 +1018,7 @@ const runSingleSimulation = (scenario, seed) => {
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
-    const hadSponsor = (state.social.activeDeals.length > 0)
+    const hadSponsor = hasActiveSponsorship(state.social)
     const updates = calculateDailyUpdates(state, rng)
     state = {
       ...state,
@@ -1026,7 +1028,7 @@ const runSingleSimulation = (scenario, seed) => {
     }
 
     // Track sponsor lifecycle events surfaced by calculateDailyUpdates
-    const hasSponsor = (state.social.activeDeals.length > 0)
+    const hasSponsor = hasActiveSponsorship(state.social)
     if (!hadSponsor && hasSponsor) counters.sponsorSignings += 1
     if (hadSponsor && !hasSponsor) counters.sponsorDrops += 1
     if (hasSponsor) counters.sponsorPayouts += 1

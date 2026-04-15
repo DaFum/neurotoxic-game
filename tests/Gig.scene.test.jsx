@@ -102,6 +102,12 @@ vi.mock('../src/components/GigHUD', () => ({
   )
 }))
 
+
+const flushPromises = async () => {
+  await Promise.resolve()
+  await Promise.resolve()
+}
+
 describe('Gig Scene Component', () => {
   const mockChangeScene = vi.fn()
   const mockAddToast = vi.fn()
@@ -478,6 +484,7 @@ describe('Gig Scene Component', () => {
         fireEvent.click(initButton)
       })
 
+      await flushPromises()
       expect(audioManager.ensureAudioContext).toHaveBeenCalled()
       expect(mockRetry).toHaveBeenCalled()
     })
