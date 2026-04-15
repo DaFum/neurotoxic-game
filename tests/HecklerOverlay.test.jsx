@@ -60,7 +60,7 @@ describe('HecklerOverlay', () => {
 
     const { container } = render(<HecklerOverlay gameStateRef={gameStateRef} />)
     const projectile = container.querySelector('.absolute.text-4xl')
-    expect(projectile.style.transform).toContain('translate3d(100px, 200px, 0')
+    expect(projectile.style.transform).toContain('translate3d(100px, 200px, 0)')
   })
 
   test('converts rotation from radians to degrees', () => {

@@ -24,7 +24,7 @@ function updateOverlayNodes(projectiles, nodeCache, seenIds, container) {
     // Update position and rotation directly bypassing React render
     // Use translate3d to force hardware acceleration and avoid layout thrashing
     // by not modifying top/left which triggers paint/layout cycles
-    node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation * 57.29}deg)`
+    node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rotation * (180 / Math.PI)}deg)`
   }
 
   // 2. Remove old nodes that are no longer in the state.
