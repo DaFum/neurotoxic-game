@@ -70,7 +70,8 @@ import {
   createPirateBroadcastAction,
   createMerchPressAction,
   createTradeVoidItemAction,
-  createBloodBankDonateAction
+  createBloodBankDonateAction,
+  createAddVenueBlacklistAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -496,9 +497,7 @@ export const GameStateProvider = ({ children }) => {
 
   const startAmpCalibration = useCallback(
     gigId =>
-      startTransition(() =>
-        dispatch(createStartAmpCalibrationAction(gigId))
-      ),
+      startTransition(() => dispatch(createStartAmpCalibrationAction(gigId))),
     []
   )
 
@@ -520,6 +519,11 @@ export const GameStateProvider = ({ children }) => {
   const advanceQuest = useCallback(
     (questId, progressAmount) =>
       dispatch(createAdvanceQuestAction(questId, progressAmount)),
+    []
+  )
+
+  const addVenueBlacklist = useCallback(
+    venueId => dispatch(createAddVenueBlacklistAction(venueId)),
     []
   )
 
@@ -915,6 +919,7 @@ export const GameStateProvider = ({ children }) => {
       endGig,
       addQuest,
       advanceQuest,
+      addVenueBlacklist,
       useContraband,
       clinicHeal,
       clinicEnhance,
@@ -958,6 +963,7 @@ export const GameStateProvider = ({ children }) => {
       endGig,
       addQuest,
       advanceQuest,
+      addVenueBlacklist,
       useContraband,
       clinicHeal,
       clinicEnhance,

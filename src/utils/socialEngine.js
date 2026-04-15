@@ -1,4 +1,3 @@
-import { hasActiveSponsorship } from './gameStateUtils.js'
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A
@@ -13,7 +12,11 @@ import { bandHasTrait } from './traitLogic.js'
 import { StateError } from './errorHandler.js'
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends.js'
 import { BRAND_ALIGNMENTS } from '../context/initialState.js'
-import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
+import {
+  hasActiveSponsorship,
+  clampPlayerMoney,
+  clampBandHarmony
+} from './gameStateUtils.js'
 
 /**
  * Calculates viral potential based on performance and events.
