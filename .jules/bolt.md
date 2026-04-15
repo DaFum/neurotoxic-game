@@ -93,3 +93,7 @@
 ## 2026-04-12 - Optimization: eventEngine.filterEvents
 **Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
 **Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, creating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
+## 2026-05-30 - Vitest Projects & Setup Guarding
+
+**Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for *every single test file* in the worker process, leading to severe redundant initialization delays.
+**Action:** Split test suites into separate Vitest projects (`node` and `jsdom` environments) based on their actual requirements. For `jsdom` projects, always wrap heavy, one-time global mock initializations in `setupFiles` with a `globalThis.__SETUP_DONE__` guard so they are only executed once per worker process.

@@ -40,13 +40,13 @@ import {
   clampMemberStamina,
   clampPlayerFame,
   calculateFameLevel,
-  hasActiveSponsorship,
+
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,
   BALANCE_CONSTANTS,
   applyEventDelta,
-  hasActiveSponsorship
+
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
