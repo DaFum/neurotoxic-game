@@ -1,6 +1,22 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { render, cleanup, waitFor } from '@testing-library/react'
+import { render, cleanup } from '@testing-library/react'
 import { PixiStage } from '../src/components/PixiStage.jsx'
+
+import { createPixiStageController } from '../src/components/PixiStageController'
+import { logger } from '../src/utils/logger'
+
+vi.mock('../src/components/PixiStageController', () => ({
+  createPixiStageController: vi.fn()
+}))
+
+vi.mock('../src/utils/logger', () => ({
+  logger: { error: vi.fn() }
+}))
+
+const flushPromises = async () => {
+  await Promise.resolve()
+  await Promise.resolve()
+}
 
 afterEach(() => {
   cleanup()
@@ -18,6 +34,7 @@ describe('PixiStage', () => {
   })
 
   test('renders canvas container with correct styling', () => {
+    createPixiStageController.mockReturnValue(createMockController())
     const { container } = render(
       <PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />
     )
@@ -41,10 +58,9 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockFactory).toHaveBeenCalled()
-      expect(mockController.init).toHaveBeenCalled()
-    })
+    await flushPromises()
+    expect(mockFactory).toHaveBeenCalled()
+    expect(mockController.init).toHaveBeenCalled()
   })
 
   test('passes correct params to controller factory', async () => {
@@ -59,15 +75,14 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockFactory).toHaveBeenCalledWith(
-        expect.objectContaining({
+    await flushPromises()
+    expect(mockFactory).toHaveBeenCalledWith(
+      expect.objectContaining({
           containerRef: expect.objectContaining({ current: expect.anything() }),
           gameStateRef: mockGameStateRef,
           updateRef: expect.objectContaining({ current: mockUpdate })
         })
-      )
-    })
+    )
   })
 
   test('calls dispose on unmount', async () => {
@@ -82,9 +97,8 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockController.init).toHaveBeenCalled()
-    })
+    await flushPromises()
+    expect(mockController.init).toHaveBeenCalled()
 
     unmount()
 
@@ -93,7 +107,8 @@ describe('PixiStage', () => {
 
   test('handles controller init failure gracefully', async () => {
     const mockController = createMockController()
-    mockController.init = vi.fn().mockRejectedValue(new Error('Init failed'))
+    const error = new Error('Init failed')
+    mockController.init = vi.fn().mockRejectedValue(error)
     const mockFactory = vi.fn(() => mockController)
 
     // Should not throw
@@ -105,10 +120,10 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockFactory).toHaveBeenCalled()
-    })
+    await flushPromises()
+    expect(mockFactory).toHaveBeenCalled()
 
+    expect(logger.error).toHaveBeenCalledWith('PixiStage', 'Pixi Stage Init Failed', error)
     expect(container).toBeTruthy()
   })
 
@@ -137,9 +152,8 @@ describe('PixiStage', () => {
     // Complete init after unmount
     resolveInit()
 
-    await waitFor(() => {
-      expect(mockController.dispose).toHaveBeenCalled()
-    })
+    await flushPromises()
+    expect(mockController.dispose).toHaveBeenCalled()
   })
 
   test('updates updateRef when update prop changes', async () => {
@@ -165,26 +179,27 @@ describe('PixiStage', () => {
     )
 
     // The controller should have received the updateRef with the new update
-    await waitFor(() => {
-      const factoryCall = mockFactory.mock.calls[0][0]
-      expect(factoryCall.updateRef.current).toBe(newUpdate)
-    })
+    await flushPromises()
+    const factoryCall = mockFactory.mock.calls[0][0]
+    expect(factoryCall.updateRef.current).toBe(newUpdate)
   })
 
   test('uses default controller factory when not provided', async () => {
-    const originalConsoleError = console.error
-    console.error = () => {}
-    try {
-      // Should not crash when using default factory
-      render(<PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />)
+    const mockController = createMockController()
+    createPixiStageController.mockReturnValue(mockController)
 
-      await waitFor(() => {
-        // Just verify it renders without error
-        expect(true).toBe(true)
+    render(<PixiStage gameStateRef={mockGameStateRef} update={mockUpdate} />)
+
+    await flushPromises()
+
+    expect(createPixiStageController).toHaveBeenCalledWith(
+      expect.objectContaining({
+        containerRef: expect.objectContaining({ current: expect.anything() }),
+        gameStateRef: mockGameStateRef,
+        updateRef: expect.objectContaining({ current: mockUpdate })
       })
-    } finally {
-      console.error = originalConsoleError
-    }
+    )
+    expect(mockController.init).toHaveBeenCalled()
   })
 
   test('containerRef is attached to DOM element', async () => {
@@ -203,9 +218,8 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(capturedContainerRef.current).toBeInstanceOf(HTMLDivElement)
-    })
+    await flushPromises()
+    expect(capturedContainerRef.current).toBeInstanceOf(HTMLDivElement)
   })
 
   test('does not recreate controller on gameStateRef change', async () => {
@@ -222,9 +236,8 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockFactory).toHaveBeenCalledTimes(1)
-    })
+    await flushPromises()
+    expect(mockFactory).toHaveBeenCalledTimes(1)
 
     // Changing the ref's content should not recreate controller
     // Changing the ref's content should not recreate controller
@@ -255,9 +268,8 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockFactory1).toHaveBeenCalledTimes(1)
-    })
+    await flushPromises()
+    expect(mockFactory1).toHaveBeenCalledTimes(1)
 
     rerender(
       <PixiStage
@@ -267,10 +279,9 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockController1.dispose).toHaveBeenCalled()
-      expect(mockFactory2).toHaveBeenCalled()
-    })
+    await flushPromises()
+    expect(mockController1.dispose).toHaveBeenCalled()
+    expect(mockFactory2).toHaveBeenCalled()
   })
 
   test('memoizes component to prevent unnecessary rerenders', async () => {
@@ -285,9 +296,8 @@ describe('PixiStage', () => {
       />
     )
 
-    await waitFor(() => {
-      expect(mockFactory).toHaveBeenCalledTimes(1)
-    })
+    await flushPromises()
+    expect(mockFactory).toHaveBeenCalledTimes(1)
 
     // Rerender with same props
     rerender(

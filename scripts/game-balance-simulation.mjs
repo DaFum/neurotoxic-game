@@ -1,4 +1,6 @@
 import fs from 'node:fs/promises'
+import { hasActiveSponsorship } from '../src/utils/gameStateUtils.js';
+
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -1163,7 +1165,7 @@ const runSingleSimulation = (scenario, seed) => {
         money: state.player.money,
         fame: state.player.fame,
         controversyLevel: state.social.controversyLevel,
-        sponsorActive: hasActiveSponsorship(state.social),
+        sponsorActive: (state.social.activeDeals.length > 0),
         cancelled: true
       })
 
@@ -1292,7 +1294,7 @@ const runSingleSimulation = (scenario, seed) => {
       money: state.player.money,
       fame: state.player.fame,
       controversyLevel: state.social.controversyLevel,
-      sponsorActive: hasActiveSponsorship(state.social)
+      sponsorActive: (state.social.activeDeals.length > 0)
     })
 
     if (shouldTriggerBankruptcy(state.player.money, financials.net)) {

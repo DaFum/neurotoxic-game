@@ -31,6 +31,60 @@ vi.mock('../src/data/songs', () => ({
   ]
 }))
 
+
+// Mock lazy-loaded phase components to prevent Suspense timeout and speed up rendering
+vi.mock('../src/components/postGig/ReportPhase', () => ({
+  ReportPhase: ({ financials, onNext, ...layoutProps }) => (
+    <div data-testid='mock-report-phase' {...layoutProps}>
+      <button type='button' onClick={onNext}>
+        Continue to Socials
+      </button>
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/SocialPhase', () => ({
+  SocialPhase: ({ options = [], onSelect, trend, zealotryLevel, ...layoutProps }) => (
+    <div data-testid='mock-social-phase' {...layoutProps}>
+      {options.map(opt => (
+        <button type='button' key={opt.id} onClick={() => onSelect(opt)}>
+          {opt.name}
+        </button>
+      ))}
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/DealsPhase', () => ({
+  DealsPhase: ({ offers = [], onAccept, onSkip, ...layoutProps }) => (
+    <div data-testid='mock-deals-phase' {...layoutProps}>
+      {offers[0] && (
+        <button type='button' onClick={() => onAccept(offers[0])}>
+          Accept First Deal
+        </button>
+      )}
+      <button type='button' onClick={onSkip}>
+        skip
+      </button>
+    </div>
+  )
+}))
+
+vi.mock('../src/components/postGig/CompletePhase', () => ({
+  CompletePhase: ({ onContinue, onSpinStory, player, social, result, ...layoutProps }) => (
+    <div data-testid='mock-complete-phase' {...layoutProps}>
+      {player && (
+        <button type='button' onClick={onSpinStory}>
+          spin
+        </button>
+      )}
+      <button type='button' onClick={onContinue}>
+        back to tour
+      </button>
+    </div>
+  )
+}))
+
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
@@ -47,9 +101,9 @@ vi.mock('react-i18next', () => ({
 
 const proceedToSocialAndSelectPost = async (postName = 'Test Post') => {
   fireEvent.click(
-    await screen.findByRole('button', { name: /continue|next|social/i })
+    await screen.findByRole('button', { name: /continue to socials/i })
   )
-  fireEvent.click(await screen.findByText(postName))
+  fireEvent.click(await screen.findByRole('button', { name: new RegExp(postName, 'i') }))
 }
 
 const getLastFunctionalUpdate = mockFn =>
@@ -221,9 +275,7 @@ describe('PostGig Component - Phase Management', () => {
     // SOCIAL -> Select post (should go to COMPLETE, skipping DEALS)
     fireEvent.click(await screen.findByText('Test Post'))
 
-    await waitFor(() => {
-      expect(screen.getByText(/TOUR UPDATE/i)).toBeInTheDocument()
-    })
+    expect(await screen.findByTestId('mock-complete-phase')).toBeInTheDocument()
   })
 
   it('shows DEALS phase when brand offers are available', async () => {
@@ -446,11 +498,7 @@ describe('PostGig Component - Brand Deals', () => {
     render(<PostGig />)
     await proceedToSocialAndSelectPost()
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /^BRAND OFFERS$/i })
-      ).toBeInTheDocument()
-    })
+    expect(await screen.findByTestId('mock-deals-phase')).toBeInTheDocument()
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
@@ -508,26 +556,18 @@ describe('PostGig Component - Brand Deals', () => {
 
     await proceedToSocialAndSelectPost()
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /^BRAND OFFERS$/i })
-      ).toBeInTheDocument()
-    })
+    expect(await screen.findByTestId('mock-deals-phase')).toBeInTheDocument()
 
     const rejectBtn = await screen.findByRole('button', {
       name: /reject|skip/i
     })
     fireEvent.click(rejectBtn)
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /^TOUR UPDATE$/i })
-      ).toBeInTheDocument()
-      expect(mockAddToast).toHaveBeenCalledWith(
-        expect.stringContaining('Skipped'),
-        'info'
-      )
-    })
+    expect(await screen.findByTestId('mock-complete-phase')).toBeInTheDocument()
+    expect(mockAddToast).toHaveBeenCalledWith(
+      expect.stringContaining('Skipped'),
+      'info'
+    )
   })
 })
 
@@ -579,9 +619,7 @@ describe('PostGig Component - Complete Phase', () => {
     await proceedToSocialAndSelectPost()
 
     // Should be in COMPLETE phase
-    await waitFor(() => {
-      expect(screen.getByText(/TOUR UPDATE/i)).toBeInTheDocument()
-    })
+    expect(await screen.findByTestId('mock-complete-phase')).toBeInTheDocument()
 
     const spinBtn = await screen.findByRole('button', { name: /spin/i })
     fireEvent.click(spinBtn)
