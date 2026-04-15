@@ -1,4 +1,12 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import {
+  test,
+  describe,
+  before,
+  after,
+  beforeEach,
+  afterEach,
+  mock
+} from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { renderHook, act, cleanup } from '@testing-library/react'
@@ -155,21 +163,40 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     await Promise.resolve()
   }
 
-  beforeEach(() => {
+  before(() => {
     setupJSDOM()
-    // Reset calls
+  })
+
+  after(() => {
+    teardownJSDOM()
+  })
+
+  beforeEach(() => {
+    // Reset calls and implementations
     mockUseGameState.mock.resetCalls()
     Object.values(mockAudioManager).forEach(m => {
-      if (m.mock) m.mock.resetCalls()
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
     })
     Object.values(mockAudioEngine).forEach(m => {
-      if (m.mock) m.mock.resetCalls()
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
     })
     Object.values(mockRhythmUtils).forEach(m => {
-      if (m.mock) m.mock.resetCalls()
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
     })
     Object.values(mockGigStats).forEach(m => {
-      if (m.mock) m.mock.resetCalls()
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
     })
 
     mockChangeScene = createMockChangeScene()
@@ -179,7 +206,6 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
   })
 
   test('bootstraps first song and notes correctly', async () => {
@@ -348,6 +374,10 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       endGig: mockEndGig
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
 
     let onSong1Ended = null
     mockAudioEngine.startGigPlayback.mock.mockImplementation(
@@ -363,6 +393,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       await flushPromises()
     })
 
+    assert.ok(onSong1Ended, 'onSong1Ended should be a function')
+    mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+
     await act(async () => {
       await onSong1Ended()
       await flushPromises()
@@ -372,7 +405,12 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       result.current.gameStateRef.current.setlistCompleted,
       true
     )
+
     act(() => {
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      result.current.gameStateRef.current.setlistCompleted = true
+      result.current.gameStateRef.current.totalDuration = 1000
+      mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 2000)
       result.current.update(16)
     })
     // Now endGig is called, which calls changeScene('POSTGIG')

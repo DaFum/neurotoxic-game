@@ -618,10 +618,12 @@ export const POST_OPTIONS = [
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
     condition: ({ social }) => hasActiveSponsorship(social),
-    resolve: (gameState) => {
+    resolve: gameState => {
       let payout = 500
       if (gameState?.social?.activeDeals) {
-        const deal = gameState.social.activeDeals.find(d => d.type === 'SPONSORSHIP')
+        const deal = gameState.social.activeDeals.find(
+          d => d.type === 'SPONSORSHIP'
+        )
         if (deal && deal.offer && deal.offer.perGig) {
           payout = deal.offer.perGig
         }
