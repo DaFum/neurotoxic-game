@@ -10,7 +10,8 @@ import { GAME_PHASES } from '../context/gameConstants'
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
- * Ensures consistent side effects (Events, Autosave, Day Advance, Routing).
+ * Note: While this handles shared side effects and delegated non-performance travel events (via arrivalUtils),
+ * inline event triggering for GIG, FESTIVAL, and FINALE destinations remains within useTravelLogic.
  */
 export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
   const {

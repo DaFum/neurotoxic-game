@@ -5,6 +5,15 @@ import {
   isForbiddenKey
 } from '../../utils/gameStateUtils.js'
 import { addContrabandHelper } from './bandReducer.js'
+import { getSafeUUID } from '../../utils/crypto.js'
+
+const ESCAPE_MAP = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+}
 
 /**
  * Handles purchasing an item from the Void Trader using Fame.
@@ -64,12 +73,15 @@ export const handleTradeVoidItem = (state, payload) => {
     const actualDelta = currentFame - nextFame
     let enrichedToast
 
+    const toastId = instanceId || getSafeUUID()
+
     if (
       typeof successToast.messageKey === 'string' &&
       successToast.messageKey.length > 0
     ) {
       enrichedToast = {
         ...successToast,
+        id: toastId,
         options: {
           ...successToast.options,
           fame: actualDelta
@@ -96,17 +108,9 @@ export const handleTradeVoidItem = (state, payload) => {
           if (isPlainObject) {
             const rawContext = parsedContext
 
-            const escapeMap = {
-              '&': '&amp;',
-              '<': '&lt;',
-              '>': '&gt;',
-              '"': '&quot;',
-              "'": '&#39;'
-            }
-
             const sanitizeContextValue = value => {
               if (typeof value === 'string') {
-                return value.replace(/[&<>"']/g, match => escapeMap[match])
+                return value.replace(/[&<>"']/g, match => ESCAPE_MAP[match])
               }
               if (Array.isArray(value)) {
                 return value.map(item => sanitizeContextValue(item))
@@ -134,6 +138,7 @@ export const handleTradeVoidItem = (state, payload) => {
 
       enrichedToast = {
         ...successToast,
+        id: toastId,
         message: enrichedMessage
       }
     }

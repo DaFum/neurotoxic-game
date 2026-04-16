@@ -105,7 +105,17 @@ describe('Trade Reducer', () => {
     const nextState = handleTradeVoidItem(initialState, payload)
     assert.strictEqual(nextState.player.fame, 700)
     assert.strictEqual(nextState.toasts.length, 1)
-    assert.ok(nextState.toasts[0].message.includes('"fame":250'))
+
+    const toastMessage = nextState.toasts[0].message
+    const pipeIdx = toastMessage.indexOf('|')
+    const jsonStr = toastMessage.slice(pipeIdx + 1)
+    const parsedContext = JSON.parse(jsonStr)
+
+    assert.strictEqual(parsedContext.fame, 250)
+    assert.strictEqual(
+      parsedContext.itemName,
+      'items:contraband.c_phantom_strings.name'
+    )
   })
 
   it('action creator formats payload correctly', () => {

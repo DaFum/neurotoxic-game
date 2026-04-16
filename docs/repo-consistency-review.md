@@ -62,8 +62,8 @@ Review and remediation focused on:
 - Comments in `useArrivalLogic` referenced legacy behavior with ambiguous wording.
 
 #### Action
-- `useTravelLogic` now delegates travel event trigger execution to `arrivalUtils.processTravelEvents`.
-- Updated `useArrivalLogic` comment to describe current behavior explicitly.
+- `useTravelLogic` delegates travel-event triggering to `arrivalUtils.processTravelEvents` only for non-performance destination nodes. It still handles transport/band travel events inline for GIG, FESTIVAL, and FINALE destinations.
+- Updated `useArrivalLogic` comment to explicitly reflect the current behavior (i.e., delegated handling vs. inline handling) rather than implying a full consolidation.
 
 #### Decision
 - Keep split orchestration (`useTravelLogic` + `useArrivalLogic`) but unify shared travel-event semantics in one utility.

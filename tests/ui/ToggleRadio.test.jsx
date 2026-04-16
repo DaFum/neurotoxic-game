@@ -25,7 +25,14 @@ const { listeners, audioManagerMock } = vi.hoisted(() => {
       mock._isPlaying = true
       mock.emitChange()
       return true
-    })
+    }),
+    getStateSnapshot: vi.fn(() => ({
+      musicVol: 1,
+      sfxVol: 1,
+      isMuted: false,
+      isPlaying: mock._isPlaying,
+      currentSongId: mock.currentSongId
+    }))
   }
   return { listeners, audioManagerMock: mock }
 })

@@ -31,7 +31,8 @@ import {
 } from '../utils/travelUtils.js'
 import {
   handleNodeArrival,
-  processTravelEvents
+  processTravelEvents,
+  isGigNode
 } from '../utils/arrivalUtils.js'
 import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
@@ -276,11 +277,7 @@ export const useTravelLogic = ({
       // Keep legacy behavior: overworld travel to performance nodes still rolls
       // transport/band travel events before node arrival handling.
       let travelEventActive
-      const isPerformanceNode =
-        node?.type === 'GIG' ||
-        node?.type === 'FESTIVAL' ||
-        node?.type === 'FINALE'
-      if (isPerformanceNode) {
+      if (isGigNode(node)) {
         travelEventActive = triggerEvent('transport', 'travel')
         if (!travelEventActive) {
           travelEventActive = triggerEvent('band', 'travel')
@@ -400,11 +397,7 @@ export const useTravelLogic = ({
         )
 
         // If it's the current node, trigger the interaction logic but DO NOT start travel
-        if (
-          node.type === 'GIG' ||
-          node.type === 'FESTIVAL' ||
-          node.type === 'FINALE'
-        ) {
+        if (isGigNode(node)) {
           if (node.id === player.lastGigNodeId) {
             addToast(
               i18n.t('ui:travel.errors.alreadyPlayedHere', {

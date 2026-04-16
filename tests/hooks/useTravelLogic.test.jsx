@@ -16,9 +16,13 @@ vi.mock('../../src/utils/mapUtils.js', () => ({
   normalizeVenueId: v => v?.id || 'venue_id'
 }))
 
-vi.mock('../../src/utils/arrivalUtils.js', () => ({
-  handleNodeArrival: () => {}
-}))
+vi.mock('../../src/utils/arrivalUtils.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    handleNodeArrival: () => {}
+  }
+})
 
 vi.mock('../../src/utils/AudioManager.js', () => ({
   audioManager: { playSFX: () => {} }
