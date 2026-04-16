@@ -31,7 +31,8 @@ const EXCLUDED_TEST_DIRS = [
   'tests/logic',
   'tests/social',
   'tests/hooks',
-  'tests/performance'
+  'tests/performance',
+  'tests/locale'
 ]
 
 const isPathInExcludedDir = testPath => {

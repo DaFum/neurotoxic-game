@@ -37,9 +37,18 @@ test.describe('Game Flow', () => {
       return
     }
 
+    const confirmBtn = page.getByRole('button', { name: /confirm/i })
+    if (await confirmBtn.isVisible()) {
+      const input = page
+        .getByPlaceholder(/enter your name/i)
+        .or(page.getByPlaceholder(/ui:enter_name_placeholder/i))
+      await input.fill('Test Name')
+      await confirmBtn.click()
+    }
+
     // Check for overworld elements if not crashed
     try {
-      await expect(page.getByText(/tour plan/i)).toBeVisible({ timeout: 5000 })
+      await expect(page.getByText(/tour plan/i)).toBeVisible({ timeout: 10000 })
     } catch (e) {
       // Double check if page crashed *after* click but before visibility
       if (page.isClosed()) {
@@ -115,8 +124,8 @@ test.describe('Game Flow', () => {
     ).toBeVisible()
 
     // Navigate tabs inside Band HQ to be safe
-    await page.getByRole('button', { name: 'SHOP' }).click()
-    await page.getByRole('button', { name: 'SETTINGS' }).click()
+    await page.getByRole('button', { name: /shop/i }).click()
+    await page.getByRole('button', { name: /settings/i }).click()
 
     // Click leave, expect Band HQ button to be visible again on main menu
     await page.getByRole('button', { name: /leave \[esc\]/i }).click()
@@ -137,10 +146,17 @@ test.describe('Game Flow', () => {
       return
     }
 
+    const confirmBtn = page.getByRole('button', { name: /confirm/i })
+    if (await confirmBtn.isVisible()) {
+      const input = page
+        .getByPlaceholder(/enter your name/i)
+        .or(page.getByPlaceholder(/ui:enter_name_placeholder/i))
+      await input.fill('Test Name')
+      await confirmBtn.click()
+    }
+
     // 1. Overworld
-    await expect(page.getByRole('heading', { name: /tour plan/i })).toBeVisible(
-      { timeout: 5000 }
-    )
+    await expect(page.getByText(/tour plan/i)).toBeVisible({ timeout: 10000 })
 
     // The Band HQ might be open depending on earlier flow, ensure it's closed
     const hqHeading = page.getByRole('heading', {

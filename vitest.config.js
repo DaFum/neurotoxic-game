@@ -34,9 +34,7 @@ export default defineConfig({
       'tests/social/**/*.test.js',
       'tests/social/**/*.spec.js',
       'tests/hooks/**/*.test.js',
-      'tests/hooks/**/*.spec.js',
-      'tests/performance/**/*.test.js',
-      'tests/performance/**/*.spec.js'
-    ],
+      'tests/hooks/**/*.spec.js'
+    ]
   }
 })

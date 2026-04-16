@@ -1,22 +1,46 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-vi.mock('tone', () => {
-  return {
-    getContext: () => ({
-      rawContext: {
-        currentTime: 0
+const mockTone = vi.hoisted(() => {
+  const createMockAudioNode = () => {
+    return class MockAudioNode {
+      constructor() {
+        this.volume = { value: 0 }
+        this.gain = { rampTo: vi.fn(), value: 1 }
       }
-    }),
+      connect() {
+        return this
+      }
+      chain() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+      stop() {
+        return this
+      }
+      cancel() {
+        return this
+      }
+    }
+  }
+
+  const MockNode = createMockAudioNode()
+
+  return {
+    getContext: () => ({ rawContext: { currentTime: 0 } }),
     getTransport: () => ({
       stop: vi.fn(),
       position: 0,
       cancel: vi.fn(),
       state: 'stopped'
     }),
-    getDestination: () => ({
-      mute: false
-    }),
+    getDestination: () => ({ mute: false }),
     Context: class {
       resume() {
         return Promise.resolve()
@@ -25,549 +49,55 @@ vi.mock('tone', () => {
     },
     setContext: vi.fn(),
     start: vi.fn().mockResolvedValue(),
-    context: {
-      state: 'running',
-      resume: vi.fn().mockResolvedValue()
-    },
-    Draw: {
-      schedule: vi.fn(),
-      cancel: vi.fn()
-    },
-    Limiter: class {
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    Synth: class {
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    StereoWidener: class {
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Volume: class {
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    NoiseSynth: class {
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Compressor: class {
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    Reverb: class {
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    Delay: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    EQ3: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    Channel: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Sequence: class {
-      start() {}
-      stop() {}
-      dispose() {}
-    },
-    Player: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {}
-      stop() {}
-    },
-    Gain: class {
-      constructor() {
-        this.gain = { rampTo: vi.fn(), value: 1 }
-      }
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    PolySynth: class {
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      chain() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    FMSynth: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Sampler: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Distortion: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Chorus: class {
-      chain() {
-        return this
-      }
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-      start() {
-        return this
-      }
-    },
-    Filter: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    AutoWah: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Tremolo: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Phaser: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    BitCrusher: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    PingPongDelay: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Vibrato: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    FeedbackDelay: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    MembraneSynth: class {
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    MetalSynth: class {
-      constructor() {
-        this.volume = { value: 0 }
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    PluckSynth: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    AMSynth: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    MonoSynth: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Oscillator: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    LFO: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Envelope: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    AmplitudeEnvelope: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Meter: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Analyser: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Waveform: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    FFT: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    PitchShift: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    JCReverb: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    AutoPanner: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Chebyshev: class {
-      chain() {
-        return this
-      }
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Panner: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    CrossFade: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Merge: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
-    Split: class {
-      connect() {
-        return this
-      }
-      toDestination() {
-        return this
-      }
-      dispose() {}
-    },
+    context: { state: 'running', resume: vi.fn().mockResolvedValue() },
+    Draw: { schedule: vi.fn(), cancel: vi.fn() },
+    Limiter: MockNode,
+    Synth: MockNode,
+    StereoWidener: MockNode,
+    Volume: MockNode,
+    NoiseSynth: MockNode,
+    Compressor: MockNode,
+    Reverb: MockNode,
+    Delay: MockNode,
+    EQ3: MockNode,
+    Channel: MockNode,
+    Sequence: MockNode,
+    Player: MockNode,
+    Gain: MockNode,
+    PolySynth: MockNode,
+    FMSynth: MockNode,
+    Sampler: MockNode,
+    Distortion: MockNode,
+    Chorus: MockNode,
+    Filter: MockNode,
+    AutoWah: MockNode,
+    Tremolo: MockNode,
+    Phaser: MockNode,
+    BitCrusher: MockNode,
+    PingPongDelay: MockNode,
+    Vibrato: MockNode,
+    FeedbackDelay: MockNode,
+    MembraneSynth: MockNode,
+    MetalSynth: MockNode,
+    PluckSynth: MockNode,
+    AMSynth: MockNode,
+    MonoSynth: MockNode,
+    Oscillator: MockNode,
+    LFO: MockNode,
+    Envelope: MockNode,
+    AmplitudeEnvelope: MockNode,
+    Meter: MockNode,
+    Analyser: MockNode,
+    Waveform: MockNode,
+    FFT: MockNode,
+    PitchShift: MockNode,
+    JCReverb: MockNode,
+    AutoPanner: MockNode,
+    Chebyshev: MockNode,
+    Panner: MockNode,
+    CrossFade: MockNode,
+    Merge: MockNode,
+    Split: MockNode,
     Transport: {
       start: vi.fn(),
       stop: vi.fn(),
@@ -579,20 +109,11 @@ vi.mock('tone', () => {
     },
     TransportTime: vi.fn(),
     Time: vi.fn(),
-    Loop: class {
-      start() {
-        return this
-      }
-      stop() {
-        return this
-      }
-      cancel() {
-        return this
-      }
-      dispose() {}
-    }
+    Loop: MockNode
   }
 })
+
+vi.mock('tone', () => mockTone)
 
 vi.mock('../src/components/PixiStage', () => ({
   PixiStage: () => <div data-testid='pixi-stage-mock'>Pixi Stage</div>
