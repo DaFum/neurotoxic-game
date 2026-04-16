@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { ALL_VENUES } from '../src/data/venues.js'
 import { createInitialState } from '../src/context/initialState.js'
@@ -47,6 +47,11 @@ import {
   applyEventDelta,
   hasActiveSponsorship
 } from '../src/utils/gameStateUtils.js'
+import {
+  validatePurchase,
+  processPurchaseEffect
+} from '../src/utils/purchaseLogicUtils.js'
+import { calculateContinueStats } from '../src/utils/postGigUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -447,8 +452,7 @@ const buildFameBalanceAudit = () => {
       performanceScore,
       rawGigFame: reachLabel.rawGigFame,
       gigsToReachLabelCost: reachLabel.gigs,
-      gigsToBuyShopOnly: shopPlusLegacy.gigs,
-      gigsToBuyFameShopOnly: shopOnly.gigs,
+      gigsToBuyShopOnly: shopOnly.gigs,
       gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs,
       verdict: getFameAuditVerdict({ gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs })
     }
@@ -754,37 +758,52 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   if (rng() > 0.24) return
   const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
   if (!candidate) return
+  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) return
 
-  const cost = Number(candidate.cost || 0)
-  if (!Number.isFinite(cost) || cost <= 0) return
+  const validation = validatePurchase(candidate, state.player, state.band)
+  if (!validation.isValid) return
 
-  const paysWithFame = candidate.currency === 'fame'
-  const availableCurrency = paysWithFame ? state.player.fame : state.player.money
-  if (availableCurrency < cost) return
+  const initialPlayerPatch = validation.payingWithFame
+    ? {
+        fame: clampPlayerFame((state.player.fame ?? 0) - validation.finalCost),
+        fameLevel: calculateFameLevel(
+          clampPlayerFame((state.player.fame ?? 0) - validation.finalCost)
+        )
+      }
+    : {
+        money: clampPlayerMoney((state.player.money ?? 0) - validation.finalCost)
+      }
 
-  const ownedHqUpgrades = Array.isArray(state.player.hqUpgrades)
-    ? state.player.hqUpgrades
-    : []
-  const ownedVanUpgrades = Array.isArray(state.player.van?.upgrades)
-    ? state.player.van.upgrades
-    : []
-  const allOwned = new Set([...ownedHqUpgrades, ...ownedVanUpgrades])
-  if (allOwned.has(candidate.id)) return
+  const effectResult = processPurchaseEffect(
+    validation.effect,
+    candidate,
+    initialPlayerPatch,
+    state.player,
+    state.band
+  )
 
-  if (paysWithFame) {
-    state.player.fame = clampPlayerFame(
-      state.player.fame - cost + getCatalogFameRefund(candidate)
-    )
-    state.player.fameLevel = calculateFameLevel(state.player.fame)
+  if (effectResult.errorType) return
+
+  if (effectResult.playerPatch) {
+    state.player = { ...state.player, ...effectResult.playerPatch }
+  }
+
+  if (effectResult.bandPatch) {
+    state.band = { ...state.band, ...effectResult.bandPatch }
+  }
+
+  if (validation.payingWithFame) {
+    counters.catalogFameSpent += validation.finalCost
   } else {
-    state.player.money = clampPlayerMoney(state.player.money - cost)
+    counters.catalogMoneySpent += validation.finalCost
   }
 
   if (candidate.category === 'VAN') {
-    state.player.van.upgrades = [...ownedVanUpgrades, candidate.id]
-  } else {
-    state.player.hqUpgrades = [...ownedHqUpgrades, candidate.id]
+    counters.vanUpgrades += 1
+  } else if (candidate.category === 'HQ') {
+    counters.hqUpgrades += 1
   }
+
   counters.catalogUpgrades += 1
 }
 
@@ -1060,30 +1079,21 @@ const applyPostGigState = (
   rng,
   misses = 0
 ) => {
-  state.player.money = clampPlayerMoney(state.player.money + financials.net)
+  const continueStats = calculateContinueStats({
+    player: state.player,
+    perfScore: performanceScore,
+    financials,
+    misses,
+    calculateFameGain,
+    calculateFameLevel,
+    clampPlayerFame,
+    clampPlayerMoney,
+    BALANCE_CONSTANTS
+  })
 
-  const currentFame = state.player.fame || 0
-  let fameDelta = -SIMULATION_CONSTANTS.fameLossBadGig
-
-  if (performanceScore >= 62) {
-    const rawFameGain = calculateGigFameReward(performanceScore)
-    fameDelta = calculateFameGain(
-      rawFameGain,
-      currentFame,
-      BALANCE_CONSTANTS.MAX_FAME_GAIN
-    )
-  } else {
-    // Progressive miss-rate penalty: each miss above the tolerance threshold
-    // (8 misses) adds 0.5 extra fame loss, modelling crowd disappointment.
-    const MISS_TOLERANCE = 8
-    if (misses > MISS_TOLERANCE) {
-      const missPenalty = Math.round((misses - MISS_TOLERANCE) * 0.5)
-      fameDelta -= missPenalty
-    }
-  }
-
-  state.player.fame = clampPlayerFame(currentFame + fameDelta)
-  state.player.fameLevel = calculateFameLevel(state.player.fame)
+  state.player.money = continueStats.newMoney
+  state.player.fame = continueStats.newFame
+  state.player.fameLevel = continueStats.fameLevel
 
   state.social.lastGigDay = state.player.day
   state.social.lastGigDifficulty = venue.diff ?? venue.difficulty ?? 1
@@ -1130,7 +1140,7 @@ const runSingleSimulation = (scenario, seed) => {
 
   const counters = {
     gigsPlayed: 0,
-      bankrupt: false,
+    bankrupt: false,
     sponsorSignings: 0,
     sponsorPayouts: 0,
     sponsorDrops: 0,
@@ -1152,6 +1162,8 @@ const runSingleSimulation = (scenario, seed) => {
     postPulses: 0,
     contrabandDrops: 0,
     catalogUpgrades: 0,
+    catalogMoneySpent: 0,
+    catalogFameSpent: 0,
     gigCapHits: 0
   }
 
@@ -1491,6 +1503,8 @@ const summarizeScenario = runs => {
       acc.postPulses += run.postPulses
       acc.contrabandDrops += run.contrabandDrops
       acc.catalogUpgrades += run.catalogUpgrades
+      acc.catalogMoneySpent += run.catalogMoneySpent || 0
+      acc.catalogFameSpent += run.catalogFameSpent || 0
       acc.gigCapHits += run.gigCapHits || 0
       acc.moneyAtDay20 += run.moneyAtDay20 || 0
       acc.moneyAtDay40 += run.moneyAtDay40 || 0
@@ -1535,7 +1549,9 @@ const summarizeScenario = runs => {
       postPulses: 0,
       contrabandDrops: 0,
       catalogUpgrades: 0,
-    gigCapHits: 0,
+      catalogMoneySpent: 0,
+      catalogFameSpent: 0,
+      gigCapHits: 0,
       moneyAtDay20: 0,
       moneyAtDay40: 0,
       moneyAtDay60: 0,
@@ -1588,6 +1604,8 @@ const summarizeScenario = runs => {
     avgPostPulses: Number((totals.postPulses / count).toFixed(2)),
     avgContrabandDrops: Number((totals.contrabandDrops / count).toFixed(2)),
     avgCatalogUpgrades: Number((totals.catalogUpgrades / count).toFixed(2)),
+    avgCatalogMoneySpent: Math.round(totals.catalogMoneySpent / count),
+    avgCatalogFameSpent: Math.round(totals.catalogFameSpent / count),
     sampleSize: count,
     // Progression curve
     avgMoneyAtDay20: Math.round(totals.moneyAtDay20 / count),
@@ -1621,6 +1639,12 @@ const summarizeScenario = runs => {
     ),
     sinkToIncomeRatio: Number(
       ((totals.totalTravelCostGigs + totals.repairs * 150 + totals.refuels * 80) / Math.max(1, totals.totalGigNet)).toFixed(2)
+    ),
+    avgFameProgress: Math.round(
+      (totals.finalFame + totals.catalogFameSpent) / count
+    ),
+    avgFameProgressPerGig: Number(
+      (((totals.finalFame + totals.catalogFameSpent) / count) / Math.max(1, totals.gigsPlayed / count)).toFixed(2)
     ),
     gigsToAffordHqUpgrade: Number(
       (
@@ -1779,50 +1803,50 @@ const KPI_TARGETS = {
     bankruptcyMax: 5,
     moneyMin: 25000,
     moneyMax: 80000,
-    fameMin: 200,
-    fameMax: 500
+    fameProgressPerGigMin: 790,
+    fameProgressPerGigMax: 1200
   },
   bootstrap_struggle: {
     bankruptcyMax: 75, // Raised from 25: tighter hit windows reduce gig income for low-skill scenarios
     moneyMin: 1000,
     moneyMax: 5000,
-    fameMin: 120,
-    fameMax: 320
+    fameProgressPerGigMin: 650,
+    fameProgressPerGigMax: 1050
   },
   aggressive_marketing: {
     bankruptcyMax: 5,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameMin: 200,
-    fameMax: 430
+    fameProgressPerGigMin: 790,
+    fameProgressPerGigMax: 1200
   },
   scandal_recovery: {
     bankruptcyMax: 15,
     moneyMin: 5000,
     moneyMax: 30000,
-    fameMin: 150,
-    fameMax: 360
+    fameProgressPerGigMin: 720,
+    fameProgressPerGigMax: 1120
   },
   festival_push: {
     bankruptcyMax: 10,
     moneyMin: 10000,
     moneyMax: 50000,
-    fameMin: 200,
-    fameMax: 460
+    fameProgressPerGigMin: 790,
+    fameProgressPerGigMax: 1250
   },
   chaos_tour: {
     bankruptcyMax: 15,
     moneyMin: 10000,
     moneyMax: 60000,
-    fameMin: 200,
-    fameMax: 430
+    fameProgressPerGigMin: 760,
+    fameProgressPerGigMax: 1200
   },
   cult_hypergrowth: {
     bankruptcyMax: 5,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameMin: 200,
-    fameMax: 380
+    fameProgressPerGigMin: 820,
+    fameProgressPerGigMax: 1300
   }
 }
 
@@ -1871,24 +1895,25 @@ const checkKpi = (id, summary) => {
     bewertung: moneyBewertung
   })
 
-  const fame = summary.avgFinalFame
-  const fameRange = t.fameMax - t.fameMin
-  const fameCenter = (t.fameMin + t.fameMax) / 2
+  const fame = summary.avgFameProgressPerGig ?? 0
+  const fameRange = t.fameProgressPerGigMax - t.fameProgressPerGigMin
+  const fameCenter =
+    (t.fameProgressPerGigMin + t.fameProgressPerGigMax) / 2
   const fameDeviation =
     fameRange > 0 ? Math.abs(fame - fameCenter) / (fameRange / 2) : 0
   let fameBewertung
-  if (fame < t.fameMin || fame > t.fameMax) {
-    fameBewertung = 'Außerhalb Zielband – Progressionspfad prüfen.'
+  if (fame < t.fameProgressPerGigMin || fame > t.fameProgressPerGigMax) {
+    fameBewertung = 'Außerhalb Zielband – Fame-Fortschritt pro Gig prüfen.'
   } else if (fameDeviation < 0.3) {
-    fameBewertung = 'Zentral im Zielband – Fame-Kurve stimmig.'
+    fameBewertung = 'Zentral im Zielband – Fame-Fortschritt pro Gig stimmig.'
   } else {
     fameBewertung = 'Im Zielband – leicht außermittig.'
   }
   checks.push({
-    label: 'Endfame',
-    pass: fame >= t.fameMin && fame <= t.fameMax,
+    label: 'Fame-Fortschritt/Gig',
+    pass: fame >= t.fameProgressPerGigMin && fame <= t.fameProgressPerGigMax,
     actual: String(fame),
-    target: `${t.fameMin} – ${t.fameMax}`,
+    target: `${t.fameProgressPerGigMin} – ${t.fameProgressPerGigMax}`,
     bewertung: fameBewertung
   })
 
@@ -1921,18 +1946,17 @@ const getGigCalibrationInsight = s => {
 }
 
 const getIncomeStructureInsight = s => {
-  // Thresholds calibrated to the post-Round-3 economy (2026-04-13):
-  // With €2.4k–4.8k gig-net and €78–93 per-gig travel, ratios land at 31–52×.
-  // A ratio >70× would indicate a genuine sink failure; >55× is notable but acceptable.
+  if (s.gigNetToTravelRatio < 1)
+    return '⚠️ Reise- und Sink-Kosten uebersteigen den Gig-Ertrag – Survival-Loop bricht weg.'
+  if (s.gigNetToTravelRatio < 3)
+    return '⚠️ Reisekosten fressen den Gig-Ertrag fast auf – Fruehspiel oekonomisch fragil.'
   if (s.gigNetToTravelRatio > 70)
     return '⚠️ Reisekosten irrelevant – Kostendruck fehlt vollständig.'
   if (s.gigNetToTravelRatio > 55)
     return '⚠️ Reisekosten zu gering – Travel-Kostendruck erhöhen.'
-  if (s.gigsToAffordHqUpgrade < 0.05)
-    return '⚠️ HQ-Upgrade in <0.05 Gigs amortisiert – Preis deutlich erhöhen.'
-  // Van upgrade (€350) requires 0.07–0.14 gigs given current net income.
-  // <0.06 would indicate the upgrade is virtually free.
-  if (s.gigsToAffordVanUpgrade < 0.06)
+  if (s.gigsToAffordHqUpgrade < 2)
+    return '⚠️ HQ-Upgrade amortisiert sich in weniger als zwei Gigs – Preis deutlich erhöhen.'
+  if (s.gigsToAffordVanUpgrade < 0.25)
     return '⚠️ Van-Upgrade zu günstig – Preis anpassen.'
   return '✅ Einkommensstruktur akzeptabel.'
 }
@@ -1988,7 +2012,7 @@ const buildMarkdownReport = payload => {
 
   for (const scenario of fameAudit.scenarios) {
     lines.push(
-      `| ${scenario.performanceScore} | ${scenario.rawGigFame} | ${scenario.gigsToReachLabelCost} | ${scenario.gigsToBuyFameShopOnly} | ${scenario.gigsToBuyShopPlusLegacy} | ${scenario.verdict} |`
+      `| ${scenario.performanceScore} | ${scenario.rawGigFame} | ${scenario.gigsToReachLabelCost} | ${scenario.gigsToBuyShopOnly} | ${scenario.gigsToBuyShopPlusLegacy} | ${scenario.verdict} |`
     )
   }
 
@@ -2225,7 +2249,7 @@ const buildMarkdownReport = payload => {
   lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')
   lines.push(
-    'Zieldefinition: Insolvenz, Endgeld, Endfame pro Szenario (kalibriert auf 75-Tage-Lauf).'
+    'Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kalibriert auf 75-Tage-Lauf).'
   )
   lines.push('')
   lines.push('| Szenario | KPI | Ziel | Ist-Wert | Status | Bewertung |')
@@ -2361,7 +2385,10 @@ export const runSimulationSuite = async () => {
   return payload
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+) {
   const payload = await runSimulationSuite()
   const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
   const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)

@@ -2,7 +2,7 @@ import {
   checkViralEvent,
   calculateSocialGrowth,
   resolvePost
-} from './socialEngine'
+} from './socialEngine.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -10,8 +10,8 @@ import {
   clampMemberMood,
   clampControversyLevel,
   calculateGigFameReward
-} from './gameStateUtils'
-import { BRAND_ALIGNMENTS } from '../context/initialState'
+} from './gameStateUtils.js'
+import { BRAND_ALIGNMENTS } from '../context/initialState.js'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals.js'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
 
@@ -289,7 +289,6 @@ export const getAcceptDealSocialUpdateFactory = deal => {
       }
     }
 
-    const prevDeals = prevSocial.activeDeals || []
     updates.activeDeals = [{ ...deal, remainingGigs: deal.offer.duration }]
 
     return updates

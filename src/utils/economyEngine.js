@@ -62,6 +62,10 @@ export const TICKET_SALES_CONSTANTS = {
 export const MANAGEMENT_CUT_RATE = 0.15
 export const MAX_GIG_NET = 7500
 export const GLOBAL_PAYOUT_NERF = 0.5
+const TRAVEL_LOGISTICS_BASE = 18
+const TRAVEL_LOGISTICS_PER_100KM = 4
+const TRAVEL_LOGISTICS_PER_FAME_LEVEL = 1.5
+const TRAVEL_LOGISTICS_CASH_CAP = 45
 
 /**
  * Calculates ticket sales revenue and attendance.
@@ -331,12 +335,18 @@ export const calculateTravelExpenses = (
   // Base food cost
   let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
 
-  // Logistics/Crew scaling with fame and distance (exponential)
-  // Scaling dynamically with fameLevel to introduce stronger sinks for higher fame without
-  // crushing early game.
+  // Keep travel scaling predictable: mild distance pressure, mild fame pressure,
+  // and at most a small reserve fee for travelling with a large cash buffer.
+  const distanceLogistics = Math.floor(
+    (dist / 100) * TRAVEL_LOGISTICS_PER_100KM
+  )
+  const fameLogistics = Math.floor(fameLevel * TRAVEL_LOGISTICS_PER_FAME_LEVEL)
+  const cashReserveFee = Math.min(
+    TRAVEL_LOGISTICS_CASH_CAP,
+    Math.floor((playerState?.money || 0) / 1000) * 5
+  )
   const logisticsCost =
-    Math.floor(dist * 0.05 * Math.pow(1.4, fameLevel)) +
-    Math.floor((playerState?.money || 0) * 0.02)
+    TRAVEL_LOGISTICS_BASE + distanceLogistics + fameLogistics + cashReserveFee
   const totalCost = foodCost + logisticsCost
 
   return { dist, fuelLiters, totalCost }
