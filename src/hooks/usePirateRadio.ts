@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/AudioManager'

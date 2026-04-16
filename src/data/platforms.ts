@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 export const SOCIAL_PLATFORMS = {
   INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.2 },

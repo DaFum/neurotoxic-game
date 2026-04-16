@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Refactored Grudge holder check to use for...in loop, added Object.hasOwn guard.
  * (#2) Next Steps: N/A

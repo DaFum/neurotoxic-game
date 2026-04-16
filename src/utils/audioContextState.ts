@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 /**
  * Returns the most reliable AudioContext state using raw context first.

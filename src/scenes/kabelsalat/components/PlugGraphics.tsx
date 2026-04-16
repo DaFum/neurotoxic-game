@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted plug graphics to sub-components, removed TODO.
  * (#2) Next Steps: N/A

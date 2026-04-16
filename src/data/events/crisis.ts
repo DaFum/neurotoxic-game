@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { secureRandom } from '../../utils/crypto'
 import { validateCrisisEvent } from '../../utils/eventValidator'

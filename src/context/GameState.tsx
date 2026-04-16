@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
 import {

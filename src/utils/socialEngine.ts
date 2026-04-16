@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
  * (#2) Next Steps: N/A

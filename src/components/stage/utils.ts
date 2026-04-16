@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Added withTimeout utility from PixiStageController.
  * (#2) Next Steps: Continue adding shared utilities here.

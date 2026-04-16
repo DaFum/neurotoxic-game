@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRoadieLogic } from '../hooks/minigames/useRoadieLogic'

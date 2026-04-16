@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Utility functions for checking character traits.
  * Centralizes logic for trait effects and conditions.

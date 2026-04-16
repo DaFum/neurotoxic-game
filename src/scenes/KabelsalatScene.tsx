@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useKabelsalatState } from './kabelsalat/useKabelsalatState'
 import { Header } from './kabelsalat/components/Header.tsx'
 import { Rules } from './kabelsalat/components/Rules.tsx'

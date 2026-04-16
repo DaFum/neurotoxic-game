@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 // Special Events
 export const SPECIAL_EVENTS = [

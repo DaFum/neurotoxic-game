@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * REVIEW.md Compliance Block
  *

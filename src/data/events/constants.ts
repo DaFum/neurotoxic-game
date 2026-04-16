@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 /**
  * UI Strings and constants for the event system.

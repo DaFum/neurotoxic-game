@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 export const QUEST_EVENTS = [
   {

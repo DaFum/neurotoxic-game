@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Pure functions for rhythm game scoring logic.
  */

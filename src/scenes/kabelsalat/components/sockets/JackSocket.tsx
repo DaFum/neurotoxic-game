@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted JackSocket into a static UI component.
  * (#2) Next Steps: N/A

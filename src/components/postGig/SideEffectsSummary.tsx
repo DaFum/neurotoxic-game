@@ -1,4 +1,3 @@
-// @ts-nocheck
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '../../utils/numberUtils'

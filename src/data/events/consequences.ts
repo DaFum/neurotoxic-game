@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { hasStateItem } from '../../utils/gameStateUtils'
 
 // TODO: Review this file

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import {
   CONTRABAND_RARITY_WEIGHTS,

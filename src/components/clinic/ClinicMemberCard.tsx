@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted ClinicMemberCard into a separate component.
  * (#2) Next Steps: N/A

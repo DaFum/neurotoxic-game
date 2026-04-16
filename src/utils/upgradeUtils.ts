@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 /**
  * Checks whether a specific upgrade is owned.

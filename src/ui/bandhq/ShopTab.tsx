@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../../data/hqItems'

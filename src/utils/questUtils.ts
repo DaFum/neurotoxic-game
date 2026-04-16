@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Checks if a specific quest is active using a fast for loop.
  * This avoids array allocation overhead from Array.some() in hot paths.

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useRef, useEffect } from 'react'
 import { createHecklerSession } from '../../utils/hecklerLogic'
 import {

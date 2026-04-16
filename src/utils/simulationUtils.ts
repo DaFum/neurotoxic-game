@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Added missing REVIEW.md comment block.
  * (#2) Next Steps: N/A

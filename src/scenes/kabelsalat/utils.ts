@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CABLE_MAP, SLOT_XS } from './constants'
 import { getSafeUUID } from '../../utils/crypto'
 import { secureRandom } from '../../utils/crypto'

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Builds the props object for the Quests modal.
  * @param {Function} onClose - The function to close the modal.

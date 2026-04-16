@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'

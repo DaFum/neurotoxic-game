@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { hasActiveSponsorship } from '../utils/gameStateUtils'
 import { SOCIAL_PLATFORMS } from './platforms'
 import i18n from '../i18n'

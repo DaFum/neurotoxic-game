@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Sprite, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
 import { secureRandom } from '../../utils/crypto'

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { GAME_PHASES } from '../gameConstants'
 import { logger } from '../../utils/logger'

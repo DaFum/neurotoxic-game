@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 // Gig Events
 export const GIG_EVENTS = [

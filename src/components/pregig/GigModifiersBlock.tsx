@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * (#1) Actual Updates: Extracted GigModifiersBlock from PreGig scene
  * (#2) Next Steps: Extract remaining logic

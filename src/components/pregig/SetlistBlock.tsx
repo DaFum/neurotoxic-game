@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * (#1) Actual Updates: Extracted SetlistBlock from PreGig scene. Added precise PropTypes definitions.
  * (#2) Next Steps: Extract remaining logic.

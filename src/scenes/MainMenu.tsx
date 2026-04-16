@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { safeStorageOperation } from '../utils/errorHandler'
 import { getSafeUUID } from '../utils/crypto'

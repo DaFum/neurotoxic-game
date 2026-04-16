@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from './logger'
 import { bandHasTrait } from './traitLogic'
 import { calculateZealotryEffects } from './socialEngine'

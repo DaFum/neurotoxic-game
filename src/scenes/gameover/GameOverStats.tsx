@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted statistics container and rows from GameOver.tsx to a standalone file. Added strict PropTypes and nullish coalescing to GameOverStats.
  * (#2) Next Steps: Continue extracting other sub-components from GameOver.tsx.

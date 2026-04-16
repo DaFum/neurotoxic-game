@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted CableItem for maintainability. Added Set optimization for O(1) lookups.
  * (#2) Next Steps: N/A

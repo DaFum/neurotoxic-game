@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const DEBOUNCE_MS = 50
 
 /**

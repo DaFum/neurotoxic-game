@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Roadie Minigame Constants
 export const ROADIE_GRID_WIDTH = 12
 export const ROADIE_GRID_HEIGHT = 8 // Rows: 0 (Start), 1-6 (Road), 7 (Venue)

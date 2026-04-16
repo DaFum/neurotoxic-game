@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useMemo } from 'react'
 import { getSafeUUID } from '../utils/crypto'
 import { useTranslation } from 'react-i18next'

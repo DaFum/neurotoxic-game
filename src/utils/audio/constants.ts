@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 export const MIN_NOTE_DURATION = 0.05
 export const MAX_NOTE_DURATION = 10

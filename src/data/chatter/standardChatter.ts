@@ -1,31 +1,30 @@
-// @ts-nocheck
 import { GAME_PHASES } from '../../context/gameConstants'
 
-const getMinMood = (state, memo) =>
+const getMinMood = (state: any, memo: any) =>
   memo?.minMood ??
   (state.band?.members
     ? Math.min(...state.band.members.map(m => m.mood ?? Infinity))
     : Infinity)
 
-const getMaxMood = (state, memo) =>
+const getMaxMood = (state: any, memo: any) =>
   memo?.maxMood ??
   (state.band?.members
     ? Math.max(...state.band.members.map(m => m.mood ?? -Infinity))
     : -Infinity)
 
-const getMinStamina = (state, memo) =>
+const getMinStamina = (state: any, memo: any) =>
   memo?.minStamina ??
   (state.band?.members
     ? Math.min(...state.band.members.map(m => m.stamina ?? Infinity))
     : Infinity)
 
-const getMaxStamina = (state, memo) =>
+const getMaxStamina = (state: any, memo: any) =>
   memo?.maxStamina ??
   (state.band?.members
     ? Math.max(...state.band.members.map(m => m.stamina ?? -Infinity))
     : -Infinity)
 
-const isPlayerInCity = (state, citySlug) => {
+const isPlayerInCity = (state: any, citySlug: any) => {
   const location = state.player?.location
   if (!location) return false
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const validateHealMember = (member, playerMoney, healCostMoney) => {
   if (!member) return { isValid: false, silent: true }
 

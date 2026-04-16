@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants'
 import { logger } from '../../utils/logger'

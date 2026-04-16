@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'

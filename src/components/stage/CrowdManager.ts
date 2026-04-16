@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { Container, Graphics, Sprite } from 'pixi.js'
 import {

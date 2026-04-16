@@ -28,7 +28,6 @@
 
 - Commits must use Conventional Commits (`feat:`, `fix:`, etc.).
 - Use `pnpm` exclusively — never `npm` or `yarn`.
-- Prefer targeted refactoring over global formatting to minimise PR noise.
 - **Tailwind v4**: use `@import "tailwindcss"` (not `@tailwind base`). For non-color tokens (e.g., z-index `--z-*`), use `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
 - **Colors**: never hardcode. Use CSS vars (`var(--color-toxic-green)`). In PixiJS: `getPixiColorFromToken('--toxic-green')` (omit `--color-` prefix).
 
@@ -36,10 +35,9 @@
 
 - `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
 - Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They return reactive state only.
-- `useArrivalLogic` owns arrival routing (including direct PREGIG entry for performance nodes).
+- `useArrivalLogic` owns ALL arrival routing (including PREGIG direct entry); `COMPLETE_TRAVEL_MINIGAME` does not change scene.
 - `START_GIG` resets `gigModifiers` to defaults; previous gig selections do not carry over.
-- `COMPLETE_TRAVEL_MINIGAME` does not route scenes; `useArrivalLogic` owns arrival routing.
-- Pixi.js v8 cleanup: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
+- Pixi.js v8 cleanup: `app.destroy({ removeView: true, children: true, texture: true, textureSource: true })`.
 - Audio end: Do NOT use `audioPlaybackEnded`. Use `setlistCompleted` + `isNearTrackEnd`.
 - Songs with JSON notes: OGG/MIDI capped to `maxNoteTime + NOTE_TAIL_MS`. Procedural songs use full excerpt duration.
 - Default chatter scenes: `MENU`, `OVERWORLD`, `PREGIG`, `POSTGIG` only — `GIG` requires explicit conditional entries.

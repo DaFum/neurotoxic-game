@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 /**
  * Initial State Definition for the Game

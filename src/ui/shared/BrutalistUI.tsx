@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import { getSafeUUID } from '../../utils/crypto'

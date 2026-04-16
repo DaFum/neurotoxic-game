@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Refactored Overlays component to use sub-components.
  * (#2) Next Steps: N/A

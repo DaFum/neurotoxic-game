@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Crisis Event Validation Utility
  * Validates event objects against the expected structure and types.

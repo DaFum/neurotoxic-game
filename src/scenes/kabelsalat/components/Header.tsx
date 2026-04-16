@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted complex UI sub-components into standalone files (HeaderTitle, HeaderTimer) for better maintainability.
  * (#2) Next Steps: N/A

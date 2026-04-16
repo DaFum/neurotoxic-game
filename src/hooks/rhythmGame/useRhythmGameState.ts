@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useReducer, useRef, useMemo, useState } from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'

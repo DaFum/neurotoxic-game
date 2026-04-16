@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Created GameOverOverlay component.
  * (#2) Next Steps: N/A

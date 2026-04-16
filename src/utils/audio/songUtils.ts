@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 /**
  * Normalizes a song entry to its ID.

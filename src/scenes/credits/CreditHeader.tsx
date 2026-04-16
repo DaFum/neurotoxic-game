@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted CreditHeader component, localized text, and wrapped in React.memo.
  * (#2) Next Steps: N/A

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * (#1) Actual Updates:
  * - Extracted subcomponents (`DealImage`, `DealInfo`, `DealActions`) from the main `DealCard` component.

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted CableItem component, wrapped in React.memo
  * (#2) Next Steps: N/A

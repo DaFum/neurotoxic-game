@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted action buttons from GameOver.tsx to a standalone file.
  * (#2) Next Steps: Refactor the main GameOver.tsx file to use these new components.

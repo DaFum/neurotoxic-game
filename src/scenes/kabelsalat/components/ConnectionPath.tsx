@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted ConnectionPath component from ConnectionPaths.tsx for better maintainability. Added a guard clause to return null if the cable is not found in CABLE_MAP to prevent runtime errors.
  * (#2) Next Steps: N/A

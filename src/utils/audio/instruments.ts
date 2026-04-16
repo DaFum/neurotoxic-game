@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as Tone from 'tone'
 import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'

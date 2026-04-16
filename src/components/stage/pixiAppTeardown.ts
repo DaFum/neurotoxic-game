@@ -1,4 +1,3 @@
-// @ts-nocheck
 /** Utility for robust PixiJS application teardown. */
 import { logger } from '../../utils/logger'
 

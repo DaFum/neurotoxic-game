@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useRef } from 'react'
 import { getTransportState, getGigTimeMs } from '../../utils/audioEngine'
 

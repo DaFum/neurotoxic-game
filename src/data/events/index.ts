@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 // Aggregate all event categories
 import { TRANSPORT_EVENTS } from './transport'

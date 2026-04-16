@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import {
