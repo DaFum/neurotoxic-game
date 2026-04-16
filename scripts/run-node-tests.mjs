@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
 
 const rawArgs = process.argv.slice(2)
@@ -23,47 +24,48 @@ const commandArgs = [
 import fs from 'node:fs'
 import path from 'node:path'
 
-const EXCLUDED_TEST_DIRS = [
-  'tests/api',
-  'tests/utils',
-  'tests/data',
-  'tests/security',
-  'tests/logic',
-  'tests/social',
-  'tests/hooks',
-  'tests/performance',
-  'tests/locale'
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
+const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
+
+const NODE_TEST_DIRS = [
+  'tests/node',
+  'tests/components',
+  'tests/context',
+  'tests/events',
+  'tests/golden-path',
+  'tests/reducers'
 ]
 
-const isPathInExcludedDir = testPath => {
+const isPathInNodeDirs = testPath => {
   const resolved = path.resolve(testPath)
-  const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
-  return EXCLUDED_TEST_DIRS.some(
+  const relative = path.relative(REPO_ROOT, resolved).replace(/\\/g, '/')
+  return NODE_TEST_DIRS.some(
     dir => relative === dir || relative.startsWith(`${dir}/`)
   )
 }
 
-// Exclude directories that have been migrated to vitest
 const getRemainingTestFiles = () => {
   const allFiles = []
   const crawl = dir => {
-    const items = fs.readdirSync(dir)
+    const absoluteDir = path.resolve(REPO_ROOT, dir)
+    if (!fs.existsSync(absoluteDir)) return
+    const items = fs.readdirSync(absoluteDir)
     for (const item of items) {
-      const fullPath = path.join(dir, item)
+      const fullPath = path.join(absoluteDir, item)
       const normalizedPath = fullPath.replace(/\\/g, '/')
       if (fs.statSync(fullPath).isDirectory()) {
-        crawl(fullPath)
+        crawl(path.relative(REPO_ROOT, fullPath))
       } else if (
         normalizedPath.endsWith('.test.js') ||
         normalizedPath.endsWith('.spec.js')
       ) {
-        if (!isPathInExcludedDir(normalizedPath)) {
-          allFiles.push(fullPath)
-        }
+        allFiles.push(fullPath)
       }
     }
   }
-  crawl('tests')
+  for (const dir of NODE_TEST_DIRS) {
+    crawl(dir)
+  }
   return allFiles
 }
 
@@ -85,11 +87,13 @@ const specificTestFileArgs = filteredArgs.filter(
   arg => arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs')
 )
 
-// Prevent running Vitest-migrated tests with node:test
-const hasExcludedSpecificFile = specificTestFileArgs.some(isPathInExcludedDir)
-if (hasExcludedSpecificFile) {
+// Prevent running tests outside tests/node/** with node:test
+const hasNonNodeSpecificFile = specificTestFileArgs.some(
+  arg => !isPathInNodeDirs(arg)
+)
+if (hasNonNodeSpecificFile) {
   console.error(
-    'Tests under the migrated directories are run with Vitest. Use the Vitest runner instead of node:test for these files.'
+    'Node runner only supports node:test directories under tests/. Use the Vitest runner for UI/integration and vitest-owned suites.'
   )
   process.exit(1)
 }

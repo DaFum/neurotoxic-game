@@ -1,5 +1,5 @@
 import {
-clampPlayerFame,
+  clampPlayerFame,
   clampBandHarmony,
   clampPlayerMoney,
   calculateFameLevel,

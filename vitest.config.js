@@ -17,24 +17,25 @@ export default defineConfig({
     globals: true, // Need this for jest-dom expect to work
     environment: 'jsdom',
     setupFiles: ['./tests/vitest.setup.js'],
-    // Include the refactored .js directories, leaving the rest for node:test
+    // JSDOM-only Vitest suites (React/DOM-facing tests).
     include: [
-      'tests/**/*.test.jsx',
-      'tests/**/*.spec.jsx',
-      'tests/api/**/*.test.js',
-      'tests/api/**/*.spec.js',
-      'tests/utils/**/*.test.js',
-      'tests/utils/**/*.spec.js',
-      'tests/data/**/*.test.js',
-      'tests/data/**/*.spec.js',
-      'tests/security/**/*.test.js',
-      'tests/security/**/*.spec.js',
-      'tests/logic/**/*.test.js',
-      'tests/logic/**/*.spec.js',
-      'tests/social/**/*.test.js',
-      'tests/social/**/*.spec.js',
-      'tests/hooks/**/*.test.js',
-      'tests/hooks/**/*.spec.js'
+      'tests/ui/**/*.test.jsx',
+      'tests/ui/**/*.spec.jsx',
+      'tests/integration/**/*.test.jsx',
+      'tests/integration/**/*.spec.jsx',
+      'tests/hooks/**/*.test.jsx',
+      'tests/hooks/**/*.spec.jsx',
+      'tests/security/**/*.test.jsx',
+      'tests/security/**/*.spec.jsx',
+      'tests/utils/**/*.test.jsx',
+      'tests/utils/**/*.spec.jsx',
+      'tests/logic/AmpStageController.test.js',
+      'tests/ui/**/*.test.js',
+      'tests/ui/**/*.spec.js',
+      'tests/integration/**/*.test.js',
+      'tests/integration/**/*.spec.js',
+      'tests/ui/bandhq/hooks/**/*.test.jsx',
+      'tests/ui/bandhq/hooks/**/*.spec.jsx'
     ]
   }
 })

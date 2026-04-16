@@ -109,8 +109,7 @@ export const CompletePhase = ({
           >
             {isProcessingAction
               ? t('ui:postGig.processing', { defaultValue: 'Processing...' })
-              : t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })
-            }
+              : t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
           </ActionButton>
         </motion.div>
       </motion.div>

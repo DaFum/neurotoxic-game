@@ -1015,7 +1015,9 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   }
 
   if (state.player.money > SIMULATION_CONSTANTS.vanUpgradeCost * 1.5 && rng() < 0.2) {
-    const vanUpgrade = UPGRADE_CATALOG.find(item => item.id === 'van_tuning')
+    const vanUpgrade = UPGRADE_CATALOG.find(
+      item => item.id === 'hq_van_tuning'
+    )
     applyCatalogPurchase(state, vanUpgrade, counters)
   }
 }
@@ -1129,6 +1131,7 @@ const applyPostGigState = (
 const runSingleSimulation = (scenario, seed) => {
   const rng = mulberry32(seed)
   let state = applyScenarioOverrides(createInitialState(), scenario)
+  const startingFame = state.player.fame
   let currentNode = HOME
 
   const counters = {
@@ -1439,6 +1442,7 @@ const runSingleSimulation = (scenario, seed) => {
   }
 
   return {
+    startingFame,
     finalMoney: state.player.money,
     maxPeakToTroughDrop,
     finalFame: state.player.fame,
@@ -1465,6 +1469,7 @@ const runSingleSimulation = (scenario, seed) => {
 const summarizeScenario = runs => {
   const totals = runs.reduce(
     (acc, run) => {
+      acc.startingFame += run.startingFame || 0
       acc.finalMoney += run.finalMoney
       acc.finalFame += run.finalFame
       acc.finalHarmony += run.finalHarmony
@@ -1512,6 +1517,7 @@ const summarizeScenario = runs => {
       return acc
     },
     {
+      startingFame: 0,
       finalMoney: 0,
       finalFame: 0,
       finalHarmony: 0,
@@ -1560,6 +1566,8 @@ const summarizeScenario = runs => {
   )
 
   const count = runs.length || 1
+  const fameProgressTotal =
+    totals.finalFame - totals.startingFame + totals.catalogFameSpent
   return {
     avgFinalMoney: Math.round(totals.finalMoney / count),
     avgFinalFame: Math.round(totals.finalFame / count),
@@ -1634,10 +1642,10 @@ const summarizeScenario = runs => {
       ((totals.totalTravelCostGigs + totals.repairs * 150 + totals.refuels * 80) / Math.max(1, totals.totalGigNet)).toFixed(2)
     ),
     avgFameProgress: Math.round(
-      (totals.finalFame + totals.catalogFameSpent) / count
+      fameProgressTotal / count
     ),
     avgFameProgressPerGig: Number(
-      (((totals.finalFame + totals.catalogFameSpent) / count) / Math.max(1, totals.gigsPlayed / count)).toFixed(2)
+      (fameProgressTotal / count / Math.max(1, totals.gigsPlayed / count)).toFixed(2)
     ),
     gigsToAffordHqUpgrade: Number(
       (
