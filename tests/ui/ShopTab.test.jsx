@@ -69,7 +69,7 @@ describe('ShopTab', () => {
       />
     )
     expect(screen.getByText(/1000€/)).toBeInTheDocument()
-    expect(screen.getByText(/FUNDS/)).toBeInTheDocument()
+    expect(screen.getByText(/ui:bandhq\.funds/)).toBeInTheDocument()
   })
 
   test('renders combined shop items from gear and instruments', () => {

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
@@ -26,6 +26,13 @@ afterEach(() => {
 })
 
 describe('MinigameSceneFrame', () => {
+  let MinigameSceneFrame
+
+  beforeAll(async () => {
+    ;({ MinigameSceneFrame } =
+      await import('../../src/components/MinigameSceneFrame.jsx'))
+  })
+
   const mockControllerFactory = vi.fn()
   const mockLogic = {
     gameStateRef: { current: {} },
@@ -34,9 +41,6 @@ describe('MinigameSceneFrame', () => {
   const mockOnComplete = vi.fn()
 
   test('renders PixiStage with correct props', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -51,9 +55,6 @@ describe('MinigameSceneFrame', () => {
 
   test('does not show CRT overlay when crtEnabled is false', async () => {
     mockGameState.settings.crtEnabled = false
-
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
 
     const { container } = render(
       <MinigameSceneFrame
@@ -71,9 +72,6 @@ describe('MinigameSceneFrame', () => {
   test('shows CRT overlay when crtEnabled is true', async () => {
     mockGameState.settings.crtEnabled = true
 
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     const { container } = render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -88,9 +86,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('does not show completion overlay when game is not over', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -104,9 +99,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('shows completion overlay when game is over', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -120,9 +112,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('displays custom completion title', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -137,9 +126,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('displays custom completion button text', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -154,8 +140,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('calls onComplete when continue button is clicked', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
     const user = userEvent.setup()
 
     render(
@@ -174,9 +158,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('renders custom completion stats when provided', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     const renderStats = uiState => (
       <div data-testid='custom-stats'>Score: {uiState.score}</div>
     )
@@ -196,9 +177,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('renders children elements', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -214,9 +192,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('focuses continue button when game over', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -233,8 +208,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('calls onComplete when Escape key is pressed during game over', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
     const user = userEvent.setup()
 
     render(
@@ -252,8 +225,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('does not call onComplete when Escape is pressed before game over', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
     const user = userEvent.setup()
 
     render(
@@ -271,9 +242,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('restores focus to previous element on unmount', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     // Create a dummy focused element
     const dummyElement = document.createElement('button')
     document.body.appendChild(dummyElement)
@@ -305,9 +273,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('completion overlay has correct ARIA attributes', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     const { container } = render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -324,9 +289,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('passes logic.update and logic.gameStateRef to PixiStage', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     const customLogic = {
       gameStateRef: { current: { test: 'value' } },
       update: vi.fn()
@@ -353,9 +315,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('handles missing optional props gracefully', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     // Should not crash with minimal props
     render(
       <MinigameSceneFrame
@@ -369,9 +328,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('handles missing children prop', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
@@ -386,9 +342,6 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('handles missing renderCompletionStats prop', async () => {
-    const { MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx')
-
     render(
       <MinigameSceneFrame
         controllerFactory={mockControllerFactory}
