@@ -326,3 +326,5 @@ export const PreGig = () => {
     </div>
   )
 }
+
+export default PreGig

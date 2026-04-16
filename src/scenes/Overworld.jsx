@@ -386,3 +386,5 @@ export const Overworld = () => {
     </div>
   )
 }
+
+export default Overworld

@@ -12,63 +12,23 @@
 import { lazy } from 'react'
 import PropTypes from 'prop-types'
 import { MainMenu } from '../scenes/MainMenu.jsx'
-import { createNamedLazyLoader } from '../utils/lazySceneLoader.js'
 import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants.js'
 
-const ClinicScene = lazy(
-  createNamedLazyLoader(
-    () => import('../scenes/ClinicScene.jsx'),
-    'ClinicScene'
-  )
-)
-const Overworld = lazy(
-  createNamedLazyLoader(() => import('../scenes/Overworld.jsx'), 'Overworld')
-)
-const Gig = lazy(
-  createNamedLazyLoader(() => import('../scenes/Gig.jsx'), 'Gig')
-)
-const PreGig = lazy(
-  createNamedLazyLoader(() => import('../scenes/PreGig.jsx'), 'PreGig')
-)
-const PostGig = lazy(
-  createNamedLazyLoader(() => import('../scenes/PostGig.jsx'), 'PostGig')
-)
-const TourbusScene = lazy(
-  createNamedLazyLoader(
-    () => import('../scenes/TourbusScene.jsx'),
-    'TourbusScene'
-  )
-)
-const RoadieRunScene = lazy(
-  createNamedLazyLoader(
-    () => import('../scenes/RoadieRunScene.jsx'),
-    'RoadieRunScene'
-  )
-)
-const KabelsalatScene = lazy(
-  createNamedLazyLoader(
-    () => import('../scenes/KabelsalatScene.jsx'),
-    'KabelsalatScene'
-  )
-)
+const ClinicScene = lazy(() => import('../scenes/ClinicScene.jsx'))
+const Overworld = lazy(() => import('../scenes/Overworld.jsx'))
+const Gig = lazy(() => import('../scenes/Gig.jsx'))
+const PreGig = lazy(() => import('../scenes/PreGig.jsx'))
+const PostGig = lazy(() => import('../scenes/PostGig.jsx'))
+const TourbusScene = lazy(() => import('../scenes/TourbusScene.jsx'))
+const RoadieRunScene = lazy(() => import('../scenes/RoadieRunScene.jsx'))
+const KabelsalatScene = lazy(() => import('../scenes/KabelsalatScene.jsx'))
 const AmpCalibrationScene = lazy(
-  createNamedLazyLoader(
-    () => import('../scenes/AmpCalibrationScene.jsx'),
-    'AmpCalibrationScene'
-  )
+  () => import('../scenes/AmpCalibrationScene.jsx')
 )
-const Settings = lazy(
-  createNamedLazyLoader(() => import('../scenes/Settings.jsx'), 'Settings')
-)
-const Credits = lazy(
-  createNamedLazyLoader(() => import('../scenes/Credits.jsx'), 'Credits')
-)
-const GameOver = lazy(
-  createNamedLazyLoader(() => import('../scenes/GameOver.jsx'), 'GameOver')
-)
-const IntroVideo = lazy(
-  createNamedLazyLoader(() => import('../scenes/IntroVideo.jsx'), 'IntroVideo')
-)
+const Settings = lazy(() => import('../scenes/Settings.jsx'))
+const Credits = lazy(() => import('../scenes/Credits.jsx'))
+const GameOver = lazy(() => import('../scenes/GameOver.jsx'))
+const IntroVideo = lazy(() => import('../scenes/IntroVideo.jsx'))
 
 /**
  * Routes the current scene state to the corresponding scene component.

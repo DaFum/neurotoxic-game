@@ -4,14 +4,14 @@ Generated baseline: 2026-04-16.
 
 ## Aggregated tree snapshot
 
-- `src/` (326 files)
+- `src/` (327 files)
   - `src/context/` state container, action creators, reducer slices
   - `src/hooks/` orchestration hooks (travel, arrival, rhythm, minigames)
   - `src/scenes/` scene-level route components
   - `src/utils/` pure logic + side-effect services (audio, save, map, events)
   - `src/components/` Pixi/scene-level rendering helpers
   - `src/ui/` reusable UI components
-- `tests/` (352 files)
+- `tests/` (351 files)
   - node:test suites under `tests/node`, reducers/context/event and golden-path checks
   - Vitest suites under `tests/ui` and mixed logic suites under `tests/utils`
 - `.agents/` (125 files) and `.claude/` (123 files)
@@ -25,13 +25,13 @@ Generated baseline: 2026-04-16.
 
 Data source: `docs/repo-inventory.json`.
 
-- Total files indexed: **741**
-- Modules with explicit exports: **262**
+- Total files indexed: **1035**
+- Modules with explicit exports: **349**
 - Hook modules (`src/hooks/**`): **29**
 - Context/reducer modules (`src/context/**`): **17**
 - Utility modules (`src/utils/**`): **62**
 - Scene modules (`src/scenes/**`): **58**
-- UI/component modules (`src/ui/**`, `src/components/**`): **44**
+- UI/component modules (`src/ui/**`, `src/components/**`): **110**
 
 ## Domain map and canonical paths
 
@@ -76,3 +76,4 @@ Data source: `docs/repo-inventory.json`.
 - `.agents/**` and `.claude/**` are overlapping mirror trees; keep as explicit duplication until ownership/source-of-truth is decided.
 - Travel event triggering previously duplicated in `useTravelLogic`; now delegated to `arrivalUtils.processTravelEvents` for one shared behavior path.
 - Script alias overlap remains intentional for DX compatibility (`test:vitest:node` retained as alias to `test:vitest:logic`).
+- `SceneRouter` now relies on scene default exports directly; the named-export lazy adapter (`lazySceneLoader`) was removed.

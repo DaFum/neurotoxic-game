@@ -65,3 +65,5 @@ export const RoadieRunScene = () => {
     </MinigameSceneFrame>
   )
 }
+
+export default RoadieRunScene

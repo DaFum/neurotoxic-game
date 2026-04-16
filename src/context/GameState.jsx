@@ -394,11 +394,11 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Adds a toast notification.
-   * @param {string} message - The message to display.
+   * @param {string|Object} messageOrPayload - Plain message or structured toast payload.
    * @param {string} [type='info'] - Type of toast (info, success, error, warning).
    */
-  const addToast = useCallback((message, type = 'info') => {
-    const action = createAddToastAction(message, type)
+  const addToast = useCallback((messageOrPayload, type = 'info') => {
+    const action = createAddToastAction(messageOrPayload, type)
     dispatch(action)
   }, [])
 
@@ -1017,12 +1017,35 @@ export const useGameDispatch = () => {
 }
 
 /**
+ * Hook to access stable game actions only.
+ * This is the preferred action surface for new code.
+ *
+ * @returns {object} The action dispatchers.
+ */
+export const useGameActions = () => {
+  return use(GameDispatchContext)
+}
+
+/**
+ * Hook to select a specific state slice.
+ * This is the preferred state surface for new code.
+ *
+ * @template T
+ * @param {(state: object) => T} selector - State selector.
+ * @returns {T} Selected state slice.
+ */
+export const useGameSelector = selector => {
+  const state = use(GameStateContext)
+  return selector(state)
+}
+
+/**
  * Hook to access the global game state context.
  * @returns {object} The game state and action dispatchers.
  */
 export const useGameState = () => {
   const state = use(GameStateContext)
-  const dispatch = use(GameDispatchContext)
+  const actions = useGameActions()
 
   /**
    * Checks if the player owns a specific van upgrade.
@@ -1035,5 +1058,5 @@ export const useGameState = () => {
     [state.player.van.upgrades]
   )
 
-  return { ...state, ...dispatch, hasUpgrade }
+  return { ...state, ...actions, hasUpgrade }
 }

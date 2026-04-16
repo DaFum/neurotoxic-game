@@ -16,7 +16,7 @@ import { SettingsTab } from './bandhq/SettingsTab.jsx'
 import { LeaderboardTab } from './bandhq/LeaderboardTab.jsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.jsx'
 
-import { useGameState } from '../context/GameState.jsx'
+import { useGameActions, useGameSelector } from '../context/GameState.jsx'
 import { useAudioControl } from '../hooks/useAudioControl.js'
 
 /**
@@ -35,19 +35,21 @@ export const BandHQ = ({ onClose, className = '' }) => {
     player,
     band,
     social,
+    settings,
+    setlist,
+    activeQuests,
+    venueBlacklist,
+    reputationByRegion
+  } = useGameSelector(state => state)
+  const {
     updatePlayer,
     updateBand,
     tradeVoidItem,
     addToast,
-    settings,
     updateSettings,
     deleteSave,
-    setlist,
-    setSetlist,
-    activeQuests,
-    venueBlacklist,
-    reputationByRegion
-  } = useGameState()
+    setSetlist
+  } = useGameActions()
 
   const { audioState, handleAudioChange: onAudioChange } = useAudioControl()
 

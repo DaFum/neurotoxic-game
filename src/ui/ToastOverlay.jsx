@@ -1,5 +1,5 @@
 // TODO: Review this file
-import { useGameState } from '../context/GameState'
+import { useGameActions, useGameSelector } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../utils/logger.js'
@@ -107,15 +107,17 @@ const TOAST_STYLE_MAP = {
 
 /**
  * Renders global toast notifications with consistent visual taxonomy.
+ * Preferred format is structured payload (`messageKey` + `options`).
  * Supports pipe-separated translation payload format (e.g. `ui:key|{"context":"value"}`)
- * where `ui:key` acts as the translation template and the JSON provides context parameters.
+ * as a backwards-compatible legacy fallback.
  * Note that some components like `usePurchaseLogic.js` pre-translate strings before calling `addToast`,
  * which this component also correctly handles.
  *
  * @returns {JSX.Element} Toast stack overlay.
  */
 export const ToastOverlay = () => {
-  const { toasts, removeToast } = useGameState()
+  const toasts = useGameSelector(state => state.toasts)
+  const { removeToast } = useGameActions()
 
   return (
     <div

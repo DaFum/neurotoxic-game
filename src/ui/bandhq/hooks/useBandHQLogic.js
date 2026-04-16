@@ -40,9 +40,8 @@ export const useBandHQLogic = ({
           )
         }
         const successToast = {
-          message: `ui:toast.void_trade_success|${JSON.stringify({
-            itemName: `items:contraband.${item.id}.name`
-          })}`,
+          messageKey: 'ui:toast.void_trade_success',
+          options: { itemName: `items:contraband.${item.id}.name` },
           type: 'success'
         }
         tradeVoidItem({ contrabandId: item.id, fameCost, successToast })

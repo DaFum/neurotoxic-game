@@ -146,14 +146,31 @@ export const createSetActiveEventAction = event => ({
 
 /**
  * Creates a toast addition action
- * @param {string} message - Toast message
+ * @param {string|Object} messageOrPayload - Toast message string or structured payload
  * @param {string} type - Toast type (info, success, error, warning)
  * @returns {Object} Action object with generated ID
  */
-export const createAddToastAction = (message, type = 'info') => ({
-  type: ActionTypes.ADD_TOAST,
-  payload: { id: getSafeUUID(), message, type }
-})
+export const createAddToastAction = (messageOrPayload, type = 'info') => {
+  if (
+    messageOrPayload &&
+    typeof messageOrPayload === 'object' &&
+    !Array.isArray(messageOrPayload)
+  ) {
+    return {
+      type: ActionTypes.ADD_TOAST,
+      payload: {
+        id: getSafeUUID(),
+        type,
+        ...messageOrPayload
+      }
+    }
+  }
+
+  return {
+    type: ActionTypes.ADD_TOAST,
+    payload: { id: getSafeUUID(), message: messageOrPayload, type }
+  }
+}
 
 /**
  * Creates a toast removal action

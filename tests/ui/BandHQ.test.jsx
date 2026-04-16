@@ -7,6 +7,26 @@ import { render, cleanup } from '@testing-library/react'
 
 // Mock hooks
 vi.mock('../../src/context/GameState.jsx', () => ({
+  useGameSelector: selector =>
+    selector({
+      player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
+      band: { members: [] },
+      social: { instagram: 0, tiktok: 0 },
+      settings: {},
+      setlist: [],
+      activeQuests: [],
+      venueBlacklist: [],
+      reputationByRegion: {}
+    }),
+  useGameActions: () => ({
+    updatePlayer: () => {},
+    updateBand: () => {},
+    tradeVoidItem: () => {},
+    addToast: () => {},
+    updateSettings: () => {},
+    deleteSave: () => {},
+    setSetlist: () => {}
+  }),
   useGameState: () => ({
     player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
     band: { members: [] },

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
-import { audioManager } from '../utils/AudioManager'
+import { audioService } from '../utils/audioService'
 import { handleError } from '../utils/errorHandler'
 
 export const executeAudioAction = (
@@ -22,7 +22,15 @@ export const executeAudioAction = (
 export const createAudioHandlers = manager => ({
   setMusic: val =>
     executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
-  setSfx: val => executeAudioAction(manager, 'setSFXVolume', 'setSfx', val),
+  setSfx: val =>
+    executeAudioAction(
+      manager,
+      typeof manager.setSfxVolume === 'function'
+        ? 'setSfxVolume'
+        : 'setSFXVolume',
+      'setSfx',
+      val
+    ),
   toggleMute: () => executeAudioAction(manager, 'toggleMute', 'toggleMute'),
   stopMusic: () => executeAudioAction(manager, 'stopMusic', 'stopMusic'),
   resumeMusic: () => {
@@ -36,17 +44,18 @@ export const getAudioSnapshot = (
   hasNativeSubscribe,
   fallbackSnapshotRef
 ) => {
-  if (hasNativeSubscribe && typeof manager.getStateSnapshot === 'function') {
-    return manager.getStateSnapshot()
-  }
-
-  const nextSnapshot = {
-    musicVol: manager.musicVolume,
-    sfxVol: manager.sfxVolume,
-    isMuted: manager.muted,
-    isPlaying: manager.isPlaying,
-    currentSongId: manager.currentSongId ?? null
-  }
+  const nextSnapshot =
+    typeof manager.getState === 'function'
+      ? manager.getState()
+      : hasNativeSubscribe && typeof manager.getStateSnapshot === 'function'
+        ? manager.getStateSnapshot()
+        : {
+            musicVol: manager.musicVolume,
+            sfxVol: manager.sfxVolume,
+            isMuted: manager.muted,
+            isPlaying: manager.isPlaying,
+            currentSongId: manager.currentSongId ?? null
+          }
 
   const previousSnapshot = fallbackSnapshotRef.current
   if (
@@ -105,12 +114,15 @@ export const createAudioSubscriber = (
  * @returns {{ audioState: any, handleAudioChange: { setMusic: Function, setSfx: Function, toggleMute: Function, stopMusic: Function, resumeMusic: Function } }}
  */
 export const useAudioControl = (selector, options = {}) => {
-  const manager = useMemo(() => audioManager, [])
+  const manager = useMemo(() => audioService, [])
   const fallbackSnapshotRef = useRef(null)
   const selectorRef = useRef(selector)
   selectorRef.current = selector
 
-  const hasNativeSubscribe = typeof manager.subscribe === 'function'
+  const hasNativeSubscribe =
+    typeof manager.hasNativeSubscribe === 'function'
+      ? manager.hasNativeSubscribe()
+      : typeof manager.subscribe === 'function'
   const pollMs =
     Number.isFinite(options.pollMs) && options.pollMs > 0
       ? options.pollMs

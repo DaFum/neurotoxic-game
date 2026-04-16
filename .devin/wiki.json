@@ -11,6 +11,10 @@
     {
       "author": "Architecture",
       "content": "Travel flow is split into two explicit paths: useTravelLogic orchestrates overworld travel selection and minigame start; useArrivalLogic orchestrates post-minigame arrival sequencing. Shared node-type behavior and travel-event triggering live in src/utils/arrivalUtils.js."
+    },
+    {
+      "author": "Architecture",
+      "content": "Scene lazy loading now follows default-export convention directly in SceneRouter. GameState also exposes phased split hooks (`useGameSelector`, `useGameActions`) while legacy `useGameState` remains for compatibility."
     }
   ],
   "pages": [

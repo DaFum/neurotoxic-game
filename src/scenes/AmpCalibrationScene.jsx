@@ -67,4 +67,4 @@ export const AmpCalibrationScene = () => {
   )
 }
 
-// Ensure default export is not needed if lazyLoader uses Named exports (which it does via createNamedLazyLoader)
+export default AmpCalibrationScene

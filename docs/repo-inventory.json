@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-16T11:30:06.450Z",
-  "fileCount": 1030,
-  "moduleCount": 337,
+  "generatedAt": "2026-04-16T14:32:37.379Z",
+  "fileCount": 1035,
+  "moduleCount": 349,
   "files": [
     ".Jules/palette.md",
     ".agents/SKILLS-COMPLIANCE-REPORT.md",
@@ -303,6 +303,10 @@
     "capture-scenes.js",
     "docs/CODEBASE_DOCS_MASTER.md",
     "docs/TEST_FAST_FEEDBACK_CHANGES.md",
+    "docs/repo-consistency-review.md",
+    "docs/repo-inventory.json",
+    "docs/repo-inventory.md",
+    "docs/travel-arrival-consolidation.md",
     "e2e/audio-output.spec.js",
     "e2e/game-flow.spec.js",
     "e2e/helpers.js",
@@ -310,6 +314,7 @@
     "eslint.config.js",
     "i18next-parser.config.js",
     "index.html",
+    "jsconfig.checkjs.json",
     "jsconfig.json",
     "lib/apiUtils.js",
     "lib/redis.js",
@@ -577,6 +582,7 @@
     "src/ui/PirateRadioModal.jsx",
     "src/ui/QuestsModal.jsx",
     "src/ui/ToastOverlay.jsx",
+    "src/ui/bandhq/CatalogTab.jsx",
     "src/ui/bandhq/DetailedStatsTab.jsx",
     "src/ui/bandhq/LeaderboardTab.jsx",
     "src/ui/bandhq/SetlistTab.jsx",
@@ -632,6 +638,7 @@
     "src/utils/audio/timingUtils.js",
     "src/utils/audioContextState.js",
     "src/utils/audioEngine.js",
+    "src/utils/audioService.js",
     "src/utils/clinicLogicUtils.js",
     "src/utils/contrabandStashUtils.js",
     "src/utils/contrabandUtils.js",
@@ -646,7 +653,6 @@
     "src/utils/gigStats.js",
     "src/utils/hecklerLogic.js",
     "src/utils/imageGen.js",
-    "src/utils/lazySceneLoader.js",
     "src/utils/locationI18n.js",
     "src/utils/logger.js",
     "src/utils/mapGenerator.js",
@@ -790,7 +796,6 @@
     "tests/node/initialState.test.js",
     "tests/node/kabelsalatConstants.test.js",
     "tests/node/kabelsalatUtils.test.js",
-    "tests/node/lazySceneLoader.test.js",
     "tests/node/localizationParity.test.js",
     "tests/node/locationI18n.test.js",
     "tests/node/logger.test.js",
@@ -1130,9 +1135,37 @@
       "classes": []
     },
     {
+      "file": "api/leaderboard/song.js",
+      "exports": [
+        "default:async"
+      ],
+      "classes": []
+    },
+    {
+      "file": "api/leaderboard/stats.js",
+      "exports": [
+        "default:async"
+      ],
+      "classes": []
+    },
+    {
       "file": "lib/apiUtils.js",
       "exports": [
         "normalizeIp"
+      ],
+      "classes": []
+    },
+    {
+      "file": "lib/redis.js",
+      "exports": [
+        "default:client"
+      ],
+      "classes": []
+    },
+    {
+      "file": "playwright.config.js",
+      "exports": [
+        "default:defineConfig"
       ],
       "classes": []
     },
@@ -1149,6 +1182,13 @@
       "file": "scripts/utils/parallelism.mjs",
       "exports": [
         "computeWorkerCount"
+      ],
+      "classes": []
+    },
+    {
+      "file": "src/App.jsx",
+      "exports": [
+        "default:function"
       ],
       "classes": []
     },
@@ -1651,6 +1691,8 @@
       "exports": [
         "GameStateProvider",
         "useGameDispatch",
+        "useGameActions",
+        "useGameSelector",
         "useGameState"
       ],
       "classes": []
@@ -2296,51 +2338,65 @@
       "classes": []
     },
     {
+      "file": "src/i18n.js",
+      "exports": [
+        "default:i18n"
+      ],
+      "classes": []
+    },
+    {
       "file": "src/scenes/AmpCalibrationScene.jsx",
       "exports": [
-        "AmpCalibrationScene"
+        "AmpCalibrationScene",
+        "default:AmpCalibrationScene"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/ClinicScene.jsx",
       "exports": [
-        "ClinicScene"
+        "ClinicScene",
+        "default:ClinicScene"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/Credits.jsx",
       "exports": [
-        "Credits"
+        "Credits",
+        "default:Credits"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/GameOver.jsx",
       "exports": [
-        "GameOver"
+        "GameOver",
+        "default:GameOver"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/Gig.jsx",
       "exports": [
-        "Gig"
+        "Gig",
+        "default:Gig"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/IntroVideo.jsx",
       "exports": [
-        "IntroVideo"
+        "IntroVideo",
+        "default:IntroVideo"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/KabelsalatScene.jsx",
       "exports": [
-        "KabelsalatScene"
+        "KabelsalatScene",
+        "default:KabelsalatScene"
       ],
       "classes": []
     },
@@ -2354,14 +2410,16 @@
     {
       "file": "src/scenes/Overworld.jsx",
       "exports": [
-        "Overworld"
+        "Overworld",
+        "default:Overworld"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/PostGig.jsx",
       "exports": [
-        "PostGig"
+        "PostGig",
+        "default:PostGig"
       ],
       "classes": []
     },
@@ -2369,28 +2427,32 @@
       "file": "src/scenes/PreGig.jsx",
       "exports": [
         "_resetLastMinigameFallback",
-        "PreGig"
+        "PreGig",
+        "default:PreGig"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/RoadieRunScene.jsx",
       "exports": [
-        "RoadieRunScene"
+        "RoadieRunScene",
+        "default:RoadieRunScene"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/Settings.jsx",
       "exports": [
-        "Settings"
+        "Settings",
+        "default:Settings"
       ],
       "classes": []
     },
     {
       "file": "src/scenes/TourbusScene.jsx",
       "exports": [
-        "TourbusScene"
+        "TourbusScene",
+        "default:TourbusScene"
       ],
       "classes": []
     },
@@ -2758,6 +2820,13 @@
       "classes": []
     },
     {
+      "file": "src/ui/GigModifierButton.jsx",
+      "exports": [
+        "default:GigModifierButton"
+      ],
+      "classes": []
+    },
+    {
       "file": "src/ui/GlitchButton.jsx",
       "exports": [
         "GlitchButton"
@@ -2796,6 +2865,13 @@
       "file": "src/ui/ToastOverlay.jsx",
       "exports": [
         "ToastOverlay"
+      ],
+      "classes": []
+    },
+    {
+      "file": "src/ui/bandhq/CatalogTab.jsx",
+      "exports": [
+        "CatalogTab"
       ],
       "classes": []
     },
@@ -3345,6 +3421,13 @@
       "classes": []
     },
     {
+      "file": "src/utils/audioService.js",
+      "exports": [
+        "audioService"
+      ],
+      "classes": []
+    },
+    {
       "file": "src/utils/clinicLogicUtils.js",
       "exports": [
         "validateHealMember",
@@ -3534,13 +3617,6 @@
         "fetchGenImageAsObjectUrl",
         "clearImageCache",
         "IMG_PROMPTS"
-      ],
-      "classes": []
-    },
-    {
-      "file": "src/utils/lazySceneLoader.js",
-      "exports": [
-        "createNamedLazyLoader"
       ],
       "classes": []
     },
@@ -4080,6 +4156,34 @@
       "classes": [
         "ResizeObserver"
       ]
+    },
+    {
+      "file": "vite.config.js",
+      "exports": [
+        "default:defineConfig"
+      ],
+      "classes": []
+    },
+    {
+      "file": "vitest.config.js",
+      "exports": [
+        "default:defineConfig"
+      ],
+      "classes": []
+    },
+    {
+      "file": "vitest.config.node.js",
+      "exports": [
+        "default:defineConfig"
+      ],
+      "classes": []
+    },
+    {
+      "file": "vitest.config.perf.js",
+      "exports": [
+        "default:defineConfig"
+      ],
+      "classes": []
     }
   ],
   "domains": {
@@ -4149,6 +4253,7 @@
       "src/utils/audio/timingUtils.js",
       "src/utils/audioContextState.js",
       "src/utils/audioEngine.js",
+      "src/utils/audioService.js",
       "src/utils/clinicLogicUtils.js",
       "src/utils/contrabandStashUtils.js",
       "src/utils/contrabandUtils.js",
@@ -4163,7 +4268,6 @@
       "src/utils/gigStats.js",
       "src/utils/hecklerLogic.js",
       "src/utils/imageGen.js",
-      "src/utils/lazySceneLoader.js",
       "src/utils/locationI18n.js",
       "src/utils/logger.js",
       "src/utils/mapGenerator.js",
@@ -4323,12 +4427,14 @@
       "src/ui/CrashHandler.jsx",
       "src/ui/DebugLogViewer.jsx",
       "src/ui/EventModal.jsx",
+      "src/ui/GigModifierButton.jsx",
       "src/ui/GlitchButton.jsx",
       "src/ui/HUD.jsx",
       "src/ui/MerchPressModal.jsx",
       "src/ui/PirateRadioModal.jsx",
       "src/ui/QuestsModal.jsx",
       "src/ui/ToastOverlay.jsx",
+      "src/ui/bandhq/CatalogTab.jsx",
       "src/ui/bandhq/DetailedStatsTab.jsx",
       "src/ui/bandhq/LeaderboardTab.jsx",
       "src/ui/bandhq/SetlistTab.jsx",
@@ -4363,7 +4469,10 @@
       "src/ui/shared/propTypes.js"
     ],
     "apiHandlers": [
-      "lib/apiUtils.js"
+      "api/leaderboard/song.js",
+      "api/leaderboard/stats.js",
+      "lib/apiUtils.js",
+      "lib/redis.js"
     ]
   }
 }

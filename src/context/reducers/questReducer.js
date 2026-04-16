@@ -38,7 +38,8 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     if (appliedDelta !== 0) {
       generatedToasts.push({
         id: `${questId}-money`,
-        message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        messageKey: 'ui:toast.quest_complete_money',
+        options: { name: quest.label, amount: appliedDelta },
         type: 'success'
       })
     }
@@ -54,7 +55,8 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     generatedToasts.push({
       id: `${questId}-item`,
-      message: `ui:toast.quest_complete_item|${JSON.stringify({ name: quest.label })}`,
+      messageKey: 'ui:toast.quest_complete_item',
+      options: { name: quest.label },
       type: 'success'
     })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
@@ -71,7 +73,8 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     if (appliedDelta !== 0) {
       generatedToasts.push({
         id: `${questId}-fame`,
-        message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        messageKey: 'ui:toast.quest_complete_fame',
+        options: { name: quest.label, amount: appliedDelta },
         type: 'success'
       })
     }
@@ -104,7 +107,8 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       nextState.band = { ...nextState.band, members }
       generatedToasts.push({
         id: `${questId}-skill`,
-        message: `ui:toast.quest_complete_skill|${JSON.stringify({ name: quest.label, member: members[memberIdx].name })}`,
+        messageKey: 'ui:toast.quest_complete_skill',
+        options: { name: quest.label, member: members[memberIdx].name },
         type: 'success'
       })
     }
@@ -121,7 +125,8 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     if (appliedDelta !== 0) {
       generatedToasts.push({
         id: `${questId}-harmony`,
-        message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        messageKey: 'ui:toast.quest_complete_harmony',
+        options: { name: quest.label, amount: appliedDelta },
         type: 'success'
       })
     }
@@ -130,7 +135,8 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   if (generatedToasts.length === 0) {
     generatedToasts.push({
       id: `${questId}-generic`,
-      message: `ui:toast.quest_complete|${JSON.stringify({ name: quest.label })}`,
+      messageKey: 'ui:toast.quest_complete',
+      options: { name: quest.label },
       type: 'success'
     })
   }
@@ -216,7 +222,8 @@ export const handleFailQuests = state => {
       }
       newToasts.push({
         id: `${quest.id}-fail`,
-        message: `ui:toast.quest_failed|${JSON.stringify({ name: quest.label })}`,
+        messageKey: 'ui:toast.quest_failed',
+        options: { name: quest.label },
         type: 'error'
       })
     } else {

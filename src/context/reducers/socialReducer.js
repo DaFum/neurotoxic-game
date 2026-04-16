@@ -76,7 +76,7 @@ export const handleAddVenueBlacklist = (state, { venueId, toastId }) => {
       ...(nextState.toasts || []),
       {
         id: toastId,
-        message: `ui:toast.fans_defended`,
+        messageKey: 'ui:toast.fans_defended',
         type: 'info'
       }
     ]
@@ -86,7 +86,8 @@ export const handleAddVenueBlacklist = (state, { venueId, toastId }) => {
       ...(nextState.toasts || []),
       {
         id: toastId,
-        message: `ui:toast.blacklisted|${JSON.stringify({ venueLabel: `venues:${venueId}.name` })}`,
+        messageKey: 'ui:toast.blacklisted',
+        options: { venueLabel: `venues:${venueId}.name` },
         type: 'error'
       }
     ]

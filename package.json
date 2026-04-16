@@ -30,7 +30,8 @@
     "format": "prettier --write .",
     "prepare": "husky",
     "i18n:extract": "i18next --config i18next-parser.config.js",
-    "test:vitest:logic": "node ./scripts/run-vitest-ui.mjs --config vitest.config.node.js"
+    "test:vitest:logic": "node ./scripts/run-vitest-ui.mjs --config vitest.config.node.js",
+    "typecheck:core": "tsc -p jsconfig.checkjs.json"
   },
   "standard": {
     "env": [

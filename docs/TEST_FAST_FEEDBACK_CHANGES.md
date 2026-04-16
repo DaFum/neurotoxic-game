@@ -43,3 +43,7 @@ E2E scripts stay split for optional sharding:
 - Keeps quick feedback for core logic/UI tests.
 - Preserves heavier/perf/e2e checks for targeted or broader validation stages.
 - Avoids mixing runner assumptions (node:test vs Vitest) inside one command path.
+
+## 6) Incremental type-check gate
+
+- `pnpm run typecheck:core` runs strict `checkJs` only for selected high-risk domains via `jsconfig.checkjs.json`.
