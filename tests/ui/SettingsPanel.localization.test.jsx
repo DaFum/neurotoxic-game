@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 
 test('SettingsPanel renders localized language option labels', async () => {
   const { SettingsPanel } =
-    await import('../../src/ui/settings/SettingsPanel.jsx')
+    await import('../../src/ui/settings/SettingsPanel.tsx')
 
   render(
     <SettingsPanel

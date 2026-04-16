@@ -1,6 +1,6 @@
 /**
  * (#1) Actual Updates:
- * - Extracted chatter polling, generation, and cleanup logic from ChatterOverlay.jsx.
+ * - Extracted chatter polling, generation, and cleanup logic from ChatterOverlay.tsx.
  * - Created custom hook `useChatterLogic` to handle periodic background messages and state.
  *
  * (#2) Next Steps:

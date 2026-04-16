@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
-import GigModifierButton from '../../src/ui/GigModifierButton.jsx'
+import GigModifierButton from '../../src/ui/GigModifierButton.tsx'
 
 const mockItem = {
   key: 'test-modifier',

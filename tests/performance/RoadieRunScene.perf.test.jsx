@@ -43,7 +43,7 @@ vi.mock('../../src/components/PixiStage', () => ({
   PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
 }))
 // Dynamic import
-const { RoadieRunScene } = await import('../../src/scenes/RoadieRunScene.jsx')
+const { RoadieRunScene } = await import('../../src/scenes/RoadieRunScene.tsx')
 
 describe('RoadieRunScene Performance', () => {
   beforeEach(() => {

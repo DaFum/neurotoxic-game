@@ -40,7 +40,7 @@ let mockGameState = {
 
 const mockUseGameState = mock.fn(() => mockGameState)
 
-mock.module('../../src/context/GameState.jsx', {
+mock.module('../../src/context/GameState.tsx', {
   namedExports: {
     useGameState: mockUseGameState
   }

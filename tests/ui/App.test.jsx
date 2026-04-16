@@ -17,7 +17,7 @@ vi.mock('framer-motion', () => ({
   }
 }))
 
-vi.mock('../../src/components/SceneRouter.jsx', () => ({
+vi.mock('../../src/components/SceneRouter.tsx', () => ({
   SceneRouter: ({ currentScene }) => {
     switch (currentScene) {
       case GAME_PHASES.INTRO:
@@ -51,47 +51,47 @@ vi.mock('../../src/components/SceneRouter.jsx', () => ({
 }))
 
 // Mock all the scene components
-vi.mock('../../src/scenes/MainMenu.jsx', () => ({
+vi.mock('../../src/scenes/MainMenu.tsx', () => ({
   MainMenu: () => <div data-testid='main-menu-scene'>Main Menu</div>
 }))
 
-vi.mock('../../src/scenes/Overworld.jsx', () => ({
+vi.mock('../../src/scenes/Overworld.tsx', () => ({
   Overworld: () => <div data-testid='overworld-scene'>Overworld</div>
 }))
 
-vi.mock('../../src/scenes/Gig.jsx', () => ({
+vi.mock('../../src/scenes/Gig.tsx', () => ({
   Gig: () => <div data-testid='gig-scene'>Gig</div>
 }))
 
-vi.mock('../../src/scenes/PreGig.jsx', () => ({
+vi.mock('../../src/scenes/PreGig.tsx', () => ({
   PreGig: () => <div data-testid='pregig-scene'>PreGig</div>
 }))
 
-vi.mock('../../src/scenes/PostGig.jsx', () => ({
+vi.mock('../../src/scenes/PostGig.tsx', () => ({
   PostGig: () => <div data-testid='postgig-scene'>PostGig</div>
 }))
 
-vi.mock('../../src/scenes/TourbusScene.jsx', () => ({
+vi.mock('../../src/scenes/TourbusScene.tsx', () => ({
   TourbusScene: () => <div data-testid='tourbus-scene'>Tourbus</div>
 }))
 
-vi.mock('../../src/scenes/RoadieRunScene.jsx', () => ({
+vi.mock('../../src/scenes/RoadieRunScene.tsx', () => ({
   RoadieRunScene: () => <div data-testid='roadie-scene'>Roadie Run</div>
 }))
 
-vi.mock('../../src/scenes/Settings.jsx', () => ({
+vi.mock('../../src/scenes/Settings.tsx', () => ({
   Settings: () => <div data-testid='settings-scene'>Settings</div>
 }))
 
-vi.mock('../../src/scenes/Credits.jsx', () => ({
+vi.mock('../../src/scenes/Credits.tsx', () => ({
   Credits: () => <div data-testid='credits-scene'>Credits</div>
 }))
 
-vi.mock('../../src/scenes/GameOver.jsx', () => ({
+vi.mock('../../src/scenes/GameOver.tsx', () => ({
   GameOver: () => <div data-testid='gameover-scene'>Game Over</div>
 }))
 
-vi.mock('../../src/scenes/IntroVideo.jsx', () => ({
+vi.mock('../../src/scenes/IntroVideo.tsx', () => ({
   IntroVideo: () => <div data-testid='intro-scene'>Intro</div>
 }))
 
@@ -163,7 +163,7 @@ const mockGameState = {
 }
 let App
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   GameStateProvider: ({ children }) => (
     <div data-testid='game-state-provider'>{children}</div>
   ),
@@ -184,7 +184,7 @@ const resetMockGameState = () => {
 }
 
 beforeAll(async () => {
-  App = (await import('../../src/App.jsx')).default
+  App = (await import('../../src/App.tsx')).default
 })
 
 beforeEach(() => {

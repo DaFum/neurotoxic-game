@@ -18,7 +18,7 @@ const mockUseGameState = mock.fn(() => ({
   setSetlist: mock.fn()
 }))
 
-mock.module('../../src/context/GameState.jsx', {
+mock.module('../../src/context/GameState.tsx', {
   namedExports: {
     useGameState: mockUseGameState
   }

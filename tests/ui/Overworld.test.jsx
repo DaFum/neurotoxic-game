@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
-import { Overworld } from '../../src/scenes/Overworld.jsx'
+import { Overworld } from '../../src/scenes/Overworld.tsx'
 import { GameStateProvider } from '../../src/context/GameState'
 
 // Mocks

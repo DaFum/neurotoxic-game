@@ -3,11 +3,11 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 
 // Mock HecklerOverlay to avoid animation loops and isolate the test
-vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
+vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
 
-import { GigHUD } from '../../src/components/GigHUD.jsx'
+import { GigHUD } from '../../src/components/GigHUD.tsx'
 
 afterEach(cleanup)
 

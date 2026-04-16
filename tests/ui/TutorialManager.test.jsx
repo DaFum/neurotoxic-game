@@ -15,7 +15,7 @@ const mockGameStateValue = {
   updateSettings: mockUpdateSettings
 }
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameState: () => mockGameStateValue
 }))
 
@@ -27,7 +27,7 @@ afterEach(() => {
 describe('TutorialManager', () => {
   test('renders welcome message for step 0 on MENU scene', async () => {
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -43,7 +43,7 @@ describe('TutorialManager', () => {
 
   test('displays correct step counter', async () => {
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -54,7 +54,7 @@ describe('TutorialManager', () => {
 
   test('calls updatePlayer when NEXT button is clicked', async () => {
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -70,7 +70,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.GIG
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -82,7 +82,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.GIG
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -99,7 +99,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.MENU
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -119,7 +119,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.MENU
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -132,7 +132,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = GAME_PHASES.MENU
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -145,7 +145,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -163,7 +163,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -182,7 +182,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -202,7 +202,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     render(<TutorialManager />)
 
@@ -222,7 +222,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -236,7 +236,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -250,7 +250,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -265,7 +265,7 @@ describe('TutorialManager', () => {
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
-      await import('../../src/components/TutorialManager.jsx')
+      await import('../../src/components/TutorialManager.tsx')
 
     // Should default to step 0
     render(<TutorialManager />)

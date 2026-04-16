@@ -77,7 +77,7 @@ export const setupMainMenuAudioTest = async () => {
     }
   })
 
-  mock.module('../src/context/GameState.jsx', {
+  mock.module('../src/context/GameState.tsx', {
     namedExports: {
       useGameState: mockUseGameState,
       useGameDispatch: mockUseGameDispatch,
@@ -86,7 +86,7 @@ export const setupMainMenuAudioTest = async () => {
     }
   })
 
-  const { MainMenu } = await import('../src/scenes/MainMenu.jsx')
+  const { MainMenu } = await import('../src/scenes/MainMenu.tsx')
 
   return { MainMenu, mockUseGameState }
 }

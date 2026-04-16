@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import {
   GameStateProvider,
   useGameState
-} from '../../src/context/GameState.jsx'
+} from '../../src/context/GameState.tsx'
 
 const Probe = () => {
   const { endGig, saveGame, loadGame } = useGameState()

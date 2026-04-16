@@ -45,7 +45,7 @@ test('Game Loop Logic Simulation', async t => {
     state.player.money = Math.max(0, state.player.money - totalCost)
     state.player.van.fuel = Math.max(0, state.player.van.fuel - fuelLiters)
 
-    // Advance Day (The logic we enabled in Overworld.jsx)
+    // Advance Day (The logic we enabled in Overworld.tsx)
     const updates = calculateDailyUpdates(state)
     state = { ...state, ...updates }
 

@@ -58,7 +58,7 @@ vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 // Dynamic import
-const { MainMenu } = await import('../../src/scenes/MainMenu.jsx')
+const { MainMenu } = await import('../../src/scenes/MainMenu.tsx')
 
 describe('MainMenu Performance Stability', () => {
   // // setupJSDOM removed removed

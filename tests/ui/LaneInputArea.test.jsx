@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
-import { LaneInputArea } from '../../src/components/hud/LaneInputArea.jsx'
+import { LaneInputArea } from '../../src/components/hud/LaneInputArea.tsx'
 
 test('LaneInputArea registers clicks and touch events on lanes', () => {
   const handleInput = vi.fn()

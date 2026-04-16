@@ -108,7 +108,7 @@ vi.mock('../../src/hooks/useGigInput', () => ({
   useGigInput: () => mockUseGigInput
 }))
 // Import Gig after mocking
-const { Gig } = await import('../../src/scenes/Gig.jsx')
+const { Gig } = await import('../../src/scenes/Gig.tsx')
 
 describe('Gig Optimization', () => {
   beforeEach(() => {

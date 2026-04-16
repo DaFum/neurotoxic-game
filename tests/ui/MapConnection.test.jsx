@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { MapConnection } from '../../src/components/MapConnection.jsx'
+import { MapConnection } from '../../src/components/MapConnection.tsx'
 
 test('MapConnection returns null if startVis or endVis is hidden', () => {
   const { container, rerender } = render(

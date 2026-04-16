@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import {
   GameStateProvider,
   useGameState
-} from '../../src/context/GameState.jsx'
+} from '../../src/context/GameState.tsx'
 
 test('GameState context functions stability', async _t => {
   let renderCount = 0

@@ -1,5 +1,5 @@
 /**
- * (#1) Actual Updates: Extracted void trade, purchase lock, and void item ownership/disabled logic from BandHQ.jsx into a reusable hook. Added synchronous ref-based lock alongside processingItemId state to prevent rapid re-entry race conditions.
+ * (#1) Actual Updates: Extracted void trade, purchase lock, and void item ownership/disabled logic from BandHQ.tsx into a reusable hook. Added synchronous ref-based lock alongside processingItemId state to prevent rapid re-entry race conditions.
  * (#2) Next Steps: Consider adding unit tests for handleVoidTrade and handleBuyWithLock edge cases.
  * (#3) Found Errors + Solutions: Fixed stash quantity property name from `.quantity` to `.stacks` to match bandReducer data model.
  */

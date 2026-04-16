@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../context/GameState.jsx'
+import { useGameState } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audioEngine'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'

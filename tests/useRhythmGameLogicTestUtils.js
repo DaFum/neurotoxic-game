@@ -109,7 +109,7 @@ export const mockRhythmGameLogicDependencies = {
 
 // Helper to mock modules
 export const mockRhythmGameLogicModules = () => {
-  mock.module('../src/context/GameState.jsx', {
+  mock.module('../src/context/GameState.tsx', {
     namedExports: { useGameState: mockUseGameState }
   })
   mock.module('../src/utils/simulationUtils.js', {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { render } from '@testing-library/react'
-import { CreditEntry } from '../../src/scenes/credits/CreditEntry.jsx'
+import { CreditEntry } from '../../src/scenes/credits/CreditEntry.tsx'
 
 describe('CreditEntry Component', () => {
   test('renders the credit entry with role and name', () => {

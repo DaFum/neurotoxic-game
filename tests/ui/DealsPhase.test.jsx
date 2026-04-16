@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { expect, test, vi, beforeEach, afterEach } from 'vitest'
-import { DealsPhase } from '../../src/components/postGig/DealsPhase.jsx'
+import { DealsPhase } from '../../src/components/postGig/DealsPhase.tsx'
 import { handleError } from '../../src/utils/errorHandler.js'
 import { negotiateDeal } from '../../src/utils/socialEngine'
 

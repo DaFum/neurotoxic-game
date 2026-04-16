@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 
 // Mock dependencies
-vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
+vi.mock('../../src/components/HecklerOverlay.tsx', () => ({
   HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
 
@@ -96,31 +96,31 @@ vi.mock(
   makeReactMemoMock('ComboDisplay', ComboDisplaySpy)
 )
 vi.mock(
-  '../../src/components/hud/OverloadMeter.jsx',
+  '../../src/components/hud/OverloadMeter.tsx',
   makeReactMemoMock('OverloadMeter', OverloadMeterSpy)
 )
 vi.mock(
-  '../../src/components/hud/LaneInputArea.jsx',
+  '../../src/components/hud/LaneInputArea.tsx',
   makeReactMemoMock('LaneInputArea', LaneInputAreaSpy)
 )
 vi.mock(
-  '../../src/components/hud/ControlsHint.jsx',
+  '../../src/components/hud/ControlsHint.tsx',
   makeReactMemoMock('ControlsHint', ControlsHintSpy)
 )
 vi.mock(
-  '../../src/components/hud/PauseButton.jsx',
+  '../../src/components/hud/PauseButton.tsx',
   makeReactMemoMock('PauseButton', PauseButtonSpy)
 )
 vi.mock(
-  '../../src/components/hud/ToxicModeFlash.jsx',
+  '../../src/components/hud/ToxicModeFlash.tsx',
   makeReactMemoMock('ToxicModeFlash', ToxicModeFlashSpy)
 )
 vi.mock(
-  '../../src/components/hud/GameOverOverlay.jsx',
+  '../../src/components/hud/GameOverOverlay.tsx',
   makeReactMemoMock('GameOverOverlay', GameOverOverlaySpy)
 )
 
-import { GigHUD } from '../../src/components/GigHUD.jsx'
+import { GigHUD } from '../../src/components/GigHUD.tsx'
 
 afterEach(() => {
   cleanup()

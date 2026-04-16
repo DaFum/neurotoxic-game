@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { useQuestsModal } from '../../src/hooks/useQuestsModal.js'
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameState: () => ({
     activeQuests: ['quest1'],
     player: { name: 'Player' }

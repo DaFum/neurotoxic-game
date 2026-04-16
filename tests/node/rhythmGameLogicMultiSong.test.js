@@ -53,7 +53,7 @@ const mockGigStats = {
 }
 
 // Register mocks BEFORE import
-mock.module('../../src/context/GameState.jsx', {
+mock.module('../../src/context/GameState.tsx', {
   namedExports: { useGameState: mockUseGameState }
 })
 mock.module('../../src/utils/AudioManager.js', {

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
-import { OverloadWarning } from '../../src/components/hud/OverloadWarning.jsx'
+import { OverloadWarning } from '../../src/components/hud/OverloadWarning.tsx'
 
 vi.mock('../../src/ui/shared/Icons', () => ({
   VoidSkullIcon: ({ className }) => (

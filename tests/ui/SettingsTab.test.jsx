@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
-import { SettingsTab } from '../../src/ui/bandhq/SettingsTab.jsx'
+import { SettingsTab } from '../../src/ui/bandhq/SettingsTab.tsx'
 import { useSettingsActions } from '../../src/hooks/useSettingsActions'
 
 vi.mock('../../src/ui/shared', () => ({

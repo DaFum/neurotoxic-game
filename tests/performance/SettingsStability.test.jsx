@@ -8,7 +8,7 @@ const mockChangeScene = vi.fn()
 const mockUpdateSettings = vi.fn()
 const mockDeleteSave = vi.fn()
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameState: () => ({
     changeScene: mockChangeScene,
     settings: { crtEnabled: true, logLevel: 1 },
@@ -45,11 +45,11 @@ const GlitchButtonCapture = vi.fn(({ children, onClick }) => (
     {children}
   </button>
 ))
-vi.mock('../../src/ui/GlitchButton.jsx', () => ({
+vi.mock('../../src/ui/GlitchButton.tsx', () => ({
   GlitchButton: GlitchButtonCapture
 }))
 // Now import Settings
-const { Settings } = await import('../../src/scenes/Settings.jsx')
+const { Settings } = await import('../../src/scenes/Settings.tsx')
 
 describe('Settings Referential Stability', () => {
   beforeEach(() => {

@@ -3,8 +3,8 @@ import { render, fireEvent } from '@testing-library/react'
 import {
   GameStateProvider,
   useGameState
-} from '../../src/context/GameState.jsx'
-import { Credits } from '../../src/scenes/Credits.jsx'
+} from '../../src/context/GameState.tsx'
+import { Credits } from '../../src/scenes/Credits.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // A small harness to capture global actions if needed, though Credits just fires changeScene

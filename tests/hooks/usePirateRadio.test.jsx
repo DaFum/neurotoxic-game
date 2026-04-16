@@ -18,7 +18,7 @@ const mockGameState = {
   hasUpgrade: vi.fn()
 }
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameState: () => mockGameState
 }))
 

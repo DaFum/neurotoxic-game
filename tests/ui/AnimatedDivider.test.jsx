@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { AnimatedDivider } from '../../src/ui/shared/AnimatedTypography.jsx'
+import { AnimatedDivider } from '../../src/ui/shared/AnimatedTypography.tsx'
 
 test('AnimatedDivider renders with default props', () => {
   const { container } = render(<AnimatedDivider />)

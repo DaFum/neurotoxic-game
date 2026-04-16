@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameState } from '../../context/GameState.jsx'
+import { useGameState } from '../../context/GameState.tsx'
 import { GAME_PHASES } from '../../context/gameConstants.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { loadTexture } from '../../components/stage/utils.js'

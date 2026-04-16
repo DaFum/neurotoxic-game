@@ -6,7 +6,7 @@ import { render, cleanup } from '@testing-library/react'
 // Mock react-i18next
 
 // Mock hooks
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameSelector: selector =>
     selector({
       player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
@@ -79,7 +79,7 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic.js', () => ({
   }),
   getPrimaryEffect: () => ({})
 }))
-vi.mock('../../src/ui/shared/index.jsx', () => ({
+vi.mock('../../src/ui/shared/index.tsx', () => ({
   StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
   ProgressBar: () =>
     React.createElement('div', { 'data-testid': 'progress-bar' }),
@@ -106,7 +106,7 @@ describe('BandHQ', () => {
   beforeAll(async () => {
     //  removed (handled by vitest env)
     // Dynamic import
-    const module = await import('../../src/ui/BandHQ.jsx')
+    const module = await import('../../src/ui/BandHQ.tsx')
     BandHQ = module.BandHQ
   })
 

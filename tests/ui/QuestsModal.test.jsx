@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { QuestsModal } from '../../src/ui/QuestsModal.jsx'
+import { QuestsModal } from '../../src/ui/QuestsModal.tsx'
 
 describe('QuestsModal', () => {
   it('renders translated accepted quests and progress', () => {

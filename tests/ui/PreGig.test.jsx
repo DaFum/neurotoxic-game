@@ -84,7 +84,7 @@ vi.mock('../../src/context/GameState', () => ({
 }))
 // Import PreGig after mocks
 const { PreGig, _resetLastMinigameFallback } =
-  await import('../../src/scenes/PreGig.jsx')
+  await import('../../src/scenes/PreGig.tsx')
 const { getSafeRandom } = await import('../../src/utils/crypto.js')
 
 describe('PreGig', () => {

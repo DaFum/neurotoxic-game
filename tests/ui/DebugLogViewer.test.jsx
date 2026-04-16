@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { DebugLogViewer } from '../../src/ui/DebugLogViewer.jsx'
+import { DebugLogViewer } from '../../src/ui/DebugLogViewer.tsx'
 
 vi.mock('../../src/utils/logger', () => {
   const listeners = new Set()

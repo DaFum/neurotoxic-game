@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { useGameState } from '../context/GameState.jsx'
+import { useGameState } from '../context/GameState.tsx'
 
 import { buildQuestsProps } from './buildQuestsProps.js'
 
