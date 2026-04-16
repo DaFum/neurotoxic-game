@@ -2,6 +2,14 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ShopItem } from './ShopItem'
 
+const BALANCE_DISPLAY_META = {
+  fame: { className: 'text-warning-yellow', suffix: '★' },
+  funds: { className: 'text-toxic-green', suffix: '€' },
+  money: { className: 'text-toxic-green', suffix: '€' },
+  credits: { className: 'text-toxic-green', suffix: '€' },
+  bonus: { className: 'text-star-white', suffix: '' }
+}
+
 export const CatalogTab = ({
   items,
   balances,
@@ -17,15 +25,16 @@ export const CatalogTab = ({
     <div>
       <div className='mb-4 flex justify-end gap-4 font-mono text-star-white'>
         {Object.entries(balances).map(([key, value]) => {
-          const isFame = key === 'fame'
+          const meta = BALANCE_DISPLAY_META[key] || {
+            className: 'text-star-white',
+            suffix: ''
+          }
           return (
             <span key={key}>
               {t(`ui:bandhq.${key}`)}:{' '}
-              <span
-                className={isFame ? 'text-warning-yellow' : 'text-toxic-green'}
-              >
+              <span className={meta.className}>
                 {value}
-                {isFame ? '★' : '€'}
+                {meta.suffix}
               </span>
             </span>
           )

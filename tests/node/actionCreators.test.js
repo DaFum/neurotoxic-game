@@ -182,6 +182,33 @@ describe('Action Creators', () => {
       assert.strictEqual(action.payload.message, 'Error message')
       assert.strictEqual(action.payload.type, 'error')
     })
+
+    it('should generate fresh id for structured payloads even when id is provided', () => {
+      const action = createAddToastAction({
+        id: 'stale-id',
+        messageKey: 'ui:toast.test',
+        options: { value: 1 }
+      })
+
+      assert.strictEqual(action.type, ActionTypes.ADD_TOAST)
+      assert.strictEqual(action.payload.messageKey, 'ui:toast.test')
+      assert.strictEqual(action.payload.options.value, 1)
+      assert.notStrictEqual(action.payload.id, 'stale-id')
+      assert.strictEqual(typeof action.payload.id, 'string')
+      assert.ok(action.payload.id.length > 0)
+    })
+
+    it('should allow structured payload type to override default type argument', () => {
+      const action = createAddToastAction(
+        {
+          messageKey: 'ui:toast.test',
+          type: 'success'
+        },
+        'error'
+      )
+
+      assert.strictEqual(action.payload.type, 'success')
+    })
   })
 
   describe('createRemoveToastAction', () => {

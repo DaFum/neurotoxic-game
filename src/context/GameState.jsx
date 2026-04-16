@@ -1029,6 +1029,8 @@ export const useGameActions = () => {
 /**
  * Hook to select a specific state slice.
  * This is the preferred state surface for new code.
+ * Note: This hook does not provide memoized equality checks; selector output
+ * is recomputed whenever context state updates.
  *
  * @template T
  * @param {(state: object) => T} selector - State selector.

@@ -156,12 +156,17 @@ export const createAddToastAction = (messageOrPayload, type = 'info') => {
     typeof messageOrPayload === 'object' &&
     !Array.isArray(messageOrPayload)
   ) {
+    const {
+      id: _ignoredId,
+      type: payloadType,
+      ...restPayload
+    } = messageOrPayload
     return {
       type: ActionTypes.ADD_TOAST,
       payload: {
         id: getSafeUUID(),
-        type,
-        ...messageOrPayload
+        type: payloadType ?? type,
+        ...restPayload
       }
     }
   }

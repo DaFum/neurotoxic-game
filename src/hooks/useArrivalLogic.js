@@ -50,13 +50,9 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
       const currentNode = gameMap?.nodes[player.currentNodeId]
-      let travelEventActive = false
-
       // If there is no resolved current node (e.g. incomplete map fixture),
       // processTravelEvents keeps legacy behavior and still attempts travel events.
-      if (!isGigNode(currentNode)) {
-        travelEventActive = processTravelEvents(currentNode, triggerEvent)
-      }
+      const travelEventActive = processTravelEvents(currentNode, triggerEvent)
 
       // 5. Handle Node Arrival & Routing
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
