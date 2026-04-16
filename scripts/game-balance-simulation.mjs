@@ -10,6 +10,7 @@ import { POST_OPTIONS } from '../src/data/postOptions.js'
 import { ALLOWED_TRENDS } from '../src/data/socialTrends.js'
 import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
 import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
+import { HQ_ITEMS } from '../src/data/hqItems.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
 import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine.js'
 import { normalizeTraitMap } from '../src/utils/traitUtils.js'
@@ -38,12 +39,13 @@ import {
   clampMemberStamina,
   clampPlayerFame,
   calculateFameLevel,
-
+  calculateGigFameReward,
   calculateFameGain,
   clampPlayerMoney,
   clampVanFuel,
   BALANCE_CONSTANTS,
-  applyEventDelta
+  applyEventDelta,
+  hasActiveSponsorship
 } from '../src/utils/gameStateUtils.js'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
@@ -56,7 +58,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 6,
+  reportVersion: 7,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -327,6 +329,140 @@ export const SCENARIOS = [
 const VENUES = ALL_VENUES.filter(v => v.type !== 'HOME' && v.capacity > 0)
 const HOME = ALL_VENUES.find(v => v.id === SIMULATION_CONSTANTS.homeVenueId)
 const UPGRADE_CATALOG = getUnifiedUpgradeCatalog()
+const SHOP_FAME_ENTRY_IDS = new Set(
+  [...HQ_ITEMS.van, ...HQ_ITEMS.hq]
+    .filter(item => item.currency === 'fame')
+    .map(item => item.id)
+)
+const SHOP_FAME_CATALOG = UPGRADE_CATALOG.filter(
+  item => item.currency === 'fame' && SHOP_FAME_ENTRY_IDS.has(item.id)
+)
+const LEGACY_FAME_CATALOG = UPGRADE_CATALOG.filter(
+  item => item.currency === 'fame' && !SHOP_FAME_ENTRY_IDS.has(item.id)
+)
+const FAME_AUDIT_PERFORMANCE_SCORES = [70, 85, 100]
+
+const getCatalogFameRefund = item => {
+  const effects = Array.isArray(item.effects)
+    ? item.effects
+    : item.effect
+      ? [item.effect]
+      : []
+
+  return effects.reduce((sum, effect) => {
+    if (effect?.target === 'player' && effect?.stat === 'fame') {
+      return sum + (Number(effect.value) || 0)
+    }
+    return sum
+  }, 0)
+}
+
+const sumCatalogCost = catalog =>
+  catalog.reduce((sum, item) => sum + (Number(item.cost) || 0), 0)
+
+const simulateGigsToReachFameTarget = (targetFame, performanceScore) => {
+  const rawGigFame = calculateGigFameReward(performanceScore)
+  let fame = 0
+  let gigs = 0
+
+  while (fame < targetFame && gigs < 250000) {
+    fame += calculateFameGain(rawGigFame, fame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
+    gigs += 1
+  }
+
+  return { gigs, finalFame: fame, rawGigFame }
+}
+
+const simulateFameCatalogClear = (catalog, performanceScore) => {
+  const rawGigFame = calculateGigFameReward(performanceScore)
+  const remaining = catalog.map(item => ({
+    id: item.id,
+    cost: Number(item.cost) || 0,
+    fameRefund: getCatalogFameRefund(item)
+  }))
+
+  let fame = 0
+  let gigs = 0
+
+  while (remaining.length > 0 && gigs < 250000) {
+    let chosenIndex = -1
+    let bestNetCost = Infinity
+
+    for (let i = 0; i < remaining.length; i += 1) {
+      const candidate = remaining[i]
+      if (candidate.cost > fame) continue
+
+      const candidateNetCost = candidate.cost - candidate.fameRefund
+      if (candidateNetCost < bestNetCost) {
+        bestNetCost = candidateNetCost
+        chosenIndex = i
+      }
+    }
+
+    if (chosenIndex >= 0) {
+      const purchased = remaining.splice(chosenIndex, 1)[0]
+      fame = clampPlayerFame(fame - purchased.cost + purchased.fameRefund)
+      continue
+    }
+
+    fame += calculateFameGain(rawGigFame, fame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
+    gigs += 1
+  }
+
+  return { gigs, finalFame: fame, rawGigFame }
+}
+
+const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy }) => {
+  if (gigsToBuyShopPlusLegacy > 30) {
+    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 20-30 guten Gigs bis 23.730 Fame.'
+  }
+
+  if (gigsToBuyShopPlusLegacy < 20) {
+    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 20-30 guten Gigs bis 23.730 Fame.'
+  }
+
+  return 'Fame-Gewinn liegt im Zielkorridor von 20-30 guten Gigs bis 23.730 Fame.'
+}
+
+const buildFameBalanceAudit = () => {
+  const shopOnlyCost = sumCatalogCost(SHOP_FAME_CATALOG)
+  const allFameCost = shopOnlyCost + sumCatalogCost(LEGACY_FAME_CATALOG)
+  const mostExpensiveShopItem = SHOP_FAME_CATALOG.reduce(
+    (max, item) => Math.max(max, Number(item.cost) || 0),
+    0
+  )
+
+  const scenarios = FAME_AUDIT_PERFORMANCE_SCORES.map(performanceScore => {
+    const reachLabel = simulateGigsToReachFameTarget(
+      mostExpensiveShopItem,
+      performanceScore
+    )
+    const shopOnly = simulateFameCatalogClear(SHOP_FAME_CATALOG, performanceScore)
+    const shopPlusLegacy = simulateFameCatalogClear(
+      [...SHOP_FAME_CATALOG, ...LEGACY_FAME_CATALOG],
+      performanceScore
+    )
+
+    return {
+      performanceScore,
+      rawGigFame: reachLabel.rawGigFame,
+      gigsToReachLabelCost: reachLabel.gigs,
+      gigsToBuyShopOnly: shopPlusLegacy.gigs,
+      gigsToBuyFameShopOnly: shopOnly.gigs,
+      gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs,
+      verdict: getFameAuditVerdict({ gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs })
+    }
+  })
+
+  return {
+    shopOnlyCost,
+    shopPlusLegacyCost: allFameCost,
+    mostExpensiveShopItem,
+    eventualPurchaseIsPossible: true,
+    note: 'Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben. Praktisch entscheidet die noetige Gig-Anzahl ueber die Balance.',
+    scenarios
+  }
+}
 
 const FEATURE_COVERAGE_KEYS = [
   'daily_updates',
@@ -615,12 +751,16 @@ const maybeApplyContrabandDrop = (state, rng, counters) => {
 }
 
 const maybeBuyCatalogUpgrade = (state, rng, counters) => {
-  if (state.player.money < 900 || rng() > 0.24) return
+  if (rng() > 0.24) return
   const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
   if (!candidate) return
 
   const cost = Number(candidate.cost || 0)
-  if (!Number.isFinite(cost) || cost <= 0 || cost > state.player.money) return
+  if (!Number.isFinite(cost) || cost <= 0) return
+
+  const paysWithFame = candidate.currency === 'fame'
+  const availableCurrency = paysWithFame ? state.player.fame : state.player.money
+  if (availableCurrency < cost) return
 
   const ownedHqUpgrades = Array.isArray(state.player.hqUpgrades)
     ? state.player.hqUpgrades
@@ -631,8 +771,16 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   const allOwned = new Set([...ownedHqUpgrades, ...ownedVanUpgrades])
   if (allOwned.has(candidate.id)) return
 
-  state.player.money = clampPlayerMoney(state.player.money - cost)
-  if (candidate.id.startsWith('van_')) {
+  if (paysWithFame) {
+    state.player.fame = clampPlayerFame(
+      state.player.fame - cost + getCatalogFameRefund(candidate)
+    )
+    state.player.fameLevel = calculateFameLevel(state.player.fame)
+  } else {
+    state.player.money = clampPlayerMoney(state.player.money - cost)
+  }
+
+  if (candidate.category === 'VAN') {
     state.player.van.upgrades = [...ownedVanUpgrades, candidate.id]
   } else {
     state.player.hqUpgrades = [...ownedHqUpgrades, candidate.id]
@@ -918,7 +1066,7 @@ const applyPostGigState = (
   let fameDelta = -SIMULATION_CONSTANTS.fameLossBadGig
 
   if (performanceScore >= 62) {
-    const rawFameGain = 50 + Math.floor(performanceScore * 1.5)
+    const rawFameGain = calculateGigFameReward(performanceScore)
     fameDelta = calculateFameGain(
       rawFameGain,
       currentFame,
@@ -1822,6 +1970,32 @@ const buildMarkdownReport = payload => {
   lines.push(`| Fame-Level-Skala | Level = floor(fame / 100) |`)
   lines.push('')
 
+  // ── Fame Audit ───────────────────────────────────────────────────────────
+  const fameAudit = payload.fameBalanceAudit
+  lines.push('## Fame-Shop-Audit')
+  lines.push('')
+  lines.push(
+    `Shop-only kosten **${fameAudit.shopOnlyCost} Fame**, mit Legacy-Upgrades **${fameAudit.shopPlusLegacyCost} Fame**.`
+  )
+  lines.push(
+    `Das teuerste einzelne Fame-Item kostet **${fameAudit.mostExpensiveShopItem} Fame**.`
+  )
+  lines.push('')
+  lines.push(
+    '| PerfScore | Roh-Fame/Gig | Gigs bis 5.000 Fame | Gigs fuer Fame-Shop-only | Gigs fuer Shop+Legacy | Bewertung |'
+  )
+  lines.push('|---:|---:|---:|---:|---:|---|')
+
+  for (const scenario of fameAudit.scenarios) {
+    lines.push(
+      `| ${scenario.performanceScore} | ${scenario.rawGigFame} | ${scenario.gigsToReachLabelCost} | ${scenario.gigsToBuyFameShopOnly} | ${scenario.gigsToBuyShopPlusLegacy} | ${scenario.verdict} |`
+    )
+  }
+
+  lines.push('')
+  lines.push(`Hinweis: ${fameAudit.note}`)
+  lines.push('')
+
   // ── App Feature Snapshot ──────────────────────────────────────────────────
   lines.push('## Feature-Snapshot der App')
   lines.push('')
@@ -2165,6 +2339,7 @@ export const runSimulationSuite = async () => {
     outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown,
     scenarios: SCENARIOS,
     appFeatureSnapshot: buildAppFeatureSnapshot(),
+    fameBalanceAudit: buildFameBalanceAudit(),
     featureCoverage: buildFeatureCoverage(results),
     results
   }

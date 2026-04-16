@@ -59,6 +59,33 @@ export const clampPlayerFame = fame => {
   return Math.max(0, Math.floor(fame))
 }
 
+export const FAME_PROGRESS_CONSTANTS = Object.freeze({
+  GIG_BASE_REWARD: 100,
+  GIG_SCORE_MULTIPLIER: 10,
+  DIMINISHING_RETURNS_START: 30000,
+  DIMINISHING_RETURNS_RATE: 0.0001
+})
+
+/**
+ * Calculates the raw fame reward for a successful gig before any diminishing returns.
+ * Tuned so the full fame catalog remains reachable in roughly 20-30 strong gigs.
+ *
+ * @param {number} performanceScore - Gig performance score.
+ * @returns {number} Raw gig fame reward.
+ */
+export const calculateGigFameReward = performanceScore => {
+  const safePerformanceScore = Number.isFinite(performanceScore)
+    ? Math.max(0, performanceScore)
+    : 0
+
+  return (
+    FAME_PROGRESS_CONSTANTS.GIG_BASE_REWARD +
+    Math.floor(
+      safePerformanceScore * FAME_PROGRESS_CONSTANTS.GIG_SCORE_MULTIPLIER
+    )
+  )
+}
+
 /**
  * Calculates fame gain with exponential diminishing returns.
  * Ensures the logic is synced across the app and simulation.
@@ -71,8 +98,14 @@ export const calculateFameGain = (rawGain, currentFame, maxGain = 500) => {
   let fameGain = Math.min(maxGain, rawGain)
   const prevFame = currentFame ?? 0
 
-  if (fameGain > 0 && prevFame > 100) {
-    const diminishingMultiplier = Math.exp(-(prevFame - 100) * 0.007)
+  if (
+    fameGain > 0 &&
+    prevFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
+  ) {
+    const diminishingMultiplier = Math.exp(
+      -(prevFame - FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
+        FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
+    )
     fameGain = Math.max(1, Math.round(fameGain * diminishingMultiplier))
   }
 
@@ -106,7 +139,7 @@ export const clampPlayerMoney = money => {
 // Shared Balance Constants
 export const BALANCE_CONSTANTS = {
   FAME_LOSS_BAD_GIG: 12,
-  MAX_FAME_GAIN: 500,
+  MAX_FAME_GAIN: 2000,
   LOW_HARMONY_THRESHOLD: 15,
   LOW_HARMONY_CANCELLATION_CHANCE: 0.25,
   // Miss-penalty on bad gigs (perfScore < 62)
