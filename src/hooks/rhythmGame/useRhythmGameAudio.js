@@ -34,6 +34,41 @@ export const useRhythmGameAudio = ({
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
   const abortControllerRef = useRef(null)
+  const latestContextRef = useRef({
+    band,
+    gameMap,
+    player,
+    setlist,
+    gigModifiers,
+    currentGig,
+    addToast,
+    t,
+    setIsAudioReady
+  })
+
+  useEffect(() => {
+    latestContextRef.current = {
+      band,
+      gameMap,
+      player,
+      setlist,
+      gigModifiers,
+      currentGig,
+      addToast,
+      t,
+      setIsAudioReady
+    }
+  }, [
+    band,
+    gameMap,
+    player,
+    setlist,
+    gigModifiers,
+    currentGig,
+    addToast,
+    t,
+    setIsAudioReady
+  ])
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -43,6 +78,19 @@ export const useRhythmGameAudio = ({
     if (hasInitializedRef.current || isInitializingRef.current) {
       return
     }
+    const ctx = latestContextRef.current
+    const {
+      band: currentBand,
+      gameMap: currentGameMap,
+      player: currentPlayer,
+      setlist: currentSetlist,
+      gigModifiers: currentGigModifiers,
+      currentGig: activeGig,
+      addToast: currentAddToast,
+      t: currentT,
+      setIsAudioReady: setAudioReady
+    } = ctx
+
     isInitializingRef.current = true
     const controller = new AbortController()
     abortControllerRef.current = controller
@@ -54,12 +102,12 @@ export const useRhythmGameAudio = ({
       // Mute ambient radio to prevent audio overlap
       audioManager.stopMusic()
 
-      const currentHarmony = clampBandHarmony(band?.harmony)
+      const currentHarmony = clampBandHarmony(currentBand?.harmony)
 
       // Harmony Guard
       if (currentHarmony <= 1) {
         logger.warn('RhythmGame', 'Band harmony too low to start gig.')
-        setIsAudioReady(false)
+        setAudioReady(false)
         return
       }
 
@@ -74,24 +122,26 @@ export const useRhythmGameAudio = ({
           'RhythmGame',
           'Audio Context blocked. Waiting for user gesture.'
         )
-        setIsAudioReady(false)
+        setAudioReady(false)
         return
       }
-      setIsAudioReady(true)
+      setAudioReady(true)
       hasInitializedRef.current = true
 
       // Reset cross-song tracking state for a new gig
       resetGigStateTracking(gameStateRef)
 
       const setlistFirstId =
-        typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
+        typeof currentSetlist?.[0] === 'string'
+          ? currentSetlist[0]
+          : currentSetlist?.[0]?.id
 
       const physicsSetup = setupGigPhysics(
-        band,
-        gigModifiers,
-        currentGig?.songId,
-        gameMap,
-        player?.currentNodeId,
+        currentBand,
+        currentGigModifiers,
+        activeGig?.songId,
+        currentGameMap,
+        currentPlayer?.currentNodeId,
         setlistFirstId
       )
       if (!physicsSetup) {
@@ -105,15 +155,21 @@ export const useRhythmGameAudio = ({
       gameStateRef.current.lanes[1].hitWindow = physicsSetup.hitWindows[1]
       gameStateRef.current.lanes[2].hitWindow = physicsSetup.hitWindows[2]
 
-      const activeSetlist = resolveActiveSetlist(setlist)
+      const activeSetlist = resolveActiveSetlist(currentSetlist)
 
       if (isAborted()) {
-        setIsAudioReady(false)
+        setAudioReady(false)
         return
       }
 
       if (!isAborted()) {
-        await playSongSequence(0, activeSetlist, gameStateRef, addToast, t)
+        await playSongSequence(
+          0,
+          activeSetlist,
+          gameStateRef,
+          currentAddToast,
+          currentT
+        )
       }
     } catch (error) {
       if (isAborted()) {
@@ -121,26 +177,15 @@ export const useRhythmGameAudio = ({
       }
 
       handleError(error, {
-        addToast,
+        addToast: currentAddToast,
         fallbackMessage: 'Gig initialization failed!'
       })
-      setIsAudioReady(false)
+      setAudioReady(false)
       hasInitializedRef.current = false
     } finally {
       isInitializingRef.current = false
     }
-  }, [
-    band,
-    gameMap,
-    player,
-    setlist,
-    gigModifiers,
-    currentGig,
-    addToast,
-    t,
-    gameStateRef,
-    setIsAudioReady
-  ])
+  }, [gameStateRef])
 
   useEffect(() => {
     initializeGigState()
