@@ -1,7 +1,9 @@
 import {
   calculateFameGain,
   calculateFameLevel,
-  BALANCE_CONSTANTS
+  calculateGigFameReward,
+  BALANCE_CONSTANTS,
+  FAME_PROGRESS_CONSTANTS
 } from '../src/utils/gameStateUtils.js'
 
 /**
@@ -18,7 +20,7 @@ import {
  */
 
 const TARGET_DAYS = 75 // The typical length of a complete game simulation run
-const MAX_FAME_GAIN = 500
+const MAX_FAME_GAIN = BALANCE_CONSTANTS.MAX_FAME_GAIN
 const FLAT_FAME_PENALTY_PER_BAD_GIG = BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
 const DAILY_COST = 64 // matches EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 members × 8
 const CLINIC_COST = 150 // matches simulation clinic visit cost
@@ -141,7 +143,7 @@ while (state.day <= TARGET_DAYS) {
     // Good gig threshold aligns with applyPostGigState in game-balance-simulation.mjs
     if (score >= 78) {
       // Great Gig — harmony reward
-      const rawGain = 50 + Math.floor(score * 1.5)
+      const rawGain = calculateGigFameReward(score)
       fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
 
       state.band.harmony = clampHarmony(state.band.harmony + 2)
@@ -149,13 +151,17 @@ while (state.day <= TARGET_DAYS) {
       state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
 
       const dampFactor =
-        previousFame > 50
-          ? `(Dampened: ${Math.exp(-(previousFame - 50) * 0.01).toFixed(2)}x)`
+        previousFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
+          ? `(Dampened: ${Math.exp(
+              -(previousFame -
+                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
+                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
+            ).toFixed(2)}x)`
           : ''
       outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
     } else if (score >= 62) {
       // Decent Gig — fame gain, harmony penalty
-      const rawGain = 50 + Math.floor(score * 1.5)
+      const rawGain = calculateGigFameReward(score)
       fameDelta = calculateFameGain(rawGain, state.fame, MAX_FAME_GAIN)
 
       state.band.harmony = clampHarmony(state.band.harmony - 5)
@@ -163,8 +169,12 @@ while (state.day <= TARGET_DAYS) {
       state.band.stamina = clamp(state.band.stamina - 8, 0, 100)
 
       const dampFactor =
-        previousFame > 50
-          ? `(Dampened: ${Math.exp(-(previousFame - 50) * 0.01).toFixed(2)}x)`
+        previousFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
+          ? `(Dampened: ${Math.exp(
+              -(previousFame -
+                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
+                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
+            ).toFixed(2)}x)`
           : ''
       outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`
     } else {

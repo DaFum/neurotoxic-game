@@ -2,15 +2,16 @@ import {
   checkViralEvent,
   calculateSocialGrowth,
   resolvePost
-} from './socialEngine'
+} from './socialEngine.js'
 import {
   clampPlayerMoney,
   clampBandHarmony,
   clampMemberStamina,
   clampMemberMood,
   clampControversyLevel,
-  } from './gameStateUtils'
-import { BRAND_ALIGNMENTS } from '../context/initialState'
+  calculateGigFameReward
+} from './gameStateUtils.js'
+import { BRAND_ALIGNMENTS } from '../context/initialState.js'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals.js'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
 
@@ -108,7 +109,6 @@ export const calculatePostGigStateUpdates = ({
     Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
   )
 
-
   const updatedSocial = {
     [result.platform]: Math.max(
       0,
@@ -144,22 +144,39 @@ export const calculatePostGigStateUpdates = ({
   }
 
   // Handle comm_sellout_ad
-  if (option.id === 'comm_sellout_ad' && social.activeDeals && social.activeDeals.length > 0) {
+  if (
+    option.id === 'comm_sellout_ad' &&
+    social.activeDeals &&
+    social.activeDeals.length > 0
+  ) {
     // Apply penalty from the sponsorship deal
     const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP')
-    if (!deal) return { finalResult, newBand, hasBandUpdates, appliedHarmonyDelta, nextMoney, appliedMoneyDelta, updatedSocial }
+    if (!deal)
+      return {
+        finalResult,
+        newBand,
+        hasBandUpdates,
+        appliedHarmonyDelta,
+        nextMoney,
+        appliedMoneyDelta,
+        updatedSocial
+      }
 
     const template = BRAND_DEALS_BY_ID.get(deal.id)
     if (template && template.penalty) {
       if (template.penalty.controversy) {
-        updatedSocial.controversyLevel = clampControversyLevel((updatedSocial.controversyLevel || 0) + template.penalty.controversy)
+        updatedSocial.controversyLevel = clampControversyLevel(
+          (updatedSocial.controversyLevel || 0) + template.penalty.controversy
+        )
       }
       if (template.penalty.loyalty) {
-        updatedSocial.loyalty = Math.max(0, (updatedSocial.loyalty || 0) + template.penalty.loyalty)
+        updatedSocial.loyalty = Math.max(
+          0,
+          (updatedSocial.loyalty || 0) + template.penalty.loyalty
+        )
       }
     }
   }
-
 
   if (result.influencerUpdate) {
     const { id, scoreChange } = result.influencerUpdate
@@ -272,10 +289,7 @@ export const getAcceptDealSocialUpdateFactory = deal => {
       }
     }
 
-    const prevDeals = prevSocial.activeDeals || []
-    updates.activeDeals = [
-      { ...deal, remainingGigs: deal.offer.duration }
-    ]
+    updates.activeDeals = [{ ...deal, remainingGigs: deal.offer.duration }]
 
     return updates
   }
@@ -320,7 +334,7 @@ export const calculateContinueStats = ({
 
   let finalFameGain = -BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG
   if (perfScore >= 62) {
-    const rawFameGain = 50 + Math.floor(perfScore * 1.5)
+    const rawFameGain = calculateGigFameReward(perfScore)
     finalFameGain = calculateFameGain(
       rawFameGain,
       prevFame,

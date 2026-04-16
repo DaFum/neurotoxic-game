@@ -9,6 +9,8 @@ import {
   clampVanFuel,
   calculateFameLevel,
   calculateFameGain,
+  calculateGigFameReward,
+  FAME_PROGRESS_CONSTANTS,
   calculateAppliedDelta,
   isForbiddenKey
 } from '../src/utils/gameStateUtils.js'
@@ -34,32 +36,42 @@ test('calculateFameLevel', () => {
   assert.strictEqual(calculateFameLevel(undefined), 0)
 })
 
+test('calculateGigFameReward scales successful gigs aggressively enough for shop progression', () => {
+  assert.strictEqual(
+    calculateGigFameReward(70),
+    800,
+    'A solid gig should grant high raw fame'
+  )
+  assert.strictEqual(
+    calculateGigFameReward(100),
+    1100,
+    'A perfect gig should be able to reach the 20-30 gig shop target'
+  )
+})
+
 test('calculateFameGain returns correct diminishing returns', () => {
   assert.strictEqual(
-    calculateFameGain(100, 0, 500),
-    100,
-    'Below 100 fame, raw gain is uncapped'
+    calculateFameGain(1100, 0, 2000),
+    1100,
+    'Before diminishing returns start, raw gain is applied directly'
   )
   assert.strictEqual(
-    calculateFameGain(600, 0, 500),
-    500,
-    'Below 100 fame, max gain is strictly applied'
-  )
-
-  // At 200 current fame, multiplier is exp(-100 * 0.007) = exp(-0.7) = 0.4965
-  // Raw 100 => 50
-  assert.strictEqual(
-    calculateFameGain(100, 200, 500),
-    50,
-    'At 200 fame, gain is diminished (~50%)'
+    calculateFameGain(3000, 0, 2000),
+    2000,
+    'The max gain cap is still enforced'
   )
 
-  // At 500 current fame, multiplier is exp(-400 * 0.007) = exp(-2.8) = 0.0608
-  // Raw 100 => 6
+  const currentFame = FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START + 1000
+  const expectedDiminished = Math.max(
+    1,
+    Math.round(
+      1100 * Math.exp(-1000 * FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE)
+    )
+  )
   assert.strictEqual(
-    calculateFameGain(100, 500, 500),
-    6,
-    'At 500 fame, gain is heavily diminished'
+    calculateFameGain(1100, currentFame, 2000),
+    expectedDiminished,
+    'Past the late-game threshold, gain is reduced exponentially'
   )
 })
 
