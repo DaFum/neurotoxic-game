@@ -36,18 +36,23 @@ export const getAudioSnapshot = (
   hasNativeSubscribe,
   fallbackSnapshotRef
 ) => {
-  const nextSnapshot =
-    typeof manager.getState === 'function'
-      ? manager.getState()
-      : hasNativeSubscribe && typeof manager.getStateSnapshot === 'function'
-        ? manager.getStateSnapshot()
-        : {
-            musicVol: manager.musicVolume,
-            sfxVol: manager.sfxVolume,
-            isMuted: manager.muted,
-            isPlaying: manager.isPlaying,
-            currentSongId: manager.currentSongId ?? null
-          }
+  let nextSnapshot
+  if (typeof manager.getState === 'function') {
+    nextSnapshot = manager.getState()
+  } else if (
+    hasNativeSubscribe &&
+    typeof manager.getStateSnapshot === 'function'
+  ) {
+    nextSnapshot = manager.getStateSnapshot()
+  } else {
+    nextSnapshot = {
+      musicVol: manager.musicVolume,
+      sfxVol: manager.sfxVolume,
+      isMuted: manager.muted,
+      isPlaying: manager.isPlaying,
+      currentSongId: manager.currentSongId ?? null
+    }
+  }
 
   const previousSnapshot = fallbackSnapshotRef.current
   if (
@@ -106,7 +111,7 @@ export const createAudioSubscriber = (
  * @returns {{ audioState: any, handleAudioChange: { setMusic: Function, setSfx: Function, toggleMute: Function, stopMusic: Function, resumeMusic: Function } }}
  */
 export const useAudioControl = (selector, options = {}) => {
-  const manager = useMemo(() => audioService, [])
+  const manager = audioService
   const fallbackSnapshotRef = useRef(null)
   const selectorRef = useRef(selector)
   selectorRef.current = selector

@@ -97,6 +97,6 @@ Data source: `docs/repo-inventory.json`.
 ## Legacy, duplication, and overlap markers
 
 - `.agents/**` and `.claude/**` are overlapping mirror trees; keep as explicit duplication until ownership/source-of-truth is decided.
-- Travel event triggering previously duplicated in `useTravelLogic`; now delegated to `arrivalUtils.processTravelEvents` for one shared behavior path.
+- Only the non-performance travel-event path was delegated to `arrivalUtils.processTravelEvents`, while `useTravelLogic` continues to handle transport/band travel events inline for GIG, FESTIVAL, and FINALE destinations.
 - Script alias overlap remains intentional for DX compatibility (`test:vitest:node` retained as alias to `test:vitest:logic`).
 - `SceneRouter` now relies on scene default exports directly; the named-export lazy adapter (`lazySceneLoader`) was removed.

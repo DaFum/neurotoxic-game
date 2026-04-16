@@ -60,16 +60,20 @@ export const isGigNode = node => {
  * @param {Function} triggerEvent - The function to trigger events.
  * @returns {boolean} True if a travel event was triggered.
  */
-export const processTravelEvents = (node, triggerEvent) => {
-  if (isGigNode(node)) {
-    return false
-  }
-
+export const triggerTravelFallback = triggerEvent => {
   let travelEventActive = triggerEvent('transport', 'travel')
   if (!travelEventActive) {
     travelEventActive = triggerEvent('band', 'travel')
   }
   return travelEventActive
+}
+
+export const processTravelEvents = (node, triggerEvent) => {
+  if (isGigNode(node)) {
+    return false
+  }
+
+  return triggerTravelFallback(triggerEvent)
 }
 
 export const handleNodeArrival = ({

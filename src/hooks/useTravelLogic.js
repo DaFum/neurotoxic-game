@@ -32,7 +32,8 @@ import {
 import {
   handleNodeArrival,
   processTravelEvents,
-  isGigNode
+  isGigNode,
+  triggerTravelFallback
 } from '../utils/arrivalUtils.js'
 import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
@@ -278,10 +279,7 @@ export const useTravelLogic = ({
       // transport/band travel events before node arrival handling.
       let travelEventActive
       if (isGigNode(node)) {
-        travelEventActive = triggerEvent('transport', 'travel')
-        if (!travelEventActive) {
-          travelEventActive = triggerEvent('band', 'travel')
-        }
+        travelEventActive = triggerTravelFallback(triggerEvent)
       } else {
         travelEventActive = processTravelEvents(node, triggerEvent)
       }

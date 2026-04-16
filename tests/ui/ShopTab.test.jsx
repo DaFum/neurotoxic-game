@@ -5,7 +5,10 @@ import { ShopTab } from '../../src/ui/bandhq/ShopTab.jsx'
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: (key, options) => options?.defaultValue || key
+    t: (key, options) => {
+      if (key === 'ui:bandhq.funds') return 'FUNDS'
+      return options?.defaultValue || key
+    }
   })
 }))
 
@@ -69,7 +72,7 @@ describe('ShopTab', () => {
       />
     )
     expect(screen.getByText(/1000€/)).toBeInTheDocument()
-    expect(screen.getByText(/ui:bandhq\.funds/)).toBeInTheDocument()
+    expect(screen.getByText(/FUNDS/)).toBeInTheDocument()
   })
 
   test('renders combined shop items from gear and instruments', () => {

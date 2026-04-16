@@ -34,9 +34,10 @@ describe('useArrivalLogic', () => {
     // 2. Save Game
     expect(mockGameState.saveGame.mock.calls.length).toBe(1)
     // 3. Trigger Events
-    expect(mockGameState.triggerEvent.mock.calls.length).toBeGreaterThanOrEqual(
-      1
-    )
+    // Default mock setup doesn't have `currentNode` in gameMap.nodes,
+    // so `currentNode` is undefined and `processTravelEvents` is NOT called anymore.
+    expect(mockGameState.triggerEvent.mock.calls.length).toBe(0)
+
     // 4. Default Routing (no current node found -> OVERWORLD)
     expect(mockGameState.changeScene.mock.calls.length).toBe(1)
     expect(mockGameState.changeScene.mock.calls[0][0]).toBe(

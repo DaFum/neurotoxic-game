@@ -53,7 +53,10 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
       const currentNode = gameMap?.nodes[player.currentNodeId]
       // If there is no resolved current node (e.g. incomplete map fixture),
       // processTravelEvents keeps legacy behavior and still attempts travel events.
-      const travelEventActive = processTravelEvents(currentNode, triggerEvent)
+      let travelEventActive = false
+      if (currentNode) {
+        travelEventActive = processTravelEvents(currentNode, triggerEvent)
+      }
 
       // 5. Handle Node Arrival & Routing
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
