@@ -8,7 +8,7 @@ import { translateLocation } from '../../utils/locationI18n'
 
 // --- Helpers ---
 
-const isUnlocked = val => {
+const isUnlocked = (val: any) => {
   if (typeof val === 'number') return val > 0
   if (typeof val === 'boolean') return val
   if (Array.isArray(val)) return val.length > 0
@@ -17,17 +17,17 @@ const isUnlocked = val => {
 
 // Generate CHAR_MAP using a single pass loop to avoid intermediate array allocations
 // from chained map/filter pipelines that run on module evaluation.
-const CHAR_MAP = {}
+const CHAR_MAP: Record<string, any> = {}
 for (const key in CHARACTERS) {
   if (Object.hasOwn(CHARACTERS, key)) {
-    const c = CHARACTERS[key]
+    const c = (CHARACTERS as any)[key]
     if (c.role !== 'NPC') {
       CHAR_MAP[c.name] = c
     }
   }
 }
 
-const DetailRow = ({ label, value, subtext, locked, className = '' }) => (
+const DetailRow = ({ label, value, subtext, locked, className = '' }: any) => (
   <div
     className={`flex justify-between items-center py-1 border-b border-ash-gray/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}
   >
@@ -53,7 +53,7 @@ DetailRow.propTypes = {
 
 // --- Sub-components ---
 
-const CareerOverviewSection = ({ player, t }) => {
+const CareerOverviewSection = ({ player, t }: any) => {
   const locationName = translateLocation(t, player.location, player.location)
   return (
     <Panel
@@ -116,7 +116,7 @@ const CareerOverviewSection = ({ player, t }) => {
   )
 }
 
-const SocialReachSection = ({ social, t }) => {
+const SocialReachSection = ({ social, t }: any) => {
   const totalReach =
     (social.instagram ?? 0) +
     (social.tiktok ?? 0) +
@@ -192,7 +192,7 @@ const SocialReachSection = ({ social, t }) => {
           label={t('ui:stats.brandDeals', { defaultValue: 'Brand Deals' })}
           value={social.activeDeals?.length || 0}
           subtext={
-            social.activeDeals?.map(d => d.id).join(', ') ||
+            social.activeDeals?.map((d: any) => d.id).join(', ') ||
             t('ui:stats.noContracts', {
               defaultValue: 'No active contracts'
             })
@@ -234,7 +234,7 @@ const SocialReachSection = ({ social, t }) => {
   )
 }
 
-const VanConditionSection = ({ player, t }) => (
+const VanConditionSection = ({ player, t }: any) => (
   <Panel title={t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}>
     {/* jscpd:ignore-start */}
     <div className='mb-4 space-y-2'>
@@ -274,7 +274,7 @@ const VanConditionSection = ({ player, t }) => (
   </Panel>
 )
 
-const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }) => (
+const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }: any) => (
   <Panel
     title={t('ui:stats.regional_standing', {
       defaultValue: 'Regional Standing'
@@ -294,7 +294,7 @@ const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }) => (
             label={translateLocation(t, region, region)}
             value={rep}
             subtext={
-              venueBlacklist.some(v => v.split('_')[0] === region)
+              venueBlacklist.some((v: any) => v.split('_')[0] === region)
                 ? t('ui:detailedStats.blacklisted', {
                     defaultValue: 'BLACKLISTED VENUES'
                   })
@@ -312,14 +312,14 @@ const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }) => (
           })}
         </div>
         <div className='text-xs text-toxic-green font-mono italic'>
-          {venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')}
+          {venueBlacklist.map((v: any) => translateLocation(t, v, v)).join(', ')}
         </div>
       </div>
     )}
   </Panel>
 )
 
-const ActiveQuestsSection = ({ activeQuests, t }) => (
+const ActiveQuestsSection = ({ activeQuests, t }: any) => (
   <Panel title={t('ui:stats.active_quests', { defaultValue: 'Active Quests' })}>
     {activeQuests.length === 0 ? (
       <div className='text-xs text-ash-gray italic py-4 text-center'>
@@ -329,7 +329,7 @@ const ActiveQuestsSection = ({ activeQuests, t }) => (
       </div>
     ) : (
       <div className='space-y-4'>
-        {activeQuests.map(q => (
+        {activeQuests.map((q: any) => (
           <div
             key={q.id}
             className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
@@ -354,7 +354,7 @@ const ActiveQuestsSection = ({ activeQuests, t }) => (
   </Panel>
 )
 
-const BandMetricsSection = ({ band, social, t }) => (
+const BandMetricsSection = ({ band, social, t }: any) => (
   <Panel title={t('ui:stats.band_metrics', { defaultValue: 'Band Metrics' })}>
     <div className='mb-4'>
       <ProgressBar
@@ -417,7 +417,7 @@ const BandMetricsSection = ({ band, social, t }) => (
   </Panel>
 )
 
-const InventoryEquipmentSection = ({ band, t }) => (
+const InventoryEquipmentSection = ({ band, t }: any) => (
   <Panel
     title={t('ui:stats.inventory_equipment', {
       defaultValue: 'Inventory & Equipment'
@@ -444,7 +444,7 @@ const InventoryEquipmentSection = ({ band, t }) => (
   </Panel>
 )
 
-const MemberTraits = ({ member, t }) => {
+const MemberTraits = ({ member, t }: any) => {
   const def = CHAR_MAP[member.name]
 
   const potentialTraits = useMemo(() => {
@@ -454,9 +454,9 @@ const MemberTraits = ({ member, t }) => {
     if (baseTraits.length === 0 && runtimeTraits.length === 0) return []
 
     const merged = [...baseTraits]
-    const seen = new Set(baseTraits.map(bt => bt.id))
+    const seen = new Set(baseTraits.map((bt: any) => bt.id))
 
-    for (const rt of runtimeTraits) {
+    for (const rt of runtimeTraits as any[]) {
       if (!seen.has(rt.id)) {
         merged.push(rt)
         seen.add(rt.id)
@@ -514,7 +514,7 @@ const MemberTraits = ({ member, t }) => {
   })
 }
 
-const MemberEquipment = ({ member, t }) => {
+const MemberEquipment = ({ member, t }: any) => {
   if (!member.equipment) {
     return (
       <div className='text-xs text-ash-gray/50'>
@@ -533,7 +533,7 @@ const MemberEquipment = ({ member, t }) => {
   ))
 }
 
-const MemberCard = ({ member, t }) => (
+const MemberCard = ({ member, t }: any) => (
   <div className='bg-void-black/60 border border-ash-gray p-4'>
     <div className='flex justify-between items-baseline mb-4'>
       <h4 className='text-lg font-bold text-toxic-green'>{member.name}</h4>
@@ -622,13 +622,13 @@ const MemberCard = ({ member, t }) => (
   </div>
 )
 
-const BandMembersSection = ({ members, t }) => (
+const BandMembersSection = ({ members, t }: any) => (
   <div className='space-y-4'>
     <h3 className='text-xl text-star-white font-display border-b border-toxic-green pb-2'>
       {t('ui:detailedStats.bandMembers', { defaultValue: 'BAND MEMBERS' })}
     </h3>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-      {(members || []).map(member => (
+      {(members || []).map((member: any) => (
         <MemberCard key={member.name} member={member} t={t} />
       ))}
     </div>
@@ -722,7 +722,7 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {}
-}) => {
+}: any) => {
   const { t } = useTranslation(['ui', 'items', 'venues', 'traits'])
 
   return (

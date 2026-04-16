@@ -12,9 +12,10 @@ const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
 
 class LaneRenderer {
-  constructor(index) {
-    const createGraphicsLayer = (layer, isVisible = true) => {
-      const g = new Graphics()
+  [key: string]: any
+  constructor(index: any) {
+    const createGraphicsLayer = (layer: any, isVisible = true) => {
+      const g = new Graphics() as any
       g.__laneIndex = index
       g.__layer = layer
       g.visible = isVisible
@@ -26,13 +27,13 @@ class LaneRenderer {
     this.inactive = createGraphicsLayer('inactive')
   }
 
-  addTo(container) {
+  addTo(container: any) {
     container.addChild(this.static)
     container.addChild(this.inactive)
     container.addChild(this.active)
   }
 
-  draw(lane, renderX, layout) {
+  draw(lane: any, renderX: any, layout: any) {
     this.static.clear()
     this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
@@ -84,19 +85,20 @@ class LaneRenderer {
     })
   }
 
-  setVisibility(isActive) {
+  setVisibility(isActive: any) {
     this.active.visible = !!isActive
     this.inactive.visible = !isActive
   }
 }
 
 export class LaneManager {
+  [key: string]: any
   /**
    * @param {Application} app
    * @param {Container} stageContainer
    * @param {object} gameStateRef
    */
-  constructor(app, stageContainer, gameStateRef) {
+  constructor(app: any, stageContainer: any, gameStateRef: any) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
@@ -141,7 +143,7 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(lane, index, laneX) {
+  _createLaneGraphics(lane: any, index: any, laneX: any) {
     const renderer = new LaneRenderer(index)
 
     // Set initial visibility based on lane state and initialize cache
@@ -154,7 +156,7 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state) {
+  update(state: any) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 
@@ -173,7 +175,7 @@ export class LaneManager {
     }
   }
 
-  updateLaneVisibility(lane, index, graphicsSet) {
+  updateLaneVisibility(lane: any, index: any, graphicsSet: any) {
     const wasActive = this.lastLaneActive[index]
 
     // Update visibility only when activity state changes

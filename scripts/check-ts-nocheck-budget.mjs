@@ -5,10 +5,8 @@ import path from 'node:path';
 
 const CONFIG_PATH = '.ci/ts-nocheck-budget.json';
 const SRC_DIR = 'src';
-const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx'];
 
 function findWithGrep() {
-  const includeArgs = EXTENSIONS.map(e => `--include="*${e}"`).join(' ');
   try {
     const out = execSync(
       `grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -l "^// @ts-nocheck" ${SRC_DIR}`,

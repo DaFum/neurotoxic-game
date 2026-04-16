@@ -75,7 +75,7 @@ export const StatBox = memo(function StatBox({
   value,
   icon,
   className = ''
-}) {
+}: any) {
   return (
     <div
       className={`relative bg-charcoal-gray p-3 flex flex-col items-center justify-center border border-steel-gray group overflow-hidden ${className}`}
@@ -96,14 +96,14 @@ export const StatBox = memo(function StatBox({
   )
 })
 
-StatBox.propTypes = {
+;(StatBox as any).propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   icon: PropTypes.string.isRequired,
   className: PropTypes.string
 }
 
-const SIZE_CLASSES = {
+const SIZE_CLASSES: Record<string, string> = {
   sm: 'h-3',
   md: 'h-5',
   mini: 'h-1.5'
@@ -131,7 +131,7 @@ export const ProgressBar = memo(function ProgressBar({
   warn = false,
   className = '',
   ...props
-}) {
+}: any) {
   const safeMax = max > 0 ? max : 1
   const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
   const pct = Math.min(100, (safeValue / safeMax) * 100)
@@ -171,7 +171,7 @@ export const ProgressBar = memo(function ProgressBar({
   )
 })
 
-ProgressBar.propTypes = {
+;(ProgressBar as any).propTypes = {
   label: PropTypes.string,
   value: PropTypes.number,
   max: PropTypes.number.isRequired,
@@ -195,7 +195,7 @@ export const Panel = memo(function Panel({
   children,
   className = '',
   contentClassName = 'space-y-1'
-}) {
+}: any) {
   return (
     <div
       className={`relative bg-abyss-black/40 border-2 border-steel-gray/40 p-4 group overflow-hidden ${className}`}
@@ -220,7 +220,7 @@ export const Panel = memo(function Panel({
   )
 })
 
-Panel.propTypes = {
+;(Panel as any).propTypes = {
   title: PropTypes.string,
   children: PropTypes.node.isRequired,
   className: PropTypes.string,

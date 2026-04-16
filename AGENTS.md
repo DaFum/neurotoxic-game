@@ -37,7 +37,7 @@
 - Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They return reactive state only.
 - `useArrivalLogic` owns ALL arrival routing (including PREGIG direct entry); `COMPLETE_TRAVEL_MINIGAME` does not change scene.
 - `START_GIG` resets `gigModifiers` to defaults; previous gig selections do not carry over.
-- Pixi.js v8 cleanup: `app.destroy({ removeView: true, children: true, texture: true, textureSource: true })`.
+- Pixi.js v8 cleanup: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })` — two distinct args: `RendererDestroyOptions` then `DestroyOptions`.
 - Audio end: Do NOT use `audioPlaybackEnded`. Use `setlistCompleted` + `isNearTrackEnd`.
 - Songs with JSON notes: OGG/MIDI capped to `maxNoteTime + NOTE_TAIL_MS`. Procedural songs use full excerpt duration.
 - Default chatter scenes: `MENU`, `OVERWORLD`, `PREGIG`, `POSTGIG` only — `GIG` requires explicit conditional entries.

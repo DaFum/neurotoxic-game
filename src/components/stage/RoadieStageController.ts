@@ -13,7 +13,18 @@ import { handleError, GameError } from '../../utils/errorHandler'
 import { hashString } from '../../utils/stringUtils'
 
 class RoadieStageController extends BaseStageController {
-  [key: string]: any
+  playerContainer: Container | null
+  playerSprite: Sprite | Graphics | null
+  itemSprite: Sprite | null
+  carSprites: Map<string | number, Sprite | Graphics> | null
+  currentIds: Set<string | number>
+  effectManager: EffectManager | null
+  _flashTimeout: ReturnType<typeof setTimeout> | null
+  lastDamage: number
+  textures: { roadie: import('pixi.js').Texture | null; cars: import('pixi.js').Texture[]; items: Record<string, import('pixi.js').Texture | undefined> }
+  colors: { bloodRed: number; starWhite: number; toxicGreen: number; roadColor: number; grassColor: number; venueColor: number }
+  bgGraphics: Graphics | null
+
   constructor(params: any) {
     super(params)
     this.playerContainer = null
@@ -105,7 +116,7 @@ class RoadieStageController extends BaseStageController {
         guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
       }
 
-      const loaded = await loadTextures(urls, undefined) as any
+      const loaded = await loadTextures(urls, undefined) as Record<keyof typeof urls, import('pixi.js').Texture | null>
 
       if (this.isDisposed) return
 
