@@ -5,14 +5,23 @@ import fs from 'node:fs';
 const CONFIG_PATH = '.ci/ts-nocheck-budget.json';
 
 function getOccurrences() {
-  const out = execSync('rg -n "^// @ts-nocheck" src --glob "*.{ts,tsx,js,jsx}"', {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  }).trim();
+  let out = '';
+  try {
+    out = execSync('rg -n "^// @ts-nocheck" src --glob "*.{ts,tsx,js,jsx}"', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (error) {
+    if (error?.status === 1) {
+      return [];
+    }
+    throw error;
+  }
 
-  if (!out) return [];
+  const normalized = out.trim();
+  if (!normalized) return [];
 
-  return out.split('\n').map((line) => {
+  return normalized.split('\n').map((line) => {
     const [file] = line.split(':');
     return file;
   });
