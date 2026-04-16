@@ -754,11 +754,8 @@ const maybeApplyContrabandDrop = (state, rng, counters) => {
   counters.contrabandDrops += 1
 }
 
-const maybeBuyCatalogUpgrade = (state, rng, counters) => {
-  if (rng() > 0.24) return
-  const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
-  if (!candidate) return
-  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) return
+const applyCatalogPurchase = (state, candidate, counters) => {
+  if (!candidate) return false
 
   const validation = validatePurchase(candidate, state.player, state.band)
   if (!validation.isValid) return
@@ -805,6 +802,16 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   }
 
   counters.catalogUpgrades += 1
+  return true
+}
+
+const maybeBuyCatalogUpgrade = (state, rng, counters) => {
+  if (rng() > 0.24) return
+  const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
+  if (!candidate) return
+  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) return
+
+  applyCatalogPurchase(state, candidate, counters)
 }
 
 const estimateMerchBuyers = (
@@ -1001,29 +1008,15 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   }
 
   if (state.player.money > SIMULATION_CONSTANTS.hqUpgradeCost * 1.5 && rng() < 0.3) {
-    const ownedUpgrades = Array.isArray(state.player.hqUpgrades)
-      ? state.player.hqUpgrades
-      : []
-    if (!ownedUpgrades.includes('hq_room_beer_pipeline')) {
-      state.player.money = clampPlayerMoney(
-        state.player.money - SIMULATION_CONSTANTS.hqUpgradeCost
-      )
-      state.player.hqUpgrades = [...ownedUpgrades, 'hq_room_beer_pipeline']
-      counters.hqUpgrades += 1
-    }
+    const hqUpgrade = UPGRADE_CATALOG.find(
+      item => item.id === 'hq_room_beer_pipeline'
+    )
+    applyCatalogPurchase(state, hqUpgrade, counters)
   }
 
   if (state.player.money > SIMULATION_CONSTANTS.vanUpgradeCost * 1.5 && rng() < 0.2) {
-    const ownedVanUpgrades = Array.isArray(state.player.van?.upgrades)
-      ? state.player.van.upgrades
-      : []
-    if (!ownedVanUpgrades.includes('van_tuning')) {
-      state.player.money = clampPlayerMoney(
-        state.player.money - SIMULATION_CONSTANTS.vanUpgradeCost
-      )
-      state.player.van.upgrades = [...ownedVanUpgrades, 'van_tuning']
-      counters.vanUpgrades += 1
-    }
+    const vanUpgrade = UPGRADE_CATALOG.find(item => item.id === 'van_tuning')
+    applyCatalogPurchase(state, vanUpgrade, counters)
   }
 }
 
