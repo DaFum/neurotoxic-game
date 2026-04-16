@@ -1,0 +1,6 @@
+{
+  "max": 299,
+  "baselineDate": "2026-04-16",
+  "scope": "src/**/*.{ts,tsx,js,jsx}",
+  "note": "Temporary migration budget. Lower this number as @ts-nocheck files are removed."
+}

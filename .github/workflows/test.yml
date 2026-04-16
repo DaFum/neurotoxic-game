@@ -127,6 +127,32 @@ jobs:
         if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' }}
         run: exit 1
 
+  ts-nocheck-guard:
+    name: TS Nocheck Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Ensure no new @ts-nocheck debt in src
+        run: pnpm run guard:nocheck
+
   locale-smoke-tests:
     name: Locale Smoke Tests
     runs-on: ubuntu-latest
