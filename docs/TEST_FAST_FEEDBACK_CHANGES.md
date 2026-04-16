@@ -4,10 +4,10 @@ This document reflects the **actual** workflow and script split in the repositor
 
 ## 1) Test split and script ownership
 
-- `pnpm run test` runs the node:test-owned suites via `scripts/run-tests.mjs`.
-- `pnpm run test:ui` runs Vitest-owned suites via `scripts/run-vitest-ui.mjs`.
-- `pnpm run test:vitest:logic` runs Vitest with `vitest.config.node.js` (logic suites that still use Vitest instead of node:test).
-- `pnpm run test:vitest:node` is kept as a backward-compatible alias to `test:vitest:logic`.
+- `pnpm run test` invokes the node:test-owned suites through `scripts/run-tests.mjs`.
+- `pnpm run test:ui` executes Vitest-owned suites via `scripts/run-vitest-ui.mjs`.
+- `pnpm run test:vitest:logic` uses Vitest with `vitest.config.node.js` for logic suites that still live on Vitest rather than node:test.
+- `pnpm run test:vitest:node` remains a backward-compatible alias for `test:vitest:logic`.
 
 ## 2) Fast-feedback CI workflow
 

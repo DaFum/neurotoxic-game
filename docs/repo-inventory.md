@@ -71,6 +71,28 @@ Data source: `docs/repo-inventory.json`.
 - CI workflows now consistently assume pnpm.
 - Local test orchestrators: `scripts/run-tests.mjs`, `scripts/run-node-tests.mjs`, `scripts/run-vitest-ui.mjs`.
 
+## Agents
+
+### Purpose and scope
+- `.agents/` and `.claude/` are agent-instruction trees used by automated contributors and bot-style workflows.
+- Both trees are currently discoverable in this repo and indexed in the machine-readable companion `docs/repo-inventory.json`.
+- They are intended to accelerate repetitive maintenance tasks (testing, refactors, workflow guidance), not to define runtime game behavior.
+
+### How to choose between `.agents/` and `.claude/`
+- Prefer whichever tree is actively configured by your automation runner in the current environment.
+- If both are available and equivalent for your task, prefer the one referenced by your CI/bot integration docs for consistency.
+- If there is divergence between mirrored files, request maintainer clarification before treating either side as authoritative.
+
+### Known limitations
+- Overlap/mirroring exists and ownership is not fully explicit.
+- Content may be duplicated across trees and can drift over time.
+- Neither tree should be treated as canonical architecture truth when it conflicts with source code and tests.
+
+### Contributor guidance
+- Update `docs/repo-inventory.json` whenever agent-tree structure changes materially (added/removed directories, major reorganization).
+- Keep `docs/repo-inventory.md` and `docs/repo-inventory.json` aligned so humans and tooling can locate mirrored files quickly.
+- If/when a canonical owner/source is formalized, record it here and in repository governance docs.
+
 ## Legacy, duplication, and overlap markers
 
 - `.agents/**` and `.claude/**` are overlapping mirror trees; keep as explicit duplication until ownership/source-of-truth is decided.
