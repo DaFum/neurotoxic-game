@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -8,13 +7,29 @@
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import type {
+  BloodBankDonatePayload,
+  ClinicActionPayload,
+  GameAction,
+  GameState,
+  GigModifiers,
+  MerchPressPayload,
+  PirateBroadcastPayload,
+  ToastPayload,
+  TradeVoidItemPayload,
+  UpdateBandPayload,
+  UpdatePlayerPayload,
+  SocialState
+} from '../types/game'
 
 /**
  * Creates a scene change action
  * @param {string} scene - Target scene name
  * @returns {Object} Action object
  */
-export const createChangeSceneAction = scene => ({
+export const createChangeSceneAction = (
+  scene: string
+): Extract<GameAction, { type: typeof ActionTypes.CHANGE_SCENE }> => ({
   type: ActionTypes.CHANGE_SCENE,
   payload: scene
 })
@@ -24,7 +39,16 @@ export const createChangeSceneAction = scene => ({
  * @param {Object} updates - Player state updates
  * @returns {Object} Action object
  */
-export const createUpdatePlayerAction = updates => {
+export const createUpdatePlayerAction = (
+  updates: UpdatePlayerPayload
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_PLAYER }> => {
+  if (typeof updates === 'function') {
+    return {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: updates
+    }
+  }
+
   let safeUpdates = updates
   if (
     updates &&
@@ -33,7 +57,7 @@ export const createUpdatePlayerAction = updates => {
   ) {
     safeUpdates = {
       ...updates,
-      money: clampPlayerMoney(updates.money)
+      money: clampPlayerMoney((updates as { money?: number }).money)
     }
   }
   return {
@@ -47,7 +71,16 @@ export const createUpdatePlayerAction = updates => {
  * @param {Object} updates - Band state updates
  * @returns {Object} Action object
  */
-export const createUpdateBandAction = updates => {
+export const createUpdateBandAction = (
+  updates: UpdateBandPayload
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_BAND }> => {
+  if (typeof updates === 'function') {
+    return {
+      type: ActionTypes.UPDATE_BAND,
+      payload: updates
+    }
+  }
+
   let safeUpdates = updates
   if (
     updates &&
@@ -56,7 +89,7 @@ export const createUpdateBandAction = updates => {
   ) {
     safeUpdates = {
       ...updates,
-      harmony: clampBandHarmony(updates.harmony)
+      harmony: clampBandHarmony((updates as { harmony?: number }).harmony)
     }
   }
   return {
@@ -70,7 +103,9 @@ export const createUpdateBandAction = updates => {
  * @param {Object} updates - Social media state updates
  * @returns {Object} Action object
  */
-export const createUpdateSocialAction = updates => ({
+export const createUpdateSocialAction = (
+  updates: Partial<SocialState>
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SOCIAL }> => ({
   type: ActionTypes.UPDATE_SOCIAL,
   payload: updates
 })
@@ -80,7 +115,9 @@ export const createUpdateSocialAction = updates => ({
  * @param {Object} updates - Settings updates
  * @returns {Object} Action object
  */
-export const createUpdateSettingsAction = updates => ({
+export const createUpdateSettingsAction = (
+  updates: Record<string, unknown>
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SETTINGS }> => ({
   type: ActionTypes.UPDATE_SETTINGS,
   payload: updates
 })
@@ -90,7 +127,9 @@ export const createUpdateSettingsAction = updates => ({
  * @param {Object} map - Generated map object
  * @returns {Object} Action object
  */
-export const createSetMapAction = map => ({
+export const createSetMapAction = (
+  map: unknown
+): Extract<GameAction, { type: typeof ActionTypes.SET_MAP }> => ({
   type: ActionTypes.SET_MAP,
   payload: map
 })
@@ -100,7 +139,9 @@ export const createSetMapAction = map => ({
  * @param {Object} gig - Current gig data
  * @returns {Object} Action object
  */
-export const createSetGigAction = gig => ({
+export const createSetGigAction = (
+  gig: Record<string, unknown> | null
+): Extract<GameAction, { type: typeof ActionTypes.SET_GIG }> => ({
   type: ActionTypes.SET_GIG,
   payload: gig
 })
@@ -110,7 +151,9 @@ export const createSetGigAction = gig => ({
  * @param {Object} venue - Venue object
  * @returns {Object} Action object
  */
-export const createStartGigAction = venue => ({
+export const createStartGigAction = (
+  venue: Record<string, unknown>
+): Extract<GameAction, { type: typeof ActionTypes.START_GIG }> => ({
   type: ActionTypes.START_GIG,
   payload: venue
 })
@@ -120,7 +163,9 @@ export const createStartGigAction = venue => ({
  * @param {Array} list - Array of songs
  * @returns {Object} Action object
  */
-export const createSetSetlistAction = list => ({
+export const createSetSetlistAction = (
+  list: unknown[]
+): Extract<GameAction, { type: typeof ActionTypes.SET_SETLIST }> => ({
   type: ActionTypes.SET_SETLIST,
   payload: list
 })
@@ -130,7 +175,9 @@ export const createSetSetlistAction = list => ({
  * @param {Object} stats - Gig statistics
  * @returns {Object} Action object
  */
-export const createSetLastGigStatsAction = stats => ({
+export const createSetLastGigStatsAction = (
+  stats: Record<string, unknown> | null
+): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => ({
   type: ActionTypes.SET_LAST_GIG_STATS,
   payload: stats
 })
@@ -140,7 +187,9 @@ export const createSetLastGigStatsAction = stats => ({
  * @param {Object|null} event - Event object or null
  * @returns {Object} Action object
  */
-export const createSetActiveEventAction = event => ({
+export const createSetActiveEventAction = (
+  event: Record<string, unknown> | null
+): Extract<GameAction, { type: typeof ActionTypes.SET_ACTIVE_EVENT }> => ({
   type: ActionTypes.SET_ACTIVE_EVENT,
   payload: event
 })
@@ -151,7 +200,10 @@ export const createSetActiveEventAction = event => ({
  * @param {string} type - Toast type (info, success, error, warning)
  * @returns {Object} Action object with generated ID
  */
-export const createAddToastAction = (messageOrPayload, type = 'info') => {
+export const createAddToastAction = (
+  messageOrPayload: string | Omit<ToastPayload, 'id'>,
+  type = 'info'
+): Extract<GameAction, { type: typeof ActionTypes.ADD_TOAST }> => {
   if (
     messageOrPayload &&
     typeof messageOrPayload === 'object' &&
@@ -161,7 +213,8 @@ export const createAddToastAction = (messageOrPayload, type = 'info') => {
       id: _ignoredId,
       type: payloadType,
       ...restPayload
-    } = messageOrPayload
+    } = messageOrPayload as Omit<ToastPayload, 'id'> &
+      Partial<Pick<ToastPayload, 'id'>>
     return {
       type: ActionTypes.ADD_TOAST,
       payload: {
@@ -183,7 +236,9 @@ export const createAddToastAction = (messageOrPayload, type = 'info') => {
  * @param {string} id - Toast ID to remove
  * @returns {Object} Action object
  */
-export const createRemoveToastAction = id => ({
+export const createRemoveToastAction = (
+  id: string
+): Extract<GameAction, { type: typeof ActionTypes.REMOVE_TOAST }> => ({
   type: ActionTypes.REMOVE_TOAST,
   payload: id
 })
@@ -193,7 +248,11 @@ export const createRemoveToastAction = id => ({
  * @param {Object|Function} payload - Modifiers or updater function
  * @returns {Object} Action object
  */
-export const createSetGigModifiersAction = payload => ({
+export const createSetGigModifiersAction = (
+  payload:
+    | Partial<GigModifiers>
+    | ((prev: GigModifiers) => Partial<GigModifiers>)
+): Extract<GameAction, { type: typeof ActionTypes.SET_GIG_MODIFIERS }> => ({
   type: ActionTypes.SET_GIG_MODIFIERS,
   payload
 })
@@ -203,7 +262,9 @@ export const createSetGigModifiersAction = payload => ({
  * @param {Object} data - Saved game data
  * @returns {Object} Action object
  */
-export const createLoadGameAction = data => ({
+export const createLoadGameAction = (
+  data: Partial<GameState>
+): Extract<GameAction, { type: typeof ActionTypes.LOAD_GAME }> => ({
   type: ActionTypes.LOAD_GAME,
   payload: data
 })
@@ -213,7 +274,9 @@ export const createLoadGameAction = data => ({
  * @param {Object} [payload={}] - Data to preserve across reset (e.g. settings, unlocks)
  * @returns {Object} Action object
  */
-export const createResetStateAction = (payload = {}) => ({
+export const createResetStateAction = (
+  payload: Record<string, unknown> = {}
+): Extract<GameAction, { type: typeof ActionTypes.RESET_STATE }> => ({
   type: ActionTypes.RESET_STATE,
   payload
 })
@@ -223,7 +286,9 @@ export const createResetStateAction = (payload = {}) => ({
  * @param {Object} delta - State delta to apply
  * @returns {Object} Action object
  */
-export const createApplyEventDeltaAction = delta => ({
+export const createApplyEventDeltaAction = (
+  delta: Record<string, unknown>
+): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => ({
   type: ActionTypes.APPLY_EVENT_DELTA,
   payload: delta
 })
@@ -232,7 +297,10 @@ export const createApplyEventDeltaAction = delta => ({
  * Creates a pop pending event action
  * @returns {Object} Action object
  */
-export const createPopPendingEventAction = () => ({
+export const createPopPendingEventAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.POP_PENDING_EVENT }
+> => ({
   type: ActionTypes.POP_PENDING_EVENT
 })
 
@@ -241,7 +309,9 @@ export const createPopPendingEventAction = () => ({
  * @param {string} itemType - Item type to consume
  * @returns {Object} Action object
  */
-export const createConsumeItemAction = itemType => ({
+export const createConsumeItemAction = (
+  itemType: string
+): Extract<GameAction, { type: typeof ActionTypes.CONSUME_ITEM }> => ({
   type: ActionTypes.CONSUME_ITEM,
   payload: itemType
 })
@@ -250,7 +320,10 @@ export const createConsumeItemAction = itemType => ({
  * Creates an advance day action
  * @returns {Object} Action object
  */
-export const createAdvanceDayAction = () => ({
+export const createAdvanceDayAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.ADVANCE_DAY }
+> => ({
   type: ActionTypes.ADVANCE_DAY
 })
 
@@ -259,7 +332,9 @@ export const createAdvanceDayAction = () => ({
  * @param {string} eventId - Event ID to add to cooldowns
  * @returns {Object} Action object
  */
-export const createAddCooldownAction = eventId => ({
+export const createAddCooldownAction = (
+  eventId: string
+): Extract<GameAction, { type: typeof ActionTypes.ADD_COOLDOWN }> => ({
   type: ActionTypes.ADD_COOLDOWN,
   payload: eventId
 })
@@ -269,7 +344,9 @@ export const createAddCooldownAction = eventId => ({
  * @param {string} targetNodeId - The destination node ID
  * @returns {Object} Action object
  */
-export const createStartTravelMinigameAction = targetNodeId => ({
+export const createStartTravelMinigameAction = (
+  targetNodeId: string
+): Extract<GameAction, { type: typeof ActionTypes.START_TRAVEL_MINIGAME }> => ({
   type: ActionTypes.START_TRAVEL_MINIGAME,
   payload: { targetNodeId }
 })
@@ -284,12 +361,12 @@ export const createStartTravelMinigameAction = targetNodeId => ({
  * @returns {Object} Action object with payload { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
  */
 export const createCompleteTravelMinigameAction = (
-  damageTaken,
-  itemsCollected,
-  rngValue,
-  contrabandId,
-  instanceId
-) => ({
+  damageTaken: number,
+  itemsCollected: unknown[],
+  rngValue?: number,
+  contrabandId?: string,
+  instanceId?: string
+): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_TRAVEL_MINIGAME }> => ({
   type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
   payload: { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
 })
@@ -299,7 +376,9 @@ export const createCompleteTravelMinigameAction = (
  * @param {string} gigId - The gig ID
  * @returns {Object} Action object
  */
-export const createStartRoadieMinigameAction = gigId => ({
+export const createStartRoadieMinigameAction = (
+  gigId: string
+): Extract<GameAction, { type: typeof ActionTypes.START_ROADIE_MINIGAME }> => ({
   type: ActionTypes.START_ROADIE_MINIGAME,
   payload: { gigId }
 })
@@ -309,7 +388,9 @@ export const createStartRoadieMinigameAction = gigId => ({
  * @param {Object} results - Results { equipmentDamage }
  * @returns {Object} Action object
  */
-export const createCompleteRoadieMinigameAction = equipmentDamage => ({
+export const createCompleteRoadieMinigameAction = (
+  equipmentDamage: number
+): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_ROADIE_MINIGAME }> => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: { equipmentDamage }
 })
@@ -319,7 +400,9 @@ export const createCompleteRoadieMinigameAction = equipmentDamage => ({
  * @param {string} gigId
  * @returns {Object}
  */
-export const createStartKabelsalatMinigameAction = gigId => ({
+export const createStartKabelsalatMinigameAction = (
+  gigId: string
+): Extract<GameAction, { type: typeof ActionTypes.START_KABELSALAT_MINIGAME }> => ({
   type: ActionTypes.START_KABELSALAT_MINIGAME,
   payload: { gigId }
 })
@@ -329,7 +412,9 @@ export const createStartKabelsalatMinigameAction = gigId => ({
  * @param {Object} results
  * @returns {Object}
  */
-export const createCompleteKabelsalatMinigameAction = results => ({
+export const createCompleteKabelsalatMinigameAction = (
+  results: unknown
+): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_KABELSALAT_MINIGAME }> => ({
   type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
   payload: { results }
 })
@@ -339,7 +424,9 @@ export const createCompleteKabelsalatMinigameAction = results => ({
  * @param {string} gigId - Target gig
  * @returns {Object} Action object
  */
-export const createStartAmpCalibrationAction = gigId => ({
+export const createStartAmpCalibrationAction = (
+  gigId: string
+): Extract<GameAction, { type: typeof ActionTypes.START_AMP_CALIBRATION }> => ({
   type: ActionTypes.START_AMP_CALIBRATION,
   payload: { gigId }
 })
@@ -349,7 +436,9 @@ export const createStartAmpCalibrationAction = gigId => ({
  * @param {number} score
  * @returns {Object} Action object
  */
-export const createCompleteAmpCalibrationAction = score => ({
+export const createCompleteAmpCalibrationAction = (
+  score: number
+): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }> => ({
   type: ActionTypes.COMPLETE_AMP_CALIBRATION,
   payload: { score }
 })
@@ -359,7 +448,10 @@ export const createCompleteAmpCalibrationAction = score => ({
  * @param {Object} payload - { memberId, traitId }
  * @returns {Object} Action object
  */
-export const createUnlockTraitAction = (memberId, traitId) => ({
+export const createUnlockTraitAction = (
+  memberId: string,
+  traitId: string
+): Extract<GameAction, { type: typeof ActionTypes.UNLOCK_TRAIT }> => ({
   type: ActionTypes.UNLOCK_TRAIT,
   payload: { memberId, traitId }
 })
@@ -370,7 +462,9 @@ export const createUnlockTraitAction = (memberId, traitId) => ({
  * @param {string} venueId - The ID of the venue to blacklist.
  * @returns {Object} Action object
  */
-export const createAddVenueBlacklistAction = venueId => ({
+export const createAddVenueBlacklistAction = (
+  venueId: string
+): Extract<GameAction, { type: typeof ActionTypes.ADD_VENUE_BLACKLIST }> => ({
   type: ActionTypes.ADD_VENUE_BLACKLIST,
   payload: { venueId, toastId: getSafeUUID() }
 })
@@ -380,7 +474,9 @@ export const createAddVenueBlacklistAction = venueId => ({
  * @param {Object} quest - The quest object to add.
  * @returns {Object} Action object
  */
-export const createAddQuestAction = quest => ({
+export const createAddQuestAction = (
+  quest: Record<string, unknown>
+): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => ({
   type: ActionTypes.ADD_QUEST,
   payload: quest
 })
@@ -392,10 +488,10 @@ export const createAddQuestAction = quest => ({
  * @returns {Object} Action object
  */
 export const createAdvanceQuestAction = (
-  questId,
+  questId: string,
   amount = 1,
-  randomIdx = undefined
-) => ({
+  randomIdx: number | undefined = undefined
+): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_QUEST }> => ({
   type: ActionTypes.ADVANCE_QUEST,
   payload: { questId, amount, randomIdx }
 })
@@ -406,7 +502,10 @@ export const createAdvanceQuestAction = (
  * @param {string} questId - The ID of the quest to complete.
  * @returns {Object} Action object
  */
-export const createCompleteQuestAction = (questId, randomIdx = undefined) => ({
+export const createCompleteQuestAction = (
+  questId: string,
+  randomIdx: number | undefined = undefined
+): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_QUEST }> => ({
   type: ActionTypes.COMPLETE_QUEST,
   payload: { questId, randomIdx }
 })
@@ -416,7 +515,10 @@ export const createCompleteQuestAction = (questId, randomIdx = undefined) => ({
  * It utilizes the `handleFailQuests` reducer.
  * @returns {Object} Action object
  */
-export const createFailQuestsAction = () => ({
+export const createFailQuestsAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.FAIL_QUESTS }
+> => ({
   type: ActionTypes.FAIL_QUESTS
 })
 
@@ -425,7 +527,9 @@ export const createFailQuestsAction = () => ({
  * @param {string} unlockId - The ID of the unlock.
  * @returns {Object} Action object
  */
-export const createAddUnlockAction = unlockId => ({
+export const createAddUnlockAction = (
+  unlockId: string
+): Extract<GameAction, { type: typeof ActionTypes.ADD_UNLOCK }> => ({
   type: ActionTypes.ADD_UNLOCK,
   payload: unlockId
 })
@@ -435,7 +539,9 @@ export const createAddUnlockAction = unlockId => ({
  * @param {string} contrabandId - The ID of the contraband item.
  * @returns {Object} Action object
  */
-export const createAddContrabandAction = contrabandId => ({
+export const createAddContrabandAction = (
+  contrabandId: string
+): Extract<GameAction, { type: typeof ActionTypes.ADD_CONTRABAND }> => ({
   type: ActionTypes.ADD_CONTRABAND,
   payload: {
     contrabandId,
@@ -451,10 +557,10 @@ export const createAddContrabandAction = contrabandId => ({
  * @returns {Object} Action object
  */
 export const createUseContrabandAction = (
-  instanceId,
-  contrabandId,
-  memberId
-) => ({
+  instanceId: string,
+  contrabandId: string,
+  memberId?: string
+): Extract<GameAction, { type: typeof ActionTypes.USE_CONTRABAND }> => ({
   type: ActionTypes.USE_CONTRABAND,
   payload: { instanceId, contrabandId, memberId }
 })
@@ -470,7 +576,9 @@ export const createUseContrabandAction = (
  * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
-export const createClinicHealAction = payload => ({
+export const createClinicHealAction = (
+  payload: ClinicActionPayload
+): Extract<GameAction, { type: typeof ActionTypes.CLINIC_HEAL }> => ({
   type: ActionTypes.CLINIC_HEAL,
   payload
 })
@@ -485,7 +593,9 @@ export const createClinicHealAction = payload => ({
  * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
-export const createClinicEnhanceAction = payload => ({
+export const createClinicEnhanceAction = (
+  payload: ClinicActionPayload
+): Extract<GameAction, { type: typeof ActionTypes.CLINIC_ENHANCE }> => ({
   type: ActionTypes.CLINIC_ENHANCE,
   payload
 })
@@ -501,7 +611,9 @@ export const createClinicEnhanceAction = payload => ({
  * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
-export const createPirateBroadcastAction = payload => ({
+export const createPirateBroadcastAction = (
+  payload: PirateBroadcastPayload
+): Extract<GameAction, { type: typeof ActionTypes.PIRATE_BROADCAST }> => ({
   type: ActionTypes.PIRATE_BROADCAST,
   payload:
     payload && typeof payload === 'object'
@@ -524,7 +636,9 @@ export const createPirateBroadcastAction = payload => ({
  * @param {Object} [payload.successToast] - Optional toast on success.
  * @returns {Object} Action object
  */
-export const createBloodBankDonateAction = payload => ({
+export const createBloodBankDonateAction = (
+  payload: BloodBankDonatePayload
+): Extract<GameAction, { type: typeof ActionTypes.BLOOD_BANK_DONATE }> => ({
   type: ActionTypes.BLOOD_BANK_DONATE,
   payload:
     payload && typeof payload === 'object'
@@ -545,7 +659,9 @@ export const createBloodBankDonateAction = payload => ({
  * @param {Object} [payload.successToast] - Optional toast on success.
  * @returns {Object} Action object
  */
-export const createTradeVoidItemAction = payload => ({
+export const createTradeVoidItemAction = (
+  payload: TradeVoidItemPayload
+): Extract<GameAction, { type: typeof ActionTypes.TRADE_VOID_ITEM }> => ({
   type: ActionTypes.TRADE_VOID_ITEM,
   payload:
     payload && typeof payload === 'object'
@@ -570,7 +686,9 @@ export const createTradeVoidItemAction = payload => ({
  * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
-export const createMerchPressAction = payload => ({
+export const createMerchPressAction = (
+  payload: MerchPressPayload
+): Extract<GameAction, { type: typeof ActionTypes.MERCH_PRESS }> => ({
   type: ActionTypes.MERCH_PRESS,
   payload:
     payload && typeof payload === 'object'
