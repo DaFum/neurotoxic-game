@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run node:test suite
+      - name: Run fast node:test suite
         id: run-tests
         shell: bash
         run: |
@@ -125,4 +125,89 @@ jobs:
 
       - name: Fail if tests failed
         if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' }}
+        run: exit 1
+
+  locale-smoke-tests:
+    name: Locale Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run locale smoke tests
+        id: run-locale
+        shell: bash
+        run: |
+          rc=0
+          pnpm test:locale:smoke || rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Fail if tests failed
+        if: ${{ always() && steps.run-locale.outputs.exit_code != '0' }}
+        run: exit 1
+
+  playwright:
+    name: Playwright E2E Shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run Playwright tests
+        id: run-pw
+        shell: bash
+        run: |
+          rc=0
+          pnpm test:e2e:shard${{ matrix.shard }} || rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-blob-report-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 7
+
+      - name: Fail if tests failed
+        if: ${{ always() && steps.run-pw.outputs.exit_code != '0' }}
         run: exit 1
