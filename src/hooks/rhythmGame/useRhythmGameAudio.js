@@ -130,14 +130,12 @@ export const useRhythmGameAudio = ({
       isInitializingRef.current = false
     }
   }, [
-    band?.members?.length,
-    band?.harmony,
-    gameMap?.nodes ? Object.keys(gameMap.nodes).length : 0,
-    player?.currentNodeId,
-    setlist?.length,
-    currentGig?.songId,
-    // Stringify gigModifiers to ensure referential stability
-    JSON.stringify(gigModifiers),
+    band,
+    gameMap,
+    player,
+    setlist,
+    gigModifiers,
+    currentGig,
     addToast,
     t,
     gameStateRef,

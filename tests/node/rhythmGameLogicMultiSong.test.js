@@ -144,14 +144,16 @@ const _stableI18n = {
 }
 mock.module('react-i18next', {
   namedExports: {
+    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useTranslation: () => _stableI18n,
     Trans: ({ i18nKey }) => i18nKey,
     initReactI18next: { type: '3rdParty', init: () => {} }
   }
 })
 
-const { useRhythmGameLogic } =
+const rhythmGameLogicModule =
   await import('../../src/hooks/useRhythmGameLogic.js')
+const rhythmGameLogicHook = rhythmGameLogicModule.useRhythmGameLogic
 
 describe('useRhythmGameLogic Multi-Song Support', () => {
   let mockChangeScene
@@ -248,7 +250,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => rhythmGameLogicHook())
 
     await act(async () => {
       await flushPromises()
@@ -323,7 +325,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => rhythmGameLogicHook())
 
     await act(async () => {
       await flushPromises()
@@ -387,7 +389,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       }
     )
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => rhythmGameLogicHook())
 
     await act(async () => {
       await flushPromises()
@@ -460,7 +462,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       }
     )
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => rhythmGameLogicHook())
     await act(async () => {
       await flushPromises()
     })
@@ -508,7 +510,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
 
-    renderHook(() => useRhythmGameLogic())
+    renderHook(() => rhythmGameLogicHook())
     await act(async () => {
       await flushPromises()
     })
@@ -546,7 +548,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => rhythmGameLogicHook())
     await act(async () => {
       await flushPromises()
     })
@@ -621,7 +623,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
-    const { result } = renderHook(() => useRhythmGameLogic())
+    const { result } = renderHook(() => rhythmGameLogicHook())
     await act(async () => {
       await flushPromises()
     })

@@ -560,15 +560,12 @@ test('calculateGigFinancials handles high fame with high price', () => {
 test('calculateTravelExpenses returns correct cost structure', () => {
   // Mock node
   const node = { venue: { x: 50, y: 50, name: 'Center' } }
-  // New Logic: relative to center (default fromNode).
-  // dx=0, dy=0. Dist = floor(0*5) + 20 = 20.
-  // Fuel: (20 / 100) * 12 = 2.4 liters
-  // Fuel Cost: floor(2.4 * 1.75) = 4
-  // Food Cost: 3 * 8 = 24
-  // Logistics cost: dist 20 * 0.05 * (1 + 0) + floor(0 * 0.02) = 1 + 0 = 1
-  // Total Cost: 24 (food) + 1 = 25
-  // Fuel is separate in calculateTravelExpenses logic (dist, fuelLiters, totalCost)
-  // where totalCost only includes food + logistics, not fuel cost.
+  // Relative to center (default fromNode):
+  // dist = 20 (base minimum)
+  // fuelLiters = 2.4 (reported separately)
+  // foodCost = 24 (3 * 8)
+  // logisticsCost = 18 base + 0 distance + 0 fame + 0 cash reserve = 18
+  // totalCost = food + logistics = 42
 
   const result = calculateTravelExpenses(node)
 
@@ -583,8 +580,8 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   )
   assert.equal(
     result.totalCost,
-    25,
-    'Total cost should be 25 (Food + Logistics)'
+    42,
+    'Total cost should be 42 (Food + Logistics)'
   )
 })
 

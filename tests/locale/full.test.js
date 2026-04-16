@@ -41,7 +41,7 @@ test('Full locale validation tests', async t => {
         )
         const entries = flattenToEntries(data)
         allData.set(`${locale}/${namespace}`, { data, entries })
-      } catch (e) {
+      } catch (_e) {
         // file might be missing or bad
       }
     }
@@ -303,7 +303,7 @@ test('Full locale validation tests', async t => {
         let rawText
         try {
           rawText = await fs.readFile(filePath, 'utf8')
-        } catch (e) {
+        } catch (_e) {
           continue
         }
 

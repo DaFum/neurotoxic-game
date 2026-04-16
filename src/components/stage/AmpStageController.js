@@ -39,7 +39,10 @@ export class AmpStageController extends BaseStageController {
       if (Object.hasOwn(state, 'dialValue')) {
         const sanitizedCurrent = Number(state.dialValue)
         if (Number.isFinite(sanitizedCurrent)) {
-          const boundedCurrentFreq = Math.max(0, Math.min(1000, sanitizedCurrent))
+          const boundedCurrentFreq = Math.max(
+            0,
+            Math.min(1000, sanitizedCurrent)
+          )
           this.currentFreq = boundedCurrentFreq
         }
       }
@@ -89,18 +92,27 @@ export class AmpStageController extends BaseStageController {
       const y = centerY + Math.sin(x / targetPeriod + this.time) * 100
       this.waveGraphics.lineTo(x, y)
     }
-    this.waveGraphics.stroke({ width: 2, color: targetColor, alpha: isMatching ? 0.8 : 0.5 })
+    this.waveGraphics.stroke({
+      width: 2,
+      color: targetColor,
+      alpha: isMatching ? 0.8 : 0.5
+    })
 
     // Draw Current Wave (Always Green)
     const currentPeriod = width / (this.currentFreq / 50 + 1)
-    const firstCurrentY = centerY + Math.sin(0 / currentPeriod + this.time) * 100
+    const firstCurrentY =
+      centerY + Math.sin(0 / currentPeriod + this.time) * 100
     this.waveGraphics.moveTo(0, firstCurrentY)
 
     for (let x = 5; x < width; x += 5) {
       const y = centerY + Math.sin(x / currentPeriod + this.time) * 100
       this.waveGraphics.lineTo(x, y)
     }
-    this.waveGraphics.stroke({ width: 4, color: getPixiColorFromToken('--toxic-green'), alpha: 0.8 })
+    this.waveGraphics.stroke({
+      width: 4,
+      color: getPixiColorFromToken('--toxic-green'),
+      alpha: 0.8
+    })
   }
 
   draw() {

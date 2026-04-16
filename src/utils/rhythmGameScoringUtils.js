@@ -1,6 +1,7 @@
 /**
  * Pure functions for rhythm game scoring logic.
  */
+import { logger } from './logger.js'
 
 export const LANE_INDICES = {
   GUITAR: 0,

@@ -74,10 +74,10 @@ test('Minigame State Transitions', async t => {
       // Distance calculation: sqrt(10^2 + 10^2) * 5 + 20 = 90.71km -> 90km (floor)
       // Fuel Cost: (90 / 100) * 12 * 1.75 = 18.9 -> 18 (floor)
       // Food Cost: 24 (3 * 8)
-      // Logistics Cost: dist 90 * 0.05 * (1 + 0) + floor(1000 * 0.02) = 4 + 20 = 24
-      // Total Cost: 24 + 24 = 48
-      // 1000 - 48 = 952
-      assert.strictEqual(newState.player.money, 952)
+      // Logistics Cost: base 18 + distance 3 + fame 0 + reserve 5 = 26
+      // Total Cost: 24 + 26 = 50
+      // 1000 - 50 = 950
+      assert.strictEqual(newState.player.money, 950)
 
       // Check condition
       // 100 - 10 = 90

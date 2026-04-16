@@ -143,13 +143,8 @@ export const usePostGigLogic = () => {
     band.inventory,
     player,
     social,
-    social?.controversyLevel,
-    social?.loyalty,
-    social?.zealotry,
     reputationByRegion,
-    activeStoryFlags,
-    gigContextRef.current?.daysSinceLastGig,
-    gigContextRef.current?.lastGigDifficulty
+    activeStoryFlags
   ])
 
   // Derive post options purely without triggering a re-render loop
@@ -181,12 +176,16 @@ export const usePostGigLogic = () => {
   // Process any error that happened during post option generation
   useEffect(() => {
     if (errorHandledRef.current && errorHandledRef.current !== true) {
-      logger.error('PostGig', 'Failed to generate post options', errorHandledRef.current)
+      logger.error(
+        'PostGig',
+        'Failed to generate post options',
+        errorHandledRef.current
+      )
       errorHandledRef.current = true // mark handled
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
       setPostOptionsError(true)
     }
   }, []) // trigger when postOptions updates
-
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {

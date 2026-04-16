@@ -203,7 +203,7 @@ describe('PreGig', () => {
     // 0.3 is >= 0.25 threshold, so Kabelsalat should be picked
     vi.mocked(getSafeRandom).mockReturnValue(0.3)
 
-    const { findByText, unmount } = render(React.createElement(PreGig))
+    const { findByText } = render(React.createElement(PreGig))
     const startBtn = await findByText(/ui:pregig.startShow/i)
     fireEvent.click(startBtn)
 

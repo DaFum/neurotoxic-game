@@ -22,7 +22,10 @@ for (const charKey in CHARACTERS) {
     for (const trait of traits) {
       TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
       if (TRAIT_DEFS_BY_ID.has(trait.id)) {
-        logger.warn('traitUtils', `Duplicate trait ID found during initialization: ${trait.id}`)
+        logger.warn(
+          'traitUtils',
+          `Duplicate trait ID found during initialization: ${trait.id}`
+        )
       }
       TRAIT_DEFS_BY_ID.set(trait.id, trait)
     }

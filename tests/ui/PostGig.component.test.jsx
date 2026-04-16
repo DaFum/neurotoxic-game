@@ -33,7 +33,7 @@ vi.mock('../../src/data/songs', () => ({
 
 // Mock lazy-loaded phase components to prevent Suspense timeout and speed up rendering
 vi.mock('../../src/components/postGig/ReportPhase', () => ({
-  ReportPhase: ({ financials, onNext, ...layoutProps }) => (
+  ReportPhase: ({ onNext, ...layoutProps }) => (
     <div data-testid='mock-report-phase' {...layoutProps}>
       <button type='button' onClick={onNext}>
         Continue to Socials
@@ -46,8 +46,8 @@ vi.mock('../../src/components/postGig/SocialPhase', () => ({
   SocialPhase: ({
     options = [],
     onSelect,
-    trend,
-    zealotryLevel,
+    _trend,
+    _zealotryLevel,
     ...layoutProps
   }) => (
     <div data-testid='mock-social-phase' {...layoutProps}>
@@ -80,8 +80,8 @@ vi.mock('../../src/components/postGig/CompletePhase', () => ({
     onContinue,
     onSpinStory,
     player,
-    social,
-    result,
+    _social,
+    _result,
     ...layoutProps
   }) => (
     <div data-testid='mock-complete-phase' {...layoutProps}>

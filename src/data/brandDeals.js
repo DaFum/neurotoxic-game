@@ -4,18 +4,16 @@
 
 export const BRAND_DEALS = [
   {
-    id: "energy_drink_cx",
-    name: "Toxic Energy Drink",
-    description: "The green stuff that glows. They want you to drink it on stage.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'energy_drink_cx',
+    name: 'Toxic Energy Drink',
+    description:
+      'The green stuff that glows. They want you to drink it on stage.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 2000,
-      trend: [
-        "TECH",
-        "NEUTRAL"
-      ],
-      trait: "party_animal",
+      trend: ['TECH', 'NEUTRAL'],
+      trait: 'party_animal',
       maxZealotry: 20
     },
     offer: {
@@ -29,14 +27,15 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "gutter_brew",
-    name: "Toxic Gutter Brew",
-    description: "The cheapest, most toxic beer in town. They want you to drink it on stage.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'gutter_brew',
+    name: 'Toxic Gutter Brew',
+    description:
+      'The cheapest, most toxic beer in town. They want you to drink it on stage.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 1500,
-      trait: "party_animal"
+      trait: 'party_animal'
     },
     offer: {
       upfront: 250,
@@ -49,11 +48,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_fast_food",
-    name: "BurgerCorp Value Menu",
-    description: "Promote our new artificial meat slurry burgers.",
-    type: "SPONSORSHIP",
-    alignment: "CORPORATE",
+    id: 'corp_fast_food',
+    name: 'BurgerCorp Value Menu',
+    description: 'Promote our new artificial meat slurry burgers.',
+    type: 'SPONSORSHIP',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 2500,
       maxControversy: 40
@@ -69,17 +68,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_app",
-    name: "Streamify Social",
-    description: "A soulless corporate streaming app trying to look hip.",
-    type: "SPONSORSHIP",
-    alignment: "CORPORATE",
+    id: 'corp_app',
+    name: 'Streamify Social',
+    description: 'A soulless corporate streaming app trying to look hip.',
+    type: 'SPONSORSHIP',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 2800,
-      trend: [
-        "MUSIC",
-        "TECH"
-      ]
+      trend: ['MUSIC', 'TECH']
     },
     offer: {
       upfront: 600,
@@ -92,18 +88,15 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_label_void",
-    name: "Void Records",
-    description: "A small indie label interested in your \"unique\" sound.",
-    type: "RECORD_DEAL",
-    alignment: "INDIE",
+    id: 'indie_label_void',
+    name: 'Void Records',
+    description: 'A small indie label interested in your "unique" sound.',
+    type: 'RECORD_DEAL',
+    alignment: 'INDIE',
     requirements: {
       followers: 1000,
-      trend: [
-        "DRAMA",
-        "WHOLESOME"
-      ],
-      trait: "melodic_genius"
+      trend: ['DRAMA', 'WHOLESOME'],
+      trait: 'melodic_genius'
     },
     offer: {
       upfront: 2000,
@@ -115,17 +108,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_clothing",
-    name: "Thrift Threads",
-    description: "Local thrift shop wants you to model their weirdest finds.",
-    type: "SPONSORSHIP",
-    alignment: "INDIE",
+    id: 'indie_clothing',
+    name: 'Thrift Threads',
+    description: 'Local thrift shop wants you to model their weirdest finds.',
+    type: 'SPONSORSHIP',
+    alignment: 'INDIE',
     requirements: {
       followers: 1200,
-      trend: [
-        "GRUNGE",
-        "PUNK"
-      ]
+      trend: ['GRUNGE', 'PUNK']
     },
     offer: {
       upfront: 100,
@@ -137,17 +127,15 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "vegan_snacks",
-    name: "No-Kill Grill Snacks",
-    description: "Cruelty-free jerky for the road.",
-    type: "SPONSORSHIP",
-    alignment: "SUSTAINABLE",
+    id: 'vegan_snacks',
+    name: 'No-Kill Grill Snacks',
+    description: 'Cruelty-free jerky for the road.',
+    type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 1500,
-      trend: [
-        "WHOLESOME"
-      ],
-      trait: "social_manager"
+      trend: ['WHOLESOME'],
+      trait: 'social_manager'
     },
     offer: {
       upfront: 300,
@@ -159,14 +147,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "recycled_picks",
-    name: "Eco-Strum Picks",
-    description: "Guitar picks made from recycled ocean plastic.",
-    type: "ENDORSEMENT",
-    alignment: "SUSTAINABLE",
+    id: 'recycled_picks',
+    name: 'Eco-Strum Picks',
+    description: 'Guitar picks made from recycled ocean plastic.',
+    type: 'ENDORSEMENT',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 1800,
-      trait: "virtuoso"
+      trait: 'virtuoso'
     },
     offer: {
       upfront: 150,
@@ -179,11 +167,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "basement_zine",
-    name: "Static Noise Zine",
-    description: "An underground punk zine looking for grassroots support.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'basement_zine',
+    name: 'Static Noise Zine',
+    description: 'An underground punk zine looking for grassroots support.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 1000,
       minControversy: 20
@@ -199,17 +187,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "community_radio",
-    name: "Pirate Signal 88.9",
-    description: "Local community radio needs a shoutout to stay on air.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'community_radio',
+    name: 'Pirate Signal 88.9',
+    description: 'Local community radio needs a shoutout to stay on air.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 2000,
-      trend: [
-        "MUSIC",
-        "PUNK"
-      ]
+      trend: ['MUSIC', 'PUNK']
     },
     offer: {
       upfront: 50,
@@ -222,11 +207,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "local_pawn_shop",
-    name: "Rusty Strings Pawn Shop",
-    description: "A local pawn shop that wants you to promote their rusty gear.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'local_pawn_shop',
+    name: 'Rusty Strings Pawn Shop',
+    description:
+      'A local pawn shop that wants you to promote their rusty gear.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 500,
       maxControversy: 50
@@ -242,11 +228,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "neon_lung_vapes",
-    name: "Neon Lung Vaporizers",
-    description: "Cheap, flavored vapes for the masses.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'neon_lung_vapes',
+    name: 'Neon Lung Vaporizers',
+    description: 'Cheap, flavored vapes for the masses.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 800,
       maxControversy: 60
@@ -262,17 +248,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "synapse_nootropics",
-    name: "Synapse+ Brain Supplements",
-    description: "Unregulated grey-market brain supplements.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'synapse_nootropics',
+    name: 'Synapse+ Brain Supplements',
+    description: 'Unregulated grey-market brain supplements.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 6000,
-      trend: [
-        "TECH",
-        "NEUTRAL"
-      ]
+      trend: ['TECH', 'NEUTRAL']
     },
     offer: {
       upfront: 600,
@@ -285,11 +268,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "cult_pamphlets",
-    name: "Children of the New Dawn",
-    description: "A cult looking to spread their message through your obsessed fans.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'cult_pamphlets',
+    name: 'Children of the New Dawn',
+    description:
+      'A cult looking to spread their message through your obsessed fans.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 7500,
       minZealotry: 30
@@ -305,11 +289,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "underground_fight_club",
-    name: "Blood & Rust Brawlhouse",
-    description: "Promote an illegal underground fighting ring.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'underground_fight_club',
+    name: 'Blood & Rust Brawlhouse',
+    description: 'Promote an illegal underground fighting ring.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 8500,
       minControversy: 40
@@ -325,23 +309,20 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "guitar_brand_shred",
-    name: "ShredMaster Guitars",
-    description: "An endorsement deal for up-and-coming shredders.",
-    type: "ENDORSEMENT",
-    alignment: "CORPORATE",
+    id: 'guitar_brand_shred',
+    name: 'ShredMaster Guitars',
+    description: 'An endorsement deal for up-and-coming shredders.',
+    type: 'ENDORSEMENT',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 5000,
-      trend: [
-        "MUSIC",
-        "TECH"
-      ],
-      trait: "virtuoso",
+      trend: ['MUSIC', 'TECH'],
+      trait: 'virtuoso',
       maxZealotry: 20
     },
     offer: {
       upfront: 1000,
-      item: "golden_pick",
+      item: 'golden_pick',
       duration: 10
     },
     penalty: {
@@ -349,11 +330,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_beverage",
-    name: "AquaPure Corporate Water",
-    description: "Overpriced bottled water from a monolithic conglomerate.",
-    type: "SPONSORSHIP",
-    alignment: "CORPORATE",
+    id: 'corp_beverage',
+    name: 'AquaPure Corporate Water',
+    description: 'Overpriced bottled water from a monolithic conglomerate.',
+    type: 'SPONSORSHIP',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 6000,
       maxControversy: 35
@@ -369,16 +350,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_tech",
-    name: "NovaTech Headsets",
-    description: "Corporate audio gear that breaks after a month.",
-    type: "ENDORSEMENT",
-    alignment: "CORPORATE",
+    id: 'corp_tech',
+    name: 'NovaTech Headsets',
+    description: 'Corporate audio gear that breaks after a month.',
+    type: 'ENDORSEMENT',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 7500,
-      trend: [
-        "TECH"
-      ]
+      trend: ['TECH']
     },
     offer: {
       upfront: 1500,
@@ -391,17 +370,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_festival",
-    name: "Dust & Echoes Festival",
-    description: "Be the face of a gritty mid-tier indie music festival.",
-    type: "SPONSORSHIP",
-    alignment: "INDIE",
+    id: 'indie_festival',
+    name: 'Dust & Echoes Festival',
+    description: 'Be the face of a gritty mid-tier indie music festival.',
+    type: 'SPONSORSHIP',
+    alignment: 'INDIE',
     requirements: {
       followers: 5500,
-      trend: [
-        "MUSIC",
-        "GRUNGE"
-      ]
+      trend: ['MUSIC', 'GRUNGE']
     },
     offer: {
       upfront: 500,
@@ -414,14 +390,15 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_amp_builder",
-    name: "VoltCraft Custom Amps",
-    description: "A boutique amp builder wants you to test their loud, unstable creations.",
-    type: "ENDORSEMENT",
-    alignment: "INDIE",
+    id: 'indie_amp_builder',
+    name: 'VoltCraft Custom Amps',
+    description:
+      'A boutique amp builder wants you to test their loud, unstable creations.',
+    type: 'ENDORSEMENT',
+    alignment: 'INDIE',
     requirements: {
       followers: 6500,
-      trait: "melodic_genius"
+      trait: 'melodic_genius'
     },
     offer: {
       upfront: 400,
@@ -434,11 +411,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_vinyl_press",
-    name: "GrooveGrave Vinyls",
-    description: "An independent vinyl pressing plant looking for exclusive artists.",
-    type: "RECORD_DEAL",
-    alignment: "INDIE",
+    id: 'indie_vinyl_press',
+    name: 'GrooveGrave Vinyls',
+    description:
+      'An independent vinyl pressing plant looking for exclusive artists.',
+    type: 'RECORD_DEAL',
+    alignment: 'INDIE',
     requirements: {
       followers: 8000,
       minZealotry: 15
@@ -453,17 +431,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "solar_power_bank",
-    name: "Helios Portable Power",
-    description: "Promote solar-powered battery banks for touring bands.",
-    type: "SPONSORSHIP",
-    alignment: "SUSTAINABLE",
+    id: 'solar_power_bank',
+    name: 'Helios Portable Power',
+    description: 'Promote solar-powered battery banks for touring bands.',
+    type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 5000,
-      trend: [
-        "TECH",
-        "WHOLESOME"
-      ]
+      trend: ['TECH', 'WHOLESOME']
     },
     offer: {
       upfront: 600,
@@ -476,14 +451,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "upcycled_instruments",
-    name: "Reclaim Guitars",
-    description: "Guitars made entirely from old skateboards and junk.",
-    type: "ENDORSEMENT",
-    alignment: "SUSTAINABLE",
+    id: 'upcycled_instruments',
+    name: 'Reclaim Guitars',
+    description: 'Guitars made entirely from old skateboards and junk.',
+    type: 'ENDORSEMENT',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 7000,
-      trait: "virtuoso"
+      trait: 'virtuoso'
     },
     offer: {
       upfront: 500,
@@ -495,11 +470,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "hemp_merch",
-    name: "WeedWeave Apparel",
-    description: "Sustainable, organic hemp band merch provider.",
-    type: "SPONSORSHIP",
-    alignment: "SUSTAINABLE",
+    id: 'hemp_merch',
+    name: 'WeedWeave Apparel',
+    description: 'Sustainable, organic hemp band merch provider.',
+    type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 8500,
       minControversy: 10
@@ -515,11 +490,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "riot_apparel",
-    name: "Black Flag Riot Apparel",
-    description: "Edgy clothing brand for the rebellious youth.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'riot_apparel',
+    name: 'Black Flag Riot Apparel',
+    description: 'Edgy clothing brand for the rebellious youth.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 5000,
       minControversy: 40
@@ -535,11 +510,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "charity_concerts",
-    name: "Rock Against The Machine",
-    description: "An NGO booking bands for political awareness concerts.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'charity_concerts',
+    name: 'Rock Against The Machine',
+    description: 'An NGO booking bands for political awareness concerts.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 6500,
       minZealotry: 20
@@ -555,11 +530,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "youth_music_program",
-    name: "Street Chords Initiative",
-    description: "A program teaching kids in the slums how to play punk rock.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'youth_music_program',
+    name: 'Street Chords Initiative',
+    description: 'A program teaching kids in the slums how to play punk rock.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 8000,
       maxControversy: 50
@@ -577,11 +552,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "blood_bank_promo",
-    name: "Sanguis Clinic Blood Bank",
-    description: "A slightly morbid promotion for the local blood bank.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'blood_bank_promo',
+    name: 'Sanguis Clinic Blood Bank',
+    description: 'A slightly morbid promotion for the local blood bank.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 4000,
       maxZealotry: 40
@@ -597,17 +572,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "boutique_synth",
-    name: "Neuro-Tech Instruments",
-    description: "High-end synthesizers for the tech-savvy musician.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'boutique_synth',
+    name: 'Neuro-Tech Instruments',
+    description: 'High-end synthesizers for the tech-savvy musician.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 8000,
-      trend: [
-        "TECH",
-        "SYNTH"
-      ]
+      trend: ['TECH', 'SYNTH']
     },
     offer: {
       upfront: 800,
@@ -620,17 +592,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "dark_web_vpn",
-    name: "ShadowRoute VPN",
-    description: "A shady VPN service for the paranoid internet user.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'dark_web_vpn',
+    name: 'ShadowRoute VPN',
+    description: 'A shady VPN service for the paranoid internet user.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 9000,
-      trend: [
-        "TECH",
-        "PUNK"
-      ]
+      trend: ['TECH', 'PUNK']
     },
     offer: {
       upfront: 500,
@@ -643,11 +612,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "crypto_scam",
-    name: "NeuroCoin NFT Casino",
-    description: "A blatant crypto scam wrapped in a flashy casino.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'crypto_scam',
+    name: 'NeuroCoin NFT Casino',
+    description: 'A blatant crypto scam wrapped in a flashy casino.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 15000
     },
@@ -662,11 +631,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "mega_corp_records",
-    name: "OmniCorp Media Group",
-    description: "The ultimate corporate sellout deal. They own you now.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'mega_corp_records',
+    name: 'OmniCorp Media Group',
+    description: 'The ultimate corporate sellout deal. They own you now.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 25000,
       maxControversy: 30
@@ -682,11 +651,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "pmc_recruitment",
-    name: "Aegis Security Solutions (PMC)",
-    description: "A private military company recruiting aggressive fans.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'pmc_recruitment',
+    name: 'Aegis Security Solutions (PMC)',
+    description: 'A private military company recruiting aggressive fans.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 20000,
       minControversy: 40
@@ -702,14 +671,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "designer_narcotics",
-    name: "Neuro-Bliss Pharmaceuticals",
-    description: "High-end designer drugs for the party elite.",
-    type: "SPONSORSHIP",
-    alignment: "EVIL",
+    id: 'designer_narcotics',
+    name: 'Neuro-Bliss Pharmaceuticals',
+    description: 'High-end designer drugs for the party elite.',
+    type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 30000,
-      trait: "party_animal"
+      trait: 'party_animal'
     },
     offer: {
       upfront: 6000,
@@ -722,11 +691,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_fashion_line",
-    name: "TrendSetter Mega-Brand",
-    description: "Plaster your logo on mass-produced fast fashion.",
-    type: "ENDORSEMENT",
-    alignment: "CORPORATE",
+    id: 'corp_fashion_line',
+    name: 'TrendSetter Mega-Brand',
+    description: 'Plaster your logo on mass-produced fast fashion.',
+    type: 'ENDORSEMENT',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 18000,
       maxControversy: 40
@@ -742,11 +711,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_automobile",
-    name: "AeroDrive Motorworks",
-    description: "A massive car manufacturer wants a \"rock\" aesthetic for their commercials.",
-    type: "SPONSORSHIP",
-    alignment: "CORPORATE",
+    id: 'corp_automobile',
+    name: 'AeroDrive Motorworks',
+    description:
+      'A massive car manufacturer wants a "rock" aesthetic for their commercials.',
+    type: 'SPONSORSHIP',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 22000,
       maxControversy: 20
@@ -762,11 +732,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_energy_conglomerate",
-    name: "Global Power Dynamics",
-    description: "Greenwashing a massive oil company through your music.",
-    type: "SPONSORSHIP",
-    alignment: "CORPORATE",
+    id: 'corp_energy_conglomerate',
+    name: 'Global Power Dynamics',
+    description: 'Greenwashing a massive oil company through your music.',
+    type: 'SPONSORSHIP',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 28000,
       minZealotry: 10
@@ -782,16 +752,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "corp_tech_giant",
-    name: "Synapse Core Computing",
-    description: "The biggest tech monopoly wants to make you their mascot.",
-    type: "SPONSORSHIP",
-    alignment: "CORPORATE",
+    id: 'corp_tech_giant',
+    name: 'Synapse Core Computing',
+    description: 'The biggest tech monopoly wants to make you their mascot.',
+    type: 'SPONSORSHIP',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 32000,
-      trend: [
-        "TECH"
-      ]
+      trend: ['TECH']
     },
     offer: {
       upfront: 7000,
@@ -804,11 +772,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_cult_label",
-    name: "Mothman Cult Records",
-    description: "The most prestigious underground label in the scene.",
-    type: "RECORD_DEAL",
-    alignment: "INDIE",
+    id: 'indie_cult_label',
+    name: 'Mothman Cult Records',
+    description: 'The most prestigious underground label in the scene.',
+    type: 'RECORD_DEAL',
+    alignment: 'INDIE',
     requirements: {
       followers: 16000,
       minZealotry: 40
@@ -824,16 +792,15 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_film_soundtrack",
-    name: "A25 Cinema",
-    description: "An acclaimed indie film studio wants you to score their next gritty thriller.",
-    type: "SPONSORSHIP",
-    alignment: "INDIE",
+    id: 'indie_film_soundtrack',
+    name: 'A25 Cinema',
+    description:
+      'An acclaimed indie film studio wants you to score their next gritty thriller.',
+    type: 'SPONSORSHIP',
+    alignment: 'INDIE',
     requirements: {
       followers: 21000,
-      trend: [
-        "DRAMA"
-      ]
+      trend: ['DRAMA']
     },
     offer: {
       upfront: 3000,
@@ -846,11 +813,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_art_collective",
-    name: "The Concrete Canvas",
-    description: "An elite underground art collective sponsors your visuals.",
-    type: "SPONSORSHIP",
-    alignment: "INDIE",
+    id: 'indie_art_collective',
+    name: 'The Concrete Canvas',
+    description: 'An elite underground art collective sponsors your visuals.',
+    type: 'SPONSORSHIP',
+    alignment: 'INDIE',
     requirements: {
       followers: 26000,
       minControversy: 50
@@ -868,14 +835,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "indie_world_tour",
-    name: "Guerilla Booking Agency",
-    description: "A legendary independent booking agency takes you global.",
-    type: "SPONSORSHIP",
-    alignment: "INDIE",
+    id: 'indie_world_tour',
+    name: 'Guerilla Booking Agency',
+    description: 'A legendary independent booking agency takes you global.',
+    type: 'SPONSORSHIP',
+    alignment: 'INDIE',
     requirements: {
       followers: 31000,
-      trait: "social_manager"
+      trait: 'social_manager'
     },
     offer: {
       upfront: 4000,
@@ -888,11 +855,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "sustainable_energy_provider",
-    name: "WindShear Renewables",
-    description: "A massive sustainable energy provider wants to power your tour.",
-    type: "SPONSORSHIP",
-    alignment: "SUSTAINABLE",
+    id: 'sustainable_energy_provider',
+    name: 'WindShear Renewables',
+    description:
+      'A massive sustainable energy provider wants to power your tour.',
+    type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 17000,
       maxControversy: 35
@@ -908,16 +876,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "sustainable_farming_coop",
-    name: "Gaia Hydroponics",
-    description: "A global network of sustainable vertical farms.",
-    type: "SPONSORSHIP",
-    alignment: "SUSTAINABLE",
+    id: 'sustainable_farming_coop',
+    name: 'Gaia Hydroponics',
+    description: 'A global network of sustainable vertical farms.',
+    type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 23000,
-      trend: [
-        "WHOLESOME"
-      ]
+      trend: ['WHOLESOME']
     },
     offer: {
       upfront: 2500,
@@ -930,11 +896,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "sustainable_vehicle_corp",
-    name: "Volt Motors EV",
+    id: 'sustainable_vehicle_corp',
+    name: 'Volt Motors EV',
     description: "Promote the world's leading electric van manufacturer.",
-    type: "ENDORSEMENT",
-    alignment: "SUSTAINABLE",
+    type: 'ENDORSEMENT',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 29000,
       maxZealotry: 20
@@ -950,11 +916,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "sustainable_global_ngo",
-    name: "Earth First Global",
-    description: "The largest environmental NGO wants you as their global ambassador.",
-    type: "SPONSORSHIP",
-    alignment: "SUSTAINABLE",
+    id: 'sustainable_global_ngo',
+    name: 'Earth First Global',
+    description:
+      'The largest environmental NGO wants you as their global ambassador.',
+    type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 34000,
       minControversy: 10,
@@ -971,11 +938,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "good_rebel_fund",
-    name: "The Resistance Warchest",
-    description: "A mysterious fund supporting bands that speak truth to power.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'good_rebel_fund',
+    name: 'The Resistance Warchest',
+    description:
+      'A mysterious fund supporting bands that speak truth to power.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 16000,
       minControversy: 60
@@ -993,11 +961,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "good_human_rights",
-    name: "Amnesty International Coalition",
-    description: "A massive human rights organization partners with you.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'good_human_rights',
+    name: 'Amnesty International Coalition',
+    description: 'A massive human rights organization partners with you.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 22000,
       maxControversy: 30
@@ -1015,11 +983,11 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "good_whistleblower_network",
-    name: "TruthLeak Foundation",
-    description: "Promote a dangerous network of corporate whistleblowers.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'good_whistleblower_network',
+    name: 'TruthLeak Foundation',
+    description: 'Promote a dangerous network of corporate whistleblowers.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 27000,
       minZealotry: 50
@@ -1037,17 +1005,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "good_utopian_city",
-    name: "New Eden Project",
-    description: "Be the voice of a radical new utopian city-state experiment.",
-    type: "SPONSORSHIP",
-    alignment: "GOOD",
+    id: 'good_utopian_city',
+    name: 'New Eden Project',
+    description: 'Be the voice of a radical new utopian city-state experiment.',
+    type: 'SPONSORSHIP',
+    alignment: 'GOOD',
     requirements: {
       followers: 33000,
-      trend: [
-        "WHOLESOME",
-        "TECH"
-      ]
+      trend: ['WHOLESOME', 'TECH']
     },
     offer: {
       upfront: 5000,
@@ -1060,11 +1025,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "mega_tour_promoter",
-    name: "LiveNation Global",
-    description: "Massive global tour promoter with zero tolerance for liabilities.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'mega_tour_promoter',
+    name: 'LiveNation Global',
+    description:
+      'Massive global tour promoter with zero tolerance for liabilities.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 35000,
       maxControversy: 25
@@ -1080,16 +1046,15 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "neutral_telecom",
-    name: "OmniNet Communications",
-    description: "The world's largest telecom network wants to sponsor your streams.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'neutral_telecom',
+    name: 'OmniNet Communications',
+    description:
+      "The world's largest telecom network wants to sponsor your streams.",
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 19000,
-      trend: [
-        "TECH"
-      ]
+      trend: ['TECH']
     },
     offer: {
       upfront: 3000,
@@ -1102,14 +1067,14 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "neutral_instrument_conglomerate",
-    name: "Yamaha Global Instruments",
-    description: "A massive, boring, but reliable instrument manufacturer.",
-    type: "ENDORSEMENT",
-    alignment: "NEUTRAL",
+    id: 'neutral_instrument_conglomerate',
+    name: 'Yamaha Global Instruments',
+    description: 'A massive, boring, but reliable instrument manufacturer.',
+    type: 'ENDORSEMENT',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 24000,
-      trait: "virtuoso"
+      trait: 'virtuoso'
     },
     offer: {
       upfront: 4000,
@@ -1122,11 +1087,12 @@ export const BRAND_DEALS = [
     }
   },
   {
-    id: "neutral_logistics",
-    name: "Atlas Shipping Solutions",
-    description: "They ship your gear. They pay you to say they ship your gear.",
-    type: "SPONSORSHIP",
-    alignment: "NEUTRAL",
+    id: 'neutral_logistics',
+    name: 'Atlas Shipping Solutions',
+    description:
+      'They ship your gear. They pay you to say they ship your gear.',
+    type: 'SPONSORSHIP',
+    alignment: 'NEUTRAL',
     requirements: {
       followers: 29000,
       maxZealotry: 30

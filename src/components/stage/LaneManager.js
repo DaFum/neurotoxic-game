@@ -204,7 +204,8 @@ export class LaneManager {
 
     const lanes = this.gameStateRef.current.lanes
     for (let index = 0, len = lanes.length; index < len; index++) {
-      lanes[index].renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
+      lanes[index].renderX =
+        startX + index * (this.laneLayout.laneWidth + LANE_GAP)
     }
     return true
   }

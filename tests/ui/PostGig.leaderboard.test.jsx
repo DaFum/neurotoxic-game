@@ -8,7 +8,7 @@ import * as socialEngine from '../../src/utils/socialEngine'
 
 // Mock lazy-loaded phase components to prevent Suspense timeout in tests
 vi.mock('../../src/components/postGig/ReportPhase', () => ({
-  ReportPhase: ({ financials, onNext, ...layoutProps }) => (
+  ReportPhase: ({ _financials, onNext, ...layoutProps }) => (
     <div data-testid='mock-report-phase' {...layoutProps}>
       <button type='button' onClick={onNext}>
         Continue to Socials

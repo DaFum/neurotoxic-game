@@ -16,17 +16,19 @@ const mockUseGameState = mock.fn(() => ({
   completeTravelMinigame: mock.fn()
 }))
 
-mock.mock('../src/context/GameState', () => ({
+mock.mock('../../src/context/GameState', () => ({
   useGameState: mockUseGameState
 }))
 
 const mockPlaySFX = mock.fn()
-mock.mock('../src/utils/AudioManager', () => ({
+mock.mock('../../src/utils/AudioManager', () => ({
   audioManager: { playSFX: mockPlaySFX }
 }))
 
 const mockHasUpgrade = mock.fn(() => false)
-mock.mock('../src/utils/upgradeUtils', () => ({ hasUpgrade: mockHasUpgrade }))
+mock.mock('../../src/utils/upgradeUtils', () => ({
+  hasUpgrade: mockHasUpgrade
+}))
 
 const {
   useTourbusLogic,

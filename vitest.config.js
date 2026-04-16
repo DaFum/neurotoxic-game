@@ -17,16 +17,25 @@ export default defineConfig({
     globals: true, // Need this for jest-dom expect to work
     environment: 'jsdom',
     setupFiles: ['./tests/vitest.setup.js'],
-    // Keep Vitest scoped to jsdom/React suites only
+    // JSDOM-only Vitest suites (React/DOM-facing tests).
     include: [
       'tests/ui/**/*.test.jsx',
       'tests/ui/**/*.spec.jsx',
-      'tests/ui/**/*.test.js',
-      'tests/ui/**/*.spec.js',
       'tests/integration/**/*.test.jsx',
       'tests/integration/**/*.spec.jsx',
+      'tests/hooks/**/*.test.jsx',
+      'tests/hooks/**/*.spec.jsx',
+      'tests/security/**/*.test.jsx',
+      'tests/security/**/*.spec.jsx',
+      'tests/utils/**/*.test.jsx',
+      'tests/utils/**/*.spec.jsx',
+      'tests/logic/AmpStageController.test.js',
+      'tests/ui/**/*.test.js',
+      'tests/ui/**/*.spec.js',
       'tests/integration/**/*.test.js',
-      'tests/integration/**/*.spec.js'
+      'tests/integration/**/*.spec.js',
+      'tests/ui/bandhq/hooks/**/*.test.jsx',
+      'tests/ui/bandhq/hooks/**/*.spec.jsx'
     ]
   }
 })

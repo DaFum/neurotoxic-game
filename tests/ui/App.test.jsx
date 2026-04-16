@@ -8,7 +8,7 @@ import {
   vi
 } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
-import { GAME_PHASES } from '../../src/context/gameConstants'
+import { GAME_PHASES } from '../../src/context/gameConstants.js'
 
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
@@ -51,47 +51,47 @@ vi.mock('../../src/components/SceneRouter.jsx', () => ({
 }))
 
 // Mock all the scene components
-vi.mock('../../src/scenes/MainMenu', () => ({
+vi.mock('../../src/scenes/MainMenu.jsx', () => ({
   MainMenu: () => <div data-testid='main-menu-scene'>Main Menu</div>
 }))
 
-vi.mock('../../src/scenes/Overworld', () => ({
+vi.mock('../../src/scenes/Overworld.jsx', () => ({
   Overworld: () => <div data-testid='overworld-scene'>Overworld</div>
 }))
 
-vi.mock('../../src/scenes/Gig', () => ({
+vi.mock('../../src/scenes/Gig.jsx', () => ({
   Gig: () => <div data-testid='gig-scene'>Gig</div>
 }))
 
-vi.mock('../../src/scenes/PreGig', () => ({
+vi.mock('../../src/scenes/PreGig.jsx', () => ({
   PreGig: () => <div data-testid='pregig-scene'>PreGig</div>
 }))
 
-vi.mock('../../src/scenes/PostGig', () => ({
+vi.mock('../../src/scenes/PostGig.jsx', () => ({
   PostGig: () => <div data-testid='postgig-scene'>PostGig</div>
 }))
 
-vi.mock('../../src/scenes/TourbusScene', () => ({
+vi.mock('../../src/scenes/TourbusScene.jsx', () => ({
   TourbusScene: () => <div data-testid='tourbus-scene'>Tourbus</div>
 }))
 
-vi.mock('../../src/scenes/RoadieRunScene', () => ({
+vi.mock('../../src/scenes/RoadieRunScene.jsx', () => ({
   RoadieRunScene: () => <div data-testid='roadie-scene'>Roadie Run</div>
 }))
 
-vi.mock('../../src/scenes/Settings', () => ({
+vi.mock('../../src/scenes/Settings.jsx', () => ({
   Settings: () => <div data-testid='settings-scene'>Settings</div>
 }))
 
-vi.mock('../../src/scenes/Credits', () => ({
+vi.mock('../../src/scenes/Credits.jsx', () => ({
   Credits: () => <div data-testid='credits-scene'>Credits</div>
 }))
 
-vi.mock('../../src/scenes/GameOver', () => ({
+vi.mock('../../src/scenes/GameOver.jsx', () => ({
   GameOver: () => <div data-testid='gameover-scene'>Game Over</div>
 }))
 
-vi.mock('../../src/scenes/IntroVideo', () => ({
+vi.mock('../../src/scenes/IntroVideo.jsx', () => ({
   IntroVideo: () => <div data-testid='intro-scene'>Intro</div>
 }))
 

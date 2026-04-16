@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
 
 const rawArgs = process.argv.slice(2)
@@ -23,25 +24,37 @@ const commandArgs = [
 import fs from 'node:fs'
 import path from 'node:path'
 
-const NODE_TEST_DIR = 'tests/node'
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
+const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
 
-const isPathInNodeDir = testPath => {
+const NODE_TEST_DIRS = [
+  'tests/node',
+  'tests/components',
+  'tests/context',
+  'tests/events',
+  'tests/golden-path',
+  'tests/reducers'
+]
+
+const isPathInNodeDirs = testPath => {
   const resolved = path.resolve(testPath)
-  const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
-  return (
-    relative === NODE_TEST_DIR || relative.startsWith(`${NODE_TEST_DIR}/`)
+  const relative = path.relative(REPO_ROOT, resolved).replace(/\\/g, '/')
+  return NODE_TEST_DIRS.some(
+    dir => relative === dir || relative.startsWith(`${dir}/`)
   )
 }
 
 const getRemainingTestFiles = () => {
   const allFiles = []
   const crawl = dir => {
-    const items = fs.readdirSync(dir)
+    const absoluteDir = path.resolve(REPO_ROOT, dir)
+    if (!fs.existsSync(absoluteDir)) return
+    const items = fs.readdirSync(absoluteDir)
     for (const item of items) {
-      const fullPath = path.join(dir, item)
+      const fullPath = path.join(absoluteDir, item)
       const normalizedPath = fullPath.replace(/\\/g, '/')
       if (fs.statSync(fullPath).isDirectory()) {
-        crawl(fullPath)
+        crawl(path.relative(REPO_ROOT, fullPath))
       } else if (
         normalizedPath.endsWith('.test.js') ||
         normalizedPath.endsWith('.spec.js')
@@ -50,7 +63,9 @@ const getRemainingTestFiles = () => {
       }
     }
   }
-  crawl(NODE_TEST_DIR)
+  for (const dir of NODE_TEST_DIRS) {
+    crawl(dir)
+  }
   return allFiles
 }
 
@@ -74,11 +89,11 @@ const specificTestFileArgs = filteredArgs.filter(
 
 // Prevent running tests outside tests/node/** with node:test
 const hasNonNodeSpecificFile = specificTestFileArgs.some(
-  arg => !isPathInNodeDir(arg)
+  arg => !isPathInNodeDirs(arg)
 )
 if (hasNonNodeSpecificFile) {
   console.error(
-    'Node runner only supports tests under tests/node/**. Use the Vitest runner for tests/ui/** and tests/integration/**.'
+    'Node runner only supports node:test directories under tests/. Use the Vitest runner for UI/integration and vitest-owned suites.'
   )
   process.exit(1)
 }

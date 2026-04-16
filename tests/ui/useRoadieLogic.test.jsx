@@ -20,12 +20,12 @@ const mockUseGameState = mock.fn(() => ({
   changeScene: mockChangeScene
 }))
 
-mock.mock('../src/context/GameState', () => ({
+mock.mock('../../src/context/GameState', () => ({
   useGameState: mockUseGameState
 }))
 
 const mockPlaySFX = mock.fn()
-mock.mock('../src/utils/AudioManager', () => ({
+mock.mock('../../src/utils/AudioManager', () => ({
   audioManager: { playSFX: mockPlaySFX }
 }))
 

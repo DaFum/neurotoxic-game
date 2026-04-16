@@ -215,12 +215,11 @@ const validateSocial = social => {
       throw new StateError(`Invalid social property format: ${key}`)
     }
     if (key === 'lastPirateBroadcastDay' && val === null) continue
-        if (key === 'egoFocus' && (val === null || typeof val === 'string'))
+    if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue
 
     // Backwards compatibility: Ignore legacy sponsorActive boolean
     if (key === 'sponsorActive' && typeof val === 'boolean') continue
-
 
     if (key === 'trend') {
       if (typeof val === 'string' && ALLOWED_TRENDS_SET.has(val)) continue

@@ -5,6 +5,7 @@ import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 mock.module('react-i18next', {
   namedExports: {
+    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useTranslation: () => ({
       t: (key, options) => options?.defaultValue || key
     }),
@@ -12,8 +13,9 @@ mock.module('react-i18next', {
   }
 })
 
-const { usePurchaseLogic } =
+const purchaseLogicModule =
   await import('../../src/ui/bandhq/hooks/usePurchaseLogic.js')
+const purchaseLogicHook = purchaseLogicModule.usePurchaseLogic
 
 describe('usePurchaseLogic', () => {
   before(() => {
@@ -32,7 +34,7 @@ describe('usePurchaseLogic', () => {
     let playerPatch = null
 
     const { result } = renderHook(() =>
-      usePurchaseLogic({
+      purchaseLogicHook({
         player: {
           money: 500,
           fame: 0,
@@ -81,7 +83,7 @@ describe('usePurchaseLogic', () => {
     }
 
     const { result } = renderHook(() =>
-      usePurchaseLogic({
+      purchaseLogicHook({
         player,
         band: { inventory: {}, performance: {} },
         updatePlayer: patch => {
@@ -125,7 +127,7 @@ describe('usePurchaseLogic', () => {
     }
 
     const { result } = renderHook(() =>
-      usePurchaseLogic({
+      purchaseLogicHook({
         player,
         band,
         updatePlayer: () => {},
@@ -163,7 +165,7 @@ describe('usePurchaseLogic', () => {
 
     // Test with base 0 (should go negative)
     const { result: result2 } = renderHook(() =>
-      usePurchaseLogic({
+      purchaseLogicHook({
         player,
         band: { ...band, performance: { guitarDifficulty: 0 } },
         updatePlayer: () => {},
@@ -186,7 +188,7 @@ describe('usePurchaseLogic', () => {
     const band = { harmonyRegenTravel: false }
 
     const { result } = renderHook(() =>
-      usePurchaseLogic({
+      purchaseLogicHook({
         player,
         band,
         updatePlayer: () => {},
@@ -217,7 +219,7 @@ describe('usePurchaseLogic', () => {
     const player = { money: 1000, fame: 0, passiveFollowers: 10 }
 
     const { result } = renderHook(() =>
-      usePurchaseLogic({
+      purchaseLogicHook({
         player,
         band: {},
         updatePlayer: patch => {

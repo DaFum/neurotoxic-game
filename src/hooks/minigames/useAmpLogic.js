@@ -7,7 +7,9 @@ export function useAmpLogic() {
   const { completeAmpCalibration } = useGameState()
 
   const [dialValue, setDialValue] = useState(500)
-  const [targetValue, setTargetValue] = useState(() => Math.floor(Math.random() * 800) + 100)
+  const [targetValue, setTargetValue] = useState(
+    () => Math.floor(Math.random() * 800) + 100
+  )
   const [timeLeft, setTimeLeft] = useState(MINIGAME_DURATION)
   const [score, setScore] = useState(100)
   const [isGameOver, setIsGameOver] = useState(false)
@@ -35,36 +37,42 @@ export function useAmpLogic() {
   }, [])
 
   // Function called by PixiStage component to get latest state for rendering
-  const update = useCallback((deltaMS) => {
-    if (isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0) return
+  const update = useCallback(
+    deltaMS => {
+      if (isCompleteRef.current || !Number.isFinite(deltaMS) || deltaMS <= 0)
+        return
 
-    const deltaSec = deltaMS / 1000
+      const deltaSec = deltaMS / 1000
 
-    setTimeLeft(prev => {
-      if (prev <= deltaSec) {
-        handleComplete()
-        return 0
-      }
-      return prev - deltaSec
-    })
-
-    // Approximately 5% chance per 100ms
-    if (Math.random() < (0.05 * (deltaMS / 100))) {
-      setTargetValue(prev => {
-        const shift = (Math.random() - 0.5) * 200
-        return Math.max(0, Math.min(1000, prev + shift))
+      setTimeLeft(prev => {
+        if (prev <= deltaSec) {
+          handleComplete()
+          return 0
+        }
+        return prev - deltaSec
       })
-    }
 
-    // Time-driven tick for score accumulation
-    const diff = Math.abs(dialValueRef.current - targetValueRef.current)
-    const currentScore = Math.max(0, 100 - (diff / 10)) // Max difference 1000 = 0 score
+      // Approximately 5% chance per 100ms
+      if (Math.random() < 0.05 * (deltaMS / 100)) {
+        setTargetValue(prev => {
+          const shift = (Math.random() - 0.5) * 200
+          return Math.max(0, Math.min(1000, prev + shift))
+        })
+      }
 
-    accumulatedScoreRef.current += currentScore * deltaMS
-    accumulatedMsRef.current += deltaMS
+      // Time-driven tick for score accumulation
+      const diff = Math.abs(dialValueRef.current - targetValueRef.current)
+      const currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
 
-    setScore(accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current))
-  }, [handleComplete])
+      accumulatedScoreRef.current += currentScore * deltaMS
+      accumulatedMsRef.current += deltaMS
+
+      setScore(
+        accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
+      )
+    },
+    [handleComplete]
+  )
 
   const finishCalledRef = useRef(false)
 
@@ -72,7 +80,8 @@ export function useAmpLogic() {
     if (finishCalledRef.current) return
     finishCalledRef.current = true
 
-    const finalScore = accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
+    const finalScore =
+      accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
     completeAmpCalibration(finalScore)
   }, [completeAmpCalibration])
 
