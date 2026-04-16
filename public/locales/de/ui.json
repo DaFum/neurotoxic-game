@@ -13,6 +13,8 @@
   "band_hq": "Band HQ",
   "bandhq.fame": "RUHM",
   "bandhq.funds": "KASSE",
+  "bandhq.credits": "KREDITE",
+  "bandhq.bonus": "BONUS",
   "bandhq.metadata.bpm": "BPM",
   "bandhq.metadata.diff": "SCHW",
   "bandhq.metadata.dur": "DAUER",

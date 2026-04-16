@@ -20,7 +20,7 @@ export const CatalogTab = ({
           const isFame = key === 'fame'
           return (
             <span key={key}>
-              {t(`ui:bandhq.${key}`, { defaultValue: key.toUpperCase() })}:{' '}
+              {t(`ui:bandhq.${key}`)}:{' '}
               <span
                 className={isFame ? 'text-warning-yellow' : 'text-toxic-green'}
               >
@@ -49,9 +49,51 @@ export const CatalogTab = ({
   )
 }
 
+const balancesShape = PropTypes.shape({
+  funds: PropTypes.number,
+  money: PropTypes.number,
+  fame: PropTypes.number,
+  credits: PropTypes.number,
+  bonus: PropTypes.number
+})
+
+const balancesValidator = (props, propName, componentName) => {
+  const value = props[propName]
+  if (!value || typeof value !== 'object') {
+    return new Error(`${componentName}: balances must be an object`)
+  }
+
+  const keys = Object.keys(value)
+  if (keys.length === 0) {
+    return new Error(`${componentName}: balances must include at least one key`)
+  }
+
+  const hasInvalidNumber = keys.some(key => !Number.isFinite(value[key]))
+  if (hasInvalidNumber) {
+    return new Error(`${componentName}: balances values must be finite numbers`)
+  }
+
+  return null
+}
+
 CatalogTab.propTypes = {
-  items: PropTypes.arrayOf(PropTypes.object).isRequired,
-  balances: PropTypes.object.isRequired,
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      name: PropTypes.string,
+      cost: PropTypes.number.isRequired,
+      description: PropTypes.string,
+      type: PropTypes.string,
+      effect: PropTypes.object
+    })
+  ).isRequired,
+  balances: (props, propName, componentName, ...rest) => {
+    const shapeError = balancesShape(props, propName, componentName, ...rest)
+    if (shapeError) {
+      return shapeError
+    }
+    return balancesValidator(props, propName, componentName)
+  },
   handleBuy: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
   isItemDisabled: PropTypes.func.isRequired,

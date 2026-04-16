@@ -81,6 +81,11 @@ Review and remediation focused on:
 #### Decision
 - Defer structural reduction until ownership/source generation strategy is agreed.
 
+#### Agent guidance
+- **Purpose:** agent instructions are for maintenance automation support (diagnostics, consistency checks, scripted refactors), not for defining runtime game rules.
+- **Operational limitations:** treat source code + tests as canonical when instruction trees drift; avoid destructive repo-wide rewrites; keep changes scoped and verifiable.
+- **Recommended usage scenarios:** use mirror-tree guidance for repetitive workflow tasks (test orchestration, docs consistency, migration checklists), then validate outcomes with project tests before merging.
+
 ---
 
 ### 6) Scene export strategy

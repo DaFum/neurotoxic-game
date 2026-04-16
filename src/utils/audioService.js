@@ -1,12 +1,14 @@
 import { audioManager } from './AudioManager.js'
 
 const getState = () => {
+  const snapshot = audioManager.getStateSnapshot()
   return {
-    musicVol: audioManager.musicVolume,
-    sfxVol: audioManager.sfxVolume,
-    isMuted: audioManager.muted,
-    isPlaying: audioManager.isPlaying,
-    currentSongId: audioManager.currentSongId ?? null
+    ...snapshot,
+    musicVol: audioManager.musicVolume ?? snapshot.musicVol,
+    sfxVol: audioManager.sfxVolume ?? snapshot.sfxVol,
+    isMuted: audioManager.muted ?? snapshot.isMuted,
+    isPlaying: audioManager.isPlaying ?? snapshot.isPlaying,
+    currentSongId: audioManager.currentSongId ?? snapshot.currentSongId ?? null
   }
 }
 
