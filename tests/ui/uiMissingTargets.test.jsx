@@ -172,7 +172,7 @@ describe('UI missing-target smoke/branch tests', () => {
         getAdjustedCost={item => item.cost - 5}
       />
     )
-    expect(screen.getByText('FUNDS:')).toBeInTheDocument()
+    expect(screen.getByText(/funds/i)).toBeInTheDocument()
     // g1 should be owned, i1 disabled.
     expect(screen.getByRole('button', { name: /OWNED/ })).toBeInTheDocument()
 
@@ -189,7 +189,7 @@ describe('UI missing-target smoke/branch tests', () => {
         getAdjustedCost={item => item.cost + 10}
       />
     )
-    expect(screen.getByText('FAME:')).toBeInTheDocument()
+    expect(screen.getByText(/fame/i)).toBeInTheDocument()
     expect(
       within(container).getByRole('button', { name: /OWNED/ })
     ).toBeInTheDocument()

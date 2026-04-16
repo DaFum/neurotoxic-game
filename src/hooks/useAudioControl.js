@@ -22,15 +22,7 @@ export const executeAudioAction = (
 export const createAudioHandlers = manager => ({
   setMusic: val =>
     executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
-  setSfx: val =>
-    executeAudioAction(
-      manager,
-      typeof manager.setSfxVolume === 'function'
-        ? 'setSfxVolume'
-        : 'setSFXVolume',
-      'setSfx',
-      val
-    ),
+  setSfx: val => executeAudioAction(manager, 'setSfxVolume', 'setSfx', val),
   toggleMute: () => executeAudioAction(manager, 'toggleMute', 'toggleMute'),
   stopMusic: () => executeAudioAction(manager, 'stopMusic', 'stopMusic'),
   resumeMusic: () => {

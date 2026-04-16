@@ -40,7 +40,7 @@ Data source: `docs/repo-inventory.json`.
 - Scene transitions are centralized through context actions (`src/context/actionCreators.js`, `src/context/gameReducer.js`).
 
 ### Context / reducer / state
-- Public state API: `useGameState`, `useGameDispatch`, `GameStateProvider` in `src/context/GameState.jsx`.
+- Public state API: `useGameState`, `useGameSelector`, `useGameActions`, `useGameDispatch`, `GameStateProvider` in `src/context/GameState.jsx`. `src/ui/BandHQ.jsx` and `src/ui/ToastOverlay.jsx` consume `useGameSelector`/`useGameActions`.
 - Reducer entry: `gameReducer` in `src/context/gameReducer.js`.
 
 ### Hooks

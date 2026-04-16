@@ -17,7 +17,7 @@ describe('audioControlUtils', () => {
   beforeEach(() => {
     mockManager = {
       setMusicVolume: vi.fn(),
-      setSFXVolume: vi.fn(),
+      setSfxVolume: vi.fn(),
       toggleMute: vi.fn(),
       stopMusic: vi.fn(),
       resumeMusic: vi.fn(),
@@ -72,7 +72,7 @@ describe('audioControlUtils', () => {
       expect(mockManager.setMusicVolume).toHaveBeenCalledWith(0.8)
 
       handlers.setSfx(0.6)
-      expect(mockManager.setSFXVolume).toHaveBeenCalledWith(0.6)
+      expect(mockManager.setSfxVolume).toHaveBeenCalledWith(0.6)
 
       handlers.toggleMute()
       expect(mockManager.toggleMute).toHaveBeenCalled()

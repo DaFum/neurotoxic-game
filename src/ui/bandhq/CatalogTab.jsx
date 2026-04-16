@@ -68,7 +68,7 @@ const balancesShape = PropTypes.shape({
 
 const balancesValidator = (props, propName, componentName) => {
   const value = props[propName]
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return new Error(`${componentName}: balances must be an object`)
   }
 
