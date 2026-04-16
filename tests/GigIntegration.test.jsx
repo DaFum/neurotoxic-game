@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { mockTone } from './mocks/toneMock.js'
+
+const { mockTone } = vi.hoisted(() => {
+  return require('./mocks/toneMock.js')
+})
 
 vi.mock('tone', () => mockTone)
 

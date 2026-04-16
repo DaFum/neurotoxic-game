@@ -2,22 +2,29 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import fs from 'node:fs/promises'
 import { readLocaleJson, flattenToEntries } from '../utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const LOCALES_ROOT = path.join(__dirname, '..', '..', 'public', 'locales')
-const LOCALES = ['en', 'de']
-const CHANGED_NAMESPACES = ['economy', 'minigame', 'ui', 'venues']
 
 test('Smoke tests for locales', async t => {
+  const locales = await fs.readdir(LOCALES_ROOT)
+  const LOCALES = locales.filter(l => !l.startsWith('.'))
+
   for (const locale of LOCALES) {
-    for (const namespace of CHANGED_NAMESPACES) {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const files = await fs.readdir(localeDir)
+    const namespaces = files
+      .filter(f => f.endsWith('.json'))
+      .map(f => f.replace('.json', ''))
+
+    for (const namespace of namespaces) {
       await t.test(
         `${locale}/${namespace}.json is valid and structural sound`,
         async () => {
-          const localeDir = path.join(LOCALES_ROOT, locale)
           const fileName = `${namespace}.json`
 
           let data

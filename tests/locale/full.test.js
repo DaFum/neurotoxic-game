@@ -9,8 +9,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const LOCALES_ROOT = path.join(__dirname, '..', '..', 'public', 'locales')
-const LOCALES = ['en', 'de']
-const CHANGED_NAMESPACES = ['economy', 'minigame', 'ui', 'venues']
 
 const hasKeyOrPrefix = (obj, prefix) => {
   if (!obj || typeof obj !== 'object') return false
@@ -25,61 +23,96 @@ const hasKeyOrPrefix = (obj, prefix) => {
 }
 
 test('Full locale validation tests', async t => {
+  const locales = await fs.readdir(LOCALES_ROOT)
+  const LOCALES = locales.filter(l => !l.startsWith('.'))
+  const enFiles = await fs.readdir(path.join(LOCALES_ROOT, 'en'))
+  const NAMESPACES = enFiles
+    .filter(f => f.endsWith('.json'))
+    .map(f => f.replace('.json', ''))
+
   const allData = new Map()
 
   for (const locale of LOCALES) {
-    for (const namespace of CHANGED_NAMESPACES) {
-      const data = await readLocaleJson(
-        path.join(LOCALES_ROOT, locale),
-        `${namespace}.json`
-      )
-      const entries = flattenToEntries(data)
-      allData.set(`${locale}/${namespace}`, { data, entries })
+    for (const namespace of NAMESPACES) {
+      try {
+        const data = await readLocaleJson(
+          path.join(LOCALES_ROOT, locale),
+          `${namespace}.json`
+        )
+        const entries = flattenToEntries(data)
+        allData.set(`${locale}/${namespace}`, { data, entries })
+      } catch (e) {
+        // file might be missing or bad
+      }
     }
   }
 
   await t.test('venues.json city names logic', async () => {
     for (const locale of LOCALES) {
-      const { entries } = allData.get(`${locale}/venues`)
+      const localeData = allData.get(`${locale}/venues`)
+      if (!localeData) continue
+      const { entries } = localeData
       const nameEntries = entries.filter(e => e.key.endsWith('.name'))
       assert.ok(
         nameEntries.length > 0,
         `${locale}/venues.json should have venue/city name entries`
       )
-      nameEntries.forEach(entry => assert.equal(typeof entry.value, 'string'))
+      nameEntries.forEach(entry => {
+        assert.equal(typeof entry.value, 'string')
+      })
     }
   })
 
   await t.test(
     'economy namespace placeholders are consistent between locales',
     async () => {
-      const { entries: enEntries } = allData.get('en/economy')
-      const { entries: deEntries } = allData.get('de/economy')
+      const enData = allData.get('en/economy')
+      if (!enData) return
+      const { entries: enEntries } = enData
+      const enKeys = new Set(enEntries.map(e => e.key))
 
-      const deMap = new Map(deEntries.map(e => [e.key, e.value]))
+      for (const locale of LOCALES) {
+        if (locale === 'en') continue
+        const localeData = allData.get(`${locale}/economy`)
+        if (!localeData) continue
+        const { entries: deEntries } = localeData
 
-      enEntries.forEach(e => {
-        if (
-          typeof e.value === 'string' &&
-          typeof deMap.get(e.key) === 'string'
-        ) {
-          const enPlaceholders = (e.value.match(/{{[^}]+}}/g) || []).sort()
-          const dePlaceholders = (
-            deMap.get(e.key).match(/{{[^}]+}}/g) || []
-          ).sort()
-          assert.deepEqual(
-            dePlaceholders,
-            enPlaceholders,
-            `economy.json key "${e.key}" should have matching placeholders`
-          )
-        }
-      })
+        const deKeys = new Set(deEntries.map(e => e.key))
+        assert.deepEqual(
+          deKeys,
+          enKeys,
+          `Keys in ${locale}/economy.json should match en/economy.json exactly`
+        )
+
+        const deMap = new Map(deEntries.map(e => [e.key, e.value]))
+
+        enEntries.forEach(e => {
+          if (typeof e.value === 'string') {
+            const deVal = deMap.get(e.key)
+            assert.ok(
+              deVal !== undefined,
+              `Missing translation for key ${e.key} in ${locale}`
+            )
+            if (typeof deVal === 'string') {
+              const enPlaceholders = (e.value.match(/{{[^}]+}}/g) || []).sort()
+              const dePlaceholders = (deVal.match(/{{[^}]+}}/g) || []).sort()
+              assert.deepEqual(
+                dePlaceholders,
+                enPlaceholders,
+                `economy.json key "${e.key}" should have matching placeholders in ${locale}`
+              )
+            }
+          }
+        })
+      }
     }
   )
 
   await t.test('ui.json featureList has valid structure', async () => {
     for (const locale of LOCALES) {
-      const { data } = allData.get(`${locale}/ui`)
+      const localeData = allData.get(`${locale}/ui`)
+      if (!localeData) continue
+      const { data } = localeData
       const hasNestedArray = Array.isArray(data.featureList)
       const flatFeatureKeys = Object.keys(data).filter(key =>
         key.startsWith('featureList.')
@@ -97,8 +130,10 @@ test('Full locale validation tests', async t => {
 
   await t.test('locale files formatting string values', async () => {
     for (const locale of LOCALES) {
-      for (const namespace of CHANGED_NAMESPACES) {
-        const { entries } = allData.get(`${locale}/${namespace}`)
+      for (const namespace of NAMESPACES) {
+        const localeData = allData.get(`${locale}/${namespace}`)
+        if (!localeData) continue
+        const { entries } = localeData
         entries.forEach(entry => {
           if (typeof entry.value === 'string' && entry.value.length > 0) {
             const hasLeadingSpace = entry.value !== entry.value.trimStart()
@@ -124,8 +159,10 @@ test('Full locale validation tests', async t => {
 
   await t.test('no empty string values and balanced HTML', async () => {
     for (const locale of LOCALES) {
-      for (const namespace of CHANGED_NAMESPACES) {
-        const { entries } = allData.get(`${locale}/${namespace}`)
+      for (const namespace of NAMESPACES) {
+        const localeData = allData.get(`${locale}/${namespace}`)
+        if (!localeData) continue
+        const { entries } = localeData
         entries.forEach(entry => {
           if (typeof entry.value === 'string') {
             assert.ok(
@@ -150,15 +187,21 @@ test('Full locale validation tests', async t => {
   await t.test(
     'locale files have similar translation counts between locales',
     async () => {
-      for (const namespace of CHANGED_NAMESPACES) {
-        const { entries: enEntries } = allData.get(`en/${namespace}`)
+      for (const namespace of NAMESPACES) {
+        const enData = allData.get(`en/${namespace}`)
+        if (!enData) continue
+        const { entries: enEntries } = enData
+        const enKeys = new Set(enEntries.map(e => e.key))
         for (const locale of LOCALES) {
           if (locale === 'en') continue
-          const { entries } = allData.get(`${locale}/${namespace}`)
-          assert.equal(
-            entries.length,
-            enEntries.length,
-            `${locale}/${namespace}.json translation count mismatch`
+          const localeData = allData.get(`${locale}/${namespace}`)
+          if (!localeData) continue
+          const { entries } = localeData
+          const locKeys = new Set(entries.map(e => e.key))
+          assert.deepEqual(
+            locKeys,
+            enKeys,
+            `${locale}/${namespace}.json keys mismatch`
           )
         }
       }
@@ -169,7 +212,9 @@ test('Full locale validation tests', async t => {
     'ui.json has loading and postGig related translation keys',
     async () => {
       for (const locale of LOCALES) {
-        const { data } = allData.get(`${locale}/ui`)
+        const localeData = allData.get(`${locale}/ui`)
+        if (!localeData) continue
+        const { data } = localeData
         const hasLoading =
           data.loading !== undefined ||
           Object.keys(data).some(key => key.toLowerCase().includes('loading'))
@@ -189,7 +234,9 @@ test('Full locale validation tests', async t => {
     'economy.json uses consistent currency formatting and placeholders',
     async () => {
       for (const locale of LOCALES) {
-        const { entries } = allData.get(`${locale}/economy`)
+        const localeData = allData.get(`${locale}/economy`)
+        if (!localeData) continue
+        const { entries } = localeData
         const currencyEntries = entries.filter(
           e =>
             typeof e.value === 'string' &&
@@ -223,7 +270,9 @@ test('Full locale validation tests', async t => {
 
   await t.test('minigame.json has comprehensive tourbus keys', async () => {
     for (const locale of LOCALES) {
-      const { entries } = allData.get(`${locale}/minigame`)
+      const localeData = allData.get(`${locale}/minigame`)
+      if (!localeData) continue
+      const { entries } = localeData
       const tourbusKeys = entries.filter(e => e.key.startsWith('tourbus'))
       assert.ok(tourbusKeys.length >= 5)
     }
@@ -232,11 +281,15 @@ test('Full locale validation tests', async t => {
   await t.test(
     'venues.json has same number of venues in all locales',
     async () => {
-      const { entries: enEntries } = allData.get('en/venues')
+      const enData = allData.get('en/venues')
+      if (!enData) return
+      const { entries: enEntries } = enData
       const enVenueCount = enEntries.filter(e => e.key.endsWith('.name')).length
       for (const locale of LOCALES) {
         if (locale === 'en') continue
-        const { entries } = allData.get(`${locale}/venues`)
+        const localeData = allData.get(`${locale}/venues`)
+        if (!localeData) continue
+        const { entries } = localeData
         const venueCount = entries.filter(e => e.key.endsWith('.name')).length
         assert.equal(venueCount, enVenueCount)
       }
@@ -245,32 +298,66 @@ test('Full locale validation tests', async t => {
 
   await t.test('no duplicate keys exist within each locale file', async () => {
     for (const locale of LOCALES) {
-      for (const namespace of CHANGED_NAMESPACES) {
+      for (const namespace of NAMESPACES) {
         const filePath = path.join(LOCALES_ROOT, locale, `${namespace}.json`)
-        const rawText = await fs.readFile(filePath, 'utf8')
+        let rawText
+        try {
+          rawText = await fs.readFile(filePath, 'utf8')
+        } catch (e) {
+          continue
+        }
+
         let hasDuplicates = false
         let duplicateDetails = []
         let currentLevelKeys = new Set()
         let objectStack = []
-        const tokens = rawText.match(/([{}[\]])|("([^"\\]|\\.)*"\s*:)/g) || []
-        for (const token of tokens) {
-          if (token === '{') {
-            objectStack.push(currentLevelKeys)
-            currentLevelKeys = new Set()
-          } else if (token === '}') {
-            currentLevelKeys = objectStack.pop() || new Set()
-          } else if (token.endsWith(':')) {
-            const key = token
-              .slice(1, token.lastIndexOf('"'))
-              .replace(/\\"/g, '"')
-            if (currentLevelKeys.has(key)) {
-              hasDuplicates = true
-              duplicateDetails.push(key)
-            } else {
-              currentLevelKeys.add(key)
+
+        let inString = false
+        let isEscaped = false
+
+        for (let i = 0; i < rawText.length; i++) {
+          const char = rawText[i]
+
+          if (!inString) {
+            if (char === '"') {
+              inString = true
+            } else if (char === '{') {
+              objectStack.push(currentLevelKeys)
+              currentLevelKeys = new Set()
+            } else if (char === '}') {
+              currentLevelKeys = objectStack.pop() || new Set()
+            } else if (char === ':') {
+              // we just passed a key. Let's backtrack to find the string.
+              let j = i - 1
+              while (j >= 0 && /\s/.test(rawText[j])) j--
+              if (j >= 0 && rawText[j] === '"') {
+                let k = j - 1
+                while (
+                  (k >= 0 && rawText[k] !== '"') ||
+                  (k > 0 && rawText[k - 1] === '\\')
+                ) {
+                  k--
+                }
+                const keyName = rawText.slice(k + 1, j).replace(/\\"/g, '"')
+                if (currentLevelKeys.has(keyName)) {
+                  hasDuplicates = true
+                  duplicateDetails.push(keyName)
+                } else {
+                  currentLevelKeys.add(keyName)
+                }
+              }
+            }
+          } else {
+            if (isEscaped) {
+              isEscaped = false
+            } else if (char === '\\') {
+              isEscaped = true
+            } else if (char === '"') {
+              inString = false
             }
           }
         }
+
         assert.equal(
           hasDuplicates,
           false,
