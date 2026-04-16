@@ -23,27 +23,16 @@ const commandArgs = [
 import fs from 'node:fs'
 import path from 'node:path'
 
-const EXCLUDED_TEST_DIRS = [
-  'tests/api',
-  'tests/utils',
-  'tests/data',
-  'tests/security',
-  'tests/logic',
-  'tests/social',
-  'tests/hooks',
-  'tests/performance',
-  'tests/locale'
-]
+const NODE_TEST_DIR = 'tests/node'
 
-const isPathInExcludedDir = testPath => {
+const isPathInNodeDir = testPath => {
   const resolved = path.resolve(testPath)
   const relative = path.relative(process.cwd(), resolved).replace(/\\/g, '/')
-  return EXCLUDED_TEST_DIRS.some(
-    dir => relative === dir || relative.startsWith(`${dir}/`)
+  return (
+    relative === NODE_TEST_DIR || relative.startsWith(`${NODE_TEST_DIR}/`)
   )
 }
 
-// Exclude directories that have been migrated to vitest
 const getRemainingTestFiles = () => {
   const allFiles = []
   const crawl = dir => {
@@ -57,13 +46,11 @@ const getRemainingTestFiles = () => {
         normalizedPath.endsWith('.test.js') ||
         normalizedPath.endsWith('.spec.js')
       ) {
-        if (!isPathInExcludedDir(normalizedPath)) {
-          allFiles.push(fullPath)
-        }
+        allFiles.push(fullPath)
       }
     }
   }
-  crawl('tests')
+  crawl(NODE_TEST_DIR)
   return allFiles
 }
 
@@ -85,11 +72,13 @@ const specificTestFileArgs = filteredArgs.filter(
   arg => arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs')
 )
 
-// Prevent running Vitest-migrated tests with node:test
-const hasExcludedSpecificFile = specificTestFileArgs.some(isPathInExcludedDir)
-if (hasExcludedSpecificFile) {
+// Prevent running tests outside tests/node/** with node:test
+const hasNonNodeSpecificFile = specificTestFileArgs.some(
+  arg => !isPathInNodeDir(arg)
+)
+if (hasNonNodeSpecificFile) {
   console.error(
-    'Tests under the migrated directories are run with Vitest. Use the Vitest runner instead of node:test for these files.'
+    'Node runner only supports tests under tests/node/**. Use the Vitest runner for tests/ui/** and tests/integration/**.'
   )
   process.exit(1)
 }

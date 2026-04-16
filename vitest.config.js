@@ -17,24 +17,16 @@ export default defineConfig({
     globals: true, // Need this for jest-dom expect to work
     environment: 'jsdom',
     setupFiles: ['./tests/vitest.setup.js'],
-    // Include the refactored .js directories, leaving the rest for node:test
+    // Keep Vitest scoped to jsdom/React suites only
     include: [
-      'tests/**/*.test.jsx',
-      'tests/**/*.spec.jsx',
-      'tests/api/**/*.test.js',
-      'tests/api/**/*.spec.js',
-      'tests/utils/**/*.test.js',
-      'tests/utils/**/*.spec.js',
-      'tests/data/**/*.test.js',
-      'tests/data/**/*.spec.js',
-      'tests/security/**/*.test.js',
-      'tests/security/**/*.spec.js',
-      'tests/logic/**/*.test.js',
-      'tests/logic/**/*.spec.js',
-      'tests/social/**/*.test.js',
-      'tests/social/**/*.spec.js',
-      'tests/hooks/**/*.test.js',
-      'tests/hooks/**/*.spec.js'
+      'tests/ui/**/*.test.jsx',
+      'tests/ui/**/*.spec.jsx',
+      'tests/ui/**/*.test.js',
+      'tests/ui/**/*.spec.js',
+      'tests/integration/**/*.test.jsx',
+      'tests/integration/**/*.spec.jsx',
+      'tests/integration/**/*.test.js',
+      'tests/integration/**/*.spec.js'
     ]
   }
 })
