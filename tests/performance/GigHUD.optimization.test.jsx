@@ -84,7 +84,7 @@ function makeReactMemoMock(exportName, spy) {
 // Use async factories so we can import React for React.memo wrapping,
 // which is needed to simulate the real components' memoization behaviour.
 vi.mock(
-  '../../src/components/hud/ScoreDisplay.jsx',
+  '../../src/components/hud/ScoreDisplay.tsx',
   makeReactMemoMock('ScoreDisplay', ScoreDisplaySpy)
 )
 vi.mock(
@@ -92,7 +92,7 @@ vi.mock(
   makeReactMemoMock('HealthBar', HealthBarSpy)
 )
 vi.mock(
-  '../../src/components/hud/ComboDisplay.jsx',
+  '../../src/components/hud/ComboDisplay.tsx',
   makeReactMemoMock('ComboDisplay', ComboDisplaySpy)
 )
 vi.mock(

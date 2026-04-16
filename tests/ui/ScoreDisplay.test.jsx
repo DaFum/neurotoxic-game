@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { ScoreDisplay } from '../../src/components/hud/ScoreDisplay.jsx'
+import { ScoreDisplay } from '../../src/components/hud/ScoreDisplay.tsx'
 
 describe('ScoreDisplay', () => {
   test('renders baseline structural elements', () => {
