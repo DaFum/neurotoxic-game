@@ -2006,7 +2006,9 @@ const buildMarkdownReport = payload => {
   )
   lines.push('')
   lines.push(
-    '| PerfScore | Roh-Fame/Gig | Gigs bis 5.000 Fame | Gigs fuer Fame-Shop-only | Gigs fuer Shop+Legacy | Bewertung |'
+    `| PerfScore | Roh-Fame/Gig | Gigs bis ${fmt(
+      fameAudit.mostExpensiveShopItem
+    )} Fame | Gigs fuer Fame-Shop-only | Gigs fuer Shop+Legacy | Bewertung |`
   )
   lines.push('|---:|---:|---:|---:|---:|---|')
 

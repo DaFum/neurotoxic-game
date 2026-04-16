@@ -91,10 +91,10 @@ export const calculateGigFameReward = performanceScore => {
  * Ensures the logic is synced across the app and simulation.
  * @param {number} rawGain - The uncapped fame gain calculated from performance.
  * @param {number} currentFame - The player's current fame.
- * @param {number} [maxGain=500] - Hard cap on raw gain.
+ * @param {number} [maxGain=2000] - Hard cap on raw gain.
  * @returns {number} The final damped fame gain.
  */
-export const calculateFameGain = (rawGain, currentFame, maxGain = 500) => {
+export const calculateFameGain = (rawGain, currentFame, maxGain = 2000) => {
   let fameGain = Math.min(maxGain, rawGain)
   const prevFame = currentFame ?? 0
 
