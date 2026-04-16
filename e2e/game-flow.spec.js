@@ -39,7 +39,10 @@ test.describe('Game Flow', () => {
 
     const confirmBtn = page.getByRole('button', { name: /confirm/i })
     if (await confirmBtn.isVisible()) {
-      await page.getByPlaceholder(/enter your name/i).fill('Test Name')
+      const input = page
+        .getByPlaceholder(/enter your name/i)
+        .or(page.getByPlaceholder(/ui:enter_name_placeholder/i))
+      await input.fill('Test Name')
       await confirmBtn.click()
     }
 
@@ -145,7 +148,10 @@ test.describe('Game Flow', () => {
 
     const confirmBtn = page.getByRole('button', { name: /confirm/i })
     if (await confirmBtn.isVisible()) {
-      await page.getByPlaceholder(/enter your name/i).fill('Test Name')
+      const input = page
+        .getByPlaceholder(/enter your name/i)
+        .or(page.getByPlaceholder(/ui:enter_name_placeholder/i))
+      await input.fill('Test Name')
       await confirmBtn.click()
     }
 
