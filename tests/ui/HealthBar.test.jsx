@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { HealthBar } from '../../src/components/hud/HealthBar.jsx'
+import { HealthBar } from '../../src/components/hud/HealthBar.tsx'
 
 describe('HealthBar', () => {
   test('renders baseline and structural elements', () => {

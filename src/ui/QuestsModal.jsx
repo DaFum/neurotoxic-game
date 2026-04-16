@@ -5,7 +5,7 @@ import { ProgressBar } from './shared/index.jsx'
 import { GlitchButton } from './GlitchButton.jsx'
 import { useTranslation } from 'react-i18next'
 import { useId, memo } from 'react'
-import { formatNumber } from '../utils/numberUtils.js'
+import { formatNumber } from '../utils/numberUtils'
 
 // Helper component for accessible SVGs
 const BaseIcon = memo(

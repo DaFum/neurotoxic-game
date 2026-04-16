@@ -63,7 +63,7 @@ vi.mock('../../src/data/hqItems.js', () => ({
 vi.mock('../../src/data/upgradeCatalog.js', () => ({
   getUnifiedUpgradeCatalog: () => []
 }))
-vi.mock('../../src/data/songs.js', () => ({
+vi.mock('../../src/data/songs.ts', () => ({
   SONGS_DB: []
 }))
 vi.mock('../../src/utils/imageGen.js', () => ({

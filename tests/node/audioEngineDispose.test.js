@@ -20,7 +20,7 @@ mock.module('tone', { namedExports: mockTone })
 
 // Import SUT
 const { setupAudio, disposeAudio } =
-  await import('../../src/utils/audioEngine.js')
+  await import('../../src/utils/audioEngine.ts')
 
 test('disposeAudio logs error when dispose fails', async t => {
   // Spy on logger.debug

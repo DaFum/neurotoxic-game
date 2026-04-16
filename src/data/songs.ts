@@ -1,16 +1,59 @@
 // TODO: Review this file
 // Music Library
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
+import type { Note, Song } from '../types/audio'
+
+type RawNote = {
+  t?: number
+  timestamp?: number
+  lane?: number | string
+  type?: string
+  durationMs?: number
+  velocity?: number
+  p?: number
+  v?: number
+  [key: string]: unknown
+}
+
+type RawSong = {
+  name?: string
+  notes?: RawNote[]
+  tpb?: number
+  bpm?: number
+  durationMs?: number
+  difficultyRank?: number
+  tags?: string[]
+  notePattern?: string
+  crowdAppeal?: number
+  staminaDrain?: number
+  tempoMap?: unknown[]
+  sourceMid?: string
+  sourceOgg?: string | null
+  excerptStartMs?: number
+  excerptEndMs?: number
+  excerptDurationMs?: number
+  [key: string]: unknown
+}
 
 /**
  * Transform a raw rhythm_songs JSON object into the SONGS_DB array format.
  * Exported so tests can invoke the transformation with controlled fixture data
  * without needing to mock the JSON module.
  */
-export function transformSongsData(rawSongs) {
+export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
   return Object.entries(rawSongs).map(([key, song]) => {
+    const durationMsValue = Number.isFinite(song.durationMs)
+      ? Number(song.durationMs)
+      : null
+    const excerptDurationValue = Number.isFinite(song.excerptDurationMs)
+      ? Number(song.excerptDurationMs)
+      : null
+    const excerptEndValue = Number.isFinite(song.excerptEndMs)
+      ? Number(song.excerptEndMs)
+      : null
     let lastNoteTick = 0
-    const validNotes = []
+    const validNotes: Note[] = []
+
     if (Array.isArray(song.notes)) {
       for (let i = 0; i < song.notes.length; i++) {
         const note = song.notes[i]
@@ -19,9 +62,13 @@ export function transformSongsData(rawSongs) {
           typeof note === 'object' &&
           Number.isFinite(note.t)
         ) {
-          validNotes.push(note)
-          if (note.t > lastNoteTick) {
-            lastNoteTick = note.t
+          validNotes.push({
+            ...note,
+            lane: note.lane ?? 'unknown',
+            timestamp: note.timestamp ?? note.t
+          })
+          if (note.t! > lastNoteTick) {
+            lastNoteTick = note.t!
           }
         }
       }
@@ -42,9 +89,9 @@ export function transformSongsData(rawSongs) {
         .replace(/_+/g, '_')
         .replace(/^_+|_+$/g, '')
         .slice(0, 64),
-      name: song.name,
-      title: song.name,
-      duration: duration,
+      name: song.name || key,
+      title: song.name || key,
+      duration,
       difficulty: Math.max(1, Math.min(7, song.difficultyRank || 2)),
       intensity:
         (song.difficultyRank || 2) > 5
@@ -54,7 +101,7 @@ export function transformSongsData(rawSongs) {
             : (song.difficultyRank || 2) > 2
               ? 'MEDIUM'
               : 'LOW',
-      bpm: bpm,
+      bpm,
       tags: song.tags || ['Metal', 'Instrumental'],
       notePattern: song.notePattern || 'standard',
       crowdAppeal: Number.isFinite(Number(song.crowdAppeal))
@@ -69,18 +116,16 @@ export function transformSongsData(rawSongs) {
       energy: { peak: Math.min(100, 60 + (song.difficultyRank || 2) * 5) },
       notes: validNotes,
       tempoMap: song.tempoMap || [],
-      tpb: tpb,
+      tpb,
       sourceMid: song.sourceMid,
       sourceOgg: song.sourceOgg || null,
       excerptStartMs: song.excerptStartMs || 0,
-      excerptEndMs: Number.isFinite(song.excerptEndMs)
-        ? song.excerptEndMs
-        : null,
-      durationMs: Number.isFinite(song.durationMs) ? song.durationMs : null,
-      excerptDurationMs: Number.isFinite(song.excerptDurationMs)
-        ? Math.max(0, song.excerptDurationMs)
-        : Number.isFinite(song.durationMs)
-          ? Math.max(0, song.durationMs)
+      excerptEndMs: excerptEndValue,
+      durationMs: durationMsValue,
+      excerptDurationMs: excerptDurationValue !== null
+        ? Math.max(0, excerptDurationValue)
+        : durationMsValue !== null
+          ? Math.max(0, durationMsValue)
           : null
     }
   })
@@ -93,7 +138,7 @@ export const SONGS_DB = transformSongsData(rhythmSongs)
 // Pre-computed maps for O(1) lookups
 export const SONGS_BY_ID = new Map(SONGS_DB.map(song => [song.id, song]))
 
-export const SONGS_BY_MID = new Map()
+export const SONGS_BY_MID = new Map<string, Song>()
 for (let i = 0; i < SONGS_DB.length; i++) {
   const song = SONGS_DB[i]
   if (song.sourceMid) {

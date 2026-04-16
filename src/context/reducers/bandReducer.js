@@ -7,7 +7,7 @@ import {
   isForbiddenKey
 } from '../../utils/gameStateUtils.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
-import { ActionTypes } from '../actionTypes.js'
+import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband.js'
 
 /**

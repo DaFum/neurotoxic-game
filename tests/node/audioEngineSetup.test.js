@@ -21,7 +21,7 @@ mock.module('../../src/utils/audio/cleanupUtils.js', {
 // Import SUT
 // We use dynamic import to ensure mocks are applied before module load
 const { setupAudio, disposeAudio, ensureAudioContext } =
-  await import('../../src/utils/audioEngine.js')
+  await import('../../src/utils/audioEngine.ts')
 const { audioState } = await import('../../src/utils/audio/state.js')
 
 import { importAudioEngine } from '../audioTestUtils.js'
@@ -45,7 +45,7 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
       assert.strictEqual(rawContext, mockTone.getContext().rawContext)
 
       // Ensure that getRawAudioContext is correctly exported from the main hub
-      const audioEngineModule = await import('../../src/utils/audioEngine.js')
+      const audioEngineModule = await import('../../src/utils/audioEngine.ts')
       assert.strictEqual(
         typeof audioEngineModule.getRawAudioContext,
         'function'

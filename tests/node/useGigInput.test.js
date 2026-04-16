@@ -37,7 +37,7 @@ mock.module('../../src/utils/errorHandler.js', {
   namedExports: { handleError: mockErrorHandler.handleError }
 })
 // Mock dynamic import
-mock.module('../../src/utils/audioEngine.js', {
+mock.module('../../src/utils/audioEngine.ts', {
   namedExports: { stopAudio: mockStopAudio }
 })
 

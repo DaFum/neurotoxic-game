@@ -4,7 +4,7 @@
  * @module actionCreators
  */
 
-import { ActionTypes } from './actionTypes.js'
+import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto.js'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
 

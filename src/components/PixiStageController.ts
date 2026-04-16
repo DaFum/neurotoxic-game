@@ -9,17 +9,26 @@ import { CrowdManager } from './stage/CrowdManager.js'
 import { LaneManager } from './stage/LaneManager.js'
 import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
-import { getGigTimeMs } from '../utils/audioEngine.js'
+import { getGigTimeMs } from '../utils/audioEngine'
 import { withTimeout } from './stage/utils.js'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
 class PixiStageController extends BaseStageController {
+  colorMatrix: any
+  stageContainer: any
+  crowdManager: any
+  laneManager: any
+  effectManager: any
+  noteManager: any
+  toxicFilters: any
+  isToxicActive: boolean
+
   /**
    * @param {object} params - Controller dependencies.
    */
-  constructor(params) {
+  constructor(params: any) {
     super(params)
     this.colorMatrix = null
     this.stageContainer = null
@@ -90,7 +99,8 @@ class PixiStageController extends BaseStageController {
       this.app,
       rhythmContainer,
       this.gameStateRef,
-      (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
+      (x: any, y: any, color: any) =>
+        this.effectManager.spawnHitEffect(x, y, color)
     )
     const noteLoad = withTimeout(this.noteManager.loadAssets(), 'Note Assets')
 
@@ -114,7 +124,7 @@ class PixiStageController extends BaseStageController {
    * Manually runs a single update frame, useful for testing without a real ticker.
    * @param {number} deltaMS - Time delta in milliseconds.
    */
-  manualUpdate(deltaMS) {
+  manualUpdate(deltaMS: number) {
     if (!this.app || this.isDisposed) return
     this.handleTicker({ deltaMS })
   }
@@ -124,7 +134,7 @@ class PixiStageController extends BaseStageController {
    * Called by BaseStageController.handleTicker().
    * @param {number} deltaMS - Time delta.
    */
-  update(deltaMS) {
+  update(deltaMS: number) {
     if (!this._canUpdate()) {
       return
     }
@@ -173,7 +183,7 @@ class PixiStageController extends BaseStageController {
    * @param {number} elapsed - The elapsed gig time.
    * @private
    */
-  _updateToxicMode(state, elapsed) {
+  _updateToxicMode(state: any, elapsed: number) {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
@@ -230,5 +240,5 @@ class PixiStageController extends BaseStageController {
  * @param {object} params - Controller dependencies.
  * @returns {PixiStageController} Controller instance.
  */
-export const createPixiStageController = params =>
+export const createPixiStageController = (params: any) =>
   new PixiStageController(params)

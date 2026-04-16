@@ -4,9 +4,9 @@
  * @module gameReducer
  */
 
-import { ActionTypes } from './actionTypes.js'
+import { ActionTypes } from './actionTypes'
 import { handleChangeScene } from './reducers/sceneReducer.js'
-import { handleUpdatePlayer } from './reducers/playerReducer.js'
+import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer.js'
 import {
   handleUpdateSocial,

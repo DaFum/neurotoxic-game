@@ -113,7 +113,7 @@ const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
 }
 
-mock.module('../../src/utils/audioEngine.js', {
+mock.module('../../src/utils/audioEngine.ts', {
   namedExports: mockAudioEngine
 })
 
@@ -157,7 +157,7 @@ describe('PixiStageController', () => {
 
     // Re-import to apply mocks
     const controllerModule =
-      await import('../../src/components/PixiStageController.js')
+      await import('../../src/components/PixiStageController.ts')
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: mock.fn() } }

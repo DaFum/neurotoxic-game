@@ -8,7 +8,7 @@ import { selectRandomItem } from './selectionUtils.js'
 import { secureRandom } from '../crypto.js'
 import { ensureAudioContext } from './context.js'
 import { playMidiFileInternal } from './midiPlayback.js'
-import { SONGS_DB, SONGS_BY_MID } from '../../data/songs.js'
+import { SONGS_DB, SONGS_BY_MID } from '../../data/songs'
 
 const customSongsMapCache = new WeakMap()
 

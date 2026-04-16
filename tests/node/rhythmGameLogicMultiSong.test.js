@@ -59,7 +59,7 @@ mock.module('../../src/context/GameState.jsx', {
 mock.module('../../src/utils/AudioManager.js', {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/audioEngine.js', {
+mock.module('../../src/utils/audioEngine.ts', {
   namedExports: mockAudioEngine
 })
 mock.module('../../src/utils/rhythmUtils.js', {
@@ -126,7 +126,7 @@ mock.module('../../src/utils/logger.js', {
     }
   }
 })
-mock.module('../../src/data/songs.js', {
+mock.module('../../src/data/songs.ts', {
   namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
 })
 // Stable i18n object prevents initializeGigState from being recreated on each render.

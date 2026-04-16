@@ -2,7 +2,7 @@ import { describe, it, vi, expect } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useRhythmGameLoop } from '../../../src/hooks/rhythmGame/useRhythmGameLoop.js'
 
-vi.mock('../../../src/utils/audioEngine.js', () => ({
+vi.mock('../../../src/utils/audioEngine.ts', () => ({
   getGigTimeMs: () => 1000,
   getTransportState: () => 'started',
   pauseAudio: vi.fn(),

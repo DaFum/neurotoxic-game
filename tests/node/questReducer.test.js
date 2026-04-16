@@ -6,7 +6,7 @@ import {
   handleAdvanceQuest,
   handleFailQuests
 } from '../../src/context/reducers/questReducer.js'
-import { ActionTypes } from '../../src/context/actionTypes.js'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer.js'
 
 test('questReducer - handleAddQuest', async t => {

@@ -133,7 +133,7 @@ mock.module('../../src/components/stage/NoteManager.js', {
 const { getOptimalResolution } =
   await import('../../src/components/stage/utils.js')
 const { createPixiStageController } =
-  await import('../../src/components/PixiStageController.js')
+  await import('../../src/components/PixiStageController.ts')
 const { createTourbusStageController } =
   await import('../../src/components/stage/TourbusStageController.js')
 const { createRoadieStageController } =

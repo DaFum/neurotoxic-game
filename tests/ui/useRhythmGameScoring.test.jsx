@@ -35,7 +35,7 @@ const mockRhythmUtils = {
 vi.mock('../../src/utils/AudioManager.js', () => ({
   audioManager: mockAudioEngine
 }))
-vi.mock('../../src/utils/audioEngine.js', () => mockAudioEngine)
+vi.mock('../../src/utils/audioEngine.ts', () => mockAudioEngine)
 vi.mock('../../src/utils/audio/timingUtils.js', () => mockAudioEngine)
 
 vi.mock('../../src/utils/gigStats.js', () => mockGigStats)

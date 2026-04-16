@@ -27,7 +27,7 @@ const mockRhythmUtils = {
 }
 
 // Apply mocks
-mock.module('../../src/utils/audioEngine.js', { namedExports: mockAudioEngine })
+mock.module('../../src/utils/audioEngine.ts', { namedExports: mockAudioEngine })
 mock.module('../../src/utils/AudioManager.js', {
   namedExports: { audioManager: mockAudioManager }
 })

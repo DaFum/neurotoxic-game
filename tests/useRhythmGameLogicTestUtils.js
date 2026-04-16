@@ -118,7 +118,7 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/utils/AudioManager.js', {
     namedExports: { audioManager: mockAudioManager }
   })
-  mock.module('../src/utils/audioEngine.js', {
+  mock.module('../src/utils/audioEngine.ts', {
     namedExports: mockAudioEngine
   })
   mock.module('../src/utils/audio/timingUtils.js', {
@@ -135,12 +135,20 @@ export const mockRhythmGameLogicModules = () => {
   })
   class MockGameError extends Error {}
   mock.module('../src/utils/errorHandler.js', {
-    namedExports: { ...mockErrorHandler, GameError: MockGameError, StateError: class MockStateError extends MockGameError {}, AudioError: class MockAudioError extends MockGameError {} }
+    namedExports: {
+      ...mockErrorHandler,
+      GameError: MockGameError,
+      StateError: class MockStateError extends MockGameError {},
+      AudioError: class MockAudioError extends MockGameError {}
+    }
   })
   mock.module('../src/utils/logger.js', {
-    namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 } }
+    namedExports: {
+      logger: mockLogger,
+      LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
+    }
   })
-  mock.module('../src/data/songs.js', {
+  mock.module('../src/data/songs.ts', {
     namedExports: {
       SONGS_BY_ID: new Map(mockSongs.map(s => [s.id, s])),
       SONGS_DB: mockSongs

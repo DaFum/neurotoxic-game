@@ -2,7 +2,7 @@ import { describe, expect, test, vi, afterEach } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import { PixiStage } from '../../src/components/PixiStage'
 
-vi.mock('../../src/utils/audioEngine.js', () => ({
+vi.mock('../../src/utils/audioEngine.ts', () => ({
   getGigTimeMs: vi.fn(() => 0),
   pauseAudio: vi.fn(),
   resumeAudio: vi.fn(),

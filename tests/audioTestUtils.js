@@ -1,4 +1,4 @@
-export async function importAudioEngine(path = '../src/utils/audioEngine.js') {
+export async function importAudioEngine(path = '../src/utils/audioEngine.ts') {
   let audioEngine = null
   let audioEngineImportError = null
 

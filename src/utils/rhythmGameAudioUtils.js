@@ -8,10 +8,10 @@ import {
   getAudioContextTimeSec,
   getToneStartTimeSec,
   getGigTimeMs
-} from './audioEngine.js'
+} from './audioEngine'
 import { handleError, AudioError } from './errorHandler.js'
 import { logger } from './logger.js'
-import { SONGS_DB, SONGS_BY_ID } from '../data/songs.js'
+import { SONGS_DB, SONGS_BY_ID } from '../data/songs'
 import { calculateGigPhysics, getGigModifiers } from './simulationUtils.js'
 import { generateNotesForSong, parseSongNotes } from './rhythmUtils.js'
 import { resolveSongPlaybackWindow } from './audio/songUtils.js'

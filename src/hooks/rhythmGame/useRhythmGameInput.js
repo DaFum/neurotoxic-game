@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { getTransportState, getGigTimeMs } from '../../utils/audioEngine.js'
+import { getTransportState, getGigTimeMs } from '../../utils/audioEngine'
 
 import {
   canProcessInput,

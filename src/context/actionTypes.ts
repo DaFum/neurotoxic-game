@@ -1,9 +1,7 @@
 // TODO: Review this file
 /**
- * Action Types Enum
+ * Action type constants.
  * Centralizes all action type strings to prevent typos.
- * @readonly
- * @enum {string}
  */
 export const ActionTypes = {
   CHANGE_SCENE: 'CHANGE_SCENE',
@@ -36,24 +34,20 @@ export const ActionTypes = {
   START_AMP_CALIBRATION: 'START_AMP_CALIBRATION',
   COMPLETE_AMP_CALIBRATION: 'COMPLETE_AMP_CALIBRATION',
   UNLOCK_TRAIT: 'UNLOCK_TRAIT',
-
   ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST',
   ADD_QUEST: 'ADD_QUEST',
   ADVANCE_QUEST: 'ADVANCE_QUEST',
   COMPLETE_QUEST: 'COMPLETE_QUEST',
   FAIL_QUESTS: 'FAIL_QUESTS',
   ADD_UNLOCK: 'ADD_UNLOCK',
-
   ADD_CONTRABAND: 'ADD_CONTRABAND',
   USE_CONTRABAND: 'USE_CONTRABAND',
-
   CLINIC_HEAL: 'CLINIC_HEAL',
   CLINIC_ENHANCE: 'CLINIC_ENHANCE',
-
   PIRATE_BROADCAST: 'PIRATE_BROADCAST',
   MERCH_PRESS: 'MERCH_PRESS',
-
   TRADE_VOID_ITEM: 'TRADE_VOID_ITEM',
-
   BLOOD_BANK_DONATE: 'BLOOD_BANK_DONATE'
-}
+} as const
+
+export type ActionType = (typeof ActionTypes)[keyof typeof ActionTypes]

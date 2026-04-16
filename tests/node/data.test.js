@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { CHARACTERS } from '../../src/data/characters.js'
-import { SONGS_DB } from '../../src/data/songs.js'
+import { SONGS_DB } from '../../src/data/songs.ts'
 
 // Chatter might be a simple export
 // import { CHATTER_DB } from '../../src/data/chatter.js';

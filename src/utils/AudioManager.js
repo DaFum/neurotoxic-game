@@ -1,5 +1,5 @@
 // TODO: Review this file
-import * as audioEngine from './audioEngine.js'
+import * as audioEngine from './audioEngine'
 import { secureRandom } from './crypto.js'
 import { handleError } from './errorHandler.js'
 import { logger } from './logger.js'

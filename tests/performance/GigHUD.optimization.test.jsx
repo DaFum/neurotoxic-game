@@ -88,7 +88,7 @@ vi.mock(
   makeReactMemoMock('ScoreDisplay', ScoreDisplaySpy)
 )
 vi.mock(
-  '../../src/components/hud/HealthBar.jsx',
+  '../../src/components/hud/HealthBar.tsx',
   makeReactMemoMock('HealthBar', HealthBarSpy)
 )
 vi.mock(

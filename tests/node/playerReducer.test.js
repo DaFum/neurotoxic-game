@@ -8,10 +8,10 @@ import assert from 'node:assert'
 import {
   playerReducer,
   handleUpdatePlayer
-} from '../../src/context/reducers/playerReducer.js'
-import { ActionTypes } from '../../src/context/actionTypes.js'
+} from '../../src/context/reducers/playerReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
 
-describe('playerReducer.js', () => {
+describe('playerReducer', () => {
   describe('playerReducer (Main Dispatch)', () => {
     it('should handle UPDATE_PLAYER action object correctly', () => {
       const initialState = {

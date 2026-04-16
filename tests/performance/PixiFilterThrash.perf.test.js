@@ -105,7 +105,7 @@ vi.mock('../../src/components/stage/NoteManager.js', () => ({
   }
 }))
 
-vi.mock('../../src/utils/audioEngine.js', () => mockAudioEngine)
+vi.mock('../../src/utils/audioEngine.ts', () => mockAudioEngine)
 
 describe('PixiStageController Filter Performance', () => {
   let controller
@@ -126,7 +126,7 @@ describe('PixiStageController Filter Performance', () => {
 
     // Re-import to apply mocks
     const controllerModule =
-      await import('../../src/components/PixiStageController.js')
+      await import('../../src/components/PixiStageController.ts')
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: vi.fn() } }

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { formatNumber, formatCurrency } from '../../src/utils/numberUtils.js'
+import { formatNumber, formatCurrency } from '../../src/utils/numberUtils.ts'
 
 test('formatNumber - formats numbers with default English locale', () => {
   assert.equal(formatNumber(1234567.89), '1,234,568')

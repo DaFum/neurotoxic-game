@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
 import { handleTradeVoidItem } from '../../src/context/reducers/tradeReducer.js'
-import { ActionTypes } from '../../src/context/actionTypes.js'
+import { ActionTypes } from '../../src/context/actionTypes'
 import { createTradeVoidItemAction } from '../../src/context/actionCreators.js'
 
 describe('Trade Reducer', () => {

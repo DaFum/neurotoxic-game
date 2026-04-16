@@ -187,7 +187,7 @@ mock.module('../../src/utils/audio/midiUtils.js', {
   }
 })
 
-mock.module('../../src/data/songs.js', {
+mock.module('../../src/data/songs.ts', {
   namedExports: {
     SONGS_BY_ID: new Map([].map(s => [s.id, s])),
     SONGS_DB: []
