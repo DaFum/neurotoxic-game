@@ -25,7 +25,7 @@ Generated baseline: 2026-04-16.
 
 Data source: `docs/repo-inventory.json`.
 
-- Total files indexed: **1035**
+- Total files indexed: **1035** (repo-wide count; not limited to the top-level snapshot bullets above).
 - Modules with explicit exports: **349**
 - Hook modules (`src/hooks/**`): **29**
 - Context/reducer modules (`src/context/**`): **17**
@@ -61,7 +61,8 @@ Data source: `docs/repo-inventory.json`.
 - Hook integration boundary: `src/hooks/rhythmGame/useRhythmGameAudio.js`.
 
 ### API/backend-near helpers
-- `lib/apiUtils.js`, `lib/redis.js`, and API route helpers under `api/`.
+- `lib/apiUtils.js`, `lib/redis.js`, and API route helpers under `api/` exist, but runtime gameplay remains frontend-first SPA.
+- Treat backend-near files as optional integrations/auxiliary tooling unless an active deployment path explicitly wires them in.
 
 ### Tests
 - Node runner domains: `tests/node/**` and additional node-managed dirs from `scripts/run-node-tests.mjs`.

@@ -23,19 +23,20 @@ Reduce overlap in travel completion behavior while preserving the existing two-h
 
 The repository keeps **two orchestration entry points** (Overworld click-travel and minigame completion), but now shares one event-trigger primitive:
 
-- `arrivalUtils.processTravelEvents(node, triggerEvent)` is the canonical travel-event trigger helper.
-- `useTravelLogic` and `useArrivalLogic` both rely on this helper instead of parallel inline trigger logic.
+- `arrivalUtils.processTravelEvents(node, triggerEvent)` is the canonical travel-event trigger helper for non-performance node arrivals.
+- `useArrivalLogic` relies on this helper directly.
+- `useTravelLogic` uses this helper for non-performance nodes and retains legacy transport/band travel event rolls for `GIG`/`FESTIVAL`/`FINALE` destinations.
 
 ## Why this is canonical
 
-- Same category ordering and fallback semantics in both arrival paths.
-- Reduces drift risk when travel event policy changes.
+- Same category ordering and fallback semantics for non-performance arrivals.
+- Preserves legacy gameplay behavior in the overworld path for performance-node travel events.
 - Keeps side-effects in hooks and node-type resolution in shared utils, preserving architecture boundaries.
 
 ## Deprecated/removed alt paths
 
-- Removed duplicated inline transport/band travel event triggering from `useTravelLogic`.
-- No runtime path deletion was performed beyond that consolidation.
+- Removed duplicated inline transport/band travel event triggering from `useTravelLogic` for non-performance destinations.
+- Legacy performance-node travel-event behavior is intentionally retained in `useTravelLogic`.
 
 ## Agent guidance
 

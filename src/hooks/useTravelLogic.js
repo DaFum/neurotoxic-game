@@ -272,8 +272,22 @@ export const useTravelLogic = ({
       setIsTraveling(false)
       setTravelTarget(null)
 
-      // Trigger travel events (shown as global modal overlay)
-      const travelEventActive = processTravelEvents(node, triggerEvent)
+      // Trigger travel events (shown as global modal overlay).
+      // Keep legacy behavior: overworld travel to performance nodes still rolls
+      // transport/band travel events before node arrival handling.
+      let travelEventActive
+      const isPerformanceNode =
+        node?.type === 'GIG' ||
+        node?.type === 'FESTIVAL' ||
+        node?.type === 'FINALE'
+      if (isPerformanceNode) {
+        travelEventActive = triggerEvent('transport', 'travel')
+        if (!travelEventActive) {
+          travelEventActive = triggerEvent('band', 'travel')
+        }
+      } else {
+        travelEventActive = processTravelEvents(node, triggerEvent)
+      }
 
       // Always handle node arrival regardless of events —
       // gigs must start even when a travel event pops up.
