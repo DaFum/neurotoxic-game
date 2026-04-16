@@ -52,6 +52,62 @@ describe('Trade Reducer', () => {
     assert.strictEqual(nextState.toasts.length, 1)
   })
 
+  it('should merge actual fame delta into structured success toast options', () => {
+    const initialState = {
+      player: { fame: 1200 },
+      band: { stash: {} },
+      toasts: []
+    }
+
+    const payload = {
+      contrabandId: 'c_phantom_strings',
+      fameCost: 300,
+      instanceId: 'structured-1',
+      successToast: {
+        messageKey: 'ui:toast.void_trade_success',
+        options: { itemName: 'items:contraband.c_phantom_strings.name' },
+        type: 'success'
+      }
+    }
+
+    const nextState = handleTradeVoidItem(initialState, payload)
+    assert.strictEqual(nextState.player.fame, 900)
+    assert.strictEqual(nextState.toasts.length, 1)
+    assert.strictEqual(
+      nextState.toasts[0].messageKey,
+      payload.successToast.messageKey
+    )
+    assert.strictEqual(
+      nextState.toasts[0].options.itemName,
+      payload.successToast.options.itemName
+    )
+    assert.strictEqual(nextState.toasts[0].options.fame, 300)
+  })
+
+  it('should preserve legacy pipe-message enrichment fallback', () => {
+    const initialState = {
+      player: { fame: 950 },
+      band: { stash: {} },
+      toasts: []
+    }
+
+    const payload = {
+      contrabandId: 'c_phantom_strings',
+      fameCost: 250,
+      instanceId: 'legacy-1',
+      successToast: {
+        message:
+          'ui:toast.void_trade_success|{"itemName":"items:contraband.c_phantom_strings.name"}',
+        type: 'success'
+      }
+    }
+
+    const nextState = handleTradeVoidItem(initialState, payload)
+    assert.strictEqual(nextState.player.fame, 700)
+    assert.strictEqual(nextState.toasts.length, 1)
+    assert.ok(nextState.toasts[0].message.includes('"fame":250'))
+  })
+
   it('action creator formats payload correctly', () => {
     const action = createTradeVoidItemAction({
       contrabandId: 'c_test',

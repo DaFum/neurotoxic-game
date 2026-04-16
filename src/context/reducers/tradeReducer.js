@@ -62,68 +62,82 @@ export const handleTradeVoidItem = (state, payload) => {
 
   if (successToast) {
     const actualDelta = currentFame - nextFame
-    let enrichedMessage = successToast.message
+    let enrichedToast
 
-    try {
-      if (
-        typeof enrichedMessage === 'string' &&
-        enrichedMessage.includes('|')
-      ) {
-        const firstPipeIdx = enrichedMessage.indexOf('|')
-        const key = enrichedMessage.slice(0, firstPipeIdx)
-        const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
-        const parsedContext = JSON.parse(jsonStr)
-        const isPlainObject =
-          parsedContext !== null &&
-          typeof parsedContext === 'object' &&
-          !Array.isArray(parsedContext) &&
-          (Object.getPrototypeOf(parsedContext) === Object.prototype ||
-            Object.getPrototypeOf(parsedContext) === null)
-
-        if (isPlainObject) {
-          const rawContext = parsedContext
-
-          const escapeMap = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-          }
-
-          const sanitizeContextValue = value => {
-            if (typeof value === 'string') {
-              return value.replace(/[&<>"']/g, match => escapeMap[match])
-            }
-            if (Array.isArray(value)) {
-              return value.map(item => sanitizeContextValue(item))
-            }
-            if (value !== null && typeof value === 'object') {
-              const out = Object.create(null)
-              for (const prop in value) {
-                if (!Object.hasOwn(value, prop)) continue
-                if (isForbiddenKey(prop)) continue
-                out[prop] = sanitizeContextValue(value[prop])
-              }
-              return out
-            }
-            return value
-          }
-
-          const finalSafeContext = sanitizeContextValue(rawContext)
-
-          finalSafeContext.fame = actualDelta
-          enrichedMessage = `${key}|${JSON.stringify(finalSafeContext)}`
+    if (
+      typeof successToast.messageKey === 'string' &&
+      successToast.messageKey.length > 0
+    ) {
+      enrichedToast = {
+        ...successToast,
+        options: {
+          ...successToast.options,
+          fame: actualDelta
         }
       }
-    } catch (err) {
-      logger.warn('GameState', 'Failed to enrich successToast message', err)
+    } else {
+      let enrichedMessage = successToast.message
+      try {
+        if (
+          typeof enrichedMessage === 'string' &&
+          enrichedMessage.includes('|')
+        ) {
+          const firstPipeIdx = enrichedMessage.indexOf('|')
+          const key = enrichedMessage.slice(0, firstPipeIdx)
+          const jsonStr = enrichedMessage.slice(firstPipeIdx + 1)
+          const parsedContext = JSON.parse(jsonStr)
+          const isPlainObject =
+            parsedContext !== null &&
+            typeof parsedContext === 'object' &&
+            !Array.isArray(parsedContext) &&
+            (Object.getPrototypeOf(parsedContext) === Object.prototype ||
+              Object.getPrototypeOf(parsedContext) === null)
+
+          if (isPlainObject) {
+            const rawContext = parsedContext
+
+            const escapeMap = {
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#39;'
+            }
+
+            const sanitizeContextValue = value => {
+              if (typeof value === 'string') {
+                return value.replace(/[&<>"']/g, match => escapeMap[match])
+              }
+              if (Array.isArray(value)) {
+                return value.map(item => sanitizeContextValue(item))
+              }
+              if (value !== null && typeof value === 'object') {
+                const out = Object.create(null)
+                for (const prop in value) {
+                  if (!Object.hasOwn(value, prop)) continue
+                  if (isForbiddenKey(prop)) continue
+                  out[prop] = sanitizeContextValue(value[prop])
+                }
+                return out
+              }
+              return value
+            }
+
+            const finalSafeContext = sanitizeContextValue(rawContext)
+            finalSafeContext.fame = actualDelta
+            enrichedMessage = `${key}|${JSON.stringify(finalSafeContext)}`
+          }
+        }
+      } catch (err) {
+        logger.warn('GameState', 'Failed to enrich successToast message', err)
+      }
+
+      enrichedToast = {
+        ...successToast,
+        message: enrichedMessage
+      }
     }
 
-    const enrichedToast = {
-      ...successToast,
-      message: enrichedMessage
-    }
     return {
       ...nextState,
       toasts: [...(nextState.toasts || []), enrichedToast]
