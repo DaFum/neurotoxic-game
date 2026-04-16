@@ -3,7 +3,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 
 export const ZealotryGauge = memo(({ zealotryLevel }) => {
   const { t } = useTranslation()

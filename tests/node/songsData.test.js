@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { transformSongsData } from '../../src/data/songs.ts'
+import { transformSongsData } from '../../src/data/songs'
 
 const mockRhythmSongs = {
   'Test Song 1': {

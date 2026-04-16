@@ -4,8 +4,8 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: Component assumed cabId was always valid, which could cause a runtime error if undefined. Solution: Return null if CABLE_MAP[cabId] is undefined.
  */
-import { CABLE_MAP } from '../constants.js'
-import { getMessyPath } from '../utils.js'
+import { CABLE_MAP } from '../constants'
+import { getMessyPath } from '../utils'
 import PropTypes from 'prop-types'
 
 export const ConnectionPath = ({

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { SideEffectsSummary } from './SideEffectsSummary'
 
 export const CompletePhase = ({

@@ -6,7 +6,7 @@ import { AudioSettings } from './AudioSettings'
 import { VisualSettings } from './VisualSettings'
 import { LogSettings } from './LogSettings'
 import { DataManagement } from './DataManagement'
-import { LOG_LEVELS } from '../../utils/logger.js'
+import { LOG_LEVELS } from '../../utils/logger'
 
 export const SettingsPanel = memo(function SettingsPanel({
   settings,

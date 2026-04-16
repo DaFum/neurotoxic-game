@@ -20,7 +20,7 @@ const mockSetMusic = vi.fn()
 const mockSetSfx = vi.fn()
 const mockToggleMute = vi.fn()
 
-vi.mock('../../src/hooks/useAudioControl.js', () => ({
+vi.mock('../../src/hooks/useAudioControl', () => ({
   useAudioControl: () => ({
     audioState: { musicVol: 0.5, sfxVol: 0.5, isMuted: false },
     handleAudioChange: {

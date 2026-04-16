@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { MapGenerator } from '../../src/utils/mapGenerator.js'
+import { MapGenerator } from '../../src/utils/mapGenerator'
 
 test('MapGenerator generates a map with correct structure', () => {
   const generator = new MapGenerator()
@@ -107,12 +107,12 @@ test('MapGenerator handles empty venues array by throwing StateError', async () 
   // It's tricky to mock ES modules dynamically in node:test after they've been loaded,
   // since MapGenerator was already imported at the top of the file without mocking.
   // Instead, we will clear the array directly for this test and restore it after.
-  const { ALL_VENUES } = await import('../../src/data/venues.js')
+  const { ALL_VENUES } = await import('../../src/data/venues')
   const originalVenues = [...ALL_VENUES]
   ALL_VENUES.length = 0 // clear array
 
   try {
-    const { StateError } = await import('../../src/utils/errorHandler.js')
+    const { StateError } = await import('../../src/utils/errorHandler')
     const generator = new MapGenerator()
     assert.throws(
       () => {

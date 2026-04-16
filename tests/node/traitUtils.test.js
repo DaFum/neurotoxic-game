@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { applyTraitUnlocks } from '../../src/utils/traitUtils.js'
+import { applyTraitUnlocks } from '../../src/utils/traitUtils'
 
 describe('Trait Utils', () => {
   test('applyTraitUnlocks finds member by ID', () => {

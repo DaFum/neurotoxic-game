@@ -1,16 +1,17 @@
+// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted withTimeout utility to utils.js.
  * (#2) Next Steps: Continue monitoring class size.
  * (#3) Found Errors + Solutions: None.
  */
 import { ColorMatrixFilter } from 'pixi.js'
-import { BaseStageController } from './stage/BaseStageController.js'
-import { CrowdManager } from './stage/CrowdManager.js'
-import { LaneManager } from './stage/LaneManager.js'
-import { EffectManager } from './stage/EffectManager.js'
-import { NoteManager } from './stage/NoteManager.js'
+import { BaseStageController } from './stage/BaseStageController'
+import { CrowdManager } from './stage/CrowdManager'
+import { LaneManager } from './stage/LaneManager'
+import { EffectManager } from './stage/EffectManager'
+import { NoteManager } from './stage/NoteManager'
 import { getGigTimeMs } from '../utils/audioEngine'
-import { withTimeout } from './stage/utils.js'
+import { withTimeout } from './stage/utils'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.

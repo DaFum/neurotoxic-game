@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { selectRandomItem } from '../../src/utils/audio/selectionUtils.js'
+import { selectRandomItem } from '../../src/utils/audio/selectionUtils'
 
 test('selectRandomItem', async t => {
   await t.test('returns null for invalid or empty inputs', () => {

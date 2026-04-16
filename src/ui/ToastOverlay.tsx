@@ -3,8 +3,8 @@
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { logger } from '../utils/logger.js'
-import { translateContextKeys } from '../utils/translationUtils.js'
+import { logger } from '../utils/logger'
+import { translateContextKeys } from '../utils/translationUtils'
 import { useEffect, memo } from 'react'
 
 const renderToastMessage = (toast, t) => {

@@ -1,7 +1,7 @@
 import { test, describe, before, after, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock context to prevent errors during render
 const mockUseGameState = mock.fn(() => ({
@@ -24,7 +24,7 @@ mock.module('../../src/context/GameState.tsx', {
   }
 })
 
-mock.module('../../src/hooks/useAudioControl.js', {
+mock.module('../../src/hooks/useAudioControl', {
   namedExports: {
     useAudioControl: mock.fn(() => ({
       audioState: {},
@@ -33,7 +33,7 @@ mock.module('../../src/hooks/useAudioControl.js', {
   }
 })
 
-const { useBandHQModal } = await import('../../src/hooks/useBandHQModal.js')
+const { useBandHQModal } = await import('../../src/hooks/useBandHQModal')
 
 describe('useBandHQModal', () => {
   before(() => {

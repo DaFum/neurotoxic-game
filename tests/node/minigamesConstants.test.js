@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import * as constants from '../../src/hooks/minigames/constants.js'
+import * as constants from '../../src/hooks/minigames/constants'
 
 test('minigames/constants - exports expected values', () => {
   assert.equal(constants.ROADIE_GRID_WIDTH, 12)

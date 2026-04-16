@@ -4,7 +4,7 @@ import {
   isClosedAudioContextState,
   getPreferredAudioContextState,
   canResumeAudioContextState
-} from '../../src/utils/audioContextState.js'
+} from '../../src/utils/audioContextState'
 
 describe('getPreferredAudioContextState', () => {
   it('returns rawContextState when available', () => {

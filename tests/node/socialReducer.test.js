@@ -5,8 +5,8 @@ import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
   handlePirateBroadcast
-} from '../../src/context/reducers/socialReducer.js'
-import { ALLOWED_TRENDS } from '../../src/data/socialTrends.js'
+} from '../../src/context/reducers/socialReducer'
+import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
 
 describe('socialReducer', () => {
   let baseState

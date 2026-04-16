@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { createRoadieStageController } from '../../src/components/stage/RoadieStageController'
 
 // Mock utils
-vi.mock('../../src/components/stage/utils.js', async importOriginal => {
+vi.mock('../../src/components/stage/utils', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,

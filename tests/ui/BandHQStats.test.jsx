@@ -23,7 +23,7 @@ vi.mock('../../src/ui/shared/index.tsx', () => ({
   ActionButton: () => <button type='button' />
 }))
 
-vi.mock('../../src/data/characters.js', () => ({
+vi.mock('../../src/data/characters', () => ({
   CHARACTERS: {
     AXEL: { name: 'Axel', traits: [] },
     FREDDIE: { name: 'Freddie', traits: [] }

@@ -1,8 +1,8 @@
 // @ts-nocheck
 // TODO: Review this file
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
-import { getSafeUUID } from '../../utils/crypto.js'
-import { secureRandom } from '../../utils/crypto.js'
+import { getSafeUUID } from '../../utils/crypto'
+import { secureRandom } from '../../utils/crypto'
 
 export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
   const [isHovered, setIsHovered] = useState(false)

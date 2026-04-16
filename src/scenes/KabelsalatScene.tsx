@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useKabelsalatState } from './kabelsalat/useKabelsalatState.js'
+import { useKabelsalatState } from './kabelsalat/useKabelsalatState'
 import { Header } from './kabelsalat/components/Header.tsx'
 import { Rules } from './kabelsalat/components/Rules.tsx'
 import { Overlays } from './kabelsalat/components/Overlays.tsx'

@@ -2,7 +2,7 @@ import assert from 'node:assert'
 import { test } from 'node:test'
 
 test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
-  const { getGenImageUrl } = await import('../../src/utils/imageGen.js')
+  const { getGenImageUrl } = await import('../../src/utils/imageGen')
 
   const prompt = 'dark void aesthetic'
   const urlString = getGenImageUrl(prompt)
@@ -35,7 +35,7 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
 })
 
 test('IMG_PROMPTS contains expected keys and string values', async () => {
-  const { IMG_PROMPTS } = await import('../../src/utils/imageGen.js')
+  const { IMG_PROMPTS } = await import('../../src/utils/imageGen')
 
   const expectedKeys = [
     'MAIN_MENU_BG',
@@ -56,7 +56,7 @@ test('IMG_PROMPTS contains expected keys and string values', async () => {
 
 test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
   const { fetchGenImage, fetchGenImageAsObjectUrl, clearImageCache } =
-    await import('../../src/utils/imageGen.js')
+    await import('../../src/utils/imageGen')
 
   const originalFetch = globalThis.fetch
   const originalCreateObjectURL = globalThis.URL?.createObjectURL

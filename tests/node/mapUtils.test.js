@@ -6,7 +6,7 @@ const mockCalculateTravelExpenses = mock.fn()
 const mockCalculateRefuelCost = mock.fn()
 
 // Mock module before import
-mock.module('../../src/utils/economyEngine.js', {
+mock.module('../../src/utils/economyEngine', {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost
@@ -15,7 +15,7 @@ mock.module('../../src/utils/economyEngine.js', {
 
 // Import module under test
 const { isConnected, getNodeVisibility, checkSoftlock, normalizeVenueId } =
-  await import('../../src/utils/mapUtils.js')
+  await import('../../src/utils/mapUtils')
 
 describe('mapUtils', () => {
   describe('isConnected', () => {

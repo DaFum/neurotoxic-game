@@ -4,7 +4,7 @@ import { test, describe, mock } from 'node:test'
 import {
   canProcessInput,
   processLaneInput
-} from '../../src/utils/rhythmGameInputUtils.js'
+} from '../../src/utils/rhythmGameInputUtils'
 
 describe('useRhythmGameInput Utils', () => {
   describe('canProcessInput', () => {

@@ -16,7 +16,7 @@ vi.mock('../../src/context/GameState', () => ({
   })
 }))
 const openHQMock = vi.fn()
-vi.mock('../../src/hooks/useBandHQModal.js', () => ({
+vi.mock('../../src/hooks/useBandHQModal', () => ({
   useBandHQModal: () => ({
     showHQ: false,
     openHQ: openHQMock,

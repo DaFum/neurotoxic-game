@@ -18,7 +18,7 @@ import { GigHUD } from '../components/GigHUD'
 const PixiStage = lazy(() =>
   import('../components/PixiStage').then(m => ({ default: m.PixiStage }))
 )
-import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen.js'
+import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'

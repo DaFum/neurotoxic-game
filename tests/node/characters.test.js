@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { CHARACTERS } from '../../src/data/characters.js'
+import { CHARACTERS } from '../../src/data/characters'
 
 describe('characters.js', () => {
   describe('CHARACTERS data structure', () => {

@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 
 import { useEffect, useRef } from 'react'
 

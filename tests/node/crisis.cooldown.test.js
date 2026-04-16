@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { CRISIS_EVENTS } from '../../src/data/events/crisis.js'
+import { CRISIS_EVENTS } from '../../src/data/events/crisis'
 
 test('crisis_police_raid_zealotry includes a cooldown effect', () => {
   const event = CRISIS_EVENTS.find(e => e.id === 'crisis_police_raid_zealotry')

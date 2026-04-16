@@ -1,12 +1,12 @@
 import { test, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   setupTravelLogicTest,
   createTravelLogicProps,
   mockTravelLogicDependencies
-} from '../useTravelLogicTestUtils.js'
+} from '../useTravelLogicTestUtils'
 
 const { mockCalculateTravelExpenses } = mockTravelLogicDependencies
 

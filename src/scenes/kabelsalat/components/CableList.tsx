@@ -4,7 +4,7 @@
  * (#2) Next Steps: N/A
  * (#3) Found Errors + Solutions: N/A
  */
-import { CABLES } from '../constants.js'
+import { CABLES } from '../constants'
 import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.tsx'
 

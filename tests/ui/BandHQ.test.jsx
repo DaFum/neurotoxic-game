@@ -45,7 +45,7 @@ vi.mock('../../src/context/GameState.tsx', () => ({
   })
 }))
 
-vi.mock('../../src/hooks/useAudioControl.js', () => ({
+vi.mock('../../src/hooks/useAudioControl', () => ({
   useAudioControl: () => ({
     audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
     handleAudioChange: {
@@ -57,20 +57,20 @@ vi.mock('../../src/hooks/useAudioControl.js', () => ({
 }))
 
 // Mock dependencies
-vi.mock('../../src/data/hqItems.js', () => ({
+vi.mock('../../src/data/hqItems', () => ({
   HQ_ITEMS: { gear: [], instruments: [] }
 }))
-vi.mock('../../src/data/upgradeCatalog.js', () => ({
+vi.mock('../../src/data/upgradeCatalog', () => ({
   getUnifiedUpgradeCatalog: () => []
 }))
-vi.mock('../../src/data/songs.ts', () => ({
+vi.mock('../../src/data/songs', () => ({
   SONGS_DB: []
 }))
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
 }))
-vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic.js', () => ({
+vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
   usePurchaseLogic: () => ({
     handleBuy: () => {},
     isItemOwned: () => false,

@@ -4,7 +4,7 @@ import {
   GameStateProvider,
   useGameState
 } from '../../src/context/GameState.tsx'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // Mock dependencies
 vi.mock('../../src/utils/logger', () => ({

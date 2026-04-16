@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { motion } from 'framer-motion'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import { usePostGigLogic } from '../hooks/usePostGigLogic.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { usePostGigLogic } from '../hooks/usePostGigLogic'
 
 import { lazy, Suspense } from 'react'
 const ReportPhase = lazy(() =>

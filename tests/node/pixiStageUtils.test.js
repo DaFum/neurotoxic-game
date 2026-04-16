@@ -5,7 +5,7 @@ import {
   calculateNoteY,
   RHYTHM_LAYOUT,
   getPixiColorFromToken
-} from '../../src/components/stage/utils.js'
+} from '../../src/components/stage/utils'
 
 test('calculateNoteY returns target position at hit time', () => {
   const result = calculateNoteY(5000, 5000, 420, 500)

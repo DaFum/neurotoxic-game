@@ -1,13 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 import {
   calculateGigFinancials,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economyEngine.js'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
-import { applyEventDelta } from '../../src/utils/gameStateUtils.js'
+} from '../../src/utils/economyEngine'
+import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { applyEventDelta } from '../../src/utils/gameStateUtils'
 
 /**
  * Test helpers

@@ -72,7 +72,7 @@ const mockNoteManager = {
   dispose: mock.fn()
 }
 
-mock.module('../../src/components/stage/CrowdManager.js', {
+mock.module('../../src/components/stage/CrowdManager', {
   namedExports: {
     CrowdManager: class {
       constructor() {
@@ -81,7 +81,7 @@ mock.module('../../src/components/stage/CrowdManager.js', {
     }
   }
 })
-mock.module('../../src/components/stage/LaneManager.js', {
+mock.module('../../src/components/stage/LaneManager', {
   namedExports: {
     LaneManager: class {
       constructor() {
@@ -90,7 +90,7 @@ mock.module('../../src/components/stage/LaneManager.js', {
     }
   }
 })
-mock.module('../../src/components/stage/EffectManager.js', {
+mock.module('../../src/components/stage/EffectManager', {
   namedExports: {
     EffectManager: class {
       constructor() {
@@ -99,7 +99,7 @@ mock.module('../../src/components/stage/EffectManager.js', {
     }
   }
 })
-mock.module('../../src/components/stage/NoteManager.js', {
+mock.module('../../src/components/stage/NoteManager', {
   namedExports: {
     NoteManager: class {
       constructor() {
@@ -113,7 +113,7 @@ const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
 }
 
-mock.module('../../src/utils/audioEngine.ts', {
+mock.module('../../src/utils/audioEngine', {
   namedExports: mockAudioEngine
 })
 
@@ -157,7 +157,7 @@ describe('PixiStageController', () => {
 
     // Re-import to apply mocks
     const controllerModule =
-      await import('../../src/components/PixiStageController.ts')
+      await import('../../src/components/PixiStageController')
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: mock.fn() } }

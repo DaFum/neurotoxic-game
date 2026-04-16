@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import {
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economyEngine.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
+} from '../../src/utils/economyEngine'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
 test('Game Loop Logic Simulation', async t => {
   // Initial State

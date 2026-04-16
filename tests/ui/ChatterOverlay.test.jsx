@@ -7,8 +7,8 @@ const getRandomChatterMock = vi.hoisted(() =>
   vi.fn(() => ({ text: 'Test chatter', speaker: 'Test Speaker' }))
 )
 
-vi.mock('../../src/data/chatter.js', async () => {
-  const { GAME_PHASES } = await import('../../src/context/gameConstants.js')
+vi.mock('../../src/data/chatter', async () => {
+  const { GAME_PHASES } = await import('../../src/context/gameConstants')
   return {
     getRandomChatter: getRandomChatterMock,
     CHATTER_DB: [],

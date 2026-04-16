@@ -9,8 +9,8 @@ import {
   buildRhythmLayout,
   loadTexture,
   getOptimalResolution
-} from '../../src/components/stage/utils.js'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+} from '../../src/components/stage/utils'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 test('stage utils', async t => {
   await t.test('calculateNoteY', () => {

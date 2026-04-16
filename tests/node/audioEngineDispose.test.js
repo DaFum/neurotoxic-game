@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import { logger } from '../../src/utils/logger.js'
-import { MockPolySynth, createMockTone } from '../mockUtils.js'
+import { logger } from '../../src/utils/logger'
+import { MockPolySynth, createMockTone } from '../mockUtils'
 
 // Save original dispose to restore later
 const originalDispose = MockPolySynth.prototype.dispose
@@ -19,8 +19,7 @@ const mockTone = createMockTone()
 mock.module('tone', { namedExports: mockTone })
 
 // Import SUT
-const { setupAudio, disposeAudio } =
-  await import('../../src/utils/audioEngine.ts')
+const { setupAudio, disposeAudio } = await import('../../src/utils/audioEngine')
 
 test('disposeAudio logs error when dispose fails', async t => {
   // Spy on logger.debug

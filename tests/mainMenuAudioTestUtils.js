@@ -24,7 +24,7 @@ export const createMockGameState = ({ canLoad } = {}) => ({
 
 export const setupMainMenuAudioTest = async () => {
   // NOTE: mock.module requires the --experimental-test-module-mocks flag
-  mock.module('../src/utils/AudioManager.js', {
+  mock.module('../src/utils/AudioManager', {
     namedExports: { audioManager: mockAudioManager }
   })
 
@@ -33,7 +33,7 @@ export const setupMainMenuAudioTest = async () => {
     handleAudioChange: () => {}
   })
 
-  mock.module('../src/hooks/useAudioControl.js', {
+  mock.module('../src/hooks/useAudioControl', {
     namedExports: {
       useAudioControl: mockUseAudioControl
     }

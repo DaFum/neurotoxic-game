@@ -25,12 +25,12 @@ test('AudioManager Tests', async t => {
     disposeAudio: mock.fn()
   }
 
-  mock.module('../../src/utils/audioEngine.ts', {
+  mock.module('../../src/utils/audioEngine', {
     namedExports: mockAudioEngine
   })
 
   // Import the module under test
-  const { audioManager } = await import('../../src/utils/AudioManager.js')
+  const { audioManager } = await import('../../src/utils/AudioManager')
 
   await t.test('initializes with default values', () => {
     // Init runs on import

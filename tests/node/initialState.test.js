@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {
   initialState,
   createInitialState
-} from '../../src/context/initialState.js'
+} from '../../src/context/initialState'
 
 test('initialState exposes empty unlocks default', () => {
   assert.deepEqual(initialState.unlocks, [])

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import { Gig } from '../../src/scenes/Gig.tsx'
 import { useRhythmGameLogic } from '../../src/hooks/useRhythmGameLogic'
 import { useGameState } from '../../src/context/GameState.tsx'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { audioManager } from '../../src/utils/AudioManager'
 import { pauseAudio, resumeAudio, stopAudio } from '../../src/utils/audioEngine'
 

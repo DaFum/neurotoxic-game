@@ -5,9 +5,9 @@ import {
   handleCompleteQuest,
   handleAdvanceQuest,
   handleFailQuests
-} from '../../src/context/reducers/questReducer.js'
+} from '../../src/context/reducers/questReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
-import { gameReducer } from '../../src/context/gameReducer.js'
+import { gameReducer } from '../../src/context/gameReducer'
 
 test('questReducer - handleAddQuest', async t => {
   await t.test('adds a new quest when none exists', () => {

@@ -15,7 +15,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
+import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
 const getAlignmentImagePrompt = alignment => {
   switch (alignment) {

@@ -7,7 +7,7 @@ import {
   flattenToObject,
   resolveNamespaceKey,
   readLocaleJson
-} from '../utils/localeTestUtils.js'
+} from '../utils/localeTestUtils'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { hasTrait, bandHasTrait } from '../../src/utils/traitLogic.js'
+import { hasTrait, bandHasTrait } from '../../src/utils/traitLogic'
 
 describe('Trait Logic', () => {
   describe('hasTrait', () => {

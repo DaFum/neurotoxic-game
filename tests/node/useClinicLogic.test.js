@@ -9,8 +9,8 @@ import {
 } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
-import { GAME_PHASES, CLINIC_CONFIG } from '../../src/context/gameConstants.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
+import { GAME_PHASES, CLINIC_CONFIG } from '../../src/context/gameConstants'
 
 // Mock context to prevent errors during render
 const mockChangeScene = mock.fn()
@@ -55,7 +55,7 @@ mock.module('react-i18next', {
   }
 })
 
-const { useClinicLogic } = await import('../../src/hooks/useClinicLogic.js')
+const { useClinicLogic } = await import('../../src/hooks/useClinicLogic')
 
 describe('useClinicLogic', () => {
   before(() => {

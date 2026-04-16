@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { SOCIAL_PLATFORMS } from '../../src/data/platforms.js'
+import { SOCIAL_PLATFORMS } from '../../src/data/platforms'
 
 test('SOCIAL_PLATFORMS data integrity', () => {
   assert.ok(SOCIAL_PLATFORMS, 'SOCIAL_PLATFORMS should be defined')

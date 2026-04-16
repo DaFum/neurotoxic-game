@@ -12,7 +12,7 @@ import {
   applyUnlockUpgrade,
   applyUnlockHQ,
   applyPassive
-} from '../../src/utils/purchaseLogicUtils.js'
+} from '../../src/utils/purchaseLogicUtils'
 
 describe('purchaseLogicUtils', () => {
   describe('getPrimaryEffect', () => {

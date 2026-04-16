@@ -57,7 +57,7 @@ vi.mock('../src/context/GameState.tsx', () => ({
 }))
 
 // Mock utils
-vi.mock('../src/utils/gameStateUtils.js', () => ({
+vi.mock('../src/utils/gameStateUtils', () => ({
   clampBandHarmony: val => {
     if (!Number.isFinite(val)) return 1
     return Math.max(1, Math.min(100, Math.floor(val)))
@@ -97,7 +97,7 @@ vi.mock('../src/utils/gameStateUtils.js', () => ({
 }))
 
 export const setupArrivalLogicTest = async () => {
-  const { useArrivalLogic } = await import('../src/hooks/useArrivalLogic.js')
+  const { useArrivalLogic } = await import('../src/hooks/useArrivalLogic')
   return { useArrivalLogic, mockGameState }
 }
 

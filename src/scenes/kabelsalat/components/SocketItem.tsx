@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { PlugGraphics } from './PlugGraphics.tsx'
 import { SocketGraphics } from './SocketGraphics.tsx'
-import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants.js'
+import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants'
 
 export const SocketItem = React.memo(
   ({

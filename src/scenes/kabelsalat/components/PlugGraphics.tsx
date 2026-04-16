@@ -5,7 +5,7 @@
  * (#3) Found Errors + Solutions: N/A
  */
 import PropTypes from 'prop-types'
-import { CONNECTOR_TYPES } from '../constants.js'
+import { CONNECTOR_TYPES } from '../constants'
 import { XlrPlug } from './plugs/XlrPlug.tsx'
 import { JackPlug } from './plugs/JackPlug.tsx'
 import { DcPlug } from './plugs/DcPlug.tsx'

@@ -119,7 +119,7 @@ vi.mock('../../src/components/PixiStage', () => ({
   PixiStage: () => <div data-testid='pixi-stage-mock'>Pixi Stage</div>
 }))
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
 }))

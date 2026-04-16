@@ -4,7 +4,7 @@ import {
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
   calculateKabelsalatMinigameResult
-} from '../../src/utils/economyEngine.js'
+} from '../../src/utils/economyEngine'
 
 test('Minigame Economy Calculations', async t => {
   await t.test('Travel Minigame Results', () => {

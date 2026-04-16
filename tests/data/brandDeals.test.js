@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { BRAND_DEALS } from '../../src/data/brandDeals.js'
+import { BRAND_DEALS } from '../../src/data/brandDeals'
 
 describe('BRAND_DEALS data module', () => {
   it('should be an array of brand deals', () => {

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { RELATIONSHIP_EVENTS } from '../../src/data/events/relationshipEvents.js'
+import { RELATIONSHIP_EVENTS } from '../../src/data/events/relationshipEvents'
 
 describe('Relationship Events Data', () => {
   it('should export an array of relationship events', () => {

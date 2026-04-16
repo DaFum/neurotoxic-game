@@ -3,10 +3,10 @@ import { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog.js'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
-import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic.js'
-import { useBandHQLogic } from './bandhq/hooks/useBandHQLogic.js'
+import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
+import { useBandHQLogic } from './bandhq/hooks/useBandHQLogic'
 
 import { StatsTab } from './bandhq/StatsTab.tsx'
 import { DetailedStatsTab } from './bandhq/DetailedStatsTab.tsx'
@@ -18,7 +18,7 @@ import { LeaderboardTab } from './bandhq/LeaderboardTab.tsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.tsx'
 
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
-import { useAudioControl } from '../hooks/useAudioControl.js'
+import { useAudioControl } from '../hooks/useAudioControl'
 
 /**
  * BandHQ Component

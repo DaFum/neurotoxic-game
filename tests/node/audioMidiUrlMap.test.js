@@ -1,13 +1,13 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import { buildAssetUrlMap } from '../../src/utils/audio/playbackUtils.js'
+import { buildAssetUrlMap } from '../../src/utils/audio/playbackUtils'
 
 // --- Mocks ---
 
 const mockLogger = {
   warn: mock.fn()
 }
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: { logger: mockLogger }
 })
 
@@ -23,7 +23,7 @@ const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
   return {}
 })
 
-mock.module('../../src/utils/audio/playbackUtils.js', {
+mock.module('../../src/utils/audio/playbackUtils', {
   namedExports: {
     buildAssetUrlMap: mockBuildAssetUrlMap,
     resolveAssetUrl: mock.fn(),
@@ -33,13 +33,13 @@ mock.module('../../src/utils/audio/playbackUtils.js', {
 })
 
 // Mock other dependencies to avoid side effects
-mock.module('../../src/utils/audio/context.js', {
+mock.module('../../src/utils/audio/context', {
   namedExports: { getRawAudioContext: () => ({}) }
 })
-mock.module('../../src/utils/audio/state.js', {
+mock.module('../../src/utils/audio/state', {
   namedExports: { audioState: { audioBufferCache: new Map() } }
 })
-mock.module('../../src/utils/audio/constants.js', {
+mock.module('../../src/utils/audio/constants', {
   namedExports: {
     AUDIO_BUFFER_LOAD_TIMEOUT_MS: 1000,
     AUDIO_BUFFER_DECODE_TIMEOUT_MS: 1000,
@@ -49,7 +49,7 @@ mock.module('../../src/utils/audio/constants.js', {
 })
 
 // Import the module under test AFTER mocking
-const { midiUrlMap } = await import('../../src/utils/audio/assets.js')
+const { midiUrlMap } = await import('../../src/utils/audio/assets')
 
 test('midiUrlMap in assets.js', async t => {
   await t.test('midiUrlMap is exported and populated', () => {

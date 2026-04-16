@@ -4,7 +4,7 @@ import {
   createKeyToLaneMap,
   handleKeyDownLogic,
   handleKeyUpLogic
-} from '../../src/utils/gigInputUtils.js'
+} from '../../src/utils/gigInputUtils'
 
 describe('gigInputUtils', () => {
   describe('createKeyToLaneMap', () => {

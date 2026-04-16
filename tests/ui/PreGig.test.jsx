@@ -36,7 +36,7 @@ vi.mock('../../src/ui/GigModifierButton', () => ({
 }))
 
 // Mock utility functions
-vi.mock('../../src/utils/crypto.js', () => ({
+vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(() => 0.5),
   getSafeRandom: vi.fn(() => 0.5),
   getSafeUUID: vi.fn(() => 'mock-uuid')
@@ -85,7 +85,7 @@ vi.mock('../../src/context/GameState', () => ({
 // Import PreGig after mocks
 const { PreGig, _resetLastMinigameFallback } =
   await import('../../src/scenes/PreGig.tsx')
-const { getSafeRandom } = await import('../../src/utils/crypto.js')
+const { getSafeRandom } = await import('../../src/utils/crypto')
 
 describe('PreGig', () => {
   beforeEach(() => {

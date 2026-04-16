@@ -1,6 +1,6 @@
 import test, { describe, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { playDrumNote } from '../../src/utils/audio/drumMappings.js'
+import { playDrumNote } from '../../src/utils/audio/drumMappings'
 
 describe('drumMappings', () => {
   let mockKit

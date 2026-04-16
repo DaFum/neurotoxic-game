@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useBandHQLogic } from '../../../../src/ui/bandhq/hooks/useBandHQLogic.js'
+import { useBandHQLogic } from '../../../../src/ui/bandhq/hooks/useBandHQLogic'
 
 // Mock react-i18next so `t()` function works
 vi.mock('react-i18next', () => ({

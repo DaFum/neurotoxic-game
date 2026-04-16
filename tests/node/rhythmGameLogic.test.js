@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { test } from 'node:test'
-import { generateNotesForSong } from '../../src/utils/rhythmUtils.js'
+import { generateNotesForSong } from '../../src/utils/rhythmUtils'
 
 test('generateNotesForSong creates correct note structure', () => {
   const song = {

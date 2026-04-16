@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import { createMockTone } from '../mockUtils.js'
+import { createMockTone } from '../mockUtils'
 
 // --- Mocks ---
 
@@ -35,7 +35,7 @@ mock.module('tone', { namedExports: mockTone })
 
 // We need to import the module under test AFTER mocking dependencies
 const { loadAudioBuffer, disposeAudio } =
-  await import('../../src/utils/audioEngine.ts')
+  await import('../../src/utils/audioEngine')
 
 // --- Test Suite ---
 

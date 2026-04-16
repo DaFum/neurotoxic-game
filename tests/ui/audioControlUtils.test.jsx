@@ -4,10 +4,10 @@ import {
   createAudioHandlers,
   getAudioSnapshot,
   createAudioSubscriber
-} from '../../src/hooks/useAudioControl.js'
-import { handleError } from '../../src/utils/errorHandler.js'
+} from '../../src/hooks/useAudioControl'
+import { handleError } from '../../src/utils/errorHandler'
 
-vi.mock('../../src/utils/errorHandler.js', () => ({
+vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 

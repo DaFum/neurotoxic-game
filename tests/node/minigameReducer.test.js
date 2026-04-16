@@ -8,13 +8,13 @@ import {
   handleCompleteRoadieMinigame,
   handleStartKabelsalatMinigame,
   handleCompleteKabelsalatMinigame
-} from '../../src/context/reducers/minigameReducer.js'
+} from '../../src/context/reducers/minigameReducer'
 
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE
-} from '../../src/context/gameConstants.js'
+} from '../../src/context/gameConstants'
 
 describe('minigameReducer', () => {
   let baseState

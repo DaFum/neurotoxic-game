@@ -6,8 +6,8 @@ import {
   calculateSocialGrowth,
   calculateViralityScore,
   generateBrandOffers
-} from '../../src/utils/socialEngine.js'
-import { checkTraitUnlocks } from '../../src/utils/unlockCheck.js'
+} from '../../src/utils/socialEngine'
+import { checkTraitUnlocks } from '../../src/utils/unlockCheck'
 
 describe('Extended Social & Trait Systems', () => {
   describe('Trend System', () => {

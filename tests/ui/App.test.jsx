@@ -8,7 +8,7 @@ import {
   vi
 } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }) => <>{children}</>,

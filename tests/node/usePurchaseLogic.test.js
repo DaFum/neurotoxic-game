@@ -1,7 +1,7 @@
 import { describe, test, before, after, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 mock.module('react-i18next', {
   namedExports: {
@@ -14,7 +14,7 @@ mock.module('react-i18next', {
 })
 
 const purchaseLogicModule =
-  await import('../../src/ui/bandhq/hooks/usePurchaseLogic.js')
+  await import('../../src/ui/bandhq/hooks/usePurchaseLogic')
 const purchaseLogicHook = purchaseLogicModule.usePurchaseLogic
 
 describe('usePurchaseLogic', () => {

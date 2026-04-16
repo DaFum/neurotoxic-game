@@ -2,7 +2,7 @@ import { test, vi } from 'vitest'
 import assert from 'node:assert/strict'
 
 // Define the mock before imports
-vi.mock('../../src/utils/crypto.js', async importOriginal => {
+vi.mock('../../src/utils/crypto', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
@@ -10,11 +10,11 @@ vi.mock('../../src/utils/crypto.js', async importOriginal => {
   }
 })
 
-vi.mock('../../src/utils/logger.js', () => ({
+vi.mock('../../src/utils/logger', () => ({
   logger: { debug: vi.fn(), error: vi.fn() },
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
-vi.mock('../../src/data/events/index.js', () => ({
+vi.mock('../../src/data/events/index', () => ({
   EVENTS_DB: { travel: [{ id: 'test', trigger: 'travel', chance: 0.5 }] }
 }))
 
@@ -22,7 +22,7 @@ vi.mock('../../src/data/events/index.js', () => ({
 import {
   secureRandom,
   resetSecureRandomBatchForTesting
-} from '../../src/utils/crypto.js'
+} from '../../src/utils/crypto'
 
 test('secureRandom returns values in [0, 1)', () => {
   for (let i = 0; i < 1000; i++) {
@@ -54,9 +54,9 @@ test('eventEngine uses secureRandom for event selection', async () => {
   // Set mock return value specifically for this test
   secureRandom.mockReturnValue(0.1)
 
-  const { eventEngine } = await import('../../src/utils/eventEngine.js')
+  const { eventEngine } = await import('../../src/utils/eventEngine')
   const { secureRandom: mockedSecureRandom } =
-    await import('../../src/utils/crypto.js')
+    await import('../../src/utils/crypto')
 
   const state = {
     player: {},

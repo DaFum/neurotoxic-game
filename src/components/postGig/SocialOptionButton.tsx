@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 
 const CATEGORY_PROMPTS = {
   Drama: IMG_PROMPTS.SOCIAL_POST_DRAMA,

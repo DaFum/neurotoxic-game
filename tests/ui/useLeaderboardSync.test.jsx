@@ -11,7 +11,7 @@ vi.mock('../../src/utils/logger', () => ({
   }
 }))
 
-vi.mock('../../src/utils/errorHandler.js', () => ({
+vi.mock('../../src/utils/errorHandler', () => ({
   safeStorageOperation: vi.fn((op, fn, fallback = null) => {
     try {
       return fn()

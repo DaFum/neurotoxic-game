@@ -1,10 +1,11 @@
+// @ts-nocheck
 // TODO: Review playerReducer.js for completeness (UPDATE_PLAYER) and verify edge cases are handled in the switch.
-import { logger } from '../../utils/logger.js'
+import { logger } from '../../utils/logger'
 import {
   clampPlayerMoney,
   clampPlayerFame,
   calculateFameLevel
-} from '../../utils/gameStateUtils.js'
+} from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 
 type PlayerState = {

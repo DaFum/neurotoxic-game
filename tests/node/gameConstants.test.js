@@ -5,7 +5,7 @@ import {
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE,
   DEFAULT_EQUIPMENT_COUNT
-} from '../../src/context/gameConstants.js'
+} from '../../src/context/gameConstants'
 
 test('gameConstants - GAME_PHASES exports expected values', () => {
   assert.ok(GAME_PHASES, 'GAME_PHASES should be exported')

@@ -16,7 +16,7 @@ import {
 } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 
 /**
  * Contraband Stash Modal Component

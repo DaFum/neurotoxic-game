@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { translateContextKeys } from '../../src/utils/translationUtils.js'
+import { translateContextKeys } from '../../src/utils/translationUtils'
 
 test('translateContextKeys translates valid keys and ignores others', () => {
   const t = vi.fn(key => `translated:${key}`)

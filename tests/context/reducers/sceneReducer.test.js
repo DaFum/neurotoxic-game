@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { handleChangeScene } from '../../../src/context/reducers/sceneReducer.js'
-import { GAME_PHASES } from '../../../src/context/gameConstants.js'
+import { handleChangeScene } from '../../../src/context/reducers/sceneReducer'
+import { GAME_PHASES } from '../../../src/context/gameConstants'
 
 describe('sceneReducer', () => {
   describe('handleChangeScene', () => {

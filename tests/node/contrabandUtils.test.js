@@ -5,7 +5,7 @@ import {
   pickRandomContrabandByRarity,
   computeDropChance,
   MAX_DROP_CHANCE
-} from '../../src/utils/contrabandUtils.js'
+} from '../../src/utils/contrabandUtils'
 
 describe('Contraband Utils', () => {
   describe('pickRarity', () => {

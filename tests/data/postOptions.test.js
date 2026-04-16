@@ -1,7 +1,7 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
-import { POST_OPTIONS } from '../../src/data/postOptions.js'
-import { SOCIAL_PLATFORMS } from '../../src/data/platforms.js'
+import { POST_OPTIONS } from '../../src/data/postOptions'
+import { SOCIAL_PLATFORMS } from '../../src/data/platforms'
 
 test('POST_OPTIONS is an array', () => {
   assert.ok(Array.isArray(POST_OPTIONS), 'POST_OPTIONS should be an array')

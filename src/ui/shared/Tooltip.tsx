@@ -7,7 +7,7 @@ import React, {
   isValidElement,
   useCallback
 } from 'react'
-import { logger } from '../../utils/logger.js'
+import { logger } from '../../utils/logger'
 import PropTypes from 'prop-types'
 
 /**

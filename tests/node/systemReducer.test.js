@@ -9,8 +9,8 @@ import {
   handleRemoveToast,
   handleAdvanceDay,
   handleAddUnlock
-} from '../../src/context/reducers/systemReducer.js'
-import { createInitialState } from '../../src/context/initialState.js'
+} from '../../src/context/reducers/systemReducer'
+import { createInitialState } from '../../src/context/initialState'
 
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(

@@ -40,7 +40,7 @@ vi.mock('../../src/components/ToggleRadio', () => ({
   ToggleRadio: () => <div data-testid='toggle-radio' />
 }))
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock://image.png',
   IMG_PROMPTS: {}
 }))

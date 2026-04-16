@@ -1,3 +1,4 @@
+// @ts-nocheck
 // TODO: Review this file
 /**
  * Audio Engine Utility
@@ -7,16 +8,16 @@
  * REFACTORED: Implementation logic has been moved to src/utils/audio/*.
  */
 
-export { setupAudio } from './audio/setup.js'
+export { setupAudio } from './audio/setup'
 export {
   getRawAudioContext,
   ensureAudioContext,
   getAudioContextTimeSec,
   getToneStartTimeSec
-} from './audio/context.js'
-export { disposeAudio, safeDispose } from './audio/dispose.js'
+} from './audio/context'
+export { disposeAudio, safeDispose } from './audio/dispose'
 
-export { hasAudioAsset, loadAudioBuffer } from './audio/assets.js'
+export { hasAudioAsset, loadAudioBuffer } from './audio/assets'
 
 export {
   playSFX,
@@ -39,21 +40,21 @@ export {
   setDestinationMute,
   getAudioTimeMs,
   getPlayRequestId
-} from './audio/playback.js'
+} from './audio/playback'
 
-export { startMetalGenerator } from './audio/proceduralMetal.js'
+export { startMetalGenerator } from './audio/proceduralMetal'
 
 export {
   playSongFromData,
   playMidiFile,
   playNoteAtTime
-} from './audio/midiPlayback.js'
+} from './audio/midiPlayback'
 
-export { playRandomAmbientMidi, playRandomAmbientOgg } from './audio/ambient.js'
+export { playRandomAmbientMidi, playRandomAmbientOgg } from './audio/ambient'
 
-export * from './audio/midiUtils.js'
+export * from './audio/midiUtils'
 // playbackUtils functions are internal to src/utils/audio/ and not re-exported.
-// Import directly from './audio/playbackUtils.js' if needed for testing.
-export * from './audio/selectionUtils.js'
-export * from './audio/songUtils.js'
-export * from './audio/timingUtils.js'
+// Import directly from './audio/playbackUtils' if needed for testing.
+export * from './audio/selectionUtils'
+export * from './audio/songUtils'
+export * from './audio/timingUtils'

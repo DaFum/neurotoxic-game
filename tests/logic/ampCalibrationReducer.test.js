@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   handleStartAmpCalibration,
   handleCompleteAmpCalibration
-} from '../../src/context/reducers/minigameReducer.js'
-import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants.js'
+} from '../../src/context/reducers/minigameReducer'
+import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 
 describe('minigameReducer - Amp Calibration', () => {
   it('should initialize amp calibration minigame state correctly', () => {
@@ -125,7 +125,7 @@ describe('minigameReducer - Amp Calibration', () => {
       currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
       band: {
         harmony: 50,
-        members: [{ id: 'player1', traits: { 'tech_wizard': true } }]
+        members: [{ id: 'player1', traits: { tech_wizard: true } }]
       },
       player: { money: 100 }
     }

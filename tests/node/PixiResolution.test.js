@@ -81,7 +81,7 @@ mock.module('pixi.js', {
 })
 
 // Mock Managers
-mock.module('../../src/components/stage/CrowdManager.js', {
+mock.module('../../src/components/stage/CrowdManager', {
   namedExports: {
     CrowdManager: class {
       init() {}
@@ -93,7 +93,7 @@ mock.module('../../src/components/stage/CrowdManager.js', {
     }
   }
 })
-mock.module('../../src/components/stage/LaneManager.js', {
+mock.module('../../src/components/stage/LaneManager', {
   namedExports: {
     LaneManager: class {
       init() {}
@@ -105,7 +105,7 @@ mock.module('../../src/components/stage/LaneManager.js', {
     }
   }
 })
-mock.module('../../src/components/stage/EffectManager.js', {
+mock.module('../../src/components/stage/EffectManager', {
   namedExports: {
     EffectManager: class {
       constructor() {
@@ -117,7 +117,7 @@ mock.module('../../src/components/stage/EffectManager.js', {
     }
   }
 })
-mock.module('../../src/components/stage/NoteManager.js', {
+mock.module('../../src/components/stage/NoteManager', {
   namedExports: {
     NoteManager: class {
       init() {}
@@ -131,13 +131,13 @@ mock.module('../../src/components/stage/NoteManager.js', {
 })
 
 const { getOptimalResolution } =
-  await import('../../src/components/stage/utils.js')
+  await import('../../src/components/stage/utils')
 const { createPixiStageController } =
-  await import('../../src/components/PixiStageController.ts')
+  await import('../../src/components/PixiStageController')
 const { createTourbusStageController } =
-  await import('../../src/components/stage/TourbusStageController.js')
+  await import('../../src/components/stage/TourbusStageController')
 const { createRoadieStageController } =
-  await import('../../src/components/stage/RoadieStageController.js')
+  await import('../../src/components/stage/RoadieStageController')
 
 describe('Pixi Resolution Capping', () => {
   beforeEach(() => {

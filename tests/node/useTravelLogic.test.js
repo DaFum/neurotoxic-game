@@ -1,7 +1,7 @@
 import { test, describe, before, after, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   mockTravelLogicDependencies,
   createTravelLogicProps,
@@ -9,7 +9,7 @@ import {
   assertActionSuccess,
   assertTravelPrevented,
   setupTravelScenario
-} from '../useTravelLogicTestUtils.js'
+} from '../useTravelLogicTestUtils'
 
 const {
   mockCalculateTravelExpenses,

@@ -8,7 +8,7 @@ const getGenImageUrlMock = vi.fn(
   prompt => `mocked-url-${prompt ? prompt.substring(0, 10) : 'none'}`
 )
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: getGenImageUrlMock,
   IMG_PROMPTS: {
     VENUE_CLUB: 'club',

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ClinicScene } from '../../src/scenes/ClinicScene.tsx'
-import { useClinicLogic } from '../../src/hooks/useClinicLogic.js'
+import { useClinicLogic } from '../../src/hooks/useClinicLogic'
 
 vi.mock('../../src/context/gameConstants', async importOriginal => {
   const actual = await importOriginal()
@@ -24,7 +24,7 @@ vi.mock('react-i18next', async importOriginal => {
   }
 })
 
-vi.mock('../../src/hooks/useClinicLogic.js', () => ({
+vi.mock('../../src/hooks/useClinicLogic', () => ({
   useClinicLogic: vi.fn()
 }))
 

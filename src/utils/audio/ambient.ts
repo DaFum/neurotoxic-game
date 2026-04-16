@@ -1,0 +1,197 @@
+// @ts-nocheck
+// TODO: Review this file
+import { logger } from '../logger'
+import { audioState } from './state'
+import { stopAudio } from './playback'
+import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets'
+import { createAndConnectBufferSource } from './sharedBufferUtils'
+import { selectRandomItem } from './selectionUtils'
+import { secureRandom } from '../crypto'
+import { ensureAudioContext } from './context'
+import { playMidiFileInternal } from './midiPlayback'
+import { SONGS_DB, SONGS_BY_MID } from '../../data/songs'
+
+const customSongsMapCache = new WeakMap()
+
+/**
+ * Memoizes metadata lookup for custom songs arrays to O(1).
+ * @param {Array} songs
+ * @returns {Map}
+ */
+function getCustomSongsMap(songs) {
+  let map = customSongsMapCache.get(songs)
+  if (!map) {
+    map = new Map()
+    for (let i = 0; i < songs.length; i++) {
+      const song = songs[i]
+      if (song.sourceMid) {
+        map.set(song.sourceMid, song)
+      }
+    }
+    customSongsMapCache.set(songs, map)
+  }
+  return map
+}
+
+/**
+ * Plays a random MIDI file from the available set for ambient music.
+ * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
+ * @param {Function} [rng] - Random number generator function.
+ * @returns {Promise<boolean>} Whether playback started successfully.
+ */
+export async function playRandomAmbientMidi(
+  songs = SONGS_DB,
+  rng = secureRandom
+) {
+  logger.debug('AudioEngine', 'playRandomAmbientMidi called')
+  // Requirement: Stop transport before starting ambient
+  stopAudio()
+  const reqId = audioState.playRequestId
+
+  const midiFiles = Object.keys(midiUrlMap)
+  if (midiFiles.length === 0) {
+    logger.warn('AudioEngine', 'No MIDI files found in midiUrlMap')
+    return false
+  }
+
+  // Requirement: pick a random MIDI from the assets folder
+  const filename = selectRandomItem(midiFiles, rng)
+  if (!filename) {
+    logger.warn('AudioEngine', 'Random MIDI selection returned null')
+    return false
+  }
+
+  // If the MIDI is known in SONGS_DB, we might use metadata, but for Ambient we always start from 0
+  const meta =
+    songs === SONGS_DB
+      ? SONGS_BY_MID.get(filename)
+      : getCustomSongsMap(songs).get(filename)
+  // Requirement: Ambient always plays from the beginning (0s)
+  const offsetSeconds = 0
+
+  logger.debug(
+    'AudioEngine',
+    `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
+  )
+  return playMidiFileInternal({
+    filename,
+    offset: offsetSeconds,
+    loop: false,
+    delay: 0,
+    options: {
+      useCleanPlayback: true,
+      onEnded: () => {
+        if (reqId !== audioState.playRequestId) {
+          logger.debug(
+            'AudioEngine',
+            `Ambient MIDI chain cancelled (reqId ${reqId} vs current ${audioState.playRequestId}).`
+          )
+          return
+        }
+        logger.debug(
+          'AudioEngine',
+          'Ambient MIDI track ended, chaining next track.'
+        )
+        playRandomAmbientMidi(songs, rng).catch(error => {
+          logger.error(
+            'AudioEngine',
+            'Failed to start next ambient MIDI track',
+            error
+          )
+        })
+      }
+    },
+    ownedRequestId: reqId
+  })
+}
+
+/**
+ * Plays a random OGG file from the bundled assets for ambient music.
+ * Uses raw AudioBufferSourceNode connected to the musicGain bus for
+ * lower CPU usage and better quality than MIDI synthesis.
+ * @param {Function} [rng] - Random number generator function.
+ * @param {object} [options] - Playback options.
+ * @param {boolean} [options.skipStop=false] - Skip internal stopAudio() when caller already stopped audio.
+ * @returns {Promise<boolean>} Whether playback started successfully.
+ */
+export async function playRandomAmbientOgg(
+  rng = secureRandom,
+  { skipStop = false } = {}
+) {
+  logger.debug('AudioEngine', 'playRandomAmbientOgg called')
+  // Skip stopAudio() when caller has already stopped audio to avoid double-stop
+  // and unnecessary playRequestId increments (e.g., AudioManager.startAmbient calls stopMusic first)
+  if (!skipStop) {
+    stopAudio()
+  }
+
+  if (oggCandidates.length === 0) {
+    logger.warn('AudioEngine', 'No OGG files available for ambient playback')
+    return false
+  }
+
+  const filename = selectRandomItem(oggCandidates, rng)
+  if (!filename) {
+    logger.warn('AudioEngine', 'Random OGG selection returned null')
+    return false
+  }
+
+  const reqId = ++audioState.playRequestId
+  const unlocked = await ensureAudioContext()
+  if (!unlocked) return false
+  if (reqId !== audioState.playRequestId) return false
+
+  const buffer = await loadAudioBuffer(filename)
+  if (!buffer) return false
+  if (reqId !== audioState.playRequestId) return false
+
+  const source = createAndConnectBufferSource(buffer)
+  if (!source) return false
+
+  audioState.ambientSource = source
+  const chainReqId = audioState.playRequestId
+
+  source.onended = () => {
+    if (audioState.ambientSource !== source) {
+      logger.debug(
+        'AudioEngine',
+        'Ambient OGG onended: source mismatch, skipping chain.'
+      )
+      return
+    }
+    if (chainReqId !== audioState.playRequestId) {
+      logger.debug(
+        'AudioEngine',
+        `Ambient OGG chain cancelled (reqId ${chainReqId} vs current ${audioState.playRequestId}).`
+      )
+      return
+    }
+    audioState.ambientSource = null
+    logger.debug('AudioEngine', 'Ambient OGG track ended, chaining next track.')
+
+    // Capture the current reqId to check against after the async call starts
+    const preChainReqId = audioState.playRequestId
+
+    playRandomAmbientOgg(rng, { skipStop: true }).catch(error => {
+      if (audioState.playRequestId !== preChainReqId + 1) {
+        logger.debug(
+          'AudioEngine',
+          'Chain failed but reqId changed. Benign race condition.'
+        )
+        return
+      }
+      logger.error(
+        'AudioEngine',
+        'Failed to chain next ambient OGG track',
+        error
+      )
+    })
+  }
+
+  source.start()
+  logger.debug(
+    'AudioEngine',
+    `Ambient OGG started: ${filename} (${buffer.duration.toFixed(1)}s)`
+  )
+  return true
+}

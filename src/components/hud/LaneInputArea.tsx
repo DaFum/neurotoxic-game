@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { memo, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils.js'
+import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils'
 
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
 

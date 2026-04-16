@@ -4,9 +4,9 @@ import {
   getGigModifiers,
   calculateGigPhysics,
   calculateDailyUpdates
-} from '../../src/utils/simulationUtils.js'
+} from '../../src/utils/simulationUtils'
 
-import { buildBandState, buildBandWithMembers } from '../simulationTestUtils.js'
+import { buildBandState, buildBandWithMembers } from '../simulationTestUtils'
 
 test('getGigModifiers returns default modifiers for average band', () => {
   const band = buildBandState()

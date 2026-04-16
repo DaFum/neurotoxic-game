@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { validateSaveData } from '../../src/utils/saveValidator.js'
+import { validateSaveData } from '../../src/utils/saveValidator'
 
 describe('saveValidator', () => {
   const getValidData = () => ({

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { CHARACTERS } from '../../src/data/characters.js'
-import { SONGS_DB } from '../../src/data/songs.ts'
+import { CHARACTERS } from '../../src/data/characters'
+import { SONGS_DB } from '../../src/data/songs'
 
 // Chatter might be a simple export
-// import { CHATTER_DB } from '../../src/data/chatter.js';
+// import { CHATTER_DB } from '../../src/data/chatter';
 // Let's check chatter.js content first or just try importing default/named.
 
 test('CHARACTERS data integrity', () => {

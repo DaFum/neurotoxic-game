@@ -6,7 +6,7 @@ import { ActionButton } from '../shared/ActionButton'
 import {
   CONTRABAND_BY_RARITY,
   VOID_TRADER_COSTS
-} from '../../data/contraband.js'
+} from '../../data/contraband'
 
 export const VoidTraderTab = ({
   player,

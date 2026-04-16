@@ -1,8 +1,8 @@
 import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { applyUnlockHQ } from '../../src/utils/purchaseLogicUtils.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
+import { applyUnlockHQ } from '../../src/utils/purchaseLogicUtils'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
 describe('HQ Passive Effects', () => {
   test('applyUnlockHQ utility hq_room_label purchase gives money bonus', () => {

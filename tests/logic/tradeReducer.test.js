@@ -1,8 +1,8 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { handleTradeVoidItem } from '../../src/context/reducers/tradeReducer.js'
+import { handleTradeVoidItem } from '../../src/context/reducers/tradeReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
-import { createTradeVoidItemAction } from '../../src/context/actionCreators.js'
+import { createTradeVoidItemAction } from '../../src/context/actionCreators'
 
 describe('Trade Reducer', () => {
   it('should reject trades if fame is insufficient', () => {

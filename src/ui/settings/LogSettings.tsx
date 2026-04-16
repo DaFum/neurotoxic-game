@@ -2,7 +2,7 @@
 import { memo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
-import { LOG_LEVELS } from '../../utils/logger.js'
+import { LOG_LEVELS } from '../../utils/logger'
 
 export const LogSettings = memo(function LogSettings({
   logLevel,

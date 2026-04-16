@@ -13,7 +13,7 @@
 import { lazy } from 'react'
 import PropTypes from 'prop-types'
 import { MainMenu } from '../scenes/MainMenu.tsx'
-import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants.js'
+import { GAME_PHASES, MINIGAME_TYPES } from '../context/gameConstants'
 
 const ClinicScene = lazy(() => import('../scenes/ClinicScene.tsx'))
 const Overworld = lazy(() => import('../scenes/Overworld.tsx'))

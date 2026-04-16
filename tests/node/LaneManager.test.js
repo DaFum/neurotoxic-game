@@ -12,7 +12,7 @@ const mockBuildRhythmLayout = mock.fn(() => ({
   rhythmOffsetY: 360
 }))
 
-mock.module('../../src/components/stage/utils.js', {
+mock.module('../../src/components/stage/utils', {
   namedExports: {
     buildRhythmLayout: mockBuildRhythmLayout,
     getPixiColorFromToken: mock.fn(tokenName => {
@@ -77,8 +77,7 @@ describe('LaneManager', () => {
   beforeEach(async () => {
     graphicsInstances.length = 0
     mockBuildRhythmLayout.mock.resetCalls()
-    ;({ LaneManager } =
-      await import('../../src/components/stage/LaneManager.js'))
+    ;({ LaneManager } = await import('../../src/components/stage/LaneManager'))
 
     app = {
       screen: {

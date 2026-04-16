@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import { SPECIAL_EVENTS } from '../../src/data/events/special.js'
+import { SPECIAL_EVENTS } from '../../src/data/events/special'
 
 describe('SPECIAL_EVENTS', () => {
   const validateEffect = (effect, eventId, optIdx) => {

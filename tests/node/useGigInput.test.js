@@ -9,7 +9,7 @@ import {
 } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mocks
 const mockAudioManager = {
@@ -27,21 +27,21 @@ const mockErrorHandler = {
 const mockStopAudio = mock.fn()
 
 // Mock imports
-mock.module('../../src/utils/AudioManager.js', {
+mock.module('../../src/utils/AudioManager', {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/gigStats.js', {
+mock.module('../../src/utils/gigStats', {
   namedExports: { buildGigStatsSnapshot: mockGigStats.buildGigStatsSnapshot }
 })
-mock.module('../../src/utils/errorHandler.js', {
+mock.module('../../src/utils/errorHandler', {
   namedExports: { handleError: mockErrorHandler.handleError }
 })
 // Mock dynamic import
-mock.module('../../src/utils/audioEngine.ts', {
+mock.module('../../src/utils/audioEngine', {
   namedExports: { stopAudio: mockStopAudio }
 })
 
-const { useGigInput } = await import('../../src/hooks/useGigInput.js')
+const { useGigInput } = await import('../../src/hooks/useGigInput')
 
 describe('useGigInput', () => {
   let actions

@@ -1,17 +1,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import path from 'node:path'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
   ALLOWED_DEFAULT_SCENES,
   CHATTER_DB,
   getRandomChatter
-} from '../../src/data/chatter.js'
-import { VENUE_CHATTER_DB } from '../../src/data/chatter/venueChatter.js'
-import {
-  readLocaleJson,
-  resetLocaleJsonCache
-} from '../utils/localeTestUtils.js'
+} from '../../src/data/chatter'
+import { VENUE_CHATTER_DB } from '../../src/data/chatter/venueChatter'
+import { readLocaleJson, resetLocaleJsonCache } from '../utils/localeTestUtils'
 
 // Cache translations at module level to avoid repeated file I/O
 let translationsPromise = null

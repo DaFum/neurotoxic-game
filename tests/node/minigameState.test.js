@@ -1,12 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
-import { initialState } from '../../src/context/initialState.js'
+import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { initialState } from '../../src/context/initialState'
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE
-} from '../../src/context/gameConstants.js'
+} from '../../src/context/gameConstants'
 
 test('Minigame State Transitions', async t => {
   await t.test('START_TRAVEL_MINIGAME updates state correctly', () => {

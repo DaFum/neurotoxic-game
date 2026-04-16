@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks'
-import { getPixiColorFromToken } from '../../src/components/stage/utils.js'
+import { getPixiColorFromToken } from '../../src/components/stage/utils'
 
 // Setup mock global environment
 globalThis.document = {

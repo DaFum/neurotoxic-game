@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { pickRandomSubset } from '../../src/utils/randomUtils.js'
+import { pickRandomSubset } from '../../src/utils/randomUtils'
 
 test('pickRandomSubset', async t => {
   await t.test(
