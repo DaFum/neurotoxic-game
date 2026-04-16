@@ -5,7 +5,8 @@ import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
 
 export class BaseStageController {
-  constructor({ containerRef, gameStateRef, updateRef }) {
+  [key: string]: any
+  constructor({ containerRef, gameStateRef, updateRef }: any) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
@@ -30,7 +31,7 @@ export class BaseStageController {
     }
   }
 
-  _checkLifecycleRace(app) {
+  _checkLifecycleRace(app: any) {
     if (this.isDisposed || this.app !== app) {
       if (this.app === app) this.app = null
       destroyPixiApp(app, this.handleTicker, this.constructor.name)
@@ -39,7 +40,7 @@ export class BaseStageController {
     return false
   }
 
-  _setupResizeListeners(container) {
+  _setupResizeListeners(container: any) {
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(() => this.handleResize())
       this.resizeObserver.observe(container)
@@ -49,13 +50,13 @@ export class BaseStageController {
     }
   }
 
-  _isLifecycleRaceError(e, app) {
+  _isLifecycleRaceError(e: any, app: any) {
     if (this.isDisposed || this.app !== app) return true
     const message = e ? String(e.message || e) : ''
     return message.includes('updateLocalTransform')
   }
 
-  _executeDisposeWithFallback(app) {
+  _executeDisposeWithFallback(app: any) {
     try {
       this.dispose()
     } catch (disposeError) {
@@ -70,7 +71,7 @@ export class BaseStageController {
     }
   }
 
-  _handleInitError(e, app) {
+  _handleInitError(e: any, app: any) {
     const isLifecycleRace = this._isLifecycleRaceError(e, app)
     const shouldRethrow = !isLifecycleRace
 
@@ -92,7 +93,7 @@ export class BaseStageController {
     }
   }
 
-  async _performInit(options) {
+  async _performInit(options: any) {
     let app = null
     try {
       const container = this.containerRef.current
@@ -140,7 +141,7 @@ export class BaseStageController {
 
   // Abstract methods to be overridden
   async setup() {}
-  update(_dt) {}
+  update(_dt: any) {}
   draw() {}
 
   handleResize() {
@@ -148,7 +149,7 @@ export class BaseStageController {
     this.draw()
   }
 
-  handleTicker(ticker) {
+  handleTicker(ticker: any) {
     if (this.isDisposed) return
     if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
 

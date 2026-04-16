@@ -12,7 +12,8 @@ import {
 } from '../../hooks/minigames/constants'
 
 class TourbusStageController extends BaseStageController {
-  constructor(params) {
+  [key: string]: any
+  constructor(params: any) {
     super(params)
     this.busSprite = null
     this.laneWidth = 0
@@ -75,7 +76,7 @@ class TourbusStageController extends BaseStageController {
         fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
       }
 
-      const loaded = await loadTextures(urls)
+      const loaded = await loadTextures(urls, undefined) as any
 
       const keys = Object.keys(loaded)
       for (let i = 0, len = keys.length; i < len; i++) {
@@ -156,7 +157,7 @@ class TourbusStageController extends BaseStageController {
     this.container.addChild(this.busSprite)
   }
 
-  _updateBusPosition(state, dt, height) {
+  _updateBusPosition(state: any, dt: any, height: any) {
     if (this.busSprite) {
       const targetX = state.busLane * this.laneWidth + this.laneWidth / 2
 
@@ -178,7 +179,7 @@ class TourbusStageController extends BaseStageController {
     }
   }
 
-  _updateRoadScroll(state, dt, height) {
+  _updateRoadScroll(state: any, dt: any, height: any) {
     if (this.roadStripes) {
       // Speed is relative units per ms.
       // Let's say speed 0.05 => 50 units per sec.
@@ -189,7 +190,7 @@ class TourbusStageController extends BaseStageController {
     }
   }
 
-  _updateObstacles(state, height) {
+  _updateObstacles(state: any, height: any) {
     this.currentIds.clear()
 
     for (let i = 0, len = state.obstacles.length; i < len; i++) {
@@ -269,7 +270,7 @@ class TourbusStageController extends BaseStageController {
     }
   }
 
-  update(dt) {
+  update(dt: any) {
     if (this.effectManager) this.effectManager.update(dt)
 
     const state = this.gameStateRef.current
@@ -303,5 +304,5 @@ class TourbusStageController extends BaseStageController {
   }
 }
 
-export const createTourbusStageController = params =>
+export const createTourbusStageController = (params: any) =>
   new TourbusStageController(params)
