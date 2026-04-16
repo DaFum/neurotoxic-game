@@ -7,11 +7,11 @@ import { calculateZealotryEffects } from './socialEngine.js'
  * Keep this as the single source of truth so both screens always agree.
  */
 export const MODIFIER_COSTS = {
-  catering: 20,
-  promo: 30,
-  merch: 30,
-  soundcheck: 50,
-  guestlist: 60
+  catering: 18,
+  promo: 26,
+  merch: 26,
+  soundcheck: 42,
+  guestlist: 50
 }
 
 export const BAR_RATE_VIP = 0.3
@@ -21,7 +21,7 @@ export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
-    BASE_COST: 70
+    BASE_COST: 62
   },
   TRANSPORT: {
     FUEL_PER_100KM: 12, // Liters

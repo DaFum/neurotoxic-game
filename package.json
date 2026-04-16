@@ -21,6 +21,8 @@
     "test:locale:smoke": "node --test tests/locale/smoke.test.js",
     "test:locale:full": "node --test tests/locale/full.test.js",
     "simulate:balance": "node scripts/game-balance-simulation.mjs",
+    "simulate:balance:compare": "node scripts/game-balance-simulation.mjs --compare-baseline reports/game-balance-simulation-baseline.json",
+    "simulate:balance:baseline": "node scripts/game-balance-simulation.mjs --write-baseline reports/game-balance-simulation-baseline.json",
     "bench:eventEngine": "node tests/performance/eventEngine.bench.js",
     "test:e2e": "playwright test",
     "test:e2e:shard1": "playwright test --shard=1/2",

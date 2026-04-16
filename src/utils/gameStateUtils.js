@@ -138,17 +138,17 @@ export const clampPlayerMoney = money => {
 
 // Shared Balance Constants
 export const BALANCE_CONSTANTS = {
-  FAME_LOSS_BAD_GIG: 12,
+  FAME_LOSS_BAD_GIG: 9,
   MAX_FAME_GAIN: 2000,
   LOW_HARMONY_THRESHOLD: 15,
-  LOW_HARMONY_CANCELLATION_CHANCE: 0.25,
+  LOW_HARMONY_CANCELLATION_CHANCE: 0.2,
   // Miss-penalty on bad gigs (perfScore < 62)
   MISS_TOLERANCE: 8,
-  MISS_PENALTY_RATE: 1.5, // fame loss per excess miss (was 0.5)
-  MISS_MONEY_PENALTY: 15, // €15 per excess miss (direct money deduction)
+  MISS_PENALTY_RATE: 1.2, // fame loss per excess miss (was 0.5)
+  MISS_MONEY_PENALTY: 12, // €12 per excess miss (direct money deduction)
   // Sponsor daily payout range (fame-scaled)
-  SPONSORSHIP_PAYOUT_FLOOR: 180,
-  SPONSORSHIP_PAYOUT_CAP: 350,
+  SPONSORSHIP_PAYOUT_FLOOR: 200,
+  SPONSORSHIP_PAYOUT_CAP: 380,
   // Wealth-scaled daily drain thresholds
   WEALTH_DRAIN_THRESHOLD: 2000,
   WEALTH_DRAIN_CHANCE: 0.12,

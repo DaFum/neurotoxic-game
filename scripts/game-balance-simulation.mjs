@@ -63,7 +63,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 7,
+  reportVersion: 8,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -72,8 +72,8 @@ export const SIMULATION_CONSTANTS = {
   followerGainMultiplier: 0.2,
   fameLossBadGig: BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG,
   harmonyGainGoodGig: 2,
-  harmonyLossBadGig: 5,
-  sponsorshipPayout: 180,
+  harmonyLossBadGig: 4,
+  sponsorshipPayout: BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_FLOOR,
   brandDealEvalChance: 0.14,
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
@@ -83,6 +83,27 @@ export const SIMULATION_CONSTANTS = {
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
 }
+
+const REGRESSION_METRICS = [
+  {
+    key: 'bankruptcyRate',
+    label: 'Insolvenzrate',
+    suffix: '%'
+  },
+  {
+    key: 'avgFinalMoney',
+    label: 'Ø Endgeld',
+    formatter: value => fmtEur(value)
+  },
+  {
+    key: 'avgFameProgressPerGig',
+    label: 'Fame-Fortschritt/Gig'
+  },
+  {
+    key: 'avgGigsPlayed',
+    label: 'Ø Gigs'
+  }
+]
 
 export const SCENARIOS = [
   {
@@ -1799,55 +1820,58 @@ const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
   // All scenarios start from the real game-default state (€500, fame 0, harmony 80).
-  // Targets calibrated to 75-day runs with uniform starting conditions (2026-04-13).
+  // Targets calibrated to 75-day runs with uniform starting conditions (2026-04-16, moderate rebalance).
   baseline_touring: {
-    bankruptcyMax: 5,
+    bankruptcyMax: 10,
     moneyMin: 25000,
     moneyMax: 80000,
-    fameProgressPerGigMin: 790,
-    fameProgressPerGigMax: 1200
+    fameProgressPerGigMin: 250,
+    fameProgressPerGigMax: 420
   },
   bootstrap_struggle: {
-    bankruptcyMax: 75, // Raised from 25: tighter hit windows reduce gig income for low-skill scenarios
+    // Remains intentionally hard, but no longer targets near-certain collapse.
+    bankruptcyMax: 85,
     moneyMin: 1000,
     moneyMax: 5000,
-    fameProgressPerGigMin: 650,
-    fameProgressPerGigMax: 1050
+    fameProgressPerGigMin: 450,
+    fameProgressPerGigMax: 800
   },
   aggressive_marketing: {
-    bankruptcyMax: 5,
+    bankruptcyMax: 15,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameProgressPerGigMin: 790,
-    fameProgressPerGigMax: 1200
+    fameProgressPerGigMin: 280,
+    fameProgressPerGigMax: 520
   },
   scandal_recovery: {
-    bankruptcyMax: 15,
+    // Recalibrated for intentionally hostile event density.
+    bankruptcyMax: 45,
     moneyMin: 5000,
     moneyMax: 30000,
-    fameProgressPerGigMin: 720,
-    fameProgressPerGigMax: 1120
+    fameProgressPerGigMin: 220,
+    fameProgressPerGigMax: 420
   },
   festival_push: {
-    bankruptcyMax: 10,
+    // Recalibrated for low-gig-count, high-modifier strategy volatility.
+    bankruptcyMax: 35,
     moneyMin: 10000,
     moneyMax: 50000,
-    fameProgressPerGigMin: 790,
-    fameProgressPerGigMax: 1250
+    fameProgressPerGigMin: 250,
+    fameProgressPerGigMax: 500
   },
   chaos_tour: {
-    bankruptcyMax: 15,
+    bankruptcyMax: 25,
     moneyMin: 10000,
     moneyMax: 60000,
-    fameProgressPerGigMin: 760,
-    fameProgressPerGigMax: 1200
+    fameProgressPerGigMin: 260,
+    fameProgressPerGigMax: 500
   },
   cult_hypergrowth: {
-    bankruptcyMax: 5,
+    bankruptcyMax: 12,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameProgressPerGigMin: 820,
-    fameProgressPerGigMax: 1300
+    fameProgressPerGigMin: 260,
+    fameProgressPerGigMax: 520
   }
 }
 
@@ -1919,6 +1943,40 @@ const checkKpi = (id, summary) => {
   })
 
   return checks
+}
+
+const buildRegressionComparison = (baselinePayload, results) => {
+  if (!baselinePayload?.results) return null
+
+  const baselineById = new Map(
+    baselinePayload.results.map(s => [s.id, s.summary || {}])
+  )
+
+  return results
+    .map(scenario => {
+      const prev = baselineById.get(scenario.id)
+      if (!prev) return null
+
+      const current = scenario.summary || {}
+      const metrics = {}
+
+      for (const metric of REGRESSION_METRICS) {
+        const previousValue = Number(prev[metric.key] ?? 0)
+        const currentValue = Number(current[metric.key] ?? 0)
+        metrics[metric.key] = {
+          previous: previousValue,
+          current: currentValue,
+          delta: Number((currentValue - previousValue).toFixed(2))
+        }
+      }
+
+      return {
+        id: scenario.id,
+        name: scenario.name,
+        metrics
+      }
+    })
+    .filter(Boolean)
 }
 
 const getProgressionInsight = s => {
@@ -2269,6 +2327,22 @@ const buildMarkdownReport = payload => {
   }
   lines.push('')
 
+  if (payload.regressionComparison?.length) {
+    lines.push('## Rebalance-Regressionsvergleich (Alt vs Neu)')
+    lines.push('')
+    lines.push(
+      '| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |'
+    )
+    lines.push('|---|---:|---:|---:|---:|')
+    for (const scenario of payload.regressionComparison) {
+      const metrics = scenario.metrics
+      lines.push(
+        `| ${scenario.name} | ${metrics.bankruptcyRate.delta}% | ${fmtEur(metrics.avgFinalMoney.delta)} | ${metrics.avgFameProgressPerGig.delta} | ${metrics.avgGigsPlayed.delta} |`
+      )
+    }
+    lines.push('')
+  }
+
   // ── Feature Coverage ──────────────────────────────────────────────────────
   lines.push('## Feature-Abdeckung in der Simulation')
   lines.push('')
@@ -2327,7 +2401,38 @@ const buildMarkdownReport = payload => {
   return lines.join('\n')
 }
 
-export const runSimulationSuite = async () => {
+const parseCliOptions = argv => {
+  const options = {
+    compareBaselinePath: null,
+    writeBaselinePath: null
+  }
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg === '--compare-baseline' && argv[i + 1]) {
+      options.compareBaselinePath = argv[i + 1]
+      i += 1
+      continue
+    }
+    if (arg === '--write-baseline' && argv[i + 1]) {
+      options.writeBaselinePath = argv[i + 1]
+      i += 1
+    }
+  }
+
+  return options
+}
+
+const tryReadJson = async filePath => {
+  try {
+    const content = await fs.readFile(filePath, 'utf8')
+    return JSON.parse(content)
+  } catch {
+    return null
+  }
+}
+
+export const runSimulationSuite = async (options = {}) => {
   logger.setLevel(LOG_LEVELS.ERROR)
 
   const results = []
@@ -2359,6 +2464,18 @@ export const runSimulationSuite = async () => {
     })
   }
 
+  await fs.mkdir(REPORT_DIR, { recursive: true })
+  const outputJsonPath = path.join(REPORT_DIR, SIMULATION_CONSTANTS.outputJson)
+  const outputMarkdownPath = path.join(
+    REPORT_DIR,
+    SIMULATION_CONSTANTS.outputMarkdown
+  )
+
+  const baselinePath = options.compareBaselinePath
+    ? path.resolve(PROJECT_ROOT, options.compareBaselinePath)
+    : outputJsonPath
+  const baselinePayload = await tryReadJson(baselinePath)
+
   const payload = {
     generatedAt: new Date().toISOString(),
     constants: SIMULATION_CONSTANTS,
@@ -2368,12 +2485,10 @@ export const runSimulationSuite = async () => {
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     featureCoverage: buildFeatureCoverage(results),
+    regressionComparison: buildRegressionComparison(baselinePayload, results),
     results
   }
 
-  await fs.mkdir(REPORT_DIR, { recursive: true })
-  const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
-  const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)
   await fs.writeFile(
     outputJsonPath,
     `${JSON.stringify(payload, null, 2)}\n`,
@@ -2385,6 +2500,16 @@ export const runSimulationSuite = async () => {
     'utf8'
   )
 
+  if (options.writeBaselinePath) {
+    const writeBaselinePath = path.resolve(PROJECT_ROOT, options.writeBaselinePath)
+    await fs.mkdir(path.dirname(writeBaselinePath), { recursive: true })
+    await fs.writeFile(
+      writeBaselinePath,
+      `${JSON.stringify(payload, null, 2)}\n`,
+      'utf8'
+    )
+  }
+
   return payload
 }
 
@@ -2392,7 +2517,8 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 ) {
-  const payload = await runSimulationSuite()
+  const cliOptions = parseCliOptions(process.argv.slice(2))
+  const payload = await runSimulationSuite(cliOptions)
   const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
   const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)
   const totalRuns = payload.results.reduce(
@@ -2403,6 +2529,7 @@ if (
   console.log(
     `[balance-sim] Fertig: ${payload.results.length} Szenarien / ${totalRuns} Runs.\n` +
       `[balance-sim] JSON: ${outputJsonPath}\n` +
-      `[balance-sim] Analyse: ${outputMarkdownPath}`
+      `[balance-sim] Analyse: ${outputMarkdownPath}\n` +
+      `[balance-sim] Vergleichs-Baseline: ${cliOptions.compareBaselinePath ? path.resolve(PROJECT_ROOT, cliOptions.compareBaselinePath) : outputJsonPath}`
   )
 }
