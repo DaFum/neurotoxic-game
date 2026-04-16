@@ -29,7 +29,10 @@ import {
   checkTravelPrerequisites,
   checkTravelResources
 } from '../utils/travelUtils.js'
-import { handleNodeArrival } from '../utils/arrivalUtils.js'
+import {
+  handleNodeArrival,
+  processTravelEvents
+} from '../utils/arrivalUtils.js'
 import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
@@ -270,10 +273,7 @@ export const useTravelLogic = ({
       setTravelTarget(null)
 
       // Trigger travel events (shown as global modal overlay)
-      let travelEventActive = triggerEvent('transport', 'travel')
-      if (!travelEventActive) {
-        travelEventActive = triggerEvent('band', 'travel')
-      }
+      const travelEventActive = processTravelEvents(node, triggerEvent)
 
       // Always handle node arrival regardless of events —
       // gigs must start even when a travel event pops up.

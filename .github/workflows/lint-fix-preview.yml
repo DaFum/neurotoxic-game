@@ -50,7 +50,7 @@ jobs:
         run: |
           if [[ -d "src/app" ]]; then TARGET="src/app"; elif [[ -d "src" ]]; then TARGET="src"; else TARGET="."; fi
           echo "Running jscpd on: $TARGET"
-          npx --yes jscpd \
+          pnpm dlx jscpd \
             --reporters json \
             --output ./jscpd-report \
             --min-lines "$JSCPD_MIN_LINES" \

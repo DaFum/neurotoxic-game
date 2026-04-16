@@ -23,17 +23,17 @@ has_eslint=0
 has_format_script=0
 has_lint_fix_script=0
 
-if npm run -s format >/dev/null 2>&1; then
+if pnpm run -s format >/dev/null 2>&1; then
 	has_format_script=1
 fi
-if npm run -s "lint:fix" >/dev/null 2>&1; then
+if pnpm run -s "lint:fix" >/dev/null 2>&1; then
 	has_lint_fix_script=1
 fi
 
-if npx --no-install prettier --version >/dev/null 2>&1; then
+if pnpm exec prettier --version >/dev/null 2>&1; then
 	has_prettier=1
 fi
-if npx --no-install eslint --version >/dev/null 2>&1; then
+if pnpm exec eslint --version >/dev/null 2>&1; then
 	has_eslint=1
 fi
 
@@ -57,17 +57,17 @@ done
 
 # Run auto-fixers — sie modifizieren den Working Tree
 if [[ "$has_format_script" == "1" ]]; then
-	echo "Running: npm run format"
-	npm run format
+	echo "Running: pnpm run format"
+	pnpm run format
 else
-	echo "No format script detected (skipping 'npm run format')"
+	echo "No format script detected (skipping 'pnpm run format')"
 fi
 
 if [[ "$has_lint_fix_script" == "1" ]]; then
-	echo "Running: npm run lint:fix"
-	npm run lint:fix
+	echo "Running: pnpm run lint:fix"
+	pnpm run lint:fix
 else
-	echo "No lint:fix script detected (skipping 'npm run lint:fix')"
+	echo "No lint:fix script detected (skipping 'pnpm run lint:fix')"
 fi
 
 # FIX: Diff gegen HEAD (letzter Commit auf dem PR-Branch) statt gegen origin/<base_ref>.
@@ -95,8 +95,8 @@ if [[ "${#missing[@]}" -gt 0 ]]; then
 		echo "> Informational: auto-fix preview may be incomplete because the following are missing: **${missing[*]}**."
 		echo
 		echo "Expected scripts (if present in your package.json):"
-		echo "- \`npm run format\`"
-		echo "- \`npm run lint:fix\`"
+		echo "- \`pnpm run format\`"
+		echo "- \`pnpm run lint:fix\`"
 		echo
 	} >>comment.md
 fi

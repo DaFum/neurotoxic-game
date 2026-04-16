@@ -12,7 +12,7 @@
     "test": "node ./scripts/run-tests.mjs",
     "test:node": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs",
     "test:vitest": "pnpm run test:vitest:node && pnpm run test:vitest:ui",
-    "test:vitest:node": "node ./scripts/run-vitest-ui.mjs --config vitest.config.node.js",
+    "test:vitest:node": "pnpm run test:vitest:logic",
     "test:vitest:ui": "node ./scripts/run-vitest-ui.mjs",
     "test:ui": "pnpm run test:vitest:ui",
     "test:all": "pnpm run test && pnpm run test:perf && pnpm run test:locale:smoke && pnpm run test:locale:full",
@@ -29,7 +29,8 @@
     "test:e2e:shard2": "playwright test --shard=2/2",
     "format": "prettier --write .",
     "prepare": "husky",
-    "i18n:extract": "i18next --config i18next-parser.config.js"
+    "i18n:extract": "i18next --config i18next-parser.config.js",
+    "test:vitest:logic": "node ./scripts/run-vitest-ui.mjs --config vitest.config.node.js"
   },
   "standard": {
     "env": [

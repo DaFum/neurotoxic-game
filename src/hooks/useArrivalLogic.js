@@ -52,8 +52,8 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
       const currentNode = gameMap?.nodes[player.currentNodeId]
       let travelEventActive = false
 
-      // If there is NO current node (like in tests where player.currentNodeId does not map to gameMap.nodes),
-      // the original code still fell back to attempting to trigger an event if !isGigNode.
+      // If there is no resolved current node (e.g. incomplete map fixture),
+      // processTravelEvents keeps legacy behavior and still attempts travel events.
       if (!isGigNode(currentNode)) {
         travelEventActive = processTravelEvents(currentNode, triggerEvent)
       }
