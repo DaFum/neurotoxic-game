@@ -13,7 +13,8 @@ import { handleError, GameError } from '../../utils/errorHandler'
 import { hashString } from '../../utils/stringUtils'
 
 class RoadieStageController extends BaseStageController {
-  constructor(params) {
+  [key: string]: any
+  constructor(params: any) {
     super(params)
     this.playerContainer = null
     this.playerSprite = null
@@ -104,7 +105,7 @@ class RoadieStageController extends BaseStageController {
         guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
       }
 
-      const loaded = await loadTextures(urls)
+      const loaded = await loadTextures(urls, undefined) as any
 
       if (this.isDisposed) return
 
@@ -120,7 +121,7 @@ class RoadieStageController extends BaseStageController {
         GUITAR: loaded.guitar
       }
     } catch (e) {
-      handleError(new GameError('Asset load failed', { cause: e }))
+      handleError(new GameError('Asset load failed', { cause: e } as any))
     }
   }
 
@@ -166,7 +167,7 @@ class RoadieStageController extends BaseStageController {
     this.container.addChildAt(g, 0)
   }
 
-  update(dt) {
+  update(dt: any) {
     if (this.isDisposed || !this.app || !this.playerContainer) return
 
     if (this.effectManager) this.effectManager.update(dt)
@@ -188,14 +189,14 @@ class RoadieStageController extends BaseStageController {
     this._cleanupTraffic()
   }
 
-  _updatePlayerPosition(state, cellW, cellH) {
+  _updatePlayerPosition(state: any, cellW: any, cellH: any) {
     if (this.playerContainer) {
       this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
       this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
     }
   }
 
-  _updateCarryingVisuals(state, cellW, cellH) {
+  _updateCarryingVisuals(state: any, cellW: any, cellH: any) {
     if (this.itemSprite && this.textures.items) {
       if (state.carrying) {
         this.itemSprite.visible = true
@@ -217,7 +218,7 @@ class RoadieStageController extends BaseStageController {
     }
   }
 
-  _checkDamageTriggers(state) {
+  _checkDamageTriggers(state: any) {
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
       const redColor = this.colors.bloodRed
@@ -243,7 +244,7 @@ class RoadieStageController extends BaseStageController {
     }
   }
 
-  _getOrCreateCarSprite(car) {
+  _getOrCreateCarSprite(car: any) {
     let sprite = this.carSprites.get(car.id)
     if (sprite) return sprite
 
@@ -270,7 +271,7 @@ class RoadieStageController extends BaseStageController {
     return sprite
   }
 
-  _renderTraffic(state, cellW, cellH) {
+  _renderTraffic(state: any, cellW: any, cellH: any) {
     if (!Array.isArray(state.traffic)) return
 
     this.currentIds.clear()
@@ -363,5 +364,5 @@ class RoadieStageController extends BaseStageController {
   }
 }
 
-export const createRoadieStageController = params =>
+export const createRoadieStageController = (params: any) =>
   new RoadieStageController(params)
