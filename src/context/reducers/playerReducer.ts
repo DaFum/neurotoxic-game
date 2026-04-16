@@ -36,6 +36,10 @@ export const handleUpdatePlayer = (
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload || {}
 
+  if (updates == null || typeof updates !== 'object') {
+    return state
+  }
+
   const nextFame = clampPlayerFame(
     Object.hasOwn(updates, 'fame') ? (updates.fame as number) : state.player.fame
   )
