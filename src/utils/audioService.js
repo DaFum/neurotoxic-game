@@ -25,7 +25,6 @@ export const audioService = {
   subscribe,
   setMusicVolume: value => audioManager.setMusicVolume(value),
   setSfxVolume: value => audioManager.setSFXVolume(value),
-  setSFXVolume: value => audioManager.setSFXVolume(value),
   toggleMute: () => audioManager.toggleMute(),
   startAmbient: (...args) => audioManager.startAmbient(...args),
   stopMusic: () => audioManager.stopMusic(),
