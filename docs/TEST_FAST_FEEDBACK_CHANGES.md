@@ -16,7 +16,7 @@
 * Moved deep comparison and formatting tests into `tests/locale/full.test.js` to ensure the release pipeline is rigorous.
 
 ## 4. `GigIntegration.test.jsx` Refactored
-* Extracted the massive Tone.js mock object into a reusable helper at `tests/mocks/toneMock.js`.
+* Refactored the massive Tone.js mock object in `tests/GigIntegration.test.jsx` into a compact shared `MockAudioNode` class using `vi.hoisted()`.
 
 ## 5. Playwright Optimizations
 * `fullyParallel` is automatically enabled on CI for concurrent test files.
