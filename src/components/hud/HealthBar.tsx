@@ -20,7 +20,7 @@ export const HealthBar = memo(function HealthBar({
       <div className='bg-void-black/80 p-4 border border-toxic-green/30 backdrop-blur-sm'>
         <BlockMeter
           label={String(t('ui:gig.crowdEnergy', 'CROWD ENERGY'))}
-          value={Math.round((health / 100) * 20)}
+          value={Math.min(20, Math.max(0, Math.round((health / 100) * 20)))}
           max={20}
           isDanger={health < 20}
         />
