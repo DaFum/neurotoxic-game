@@ -861,3 +861,26 @@ export const hasActiveSponsorship = (socialState: any): boolean => {
     (d: any) => d.type === 'SPONSORSHIP' && (d.remainingGigs ?? 1) > 0
   )
 }
+
+/**
+ * Normalizes an unknown setlist payload to an array of objects with an 'id' property.
+ * @param {unknown} setlist - The setlist payload to normalize.
+ * @returns {Array<{ id: string }>} Normalized setlist.
+ */
+export const normalizeSetlistForSave = (setlist: unknown): Array<{ id: string }> => {
+  if (!Array.isArray(setlist)) return []
+
+  const result: { id: string }[] = []
+  for (const song of setlist) {
+    if (typeof song === 'string') {
+      result.push({ id: song })
+    } else if (
+      song &&
+      typeof song === 'object' &&
+      typeof (song as { id?: unknown }).id === 'string'
+    ) {
+      result.push({ id: (song as { id: string }).id })
+    }
+  }
+  return result
+}

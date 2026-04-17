@@ -18,6 +18,7 @@ import {
   QUEST_APOLOGY_TOUR
 } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
+import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
@@ -38,7 +39,7 @@ export const handleStartGig = (state, payload) => {
 }
 
 export const handleSetSetlist = (state, payload) => {
-  return { ...state, setlist: payload }
+  return { ...state, setlist: normalizeSetlistForSave(payload) }
 }
 
 /**
