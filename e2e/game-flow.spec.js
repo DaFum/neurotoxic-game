@@ -204,7 +204,15 @@ test.describe('Game Flow', () => {
           continue
         }
 
-        await page.waitForTimeout(300)
+        await Promise.race([
+          tourPlanHeading
+            .waitFor({ state: 'visible', timeout: 300 })
+            .catch(() => null),
+          skipIntroBtn
+            .waitFor({ state: 'visible', timeout: 300 })
+            .catch(() => null),
+          startBtn.waitFor({ state: 'visible', timeout: 300 }).catch(() => null)
+        ]).catch(() => {})
       }
 
       // Hard recovery: reset to menu and retry once from a clean state.
@@ -313,7 +321,17 @@ test.describe('Game Flow', () => {
         await page.keyboard.press('Shift+P')
 
         if (await dismissTopEventDialog()) {
-          await page.waitForTimeout(300)
+          await Promise.race([
+            destReachedBtn
+              .waitFor({ state: 'visible', timeout: 500 })
+              .catch(() => null),
+            tourbusHeading
+              .waitFor({ state: 'hidden', timeout: 500 })
+              .catch(() => null),
+            tourbusMoveLeftBtn
+              .waitFor({ state: 'hidden', timeout: 500 })
+              .catch(() => null)
+          ]).catch(() => {})
           continue
         }
 
@@ -323,7 +341,17 @@ test.describe('Game Flow', () => {
         if (hasTourbusContinue) {
           await destReachedBtn.click({ timeout: 2000 }).catch(() => {})
         }
-        await page.waitForTimeout(300)
+        await Promise.race([
+          destReachedBtn
+            .waitFor({ state: 'visible', timeout: 500 })
+            .catch(() => null),
+          tourbusHeading
+            .waitFor({ state: 'hidden', timeout: 500 })
+            .catch(() => null),
+          tourbusMoveLeftBtn
+            .waitFor({ state: 'hidden', timeout: 500 })
+            .catch(() => null)
+        ]).catch(() => {})
       }
     }
 
@@ -344,7 +372,11 @@ test.describe('Game Flow', () => {
       if (!dismissed) {
         break
       }
-      await page.waitForTimeout(500) // allow UI to settle
+      await page
+        .getByRole('dialog')
+        .first()
+        .waitFor({ state: 'hidden', timeout: 1000 })
+        .catch(() => {})
     }
 
     // If we are still in overworld due to a detour event (e.g., MISSED EXIT),
@@ -371,7 +403,11 @@ test.describe('Game Flow', () => {
         if (!dismissed) {
           break
         }
-        await page.waitForTimeout(500)
+        await page
+          .getByRole('dialog')
+          .first()
+          .waitFor({ state: 'hidden', timeout: 1000 })
+          .catch(() => {})
       }
     }
 
@@ -399,7 +435,11 @@ test.describe('Game Flow', () => {
       for (let j = 0; j < 3; j++) {
         const dismissed = await dismissTopEventDialog()
         if (!dismissed) break
-        await page.waitForTimeout(300)
+        await page
+          .getByRole('dialog')
+          .first()
+          .waitFor({ state: 'hidden', timeout: 500 })
+          .catch(() => {})
       }
     }
 
@@ -420,12 +460,39 @@ test.describe('Game Flow', () => {
     // 4. Pre-Gig Minigame (Roadie or Kabelsalat)
     // We arrive at either Roadie Run or Kabelsalat screen randomly.
 
-    // We can just use Shift+P backdoor for both.
-    await page.waitForTimeout(2000)
+    // We can just use Shift+P backdoor for both. Wait for either the
+    // minigame canvas or a continue/gig-report element before proceeding.
+    await Promise.race([
+      page
+        .locator('canvas')
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .catch(() => null),
+      page
+        .getByRole('button', { name: /continue/i, exact: true })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .catch(() => null),
+      page
+        .getByRole('heading', { name: /gig report/i })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .catch(() => null)
+    ]).catch(() => {})
 
     // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
     await page.keyboard.press('Shift+P')
-    await page.waitForTimeout(2000)
+    await Promise.race([
+      page
+        .getByRole('button', { name: /continue/i, exact: true })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .catch(() => null),
+      page
+        .getByRole('heading', { name: /gig report/i })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .catch(() => null),
+      page
+        .locator('canvas')
+        .waitFor({ state: 'hidden', timeout: 2000 })
+        .catch(() => null)
+    ]).catch(() => {})
 
     // Handle minigame specific continue buttons if any
     const continueBtn = page.getByRole('button', {
