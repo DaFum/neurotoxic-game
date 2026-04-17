@@ -51,6 +51,8 @@
     "i18next-browser-languagedetector": "^8.2.1",
     "i18next-http-backend": "^3.0.4",
     "lucide-react": "1.8.0",
+    "motion-dom": "^12.38.0",
+    "motion-utils": "^12.36.0",
     "pixi.js": "8.18.1",
     "playwright": "^1.59.1",
     "prop-types": "15.8.1",
