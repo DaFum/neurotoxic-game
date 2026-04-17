@@ -9,7 +9,7 @@ import { logger } from './logger'
  * @param {number} value - Candidate value.
  * @returns {number} Clamped value ensuring non-negative.
  */
-export const clampNonNegative = value => {
+export const clampNonNegative = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, value)
 }
@@ -19,7 +19,7 @@ export const clampNonNegative = value => {
  * @param {number} fame - Raw fame amount.
  * @returns {number} Derived fame level.
  */
-export const calculateFameLevel = fame => {
+export const calculateFameLevel = (fame: number): number => {
   const clampedFame = clampNonNegative(fame)
   return Math.floor(clampedFame / 100)
 }
@@ -31,7 +31,10 @@ export const calculateFameLevel = fame => {
  * @param {number} [staminaMax=100] - The member's maximum stamina.
  * @returns {number} Clamped stamina value.
  */
-export const clampMemberStamina = (stamina, staminaMax = 100) => {
+export const clampMemberStamina = (
+  stamina: number,
+  staminaMax = 100
+): number => {
   if (!Number.isFinite(stamina)) return 0
   const resolvedStaminaMax = Number.isFinite(staminaMax) ? staminaMax : 100
   return Math.max(0, Math.min(resolvedStaminaMax, Math.floor(stamina)))
@@ -43,7 +46,7 @@ export const clampMemberStamina = (stamina, staminaMax = 100) => {
  * @param {number} mood - Candidate mood value.
  * @returns {number} Clamped mood value.
  */
-export const clampMemberMood = mood => {
+export const clampMemberMood = (mood: number): number => {
   if (!Number.isFinite(mood)) return 0
   return Math.max(0, Math.min(100, Math.floor(mood)))
 }
@@ -54,7 +57,7 @@ export const clampMemberMood = mood => {
  * @param {number} fame - Candidate fame value.
  * @returns {number} Clamped non-negative fame value.
  */
-export const clampPlayerFame = fame => {
+export const clampPlayerFame = (fame: number): number => {
   if (!Number.isFinite(fame)) return 0
   return Math.max(0, Math.floor(fame))
 }
@@ -73,7 +76,7 @@ export const FAME_PROGRESS_CONSTANTS = Object.freeze({
  * @param {number} performanceScore - Gig performance score.
  * @returns {number} Raw gig fame reward.
  */
-export const calculateGigFameReward = performanceScore => {
+export const calculateGigFameReward = (performanceScore: number): number => {
   const safePerformanceScore = Number.isFinite(performanceScore)
     ? Math.max(0, performanceScore)
     : 0
@@ -94,7 +97,11 @@ export const calculateGigFameReward = performanceScore => {
  * @param {number} [maxGain=2000] - Hard cap on raw gain.
  * @returns {number} The final damped fame gain.
  */
-export const calculateFameGain = (rawGain, currentFame, maxGain = 2000) => {
+export const calculateFameGain = (
+  rawGain: number,
+  currentFame: number,
+  maxGain = 2000
+): number => {
   let fameGain = Math.min(maxGain, rawGain)
   const prevFame = currentFame ?? 0
 
@@ -118,7 +125,7 @@ export const calculateFameGain = (rawGain, currentFame, maxGain = 2000) => {
  * @param {number} level - Candidate controversy level.
  * @returns {number} Clamped controversy level in range [0, 100].
  */
-export const clampControversyLevel = level => {
+export const clampControversyLevel = (level: number): number => {
   if (!Number.isFinite(level)) return 0
   const safeLevel = Math.floor(level)
   return Math.max(0, Math.min(100, safeLevel))
@@ -131,7 +138,7 @@ export const clampControversyLevel = level => {
  * @param {number} money - Candidate money value.
  * @returns {number} Clamped money value ensuring non-negative integer.
  */
-export const clampPlayerMoney = money => {
+export const clampPlayerMoney = (money: number): number => {
   if (!Number.isFinite(money)) return 0
   return Math.floor(Math.max(0, money))
 }
@@ -169,7 +176,7 @@ export const RELATIONSHIP_MAX_SCORE = 100
  * @param {number} harmony - Candidate harmony value.
  * @returns {number} Clamped harmony value in range [1, 100].
  */
-export const clampBandHarmony = harmony => {
+export const clampBandHarmony = (harmony: number): number => {
   if (!Number.isFinite(harmony)) return 1
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
@@ -181,7 +188,7 @@ export const clampBandHarmony = harmony => {
  * @param {number} condition - Candidate condition value.
  * @returns {number} Clamped condition value.
  */
-export const clampVanCondition = condition => {
+export const clampVanCondition = (condition: number): number => {
   if (!Number.isFinite(condition)) return 0
   return Math.floor(Math.max(0, Math.min(100, condition)))
 }
@@ -194,9 +201,9 @@ export const clampVanCondition = condition => {
  * @returns {number} Clamped fuel value.
  */
 export const clampVanFuel = (
-  fuel,
+  fuel: number,
   maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
-) => {
+): number => {
   if (!Number.isFinite(fuel)) return 0
   return Math.max(0, Math.min(maxFuel, fuel))
 }
@@ -255,7 +262,7 @@ const calculateClampedControversyDelta = (currentValue, deltaValue) => {
  * @param {object} source - Source object to copy from.
  * @returns {object} New object with filtered properties.
  */
-const copyFilteredProperties = source => {
+const copyFilteredProperties = (source: any) => {
   if (!source) return Object.create(null)
 
   // Explicit check for prototype pollution before copying properties
@@ -282,8 +289,8 @@ const copyFilteredProperties = source => {
   return destination
 }
 
-export const calculateAppliedDelta = (state, delta) => {
-  const applied = { player: {}, band: {}, social: {} }
+export const calculateAppliedDelta = (state: any, delta: any): any => {
+  const applied: any = { player: {}, band: {}, social: {} }
 
   if (delta.flags) {
     applied.flags = copyFilteredProperties(delta.flags)
@@ -477,12 +484,12 @@ export const calculateAppliedDelta = (state, delta) => {
  * @returns {object|null} The calculated change or null if none.
  */
 export const calculateMemberRelationshipChange = (
-  change,
-  memberName,
-  hasGrudgeHolder,
-  hasPeacemaker,
-  currentRelationships
-) => {
+  change: any,
+  memberName: string,
+  hasGrudgeHolder: boolean,
+  hasPeacemaker: boolean,
+  currentRelationships: Record<string, number>
+): { other: string; newScore: number } | null => {
   const isM1 = change.member1 === memberName
   const isM2 = change.member2 === memberName
 
@@ -512,8 +519,8 @@ export const calculateMemberRelationshipChange = (
   return { other, newScore }
 }
 
-export const applyEventDelta = (state, delta) => {
-  const nextState = { ...state }
+export const applyEventDelta = (state: any, delta: any): any => {
+  const nextState: any = { ...state }
 
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
@@ -833,7 +840,10 @@ export const applyEventDelta = (state, delta) => {
  * @param {any} item - The item to look for.
  * @returns {boolean} True if the collection contains the item.
  */
-export const hasStateItem = (collection, item) => {
+export const hasStateItem = (
+  collection: Set<any> | any[] | null | undefined,
+  item: any
+): boolean => {
   return collection instanceof Set
     ? collection.has(item)
     : (collection || []).includes(item)
@@ -846,8 +856,8 @@ export const hasStateItem = (collection, item) => {
  * @param {object} socialState
  * @returns {boolean}
  */
-export const hasActiveSponsorship = socialState => {
+export const hasActiveSponsorship = (socialState: any): boolean => {
   return (socialState?.activeDeals || []).some(
-    d => d.type === 'SPONSORSHIP' && (d.remainingGigs ?? 1) > 0
+    (d: any) => d.type === 'SPONSORSHIP' && (d.remainingGigs ?? 1) > 0
   )
 }

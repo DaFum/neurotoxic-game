@@ -1,9 +1,14 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
-export const GameOverOverlay = memo(function GameOverOverlay({ isGameOver }) {
+interface GameOverOverlayProps {
+  isGameOver?: boolean
+}
+
+export const GameOverOverlay = memo(function GameOverOverlay({
+  isGameOver
+}: GameOverOverlayProps) {
   const { t } = useTranslation()
   if (!isGameOver) return null
   return (
@@ -23,7 +28,3 @@ export const GameOverOverlay = memo(function GameOverOverlay({ isGameOver }) {
     </div>
   )
 })
-
-GameOverOverlay.propTypes = {
-  isGameOver: PropTypes.bool
-}

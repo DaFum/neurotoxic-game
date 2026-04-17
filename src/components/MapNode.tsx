@@ -1,18 +1,58 @@
 // TODO: Review this file
 import { memo, useCallback, useMemo, useState } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
+import type { MapNode as GameMapNode } from '../types/game'
+import type { TranslationCallback } from '../types/callbacks'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
 const MOTION_ANIMATE = { scale: 1 }
 const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
 const MOTION_NO_HOVER = {}
+type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
 
-const getPinAltText = (t, type) => {
+interface MapVenueData {
+  id?: string
+  name?: string
+  capacity?: number
+  pay?: number
+  price?: number
+  diff?: number
+  [key: string]: unknown
+}
+
+interface MapNodeData extends GameMapNode {
+  type: string
+  venue?: MapVenueData
+}
+
+interface MapNodeTooltipProps {
+  node: MapNodeData
+  isCurrent: boolean
+  nodeLocationName: string
+  ticketPrice?: number
+  t: TranslationCallback
+}
+
+interface MapNodeProps {
+  node: MapNodeData
+  isCurrent: boolean
+  isTraveling: boolean
+  visibility: NodeVisibility
+  isReachable: boolean
+  isPendingConfirm?: boolean
+  handleTravel: (node: MapNodeData) => void
+  setHoveredNode: (node: MapNodeData | null) => void
+  iconUrl: string
+  vanUrl: string
+  ticketPrice?: number
+}
+
+const getPinAltText = (t: TranslationCallback, type: string): string => {
   return t('ui:map.pinTypeAlt', {
     type: t('ui:map.nodeType.fallback', {
       type: type.replace('_', ' ')
@@ -20,7 +60,7 @@ const getPinAltText = (t, type) => {
   })
 }
 
-const getNodeTypeLabel = (t, type) => {
+const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   if (type === 'GIG') return t('ui:map.nodeType.gig')
   if (type === 'REST_STOP') return t('ui:map.nodeType.rest')
   return t('ui:map.nodeType.fallback', {
@@ -29,7 +69,13 @@ const getNodeTypeLabel = (t, type) => {
 }
 
 const MapNodeTooltip = memo(
-  ({ node, isCurrent, nodeLocationName, ticketPrice, t }) => {
+  ({
+    node,
+    isCurrent,
+    nodeLocationName,
+    ticketPrice,
+    t
+  }: MapNodeTooltipProps) => {
     return (
       <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
@@ -77,21 +123,6 @@ const MapNodeTooltip = memo(
 )
 
 MapNodeTooltip.displayName = 'MapNodeTooltip'
-MapNodeTooltip.propTypes = {
-  node: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    venue: PropTypes.shape({
-      capacity: PropTypes.number,
-      pay: PropTypes.number,
-      price: PropTypes.number,
-      diff: PropTypes.number
-    })
-  }).isRequired,
-  isCurrent: PropTypes.bool.isRequired,
-  nodeLocationName: PropTypes.string.isRequired,
-  ticketPrice: PropTypes.number,
-  t: PropTypes.func.isRequired
-}
 
 export const MapNode = memo(
   ({
@@ -106,22 +137,22 @@ export const MapNode = memo(
     iconUrl,
     vanUrl,
     ticketPrice
-  }) => {
+  }: MapNodeProps) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
 
+    const handleClick = useCallback(
+      () => handleTravel(node),
+      [handleTravel, node]
+    )
+
     const handleKeyDown = useCallback(
-      e => {
+      (e: ReactKeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           handleTravel(node)
         }
       },
-      [handleTravel, node]
-    )
-
-    const handleClick = useCallback(
-      () => handleTravel(node),
       [handleTravel, node]
     )
 
@@ -185,7 +216,6 @@ export const MapNode = memo(
         onMouseLeave={handleMouseLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        role={isReachable ? 'button' : undefined}
         aria-label={
           isReachable
             ? t('ui:map.travel_to', {
@@ -193,7 +223,8 @@ export const MapNode = memo(
               }) + (isPendingConfirm ? t('ui:map.click_to_confirm') : '')
             : undefined
         }
-        tabIndex={isReachable ? 0 : undefined}
+        role={isReachable ? 'button' : undefined}
+        tabIndex={isReachable ? 0 : -1}
         onKeyDown={isReachable ? handleKeyDown : undefined}
       >
         {/* Target Crosshairs (appear on hover/focus) */}
@@ -266,7 +297,7 @@ export const MapNode = memo(
       </div>
     )
   },
-  (prev, next) => {
+  (prev: Readonly<MapNodeProps>, next: Readonly<MapNodeProps>) => {
     return (
       prev.node.id === next.node.id &&
       prev.node.x === next.node.x &&
@@ -292,28 +323,3 @@ export const MapNode = memo(
 )
 
 MapNode.displayName = 'MapNode'
-MapNode.propTypes = {
-  node: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-    venue: PropTypes.shape({
-      name: PropTypes.string,
-      capacity: PropTypes.number,
-      pay: PropTypes.number,
-      price: PropTypes.number,
-      diff: PropTypes.number
-    })
-  }).isRequired,
-  isCurrent: PropTypes.bool.isRequired,
-  isTraveling: PropTypes.bool.isRequired,
-  visibility: PropTypes.string.isRequired,
-  isReachable: PropTypes.bool.isRequired,
-  isPendingConfirm: PropTypes.bool,
-  handleTravel: PropTypes.func.isRequired,
-  setHoveredNode: PropTypes.func.isRequired,
-  iconUrl: PropTypes.string.isRequired,
-  vanUrl: PropTypes.string.isRequired,
-  ticketPrice: PropTypes.number
-}

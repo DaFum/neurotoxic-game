@@ -1,13 +1,17 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Tooltip } from '../../ui/shared'
+
+interface PauseButtonProps {
+  onTogglePause?: () => void
+  isGameOver?: boolean
+}
 
 export const PauseButton = memo(function PauseButton({
   onTogglePause,
   isGameOver
-}) {
+}: PauseButtonProps) {
   const { t } = useTranslation(['ui'])
 
   return (
@@ -42,8 +46,3 @@ export const PauseButton = memo(function PauseButton({
     </div>
   )
 })
-
-PauseButton.propTypes = {
-  onTogglePause: PropTypes.func,
-  isGameOver: PropTypes.bool
-}

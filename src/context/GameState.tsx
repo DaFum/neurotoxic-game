@@ -1,6 +1,9 @@
 // TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
 import {
+  type Dispatch,
+  type Context,
+  type ReactNode,
   createContext,
   use,
   useReducer,
@@ -75,11 +78,45 @@ import {
   createAddVenueBlacklistAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
+import type {
+  BloodBankDonatePayload,
+  ClinicActionPayload,
+  GameAction,
+  GameState,
+  MerchPressPayload,
+  PirateBroadcastPayload,
+  SocialState,
+  ToastPayload,
+  TradeVoidItemPayload,
+  UpdateBandPayload,
+  UpdatePlayerPayload
+} from '../types/game'
 
-const GameStateContext = createContext()
-const GameDispatchContext = createContext()
+declare global {
+  interface Window {
+    gameState?: unknown
+  }
+}
+
+type GameDispatchContextValue = Record<string, unknown>
+type EventResolution = {
+  result?: unknown
+  delta?: {
+    flags?: {
+      addQuest?: unknown
+      unlock?: unknown
+      gameOver?: unknown
+    }
+    [key: string]: unknown
+  }
+  outcomeText?: string
+  description?: string
+}
+
+const GameStateContext = createContext<GameState | null>(null)
+const GameDispatchContext = createContext<GameDispatchContextValue | null>(null)
 const SAVE_KEY = 'neurotoxic_v3_save'
-const normalizeSetlistForSave = setlist => {
+const normalizeSetlistForSave = (setlist: unknown): Array<{ id: string }> => {
   if (!Array.isArray(setlist)) return []
 
   return setlist
@@ -87,15 +124,20 @@ const normalizeSetlistForSave = setlist => {
       if (typeof song === 'string') {
         return { id: song }
       }
-      if (song && song.id) {
-        return { id: song.id }
+      if (
+        song &&
+        typeof song === 'object' &&
+        'id' in song &&
+        typeof (song as { id?: unknown }).id === 'string'
+      ) {
+        return { id: (song as { id: string }).id }
       }
       return null
     })
-    .filter(Boolean)
+    .filter((value): value is { id: string } => value !== null)
 }
 
-const createPersistedState = currentState => {
+const createPersistedState = (currentState: GameState) => {
   const {
     version,
     currentScene,
@@ -142,21 +184,53 @@ const createPersistedState = currentState => {
   }
 }
 
-const isPlainObject = value =>
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const processAddQuests = (quests, currentDay, dispatch) => {
+const processAddQuests = (
+  quests: unknown,
+  currentDay: number,
+  dispatch: Dispatch<GameAction>
+) => {
   if (!Array.isArray(quests)) return
 
   quests.forEach(q => {
     // Parse relative deadlines
-    const questToAdd = { ...q }
+    const questToAdd = { ...(q as Record<string, unknown>) }
     if (questToAdd.deadlineOffset) {
-      questToAdd.deadline = currentDay + questToAdd.deadlineOffset
+      questToAdd.deadline =
+        currentDay + Number(questToAdd.deadlineOffset || 0)
       delete questToAdd.deadlineOffset
     }
     dispatch(createAddQuestAction(questToAdd))
   })
+}
+
+function safeStorage<T>(
+  operation: string,
+  fn: () => T,
+  fallbackValue: T
+): T {
+  return (safeStorageOperation as unknown as (
+    op: string,
+    exec: () => T,
+    fallback: T
+  ) => T)(operation, fn, fallbackValue)
+}
+
+function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
+  return (safeStorageOperation as unknown as (op: string, exec: () => T) => T)(
+    operation,
+    fn
+  )
+}
+
+function useRequiredContext<T>(context: Context<T | null>, name: string): T {
+  const value = use(context)
+  if (value === null) {
+    throw new Error(`${name} must be used within GameStateProvider`)
+  }
+  return value
 }
 
 /**
@@ -164,7 +238,7 @@ const processAddQuests = (quests, currentDay, dispatch) => {
  * @param {object} props
  * @param {React.ReactNode} props.children
  */
-export const GameStateProvider = ({ children }) => {
+export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const { t } = useTranslation()
   const tRef = useRef(t)
   useEffect(() => {
@@ -172,16 +246,16 @@ export const GameStateProvider = ({ children }) => {
   }, [t])
 
   // Lazy initialization of state to ensure fresh data fetch on mount
-  const initGameState = () => {
+  const initGameState = (): GameState => {
     const unlocks =
-      safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
-    const freshState = createInitialState({ unlocks })
+      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
+    const freshState = createInitialState({ unlocks }) as unknown as GameState
 
     // Check for test-injected state (screenshot testing).
     // A special marker key signals the state was placed by the screenshot
     // injection script and should be hydrated on mount.  Normal player
     // saves are loaded explicitly via the MENU → "Load Game" button.
-    const shouldHydrate = safeStorageOperation(
+    const shouldHydrate = safeStorage(
       'checkInjectMarker',
       () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
       false
@@ -193,13 +267,13 @@ export const GameStateProvider = ({ children }) => {
       // the second (authoritative) call to miss the marker and return INTRO.
       // The marker is cleaned up in a useEffect after mount instead.
 
-      const savedGame = safeStorageOperation(
+      const savedGame = safeStorage(
         'loadInjectedState',
         () => {
           const saved = localStorage.getItem(SAVE_KEY)
-          return saved ? JSON.parse(saved) : null
+          return saved ? (JSON.parse(saved) as Partial<GameState>) : null
         },
-        null
+        null as Partial<GameState> | null
       )
 
       if (savedGame && savedGame.version !== undefined) {
@@ -219,7 +293,7 @@ export const GameStateProvider = ({ children }) => {
             // isScreenshotMode flag is used by scenes to suppress random events
             isScreenshotMode:
               savedGame.isScreenshotMode ?? freshState.isScreenshotMode
-          }
+          } as GameState
         } catch (err) {
           logger.error('GameState', 'Failed to hydrate injected state', err)
         }
@@ -234,13 +308,13 @@ export const GameStateProvider = ({ children }) => {
   // Clean up injection marker after mount (deferred from initGameState to
   // survive React StrictMode's double-invocation of lazy initialisers).
   useEffect(() => {
-    safeStorageOperation('removeInjectMarker', () =>
+    safeStorageNoFallback('removeInjectMarker', () =>
       localStorage.removeItem('neurotoxic_inject_marker')
     )
 
     // Also clean up on page unload to prevent marker persistence if test crashes
     const handleUnload = () => {
-      safeStorageOperation('removeInjectMarkerOnUnload', () =>
+      safeStorageNoFallback('removeInjectMarkerOnUnload', () =>
         localStorage.removeItem('neurotoxic_inject_marker')
       )
     }
@@ -259,7 +333,7 @@ export const GameStateProvider = ({ children }) => {
   // Initialize Map if needed
   useEffect(() => {
     if (!state.gameMap) {
-      const generator = new MapGenerator()
+      const generator = new MapGenerator(Date.now())
       const newMap = generator.generateMap()
       dispatch(createSetMapAction(newMap))
     }
@@ -279,7 +353,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
-    scene => startTransition(() => dispatch(createChangeSceneAction(scene))),
+    (scene: Parameters<typeof createChangeSceneAction>[0]) =>
+      startTransition(() => dispatch(createChangeSceneAction(scene))),
     []
   )
 
@@ -288,7 +363,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updatePlayer = useCallback(
-    updates => dispatch(createUpdatePlayerAction(updates)),
+    (updates: UpdatePlayerPayload) => dispatch(createUpdatePlayerAction(updates)),
     []
   )
 
@@ -297,7 +372,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateBand = useCallback(
-    updates => dispatch(createUpdateBandAction(updates)),
+    (updates: UpdateBandPayload) => dispatch(createUpdateBandAction(updates)),
     []
   )
 
@@ -306,7 +381,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateSocial = useCallback(
-    updates => dispatch(createUpdateSocialAction(updates)),
+    (updates: Partial<SocialState>) => dispatch(createUpdateSocialAction(updates)),
     []
   )
 
@@ -314,7 +389,7 @@ export const GameStateProvider = ({ children }) => {
    * Updates global settings.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSettings = useCallback(updates => {
+  const updateSettings = useCallback((updates: Record<string, unknown>) => {
     dispatch(createUpdateSettingsAction(updates))
 
     // Synchronize logger if logLevel is updated
@@ -323,7 +398,7 @@ export const GameStateProvider = ({ children }) => {
     }
 
     // Persist to global settings (persist across new games)
-    safeStorageOperation('saveGlobalSettings', () => {
+    safeStorageNoFallback('saveGlobalSettings', () => {
       const current = JSON.parse(
         localStorage.getItem('neurotoxic_global_settings') || '{}'
       )
@@ -336,14 +411,19 @@ export const GameStateProvider = ({ children }) => {
    * Sets the generated game map.
    * @param {object} map - The map object.
    */
-  const setGameMap = useCallback(map => dispatch(createSetMapAction(map)), [])
+  const setGameMap = useCallback(
+    (map: Parameters<typeof createSetMapAction>[0]) =>
+      dispatch(createSetMapAction(map)),
+    []
+  )
 
   /**
    * Sets the current gig data context.
    * @param {object} gig - The gig data object.
    */
   const setCurrentGig = useCallback(
-    gig => dispatch(createSetGigAction(gig)),
+    (gig: Parameters<typeof createSetGigAction>[0]) =>
+      dispatch(createSetGigAction(gig)),
     []
   )
 
@@ -352,7 +432,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} venue - The venue object.
    */
   const startGig = useCallback(
-    venue => startTransition(() => dispatch(createStartGigAction(venue))),
+    (venue: Parameters<typeof createStartGigAction>[0]) =>
+      startTransition(() => dispatch(createStartGigAction(venue))),
     []
   )
 
@@ -361,7 +442,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {Array} list - Array of song objects or IDs.
    */
   const setSetlist = useCallback(
-    list => dispatch(createSetSetlistAction(list)),
+    (list: Parameters<typeof createSetSetlistAction>[0]) =>
+      dispatch(createSetSetlistAction(list)),
     []
   )
 
@@ -370,7 +452,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} stats - The stats object.
    */
   const setLastGigStats = useCallback(
-    stats => dispatch(createSetLastGigStatsAction(stats)),
+    (stats: Parameters<typeof createSetLastGigStatsAction>[0]) =>
+      dispatch(createSetLastGigStatsAction(stats)),
     []
   )
 
@@ -379,7 +462,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} event - The event object or null.
    */
   const setActiveEvent = useCallback(
-    event => dispatch(createSetActiveEventAction(event)),
+    (event: Parameters<typeof createSetActiveEventAction>[0]) =>
+      dispatch(createSetActiveEventAction(event)),
     []
   )
 
@@ -388,7 +472,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object|Function} payload - The new modifiers or an updater function.
    */
   const setGigModifiers = useCallback(
-    payload => dispatch(createSetGigModifiersAction(payload)),
+    (payload: Parameters<typeof createSetGigModifiersAction>[0]) =>
+      dispatch(createSetGigModifiersAction(payload)),
     []
   )
 
@@ -397,12 +482,18 @@ export const GameStateProvider = ({ children }) => {
    * @param {string|Object} messageOrPayload - Plain message or structured toast payload.
    * @param {string} [type='info'] - Type of toast (info, success, error, warning).
    */
-  const addToast = useCallback((messageOrPayload, type = 'info') => {
+  const addToast = useCallback(
+    (
+      messageOrPayload: Parameters<typeof createAddToastAction>[0],
+      type: Parameters<typeof createAddToastAction>[1] = 'info'
+    ) => {
     const action = createAddToastAction(messageOrPayload, type)
     dispatch(action)
-  }, [])
+    },
+    []
+  )
 
-  const removeToast = useCallback(id => {
+  const removeToast = useCallback((id: Parameters<typeof createRemoveToastAction>[0]) => {
     dispatch(createRemoveToastAction(id))
   }, [])
 
@@ -411,7 +502,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} itemType - The item key (e.g., 'strings').
    */
   const consumeItem = useCallback(
-    itemType => dispatch(createConsumeItemAction(itemType)),
+    (itemType: Parameters<typeof createConsumeItemAction>[0]) =>
+      dispatch(createConsumeItemAction(itemType)),
     []
   )
 
@@ -422,7 +514,11 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} [memberId] - Optional. The ID of the band member.
    */
   const useContraband = useCallback(
-    (instanceId, contrabandId, memberId) =>
+    (
+      instanceId: Parameters<typeof createUseContrabandAction>[0],
+      contrabandId: Parameters<typeof createUseContrabandAction>[1],
+      memberId?: Parameters<typeof createUseContrabandAction>[2]
+    ) =>
       dispatch(createUseContrabandAction(instanceId, contrabandId, memberId)),
     []
   )
@@ -443,21 +539,25 @@ export const GameStateProvider = ({ children }) => {
    */
   const resetState = useCallback(() => {
     const unlocks =
-      safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
     dispatch(createResetStateAction({ unlocks }))
   }, [])
 
   // Minigame Actions
   const startTravelMinigame = useCallback(
-    targetNodeId =>
+    (targetNodeId: Parameters<typeof createStartTravelMinigameAction>[0]) =>
       startTransition(() =>
         dispatch(createStartTravelMinigameAction(targetNodeId))
       ),
     []
   )
 
-  const completeTravelMinigame = useCallback((damageTaken, itemsCollected) => {
-    const rngValue = secureRandom()
+  const completeTravelMinigame = useCallback(
+    (
+      damageTaken: Parameters<typeof createCompleteTravelMinigameAction>[0],
+      itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
+    ) => {
+    const rngValue = secureRandom() as number
     const contrabandId = pickRandomContraband(secureRandom)
     const instanceId = getSafeUUID()
     dispatch(
@@ -469,22 +569,24 @@ export const GameStateProvider = ({ children }) => {
         instanceId
       )
     )
-  }, [])
+    },
+    []
+  )
 
   const startRoadieMinigame = useCallback(
-    gigId =>
+    (gigId: Parameters<typeof createStartRoadieMinigameAction>[0]) =>
       startTransition(() => dispatch(createStartRoadieMinigameAction(gigId))),
     []
   )
 
   const completeRoadieMinigame = useCallback(
-    equipmentDamage =>
+    (equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0]) =>
       dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
     []
   )
 
   const startKabelsalatMinigame = useCallback(
-    gigId =>
+    (gigId: Parameters<typeof createStartKabelsalatMinigameAction>[0]) =>
       startTransition(() =>
         dispatch(createStartKabelsalatMinigameAction(gigId))
       ),
@@ -492,39 +594,49 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const completeKabelsalatMinigame = useCallback(
-    results => dispatch(createCompleteKabelsalatMinigameAction(results)),
+    (results: Parameters<typeof createCompleteKabelsalatMinigameAction>[0]) =>
+      dispatch(createCompleteKabelsalatMinigameAction(results)),
     []
   )
 
   const startAmpCalibration = useCallback(
-    gigId =>
+    (gigId: Parameters<typeof createStartAmpCalibrationAction>[0]) =>
       startTransition(() => dispatch(createStartAmpCalibrationAction(gigId))),
     []
   )
 
   const completeAmpCalibration = useCallback(
-    score => dispatch(createCompleteAmpCalibrationAction(score)),
+    (score: Parameters<typeof createCompleteAmpCalibrationAction>[0]) =>
+      dispatch(createCompleteAmpCalibrationAction(score)),
     []
   )
 
   const unlockTrait = useCallback(
-    (memberId, traitId) => dispatch(createUnlockTraitAction(memberId, traitId)),
+    (
+      memberId: Parameters<typeof createUnlockTraitAction>[0],
+      traitId: Parameters<typeof createUnlockTraitAction>[1]
+    ) => dispatch(createUnlockTraitAction(memberId, traitId)),
     []
   )
 
   const addQuest = useCallback(
-    quest => dispatch(createAddQuestAction(quest)),
+    (quest: Parameters<typeof createAddQuestAction>[0]) =>
+      dispatch(createAddQuestAction(quest)),
     []
   )
 
   const advanceQuest = useCallback(
-    (questId, progressAmount) =>
+    (
+      questId: Parameters<typeof createAdvanceQuestAction>[0],
+      progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
+    ) =>
       dispatch(createAdvanceQuestAction(questId, progressAmount)),
     []
   )
 
   const addVenueBlacklist = useCallback(
-    venueId => dispatch(createAddVenueBlacklistAction(venueId)),
+    (venueId: Parameters<typeof createAddVenueBlacklistAction>[0]) =>
+      dispatch(createAddVenueBlacklistAction(venueId)),
     []
   )
 
@@ -533,7 +645,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} payload - The heal action payload.
    */
   const clinicHeal = useCallback(
-    payload => dispatch(createClinicHealAction(payload)),
+    (payload: ClinicActionPayload) => dispatch(createClinicHealAction(payload)),
     []
   )
 
@@ -542,7 +654,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} payload - The enhance action payload.
    */
   const clinicEnhance = useCallback(
-    payload => dispatch(createClinicEnhanceAction(payload)),
+    (payload: ClinicActionPayload) =>
+      dispatch(createClinicEnhanceAction(payload)),
     []
   )
 
@@ -551,7 +664,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} payload - The broadcast payload.
    */
   const pirateBroadcast = useCallback(
-    payload => dispatch(createPirateBroadcastAction(payload)),
+    (payload: PirateBroadcastPayload) =>
+      dispatch(createPirateBroadcastAction(payload)),
     []
   )
 
@@ -560,7 +674,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} payload - The merch press payload.
    */
   const merchPress = useCallback(
-    payload => dispatch(createMerchPressAction(payload)),
+    (payload: MerchPressPayload) => dispatch(createMerchPressAction(payload)),
     []
   )
 
@@ -569,7 +683,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} payload - The void trade payload.
    */
   const tradeVoidItem = useCallback(
-    payload => dispatch(createTradeVoidItemAction(payload)),
+    (payload: TradeVoidItemPayload) =>
+      dispatch(createTradeVoidItemAction(payload)),
     []
   )
 
@@ -578,7 +693,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} payload - The blood bank donation payload.
    */
   const bloodBankDonate = useCallback(
-    payload => dispatch(createBloodBankDonateAction(payload)),
+    (payload: BloodBankDonatePayload) =>
+      dispatch(createBloodBankDonateAction(payload)),
     []
   )
 
@@ -587,7 +703,7 @@ export const GameStateProvider = ({ children }) => {
    * Deletes the save file and reloads the application.
    */
   const deleteSave = useCallback(() => {
-    safeStorageOperation('deleteSave', () => {
+    safeStorageNoFallback('deleteSave', () => {
       localStorage.removeItem(SAVE_KEY)
     })
     // No need to changeScene as location.reload will wipe state anyway
@@ -601,7 +717,7 @@ export const GameStateProvider = ({ children }) => {
     (showToast = true) => {
       const saveData = createPersistedState(stateRef.current)
 
-      const success = safeStorageOperation(
+      const success = safeStorage(
         'saveGame',
         () => {
           localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
@@ -614,7 +730,7 @@ export const GameStateProvider = ({ children }) => {
         if (showToast) {
           addToast(tRef.current('ui:toast.gameSaved'), 'success')
         }
-        logger.info('System', 'Game Saved Successfully')
+        logger.info('System', 'Game Saved Successfully', null)
       } else {
         handleError(new StorageError('Failed to save game'), { addToast })
       }
@@ -656,10 +772,10 @@ export const GameStateProvider = ({ children }) => {
    * @returns {boolean} True if load was successful.
    */
   const loadGame = useCallback(() => {
-    return safeStorageOperation(
+    return safeStorage(
       'loadGame',
       () => {
-        let parsed
+        let parsed: unknown
         try {
           const saved = localStorage.getItem(SAVE_KEY)
           if (!saved) return false
@@ -695,13 +811,15 @@ export const GameStateProvider = ({ children }) => {
         try {
           validateSaveData(parsed)
         } catch (error) {
+          const reason =
+            error instanceof Error ? error.message : String(error)
           handleError(
             new StateError(
               tRef.current('ui:save.corruptFailed', {
                 defaultValue: 'Save file is corrupt or invalid.'
               }),
               {
-                reason: error.message
+                reason
               }
             ),
             { addToast }
@@ -724,7 +842,7 @@ export const GameStateProvider = ({ children }) => {
    * @returns {boolean} True if an event was triggered.
    */
   const triggerEvent = useCallback(
-    (category, triggerPoint = null) => {
+    (category: string, triggerPoint: string | null = null) => {
       const currentState = stateRef.current
       // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
       // "GIG" scene should not be interrupted unless critical logic allows it.
@@ -742,13 +860,26 @@ export const GameStateProvider = ({ children }) => {
       // Pass full state context for flags/cooldowns
       const context = currentState
 
-      let event = eventEngine.checkEvent(category, context, triggerPoint)
+      let event = (eventEngine.checkEvent as (
+        categoryArg: string,
+        contextArg: GameState,
+        triggerArg?: string | null
+      ) => Record<string, unknown> | null)(category, context, triggerPoint)
 
       if (event) {
         // Process dynamic options (Inventory checks)
-        event = eventEngine.processOptions(event, context)
+        const processedEvent = eventEngine.processOptions(
+          event,
+          context
+        ) as Record<string, unknown> | null
+        if (!processedEvent) {
+          return false
+        }
+        const processedEventId =
+          typeof processedEvent.id === 'string' ? processedEvent.id : undefined
+        event = processedEvent
 
-        setActiveEvent(event)
+        setActiveEvent(processedEvent)
         // Increment daily event count
         dispatch(
           createUpdatePlayerAction({
@@ -758,7 +889,11 @@ export const GameStateProvider = ({ children }) => {
         )
 
         // If it was a pending event, remove it from queue
-        if (currentState.pendingEvents.includes(event.id)) {
+        if (
+          currentState.pendingEvents.some(
+            (pending: { id?: string }) => pending.id === processedEventId
+          )
+        ) {
           dispatch(createPopPendingEventAction())
         }
         return true
@@ -774,7 +909,7 @@ export const GameStateProvider = ({ children }) => {
    * @returns {object} Object containing { outcomeText, description, result }.
    */
   const resolveEvent = useCallback(
-    choice => {
+    (choice: Record<string, unknown> | null) => {
       // 1. Validation
       if (!choice) {
         setActiveEvent(null)
@@ -782,28 +917,43 @@ export const GameStateProvider = ({ children }) => {
       }
 
       const currentState = stateRef.current
+      const selectedChoice = (choice || {}) as {
+        _precomputedResult?: EventResolution
+        outcomeText?: string
+        description?: string
+      }
 
       try {
         // 2. Logic Execution
-        const { result, delta, outcomeText, description } =
-          choice._precomputedResult || resolveEventChoice(choice, currentState)
+        const resolution: EventResolution =
+          selectedChoice._precomputedResult ||
+          (resolveEventChoice(
+            choice as unknown as Record<string, unknown>,
+            currentState as unknown as Record<string, unknown>
+          ) as EventResolution)
+        const { result, delta, outcomeText, description } = resolution
+        const flags = (delta?.flags || {}) as {
+          addQuest?: unknown
+          unlock?: unknown
+          gameOver?: unknown
+        }
 
         // 3. State Application
         if (delta) {
           dispatch(createApplyEventDeltaAction(delta))
 
           // Add Quests
-          if (delta.flags?.addQuest) {
+          if (flags.addQuest) {
             processAddQuests(
-              delta.flags.addQuest,
+              flags.addQuest,
               currentState.player.day,
               dispatch
             )
           }
 
           // Unlocks
-          if (delta.flags?.unlock) {
-            const rawUnlock = String(delta.flags.unlock)
+          if (flags.unlock) {
+            const rawUnlock = String(flags.unlock)
             const safeUnlockId = rawUnlock
               .trim()
               .replace(/[^a-zA-Z0-9_]/g, '')
@@ -820,7 +970,12 @@ export const GameStateProvider = ({ children }) => {
                   defaultValue: safeUnlockId.toUpperCase()
                 })
                 addToast(
-                  tRef.current('ui:unlocked', { unlock: unlockLabel }),
+                  tRef.current('ui:unlocked', {
+                    unlock:
+                      typeof unlockLabel === 'string'
+                        ? unlockLabel
+                        : String(unlockLabel)
+                  }),
                   'success'
                 )
               }
@@ -828,7 +983,7 @@ export const GameStateProvider = ({ children }) => {
           }
 
           // Game Over - Early Exit
-          if (delta.flags?.gameOver) {
+          if (flags.gameOver) {
             const context = currentState.activeEvent?.context || {}
             const translatedDesc = description
               ? tRef.current(description, context)
@@ -860,7 +1015,7 @@ export const GameStateProvider = ({ children }) => {
             msgOutcome && msgDesc
               ? `${msgOutcome} ${msgDesc}`
               : msgOutcome || msgDesc
-          addToast(message, 'info')
+          addToast(typeof message === 'string' ? message : String(message), 'info')
         }
 
         // 6. Cleanup
@@ -872,9 +1027,10 @@ export const GameStateProvider = ({ children }) => {
         addToast(tRef.current('ui:event_error'), 'error')
         setActiveEvent(null)
         return {
-          outcomeText: choice.outcomeText ?? '',
-          description: choice.description
-            ? tRef.current(choice.description)
+          outcomeText: selectedChoice.outcomeText ?? '',
+          description:
+            typeof selectedChoice.description === 'string'
+              ? tRef.current(selectedChoice.description)
             : '',
           result: null
         }
@@ -1013,7 +1169,7 @@ GameStateProvider.propTypes = {
  * @returns {object} The action dispatchers.
  */
 export const useGameDispatch = () => {
-  return use(GameDispatchContext)
+  return useRequiredContext(GameDispatchContext, 'useGameDispatch')
 }
 
 /**
@@ -1023,21 +1179,21 @@ export const useGameDispatch = () => {
  * @returns {object} The action dispatchers.
  */
 export const useGameActions = () => {
-  return use(GameDispatchContext)
+  return useRequiredContext(GameDispatchContext, 'useGameActions')
 }
 
 /**
  * Hook to select a specific state slice.
  * This is the preferred state surface for new code.
- * Note: This hook does not provide memoized equality checks; selector output
- * is recomputed whenever context state updates.
+ * Note: Re-renders are still triggered by any context update; for
+ * equality-based bail-out, memoize the consuming component with React.memo.
  *
  * @template T
- * @param {(state: object) => T} selector - State selector.
+ * @param {(state: GameState) => T} selector - State selector.
  * @returns {T} Selected state slice.
  */
-export const useGameSelector = selector => {
-  const state = use(GameStateContext)
+export function useGameSelector<T>(selector: (state: GameState) => T): T {
+  const state = useRequiredContext(GameStateContext, 'useGameSelector')
   return selector(state)
 }
 
@@ -1046,7 +1202,7 @@ export const useGameSelector = selector => {
  * @returns {object} The game state and action dispatchers.
  */
 export const useGameState = () => {
-  const state = use(GameStateContext)
+  const state = useRequiredContext(GameStateContext, 'useGameState')
   const actions = useGameActions()
 
   /**
@@ -1056,7 +1212,7 @@ export const useGameState = () => {
    * @returns {boolean} True if owned.
    */
   const hasUpgrade = useCallback(
-    upgradeId => checkUpgrade(state.player.van.upgrades, upgradeId),
+    (upgradeId: string) => checkUpgrade(state.player.van.upgrades, upgradeId),
     [state.player.van.upgrades]
   )
 

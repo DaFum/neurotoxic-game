@@ -6,11 +6,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband'
-import {
-  handleError,
-  GameError,
-  StateError
-} from '../../../utils/errorHandler'
+import { handleError, GameError, StateError } from '../../../utils/errorHandler'
 
 export const useBandHQLogic = ({
   player,

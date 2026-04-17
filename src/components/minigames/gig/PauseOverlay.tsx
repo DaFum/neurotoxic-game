@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
+import type { PauseOverlayProps } from '../../../types/components'
 
-export const PauseOverlay = ({ isPaused, onResume, onQuit }) => {
+export const PauseOverlay = ({ isPaused, onResume, onQuit }: PauseOverlayProps) => {
   const { t } = useTranslation()
 
   if (!isPaused) return null
@@ -27,10 +27,4 @@ export const PauseOverlay = ({ isPaused, onResume, onQuit }) => {
       </div>
     </div>
   )
-}
-
-PauseOverlay.propTypes = {
-  isPaused: PropTypes.bool.isRequired,
-  onResume: PropTypes.func.isRequired,
-  onQuit: PropTypes.func.isRequired
 }

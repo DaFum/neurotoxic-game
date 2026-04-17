@@ -1,6 +1,5 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { HecklerOverlay } from './HecklerOverlay'
 import { LaneInputArea } from './hud/LaneInputArea'
 import { HealthBar } from './hud/HealthBar'
@@ -12,12 +11,29 @@ import { StatsOverlay } from './hud/StatsOverlay'
 import { ToxicHazardTicker } from './hud/ToxicHazardTicker'
 import { OverloadWarning } from './hud/OverloadWarning'
 
+interface GigHUDStats {
+  score: number
+  combo: number
+  health: number
+  overload: number
+  isGameOver: boolean
+  accuracy?: number
+  isToxicMode?: boolean
+}
+
+interface GigHUDProps {
+  stats: GigHUDStats
+  onLaneInput?: (laneIndex: number, isDown: boolean, now?: number) => void
+  gameStateRef: { current: { projectiles?: unknown[] } | null }
+  onTogglePause?: () => void
+}
+
 export const GigHUD = memo(function GigHUD({
   stats,
   onLaneInput,
   gameStateRef,
   onTogglePause
-}) {
+}: GigHUDProps) {
   const {
     score,
     combo,
@@ -57,22 +73,3 @@ export const GigHUD = memo(function GigHUD({
     </div>
   )
 })
-
-GigHUD.propTypes = {
-  stats: PropTypes.shape({
-    score: PropTypes.number.isRequired,
-    combo: PropTypes.number.isRequired,
-    health: PropTypes.number.isRequired,
-    overload: PropTypes.number.isRequired,
-    isGameOver: PropTypes.bool.isRequired,
-    accuracy: PropTypes.number.isRequired,
-    isToxicMode: PropTypes.bool
-  }).isRequired,
-  onLaneInput: PropTypes.func,
-  gameStateRef: PropTypes.shape({
-    current: PropTypes.shape({
-      projectiles: PropTypes.array
-    })
-  }).isRequired,
-  onTogglePause: PropTypes.func
-}

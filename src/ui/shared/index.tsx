@@ -95,7 +95,6 @@ export const StatBox = memo(function StatBox({
     </div>
   )
 })
-
 ;(StatBox as any).propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -170,7 +169,6 @@ export const ProgressBar = memo(function ProgressBar({
     </div>
   )
 })
-
 ;(ProgressBar as any).propTypes = {
   label: PropTypes.string,
   value: PropTypes.number,
@@ -219,7 +217,6 @@ export const Panel = memo(function Panel({
     </div>
   )
 })
-
 ;(Panel as any).propTypes = {
   title: PropTypes.string,
   children: PropTypes.node.isRequired,

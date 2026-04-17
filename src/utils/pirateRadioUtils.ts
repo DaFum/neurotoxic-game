@@ -1,11 +1,19 @@
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
 
-export const checkHasBroadcastedToday = (social, playerDay) => {
+export const checkHasBroadcastedToday = (
+  social: any,
+  playerDay: number
+): boolean => {
   if (!social || typeof playerDay !== 'number') return false
   return social.lastPirateBroadcastDay === playerDay
 }
 
-export const validatePirateBroadcast = (social, player, band, config) => {
+export const validatePirateBroadcast = (
+  social: any,
+  player: any,
+  band: any,
+  config: any
+): boolean => {
   if (!social || !player || !band || !config) return false
 
   const hasBroadcastedToday = checkHasBroadcastedToday(social, player.day)

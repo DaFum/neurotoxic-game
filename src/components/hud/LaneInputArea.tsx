@@ -1,10 +1,21 @@
 import { memo, useCallback } from 'react'
-import PropTypes from 'prop-types'
+import type { TouchEvent as ReactTouchEvent } from 'react'
 import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils'
 
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
 
-const LaneInputZone = memo(function LaneInputZone({ laneIndex, onLaneInput }) {
+interface LaneInputAreaProps {
+  onLaneInput?: (laneIndex: number, isDown: boolean, now?: number) => void
+}
+
+interface LaneInputZoneProps extends LaneInputAreaProps {
+  laneIndex: number
+}
+
+const LaneInputZone = memo(function LaneInputZone({
+  laneIndex,
+  onLaneInput
+}: LaneInputZoneProps) {
   const handleMouseDown = useCallback(
     () => onLaneInput?.(laneIndex, true),
     [laneIndex, onLaneInput]
@@ -14,14 +25,14 @@ const LaneInputZone = memo(function LaneInputZone({ laneIndex, onLaneInput }) {
     [laneIndex, onLaneInput]
   )
   const handleTouchStart = useCallback(
-    e => {
+    (e: ReactTouchEvent<HTMLDivElement>) => {
       e.preventDefault()
       onLaneInput?.(laneIndex, true)
     },
     [laneIndex, onLaneInput]
   )
   const handleTouchEnd = useCallback(
-    e => {
+    (e: ReactTouchEvent<HTMLDivElement>) => {
       e.preventDefault()
       onLaneInput?.(laneIndex, false)
     },
@@ -47,12 +58,9 @@ const LaneInputZone = memo(function LaneInputZone({ laneIndex, onLaneInput }) {
   )
 })
 
-LaneInputZone.propTypes = {
-  laneIndex: PropTypes.number.isRequired,
-  onLaneInput: PropTypes.func
-}
-
-export const LaneInputArea = memo(function LaneInputArea({ onLaneInput }) {
+export const LaneInputArea = memo(function LaneInputArea({
+  onLaneInput
+}: LaneInputAreaProps) {
   return (
     <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
       {Object.values(LANE_INDICES).map(laneIndex => (
@@ -65,7 +73,3 @@ export const LaneInputArea = memo(function LaneInputArea({ onLaneInput }) {
     </div>
   )
 })
-
-LaneInputArea.propTypes = {
-  onLaneInput: PropTypes.func
-}

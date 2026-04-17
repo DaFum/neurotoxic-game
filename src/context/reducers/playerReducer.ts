@@ -6,17 +6,9 @@ import {
   calculateFameLevel
 } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
+import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
-type PlayerState = {
-  player: Record<string, unknown> & {
-    money: number
-    fame: number
-    fameLevel: number
-  }
-}
-
-type PlayerUpdates = Partial<PlayerState['player']>
-type UpdatePlayerPayload = PlayerUpdates | ((player: PlayerState['player']) => PlayerUpdates)
+type PlayerSlice = { player: PlayerState }
 
 export type PlayerAction =
   | { type: typeof ActionTypes.UPDATE_PLAYER; payload: UpdatePlayerPayload }
@@ -28,9 +20,9 @@ export type PlayerAction =
  * and correctly applied.
  */
 export const handleUpdatePlayer = (
-  state: PlayerState,
+  state: PlayerSlice,
   payload: UpdatePlayerPayload
-): PlayerState => {
+): PlayerSlice => {
   logger.debug('GameState', 'Update Player', payload)
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload || {}
@@ -40,7 +32,9 @@ export const handleUpdatePlayer = (
   }
 
   const nextFame = clampPlayerFame(
-    Object.hasOwn(updates, 'fame') ? (updates.fame as number) : state.player.fame
+    Object.hasOwn(updates, 'fame')
+      ? (updates.fame as number)
+      : state.player.fame
   )
 
   const nextMoney = clampPlayerMoney(
@@ -69,9 +63,9 @@ export const handleUpdatePlayer = (
  * Uses a discriminated union so payload is typed for UPDATE_PLAYER.
  */
 export const playerReducer = (
-  state: PlayerState,
+  state: PlayerSlice,
   action: PlayerAction
-): PlayerState => {
+): PlayerSlice => {
   switch (action.type) {
     case ActionTypes.UPDATE_PLAYER:
       return handleUpdatePlayer(state, action.payload as UpdatePlayerPayload)

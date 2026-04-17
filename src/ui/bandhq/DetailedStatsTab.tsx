@@ -274,7 +274,11 @@ const VanConditionSection = ({ player, t }: any) => (
   </Panel>
 )
 
-const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }: any) => (
+const RegionalStandingSection = ({
+  reputationByRegion,
+  venueBlacklist,
+  t
+}: any) => (
   <Panel
     title={t('ui:stats.regional_standing', {
       defaultValue: 'Regional Standing'
@@ -312,7 +316,9 @@ const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }: any)
           })}
         </div>
         <div className='text-xs text-toxic-green font-mono italic'>
-          {venueBlacklist.map((v: any) => translateLocation(t, v, v)).join(', ')}
+          {venueBlacklist
+            .map((v: any) => translateLocation(t, v, v))
+            .join(', ')}
         </div>
       </div>
     )}

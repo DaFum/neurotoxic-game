@@ -34,11 +34,11 @@ const CONSTANTS = {
  * @returns {number} The calculated dynamic hit window.
  */
 export const calculateDynamicHitWindow = (
-  baseHitWindow,
+  baseHitWindow: number,
   hitWindowBonus = 0,
-  laneIndex,
+  laneIndex: number,
   guitarDifficulty = 1.0
-) => {
+): number => {
   let hitWindow = baseHitWindow + hitWindowBonus
 
   // Dynamic Hit Window (Guitar Custom: easier to hit = larger window)
@@ -63,12 +63,12 @@ export const calculateDynamicHitWindow = (
  * @returns {number} The calculated base points.
  */
 export const calculatePoints = (
-  laneIndex,
+  laneIndex: number,
   drumMultiplier = 1.0,
   guitarScoreMult = 1.0,
   bassScoreMult = 1.0,
   guestlist = false
-) => {
+): number => {
   let points = CONSTANTS.BASE_POINTS
 
   // Dynamic Score Multiplier
@@ -83,7 +83,11 @@ export const calculatePoints = (
       points *= bassScoreMult
       break
     default:
-      logger.error('rhythmGameScoringUtils', `Unknown lane index: ${laneIndex}`)
+      logger.error(
+        'rhythmGameScoringUtils',
+        `Unknown lane index: ${laneIndex}`,
+        null
+      )
       throw new Error(`Unknown lane index: ${laneIndex}`)
   }
 
@@ -103,12 +107,12 @@ export const calculatePoints = (
  * @returns {number} The final calculated score increment.
  */
 export const calculateFinalScore = (
-  basePoints,
-  currentCombo,
-  toxicModeActive,
-  hasPerfektionist,
-  currentAccuracy
-) => {
+  basePoints: number,
+  currentCombo: number,
+  toxicModeActive: boolean,
+  hasPerfektionist: boolean,
+  currentAccuracy: number
+): number => {
   let finalScore = basePoints + currentCombo * CONSTANTS.COMBO_POINT_BONUS
   if (toxicModeActive) finalScore *= CONSTANTS.TOXIC_MODE_SCORE_MULTIPLIER
 
@@ -138,7 +142,12 @@ export const calculateMissImpact = (
   currentOverload = 0,
   currentHealth = CONSTANTS.MAX_HEALTH,
   crowdDecay = 1.0
-) => {
+): {
+  penalty: number
+  nextOverload: number
+  decayPerMiss: number
+  nextHealth: number
+} => {
   // Overload penalty
   const penalty = isEmptyHit
     ? CONSTANTS.EMPTY_HIT_OVERLOAD_PENALTY

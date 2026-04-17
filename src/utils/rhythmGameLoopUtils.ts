@@ -1,10 +1,68 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
+import type {
+  AsyncVoidCallback,
+  CollisionHandler,
+  GigFinalizeHandler,
+  MissHandler,
+  ToggleBooleanCallback,
+  VoidCallback
+} from '../types/callbacks'
 
 const NOTE_MISS_WINDOW_MS = 300
 
-export const finalizeGig = (stateRef, setLastGigStats, endGig, stopAudio) => {
+interface RhythmLoopNote {
+  time: number
+  visible: boolean
+  hit: boolean
+}
+
+interface RhythmLoopState {
+  hasSubmittedResults: boolean
+  score: number
+  stats: Record<string, unknown>
+  toxicTimeTotal: number
+  songStats: unknown[]
+  isGameOver: boolean
+  songTransitioning: boolean
+  transportPausedByOverlay: boolean
+  totalDuration: number
+  progress: number
+  projectiles: unknown[]
+  health: number
+  combo: number
+  rng: () => number
+  isToxicMode: boolean
+  toxicModeEndTime: number
+  setlistCompleted: boolean
+  notes: RhythmLoopNote[]
+  nextMissCheckIndex: number
+}
+
+interface RhythmTickArgs {
+  stateRef: RhythmLoopState
+  isTransportRunning: boolean
+  transportState: string
+  activeEvent: unknown
+  dimensionsRef: { current: { width: number; height: number } }
+  hecklerSessionRef: { current: unknown }
+  deltaMS: number
+  handleCollision: CollisionHandler
+  setIsToxicMode: ToggleBooleanCallback
+  handleMiss: MissHandler
+  finalizeGigCallback: GigFinalizeHandler<RhythmLoopState>
+  getGigTimeMs: () => number
+  pauseAudio: AsyncVoidCallback
+  resumeAudio: AsyncVoidCallback
+}
+
+export const finalizeGig = (
+  stateRef: RhythmLoopState,
+  setLastGigStats: (stats: unknown) => void,
+  endGig: VoidCallback,
+  stopAudio: VoidCallback
+): void => {
   if (stateRef.hasSubmittedResults) return
   stateRef.hasSubmittedResults = true
   setLastGigStats(
@@ -34,7 +92,7 @@ export const processRhythmGameTick = ({
   getGigTimeMs,
   pauseAudio,
   resumeAudio
-}) => {
+}: RhythmTickArgs): void => {
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
     if (isTransportRunning && !stateRef.transportPausedByOverlay) {
       try {

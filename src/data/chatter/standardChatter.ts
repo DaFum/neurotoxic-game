@@ -801,7 +801,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_098',
     weight: 2,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
@@ -829,7 +830,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_103',
     weight: 2,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
@@ -895,19 +897,22 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_116',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_117',
     weight: 2,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_118',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Lars'
   },
   {
@@ -932,7 +937,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_122',
     weight: 2,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Lars'
   },
   {
@@ -953,7 +959,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_126',
     weight: 2,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Matze'
   },
   {
@@ -969,7 +976,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_129',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
@@ -990,7 +998,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_133',
     weight: 2,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.POST_GIG,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Lars'
   },
 
@@ -998,104 +1007,124 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_134',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 30
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 30
   },
   {
     text: 'chatter:standard.msg_135',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 20
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 20
   },
   {
     text: 'chatter:standard.msg_136',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_137',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 30
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 30
   },
   {
     text: 'chatter:standard.msg_138',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 20
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 20
   },
   {
     text: 'chatter:standard.msg_139',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_140',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 30
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 30
   },
   {
     text: 'chatter:standard.msg_141',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_142',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 30
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 30
   },
   {
     text: 'chatter:standard.msg_143',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 20
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 20
   },
   {
     text: 'chatter:standard.msg_144',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_145',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 20
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 20
   },
   {
     text: 'chatter:standard.msg_146',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_147',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 30
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 30
   },
   {
     text: 'chatter:standard.msg_148',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_149',
     weight: 10,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 20
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 20
   },
   {
     text: 'chatter:standard.msg_150',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25
   },
   {
     text: 'chatter:standard.msg_151',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 30,
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 30,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_152',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25,
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_153',
     weight: 8,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMinMood(state, memo) < 25,
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMinMood(state, memo) < 25,
     speaker: 'Lars'
   },
 
@@ -1103,94 +1132,112 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_154',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 80
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 80
   },
   {
     text: 'chatter:standard.msg_155',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 90
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 90
   },
   {
     text: 'chatter:standard.msg_156',
     weight: 1,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 95
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 95
   },
   {
     text: 'chatter:standard.msg_157',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 80
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 80
   },
   {
     text: 'chatter:standard.msg_158',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 90
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 90
   },
   {
     text: 'chatter:standard.msg_159',
     weight: 1,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 95
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 95
   },
   {
     text: 'chatter:standard.msg_160',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 85
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 85
   },
   {
     text: 'chatter:standard.msg_161',
     weight: 4,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 80
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 80
   },
   {
     text: 'chatter:standard.msg_162',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 90
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 90
   },
   {
     text: 'chatter:standard.msg_163',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 85
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 85
   },
   {
     text: 'chatter:standard.msg_164',
     weight: 1,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 95
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 95
   },
   {
     text: 'chatter:standard.msg_165',
     weight: 1,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 95
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 95
   },
   {
     text: 'chatter:standard.msg_166',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 85
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 85
   },
   {
     text: 'chatter:standard.msg_167',
     weight: 4,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 80,
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 80,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_168',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 85
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 85
   },
   {
     text: 'chatter:standard.msg_169',
     weight: 5,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 90
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 90
   },
   {
     text: 'chatter:standard.msg_170',
     weight: 4,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 80,
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 80,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_171',
     weight: 3,
-    condition: (state: GameState, memo: Record<string, unknown>) => getMaxMood(state, memo) > 90
+    condition: (state: GameState, memo: Record<string, unknown>) =>
+      getMaxMood(state, memo) > 90
   },
 
   // --- CONDITION: MONEY ---
@@ -1700,7 +1747,8 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_262',
     weight: 5,
-    condition: (state: GameState) => state.player.day >= 10 && state.player.day <= 20
+    condition: (state: GameState) =>
+      state.player.day >= 10 && state.player.day <= 20
   },
   {
     text: 'chatter:standard.msg_263',
@@ -2000,58 +2048,68 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_314',
     weight: 5,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_315',
     weight: 5,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
   },
   {
     text: 'chatter:standard.msg_316',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
   },
   {
     text: 'chatter:standard.msg_317',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_318',
     weight: 4,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
   },
 
   // --- MINIGAME: ROADIE ---
   {
     text: 'chatter:standard.msg_319',
     weight: 5,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_320',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_321',
     weight: 5,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_322',
     weight: 4,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_323',
     weight: 3,
-    condition: (state: GameState) => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
+    condition: (state: GameState) =>
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Lars'
   }
 ]

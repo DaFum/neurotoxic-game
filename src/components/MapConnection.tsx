@@ -1,9 +1,22 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
+
+type NodeVisibility = 'visible' | 'dimmed' | 'hidden'
+
+interface MapConnectionEndpoint {
+  x: number
+  y: number
+}
+
+interface MapConnectionProps {
+  start: MapConnectionEndpoint
+  end: MapConnectionEndpoint
+  startVis: NodeVisibility
+  endVis: NodeVisibility
+}
 
 export const MapConnection = memo(
-  ({ start, end, startVis, endVis }) => {
+  ({ start, end, startVis, endVis }: MapConnectionProps) => {
     if (startVis === 'hidden' || endVis === 'hidden') return null
 
     return (
@@ -18,7 +31,7 @@ export const MapConnection = memo(
       />
     )
   },
-  (prev, next) => {
+  (prev: Readonly<MapConnectionProps>, next: Readonly<MapConnectionProps>) => {
     return (
       prev.start.x === next.start.x &&
       prev.start.y === next.start.y &&
@@ -31,15 +44,3 @@ export const MapConnection = memo(
 )
 
 MapConnection.displayName = 'MapConnection'
-MapConnection.propTypes = {
-  start: PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired
-  }).isRequired,
-  end: PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired
-  }).isRequired,
-  startVis: PropTypes.string.isRequired,
-  endVis: PropTypes.string.isRequired
-}

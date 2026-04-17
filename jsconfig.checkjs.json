@@ -9,7 +9,6 @@
     "src/context/**/*",
     "src/hooks/rhythmGame/**/*",
     "src/utils/audio/**/*",
-    "src/ui/BandHQ.jsx",
     "src/ui/bandhq/**/*"
   ]
 }

@@ -9,7 +9,10 @@ interface HealthBarProps {
   isToxicMode?: boolean
 }
 
-export const HealthBar = memo(function HealthBar({ health, isToxicMode = false }: HealthBarProps) {
+export const HealthBar = memo(function HealthBar({
+  health,
+  isToxicMode = false
+}: HealthBarProps) {
   const { t } = useTranslation()
   const BlockMeterAny = BlockMeter as any
   return (

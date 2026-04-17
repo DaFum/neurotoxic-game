@@ -7,7 +7,7 @@ import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
  * @param {object} bus - Tone.js audio node to connect the snare to.
  * @returns {object} Proxy object with triggerAttackRelease, volume, and dispose methods.
  */
-export function createLayeredSnare(bus) {
+export function createLayeredSnare(bus: any): any {
   const snareBus = new Tone.Volume(0).connect(bus)
   const snareNoise = new Tone.NoiseSynth({
     envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
@@ -35,7 +35,7 @@ export function createLayeredSnare(bus) {
   }
 }
 
-export function setupMasterChain() {
+export function setupMasterChain(): void {
   // Nodes
   // Limiter prevents clipping, Compressor glues the mix
   audioState.masterLimiter = new Tone.Limiter(-3).toDestination()
@@ -51,7 +51,7 @@ export function setupMasterChain() {
   audioState.reverbSend.chain(audioState.reverb, audioState.musicGain)
 }
 
-export function setupGuitar() {
+export function setupGuitar(): void {
   // FM synthesis for richer harmonic content
   audioState.guitar = new Tone.PolySynth(Tone.FMSynth, {
     harmonicity: 2,
@@ -83,7 +83,7 @@ export function setupGuitar() {
   audioState.guitar.volume.value = -2
 }
 
-export function setupBass() {
+export function setupBass(): void {
   // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
   audioState.bass = new Tone.PolySynth(Tone.MonoSynth, {
     oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
@@ -107,7 +107,7 @@ export function setupBass() {
   audioState.bass.volume.value = 0
 }
 
-export function buildDrumKit(bus, kickOverrides = {}) {
+export function buildDrumKit(bus: any, kickOverrides: any = {}): any {
   const safeKickOverrides =
     kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
   return {
@@ -124,7 +124,7 @@ export function buildDrumKit(bus, kickOverrides = {}) {
   }
 }
 
-export function setupDrums() {
+export function setupDrums(): void {
   // Drum bus with own reverb send
   audioState.drumBus = new Tone.Gain(1).connect(audioState.musicGain)
   audioState.drumBus.connect(audioState.reverbSend)
@@ -138,7 +138,7 @@ export function setupDrums() {
   audioState.drumKit.crash.volume.value = -8
 }
 
-export function setupSFX() {
+export function setupSFX(): void {
   audioState.sfxGain = new Tone.Gain(0.25).connect(audioState.masterLimiter)
   audioState.sfxSynth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'triangle' },
@@ -146,7 +146,7 @@ export function setupSFX() {
   }).connect(audioState.sfxGain)
 }
 
-export function setupMidiChain() {
+export function setupMidiChain(): void {
   // Used for ambient playback. Richer synths with subtle spatial processing
   // to faithfully represent the MIDI content without heavy coloration.
   audioState.midiDryBus = new Tone.Gain(1).connect(audioState.musicGain)

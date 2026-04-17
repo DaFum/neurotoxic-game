@@ -20,19 +20,20 @@
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
 
-let cachedHomeVenue = null
-let cachedFinaleVenue = null
-let cachedVenuesLength = -1
+let cachedHomeVenue: any = null
+let cachedFinaleVenue: any = null
+let cachedVenuesLength: number = -1
 
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
  */
 export class MapGenerator {
+  seed: number
   /**
    * Creates a new MapGenerator instance.
    * @param {number} seed - The seed for the random number generator.
    */
-  constructor(seed) {
+  constructor(seed: number) {
     const s = Number(seed)
     this.seed = Number.isFinite(s) ? s : Date.now()
   }
@@ -41,7 +42,7 @@ export class MapGenerator {
    * Linear Congruential Generator for seeded random numbers.
    * @returns {number} A float between 0 and 1.
    */
-  random() {
+  random(): number {
     this.seed = (this.seed * 9301 + 49297) % 233280
     return this.seed / 233280
   }
@@ -52,7 +53,7 @@ export class MapGenerator {
    * @param {number} [depth=10] - The number of layers in the map.
    * @returns {object} The generated map object containing layers, nodes, and connections.
    */
-  generateMap(depth = 10) {
+  generateMap(depth: number = 10): any {
     const validDepth = Math.floor(depth)
     if (!Number.isFinite(validDepth) || validDepth < 1) {
       return { layers: [], nodes: {}, nodeList: [], connections: [] }
@@ -170,7 +171,7 @@ export class MapGenerator {
    * @param {number} depth - The total depth of the map.
    * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
    */
-  _generateIntermediateLayers(map, depth, pools) {
+  _generateIntermediateLayers(map: any, depth: number, pools: any): void {
     let {
       easyVenues,
       mediumVenues,
@@ -290,7 +291,7 @@ export class MapGenerator {
    * @param {object} map - The map object.
    * @param {number} depth - The total depth of the map.
    */
-  _generateConnections(map, depth) {
+  _generateConnections(map: any, depth: number): void {
     // Generate Connections
     // Ensure every node in layer I connects to at least one in I+1
     // Ensure every node in layer I+1 has at least one parent in I
@@ -332,7 +333,12 @@ export class MapGenerator {
    * @param {Array} hardVenues - The hard venues array.
    * @param {object} pools - The pools object.
    */
-  _generateFinaleLayer(map, depth, hardVenues, pools) {
+  _generateFinaleLayer(
+    map: any,
+    depth: number,
+    hardVenues: any[],
+    pools: any
+  ): void {
     // Finale Layer
     const finaleVenue = cachedFinaleVenue || hardVenues[0]
 
@@ -365,7 +371,7 @@ export class MapGenerator {
    * Assigns initial coordinates to map nodes.
    * @param {object} map - The map object.
    */
-  _assignInitialCoordinates(map) {
+  _assignInitialCoordinates(map: any): void {
     // Assign initial coordinates with jitter and resolve overlaps
     // Increased jitter to +/- 5 to help initial separation
     const nodeList = map.nodeList
@@ -386,7 +392,12 @@ export class MapGenerator {
    * @returns {number[]} Array of candidate node indices.
    * @private
    */
-  _getNeighborCandidates(grid, cellX, cellY, j) {
+  _getNeighborCandidates(
+    grid: Map<number, any>,
+    cellX: number,
+    cellY: number,
+    j: number
+  ): number[] {
     const candidates = []
 
     for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
@@ -413,7 +424,7 @@ export class MapGenerator {
    * Note: This method mutates the node objects in the provided list.
    * @param {object[]} nodeList - The list of nodes.
    */
-  resolveOverlaps(nodeList) {
+  resolveOverlaps(nodeList: any[]): void {
     const iterations = 150 // Increased iterations
     const minDistance = 6 // % of map width/height (approx 2x pin size)
     const minDistanceSq = minDistance * minDistance
@@ -513,7 +524,7 @@ export class MapGenerator {
    * @param {number} count - The number of items to pick.
    * @returns {Array} A new array with the selected items.
    */
-  pickRandomSubset(arr, count) {
+  pickRandomSubset(arr: any[], count: number): any[] {
     const n = arr.length
     const countInt = Math.floor(count)
     if (!Number.isFinite(countInt)) return []
