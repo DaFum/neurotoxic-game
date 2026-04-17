@@ -16,7 +16,7 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 - Prefer narrow, domain-scoped edits while removing `@ts-nocheck`.
 - Keep behavior unchanged in type-only PRs.
 - Avoid adding new `@ts-nocheck` in migrated modules.
-- `jsconfig.checkjs.json` scopes strict CheckJS to already-migrated domains (`src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, `src/ui/BandHQ.jsx`, `src/ui/bandhq`). When adding a new domain to the TypeScript migration, expand the `include` list in that file in the same PR.
+- `jsconfig.checkjs.json` scopes strict CheckJS to already-migrated domains (`src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, `src/ui/bandhq`). When adding a new domain to the TypeScript migration, expand the `include` list in that file in the same PR.
 
 ## Gotchas
 
