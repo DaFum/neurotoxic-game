@@ -143,18 +143,25 @@ export default async function handler(req, res) {
       if (!range.length) return res.status(200).json([])
 
       // range is [{ value: 'id', score: 100 }, ...]
-      const playerIds = range.map(r => r.value)
+      const len = range.length
+      const playerIds = new Array(len)
+      for (let i = 0; i < len; i++) {
+        playerIds[i] = range[i].value
+      }
 
       // v4: hmGet returns string[] (aligned with keys)
       const names = await client.hmGet('players', playerIds)
 
       // hmGet returns array of values corresponding to keys
-      const leaderboard = range.map((entry, index) => ({
-        rank: index + 1,
-        playerId: entry.value, // 'value' not 'member' in node-redis v4
-        playerName: names[index] || 'Unknown',
-        score: entry.score
-      }))
+      const leaderboard = new Array(len)
+      for (let i = 0; i < len; i++) {
+        leaderboard[i] = {
+          rank: i + 1,
+          playerId: playerIds[i], // 'value' not 'member' in node-redis v4
+          playerName: names[i] || 'Unknown',
+          score: range[i].score
+        }
+      }
 
       return res.status(200).json(leaderboard)
     } catch (error) {
