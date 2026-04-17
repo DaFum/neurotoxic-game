@@ -4,7 +4,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  clampControversyLevel
 } from '../../utils/gameStateUtils.js'
 
 /**
@@ -122,10 +123,7 @@ export const handleMerchPress = (state, payload) => {
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
-  const nextControversy = Math.max(
-    0,
-    Math.min(100, currentControversy + controversyGain)
-  )
+  const nextControversy = clampControversyLevel(currentControversy + controversyGain)
   const nextFame = clampPlayerFame(currentFame + fameGain)
 
   const nextState = {
@@ -213,10 +211,7 @@ export const handlePirateBroadcast = (state, payload) => {
     0,
     Math.min(100, currentZealotry + zealotryGain)
   )
-  const nextControversy = Math.max(
-    0,
-    Math.min(100, currentControversy + controversyGain)
-  )
+  const nextControversy = clampControversyLevel(currentControversy + controversyGain)
 
   const nextState = {
     ...state,
