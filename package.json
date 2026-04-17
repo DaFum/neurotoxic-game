@@ -41,12 +41,7 @@
       "browser"
     ]
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "husky"
-    ]
-  },
+  "pnpm": {},
   "dependencies": {
     "@tonejs/midi": "2.0.28",
     "@vercel/analytics": "2.0.1",
