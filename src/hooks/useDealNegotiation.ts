@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * (#1) Actual Updates: Extracted deal negotiation state and logic from `DealsPhase.tsx` into a reusable hook `useDealNegotiation.js` to improve component readability and maintainability.
  * (#2) Next Steps: Consider writing tests for the `useDealNegotiation` hook, ensuring different negotiation outcomes and cleanup are properly verified.

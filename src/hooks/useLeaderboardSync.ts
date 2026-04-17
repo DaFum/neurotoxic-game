@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect } from 'react'
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'

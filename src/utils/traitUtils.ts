@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'

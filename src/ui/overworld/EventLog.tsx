@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react'
 import { ALL_VENUES } from '../../data/venues'
 

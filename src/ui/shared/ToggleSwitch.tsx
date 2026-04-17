@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { memo, useState, useRef, useEffect, useId, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'

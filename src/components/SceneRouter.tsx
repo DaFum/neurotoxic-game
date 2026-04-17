@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * REVIEW
  * #1 Actual updates:

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { audioService } from '../utils/audioService'
 import { handleError } from '../utils/errorHandler'

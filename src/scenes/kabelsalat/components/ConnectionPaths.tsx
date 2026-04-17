@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Refactored ConnectionPaths to use the newly extracted ConnectionPath sub-component.
  * (#2) Next Steps: N/A

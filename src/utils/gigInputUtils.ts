@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Generates a mapping of key strings to their corresponding lane indices.
  * @param {Array} currentLanes - The current lanes array from the game state.

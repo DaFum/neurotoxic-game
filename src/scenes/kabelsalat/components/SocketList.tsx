@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted SocketItem component to improve maintainability.
  * (#2) Next Steps: N/A

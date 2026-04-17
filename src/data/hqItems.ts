@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const HQ_ITEMS = {
   gear: [
     // Standard Consumables

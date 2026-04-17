@@ -66,7 +66,7 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
             ...note,
             lane: note.lane ?? 'unknown',
             timestamp: note.timestamp ?? note.t
-          })
+          } as Note)
           if (note.t! > lastNoteTick) {
             lastNoteTick = note.t!
           }

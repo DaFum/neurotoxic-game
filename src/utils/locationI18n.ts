@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 const VENUE_NAMESPACE = 'venues:'
 const VENUE_NAME_SUFFIX = '.name'

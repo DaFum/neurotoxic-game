@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
-import { readLocaleJson, flattenToEntries } from '../utils/localeTestUtils'
+import { readLocaleJson, flattenToEntries } from '../utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

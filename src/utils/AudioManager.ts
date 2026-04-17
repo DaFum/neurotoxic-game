@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import * as audioEngine from './audioEngine'
 import { secureRandom } from './crypto'

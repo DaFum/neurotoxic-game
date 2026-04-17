@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'

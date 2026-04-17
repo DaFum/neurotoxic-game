@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
 

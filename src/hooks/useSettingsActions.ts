@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useRef, useLayoutEffect } from 'react'
 
 /**

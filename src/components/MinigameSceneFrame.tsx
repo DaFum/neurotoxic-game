@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Added strict isRequired to MinigameSceneFrame logic props and added this block.
  * (#2) Next Steps: Extract specific minigame UIs from this component.

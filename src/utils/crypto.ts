@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 /**
  * Cryptographically secure random number generator between 0 and 1.

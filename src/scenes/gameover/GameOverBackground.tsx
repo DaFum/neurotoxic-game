@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted static background elements from GameOver.tsx to a standalone file.
  * (#2) Next Steps: Continue extracting other sub-components from GameOver.tsx.

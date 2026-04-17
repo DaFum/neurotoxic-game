@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Added specific PropTypes and cleaned up imports.
  * (#2) Next Steps: Consider pagination if stash grows too large.

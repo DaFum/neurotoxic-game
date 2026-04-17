@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Refactored logic to reduce cognitive complexity and improve testability.
  * (#2) Next Steps: N/A

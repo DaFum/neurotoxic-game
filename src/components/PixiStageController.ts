@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Extracted withTimeout utility to utils.js.
  * (#2) Next Steps: Continue monitoring class size.

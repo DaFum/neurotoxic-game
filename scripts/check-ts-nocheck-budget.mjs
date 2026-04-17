@@ -1,30 +1,41 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
 
 const CONFIG_PATH = '.ci/ts-nocheck-budget.json';
+const SRC_DIR = 'src';
 
-function getOccurrences() {
-  let out = '';
+function findWithGrep() {
   try {
-    out = execSync('rg -n "^// @ts-nocheck" src --glob "*.{ts,tsx,js,jsx}"', {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    const out = execSync(
+      `grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -l "^// @ts-nocheck" ${SRC_DIR}`,
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    );
+    return out.trim() ? out.trim().split('\n') : [];
   } catch (error) {
-    if (error?.status === 1) {
-      return [];
-    }
+    if (error?.status === 1) return []; // grep exit 1 = no matches
     throw error;
   }
+}
 
-  const normalized = out.trim();
-  if (!normalized) return [];
+function findWithRg() {
+  try {
+    const out = execSync(
+      `rg -l "^// @ts-nocheck" ${SRC_DIR} --glob "*.{ts,tsx,js,jsx}"`,
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    );
+    return out.trim() ? out.trim().split('\n') : [];
+  } catch (error) {
+    if (error?.status === 1) return []; // rg exit 1 = no matches
+    return null; // rg not available or other error
+  }
+}
 
-  return normalized.split('\n').map((line) => {
-    const [file] = line.split(':');
-    return file;
-  });
+function getOccurrences() {
+  const rg = findWithRg();
+  if (rg !== null) return rg;
+  return findWithGrep();
 }
 
 function toDomain(filePath) {

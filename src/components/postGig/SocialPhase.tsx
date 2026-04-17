@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { Panel } from '../../ui/shared'

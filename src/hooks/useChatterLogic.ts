@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * (#1) Actual Updates:
  * - Extracted chatter polling, generation, and cleanup logic from ChatterOverlay.tsx.

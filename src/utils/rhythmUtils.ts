@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'

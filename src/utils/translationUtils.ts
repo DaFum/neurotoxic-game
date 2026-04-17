@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { isForbiddenKey } from './gameStateUtils'
 
 const VALID_NAMESPACES = [

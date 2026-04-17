@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review playerReducer.js for completeness (UPDATE_PLAYER) and verify edge cases are handled in the switch.
 import { logger } from '../../utils/logger'
 import {
@@ -35,6 +34,10 @@ export const handleUpdatePlayer = (
   logger.debug('GameState', 'Update Player', payload)
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload || {}
+
+  if (updates == null || typeof updates !== 'object') {
+    return state
+  }
 
   const nextFame = clampPlayerFame(
     Object.hasOwn(updates, 'fame') ? (updates.fame as number) : state.player.fame

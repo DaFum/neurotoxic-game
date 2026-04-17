@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * (#1) Actual Updates: Replaced arbitrary color value with native Tailwind token bg-overlay.
  * (#2) Next Steps: N/A

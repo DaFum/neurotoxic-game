@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'

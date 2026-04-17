@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { logger } from '../utils/logger'

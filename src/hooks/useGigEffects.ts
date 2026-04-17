@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { getSafeRandom } from '../utils/crypto'
 import { handleError } from '../utils/errorHandler'

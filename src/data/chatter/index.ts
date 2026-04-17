@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter'
 import { VENUE_CHATTER_LOOKUP } from './venueChatter'
 import { getSafeRandom } from '../../utils/crypto'

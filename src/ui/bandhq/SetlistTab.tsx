@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import React, { useCallback, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'

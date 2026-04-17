@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
 
 export const checkHasBroadcastedToday = (social, playerDay) => {

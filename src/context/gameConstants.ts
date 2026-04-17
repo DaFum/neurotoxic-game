@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',

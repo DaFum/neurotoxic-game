@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { hasTrait } from './traitLogic'
 import { EXPENSE_CONSTANTS } from './economyEngine'

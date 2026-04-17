@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { normalizeVenueId } from './mapUtils'
 import { clampPlayerMoney } from './gameStateUtils'
 

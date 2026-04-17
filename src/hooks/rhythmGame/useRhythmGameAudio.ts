@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useRef, useEffect } from 'react'
 import { audioManager } from '../../utils/AudioManager'
 import { stopAudio } from '../../utils/audioEngine'

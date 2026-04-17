@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { audioManager } from './AudioManager'
 
 const getState = () => {

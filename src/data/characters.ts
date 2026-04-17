@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const CHARACTERS = {
   MATZE: {
     id: 'matze',

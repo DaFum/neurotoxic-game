@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { Container } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'

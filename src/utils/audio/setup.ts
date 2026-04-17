@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'

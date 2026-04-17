@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Review this file
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'

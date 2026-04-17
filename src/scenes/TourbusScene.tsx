@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTourbusLogic } from '../hooks/minigames/useTourbusLogic'

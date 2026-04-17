@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Validates if a contraband stash item can be used based on the current selection.
  * @param {Object} item - The contraband item.

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { motion } from 'framer-motion'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePostGigLogic } from '../hooks/usePostGigLogic'

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
