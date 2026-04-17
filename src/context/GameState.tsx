@@ -118,19 +118,19 @@ const SAVE_KEY = 'neurotoxic_v3_save'
 const normalizeSetlistForSave = (setlist: unknown): Array<{ id: string }> => {
   if (!Array.isArray(setlist)) return []
 
-  return setlist.reduce<{ id: string }[]>((acc, song) => {
+  const result: { id: string }[] = []
+  for (const song of setlist) {
     if (typeof song === 'string') {
-      acc.push({ id: song })
+      result.push({ id: song })
     } else if (
       song &&
       typeof song === 'object' &&
-      'id' in song &&
       typeof (song as { id?: unknown }).id === 'string'
     ) {
-      acc.push({ id: (song as { id: string }).id })
+      result.push({ id: (song as { id: string }).id })
     }
-    return acc
-  }, [])
+  }
+  return result
 }
 
 const createPersistedState = (currentState: GameState) => {

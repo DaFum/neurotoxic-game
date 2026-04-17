@@ -55,10 +55,8 @@ export function useAmpLogic() {
 
       // Approximately 5% chance per 100ms
       if (getSafeRandom() < 0.05 * (deltaMS / 100)) {
-        setTargetValue(prev => {
-          const shift = (getSafeRandom() - 0.5) * 200
-          return Math.max(0, Math.min(1000, prev + shift))
-        })
+        const shift = (getSafeRandom() - 0.5) * 200
+        setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
 
       // Time-driven tick for score accumulation
