@@ -31,7 +31,12 @@ interface BandMember {
   technical?: number
   improv?: number
   composition?: number
-  baseStats?: Partial<Record<'skill' | 'charisma' | 'technical' | 'improv' | 'composition', number>>
+  baseStats?: Partial<
+    Record<
+      'skill' | 'charisma' | 'technical' | 'improv' | 'composition',
+      number
+    >
+  >
   traits?: Record<string, CharacterTrait>
   equipment?: Record<string, unknown>
 }
@@ -66,7 +71,7 @@ interface SocialData {
   tiktok?: number
   youtube?: number
   newsletter?: number
-  viral?: boolean
+  viral?: number
   trend?: string
   reputationCooldown?: number
   activeDeals?: SocialDeal[]
@@ -426,9 +431,7 @@ const RegionalStandingSection = ({
           })}
         </div>
         <div className='text-xs text-toxic-green font-mono italic'>
-          {venueBlacklist
-            .map(v => translateLocation(t, v, v))
-            .join(', ')}
+          {venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')}
         </div>
       </div>
     )}

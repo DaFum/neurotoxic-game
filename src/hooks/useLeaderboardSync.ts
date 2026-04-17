@@ -5,6 +5,13 @@ import { logger } from '../utils/logger'
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
 
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    leaderboardStatsEndpointUnavailable = false
+    hasLoggedUnavailableEndpoint = false
+  })
+}
+
 const getLeaderboardSyncEnabledFlag = () => {
   const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
   if (typeof viteFlag === 'string') {

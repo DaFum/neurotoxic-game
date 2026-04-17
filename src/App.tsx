@@ -40,13 +40,15 @@ const resolveVercelTelemetryEnabled = () => {
     return processFlag.toLowerCase() === 'true'
   }
 
-  const nodeEnv = typeof process !== 'undefined' ? process?.env?.NODE_ENV : undefined
+  const nodeEnv =
+    typeof process !== 'undefined' ? process?.env?.NODE_ENV : undefined
   if (nodeEnv === 'test') {
     return true
   }
 
   return import.meta.env?.PROD ?? false
 }
+const VERCEL_TELEMETRY_ENABLED = resolveVercelTelemetryEnabled()
 
 const SceneLoadingFallback = () => {
   const { t } = useTranslation()
@@ -69,7 +71,6 @@ const SceneLoadingFallback = () => {
 function GameContent() {
   const gameState = useGameState()
   const { currentScene, activeEvent, resolveEvent, settings } = gameState
-  const vercelTelemetryEnabled = resolveVercelTelemetryEnabled()
 
   // Construct a safe, read-only slice of state for ChatterOverlay
   // This avoids passing dispatch functions which violates the component's contract
@@ -133,7 +134,7 @@ function GameContent() {
           </AnimatePresence>
         </Suspense>
       </ErrorBoundary>
-      {vercelTelemetryEnabled && (
+      {VERCEL_TELEMETRY_ENABLED && (
         <>
           <Analytics />
           <SpeedInsights />
