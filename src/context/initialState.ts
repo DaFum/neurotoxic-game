@@ -155,7 +155,7 @@ export const DEFAULT_GIG_MODIFIERS = {
  * Default settings configuration
  * @type {Object}
  */
-const savedSettings = (() => {
+const getSavedSettings = () => {
   try {
     return JSON.parse(
       localStorage.getItem('neurotoxic_global_settings') || '{}'
@@ -163,13 +163,12 @@ const savedSettings = (() => {
   } catch (_e) {
     return {}
   }
-})()
+}
 
 const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
-  logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN,
-  ...savedSettings
+  logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN
 }
 
 /**
@@ -229,7 +228,7 @@ export const createInitialState = (persistedData = {}) => ({
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
   },
-  settings: { ...DEFAULT_SETTINGS, ...(persistedData.settings || {}) },
+  settings: { ...DEFAULT_SETTINGS, ...getSavedSettings(), ...(persistedData.settings || {}) },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: Array.isArray(persistedData.unlocks)
