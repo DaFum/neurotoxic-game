@@ -28,6 +28,7 @@ dist-ssr
 test-results/
 test_output.txt
 test*_output.txt
+output.txt
 
 # Playwright screenshots
 output/playwright/**/*.png
