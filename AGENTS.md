@@ -3,7 +3,7 @@
 ## Critical Commands
 
 - Full quality gate: `pnpm run test:all` (required before PR).
-- Extended suite (perf + locale): `pnpm run test:additional` (runs in CI via the Performance Tests job).
+- Extended suite (perf + locale): `pnpm run test:additional` (perf runs in CI via Performance Tests job; locale via Locale Smoke/Full Tests jobs).
 - Legacy logic suites (`node:test`): `pnpm run test`.
 - UI + migrated suites (Vitest): `pnpm run test:ui`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
