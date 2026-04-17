@@ -4,7 +4,7 @@ import { ZealotryGauge } from '../../src/components/postGig/ZealotryGauge'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../src/utils/economyEngine'
 
 // Mock imageGen
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: vi.fn(() => 'mock-image-url'),
   IMG_PROMPTS: { ZEALOTRY_CULT: 'ZEALOTRY_CULT' }
 }))

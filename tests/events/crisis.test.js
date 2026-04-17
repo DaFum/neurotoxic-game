@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import { CRISIS_EVENTS } from '../../src/data/events/crisis.js'
-import { validateCrisisEvent } from '../../src/utils/eventValidator.js'
+import { CRISIS_EVENTS } from '../../src/data/events/crisis'
+import { validateCrisisEvent } from '../../src/utils/eventValidator'
 
 describe('CRISIS_EVENTS', () => {
   const getCrisisEvent = id => {

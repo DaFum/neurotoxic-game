@@ -3,8 +3,8 @@ import { render, screen, waitFor, act } from '@testing-library/react'
 import {
   GameStateProvider,
   useGameState
-} from '../../src/context/GameState.jsx'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+} from '../../src/context/GameState.tsx'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // Mock dependencies
 vi.mock('../../src/utils/logger', () => ({

@@ -1,6 +1,6 @@
 import { suite, test } from 'vitest'
 import assert from 'node:assert'
-import { generateBrandOffers } from '../../src/utils/socialEngine.js'
+import { generateBrandOffers } from '../../src/utils/socialEngine'
 
 // Setup Mock Game State with multiple traits and eligible deals
 const mockGameState = {

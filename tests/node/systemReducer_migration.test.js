@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { handleLoadGame } from '../../src/context/reducers/systemReducer.js'
-import { createInitialState } from '../../src/context/initialState.js'
+import { handleLoadGame } from '../../src/context/reducers/systemReducer'
+import { createInitialState } from '../../src/context/initialState'
 
 test('systemReducer - handleLoadGame legacy venue migration', async t => {
   await t.test(

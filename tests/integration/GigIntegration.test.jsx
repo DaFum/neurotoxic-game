@@ -119,12 +119,12 @@ vi.mock('../../src/components/PixiStage', () => ({
   PixiStage: () => <div data-testid='pixi-stage-mock'>Pixi Stage</div>
 }))
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
 }))
 
-vi.mock('../../src/context/GameState.jsx', async importOriginal => {
+vi.mock('../../src/context/GameState.tsx', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,
@@ -143,8 +143,8 @@ vi.mock('../../src/context/GameState.jsx', async importOriginal => {
   }
 })
 
-import { Gig } from '../../src/scenes/Gig.jsx'
-import { GameStateProvider } from '../../src/context/GameState.jsx'
+import { Gig } from '../../src/scenes/Gig.tsx'
+import { GameStateProvider } from '../../src/context/GameState.tsx'
 
 describe('Gig Component Integration', () => {
   it('renders standard composition elements of the gig scene', async () => {

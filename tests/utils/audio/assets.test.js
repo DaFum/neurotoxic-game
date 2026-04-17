@@ -13,15 +13,15 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('../../../src/utils/audio/state.js', () => ({
+vi.mock('../../../src/utils/audio/state', () => ({
   audioState: mocks.mockAudioState
 }))
 
-vi.mock('../../../src/utils/audio/context.js', () => ({
+vi.mock('../../../src/utils/audio/context', () => ({
   getRawAudioContext: () => mocks.mockGetRawAudioContextReturn
 }))
 
-vi.mock('../../../src/utils/logger.js', () => ({
+vi.mock('../../../src/utils/logger', () => ({
   logger: {
     warn: vi.fn(),
     info: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock('../../../src/utils/logger.js', () => ({
   }
 }))
 
-vi.mock('../../../src/utils/audio/playbackUtils.js', () => ({
+vi.mock('../../../src/utils/audio/playbackUtils', () => ({
   buildAssetUrlMap: () => ({}),
   resolveAssetUrl: () => mocks.mockResolveAssetUrlReturn,
   PATH_PREFIX_REGEX: /^\.?\//,
@@ -37,18 +37,18 @@ vi.mock('../../../src/utils/audio/playbackUtils.js', () => ({
 }))
 
 describe('loadAudioBuffer tests', () => {
-  let loadAudioBuffer;
-  let MAX_AUDIO_BUFFER_BYTE_SIZE;
+  let loadAudioBuffer
+  let MAX_AUDIO_BUFFER_BYTE_SIZE
 
   const originalFetch = global.fetch
 
   beforeEach(async () => {
     vi.resetModules() // clear any loaded module cache
-    vi.unmock('../../../src/utils/audio/assets.js')
+    vi.unmock('../../../src/utils/audio/assets')
 
     // Import assets AFTER setting up mocks, dynamically
-    const assetsModule = await import('../../../src/utils/audio/assets.js')
-    const constantsModule = await import('../../../src/utils/audio/constants.js')
+    const assetsModule = await import('../../../src/utils/audio/assets')
+    const constantsModule = await import('../../../src/utils/audio/constants')
     loadAudioBuffer = assetsModule.loadAudioBuffer
     MAX_AUDIO_BUFFER_BYTE_SIZE = constantsModule.MAX_AUDIO_BUFFER_BYTE_SIZE
 

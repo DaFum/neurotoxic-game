@@ -52,7 +52,7 @@ mock.module('pixi.js', {
 })
 
 // Mock dependencies
-mock.module('../../src/utils/imageGen.js', {
+mock.module('../../src/utils/imageGen', {
   namedExports: {
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { CROWD_IDLE: 'idle', CROWD_MOSH: 'mosh' }
@@ -60,13 +60,13 @@ mock.module('../../src/utils/imageGen.js', {
 })
 
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler.js', {
+mock.module('../../src/utils/errorHandler', {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: {
     logger: {
       warn: mock.fn()
@@ -106,7 +106,7 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/utils.js', {
+mock.module('../../src/components/stage/utils', {
   namedExports: {
     ...mockPixiStageUtils,
     calculateCrowdOffset: mock.fn(() => 10),
@@ -133,7 +133,7 @@ describe('CrowdManager', () => {
     PIXI = pixiModule
 
     const managerModule =
-      await import('../../src/components/stage/CrowdManager.js')
+      await import('../../src/components/stage/CrowdManager')
     CrowdManager = managerModule.CrowdManager
 
     parentContainer = new PIXI.Container()

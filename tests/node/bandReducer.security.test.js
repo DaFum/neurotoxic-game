@@ -5,7 +5,7 @@ import {
   handleConsumeItem,
   handleUseContraband,
   handleAddContraband
-} from '../../src/context/reducers/bandReducer.js'
+} from '../../src/context/reducers/bandReducer'
 
 describe('bandReducer Security - Prototype Pollution', () => {
   it('should reject forbidden keys in handleUpdateBand', () => {

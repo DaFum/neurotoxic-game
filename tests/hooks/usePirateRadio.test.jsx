@@ -3,9 +3,9 @@ import { renderHook, act } from '@testing-library/react'
 import {
   usePirateRadio,
   PIRATE_RADIO_CONFIG
-} from '../../src/hooks/usePirateRadio.js'
+} from '../../src/hooks/usePirateRadio'
 
-vi.mock('../../src/utils/AudioManager.js', () => ({
+vi.mock('../../src/utils/AudioManager', () => ({
   audioManager: { playSFX: vi.fn() }
 }))
 
@@ -18,7 +18,7 @@ const mockGameState = {
   hasUpgrade: vi.fn()
 }
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameState: () => mockGameState
 }))
 
@@ -78,7 +78,7 @@ describe('usePirateRadio', () => {
     mockGameState.player.money = 0
     const { result } = renderHook(() => usePirateRadio())
 
-    const { audioManager } = await import('../../src/utils/AudioManager.js')
+    const { audioManager } = await import('../../src/utils/AudioManager')
 
     act(() => {
       result.current.triggerBroadcast()
@@ -91,7 +91,7 @@ describe('usePirateRadio', () => {
   it('triggerBroadcast succeeds when conditions are met', async () => {
     const { result } = renderHook(() => usePirateRadio())
 
-    const { audioManager } = await import('../../src/utils/AudioManager.js')
+    const { audioManager } = await import('../../src/utils/AudioManager')
 
     // Open radio first to test if it closes
     act(() => {

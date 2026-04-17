@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
-import { StatsOverlay } from '../../src/components/hud/StatsOverlay.jsx'
+import { StatsOverlay } from '../../src/components/hud/StatsOverlay.tsx'
 
 vi.mock('../../src/components/hud/ScoreDisplay', () => ({
   ScoreDisplay: ({ score }) => (

@@ -56,7 +56,7 @@ vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey }) => i18nKey || 'mock-trans'
 }))
 
-vi.mock('../src/utils/audio/assets.js', () => ({
+vi.mock('../src/utils/audio/assets', () => ({
   oggCandidates: [],
   hasAudioAsset: () => false,
   loadAudioBuffer: async () => null

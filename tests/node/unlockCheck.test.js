@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { checkTraitUnlocks } from '../../src/utils/unlockCheck.js'
+import { checkTraitUnlocks } from '../../src/utils/unlockCheck'
 
 describe('checkTraitUnlocks', () => {
   const createMember = (name, traits = {}, relationships = {}) => ({

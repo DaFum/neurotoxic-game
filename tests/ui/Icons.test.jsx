@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, test, expect } from 'vitest'
-import { RazorPlayIcon, VoidSkullIcon } from '../../src/ui/shared/Icons.jsx'
+import { RazorPlayIcon, VoidSkullIcon } from '../../src/ui/shared/Icons.tsx'
 
 describe('RazorPlayIcon', () => {
   test('renders SVG element', () => {

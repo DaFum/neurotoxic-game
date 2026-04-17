@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { FINANCIAL_EVENTS } from '../../../src/data/events/financial.js'
+import { FINANCIAL_EVENTS } from '../../../src/data/events/financial'
 
 describe('Financial Events Data', () => {
   it('should be an array of event objects', () => {

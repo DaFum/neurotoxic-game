@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { translateLocation } from '../../src/utils/locationI18n.js'
+import { translateLocation } from '../../src/utils/locationI18n'
 
 test('translateLocation', async t => {
   const mockT = (key, options) => {

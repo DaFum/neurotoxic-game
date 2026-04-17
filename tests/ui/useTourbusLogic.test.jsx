@@ -8,7 +8,7 @@ import {
 } from 'vitest'
 
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock dependencies
 const mockUseGameState = mock.fn(() => ({
@@ -37,9 +37,9 @@ const {
   SPAWN_RATE_MS,
   TARGET_DISTANCE,
   getHitDamage
-} = await import('../../src/hooks/minigames/useTourbusLogic.js')
+} = await import('../../src/hooks/minigames/useTourbusLogic')
 const { TOURBUS_LANE_COUNT, TOURBUS_BUS_Y_PERCENT } =
-  await import('../../src/hooks/minigames/constants.js')
+  await import('../../src/hooks/minigames/constants')
 
 describe('getHitDamage', () => {
   beforeEach(() => {

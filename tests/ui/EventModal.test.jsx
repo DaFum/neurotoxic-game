@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { EventModal } from '../../src/ui/EventModal.jsx'
+import { EventModal } from '../../src/ui/EventModal.tsx'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({

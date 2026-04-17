@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { resolveEventChoice } from '../../src/utils/eventEngine.js'
-import { EVENT_STRINGS } from '../../src/data/events/constants.js'
+import { resolveEventChoice } from '../../src/utils/eventEngine'
+import { EVENT_STRINGS } from '../../src/data/events/constants'
 
 test('resolveEventChoice appends SAVED_BY_BANDLEADER string on successful bandleader save', () => {
   const choice = {

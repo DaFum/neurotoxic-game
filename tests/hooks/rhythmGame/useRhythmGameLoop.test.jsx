@@ -1,8 +1,8 @@
 import { describe, it, vi, expect } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useRhythmGameLoop } from '../../../src/hooks/rhythmGame/useRhythmGameLoop.js'
+import { useRhythmGameLoop } from '../../../src/hooks/rhythmGame/useRhythmGameLoop'
 
-vi.mock('../../../src/utils/audioEngine.js', () => ({
+vi.mock('../../../src/utils/audioEngine', () => ({
   getGigTimeMs: () => 1000,
   getTransportState: () => 'started',
   pauseAudio: vi.fn(),
@@ -10,13 +10,13 @@ vi.mock('../../../src/utils/audioEngine.js', () => ({
   stopAudio: vi.fn()
 }))
 
-vi.mock('../../../src/utils/hecklerLogic.js', () => ({
+vi.mock('../../../src/utils/hecklerLogic', () => ({
   trySpawnProjectile: () => null,
   processProjectiles: (session, projectiles) => projectiles,
   createHecklerSession: () => ({})
 }))
 
-vi.mock('../../../src/utils/gigStats.js', () => ({
+vi.mock('../../../src/utils/gigStats', () => ({
   buildGigStatsSnapshot: () => ({})
 }))
 

@@ -4,7 +4,7 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -45,8 +45,8 @@ import {
   createClinicHealAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction
-} from '../../src/context/actionCreators.js'
-import { ActionTypes } from '../../src/context/gameReducer.js'
+} from '../../src/context/actionCreators'
+import { ActionTypes } from '../../src/context/gameReducer'
 
 describe('Action Creators', () => {
   describe('createChangeSceneAction', () => {

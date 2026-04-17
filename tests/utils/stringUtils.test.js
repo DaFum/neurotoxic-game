@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { hashString } from '../../src/utils/stringUtils.js'
+import { hashString } from '../../src/utils/stringUtils'
 
 describe('hashString', () => {
   const testCases = [

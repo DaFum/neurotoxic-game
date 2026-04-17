@@ -1,11 +1,11 @@
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useAudioControl } from '../../src/hooks/useAudioControl.js'
-import { audioManager } from '../../src/utils/AudioManager.js'
-import { handleError } from '../../src/utils/errorHandler.js'
+import { useAudioControl } from '../../src/hooks/useAudioControl'
+import { audioManager } from '../../src/utils/AudioManager'
+import { handleError } from '../../src/utils/errorHandler'
 
 // Mock dependencies
-vi.mock('../../src/utils/AudioManager.js', () => {
+vi.mock('../../src/utils/AudioManager', () => {
   const listeners = new Set()
   let stateSnapshot = {
     musicVol: 0.5,
@@ -47,7 +47,7 @@ vi.mock('../../src/utils/AudioManager.js', () => {
   return { audioManager: manager }
 })
 
-vi.mock('../../src/utils/errorHandler.js', () => ({
+vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 

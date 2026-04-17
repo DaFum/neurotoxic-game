@@ -4,8 +4,8 @@
 
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
-import { normalizeTraitMap } from '../../src/utils/traitUtils.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
+import { normalizeTraitMap } from '../../src/utils/traitUtils'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
@@ -46,7 +46,7 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   }
 })
 
-mock.module('../../src/utils/traitUtils.js', {
+mock.module('../../src/utils/traitUtils', {
   namedExports: {
     applyTraitUnlocks: mockApplyTraitUnlocks,
     getTraitById: mock.fn(traitId => ({ id: traitId })),
@@ -56,9 +56,9 @@ mock.module('../../src/utils/traitUtils.js', {
 
 // Import SUT after mocking
 const { gameReducer, ActionTypes } =
-  await import('../../src/context/gameReducer.js')
+  await import('../../src/context/gameReducer')
 const { createInitialState, initialState } =
-  await import('../../src/context/initialState.js')
+  await import('../../src/context/initialState')
 
 describe('gameReducer', () => {
   let testState

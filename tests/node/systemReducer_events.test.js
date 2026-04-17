@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { handleAdvanceDay } from '../../src/context/reducers/systemReducer.js'
+import { handleAdvanceDay } from '../../src/context/reducers/systemReducer'
 
 test('systemReducer - handleAdvanceDay', async t => {
   await t.test('resets eventsTriggeredToday to 0 on advance day', () => {

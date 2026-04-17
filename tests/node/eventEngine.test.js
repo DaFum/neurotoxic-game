@@ -18,7 +18,7 @@ const mockLogger = {
   warn: mock.fn()
 }
 
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: {
     logger: mockLogger,
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
@@ -26,12 +26,12 @@ mock.module('../../src/utils/logger.js', {
   }
 })
 
-mock.module('../../src/data/events/index.js', {
+mock.module('../../src/data/events/index', {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
 
 const mockSecureRandom = mock.fn(() => 0.5)
-mock.module('../../src/utils/crypto.js', {
+mock.module('../../src/utils/crypto', {
   namedExports: {
     secureRandom: mockSecureRandom,
     getSafeRandom: mockSecureRandom,
@@ -41,7 +41,7 @@ mock.module('../../src/utils/crypto.js', {
 
 // Import module under test after mocking
 const { eventEngine, resolveEventChoice } =
-  await import('../../src/utils/eventEngine.js')
+  await import('../../src/utils/eventEngine')
 
 const TEST_EVENT_VAN_BREAKDOWN = {
   id: 'van_breakdown',

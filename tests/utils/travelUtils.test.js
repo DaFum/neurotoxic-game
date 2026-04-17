@@ -6,7 +6,7 @@ import {
   checkVenueAccess,
   checkTravelPrerequisites,
   checkTravelResources
-} from '../../src/utils/travelUtils.js'
+} from '../../src/utils/travelUtils'
 
 describe('travelUtils', () => {
   const venuesMap = new Map([

@@ -29,7 +29,7 @@ const mockRedisClient = {
 }
 
 // Since stats.js imports the client directly as the default export of lib/redis.js
-vi.mock('../../lib/redis.js', () => ({
+vi.mock('../../lib/redis', () => ({
   default: mockRedisClient
 }))
 
@@ -51,7 +51,7 @@ describe('Leaderboard Stats API', () => {
     mockMulti.exec.mockClear()
 
     // Import module once properly
-    statsModule = await import('../../api/leaderboard/stats.js')
+    statsModule = await import('../../api/leaderboard/stats')
   })
 
   afterEach(async () => {

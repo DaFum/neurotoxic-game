@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { handleError, StateError } from '../../src/utils/errorHandler.js'
+import { handleError, StateError } from '../../src/utils/errorHandler'
 
 describe('errorHandler', () => {
   describe('handleError', () => {

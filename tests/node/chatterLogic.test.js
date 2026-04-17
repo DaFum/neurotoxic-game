@@ -1,9 +1,9 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import * as cryptoUtils from '../../src/utils/crypto.js'
+import * as cryptoUtils from '../../src/utils/crypto'
 
 // Mock the data modules before importing the logic
-mock.module('../../src/data/chatter/standardChatter.js', {
+mock.module('../../src/data/chatter/standardChatter', {
   namedExports: {
     CHATTER_DB: [
       {
@@ -21,7 +21,7 @@ mock.module('../../src/data/chatter/standardChatter.js', {
   }
 })
 
-mock.module('../../src/data/chatter/venueChatter.js', {
+mock.module('../../src/data/chatter/venueChatter', {
   namedExports: {
     VENUE_CHATTER_DB: [
       {
@@ -53,7 +53,7 @@ mock.module('../../src/data/chatter/venueChatter.js', {
 })
 
 // Now import the function under test
-const { getRandomChatter } = await import('../../src/data/chatter/index.js')
+const { getRandomChatter } = await import('../../src/data/chatter/index')
 
 const buildState = (overrides = {}) => ({
   currentScene: 'ALLOWED',

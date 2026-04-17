@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: { logger: mockLogger }
 })
 
@@ -38,7 +38,7 @@ const mockAudioState = {
     ride: { triggerAttackRelease: mock.fn() }
   }
 }
-mock.module('../../src/utils/audio/state.js', {
+mock.module('../../src/utils/audio/state', {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -72,7 +72,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context.js', {
+mock.module('../../src/utils/audio/context', {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -80,7 +80,7 @@ mock.module('../../src/utils/audio/context.js', {
 })
 
 // Mock Playback
-mock.module('../../src/utils/audio/playback.js', {
+mock.module('../../src/utils/audio/playback', {
   namedExports: {
     stopAudioInternal: mock.fn(),
     stopAudio: mock.fn()
@@ -88,7 +88,7 @@ mock.module('../../src/utils/audio/playback.js', {
 })
 
 // Mock Assets
-mock.module('../../src/utils/audio/assets.js', {
+mock.module('../../src/utils/audio/assets', {
   namedExports: {
     midiUrlMap: {},
     loadAudioBuffer: mock.fn(),
@@ -97,7 +97,7 @@ mock.module('../../src/utils/audio/assets.js', {
 })
 
 // Mock Shared Buffer Utils
-mock.module('../../src/utils/audio/sharedBufferUtils.js', {
+mock.module('../../src/utils/audio/sharedBufferUtils', {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }
@@ -115,7 +115,7 @@ const mockGetNoteName = mock.fn(midi => {
 
 // We need to allow other exports to pass through if needed, or mock them all.
 // procedural.js uses: isPercussionTrack, isValidMidiNote, normalizeMidiPitch, getNoteName
-mock.module('../../src/utils/audio/midiUtils.js', {
+mock.module('../../src/utils/audio/midiUtils', {
   namedExports: {
     isPercussionTrack: mock.fn(),
     isValidMidiNote: mock.fn(),
@@ -128,7 +128,7 @@ mock.module('../../src/utils/audio/midiUtils.js', {
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
-const { playNoteAtTime } = await import('../../src/utils/audio/midiPlayback.js')
+const { playNoteAtTime } = await import('../../src/utils/audio/midiPlayback')
 
 // --- Tests ---
 

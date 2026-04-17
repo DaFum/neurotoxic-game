@@ -1,13 +1,13 @@
 import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
 
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   setupArrivalLogicTest,
   setupArrivalScenario,
   resetMockGameState
-} from '../useArrivalLogicTestUtils.js'
+} from '../useArrivalLogicTestUtils'
 
 const { useArrivalLogic, mockGameState } = await setupArrivalLogicTest()
 

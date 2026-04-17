@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
 import { render, fireEvent } from '@testing-library/react'
-import { Tooltip } from '../../src/ui/shared/Tooltip.jsx'
+import { Tooltip } from '../../src/ui/shared/Tooltip.tsx'
 
 describe('Tooltip Component', () => {
   test('does not show content initially', () => {

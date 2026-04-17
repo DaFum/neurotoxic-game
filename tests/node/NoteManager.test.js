@@ -71,7 +71,7 @@ class MockNoteSpritePool {
   dispose = mockPoolDispose
 }
 
-mock.module('../../src/components/stage/NoteSpritePool.js', {
+mock.module('../../src/components/stage/NoteSpritePool', {
   namedExports: {
     NoteSpritePool: MockNoteSpritePool,
     NOTE_CENTER_OFFSET: 50
@@ -80,13 +80,13 @@ mock.module('../../src/components/stage/NoteSpritePool.js', {
 
 // Mock other dependencies
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler.js', {
+mock.module('../../src/utils/errorHandler', {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/imageGen.js', {
+mock.module('../../src/utils/imageGen', {
   namedExports: {
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { NOTE_SKULL: 'skull', NOTE_LIGHTNING: 'lightning' }
@@ -127,7 +127,7 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/utils.js', {
+mock.module('../../src/components/stage/utils', {
   namedExports: mockPixiStageUtils
 })
 
@@ -143,8 +143,7 @@ describe('NoteManager', () => {
     const pixiModule = await import('pixi.js')
     PIXI = pixiModule
 
-    const managerModule =
-      await import('../../src/components/stage/NoteManager.js')
+    const managerModule = await import('../../src/components/stage/NoteManager')
     NoteManager = managerModule.NoteManager
 
     // Reset mocks

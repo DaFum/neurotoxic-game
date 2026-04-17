@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { BRAND_DEALS } from '../../src/data/brandDeals.js'
+import { BRAND_DEALS } from '../../src/data/brandDeals'
 
 describe('Brand Deals Data', () => {
   it('should be an array of deal objects', () => {

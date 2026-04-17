@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
-import { ReportPhase } from '../../src/components/postGig/ReportPhase.jsx'
+import { ReportPhase } from '../../src/components/postGig/ReportPhase.tsx'
 
 test('ReportPhase renders loading state', () => {
   render(<ReportPhase />)

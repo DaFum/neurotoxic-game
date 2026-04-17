@@ -1,8 +1,8 @@
 import { test } from 'vitest'
 import assert from 'node:assert/strict'
-import { validateSaveData } from '../../src/utils/saveValidator.js'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { validateSaveData } from '../../src/utils/saveValidator'
+import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 test('validateSaveData rejects non-objects', () => {
   assert.throws(() => validateSaveData(null), /Save data must be an object/)

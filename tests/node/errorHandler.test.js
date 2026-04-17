@@ -15,7 +15,7 @@ import {
   safeStorageOperation,
   withRetry,
   initGlobalErrorHandling
-} from '../../src/utils/errorHandler.js'
+} from '../../src/utils/errorHandler'
 
 describe('Custom Error Classes', () => {
   describe('GameError', () => {
@@ -222,7 +222,7 @@ describe('handleError', () => {
   })
 
   it('should log locally to logger.debug for ErrorSeverity.LOW', async () => {
-    const { logger } = await import('../../src/utils/logger.js')
+    const { logger } = await import('../../src/utils/logger')
     const originalDebug = logger.debug
     let debugCalled = false
     let loggedChannel = ''

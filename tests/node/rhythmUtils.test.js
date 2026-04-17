@@ -6,7 +6,7 @@ import {
   preprocessTempoMap,
   parseSongNotes,
   generateNotesForSong
-} from '../../src/utils/rhythmUtils.js'
+} from '../../src/utils/rhythmUtils'
 
 describe('rhythmUtils', () => {
   describe('generateNotesForSong', () => {

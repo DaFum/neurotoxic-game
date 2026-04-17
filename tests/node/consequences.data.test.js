@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { CONSEQUENCE_EVENTS } from '../../src/data/events/consequences.js'
+import { CONSEQUENCE_EVENTS } from '../../src/data/events/consequences'
 
 describe('Consequences Event Pool', () => {
   it('should export an array of consequence events', () => {

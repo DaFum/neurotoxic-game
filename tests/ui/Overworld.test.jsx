@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
-import { Overworld } from '../../src/scenes/Overworld.jsx'
+import { Overworld } from '../../src/scenes/Overworld.tsx'
 import { GameStateProvider } from '../../src/context/GameState'
 
 // Mocks
@@ -40,7 +40,7 @@ vi.mock('../../src/components/ToggleRadio', () => ({
   ToggleRadio: () => <div data-testid='toggle-radio' />
 }))
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock://image.png',
   IMG_PROMPTS: {}
 }))

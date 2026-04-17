@@ -42,7 +42,7 @@ const mockHandleError = mock.fn()
 class MockStateError extends Error {}
 
 // Mock modules
-mock.module('../src/utils/economyEngine.js', {
+mock.module('../src/utils/economyEngine', {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
@@ -53,20 +53,20 @@ mock.module('../src/utils/economyEngine.js', {
   }
 })
 
-mock.module('../src/utils/AudioManager.js', {
+mock.module('../src/utils/AudioManager', {
   namedExports: {
     audioManager: mockAudioManager
   }
 })
 
-mock.module('../src/utils/logger.js', {
+mock.module('../src/utils/logger', {
   namedExports: {
     logger: mockLogger,
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
   }
 })
 
-mock.module('../src/utils/errorHandler.js', {
+mock.module('../src/utils/errorHandler', {
   namedExports: {
     handleError: mockHandleError,
     StateError: MockStateError
@@ -81,7 +81,7 @@ export const mockTravelLogicDependencies = {
 }
 
 export const setupTravelLogicTest = async () => {
-  const { useTravelLogic } = await import('../src/hooks/useTravelLogic.js')
+  const { useTravelLogic } = await import('../src/hooks/useTravelLogic')
   return { useTravelLogic }
 }
 

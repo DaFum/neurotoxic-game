@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
 test('Van Breakdown: Base breakdown chance with no upgrades and perfect condition', () => {
   const currentState = {

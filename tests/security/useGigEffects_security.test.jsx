@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach, vi, expect } from 'vitest'
 import { renderHook, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
-import { useGigEffects } from '../../src/hooks/useGigEffects.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
+import { useGigEffects } from '../../src/hooks/useGigEffects'
 
 describe('useGigEffects Security', () => {
   beforeEach(() => {

@@ -1,8 +1,8 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
-import { useGigEffects } from '../../src/hooks/useGigEffects.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
+import { useGigEffects } from '../../src/hooks/useGigEffects'
 
 describe('useGigEffects', () => {
   beforeEach(() => {
@@ -98,8 +98,7 @@ describe('useGigEffects', () => {
 })
 
 describe('calculateChaosStyle', async () => {
-  const { calculateChaosStyle } =
-    await import('../../src/hooks/useGigEffects.js')
+  const { calculateChaosStyle } = await import('../../src/hooks/useGigEffects')
 
   test('returns full chaos style for toxic mode', () => {
     const style = calculateChaosStyle(true, 0)
@@ -131,7 +130,7 @@ describe('applyChaosJitter', async () => {
   afterEach(() => {
     teardownJSDOM()
   })
-  const { applyChaosJitter } = await import('../../src/hooks/useGigEffects.js')
+  const { applyChaosJitter } = await import('../../src/hooks/useGigEffects')
 
   test('applies translate transform in toxic mode', () => {
     const el = document.createElement('div')

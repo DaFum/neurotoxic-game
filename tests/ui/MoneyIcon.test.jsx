@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { MoneyIcon } from '../../src/ui/shared/BrutalistUI.jsx'
+import { MoneyIcon } from '../../src/ui/shared/BrutalistUI.tsx'
 
 test('MoneyIcon renders SVG element correctly with title', () => {
   const { container, getByText } = render(

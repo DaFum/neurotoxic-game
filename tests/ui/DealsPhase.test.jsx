@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { expect, test, vi, beforeEach, afterEach } from 'vitest'
-import { DealsPhase } from '../../src/components/postGig/DealsPhase.jsx'
-import { handleError } from '../../src/utils/errorHandler.js'
+import { DealsPhase } from '../../src/components/postGig/DealsPhase.tsx'
+import { handleError } from '../../src/utils/errorHandler'
 import { negotiateDeal } from '../../src/utils/socialEngine'
 
-vi.mock('../../src/utils/errorHandler.js', () => ({
+vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 

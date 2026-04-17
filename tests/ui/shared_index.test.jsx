@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { StatBox, ProgressBar, Panel } from '../../src/ui/shared/index.jsx'
+import { StatBox, ProgressBar, Panel } from '../../src/ui/shared/index.tsx'
 
 test('StatBox renders with correct label and value', () => {
   render(<StatBox label='Fame' value={100} icon='⭐' />)

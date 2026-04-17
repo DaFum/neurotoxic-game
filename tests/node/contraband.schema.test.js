@@ -5,7 +5,7 @@ import {
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY,
   CONTRABAND_RARITY_WEIGHTS
-} from '../../src/data/contraband.js'
+} from '../../src/data/contraband'
 
 describe('Contraband Schema (with imagePrompt)', () => {
   describe('CONTRABAND_DB structure', () => {

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
-import { UpgradesTab } from '../../src/ui/bandhq/UpgradesTab.jsx'
+import { UpgradesTab } from '../../src/ui/bandhq/UpgradesTab.tsx'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },

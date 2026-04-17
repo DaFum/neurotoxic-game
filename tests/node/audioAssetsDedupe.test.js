@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: { logger: mockLogger }
 })
 
@@ -20,7 +20,7 @@ const mockAudioState = {
   audioBufferCache: new Map(),
   currentCacheByteSize: 0
 }
-mock.module('../../src/utils/audio/state.js', {
+mock.module('../../src/utils/audio/state', {
   namedExports: { audioState: mockAudioState }
 })
 
@@ -30,7 +30,7 @@ const mockOggUrlMap = {
   'other.ogg': '/assets/other.ogg',
   'fail.ogg': '/assets/fail.ogg'
 }
-mock.module('../../src/utils/audio/playbackUtils.js', {
+mock.module('../../src/utils/audio/playbackUtils', {
   namedExports: {
     buildAssetUrlMap: () => mockOggUrlMap,
     resolveAssetUrl: filename => ({
@@ -55,14 +55,14 @@ const mockContext = {
     }
   })
 }
-mock.module('../../src/utils/audio/context.js', {
+mock.module('../../src/utils/audio/context', {
   namedExports: {
     getRawAudioContext: () => mockContext
   }
 })
 
 // Import the module under test AFTER mocking
-const { loadAudioBuffer } = await import('../../src/utils/audio/assets.js')
+const { loadAudioBuffer } = await import('../../src/utils/audio/assets')
 
 // --- Tests ---
 

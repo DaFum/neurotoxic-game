@@ -5,9 +5,9 @@ import {
   handleSetGig,
   handleStartGig,
   handleSetLastGigStats
-} from '../../src/context/reducers/gigReducer.js'
-import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState.js'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+} from '../../src/context/reducers/gigReducer'
+import { DEFAULT_GIG_MODIFIERS } from '../../src/context/initialState'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 describe('gigReducer', () => {
   let baseState

@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: { logger: mockLogger }
 })
 
@@ -32,7 +32,7 @@ const mockAudioState = {
   transportEndEventId: null,
   transportStopEventId: null
 }
-mock.module('../../src/utils/audio/state.js', {
+mock.module('../../src/utils/audio/state', {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -98,7 +98,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context.js', {
+mock.module('../../src/utils/audio/context', {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -107,7 +107,7 @@ mock.module('../../src/utils/audio/context.js', {
 
 // Mock PlaybackUtils
 const mockStopTransportAndClear = mock.fn()
-mock.module('../../src/utils/audio/cleanupUtils.js', {
+mock.module('../../src/utils/audio/cleanupUtils', {
   namedExports: {
     stopTransportAndClear: mockStopTransportAndClear,
     clearTransportEvent: mock.fn(),
@@ -119,7 +119,7 @@ mock.module('../../src/utils/audio/cleanupUtils.js', {
 })
 
 // Mock Assets (not used directly but imported)
-mock.module('../../src/utils/audio/assets.js', {
+mock.module('../../src/utils/audio/assets', {
   namedExports: {
     midiUrlMap: {},
     loadAudioBuffer: mock.fn(),
@@ -128,27 +128,27 @@ mock.module('../../src/utils/audio/assets.js', {
 })
 
 // Mock Shared Buffer Utils (not used directly)
-mock.module('../../src/utils/audio/sharedBufferUtils.js', {
+mock.module('../../src/utils/audio/sharedBufferUtils', {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }
 })
 
 // Mock other utils
-mock.module('../../src/utils/rhythmUtils.js', {
+mock.module('../../src/utils/rhythmUtils', {
   namedExports: {
     calculateTimeFromTicks: mock.fn(),
     preprocessTempoMap: mock.fn()
   }
 })
 
-mock.module('../../src/utils/audio/selectionUtils.js', {
+mock.module('../../src/utils/audio/selectionUtils', {
   namedExports: {
     selectRandomItem: mock.fn()
   }
 })
 
-mock.module('../../src/utils/audio/playbackUtils.js', {
+mock.module('../../src/utils/audio/playbackUtils', {
   namedExports: {
     resolveAssetUrl: mock.fn(),
     prepareTransportPlayback: mock.fn(async (options = {}) => {
@@ -177,7 +177,7 @@ mock.module('../../src/utils/audio/playbackUtils.js', {
   }
 })
 
-mock.module('../../src/utils/audio/midiUtils.js', {
+mock.module('../../src/utils/audio/midiUtils', {
   namedExports: {
     isPercussionTrack: mock.fn(),
     isValidMidiNote: mock.fn(),
@@ -187,7 +187,7 @@ mock.module('../../src/utils/audio/midiUtils.js', {
   }
 })
 
-mock.module('../../src/data/songs.js', {
+mock.module('../../src/data/songs', {
   namedExports: {
     SONGS_BY_ID: new Map([].map(s => [s.id, s])),
     SONGS_DB: []
@@ -199,7 +199,7 @@ globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the function under test
 const { startMetalGenerator } =
-  await import('../../src/utils/audio/proceduralMetal.js')
+  await import('../../src/utils/audio/proceduralMetal')
 
 // --- Tests ---
 

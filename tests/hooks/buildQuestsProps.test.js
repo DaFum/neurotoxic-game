@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { buildQuestsProps } from '../../src/hooks/buildQuestsProps.js'
+import { buildQuestsProps } from '../../src/hooks/buildQuestsProps'
 
 describe('buildQuestsProps', () => {
   it('should build props with provided values', () => {

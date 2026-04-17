@@ -8,13 +8,13 @@ import {
   mock
 } from 'node:test'
 import assert from 'node:assert/strict'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   createMockChangeScene,
   createMockSetLastGigStats
-} from '../useRhythmGameLogicTestUtils.js'
+} from '../useRhythmGameLogicTestUtils'
 
 // Local mocks to ensure correct intercept
 const mockUseGameState = mock.fn()
@@ -53,23 +53,23 @@ const mockGigStats = {
 }
 
 // Register mocks BEFORE import
-mock.module('../../src/context/GameState.jsx', {
+mock.module('../../src/context/GameState.tsx', {
   namedExports: { useGameState: mockUseGameState }
 })
-mock.module('../../src/utils/AudioManager.js', {
+mock.module('../../src/utils/AudioManager', {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/audioEngine.js', {
+mock.module('../../src/utils/audioEngine', {
   namedExports: mockAudioEngine
 })
-mock.module('../../src/utils/rhythmUtils.js', {
+mock.module('../../src/utils/rhythmUtils', {
   namedExports: mockRhythmUtils
 })
-mock.module('../../src/utils/gigStats.js', {
+mock.module('../../src/utils/gigStats', {
   namedExports: mockGigStats
 })
 // Mock other deps to avoid side effects
-mock.module('../../src/utils/simulationUtils.js', {
+mock.module('../../src/utils/simulationUtils', {
   namedExports: {
     calculateGigPhysics: mock.fn(() => ({
       speedModifier: 1,
@@ -79,7 +79,7 @@ mock.module('../../src/utils/simulationUtils.js', {
     getGigModifiers: mock.fn(() => ({}))
   }
 })
-mock.module('../../src/utils/hecklerLogic.js', {
+mock.module('../../src/utils/hecklerLogic', {
   namedExports: {
     createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),
     processProjectiles: mock.fn(
@@ -107,7 +107,7 @@ mock.module('../../src/utils/hecklerLogic.js', {
   }
 })
 const _GameError = class GameError extends Error {}
-mock.module('../../src/utils/errorHandler.js', {
+mock.module('../../src/utils/errorHandler', {
   namedExports: {
     handleError: mock.fn(),
     GameError: _GameError,
@@ -115,7 +115,7 @@ mock.module('../../src/utils/errorHandler.js', {
     StateError: class StateError extends _GameError {}
   }
 })
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: {
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
     logger: {
@@ -126,7 +126,7 @@ mock.module('../../src/utils/logger.js', {
     }
   }
 })
-mock.module('../../src/data/songs.js', {
+mock.module('../../src/data/songs', {
   namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
 })
 // Stable i18n object prevents initializeGigState from being recreated on each render.
@@ -151,8 +151,7 @@ mock.module('react-i18next', {
   }
 })
 
-const rhythmGameLogicModule =
-  await import('../../src/hooks/useRhythmGameLogic.js')
+const rhythmGameLogicModule = await import('../../src/hooks/useRhythmGameLogic')
 const rhythmGameLogicHook = rhythmGameLogicModule.useRhythmGameLogic
 
 describe('useRhythmGameLogic Multi-Song Support', () => {

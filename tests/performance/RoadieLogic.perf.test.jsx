@@ -22,7 +22,7 @@ describe('RoadieLogic Performance', () => {
   beforeAll(async () => {
     //  removed (handled by vitest env)
     // Dynamic import after mocks
-    const module = await import('../../src/hooks/minigames/useRoadieLogic.js')
+    const module = await import('../../src/hooks/minigames/useRoadieLogic')
     useRoadieLogic = module.useRoadieLogic
   })
 

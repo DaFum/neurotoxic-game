@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, fireEvent, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ToggleSwitch } from '../../src/ui/shared/ToggleSwitch.jsx'
+import { ToggleSwitch } from '../../src/ui/shared/ToggleSwitch.tsx'
 
 describe('ToggleSwitch', () => {
   afterEach(() => {

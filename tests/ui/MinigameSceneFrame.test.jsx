@@ -7,13 +7,13 @@ const mockGameState = {
   settings: { crtEnabled: false }
 }
 
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
   useGameState: () => mockGameState
 }))
 
 // Mock PixiStage component
 const mockPixiStage = vi.fn()
-vi.mock('../../src/components/PixiStage.jsx', () => ({
+vi.mock('../../src/components/PixiStage.tsx', () => ({
   PixiStage: props => {
     mockPixiStage(props)
     return <div data-testid='pixi-stage-mock'>Pixi Stage Mock</div>
@@ -30,7 +30,7 @@ describe('MinigameSceneFrame', () => {
 
   beforeAll(async () => {
     ;({ MinigameSceneFrame } =
-      await import('../../src/components/MinigameSceneFrame.jsx'))
+      await import('../../src/components/MinigameSceneFrame.tsx'))
   })
 
   const mockControllerFactory = vi.fn()

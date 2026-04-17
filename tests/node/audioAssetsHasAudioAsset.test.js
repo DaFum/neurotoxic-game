@@ -17,7 +17,7 @@ const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
 const mockResolveAssetUrl = mock.fn()
 const PATH_PREFIX_REGEX = /^\.?\//
 
-mock.module('../../src/utils/audio/playbackUtils.js', {
+mock.module('../../src/utils/audio/playbackUtils', {
   namedExports: {
     buildAssetUrlMap: mockBuildAssetUrlMap,
     resolveAssetUrl: mockResolveAssetUrl,
@@ -28,7 +28,7 @@ mock.module('../../src/utils/audio/playbackUtils.js', {
 
 // Import the module under test
 // Note: We need to import this AFTER mocking
-const { hasAudioAsset } = await import('../../src/utils/audio/assets.js')
+const { hasAudioAsset } = await import('../../src/utils/audio/assets')
 
 test('hasAudioAsset', async t => {
   await t.test('returns true for existing asset with full path', () => {

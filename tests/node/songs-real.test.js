@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { SONGS_DB, SONGS_BY_ID } from '../../src/data/songs.js'
+import { SONGS_DB, SONGS_BY_ID } from '../../src/data/songs'
 
 describe('songs.js - SONGS_DB structure', () => {
   describe('SONGS_DB transformation', () => {

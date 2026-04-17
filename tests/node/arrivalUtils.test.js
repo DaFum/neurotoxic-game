@@ -3,9 +3,9 @@ import { test, mock, describe } from 'node:test'
 import {
   handleNodeArrival,
   processTravelEvents
-} from '../../src/utils/arrivalUtils.js'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
-import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils.js'
+} from '../../src/utils/arrivalUtils'
+import { GAME_PHASES } from '../../src/context/gameConstants'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
 
 describe('handleNodeArrival', () => {
   const getMocks = () => ({

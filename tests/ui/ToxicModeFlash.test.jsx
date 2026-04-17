@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { describe, test, expect } from 'vitest'
-import { ToxicModeFlash } from '../../src/components/hud/ToxicModeFlash.jsx'
+import { ToxicModeFlash } from '../../src/components/hud/ToxicModeFlash.tsx'
 
 describe('ToxicModeFlash', () => {
   test('renders nothing when isToxicMode is false', () => {

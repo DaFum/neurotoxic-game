@@ -1,5 +1,5 @@
 import { test, describe, beforeAll, afterAll, vi } from 'vitest'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock PIXI
 const PIXI = vi.hoisted(() => ({
@@ -41,14 +41,14 @@ vi.mock('pixi.js', () => {
 })
 
 // Mock other utils
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => '',
   IMG_PROMPTS: {}
 }))
-vi.mock('../../src/utils/logger.js', () => ({
+vi.mock('../../src/utils/logger', () => ({
   logger: { warn: () => {} }
 }))
-vi.mock('../../src/components/stage/utils.js', () => ({
+vi.mock('../../src/components/stage/utils', () => ({
   loadTexture: async () => ({}),
   loadTextures: async () => ({}),
   getPixiColorFromToken: () => 0
@@ -59,7 +59,7 @@ describe('EffectManager Performance', () => {
 
   beforeAll(async () => {
     setupJSDOM()
-    const module = await import('../../src/components/stage/EffectManager.js')
+    const module = await import('../../src/components/stage/EffectManager')
     EffectManager = module.EffectManager
   })
 

@@ -5,7 +5,7 @@ import {
   canResumeAudioContextState,
   getPreferredAudioContextState,
   isClosedAudioContextState
-} from '../../src/utils/audioContextState.js'
+} from '../../src/utils/audioContextState'
 
 test('getPreferredAudioContextState prefers raw context state', () => {
   assert.strictEqual(

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { CompletePhase } from '../../src/components/postGig/CompletePhase.jsx'
+import { CompletePhase } from '../../src/components/postGig/CompletePhase.tsx'
 
 afterEach(cleanup)
 

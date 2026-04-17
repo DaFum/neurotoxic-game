@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import {
   parseSongNotes,
   calculateTimeFromTicks
-} from '../../src/utils/rhythmUtils.js'
+} from '../../src/utils/rhythmUtils'
 
 // Helper to load JSON in Node environment without import attributes (ESLint conflict)
 const __filename = fileURLToPath(import.meta.url)

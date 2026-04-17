@@ -4,7 +4,7 @@ import {
   _CONTRABAND_DB_FOR_TESTING as CONTRABAND_DB,
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY
-} from '../../src/data/contraband.js'
+} from '../../src/data/contraband'
 
 /**
  * Integration tests for contraband data usage patterns

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { resolveSongPlaybackWindow } from '../../src/utils/audio/songUtils.js'
+import { resolveSongPlaybackWindow } from '../../src/utils/audio/songUtils'
 
 test('resolveSongPlaybackWindow prefers excerpt end-start duration when available', () => {
   const window = resolveSongPlaybackWindow({

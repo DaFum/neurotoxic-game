@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
-import { PixiStage } from '../../src/components/PixiStage.jsx'
+import { PixiStage } from '../../src/components/PixiStage.tsx'
 
 import { createPixiStageController } from '../../src/components/PixiStageController'
 import { logger } from '../../src/utils/logger'
