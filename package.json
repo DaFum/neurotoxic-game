@@ -105,12 +105,5 @@
       "eslint --fix",
       "prettier --write"
     ]
-  },
-  "pnpm": {
-    "overrides": {
-      "lodash": "4.18.1",
-      "picomatch": "4.0.4",
-      "@xmldom/xmldom": "0.9.9"
-    }
   }
 }
