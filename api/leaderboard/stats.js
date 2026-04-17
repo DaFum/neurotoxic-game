@@ -1,5 +1,5 @@
 import client from '../../lib/redis.js'
-import { normalizeIp } from '../../lib/apiUtils.js'
+import { normalizeIp, hasPrototypePollution } from '../../lib/apiUtils.js'
 
 const VALID_STATS = [
   'balance',
@@ -43,11 +43,7 @@ export default async function handler(req, res) {
       }
 
       // Anti-Tamper / Prototype Pollution Check
-      if (
-        Object.hasOwn(req.body, '__proto__') ||
-        Object.hasOwn(req.body, 'constructor') ||
-        Object.hasOwn(req.body, 'prototype')
-      ) {
+      if (hasPrototypePollution(req.body)) {
         return res.status(400).json({ error: 'Invalid payload structure' })
       }
 
