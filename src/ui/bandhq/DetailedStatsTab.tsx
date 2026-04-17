@@ -1,14 +1,119 @@
 // TODO: Review this file
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ProgressBar, Panel, Tooltip } from '../shared'
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
 
 // --- Helpers ---
 
-const isUnlocked = (val: any) => {
+interface CharacterTrait {
+  id: string
+  name: string
+  desc: string
+  unlockHint: string
+}
+
+interface CharacterDefinition {
+  name: string
+  role?: string
+  traits?: CharacterTrait[]
+}
+
+interface BandMember {
+  name: string
+  role?: string
+  stamina?: number
+  mood?: number
+  skill?: number
+  charisma?: number
+  technical?: number
+  improv?: number
+  composition?: number
+  baseStats?: Partial<
+    Record<
+      'skill' | 'charisma' | 'technical' | 'improv' | 'composition',
+      number
+    >
+  >
+  traits?: Record<string, CharacterTrait>
+  equipment?: Record<string, unknown>
+}
+
+interface PlayerData {
+  money: number
+  fame: number
+  fameLevel?: number
+  day: number
+  time?: string | number
+  location?: string
+  totalTravels?: number
+  passiveFollowers?: number
+  hqUpgrades?: string[]
+  stats?: {
+    proveYourselfMode?: boolean
+  }
+  van?: {
+    fuel?: number
+    condition?: number
+    breakdownChance?: number
+    upgrades?: string[]
+  }
+}
+
+interface SocialDeal {
+  id: string
+}
+
+interface SocialData {
+  instagram?: number
+  tiktok?: number
+  youtube?: number
+  newsletter?: number
+  viral?: number
+  trend?: string
+  reputationCooldown?: number
+  activeDeals?: SocialDeal[]
+  loyalty?: number
+  controversyLevel?: number
+  egoFocus?: string
+}
+
+interface BandData {
+  harmony?: number
+  luck?: number
+  inventorySlots?: number
+  inventory?: Record<string, unknown>
+  performance?: {
+    guitarDifficulty?: number
+    drumMultiplier?: number
+    crowdDecay?: number
+  }
+  members?: BandMember[]
+}
+
+interface ActiveQuest {
+  id: string
+  label: string
+  deadline?: number
+  progress?: number
+  required?: number
+}
+
+interface DetailRowProps {
+  label: ReactNode
+  value: ReactNode
+  subtext?: ReactNode
+  locked?: boolean
+  className?: string
+}
+
+interface BasicTProps {
+  t: TFunction
+}
+
+const isUnlocked = (val: unknown) => {
   if (typeof val === 'number') return val > 0
   if (typeof val === 'boolean') return val
   if (Array.isArray(val)) return val.length > 0
@@ -17,17 +122,23 @@ const isUnlocked = (val: any) => {
 
 // Generate CHAR_MAP using a single pass loop to avoid intermediate array allocations
 // from chained map/filter pipelines that run on module evaluation.
-const CHAR_MAP: Record<string, any> = {}
+const CHAR_MAP: Record<string, CharacterDefinition> = {}
 for (const key in CHARACTERS) {
   if (Object.hasOwn(CHARACTERS, key)) {
-    const c = (CHARACTERS as any)[key]
+    const c = CHARACTERS[key as keyof typeof CHARACTERS] as CharacterDefinition
     if (c.role !== 'NPC') {
       CHAR_MAP[c.name] = c
     }
   }
 }
 
-const DetailRow = ({ label, value, subtext, locked, className = '' }: any) => (
+const DetailRow = ({
+  label,
+  value,
+  subtext,
+  locked,
+  className = ''
+}: DetailRowProps) => (
   <div
     className={`flex justify-between items-center py-1 border-b border-ash-gray/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}
   >
@@ -43,17 +154,12 @@ const DetailRow = ({ label, value, subtext, locked, className = '' }: any) => (
   </div>
 )
 
-DetailRow.propTypes = {
-  label: PropTypes.node.isRequired,
-  value: PropTypes.node.isRequired,
-  subtext: PropTypes.node,
-  locked: PropTypes.bool,
-  className: PropTypes.string
-}
-
 // --- Sub-components ---
 
-const CareerOverviewSection = ({ player, t }: any) => {
+const CareerOverviewSection = ({
+  player,
+  t
+}: { player: PlayerData } & BasicTProps) => {
   const locationName = translateLocation(t, player.location, player.location)
   return (
     <Panel
@@ -116,7 +222,10 @@ const CareerOverviewSection = ({ player, t }: any) => {
   )
 }
 
-const SocialReachSection = ({ social, t }: any) => {
+const SocialReachSection = ({
+  social,
+  t
+}: { social: SocialData } & BasicTProps) => {
   const totalReach =
     (social.instagram ?? 0) +
     (social.tiktok ?? 0) +
@@ -192,7 +301,7 @@ const SocialReachSection = ({ social, t }: any) => {
           label={t('ui:stats.brandDeals', { defaultValue: 'Brand Deals' })}
           value={social.activeDeals?.length || 0}
           subtext={
-            social.activeDeals?.map((d: any) => d.id).join(', ') ||
+            social.activeDeals?.map(d => d.id).join(', ') ||
             t('ui:stats.noContracts', {
               defaultValue: 'No active contracts'
             })
@@ -234,7 +343,10 @@ const SocialReachSection = ({ social, t }: any) => {
   )
 }
 
-const VanConditionSection = ({ player, t }: any) => (
+const VanConditionSection = ({
+  player,
+  t
+}: { player: PlayerData } & BasicTProps) => (
   <Panel title={t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}>
     {/* jscpd:ignore-start */}
     <div className='mb-4 space-y-2'>
@@ -278,7 +390,10 @@ const RegionalStandingSection = ({
   reputationByRegion,
   venueBlacklist,
   t
-}: any) => (
+}: {
+  reputationByRegion: Record<string, number>
+  venueBlacklist: string[]
+} & BasicTProps) => (
   <Panel
     title={t('ui:stats.regional_standing', {
       defaultValue: 'Regional Standing'
@@ -298,7 +413,7 @@ const RegionalStandingSection = ({
             label={translateLocation(t, region, region)}
             value={rep}
             subtext={
-              venueBlacklist.some((v: any) => v.split('_')[0] === region)
+              venueBlacklist.some(v => v.split('_')[0] === region)
                 ? t('ui:detailedStats.blacklisted', {
                     defaultValue: 'BLACKLISTED VENUES'
                   })
@@ -316,16 +431,17 @@ const RegionalStandingSection = ({
           })}
         </div>
         <div className='text-xs text-toxic-green font-mono italic'>
-          {venueBlacklist
-            .map((v: any) => translateLocation(t, v, v))
-            .join(', ')}
+          {venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')}
         </div>
       </div>
     )}
   </Panel>
 )
 
-const ActiveQuestsSection = ({ activeQuests, t }: any) => (
+const ActiveQuestsSection = ({
+  activeQuests,
+  t
+}: { activeQuests: ActiveQuest[] } & BasicTProps) => (
   <Panel title={t('ui:stats.active_quests', { defaultValue: 'Active Quests' })}>
     {activeQuests.length === 0 ? (
       <div className='text-xs text-ash-gray italic py-4 text-center'>
@@ -335,7 +451,7 @@ const ActiveQuestsSection = ({ activeQuests, t }: any) => (
       </div>
     ) : (
       <div className='space-y-4'>
-        {activeQuests.map((q: any) => (
+        {activeQuests.map(q => (
           <div
             key={q.id}
             className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
@@ -360,7 +476,11 @@ const ActiveQuestsSection = ({ activeQuests, t }: any) => (
   </Panel>
 )
 
-const BandMetricsSection = ({ band, social, t }: any) => (
+const BandMetricsSection = ({
+  band,
+  social,
+  t
+}: { band: BandData; social: SocialData } & BasicTProps) => (
   <Panel title={t('ui:stats.band_metrics', { defaultValue: 'Band Metrics' })}>
     <div className='mb-4'>
       <ProgressBar
@@ -423,7 +543,10 @@ const BandMetricsSection = ({ band, social, t }: any) => (
   </Panel>
 )
 
-const InventoryEquipmentSection = ({ band, t }: any) => (
+const InventoryEquipmentSection = ({
+  band,
+  t
+}: { band: BandData } & BasicTProps) => (
   <Panel
     title={t('ui:stats.inventory_equipment', {
       defaultValue: 'Inventory & Equipment'
@@ -450,7 +573,7 @@ const InventoryEquipmentSection = ({ band, t }: any) => (
   </Panel>
 )
 
-const MemberTraits = ({ member, t }: any) => {
+const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
   const def = CHAR_MAP[member.name]
 
   const potentialTraits = useMemo(() => {
@@ -460,10 +583,10 @@ const MemberTraits = ({ member, t }: any) => {
     if (baseTraits.length === 0 && runtimeTraits.length === 0) return []
 
     const merged = [...baseTraits]
-    const seen = new Set(baseTraits.map((bt: any) => bt.id))
+    const seen = new Set(baseTraits.map(bt => bt.id))
 
-    for (const rt of runtimeTraits as any[]) {
-      if (!seen.has(rt.id)) {
+    for (const rt of runtimeTraits as CharacterTrait[]) {
+      if (rt?.id && !seen.has(rt.id)) {
         merged.push(rt)
         seen.add(rt.id)
       }
@@ -520,7 +643,10 @@ const MemberTraits = ({ member, t }: any) => {
   })
 }
 
-const MemberEquipment = ({ member, t }: any) => {
+const MemberEquipment = ({
+  member,
+  t
+}: { member: BandMember } & BasicTProps) => {
   if (!member.equipment) {
     return (
       <div className='text-xs text-ash-gray/50'>
@@ -539,7 +665,7 @@ const MemberEquipment = ({ member, t }: any) => {
   ))
 }
 
-const MemberCard = ({ member, t }: any) => (
+const MemberCard = ({ member, t }: { member: BandMember } & BasicTProps) => (
   <div className='bg-void-black/60 border border-ash-gray p-4'>
     <div className='flex justify-between items-baseline mb-4'>
       <h4 className='text-lg font-bold text-toxic-green'>{member.name}</h4>
@@ -628,96 +754,21 @@ const MemberCard = ({ member, t }: any) => (
   </div>
 )
 
-const BandMembersSection = ({ members, t }: any) => (
+const BandMembersSection = ({
+  members,
+  t
+}: { members: BandMember[] } & BasicTProps) => (
   <div className='space-y-4'>
     <h3 className='text-xl text-star-white font-display border-b border-toxic-green pb-2'>
       {t('ui:detailedStats.bandMembers', { defaultValue: 'BAND MEMBERS' })}
     </h3>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-      {(members || []).map((member: any) => (
+      {(members || []).map(member => (
         <MemberCard key={member.name} member={member} t={t} />
       ))}
     </div>
   </div>
 )
-
-CareerOverviewSection.propTypes = {
-  player: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-SocialReachSection.propTypes = {
-  social: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-VanConditionSection.propTypes = {
-  player: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-RegionalStandingSection.propTypes = {
-  reputationByRegion: PropTypes.object.isRequired,
-  venueBlacklist: PropTypes.array.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-ActiveQuestsSection.propTypes = {
-  activeQuests: PropTypes.array.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-BandMetricsSection.propTypes = {
-  band: PropTypes.object.isRequired,
-  social: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-InventoryEquipmentSection.propTypes = {
-  band: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-MemberTraits.propTypes = {
-  member: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-MemberEquipment.propTypes = {
-  member: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-MemberCard.propTypes = {
-  member: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired
-}
-
-BandMembersSection.propTypes = {
-  members: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      role: PropTypes.string,
-      stamina: PropTypes.number,
-      mood: PropTypes.number,
-      skill: PropTypes.number,
-      charisma: PropTypes.number,
-      technical: PropTypes.number,
-      improv: PropTypes.number,
-      composition: PropTypes.number,
-      baseStats: PropTypes.shape({
-        skill: PropTypes.number,
-        charisma: PropTypes.number,
-        technical: PropTypes.number,
-        improv: PropTypes.number,
-        composition: PropTypes.number
-      }),
-      traits: PropTypes.object,
-      equipment: PropTypes.object
-    })
-  ),
-  t: PropTypes.func.isRequired
-}
 
 // --- Main Component ---
 
@@ -728,7 +779,14 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {}
-}: any) => {
+}: {
+  player: PlayerData
+  band: BandData
+  social: SocialData
+  activeQuests?: ActiveQuest[]
+  venueBlacklist?: string[]
+  reputationByRegion?: Record<string, number>
+}) => {
   const { t } = useTranslation(['ui', 'items', 'venues', 'traits'])
 
   return (
@@ -757,16 +815,7 @@ export const DetailedStatsTab = ({
       </div>
 
       {/* Members Detail */}
-      <BandMembersSection members={band.members} t={t} />
+      <BandMembersSection members={band.members || []} t={t} />
     </div>
   )
-}
-
-DetailedStatsTab.propTypes = {
-  player: PropTypes.object.isRequired,
-  band: PropTypes.object.isRequired,
-  social: PropTypes.object.isRequired,
-  activeQuests: PropTypes.array,
-  venueBlacklist: PropTypes.array,
-  reputationByRegion: PropTypes.object
 }

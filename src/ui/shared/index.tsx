@@ -5,8 +5,7 @@
  * @module shared
  */
 
-import { memo } from 'react'
-import PropTypes from 'prop-types'
+import { memo, type HTMLAttributes, type ReactNode } from 'react'
 
 // Export components
 export { SettingsPanel } from '../settings/SettingsPanel'
@@ -70,12 +69,19 @@ export {
  * @param {string} props.icon - Icon or emoji
  * @param {string} [props.className] - Additional CSS classes
  */
+interface StatBoxProps {
+  label: string
+  value: string | number
+  icon: ReactNode
+  className?: string
+}
+
 export const StatBox = memo(function StatBox({
   label,
   value,
   icon,
   className = ''
-}: any) {
+}: StatBoxProps) {
   return (
     <div
       className={`relative bg-charcoal-gray p-3 flex flex-col items-center justify-center border border-steel-gray group overflow-hidden ${className}`}
@@ -95,17 +101,24 @@ export const StatBox = memo(function StatBox({
     </div>
   )
 })
-;(StatBox as any).propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  icon: PropTypes.string.isRequired,
-  className: PropTypes.string
-}
 
 const SIZE_CLASSES: Record<string, string> = {
   sm: 'h-3',
   md: 'h-5',
   mini: 'h-1.5'
+}
+
+type ProgressBarSize = 'sm' | 'md' | 'mini'
+
+interface ProgressBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'color'> {
+  label?: string
+  value?: number
+  max: number
+  color: string
+  size?: ProgressBarSize
+  showValue?: boolean
+  warn?: boolean
+  className?: string
 }
 
 /**
@@ -130,7 +143,7 @@ export const ProgressBar = memo(function ProgressBar({
   warn = false,
   className = '',
   ...props
-}: any) {
+}: ProgressBarProps) {
   const safeMax = max > 0 ? max : 1
   const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
   const pct = Math.min(100, (safeValue / safeMax) * 100)
@@ -169,15 +182,12 @@ export const ProgressBar = memo(function ProgressBar({
     </div>
   )
 })
-;(ProgressBar as any).propTypes = {
-  label: PropTypes.string,
-  value: PropTypes.number,
-  max: PropTypes.number.isRequired,
-  color: PropTypes.string.isRequired,
-  size: PropTypes.oneOf(['sm', 'md', 'mini']),
-  showValue: PropTypes.bool,
-  warn: PropTypes.bool,
-  className: PropTypes.string
+
+interface PanelProps {
+  title?: ReactNode
+  children: ReactNode
+  className?: string
+  contentClassName?: string
 }
 
 /**
@@ -193,7 +203,7 @@ export const Panel = memo(function Panel({
   children,
   className = '',
   contentClassName = 'space-y-1'
-}: any) {
+}: PanelProps) {
   return (
     <div
       className={`relative bg-abyss-black/40 border-2 border-steel-gray/40 p-4 group overflow-hidden ${className}`}
@@ -217,9 +227,3 @@ export const Panel = memo(function Panel({
     </div>
   )
 })
-;(Panel as any).propTypes = {
-  title: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  contentClassName: PropTypes.string
-}

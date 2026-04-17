@@ -17,17 +17,15 @@ test.describe('Audio System', () => {
     await page.getByRole('button', { name: /band hq/i }).click()
 
     // 4. Navigate to SETTINGS tab
-    await page.getByRole('button', { name: /settings/i }).click()
+    const bandHqTabs = page.getByRole('tablist', { name: /band hq sections/i })
+    await bandHqTabs.getByRole('tab', { name: /^settings$/i }).click()
 
     // 5. Verify the slider or internal state reflects the stored value.
     // Check if we can select by label text if available.
 
-    // Attempt to find the slider associated with "MUSIC VOLUME" text
-    const musicLabel = page.getByText('MUSIC VOLUME')
-    const musicSlider = musicLabel.locator('..').locator('input[type="range"]')
+    const musicSlider = page.getByRole('slider', { name: /music volume/i })
 
     // Verify visibility first
-    await expect(musicLabel).toBeVisible()
     await expect(musicSlider).toBeVisible()
 
     // Check value

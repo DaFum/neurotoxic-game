@@ -199,7 +199,7 @@ export interface EventDeltaPayload extends UnknownRecord {
   band?: Partial<BandState>
   social?: Partial<SocialState>
   activeStoryFlags?: string[]
-  pendingEvents?: Array<GameEvent | string>
+  pendingEvents?: string[]
 }
 
 export type UpdatePlayerPayload =
@@ -276,7 +276,7 @@ export interface GameState {
   setlist: unknown[]
   lastGigStats: UnknownRecord | null
   activeEvent: GameEvent | null
-  pendingEvents: GameEvent[]
+  pendingEvents: string[]
   isScreenshotMode: boolean
   toasts: ToastPayload[]
   activeStoryFlags: string[]

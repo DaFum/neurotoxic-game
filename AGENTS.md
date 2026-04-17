@@ -11,7 +11,7 @@
 
 ## Architecture Constraints
 
-- Keep dependency pins aligned with project policy (React 19.2.5, Vite 8.0.8, Tailwind 4.2.2, Framer Motion 12.38.0, Tone 15.5.6). Node.js 22.13+ required. Do not add Howler.js.
+- Do not upgrade pinned deps without discussion; do not add Howler.js.
 - State updates must go through action creators. If adding a new action: update `actionTypes`, reducer handling, and `actionCreators` in the same change.
 - Use canonical clamps for bounded state: `player.money >= 0` and `band.harmony` in `1..100` via `src/utils/gameStateUtils.ts`.
 - Audio clock source is `audioEngine.getGigTimeMs()` only; do not read Tone.js time directly.
@@ -35,6 +35,7 @@
 ## Gotchas
 
 - `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
+- `lint-staged` now covers `*.{js,jsx,ts,tsx}` — all source files are auto-linted and formatted at commit time.
 - Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They return reactive state only.
 - `useArrivalLogic` owns ALL arrival routing (including PREGIG direct entry); `COMPLETE_TRAVEL_MINIGAME` does not change scene.
 - `START_GIG` resets `gigModifiers` to defaults; previous gig selections do not carry over.

@@ -9,6 +9,26 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && pnpm run typecheck"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ \\.(ts|tsx)$ ]] && eslint --fix \"$CLAUDE_TOOL_INPUT_FILE_PATH\" && prettier --write \"$CLAUDE_TOOL_INPUT_FILE_PATH\" || true"
+          }
+        ]
+      }
     ]
   }
 }

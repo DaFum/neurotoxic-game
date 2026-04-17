@@ -77,7 +77,6 @@ import {
   createBloodBankDonateAction,
   createAddVenueBlacklistAction
 } from './actionCreators'
-import PropTypes from 'prop-types'
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
@@ -198,24 +197,21 @@ const processAddQuests = (
     // Parse relative deadlines
     const questToAdd = { ...(q as Record<string, unknown>) }
     if (questToAdd.deadlineOffset) {
-      questToAdd.deadline =
-        currentDay + Number(questToAdd.deadlineOffset || 0)
+      questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset || 0)
       delete questToAdd.deadlineOffset
     }
     dispatch(createAddQuestAction(questToAdd))
   })
 }
 
-function safeStorage<T>(
-  operation: string,
-  fn: () => T,
-  fallbackValue: T
-): T {
-  return (safeStorageOperation as unknown as (
-    op: string,
-    exec: () => T,
-    fallback: T
-  ) => T)(operation, fn, fallbackValue)
+function safeStorage<T>(operation: string, fn: () => T, fallbackValue: T): T {
+  return (
+    safeStorageOperation as unknown as (
+      op: string,
+      exec: () => T,
+      fallback: T
+    ) => T
+  )(operation, fn, fallbackValue)
 }
 
 function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
@@ -363,7 +359,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updatePlayer = useCallback(
-    (updates: UpdatePlayerPayload) => dispatch(createUpdatePlayerAction(updates)),
+    (updates: UpdatePlayerPayload) =>
+      dispatch(createUpdatePlayerAction(updates)),
     []
   )
 
@@ -381,7 +378,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateSocial = useCallback(
-    (updates: Partial<SocialState>) => dispatch(createUpdateSocialAction(updates)),
+    (updates: Partial<SocialState>) =>
+      dispatch(createUpdateSocialAction(updates)),
     []
   )
 
@@ -487,15 +485,18 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       messageOrPayload: Parameters<typeof createAddToastAction>[0],
       type: Parameters<typeof createAddToastAction>[1] = 'info'
     ) => {
-    const action = createAddToastAction(messageOrPayload, type)
-    dispatch(action)
+      const action = createAddToastAction(messageOrPayload, type)
+      dispatch(action)
     },
     []
   )
 
-  const removeToast = useCallback((id: Parameters<typeof createRemoveToastAction>[0]) => {
-    dispatch(createRemoveToastAction(id))
-  }, [])
+  const removeToast = useCallback(
+    (id: Parameters<typeof createRemoveToastAction>[0]) => {
+      dispatch(createRemoveToastAction(id))
+    },
+    []
+  )
 
   /**
    * Consumes a consumable item from band inventory.
@@ -557,18 +558,18 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       damageTaken: Parameters<typeof createCompleteTravelMinigameAction>[0],
       itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
     ) => {
-    const rngValue = secureRandom() as number
-    const contrabandId = pickRandomContraband(secureRandom)
-    const instanceId = getSafeUUID()
-    dispatch(
-      createCompleteTravelMinigameAction(
-        damageTaken,
-        itemsCollected,
-        rngValue,
-        contrabandId,
-        instanceId
+      const rngValue = secureRandom() as number
+      const contrabandId = pickRandomContraband(secureRandom)
+      const instanceId = getSafeUUID()
+      dispatch(
+        createCompleteTravelMinigameAction(
+          damageTaken,
+          itemsCollected,
+          rngValue,
+          contrabandId,
+          instanceId
+        )
       )
-    )
     },
     []
   )
@@ -580,8 +581,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   )
 
   const completeRoadieMinigame = useCallback(
-    (equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0]) =>
-      dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
+    (
+      equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0]
+    ) => dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
     []
   )
 
@@ -629,8 +631,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     (
       questId: Parameters<typeof createAdvanceQuestAction>[0],
       progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
-    ) =>
-      dispatch(createAdvanceQuestAction(questId, progressAmount)),
+    ) => dispatch(createAdvanceQuestAction(questId, progressAmount)),
     []
   )
 
@@ -811,8 +812,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         try {
           validateSaveData(parsed)
         } catch (error) {
-          const reason =
-            error instanceof Error ? error.message : String(error)
+          const reason = error instanceof Error ? error.message : String(error)
           handleError(
             new StateError(
               tRef.current('ui:save.corruptFailed', {
@@ -860,11 +860,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       // Pass full state context for flags/cooldowns
       const context = currentState
 
-      let event = (eventEngine.checkEvent as (
-        categoryArg: string,
-        contextArg: GameState,
-        triggerArg?: string | null
-      ) => Record<string, unknown> | null)(category, context, triggerPoint)
+      let event = (
+        eventEngine.checkEvent as (
+          categoryArg: string,
+          contextArg: GameState,
+          triggerArg?: string | null
+        ) => Record<string, unknown> | null
+      )(category, context, triggerPoint)
 
       if (event) {
         // Process dynamic options (Inventory checks)
@@ -890,9 +892,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // If it was a pending event, remove it from queue
         if (
-          currentState.pendingEvents.some(
-            (pending: { id?: string }) => pending.id === processedEventId
-          )
+          typeof processedEventId === 'string' &&
+          currentState.pendingEvents[0] === processedEventId
         ) {
           dispatch(createPopPendingEventAction())
         }
@@ -944,11 +945,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
           // Add Quests
           if (flags.addQuest) {
-            processAddQuests(
-              flags.addQuest,
-              currentState.player.day,
-              dispatch
-            )
+            processAddQuests(flags.addQuest, currentState.player.day, dispatch)
           }
 
           // Unlocks
@@ -1015,7 +1012,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
             msgOutcome && msgDesc
               ? `${msgOutcome} ${msgDesc}`
               : msgOutcome || msgDesc
-          addToast(typeof message === 'string' ? message : String(message), 'info')
+          addToast(
+            typeof message === 'string' ? message : String(message),
+            'info'
+          )
         }
 
         // 6. Cleanup
@@ -1031,7 +1031,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           description:
             typeof selectedChoice.description === 'string'
               ? tRef.current(selectedChoice.description)
-            : '',
+              : '',
           result: null
         }
       }
@@ -1157,10 +1157,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       <GameStateContext value={state}>{children}</GameStateContext>
     </GameDispatchContext>
   )
-}
-
-GameStateProvider.propTypes = {
-  children: PropTypes.node
 }
 
 /**

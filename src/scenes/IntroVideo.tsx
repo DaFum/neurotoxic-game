@@ -13,6 +13,7 @@ export const IntroVideo = () => {
   const { changeScene } = useGameState()
   const videoRef = useRef(null)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
+  const [isVideoSupported, setIsVideoSupported] = useState(true)
 
   const handleEnd = useCallback(() => {
     changeScene(GAME_PHASES.MENU)
@@ -23,7 +24,19 @@ export const IntroVideo = () => {
       videoRef.current
         .play()
         .then(() => setAutoplayBlocked(false))
-        .catch(err => logger.error('IntroVideo', 'Manual play failed', err))
+        .catch(err => {
+          if (err?.name === 'NotSupportedError') {
+            logger.warn(
+              'IntroVideo',
+              'Intro video format is not supported by this browser. Skipping intro.'
+            )
+            setAutoplayBlocked(false)
+            setIsVideoSupported(false)
+            handleEnd()
+            return
+          }
+          logger.error('IntroVideo', 'Manual play failed', err)
+        })
     }
   }
 
@@ -31,24 +44,36 @@ export const IntroVideo = () => {
     // Attempt to play video on mount
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
+        if (error?.name === 'NotSupportedError') {
+          logger.warn(
+            'IntroVideo',
+            'Intro video source is unsupported. Skipping intro.'
+          )
+          setAutoplayBlocked(false)
+          setIsVideoSupported(false)
+          handleEnd()
+          return
+        }
         logger.warn('IntroVideo', 'Intro video autoplay blocked', error)
         setAutoplayBlocked(true)
       })
     }
-  }, [])
+  }, [handleEnd])
 
   return (
     <div className='relative w-full h-full bg-void-black overflow-hidden flex items-center justify-center z-[100]'>
-      <video
-        ref={videoRef}
-        src={introVideo}
-        className='w-full h-full object-cover'
-        playsInline
-        muted
-        onEnded={handleEnd}
-        onError={handleEnd} // Auto-skip if video fails to load (e.g. missing asset)
-        onClick={handleEnd} // Click video to skip (if playing)
-      />
+      {isVideoSupported && (
+        <video
+          ref={videoRef}
+          src={introVideo}
+          className='w-full h-full object-cover'
+          playsInline
+          muted
+          onEnded={handleEnd}
+          onError={handleEnd} // Auto-skip if video fails to load (e.g. missing asset)
+          onClick={handleEnd} // Click video to skip (if playing)
+        />
+      )}
 
       {/* Autoplay Blocked Overlay */}
       {autoplayBlocked && <AutoplayOverlay onPlay={handleManualPlay} />}

@@ -26,6 +26,30 @@ const SCENES_WITHOUT_HUD = [
   GAME_PHASES.CLINIC
 ]
 
+const resolveVercelTelemetryEnabled = () => {
+  const viteFlag = import.meta.env?.VITE_ENABLE_VERCEL_TELEMETRY
+  if (typeof viteFlag === 'string') {
+    return viteFlag.toLowerCase() === 'true'
+  }
+
+  const processFlag =
+    typeof process !== 'undefined'
+      ? process?.env?.VITE_ENABLE_VERCEL_TELEMETRY
+      : undefined
+  if (typeof processFlag === 'string') {
+    return processFlag.toLowerCase() === 'true'
+  }
+
+  const nodeEnv =
+    typeof process !== 'undefined' ? process?.env?.NODE_ENV : undefined
+  if (nodeEnv === 'test') {
+    return true
+  }
+
+  return import.meta.env?.PROD ?? false
+}
+const VERCEL_TELEMETRY_ENABLED = resolveVercelTelemetryEnabled()
+
 const SceneLoadingFallback = () => {
   const { t } = useTranslation()
   return (
@@ -110,8 +134,12 @@ function GameContent() {
           </AnimatePresence>
         </Suspense>
       </ErrorBoundary>
-      <Analytics />
-      <SpeedInsights />
+      {VERCEL_TELEMETRY_ENABLED && (
+        <>
+          <Analytics />
+          <SpeedInsights />
+        </>
+      )}
     </div>
   )
 }

@@ -307,7 +307,6 @@ export const PreGig = () => {
 
         {/* Setlist */}
         <SetlistBlock
-          t={t}
           setlist={setlist}
           songsDb={SONGS_DB}
           songsDict={SONGS_DICT}

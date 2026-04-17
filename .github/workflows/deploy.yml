@@ -15,6 +15,9 @@ concurrency:
   group: 'pages'
   cancel-in-progress: false
 
+env:
+  PNPM_VERSION: '10.30.3'
+
 jobs:
   deploy:
     environment:
@@ -27,7 +30,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
       - name: Setup Node
         uses: actions/setup-node@v6
         with:

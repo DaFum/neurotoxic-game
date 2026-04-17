@@ -229,6 +229,114 @@ describe('GameState Context - Event System', () => {
 
     expect(eventEngine.checkEvent).not.toHaveBeenCalled()
   })
+
+  test('triggerEvent pops matching pending event IDs from queue', async () => {
+    const { eventEngine } = await import('../../src/utils/eventEngine')
+    eventEngine.checkEvent.mockReturnValue({
+      id: 'event_pending',
+      title: 'Pending Event',
+      options: []
+    })
+
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='pending-events'>
+            {gameState.pendingEvents.length}
+          </div>
+          <button
+            type='button'
+            onClick={() => {
+              localStorage.setItem(
+                'neurotoxic_v3_save',
+                JSON.stringify({ pendingEvents: ['event_pending'] })
+              )
+              gameState.loadGame()
+            }}
+          >
+            Load Pending
+          </button>
+          <button type='button' onClick={() => gameState.triggerEvent('test')}>
+            Trigger Event
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Load Pending').click()
+    })
+    expect(screen.getByTestId('pending-events')).toHaveTextContent('1')
+
+    act(() => {
+      screen.getByText('Trigger Event').click()
+    })
+    expect(screen.getByTestId('pending-events')).toHaveTextContent('0')
+  })
+
+  test('triggerEvent does not pop pending queue when processed event is not head', async () => {
+    const { eventEngine } = await import('../../src/utils/eventEngine')
+    eventEngine.checkEvent.mockReturnValue({
+      id: 'event_second',
+      title: 'Second Pending Event',
+      options: []
+    })
+
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='pending-events'>
+            {JSON.stringify(gameState.pendingEvents)}
+          </div>
+          <button
+            type='button'
+            onClick={() => {
+              localStorage.setItem(
+                'neurotoxic_v3_save',
+                JSON.stringify({
+                  pendingEvents: ['event_head', 'event_second']
+                })
+              )
+              gameState.loadGame()
+            }}
+          >
+            Load Pending
+          </button>
+          <button type='button' onClick={() => gameState.triggerEvent('test')}>
+            Trigger Event
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Load Pending').click()
+    })
+    expect(screen.getByTestId('pending-events')).toHaveTextContent(
+      '["event_head","event_second"]'
+    )
+
+    act(() => {
+      screen.getByText('Trigger Event').click()
+    })
+    expect(screen.getByTestId('pending-events')).toHaveTextContent(
+      '["event_head","event_second"]'
+    )
+  })
 })
 
 describe('GameState Context - Save/Load', () => {

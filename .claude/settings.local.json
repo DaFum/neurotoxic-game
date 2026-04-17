@@ -7,7 +7,16 @@
       "Bash(claude mcp add:*)",
       "Bash(cmd /c \"claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp\")",
       "Bash(cmd /c \"claude mcp list -s user\")",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(grep -v \"//.*defaultValue\")",
+      "Bash(grep -rn \">[A-Z][A-Z ]\\{4,\\}</\" ./src --include=\"*.tsx\")",
+      "Bash(grep -rn \">\\s*[A-Z][a-z][a-zA-Z ]\\{3,\\}\\s*<\" ./src --include=\"*.tsx\")",
+      "Bash(grep -rn \">\\s*[A-Z][A-Z ]\\{4,\\}\\s*<\" ./src --include=\"*.tsx\")",
+      "Bash(\" | grep -v \"propTypes\\|displayName\" | head -40)",
+      "Bash(grep -v \"t\\(\\\\|{t\\\\|Trans\\\\|//\\\\|className\\\\|TODO\\\\|NOTE\\\\|{'\\\\|{`\" | grep -v \"propTypes\\|displayName\" | head -40)",
+      "Bash(grep -rn \"\\\"[A-Za-z ]\\{6,\\}\\\"\" ./src --include=\"*.tsx\")",
+      "Bash(grep -v \"t\\(\\\\|{t\\\\|Trans\\\\|//\")"
     ]
   }
 }
