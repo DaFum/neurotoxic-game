@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGameState } from '../../context/GameState'
+import { getSafeRandom } from '../../utils/crypto'
 
 const MINIGAME_DURATION = 15
 
@@ -8,7 +9,7 @@ export function useAmpLogic() {
 
   const [dialValue, setDialValue] = useState(500)
   const [targetValue, setTargetValue] = useState(
-    () => Math.floor(Math.random() * 800) + 100
+    () => Math.floor(getSafeRandom() * 800) + 100
   )
   const [timeLeft, setTimeLeft] = useState(MINIGAME_DURATION)
   const [score, setScore] = useState(100)
@@ -53,9 +54,9 @@ export function useAmpLogic() {
       })
 
       // Approximately 5% chance per 100ms
-      if (Math.random() < 0.05 * (deltaMS / 100)) {
+      if (getSafeRandom() < 0.05 * (deltaMS / 100)) {
         setTargetValue(prev => {
-          const shift = (Math.random() - 0.5) * 200
+          const shift = (getSafeRandom() - 0.5) * 200
           return Math.max(0, Math.min(1000, prev + shift))
         })
       }
