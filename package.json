@@ -41,9 +41,10 @@
       "browser"
     ]
   },
-    "pnpm": {
+  "pnpm": {
     "onlyBuiltDependencies": [
-      "esbuild"
+      "esbuild",
+      "husky"
     ]
   },
   "dependencies": {
