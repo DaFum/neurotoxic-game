@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PNPM_VERSION: '10.30.3'
+  PNPM_VERSION: '10.32.1'
 
 jobs:
   deploy:
