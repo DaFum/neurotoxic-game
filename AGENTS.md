@@ -35,7 +35,7 @@
 ## Gotchas
 
 - `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
-- `lint-staged` covers only `*.{js,jsx}` — `.ts/.tsx` files are not auto-linted or formatted at commit time.
+- `lint-staged` now covers `*.{js,jsx,ts,tsx}` — all source files are auto-linted and formatted at commit time.
 - Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They return reactive state only.
 - `useArrivalLogic` owns ALL arrival routing (including PREGIG direct entry); `COMPLETE_TRAVEL_MINIGAME` does not change scene.
 - `START_GIG` resets `gigModifiers` to defaults; previous gig selections do not carry over.
