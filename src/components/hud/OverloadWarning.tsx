@@ -1,12 +1,16 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
+
+interface OverloadWarningProps {
+  overload: number
+  isToxicMode: boolean
+}
 
 export const OverloadWarning = memo(function OverloadWarning({
   overload,
   isToxicMode
-}) {
+}: OverloadWarningProps) {
   if (overload <= 90 && !isToxicMode) return null
 
   return (
@@ -15,8 +19,3 @@ export const OverloadWarning = memo(function OverloadWarning({
     </div>
   )
 })
-
-OverloadWarning.propTypes = {
-  overload: PropTypes.number.isRequired,
-  isToxicMode: PropTypes.bool.isRequired
-}

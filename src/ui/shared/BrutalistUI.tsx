@@ -1,115 +1,144 @@
 // TODO: Review this file
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
+import type { MouseEvent, ComponentType } from 'react'
 import { getSafeUUID } from '../../utils/crypto'
 import { secureRandom } from '../../utils/crypto'
 
-export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
-  const [isHovered, setIsHovered] = useState(false)
+interface SvgIconProps {
+  className?: string
+  title?: string
+}
 
-  /**
-   * ACTUAL UPDATES (#1):
-   * - Implemented robust URL validation using regex for case-insensitive protocol check (http/https).
-   * - Conditionally apply target='_blank' and rel='noopener noreferrer' only for safe URLs.
-   * - Added onClick handler to prevent default behavior (opening a new tab with #) for unsafe URLs.
-   *
-   * NEXT STEPS AND IDEAS (#2):
-   * - Consider moving the URL sanitizer to a shared utility if other components need it.
-   * - Implement a 'copy to clipboard' fallback for unsafe URLs if they appear intended as data but not navigation.
-   *
-   * FOUND ERRORS + SOLUTIONS (#3):
-   * - ERROR: Case-sensitive protocol check was too restrictive. SOLUTION: Used case-insensitive regex.
-   * - ERROR: Clicking unsafe URL with target='_blank' opened an empty tab. SOLUTION: Conditional target and e.preventDefault().
-   */
-  const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
-  const safeUrl = isSafeUrl ? url.trim() : '#'
+interface BlockMeterProps {
+  label: string
+  value: number
+  max?: number
+  isDanger?: boolean
+}
 
-  const handleClick = useCallback(
-    e => {
-      if (!isSafeUrl) {
-        e.preventDefault()
-      }
-    },
-    [isSafeUrl]
-  )
+interface HazardTickerProps {
+  message: string
+}
 
-  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
-  const handleMouseLeave = useCallback(() => setIsHovered(false), [])
+interface UplinkButtonProps {
+  title?: string
+  url?: string
+  subtitle?: string
+  type?: string
+  Icon?: ComponentType<SvgIconProps>
+}
 
-  return (
-    <a
-      href={safeUrl}
-      target={isSafeUrl ? '_blank' : undefined}
-      rel={isSafeUrl ? 'noopener noreferrer' : undefined}
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
-    >
-      {/* Glitch Background on Hover */}
-      {isHovered && (
-        <div className='absolute inset-0 bg-toxic-green/10 z-0'>
-          <div className='absolute inset-0 bg-[image:repeating-linear-gradient(transparent,transparent_2px,var(--color-void-black-50)_2px,var(--color-void-black-50)_4px)] opacity-50'></div>
-          <div className='w-full h-1 bg-toxic-green absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
-        </div>
-      )}
+type AnyProps = Record<string, any>
 
-      <div className='relative z-10 flex items-start gap-3 sm:gap-0 p-3 sm:p-4'>
-        {/* Icon Block */}
-        <div
-          className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
-          ${isHovered ? 'border-toxic-green bg-toxic-green text-void-black shadow-[0_0_15px_var(--color-toxic-green)]' : 'border-toxic-green/50 text-toxic-green'}`}
-        >
-          {Icon && <Icon className='w-6 h-6 sm:w-8 sm:h-8 shrink-0' />}
-        </div>
+export const UplinkButton = memo(
+  ({ title, url, subtitle, type, Icon }: UplinkButtonProps) => {
+    const [isHovered, setIsHovered] = useState(false)
 
-        {/* Text Block */}
-        <div className='ml-1 sm:ml-6 flex-1 min-w-0 pr-1 sm:pr-2'>
-          <div className='flex flex-col gap-1 items-start justify-start'>
-            <h2
-              className='font-bold tracking-[0.08em] sm:tracking-[0.2em] text-sm sm:text-lg uppercase glitch-text break-words [overflow-wrap:anywhere] w-full leading-snug'
-              data-text={title}
-            >
-              {title}
-            </h2>
-            <span
-              className={`text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
-            >
-              {type}
-            </span>
+    /**
+     * ACTUAL UPDATES (#1):
+     * - Implemented robust URL validation using regex for case-insensitive protocol check (http/https).
+     * - Conditionally apply target='_blank' and rel='noopener noreferrer' only for safe URLs.
+     * - Added onClick handler to prevent default behavior (opening a new tab with #) for unsafe URLs.
+     *
+     * NEXT STEPS AND IDEAS (#2):
+     * - Consider moving the URL sanitizer to a shared utility if other components need it.
+     * - Implement a 'copy to clipboard' fallback for unsafe URLs if they appear intended as data but not navigation.
+     *
+     * FOUND ERRORS + SOLUTIONS (#3):
+     * - ERROR: Case-sensitive protocol check was too restrictive. SOLUTION: Used case-insensitive regex.
+     * - ERROR: Clicking unsafe URL with target='_blank' opened an empty tab. SOLUTION: Conditional target and e.preventDefault().
+     */
+    const isSafeUrl = url && /^\s*https?:\/\//i.test(url)
+    const safeUrl = isSafeUrl ? url.trim() : '#'
+
+    const handleClick = useCallback(
+      (e: MouseEvent<HTMLAnchorElement>) => {
+        if (!isSafeUrl) {
+          e.preventDefault()
+        }
+      },
+      [isSafeUrl]
+    )
+
+    const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+    const handleMouseLeave = useCallback(() => setIsHovered(false), [])
+
+    return (
+      <a
+        href={safeUrl}
+        target={isSafeUrl ? '_blank' : undefined}
+        rel={isSafeUrl ? 'noopener noreferrer' : undefined}
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
+      >
+        {/* Glitch Background on Hover */}
+        {isHovered && (
+          <div className='absolute inset-0 bg-toxic-green/10 z-0'>
+            <div className='absolute inset-0 bg-[image:repeating-linear-gradient(transparent,transparent_2px,var(--color-void-black-50)_2px,var(--color-void-black-50)_4px)] opacity-50'></div>
+            <div className='w-full h-1 bg-toxic-green absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
           </div>
-          <p className='text-[9px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
-            {subtitle}
-          </p>
-        </div>
+        )}
 
-        {/* External Link Indicator */}
-        <div
-          className={`shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-star-white' : 'text-toxic-green/30'}`}
-        >
-          <svg
-            width='24'
-            height='24'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='square'
-            aria-hidden='true'
-            focusable='false'
-            role='presentation'
+        <div className='relative z-10 flex items-start gap-3 sm:gap-0 p-3 sm:p-4'>
+          {/* Icon Block */}
+          <div
+            className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
+          ${isHovered ? 'border-toxic-green bg-toxic-green text-void-black shadow-[0_0_15px_var(--color-toxic-green)]' : 'border-toxic-green/50 text-toxic-green'}`}
           >
-            <path d='M5 12H19M19 12L12 5M19 12L12 19' />
-          </svg>
+            {Icon && <Icon className='w-6 h-6 sm:w-8 sm:h-8 shrink-0' />}
+          </div>
+
+          {/* Text Block */}
+          <div className='ml-1 sm:ml-6 flex-1 min-w-0 pr-1 sm:pr-2'>
+            <div className='flex flex-col gap-1 items-start justify-start'>
+              <h2
+                className='font-bold tracking-[0.08em] sm:tracking-[0.2em] text-sm sm:text-lg uppercase glitch-text break-words [overflow-wrap:anywhere] w-full leading-snug'
+                data-text={title}
+              >
+                {title}
+              </h2>
+              <span
+                className={`text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
+              >
+                {type}
+              </span>
+            </div>
+            <p className='text-[9px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
+              {subtitle}
+            </p>
+          </div>
+
+          {/* External Link Indicator */}
+          <div
+            className={`shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-star-white' : 'text-toxic-green/30'}`}
+          >
+            <svg
+              width='24'
+              height='24'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='square'
+              aria-hidden='true'
+              focusable='false'
+              role='presentation'
+            >
+              <path d='M5 12H19M19 12L12 5M19 12L12 19' />
+            </svg>
+          </div>
         </div>
-      </div>
-    </a>
-  )
-})
+      </a>
+    )
+  }
+)
 
 // --- SVG DECORATIONS ---
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const HexBorder = memo(({ className, title }) => {
+export const HexBorder = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -160,7 +189,7 @@ export const HexBorder = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const CrosshairIcon = memo(({ className, title }) => {
+export const CrosshairIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -221,7 +250,7 @@ export const CrosshairIcon = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const MoneyIcon = memo(({ className, title }) => {
+export const MoneyIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -272,7 +301,7 @@ export const MoneyIcon = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const AlertIcon = memo(({ className, title }) => {
+export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -323,7 +352,7 @@ export const AlertIcon = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const SkullIcon = memo(({ className, title }) => {
+export const SkullIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -402,7 +431,7 @@ export const SkullIcon = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const GearIcon = memo(({ className, title }) => {
+export const GearIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -457,7 +486,7 @@ export const GearIcon = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const HexNode = memo(({ className, title }) => {
+export const HexNode = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -540,7 +569,7 @@ export const WarningStripe = memo(() => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const BiohazardIcon = memo(({ className, title }) => {
+export const BiohazardIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -595,7 +624,7 @@ export const BiohazardIcon = memo(({ className, title }) => {
 })
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
-export const CorporateSeal = memo(({ className, title }) => {
+export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
   if (title) {
@@ -663,64 +692,66 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Tooltip } from './Tooltip'
 
 // 1. Industrial Toggle
-export const BrutalToggle = memo(({ label, initialState = false }) => {
-  const { t } = useTranslation()
-  const [isOn, setIsOn] = useState(initialState)
-  const [isGlitching, setIsGlitching] = useState(false)
-  const glitchTimerRef = useRef(null)
-  const labelId = useId()
+export const BrutalToggle = memo(
+  ({ label, initialState = false }: AnyProps) => {
+    const { t } = useTranslation()
+    const [isOn, setIsOn] = useState(initialState)
+    const [isGlitching, setIsGlitching] = useState(false)
+    const glitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const labelId = useId()
 
-  const toggle = () => {
-    setIsGlitching(true)
-    if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current)
-    glitchTimerRef.current = setTimeout(() => setIsGlitching(false), 150)
-    setIsOn(!isOn)
-  }
-
-  useEffect(() => {
-    return () => {
+    const toggle = () => {
+      setIsGlitching(true)
       if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current)
+      glitchTimerRef.current = setTimeout(() => setIsGlitching(false), 150)
+      setIsOn(!isOn)
     }
-  }, [])
 
-  return (
-    <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
-      <span
-        id={labelId}
-        className='text-sm font-bold tracking-widest uppercase'
-      >
-        {label}
-      </span>
-      <button
-        type='button'
-        onClick={toggle}
-        aria-labelledby={labelId}
-        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
-        aria-pressed={isOn}
-      >
-        <div
-          className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
-        ></div>
-        <div
-          className={`w-5 h-full bg-toxic-green transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
-        >
-          <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
-        </div>
+    useEffect(() => {
+      return () => {
+        if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current)
+      }
+    }, [])
+
+    return (
+      <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
         <span
-          className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
+          id={labelId}
+          className='text-sm font-bold tracking-widest uppercase'
         >
-          {isOn ? t('ui:toggle.on', 'ON') : t('ui:toggle.off', 'OFF')}
+          {label}
         </span>
-      </button>
-    </div>
-  )
-})
+        <button
+          type='button'
+          onClick={toggle}
+          aria-labelledby={labelId}
+          className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+          aria-pressed={isOn}
+        >
+          <div
+            className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
+          ></div>
+          <div
+            className={`w-5 h-full bg-toxic-green transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
+          >
+            <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
+          </div>
+          <span
+            className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
+          >
+            {isOn ? t('ui:toggle.on', 'ON') : t('ui:toggle.off', 'OFF')}
+          </span>
+        </button>
+      </div>
+    )
+  }
+)
 
 // 2. Segmented Block Meter
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders when parent components
 // pass frequently changing state (like overload or health) that results in the same quantized value.
 export const BlockMeter = memo(
-  ({ label, value, max = 10, isDanger = false }) => {
+  ({ label, value, max = 10, isDanger = false }: BlockMeterProps) => {
     const blocks = Array.from({ length: max }, (_, i) => i)
     return (
       <div
@@ -819,7 +850,7 @@ export const BrutalTabs = memo(() => {
 })
 
 // 4. Data/Stat Block
-export const StatBlock = memo(({ label, value, icon: Icon }) => (
+export const StatBlock = memo(({ label, value, icon: Icon }: AnyProps) => (
   <div className='relative w-32 h-24 bg-void-black flex flex-col items-center justify-center group overflow-hidden'>
     <HexBorder className='absolute inset-0 w-full h-full text-toxic-green/50 group-hover:text-toxic-green transition-colors' />
     <div className='absolute inset-0 bg-gradient-to-b from-transparent via-toxic-green/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
@@ -834,57 +865,59 @@ export const StatBlock = memo(({ label, value, icon: Icon }) => (
 ))
 
 // 5. Brutal Amp Fader (Custom Slider)
-export const BrutalFader = memo(({ label, initialValue = 7, max = 10 }) => {
-  const { t } = useTranslation(['ui'])
-  const [val, setVal] = useState(initialValue)
-  const segments = Array.from({ length: max }, (_, i) => i + 1)
+export const BrutalFader = memo(
+  ({ label, initialValue = 7, max = 10 }: AnyProps) => {
+    const { t } = useTranslation(['ui'])
+    const [val, setVal] = useState(initialValue)
+    const segments = Array.from({ length: max }, (_, i) => i + 1)
 
-  return (
-    <div className='w-full max-w-sm flex flex-col gap-2'>
-      <div className='flex justify-between items-end'>
-        <span className='text-xs tracking-widest uppercase opacity-80'>
-          {label}
-        </span>
-        <span className='text-sm font-bold text-toxic-green'>{val}</span>
-      </div>
-      <div
-        className='flex gap-1 h-8 items-end cursor-pointer group'
-        role='presentation'
-      >
-        {segments.map(segment => {
-          const isActive = segment <= val
-          // Calculate dynamic height for the bars to look like an EQ/Volume fader
-          const height = `${30 + (segment / max) * 70}%`
-          return (
-            <button
-              type='button'
-              key={segment}
-              onClick={() => setVal(segment)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  if (e.key === ' ') e.preventDefault()
-                  setVal(segment)
-                }
-              }}
-              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-              aria-label={t('ui:set_label_to_segment', {
-                label: t(label),
-                segment
-              })}
-              aria-pressed={isActive}
-            >
-              <div
-                style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
+    return (
+      <div className='w-full max-w-sm flex flex-col gap-2'>
+        <div className='flex justify-between items-end'>
+          <span className='text-xs tracking-widest uppercase opacity-80'>
+            {label}
+          </span>
+          <span className='text-sm font-bold text-toxic-green'>{val}</span>
+        </div>
+        <div
+          className='flex gap-1 h-8 items-end cursor-pointer group'
+          role='presentation'
+        >
+          {segments.map(segment => {
+            const isActive = segment <= val
+            // Calculate dynamic height for the bars to look like an EQ/Volume fader
+            const height = `${30 + (segment / max) * 70}%`
+            return (
+              <button
+                type='button'
+                key={segment}
+                onClick={() => setVal(segment)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === ' ') e.preventDefault()
+                    setVal(segment)
+                  }
+                }}
+                className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+                aria-label={t('ui:set_label_to_segment', {
+                  label: t(label),
+                  segment
+                })}
+                aria-pressed={isActive}
+              >
+                <div
+                  style={{ height }}
+                  className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
                   ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
-              ></div>
-            </button>
-          )
-        })}
+                ></div>
+              </button>
+            )
+          })}
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  }
+)
 
 // 6. Setlist / Track Selector
 export const SetlistSelector = memo(() => {
@@ -956,7 +989,7 @@ export const SetlistSelector = memo(() => {
 })
 
 // 7. Crisis Modal Overlay
-export const CrisisModal = memo(({ isOpen, onClose }) => {
+export const CrisisModal = memo(({ isOpen, onClose }: AnyProps) => {
   const { t } = useTranslation(['ui'])
   if (!isOpen) return null
   return (
@@ -1033,7 +1066,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
 })
 
 // 8. Deadman Button (Hold to Confirm)
-export const DeadmanButton = memo(({ label, onConfirm }) => {
+export const DeadmanButton = memo(({ label, onConfirm }: AnyProps) => {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
   const [isHolding, setIsHolding] = useState(false)
@@ -1325,7 +1358,7 @@ export const CorruptedText = memo(({ text, delay = 0 }) => {
 })
 
 // 14. Hazard Ticker Tape (For Gig Modifiers)
-export const HazardTicker = memo(({ message }) => {
+export const HazardTicker = memo(({ message }: HazardTickerProps) => {
   const { t } = useTranslation(['ui'])
   return (
     <div className='relative w-full h-8 bg-void-black border-y-2 border-toxic-green flex items-center overflow-hidden'>

@@ -1,6 +1,29 @@
 // TODO: Review this file
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
+import type { Note, Song } from '../types/audio'
+
+type RandomFn = () => number
+
+interface TempoMapEntry {
+  tick: number
+  usPerBeat: number
+}
+
+interface ProcessedTempoMapEntry extends TempoMapEntry {
+  _startTick: number
+  _accumulatedMicros: number
+}
+
+interface ParsedGameNote {
+  time: number
+  laneIndex: number
+  hit: boolean
+  visible: boolean
+  songId: string
+  originalNote?: Note
+  type: 'note'
+}
 
 /**
  * Generates rhythm game notes for a given song and configuration.
@@ -10,9 +33,12 @@ import { secureRandom } from './crypto'
  * @param {Function} [options.random] - Optional random function (returns 0-1) for deterministic generation.
  * @returns {Array} Array of note objects.
  */
-export const generateNotesForSong = (song, options = {}) => {
+export const generateNotesForSong = (
+  song: Pick<Song, 'id' | 'bpm' | 'duration' | 'difficulty'>,
+  options: { leadIn?: number; random?: RandomFn } = {}
+): ParsedGameNote[] => {
   const { leadIn = 2000, random = secureRandom } = options
-  const notes = []
+  const notes: ParsedGameNote[] = []
   const beatInterval = 60000 / Math.max(1, song.bpm || 120)
   const songDurationMs = song.duration * 1000
   const totalBeats = Math.floor(songDurationMs / beatInterval)
@@ -65,7 +91,10 @@ export const generateNotesForSong = (song, options = {}) => {
  * @param {number} tpb - Ticks per beat.
  * @returns {Array} New tempo map with accumulatedMicros.
  */
-export const preprocessTempoMap = (tempoMap, tpb) => {
+export const preprocessTempoMap = (
+  tempoMap: TempoMapEntry[] | undefined,
+  tpb: number
+): ProcessedTempoMapEntry[] => {
   if (!tempoMap || tempoMap.length === 0) return []
 
   const processed = []
@@ -101,7 +130,10 @@ export const preprocessTempoMap = (tempoMap, tpb) => {
  * @param {number} ticks - Target ticks.
  * @returns {object} The tempo map entry active for this tick.
  */
-const findTempoSegment = (processedMap, ticks) => {
+const findTempoSegment = (
+  processedMap: ProcessedTempoMapEntry[],
+  ticks: number
+): ProcessedTempoMapEntry => {
   let lo = 0
   let hi = processedMap.length - 1
   let candidate = processedMap[0]
@@ -127,9 +159,17 @@ const findTempoSegment = (processedMap, ticks) => {
  * @param {number} tpb - Ticks per beat.
  * @returns {Array} Preprocessed tempo map.
  */
-const ensureProcessedTempoMap = (tempoMap, tpb) => {
+const ensureProcessedTempoMap = (
+  tempoMap: (TempoMapEntry | ProcessedTempoMapEntry)[] | undefined,
+  tpb: number
+): ProcessedTempoMapEntry[] => {
   if (!Array.isArray(tempoMap) || tempoMap.length === 0) return []
-  if (typeof tempoMap[0]?._accumulatedMicros === 'number') return tempoMap
+  if (
+    typeof (tempoMap[0] as ProcessedTempoMapEntry)?._accumulatedMicros ===
+    'number'
+  ) {
+    return tempoMap as ProcessedTempoMapEntry[]
+  }
   return preprocessTempoMap(tempoMap, tpb)
 }
 
@@ -141,7 +181,12 @@ const ensureProcessedTempoMap = (tempoMap, tpb) => {
  * @param {string} [unit='ms'] - Output unit: 'ms' (milliseconds) or 's' (seconds).
  * @returns {number} Time in the specified unit.
  */
-export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
+export const calculateTimeFromTicks = (
+  ticks: number,
+  tpb: number,
+  tempoMap: (TempoMapEntry | ProcessedTempoMapEntry)[] | undefined,
+  unit: 'ms' | 's' = 'ms'
+): number => {
   const processedTempoMap = ensureProcessedTempoMap(tempoMap, tpb)
   if (processedTempoMap.length === 0) return 0
 
@@ -163,7 +208,11 @@ export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
  * @param {Function} [options.onWarn] - Callback for warnings (e.g. unknown lanes).
  * @returns {Array} Array of note objects formatted for the game loop.
  */
-export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
+export const parseSongNotes = (
+  song: Song,
+  leadIn = 2000,
+  { onWarn }: { onWarn?: (message: string) => void } = {}
+): ParsedGameNote[] => {
   if (!song.notes || !Array.isArray(song.notes)) return []
 
   const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
@@ -174,14 +223,14 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
   } = resolveSongPlaybackWindow(song, { defaultDurationMs: 0 })
   const excerptDurationMs = rawExcerptDuration > 0 ? rawExcerptDuration : null
 
-  const laneMap = {
+  const laneMap: Record<string, number> = {
     guitar: 0,
     drums: 1,
     bass: 2
   }
 
   // ⚡ BOLT OPTIMIZATION: Replaced multiple O(N) array passes (filter, sort, filter, map, filter) with a more efficient pipeline
-  const validNotes = []
+  const validNotes: Note[] = []
   for (let i = 0; i < song.notes.length; i++) {
     const n = song.notes[i]
     if (typeof n.t === 'number' && Number.isFinite(n.t)) {
@@ -190,18 +239,22 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
   }
 
   // 1. Sort valid notes by time
-  validNotes.sort((a, b) => a.t - b.t)
+  validNotes.sort((a, b) => (a.t ?? 0) - (b.t ?? 0))
 
   // Determine timing strategy: Tempo Map vs Constant BPM
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+  const rawTempoMap = useTempoMap
+    ? (song.tempoMap as TempoMapEntry[])
+    : undefined
   const activeTempoMap = useTempoMap
-    ? preprocessTempoMap(song.tempoMap, tpb)
+    ? preprocessTempoMap(rawTempoMap, tpb)
     : []
 
   // 2. Map and filter in a single pass, processing only every 4th note
-  const gameNotes = []
+  const gameNotes: ParsedGameNote[] = []
   for (let i = 0; i < validNotes.length; i += 4) {
     const n = validNotes[i]
+    const noteTick = n.t ?? 0
     const laneIndex = laneMap[n.lane]
 
     if (laneIndex === undefined) {
@@ -212,9 +265,9 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
       continue
     }
 
-    const fallbackTimeMs = (n.t / tpb) * (60000 / bpm)
+    const fallbackTimeMs = (noteTick / tpb) * (60000 / bpm)
     const calculatedTimeMs = useTempoMap
-      ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
+      ? calculateTimeFromTicks(noteTick, tpb, activeTempoMap, 'ms')
       : fallbackTimeMs
 
     const timeMs = Number.isFinite(calculatedTimeMs)
@@ -224,7 +277,7 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
     if (
       excerptRelativeTimeMs < 0 ||
-      (Number.isFinite(excerptDurationMs) &&
+      (excerptDurationMs !== null &&
         excerptRelativeTimeMs > excerptDurationMs)
     ) {
       continue
@@ -246,8 +299,8 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
   }
 
   // 4. Ensure no simultaneous notes (chords) - strictly single lane
-  const uniqueTimeNotes = []
-  let lastTime = null
+  const uniqueTimeNotes: ParsedGameNote[] = []
+  let lastTime: number | null = null
 
   for (const note of gameNotes) {
     // If this note is at the same time as the last valid one, skip it
@@ -271,7 +324,12 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
  * @param {number} hitWindow - Allowed deviation in ms.
  * @returns {object|null} The hit note or null.
  */
-export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
+export const checkHit = (
+  notes: ParsedGameNote[],
+  laneIndex: number,
+  elapsed: number,
+  hitWindow: number
+): ParsedGameNote | null => {
   if (!Number.isFinite(elapsed)) return null
 
   const windowStart = elapsed - hitWindow

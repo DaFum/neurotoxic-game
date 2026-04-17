@@ -9,7 +9,9 @@ import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
  * @param {object} [options] - Playback options.
  * @returns {Promise<{success: boolean, reqId: number, normalizedOptions: object}>}
  */
-export async function prepareTransportPlayback(options = {}) {
+export async function prepareTransportPlayback(
+  options: any = {}
+): Promise<{ success: boolean; reqId: number; normalizedOptions: any }> {
   const normalizedOptions = normalizeMidiPlaybackOptions(options)
   const reqId = ++audioState.playRequestId
   const unlocked = await ensureAudioContext()
@@ -34,7 +36,14 @@ export async function prepareTransportPlayback(options = {}) {
  * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
  * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null, startTimeSec: number|null}} Normalized options.
  */
-export const normalizeMidiPlaybackOptions = options => {
+export const normalizeMidiPlaybackOptions = (
+  options: any
+): {
+  useCleanPlayback: boolean
+  onEnded: ((...args: any[]) => void) | null
+  stopAfterSeconds: number | null
+  startTimeSec: number | null
+} => {
   const useCleanPlayback =
     typeof options?.useCleanPlayback === 'boolean'
       ? options.useCleanPlayback
@@ -68,7 +77,10 @@ let cachedAssetPaths = null
  * Computes once lazily and caches the result for performance.
  * @returns {{baseUrl: string, publicBasePath: string}} The resolved paths.
  */
-export const getBaseAssetPath = () => {
+export const getBaseAssetPath = (): {
+  baseUrl: string
+  publicBasePath: string
+} => {
   if (!cachedAssetPaths) {
     const rawBaseUrl =
       typeof import.meta !== 'undefined' &&
@@ -87,7 +99,7 @@ export const getBaseAssetPath = () => {
 /**
  * Resets the cached base asset path. Used for testing.
  */
-export const __resetBaseAssetPathCache = () => {
+export const __resetBaseAssetPathCache = (): void => {
   cachedAssetPaths = null
 }
 
@@ -97,7 +109,7 @@ export const __resetBaseAssetPathCache = () => {
  * @param {string} assetPath - Asset path relative to the public base.
  * @returns {string} Encoded path suitable for URL usage.
  */
-export const encodePublicAssetPath = assetPath => {
+export const encodePublicAssetPath = (assetPath: string): string => {
   if (typeof assetPath !== 'string') return ''
   const trimmedPath = assetPath.replace(/^\/+/, '')
   return trimmedPath
@@ -114,10 +126,10 @@ export const encodePublicAssetPath = assetPath => {
  * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
  */
 export const resolveAssetUrl = (
-  filename,
-  assetUrlMap,
+  filename: string,
+  assetUrlMap: Record<string, string>,
   publicBasePath = '/assets'
-) => {
+): { url: string | null; source: 'bundled' | 'public' | null } => {
   if (typeof filename !== 'string' || filename.length === 0) {
     return { url: null, source: null }
   }
@@ -153,10 +165,10 @@ export const resolveAssetUrl = (
  * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
  */
 export const buildAssetUrlMap = (
-  assetGlob,
-  warn = console.warn,
+  assetGlob: any,
+  warn: (message: string) => void = console.warn,
   label = 'Asset'
-) => {
+): Record<string, string> => {
   const accumulator = {}
   for (const path in assetGlob || {}) {
     if (Object.hasOwn(assetGlob, path)) {

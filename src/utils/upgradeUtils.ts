@@ -8,10 +8,12 @@
  * @param {string} upgradeId - The ID of the upgrade to check.
  * @returns {boolean} True if the upgrade is owned.
  */
-export const hasUpgrade = (upgrades, upgradeId) =>
-  Array.isArray(upgrades) && upgrades.includes(upgradeId)
+export const hasUpgrade = (
+  upgrades: string[] | null | undefined,
+  upgradeId: string
+): boolean => Array.isArray(upgrades) && upgrades.includes(upgradeId)
 
-const BREAKDOWN_REDUCTIONS = {
+const BREAKDOWN_REDUCTIONS: Record<string, number> = {
   van_suspension: 0.01,
   hq_van_suspension: 0.01,
   hq_van_tyre_spare: 0.05
@@ -24,7 +26,9 @@ const BREAKDOWN_REDUCTIONS = {
  * @param {string[]} upgrades - The van's current upgrades array.
  * @returns {number} Base breakdown chance (before condition multiplier), clamped >= 0.
  */
-export const calcBaseBreakdownChance = upgrades => {
+export const calcBaseBreakdownChance = (
+  upgrades: string[] | null | undefined
+): number => {
   let base = 0.05
   if (!Array.isArray(upgrades)) return base
 

@@ -9,7 +9,7 @@ const VALID_NAMESPACES = [
   'traits'
 ]
 
-const isTranslatableKey = key => {
+const isTranslatableKey = (key: unknown): boolean => {
   if (typeof key !== 'string') return false
   const parts = key.split(':')
   if (parts.length > 1) {
@@ -24,7 +24,10 @@ const isTranslatableKey = key => {
  * @param {Function} t - The translation function.
  * @returns {any} The sanitized and translated context.
  */
-export const translateContextKeys = (context, t) => {
+export const translateContextKeys = (
+  context: any,
+  t: (key: string) => string
+): any => {
   // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
   if (context === null || typeof context !== 'object') {
     return context
@@ -39,7 +42,7 @@ export const translateContextKeys = (context, t) => {
     })
   }
 
-  const translatedContext = {}
+  const translatedContext: Record<string, any> = {}
   for (const prop in context) {
     if (!Object.hasOwn(context, prop)) continue
     // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection

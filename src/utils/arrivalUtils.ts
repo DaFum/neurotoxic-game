@@ -36,7 +36,7 @@ import i18n from '../i18n'
  * @param {object} band - The current band state.
  * @returns {number|null} The new harmony value, or null if regen is not applicable.
  */
-export const processHarmonyRegen = band => {
+export const processHarmonyRegen = (band: any): number | null => {
   if (band?.harmonyRegenTravel) {
     return clampBandHarmony((band.harmony ?? 0) + 5)
   }
@@ -48,7 +48,7 @@ export const processHarmonyRegen = band => {
  * @param {object} node - The current node.
  * @returns {boolean} True if the node is a GIG, FESTIVAL, or FINALE.
  */
-export const isGigNode = node => {
+export const isGigNode = (node: any): boolean => {
   return (
     node?.type === 'GIG' || node?.type === 'FESTIVAL' || node?.type === 'FINALE'
   )
@@ -60,7 +60,10 @@ export const isGigNode = node => {
  * @param {Function} triggerEvent - The function to trigger events.
  * @returns {boolean} True if a travel event was triggered.
  */
-export const processTravelEvents = (node, triggerEvent) => {
+export const processTravelEvents = (
+  node: any,
+  triggerEvent: (a: string, b?: string) => boolean
+): boolean => {
   if (isGigNode(node)) {
     return false
   }
@@ -72,20 +75,36 @@ export const processTravelEvents = (node, triggerEvent) => {
   return travelEventActive
 }
 
-export const handleNodeArrival = ({
-  node,
-  band,
-  player,
-  updateBand,
-  updatePlayer,
-  triggerEvent,
-  startGig,
-  addToast,
-  changeScene,
-  onShowHQ,
-  eventAlreadyActive = false,
-  rng = secureRandom
-}) => {
+type HandleNodeArrivalParams = {
+  node: any
+  band: any
+  player: any
+  updateBand: (p: any) => void
+  updatePlayer: (p: any) => void
+  triggerEvent: (a: string, b?: string) => boolean
+  startGig: (venue: any) => void
+  addToast: (msg: string, level?: string) => void
+  changeScene?: (scene: string) => void
+  onShowHQ?: () => void
+  eventAlreadyActive?: boolean
+  rng?: () => number
+}
+
+export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
+  const {
+    node,
+    band,
+    player,
+    updateBand,
+    updatePlayer,
+    triggerEvent,
+    startGig,
+    addToast,
+    changeScene,
+    onShowHQ,
+    eventAlreadyActive = false,
+    rng = secureRandom
+  } = params
   switch (node.type) {
     case 'REST_STOP': {
       const members = band?.members ?? []

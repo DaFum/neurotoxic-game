@@ -1,4 +1,10 @@
-export const validateHealMember = (member, playerMoney, healCostMoney) => {
+import type { BandMember } from '../types/game'
+
+export const validateHealMember = (
+  member: BandMember | null | undefined,
+  playerMoney: number,
+  healCostMoney: number
+) => {
   if (!member) return { isValid: false, silent: true }
 
   if (playerMoney < healCostMoney) {
@@ -13,10 +19,10 @@ export const validateHealMember = (member, playerMoney, healCostMoney) => {
 }
 
 export const validateEnhanceMember = (
-  member,
-  trait,
-  playerFame,
-  enhanceCostFame
+  member: BandMember | null | undefined,
+  trait: string,
+  playerFame: number,
+  enhanceCostFame: number
 ) => {
   if (!member) return { isValid: false, silent: true }
 
@@ -37,8 +43,12 @@ export const validateEnhanceMember = (
   return { isValid: true }
 }
 
-export const calculateHealAmounts = (member, healStaminaGain, healMoodGain) => {
-  const maxStamina = Number.isFinite(member.staminaMax)
+export const calculateHealAmounts = (
+  member: BandMember,
+  healStaminaGain: number,
+  healMoodGain: number
+) => {
+  const maxStamina = Number.isFinite((member as any).staminaMax)
     ? member.staminaMax
     : 100
   const currentStamina = member.stamina || 0

@@ -23,12 +23,12 @@ const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
  * Internal helper to trigger instrument notes.
  */
 function triggerInstrumentNote(
-  lane,
-  midiPitch,
-  time,
-  velocity,
-  noteName = null
-) {
+  lane: string,
+  midiPitch: number,
+  time: number,
+  velocity: number,
+  noteName: string | null = null
+): void {
   if (lane === 'drums') {
     playDrumNote(midiPitch, time, velocity)
   } else if (lane === 'bass') {
@@ -57,7 +57,12 @@ function triggerInstrumentNote(
  * @param {number} whenSeconds - Tone.js time in seconds.
  * @param {number} [velocity=127] - The velocity (0-127).
  */
-export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
+export function playNoteAtTime(
+  midiPitch: number,
+  lane: string,
+  whenSeconds: number,
+  velocity = 127
+): void {
   if (!audioState.isSetup) return
   const now = Number.isFinite(whenSeconds) ? whenSeconds : Tone.now()
   const vel = Math.max(0, Math.min(1, velocity / 127))
@@ -67,7 +72,7 @@ export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
 /**
  * Validates the song data and audio components readiness.
  */
-function validateSongReady(song) {
+function validateSongReady(song: any): boolean {
   if (!Array.isArray(song.notes)) {
     logger.error('AudioEngine', 'playSongFromData: song.notes is not an array')
     return false
@@ -87,8 +92,14 @@ function validateSongReady(song) {
 /**
  * Processes song notes into schedulable events.
  */
-function processSongEvents(song, bpm, tpb, useTempoMap, activeTempoMap) {
-  const events = []
+function processSongEvents(
+  song: any,
+  bpm: number,
+  tpb: number,
+  useTempoMap: boolean,
+  activeTempoMap: any[]
+): { events: any[]; lastTime: number } | null {
+  const events: any[] = []
   let lastTime = 0
 
   for (let i = 0; i < song.notes.length; i++) {
@@ -144,8 +155,8 @@ function processSongEvents(song, bpm, tpb, useTempoMap, activeTempoMap) {
 /**
  * Creates the Tone.Part for the song events.
  */
-function createSongPart(events) {
-  return new Tone.Part((time, value) => {
+function createSongPart(events: any[]) {
+  return new Tone.Part((time: number, value: any) => {
     try {
       if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
 
@@ -170,7 +181,12 @@ function createSongPart(events) {
 /**
  * Schedules the song playback on the Transport.
  */
-function scheduleSongPlayback(lastTime, delay, reqId, onEnded) {
+function scheduleSongPlayback(
+  lastTime: number,
+  delay: number,
+  reqId: number,
+  onEnded?: (() => void) | null
+): void {
   const minLookahead = 0.1
   const startTime = Tone.now() + Math.max(minLookahead, delay)
 
@@ -191,7 +207,11 @@ function scheduleSongPlayback(lastTime, delay, reqId, onEnded) {
  * @param {object} song - The song object containing `notes` and `bpm`.
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
-export async function playSongFromData(song, delay = 0, options = {}) {
+export async function playSongFromData(
+  song: any,
+  delay = 0,
+  options: any = {}
+): Promise<boolean> {
   const { success, reqId, normalizedOptions } =
     await prepareTransportPlayback(options)
   if (!success) return false
@@ -234,7 +254,12 @@ export async function playSongFromData(song, delay = 0, options = {}) {
  * @param {number|null} ownedRequestId - Internal request ownership override.
  * @returns {number} The new request ID.
  */
-function initializePlaybackRequest(filename, offset, loop, ownedRequestId) {
+function initializePlaybackRequest(
+  filename: string,
+  offset: number,
+  loop: boolean,
+  ownedRequestId: number | null
+): number {
   logger.debug(
     'AudioEngine',
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
@@ -252,7 +277,7 @@ function initializePlaybackRequest(filename, offset, loop, ownedRequestId) {
  * @param {string} filename - The filename of the MIDI.
  * @returns {string|null} The resolved URL or null if not found.
  */
-function resolveMidiUrl(filename) {
+function resolveMidiUrl(filename: string): string | null {
   const { publicBasePath } = getBaseAssetPath()
   const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
   logger.debug(
@@ -274,7 +299,11 @@ function resolveMidiUrl(filename) {
  * @param {string} filename - The filename for logging.
  * @returns {Promise<ArrayBuffer|null>} The MIDI data or null on failure.
  */
-async function fetchMidiArrayBuffer(url, reqId, filename) {
+async function fetchMidiArrayBuffer(
+  url: string,
+  reqId: number,
+  filename: string
+): Promise<ArrayBuffer | null> {
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(
@@ -307,7 +336,7 @@ async function fetchMidiArrayBuffer(url, reqId, filename) {
  * @param {ArrayBuffer} arrayBuffer - The MIDI data.
  * @returns {object|null} The parsed MIDI object or null on failure.
  */
-function parseMidiData(arrayBuffer) {
+function parseMidiData(arrayBuffer: ArrayBuffer): any | null {
   if (!MidiParser) {
     logger.error(
       'AudioEngine',
@@ -334,7 +363,7 @@ function parseMidiData(arrayBuffer) {
  * @param {boolean} useCleanPlayback - If true, bypass FX for MIDI playback.
  * @returns {Array} An array of created Tone.Part objects.
  */
-function createMidiParts(midi, useCleanPlayback) {
+function createMidiParts(midi: any, useCleanPlayback: boolean): any[] {
   const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
   const bassSynth = useCleanPlayback ? audioState.midiBass : audioState.bass
   const drumSet = useCleanPlayback ? audioState.midiDrumKit : audioState.drumKit
@@ -428,7 +457,7 @@ function createMidiParts(midi, useCleanPlayback) {
  * @param {object} midi - The parsed MIDI object.
  * @param {object} params - Parameters for scheduling.
  */
-function scheduleMidiTransport(midi, params) {
+function scheduleMidiTransport(midi: any, params: any): void {
   const {
     reqId,
     filename,
@@ -514,7 +543,7 @@ function scheduleMidiTransport(midi, params) {
  * @param {number} [params.options.startTimeSec] - Absolute Tone.js time to start playback.
  * @param {number|null} [params.ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFileInternal(params = {}) {
+export async function playMidiFileInternal(params: any = {}): Promise<boolean> {
   const {
     filename,
     offset = 0,
@@ -592,11 +621,11 @@ export async function playMidiFileInternal(params = {}) {
  * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
  */
 export async function playMidiFile(
-  filename,
+  filename: string,
   offset = 0,
   loop = false,
   delay = 0,
-  options = {}
-) {
+  options: any = {}
+): Promise<boolean> {
   return playMidiFileInternal({ filename, offset, loop, delay, options })
 }

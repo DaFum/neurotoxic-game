@@ -1,5 +1,18 @@
 export const DEBOUNCE_MS = 50
 
+interface LaneState {
+  active: boolean
+}
+
+interface InputRuntimeState {
+  songTransitioning: boolean
+  isGameOver: boolean
+  hasSubmittedResults: boolean
+  lanes: LaneState[]
+}
+
+type LaneHitHandler = (laneIndex: number) => void
+
 /**
  * Determines whether input can be processed based on the current game state.
  *
@@ -8,7 +21,11 @@ export const DEBOUNCE_MS = 50
  * @param {string} transportState - Current audio transport state.
  * @returns {boolean} True if input should be processed, false otherwise.
  */
-export const canProcessInput = (state, activeEvent, transportState) => {
+export const canProcessInput = (
+  state: InputRuntimeState,
+  activeEvent: unknown,
+  transportState: string
+): boolean => {
   if (
     activeEvent ||
     state.songTransitioning ||
@@ -39,7 +56,14 @@ export const processLaneInput = ({
   state,
   lastInputTimes,
   handleHit
-}) => {
+}: {
+  laneIndex: number
+  isDown: boolean
+  now: number
+  state: InputRuntimeState
+  lastInputTimes: number[]
+  handleHit: LaneHitHandler
+}): void => {
   if (laneIndex < 0 || laneIndex >= state.lanes.length) return
 
   // Toggle the visual active state (this is read by the PixiJS game loop)

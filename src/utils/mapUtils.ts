@@ -8,7 +8,11 @@ import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine'
  * @param {string} targetNodeId - The target node ID.
  * @returns {boolean} True if connected.
  */
-export const isConnected = (gameMap, fromNodeId, targetNodeId) => {
+export const isConnected = (
+  gameMap: any,
+  fromNodeId: string,
+  targetNodeId: string
+): boolean => {
   if (!gameMap) return false
   if (!gameMap.connections) {
     throw new TypeError('gameMap.connections is missing')
@@ -28,7 +32,10 @@ export const isConnected = (gameMap, fromNodeId, targetNodeId) => {
  * @param {number} currentLayer - Current player layer.
  * @returns {string} 'visible', 'dimmed', or 'hidden'.
  */
-export const getNodeVisibility = (nodeLayer, currentLayer) => {
+export const getNodeVisibility = (
+  nodeLayer: number,
+  currentLayer: number
+): 'visible' | 'dimmed' | 'hidden' => {
   if (nodeLayer <= currentLayer + 1) return 'visible'
   if (nodeLayer === currentLayer + 2) return 'dimmed'
   return 'hidden'
@@ -39,7 +46,7 @@ export const getNodeVisibility = (nodeLayer, currentLayer) => {
  * @param {object|string} venue - The venue object or string to normalize.
  * @returns {string|null} The normalized string ID, or null.
  */
-export const normalizeVenueId = venue => {
+export const normalizeVenueId = (venue: any): string | null => {
   if (!venue) return null
   let id = typeof venue === 'object' ? venue.id || venue.name : venue
 
@@ -67,7 +74,11 @@ export const normalizeVenueId = venue => {
  * @param {object} [band=null] - The band state object.
  * @returns {boolean} True if stranded.
  */
-export const checkSoftlock = (gameMap, player, band = null) => {
+export const checkSoftlock = (
+  gameMap: any,
+  player: any,
+  band: any = null
+): boolean => {
   if (!gameMap || !player.currentNodeId) return false
 
   const currentFuel = player.van?.fuel ?? 0

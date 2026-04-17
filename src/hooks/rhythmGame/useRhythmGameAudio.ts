@@ -136,6 +136,15 @@ export const useRhythmGameAudio = ({
           ? currentSetlist[0]
           : currentSetlist?.[0]?.id
 
+      if (!currentGameMap?.nodes || !currentPlayer?.currentNodeId) {
+        logger.error(
+          'RhythmGame',
+          'Missing gameMap nodes or current player node before gig physics setup'
+        )
+        hasInitializedRef.current = false
+        return
+      }
+
       const physicsSetup = setupGigPhysics(
         currentBand,
         currentGigModifiers,

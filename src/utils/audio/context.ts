@@ -13,7 +13,7 @@ import { disposeAudio } from './dispose'
  * Returns the raw Web Audio context used by Tone.js.
  * @returns {AudioContext} The raw AudioContext.
  */
-export const getRawAudioContext = () => {
+export const getRawAudioContext = (): AudioContext | any => {
   const toneContext = Tone.getContext()
   return toneContext?.rawContext ?? toneContext
 }
@@ -22,7 +22,7 @@ export const getRawAudioContext = () => {
  * Returns the raw AudioContext time in seconds.
  * @returns {number} Current raw AudioContext time in seconds.
  */
-export const getAudioContextTimeSec = () => {
+export const getAudioContextTimeSec = (): number => {
   return getRawAudioContext().currentTime
 }
 
@@ -31,7 +31,7 @@ export const getAudioContextTimeSec = () => {
  * @param {number} rawStartTimeSec - Raw AudioContext time in seconds.
  * @returns {number} Tone.js time in seconds.
  */
-export const getToneStartTimeSec = rawStartTimeSec => {
+export const getToneStartTimeSec = (rawStartTimeSec: number): number => {
   const lookAhead = Tone.getContext()?.lookAhead ?? 0
   return rawStartTimeSec + lookAhead
 }
@@ -40,7 +40,7 @@ export const getToneStartTimeSec = rawStartTimeSec => {
  * Ensures the AudioContext is running and initialized.
  * @returns {Promise<boolean>} True if the AudioContext is running.
  */
-export async function ensureAudioContext() {
+export async function ensureAudioContext(): Promise<boolean> {
   // Synchronous resume attempt to capture user gesture for Web Audio unlock (iOS/Safari).
   // Only attempt when audio is already set up to avoid resuming a stale context that
   // setupAudio() is about to replace.

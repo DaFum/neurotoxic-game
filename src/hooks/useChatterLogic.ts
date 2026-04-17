@@ -13,11 +13,28 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
+import type { BandMember } from '../types/game'
+import type { TranslationCallback } from '../types/callbacks'
+import type {
+  ChatterGameState,
+  ChatterMessageData,
+  ChatterMessageType
+} from '../types/components'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
 
-const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
+interface ChatterTemplate {
+  text: string
+  speaker?: string
+  type: ChatterMessageType
+}
+
+const resolveSpeaker = (
+  fixedSpeaker: string | undefined,
+  bandMembers: BandMember[] | undefined,
+  t: TranslationCallback
+): string => {
   if (fixedSpeaker) return fixedSpeaker
   const memberNames = []
   if (bandMembers) {
@@ -35,11 +52,14 @@ const resolveSpeaker = (fixedSpeaker, bandMembers, t) => {
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
 
-export const useChatterLogic = (gameState, t) => {
-  const stateRef = useRef(gameState)
-  const [messages, setMessages] = useState([])
+export const useChatterLogic = (
+  gameState: ChatterGameState,
+  t: TranslationCallback
+) => {
+  const stateRef = useRef<ChatterGameState>(gameState)
+  const [messages, setMessages] = useState<ChatterMessageData[]>([])
 
-  const removeMessage = useCallback(id => {
+  const removeMessage = useCallback((id: string) => {
     setMessages(prev => prev.filter(m => m.id !== id))
   }, [])
 
@@ -48,7 +68,7 @@ export const useChatterLogic = (gameState, t) => {
   }, [gameState])
 
   useEffect(() => {
-    let timeoutId
+    let timeoutId: ReturnType<typeof setTimeout>
     let active = true
 
     const scheduleNext = () => {
@@ -60,7 +80,7 @@ export const useChatterLogic = (gameState, t) => {
         if (!active) return
 
         const currentState = stateRef.current
-        const result = getRandomChatter(currentState)
+        const result = getRandomChatter(currentState) as ChatterTemplate | null
 
         if (result) {
           const { text, speaker: fixedSpeaker, type } = result

@@ -14,7 +14,10 @@
  * @param {number} misses
  * @returns {number}
  */
-export const calculateAccuracy = (perfectHits, misses) => {
+export const calculateAccuracy = (
+  perfectHits: number,
+  misses: number
+): number => {
   const total = perfectHits + misses
   if (total === 0) return 100
   return Math.max(0, Math.min(100, Math.round((perfectHits / total) * 100)))
@@ -26,7 +29,20 @@ export const calculateAccuracy = (perfectHits, misses) => {
  * @param {{combo: number, overload: number}} payload - Current combo and hype values.
  * @returns {GigPerformanceStats} Updated stats snapshot.
  */
-export const updateGigPerformanceStats = (stats, payload) => ({
+export const updateGigPerformanceStats = (
+  stats: {
+    perfectHits: number
+    misses: number
+    maxCombo: number
+    peakHype: number
+  },
+  payload: { combo: number; overload: number }
+): {
+  perfectHits: number
+  misses: number
+  maxCombo: number
+  peakHype: number
+} => ({
   ...stats,
   maxCombo: Math.max(stats.maxCombo, payload.combo),
   peakHype: Math.max(stats.peakHype, payload.overload)
@@ -41,11 +57,35 @@ export const updateGigPerformanceStats = (stats, payload) => ({
  * @returns {{score: number, misses: number, perfectHits: number, maxCombo: number, peakHype: number, toxicTimeTotal: number, accuracy: number, songStats: Array<{songId: string, score: number, accuracy: number, index: number}>}}
  */
 export const buildGigStatsSnapshot = (
-  score,
-  stats,
-  toxicTimeTotal,
-  songStats = []
-) => ({
+  score: number,
+  stats: {
+    perfectHits: number
+    misses: number
+    maxCombo: number
+    peakHype: number
+  },
+  toxicTimeTotal: number,
+  songStats: Array<{
+    songId: string
+    score: number
+    accuracy: number
+    index: number
+  }> = []
+): {
+  score: number
+  misses: number
+  perfectHits: number
+  maxCombo: number
+  peakHype: number
+  toxicTimeTotal: number
+  accuracy: number
+  songStats: Array<{
+    songId: string
+    score: number
+    accuracy: number
+    index: number
+  }>
+} => ({
   score,
   misses: stats.misses,
   perfectHits: stats.perfectHits,

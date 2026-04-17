@@ -15,16 +15,30 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
-export const calculatePostGigStateUpdates = ({
-  option,
-  player,
-  band,
-  social,
-  lastGigStats,
-  currentGig,
-  perfScore,
-  secureRandomValue
-}) => {
+type CalculatePostGigStateParams = {
+  option: any
+  player: any
+  band: any
+  social: any
+  lastGigStats?: any
+  currentGig?: any
+  perfScore?: number
+  secureRandomValue?: number
+}
+
+export const calculatePostGigStateUpdates = (
+  params: CalculatePostGigStateParams
+) => {
+  const {
+    option,
+    player,
+    band,
+    social,
+    lastGigStats,
+    currentGig,
+    perfScore,
+    secureRandomValue
+  } = params
   const gameState = { player, band, social }
   const result = resolvePost(option, gameState, secureRandomValue)
 
@@ -236,7 +250,13 @@ const OPPOSING_ALIGNMENT_MAP = {
   [BRAND_ALIGNMENTS.GOOD]: BRAND_ALIGNMENTS.EVIL
 }
 
-export const getAcceptDealMoneyUpdate = ({ deal, player }) => {
+export const getAcceptDealMoneyUpdate = ({
+  deal,
+  player
+}: {
+  deal: any
+  player: any
+}) => {
   let appliedMoneyDelta = 0
   let nextMoney = player.money ?? 0
 
@@ -249,8 +269,8 @@ export const getAcceptDealMoneyUpdate = ({ deal, player }) => {
   return { nextMoney, appliedMoneyDelta }
 }
 
-export const getAcceptDealBandUpdateFactory = deal => {
-  return prevBand => {
+export const getAcceptDealBandUpdateFactory = (deal: any) => {
+  return (prevBand: any) => {
     if (!deal.offer.item) return prevBand
     return {
       ...prevBand,
@@ -259,9 +279,9 @@ export const getAcceptDealBandUpdateFactory = deal => {
   }
 }
 
-export const getAcceptDealSocialUpdateFactory = deal => {
-  return prevSocial => {
-    const updates = {}
+export const getAcceptDealSocialUpdateFactory = (deal: any) => {
+  return (prevSocial: any) => {
+    const updates: Record<string, any> = {}
 
     if (deal.penalty) {
       if (deal.penalty.loyalty) {
@@ -295,7 +315,7 @@ export const getAcceptDealSocialUpdateFactory = deal => {
   }
 }
 
-export const getSpinStoryMoneyUpdate = ({ player }) => {
+export const getSpinStoryMoneyUpdate = ({ player }: { player: any }) => {
   if (player.money < 200) {
     return { success: false }
   }
@@ -312,7 +332,7 @@ export const getSpinStoryMoneyUpdate = ({ player }) => {
 }
 
 export const getSpinStorySocialUpdateFactory = () => {
-  return prevSocial => ({
+  return (prevSocial: any) => ({
     controversyLevel: clampControversyLevel(
       (prevSocial.controversyLevel || 0) - 25
     )
@@ -329,6 +349,16 @@ export const calculateContinueStats = ({
   clampPlayerFame,
   clampPlayerMoney,
   BALANCE_CONSTANTS
+}: {
+  player: any
+  perfScore: number
+  financials: any
+  misses?: number
+  calculateFameGain: (a: number, b: number, c: number) => number
+  calculateFameLevel: (fame: number) => number
+  clampPlayerFame: (n: number) => number
+  clampPlayerMoney: (n: number) => number
+  BALANCE_CONSTANTS: any
 }) => {
   const prevFame = player.fame ?? 0
 

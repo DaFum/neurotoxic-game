@@ -9,24 +9,68 @@ import {
   clampPlayerFame,
   calculateFameLevel
 } from './gameStateUtils'
+import type { PlayerState, BandState, BandMember } from '../types/game'
+
+type Inventory = Record<string, unknown>
+
+type Effect = {
+  type?: string
+  item?: string
+  value?: any
+  target?: string
+  stat?: string
+  key?: string
+  id?: string
+}
+
+type PurchaseItem = {
+  id?: string
+  cost?: number
+  currency?: string
+  category?: string
+  effect?: Effect
+  effects?: Effect[]
+  oneTime?: boolean
+  [k: string]: any
+}
+
+type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
+  van?: Partial<PlayerState['van']>
+  fameLevel?: number
+}
+type BandPatch = Partial<BandState> | null
+type EffectHandler = (
+  effect: Effect,
+  item: PurchaseItem,
+  playerPatch: PlayerPatch,
+  player: PlayerState,
+  band: BandState | null
+) =>
+  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: any[] }
+  | undefined
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
  * @param {object} item - Purchase catalog item.
  * @returns {object|undefined} Primary effect object, if available.
  */
-export const getPrimaryEffect = item => {
+export const getPrimaryEffect = (
+  item?: PurchaseItem | null
+): Effect | undefined => {
   if (!item) return undefined
-  return item.effects?.[0] ?? item.effect
+  return (item.effects?.[0] as Effect) ?? (item.effect as Effect)
 }
 
 // Pre-compute gear lookup for O(1) checks during purchases
-export const GEAR_LOOKUP = new Map()
-const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
+export const GEAR_LOOKUP = new Map<string, PurchaseItem>()
+const allGearItems = [
+  ...(HQ_ITEMS.gear || []),
+  ...(HQ_ITEMS.instruments || [])
+] as PurchaseItem[]
 
-allGearItems.forEach(item => {
+allGearItems.forEach((item: PurchaseItem) => {
   if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
-    GEAR_LOOKUP.set(item.id, item)
+    if (item.id) GEAR_LOOKUP.set(item.id, item)
     const e = getPrimaryEffect(item)
     if (e?.item) {
       GEAR_LOOKUP.set(e.item, item)
@@ -40,14 +84,18 @@ allGearItems.forEach(item => {
  * @param {Map} lookup - Gear lookup map
  * @returns {number} Gear count
  */
-export const getGearCount = (inventory, lookup) => {
+export const getGearCount = (
+  inventory?: Inventory | null,
+  lookup?: Map<string, PurchaseItem>
+): number => {
   let count = 0
   const inv = inventory || {}
+  const map = lookup ?? GEAR_LOOKUP
   for (const key in inv) {
     if (Object.hasOwn(inv, key)) {
       const value = inv[key]
       const isOwned = value === true || (typeof value === 'number' && value > 0)
-      if (isOwned && lookup.has(key)) {
+      if (isOwned && map.has(key)) {
         count++
       }
     }
@@ -61,8 +109,11 @@ export const getGearCount = (inventory, lookup) => {
  * @param {Object} band - Band state
  * @returns {number} Adjusted cost
  */
-export const getAdjustedCost = (item, band) => {
-  let cost = item.cost
+export const getAdjustedCost = (
+  item: PurchaseItem,
+  band: BandState
+): number => {
+  let cost = item.cost ?? 0
   // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
   if (
     item.category === 'GEAR' &&
@@ -80,7 +131,10 @@ export const getAdjustedCost = (item, band) => {
  * @param {string} upgradeId - ID of the upgrade to add
  * @returns {Object} Updated van object
  */
-export const buildVanWithUpgrade = (van, upgradeId) => {
+export const buildVanWithUpgrade = (
+  van: Partial<PlayerState['van']> | undefined,
+  upgradeId: string
+): Partial<PlayerState['van']> => {
   const currentUpgrades = van?.upgrades ?? []
 
   if (!currentUpgrades.includes(upgradeId)) {
@@ -111,7 +165,11 @@ export const buildVanWithUpgrade = (van, upgradeId) => {
  * @param {Object} band - Band state
  * @returns {boolean} True if owned
  */
-export const isItemOwned = (item, player, band) => {
+export const isItemOwned = (
+  item: PurchaseItem,
+  player: PlayerState,
+  band: BandState
+): boolean => {
   const effect = getPrimaryEffect(item)
   if (!effect) return false
 
@@ -121,10 +179,10 @@ export const isItemOwned = (item, player, band) => {
       : null
 
   return (
-    (player.van?.upgrades ?? []).includes(item.id) ||
-    (player.hqUpgrades ?? []).includes(item.id) ||
+    (player.van?.upgrades ?? []).includes(item.id as string) ||
+    (player.hqUpgrades ?? []).includes(item.id as string) ||
     (effect.type === 'inventory_set'
-      ? band.inventory?.[inventoryKey] === true
+      ? band.inventory?.[inventoryKey as string] === true
       : false)
   )
 }
@@ -136,7 +194,11 @@ export const isItemOwned = (item, player, band) => {
  * @param {number} adjustedCost - Cost after adjustments
  * @returns {boolean} True if affordable
  */
-export const canAfford = (item, player, adjustedCost) => {
+export const canAfford = (
+  item: PurchaseItem,
+  player: PlayerState,
+  adjustedCost: number
+): boolean => {
   const payingWithFame = item.currency === 'fame'
   const currencyValue = payingWithFame
     ? (player.fame ?? 0)
@@ -150,8 +212,11 @@ export const canAfford = (item, player, adjustedCost) => {
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply
  */
-export const applyInventorySet = (effect, bandInventory) => ({
-  inventory: { ...(bandInventory ?? {}), [effect.item]: effect.value }
+export const applyInventorySet = (
+  effect: Effect,
+  bandInventory?: Inventory
+) => ({
+  inventory: { ...(bandInventory ?? {}), [effect.item as string]: effect.value }
 })
 
 /**
@@ -160,10 +225,14 @@ export const applyInventorySet = (effect, bandInventory) => ({
  * @param {Object} bandInventory - Current band inventory
  * @returns {Object} Band patch to apply
  */
-export const applyInventoryAdd = (effect, bandInventory) => ({
+export const applyInventoryAdd = (
+  effect: Effect,
+  bandInventory?: Inventory
+) => ({
   inventory: {
     ...(bandInventory ?? {}),
-    [effect.item]: ((bandInventory ?? {})[effect.item] || 0) + effect.value
+    [effect.item as string]:
+      ((bandInventory ?? {})[effect.item as string] || 0) + effect.value
   }
 })
 
@@ -175,31 +244,45 @@ export const applyInventoryAdd = (effect, bandInventory) => ({
  * @param {Object} band - Band state
  * @returns {Object} Object with updated playerPatch and bandPatch
  */
-export const applyStatModifier = (effect, playerPatch, player, band) => {
+export const applyStatModifier = (
+  effect: Effect,
+  playerPatch: PlayerPatch,
+  player: PlayerState,
+  band: BandState
+): { playerPatch: PlayerPatch; bandPatch: BandPatch } => {
   const val = effect.value
-  let nextPlayerPatch = { ...playerPatch }
-  let nextBandPatch = null
+  let nextPlayerPatch: PlayerPatch = { ...playerPatch }
+  let nextBandPatch: BandPatch = null
 
   switch (effect.target) {
     case 'van':
       nextPlayerPatch.van = {
         ...(player.van ?? {}),
-        [effect.stat]: Math.max(0, ((player.van ?? {})[effect.stat] || 0) + val)
+        [effect.stat as string]: Math.max(
+          0,
+          (((player.van ?? {}) as any)[effect.stat as string] || 0) + val
+        )
       }
       break
 
     case 'player': {
-      const basePlayerStat =
-        nextPlayerPatch[effect.stat] ?? player[effect.stat] ?? 0
+      const basePlayerStat = ((nextPlayerPatch as any)[effect.stat as string] ??
+        (player as any)[effect.stat as string] ??
+        0) as number
 
       if (effect.stat === 'money') {
-        nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
+        ;(nextPlayerPatch as any)[effect.stat as string] = clampPlayerMoney(
+          basePlayerStat + val
+        )
       } else if (effect.stat === 'fame') {
         const clampedFame = clampPlayerFame(basePlayerStat + val)
         nextPlayerPatch.fame = clampedFame
         nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
       } else {
-        nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
+        ;(nextPlayerPatch as any)[effect.stat as string] = Math.max(
+          0,
+          basePlayerStat + val
+        )
       }
       break
     }
@@ -211,7 +294,10 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
         }
       } else {
         nextBandPatch = {
-          [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val)
+          [effect.stat as string]: Math.max(
+            0,
+            ((band as any)[effect.stat as string] || 0) + val
+          )
         }
       }
       break
@@ -220,7 +306,9 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
       nextBandPatch = {
         performance: {
           ...(band.performance ?? {}),
-          [effect.stat]: ((band.performance ?? {})[effect.stat] || 0) + val
+          [effect.stat as string]:
+            (((band.performance ?? {}) as any)[effect.stat as string] || 0) +
+            val
         }
       }
   }
@@ -235,7 +323,11 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
  * @param {Object} band - Band state
  * @returns {Object} { isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number, effect?: Object }
  */
-export const validatePurchase = (item, player, band) => {
+export const validatePurchase = (
+  item: PurchaseItem,
+  player: PlayerState,
+  band: BandState
+) => {
   const effect = getPrimaryEffect(item)
   if (!effect) {
     return { isValid: false, errorType: 'missing_effect' }
@@ -271,22 +363,27 @@ export const validatePurchase = (item, player, band) => {
 /**
  * Registry of effect handlers to process different purchase effect types
  */
-export const EFFECT_HANDLERS = {
+export const EFFECT_HANDLERS: Record<string, EffectHandler> = {
   inventory_set: (effect, _item, _playerPatch, _player, band) => {
-    return { bandPatch: applyInventorySet(effect, band.inventory) }
+    return { bandPatch: applyInventorySet(effect, band?.inventory) }
   },
 
   inventory_add: (effect, _item, _playerPatch, _player, band) => {
-    return { bandPatch: applyInventoryAdd(effect, band.inventory) }
+    return { bandPatch: applyInventoryAdd(effect, band?.inventory) }
   },
 
   stat_modifier: (effect, item, playerPatch, player, band) => {
-    const result = applyStatModifier(effect, playerPatch, player, band)
+    const result = applyStatModifier(
+      effect,
+      playerPatch,
+      player,
+      band as BandState
+    )
     let nextPlayerPatch = result.playerPatch
 
     if (item.oneTime !== false) {
       const vanState = nextPlayerPatch.van ?? player.van
-      nextPlayerPatch.van = buildVanWithUpgrade(vanState, item.id)
+      nextPlayerPatch.van = buildVanWithUpgrade(vanState, item.id as string)
     }
     return { playerPatch: nextPlayerPatch, bandPatch: result.bandPatch }
   },
@@ -303,7 +400,7 @@ export const EFFECT_HANDLERS = {
   },
 
   unlock_hq: (_effect, item, playerPatch, player, band) => {
-    return applyUnlockHQ(item, playerPatch, player, band)
+    return applyUnlockHQ(item, playerPatch, player, band as BandState)
   },
 
   passive: (effect, item, playerPatch, player, _band) => {
@@ -312,7 +409,7 @@ export const EFFECT_HANDLERS = {
 
     // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
     const vanState = nextPlayerPatch.van ?? player.van
-    nextPlayerPatch.van = buildVanWithUpgrade(vanState, item.id)
+    nextPlayerPatch.van = buildVanWithUpgrade(vanState, item.id as string)
 
     return { playerPatch: nextPlayerPatch, bandPatch: result.bandPatch }
   }
@@ -328,12 +425,16 @@ export const EFFECT_HANDLERS = {
  * @returns {Object} { playerPatch, bandPatch, messages, errorType }
  */
 export const processPurchaseEffect = (
-  effect,
-  item,
-  initialPlayerPatch,
-  player,
-  band
+  effect: Effect,
+  item: PurchaseItem,
+  initialPlayerPatch: PlayerPatch,
+  player: PlayerState,
+  band: BandState
 ) => {
+  if (!effect.type) {
+    return { errorType: 'unknown_effect', effectType: effect.type }
+  }
+
   const handler = EFFECT_HANDLERS[effect.type]
 
   if (!handler) {
@@ -351,11 +452,16 @@ export const processPurchaseEffect = (
  * @param {Object} playerVan - Current player van state
  * @returns {Object} Updated player patch
  */
-export const applyUnlockUpgrade = (effect, item, playerPatch, playerVan) => {
+export const applyUnlockUpgrade = (
+  effect: Effect,
+  item: PurchaseItem,
+  playerPatch: PlayerPatch,
+  playerVan: Partial<PlayerState['van']> | undefined
+): PlayerPatch => {
   const upgradeId = effect.id ? effect.id : item.id
   const currentUpgrades = playerVan?.upgrades ?? []
 
-  if (currentUpgrades.includes(upgradeId)) {
+  if (currentUpgrades.includes(upgradeId as string)) {
     return playerPatch
   }
 
@@ -363,7 +469,7 @@ export const applyUnlockUpgrade = (effect, item, playerPatch, playerVan) => {
     ...playerPatch,
     van: {
       ...(playerVan ?? {}),
-      upgrades: [...currentUpgrades, upgradeId]
+      upgrades: [...currentUpgrades, upgradeId as string]
     }
   }
 }
@@ -376,19 +482,24 @@ export const applyUnlockUpgrade = (effect, item, playerPatch, playerVan) => {
  * @param {Object} band - Band state
  * @returns {Object} Object with updated playerPatch, bandPatch and messages
  */
-export const applyUnlockHQ = (item, playerPatch, player, band) => {
-  let nextPlayerPatch = {
+export const applyUnlockHQ = (
+  item: PurchaseItem,
+  playerPatch: PlayerPatch,
+  player: PlayerState,
+  band: BandState
+) => {
+  let nextPlayerPatch: PlayerPatch = {
     ...playerPatch,
-    hqUpgrades: [...(player.hqUpgrades ?? []), item.id]
+    hqUpgrades: [...(player.hqUpgrades ?? []), item.id as string]
   }
-  let nextBandPatch = null
-  let messages = []
+  let nextBandPatch: BandPatch = null
+  let messages: any[] = []
 
   // Special item effects
   switch (item.id) {
     case 'hq_room_poster_wall': {
       const clampedFame = clampPlayerFame(
-        (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
+        ((nextPlayerPatch.fame as number | undefined) ?? player.fame ?? 0) + 10
       )
       nextPlayerPatch.fame = clampedFame
       nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
@@ -413,7 +524,8 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
 
     case 'hq_room_label':
       nextPlayerPatch.money = clampPlayerMoney(
-        (nextPlayerPatch.money ?? player.money ?? 0) + 500
+        ((nextPlayerPatch.money as number | undefined) ?? player.money ?? 0) +
+          500
       )
       messages.push({
         messageKey: 'ui:shop.messages.labelSigned',
@@ -426,7 +538,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
     case 'hq_room_sofa':
     case 'hq_room_old_couch':
     case 'hq_room_cheap_beer_fridge': {
-      const members = (band.members ?? []).map(m => {
+      const members = (band.members ?? []).map((m: BandMember) => {
         switch (item.id) {
           case 'hq_room_coffee':
             return {
@@ -436,12 +548,18 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
           case 'hq_room_sofa':
             return {
               ...m,
-              stamina: clampMemberStamina((m.stamina ?? 0) + 30, m.staminaMax)
+              stamina: clampMemberStamina(
+                (m.stamina ?? 0) + 30,
+                (m as any).staminaMax
+              )
             }
           case 'hq_room_old_couch':
             return {
               ...m,
-              stamina: clampMemberStamina((m.stamina ?? 0) + 10, m.staminaMax)
+              stamina: clampMemberStamina(
+                (m.stamina ?? 0) + 10,
+                (m as any).staminaMax
+              )
             }
           default:
             return {
@@ -465,9 +583,13 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
  * @param {Object} player - Player state
  * @returns {Object} Object with updated playerPatch and bandPatch
  */
-export const applyPassive = (effect, playerPatch, player) => {
-  let nextPlayerPatch = { ...playerPatch }
-  let nextBandPatch = null
+export const applyPassive = (
+  effect: Effect,
+  playerPatch: PlayerPatch,
+  player: PlayerState
+) => {
+  let nextPlayerPatch: PlayerPatch = { ...playerPatch }
+  let nextBandPatch: BandPatch = null
 
   if (effect.key === 'harmony_regen_travel') {
     nextBandPatch = { harmonyRegenTravel: true }

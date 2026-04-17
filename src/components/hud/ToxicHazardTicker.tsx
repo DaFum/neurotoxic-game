@@ -1,12 +1,15 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { HazardTicker } from '../../ui/shared'
 import { useTranslation } from 'react-i18next'
 
+interface ToxicHazardTickerProps {
+  isToxicMode: boolean
+}
+
 export const ToxicHazardTicker = memo(function ToxicHazardTicker({
   isToxicMode
-}) {
+}: ToxicHazardTickerProps) {
   const { t } = useTranslation()
 
   if (!isToxicMode) return null
@@ -22,7 +25,3 @@ export const ToxicHazardTicker = memo(function ToxicHazardTicker({
     </div>
   )
 })
-
-ToxicHazardTicker.propTypes = {
-  isToxicMode: PropTypes.bool.isRequired
-}
