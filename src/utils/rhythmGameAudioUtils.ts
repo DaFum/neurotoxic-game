@@ -16,19 +16,83 @@ import { calculateGigPhysics, getGigModifiers } from './simulationUtils'
 import { generateNotesForSong, parseSongNotes } from './rhythmUtils'
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { getSafeRandom } from './crypto'
+import type { Song } from '../types/audio'
+import type { BandState, GameState, GigModifiers } from '../types/game'
+import type {
+  ToastCallback,
+  TranslationCallback
+} from '../types/callbacks'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
 const NOTE_TAIL_MS = 1000
 
+type RandomFn = () => number
+
+interface RhythmNote {
+  time: number
+  laneIndex: number
+  hit: boolean
+  visible: boolean
+  songId: string
+  type: string
+}
+
+interface SongStatsEntry {
+  songId: string
+  score: number
+  accuracy: number
+  index: number
+}
+
+interface GigRuntimeState {
+  hasSubmittedResults: boolean
+  isGameOver: boolean
+  setlistCompleted: boolean
+  songTransitioning: boolean
+  totalDuration: number
+  rng?: RandomFn
+  notes: RhythmNote[]
+  nextMissCheckIndex: number
+  notesVersion: number
+  lastEndedSongIndex: number
+  songStats: SongStatsEntry[]
+  score: number
+  currentSongStartScore: number
+  currentSongStartPerfectHits: number
+  currentSongStartMisses: number
+  stats?: { perfectHits?: number; misses?: number }
+}
+
+interface MutableRef<T> {
+  current: T
+}
+
+type ActiveSong = Partial<Song> & {
+  id: string
+  name: string
+  bpm: number
+  duration: number
+  difficulty: number
+  notes?: unknown[]
+  sourceMid?: string
+  sourceOgg?: string | null
+}
+
 export const setupGigPhysics = (
-  band,
-  gigModifiers,
-  currentGigId,
-  gameMap,
-  playerNodeId,
-  setlistFirstId
-) => {
+  band: BandState,
+  gigModifiers: Partial<GigModifiers>,
+  currentGigId: string | undefined,
+  gameMap: GameState['gameMap'] & {
+    nodes?: Record<string, { layer?: number }>
+  },
+  playerNodeId: string,
+  setlistFirstId: string | undefined
+): {
+  mergedModifiers: Record<string, unknown>
+  speed: number
+  hitWindows: number[]
+} | null => {
   const activeModifiers = getGigModifiers(band, gigModifiers)
 
   const songId = currentGigId || setlistFirstId || 'neurotoxic_1'
@@ -74,7 +138,9 @@ export const setupGigPhysics = (
   }
 }
 
-export const resolveActiveSetlist = setlist => {
+export const resolveActiveSetlist = (
+  setlist: Array<string | ActiveSong>
+): ActiveSong[] => {
   return (
     setlist.length > 0
       ? setlist
@@ -98,7 +164,11 @@ export const resolveActiveSetlist = setlist => {
   })
 }
 
-const playOggBuffer = async (currentSong, notes, onSongEnded) => {
+const playOggBuffer = async (
+  currentSong: ActiveSong,
+  notes: RhythmNote[],
+  onSongEnded: () => Promise<void> | void
+): Promise<boolean> => {
   if (!currentSong.sourceOgg && !currentSong.sourceMid) return false
 
   const { excerptStartMs, excerptDurationMs } = resolveSongPlaybackWindow(
@@ -145,7 +215,11 @@ const playOggBuffer = async (currentSong, notes, onSongEnded) => {
   return success
 }
 
-const playMidiSynthesis = async (currentSong, notes, onSongEnded) => {
+const playMidiSynthesis = async (
+  currentSong: ActiveSong,
+  notes: RhythmNote[],
+  onSongEnded: () => Promise<void> | void
+): Promise<boolean> => {
   if (!currentSong.sourceMid) return false
 
   const { excerptStartMs, excerptDurationMs } = resolveSongPlaybackWindow(
@@ -189,7 +263,11 @@ const playMidiSynthesis = async (currentSong, notes, onSongEnded) => {
   return success
 }
 
-const playNoteDataSynthesis = async (currentSong, notes, onSongEnded) => {
+const playNoteDataSynthesis = async (
+  currentSong: ActiveSong,
+  notes: RhythmNote[],
+  onSongEnded: () => Promise<void> | void
+): Promise<boolean> => {
   if (notes.length === 0) return false
 
   startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
@@ -206,7 +284,11 @@ const playNoteDataSynthesis = async (currentSong, notes, onSongEnded) => {
   return success
 }
 
-const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
+const playProceduralMetal = async (
+  currentSong: ActiveSong,
+  onSongEnded: () => Promise<void> | void,
+  rng: RandomFn
+): Promise<boolean> => {
   const audioDelay = GIG_LEAD_IN_MS / 1000
   startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
   const success = await startMetalGenerator(
@@ -225,7 +307,12 @@ const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
   return success
 }
 
-const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
+const playAudioForSong = async (
+  currentSong: ActiveSong,
+  notes: RhythmNote[],
+  onSongEnded: () => Promise<void> | void,
+  rng: RandomFn
+): Promise<RhythmNote[]> => {
   let bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
 
   if (!bgAudioStarted) {
@@ -259,7 +346,11 @@ const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
   return finalNotes
 }
 
-const handleSongEnded = (gameStateRef, currentSong, index) => {
+const handleSongEnded = (
+  gameStateRef: MutableRef<GigRuntimeState>,
+  currentSong: ActiveSong,
+  index: number
+): void => {
   const currentState = gameStateRef.current
   if (!currentState) return
 
@@ -302,12 +393,12 @@ const handleSongEnded = (gameStateRef, currentSong, index) => {
 }
 
 export const playSongSequence = async (
-  index,
-  activeSetlist,
-  gameStateRef,
-  addToast,
-  t
-) => {
+  index: number,
+  activeSetlist: ActiveSong[],
+  gameStateRef: MutableRef<GigRuntimeState>,
+  addToast: ToastCallback,
+  t: TranslationCallback | undefined
+): Promise<void> => {
   if (
     gameStateRef.current.hasSubmittedResults ||
     gameStateRef.current.isGameOver
@@ -330,7 +421,7 @@ export const playSongSequence = async (
   }
 
   const currentSong = activeSetlist[index]
-  let notes = []
+  let notes: RhythmNote[] = []
   const rng = getSafeRandom
   gameStateRef.current.rng = rng
 
@@ -342,7 +433,7 @@ export const playSongSequence = async (
   if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
     const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
       onWarn: msg => logger.warn('RhythmGame', msg)
-    })
+    }) as RhythmNote[]
     if (parsedNotes.length > 0) {
       notes = notes.concat(parsedNotes)
     }
@@ -426,7 +517,9 @@ export const playSongSequence = async (
   }
 }
 
-export const resetGigStateTracking = gameStateRef => {
+export const resetGigStateTracking = (
+  gameStateRef: MutableRef<GigRuntimeState>
+): void => {
   if (gameStateRef.current) {
     gameStateRef.current.lastEndedSongIndex = -1
     gameStateRef.current.songStats = []

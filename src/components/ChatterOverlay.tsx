@@ -1,10 +1,12 @@
 // TODO: Review this file
 import { useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useChatterLogic } from '../hooks/useChatterLogic'
+import type { GameState } from '../types/game'
 
 const MESSAGE_LIFETIME_MS = 10000
 
@@ -91,14 +93,63 @@ const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
 
 const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
 
-const resolveMessageTextColor = (msgType, currentScene) => {
+type ChatterMessageType = 'hate' | string
+
+interface SceneStyle {
+  accent: string
+  accentGlow: string
+  borderColor: string
+  labelColor: string
+  barColor: string
+  speakerColor: string
+  icon: string
+}
+
+interface ChatterMessageData {
+  id: string
+  text: string
+  speaker: string
+  type: ChatterMessageType
+  scene: string
+}
+
+interface ChatterMessageHeaderProps {
+  sceneStyle: SceneStyle
+  sceneLabel: string
+  speaker: string
+}
+
+interface ChatterMessageBodyProps {
+  text: string
+  textColorClass: string
+}
+
+interface ChatterMessageLifetimeBarProps {
+  barColorClass: string
+}
+
+interface ChatterMessageProps {
+  msg: ChatterMessageData
+  onRemove: (messageId: string) => void
+  t: TFunction
+}
+
+interface ChatterOverlayProps {
+  gameState: GameState
+}
+
+const resolveMessageTextColor = (msgType: ChatterMessageType, currentScene: string): string => {
   if (msgType === 'hate' || currentScene === GAME_PHASES.GAMEOVER) {
     return 'text-star-white chromatic-text'
   }
   return 'text-star-white'
 }
 
-const ChatterMessageHeader = memo(({ sceneStyle, sceneLabel, speaker }) => (
+const ChatterMessageHeader = memo(({
+  sceneStyle,
+  sceneLabel,
+  speaker
+}: ChatterMessageHeaderProps) => (
   <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
     <div className='flex items-center gap-1.5'>
       <span className='text-[10px]'>{sceneStyle.icon}</span>
@@ -123,7 +174,7 @@ ChatterMessageHeader.propTypes = {
   speaker: PropTypes.string.isRequired
 }
 
-const ChatterMessageBody = memo(({ text, textColorClass }) => (
+const ChatterMessageBody = memo(({ text, textColorClass }: ChatterMessageBodyProps) => (
   <div className='pl-3 pr-2 py-2.5'>
     <p className={`text-xs leading-snug ${FONT_UI_CLASS} ${textColorClass}`}>
       {text}
@@ -137,7 +188,7 @@ ChatterMessageBody.propTypes = {
   textColorClass: PropTypes.string.isRequired
 }
 
-const ChatterMessageLifetimeBar = memo(({ barColorClass }) => (
+const ChatterMessageLifetimeBar = memo(({ barColorClass }: ChatterMessageLifetimeBarProps) => (
   <div className='h-[2px] w-full bg-ash-gray/10'>
     <motion.div
       className={`h-full ${barColorClass} opacity-40`}
@@ -156,7 +207,7 @@ ChatterMessageLifetimeBar.propTypes = {
   barColorClass: PropTypes.string.isRequired
 }
 
-const ChatterMessage = memo(({ msg, onRemove, t }) => {
+const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
   const messageScene = msg.scene
   const sceneStyle = useMemo(
     () => SCENE_STYLES[messageScene] || DEFAULT_STYLE,
@@ -245,7 +296,7 @@ ChatterMessage.propTypes = {
  * @param {object} props
  * @param {object} props.gameState - Read-only game state slice.
  */
-export const ChatterOverlay = memo(({ gameState }) => {
+export const ChatterOverlay = memo(({ gameState }: ChatterOverlayProps) => {
   const { t } = useTranslation(['chatter', 'ui'])
   const { messages, removeMessage } = useChatterLogic(gameState, t)
 
@@ -268,7 +319,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
       aria-live='polite'
     >
       <AnimatePresence mode='popLayout'>
-        {messages.map(msg => (
+        {messages.map((msg: ChatterMessageData) => (
           <ChatterMessage
             key={msg.id}
             msg={msg}

@@ -4,6 +4,72 @@ export type ActionType = ActionTypes[keyof ActionTypes]
 
 export type UnknownRecord = Record<string, unknown>
 
+export interface EventOption {
+  id?: string
+  text?: string
+  textKey?: string
+  effects?: UnknownRecord
+  [key: string]: unknown
+}
+
+export interface GameEvent {
+  id: string
+  category?: string
+  title?: string
+  titleKey?: string
+  description?: string
+  descriptionKey?: string
+  options?: EventOption[]
+  effects?: UnknownRecord
+  [key: string]: unknown
+}
+
+export interface Venue {
+  id: string
+  name: string
+  city?: string
+  region?: string
+  capacity?: number
+  difficulty?: number
+  reputation?: number
+  [key: string]: unknown
+}
+
+export interface CharacterProfile {
+  id: string
+  name?: string
+  role?: string
+  traits?: string[]
+  relationship?: number
+  [key: string]: unknown
+}
+
+export interface MapNode {
+  id: string
+  x: number
+  y: number
+  layer?: number
+  venueId?: string
+  neighbors?: string[]
+  [key: string]: unknown
+}
+
+export interface GameMap {
+  nodes: Record<string, MapNode>
+  edges?: Array<{ from: string; to: string }>
+  [key: string]: unknown
+}
+
+export interface MinigameState {
+  type?: string
+  isActive?: boolean
+  targetNodeId?: string | null
+  roadie?: UnknownRecord
+  amp?: UnknownRecord
+  travel?: UnknownRecord
+  [key: string]: unknown
+}
+
 export interface PlayerState {
   playerId: string | null
   playerName: string
@@ -172,12 +238,12 @@ export interface GameState {
   player: PlayerState
   band: BandState
   social: SocialState
-  gameMap: unknown
-  currentGig: UnknownRecord | null
+  gameMap: GameMap | UnknownRecord
+  currentGig: Venue | UnknownRecord | null
   setlist: unknown[]
   lastGigStats: UnknownRecord | null
-  activeEvent: UnknownRecord | null
-  pendingEvents: unknown[]
+  activeEvent: GameEvent | UnknownRecord | null
+  pendingEvents: GameEvent[]
   isScreenshotMode: boolean
   toasts: ToastPayload[]
   activeStoryFlags: string[]
@@ -186,9 +252,9 @@ export interface GameState {
   activeQuests: UnknownRecord[]
   reputationByRegion: Record<string, number>
   settings: UnknownRecord
-  npcs: Record<string, unknown>
+  npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers
-  minigame: UnknownRecord
+  minigame: MinigameState
   unlocks: string[]
 }
 
