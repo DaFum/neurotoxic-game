@@ -9,7 +9,7 @@ const SRC_DIR = 'src';
 function findWithGrep() {
   try {
     const out = execSync(
-      `grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -l "^// @ts-nocheck" ${SRC_DIR}`,
+      `grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" -l "^[[:space:]]*// @ts-nocheck" ${SRC_DIR}`,
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
     );
     return out.trim() ? out.trim().split('\n') : [];
@@ -22,7 +22,7 @@ function findWithGrep() {
 function findWithRg() {
   try {
     const out = execSync(
-      `rg -l "^// @ts-nocheck" ${SRC_DIR} --glob "*.{ts,tsx,js,jsx}"`,
+      `rg -l "^\\s*// @ts-nocheck" ${SRC_DIR} --glob "*.{ts,tsx,js,jsx}"`,
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
     );
     return out.trim() ? out.trim().split('\n') : [];
