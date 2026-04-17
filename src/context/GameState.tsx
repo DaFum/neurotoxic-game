@@ -1027,18 +1027,18 @@ export const useGameActions = () => {
 }
 
 /**
- * Hook to select a specific state slice.
+ * Hook to select a specific state slice with memoization.
  * This is the preferred state surface for new code.
- * Note: This hook does not provide memoized equality checks; selector output
- * is recomputed whenever context state updates.
+ * Note: Re-renders are still triggered by any context update; for deep
+ * equality-based bail-out, memoize the consuming component with React.memo.
  *
  * @template T
  * @param {(state: object) => T} selector - State selector.
  * @returns {T} Selected state slice.
  */
-export const useGameSelector = selector => {
+export const useGameSelector = <T>(selector: (state: object) => T): T => {
   const state = use(GameStateContext)
-  return selector(state)
+  return useMemo(() => selector(state), [state, selector])
 }
 
 /**

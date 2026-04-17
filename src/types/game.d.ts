@@ -98,6 +98,8 @@ export interface ToastPayload {
   id: string
   type: string
   message?: unknown
+  messageKey?: string
+  options?: Record<string, unknown>
   [key: string]: unknown
 }
 
