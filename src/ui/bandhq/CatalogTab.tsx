@@ -72,14 +72,18 @@ const balancesValidator = (props, propName, componentName) => {
     return new Error(`${componentName}: balances must be an object`)
   }
 
-  const keys = Object.keys(value)
-  if (keys.length === 0) {
-    return new Error(`${componentName}: balances must include at least one key`)
+  let hasKeys = false
+  for (const key in value) {
+    if (Object.hasOwn(value, key)) {
+      hasKeys = true
+      if (!Number.isFinite(value[key])) {
+        return new Error(`${componentName}: balances values must be finite numbers`)
+      }
+    }
   }
 
-  const hasInvalidNumber = keys.some(key => !Number.isFinite(value[key]))
-  if (hasInvalidNumber) {
-    return new Error(`${componentName}: balances values must be finite numbers`)
+  if (!hasKeys) {
+    return new Error(`${componentName}: balances must include at least one key`)
   }
 
   return null
