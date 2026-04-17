@@ -35,6 +35,7 @@
 ## Gotchas
 
 - `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
+- framer-motion, lucide-react, pixi.js, tone, and @tonejs/midi — these packages all include bundled TypeScript declarations and don't require stub files.
 - `lint-staged` now covers `*.{js,jsx,ts,tsx}` — all source files are auto-linted and formatted at commit time.
 - Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They return reactive state only.
 - `useArrivalLogic` owns ALL arrival routing (including PREGIG direct entry); `COMPLETE_TRAVEL_MINIGAME` does not change scene.
