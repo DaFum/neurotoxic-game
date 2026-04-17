@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import i18n from '../../src/i18n.js'
+import i18n from '../../src/i18n'
 
 test('i18n runtime configuration', () => {
   assert.ok(i18n, 'i18n instance should exist')

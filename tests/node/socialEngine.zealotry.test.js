@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import {
   calculateZealotryEffects,
   generateBrandOffers
-} from '../../src/utils/socialEngine.js'
+} from '../../src/utils/socialEngine'
 
 describe('calculateZealotryEffects', () => {
   it('should calculate passive income properly', () => {

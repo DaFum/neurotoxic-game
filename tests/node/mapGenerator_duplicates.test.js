@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { MapGenerator } from '../../src/utils/mapGenerator.js'
+import { MapGenerator } from '../../src/utils/mapGenerator'
 
 test('MapGenerator should not have duplicate venues (if possible)', () => {
   // Use fixed seed for deterministic test

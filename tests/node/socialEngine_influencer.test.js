@@ -1,8 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { resolvePost } from '../../src/utils/socialEngine.js'
-import { POST_OPTIONS } from '../../src/data/postOptions.js'
-import { SOCIAL_PLATFORMS } from '../../src/data/platforms.js'
+import { resolvePost } from '../../src/utils/socialEngine'
+import { POST_OPTIONS } from '../../src/data/postOptions'
+import { SOCIAL_PLATFORMS } from '../../src/data/platforms'
 
 const collabOption = POST_OPTIONS.find(o => o.id === 'collab_influencer')
 

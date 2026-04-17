@@ -22,7 +22,7 @@ const mockClient = {
   on: vi.fn()
 }
 
-vi.mock('../../lib/redis.js', () => ({
+vi.mock('../../lib/redis', () => ({
   default: mockClient
 }))
 
@@ -31,7 +31,7 @@ describe('Leaderboard API - Song', () => {
 
   beforeEach(async () => {
     // Import handler dynamically after mocking
-    const module = await import('../../api/leaderboard/song.js')
+    const module = await import('../../api/leaderboard/song')
     handler = module.default
 
     mockClient.isOpen = true

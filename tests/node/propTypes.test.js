@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import {
   AudioStatePropType,
   OnAudioChangePropType
-} from '../../src/ui/shared/propTypes.js'
+} from '../../src/ui/shared/propTypes'
 
 test('propTypes', async t => {
   await t.test('AudioStatePropType defines shape correctly', () => {

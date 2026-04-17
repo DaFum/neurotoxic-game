@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mocks
 const mockAudioEngine = {
@@ -27,19 +27,19 @@ const mockRhythmUtils = {
 }
 
 // Apply mocks
-mock.module('../../src/utils/audioEngine.js', { namedExports: mockAudioEngine })
-mock.module('../../src/utils/AudioManager.js', {
+mock.module('../../src/utils/audioEngine', { namedExports: mockAudioEngine })
+mock.module('../../src/utils/AudioManager', {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/gigStats.js', { namedExports: mockGigStats })
-mock.module('../../src/utils/audio/timingUtils.js', {
+mock.module('../../src/utils/gigStats', { namedExports: mockGigStats })
+mock.module('../../src/utils/audio/timingUtils', {
   namedExports: mockTimingUtils
 })
-mock.module('../../src/utils/rhythmUtils.js', { namedExports: mockRhythmUtils })
+mock.module('../../src/utils/rhythmUtils', { namedExports: mockRhythmUtils })
 
 // Import hook (must be after mocks)
 const { useRhythmGameScoring } =
-  await import('../../src/hooks/rhythmGame/useRhythmGameScoring.js')
+  await import('../../src/hooks/rhythmGame/useRhythmGameScoring')
 
 describe('useRhythmGameScoring Game Over', () => {
   beforeEach(() => {

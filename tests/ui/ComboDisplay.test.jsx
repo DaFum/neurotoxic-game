@@ -1,12 +1,17 @@
 import { render, screen } from '@testing-library/react'
-import { expect, test } from 'vitest'
-import { ComboDisplay } from '../../src/components/hud/ComboDisplay.jsx'
+import { expect, test, vi } from 'vitest'
+import { ComboDisplay } from '../../src/components/hud/ComboDisplay.tsx'
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: key => key }),
+  initReactI18next: { type: '3rdParty', init: () => {} }
+}))
 
 test('ComboDisplay renders zero combo', () => {
   render(<ComboDisplay combo={0} accuracy={100} />)
   expect(screen.getByText('0x')).toBeInTheDocument()
   expect(screen.getByText('0x').className).toContain('text-ash-gray/50')
-  expect(screen.queryByText('LOW ACC')).not.toBeInTheDocument()
+  expect(screen.queryByText('ui:gig.lowAcc')).not.toBeInTheDocument()
 })
 
 test('ComboDisplay renders low combo', () => {
@@ -39,13 +44,13 @@ test('ComboDisplay boundary tests around 50', () => {
   expect(screen.getByText('51x').className).toContain('animate-pulse')
 })
 
-test('ComboDisplay LOW ACC threshold boundary tests around 70', () => {
+test('ComboDisplay ui:gig.lowAcc threshold boundary tests around 70', () => {
   const { rerender } = render(<ComboDisplay combo={10} accuracy={71} />)
-  expect(screen.queryByText('LOW ACC')).not.toBeInTheDocument()
+  expect(screen.queryByText('ui:gig.lowAcc')).not.toBeInTheDocument()
 
   rerender(<ComboDisplay combo={10} accuracy={70} />)
-  expect(screen.queryByText('LOW ACC')).not.toBeInTheDocument()
+  expect(screen.queryByText('ui:gig.lowAcc')).not.toBeInTheDocument()
 
   rerender(<ComboDisplay combo={10} accuracy={69} />)
-  expect(screen.getByText('LOW ACC')).toBeInTheDocument()
+  expect(screen.getByText('ui:gig.lowAcc')).toBeInTheDocument()
 })

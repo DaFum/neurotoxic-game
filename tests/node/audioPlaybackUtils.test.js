@@ -7,7 +7,7 @@ import {
   resolveAssetUrl,
   getBaseAssetPath,
   __resetBaseAssetPathCache
-} from '../../src/utils/audio/playbackUtils.js'
+} from '../../src/utils/audio/playbackUtils'
 
 test('getBaseAssetPath and __resetBaseAssetPathCache', async t => {
   // Save original import.meta for restoring later if present

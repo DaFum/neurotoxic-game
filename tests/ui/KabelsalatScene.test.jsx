@@ -47,12 +47,12 @@ vi.mock('../../src/context/GameState', () => ({
   }))
 }))
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock://bg',
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
 }))
 
-vi.mock('../../src/components/stage/utils.js', async importOriginal => {
+vi.mock('../../src/components/stage/utils', async importOriginal => {
   const original = await importOriginal()
   return {
     ...original,

@@ -5,7 +5,7 @@ import {
   resetSecureRandomBatchForTesting,
   getSafeRandom,
   getSafeUUID
-} from '../../src/utils/crypto.js'
+} from '../../src/utils/crypto'
 
 describe('secureRandom', () => {
   let originalCryptoDescriptor

@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
-import { createInitialState } from '../../src/context/initialState.js'
+import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
+import { createInitialState } from '../../src/context/initialState'
 
 describe('Crisis Management Integration', () => {
   describe('Gap A: Regional Reputation Penalty on Poor Performance', () => {

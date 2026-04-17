@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import { createMockTone } from '../mockUtils.js'
+import { createMockTone } from '../mockUtils'
 
 // Mock Tone.js
 const mockTone = createMockTone()
@@ -13,7 +13,7 @@ const mockLogger = {
   error: mock.fn(),
   info: mock.fn()
 }
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: { logger: mockLogger }
 })
 
@@ -29,7 +29,7 @@ const mockAudioState = {
 }
 const mockResetGigState = mock.fn()
 
-mock.module('../../src/utils/audio/state.js', {
+mock.module('../../src/utils/audio/state', {
   namedExports: {
     audioState: mockAudioState,
     resetGigState: mockResetGigState
@@ -44,7 +44,7 @@ const {
   cleanupGigPlayback,
   cleanupAmbientPlayback,
   cleanupTransportEvents
-} = await import('../../src/utils/audio/cleanupUtils.js')
+} = await import('../../src/utils/audio/cleanupUtils')
 
 test('clearTransportEvent', async t => {
   t.beforeEach(() => {

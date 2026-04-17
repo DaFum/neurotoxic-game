@@ -7,8 +7,8 @@ const getRandomChatterMock = vi.hoisted(() =>
   vi.fn(() => ({ text: 'Test chatter', speaker: 'Test Speaker' }))
 )
 
-vi.mock('../../src/data/chatter.js', async () => {
-  const { GAME_PHASES } = await import('../../src/context/gameConstants.js')
+vi.mock('../../src/data/chatter', async () => {
+  const { GAME_PHASES } = await import('../../src/context/gameConstants')
   return {
     getRandomChatter: getRandomChatterMock,
     CHATTER_DB: [],
@@ -26,7 +26,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
   // Dynamic import to apply mock
   const { ChatterOverlay } =
-    await import('../../src/components/ChatterOverlay.jsx')
+    await import('../../src/components/ChatterOverlay.tsx')
 
   const gameState = {
     currentScene: GAME_PHASES.GIG,

@@ -8,7 +8,7 @@ const getGenImageUrlMock = vi.fn(
   prompt => `mocked-url-${prompt ? prompt.substring(0, 10) : 'none'}`
 )
 
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: getGenImageUrlMock,
   IMG_PROMPTS: {
     VENUE_CLUB: 'club',
@@ -108,7 +108,7 @@ vi.mock('../../src/hooks/useGigInput', () => ({
   useGigInput: () => mockUseGigInput
 }))
 // Import Gig after mocking
-const { Gig } = await import('../../src/scenes/Gig.jsx')
+const { Gig } = await import('../../src/scenes/Gig.tsx')
 
 describe('Gig Optimization', () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ActionTypes } from '../../src/context/actionTypes.js'
+import { ActionTypes } from '../../src/context/actionTypes'
 
 describe('ActionTypes', () => {
   it('contains expected action strings', () => {

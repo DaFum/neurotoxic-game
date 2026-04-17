@@ -1,7 +1,7 @@
 import {
   calculateTimeFromTicks,
   preprocessTempoMap
-} from '../../src/utils/rhythmUtils.js'
+} from '../../src/utils/rhythmUtils'
 import { performance } from 'node:perf_hooks'
 
 // Simulate a large tempo map (e.g., 500 changes)

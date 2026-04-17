@@ -1,0 +1,6 @@
+{
+  "max": 0,
+  "baselineDate": "2026-04-16",
+  "scope": "src/**/*.{ts,tsx,js,jsx}",
+  "note": "Migration complete. Budget is 0 — no @ts-nocheck allowed in src."
+}

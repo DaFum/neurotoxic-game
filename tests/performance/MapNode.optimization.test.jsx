@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'vitest'
 
 import { render, cleanup } from '@testing-library/react'
 
-import { MapNode } from '../../src/components/MapNode.jsx'
+import { MapNode } from '../../src/components/MapNode.tsx'
 
 describe('MapNode Optimization', () => {
   afterEach(() => {

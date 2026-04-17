@@ -8,7 +8,7 @@ const GlitchButton = ({ children, onClick }) => (
     {children}
   </button>
 )
-vi.mock('../../src/ui/GlitchButton.jsx', () => ({ GlitchButton }))
+vi.mock('../../src/ui/GlitchButton.tsx', () => ({ GlitchButton }))
 
 let originalEnv
 
@@ -38,7 +38,7 @@ const DeeplyNestedThrower = () => {
 test('CrashHandler catches error from deeply nested component and displays fallback UI', async () => {
   const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  const { ErrorBoundary } = await import('../../src/ui/CrashHandler.jsx')
+  const { ErrorBoundary } = await import('../../src/ui/CrashHandler.tsx')
 
   const { getByText } = render(
     <ErrorBoundary>
@@ -60,7 +60,7 @@ test('CrashHandler exposes stack trace in DEV mode', async () => {
 
   vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  const { ErrorBoundary } = await import('../../src/ui/CrashHandler.jsx')
+  const { ErrorBoundary } = await import('../../src/ui/CrashHandler.tsx')
 
   const { getByText, container } = render(
     <ErrorBoundary>
@@ -81,7 +81,7 @@ test('CrashHandler HIDES stack trace in PROD mode', async () => {
 
   vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  const { ErrorBoundary } = await import('../../src/ui/CrashHandler.jsx')
+  const { ErrorBoundary } = await import('../../src/ui/CrashHandler.tsx')
 
   const { getByText, queryByText, container } = render(
     <ErrorBoundary>

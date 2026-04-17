@@ -138,14 +138,14 @@ test('i18next-parser.config.js defines lexers', async () => {
   assert.ok(config.lexers, 'lexers should be defined')
   assert.equal(typeof config.lexers, 'object', 'lexers should be an object')
   assert.ok(Array.isArray(config.lexers.js), 'lexers.js should be an array')
-  assert.ok(Array.isArray(config.lexers.jsx), 'lexers.jsx should be an array')
+  assert.ok(Array.isArray(config.lexers.tsx), 'lexers.tsx should be an array')
   assert.ok(
     config.lexers.js.includes('JavascriptLexer'),
     'lexers.js should include JavascriptLexer'
   )
   assert.ok(
-    config.lexers.jsx.includes('JsxLexer'),
-    'lexers.jsx should include JsxLexer'
+    config.lexers.tsx.includes('JsxLexer'),
+    'lexers.tsx should include JsxLexer'
   )
 })
 

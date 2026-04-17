@@ -4,6 +4,19 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 vi.mock('../../src/context/GameState', () => ({
+  useGameSelector: selector =>
+    selector({
+      toasts: [
+        { id: 1, type: 'success', message: 'Saved' },
+        { id: 2, type: 'warning', message: 'Low harmony' },
+        { id: 3, type: 'error', message: 'Crash' },
+        { id: 4, type: 'info', message: 'Traveling' },
+        { id: 5, type: 'info', message: 'ui:test.key|{invalid:json}' }
+      ]
+    }),
+  useGameActions: () => ({
+    removeToast: vi.fn()
+  }),
   useGameState: () => ({
     toasts: [
       { id: 1, type: 'success', message: 'Saved' },
@@ -19,12 +32,12 @@ const mockLogger = {
   error: vi.fn()
 }
 
-vi.mock('../../src/utils/logger.js', () => ({
+vi.mock('../../src/utils/logger', () => ({
   logger: mockLogger,
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
 
-const { ToastOverlay } = await import('../../src/ui/ToastOverlay.jsx')
+const { ToastOverlay } = await import('../../src/ui/ToastOverlay.tsx')
 
 test('ToastOverlay renders all taxonomy variants with themed classes', () => {
   const html = renderToStaticMarkup(React.createElement(ToastOverlay))

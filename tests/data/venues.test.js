@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'vitest'
-import { ALL_VENUES } from '../../src/data/venues.js'
+import { ALL_VENUES } from '../../src/data/venues'
 
 test('ALL_VENUES data integrity', () => {
   assert.ok(Array.isArray(ALL_VENUES), 'ALL_VENUES should be an array')

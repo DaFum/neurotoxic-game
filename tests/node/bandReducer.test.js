@@ -5,7 +5,7 @@ import {
   handleUpdateBand,
   handleConsumeItem,
   handleUnlockTrait
-} from '../../src/context/reducers/bandReducer.js'
+} from '../../src/context/reducers/bandReducer'
 
 describe('bandReducer', () => {
   let baseState

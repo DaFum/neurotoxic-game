@@ -4,7 +4,7 @@ import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats,
   calculateAccuracy
-} from '../../src/utils/gigStats.js'
+} from '../../src/utils/gigStats'
 
 test('calculateAccuracy computes correct percentages', () => {
   assert.equal(calculateAccuracy(0, 0), 100)

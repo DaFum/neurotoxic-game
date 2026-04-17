@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { SPECIAL_EVENTS } from '../../../src/data/events/special.js'
+import { SPECIAL_EVENTS } from '../../../src/data/events/special'
 
 describe('SPECIAL_EVENTS data module', () => {
   it('should be an array of special events', () => {

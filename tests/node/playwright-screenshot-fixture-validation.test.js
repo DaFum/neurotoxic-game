@@ -11,10 +11,10 @@ import { test, describe } from 'node:test'
 import { ok, strictEqual } from 'node:assert'
 
 // Import the actual initialState for comparison
-import { initialState } from '../../src/context/initialState.js'
+import { initialState } from '../../src/context/initialState'
 
 // Import BASE_STATE directly — ensures fixture shape stays in sync with game state
-import { BASE_STATE } from '../../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
+import { BASE_STATE } from '../../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject'
 
 describe('Playwright Screenshot Fixtures', () => {
   test('BASE_STATE contains all required top-level fields from initialState', () => {

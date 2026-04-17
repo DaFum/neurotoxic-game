@@ -5,9 +5,9 @@ import {
   handleCompleteQuest,
   handleAdvanceQuest,
   handleFailQuests
-} from '../../src/context/reducers/questReducer.js'
-import { ActionTypes } from '../../src/context/actionTypes.js'
-import { gameReducer } from '../../src/context/gameReducer.js'
+} from '../../src/context/reducers/questReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
+import { gameReducer } from '../../src/context/gameReducer'
 
 test('questReducer - handleAddQuest', async t => {
   await t.test('adds a new quest when none exists', () => {
@@ -68,7 +68,8 @@ test('questReducer - handleAdvanceQuest & Completion', async t => {
       assert.equal(nextState.activeQuests.length, 0)
       // Toast should be generated
       assert.equal(nextState.toasts.length, 1)
-      assert.ok(nextState.toasts[0].message.includes('Q1'))
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete')
+      assert.equal(nextState.toasts[0].options.name, 'Q1')
     }
   )
 
@@ -99,8 +100,9 @@ test('questReducer - Rewards Logic', async t => {
     const nextState = handleCompleteQuest(initialState, { questId: 'q_money' })
 
     assert.equal(nextState.player.money, 600)
-    assert.ok(
-      nextState.toasts[0].message.includes('ui:toast.quest_complete_money')
+    assert.equal(
+      nextState.toasts[0].messageKey,
+      'ui:toast.quest_complete_money'
     )
   })
 
@@ -121,9 +123,7 @@ test('questReducer - Rewards Logic', async t => {
     assert.equal(nextState.player.fame, 200)
     // Fame level: floor(200 / 100) = 2
     assert.equal(nextState.player.fameLevel, 2)
-    assert.ok(
-      nextState.toasts[0].message.includes('ui:toast.quest_complete_fame')
-    )
+    assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_fame')
   })
 
   await t.test('grants item reward on complete', () => {
@@ -141,9 +141,7 @@ test('questReducer - Rewards Logic', async t => {
     const nextState = handleCompleteQuest(initialState, { questId: 'q_item' })
 
     assert.equal(nextState.band.inventory.lucky_pick, true)
-    assert.ok(
-      nextState.toasts[0].message.includes('ui:toast.quest_complete_item')
-    )
+    assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_complete_item')
   })
 
   await t.test('grants skill point reward to a random member', () => {
@@ -170,8 +168,9 @@ test('questReducer - Rewards Logic', async t => {
       0
     )
     assert.equal(totalSkill, 21, 'One member should have gained +1 skill')
-    assert.ok(
-      nextState.toasts[0].message.includes('ui:toast.quest_complete_skill')
+    assert.equal(
+      nextState.toasts[0].messageKey,
+      'ui:toast.quest_complete_skill'
     )
   })
 
@@ -192,8 +191,9 @@ test('questReducer - Rewards Logic', async t => {
     })
 
     assert.equal(nextState.band.harmony, 100)
-    assert.ok(
-      nextState.toasts[0].message.includes('ui:toast.quest_complete_harmony')
+    assert.equal(
+      nextState.toasts[0].messageKey,
+      'ui:toast.quest_complete_harmony'
     )
   })
 })
@@ -239,7 +239,7 @@ test('questReducer - handleFailQuests', async t => {
       assert.equal(nextState.social.controversyLevel, 20)
       assert.equal(nextState.band.harmony, 40)
       assert.equal(nextState.toasts.length, 1)
-      assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_failed'))
+      assert.equal(nextState.toasts[0].messageKey, 'ui:toast.quest_failed')
     }
   )
 })

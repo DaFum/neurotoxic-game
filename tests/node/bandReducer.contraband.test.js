@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import {
   handleAddContraband,
   handleUseContraband
-} from '../../src/context/reducers/bandReducer.js'
-import { DEFAULT_BAND_STATE } from '../../src/context/initialState.js'
+} from '../../src/context/reducers/bandReducer'
+import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 
 describe('bandReducer - Contraband', () => {
   describe('handleAddContraband', () => {

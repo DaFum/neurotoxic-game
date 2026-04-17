@@ -1,31 +1,49 @@
-# Fast Feedback CI/CD Test Changes
+# Fast Feedback CI/Test Setup (Current State)
 
-## 1. Faster Standard Vitest Execution
-* Removed `tests/performance/**/*.test.js` and `tests/performance/**/*.spec.js` from the default `test:ui` target in `vitest.config.js`.
+This document reflects the **actual** workflow and script split in the repository as of **2026-04-16**.
 
-## 2. Test Targets Added to `package.json`
-* `test:fast` - Runs regular Node and UI tests without performance/long tests.
-* `test:perf` - Runs only performance tests via Vitest.
-* `test:locale:smoke` - Runs quick structural checks for language locales.
-* `test:locale:full` - Runs full logic and validation checks on translated text.
-* `test:e2e:shard1` & `test:e2e:shard2` - Runs Playwright tests with sharding.
+## 1) Test split and script ownership
 
-## 3. Locale Tests Refactored
-* Extracted generic locale file parsing to `tests/utils/localeTestUtils.js` to enable caching of large JSON structures in memory across tests.
-* Separated basic logic validation into `tests/locale/smoke.test.js` to provide immediate PR feedback on translations.
-* Moved deep comparison and formatting tests into `tests/locale/full.test.js` to ensure the release pipeline is rigorous.
+- `pnpm run test` invokes the node:test-owned suites through `scripts/run-tests.mjs`.
+- `pnpm run test:ui` executes Vitest-owned suites via `scripts/run-vitest-ui.mjs`.
+- `pnpm run test:vitest:logic` uses Vitest with `vitest.config.node.js` for logic suites that still live on Vitest rather than node:test.
+- `pnpm run test:vitest:node` remains a backward-compatible alias for `test:vitest:logic`.
 
-## 4. `GigIntegration.test.jsx` Refactored
-* Refactored the massive Tone.js mock object in `tests/GigIntegration.test.jsx` into a compact shared `MockAudioNode` class using `vi.hoisted()`.
+## 2) Fast-feedback CI workflow
 
-## 5. Playwright Optimizations
-* `fullyParallel` is automatically enabled on CI for concurrent test files.
-* Test runners scale to 2 workers natively on CI platforms instead of 1.
-* Tracing is set to `on-first-retry` rather than `retain-on-failure` to lower test execution memory and space constraints.
-* The `blob` reporter is enabled during CI execution to assist in cross-container trace collection.
-* E2E tests are configured to use native Playwright sharding using the `test:e2e:shard1` and `test:e2e:shard2` commands.
+The current CI workflow file is:
 
-## 6. GitHub Actions Enhancements
-* Refactored `.github/workflows/test.yml` into logical, decoupled test execution steps with `pnpm` caching utilized cleanly.
-* Parallelized Locale Smoke and Playwright execution with Vitest and Node tests to accelerate pipeline resolution.
-* Included the Blob report output from Playwright shards for debugging.
+- `.github/workflows/test.yml`
+
+It runs jobs in parallel for:
+
+- node:test suites (`pnpm test`)
+- Vitest suites (`pnpm test:ui`)
+- locale smoke checks (`pnpm test:locale:smoke`)
+- locale full checks (`pnpm test:locale:full`)
+
+## 3) Lint/format preview workflow
+
+The current lint preview workflow is:
+
+- `.github/workflows/lint-fix-preview.yml`
+
+It calls `scripts/lint-fix-preview.sh`, which now uses pnpm-compatible commands (`pnpm run`, `pnpm exec`) end-to-end.
+
+## 4) Playwright and E2E
+
+E2E scripts stay split for optional sharding:
+
+- `pnpm run test:e2e`
+- `pnpm run test:e2e:shard1`
+- `pnpm run test:e2e:shard2`
+
+## 5) Why this split exists
+
+- Keeps quick feedback for core logic/UI tests.
+- Preserves heavier/perf/e2e checks for targeted or broader validation stages.
+- Avoids mixing runner assumptions (node:test vs Vitest) inside one command path.
+
+## 6) Incremental type-check gate
+
+- `pnpm run typecheck:core` runs strict `checkJs` only for selected high-risk domains via `jsconfig.checkjs.json`.

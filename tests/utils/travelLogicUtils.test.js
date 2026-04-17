@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test, describe } from 'vitest'
-import { getTravelArrivalUpdates } from '../../src/utils/travelLogicUtils.js'
+import { getTravelArrivalUpdates } from '../../src/utils/travelLogicUtils'
 
 describe('travelLogicUtils', () => {
   describe('getTravelArrivalUpdates', () => {

@@ -1,0 +1,14 @@
+{
+  "extends": "./jsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": [
+    "src/context/**/*",
+    "src/hooks/rhythmGame/**/*",
+    "src/utils/audio/**/*",
+    "src/ui/bandhq/**/*"
+  ]
+}

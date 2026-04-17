@@ -57,13 +57,13 @@ mock.module('pixi.js', {
 
 // Mock other dependencies
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler.js', {
+mock.module('../../src/utils/errorHandler', {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/crypto.js', {
+mock.module('../../src/utils/crypto', {
   namedExports: {
     secureRandom: mock.fn(() => 0.5)
   }
@@ -83,8 +83,7 @@ describe('NoteSpritePool', () => {
     const pixiModule = await import('pixi.js')
     PIXI = pixiModule
 
-    const poolModule =
-      await import('../../src/components/stage/NoteSpritePool.js')
+    const poolModule = await import('../../src/components/stage/NoteSpritePool')
     NoteSpritePool = poolModule.NoteSpritePool
 
     container = new PIXI.Container()
@@ -302,7 +301,7 @@ describe('NoteSpritePool', () => {
 
   test('reports rng error exactly once per pool instance', async () => {
     mockHandleError.mock.resetCalls()
-    const cryptoModule = await import('../../src/utils/crypto.js')
+    const cryptoModule = await import('../../src/utils/crypto')
 
     // Break secureRandom to throw an error
     cryptoModule.secureRandom.mock.mockImplementation(() => {

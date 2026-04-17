@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateGigPhysics } from '../../src/utils/simulationUtils.js'
+import { calculateGigPhysics } from '../../src/utils/simulationUtils'
 
 describe('calculateGigPhysics - Character Traits', () => {
   const baseMember = {

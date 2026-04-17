@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import { createMockTone } from '../mockUtils.js'
+import { createMockTone } from '../mockUtils'
 
 const mockTone = createMockTone()
 
@@ -38,7 +38,7 @@ global.fetch = mock.fn(async _url => {
 })
 
 const { loadAudioBuffer, disposeAudio } =
-  await import('../../src/utils/audioEngine.js')
+  await import('../../src/utils/audioEngine')
 
 test('audioBufferCache optimization', async t => {
   t.after(() => {

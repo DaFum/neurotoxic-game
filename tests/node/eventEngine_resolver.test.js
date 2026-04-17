@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { resolveEventChoice } from '../../src/utils/eventEngine.js'
+import { resolveEventChoice } from '../../src/utils/eventEngine'
 
 const buildState = () => ({
   player: {

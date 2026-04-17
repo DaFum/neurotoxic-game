@@ -5,8 +5,8 @@ import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
   handlePirateBroadcast
-} from '../../src/context/reducers/socialReducer.js'
-import { ALLOWED_TRENDS } from '../../src/data/socialTrends.js'
+} from '../../src/context/reducers/socialReducer'
+import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
 
 describe('socialReducer', () => {
   let baseState
@@ -141,7 +141,7 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.loyalty, 10) // unchanged
       assert.ok(
         nextState.toasts.some(
-          t => t.type === 'error' && t.message.includes('ui:toast.blacklisted')
+          t => t.type === 'error' && t.messageKey === 'ui:toast.blacklisted'
         )
       )
     })
@@ -157,7 +157,7 @@ describe('socialReducer', () => {
       assert.strictEqual(nextState.social.loyalty, 15) // 30 - 15
       assert.ok(
         nextState.toasts.some(
-          t => t.type === 'info' && t.message === 'ui:toast.fans_defended'
+          t => t.type === 'info' && t.messageKey === 'ui:toast.fans_defended'
         )
       )
     })
@@ -263,7 +263,7 @@ describe('socialReducer', () => {
       })
 
       const toast = nextState.toasts.find(t => t.type === 'error')
-      assert.ok(toast.message.includes('venues:club_berlin.name'))
+      assert.strictEqual(toast.options.venueLabel, 'venues:club_berlin.name')
     })
   })
 

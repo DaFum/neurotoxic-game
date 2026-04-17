@@ -6,7 +6,27 @@ import { render, cleanup } from '@testing-library/react'
 // Mock react-i18next
 
 // Mock hooks
-vi.mock('../../src/context/GameState.jsx', () => ({
+vi.mock('../../src/context/GameState.tsx', () => ({
+  useGameSelector: selector =>
+    selector({
+      player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
+      band: { members: [] },
+      social: { instagram: 0, tiktok: 0 },
+      settings: {},
+      setlist: [],
+      activeQuests: [],
+      venueBlacklist: [],
+      reputationByRegion: {}
+    }),
+  useGameActions: () => ({
+    updatePlayer: () => {},
+    updateBand: () => {},
+    tradeVoidItem: () => {},
+    addToast: () => {},
+    updateSettings: () => {},
+    deleteSave: () => {},
+    setSetlist: () => {}
+  }),
   useGameState: () => ({
     player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
     band: { members: [] },
@@ -25,7 +45,7 @@ vi.mock('../../src/context/GameState.jsx', () => ({
   })
 }))
 
-vi.mock('../../src/hooks/useAudioControl.js', () => ({
+vi.mock('../../src/hooks/useAudioControl', () => ({
   useAudioControl: () => ({
     audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
     handleAudioChange: {
@@ -37,20 +57,20 @@ vi.mock('../../src/hooks/useAudioControl.js', () => ({
 }))
 
 // Mock dependencies
-vi.mock('../../src/data/hqItems.js', () => ({
+vi.mock('../../src/data/hqItems', () => ({
   HQ_ITEMS: { gear: [], instruments: [] }
 }))
-vi.mock('../../src/data/upgradeCatalog.js', () => ({
+vi.mock('../../src/data/upgradeCatalog', () => ({
   getUnifiedUpgradeCatalog: () => []
 }))
-vi.mock('../../src/data/songs.js', () => ({
+vi.mock('../../src/data/songs', () => ({
   SONGS_DB: []
 }))
-vi.mock('../../src/utils/imageGen.js', () => ({
+vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
 }))
-vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic.js', () => ({
+vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
   usePurchaseLogic: () => ({
     handleBuy: () => {},
     isItemOwned: () => false,
@@ -59,7 +79,7 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic.js', () => ({
   }),
   getPrimaryEffect: () => ({})
 }))
-vi.mock('../../src/ui/shared/index.jsx', () => ({
+vi.mock('../../src/ui/shared/index.tsx', () => ({
   StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
   ProgressBar: () =>
     React.createElement('div', { 'data-testid': 'progress-bar' }),
@@ -86,7 +106,7 @@ describe('BandHQ', () => {
   beforeAll(async () => {
     //  removed (handled by vitest env)
     // Dynamic import
-    const module = await import('../../src/ui/BandHQ.jsx')
+    const module = await import('../../src/ui/BandHQ.tsx')
     BandHQ = module.BandHQ
   })
 

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi } from 'vitest'
-import { UpgradesTab } from '../../src/ui/bandhq/UpgradesTab.jsx'
+import { UpgradesTab } from '../../src/ui/bandhq/UpgradesTab.tsx'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -59,8 +59,8 @@ describe('UpgradesTab', () => {
     )
     expect(screen.getByText(/500★/)).toBeInTheDocument()
     expect(screen.getByText(/1000€/)).toBeInTheDocument()
-    expect(screen.getByText(/FAME:/)).toBeInTheDocument()
-    expect(screen.getByText(/MONEY:/)).toBeInTheDocument()
+    expect(screen.getByText(/ui:bandhq\.fame/)).toBeInTheDocument()
+    expect(screen.getByText(/ui:bandhq\.money/)).toBeInTheDocument()
   })
 
   test('renders shop items', () => {

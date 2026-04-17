@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict'
 import { test, mock, describe } from 'node:test'
-import { handleNodeArrival } from '../../src/utils/arrivalUtils.js'
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
-import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils.js'
+import {
+  handleNodeArrival,
+  processTravelEvents
+} from '../../src/utils/arrivalUtils'
+import { GAME_PHASES } from '../../src/context/gameConstants'
+import { BALANCE_CONSTANTS } from '../../src/utils/gameStateUtils'
 
 describe('handleNodeArrival', () => {
   const getMocks = () => ({
@@ -222,5 +225,53 @@ describe('handleNodeArrival', () => {
     assert.ok(
       mocks.addToast.mock.calls[0].arguments[0].includes('Failed to load song')
     )
+  })
+})
+
+describe('processTravelEvents', () => {
+  test('returns false and does not trigger events for gig nodes', () => {
+    const triggerEvent = mock.fn(() => true)
+    const node = { type: 'GIG' }
+
+    const result = processTravelEvents(node, triggerEvent)
+
+    assert.strictEqual(result, false)
+    assert.strictEqual(triggerEvent.mock.calls.length, 0)
+  })
+
+  test('triggers transport first and short-circuits when active', () => {
+    const triggerEvent = mock.fn((category, tag) => {
+      assert.strictEqual(category, 'transport')
+      assert.strictEqual(tag, 'travel')
+      return true
+    })
+
+    const result = processTravelEvents({ type: 'REST_STOP' }, triggerEvent)
+
+    assert.strictEqual(result, true)
+    assert.strictEqual(triggerEvent.mock.calls.length, 1)
+  })
+
+  test('falls back to band travel event when transport does not activate', () => {
+    const triggerEvent = mock.fn((category, tag) => {
+      assert.strictEqual(tag, 'travel')
+      return category === 'band'
+    })
+
+    const result = processTravelEvents({ type: 'SPECIAL' }, triggerEvent)
+
+    assert.strictEqual(result, true)
+    assert.strictEqual(triggerEvent.mock.calls.length, 2)
+    assert.strictEqual(triggerEvent.mock.calls[0].arguments[0], 'transport')
+    assert.strictEqual(triggerEvent.mock.calls[1].arguments[0], 'band')
+  })
+
+  test('handles undefined node using non-gig fallback behavior', () => {
+    const triggerEvent = mock.fn(() => false)
+
+    const result = processTravelEvents(undefined, triggerEvent)
+
+    assert.strictEqual(result, false)
+    assert.strictEqual(triggerEvent.mock.calls.length, 2)
   })
 })

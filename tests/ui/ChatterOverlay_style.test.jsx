@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // Mock data to prevent network or other issues
-vi.mock('../../src/data/chatter.js', () => ({
+vi.mock('../../src/data/chatter', () => ({
   getRandomChatter: () => null,
   CHATTER_DB: [],
   ALLOWED_DEFAULT_SCENES: ['GIG']
@@ -13,7 +13,7 @@ test('ChatterOverlay renders with correct z-index style', async () => {
   // Use a dynamic import to ensure mocks are applied if needed (though here we mock before import anyway)
   // But for consistency with existing tests:
   const { ChatterOverlay } =
-    await import('../../src/components/ChatterOverlay.jsx')
+    await import('../../src/components/ChatterOverlay.tsx')
 
   const gameState = {
     currentScene: GAME_PHASES.GIG,

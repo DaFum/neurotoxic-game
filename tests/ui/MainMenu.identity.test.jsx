@@ -27,7 +27,7 @@ vi.mock('../../src/utils/AudioManager', () => ({
   }
 }))
 
-vi.mock('../../src/utils/errorHandler.js', () => ({
+vi.mock('../../src/utils/errorHandler', () => ({
   safeStorageOperation: vi.fn((op, fn, fallback = null) => {
     try {
       return fn()

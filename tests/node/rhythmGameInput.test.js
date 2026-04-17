@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { test } from 'node:test'
-import { checkHit } from '../../src/utils/rhythmUtils.js'
+import { checkHit } from '../../src/utils/rhythmUtils'
 
 test('checkHit finds matching note within window', () => {
   const notes = [

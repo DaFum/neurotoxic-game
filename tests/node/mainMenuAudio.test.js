@@ -3,12 +3,12 @@ import { afterEach, beforeEach, before, after, test, mock } from 'node:test'
 import React from 'react'
 import { cleanup, render, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   mockAudioManager,
   createMockGameState,
   setupMainMenuAudioTest
-} from '../mainMenuAudioTestUtils.js'
+} from '../mainMenuAudioTestUtils'
 
 const { MainMenu, mockUseGameState } = await setupMainMenuAudioTest()
 

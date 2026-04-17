@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import { QUEST_EVENTS } from '../../src/data/events/quests.js'
+import { QUEST_EVENTS } from '../../src/data/events/quests'
 
 describe('QUEST_EVENTS', () => {
   test('all quest events have required fields', () => {

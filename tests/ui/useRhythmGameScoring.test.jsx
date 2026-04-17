@@ -1,6 +1,6 @@
 import { describe, it as test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock Dependencies
 const mockAudioEngine = {
@@ -32,15 +32,15 @@ const mockRhythmUtils = {
   generateLanes: vi.fn()
 }
 
-vi.mock('../../src/utils/AudioManager.js', () => ({
+vi.mock('../../src/utils/AudioManager', () => ({
   audioManager: mockAudioEngine
 }))
-vi.mock('../../src/utils/audioEngine.js', () => mockAudioEngine)
-vi.mock('../../src/utils/audio/timingUtils.js', () => mockAudioEngine)
+vi.mock('../../src/utils/audioEngine', () => mockAudioEngine)
+vi.mock('../../src/utils/audio/timingUtils', () => mockAudioEngine)
 
-vi.mock('../../src/utils/gigStats.js', () => mockGigStats)
+vi.mock('../../src/utils/gigStats', () => mockGigStats)
 
-vi.mock('../../src/utils/rhythmUtils.js', () => mockRhythmUtils)
+vi.mock('../../src/utils/rhythmUtils', () => mockRhythmUtils)
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({ t: k => k })
@@ -54,7 +54,7 @@ vi.mock('tone', () => ({
 
 const setupRhythmGameScoringTest = async () => {
   const { useRhythmGameScoring } =
-    await import('../../src/hooks/rhythmGame/useRhythmGameScoring.js')
+    await import('../../src/hooks/rhythmGame/useRhythmGameScoring')
   return { useRhythmGameScoring }
 }
 

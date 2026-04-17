@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import { MockGain, createMockTone } from '../mockUtils.js'
+import { MockGain, createMockTone } from '../mockUtils'
 
 // Mock Tone.js
 const mockTone = createMockTone()
@@ -14,24 +14,24 @@ const mockCleanup = {
   cleanupAmbientPlayback: mock.fn(),
   cleanupTransportEvents: mock.fn()
 }
-mock.module('../../src/utils/audio/cleanupUtils.js', {
+mock.module('../../src/utils/audio/cleanupUtils', {
   namedExports: mockCleanup
 })
 
 // Import SUT
 // We use dynamic import to ensure mocks are applied before module load
 const { setupAudio, disposeAudio, ensureAudioContext } =
-  await import('../../src/utils/audioEngine.js')
-const { audioState } = await import('../../src/utils/audio/state.js')
+  await import('../../src/utils/audioEngine')
+const { audioState } = await import('../../src/utils/audio/state')
 
-import { importAudioEngine } from '../audioTestUtils.js'
+import { importAudioEngine } from '../audioTestUtils'
 
 const { skipIfImportFailed } = await importAudioEngine()
 
 test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t => {
   if (skipIfImportFailed(t)) return
 
-  const setupModule = await import('../../src/utils/audio/context.js')
+  const setupModule = await import('../../src/utils/audio/context')
   const { getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec } =
     setupModule
 
@@ -45,7 +45,7 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
       assert.strictEqual(rawContext, mockTone.getContext().rawContext)
 
       // Ensure that getRawAudioContext is correctly exported from the main hub
-      const audioEngineModule = await import('../../src/utils/audioEngine.js')
+      const audioEngineModule = await import('../../src/utils/audioEngine')
       assert.strictEqual(
         typeof audioEngineModule.getRawAudioContext,
         'function'
@@ -243,7 +243,7 @@ test('setupAudio and disposeAudio', async t => {
   })
 
   await t.test('safeDispose swallows disposal errors', async () => {
-    const setupModule = await import('../../src/utils/audio/dispose.js')
+    const setupModule = await import('../../src/utils/audio/dispose')
     const { safeDispose } = setupModule
     const failingNode = {
       dispose: () => {

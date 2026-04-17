@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { ALLOWED_TRENDS } from '../../src/data/socialTrends.js'
+import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
 
 test('ALLOWED_TRENDS data integrity', () => {
   assert.ok(Array.isArray(ALLOWED_TRENDS), 'ALLOWED_TRENDS should be an array')

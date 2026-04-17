@@ -10,7 +10,7 @@ import {
   IndustrialChecklist,
   SelloutContract,
   VoidLoader
-} from '../../src/ui/shared/BrutalistUI.jsx'
+} from '../../src/ui/shared/BrutalistUI.tsx'
 
 beforeEach(() => {
   vi.useFakeTimers()

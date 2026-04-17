@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { CONSEQUENCE_EVENTS } from '../../../src/data/events/consequences.js'
+import { CONSEQUENCE_EVENTS } from '../../../src/data/events/consequences'
 
 describe('Consequence Events Data', () => {
   it('should be an array of event objects', () => {

@@ -7,9 +7,9 @@ import {
   expect
 } from 'vitest'
 
-import { GAME_PHASES } from '../../src/context/gameConstants.js'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mock dependencies
 const mockCompleteRoadieMinigame = mock.fn()
@@ -30,9 +30,9 @@ mock.mock('../../src/utils/AudioManager', () => ({
 }))
 
 const { useRoadieLogic } =
-  await import('../../src/hooks/minigames/useRoadieLogic.js')
+  await import('../../src/hooks/minigames/useRoadieLogic')
 const { ROADIE_GRID_WIDTH: GRID_WIDTH, ROADIE_GRID_HEIGHT: GRID_HEIGHT } =
-  await import('../../src/hooks/minigames/constants.js')
+  await import('../../src/hooks/minigames/constants')
 
 describe('useRoadieLogic', () => {
   beforeEach(() => {

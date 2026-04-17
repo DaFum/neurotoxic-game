@@ -1,7 +1,7 @@
 import {
   processProjectiles,
   createHecklerSession
-} from '../../src/utils/hecklerLogic.js'
+} from '../../src/utils/hecklerLogic'
 
 const RUNS = 500
 const PROJECTILES_COUNT = 5000

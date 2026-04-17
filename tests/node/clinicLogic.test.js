@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import {
   handleClinicHeal,
   handleClinicEnhance
-} from '../../src/context/reducers/clinicReducer.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
+} from '../../src/context/reducers/clinicReducer'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
 // The reducer computes costs internally from CLINIC_CONFIG and clinicVisits.
 // At 0 visits: heal cost = 150 money, enhance cost = 500 fame.

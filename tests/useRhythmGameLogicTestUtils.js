@@ -109,38 +109,46 @@ export const mockRhythmGameLogicDependencies = {
 
 // Helper to mock modules
 export const mockRhythmGameLogicModules = () => {
-  mock.module('../src/context/GameState.jsx', {
+  mock.module('../src/context/GameState.tsx', {
     namedExports: { useGameState: mockUseGameState }
   })
-  mock.module('../src/utils/simulationUtils.js', {
+  mock.module('../src/utils/simulationUtils', {
     namedExports: mockSimulationUtils
   })
-  mock.module('../src/utils/AudioManager.js', {
+  mock.module('../src/utils/AudioManager', {
     namedExports: { audioManager: mockAudioManager }
   })
-  mock.module('../src/utils/audioEngine.js', {
+  mock.module('../src/utils/audioEngine', {
     namedExports: mockAudioEngine
   })
-  mock.module('../src/utils/audio/timingUtils.js', {
+  mock.module('../src/utils/audio/timingUtils', {
     namedExports: mockAudioTimingUtils
   })
-  mock.module('../src/utils/gigStats.js', {
+  mock.module('../src/utils/gigStats', {
     namedExports: mockGigStats
   })
-  mock.module('../src/utils/rhythmUtils.js', {
+  mock.module('../src/utils/rhythmUtils', {
     namedExports: mockRhythmUtils
   })
-  mock.module('../src/utils/hecklerLogic.js', {
+  mock.module('../src/utils/hecklerLogic', {
     namedExports: mockHecklerLogic
   })
   class MockGameError extends Error {}
-  mock.module('../src/utils/errorHandler.js', {
-    namedExports: { ...mockErrorHandler, GameError: MockGameError, StateError: class MockStateError extends MockGameError {}, AudioError: class MockAudioError extends MockGameError {} }
+  mock.module('../src/utils/errorHandler', {
+    namedExports: {
+      ...mockErrorHandler,
+      GameError: MockGameError,
+      StateError: class MockStateError extends MockGameError {},
+      AudioError: class MockAudioError extends MockGameError {}
+    }
   })
-  mock.module('../src/utils/logger.js', {
-    namedExports: { logger: mockLogger, LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 } }
+  mock.module('../src/utils/logger', {
+    namedExports: {
+      logger: mockLogger,
+      LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
+    }
   })
-  mock.module('../src/data/songs.js', {
+  mock.module('../src/data/songs', {
     namedExports: {
       SONGS_BY_ID: new Map(mockSongs.map(s => [s.id, s])),
       SONGS_DB: mockSongs
@@ -154,7 +162,7 @@ export const mockRhythmGameLogicModules = () => {
       initReactI18next: { type: '3rdParty', init: () => {} }
     }
   })
-  mock.module('../src/utils/imageGen.js', {
+  mock.module('../src/utils/imageGen', {
     namedExports: {
       getGenImageUrl: mock.fn(() => 'mock-url'),
       IMG_PROMPTS: {}
@@ -164,8 +172,7 @@ export const mockRhythmGameLogicModules = () => {
 
 export const setupRhythmGameLogicTest = async () => {
   mockRhythmGameLogicModules()
-  const { useRhythmGameLogic } =
-    await import('../src/hooks/useRhythmGameLogic.js')
+  const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
   return { useRhythmGameLogic }
 }
 

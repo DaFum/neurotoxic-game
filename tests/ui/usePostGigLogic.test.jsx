@@ -39,7 +39,7 @@ vi.mock('../../src/data/songs', () => ({
     ]
   ])
 }))
-vi.mock('../../src/utils/logger.js', () => ({
+vi.mock('../../src/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
@@ -691,9 +691,11 @@ describe('usePostGigLogic', () => {
         result.current.handleContinue()
       })
       // perfScore = clamp(25000/500, 30, 100) = 50 -> bad gig
-      // missPenalty = round((13 - 8) * 1.5) = 8  (MISS_PENALTY_RATE = 1.5)
-      // finalFameGain = -FAME_LOSS_BAD_GIG - 8
-      const expectedMissPenalty = Math.round((13 - 8) * 1.5)
+      // missPenalty = round((13 - 8) * MISS_PENALTY_RATE)
+      // finalFameGain = -FAME_LOSS_BAD_GIG - missPenalty
+      const expectedMissPenalty = Math.round(
+        (13 - 8) * BALANCE_CONSTANTS.MISS_PENALTY_RATE
+      )
       const expectedFame =
         baseState.player.fame -
         BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG -

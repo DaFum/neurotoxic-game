@@ -1,9 +1,9 @@
 import assert from 'node:assert'
 import test from 'node:test'
-import { createInitialState } from '../src/context/initialState.js'
-import { applyEventDelta } from '../src/utils/gameStateUtils.js'
-import { eventEngine } from '../src/utils/eventEngine.js'
-import { checkTraitUnlocks } from '../src/utils/unlockCheck.js'
+import { createInitialState } from '../src/context/initialState'
+import { applyEventDelta } from '../src/utils/gameStateUtils'
+import { eventEngine } from '../src/utils/eventEngine'
+import { checkTraitUnlocks } from '../src/utils/unlockCheck'
 
 test('Relationship Mechanics', async t => {
   await t.test('Relationship update via applyEventDelta', () => {

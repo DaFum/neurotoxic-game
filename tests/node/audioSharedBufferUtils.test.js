@@ -4,7 +4,7 @@ import { test, mock } from 'node:test'
 // In order to properly mock the audio context for createAndConnectBufferSource,
 // we just mock context.js using module mocking
 
-mock.module('../../src/utils/audio/context.js', {
+mock.module('../../src/utils/audio/context', {
   namedExports: {
     getRawAudioContext: () => {
       return (
@@ -21,9 +21,9 @@ mock.module('../../src/utils/audio/context.js', {
 })
 
 test('createAndConnectBufferSource', async t => {
-  const { audioState } = await import('../../src/utils/audio/state.js')
+  const { audioState } = await import('../../src/utils/audio/state')
   const { createAndConnectBufferSource } =
-    await import('../../src/utils/audio/sharedBufferUtils.js')
+    await import('../../src/utils/audio/sharedBufferUtils')
 
   t.afterEach(() => {
     audioState.musicGain = null

@@ -10,8 +10,8 @@ import {
   generateBrandName,
   generateBrandOffers,
   negotiateDeal
-} from '../../src/utils/socialEngine.js'
-import { BRAND_ALIGNMENTS } from '../../src/context/initialState.js'
+} from '../../src/utils/socialEngine'
+import { BRAND_ALIGNMENTS } from '../../src/context/initialState'
 
 test('calculateViralityScore returns base chance for average performance', () => {
   const venue = { name: 'Test Venue' }

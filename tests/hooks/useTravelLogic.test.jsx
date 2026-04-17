@@ -1,34 +1,38 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useTravelLogic } from '../../src/hooks/useTravelLogic.js'
+import { useTravelLogic } from '../../src/hooks/useTravelLogic'
 
-vi.mock('../../src/utils/economyEngine.js', () => ({
+vi.mock('../../src/utils/economyEngine', () => ({
   calculateTravelExpenses: () => ({ fuelLiters: 10, totalCost: 50, dist: 100 }),
   calculateRefuelCost: () => 20,
   calculateRepairCost: () => 30,
   EXPENSE_CONSTANTS: { TRANSPORT: { MAX_FUEL: 100 } }
 }))
 
-vi.mock('../../src/utils/mapUtils.js', () => ({
+vi.mock('../../src/utils/mapUtils', () => ({
   isConnected: () => true,
   getNodeVisibility: () => 'visible',
   checkSoftlock: () => false,
   normalizeVenueId: v => v?.id || 'venue_id'
 }))
 
-vi.mock('../../src/utils/arrivalUtils.js', () => ({
-  handleNodeArrival: () => {}
-}))
+vi.mock('../../src/utils/arrivalUtils', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    handleNodeArrival: () => {}
+  }
+})
 
-vi.mock('../../src/utils/AudioManager.js', () => ({
+vi.mock('../../src/utils/AudioManager', () => ({
   audioManager: { playSFX: () => {} }
 }))
 
-vi.mock('../../src/utils/logger.js', () => ({
+vi.mock('../../src/utils/logger', () => ({
   logger: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} }
 }))
 
-vi.mock('../../src/utils/errorHandler.js', () => {
+vi.mock('../../src/utils/errorHandler', () => {
   class StateError extends Error {
     constructor(message, context = {}) {
       super(message)
@@ -45,30 +49,30 @@ vi.mock('../../src/utils/errorHandler.js', () => {
   }
 })
 
-vi.mock('../../src/utils/upgradeUtils.js', () => ({
+vi.mock('../../src/utils/upgradeUtils', () => ({
   calcBaseBreakdownChance: () => 0.05
 }))
 
-vi.mock('../../src/i18n.js', () => ({
+vi.mock('../../src/i18n', () => ({
   default: {
     t: (key, opts) => opts?.defaultValue || key
   }
 }))
 
-vi.mock('../../src/context/gameConstants.js', () => ({
+vi.mock('../../src/context/gameConstants', () => ({
   GAME_PHASES: { GAMEOVER: 'GAMEOVER' }
 }))
 
-vi.mock('../../src/utils/gameStateUtils.js', () => ({
+vi.mock('../../src/utils/gameStateUtils', () => ({
   clampPlayerMoney: m => m,
   clampBandHarmony: h => h
 }))
 
-vi.mock('../../src/utils/locationI18n.js', () => ({
+vi.mock('../../src/utils/locationI18n', () => ({
   translateLocation: (t, loc) => loc
 }))
 
-vi.mock('../../src/data/venues.js', () => ({
+vi.mock('../../src/data/venues', () => ({
   ALL_VENUES: [{ id: 'venue_1', capacity: 100, name: 'Venue 1' }]
 }))
 

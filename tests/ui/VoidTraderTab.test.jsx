@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { VoidTraderTab } from '../../src/ui/bandhq/VoidTraderTab.jsx'
+import { VoidTraderTab } from '../../src/ui/bandhq/VoidTraderTab.tsx'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: key => key }),

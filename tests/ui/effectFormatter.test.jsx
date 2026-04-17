@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { generateEffectText } from '../../src/utils/effectFormatter.js'
+import { generateEffectText } from '../../src/utils/effectFormatter'
 
 test('generateEffectText formats valid delta inputs properly', () => {
   const mockT = vi.fn(key => {

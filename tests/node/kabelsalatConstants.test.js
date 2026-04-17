@@ -7,7 +7,7 @@ import {
   SOCKET_DEFS,
   INITIAL_SOCKET_ORDER,
   TIME_LIMIT
-} from '../../src/scenes/kabelsalat/constants.js'
+} from '../../src/scenes/kabelsalat/constants'
 
 describe('kabelsalat/constants', () => {
   describe('CABLES', () => {

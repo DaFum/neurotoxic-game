@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { render } from '@testing-library/react'
-import { CreditFooter } from '../../src/scenes/credits/CreditFooter.jsx'
+import { CreditFooter } from '../../src/scenes/credits/CreditFooter.tsx'
 
 describe('CreditFooter Component', () => {
   test('renders the credit footer with translated text', () => {

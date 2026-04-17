@@ -1,15 +1,14 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { importAudioEngine } from '../audioTestUtils.js'
+import { importAudioEngine } from '../audioTestUtils'
 
 const { audioEngine, skipIfImportFailed } = await importAudioEngine()
 
 test('playSFX', async t => {
   if (skipIfImportFailed(t)) return
-  const { playSFX, audioState } =
-    await import('../../src/utils/audio/playback.js')
+  const { playSFX, audioState } = await import('../../src/utils/audio/playback')
   const moduleState =
-    audioState || (await import('../../src/utils/audio/state.js')).audioState
+    audioState || (await import('../../src/utils/audio/state')).audioState
 
   await t.test('does nothing if not setup or missing sfxSynth', () => {
     moduleState.isSetup = false
@@ -63,9 +62,9 @@ test('setMusicVolume & setSFXVolume', async t => {
   // audioState may not be directly exported or might be called differently in the real module
   // Check the export and fall back if needed
   const { setMusicVolume, setSFXVolume, audioState } =
-    await import('../../src/utils/audio/playback.js')
+    await import('../../src/utils/audio/playback')
   const moduleState =
-    audioState || (await import('../../src/utils/audio/state.js')).audioState
+    audioState || (await import('../../src/utils/audio/state')).audioState
 
   await t.test('setMusicVolume clamps value to [0, 1] and ramps gain', () => {
     let mockGain = {
@@ -144,9 +143,9 @@ test('stopGigPlayback', async t => {
   if (skipIfImportFailed(t)) return
 
   const { stopGigPlayback, audioState } =
-    await import('../../src/utils/audio/playback.js')
+    await import('../../src/utils/audio/playback')
   const moduleState =
-    audioState || (await import('../../src/utils/audio/state.js')).audioState
+    audioState || (await import('../../src/utils/audio/state')).audioState
 
   await t.test(
     'calls cleanupGigPlayback and logs if source exists',

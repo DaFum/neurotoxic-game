@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { importAudioEngine } from '../audioTestUtils.js'
+import { importAudioEngine } from '../audioTestUtils'
 
 const { audioEngine, skipIfImportFailed } = await importAudioEngine()
 
@@ -71,9 +71,9 @@ test('getGigTimeMs', async t => {
   const mockTone = ToneModule.default || ToneModule.Tone || ToneModule
 
   const { getGigTimeMs, audioState } =
-    await import('../../src/utils/audio/playback.js')
+    await import('../../src/utils/audio/playback')
   const moduleState =
-    audioState || (await import('../../src/utils/audio/state.js')).audioState
+    audioState || (await import('../../src/utils/audio/state')).audioState
 
   await t.test(
     'returns calculated gig time using audio context and state',

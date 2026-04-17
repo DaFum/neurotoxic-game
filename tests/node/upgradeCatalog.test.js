@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
+import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog'
 
 test('getUnifiedUpgradeCatalog includes upgrades from all active sources', () => {
   const catalog = getUnifiedUpgradeCatalog()

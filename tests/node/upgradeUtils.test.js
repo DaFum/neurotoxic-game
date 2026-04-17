@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 import {
   calcBaseBreakdownChance,
   hasUpgrade
-} from '../../src/utils/upgradeUtils.js'
+} from '../../src/utils/upgradeUtils'
 
 test('hasUpgrade - checks ownership correctly', () => {
   assert.equal(hasUpgrade(['van_suspension'], 'van_suspension'), true)

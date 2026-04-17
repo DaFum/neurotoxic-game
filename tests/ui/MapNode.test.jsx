@@ -29,7 +29,7 @@ describe('MapNode', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    const module = await import('../../src/components/MapNode.jsx')
+    const module = await import('../../src/components/MapNode.tsx')
     MapNode = module.MapNode
   })
 

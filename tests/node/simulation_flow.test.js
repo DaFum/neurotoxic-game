@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import {
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economyEngine.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
+} from '../../src/utils/economyEngine'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 
 test('Game Loop Logic Simulation', async t => {
   // Initial State
@@ -45,7 +45,7 @@ test('Game Loop Logic Simulation', async t => {
     state.player.money = Math.max(0, state.player.money - totalCost)
     state.player.van.fuel = Math.max(0, state.player.van.fuel - fuelLiters)
 
-    // Advance Day (The logic we enabled in Overworld.jsx)
+    // Advance Day (The logic we enabled in Overworld.tsx)
     const updates = calculateDailyUpdates(state)
     state = { ...state, ...updates }
 

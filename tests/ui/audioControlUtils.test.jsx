@@ -4,10 +4,10 @@ import {
   createAudioHandlers,
   getAudioSnapshot,
   createAudioSubscriber
-} from '../../src/hooks/useAudioControl.js'
-import { handleError } from '../../src/utils/errorHandler.js'
+} from '../../src/hooks/useAudioControl'
+import { handleError } from '../../src/utils/errorHandler'
 
-vi.mock('../../src/utils/errorHandler.js', () => ({
+vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 
@@ -17,7 +17,7 @@ describe('audioControlUtils', () => {
   beforeEach(() => {
     mockManager = {
       setMusicVolume: vi.fn(),
-      setSFXVolume: vi.fn(),
+      setSfxVolume: vi.fn(),
       toggleMute: vi.fn(),
       stopMusic: vi.fn(),
       resumeMusic: vi.fn(),
@@ -72,7 +72,7 @@ describe('audioControlUtils', () => {
       expect(mockManager.setMusicVolume).toHaveBeenCalledWith(0.8)
 
       handlers.setSfx(0.6)
-      expect(mockManager.setSFXVolume).toHaveBeenCalledWith(0.6)
+      expect(mockManager.setSfxVolume).toHaveBeenCalledWith(0.6)
 
       handlers.toggleMute()
       expect(mockManager.toggleMute).toHaveBeenCalled()

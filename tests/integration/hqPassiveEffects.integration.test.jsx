@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { usePurchaseLogic } from '../../src/ui/bandhq/hooks/usePurchaseLogic.js'
+import { usePurchaseLogic } from '../../src/ui/bandhq/hooks/usePurchaseLogic'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },

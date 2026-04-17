@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { GameOverOverlay } from '../../src/components/hud/GameOverOverlay.jsx'
+import { GameOverOverlay } from '../../src/components/hud/GameOverOverlay.tsx'
 
 test('GameOverOverlay renders nothing when isGameOver is false', () => {
   const { container } = render(<GameOverOverlay isGameOver={false} />)

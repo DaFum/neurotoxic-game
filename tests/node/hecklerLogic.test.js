@@ -4,7 +4,7 @@ import {
   processProjectiles,
   trySpawnProjectile,
   createHecklerSession
-} from '../../src/utils/hecklerLogic.js'
+} from '../../src/utils/hecklerLogic'
 
 test('processProjectiles - updates position and rotation', () => {
   const session = createHecklerSession()

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { PauseButton } from '../../src/components/hud/PauseButton.jsx'
+import { PauseButton } from '../../src/components/hud/PauseButton.tsx'
 
 afterEach(cleanup)
 

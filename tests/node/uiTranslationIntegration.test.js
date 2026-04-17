@@ -7,28 +7,28 @@ import {
   flattenToObject,
   resolveNamespaceKey,
   readLocaleJson
-} from '../utils/localeTestUtils.js'
+} from '../utils/localeTestUtils'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const REPO_ROOT = path.join(__dirname, '..', '..')
 
 const UI_SOURCE_FILES = [
-  'src/ui/bandhq/DetailedStatsTab.jsx',
-  'src/ui/bandhq/StatsTab.jsx',
-  'src/ui/bandhq/SetlistTab.jsx',
-  'src/ui/bandhq/LeaderboardTab.jsx',
-  'src/ui/settings/SettingsPanel.jsx',
-  'src/ui/settings/LanguageSettings.jsx',
-  'src/ui/settings/AudioSettings.jsx',
-  'src/ui/settings/VisualSettings.jsx',
-  'src/ui/settings/LogSettings.jsx',
-  'src/ui/settings/DataManagement.jsx',
-  'src/scenes/GameOver.jsx',
-  'src/scenes/MainMenu.jsx',
-  'src/scenes/IntroVideo.jsx',
-  'src/components/ChatterOverlay.jsx',
-  'src/components/MapNode.jsx'
+  'src/ui/bandhq/DetailedStatsTab.tsx',
+  'src/ui/bandhq/StatsTab.tsx',
+  'src/ui/bandhq/SetlistTab.tsx',
+  'src/ui/bandhq/LeaderboardTab.tsx',
+  'src/ui/settings/SettingsPanel.tsx',
+  'src/ui/settings/LanguageSettings.tsx',
+  'src/ui/settings/AudioSettings.tsx',
+  'src/ui/settings/VisualSettings.tsx',
+  'src/ui/settings/LogSettings.tsx',
+  'src/ui/settings/DataManagement.tsx',
+  'src/scenes/GameOver.tsx',
+  'src/scenes/MainMenu.tsx',
+  'src/scenes/IntroVideo.tsx',
+  'src/components/ChatterOverlay.tsx',
+  'src/components/MapNode.tsx'
 ]
 
 const KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g

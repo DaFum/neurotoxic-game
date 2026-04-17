@@ -76,28 +76,28 @@ vi.mock('pixi.js', () => {
   }
 })
 
-vi.mock('../../src/components/stage/CrowdManager.js', () => ({
+vi.mock('../../src/components/stage/CrowdManager', () => ({
   CrowdManager: class {
     constructor() {
       Object.assign(this, createMockManager())
     }
   }
 }))
-vi.mock('../../src/components/stage/LaneManager.js', () => ({
+vi.mock('../../src/components/stage/LaneManager', () => ({
   LaneManager: class {
     constructor() {
       Object.assign(this, createMockManager())
     }
   }
 }))
-vi.mock('../../src/components/stage/EffectManager.js', () => ({
+vi.mock('../../src/components/stage/EffectManager', () => ({
   EffectManager: class {
     constructor() {
       Object.assign(this, createMockManager())
     }
   }
 }))
-vi.mock('../../src/components/stage/NoteManager.js', () => ({
+vi.mock('../../src/components/stage/NoteManager', () => ({
   NoteManager: class {
     constructor() {
       Object.assign(this, createMockManager())
@@ -105,7 +105,7 @@ vi.mock('../../src/components/stage/NoteManager.js', () => ({
   }
 }))
 
-vi.mock('../../src/utils/audioEngine.js', () => mockAudioEngine)
+vi.mock('../../src/utils/audioEngine', () => mockAudioEngine)
 
 describe('PixiStageController Filter Performance', () => {
   let controller
@@ -126,7 +126,7 @@ describe('PixiStageController Filter Performance', () => {
 
     // Re-import to apply mocks
     const controllerModule =
-      await import('../../src/components/PixiStageController.js')
+      await import('../../src/components/PixiStageController')
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: vi.fn() } }

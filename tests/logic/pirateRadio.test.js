@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { handlePirateBroadcast } from '../../src/context/reducers/socialReducer.js'
+import { handlePirateBroadcast } from '../../src/context/reducers/socialReducer'
 
 describe('Pirate Radio Logic', () => {
   it('should correctly apply costs and gains from broadcast', () => {

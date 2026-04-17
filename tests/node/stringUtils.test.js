@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { hashString } from '../../src/utils/stringUtils.js'
+import { hashString } from '../../src/utils/stringUtils'
 
 test('hashString calculates correct 32-bit integer hashes', async t => {
   await t.test('returns 0 for empty string', () => {

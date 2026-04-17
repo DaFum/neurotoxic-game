@@ -2,7 +2,7 @@ import { test, vi } from 'vitest'
 import assert from 'node:assert'
 
 // Mock the transport events module
-vi.mock('../../../src/data/events/transport.js', () => ({
+vi.mock('../../../src/data/events/transport', () => ({
   TRANSPORT_EVENTS: [
     { id: 'valid_event', category: 'transport', description: 'Valid Event' },
     { category: 'transport', description: 'Missing ID' }, // Invalid: Missing ID
@@ -11,7 +11,7 @@ vi.mock('../../../src/data/events/transport.js', () => ({
 }))
 
 // Dynamic import to ensure mock is applied
-const { EVENTS_DB } = await import('../../../src/data/events/index.js')
+const { EVENTS_DB } = await import('../../../src/data/events/index')
 
 test('Event validation filters out invalid events', async _t => {
   const transportEvents = EVENTS_DB.transport

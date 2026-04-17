@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { UplinkButton } from '../../src/ui/shared/BrutalistUI.jsx'
+import { UplinkButton } from '../../src/ui/shared/BrutalistUI.tsx'
 
 test('UplinkButton renders correctly and handles hover states properly', () => {
   const DummyIcon = () => <svg data-testid='dummy-icon' />

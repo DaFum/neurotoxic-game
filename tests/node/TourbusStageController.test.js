@@ -83,7 +83,7 @@ mock.module('pixi.js', {
 })
 
 // Mock EffectManager
-mock.module('../../src/components/stage/EffectManager.js', {
+mock.module('../../src/components/stage/EffectManager', {
   namedExports: {
     EffectManager: class {
       constructor() {}
@@ -99,7 +99,7 @@ mock.module('../../src/components/stage/EffectManager.js', {
 })
 
 // Mock Utils
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: {
     logger: {
       info: mock.fn(),
@@ -149,7 +149,7 @@ describe('TourbusStageController', () => {
 
   beforeEach(async () => {
     const module =
-      await import('../../src/components/stage/TourbusStageController.js')
+      await import('../../src/components/stage/TourbusStageController')
     createTourbusStageController = module.createTourbusStageController
 
     containerRef = { current: { appendChild: mock.fn() } }

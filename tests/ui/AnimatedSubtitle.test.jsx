@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { AnimatedSubtitle } from '../../src/ui/shared/AnimatedTypography.jsx'
+import { AnimatedSubtitle } from '../../src/ui/shared/AnimatedTypography.tsx'
 
 test('AnimatedSubtitle renders as h2 by default', () => {
   render(<AnimatedSubtitle>Test Subtitle</AnimatedSubtitle>)

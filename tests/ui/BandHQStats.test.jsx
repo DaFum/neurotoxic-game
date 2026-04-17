@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { cleanup, render } from '@testing-library/react'
 
-vi.mock('../../src/ui/shared/index.jsx', () => ({
+vi.mock('../../src/ui/shared/index.tsx', () => ({
   StatBox: ({ label, value }) => (
     <div data-testid='stat-box'>
       <span data-testid='stat-label'>{label}</span>
@@ -23,7 +23,7 @@ vi.mock('../../src/ui/shared/index.jsx', () => ({
   ActionButton: () => <button type='button' />
 }))
 
-vi.mock('../../src/data/characters.js', () => ({
+vi.mock('../../src/data/characters', () => ({
   CHARACTERS: {
     AXEL: { name: 'Axel', traits: [] },
     FREDDIE: { name: 'Freddie', traits: [] }
@@ -47,9 +47,9 @@ describe('BandHQ Stats Discrepancy', () => {
   }
 
   beforeAll(async () => {
-    const statsModule = await import('../../src/ui/bandhq/StatsTab.jsx')
+    const statsModule = await import('../../src/ui/bandhq/StatsTab.tsx')
     const detailsModule =
-      await import('../../src/ui/bandhq/DetailedStatsTab.jsx')
+      await import('../../src/ui/bandhq/DetailedStatsTab.tsx')
     StatsTab = statsModule.StatsTab
     DetailedStatsTab = detailsModule.DetailedStatsTab
   })

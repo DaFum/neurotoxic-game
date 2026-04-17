@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger.js', {
+mock.module('../../src/utils/logger', {
   namedExports: { logger: mockLogger }
 })
 
@@ -41,7 +41,7 @@ const mockAudioState = {
   transportEndEventId: null,
   transportStopEventId: null
 }
-mock.module('../../src/utils/audio/state.js', {
+mock.module('../../src/utils/audio/state', {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -123,7 +123,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context.js', {
+mock.module('../../src/utils/audio/context', {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -133,7 +133,7 @@ mock.module('../../src/utils/audio/context.js', {
 // Mock Playback
 const mockStopAudioInternal = mock.fn()
 const mockStopAudio = mock.fn()
-mock.module('../../src/utils/audio/playback.js', {
+mock.module('../../src/utils/audio/playback', {
   namedExports: {
     stopAudioInternal: mockStopAudioInternal,
     stopAudio: mockStopAudio
@@ -148,7 +148,7 @@ const mockMidiUrlMap = {
   'empty.mid': '/assets/empty.mid'
 }
 const mockLoadAudioBuffer = mock.fn()
-mock.module('../../src/utils/audio/assets.js', {
+mock.module('../../src/utils/audio/assets', {
   namedExports: {
     midiUrlMap: mockMidiUrlMap,
     loadAudioBuffer: mockLoadAudioBuffer,
@@ -157,7 +157,7 @@ mock.module('../../src/utils/audio/assets.js', {
 })
 
 // Mock Shared Buffer Utils
-mock.module('../../src/utils/audio/sharedBufferUtils.js', {
+mock.module('../../src/utils/audio/sharedBufferUtils', {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }
@@ -167,7 +167,7 @@ mock.module('../../src/utils/audio/sharedBufferUtils.js', {
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
-const { playMidiFile } = await import('../../src/utils/audio/midiPlayback.js')
+const { playMidiFile } = await import('../../src/utils/audio/midiPlayback')
 
 // --- Tests ---
 

@@ -1,11 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  generatePostOptions,
-  resolvePost
-} from '../../src/utils/socialEngine.js'
-import { calculateDailyUpdates } from '../../src/utils/simulationUtils.js'
-import { POST_OPTIONS } from '../../src/data/postOptions.js'
+import { generatePostOptions, resolvePost } from '../../src/utils/socialEngine'
+import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
+import { POST_OPTIONS } from '../../src/data/postOptions'
 
 // Helper to generate a highly randomized game state
 const createRandomGameState = () => ({

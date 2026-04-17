@@ -1,6 +1,11 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { ScoreDisplay } from '../../src/components/hud/ScoreDisplay.jsx'
+import { ScoreDisplay } from '../../src/components/hud/ScoreDisplay.tsx'
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: key => key }),
+  initReactI18next: { type: '3rdParty', init: () => {} }
+}))
 
 describe('ScoreDisplay', () => {
   test('renders baseline structural elements', () => {
@@ -8,7 +13,7 @@ describe('ScoreDisplay', () => {
 
     // Existence and Label
     expect(container).toBeTruthy()
-    expect(getByText('SCORE')).toBeInTheDocument()
+    expect(getByText('ui:gig.score')).toBeInTheDocument()
 
     // Classes
     const wrapper = container.firstChild

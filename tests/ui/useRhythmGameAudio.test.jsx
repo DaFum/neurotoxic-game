@@ -39,7 +39,7 @@ vi.mock('../../src/utils/logger', () => ({
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
 
-vi.mock('../../src/utils/rhythmGameAudioUtils.js', () => ({
+vi.mock('../../src/utils/rhythmGameAudioUtils', () => ({
   setupGigPhysics: mocks.setupGigPhysics,
   resolveActiveSetlist: mocks.resolveActiveSetlist,
   playSongSequence: mocks.playSongSequence,

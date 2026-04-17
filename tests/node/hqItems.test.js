@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { HQ_ITEMS } from '../../src/data/hqItems.js'
+import { HQ_ITEMS } from '../../src/data/hqItems'
 
 describe('HQ Items Data Integrity', () => {
   const itemIds = new Set()

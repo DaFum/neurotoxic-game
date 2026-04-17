@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { ShopTab } from '../../src/ui/bandhq/ShopTab.jsx'
+import { ShopTab } from '../../src/ui/bandhq/ShopTab.tsx'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -69,7 +69,7 @@ describe('ShopTab', () => {
       />
     )
     expect(screen.getByText(/1000€/)).toBeInTheDocument()
-    expect(screen.getByText(/FUNDS/)).toBeInTheDocument()
+    expect(screen.getByText(/ui:bandhq\.funds/)).toBeInTheDocument()
   })
 
   test('renders combined shop items from gear and instruments', () => {
