@@ -45,7 +45,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --config.only-built-dependencies=esbuild,husky
+        run: pnpm install --frozen-lockfile
       - name: Run fast node:test suite
         id: run-tests
         shell: bash
