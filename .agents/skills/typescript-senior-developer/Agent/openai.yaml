@@ -1,0 +1,4 @@
+interface:
+  display_name: 'typescript-senior-developer'
+  short_description: 'write perfect typed code'
+  default_prompt: 'improve types, fix tsc errors, fix typescript'
