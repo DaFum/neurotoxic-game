@@ -6,7 +6,7 @@
 import { Assets, ImageSource, Texture } from 'pixi.js'
 import { logger } from '../../utils/logger'
 
-const PIXI_TOKEN_FALLBACKS = Object.freeze({
+const PIXI_TOKEN_FALLBACKS: Readonly<Record<string, string>> = Object.freeze({
   '--void-black': '#0a0a0a',
   '--toxic-green': '#00ff41',
   '--star-white': '#ffffff',
@@ -23,7 +23,7 @@ const PIXI_TOKEN_FALLBACKS = Object.freeze({
 
 const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
 
-const normalizeHexColor = colorValue => {
+const normalizeHexColor = (colorValue: unknown): string | null => {
   if (typeof colorValue !== 'string') {
     return null
   }
@@ -40,7 +40,7 @@ const normalizeHexColor = colorValue => {
   return normalizedColorValue
 }
 
-const colorCache = new Map()
+const colorCache = new Map<string, number>()
 
 /**
  * Resolves a CSS variable token to a Pixi-compatible numeric color value.
@@ -48,9 +48,9 @@ const colorCache = new Map()
  * @returns {number} Pixi numeric hex color.
  */
 export const getPixiColorFromToken = (
-  tokenName,
+  tokenName: string,
   defaultHexFallback = '#ffffff'
-) => {
+): number => {
   const canReadCssVariables =
     typeof window !== 'undefined' &&
     typeof document !== 'undefined' &&
@@ -63,7 +63,7 @@ export const getPixiColorFromToken = (
 
   const cacheKey = `${tokenName}-${defaultHexFallback}`
   if (colorCache.has(cacheKey)) {
-    return colorCache.get(cacheKey)
+    return colorCache.get(cacheKey) ?? Number.parseInt('ffffff', 16)
   }
 
   const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback
@@ -80,6 +80,10 @@ export const getPixiColorFromToken = (
   const normalizedHexColor =
     normalizeHexColor(resolvedCssValue) ?? normalizeHexColor(fallbackColor)
 
+  if (!normalizedHexColor) {
+    return Number.parseInt(defaultHexFallback.slice(1), 16)
+  }
+
   const result = Number.parseInt(normalizedHexColor.slice(1), 16)
   colorCache.set(cacheKey, result)
   return result
@@ -93,9 +97,13 @@ export const getPixiColorFromToken = (
  * @param {number} [timeoutMs=10000] - Timeout in milliseconds.
  * @returns {Promise<any|null>} The resolved value or null if an error/timeout occurred.
  */
-export const withTimeout = async (promise, label, timeoutMs = 10000) => {
-  let timerId
-  const timeout = new Promise((resolve, _reject) => {
+export const withTimeout = async <T>(
+  promise: Promise<T>,
+  label: string,
+  timeoutMs = 10000
+): Promise<T | null> => {
+  let timerId: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<null>(resolve => {
     timerId = setTimeout(() => {
       logger.warn(
         'PixiStageController',
@@ -109,8 +117,8 @@ export const withTimeout = async (promise, label, timeoutMs = 10000) => {
   try {
     const result = await Promise.race([promise, timeout])
     return result
-  } catch (err) {
-    const errorMessage = err?.message ?? String(err)
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err)
     logger.error(
       'PixiStageController',
       `${label} load failed: ${errorMessage}`,
@@ -130,7 +138,12 @@ export const withTimeout = async (promise, label, timeoutMs = 10000) => {
  * @param {number} speed - Note travel speed.
  * @returns {number} Calculated Y position.
  */
-export const calculateNoteY = (elapsed, noteTime, targetY, speed) => {
+export const calculateNoteY = (
+  elapsed: number,
+  noteTime: number,
+  targetY: number,
+  speed: number
+): number => {
   const timeUntilHit = noteTime - elapsed
   return targetY - (timeUntilHit / 1000) * speed
 }
@@ -142,7 +155,13 @@ export const calculateNoteY = (elapsed, noteTime, targetY, speed) => {
  * @param {number} params.timeMs - Current time in ms.
  * @returns {number} The vertical offset.
  */
-export const calculateCrowdOffset = ({ combo, timeMs }) => {
+export const calculateCrowdOffset = ({
+  combo,
+  timeMs
+}: {
+  combo: number
+  timeMs: number
+}): number => {
   const intensity = combo > 10 ? 2 : 1
   return Math.abs(Math.sin((timeMs / 100) * intensity) * 5)
 }
@@ -154,8 +173,13 @@ export const calculateCrowdOffset = ({ combo, timeMs }) => {
  * @param {number} params.laneTotalWidth - Total lane width.
  * @returns {number} Lane start X position.
  */
-const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) =>
-  (screenWidth - laneTotalWidth) / 2
+const calculateLaneStartX = ({
+  screenWidth,
+  laneTotalWidth
+}: {
+  screenWidth: number
+  laneTotalWidth: number
+}) => (screenWidth - laneTotalWidth) / 2
 
 const LANE_TOTAL_WIDTH = 360
 const LANE_WIDTH = 100
@@ -192,7 +216,13 @@ export const CROWD_LAYOUT = Object.freeze({
  * @param {number} params.screenHeight - Current screen height.
  * @returns {{startX: number, laneWidth: number, laneHeight: number, laneStrokeWidth: number, hitLineY: number, hitLineHeight: number, hitLineStrokeWidth: number, rhythmOffsetY: number, laneTotalWidth: number}} Layout metrics.
  */
-export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
+export const buildRhythmLayout = ({
+  screenWidth,
+  screenHeight
+}: {
+  screenWidth: number
+  screenHeight: number
+}) => {
   const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth
   const startX = calculateLaneStartX({ screenWidth, laneTotalWidth })
   const laneHeight = screenHeight * RHYTHM_LAYOUT.laneHeightRatio
@@ -217,17 +247,23 @@ export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
  * (Image-based textures lack proper source metadata for tiling).
  * @type {Map<string, Texture>}
  */
-const _imageTextureCache = new Map()
+const _imageTextureCache = new Map<string, Texture>()
 
 /**
  * Checks existing caches for a valid texture.
  * @param {string} url - The URL of the texture.
  * @returns {Texture|null} The cached texture or null.
  */
-const _getCachedTexture = url => {
+const _getCachedTexture = (url: string): Texture | null => {
   if (Assets.cache.has(url)) {
     const cached = Assets.cache.get(url)
-    if (cached?.source && !cached.source.destroyed) return cached
+    if (
+      cached instanceof Texture &&
+      cached.source &&
+      !cached.source.destroyed
+    ) {
+      return cached
+    }
   }
 
   const imgCached = _imageTextureCache.get(url)
@@ -241,7 +277,7 @@ const _getCachedTexture = url => {
  * @param {string} url - The URL to check.
  * @returns {boolean} True if the URL has an extension, false otherwise.
  */
-const _hasFileExtension = url => {
+const _hasFileExtension = (url: string): boolean => {
   try {
     const pathname = new URL(url).pathname
     const lastSegment = pathname.split('/').pop() || ''
@@ -256,7 +292,7 @@ const _hasFileExtension = url => {
  * @param {string} url - The URL to load.
  * @returns {Promise<Texture|null>} The loaded texture or null.
  */
-const _loadWithImageFallback = url => {
+const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
   return new Promise(resolve => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -280,7 +316,7 @@ const _loadWithImageFallback = url => {
  * @param {string} url - The URL to load.
  * @returns {Promise<Texture|null>} The loaded texture or null.
  */
-export const loadTexture = async url => {
+export const loadTexture = async (url: string): Promise<Texture | null> => {
   const cached = _getCachedTexture(url)
   if (cached) return cached
 
@@ -316,7 +352,10 @@ export const getOptimalResolution = () => {
  * @param {function(Error, string): void} [onError] - Optional callback to handle individual load errors (receives error and fallback message).
  * @returns {Promise<Object.<string, Texture|null>>} A record mapping the same keys to loaded Textures (or null if failed).
  */
-export const loadTextures = async (urlMap, onError) => {
+export const loadTextures = async (
+  urlMap: Record<string, string>,
+  onError?: (error: Error, message: string) => void
+): Promise<Record<string, Texture | null>> => {
   const keys = Object.keys(urlMap)
   const length = keys.length
   if (length === 0) {
@@ -325,14 +364,17 @@ export const loadTextures = async (urlMap, onError) => {
 
   const promises = new Array(length)
   for (let i = 0; i < length; i++) {
-    promises[i] = loadTexture(urlMap[keys[i]])
+    const key = keys[i]
+    if (!key) continue
+    promises[i] = loadTexture(urlMap[key] ?? '')
   }
   const settledResults = await Promise.allSettled(promises)
 
-  const result = {}
+  const result: Record<string, Texture | null> = {}
   for (let index = 0; index < keys.length; index++) {
     const key = keys[index]
     const res = settledResults[index]
+    if (!key || !res) continue
 
     if (res.status === 'fulfilled' && res.value !== null) {
       result[key] = res.value

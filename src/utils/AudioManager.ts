@@ -4,6 +4,26 @@ import { secureRandom } from './crypto'
 import { handleError } from './errorHandler'
 import { logger } from './logger'
 
+type AudioListener = () => void
+type AudioSfxType =
+  | 'hit'
+  | 'miss'
+  | 'menu'
+  | 'travel'
+  | 'cash'
+  | 'crash'
+  | 'honk'
+  | 'pickup'
+  | 'deliver'
+
+type AudioStateSnapshot = {
+  musicVol: number
+  sfxVol: number
+  isMuted: boolean
+  isPlaying: boolean
+  currentSongId: string | null
+}
+
 /**
  * High-level audio facade that wraps audioEngine with user preference persistence.
  *
@@ -17,6 +37,16 @@ import { logger } from './logger'
  * exist yet when preferences are loaded at startup).
  */
 class AudioSystem {
+  currentSongId: string | null
+  musicVolume: number
+  sfxVolume: number
+  muted: boolean
+  prefsLoaded: boolean
+  isStartingAmbient: boolean
+  ambientStartPromise: Promise<boolean> | null
+  listeners: Set<AudioListener>
+  stateSnapshot: AudioStateSnapshot
+
   constructor() {
     this.currentSongId = null
     this.musicVolume = 0.5
@@ -52,7 +82,7 @@ class AudioSystem {
    * @param {() => void} listener - Callback invoked after audio state transitions.
    * @returns {() => void} Unsubscribe function.
    */
-  subscribe(listener) {
+  subscribe(listener: AudioListener): () => void {
     if (typeof listener !== 'function') {
       return () => {}
     }
@@ -67,7 +97,7 @@ class AudioSystem {
    * Returns the current audio state snapshot for external-store consumers.
    * @returns {{musicVol: number, sfxVol: number, isMuted: boolean, isPlaying: boolean, currentSongId: string | null}}
    */
-  getStateSnapshot() {
+  getStateSnapshot(): AudioStateSnapshot {
     return this.stateSnapshot
   }
 
@@ -83,7 +113,7 @@ class AudioSystem {
       currentSongId: this.currentSongId
     }
 
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener: AudioListener) => {
       try {
         listener()
       } catch (error) {
@@ -97,7 +127,7 @@ class AudioSystem {
    * Initializes the audio system, loading preferences and setting up synthesizers.
    * Note: Audio playback remains blocked until ensureAudioContext() is called after a user gesture.
    */
-  init() {
+  init(): void {
     if (this.prefsLoaded) return
 
     try {
@@ -106,7 +136,7 @@ class AudioSystem {
       const savedSfxVol = localStorage.getItem('neurotoxic_vol_sfx')
       const savedMuted = localStorage.getItem('neurotoxic_muted')
 
-      const clamp01 = (n, fallback) => {
+      const clamp01 = (n: string, fallback: number): number => {
         const v = Number.parseFloat(n)
         if (!Number.isFinite(v)) return fallback
         return Math.min(1, Math.max(0, v))
@@ -137,7 +167,7 @@ class AudioSystem {
    * Starts the ambient background music stream if not already playing.
    * Prefers OGG buffer playback for quality/CPU; falls back to MIDI synthesis.
    */
-  async startAmbient() {
+  async startAmbient(): Promise<boolean> {
     if (!this.prefsLoaded) return false
 
     // Prevent re-entrant calls or redundant starts
@@ -208,7 +238,7 @@ class AudioSystem {
    * Stops the currently playing music.
    * @param {{ emit?: boolean }} [options] - Controls whether subscriber notifications are emitted.
    */
-  stopMusic(options = {}) {
+  stopMusic(options: { emit?: boolean } = {}): void {
     logger.debug(
       'AudioSystem',
       `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`
@@ -226,7 +256,7 @@ class AudioSystem {
    * We assume mutually exclusive playback states (either ambient or gig audio is active, not both).
    * @returns {Promise<boolean>} True when music is running or successfully started.
    */
-  async resumeMusic() {
+  async resumeMusic(): Promise<boolean> {
     try {
       if (
         this.currentSongId === 'ambient' &&
@@ -257,7 +287,7 @@ class AudioSystem {
    * Should be called after a user gesture.
    * @returns {Promise<boolean>} True if successful.
    */
-  async ensureAudioContext() {
+  async ensureAudioContext(): Promise<boolean> {
     try {
       await audioEngine.setupAudio()
 
@@ -278,9 +308,9 @@ class AudioSystem {
    * Plays a sound effect by key.
    * @param {string} key - The SFX identifier (e.g., 'CLICK', 'ERROR').
    */
-  playSFX(key) {
+  playSFX(key: AudioSfxType): void {
     if (!this.prefsLoaded) return
-    const validTypes = [
+    const validTypes: AudioSfxType[] = [
       'hit',
       'miss',
       'menu',
@@ -302,7 +332,7 @@ class AudioSystem {
    * Sets the music volume and persists it.
    * @param {number} vol - Volume level between 0 and 1.
    */
-  setMusicVolume(vol) {
+  setMusicVolume(vol: number): boolean {
     const next = Math.min(1, Math.max(0, vol))
     let operationSucceeded = true
     let appliedNow = false
@@ -321,7 +351,7 @@ class AudioSystem {
         )
       }
       try {
-        localStorage.setItem('neurotoxic_vol_music', next)
+        localStorage.setItem('neurotoxic_vol_music', String(next))
       } catch (e) {
         handleError(e, {
           fallbackMessage: 'Failed to persist music volume preference'
@@ -339,7 +369,7 @@ class AudioSystem {
    * Sets the SFX volume and persists it.
    * @param {number} vol - Volume level between 0 and 1.
    */
-  setSFXVolume(vol) {
+  setSFXVolume(vol: number): boolean {
     const next = Math.min(1, Math.max(0, vol))
     let operationSucceeded = true
     let appliedNow = false
@@ -358,7 +388,7 @@ class AudioSystem {
         )
       }
       try {
-        localStorage.setItem('neurotoxic_vol_sfx', next)
+        localStorage.setItem('neurotoxic_vol_sfx', String(next))
       } catch (e) {
         handleError(e, {
           fallbackMessage: 'Failed to persist SFX volume preference'
@@ -376,7 +406,7 @@ class AudioSystem {
    * Toggles global mute state.
    * @returns {boolean} The new mute state.
    */
-  toggleMute() {
+  toggleMute(): boolean {
     this.muted = !this.muted
 
     try {
@@ -388,7 +418,7 @@ class AudioSystem {
     this.emitChange()
 
     try {
-      localStorage.setItem('neurotoxic_muted', this.muted)
+      localStorage.setItem('neurotoxic_muted', String(this.muted))
     } catch (e) {
       handleError(e, { fallbackMessage: 'Failed to persist mute preference' })
     }
@@ -398,7 +428,7 @@ class AudioSystem {
   /**
    * Disposes of the audio system, unloading resources.
    */
-  dispose() {
+  dispose(): void {
     this.stopMusic({ emit: false })
     this.currentSongId = null
     this.ambientStartPromise = null

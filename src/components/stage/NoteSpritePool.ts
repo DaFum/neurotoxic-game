@@ -10,29 +10,51 @@ export const NOTE_INITIAL_Y = -50
 export const NOTE_CENTER_OFFSET = 50
 export const NOTE_LIGHTNING_LANE_INDEX = 1
 
+type LaneData = {
+  color: number
+  renderX: number
+}
+
+export type NoteSprite = Sprite & {
+  isFallback: boolean
+  jitterOffset: number
+}
+
+type NoteTextures = {
+  skull: Texture | null
+  lightning: Texture | null
+}
+
 export class NoteSpritePool {
   static MAX_POOL_SIZE = 64
+  container: { removeChild: (sprite: Sprite) => void } | null
+  spritePool: NoteSprite[]
+  noteTextures: NoteTextures
+  rngErrorReported: boolean
 
-  constructor(container) {
+  constructor(container: { removeChild: (sprite: Sprite) => void } | null) {
     this.container = container
     this.spritePool = []
     this.noteTextures = { skull: null, lightning: null }
     this.rngErrorReported = false
   }
 
-  acquireSpriteFromPool(lane, laneIndex) {
-    let sprite
+  acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
+    let sprite: NoteSprite | undefined
     if (this.spritePool.length > 0) {
       sprite = this.spritePool.pop()
     } else {
       sprite = this.createNoteSprite(laneIndex)
     }
 
+    if (!sprite) {
+      sprite = this.createNoteSprite(laneIndex)
+    }
     this.initializeNoteSprite(sprite, lane, laneIndex)
     return sprite
   }
 
-  _getEffectiveTexture(laneIndex) {
+  _getEffectiveTexture(laneIndex: number): Texture | null {
     const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
     const desiredTexture = useLightning
       ? this.noteTextures.lightning
@@ -44,24 +66,30 @@ export class NoteSpritePool {
     return desiredTexture || fallbackTexture
   }
 
-  createNoteSprite(laneIndex) {
+  createNoteSprite(laneIndex: number): NoteSprite {
     const effectiveTexture = this._getEffectiveTexture(laneIndex)
 
     if (effectiveTexture) {
-      const sprite = new Sprite(effectiveTexture)
+      const sprite = new Sprite(effectiveTexture) as NoteSprite
       sprite.anchor.set(0.5)
       sprite.isFallback = false
+      sprite.jitterOffset = 0
       return sprite
     }
 
     // Use Texture.WHITE for fallback instead of Graphics
-    const sprite = new Sprite(Texture.WHITE)
+    const sprite = new Sprite(Texture.WHITE) as NoteSprite
     sprite.anchor.set(0.5)
     sprite.isFallback = true
+    sprite.jitterOffset = 0
     return sprite
   }
 
-  initializeNoteSprite(sprite, lane, laneIndex) {
+  initializeNoteSprite(
+    sprite: NoteSprite,
+    lane: LaneData,
+    laneIndex: number
+  ): void {
     sprite.visible = true
     sprite.alpha = 1
 
@@ -105,7 +133,7 @@ export class NoteSpritePool {
     }
   }
 
-  destroyNoteSprite(sprite) {
+  destroyNoteSprite(sprite: NoteSprite | null | undefined): void {
     if (!sprite) return
 
     if (this.container) {
@@ -116,7 +144,7 @@ export class NoteSpritePool {
     this.releaseSpriteToPool(sprite)
   }
 
-  releaseSpriteToPool(sprite) {
+  releaseSpriteToPool(sprite: NoteSprite): void {
     sprite.visible = false
     if (this.spritePool.length < NoteSpritePool.MAX_POOL_SIZE) {
       this.spritePool.push(sprite)
@@ -125,7 +153,7 @@ export class NoteSpritePool {
     }
   }
 
-  dispose() {
+  dispose(): void {
     // Destroy pooled sprites
     for (let i = 0; i < this.spritePool.length; i++) {
       this.spritePool[i].destroy()
