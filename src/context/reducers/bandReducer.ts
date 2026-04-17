@@ -44,7 +44,9 @@ export const handleUpdateBand = (
   let nextHarmony = state.band.harmony
   if ('harmony' in updates) {
     // Explicit bounds check mandated by [STATE_SAFETY] critical rules
-    nextHarmony = clampBandHarmony(updates.harmony as number)
+    nextHarmony = clampBandHarmony(
+      (updates.harmony as number | undefined) ?? nextHarmony
+    )
   }
 
   const mergedBand = {
@@ -148,7 +150,7 @@ export const addContrabandHelper = (
     if (!item.stackable) {
       return state // Don't add duplicate non-stackable items
     } else {
-      const currentStacks = (existingItem.stacks as number) || 1
+      const currentStacks = (existingItem.stacks as number | undefined) ?? 1
       const max = (item.maxStacks as number) || Infinity
       if (currentStacks < max) {
         newBand.stash = Object.assign(Object.create(null), currentStash, {
@@ -167,7 +169,7 @@ export const addContrabandHelper = (
   const newInstance = {
     ...item,
     instanceId,
-    remainingDuration: (item.duration as number | undefined) || null,
+    remainingDuration: (item.duration as number | undefined) ?? null,
     applied: !!item.applyOnAdd,
     stacks: item.stackable ? 1 : undefined
   }
@@ -182,14 +184,15 @@ export const addContrabandHelper = (
     } else if (item.effectType === 'stamina_max') {
       newBand.members = newBand.members.map((m: BandMember) => ({
         ...m,
-        staminaMax: ((m.staminaMax as number) || 100) + (item.value as number)
+        staminaMax:
+          ((m.staminaMax as number | undefined) ?? 100) + (item.value as number)
       }))
     } else if (item.effectType === 'guitar_difficulty') {
       newBand.performance = {
         ...newBand.performance,
         guitarDifficulty: Math.max(
           0.1,
-          (newBand.performance?.guitarDifficulty || 1) + (item.value as number)
+          (newBand.performance?.guitarDifficulty ?? 1) + (item.value as number)
         )
       }
     } else if (item.effectType === 'crit') {
@@ -295,7 +298,8 @@ export const applyContrabandEffect = (
     if (item.effectType === 'stamina_max') {
       newBand.members = newBand.members.map((m: BandMember) => ({
         ...m,
-        staminaMax: ((m.staminaMax as number) || 100) + (item.value as number)
+        staminaMax:
+          ((m.staminaMax as number | undefined) ?? 100) + (item.value as number)
       }))
     } else if (item.effectType === 'style') {
       newBand.style = ((newBand.style as number) || 0) + (item.value as number)
@@ -321,7 +325,7 @@ export const applyContrabandEffect = (
     }
   }
 
-  if (item.duration) {
+  if (item.duration != null) {
     newBand.activeContrabandEffects = [
       ...(newBand.activeContrabandEffects || []),
       {
