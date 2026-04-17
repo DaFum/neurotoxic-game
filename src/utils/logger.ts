@@ -16,6 +16,10 @@ export const LOG_LEVELS = {
  * A configurable logger system for debugging game flow.
  */
 export class Logger {
+  logs: any[]
+  maxLogs: number
+  minLevel: number
+  listeners: Array<(event: any) => void>
   constructor() {
     this.logs = []
     this.maxLogs = 1000
@@ -35,10 +39,10 @@ export class Logger {
    * Set the minimum log level filter.
    * @param {number} level
    */
-  setLevel(level) {
+  setLevel(level: number): void {
     this.minLevel = level
     try {
-      localStorage.setItem('neurotoxic_log_level', level)
+      localStorage.setItem('neurotoxic_log_level', String(level))
     } catch (_e) {
       // Ignore storage errors
     }
@@ -49,7 +53,9 @@ export class Logger {
    * @param {Function} callback - Callback receiving {type, entry}.
    * @returns {Function} Unsubscribe function
    */
-  subscribe(callback) {
+  subscribe(
+    callback: (event: { type: string; entry: any }) => void
+  ): () => void {
     this.listeners.push(callback)
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback)
@@ -61,7 +67,7 @@ export class Logger {
    * @param {object} event - Event object { type, entry }.
    * @private
    */
-  _emit(event) {
+  _emit(event: any): void {
     this.listeners.forEach(cb => {
       cb(event)
     })
@@ -72,7 +78,7 @@ export class Logger {
    * @param {object} entry - Log entry.
    * @private
    */
-  _push(entry) {
+  _push(entry: any): void {
     this.logs.unshift(entry) // Newest first
     if (this.logs.length > this.maxLogs) {
       this.logs.pop()
@@ -89,7 +95,19 @@ export class Logger {
    * @returns {object} Formatted log object.
    * @private
    */
-  _format(level, channel, message, data) {
+  _format(
+    level: string,
+    channel: string,
+    message: string,
+    data: any
+  ): {
+    id: string
+    timestamp: string
+    level: string
+    channel: string
+    message: string
+    data: any
+  } {
     return {
       id: getSafeUUID(),
       timestamp: new Date().toISOString(),
@@ -106,7 +124,7 @@ export class Logger {
    * @param {string} message - The log message.
    * @param {any} [data] - Optional data to attach.
    */
-  debug(channel, message, data) {
+  debug(channel: string, message: string, data?: any): void {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
     if (!import.meta.env?.PROD) {
       console.debug(`[${channel}] ${message}`, data || '')
@@ -120,7 +138,7 @@ export class Logger {
    * @param {string} message - The log message.
    * @param {any} [data] - Optional data.
    */
-  info(channel, message, data) {
+  info(channel: string, message: string, data?: any): void {
     if (this.minLevel > LOG_LEVELS.INFO) return
     if (!import.meta.env?.PROD) {
       console.info(`[${channel}] ${message}`, data || '')
@@ -134,7 +152,7 @@ export class Logger {
    * @param {string} message - The log message.
    * @param {any} [data] - Optional data.
    */
-  warn(channel, message, data) {
+  warn(channel: string, message: string, data?: any): void {
     if (this.minLevel > LOG_LEVELS.WARN) return
     console.warn(`[${channel}] ${message}`, data || '')
     this._push(this._format('WARN', channel, message, data))
@@ -146,7 +164,7 @@ export class Logger {
    * @param {string} message - The log message.
    * @param {any} [data] - Optional data (usually the error object).
    */
-  error(channel, message, data) {
+  error(channel: string, message: string, data?: any): void {
     if (this.minLevel > LOG_LEVELS.ERROR) return
     console.error(`[${channel}] ${message}`, data || '')
     this._push(this._format('ERROR', channel, message, data))
@@ -155,7 +173,7 @@ export class Logger {
   /**
    * Clears all stored logs.
    */
-  clear() {
+  clear(): void {
     this.logs = []
     this._emit({ type: 'clear' })
   }
@@ -164,7 +182,7 @@ export class Logger {
    * Dumps logs as a JSON string.
    * @returns {string} JSON representation of logs.
    */
-  dump() {
+  dump(): string {
     return JSON.stringify(this.logs, null, 2)
   }
 }

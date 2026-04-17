@@ -12,9 +12,16 @@ import type {
   ClinicActionPayload,
   GameAction,
   GameState,
+  GameMap,
+  GameEvent,
   GigModifiers,
+  GigStats,
   MerchPressPayload,
   PirateBroadcastPayload,
+  QuestState,
+  ResetStatePayload,
+  EventDeltaPayload,
+  Venue,
   ToastPayload,
   TradeVoidItemPayload,
   UpdateBandPayload,
@@ -128,7 +135,7 @@ export const createUpdateSettingsAction = (
  * @returns {Object} Action object
  */
 export const createSetMapAction = (
-  map: unknown
+  map: GameMap
 ): Extract<GameAction, { type: typeof ActionTypes.SET_MAP }> => ({
   type: ActionTypes.SET_MAP,
   payload: map
@@ -140,7 +147,7 @@ export const createSetMapAction = (
  * @returns {Object} Action object
  */
 export const createSetGigAction = (
-  gig: Record<string, unknown> | null
+  gig: Venue | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_GIG }> => ({
   type: ActionTypes.SET_GIG,
   payload: gig
@@ -152,7 +159,7 @@ export const createSetGigAction = (
  * @returns {Object} Action object
  */
 export const createStartGigAction = (
-  venue: Record<string, unknown>
+  venue: Venue
 ): Extract<GameAction, { type: typeof ActionTypes.START_GIG }> => ({
   type: ActionTypes.START_GIG,
   payload: venue
@@ -176,7 +183,7 @@ export const createSetSetlistAction = (
  * @returns {Object} Action object
  */
 export const createSetLastGigStatsAction = (
-  stats: Record<string, unknown> | null
+  stats: GigStats | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => ({
   type: ActionTypes.SET_LAST_GIG_STATS,
   payload: stats
@@ -188,7 +195,7 @@ export const createSetLastGigStatsAction = (
  * @returns {Object} Action object
  */
 export const createSetActiveEventAction = (
-  event: Record<string, unknown> | null
+  event: GameEvent | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_ACTIVE_EVENT }> => ({
   type: ActionTypes.SET_ACTIVE_EVENT,
   payload: event
@@ -275,7 +282,7 @@ export const createLoadGameAction = (
  * @returns {Object} Action object
  */
 export const createResetStateAction = (
-  payload: Record<string, unknown> = {}
+  payload: ResetStatePayload = {}
 ): Extract<GameAction, { type: typeof ActionTypes.RESET_STATE }> => ({
   type: ActionTypes.RESET_STATE,
   payload
@@ -287,7 +294,7 @@ export const createResetStateAction = (
  * @returns {Object} Action object
  */
 export const createApplyEventDeltaAction = (
-  delta: Record<string, unknown>
+  delta: EventDeltaPayload
 ): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => ({
   type: ActionTypes.APPLY_EVENT_DELTA,
   payload: delta
@@ -490,7 +497,7 @@ export const createAddVenueBlacklistAction = (
  * @returns {Object} Action object
  */
 export const createAddQuestAction = (
-  quest: Record<string, unknown>
+  quest: QuestState
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => ({
   type: ActionTypes.ADD_QUEST,
   payload: quest

@@ -11,32 +11,29 @@
  * - Solution: Used refs for gameState to separate UI updates from logical ticks.
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import type { TFunction } from 'i18next'
 import { getRandomChatter } from '../data/chatter'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
-import type { BandMember, GameState } from '../types/game'
+import type { BandMember } from '../types/game'
+import type { TranslationCallback } from '../types/callbacks'
+import type {
+  ChatterGameState,
+  ChatterMessageData,
+  ChatterMessageType
+} from '../types/components'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
 
-interface ChatterMessage {
-  id: string
-  text: string
-  speaker: string
-  type: string
-  scene: string
-}
-
 interface ChatterTemplate {
   text: string
   speaker?: string
-  type: string
+  type: ChatterMessageType
 }
 
 const resolveSpeaker = (
   fixedSpeaker: string | undefined,
   bandMembers: BandMember[] | undefined,
-  t: TFunction
+  t: TranslationCallback
 ): string => {
   if (fixedSpeaker) return fixedSpeaker
   const memberNames = []
@@ -55,9 +52,12 @@ const resolveSpeaker = (
   return t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 }
 
-export const useChatterLogic = (gameState: GameState, t: TFunction) => {
-  const stateRef = useRef<GameState>(gameState)
-  const [messages, setMessages] = useState<ChatterMessage[]>([])
+export const useChatterLogic = (
+  gameState: ChatterGameState,
+  t: TranslationCallback
+) => {
+  const stateRef = useRef<ChatterGameState>(gameState)
+  const [messages, setMessages] = useState<ChatterMessageData[]>([])
 
   const removeMessage = useCallback((id: string) => {
     setMessages(prev => prev.filter(m => m.id !== id))

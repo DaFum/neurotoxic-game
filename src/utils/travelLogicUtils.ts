@@ -5,6 +5,20 @@
  */
 import { normalizeVenueId } from './mapUtils'
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
+import type { BandState, MapNode, PlayerState } from '../types/game'
+
+interface TravelArrivalUpdateInput {
+  player: PlayerState
+  band: BandState
+  node: MapNode & { venue?: unknown }
+  fuelLiters: number
+  totalCost: number
+}
+
+interface TravelArrivalUpdates {
+  nextPlayer: Partial<PlayerState>
+  nextBand: Partial<BandState> | null
+}
 
 export const getTravelArrivalUpdates = ({
   player,
@@ -12,7 +26,7 @@ export const getTravelArrivalUpdates = ({
   node,
   fuelLiters,
   totalCost
-}) => {
+}: TravelArrivalUpdateInput): TravelArrivalUpdates => {
   const nextPlayer = {
     money: clampPlayerMoney((player.money ?? 0) - totalCost),
     van: {

@@ -1,17 +1,23 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { ScoreDisplay } from './ScoreDisplay'
 import { ComboDisplay } from './ComboDisplay'
 import { OverloadMeter } from './OverloadMeter'
 import { UIFrameCorner } from '../../ui/shared/Icons'
+
+interface StatsOverlayProps {
+  score: number
+  combo: number
+  accuracy: number
+  overload: number
+}
 
 export const StatsOverlay = memo(function StatsOverlay({
   score,
   combo,
   accuracy,
   overload
-}) {
+}: StatsOverlayProps) {
   return (
     <div className='absolute top-32 left-4 z-10 text-star-white font-mono pointer-events-none p-4 relative group'>
       <UIFrameCorner className='absolute top-0 left-0 w-4 h-4 text-ash-gray opacity-50' />
@@ -25,10 +31,3 @@ export const StatsOverlay = memo(function StatsOverlay({
     </div>
   )
 })
-
-StatsOverlay.propTypes = {
-  score: PropTypes.number.isRequired,
-  combo: PropTypes.number.isRequired,
-  accuracy: PropTypes.number.isRequired,
-  overload: PropTypes.number.isRequired
-}

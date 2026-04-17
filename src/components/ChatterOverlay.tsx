@@ -1,12 +1,15 @@
 // TODO: Review this file
 import { useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
-import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useChatterLogic } from '../hooks/useChatterLogic'
-import type { GameState } from '../types/game'
+import type {
+  ChatterMessageData,
+  ChatterMessageProps,
+  ChatterMessageType,
+  ChatterOverlayProps
+} from '../types/components'
 
 const MESSAGE_LIFETIME_MS = 10000
 
@@ -47,11 +50,21 @@ const PRE_GIG_BASE_STYLE = {
   speakerColor: 'text-toxic-green'
 }
 
+interface SceneStyle {
+  accent: string
+  accentGlow: string
+  borderColor: string
+  labelColor: string
+  barColor: string
+  speakerColor: string
+  icon: string
+}
+
 /**
  * Per-scene visual theme for the chatter box.
  * Each entry defines border color, accent color, icon, etc.
  */
-const SCENE_STYLES = {
+const SCENE_STYLES: Record<string, SceneStyle> = {
   [GAME_PHASES.OVERWORLD]: OVERWORLD_STYLE,
   [GAME_PHASES.PRE_GIG]: {
     ...PRE_GIG_BASE_STYLE,
@@ -93,26 +106,6 @@ const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
 
 const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
 
-type ChatterMessageType = 'hate' | string
-
-interface SceneStyle {
-  accent: string
-  accentGlow: string
-  borderColor: string
-  labelColor: string
-  barColor: string
-  speakerColor: string
-  icon: string
-}
-
-interface ChatterMessageData {
-  id: string
-  text: string
-  speaker: string
-  type: ChatterMessageType
-  scene: string
-}
-
 interface ChatterMessageHeaderProps {
   sceneStyle: SceneStyle
   sceneLabel: string
@@ -126,16 +119,6 @@ interface ChatterMessageBodyProps {
 
 interface ChatterMessageLifetimeBarProps {
   barColorClass: string
-}
-
-interface ChatterMessageProps {
-  msg: ChatterMessageData
-  onRemove: (messageId: string) => void
-  t: TFunction
-}
-
-interface ChatterOverlayProps {
-  gameState: GameState
 }
 
 const resolveMessageTextColor = (msgType: ChatterMessageType, currentScene: string): string => {
@@ -168,11 +151,6 @@ const ChatterMessageHeader = memo(({
 ))
 
 ChatterMessageHeader.displayName = 'ChatterMessageHeader'
-ChatterMessageHeader.propTypes = {
-  sceneStyle: PropTypes.object.isRequired,
-  sceneLabel: PropTypes.string.isRequired,
-  speaker: PropTypes.string.isRequired
-}
 
 const ChatterMessageBody = memo(({ text, textColorClass }: ChatterMessageBodyProps) => (
   <div className='pl-3 pr-2 py-2.5'>
@@ -183,10 +161,6 @@ const ChatterMessageBody = memo(({ text, textColorClass }: ChatterMessageBodyPro
 ))
 
 ChatterMessageBody.displayName = 'ChatterMessageBody'
-ChatterMessageBody.propTypes = {
-  text: PropTypes.string.isRequired,
-  textColorClass: PropTypes.string.isRequired
-}
 
 const ChatterMessageLifetimeBar = memo(({ barColorClass }: ChatterMessageLifetimeBarProps) => (
   <div className='h-[2px] w-full bg-ash-gray/10'>
@@ -203,9 +177,6 @@ const ChatterMessageLifetimeBar = memo(({ barColorClass }: ChatterMessageLifetim
 ))
 
 ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
-ChatterMessageLifetimeBar.propTypes = {
-  barColorClass: PropTypes.string.isRequired
-}
 
 const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
   const messageScene = msg.scene
@@ -275,12 +246,6 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
 
 ChatterMessage.displayName = 'ChatterMessage'
 
-ChatterMessage.propTypes = {
-  msg: PropTypes.object.isRequired,
-  onRemove: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired
-}
-
 /**
  * Displays an animated social chatter box that is always visible on top of all content.
  *
@@ -333,7 +298,3 @@ export const ChatterOverlay = memo(({ gameState }: ChatterOverlayProps) => {
 })
 
 ChatterOverlay.displayName = 'ChatterOverlay'
-
-ChatterOverlay.propTypes = {
-  gameState: PropTypes.object.isRequired
-}

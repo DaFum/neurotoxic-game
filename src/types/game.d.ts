@@ -169,6 +169,39 @@ export interface ToastPayload {
   [key: string]: unknown
 }
 
+export interface GigStats extends UnknownRecord {
+  score?: number
+  accuracy?: number
+  combo?: number
+  health?: number
+  overload?: number
+}
+
+export interface QuestState extends UnknownRecord {
+  id: string
+  label?: string
+  deadline?: number | null
+  progress?: number
+  required?: number
+  rewardType?: string
+  rewardData?: UnknownRecord
+  rewardFlag?: string
+  failurePenalty?: UnknownRecord
+}
+
+export interface ResetStatePayload extends UnknownRecord {
+  settings?: UnknownRecord
+  unlocks?: string[]
+}
+
+export interface EventDeltaPayload extends UnknownRecord {
+  player?: Partial<PlayerState>
+  band?: Partial<BandState>
+  social?: Partial<SocialState>
+  activeStoryFlags?: string[]
+  pendingEvents?: Array<GameEvent | string>
+}
+
 export type UpdatePlayerPayload =
   | Partial<PlayerState>
   | ((player: PlayerState) => Partial<PlayerState>)
@@ -238,11 +271,11 @@ export interface GameState {
   player: PlayerState
   band: BandState
   social: SocialState
-  gameMap: GameMap | UnknownRecord
-  currentGig: Venue | UnknownRecord | null
+  gameMap: GameMap
+  currentGig: Venue | null
   setlist: unknown[]
   lastGigStats: UnknownRecord | null
-  activeEvent: GameEvent | UnknownRecord | null
+  activeEvent: GameEvent | null
   pendingEvents: GameEvent[]
   isScreenshotMode: boolean
   toasts: ToastPayload[]
@@ -271,12 +304,12 @@ export type GameAction =
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
   | Action<ActionTypes['UPDATE_SOCIAL'], Partial<SocialState>>
   | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
-  | Action<ActionTypes['SET_MAP'], unknown>
-  | Action<ActionTypes['SET_GIG'], UnknownRecord | null>
-  | Action<ActionTypes['START_GIG'], UnknownRecord>
+  | Action<ActionTypes['SET_MAP'], GameMap>
+  | Action<ActionTypes['SET_GIG'], Venue | null>
+  | Action<ActionTypes['START_GIG'], Venue>
   | Action<ActionTypes['SET_SETLIST'], unknown[]>
-  | Action<ActionTypes['SET_LAST_GIG_STATS'], UnknownRecord | null>
-  | Action<ActionTypes['SET_ACTIVE_EVENT'], UnknownRecord | null>
+  | Action<ActionTypes['SET_LAST_GIG_STATS'], GigStats | null>
+  | Action<ActionTypes['SET_ACTIVE_EVENT'], GameEvent | null>
   | Action<ActionTypes['ADD_TOAST'], ToastPayload>
   | Action<ActionTypes['REMOVE_TOAST'], string>
   | Action<
@@ -284,8 +317,8 @@ export type GameAction =
       Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
     >
   | Action<ActionTypes['LOAD_GAME'], Partial<GameState>>
-  | Action<ActionTypes['RESET_STATE'], UnknownRecord>
-  | Action<ActionTypes['APPLY_EVENT_DELTA'], UnknownRecord>
+  | Action<ActionTypes['RESET_STATE'], ResetStatePayload>
+  | Action<ActionTypes['APPLY_EVENT_DELTA'], EventDeltaPayload>
   | Action<ActionTypes['POP_PENDING_EVENT']>
   | Action<ActionTypes['CONSUME_ITEM'], string>
   | Action<ActionTypes['ADVANCE_DAY']>
@@ -306,7 +339,7 @@ export type GameAction =
       ActionTypes['ADD_VENUE_BLACKLIST'],
       { venueId: string; toastId: string }
     >
-  | Action<ActionTypes['ADD_QUEST'], UnknownRecord>
+  | Action<ActionTypes['ADD_QUEST'], QuestState>
   | Action<
       ActionTypes['ADVANCE_QUEST'],
       { questId: string; amount: number; randomIdx?: number }

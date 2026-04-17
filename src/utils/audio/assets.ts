@@ -16,13 +16,13 @@ import {
 } from './constants'
 
 // Import all MIDI files as URLs
-const midiGlob = import.meta.glob('../../assets/**/*.mid', {
+const midiGlob: any = import.meta.glob('../../assets/**/*.mid', {
   query: '?url',
   import: 'default',
   eager: true
 })
 
-const oggGlob = import.meta.glob('../../assets/**/*.ogg', {
+const oggGlob: any = import.meta.glob('../../assets/**/*.ogg', {
   query: '?url',
   import: 'default',
   eager: true
@@ -51,7 +51,7 @@ export const oggCandidates =
   fullPathCandidates.length > 0 ? fullPathCandidates : oggAssetKeys
 
 // ⚡ BOLT OPTIMIZATION: Track in-flight requests to deduplicate concurrent loads
-const pendingAudioRequests = new Map()
+const pendingAudioRequests: Map<string, Promise<AudioBuffer | null>> = new Map()
 
 if (oggCandidates.length > 0) {
   logger.info(
@@ -71,7 +71,7 @@ if (oggCandidates.length > 0) {
  * @param {string} mimeType - e.g. 'audio/ogg; codecs=vorbis'
  * @returns {boolean} True when the browser reports 'probably' or 'maybe'.
  */
-function canPlayAudioType(mimeType) {
+function canPlayAudioType(mimeType: string): boolean {
   try {
     const a = new Audio()
     const result = a.canPlayType(mimeType)
@@ -91,7 +91,7 @@ function canPlayAudioType(mimeType) {
  * @param {string} filename - The audio filename to check.
  * @returns {boolean} True when the asset exists.
  */
-export function hasAudioAsset(filename) {
+export function hasAudioAsset(filename: string): boolean {
   if (typeof filename !== 'string') return false
   const normalized = filename.replace(PATH_PREFIX_REGEX, '')
   return Boolean(
@@ -105,7 +105,7 @@ export function hasAudioAsset(filename) {
  * @param {AudioBuffer} buffer - The buffer to measure.
  * @returns {number} Estimated size in bytes.
  */
-function getAudioBufferSize(buffer) {
+function getAudioBufferSize(buffer: AudioBuffer | null | undefined): number {
   if (!buffer) return 0
   return (buffer.length || 0) * (buffer.numberOfChannels || 0) * 4
 }
@@ -115,7 +115,9 @@ function getAudioBufferSize(buffer) {
  * @param {string} filename - Audio filename (e.g. .ogg).
  * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null on failure.
  */
-export async function loadAudioBuffer(filename) {
+export async function loadAudioBuffer(
+  filename: string
+): Promise<AudioBuffer | null> {
   if (typeof filename !== 'string' || filename.length === 0) return null
   const cacheKey = filename.replace(PATH_PREFIX_REGEX, '')
   if (audioState.audioBufferCache.has(cacheKey)) {
@@ -128,7 +130,7 @@ export async function loadAudioBuffer(filename) {
 
   // Return existing promise if already loading
   if (pendingAudioRequests.has(cacheKey)) {
-    return pendingAudioRequests.get(cacheKey)
+    return pendingAudioRequests.get(cacheKey) as Promise<AudioBuffer | null>
   }
 
   const promise = loadAudioBufferInternal(filename, cacheKey)
@@ -147,7 +149,10 @@ export async function loadAudioBuffer(filename) {
  * @param {string} cacheKey - The cache key for storage.
  * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null.
  */
-async function loadAudioBufferInternal(filename, cacheKey) {
+async function loadAudioBufferInternal(
+  filename: string,
+  cacheKey: string
+): Promise<AudioBuffer | null> {
   const { publicBasePath } = getBaseAssetPath()
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {

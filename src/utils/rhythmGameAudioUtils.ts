@@ -17,7 +17,7 @@ import { generateNotesForSong, parseSongNotes } from './rhythmUtils'
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { getSafeRandom } from './crypto'
 import type { Song } from '../types/audio'
-import type { BandState, GameState, GigModifiers } from '../types/game'
+import type { BandState, GameMap, GigModifiers } from '../types/game'
 import type {
   ToastCallback,
   TranslationCallback
@@ -83,9 +83,7 @@ export const setupGigPhysics = (
   band: BandState,
   gigModifiers: Partial<GigModifiers>,
   currentGigId: string | undefined,
-  gameMap: GameState['gameMap'] & {
-    nodes?: Record<string, { layer?: number }>
-  },
+  gameMap: GameMap,
   playerNodeId: string,
   setlistFirstId: string | undefined
 ): {
@@ -100,7 +98,7 @@ export const setupGigPhysics = (
   const activeSong = SONGS_BY_ID.get(songId) || SONGS_DB[0] || DEFAULT_SONG
   const physics = calculateGigPhysics(band, activeSong)
 
-  const currentNode = gameMap?.nodes?.[playerNodeId]
+  const currentNode = gameMap.nodes[playerNodeId]
   if (!currentNode) {
     logger.error('RhythmGame', `No map node found for ${playerNodeId}`)
     return null

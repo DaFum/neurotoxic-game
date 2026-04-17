@@ -1,11 +1,16 @@
 // TODO: Review this file
 import { memo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 import { BlockMeter } from '../../ui/shared'
 
-export const OverloadMeter = memo(function OverloadMeter({ overload }) {
+interface OverloadMeterProps {
+  overload: number
+}
+
+export const OverloadMeter = memo(function OverloadMeter({
+  overload
+}: OverloadMeterProps) {
   const { t } = useTranslation()
   return (
     <div className='mt-3 w-48 bg-void-black/80 p-2 border border-toxic-green/30 backdrop-blur-sm'>
@@ -18,7 +23,3 @@ export const OverloadMeter = memo(function OverloadMeter({ overload }) {
     </div>
   )
 })
-
-OverloadMeter.propTypes = {
-  overload: PropTypes.number.isRequired
-}

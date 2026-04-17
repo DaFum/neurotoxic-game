@@ -1,16 +1,30 @@
-import type { GameState } from './game'
+import type { EventOption, GameState, MapNode } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
+
+/**
+ * Known chatter variants:
+ * - `normal`: default emitted by `getRandomChatter`
+ * - `hate`: explicit style override (chromatic hostile text)
+ *
+ * Keep `(string & {})` to allow future/remote variants without breaking.
+ */
+export type ChatterMessageType = 'normal' | 'hate' | (string & {})
 
 export interface ChatterMessageData {
   id: string
   text: string
   speaker: string
-  type: string
+  type: ChatterMessageType
   scene: string
 }
 
+export type ChatterGameState = Pick<
+  GameState,
+  'currentScene' | 'band' | 'player' | 'gameMap' | 'social' | 'lastGigStats'
+>
+
 export interface ChatterOverlayProps {
-  gameState: GameState
+  gameState: ChatterGameState
 }
 
 export interface GigHUDProps {
@@ -24,25 +38,25 @@ export interface GigHUDProps {
     isAudioReady: boolean
     accuracy: number
   }
-  gameStateRef: { current: unknown }
+  gameStateRef: { current: GameState }
   onLaneInput: (laneIndex: number, isDown: boolean, now: number) => void
 }
 
 export interface MapNodeProps {
-  node: Record<string, unknown>
+  node: MapNode
   isCurrentNode?: boolean
   isTargetNode?: boolean
   onSelect?: (nodeId: string) => void
 }
 
 export interface MapConnectionProps {
-  from: Record<string, unknown>
-  to: Record<string, unknown>
+  from: MapNode
+  to: MapNode
   isUnlocked?: boolean
 }
 
 export interface HecklerOverlayProps {
-  gameStateRef: { current: unknown }
+  gameStateRef: { current: GameState }
 }
 
 export interface GenericListProps<TItem = unknown> {
@@ -56,7 +70,7 @@ export interface ChatterMessageProps {
 }
 
 export interface SocialOptionButtonProps {
-  opt: Record<string, unknown>
+  opt: EventOption
   index: number
   onSelect: (index: number) => void
 }

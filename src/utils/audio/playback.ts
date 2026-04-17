@@ -17,7 +17,7 @@ import {
  * Plays a sound effect by type.
  * @param {string} type - The type of SFX ('hit', 'miss', 'menu', 'travel', 'cash').
  */
-export function playSFX(type) {
+export function playSFX(type: string): void {
   if (!audioState.isSetup || !audioState.sfxSynth) return
 
   const now = Tone.now()
@@ -78,7 +78,7 @@ export function playSFX(type) {
  * @param {number} vol - Volume between 0 and 1.
  * @returns {boolean} True when applied to an existing gain node.
  */
-export function setSFXVolume(vol) {
+export function setSFXVolume(vol: number): boolean {
   if (!audioState.sfxGain) return false
   // Convert 0-1 linear to decibels (approximate or use ramp)
   // Tone.Gain accepts linear values if units are default, but volume is typically db.
@@ -92,7 +92,7 @@ export function setSFXVolume(vol) {
  * @param {number} vol - Volume between 0 and 1.
  * @returns {boolean} True when applied to an existing gain node.
  */
-export function setMusicVolume(vol) {
+export function setMusicVolume(vol: number): boolean {
   if (!audioState.musicGain) return false
   const next = Math.max(0, Math.min(1, vol))
   audioState.musicGain.gain.rampTo(next, 0.1)
@@ -111,7 +111,11 @@ export const calculateGigTimeMs = ({
   contextTimeSec,
   startCtxTimeSec,
   offsetMs
-}) => {
+}: {
+  contextTimeSec: number
+  startCtxTimeSec: number | null
+  offsetMs?: number
+}): number => {
   const safeOffset = Number.isFinite(offsetMs) ? offsetMs : 0
   if (!Number.isFinite(contextTimeSec) || !Number.isFinite(startCtxTimeSec)) {
     return safeOffset
@@ -138,7 +142,7 @@ export function getGigTimeMs() {
  * @param {AudioBufferSourceNode} source - The ended source node.
  * @returns {void}
  */
-const handleGigSourceEnded = source => {
+const handleGigSourceEnded = (source: any): void => {
   if (audioState.gigSource !== source || audioState.gigIsPaused) return
   if (audioState.gigOnEnded) {
     audioState.gigOnEnded({
@@ -152,7 +156,13 @@ const handleGigSourceEnded = source => {
   audioState.gigSource = null
 }
 
-const createGigBufferSource = ({ buffer, onEnded }) => {
+const createGigBufferSource = ({
+  buffer,
+  onEnded
+}: {
+  buffer: any
+  onEnded?: any
+}): any => {
   return createAndConnectBufferSource(buffer, onEnded)
 }
 
@@ -170,6 +180,11 @@ export const calculateGigPlaybackWindow = ({
   baseOffsetMs,
   seekOffsetMs,
   durationMs
+}: {
+  bufferDurationSec: number
+  baseOffsetMs: number
+  seekOffsetMs: number
+  durationMs: number | null
 }) => {
   const safeBaseOffsetMs = Number.isFinite(baseOffsetMs)
     ? Math.max(0, baseOffsetMs)
@@ -245,7 +260,13 @@ export async function startGigPlayback({
   delayMs = 0,
   durationMs = null,
   onEnded = null
-}) {
+}: {
+  filename: string
+  bufferOffsetMs?: number
+  delayMs?: number
+  durationMs?: number | null
+  onEnded?: ((args: any) => void) | null
+}): Promise<boolean> {
   const unlocked = await ensureAudioContext()
   if (!unlocked) return false
 
@@ -353,7 +374,11 @@ export function startGigClock({
   delayMs = 0,
   offsetMs = 0,
   startTimeSec = null
-} = {}) {
+}: {
+  delayMs?: number
+  offsetMs?: number
+  startTimeSec?: number | null
+} = {}): void {
   const startTime = Number.isFinite(startTimeSec)
     ? startTimeSec
     : getAudioContextTimeSec() + Math.max(0, delayMs) / 1000
@@ -379,7 +404,7 @@ export function startGigClock({
  * Pauses gig playback and preserves the current offset.
  * @returns {void}
  */
-export function pauseGigPlayback() {
+export function pauseGigPlayback(): void {
   if (audioState.gigIsPaused) return
   if (!audioState.gigSource && audioState.gigStartCtxTime == null) return
   logger.debug(
@@ -408,7 +433,7 @@ export function pauseGigPlayback() {
  * Resumes gig playback from the stored offset.
  * @returns {boolean} True on success or no-op, false on source.start() failure.
  */
-export function resumeGigPlayback() {
+export function resumeGigPlayback(): boolean {
   if (!audioState.gigIsPaused) return true
   logger.debug(
     'AudioEngine',
@@ -502,7 +527,7 @@ export function resumeGigPlayback() {
  * Internal function to stop audio without invalidating pending requests.
  * Used by playback functions to clear previous state.
  */
-export function stopAudioInternal() {
+export function stopAudioInternal(): void {
   stopTransportAndClear()
   cleanupTransportEvents()
 }
@@ -511,7 +536,7 @@ export function stopAudioInternal() {
  * Stops ambient OGG playback and clears ambient state.
  * @returns {void}
  */
-export function stopAmbientPlayback() {
+export function stopAmbientPlayback(): void {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
   }
@@ -522,7 +547,7 @@ export function stopAmbientPlayback() {
  * Stops the audio transport and disposes of the current loop.
  * Also invalidates any pending playback requests.
  */
-export function stopAudio() {
+export function stopAudio(): void {
   audioState.playRequestId++
   logger.debug(
     'AudioEngine',
@@ -537,7 +562,7 @@ export function stopAudio() {
  * Pauses the audio transport.
  * @returns {Promise<void>} Resolves when pause is complete.
  */
-export async function pauseAudio() {
+export async function pauseAudio(): Promise<void> {
   try {
     if (Tone.getTransport().state === 'started') {
       const p = Tone.getTransport().pause()
@@ -559,7 +584,7 @@ export async function pauseAudio() {
  * Resumes the audio transport.
  * @returns {Promise<boolean>} Resolves to the boolean result of resumeGigPlayback() when resume is complete.
  */
-export async function resumeAudio() {
+export async function resumeAudio(): Promise<boolean> {
   try {
     if (Tone.getTransport().state === 'paused') {
       const p = Tone.getTransport().start()
@@ -592,7 +617,7 @@ export async function resumeAudio() {
  * Returns the current Tone transport state.
  * @returns {'started'|'stopped'|'paused'}
  */
-export function getTransportState() {
+export function getTransportState(): 'started' | 'stopped' | 'paused' {
   return Tone.getTransport().state
 }
 
@@ -601,7 +626,7 @@ export function getTransportState() {
  * @param {boolean} muted - Whether the output destination should be muted.
  * @returns {boolean} The applied mute state.
  */
-export function setDestinationMute(muted) {
+export function setDestinationMute(muted: boolean): boolean {
   const nextMute = Boolean(muted)
   try {
     Tone.getDestination().mute = nextMute
@@ -620,7 +645,7 @@ export function setDestinationMute(muted) {
  * Returns whether ambient OGG playback is currently active.
  * @returns {boolean}
  */
-export function isAmbientOggPlaying() {
+export function isAmbientOggPlaying(): boolean {
   return audioState.ambientSource != null
 }
 
@@ -631,7 +656,7 @@ export function isAmbientOggPlaying() {
  * when mixing Date.now() with Tone scheduling.
  * @returns {number} Current audio time in ms.
  */
-export function getAudioTimeMs() {
+export function getAudioTimeMs(): number {
   return Tone.now() * 1000
 }
 
@@ -639,6 +664,6 @@ export function getAudioTimeMs() {
  * Returns the current play request ID.
  * @returns {number} The play request ID.
  */
-export function getPlayRequestId() {
+export function getPlayRequestId(): number {
   return audioState.playRequestId
 }

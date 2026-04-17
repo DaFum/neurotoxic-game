@@ -18,15 +18,75 @@ import {
   clampBandHarmony
 } from './gameStateUtils'
 
+type RandomFn = () => number
+
+interface SocialEngineGameState {
+  player: {
+    day?: number
+    money?: number
+    fame?: number
+    [key: string]: unknown
+  }
+  band?: Record<string, unknown>
+  social?: {
+    reputationCooldown?: number
+    trend?: string
+    instagram?: number
+    tiktok?: number
+    youtube?: number
+    controversyLevel?: number
+    zealotry?: number
+    activeDeals?: unknown[]
+    brandReputation?: Record<string, number>
+    [key: string]: unknown
+  }
+  currentGig?: { id?: string; [key: string]: unknown } | null
+  [key: string]: unknown
+}
+
+interface SocialPostOption {
+  id: string
+  category?: string
+  badges?: string[]
+  platform?: string
+  condition: (gameState: any) => boolean
+  resolve?: (gameState: SocialEngineGameState & { diceRoll: number }) => Record<string, unknown>
+  [key: string]: unknown
+}
+
+interface WeightedPostOption extends SocialPostOption {
+  _weight: number
+  _force?: boolean
+}
+
+interface ViralStats {
+  accuracy: number
+  maxCombo: number
+  score?: number
+}
+
+interface ViralContext {
+  perfScore?: number
+  events?: string[] | Set<string>
+  venue?: { name?: string; [key: string]: unknown } | null
+  band?: Record<string, unknown>
+}
+
+interface ViralOptions {
+  modifiers?: number
+  roll?: number
+  context?: ViralContext
+}
+
 /**
  * Calculates viral potential based on performance and events.
  */
 export const calculateViralityScore = (
-  performanceScore,
-  gigEvents,
-  venue,
-  bandState
-) => {
+  performanceScore: number,
+  gigEvents: string[] | Set<string> | null | undefined,
+  venue: { name?: string; [key: string]: unknown } | null | undefined,
+  bandState: Record<string, unknown> | undefined
+): number => {
   let baseChance = 0.05 // 5%
 
   // Performance Multiplier
@@ -79,19 +139,20 @@ const COOLDOWN_BLOCKED_IDS = new Set([
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
  */
 export const generatePostOptions = (
-  gigResult,
-  gameState,
-  rng = secureRandom
-) => {
+  gigResult: unknown,
+  gameState: SocialEngineGameState,
+  rng: RandomFn = secureRandom
+): SocialPostOption[] => {
   // 1. Evaluate and collect eligible options
   const isCooldownActive = (gameState.social?.reputationCooldown || 0) > 0
 
-  const eligibleOptions = []
+  const eligibleOptions: WeightedPostOption[] = []
   let sponsorIdx = -1
   const currentTrend = gameState.social?.trend
 
-  for (let i = 0; i < POST_OPTIONS.length; i++) {
-    const opt = POST_OPTIONS[i]
+  const postOptions = POST_OPTIONS as unknown as SocialPostOption[]
+  for (let i = 0; i < postOptions.length; i++) {
+    const opt = postOptions[i]
 
     // Filter by cooldown if active
     if (isCooldownActive && COOLDOWN_BLOCKED_IDS.has(opt.id)) {
@@ -103,7 +164,7 @@ export const generatePostOptions = (
         let weight = 1.0
 
         // Example: If very low money, boost crowdfund weight
-        if (opt.id === 'comm_crowdfund' && gameState.player.money < 100)
+        if (opt.id === 'comm_crowdfund' && (gameState.player.money ?? 0) < 100)
           weight += 50
 
         // Trend Matching Bonus
@@ -138,7 +199,7 @@ export const generatePostOptions = (
     }
   }
 
-  const results = []
+  const results: WeightedPostOption[] = []
 
   // 1a. Forced Sponsor Post Override
   // Check if there are active deals of type SPONSORSHIP.
@@ -186,7 +247,7 @@ export const generatePostOptions = (
   }
 
   // 4. Return new array and objects without _weight and _force
-  const finalResults = []
+  const finalResults: SocialPostOption[] = []
   for (let i = 0; i < results.length; i++) {
     const { _weight, _force, ...rest } = results[i]
     finalResults.push(rest)
@@ -203,10 +264,10 @@ export const generatePostOptions = (
  * @returns {object} The full resolution map containing success, followers, and side effects.
  */
 export const resolvePost = (
-  postOption,
-  gameState,
+  postOption: SocialPostOption,
+  gameState: SocialEngineGameState,
   diceRoll = secureRandom()
-) => {
+): Record<string, unknown> => {
   if (!postOption.resolve) {
     throw new StateError(
       `Post option ${postOption.id} is missing a resolve function.`
@@ -214,21 +275,28 @@ export const resolvePost = (
   }
 
   try {
-    const result = postOption.resolve({ ...gameState, diceRoll })
+    const result = postOption.resolve({ ...gameState, diceRoll }) as Record<
+      string,
+      unknown
+    >
 
     // Safety bounds enforcement for resolved deltas
     // Note: Double-clamping occurs here and in hooks for defense-in-depth, ensuring
     // resolved deltas stay within bounds before applying and displaying correctly.
-    let moneyChange = result.moneyChange
+    let moneyChange =
+      typeof result.moneyChange === 'number' ? result.moneyChange : undefined
     if (moneyChange !== undefined && gameState.player?.money !== undefined) {
-      const prevMoney = gameState.player.money
+      const prevMoney = gameState.player.money ?? 0
       const nextMoney = clampPlayerMoney(prevMoney + moneyChange)
       moneyChange = nextMoney - prevMoney
     }
 
-    let harmonyChange = result.harmonyChange
+    let harmonyChange =
+      typeof result.harmonyChange === 'number'
+        ? result.harmonyChange
+        : undefined
     if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
-      const prevHarmony = gameState.band.harmony
+      const prevHarmony = Number(gameState.band.harmony ?? 0)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony
     }
@@ -282,22 +350,23 @@ export const resolvePost = (
  */
 // ⚡ Bolt: Pre-calculate platform ID map for O(1) lookups instead of O(N) array allocation and search.
 // Expected Impact: Reduces GC overhead and CPU cycles during the hot-path calculateSocialGrowth function.
-const PLATFORMS_BY_ID = Object.create(null)
+const PLATFORMS_BY_ID: Record<string, { multiplier: number }> =
+  Object.create(null)
 for (const key in SOCIAL_PLATFORMS) {
   if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
-    const p = SOCIAL_PLATFORMS[key]
+    const p = SOCIAL_PLATFORMS[key as keyof typeof SOCIAL_PLATFORMS]
     PLATFORMS_BY_ID[p.id] = p
   }
 }
 
 export const calculateSocialGrowth = (
-  platform,
-  performance,
-  currentFollowers,
+  platform: string,
+  performance: number,
+  currentFollowers: number,
   isViral = false,
   controversyLevel = 0,
   loyalty = 0
-) => {
+): number => {
   const platformData = PLATFORMS_BY_ID[platform]
   const multiplier = platformData ? platformData.multiplier : 1.0
 
@@ -326,13 +395,14 @@ export const calculateSocialGrowth = (
  * @returns {boolean} True if viral event occurs
  */
 export const checkViralEvent = (
-  stats,
-  options = {},
+  stats: ViralStats,
+  options: ViralOptions | number = {},
   legacyRoll = secureRandom()
-) => {
+): boolean => {
   // Backwards compatibility handling
-  let modifiers
+  let modifiers = 0
   let roll = legacyRoll
+  let context: ViralContext | undefined
 
   if (typeof options === 'number') {
     modifiers = options
@@ -340,6 +410,7 @@ export const checkViralEvent = (
     // New signature usage
     modifiers = options.modifiers || 0
     roll = options.roll !== undefined ? options.roll : secureRandom()
+    context = options.context
   }
 
   if (stats.accuracy > 95) return true
@@ -347,9 +418,7 @@ export const checkViralEvent = (
   // Using maxCombo directly.
   if (stats.maxCombo > 50) return true
 
-  let chance
-
-  const context = options.context
+  let chance = 0.01
 
   // If we have context, use the full virality score logic (which includes traits like social_manager)
   if (context && typeof context.perfScore === 'number') {
@@ -375,7 +444,10 @@ export const checkViralEvent = (
  * @param {number} daysSinceLastPost - Days since last engagement
  * @returns {number} New follower count (decreased)
  */
-export const applyReputationDecay = (followers, daysSinceLastPost) => {
+export const applyReputationDecay = (
+  followers: number,
+  daysSinceLastPost: number
+): number => {
   if (daysSinceLastPost < 3) return followers
   const decayRate = 0.01 * (daysSinceLastPost - 2) // 1% per day after day 2
   return Math.floor(followers * (1 - Math.min(0.5, decayRate)))
@@ -387,7 +459,7 @@ export const applyReputationDecay = (followers, daysSinceLastPost) => {
  * @param {Function} rng - Random number generator.
  * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
-export const generateDailyTrend = (rng = secureRandom) => {
+export const generateDailyTrend = (rng: RandomFn = secureRandom): string => {
   // Weighted choice could go here, for now uniform random
   const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
   // Ensure valid index even if rng() === 1
@@ -402,8 +474,12 @@ export const generateDailyTrend = (rng = secureRandom) => {
  * @param {Function} rng - Random number generator.
  * @returns {string} Generated brand name.
  */
-export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
-  const pick = arr => arr[Math.floor(rng() * arr.length)]
+export const generateBrandName = (
+  baseName: string,
+  alignment: string,
+  rng: RandomFn = secureRandom
+): string => {
+  const pick = (arr: string[]): string => arr[Math.floor(rng() * arr.length)]
 
   if (alignment === BRAND_ALIGNMENTS.EVIL) {
     const prefixes = [
@@ -522,7 +598,9 @@ export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
  * @param {Function} rng - Random number generator.
  * @returns {Array} List of offer objects.
  */
-export const calculateZealotryEffects = zealotry => {
+export const calculateZealotryEffects = (
+  zealotry: number
+): { passiveIncome: number; raidProbability: number } => {
   const z = Math.max(0, Math.min(100, Number(zealotry) || 0))
   return {
     passiveIncome: Math.floor(z * 1.2),
@@ -530,7 +608,10 @@ export const calculateZealotryEffects = zealotry => {
   }
 }
 
-export const generateBrandOffers = (gameState, rng = secureRandom) => {
+export const generateBrandOffers = (
+  gameState: SocialEngineGameState,
+  rng: RandomFn = secureRandom
+): Array<Record<string, unknown>> => {
   const social = gameState?.social || {}
   const band = gameState?.band || {}
   const reputation = social.brandReputation || {}
@@ -549,7 +630,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   }
 
   // Filter available deals
-  const eligibleDeals = []
+  const eligibleDeals: Array<Record<string, any>> = []
   for (const deal of BRAND_DEALS_BY_ID.values()) {
     // Check followers
     if (totalFollowers < deal.requirements.followers) continue
@@ -652,18 +733,34 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
  * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
  */
 export const negotiateDeal = (
-  deal,
-  strategy,
-  gameState,
-  rng = secureRandom
-) => {
+  deal: Record<string, unknown> & {
+    alignment?: string
+    offer: { upfront: number; perGig?: number; [key: string]: unknown }
+  },
+  strategy: 'AGGRESSIVE' | 'PERSUASIVE' | 'SAFE',
+  gameState: SocialEngineGameState,
+  rng: RandomFn = secureRandom
+): {
+  success: boolean
+  deal: (Record<string, unknown> & {
+    alignment?: string
+    offer: { upfront: number; perGig?: number; [key: string]: unknown }
+  }) | null
+  feedback: string
+  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
+} => {
   const band = gameState.band
   let successChance
   let feedback
-  let status = 'ACCEPTED'
+  let status: 'ACCEPTED' | 'REVOKED' | 'FAILED' = 'ACCEPTED'
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.
-  let newDeal = { ...deal, offer: { ...deal.offer } }
+  let newDeal:
+    | (Record<string, unknown> & {
+        alignment?: string
+        offer: { upfront: number; perGig?: number; [key: string]: unknown }
+      })
+    | null = { ...deal, offer: { ...deal.offer } }
 
   // Modifiers
   const hasManager = bandHasTrait(band, 'social_manager')
