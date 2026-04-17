@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ComboDisplayProps {
   combo: number
@@ -10,6 +11,7 @@ export const ComboDisplay = memo(function ComboDisplay({
   combo,
   accuracy
 }: ComboDisplayProps) {
+  const { t } = useTranslation()
   const comboTier =
     combo >= 50
       ? 'text-blood-red animate-pulse'
@@ -29,11 +31,11 @@ export const ComboDisplay = memo(function ComboDisplay({
         {combo}x
       </div>
       <div className='text-[10px] text-ash-gray uppercase tracking-widest'>
-        combo
+        {t('ui:gig.combo')}
       </div>
       {accuracy < 70 && (
         <div className='text-[10px] text-warning-yellow animate-pulse'>
-          LOW ACC
+          {t('ui:gig.lowAcc')}
         </div>
       )}
     </div>
