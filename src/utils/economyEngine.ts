@@ -381,7 +381,10 @@ export const calculateRepairCost = (currentCondition: any) => {
  * @param {object} context - Context object containing flags like discountedTickets.
  * @returns {number} The effective ticket price.
  */
-export const calculateEffectiveTicketPrice = (gigData: any = {}, context: any = {}) => {
+export const calculateEffectiveTicketPrice = (
+  gigData: any = {},
+  context: any = {}
+) => {
   if (!gigData) return 0
   gigData = gigData || {}
   context = context || {}
@@ -764,7 +767,10 @@ export const shouldTriggerBankruptcy = (newMoney: any, netIncome: any) => {
  * @param {string[]} itemsCollected - Array of collected item types.
  * @returns {object} { conditionLoss, fuelBonus }
  */
-export const calculateTravelMinigameResult = (damageTaken: any, itemsCollected: any) => {
+export const calculateTravelMinigameResult = (
+  damageTaken: any,
+  itemsCollected: any
+) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
   const conditionLoss = Math.floor(Math.max(0, damageTaken) / 2)
 
@@ -786,7 +792,10 @@ export const calculateTravelMinigameResult = (damageTaken: any, itemsCollected: 
  * @param {object} bandState - Current band traits/state used by bandHasTrait.
  * @returns {object} { stress, repairCost }
  */
-export const calculateRoadieMinigameResult = (equipmentDamage: any, bandState: any) => {
+export const calculateRoadieMinigameResult = (
+  equipmentDamage: any,
+  bandState: any
+) => {
   const safeDamage = Math.max(0, equipmentDamage)
   const stress = Math.floor(safeDamage / 5)
   let repairCost = Math.floor(safeDamage * 2)
@@ -836,7 +845,10 @@ export const calculateAmpCalibrationResult = (score: any, bandState: any) => {
  * @param {Object} bandState
  * @returns {Object} { stress, reward }
  */
-export const calculateKabelsalatMinigameResult = (results: any, bandState: any) => {
+export const calculateKabelsalatMinigameResult = (
+  results: any,
+  bandState: any
+) => {
   let stress = 0
   let reward = 0
 

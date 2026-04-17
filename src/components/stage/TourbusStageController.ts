@@ -76,7 +76,7 @@ class TourbusStageController extends BaseStageController {
         fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
       }
 
-      const loaded = await loadTextures(urls, undefined) as any
+      const loaded = (await loadTextures(urls, undefined)) as any
 
       const keys = Object.keys(loaded)
       for (let i = 0, len = keys.length; i < len; i++) {

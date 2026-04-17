@@ -16,7 +16,9 @@ type PlayerSlice = {
 }
 
 type PlayerUpdates = Partial<PlayerSlice['player']>
-type UpdatePlayerPayload = PlayerUpdates | ((player: PlayerSlice['player']) => PlayerUpdates)
+type UpdatePlayerPayload =
+  | PlayerUpdates
+  | ((player: PlayerSlice['player']) => PlayerUpdates)
 
 export type PlayerAction =
   | { type: typeof ActionTypes.UPDATE_PLAYER; payload: UpdatePlayerPayload }
@@ -40,7 +42,9 @@ export const handleUpdatePlayer = (
   }
 
   const nextFame = clampPlayerFame(
-    Object.hasOwn(updates, 'fame') ? (updates.fame as number) : state.player.fame
+    Object.hasOwn(updates, 'fame')
+      ? (updates.fame as number)
+      : state.player.fame
   )
 
   const nextMoney = clampPlayerMoney(

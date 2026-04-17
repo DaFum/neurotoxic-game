@@ -366,7 +366,10 @@ export const createCompleteTravelMinigameAction = (
   rngValue?: number,
   contrabandId?: string,
   instanceId?: string
-): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_TRAVEL_MINIGAME }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.COMPLETE_TRAVEL_MINIGAME }
+> => ({
   type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
   payload: { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
 })
@@ -390,7 +393,10 @@ export const createStartRoadieMinigameAction = (
  */
 export const createCompleteRoadieMinigameAction = (
   equipmentDamage: number
-): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_ROADIE_MINIGAME }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.COMPLETE_ROADIE_MINIGAME }
+> => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: { equipmentDamage }
 })
@@ -402,7 +408,10 @@ export const createCompleteRoadieMinigameAction = (
  */
 export const createStartKabelsalatMinigameAction = (
   gigId: string
-): Extract<GameAction, { type: typeof ActionTypes.START_KABELSALAT_MINIGAME }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.START_KABELSALAT_MINIGAME }
+> => ({
   type: ActionTypes.START_KABELSALAT_MINIGAME,
   payload: { gigId }
 })
@@ -414,7 +423,10 @@ export const createStartKabelsalatMinigameAction = (
  */
 export const createCompleteKabelsalatMinigameAction = (
   results: unknown
-): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_KABELSALAT_MINIGAME }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.COMPLETE_KABELSALAT_MINIGAME }
+> => ({
   type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
   payload: { results }
 })
@@ -438,7 +450,10 @@ export const createStartAmpCalibrationAction = (
  */
 export const createCompleteAmpCalibrationAction = (
   score: number
-): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
+> => ({
   type: ActionTypes.COMPLETE_AMP_CALIBRATION,
   payload: { score }
 })

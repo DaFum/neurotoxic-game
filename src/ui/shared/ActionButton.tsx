@@ -19,7 +19,14 @@ interface ActionButtonProps {
  * ActionButton - A standardized action button for overlays and dialogues.
  */
 export const ActionButton = memo(
-  ({ children, onClick, type = 'button', className = '', ref, ...rest }: ActionButtonProps) => (
+  ({
+    children,
+    onClick,
+    type = 'button',
+    className = '',
+    ref,
+    ...rest
+  }: ActionButtonProps) => (
     <button
       ref={ref}
       type={type}

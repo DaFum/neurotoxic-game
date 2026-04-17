@@ -192,8 +192,12 @@ export interface GameState {
   unlocks: string[]
 }
 
-export type Action<TType extends ActionType, TPayload = undefined> =
-  TPayload extends undefined ? { type: TType } : { type: TType; payload: TPayload }
+export type Action<
+  TType extends ActionType,
+  TPayload = undefined
+> = TPayload extends undefined
+  ? { type: TType }
+  : { type: TType; payload: TPayload }
 
 export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], string>
@@ -209,7 +213,10 @@ export type GameAction =
   | Action<ActionTypes['SET_ACTIVE_EVENT'], UnknownRecord | null>
   | Action<ActionTypes['ADD_TOAST'], ToastPayload>
   | Action<ActionTypes['REMOVE_TOAST'], string>
-  | Action<ActionTypes['SET_GIG_MODIFIERS'], Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)>
+  | Action<
+      ActionTypes['SET_GIG_MODIFIERS'],
+      Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
+    >
   | Action<ActionTypes['LOAD_GAME'], Partial<GameState>>
   | Action<ActionTypes['RESET_STATE'], UnknownRecord>
   | Action<ActionTypes['APPLY_EVENT_DELTA'], UnknownRecord>
@@ -218,7 +225,10 @@ export type GameAction =
   | Action<ActionTypes['ADVANCE_DAY']>
   | Action<ActionTypes['ADD_COOLDOWN'], string>
   | Action<ActionTypes['START_TRAVEL_MINIGAME'], { targetNodeId: string }>
-  | Action<ActionTypes['COMPLETE_TRAVEL_MINIGAME'], CompleteTravelMinigamePayload>
+  | Action<
+      ActionTypes['COMPLETE_TRAVEL_MINIGAME'],
+      CompleteTravelMinigamePayload
+    >
   | Action<ActionTypes['START_ROADIE_MINIGAME'], { gigId: string }>
   | Action<ActionTypes['COMPLETE_ROADIE_MINIGAME'], { equipmentDamage: number }>
   | Action<ActionTypes['START_KABELSALAT_MINIGAME'], { gigId: string }>
@@ -226,14 +236,29 @@ export type GameAction =
   | Action<ActionTypes['START_AMP_CALIBRATION'], { gigId: string }>
   | Action<ActionTypes['COMPLETE_AMP_CALIBRATION'], { score: number }>
   | Action<ActionTypes['UNLOCK_TRAIT'], { memberId: string; traitId: string }>
-  | Action<ActionTypes['ADD_VENUE_BLACKLIST'], { venueId: string; toastId: string }>
+  | Action<
+      ActionTypes['ADD_VENUE_BLACKLIST'],
+      { venueId: string; toastId: string }
+    >
   | Action<ActionTypes['ADD_QUEST'], UnknownRecord>
-  | Action<ActionTypes['ADVANCE_QUEST'], { questId: string; amount: number; randomIdx?: number }>
-  | Action<ActionTypes['COMPLETE_QUEST'], { questId: string; randomIdx?: number }>
+  | Action<
+      ActionTypes['ADVANCE_QUEST'],
+      { questId: string; amount: number; randomIdx?: number }
+    >
+  | Action<
+      ActionTypes['COMPLETE_QUEST'],
+      { questId: string; randomIdx?: number }
+    >
   | Action<ActionTypes['FAIL_QUESTS']>
   | Action<ActionTypes['ADD_UNLOCK'], string>
-  | Action<ActionTypes['ADD_CONTRABAND'], { contrabandId: string; instanceId: string }>
-  | Action<ActionTypes['USE_CONTRABAND'], { instanceId: string; contrabandId: string; memberId?: string }>
+  | Action<
+      ActionTypes['ADD_CONTRABAND'],
+      { contrabandId: string; instanceId: string }
+    >
+  | Action<
+      ActionTypes['USE_CONTRABAND'],
+      { instanceId: string; contrabandId: string; memberId?: string }
+    >
   | Action<ActionTypes['CLINIC_HEAL'], ClinicActionPayload>
   | Action<ActionTypes['CLINIC_ENHANCE'], ClinicActionPayload>
   | Action<ActionTypes['PIRATE_BROADCAST'], PirateBroadcastPayload>

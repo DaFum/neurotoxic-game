@@ -122,11 +122,12 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
       excerptStartMs: song.excerptStartMs || 0,
       excerptEndMs: excerptEndValue,
       durationMs: durationMsValue,
-      excerptDurationMs: excerptDurationValue !== null
-        ? Math.max(0, excerptDurationValue)
-        : durationMsValue !== null
-          ? Math.max(0, durationMsValue)
-          : null
+      excerptDurationMs:
+        excerptDurationValue !== null
+          ? Math.max(0, excerptDurationValue)
+          : durationMsValue !== null
+            ? Math.max(0, durationMsValue)
+            : null
     }
   })
 }

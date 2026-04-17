@@ -21,8 +21,19 @@ class RoadieStageController extends BaseStageController {
   effectManager: EffectManager | null
   _flashTimeout: ReturnType<typeof setTimeout> | null
   lastDamage: number
-  textures: { roadie: import('pixi.js').Texture | null; cars: import('pixi.js').Texture[]; items: Record<string, import('pixi.js').Texture | undefined> }
-  colors: { bloodRed: number; starWhite: number; toxicGreen: number; roadColor: number; grassColor: number; venueColor: number }
+  textures: {
+    roadie: import('pixi.js').Texture | null
+    cars: import('pixi.js').Texture[]
+    items: Record<string, import('pixi.js').Texture | undefined>
+  }
+  colors: {
+    bloodRed: number
+    starWhite: number
+    toxicGreen: number
+    roadColor: number
+    grassColor: number
+    venueColor: number
+  }
   bgGraphics: Graphics | null
 
   constructor(params: any) {
@@ -116,7 +127,10 @@ class RoadieStageController extends BaseStageController {
         guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
       }
 
-      const loaded = await loadTextures(urls, undefined) as Record<keyof typeof urls, import('pixi.js').Texture | null>
+      const loaded = (await loadTextures(urls, undefined)) as Record<
+        keyof typeof urls,
+        import('pixi.js').Texture | null
+      >
 
       if (this.isDisposed) return
 

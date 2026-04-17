@@ -1,8 +1,5 @@
 // TODO: Review this file
-import {
-  calculateRefuelCost,
-  calculateTravelExpenses
-} from './economyEngine'
+import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine'
 
 /**
  * Checks if a target node is connected to the source node.

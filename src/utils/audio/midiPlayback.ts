@@ -14,11 +14,7 @@ import {
   prepareTransportPlayback,
   getBaseAssetPath
 } from './playbackUtils'
-import {
-  isPercussionTrack,
-  normalizeMidiPitch,
-  getNoteName
-} from './midiUtils'
+import { isPercussionTrack, normalizeMidiPitch, getNoteName } from './midiUtils'
 import { playDrumNote } from './drumMappings'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null

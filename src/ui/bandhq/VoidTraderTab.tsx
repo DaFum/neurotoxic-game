@@ -2,10 +2,7 @@ import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
-import {
-  CONTRABAND_BY_RARITY,
-  VOID_TRADER_COSTS
-} from '../../data/contraband'
+import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
 
 export const VoidTraderTab = ({
   player,
