@@ -56,7 +56,7 @@ jobs:
 
       - name: Upload test log artifact (node)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-output-node
           path: test-output-node.txt
@@ -108,7 +108,7 @@ jobs:
 
       - name: Upload test log artifact (vitest)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-output-vitest
           path: test-output-vitest.txt
