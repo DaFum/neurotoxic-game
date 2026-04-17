@@ -75,6 +75,7 @@ import {
   createAddVenueBlacklistAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
+import type { GameState } from '../types/game'
 
 const GameStateContext = createContext()
 const GameDispatchContext = createContext()
@@ -1033,12 +1034,12 @@ export const useGameActions = () => {
  * equality-based bail-out, memoize the consuming component with React.memo.
  *
  * @template T
- * @param {(state: any) => T} selector - State selector.
+ * @param {(state: GameState) => T} selector - State selector.
  * @returns {T} Selected state slice.
  */
-export function useGameSelector<T>(selector: (state: any) => T): T {
+export function useGameSelector<T>(selector: (state: GameState) => T): T {
   const state = use(GameStateContext)
-  return selector(state)
+  return selector(state as GameState)
 }
 
 /**

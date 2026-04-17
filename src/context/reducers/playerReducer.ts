@@ -6,19 +6,9 @@ import {
   calculateFameLevel
 } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
+import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
-type PlayerSlice = {
-  player: Record<string, unknown> & {
-    money: number
-    fame: number
-    fameLevel: number
-  }
-}
-
-type PlayerUpdates = Partial<PlayerSlice['player']>
-type UpdatePlayerPayload =
-  | PlayerUpdates
-  | ((player: PlayerSlice['player']) => PlayerUpdates)
+type PlayerSlice = { player: PlayerState }
 
 export type PlayerAction =
   | { type: typeof ActionTypes.UPDATE_PLAYER; payload: UpdatePlayerPayload }
