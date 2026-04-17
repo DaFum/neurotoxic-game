@@ -14,7 +14,7 @@ env:
   JSCPD_MIN_LINES: '8'
   JSCPD_MIN_TOKENS: '60'
   JSCPD_IGNORE: '**/*.test.js,**/*.spec.js,**/__tests__/**,**/tests/**,**/node_modules/**'
-  PNPM_VERSION: '10.32.1'
+  PNPM_VERSION: '10.30.3'
 
 permissions:
   contents: read
