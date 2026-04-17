@@ -1,5 +1,6 @@
 // TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
+import { normalizeSetlistForSave } from '../utils/gameStateUtils'
 import {
   type Dispatch,
   type Context,
@@ -115,23 +116,6 @@ type EventResolution = {
 const GameStateContext = createContext<GameState | null>(null)
 const GameDispatchContext = createContext<GameDispatchContextValue | null>(null)
 const SAVE_KEY = 'neurotoxic_v3_save'
-const normalizeSetlistForSave = (setlist: unknown): Array<{ id: string }> => {
-  if (!Array.isArray(setlist)) return []
-
-  const result: { id: string }[] = []
-  for (const song of setlist) {
-    if (typeof song === 'string') {
-      result.push({ id: song })
-    } else if (
-      song &&
-      typeof song === 'object' &&
-      typeof (song as { id?: unknown }).id === 'string'
-    ) {
-      result.push({ id: (song as { id: string }).id })
-    }
-  }
-  return result
-}
 
 const createPersistedState = (currentState: GameState) => {
   const {
