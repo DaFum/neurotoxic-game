@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd $CLAUDE_PROJECT_DIR && [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ \\.(ts|tsx)$ ]] && eslint --fix \"$CLAUDE_TOOL_INPUT_FILE_PATH\" && prettier --write \"$CLAUDE_TOOL_INPUT_FILE_PATH\" || true"
+            "command": "cd $CLAUDE_PROJECT_DIR && case \"$CLAUDE_TOOL_INPUT_FILE_PATH\" in *.ts|*.tsx) eslint --fix \"$CLAUDE_TOOL_INPUT_FILE_PATH\" && prettier --write \"$CLAUDE_TOOL_INPUT_FILE_PATH\";; esac || true"
           }
         ]
       }
