@@ -59,8 +59,8 @@ export const handleTradeVoidItem = (state, payload) => {
       'Failed to add void item to stash (max stacks or invalid item)'
     )
     const failureToast = {
-      id: instanceId || Date.now().toString(),
-      message: 'ui:shop.messages.purchaseFailed',
+      id: instanceId || getSafeUUID(),
+      messageKey: 'ui:shop.messages.purchaseFailed',
       type: 'error'
     }
     return {

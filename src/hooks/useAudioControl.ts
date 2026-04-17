@@ -19,6 +19,12 @@ export const executeAudioAction = (
   }
 }
 
+/**
+ * Build audio event handlers bound to a manager instance.
+ * The manager must expose `setSfxVolume` (camelCase), not `setSFXVolume`.
+ * In production this is always `audioService`; custom managers in tests must
+ * match this interface.
+ */
 export const createAudioHandlers = manager => ({
   setMusic: val =>
     executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
