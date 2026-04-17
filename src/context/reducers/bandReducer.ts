@@ -9,6 +9,13 @@ import {
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { ActionTypes } from '../actionTypes'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
+import type {
+  BandMember,
+  BandState,
+  GameAction,
+  GameState,
+  UpdateBandPayload
+} from '../../types/game'
 
 /**
  * Handles band update actions
@@ -17,7 +24,10 @@ import { CONTRABAND_BY_ID } from '../../data/contraband'
  * @param {Object} payload - Band updates
  * @returns {Object} Updated state
  */
-export const handleUpdateBand = (state, payload) => {
+export const handleUpdateBand = (
+  state: GameState,
+  payload: UpdateBandPayload
+): GameState => {
   if (!payload) return state
   logger.debug('GameState', 'Update Band', payload)
   const updates = typeof payload === 'function' ? payload(state.band) : payload
@@ -34,7 +44,9 @@ export const handleUpdateBand = (state, payload) => {
   let nextHarmony = state.band.harmony
   if ('harmony' in updates) {
     // Explicit bounds check mandated by [STATE_SAFETY] critical rules
-    nextHarmony = clampBandHarmony(updates.harmony)
+    nextHarmony = clampBandHarmony(
+      (updates.harmony as number | undefined) ?? nextHarmony
+    )
   }
 
   const mergedBand = {
@@ -52,7 +64,10 @@ export const handleUpdateBand = (state, payload) => {
  * @param {Object} payload - { memberId, traitId }
  * @returns {Object} Updated state
  */
-export const handleUnlockTrait = (state, payload) => {
+export const handleUnlockTrait = (
+  state: GameState,
+  payload: { memberId: string; traitId: string }
+): GameState => {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     return state
   }
@@ -81,7 +96,10 @@ export const handleUnlockTrait = (state, payload) => {
  * @param {string} payload - Item type to consume
  * @returns {Object} Updated state
  */
-export const handleConsumeItem = (state, payload) => {
+export const handleConsumeItem = (
+  state: GameState,
+  payload: string
+): GameState => {
   const itemType = payload
   if (
     !itemType ||
@@ -100,7 +118,7 @@ export const handleConsumeItem = (state, payload) => {
     nextBand.inventory[itemType] = false
   } else if (typeof nextBand.inventory[itemType] === 'number') {
     nextBand.inventory[itemType] = applyInventoryItemDelta(
-      nextBand.inventory[itemType],
+      nextBand.inventory[itemType] as number,
       -1
     )
   }
@@ -112,7 +130,10 @@ export const handleConsumeItem = (state, payload) => {
  * Pure helper function to handle adding contraband.
  * Extracted to avoid tight coupling between reducers.
  */
-export const addContrabandHelper = (state, payload) => {
+export const addContrabandHelper = (
+  state: GameState,
+  payload: { contrabandId: string; instanceId?: string }
+): GameState => {
   const { contrabandId, instanceId } = payload
   if (isForbiddenKey(contrabandId)) return state
   const item = CONTRABAND_BY_ID.get(contrabandId)
@@ -122,13 +143,15 @@ export const addContrabandHelper = (state, payload) => {
   const currentStash = newBand.stash || {}
 
   // Handle stackable logic and uniqueness
-  const existingItem = currentStash[item.id]
+  const existingItem = currentStash[item.id] as
+    | Record<string, unknown>
+    | undefined
   if (existingItem) {
     if (!item.stackable) {
       return state // Don't add duplicate non-stackable items
     } else {
-      const currentStacks = existingItem.stacks || 1
-      const max = item.maxStacks || Infinity
+      const currentStacks = (existingItem.stacks as number | undefined) ?? 1
+      const max = (item.maxStacks as number) || Infinity
       if (currentStacks < max) {
         newBand.stash = Object.assign(Object.create(null), currentStash, {
           [item.id]: {
@@ -146,7 +169,7 @@ export const addContrabandHelper = (state, payload) => {
   const newInstance = {
     ...item,
     instanceId,
-    remainingDuration: item.duration || null,
+    remainingDuration: (item.duration as number | undefined) ?? null,
     applied: !!item.applyOnAdd,
     stacks: item.stackable ? 1 : undefined
   }
@@ -157,30 +180,34 @@ export const addContrabandHelper = (state, payload) => {
 
   if (item.applyOnAdd && item.type === 'equipment') {
     if (item.effectType === 'luck') {
-      newBand.luck = (newBand.luck || 0) + item.value
+      newBand.luck = (newBand.luck || 0) + (item.value as number)
     } else if (item.effectType === 'stamina_max') {
-      newBand.members = newBand.members.map(m => ({
+      newBand.members = newBand.members.map((m: BandMember) => ({
         ...m,
-        staminaMax: (m.staminaMax || 100) + item.value
+        staminaMax:
+          ((m.staminaMax as number | undefined) ?? 100) + (item.value as number)
       }))
     } else if (item.effectType === 'guitar_difficulty') {
       newBand.performance = {
         ...newBand.performance,
         guitarDifficulty: Math.max(
           0.1,
-          (newBand.performance?.guitarDifficulty || 1) + item.value
+          (newBand.performance?.guitarDifficulty ?? 1) + (item.value as number)
         )
       }
     } else if (item.effectType === 'crit') {
-      newBand.crit = (newBand.crit || 0) + item.value
+      newBand.crit = ((newBand.crit as number) || 0) + (item.value as number)
     } else if (item.effectType === 'crowd_control') {
-      newBand.crowdControl = (newBand.crowdControl || 0) + item.value
+      newBand.crowdControl =
+        ((newBand.crowdControl as number) || 0) + (item.value as number)
     } else if (item.effectType === 'affinity') {
-      newBand.affinity = (newBand.affinity || 0) + item.value
+      newBand.affinity =
+        ((newBand.affinity as number) || 0) + (item.value as number)
     } else if (item.effectType === 'style') {
-      newBand.style = (newBand.style || 0) + item.value
+      newBand.style = ((newBand.style as number) || 0) + (item.value as number)
     } else if (item.effectType === 'tour_success') {
-      newBand.tourSuccess = (newBand.tourSuccess || 0) + item.value
+      newBand.tourSuccess =
+        ((newBand.tourSuccess as number) || 0) + (item.value as number)
     }
   }
 
@@ -196,7 +223,10 @@ export const addContrabandHelper = (state, payload) => {
  * @param {Object} payload - { contrabandId, instanceId }
  * @returns {Object} Updated state
  */
-export const handleAddContraband = (state, payload) => {
+export const handleAddContraband = (
+  state: GameState,
+  payload: { contrabandId: string; instanceId?: string }
+): GameState => {
   return addContrabandHelper(state, payload)
 }
 
@@ -207,39 +237,51 @@ export const handleAddContraband = (state, payload) => {
  * @param {string} memberId - Target member ID for targeted effects
  * @returns {Object|null} Updated band object, or null if application fails (e.g. invalid target)
  */
-export const applyContrabandEffect = (band, item, memberId) => {
+export const applyContrabandEffect = (
+  band: BandState,
+  item: Record<string, unknown>,
+  memberId: string | undefined
+): BandState | null => {
   const newBand = { ...band }
 
   if (item.effectType === 'stamina' || item.effectType === 'mood') {
-    if (!memberId || !newBand.members.some(m => m.id === memberId)) {
+    if (
+      !memberId ||
+      !newBand.members.some((m: BandMember) => m.id === memberId)
+    ) {
       return null
     }
-    newBand.members = newBand.members.map(m => {
+    newBand.members = newBand.members.map((m: BandMember) => {
       if (m.id === memberId) {
+        const key = item.effectType as 'stamina' | 'mood'
         return {
           ...m,
-          [item.effectType]:
-            item.effectType === 'stamina'
+          [key]:
+            key === 'stamina'
               ? clampMemberStamina(
-                  (m[item.effectType] || 0) + item.value,
-                  m.staminaMax
+                  ((m[key] as number) || 0) + (item.value as number),
+                  m.staminaMax as number
                 )
-              : clampMemberMood((m[item.effectType] || 0) + item.value)
+              : clampMemberMood(
+                  ((m[key] as number) || 0) + (item.value as number)
+                )
         }
       }
       return m
     })
     return newBand
   } else if (item.effectType === 'harmony') {
-    newBand.harmony = clampBandHarmony((newBand.harmony || 0) + item.value)
+    newBand.harmony = clampBandHarmony(
+      (newBand.harmony || 0) + (item.value as number)
+    )
   } else if (item.effectType === 'luck') {
-    newBand.luck = (newBand.luck || 0) + item.value
+    newBand.luck = (newBand.luck || 0) + (item.value as number)
   } else if (item.effectType === 'guitar_difficulty') {
     newBand.performance = {
       ...newBand.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (newBand.performance?.guitarDifficulty ?? 1) + item.value
+        (newBand.performance?.guitarDifficulty ?? 1) + (item.value as number)
       )
     }
   } else if (
@@ -254,30 +296,36 @@ export const applyContrabandEffect = (band, item, memberId) => {
     item.effectType === 'crowd_control'
   ) {
     if (item.effectType === 'stamina_max') {
-      newBand.members = newBand.members.map(m => ({
+      newBand.members = newBand.members.map((m: BandMember) => ({
         ...m,
-        staminaMax: (m.staminaMax || 100) + item.value
+        staminaMax:
+          ((m.staminaMax as number | undefined) ?? 100) + (item.value as number)
       }))
     } else if (item.effectType === 'style') {
-      newBand.style = (newBand.style || 0) + item.value
+      newBand.style = ((newBand.style as number) || 0) + (item.value as number)
     } else if (item.effectType === 'tour_success') {
-      newBand.tourSuccess = (newBand.tourSuccess || 0) + item.value
+      newBand.tourSuccess =
+        ((newBand.tourSuccess as number) || 0) + (item.value as number)
     } else if (item.effectType === 'gig_modifier') {
-      newBand.gigModifier = (newBand.gigModifier || 0) + item.value
+      newBand.gigModifier =
+        ((newBand.gigModifier as number) || 0) + (item.value as number)
     } else if (item.effectType === 'tempo') {
-      newBand.tempo = (newBand.tempo || 0) + item.value
+      newBand.tempo = ((newBand.tempo as number) || 0) + (item.value as number)
     } else if (item.effectType === 'practice_gain') {
-      newBand.practiceGain = (newBand.practiceGain || 0) + item.value
+      newBand.practiceGain =
+        ((newBand.practiceGain as number) || 0) + (item.value as number)
     } else if (item.effectType === 'crit') {
-      newBand.crit = (newBand.crit || 0) + item.value
+      newBand.crit = ((newBand.crit as number) || 0) + (item.value as number)
     } else if (item.effectType === 'affinity') {
-      newBand.affinity = (newBand.affinity || 0) + item.value
+      newBand.affinity =
+        ((newBand.affinity as number) || 0) + (item.value as number)
     } else if (item.effectType === 'crowd_control') {
-      newBand.crowdControl = (newBand.crowdControl || 0) + item.value
+      newBand.crowdControl =
+        ((newBand.crowdControl as number) || 0) + (item.value as number)
     }
   }
 
-  if (item.duration) {
+  if (item.duration != null) {
     newBand.activeContrabandEffects = [
       ...(newBand.activeContrabandEffects || []),
       {
@@ -299,7 +347,10 @@ export const applyContrabandEffect = (band, item, memberId) => {
  * @param {Object} payload - { instanceId, contrabandId, memberId }
  * @returns {Object} Updated state
  */
-export const handleUseContraband = (state, payload) => {
+export const handleUseContraband = (
+  state: GameState,
+  payload: { instanceId: string; contrabandId: string; memberId?: string }
+): GameState => {
   const { instanceId, contrabandId, memberId } = payload
   const stash = state.band.stash || {}
 
@@ -310,7 +361,7 @@ export const handleUseContraband = (state, payload) => {
     return state
   }
 
-  const item = stash[contrabandId]
+  const item = stash[contrabandId] as Record<string, unknown>
   if (!item) return state
   if (item.instanceId !== undefined && item.instanceId !== instanceId)
     return state
@@ -324,8 +375,8 @@ export const handleUseContraband = (state, payload) => {
   let newStash = Object.assign(Object.create(null), stash)
 
   if (item.type === 'consumable') {
-    if (item.stacks > 1) {
-      newStash[itemKey] = { ...item, stacks: item.stacks - 1 }
+    if ((item.stacks as number) > 1) {
+      newStash[itemKey] = { ...item, stacks: (item.stacks as number) - 1 }
     } else {
       delete newStash[itemKey]
     }
@@ -344,18 +395,36 @@ export const handleUseContraband = (state, payload) => {
  * @param {Object} action - Action with type and payload
  * @returns {Object} New state
  */
-export const bandReducer = (state, action) => {
+export const bandReducer = (
+  state: GameState,
+  action: GameAction
+): GameState => {
+  if (!('payload' in action)) return state
+
   switch (action.type) {
     case ActionTypes.UPDATE_BAND:
-      return handleUpdateBand(state, action.payload)
+      return handleUpdateBand(state, action.payload as UpdateBandPayload)
     case ActionTypes.UNLOCK_TRAIT:
-      return handleUnlockTrait(state, action.payload)
+      return handleUnlockTrait(
+        state,
+        action.payload as { memberId: string; traitId: string }
+      )
     case ActionTypes.CONSUME_ITEM:
-      return handleConsumeItem(state, action.payload)
+      return handleConsumeItem(state, action.payload as string)
     case ActionTypes.ADD_CONTRABAND:
-      return handleAddContraband(state, action.payload)
+      return handleAddContraband(
+        state,
+        action.payload as { contrabandId: string; instanceId?: string }
+      )
     case ActionTypes.USE_CONTRABAND:
-      return handleUseContraband(state, action.payload)
+      return handleUseContraband(
+        state,
+        action.payload as {
+          instanceId: string
+          contrabandId: string
+          memberId?: string
+        }
+      )
     default:
       return state
   }

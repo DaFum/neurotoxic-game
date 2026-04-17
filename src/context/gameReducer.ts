@@ -5,6 +5,7 @@
  */
 
 import { ActionTypes } from './actionTypes'
+import type { GameAction, GameState } from '../types/game'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
@@ -84,7 +85,8 @@ const reducerMap = {
   [ActionTypes.LOAD_GAME]: handleLoadGame,
   [ActionTypes.RESET_STATE]: handleResetState,
   [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta,
-  [ActionTypes.POP_PENDING_EVENT]: state => handlePopPendingEvent(state),
+  [ActionTypes.POP_PENDING_EVENT]: (state: GameState) =>
+    handlePopPendingEvent(state),
   [ActionTypes.ADVANCE_DAY]: handleAdvanceDay,
   [ActionTypes.ADD_COOLDOWN]: handleAddCooldown,
   [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame,
@@ -101,7 +103,7 @@ const reducerMap = {
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
   [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest,
-  [ActionTypes.FAIL_QUESTS]: state => handleFailQuests(state),
+  [ActionTypes.FAIL_QUESTS]: (state: GameState) => handleFailQuests(state),
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
@@ -116,7 +118,10 @@ const reducerMap = {
  * @param {Object} action - Action with type and payload
  * @returns {Object} New state
  */
-export const gameReducer = (state, action) => {
+export const gameReducer = (
+  state: GameState,
+  action: GameAction
+): GameState => {
   // Delegate band actions to the bandReducer
   if (
     action.type === ActionTypes.UPDATE_BAND ||
@@ -130,8 +135,12 @@ export const gameReducer = (state, action) => {
 
   // Dispatch using the O(1) reducer map
   if (Object.hasOwn(reducerMap, action.type)) {
-    const handler = reducerMap[action.type]
-    return handler(state, action.payload)
+    const handler = reducerMap[action.type as keyof typeof reducerMap] as (
+      nextState: GameState,
+      payload?: unknown
+    ) => GameState
+    const payload = 'payload' in action ? action.payload : undefined
+    return handler(state, payload)
   }
 
   // Fallback

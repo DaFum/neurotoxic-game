@@ -21,9 +21,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "motion-dom": ["node_modules/.pnpm/motion-dom@12.38.0/node_modules/motion-dom"],
-      "motion-utils": ["node_modules/.pnpm/motion-utils@12.36.0/node_modules/motion-utils"]
+      "@/*": ["src/*"]
     },
     "ignoreDeprecations": "6.0"
   },
