@@ -26,6 +26,28 @@ const SCENES_WITHOUT_HUD = [
   GAME_PHASES.CLINIC
 ]
 
+const resolveVercelTelemetryEnabled = () => {
+  const viteFlag = import.meta.env?.VITE_ENABLE_VERCEL_TELEMETRY
+  if (typeof viteFlag === 'string') {
+    return viteFlag.toLowerCase() === 'true'
+  }
+
+  const processFlag =
+    typeof process !== 'undefined'
+      ? process?.env?.VITE_ENABLE_VERCEL_TELEMETRY
+      : undefined
+  if (typeof processFlag === 'string') {
+    return processFlag.toLowerCase() === 'true'
+  }
+
+  const nodeEnv = typeof process !== 'undefined' ? process?.env?.NODE_ENV : undefined
+  if (nodeEnv === 'test') {
+    return true
+  }
+
+  return import.meta.env?.PROD ?? false
+}
+
 const SceneLoadingFallback = () => {
   const { t } = useTranslation()
   return (
@@ -47,6 +69,7 @@ const SceneLoadingFallback = () => {
 function GameContent() {
   const gameState = useGameState()
   const { currentScene, activeEvent, resolveEvent, settings } = gameState
+  const vercelTelemetryEnabled = resolveVercelTelemetryEnabled()
 
   // Construct a safe, read-only slice of state for ChatterOverlay
   // This avoids passing dispatch functions which violates the component's contract
@@ -110,8 +133,12 @@ function GameContent() {
           </AnimatePresence>
         </Suspense>
       </ErrorBoundary>
-      <Analytics />
-      <SpeedInsights />
+      {vercelTelemetryEnabled && (
+        <>
+          <Analytics />
+          <SpeedInsights />
+        </>
+      )}
     </div>
   )
 }

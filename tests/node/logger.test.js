@@ -56,7 +56,7 @@ describe('Logger', () => {
     assert.strictEqual(globalThis.localStorage.setItem.mock.calls.length, 1)
     assert.deepStrictEqual(
       globalThis.localStorage.setItem.mock.calls[0].arguments,
-      ['neurotoxic_log_level', LOG_LEVELS.ERROR]
+      ['neurotoxic_log_level', String(LOG_LEVELS.ERROR)]
     )
   })
 

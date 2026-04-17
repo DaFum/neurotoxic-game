@@ -77,7 +77,6 @@ import {
   createBloodBankDonateAction,
   createAddVenueBlacklistAction
 } from './actionCreators'
-import PropTypes from 'prop-types'
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
@@ -890,9 +889,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // If it was a pending event, remove it from queue
         if (
-          currentState.pendingEvents.some(
-            (pending: { id?: string }) => pending.id === processedEventId
-          )
+          typeof processedEventId === 'string' &&
+          currentState.pendingEvents.includes(processedEventId)
         ) {
           dispatch(createPopPendingEventAction())
         }
@@ -1157,10 +1155,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       <GameStateContext value={state}>{children}</GameStateContext>
     </GameDispatchContext>
   )
-}
-
-GameStateProvider.propTypes = {
-  children: PropTypes.node
 }
 
 /**

@@ -37,11 +37,10 @@ test.describe('Game Flow', () => {
       return
     }
 
-    const confirmBtn = page.getByRole('button', { name: /confirm/i })
+    const identityDialog = page.getByRole('dialog')
+    const confirmBtn = identityDialog.getByRole('button', { name: /confirm/i })
     if (await confirmBtn.isVisible()) {
-      const input = page
-        .getByPlaceholder(/enter your name/i)
-        .or(page.getByPlaceholder(/ui:enter_name_placeholder/i))
+      const input = identityDialog.getByRole('textbox').first()
       await input.fill('Test Name')
       await confirmBtn.click()
     }
@@ -124,8 +123,9 @@ test.describe('Game Flow', () => {
     ).toBeVisible()
 
     // Navigate tabs inside Band HQ to be safe
-    await page.getByRole('button', { name: /shop/i }).click()
-    await page.getByRole('button', { name: /settings/i }).click()
+    const bandHqTabs = page.getByRole('tablist', { name: /band hq sections/i })
+    await bandHqTabs.getByRole('tab', { name: /^shop$/i }).click()
+    await bandHqTabs.getByRole('tab', { name: /^settings$/i }).click()
 
     // Click leave, expect Band HQ button to be visible again on main menu
     await page.getByRole('button', { name: /leave \[esc\]/i }).click()
@@ -140,23 +140,91 @@ test.describe('Game Flow', () => {
 
     await skipToMenu(page)
     const startBtn = page.getByRole('button', { name: /start tour/i })
-    const result = await raceWithCrash(page, () => startBtn.click(), 5000)
-    if (result === 'crash' || result === 'timeout') {
-      test.skip(true, 'Chromium crashed on Start Tour.')
-      return
-    }
+    const identityDialog = page.getByRole('dialog')
+    const tourPlanHeading = page.getByRole('heading', { name: /tour plan/i })
+    const skipIntroBtn = page.getByRole('button', { name: /skip intro/i })
 
-    const confirmBtn = page.getByRole('button', { name: /confirm/i })
-    if (await confirmBtn.isVisible()) {
-      const input = page
-        .getByPlaceholder(/enter your name/i)
-        .or(page.getByPlaceholder(/ui:enter_name_placeholder/i))
+    const completeIdentityIfNeeded = async () => {
+      const confirmBtn = identityDialog.getByRole('button', {
+        name: /confirm/i
+      })
+      const needsIdentity = await confirmBtn
+        .isVisible({ timeout: 2500 })
+        .catch(() => false)
+      if (!needsIdentity) return
+      const input = identityDialog.getByRole('textbox').first()
       await input.fill('Test Name')
       await confirmBtn.click()
     }
 
+    const ensureOverworld = async () => {
+      const getState = async () =>
+        Promise.race([
+          tourPlanHeading
+            .waitFor({ state: 'visible', timeout: 10000 })
+            .then(() => 'overworld')
+            .catch(() => null),
+          skipIntroBtn
+            .waitFor({ state: 'visible', timeout: 10000 })
+            .then(() => 'intro')
+            .catch(() => null),
+          startBtn
+            .waitFor({ state: 'visible', timeout: 10000 })
+            .then(() => 'menu')
+            .catch(() => null)
+        ])
+
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const state = await getState()
+        if (state === 'overworld') return
+
+        if (state === 'intro') {
+          await skipIntroBtn.click()
+          // After skipping intro we can land either on menu or directly in overworld.
+          await Promise.race([
+            tourPlanHeading.waitFor({ state: 'visible', timeout: 10000 }),
+            startBtn.waitFor({ state: 'visible', timeout: 10000 })
+          ]).catch(() => {})
+          continue
+        }
+
+        if (state === 'menu') {
+          const clickedStart = await startBtn
+            .click({ timeout: 2000 })
+            .then(() => true)
+            .catch(() => false)
+          if (clickedStart) {
+            await completeIdentityIfNeeded()
+          }
+          await Promise.race([
+            tourPlanHeading.waitFor({ state: 'visible', timeout: 10000 }),
+            skipIntroBtn.waitFor({ state: 'visible', timeout: 10000 }),
+            startBtn.waitFor({ state: 'visible', timeout: 10000 })
+          ]).catch(() => {})
+          continue
+        }
+
+        await page.waitForTimeout(300)
+      }
+
+      // Hard recovery: reset to menu and retry once from a clean state.
+      await skipToMenu(page)
+      await expect(startBtn).toBeVisible({ timeout: 10000 })
+      await expect(startBtn).toBeEnabled({ timeout: 15000 })
+      await startBtn.click()
+      await completeIdentityIfNeeded()
+      await expect(tourPlanHeading).toBeVisible({ timeout: 15000 })
+      if (await tourPlanHeading.isVisible().catch(() => false)) return
+
+      throw new Error('Could not reach overworld from Start Tour after retry.')
+    }
+
     // 1. Overworld
-    await expect(page.getByText(/tour plan/i)).toBeVisible({ timeout: 10000 })
+    await ensureOverworld()
+
+    if (page.isClosed()) {
+      throw new Error('Page closed unexpectedly while entering overworld.')
+    }
 
     // The Band HQ might be open depending on earlier flow, ensure it's closed
     const hqHeading = page.getByRole('heading', {
@@ -170,62 +238,173 @@ test.describe('Game Flow', () => {
 
     // Find a reachable node and click it (avoid the current node 'Proberaum' or wherever the van currently is)
     // Explicitly target a known gig or festival venue to ensure the PreGig and Roadie minigame actually occur
-    const travelNode = page
-      .getByRole('button', {
-        name: /Travel to (Goldgrube|MTC|Die Distille|Stadtfest|Deichbrand|Wacken)/i
-      })
-      .first()
-    await travelNode.waitFor({ state: 'visible', timeout: 5000 })
+    const getTravelNode = () =>
+      page
+        .getByRole('button', {
+          // Prefer known GIG venues only (exclude SPECIAL/REST style nodes)
+          name: /Travel to (Gold Mine|Goldgrube|The Distillery|Die Distille|Underground|UT Connewitz|Logo|K17|Black Eagle|Cassiopeia|Moritzhof|Centrum)/i
+        })
+        .first()
+    await getTravelNode().waitFor({ state: 'visible', timeout: 5000 })
 
     // Click once to select/hover
-    await travelNode.click()
+    await getTravelNode().click()
 
     // Wait for the Confirm? state to appear then click again
     await expect(
       page.getByText('CONFIRM?').filter({ visible: true })
     ).toBeVisible()
-    await travelNode.click()
+    await getTravelNode().click()
 
     // 2. Tourbus Minigame -> Wait for completion
     // Wait for scene to load
-    await expect(page.getByText('TOURBUS TERROR')).toBeVisible({
+    const tourbusHeading = page.getByRole('heading', {
+      name: /tourbus terror/i
+    })
+    const tourbusMoveLeftBtn = page.getByRole('button', { name: /move left/i })
+    await expect(tourbusHeading).toBeVisible({
       timeout: 10000
     })
 
-    // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
-    await page.keyboard.press('Shift+P')
-    await page.waitForTimeout(500)
-
-    // Wait for game over screen and click continue.
+    // Tourbus completion can branch:
+    // - show a "Continue" button, or
+    // - return directly to overworld with an event modal.
     const destReachedBtn = page.getByRole('button', {
       name: /continue/i,
       exact: true
     })
-    await destReachedBtn.waitFor({ state: 'visible', timeout: 10000 })
-    await destReachedBtn.click()
+    const dismissTopEventDialog = async () => {
+      const eventDialog = page.getByRole('dialog').first()
+      const hasDialog = await eventDialog
+        .isVisible({ timeout: 500 })
+        .catch(() => false)
+      if (!hasDialog) return false
 
-    // Handle Potential Random Events (e.g., Van Breakdown, Police Check)
-    // These appear after the Tourbus Minigame (on arrival) and overlay the PreGig view.
-    for (let i = 0; i < 3; i++) {
-      try {
-        // Check if an event modal is visible by looking for options
-        const firstEventOption = page
-          .locator('button', { hasText: /^1 / })
-          .first()
-        // Reduced timeout for event check to fail fast if no event
-        await firstEventOption.waitFor({ state: 'visible', timeout: 2000 })
-        await firstEventOption.click()
-        await page.waitForTimeout(1000) // allow UI to settle
-      } catch (_e) {
-        // No more events found, proceed
+      const numberedOption = eventDialog
+        .locator('button')
+        .filter({ hasText: /^\[\d+\]/ })
+        .first()
+      const continueOption = eventDialog.getByRole('button', {
+        name: /continue/i
+      })
+
+      if (await numberedOption.isVisible().catch(() => false)) {
+        await numberedOption.click()
+        return true
+      }
+      if (await continueOption.isVisible().catch(() => false)) {
+        await continueOption.click()
+        return true
+      }
+      return false
+    }
+    const isInTourbusScene = async () => {
+      const byHeading = await tourbusHeading
+        .isVisible({ timeout: 300 })
+        .catch(() => false)
+      if (byHeading) return true
+      return tourbusMoveLeftBtn.isVisible({ timeout: 300 }).catch(() => false)
+    }
+    const bypassTourbusScene = async () => {
+      for (let i = 0; i < 10; i++) {
+        const stillInTourbus = await isInTourbusScene()
+        if (!stillInTourbus) break
+
+        await page.keyboard.press('Shift+P')
+
+        if (await dismissTopEventDialog()) {
+          await page.waitForTimeout(300)
+          continue
+        }
+
+        const hasTourbusContinue = await destReachedBtn
+          .isVisible({ timeout: 1500 })
+          .catch(() => false)
+        if (hasTourbusContinue) {
+          await destReachedBtn.click({ timeout: 2000 }).catch(() => {})
+        }
+        await page.waitForTimeout(300)
+      }
+    }
+
+    // Simulate the DEV backdoor repeatedly until Tourbus scene exits.
+    await bypassTourbusScene()
+
+    const stillInTourbusAfterBypass = await isInTourbusScene()
+    if (stillInTourbusAfterBypass) {
+      throw new Error(
+        'Tourbus minigame did not exit after Shift+P bypass attempts.'
+      )
+    }
+
+    // Handle potential random events after travel completion.
+    // Some events expose numbered options ([1]/[2]), others only a [CONTINUE] action.
+    for (let i = 0; i < 4; i++) {
+      const dismissed = await dismissTopEventDialog()
+      if (!dismissed) {
         break
+      }
+      await page.waitForTimeout(500) // allow UI to settle
+    }
+
+    // If we are still in overworld due to a detour event (e.g., MISSED EXIT),
+    // retry one travel attempt to continue the golden path.
+    if (await tourPlanHeading.isVisible().catch(() => false)) {
+      await getTravelNode().click()
+      await expect(
+        page.getByText('CONFIRM?').filter({ visible: true })
+      ).toBeVisible()
+      await getTravelNode().click()
+
+      // Retry travel can put us into Tourbus again; bypass it the same way.
+      await bypassTourbusScene()
+
+      if (await isInTourbusScene()) {
+        throw new Error(
+          'Retry travel remained in Tourbus and did not complete.'
+        )
+      }
+
+      // Clear any follow-up event overlays from the retry path.
+      for (let i = 0; i < 4; i++) {
+        const dismissed = await dismissTopEventDialog()
+        if (!dismissed) {
+          break
+        }
+        await page.waitForTimeout(500)
+      }
+    }
+
+    // Last-mile stabilization: random events and detours can bounce between
+    // OVERWORLD and TOURBUS right before PreGig. Ensure we truly reach PreGig.
+    const preGigHeading = page.getByRole('heading', { name: /preparation/i })
+    for (let i = 0; i < 3; i++) {
+      if (await preGigHeading.isVisible({ timeout: 1000 }).catch(() => false)) {
+        break
+      }
+
+      if (await isInTourbusScene()) {
+        await bypassTourbusScene()
+      } else if (
+        await tourPlanHeading.isVisible({ timeout: 1000 }).catch(() => false)
+      ) {
+        await getTravelNode().click()
+        await expect(
+          page.getByText('CONFIRM?').filter({ visible: true })
+        ).toBeVisible()
+        await getTravelNode().click()
+        await bypassTourbusScene()
+      }
+
+      for (let j = 0; j < 3; j++) {
+        const dismissed = await dismissTopEventDialog()
+        if (!dismissed) break
+        await page.waitForTimeout(300)
       }
     }
 
     // 3. PreGig Preparation
-    await expect(
-      page.getByRole('heading', { name: /preparation/i })
-    ).toBeVisible({ timeout: 15000 })
+    await expect(preGigHeading).toBeVisible({ timeout: 15000 })
     // Select the first song to fulfill minimum requirements (1 song)
     const firstSong = page.getByText('01 Kranker Schrank')
     await firstSong.waitFor({ state: 'visible', timeout: 5000 })

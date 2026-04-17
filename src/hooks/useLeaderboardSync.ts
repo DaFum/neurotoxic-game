@@ -2,6 +2,26 @@ import { useEffect } from 'react'
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 
+let leaderboardStatsEndpointUnavailable = false
+let hasLoggedUnavailableEndpoint = false
+
+const getLeaderboardSyncEnabledFlag = () => {
+  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
+  if (typeof viteFlag === 'string') {
+    return viteFlag.toLowerCase() !== 'false'
+  }
+
+  const processFlag =
+    typeof process !== 'undefined'
+      ? process?.env?.VITE_ENABLE_LEADERBOARD_SYNC
+      : undefined
+  if (typeof processFlag === 'string') {
+    return processFlag.toLowerCase() !== 'false'
+  }
+
+  return true
+}
+
 /**
  * Validates if the player state is ready for leaderboard sync.
  * @param {string} playerId - The player's ID.
@@ -77,18 +97,36 @@ export const createSyncPayload = (
 /**
  * Sends the payload to the leaderboard API.
  * @param {object} payload - The data to sync.
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
  */
 export const syncLeaderboardStats = async payload => {
+  if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
+    return false
+  }
+
   const response = await fetch('/api/leaderboard/stats', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
 
+  if (response.status === 404) {
+    leaderboardStatsEndpointUnavailable = true
+    if (!hasLoggedUnavailableEndpoint) {
+      hasLoggedUnavailableEndpoint = true
+      logger.info(
+        'Leaderboard',
+        'Stats endpoint unavailable (404). Disabling stat sync for this session.'
+      )
+    }
+    return false
+  }
+
   if (!response.ok) {
     throw new Error(`Sync failed: ${response.statusText}`)
   }
+
+  return true
 }
 
 /**
@@ -134,7 +172,8 @@ export const useLeaderboardSync = state => {
           totalFollowers
         )
 
-        await syncLeaderboardStats(payload)
+        const didSync = await syncLeaderboardStats(payload)
+        if (!didSync) return
 
         // 4. Update Synced State
         safeStorageOperation('setLastSyncedDay', () =>

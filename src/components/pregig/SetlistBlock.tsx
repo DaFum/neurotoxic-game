@@ -1,15 +1,52 @@
-/**
- * (#1) Actual Updates: Extracted SetlistBlock from PreGig scene. Added precise PropTypes definitions.
- * (#2) Next Steps: Extract remaining logic.
- * (#3) Found Errors + Solutions: N/A
- */
-import React, { useCallback } from 'react'
+import { memo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/songUtils'
 import { Tooltip } from '../../ui/shared/Tooltip'
 
-const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
+interface SongData {
+  id: string | number
+  name: string
+  difficulty: number
+  duration: number
+  energy: {
+    peak: number
+  }
+}
+
+interface SetlistSongRef {
+  id: string | number
+}
+
+interface SetlistPlayerState {
+  stats?: {
+    proveYourselfMode?: boolean
+  }
+}
+
+interface SongRowProps {
+  song: SongData
+  isSelected: boolean
+  isLocked: boolean
+  toggleSong: (song: SongData) => void
+}
+
+interface SetlistBlockProps {
+  setlist: Array<string | SetlistSongRef>
+  songsDb: SongData[]
+  songsDict: Record<string, SongData>
+  selectedSongIds: Set<string | number>
+  player?: SetlistPlayerState
+  toggleSong: (song: SongData) => void
+}
+
+const SongRow = memo(function SongRow({
+  song,
+  isSelected,
+  isLocked,
+  toggleSong
+}: SongRowProps) {
+  const { t } = useTranslation('ui')
   const handleToggle = useCallback(() => {
     if (isLocked) return
     toggleSong(song)
@@ -83,33 +120,16 @@ const SongRow = React.memo(({ song, isSelected, isLocked, t, toggleSong }) => {
 
 SongRow.displayName = 'SongRow'
 
-const SongShape = PropTypes.shape({
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  name: PropTypes.string.isRequired,
-  difficulty: PropTypes.number.isRequired,
-  duration: PropTypes.number.isRequired,
-  energy: PropTypes.shape({
-    peak: PropTypes.number.isRequired
-  }).isRequired
-})
-
-SongRow.propTypes = {
-  song: SongShape.isRequired,
-  isSelected: PropTypes.bool.isRequired,
-  isLocked: PropTypes.bool.isRequired,
-  t: PropTypes.func.isRequired,
-  toggleSong: PropTypes.func.isRequired
-}
-
 export const SetlistBlock = ({
-  t,
   setlist,
   songsDb,
   songsDict,
   selectedSongIds,
   player,
   toggleSong
-}) => {
+}: SetlistBlockProps) => {
+  const { t } = useTranslation('ui')
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -133,14 +153,12 @@ export const SetlistBlock = ({
               song={song}
               isSelected={isSelected}
               isLocked={isLocked}
-              t={t}
               toggleSong={toggleSong}
             />
           )
         })}
       </div>
 
-      {/* Curve Visualization */}
       <div className='mt-3 h-14 border-t border-ash-gray/20 pt-2 flex items-end justify-between gap-1'>
         {setlist.map((s, i) => {
           const id = getSongId(s)
@@ -169,19 +187,4 @@ export const SetlistBlock = ({
       </div>
     </motion.div>
   )
-}
-
-SetlistBlock.propTypes = {
-  t: PropTypes.func.isRequired,
-  setlist: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, SongShape]))
-    .isRequired,
-  songsDb: PropTypes.arrayOf(SongShape).isRequired,
-  songsDict: PropTypes.objectOf(SongShape).isRequired,
-  selectedSongIds: PropTypes.instanceOf(Set).isRequired,
-  player: PropTypes.shape({
-    stats: PropTypes.shape({
-      proveYourselfMode: PropTypes.bool
-    })
-  }),
-  toggleSong: PropTypes.func.isRequired
 }

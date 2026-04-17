@@ -2,10 +2,6 @@
 
 @AGENTS.md
 
-## Claude-Specific
-
-For repo-wide workflow, testing, package management, and PR guidance, see `AGENTS.md` — it is the single source of truth. This file provides only Claude Code-specific supplements.
-
 ## Testing Supplements
 
 - Vitest structural component mocks (`vi.mock`) must replicate core DOM hierarchy and forward layout props.
