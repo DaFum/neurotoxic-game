@@ -21,6 +21,7 @@ env:
   MAX_FAILURE_LINES: '500'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   NEUROTOXIC_LOG_LEVEL: '3'
+  PNPM_VERSION: '10.30.3'
 
 jobs:
   node-tests:
@@ -35,7 +36,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -87,7 +88,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -139,7 +140,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -165,7 +166,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -200,7 +201,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -235,7 +236,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
