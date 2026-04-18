@@ -309,6 +309,25 @@ export interface NegotiationModalProps {
   handleNegotiationSubmit: (submission: unknown) => void
 }
 
+export interface FinancialItem {
+  label?: string
+  labelKey: string
+  value: number
+  detail?: string
+  detailKey?: string
+  detailParams?: Record<string, unknown>
+}
+
+export interface FinancialCategory {
+  total: number
+  breakdown: FinancialItem[]
+}
+
 export interface ReportPhaseProps {
-  financials: unknown
+  financials?: {
+    income: FinancialCategory
+    expenses: FinancialCategory
+    net: number
+  }
+  onNext?: () => void
 }
