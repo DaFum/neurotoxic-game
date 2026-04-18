@@ -14,7 +14,10 @@ export const handleAddQuest = (state: GameState, quest: QuestState): GameState =
   return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
 }
 
-export const handleCompleteQuest = (state, { questId, randomIdx }) => {
+export const handleCompleteQuest = (
+  state: GameState,
+  { questId, randomIdx }: { questId: string; randomIdx?: number }
+): GameState => {
   if (!state.activeQuests) return state
   const questIndex = state.activeQuests.findIndex(q => q.id === questId)
   if (questIndex === -1) return state
@@ -166,9 +169,9 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 }
 
 export const handleAdvanceQuest = (
-  state,
-  { questId, amount = 1, randomIdx }
-) => {
+  state: GameState,
+  { questId, amount = 1, randomIdx }: { questId: string; amount?: number; randomIdx?: number }
+): GameState => {
   const nextState = { ...state }
   let questCompleted = false
   if (!nextState.activeQuests) return state
@@ -190,7 +193,7 @@ export const handleAdvanceQuest = (
   return nextState
 }
 
-export const handleFailQuests = state => {
+export const handleFailQuests = (state: GameState): GameState => {
   const nextState = { ...state }
   if (!nextState.activeQuests) return state
 

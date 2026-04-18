@@ -1,4 +1,6 @@
 // TODO: Review this file
+import type { GameState, Venue } from '../../types/game'
+import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { getSafeUUID } from '../../utils/crypto'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
@@ -23,7 +25,7 @@ import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
 
-export const handleSetGig = (state, payload) => {
+export const handleSetGig = (state: GameState, payload: Venue | null): GameState => {
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
 }

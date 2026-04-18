@@ -1,4 +1,4 @@
-import type { EventOption, GameState, MapNode } from './game'
+import type { EventOption, GameState, MapNode, PlayerState, BandMember } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 
 /**
@@ -114,7 +114,7 @@ export interface TutorialManagerProps {
 }
 
 export interface ClinicHeaderProps {
-  player: unknown
+  player: Pick<PlayerState, 'money' | 'fame'>
 }
 
 export interface ClinicMemberCardHeaderProps {
