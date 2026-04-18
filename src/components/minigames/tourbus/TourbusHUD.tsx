@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { TourbusHUDProps } from '../../../types/components'
 
-export const TourbusHUD = ({ distance, damage }) => {
+export const TourbusHUD = ({ distance, damage }: TourbusHUDProps) => {
   const { t } = useTranslation('minigame')
 
   return (
