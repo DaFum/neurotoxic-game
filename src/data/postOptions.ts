@@ -20,20 +20,22 @@ const POST_BADGES = {
 }
 
 const getCost = (inf: unknown): number => {
+  const infObj =
+    typeof inf === 'object' && inf !== null
+      ? (inf as Record<string, unknown>)
+      : null
   if (
-    !inf ||
-    typeof inf !== 'object' ||
-    Array.isArray(inf) ||
-    typeof inf.score !== 'number' ||
-    !['Micro', 'Macro', 'Mega'].includes(inf.tier)
+    !infObj ||
+    typeof infObj.score !== 'number' ||
+    !['Micro', 'Macro', 'Mega'].includes(String(infObj.tier))
   ) {
     return Number.POSITIVE_INFINITY
   }
 
   let base = 100
-  if (inf.tier === 'Macro') base = 300
-  if (inf.tier === 'Mega') base = 800
-  const discount = Math.min(0.5, (inf.score || 0) * 0.005)
+  if (infObj.tier === 'Macro') base = 300
+  if (infObj.tier === 'Mega') base = 800
+  const discount = Math.min(0.5, (infObj.score || 0) * 0.005)
   return Math.floor(base * (1 - discount))
 }
 
