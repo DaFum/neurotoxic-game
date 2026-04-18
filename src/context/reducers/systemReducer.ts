@@ -89,12 +89,19 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
 }
 
 const sanitizeBand = (loadedBand: unknown): BandState => {
+  const bandData =
+    typeof loadedBand === 'object' && loadedBand !== null
+      ? (loadedBand as Record<string, unknown>)
+      : {}
   const rawBand = {
     ...DEFAULT_BAND_STATE,
-    ...loadedBand,
+    ...bandData,
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(loadedBand?.performance || {})
+      ...(typeof bandData.performance === 'object' &&
+      bandData.performance !== null
+        ? (bandData.performance as Record<string, unknown>)
+        : {})
     },
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
