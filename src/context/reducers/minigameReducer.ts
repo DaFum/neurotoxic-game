@@ -225,7 +225,7 @@ export const handleCompleteAmpCalibration = (state: GameState, payload: Record<s
   }
 }
 
-export const handleStartKabelsalatMinigame = (state, payload) => {
+export const handleStartKabelsalatMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
   return {
