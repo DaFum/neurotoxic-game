@@ -278,7 +278,7 @@ export const handleCompleteKabelsalatMinigame = (state: GameState, payload: Reco
   }
 }
 
-export const handleCompleteRoadieMinigame = (state, payload) => {
+export const handleCompleteRoadieMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
   const { equipmentDamage } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
