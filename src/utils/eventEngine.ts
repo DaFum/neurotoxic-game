@@ -530,7 +530,15 @@ export const eventEngine = {
 
   processEvent(event: EngineEvent, optimizedState: EngineGameState) {
     try {
-      if (typeof event.condition !== 'function') return null
+      if (typeof event.condition !== 'function') {
+        this.handleError(
+          new TypeError(
+            `Invalid condition for event ${event.id}: expected function`
+          ),
+          event.id
+        )
+        return null
+      }
       const condResult = event.condition(optimizedState)
       if (condResult) {
         return {

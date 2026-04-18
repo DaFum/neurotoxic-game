@@ -44,6 +44,7 @@ class AudioSystem {
   prefsLoaded: boolean
   isStartingAmbient: boolean
   ambientStartPromise: Promise<boolean> | null
+  ambientStartToken: number
   listeners: Set<AudioListener>
   stateSnapshot: AudioStateSnapshot
 
@@ -55,6 +56,7 @@ class AudioSystem {
     this.prefsLoaded = false
     this.isStartingAmbient = false
     this.ambientStartPromise = null
+    this.ambientStartToken = 0
     this.listeners = new Set()
     this.stateSnapshot = {
       musicVol: this.musicVolume,
@@ -130,37 +132,46 @@ class AudioSystem {
   init(): void {
     if (this.prefsLoaded) return
 
+    const clamp01 = (n: string | null, fallback: number): number => {
+      if (n == null) return fallback
+      const v = Number.parseFloat(n)
+      if (!Number.isFinite(v)) return fallback
+      return Math.min(1, Math.max(0, v))
+    }
+
+    let savedMusicVol: string | null = null
+    let savedSfxVol: string | null = null
+    let savedMuted: string | null = null
+
     try {
-      // Load preferences
-      const savedMusicVol = localStorage.getItem('neurotoxic_vol_music')
-      const savedSfxVol = localStorage.getItem('neurotoxic_vol_sfx')
-      const savedMuted = localStorage.getItem('neurotoxic_muted')
+      savedMusicVol = localStorage.getItem('neurotoxic_vol_music')
+      savedSfxVol = localStorage.getItem('neurotoxic_vol_sfx')
+      savedMuted = localStorage.getItem('neurotoxic_muted')
+    } catch (error) {
+      handleError(error, {
+        fallbackMessage: 'AudioSystem preference load failed'
+      })
+    }
 
-      const clamp01 = (n: string, fallback: number): number => {
-        const v = Number.parseFloat(n)
-        if (!Number.isFinite(v)) return fallback
-        return Math.min(1, Math.max(0, v))
-      }
+    this.musicVolume = clamp01(savedMusicVol, 0.5)
+    this.sfxVolume = clamp01(savedSfxVol, 0.5)
+    this.muted = savedMuted === 'true'
 
-      this.musicVolume =
-        savedMusicVol != null ? clamp01(savedMusicVol, 0.5) : 0.5
-      this.sfxVolume = savedSfxVol != null ? clamp01(savedSfxVol, 0.5) : 0.5
-      this.muted = savedMuted === 'true'
-
+    try {
       // Initialize Audio Engine settings (but don't start Context yet)
       audioEngine.setSFXVolume(this.sfxVolume)
       audioEngine.setMusicVolume(this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       audioEngine.setDestinationMute(this.muted)
-
-      this.prefsLoaded = true
-      this.emitChange()
     } catch (error) {
       handleError(error, {
-        fallbackMessage: 'AudioSystem initialization failed'
+        fallbackMessage: 'AudioSystem engine initialization failed'
       })
     }
+
+    this.prefsLoaded = true
+    this.emitChange()
   }
 
   /**
@@ -183,8 +194,9 @@ class AudioSystem {
     }
 
     this.isStartingAmbient = true
+    const ambientStartToken = ++this.ambientStartToken
     this.ambientStartPromise = (async () => {
-      this.stopMusic({ emit: false })
+      this.stopMusic({ emit: false, invalidateAmbientStart: false })
       this.currentSongId = 'ambient'
       this.emitChange()
       try {
@@ -194,6 +206,7 @@ class AudioSystem {
             skipStop: true
           }
         )
+        if (ambientStartToken !== this.ambientStartToken) return false
         if (oggSuccess) {
           this.emitChange()
           logger.info('AudioSystem', 'Ambient started via OGG buffer playback.')
@@ -206,6 +219,7 @@ class AudioSystem {
         )
 
         const midiSuccess = await audioEngine.playRandomAmbientMidi()
+        if (ambientStartToken !== this.ambientStartToken) return false
         if (!midiSuccess) {
           this.currentSongId = null
           this.emitChange()
@@ -223,11 +237,13 @@ class AudioSystem {
         return true
       } catch (e) {
         handleError(e, { fallbackMessage: 'Failed to start ambient music' })
-        this.stopMusic()
+        this.stopMusic({ invalidateAmbientStart: false })
         return false
       } finally {
-        this.isStartingAmbient = false
-        this.ambientStartPromise = null
+        if (ambientStartToken === this.ambientStartToken) {
+          this.isStartingAmbient = false
+          this.ambientStartPromise = null
+        }
       }
     })()
 
@@ -238,7 +254,14 @@ class AudioSystem {
    * Stops the currently playing music.
    * @param {{ emit?: boolean }} [options] - Controls whether subscriber notifications are emitted.
    */
-  stopMusic(options: { emit?: boolean } = {}): void {
+  stopMusic(
+    options: { emit?: boolean; invalidateAmbientStart?: boolean } = {}
+  ): void {
+    if (options.invalidateAmbientStart !== false) {
+      this.ambientStartToken++
+      this.isStartingAmbient = false
+      this.ambientStartPromise = null
+    }
     logger.debug(
       'AudioSystem',
       `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`
@@ -333,6 +356,10 @@ class AudioSystem {
    * @param {number} vol - Volume level between 0 and 1.
    */
   setMusicVolume(vol: number): boolean {
+    if (!Number.isFinite(vol)) {
+      logger.warn('AudioSystem', `Invalid music volume: ${String(vol)}`)
+      return false
+    }
     const next = Math.min(1, Math.max(0, vol))
     let operationSucceeded = true
     let appliedNow = false
@@ -370,6 +397,10 @@ class AudioSystem {
    * @param {number} vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol: number): boolean {
+    if (!Number.isFinite(vol)) {
+      logger.warn('AudioSystem', `Invalid SFX volume: ${String(vol)}`)
+      return false
+    }
     const next = Math.min(1, Math.max(0, vol))
     let operationSucceeded = true
     let appliedNow = false
@@ -431,6 +462,7 @@ class AudioSystem {
   dispose(): void {
     this.stopMusic({ emit: false })
     this.currentSongId = null
+    this.ambientStartToken++
     this.ambientStartPromise = null
     this.isStartingAmbient = false
     this.prefsLoaded = false

@@ -222,7 +222,17 @@ export const buildRhythmLayout = ({
 }: {
   screenWidth: number
   screenHeight: number
-}) => {
+}): {
+  startX: number
+  laneWidth: number
+  laneHeight: number
+  laneStrokeWidth: number
+  hitLineY: number
+  hitLineHeight: number
+  hitLineStrokeWidth: number
+  rhythmOffsetY: number
+  laneTotalWidth: number
+} => {
   const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth
   const startX = calculateLaneStartX({ screenWidth, laneTotalWidth })
   const laneHeight = screenHeight * RHYTHM_LAYOUT.laneHeightRatio
@@ -277,9 +287,14 @@ const _getCachedTexture = (url: string): Texture | null => {
  * @param {string} url - The URL to check.
  * @returns {boolean} True if the URL has an extension, false otherwise.
  */
-const _hasFileExtension = (url: string): boolean => {
+const _hasFileExtension = (url: string, baseUrl?: string): boolean => {
   try {
-    const pathname = new URL(url).pathname
+    const fallbackBase =
+      baseUrl ??
+      (typeof window !== 'undefined' && window.location
+        ? window.location.href
+        : 'http://localhost')
+    const pathname = new URL(url, fallbackBase).pathname
     const lastSegment = pathname.split('/').pop() || ''
     return lastSegment.includes('.')
   } catch {
@@ -294,6 +309,14 @@ const _hasFileExtension = (url: string): boolean => {
  */
 const _loadWithImageFallback = (url: string): Promise<Texture | null> => {
   return new Promise(resolve => {
+    if (typeof Image === 'undefined') {
+      logger.warn(
+        'loadTexture',
+        `Image fallback unavailable in this runtime for URL: ${url}`
+      )
+      resolve(null)
+      return
+    }
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -320,7 +343,11 @@ export const loadTexture = async (url: string): Promise<Texture | null> => {
   const cached = _getCachedTexture(url)
   if (cached) return cached
 
-  if (_hasFileExtension(url)) {
+  const baseUrl =
+    typeof window !== 'undefined' && window.location
+      ? window.location.href
+      : undefined
+  if (_hasFileExtension(url, baseUrl)) {
     try {
       return await Assets.load(url)
     } catch (err) {
