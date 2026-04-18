@@ -25,12 +25,18 @@ import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
 
-export const handleSetGig = (state: GameState, payload: Venue | null): GameState => {
+export const handleSetGig = (
+  state: GameState,
+  payload: Venue | null
+): GameState => {
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
 }
 
-export const handleStartGig = (state: GameState, payload: Venue | null): GameState => {
+export const handleStartGig = (
+  state: GameState,
+  payload: Venue | null
+): GameState => {
   logger.info('GameState', 'Starting Gig Sequence', payload?.name)
   return {
     ...state,
@@ -40,7 +46,10 @@ export const handleStartGig = (state: GameState, payload: Venue | null): GameSta
   }
 }
 
-export const handleSetSetlist = (state: GameState, payload: RhythmSetlistEntry[]): GameState => {
+export const handleSetSetlist = (
+  state: GameState,
+  payload: RhythmSetlistEntry[]
+): GameState => {
   return { ...state, setlist: normalizeSetlistForSave(payload) }
 }
 
@@ -52,7 +61,9 @@ export const handleSetSetlist = (state: GameState, payload: RhythmSetlistEntry[]
  */
 export const handleSetGigModifiers = (
   state: GameState,
-  payload: Record<string, boolean> | ((mods: Record<string, boolean>) => Record<string, boolean>)
+  payload:
+    | Record<string, boolean>
+    | ((mods: Record<string, boolean>) => Record<string, boolean>)
 ): GameState => {
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ||
@@ -117,7 +128,10 @@ const handleRecordGoodShow = (state: GameState): GameState => {
   return nextState
 }
 
-export const handleSetLastGigStats = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleSetLastGigStats = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
     return {
@@ -141,7 +155,7 @@ export const handleSetLastGigStats = (state: GameState, payload: Record<string, 
 
   const score = payload?.score ?? 0
   const location = state.player?.location || 'Unknown'
-  const capacity = state.currentGig?.venue?.capacity || 0
+  const capacity = state.currentGig?.capacity || 0
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
