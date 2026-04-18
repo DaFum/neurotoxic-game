@@ -214,18 +214,27 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
 
 const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   if (!Array.isArray(loadedToasts)) return []
-  const acc = []
+  const acc: ToastPayload[] = []
   for (const t of loadedToasts) {
-    if (t && typeof t === 'object' && t.id && t.message) {
-      const message = String(t.message).trim()
-      if (message.length > 0) {
-        acc.push({
-          ...t,
-          message,
-          type: ['success', 'error', 'warning', 'info'].includes(t.type)
-            ? t.type
-            : 'info'
-        })
+    if (t && typeof t === 'object') {
+      const toastObj = t as Record<string, unknown>
+      if (toastObj.id && toastObj.message) {
+        const message = String(toastObj.message).trim()
+        if (message.length > 0) {
+          acc.push({
+            ...toastObj,
+            id: String(toastObj.id),
+            type: ['success', 'error', 'warning', 'info'].includes(
+              String(toastObj.type)
+            )
+              ? (String(toastObj.type) as
+                  | 'success'
+                  | 'error'
+                  | 'warning'
+                  | 'info')
+              : 'info'
+          } as ToastPayload)
+        }
       }
     }
   }
