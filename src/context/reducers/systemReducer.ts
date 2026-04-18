@@ -484,7 +484,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
  * @param {Object} state - Current state
  * @returns {Object} Updated state
  */
-export const handleAdvanceDay = (state, payload) => {
+export const handleAdvanceDay = (state: GameState, payload: Record<string, unknown>): GameState => {
   const rng = payload?.rng || getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
