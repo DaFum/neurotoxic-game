@@ -346,7 +346,7 @@ export const handleSetMap = (state: GameState, payload: Record<string, unknown>)
   return { ...state, gameMap: payload }
 }
 
-export const handleAddToast = (state, payload) => {
+export const handleAddToast = (state: GameState, payload: ToastPayload): GameState => {
   return { ...state, toasts: [...state.toasts, payload] }
 }
 
