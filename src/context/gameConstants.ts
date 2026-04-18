@@ -1,4 +1,5 @@
 // TODO: Review this file
+import type { MinigameState } from '../types/game'
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',
