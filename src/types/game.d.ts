@@ -72,7 +72,7 @@ export interface GameMap {
 }
 
 export interface MinigameState {
-  type?: string
+  type?: string | null
   isActive?: boolean
   targetNodeId?: string | null
   active?: boolean
