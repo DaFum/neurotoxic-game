@@ -210,7 +210,7 @@ export interface TravelingVanProps {
   travelTarget: MapNode | null
   vanUrl: string
   travelCompletedRef: { current: unknown }
-  onTravelComplete: () => void
+  onTravelComplete: (node?: MapNode) => void
 }
 
 export interface CompletePhaseProps {
