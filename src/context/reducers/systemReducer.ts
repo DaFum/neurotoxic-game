@@ -197,7 +197,7 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
-const migratePlayerLocation = location => {
+const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return location
 
   let legacyLocation = location
