@@ -37,7 +37,10 @@ const getCost = (inf: unknown): number => {
   return Math.floor(base * (1 - discount))
 }
 
-const isValidAndAffordableInfluencer = (inf, money) => {
+const isValidAndAffordableInfluencer = (
+  inf: unknown,
+  money: number
+): boolean => {
   const cost = getCost(inf)
   return cost <= money
 }
