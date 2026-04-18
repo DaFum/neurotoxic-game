@@ -177,7 +177,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
   }
 }
 
-const sanitizeToasts = loadedToasts => {
+const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   if (!Array.isArray(loadedToasts)) return []
   const acc = []
   for (const t of loadedToasts) {
