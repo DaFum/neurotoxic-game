@@ -105,15 +105,17 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     },
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
-      ...(loadedBand?.inventory || {})
+      ...(typeof bandData.inventory === 'object' && bandData.inventory !== null
+        ? (bandData.inventory as Record<string, unknown>)
+        : {})
     },
     stash: (() => {
       const defaultStash = Object.assign(
         Object.create(null),
         DEFAULT_BAND_STATE.stash
       )
-      if (Array.isArray(loadedBand?.stash)) {
-        const stashArr = loadedBand.stash
+      if (Array.isArray(bandData.stash)) {
+        const stashArr = bandData.stash as unknown[]
         for (let i = 0; i < stashArr.length; i++) {
           const item = stashArr[i]
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
