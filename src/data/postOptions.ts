@@ -27,8 +27,10 @@ const getCost = (inf: unknown): number => {
   if (
     !infObj ||
     typeof infObj.score !== 'number' ||
-    (typeof infObj.tier === 'string' &&
-      !['Micro', 'Macro', 'Mega'].includes(infObj.tier))
+    !(
+      typeof infObj.tier === 'string' &&
+      ['Micro', 'Macro', 'Mega'].includes(infObj.tier)
+    )
   ) {
     return Number.POSITIVE_INFINITY
   }
