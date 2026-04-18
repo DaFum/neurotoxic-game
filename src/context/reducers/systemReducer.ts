@@ -1,5 +1,10 @@
 // TODO: Review this file
-import type { GameState, PlayerState, BandState, ToastPayload } from '../../types/game'
+import type {
+  GameState,
+  PlayerState,
+  BandState,
+  ToastPayload
+} from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,
@@ -39,16 +44,24 @@ export const ALLOWED_SCENES = new Set([
 ])
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
+  const playerData =
+    typeof loadedPlayer === 'object' && loadedPlayer !== null
+      ? (loadedPlayer as Record<string, unknown>)
+      : {}
   const rawPlayer = {
     ...DEFAULT_PLAYER_STATE,
-    ...loadedPlayer,
+    ...playerData,
     van: {
       ...DEFAULT_PLAYER_STATE.van,
-      ...(loadedPlayer?.van || {})
+      ...(typeof playerData.van === 'object' && playerData.van !== null
+        ? (playerData.van as Record<string, unknown>)
+        : {})
     },
     stats: {
       ...DEFAULT_PLAYER_STATE.stats,
-      ...(loadedPlayer?.stats || {})
+      ...(typeof playerData.stats === 'object' && playerData.stats !== null
+        ? (playerData.stats as Record<string, unknown>)
+        : {})
     }
   }
 
@@ -224,7 +237,10 @@ const migrateLegacyVenueId = (id: unknown): string => {
  * @param {Object} payload - Loaded save data
  * @returns {Object} Updated state
  */
-export const handleLoadGame = (state: GameState, payload: unknown): GameState => {
+export const handleLoadGame = (
+  state: GameState,
+  payload: unknown
+): GameState => {
   logger.info('GameState', 'Game Loaded')
 
   const loadedState = payload || {}
@@ -321,7 +337,10 @@ export const handleLoadGame = (state: GameState, payload: unknown): GameState =>
   return migratedState
 }
 
-export const handleResetState = (state: GameState, payload: Record<string, unknown> = {}): GameState => {
+export const handleResetState = (
+  state: GameState,
+  payload: Record<string, unknown> = {}
+): GameState => {
   logger.info('GameState', 'State Reset (Debug)')
 
   // Construct the data to preserve across reset
@@ -336,21 +355,33 @@ export const handleResetState = (state: GameState, payload: Record<string, unkno
   }
 }
 
-export const handleUpdateSettings = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleUpdateSettings = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') return state
   return { ...state, settings: { ...state.settings, ...payload } }
 }
 
-export const handleSetMap = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleSetMap = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   logger.info('GameState', 'Map Generated')
   return { ...state, gameMap: payload }
 }
 
-export const handleAddToast = (state: GameState, payload: ToastPayload): GameState => {
+export const handleAddToast = (
+  state: GameState,
+  payload: ToastPayload
+): GameState => {
   return { ...state, toasts: [...state.toasts, payload] }
 }
 
-export const handleRemoveToast = (state: GameState, payload: { toastId: string }): GameState => {
+export const handleRemoveToast = (
+  state: GameState,
+  payload: { toastId: string }
+): GameState => {
   return {
     ...state,
     toasts: state.toasts.filter(t => t.id !== payload)
@@ -484,7 +515,10 @@ const processContrabandExpiry = (band: BandState): BandState => {
  * @param {Object} state - Current state
  * @returns {Object} Updated state
  */
-export const handleAdvanceDay = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleAdvanceDay = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const rng = payload?.rng || getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
@@ -544,7 +578,10 @@ export const handleAdvanceDay = (state: GameState, payload: Record<string, unkno
  * @param {string} unlockId - Unlock ID to add
  * @returns {Object} Updated state
  */
-export const handleAddUnlock = (state: GameState, unlockId: string): GameState => {
+export const handleAddUnlock = (
+  state: GameState,
+  unlockId: string
+): GameState => {
   if (!unlockId || typeof unlockId !== 'string') return state
   if (state.unlocks?.includes(unlockId)) return state
   return { ...state, unlocks: [...(state.unlocks ?? []), unlockId] }
