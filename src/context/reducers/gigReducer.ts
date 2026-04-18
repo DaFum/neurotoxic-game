@@ -30,7 +30,7 @@ export const handleSetGig = (state: GameState, payload: Venue | null): GameState
   return { ...state, currentGig: payload }
 }
 
-export const handleStartGig = (state, payload) => {
+export const handleStartGig = (state: GameState, payload: Venue | null): GameState => {
   logger.info('GameState', 'Starting Gig Sequence', payload?.name)
   return {
     ...state,
