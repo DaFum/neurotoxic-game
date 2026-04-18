@@ -153,9 +153,15 @@ export const handleSetLastGigStats = (
     reputationByRegion: { ...state.reputationByRegion }
   }
 
-  const score = payload?.score ?? 0
+  const score = (
+    typeof payload?.score === 'number' ? payload.score : 0
+  ) as number
   const location = state.player?.location || 'Unknown'
-  const capacity = state.currentGig?.capacity || 0
+  const capacity = (
+    typeof state.currentGig?.capacity === 'number'
+      ? state.currentGig.capacity
+      : 0
+  ) as number
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
@@ -168,7 +174,7 @@ export const handleSetLastGigStats = (
         `Regional reputation loss in ${location} due to poor gig performance (-10)`
       )
       if ((nextState.reputationByRegion[location] || 0) <= -30) {
-        const gigVenueId = state.currentGig?.venue?.id || 'unknown_venue'
+        const gigVenueId = (state.currentGig?.id as string) || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,
           toastId: `${gigVenueId}-blacklisted`
