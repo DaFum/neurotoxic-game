@@ -165,15 +165,23 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
       }
       return defaultStash
     })(),
-    activeContrabandEffects: Array.isArray(loadedBand?.activeContrabandEffects)
-      ? loadedBand.activeContrabandEffects.map(effect => ({
-          ...effect,
-          remainingDuration:
-            Number.isFinite(effect.remainingDuration) &&
-            effect.remainingDuration >= 0
-              ? effect.remainingDuration
-              : 0
-        }))
+    activeContrabandEffects: Array.isArray(bandData.activeContrabandEffects)
+      ? (bandData.activeContrabandEffects as unknown[]).map(
+          (effect: unknown) => {
+            const effectObj =
+              typeof effect === 'object' && effect !== null
+                ? (effect as Record<string, unknown>)
+                : {}
+            return {
+              ...effectObj,
+              remainingDuration:
+                Number.isFinite(effectObj.remainingDuration as number) &&
+                (effectObj.remainingDuration as number) >= 0
+                  ? (effectObj.remainingDuration as number)
+                  : 0
+            }
+          }
+        )
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
 
