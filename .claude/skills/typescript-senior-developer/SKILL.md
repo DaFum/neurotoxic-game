@@ -148,7 +148,7 @@ drift.
 function reducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case ActionTypes.CHANGE_SCENE:
-      return { ...state, scene: action.payload }
+      return { ...state, currentScene: action.payload }
     // ...
     default:
       return assertNever(action)
@@ -187,8 +187,8 @@ function isGameState(v: unknown): v is GameState {
   return (
     typeof v === 'object' &&
     v !== null &&
-    'player' in v &&
-    'scene' in v
+    Object.hasOwn(v, 'player') &&
+    Object.hasOwn(v, 'currentScene')
   )
 }
 ```
@@ -297,8 +297,8 @@ tightly as possible so callers get usable inference:
 
 ```ts
 // Good — constrained
-function clamp<T extends number>(v: T, min: T, max: T): T {
-  return Math.min(Math.max(v, min), max) as T
+function clamp(v: number, min: number, max: number): number {
+  return Math.min(Math.max(v, min), max)
 }
 
 // Good — typed lookup wrapper
