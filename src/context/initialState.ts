@@ -7,6 +7,7 @@
 
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS } from '../utils/logger'
+import { isPlainObject } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import type { GameState } from '../types/game'
@@ -172,9 +173,6 @@ const DEFAULT_SETTINGS = {
   logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN
 }
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-
 const sanitizeSettings = (
   input: unknown
 ): {
@@ -240,8 +238,6 @@ export const initialState: GameState = {
   unlocks: []
 }
 
-export interface InitialState extends GameState {}
-
 /**
  * Creates a fresh copy of the initial state
  * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
@@ -249,7 +245,7 @@ export interface InitialState extends GameState {}
  */
 export const createInitialState = (
   persistedData: { settings?: Record<string, unknown>; unlocks?: string[] } = {}
-): InitialState => ({
+): GameState => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],

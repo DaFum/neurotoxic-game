@@ -1,6 +1,6 @@
 // TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
-import { normalizeSetlistForSave } from '../utils/gameStateUtils'
+import { isPlainObject, normalizeSetlistForSave } from '../utils/gameStateUtils'
 import {
   type Dispatch,
   type Context,
@@ -101,10 +101,97 @@ declare global {
 }
 
 type GameDispatchActions = {
-  setLastGigStats: (stats: unknown) => void
-  addToast: (message: string, type?: string) => void
+  changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
+  updatePlayer: (
+    updates: Parameters<typeof createUpdatePlayerAction>[0]
+  ) => void
+  updateBand: (updates: Parameters<typeof createUpdateBandAction>[0]) => void
+  updateSocial: (
+    updates: Parameters<typeof createUpdateSocialAction>[0]
+  ) => void
+  setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
+  setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
+  startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
+  setSetlist: (list: Parameters<typeof createSetSetlistAction>[0]) => void
+  setLastGigStats: (
+    stats: Parameters<typeof createSetLastGigStatsAction>[0]
+  ) => void
+  setActiveEvent: (
+    event: Parameters<typeof createSetActiveEventAction>[0]
+  ) => void
+  triggerEvent: (category: string, triggerPoint?: string | null) => boolean
+  resolveEvent: (choice: Record<string, unknown> | null) => {
+    outcomeText: string
+    description: string
+    result: unknown
+  }
+  addToast: (
+    message: Parameters<typeof createAddToastAction>[0],
+    type?: string
+  ) => void
+  removeToast: (id: Parameters<typeof createRemoveToastAction>[0]) => void
+  setGigModifiers: (
+    modifiers: Parameters<typeof createSetGigModifiersAction>[0]
+  ) => void
+  consumeItem: (itemId: Parameters<typeof createConsumeItemAction>[0]) => void
+  advanceDay: () => void
+  saveGame: () => boolean
+  loadGame: () => boolean
+  deleteSave: () => void
+  resetState: (preserved: Parameters<typeof createResetStateAction>[0]) => void
+  updateSettings: (
+    settings: Parameters<typeof createUpdateSettingsAction>[0]
+  ) => void
+  startTravelMinigame: (
+    payload: Parameters<typeof createStartTravelMinigameAction>[0]
+  ) => void
+  completeTravelMinigame: (
+    payload: Parameters<typeof createCompleteTravelMinigameAction>[0]
+  ) => void
+  startRoadieMinigame: (
+    payload: Parameters<typeof createStartRoadieMinigameAction>[0]
+  ) => void
+  completeRoadieMinigame: (
+    payload: Parameters<typeof createCompleteRoadieMinigameAction>[0]
+  ) => void
+  startKabelsalatMinigame: (
+    payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]
+  ) => void
+  completeKabelsalatMinigame: (
+    payload: Parameters<typeof createCompleteKabelsalatMinigameAction>[0]
+  ) => void
+  startAmpCalibration: (
+    payload: Parameters<typeof createStartAmpCalibrationAction>[0]
+  ) => void
+  completeAmpCalibration: (
+    payload: Parameters<typeof createCompleteAmpCalibrationAction>[0]
+  ) => void
+  unlockTrait: (payload: Parameters<typeof createUnlockTraitAction>[0]) => void
   endGig: () => void
-  [key: string]: unknown
+  addQuest: (payload: Parameters<typeof createAddQuestAction>[0]) => void
+  advanceQuest: (
+    payload: Parameters<typeof createAdvanceQuestAction>[0]
+  ) => void
+  addVenueBlacklist: (
+    payload: Parameters<typeof createAddVenueBlacklistAction>[0]
+  ) => void
+  useContraband: (
+    payload: Parameters<typeof createUseContrabandAction>[0]
+  ) => void
+  clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
+  clinicEnhance: (
+    payload: Parameters<typeof createClinicEnhanceAction>[0]
+  ) => void
+  pirateBroadcast: (
+    payload: Parameters<typeof createPirateBroadcastAction>[0]
+  ) => void
+  merchPress: (payload: Parameters<typeof createMerchPressAction>[0]) => void
+  tradeVoidItem: (
+    payload: Parameters<typeof createTradeVoidItemAction>[0]
+  ) => void
+  bloodBankDonate: (
+    payload: Parameters<typeof createBloodBankDonateAction>[0]
+  ) => void
 }
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
@@ -174,9 +261,6 @@ const createPersistedState = (currentState: GameState) => {
     setlist: normalizeSetlistForSave(setlist)
   }
 }
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const isQuestStateLike = (value: unknown): value is QuestState =>
   isPlainObject(value) && typeof value.id === 'string'
@@ -881,7 +965,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       // Pass full state context for flags/cooldowns
       const context = currentState
 
-      let event = eventEngine.checkEvent(category, context, triggerPoint)
+      const event = eventEngine.checkEvent(category, context, triggerPoint)
 
       if (event) {
         // Process dynamic options (Inventory checks)
@@ -891,7 +975,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         }
         const processedEventId =
           typeof processedEvent.id === 'string' ? processedEvent.id : undefined
-        event = processedEvent
 
         setActiveEvent(processedEvent)
         // Increment daily event count

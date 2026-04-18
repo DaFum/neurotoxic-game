@@ -124,34 +124,34 @@ export const resolveActiveSetlist = (
     }
     if (Array.isArray(songRef.notes) && songRef.notes.length > 0) {
       return {
-        id: songRef.id || 'jam',
-        name: songRef.name || songRef.id || 'Jam',
-        bpm: songRef.bpm || 120,
-        duration: songRef.duration || 60,
-        difficulty: songRef.difficulty || 2,
-        ...songRef
+        ...songRef,
+        id: songRef.id ?? 'jam',
+        name: songRef.name ?? songRef.id ?? 'Jam',
+        bpm: songRef.bpm ?? 120,
+        duration: songRef.duration ?? 60,
+        difficulty: songRef.difficulty ?? 2
       }
     }
 
     if (songRef.id && songRef.id !== 'jam') {
-      return (
-        SONGS_BY_ID.get(songRef.id) || {
-          id: songRef.id,
-          name: songRef.id,
-          bpm: 120,
-          duration: 60,
-          difficulty: 2,
-          ...songRef
-        }
-      )
+      const resolvedSong = SONGS_BY_ID.get(songRef.id)
+      return {
+        ...resolvedSong,
+        ...songRef,
+        id: songRef.id ?? resolvedSong?.id ?? 'jam',
+        name: songRef.name ?? resolvedSong?.name ?? songRef.id ?? 'Jam',
+        bpm: songRef.bpm ?? resolvedSong?.bpm ?? 120,
+        duration: songRef.duration ?? resolvedSong?.duration ?? 60,
+        difficulty: songRef.difficulty ?? resolvedSong?.difficulty ?? 2
+      }
     }
     return {
-      id: songRef.id || 'jam',
-      name: songRef.name || 'Jam',
-      bpm: songRef.bpm || 120,
-      duration: songRef.duration || 60,
-      difficulty: songRef.difficulty || 2,
-      ...songRef
+      ...songRef,
+      id: songRef.id ?? 'jam',
+      name: songRef.name ?? songRef.id ?? 'Jam',
+      bpm: songRef.bpm ?? 120,
+      duration: songRef.duration ?? 60,
+      difficulty: songRef.difficulty ?? 2
     }
   })
 }

@@ -8,6 +8,7 @@ export interface Note {
   lane: number | string
   type?: NoteType
   durationMs?: number
+  /** optional MIDI pitch (integer 0-127 finite number) */
   p?: number
   velocity?: number
 }

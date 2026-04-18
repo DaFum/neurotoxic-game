@@ -53,6 +53,13 @@ type RhythmGameScoringParams = {
   }
 }
 
+export type RhythmGameScoringReturn = {
+  handleHit: (laneIndex: number) => boolean
+  handleMiss: (count?: number, isEmptyHit?: boolean) => void
+  activateToxicMode: () => void
+  gameOverTimerRef: { current: ReturnType<typeof setTimeout> | null }
+}
+
 /**
  * Handles scoring logic including hits, misses, toxic mode, and game over.
  *
@@ -68,7 +75,7 @@ export const useRhythmGameScoring = ({
   setters,
   performance,
   contextActions
-}: RhythmGameScoringParams) => {
+}: RhythmGameScoringParams): RhythmGameScoringReturn => {
   const { t } = useTranslation('ui')
   const {
     setScore,

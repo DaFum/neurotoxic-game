@@ -7,6 +7,7 @@
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
@@ -171,7 +172,7 @@ export const createStartGigAction = (
  * @returns {Object} Action object
  */
 export const createSetSetlistAction = (
-  list: unknown[]
+  list: RhythmSetlistEntry[]
 ): Extract<GameAction, { type: typeof ActionTypes.SET_SETLIST }> => ({
   type: ActionTypes.SET_SETLIST,
   payload: list

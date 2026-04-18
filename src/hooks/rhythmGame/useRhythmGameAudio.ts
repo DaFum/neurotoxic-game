@@ -225,9 +225,11 @@ export const useRhythmGameAudio = ({
       setAudioReady(false)
       hasInitializedRef.current = false
     } finally {
-      isInitializingRef.current = false
-      if (!hasInitializedRef.current || isAborted()) {
-        stopAudio()
+      if (abortControllerRef.current === controller) {
+        isInitializingRef.current = false
+        if (!hasInitializedRef.current || isAborted()) {
+          stopAudio()
+        }
       }
     }
   }, [gameStateRef])
@@ -236,17 +238,22 @@ export const useRhythmGameAudio = ({
     initializeGigState()
 
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
+      const controller = abortControllerRef.current
+      if (controller) {
+        controller.abort()
       }
-      hasInitializedRef.current = false
-      isInitializingRef.current = false
-      stopAudio()
+      if (abortControllerRef.current === controller) {
+        hasInitializedRef.current = false
+        isInitializingRef.current = false
+        stopAudio()
+      }
     }
   }, [initializeGigState])
 
   const retryAudioInitialization = useCallback(async () => {
-    hasInitializedRef.current = false
+    if (!isInitializingRef.current) {
+      hasInitializedRef.current = false
+    }
     await initializeGigState()
   }, [initializeGigState])
 
