@@ -1,6 +1,6 @@
 // TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
-import { normalizeSetlistForSave } from '../utils/gameStateUtils'
+import { isPlainObject, normalizeSetlistForSave } from '../utils/gameStateUtils'
 import {
   type Dispatch,
   type Context,
@@ -17,7 +17,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { MapGenerator } from '../utils/mapGenerator'
-import { logger } from '../utils/logger'
+import { logger, LOG_LEVELS } from '../utils/logger'
 import { secureRandom } from '../utils/crypto'
 import { pickRandomContraband } from '../utils/contrabandUtils'
 import {
@@ -82,9 +82,11 @@ import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
   GameAction,
+  GameEvent,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
+  QuestState,
   SocialState,
   ToastPayload,
   TradeVoidItemPayload,
@@ -98,7 +100,110 @@ declare global {
   }
 }
 
-type GameDispatchContextValue = Record<string, unknown>
+type GameDispatchActions = {
+  changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
+  updatePlayer: (
+    updates: Parameters<typeof createUpdatePlayerAction>[0]
+  ) => void
+  updateBand: (updates: Parameters<typeof createUpdateBandAction>[0]) => void
+  updateSocial: (
+    updates: Parameters<typeof createUpdateSocialAction>[0]
+  ) => void
+  setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
+  setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
+  startGig: (gig: Parameters<typeof createStartGigAction>[0]) => void
+  setSetlist: (list: Parameters<typeof createSetSetlistAction>[0]) => void
+  setLastGigStats: (
+    stats: Parameters<typeof createSetLastGigStatsAction>[0]
+  ) => void
+  setActiveEvent: (
+    event: Parameters<typeof createSetActiveEventAction>[0]
+  ) => void
+  triggerEvent: (category: string, triggerPoint?: string | null) => boolean
+  resolveEvent: (choice: Record<string, unknown> | null) => {
+    outcomeText: string
+    description: string
+    result: unknown
+  }
+  addToast: (
+    message: Parameters<typeof createAddToastAction>[0],
+    type?: string
+  ) => void
+  removeToast: (id: Parameters<typeof createRemoveToastAction>[0]) => void
+  setGigModifiers: (
+    modifiers: Parameters<typeof createSetGigModifiersAction>[0]
+  ) => void
+  consumeItem: (itemId: Parameters<typeof createConsumeItemAction>[0]) => void
+  advanceDay: () => void
+  saveGame: (showToast?: boolean) => void
+  loadGame: () => boolean
+  deleteSave: () => void
+  resetState: () => void
+  updateSettings: (
+    settings: Parameters<typeof createUpdateSettingsAction>[0]
+  ) => void
+  startTravelMinigame: (
+    payload: Parameters<typeof createStartTravelMinigameAction>[0]
+  ) => void
+  completeTravelMinigame: (
+    damageTaken: Parameters<typeof createCompleteTravelMinigameAction>[0],
+    itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
+  ) => void
+  startRoadieMinigame: (
+    payload: Parameters<typeof createStartRoadieMinigameAction>[0]
+  ) => void
+  completeRoadieMinigame: (
+    payload: Parameters<typeof createCompleteRoadieMinigameAction>[0]
+  ) => void
+  startKabelsalatMinigame: (
+    payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]
+  ) => void
+  completeKabelsalatMinigame: (
+    payload: Parameters<typeof createCompleteKabelsalatMinigameAction>[0]
+  ) => void
+  startAmpCalibration: (
+    payload: Parameters<typeof createStartAmpCalibrationAction>[0]
+  ) => void
+  completeAmpCalibration: (
+    payload: Parameters<typeof createCompleteAmpCalibrationAction>[0]
+  ) => void
+  unlockTrait: (
+    memberId: Parameters<typeof createUnlockTraitAction>[0],
+    traitId: Parameters<typeof createUnlockTraitAction>[1]
+  ) => void
+  endGig: () => void
+  addQuest: (payload: Parameters<typeof createAddQuestAction>[0]) => void
+  advanceQuest: (
+    questId: Parameters<typeof createAdvanceQuestAction>[0],
+    progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
+  ) => void
+  addVenueBlacklist: (
+    payload: Parameters<typeof createAddVenueBlacklistAction>[0]
+  ) => void
+  useContraband: (
+    instanceId: Parameters<typeof createUseContrabandAction>[0],
+    contrabandId: Parameters<typeof createUseContrabandAction>[1],
+    memberId?: Parameters<typeof createUseContrabandAction>[2]
+  ) => void
+  clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
+  clinicEnhance: (
+    payload: Parameters<typeof createClinicEnhanceAction>[0]
+  ) => void
+  pirateBroadcast: (
+    payload: Parameters<typeof createPirateBroadcastAction>[0]
+  ) => void
+  merchPress: (payload: Parameters<typeof createMerchPressAction>[0]) => void
+  tradeVoidItem: (
+    payload: Parameters<typeof createTradeVoidItemAction>[0]
+  ) => void
+  bloodBankDonate: (
+    payload: Parameters<typeof createBloodBankDonateAction>[0]
+  ) => void
+}
+export type GameStateWithActions = GameState &
+  GameDispatchActions & {
+    hasUpgrade: (upgradeId: string) => boolean
+  }
 type EventResolution = {
   result?: unknown
   delta?: {
@@ -114,7 +219,7 @@ type EventResolution = {
 }
 
 const GameStateContext = createContext<GameState | null>(null)
-const GameDispatchContext = createContext<GameDispatchContextValue | null>(null)
+const GameDispatchContext = createContext<GameDispatchActions | null>(null)
 const SAVE_KEY = 'neurotoxic_v3_save'
 
 const createPersistedState = (currentState: GameState) => {
@@ -164,8 +269,8 @@ const createPersistedState = (currentState: GameState) => {
   }
 }
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+const isQuestStateLike = (value: unknown): value is QuestState =>
+  isPlainObject(value) && typeof value.id === 'string'
 
 const processAddQuests = (
   quests: unknown,
@@ -180,6 +285,14 @@ const processAddQuests = (
     if (questToAdd.deadlineOffset) {
       questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset || 0)
       delete questToAdd.deadlineOffset
+    }
+    if (!isQuestStateLike(questToAdd)) {
+      logger.warn(
+        'GameState',
+        'Skipping malformed quest payload in processAddQuests',
+        questToAdd
+      )
+      return
     }
     dispatch(createAddQuestAction(questToAdd))
   })
@@ -226,7 +339,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const initGameState = (): GameState => {
     const unlocks =
       safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
-    const freshState = createInitialState({ unlocks }) as unknown as GameState
+    const freshState = createInitialState({ unlocks })
 
     // Check for test-injected state (screenshot testing).
     // A special marker key signals the state was placed by the screenshot
@@ -319,7 +432,21 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Sync Logger with settings on load/change
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
-      logger.setLevel(state.settings.logLevel)
+      const numericLogLevel = Number(state.settings.logLevel)
+      if (
+        Number.isFinite(numericLogLevel) &&
+        Number.isInteger(numericLogLevel) &&
+        numericLogLevel >= LOG_LEVELS.DEBUG &&
+        numericLogLevel <= LOG_LEVELS.NONE
+      ) {
+        logger.setLevel(numericLogLevel)
+      } else {
+        logger.warn(
+          'GameState',
+          'Rejected persisted invalid logLevel from settings',
+          state.settings.logLevel
+        )
+      }
     }
   }, [state.settings?.logLevel])
 
@@ -373,7 +500,21 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
     // Synchronize logger if logLevel is updated
     if (updates.logLevel !== undefined) {
-      logger.setLevel(updates.logLevel)
+      const numericLogLevel = Number(updates.logLevel)
+      if (
+        Number.isFinite(numericLogLevel) &&
+        Number.isInteger(numericLogLevel) &&
+        numericLogLevel >= LOG_LEVELS.DEBUG &&
+        numericLogLevel <= LOG_LEVELS.NONE
+      ) {
+        logger.setLevel(numericLogLevel)
+      } else {
+        logger.warn(
+          'GameState',
+          'Rejected persisted invalid logLevel update',
+          updates.logLevel
+        )
+      }
     }
 
     // Persist to global settings (persist across new games)
@@ -841,26 +982,16 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       // Pass full state context for flags/cooldowns
       const context = currentState
 
-      let event = (
-        eventEngine.checkEvent as (
-          categoryArg: string,
-          contextArg: GameState,
-          triggerArg?: string | null
-        ) => Record<string, unknown> | null
-      )(category, context, triggerPoint)
+      const event = eventEngine.checkEvent(category, context, triggerPoint)
 
       if (event) {
         // Process dynamic options (Inventory checks)
-        const processedEvent = eventEngine.processOptions(
-          event,
-          context
-        ) as Record<string, unknown> | null
+        const processedEvent = eventEngine.processOptions(event, context)
         if (!processedEvent) {
           return false
         }
         const processedEventId =
           typeof processedEvent.id === 'string' ? processedEvent.id : undefined
-        event = processedEvent
 
         setActiveEvent(processedEvent)
         // Increment daily event count
@@ -906,6 +1037,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       }
 
       try {
+        const activeEventContext = isPlainObject(
+          currentState.activeEvent?.context
+        )
+          ? currentState.activeEvent.context
+          : {}
+
         // 2. Logic Execution
         const resolution: EventResolution =
           selectedChoice._precomputedResult ||
@@ -962,9 +1099,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
           // Game Over - Early Exit
           if (flags.gameOver) {
-            const context = currentState.activeEvent?.context || {}
             const translatedDesc = description
-              ? tRef.current(description, context)
+              ? tRef.current(description, activeEventContext)
               : ''
             addToast(
               tRef.current('ui:game_over', { description: translatedDesc }),
@@ -983,11 +1119,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // 5. Feedback (Success Path)
         if (outcomeText || description) {
-          const context = currentState.activeEvent?.context || {}
           const msgOutcome = outcomeText
-            ? tRef.current(outcomeText, context)
+            ? tRef.current(outcomeText, activeEventContext)
             : ''
-          const msgDesc = description ? tRef.current(description, context) : ''
+          const msgDesc = description
+            ? tRef.current(description, activeEventContext)
+            : ''
 
           const message =
             msgOutcome && msgDesc
@@ -1178,7 +1315,7 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
  * Hook to access the global game state context.
  * @returns {object} The game state and action dispatchers.
  */
-export const useGameState = () => {
+export const useGameState = (): GameStateWithActions => {
   const state = useRequiredContext(GameStateContext, 'useGameState')
   const actions = useGameActions()
 
@@ -1193,5 +1330,10 @@ export const useGameState = () => {
     [state.player.van.upgrades]
   )
 
-  return { ...state, ...actions, hasUpgrade }
+  const merged = useMemo(
+    () => ({ ...state, ...actions, hasUpgrade }),
+    [state, actions, hasUpgrade]
+  )
+
+  return merged
 }

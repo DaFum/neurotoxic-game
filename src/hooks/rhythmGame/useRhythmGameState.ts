@@ -1,8 +1,69 @@
-import { useReducer, useRef, useMemo, useState } from 'react'
+import {
+  useReducer,
+  useRef,
+  useMemo,
+  useState,
+  type MutableRefObject
+} from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'
+import type {
+  RhythmGameRefState,
+  RhythmLane,
+  RhythmLiveStats,
+  RhythmModifiers,
+  RhythmNote
+} from '../../types/rhythmGame'
 
-const INITIAL_UI_STATE = {
+type SetterPayload<T> = T | ((current: T) => T)
+
+export type RhythmUiState = {
+  score: number
+  combo: number
+  health: number
+  overload: number
+  isToxicMode: boolean
+  isGameOver: boolean
+  isAudioReady: boolean | null
+  accuracy: number
+}
+
+type RhythmStateAction =
+  | { type: 'SET_SCORE'; payload: SetterPayload<number> }
+  | { type: 'SET_COMBO'; payload: SetterPayload<number> }
+  | { type: 'SET_HEALTH'; payload: SetterPayload<number> }
+  | { type: 'SET_OVERLOAD'; payload: SetterPayload<number> }
+  | { type: 'SET_IS_TOXIC_MODE'; payload: SetterPayload<boolean> }
+  | { type: 'SET_IS_GAME_OVER'; payload: SetterPayload<boolean> }
+  | { type: 'SET_IS_AUDIO_READY'; payload: SetterPayload<boolean | null> }
+  | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
+
+export type {
+  RhythmGameRefState,
+  RhythmLane,
+  RhythmLiveStats,
+  RhythmModifiers,
+  RhythmNote
+} from '../../types/rhythmGame'
+
+export type RhythmStateSetters = {
+  setScore: (score: SetterPayload<number>) => void
+  setCombo: (combo: SetterPayload<number>) => void
+  setHealth: (health: SetterPayload<number>) => void
+  setOverload: (overload: SetterPayload<number>) => void
+  setIsToxicMode: (isToxicMode: SetterPayload<boolean>) => void
+  setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
+  setIsAudioReady: (isAudioReady: SetterPayload<boolean | null>) => void
+  setAccuracy: (accuracy: SetterPayload<number>) => void
+}
+
+export type RhythmGameStateHookReturn = {
+  gameStateRef: MutableRefObject<RhythmGameRefState>
+  state: RhythmUiState
+  setters: RhythmStateSetters
+}
+
+const INITIAL_UI_STATE: RhythmUiState = {
   score: 0,
   combo: 0,
   health: 100,
@@ -13,11 +74,16 @@ const INITIAL_UI_STATE = {
   accuracy: 100
 }
 
-function resolvePayload(payload, currentStateValue) {
-  return typeof payload === 'function' ? payload(currentStateValue) : payload
+function resolvePayload<T>(payload: SetterPayload<T>, currentStateValue: T): T {
+  return typeof payload === 'function'
+    ? (payload as (current: T) => T)(currentStateValue)
+    : payload
 }
 
-function rhythmGameReducer(state, action) {
+function rhythmGameReducer(
+  state: RhythmUiState,
+  action: RhythmStateAction
+): RhythmUiState {
   switch (action.type) {
     case 'SET_SCORE':
       return { ...state, score: resolvePayload(action.payload, state.score) }
@@ -55,8 +121,8 @@ function rhythmGameReducer(state, action) {
   }
 }
 
-const INITIAL_GAME_STATE_REF = {
-  notes: [],
+const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
+  notes: [] as RhythmNote[],
   nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
   lanes: [
     {
@@ -85,8 +151,19 @@ const INITIAL_GAME_STATE_REF = {
     }
   ],
   speed: 500,
-  modifiers: {},
-  stats: { perfectHits: 0, misses: 0, maxCombo: 0, peakHype: 0 },
+  modifiers: {
+    drumMultiplier: 1,
+    guitarScoreMult: 1,
+    bassScoreMult: 1,
+    hitWindowBonus: 0,
+    drumSpeedMult: 1
+  } as RhythmModifiers,
+  stats: {
+    perfectHits: 0,
+    misses: 0,
+    maxCombo: 0,
+    peakHype: 0
+  } as RhythmLiveStats,
   projectiles: [],
   // Mirror React State for Renderer
   combo: 0,
@@ -121,19 +198,20 @@ const INITIAL_GAME_STATE_REF = {
  *
  * @returns {{gameStateRef: React.MutableRefObject, state: Object, setters: Object}} State and setters.
  */
-export const useRhythmGameState = () => {
+export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   // React State for UI
   const [state, dispatch] = useReducer(rhythmGameReducer, INITIAL_UI_STATE)
 
-  // High-Frequency Game State (Ref)
-  // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
-  const [initialRefValue] = useState(() => ({
+  const [initialRefValue] = useState<RhythmGameRefState>(() => ({
     ...structuredClone(INITIAL_GAME_STATE_REF),
     rng: getSafeRandom // Store RNG for consistency
   }))
-  const gameStateRef = useRef(initialRefValue)
 
-  const setters = useMemo(
+  // High-Frequency Game State (Ref)
+  // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
+  const gameStateRef = useRef<RhythmGameRefState>(initialRefValue)
+
+  const setters = useMemo<RhythmStateSetters>(
     () => ({
       setScore: score => dispatch({ type: 'SET_SCORE', payload: score }),
       setCombo: combo => dispatch({ type: 'SET_COMBO', payload: combo }),

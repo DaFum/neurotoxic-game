@@ -7,6 +7,7 @@
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
@@ -62,9 +63,12 @@ export const createUpdatePlayerAction = (
     typeof updates === 'object' &&
     Object.hasOwn(updates, 'money')
   ) {
+    const moneyValue = (updates as { money?: unknown }).money
     safeUpdates = {
       ...updates,
-      money: clampPlayerMoney((updates as { money?: number }).money)
+      money: clampPlayerMoney(
+        typeof moneyValue === 'number' ? moneyValue : Number.NaN
+      )
     }
   }
   return {
@@ -93,10 +97,12 @@ export const createUpdateBandAction = (
     updates &&
     typeof updates === 'object' &&
     Object.hasOwn(updates, 'harmony')
-  ) {
+    const harmonyValue = (updates as { harmony?: unknown }).harmony
     safeUpdates = {
       ...updates,
-      harmony: clampBandHarmony((updates as { harmony?: number }).harmony)
+      harmony: typeof harmonyValue === 'number'
+        ? clampBandHarmony(harmonyValue)
+        : clampBandHarmony(1)
     }
   }
   return {
@@ -171,7 +177,7 @@ export const createStartGigAction = (
  * @returns {Object} Action object
  */
 export const createSetSetlistAction = (
-  list: unknown[]
+  list: RhythmSetlistEntry[]
 ): Extract<GameAction, { type: typeof ActionTypes.SET_SETLIST }> => ({
   type: ActionTypes.SET_SETLIST,
   payload: list

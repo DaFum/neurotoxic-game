@@ -21,6 +21,44 @@ import {
   calculateFinalScore,
   calculateMissImpact
 } from '../../utils/rhythmGameScoringUtils'
+import type {
+  RhythmGameRefState,
+  SetLastGigStats
+} from '../../types/rhythmGame'
+import type { RhythmStateSetters } from './useRhythmGameState'
+
+type RhythmPerformance = {
+  crowdDecay?: number
+  guitarDifficulty?: number
+  drumMultiplier?: number
+}
+
+type RhythmGameScoringParams = {
+  gameStateRef: { current: RhythmGameRefState }
+  setters: Pick<
+    RhythmStateSetters,
+    | 'setScore'
+    | 'setCombo'
+    | 'setHealth'
+    | 'setOverload'
+    | 'setIsToxicMode'
+    | 'setIsGameOver'
+    | 'setAccuracy'
+  >
+  performance: RhythmPerformance
+  contextActions: {
+    addToast: (message: string, type?: string) => void
+    setLastGigStats: SetLastGigStats
+    endGig: () => void
+  }
+}
+
+export type RhythmGameScoringReturn = {
+  handleHit: (laneIndex: number) => boolean
+  handleMiss: (count?: number, isEmptyHit?: boolean) => void
+  activateToxicMode: () => void
+  gameOverTimerRef: { current: ReturnType<typeof setTimeout> | null }
+}
 
 /**
  * Handles scoring logic including hits, misses, toxic mode, and game over.
@@ -29,7 +67,7 @@ import {
  * @param {Object} params.gameStateRef - Reference to the mutable game state.
  * @param {Object} params.setters - React state setters from useRhythmGameState.
  * @param {Object} params.performance - Band performance stats (modifiers).
- * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, setLastGigStats).
+ * @param {Object} params.contextActions - Actions from useGameState (addToast, setLastGigStats, endGig).
  * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({
@@ -37,7 +75,7 @@ export const useRhythmGameScoring = ({
   setters,
   performance,
   contextActions
-}) => {
+}: RhythmGameScoringParams): RhythmGameScoringReturn => {
   const { t } = useTranslation('ui')
   const {
     setScore,
@@ -55,7 +93,7 @@ export const useRhythmGameScoring = ({
   const guitarDifficulty = performance?.guitarDifficulty ?? 1.0
   const drumMultiplier = performance?.drumMultiplier ?? 1.0
 
-  const gameOverTimerRef = useRef(null)
+  const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Cleanup game over timer on unmount
   useEffect(() => {
@@ -151,6 +189,9 @@ export const useRhythmGameScoring = ({
       gameOverTimerRef.current = setTimeout(() => {
         // Bail if another audio session started in the 4s window (e.g. external endGig call)
         if (getPlayRequestId() !== failReqId) return
+        if (!Array.isArray(gameStateRef.current.songStats)) {
+          gameStateRef.current.songStats = []
+        }
         addToast(
           t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
           'info'
@@ -160,7 +201,7 @@ export const useRhythmGameScoring = ({
             gameStateRef.current.score,
             gameStateRef.current.stats,
             gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats || []
+            gameStateRef.current.songStats
           )
         )
         endGig()
@@ -188,16 +229,22 @@ export const useRhythmGameScoring = ({
    * @returns {boolean} True when the hit registers.
    */
   const handleHit = useCallback(
-    laneIndex => {
+    (laneIndex: number) => {
       const state = gameStateRef.current
-      if (laneIndex < 0 || laneIndex >= state.lanes.length) return false
+      if (
+        !Number.isInteger(laneIndex) ||
+        laneIndex < 0 ||
+        laneIndex >= state.lanes.length
+      ) {
+        return false
+      }
       // Use Tone.js AudioContext clock for hit detection
       const elapsed = getGigTimeMs()
       const toxicModeActive = state.isToxicMode
 
       const hitWindow = calculateDynamicHitWindow(
         state.lanes[laneIndex].hitWindow,
-        state.modifiers.hitWindowBonus || 0,
+        state.modifiers.hitWindowBonus ?? 0,
         laneIndex,
         guitarDifficulty
       )
@@ -209,10 +256,18 @@ export const useRhythmGameScoring = ({
         note.visible = false // consumed
 
         // Play the specific note pitch
-        if (note.originalNote && Number.isFinite(note.originalNote.p)) {
-          const velocity = Number.isFinite(note.originalNote.v)
-            ? note.originalNote.v
-            : 127
+        const originalNote = note.originalNote
+        if (
+          originalNote &&
+          Number.isInteger(originalNote.p) &&
+          originalNote.p >= 0 &&
+          originalNote.p <= 127
+        ) {
+          const velocity =
+            typeof originalNote.velocity === 'number' &&
+            Number.isFinite(originalNote.velocity)
+              ? originalNote.velocity
+              : 127
           const toneNowMs = getAudioTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
             noteTimeMs: note.time,
@@ -221,7 +276,7 @@ export const useRhythmGameScoring = ({
             maxLeadMs: 30
           })
           playNoteAtTime(
-            note.originalNote.p,
+            originalNote.p,
             state.lanes[laneIndex].id,
             scheduledMs / 1000,
             velocity
@@ -233,13 +288,13 @@ export const useRhythmGameScoring = ({
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to
         // the static performance value if audio hasn't initialized yet.
         const activeDrumMultiplier =
-          state.modifiers.drumMultiplier || drumMultiplier
+          state.modifiers.drumMultiplier ?? drumMultiplier
         const basePoints = calculatePoints(
           laneIndex,
           activeDrumMultiplier,
-          state.modifiers.guitarScoreMult || 1.0,
-          state.modifiers.bassScoreMult || 1.0,
-          state.modifiers.guestlist || false
+          state.modifiers.guitarScoreMult ?? 1.0,
+          state.modifiers.bassScoreMult ?? 1.0,
+          Boolean(state.modifiers.guestlist)
         )
 
         // Update hits immediately for accuracy calculation
@@ -255,7 +310,7 @@ export const useRhythmGameScoring = ({
           basePoints,
           state.combo,
           toxicModeActive,
-          state.modifiers.hasPerfektionist || false,
+          Boolean(state.modifiers.hasPerfektionist),
           currentAccuracy
         )
 

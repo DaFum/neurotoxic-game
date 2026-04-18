@@ -7,26 +7,39 @@ import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
 import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
+import type { RhythmGameRefState } from '../types/rhythmGame'
+import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
+
+type RhythmGameLogicActions = {
+  registerInput: (laneIndex: number, isDown: boolean) => void
+  activateToxicMode: () => void
+  retryAudioInitialization: () => Promise<void>
+}
+
+export type RhythmGameLogicReturn = {
+  gameStateRef: { current: RhythmGameRefState }
+  stats: RhythmUiState
+  actions: RhythmGameLogicActions
+  update: (deltaMS: number) => void
+}
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
-export const useRhythmGameLogic = () => {
+export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()
+  const gameState = useGameState()
+  const { setLastGigStats, addToast, endGig } = gameState
   const {
     setlist,
     band,
     activeEvent,
-    setLastGigStats,
-    addToast,
     gameMap,
     player,
-    changeScene,
     gigModifiers,
-    currentGig,
-    endGig
-  } = useGameState()
+    currentGig
+  } = gameState
 
   // 1. Core State (React + Ref)
   const { gameStateRef, state, setters } = useRhythmGameState()
@@ -60,12 +73,10 @@ export const useRhythmGameLogic = () => {
     gameStateRef,
     scoringActions,
     setters,
-    state,
     contextState: { activeEvent },
     contextActions: {
       setLastGigStats,
-      endGig,
-      changeScene
+      endGig
     }
   })
 
@@ -87,28 +98,7 @@ export const useRhythmGameLogic = () => {
     }
   }, [gameStateRef])
 
-  const stats = useMemo(
-    () => ({
-      score: state.score,
-      combo: state.combo,
-      health: state.health,
-      overload: state.overload,
-      isToxicMode: state.isToxicMode,
-      isGameOver: state.isGameOver,
-      isAudioReady: state.isAudioReady,
-      accuracy: state.accuracy
-    }),
-    [
-      state.score,
-      state.combo,
-      state.health,
-      state.overload,
-      state.isToxicMode,
-      state.isGameOver,
-      state.isAudioReady,
-      state.accuracy
-    ]
-  )
+  const stats = state
 
   const actions = useMemo(
     () => ({ registerInput, activateToxicMode, retryAudioInitialization }),

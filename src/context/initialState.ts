@@ -7,8 +7,10 @@
 
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS } from '../utils/logger'
+import { isPlainObject } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
+import type { GameState } from '../types/game'
 
 /**
  * Brand alignment constants
@@ -171,11 +173,47 @@ const DEFAULT_SETTINGS = {
   logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN
 }
 
+const sanitizeSettings = (
+  input: unknown
+): {
+  crtEnabled?: boolean
+  tutorialSeen?: boolean
+  logLevel?: number
+} => {
+  if (!isPlainObject(input)) return {}
+
+  const next: {
+    crtEnabled?: boolean
+    tutorialSeen?: boolean
+    logLevel?: number
+  } = {}
+
+  if ('crtEnabled' in input) {
+    next.crtEnabled = Boolean(input.crtEnabled)
+  }
+  if ('tutorialSeen' in input) {
+    next.tutorialSeen = Boolean(input.tutorialSeen)
+  }
+  if ('logLevel' in input) {
+    const numeric = Number(input.logLevel)
+    if (
+      Number.isFinite(numeric) &&
+      Number.isInteger(numeric) &&
+      numeric >= LOG_LEVELS.DEBUG &&
+      numeric <= LOG_LEVELS.NONE
+    ) {
+      next.logLevel = numeric
+    }
+  }
+
+  return next
+}
+
 /**
  * Complete initial state for the game
  * @type {Object}
  */
-export const initialState = {
+export const initialState: GameState = {
   version: 2,
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
@@ -206,7 +244,9 @@ export const initialState = {
  * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
  * @returns {Object} A new initial state object
  */
-export const createInitialState = (persistedData = {}) => ({
+export const createInitialState = (
+  persistedData: { settings?: Record<string, unknown>; unlocks?: string[] } = {}
+): GameState => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
@@ -228,7 +268,11 @@ export const createInitialState = (persistedData = {}) => ({
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
   },
-  settings: { ...DEFAULT_SETTINGS, ...getSavedSettings(), ...(persistedData.settings || {}) },
+  settings: {
+    ...DEFAULT_SETTINGS,
+    ...sanitizeSettings(getSavedSettings()),
+    ...sanitizeSettings(persistedData.settings)
+  },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: Array.isArray(persistedData.unlocks)

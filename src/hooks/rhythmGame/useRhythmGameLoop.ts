@@ -11,6 +11,23 @@ import {
   processRhythmGameTick,
   finalizeGig
 } from '../../utils/rhythmGameLoopUtils'
+import type { GameEvent } from '../../types/game'
+import type {
+  RhythmGameRefState,
+  SetLastGigStats
+} from '../../types/rhythmGame'
+import type { RhythmStateSetters } from './useRhythmGameState'
+
+type RhythmGameLoopParams = {
+  gameStateRef: { current: RhythmGameRefState }
+  scoringActions: { handleMiss: (count?: number, isEmptyHit?: boolean) => void }
+  setters: Pick<RhythmStateSetters, 'setIsToxicMode'>
+  contextState: { activeEvent: GameEvent | null }
+  contextActions: {
+    setLastGigStats: SetLastGigStats
+    endGig: () => void
+  }
+}
 
 export const useRhythmGameLoop = ({
   gameStateRef,
@@ -18,7 +35,7 @@ export const useRhythmGameLoop = ({
   setters,
   contextState,
   contextActions
-}) => {
+}: RhythmGameLoopParams) => {
   const { handleMiss } = scoringActions
   const { setIsToxicMode } = setters
   const { activeEvent } = contextState
@@ -50,14 +67,14 @@ export const useRhythmGameLoop = ({
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
   const finalizeGigCallback = useCallback(
-    stateRef => {
+    (stateRef: RhythmGameRefState) => {
       finalizeGig(stateRef, setLastGigStats, endGig, stopAudio)
     },
     [endGig, setLastGigStats]
   )
 
   const update = useCallback(
-    deltaMS => {
+    (deltaMS: number) => {
       const transportState = getTransportState()
       const isTransportRunning = transportState === 'started'
 

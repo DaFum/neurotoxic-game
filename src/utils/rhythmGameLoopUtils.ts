@@ -1,10 +1,10 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
+import type { RhythmGameRefState } from '../types/rhythmGame'
 import type {
   AsyncVoidCallback,
   CollisionHandler,
-  GigFinalizeHandler,
   MissHandler,
   ToggleBooleanCallback,
   VoidCallback
@@ -12,36 +12,8 @@ import type {
 
 const NOTE_MISS_WINDOW_MS = 300
 
-interface RhythmLoopNote {
-  time: number
-  visible: boolean
-  hit: boolean
-}
-
-interface RhythmLoopState {
-  hasSubmittedResults: boolean
-  score: number
-  stats: Record<string, unknown>
-  toxicTimeTotal: number
-  songStats: unknown[]
-  isGameOver: boolean
-  songTransitioning: boolean
-  transportPausedByOverlay: boolean
-  totalDuration: number
-  progress: number
-  projectiles: unknown[]
-  health: number
-  combo: number
-  rng: () => number
-  isToxicMode: boolean
-  toxicModeEndTime: number
-  setlistCompleted: boolean
-  notes: RhythmLoopNote[]
-  nextMissCheckIndex: number
-}
-
 interface RhythmTickArgs {
-  stateRef: RhythmLoopState
+  stateRef: RhythmGameRefState
   isTransportRunning: boolean
   transportState: string
   activeEvent: unknown
@@ -51,14 +23,14 @@ interface RhythmTickArgs {
   handleCollision: CollisionHandler
   setIsToxicMode: ToggleBooleanCallback
   handleMiss: MissHandler
-  finalizeGigCallback: GigFinalizeHandler<RhythmLoopState>
+  finalizeGigCallback: (stateRef: RhythmGameRefState) => void
   getGigTimeMs: () => number
   pauseAudio: AsyncVoidCallback
   resumeAudio: AsyncVoidCallback
 }
 
 export const finalizeGig = (
-  stateRef: RhythmLoopState,
+  stateRef: RhythmGameRefState,
   setLastGigStats: (stats: unknown) => void,
   endGig: VoidCallback,
   stopAudio: VoidCallback
@@ -70,7 +42,7 @@ export const finalizeGig = (
       stateRef.score,
       stateRef.stats,
       stateRef.toxicTimeTotal,
-      stateRef.songStats || []
+      stateRef.songStats
     )
   )
   stopAudio()

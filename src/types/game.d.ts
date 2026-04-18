@@ -1,4 +1,5 @@
 import type { ActionTypes } from '../context/actionTypes'
+import type { RhythmSetlistEntry } from './rhythmGame'
 
 export type ActionType = ActionTypes[keyof ActionTypes]
 
@@ -271,9 +272,9 @@ export interface GameState {
   player: PlayerState
   band: BandState
   social: SocialState
-  gameMap: GameMap
+  gameMap: GameMap | null
   currentGig: Venue | null
-  setlist: unknown[]
+  setlist: RhythmSetlistEntry[]
   lastGigStats: UnknownRecord | null
   activeEvent: GameEvent | null
   pendingEvents: string[]
@@ -307,7 +308,7 @@ export type GameAction =
   | Action<ActionTypes['SET_MAP'], GameMap>
   | Action<ActionTypes['SET_GIG'], Venue | null>
   | Action<ActionTypes['START_GIG'], Venue>
-  | Action<ActionTypes['SET_SETLIST'], unknown[]>
+  | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>
   | Action<ActionTypes['SET_LAST_GIG_STATS'], GigStats | null>
   | Action<ActionTypes['SET_ACTIVE_EVENT'], GameEvent | null>
   | Action<ActionTypes['ADD_TOAST'], ToastPayload>

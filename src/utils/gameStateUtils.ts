@@ -14,6 +14,11 @@ export const clampNonNegative = (value: number): number => {
   return Math.max(0, value)
 }
 
+export const isPlainObject = (
+  value: unknown
+): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 /**
  * Derives fame level from raw fame.
  * @param {number} fame - Raw fame amount.
@@ -867,7 +872,9 @@ export const hasActiveSponsorship = (socialState: any): boolean => {
  * @param {unknown} setlist - The setlist payload to normalize.
  * @returns {Array<{ id: string }>} Normalized setlist.
  */
-export const normalizeSetlistForSave = (setlist: unknown): Array<{ id: string }> => {
+export const normalizeSetlistForSave = (
+  setlist: unknown
+): Array<{ id: string }> => {
   if (!Array.isArray(setlist)) return []
 
   const result: { id: string }[] = []
