@@ -1,4 +1,10 @@
-import { useReducer, useRef, useMemo, type MutableRefObject } from 'react'
+import {
+  useReducer,
+  useRef,
+  useMemo,
+  useState,
+  type MutableRefObject
+} from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'
 import type {
@@ -196,12 +202,14 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   // React State for UI
   const [state, dispatch] = useReducer(rhythmGameReducer, INITIAL_UI_STATE)
 
-  // High-Frequency Game State (Ref)
-  // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
-  const gameStateRef = useRef<RhythmGameRefState>({
+  const [initialRefValue] = useState<RhythmGameRefState>(() => ({
     ...structuredClone(INITIAL_GAME_STATE_REF),
     rng: getSafeRandom // Store RNG for consistency
-  })
+  }))
+
+  // High-Frequency Game State (Ref)
+  // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
+  const gameStateRef = useRef<RhythmGameRefState>(initialRefValue)
 
   const setters = useMemo<RhythmStateSetters>(
     () => ({

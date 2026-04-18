@@ -135,10 +135,10 @@ type GameDispatchActions = {
   ) => void
   consumeItem: (itemId: Parameters<typeof createConsumeItemAction>[0]) => void
   advanceDay: () => void
-  saveGame: () => boolean
+  saveGame: (showToast?: boolean) => void
   loadGame: () => boolean
   deleteSave: () => void
-  resetState: (preserved: Parameters<typeof createResetStateAction>[0]) => void
+  resetState: () => void
   updateSettings: (
     settings: Parameters<typeof createUpdateSettingsAction>[0]
   ) => void
@@ -146,7 +146,8 @@ type GameDispatchActions = {
     payload: Parameters<typeof createStartTravelMinigameAction>[0]
   ) => void
   completeTravelMinigame: (
-    payload: Parameters<typeof createCompleteTravelMinigameAction>[0]
+    damageTaken: Parameters<typeof createCompleteTravelMinigameAction>[0],
+    itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
   ) => void
   startRoadieMinigame: (
     payload: Parameters<typeof createStartRoadieMinigameAction>[0]
@@ -176,7 +177,9 @@ type GameDispatchActions = {
     payload: Parameters<typeof createAddVenueBlacklistAction>[0]
   ) => void
   useContraband: (
-    payload: Parameters<typeof createUseContrabandAction>[0]
+    instanceId: Parameters<typeof createUseContrabandAction>[0],
+    contrabandId: Parameters<typeof createUseContrabandAction>[1],
+    memberId?: Parameters<typeof createUseContrabandAction>[2]
   ) => void
   clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
   clinicEnhance: (
