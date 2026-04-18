@@ -67,7 +67,10 @@ export const handleUpdateSocial = (
   return { ...state, social: { ...state.social, ...updates } }
 }
 
-export const handleAddVenueBlacklist = (state, { venueId, toastId }) => {
+export const handleAddVenueBlacklist = (
+  state: GameState,
+  { venueId, toastId }: { venueId: string; toastId: string }
+): GameState => {
   let nextState = { ...state }
   // Intentional design: If loyalty is high enough (>= 30), loyal fans will defend the band
   // and prevent the venue from blacklisting them, at the cost of 15 loyalty points.
