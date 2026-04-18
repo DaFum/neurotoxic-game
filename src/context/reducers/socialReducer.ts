@@ -102,7 +102,7 @@ export const handleAddVenueBlacklist = (
   return nextState
 }
 
-export const handleMerchPress = (state, payload) => {
+export const handleMerchPress = (state: GameState, payload: Record<string, unknown>): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
     return state
