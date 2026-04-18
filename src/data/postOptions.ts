@@ -73,8 +73,12 @@ function getMemberWithTrait(
  * @param {string} [traitId2] - Optional ID of a secondary trait
  * @returns {boolean} True if any member has the trait(s)
  */
-function hasMemberWithTrait(members, traitId1, traitId2) {
-  if (!members || !members.length) return false
+function hasMemberWithTrait(
+  members: unknown,
+  traitId1: string,
+  traitId2?: string
+): boolean {
+  if (!Array.isArray(members) || members.length === 0) return false
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
     if (hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2))) {
