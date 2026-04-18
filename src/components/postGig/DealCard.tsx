@@ -70,7 +70,7 @@ const getAlignmentColor = alignment => {
   }
 }
 
-const DealImage = memo(({ alignment, name }) => (
+const DealImage = memo(({ alignment, name }: DealImageProps) => (
   <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
     <img
       src={getGenImageUrl(getAlignmentImagePrompt(alignment))}

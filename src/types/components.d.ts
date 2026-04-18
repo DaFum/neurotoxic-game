@@ -102,7 +102,7 @@ export interface MinigameSceneFrameProps {
 export interface PixiStageProps {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
-  controllerFactory: (options: unknown) => unknown
+  controllerFactory?: (options: unknown) => unknown
 }
 
 export interface ToggleRadioProps {
