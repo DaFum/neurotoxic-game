@@ -422,7 +422,7 @@ const EFFECT_REVERTERS = {
  * @param {Object} band - The current band state
  * @returns {Object} Updated band state
  */
-const processContrabandExpiry = band => {
+const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
   const stillActive = []
   const expired = []
