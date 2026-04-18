@@ -74,13 +74,13 @@ export interface GameMap {
 export interface MinigameState {
   type?: string
   isActive?: boolean
-  active: boolean
   targetNodeId?: string | null
-  targetDestination: unknown
-  gigId: string | null
-  equipmentRemaining: number
-  accumulatedDamage: number
-  score: number
+  active?: boolean
+  targetDestination?: unknown
+  gigId?: string | null
+  equipmentRemaining?: number
+  accumulatedDamage?: number
+  score?: number
   roadie?: UnknownRecord
   amp?: UnknownRecord
   travel?: UnknownRecord
