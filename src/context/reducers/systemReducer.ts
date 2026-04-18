@@ -341,7 +341,7 @@ export const handleUpdateSettings = (state: GameState, payload: Record<string, u
   return { ...state, settings: { ...state.settings, ...payload } }
 }
 
-export const handleSetMap = (state, payload) => {
+export const handleSetMap = (state: GameState, payload: Record<string, unknown>): GameState => {
   logger.info('GameState', 'Map Generated')
   return { ...state, gameMap: payload }
 }

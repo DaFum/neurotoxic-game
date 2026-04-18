@@ -292,7 +292,20 @@ export interface DealActionsProps {
 }
 
 export interface DealsPhaseProps {
-  offers: unknown[]
+  offers: Array<{
+    id: string
+    name: string
+    description: string
+    alignment?: string
+    offer: {
+      upfront: number
+      duration: number
+      perGig?: number
+      item?: string
+    }
+    penalty?: Record<string, unknown>
+    [key: string]: unknown
+  }>
   onAccept: (dealId: string) => void
   onSkip: () => void
 }
