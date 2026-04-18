@@ -100,7 +100,16 @@ declare global {
   }
 }
 
-type GameDispatchContextValue = Record<string, unknown>
+type GameDispatchActions = {
+  setLastGigStats: (stats: unknown) => void
+  addToast: (message: string, type?: string) => void
+  endGig: () => void
+  [key: string]: unknown
+}
+export type GameStateWithActions = GameState &
+  GameDispatchActions & {
+    hasUpgrade: (upgradeId: string) => boolean
+  }
 type EventResolution = {
   result?: unknown
   delta?: {
@@ -116,7 +125,7 @@ type EventResolution = {
 }
 
 const GameStateContext = createContext<GameState | null>(null)
-const GameDispatchContext = createContext<GameDispatchContextValue | null>(null)
+const GameDispatchContext = createContext<GameDispatchActions | null>(null)
 const SAVE_KEY = 'neurotoxic_v3_save'
 
 const createPersistedState = (currentState: GameState) => {
@@ -335,6 +344,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       const numericLogLevel = Number(state.settings.logLevel)
       if (Number.isFinite(numericLogLevel)) {
         logger.setLevel(numericLogLevel)
+      } else {
+        logger.warn(
+          'GameState',
+          'Rejected persisted non-finite logLevel from settings',
+          state.settings.logLevel
+        )
       }
     }
   }, [state.settings?.logLevel])
@@ -392,6 +407,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       const numericLogLevel = Number(updates.logLevel)
       if (Number.isFinite(numericLogLevel)) {
         logger.setLevel(numericLogLevel)
+      } else {
+        logger.warn(
+          'GameState',
+          'Rejected persisted non-finite logLevel update',
+          updates.logLevel
+        )
       }
     }
 
@@ -860,20 +881,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       // Pass full state context for flags/cooldowns
       const context = currentState
 
-      let event = (
-        eventEngine.checkEvent as unknown as (
-          categoryArg: string,
-          contextArg: GameState,
-          triggerArg?: string | null
-        ) => GameEvent | null
-      )(category, context, triggerPoint)
+      let event = eventEngine.checkEvent(category, context, triggerPoint)
 
       if (event) {
         // Process dynamic options (Inventory checks)
-        const processedEvent = eventEngine.processOptions(
-          event as unknown as Record<string, unknown>,
-          context as unknown as Parameters<typeof eventEngine.processOptions>[1]
-        ) as GameEvent | null
+        const processedEvent = eventEngine.processOptions(event, context)
         if (!processedEvent) {
           return false
         }
@@ -925,6 +937,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       }
 
       try {
+        const activeEventContext = isPlainObject(
+          currentState.activeEvent?.context
+        )
+          ? currentState.activeEvent.context
+          : {}
+
         // 2. Logic Execution
         const resolution: EventResolution =
           selectedChoice._precomputedResult ||
@@ -981,11 +999,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
           // Game Over - Early Exit
           if (flags.gameOver) {
-            const context = isPlainObject(currentState.activeEvent?.context)
-              ? currentState.activeEvent.context
-              : {}
             const translatedDesc = description
-              ? tRef.current(description, context)
+              ? tRef.current(description, activeEventContext)
               : ''
             addToast(
               tRef.current('ui:game_over', { description: translatedDesc }),
@@ -1004,13 +1019,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // 5. Feedback (Success Path)
         if (outcomeText || description) {
-          const context = isPlainObject(currentState.activeEvent?.context)
-            ? currentState.activeEvent.context
-            : {}
           const msgOutcome = outcomeText
-            ? tRef.current(outcomeText, context)
+            ? tRef.current(outcomeText, activeEventContext)
             : ''
-          const msgDesc = description ? tRef.current(description, context) : ''
+          const msgDesc = description
+            ? tRef.current(description, activeEventContext)
+            : ''
 
           const message =
             msgOutcome && msgDesc
@@ -1201,7 +1215,7 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
  * Hook to access the global game state context.
  * @returns {object} The game state and action dispatchers.
  */
-export const useGameState = () => {
+export const useGameState = (): GameStateWithActions => {
   const state = useRequiredContext(GameStateContext, 'useGameState')
   const actions = useGameActions()
 

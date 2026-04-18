@@ -1,7 +1,7 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
-import type { RhythmGameRefState } from '../hooks/rhythmGame/useRhythmGameState'
+import type { RhythmGameRefState } from '../types/rhythmGame'
 import type {
   AsyncVoidCallback,
   CollisionHandler,

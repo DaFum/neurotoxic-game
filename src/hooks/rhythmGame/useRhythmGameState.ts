@@ -1,12 +1,13 @@
-import {
-  useReducer,
-  useRef,
-  useMemo,
-  useState,
-  type MutableRefObject
-} from 'react'
+import { useReducer, useRef, useMemo, type MutableRefObject } from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'
+import type {
+  RhythmGameRefState,
+  RhythmLane,
+  RhythmLiveStats,
+  RhythmModifiers,
+  RhythmNote
+} from '../../types/rhythmGame'
 
 type SetterPayload<T> = T | ((current: T) => T)
 
@@ -31,52 +32,13 @@ type RhythmStateAction =
   | { type: 'SET_IS_AUDIO_READY'; payload: SetterPayload<boolean | null> }
   | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
 
-export type RhythmLane = {
-  id: 'guitar' | 'drums' | 'bass'
-  key: 'ArrowLeft' | 'ArrowDown' | 'ArrowRight'
-  x: number
-  color: number
-  active: boolean
-  hitWindow: number
-}
-
-export type RhythmLiveStats = {
-  perfectHits: number
-  misses: number
-  maxCombo: number
-  peakHype: number
-}
-
-export type RhythmGameRefState = {
-  notes: Array<Record<string, unknown>>
-  nextMissCheckIndex: number
-  lanes: RhythmLane[]
-  speed: number
-  modifiers: Record<string, unknown>
-  stats: RhythmLiveStats
-  projectiles: unknown[]
-  combo: number
-  health: number
-  score: number
-  progress: number
-  isToxicMode: boolean
-  isGameOver: boolean
-  overload: number
-  totalDuration: number
-  hasSubmittedResults: boolean
-  songTransitioning: boolean
-  songStats: unknown[]
-  lastEndedSongIndex: number
-  currentSongStartScore: number
-  currentSongStartPerfectHits: number
-  currentSongStartMisses: number
-  setlistCompleted: boolean
-  notesVersion: number
-  transportPausedByOverlay: boolean
-  toxicTimeTotal: number
-  toxicModeEndTime: number
-  rng: () => number
-}
+export type {
+  RhythmGameRefState,
+  RhythmLane,
+  RhythmLiveStats,
+  RhythmModifiers,
+  RhythmNote
+} from '../../types/rhythmGame'
 
 export type RhythmStateSetters = {
   setScore: (score: SetterPayload<number>) => void
@@ -154,7 +116,7 @@ function rhythmGameReducer(
 }
 
 const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
-  notes: [],
+  notes: [] as RhythmNote[],
   nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
   lanes: [
     {
@@ -183,8 +145,19 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
     }
   ],
   speed: 500,
-  modifiers: {},
-  stats: { perfectHits: 0, misses: 0, maxCombo: 0, peakHype: 0 },
+  modifiers: {
+    drumMultiplier: 1,
+    guitarScoreMult: 1,
+    bassScoreMult: 1,
+    hitWindowBonus: 0,
+    drumSpeedMult: 1
+  } as RhythmModifiers,
+  stats: {
+    perfectHits: 0,
+    misses: 0,
+    maxCombo: 0,
+    peakHype: 0
+  } as RhythmLiveStats,
   projectiles: [],
   // Mirror React State for Renderer
   combo: 0,
@@ -225,10 +198,13 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
 
   // High-Frequency Game State (Ref)
   // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
-  const [initialRefValue] = useState(() => ({
-    ...structuredClone(INITIAL_GAME_STATE_REF),
-    rng: getSafeRandom // Store RNG for consistency
-  }))
+  const initialRefValue = useMemo(
+    () => ({
+      ...structuredClone(INITIAL_GAME_STATE_REF),
+      rng: getSafeRandom // Store RNG for consistency
+    }),
+    []
+  )
   const gameStateRef = useRef<RhythmGameRefState>(initialRefValue)
 
   const setters = useMemo<RhythmStateSetters>(

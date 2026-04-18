@@ -21,10 +21,8 @@ import {
   calculateFinalScore,
   calculateMissImpact
 } from '../../utils/rhythmGameScoringUtils'
-import type {
-  RhythmGameRefState,
-  RhythmStateSetters
-} from './useRhythmGameState'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmPerformance = {
   crowdDecay?: number
@@ -190,9 +188,7 @@ export const useRhythmGameScoring = ({
             gameStateRef.current.score,
             gameStateRef.current.stats,
             gameStateRef.current.toxicTimeTotal,
-            (gameStateRef.current.songStats || []) as Parameters<
-              typeof buildGigStatsSnapshot
-            >[3]
+            gameStateRef.current.songStats || []
           )
         )
         endGig()
@@ -234,12 +230,7 @@ export const useRhythmGameScoring = ({
         guitarDifficulty
       )
 
-      const note = checkHit(
-        state.notes as unknown as Parameters<typeof checkHit>[0],
-        laneIndex,
-        elapsed,
-        hitWindow
-      )
+      const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
 
       if (note) {
         note.hit = true

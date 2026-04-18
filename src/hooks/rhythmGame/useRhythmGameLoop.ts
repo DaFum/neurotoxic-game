@@ -11,16 +11,15 @@ import {
   processRhythmGameTick,
   finalizeGig
 } from '../../utils/rhythmGameLoopUtils'
-import type {
-  RhythmGameRefState,
-  RhythmStateSetters
-} from './useRhythmGameState'
+import type { GameEvent } from '../../types/game'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmGameLoopParams = {
   gameStateRef: { current: RhythmGameRefState }
   scoringActions: { handleMiss: (count?: number, isEmptyHit?: boolean) => void }
   setters: Pick<RhythmStateSetters, 'setIsToxicMode'>
-  contextState: { activeEvent: unknown }
+  contextState: { activeEvent: GameEvent | null }
   contextActions: {
     setLastGigStats: (stats: unknown) => void
     endGig: () => void

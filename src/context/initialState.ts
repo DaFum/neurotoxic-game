@@ -201,6 +201,8 @@ export const initialState = {
   unlocks: []
 }
 
+export type InitialState = typeof initialState
+
 /**
  * Creates a fresh copy of the initial state
  * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
@@ -208,7 +210,7 @@ export const initialState = {
  */
 export const createInitialState = (
   persistedData: { settings?: Record<string, unknown>; unlocks?: string[] } = {}
-) => ({
+): InitialState => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],

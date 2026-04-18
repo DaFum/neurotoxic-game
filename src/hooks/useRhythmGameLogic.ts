@@ -7,25 +7,8 @@ import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
 import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
-import type { GameState } from '../types/game'
-import type { RhythmGameRefState } from './rhythmGame/useRhythmGameState'
-
-type RhythmGameActions = {
-  setLastGigStats: (stats: unknown) => void
-  addToast: (message: string, type?: string) => void
-  endGig: () => void
-}
-
-type RhythmGameStats = {
-  score: number
-  combo: number
-  health: number
-  overload: number
-  isToxicMode: boolean
-  isGameOver: boolean
-  isAudioReady: boolean | null
-  accuracy: number
-}
+import type { RhythmGameRefState } from '../types/rhythmGame'
+import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
 
 type RhythmGameLogicActions = {
   registerInput: (laneIndex: number, isDown: boolean) => void
@@ -35,7 +18,7 @@ type RhythmGameLogicActions = {
 
 export type RhythmGameLogicReturn = {
   gameStateRef: { current: RhythmGameRefState }
-  stats: RhythmGameStats
+  stats: RhythmUiState
   actions: RhythmGameLogicActions
   update: (deltaMS: number) => void
 }
@@ -46,7 +29,7 @@ export type RhythmGameLogicReturn = {
  */
 export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()
-  const gameState = useGameState() as GameState & RhythmGameActions
+  const gameState = useGameState()
   const { setLastGigStats, addToast, endGig } = gameState
   const {
     setlist,

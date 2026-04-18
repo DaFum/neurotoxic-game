@@ -20,6 +20,7 @@ import { logger } from './logger'
 import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitLogic'
 import { calculateAppliedDelta } from './gameStateUtils'
+import type { GameEvent, GameState } from '../types/game'
 
 type TemplateContext = Record<string, string>
 type TriggerPoint = string | null
@@ -564,14 +565,21 @@ export const eventEngine = {
    * @returns {object|null} The selected event object or null if none found.
    */
   checkEvent: (
-    category: keyof typeof EVENTS_DB,
-    gameState: EngineGameState,
+    category: string,
+    gameState: GameState,
     triggerPoint: TriggerPoint = null,
     rng: () => number = secureRandom
-  ) => {
-    const pool = EVENTS_DB[category] as EngineEvent[] | undefined
+  ): GameEvent | null => {
+    const pool = EVENTS_DB[category as keyof typeof EVENTS_DB] as
+      | EngineEvent[]
+      | undefined
     if (!pool) return null
-    return selectEvent(pool, gameState, triggerPoint, rng)
+    return selectEvent(
+      pool,
+      gameState as unknown as EngineGameState,
+      triggerPoint,
+      rng
+    ) as GameEvent | null
   },
 
   /**
@@ -741,7 +749,10 @@ export const eventEngine = {
    * @param {object} gameState - The current game state.
    * @returns {object} The event object with processed options.
    */
-  processOptions: (event: EngineEvent, gameState: EngineGameState) => {
+  processOptions: (
+    event: GameEvent,
+    gameState: GameState
+  ): GameEvent | null => {
     if (!event || !event.options) return event
 
     const processedEvent = { ...event, options: [...event.options] }
@@ -770,7 +781,7 @@ export const eventEngine = {
       processedEvent.options.unshift(spareTireOption)
     }
 
-    return processedEvent
+    return processedEvent as GameEvent
   },
 
   /**

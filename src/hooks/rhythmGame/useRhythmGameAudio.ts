@@ -17,10 +17,8 @@ import type {
   GigModifiers,
   PlayerState
 } from '../../types/game'
-import type {
-  RhythmGameRefState,
-  RhythmStateSetters
-} from './useRhythmGameState'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
@@ -161,9 +159,7 @@ export const useRhythmGameAudio = ({
       hasInitializedRef.current = true
 
       // Reset cross-song tracking state for a new gig
-      resetGigStateTracking(
-        gameStateRef as unknown as Parameters<typeof resetGigStateTracking>[0]
-      )
+      resetGigStateTracking(gameStateRef)
 
       const setlistFirstId =
         typeof currentSetlist?.[0] === 'string'
@@ -198,9 +194,7 @@ export const useRhythmGameAudio = ({
       gameStateRef.current.lanes[1].hitWindow = physicsSetup.hitWindows[1]
       gameStateRef.current.lanes[2].hitWindow = physicsSetup.hitWindows[2]
 
-      const activeSetlist = resolveActiveSetlist(
-        currentSetlist as unknown as Parameters<typeof resolveActiveSetlist>[0]
-      )
+      const activeSetlist = resolveActiveSetlist(currentSetlist)
 
       if (isAborted()) {
         setAudioReady(false)
@@ -211,7 +205,7 @@ export const useRhythmGameAudio = ({
         await playSongSequence(
           0,
           activeSetlist,
-          gameStateRef as unknown as Parameters<typeof playSongSequence>[2],
+          gameStateRef,
           currentAddToast,
           currentT
         )
@@ -229,6 +223,9 @@ export const useRhythmGameAudio = ({
       hasInitializedRef.current = false
     } finally {
       isInitializingRef.current = false
+      if (!hasInitializedRef.current || isAborted()) {
+        stopAudio()
+      }
     }
   }, [gameStateRef])
 

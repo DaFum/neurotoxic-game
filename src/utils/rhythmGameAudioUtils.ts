@@ -18,51 +18,14 @@ import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { getSafeRandom } from './crypto'
 import type { Song } from '../types/audio'
 import type { BandState, GameMap, GigModifiers } from '../types/game'
-import type {
-  ToastCallback,
-  TranslationCallback
-} from '../types/callbacks'
+import type { RhythmGameRefState, RhythmNote } from '../types/rhythmGame'
+import type { ToastCallback, TranslationCallback } from '../types/callbacks'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
 const NOTE_TAIL_MS = 1000
 
 type RandomFn = () => number
-
-interface RhythmNote {
-  time: number
-  laneIndex: number
-  hit: boolean
-  visible: boolean
-  songId: string
-  type: string
-}
-
-interface SongStatsEntry {
-  songId: string
-  score: number
-  accuracy: number
-  index: number
-}
-
-interface GigRuntimeState {
-  hasSubmittedResults: boolean
-  isGameOver: boolean
-  setlistCompleted: boolean
-  songTransitioning: boolean
-  totalDuration: number
-  rng?: RandomFn
-  notes: RhythmNote[]
-  nextMissCheckIndex: number
-  notesVersion: number
-  lastEndedSongIndex: number
-  songStats: SongStatsEntry[]
-  score: number
-  currentSongStartScore: number
-  currentSongStartPerfectHits: number
-  currentSongStartMisses: number
-  stats?: { perfectHits?: number; misses?: number }
-}
 
 interface MutableRef<T> {
   current: T
@@ -137,7 +100,7 @@ export const setupGigPhysics = (
 }
 
 export const resolveActiveSetlist = (
-  setlist: Array<string | ActiveSong>
+  setlist: Array<string | (Partial<ActiveSong> & { id?: string })>
 ): ActiveSong[] => {
   return (
     setlist.length > 0
@@ -155,10 +118,30 @@ export const resolveActiveSetlist = (
         }
       )
     }
-    if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
-      return SONGS_BY_ID.get(songRef.id) || songRef
+    if (Array.isArray(songRef.notes) && songRef.notes.length > 0) {
+      return {
+        id: songRef.id || 'jam',
+        name: songRef.name || songRef.id || 'Jam',
+        bpm: songRef.bpm || 120,
+        duration: songRef.duration || 60,
+        difficulty: songRef.difficulty || 2,
+        ...songRef
+      }
     }
-    return songRef
+
+    if (songRef.id && songRef.id !== 'jam') {
+      return (
+        SONGS_BY_ID.get(songRef.id) || {
+          id: songRef.id,
+          name: songRef.id,
+          bpm: 120,
+          duration: 60,
+          difficulty: 2,
+          ...songRef
+        }
+      )
+    }
+    return { id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }
   })
 }
 
@@ -393,7 +376,7 @@ const handleSongEnded = (
 export const playSongSequence = async (
   index: number,
   activeSetlist: ActiveSong[],
-  gameStateRef: MutableRef<GigRuntimeState>,
+  gameStateRef: MutableRef<RhythmGameRefState>,
   addToast: ToastCallback,
   t: TranslationCallback | undefined
 ): Promise<void> => {
@@ -516,7 +499,7 @@ export const playSongSequence = async (
 }
 
 export const resetGigStateTracking = (
-  gameStateRef: MutableRef<GigRuntimeState>
+  gameStateRef: MutableRef<RhythmGameRefState>
 ): void => {
   if (gameStateRef.current) {
     gameStateRef.current.lastEndedSongIndex = -1
