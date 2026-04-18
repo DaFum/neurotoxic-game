@@ -109,7 +109,7 @@ export const handleTradeVoidItem = (state: GameState, payload: Record<string, un
           if (isPlainObject) {
             const rawContext = parsedContext
 
-            const sanitizeContextValue = value => {
+            const sanitizeContextValue = (value: unknown): unknown => {
               if (typeof value === 'string') {
                 return value.replace(/[&<>"']/g, match => ESCAPE_MAP[match])
               }
