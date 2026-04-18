@@ -224,7 +224,7 @@ const migrateLegacyVenueId = (id: unknown): string => {
  * @param {Object} payload - Loaded save data
  * @returns {Object} Updated state
  */
-export const handleLoadGame = (state, payload) => {
+export const handleLoadGame = (state: GameState, payload: unknown): GameState => {
   logger.info('GameState', 'Game Loaded')
 
   const loadedState = payload || {}

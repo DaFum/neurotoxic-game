@@ -42,7 +42,7 @@ export const NegotiationModal = ({
   onClose,
   negotiationResult,
   handleNegotiationSubmit
-}) => {
+}: NegotiationModalProps) => {
   const { t } = useTranslation()
 
   return (
