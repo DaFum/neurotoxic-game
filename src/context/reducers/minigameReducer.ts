@@ -1,4 +1,5 @@
 // TODO: Review this file
+import type { GameState } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampVanCondition,
@@ -24,7 +25,7 @@ import {
   DEFAULT_EQUIPMENT_COUNT
 } from '../gameConstants'
 
-export const handleStartTravelMinigame = (state, payload) => {
+export const handleStartTravelMinigame = (state: GameState, payload: { targetNodeId: string }): GameState => {
   const { targetNodeId } = payload
   logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
   return {
