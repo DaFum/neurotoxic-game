@@ -17,7 +17,10 @@ import type {
   GigModifiers,
   PlayerState
 } from '../../types/game'
-import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type {
+  RhythmGameRefState,
+  RhythmSetlistEntry
+} from '../../types/rhythmGame'
 import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmGameAudioParams = {
@@ -27,7 +30,7 @@ type RhythmGameAudioParams = {
     band: GameState['band']
     gameMap: GameMap | null
     player: PlayerState
-    setlist: Array<string | { id?: string }>
+    setlist: RhythmSetlistEntry[]
     gigModifiers: GigModifiers
     currentGig: GameState['currentGig']
   }
@@ -48,7 +51,7 @@ export type RhythmGameAudioReturn = {
  * @param {Object} params.gameStateRef - Game state reference.
  * @param {Object} params.setters - Setters (setIsAudioReady).
  * @param {Object} params.contextState - Context state (band, gameMap, player, setlist, gigModifiers, addToast).
- * @returns {Object} Audio actions (initializeGigState, retryAudioInitialization).
+ * @returns {Object} Audio actions ({ retryAudioInitialization }).
  */
 export const useRhythmGameAudio = ({
   gameStateRef,
@@ -104,8 +107,8 @@ export const useRhythmGameAudio = ({
    * Initializes gig physics and note data once per gig.
    */
   const initializeGigState = useCallback(async () => {
-    // Prevent double initialization
-    if (hasInitializedRef.current || isInitializingRef.current) {
+    // Prevent concurrent initialization
+    if (isInitializingRef.current) {
       return
     }
     const ctx = latestContextRef.current
@@ -242,7 +245,10 @@ export const useRhythmGameAudio = ({
     }
   }, [initializeGigState])
 
-  return {
-    retryAudioInitialization: () => initializeGigState()
-  }
+  const retryAudioInitialization = useCallback(async () => {
+    hasInitializedRef.current = false
+    await initializeGigState()
+  }, [initializeGigState])
+
+  return { retryAudioInitialization }
 }

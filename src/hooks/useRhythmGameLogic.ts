@@ -61,7 +61,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       band,
       gameMap,
       player,
-      setlist: setlist as Array<string | { id?: string }>,
+      setlist,
       gigModifiers,
       currentGig
     },
@@ -98,28 +98,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     }
   }, [gameStateRef])
 
-  const stats = useMemo(
-    () => ({
-      score: state.score,
-      combo: state.combo,
-      health: state.health,
-      overload: state.overload,
-      isToxicMode: state.isToxicMode,
-      isGameOver: state.isGameOver,
-      isAudioReady: state.isAudioReady,
-      accuracy: state.accuracy
-    }),
-    [
-      state.score,
-      state.combo,
-      state.health,
-      state.overload,
-      state.isToxicMode,
-      state.isGameOver,
-      state.isAudioReady,
-      state.accuracy
-    ]
-  )
+  const stats = state
 
   const actions = useMemo(
     () => ({ registerInput, activateToxicMode, retryAudioInitialization }),

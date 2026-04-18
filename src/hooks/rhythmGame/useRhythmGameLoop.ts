@@ -12,7 +12,10 @@ import {
   finalizeGig
 } from '../../utils/rhythmGameLoopUtils'
 import type { GameEvent } from '../../types/game'
-import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type {
+  RhythmGameRefState,
+  SetLastGigStats
+} from '../../types/rhythmGame'
 import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmGameLoopParams = {
@@ -21,7 +24,7 @@ type RhythmGameLoopParams = {
   setters: Pick<RhythmStateSetters, 'setIsToxicMode'>
   contextState: { activeEvent: GameEvent | null }
   contextActions: {
-    setLastGigStats: (stats: unknown) => void
+    setLastGigStats: SetLastGigStats
     endGig: () => void
   }
 }

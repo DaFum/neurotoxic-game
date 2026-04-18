@@ -198,14 +198,10 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
 
   // High-Frequency Game State (Ref)
   // structuredClone is used to ensure a fresh copy of the initial state is created per hook instance
-  const initialRefValue = useMemo(
-    () => ({
-      ...structuredClone(INITIAL_GAME_STATE_REF),
-      rng: getSafeRandom // Store RNG for consistency
-    }),
-    []
-  )
-  const gameStateRef = useRef<RhythmGameRefState>(initialRefValue)
+  const gameStateRef = useRef<RhythmGameRefState>({
+    ...structuredClone(INITIAL_GAME_STATE_REF),
+    rng: getSafeRandom // Store RNG for consistency
+  })
 
   const setters = useMemo<RhythmStateSetters>(
     () => ({

@@ -1,4 +1,5 @@
 import type { ActionTypes } from '../context/actionTypes'
+import type { RhythmSetlistEntry } from './rhythmGame'
 
 export type ActionType = ActionTypes[keyof ActionTypes]
 
@@ -273,7 +274,7 @@ export interface GameState {
   social: SocialState
   gameMap: GameMap
   currentGig: Venue | null
-  setlist: unknown[]
+  setlist: RhythmSetlistEntry[]
   lastGigStats: UnknownRecord | null
   activeEvent: GameEvent | null
   pendingEvents: string[]

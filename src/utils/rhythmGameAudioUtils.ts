@@ -18,7 +18,11 @@ import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { getSafeRandom } from './crypto'
 import type { Song } from '../types/audio'
 import type { BandState, GameMap, GigModifiers } from '../types/game'
-import type { RhythmGameRefState, RhythmNote } from '../types/rhythmGame'
+import type {
+  RhythmGameRefState,
+  RhythmNote,
+  RhythmSetlistEntry
+} from '../types/rhythmGame'
 import type { ToastCallback, TranslationCallback } from '../types/callbacks'
 
 const GIG_LEAD_IN_MS = 2000
@@ -100,7 +104,7 @@ export const setupGigPhysics = (
 }
 
 export const resolveActiveSetlist = (
-  setlist: Array<string | (Partial<ActiveSong> & { id?: string })>
+  setlist: RhythmSetlistEntry[]
 ): ActiveSong[] => {
   return (
     setlist.length > 0
@@ -141,7 +145,14 @@ export const resolveActiveSetlist = (
         }
       )
     }
-    return { id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }
+    return {
+      id: songRef.id || 'jam',
+      name: songRef.name || 'Jam',
+      bpm: songRef.bpm || 120,
+      duration: songRef.duration || 60,
+      difficulty: songRef.difficulty || 2,
+      ...songRef
+    }
   })
 }
 
@@ -328,7 +339,7 @@ const playAudioForSong = async (
 }
 
 const handleSongEnded = (
-  gameStateRef: MutableRef<GigRuntimeState>,
+  gameStateRef: MutableRef<RhythmGameRefState>,
   currentSong: ActiveSong,
   index: number
 ): void => {

@@ -21,7 +21,10 @@ import {
   calculateFinalScore,
   calculateMissImpact
 } from '../../utils/rhythmGameScoringUtils'
-import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type {
+  RhythmGameRefState,
+  SetLastGigStats
+} from '../../types/rhythmGame'
 import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmPerformance = {
@@ -45,7 +48,7 @@ type RhythmGameScoringParams = {
   performance: RhythmPerformance
   contextActions: {
     addToast: (message: string, type?: string) => void
-    setLastGigStats: (stats: unknown) => void
+    setLastGigStats: SetLastGigStats
     endGig: () => void
   }
 }
@@ -179,6 +182,9 @@ export const useRhythmGameScoring = ({
       gameOverTimerRef.current = setTimeout(() => {
         // Bail if another audio session started in the 4s window (e.g. external endGig call)
         if (getPlayRequestId() !== failReqId) return
+        if (!Array.isArray(gameStateRef.current.songStats)) {
+          gameStateRef.current.songStats = []
+        }
         addToast(
           t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
           'info'
@@ -188,7 +194,7 @@ export const useRhythmGameScoring = ({
             gameStateRef.current.score,
             gameStateRef.current.stats,
             gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats || []
+            gameStateRef.current.songStats
           )
         )
         endGig()
@@ -225,7 +231,7 @@ export const useRhythmGameScoring = ({
 
       const hitWindow = calculateDynamicHitWindow(
         state.lanes[laneIndex].hitWindow,
-        (state.modifiers.hitWindowBonus as number | undefined) || 0,
+        state.modifiers.hitWindowBonus ?? 0,
         laneIndex,
         guitarDifficulty
       )
@@ -237,18 +243,16 @@ export const useRhythmGameScoring = ({
         note.visible = false // consumed
 
         // Play the specific note pitch
-        const originalNote = note.originalNote as
-          | ({ p?: number; v?: number } & Record<string, unknown>)
-          | undefined
+        const originalNote = note.originalNote
         if (
           originalNote &&
           typeof originalNote.p === 'number' &&
           Number.isFinite(originalNote.p)
         ) {
           const velocity =
-            typeof originalNote.v === 'number' &&
-            Number.isFinite(originalNote.v)
-              ? originalNote.v
+            typeof originalNote.velocity === 'number' &&
+            Number.isFinite(originalNote.velocity)
+              ? originalNote.velocity
               : 127
           const toneNowMs = getAudioTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
@@ -270,13 +274,12 @@ export const useRhythmGameScoring = ({
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to
         // the static performance value if audio hasn't initialized yet.
         const activeDrumMultiplier =
-          (state.modifiers.drumMultiplier as number | undefined) ||
-          drumMultiplier
+          state.modifiers.drumMultiplier ?? drumMultiplier
         const basePoints = calculatePoints(
           laneIndex,
           activeDrumMultiplier,
-          (state.modifiers.guitarScoreMult as number | undefined) || 1.0,
-          (state.modifiers.bassScoreMult as number | undefined) || 1.0,
+          state.modifiers.guitarScoreMult ?? 1.0,
+          state.modifiers.bassScoreMult ?? 1.0,
           Boolean(state.modifiers.guestlist)
         )
 

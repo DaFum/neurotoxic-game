@@ -8,6 +8,7 @@ export interface Note {
   lane: number | string
   type?: NoteType
   durationMs?: number
+  p?: number
   velocity?: number
 }
 

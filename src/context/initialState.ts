@@ -9,6 +9,7 @@ import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS } from '../utils/logger'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
+import type { GameState } from '../types/game'
 
 /**
  * Brand alignment constants
@@ -171,11 +172,49 @@ const DEFAULT_SETTINGS = {
   logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN
 }
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const sanitizeSettings = (
+  input: unknown
+): {
+  crtEnabled?: boolean
+  tutorialSeen?: boolean
+  logLevel?: number
+} => {
+  if (!isPlainObject(input)) return {}
+
+  const next: {
+    crtEnabled?: boolean
+    tutorialSeen?: boolean
+    logLevel?: number
+  } = {}
+
+  if ('crtEnabled' in input) {
+    next.crtEnabled = Boolean(input.crtEnabled)
+  }
+  if ('tutorialSeen' in input) {
+    next.tutorialSeen = Boolean(input.tutorialSeen)
+  }
+  if ('logLevel' in input) {
+    const numeric = Number(input.logLevel)
+    if (
+      Number.isFinite(numeric) &&
+      numeric >= LOG_LEVELS.DEBUG &&
+      numeric <= LOG_LEVELS.NONE
+    ) {
+      next.logLevel = numeric
+    }
+  }
+
+  return next
+}
+
 /**
  * Complete initial state for the game
  * @type {Object}
  */
-export const initialState = {
+export const initialState: GameState = {
   version: 2,
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
@@ -201,7 +240,7 @@ export const initialState = {
   unlocks: []
 }
 
-export type InitialState = typeof initialState
+export interface InitialState extends GameState {}
 
 /**
  * Creates a fresh copy of the initial state
@@ -234,8 +273,8 @@ export const createInitialState = (
   },
   settings: {
     ...DEFAULT_SETTINGS,
-    ...getSavedSettings(),
-    ...(persistedData.settings || {})
+    ...sanitizeSettings(getSavedSettings()),
+    ...sanitizeSettings(persistedData.settings)
   },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },

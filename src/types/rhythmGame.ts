@@ -33,12 +33,39 @@ export type RhythmSongStatsEntry = {
   index: number
 }
 
+export type GigStats = {
+  score: number
+  misses: number
+  perfectHits: number
+  maxCombo: number
+  peakHype: number
+  toxicTimeTotal: number
+  accuracy: number
+  songStats: RhythmSongStatsEntry[]
+}
+
+export type SetLastGigStats = (stats: GigStats) => void
+
+export type RhythmSetlistEntry =
+  | string
+  | {
+      id?: string
+      name?: string
+      bpm?: number
+      duration?: number
+      difficulty?: number
+      notes?: unknown[]
+      sourceMid?: string
+      sourceOgg?: string | null
+      [key: string]: unknown
+    }
+
 export type RhythmModifiers = {
-  drumMultiplier: number
-  guitarScoreMult: number
-  bassScoreMult: number
-  hitWindowBonus: number
-  drumSpeedMult: number
+  drumMultiplier?: number
+  guitarScoreMult?: number
+  bassScoreMult?: number
+  hitWindowBonus?: number
+  drumSpeedMult?: number
   hasPerfektionist?: boolean
   guestlist?: boolean
   noteJitter?: boolean
@@ -66,7 +93,7 @@ export type RhythmGameRefState = {
   totalDuration: number
   hasSubmittedResults: boolean
   songTransitioning: boolean
-  songStats: RhythmSongStatsEntry[] | undefined
+  songStats: RhythmSongStatsEntry[]
   lastEndedSongIndex: number
   currentSongStartScore: number
   currentSongStartPerfectHits: number

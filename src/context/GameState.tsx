@@ -248,7 +248,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const initGameState = (): GameState => {
     const unlocks =
       safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
-    const freshState = createInitialState({ unlocks }) as unknown as GameState
+    const freshState = createInitialState({ unlocks })
 
     // Check for test-injected state (screenshot testing).
     // A special marker key signals the state was placed by the screenshot
@@ -1230,5 +1230,10 @@ export const useGameState = (): GameStateWithActions => {
     [state.player.van.upgrades]
   )
 
-  return { ...state, ...actions, hasUpgrade }
+  const merged = useMemo(
+    () => ({ ...state, ...actions, hasUpgrade }),
+    [state, actions, hasUpgrade]
+  )
+
+  return merged
 }
