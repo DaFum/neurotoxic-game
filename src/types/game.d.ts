@@ -22,6 +22,7 @@ export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
   logLevel: number
+  [key: string]: unknown
 }
 
 export type UnknownRecord = Record<string, unknown>
