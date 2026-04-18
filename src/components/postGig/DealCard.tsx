@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import type { DealImageProps, DealInfoProps, DealActionsProps, DealCardProps } from '../../types/components'
 
 const getAlignmentImagePrompt = alignment => {
   switch (alignment) {
