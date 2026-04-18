@@ -242,7 +242,7 @@ export const DealCard = memo(
     brandReputation,
     handleAcceptDeal,
     handleNegotiationStart
-  }) => {
+  }: DealCardProps) => {
     const isRevoked = negotiationState?.status === 'REVOKED'
     const displayDeal = negotiationState?.deal || deal
     const hasNegotiated = !!negotiationState

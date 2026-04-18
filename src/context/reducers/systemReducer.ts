@@ -75,7 +75,7 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   }
 }
 
-const sanitizeBand = loadedBand => {
+const sanitizeBand = (loadedBand: unknown): BandState => {
   const rawBand = {
     ...DEFAULT_BAND_STATE,
     ...loadedBand,
