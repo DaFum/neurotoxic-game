@@ -198,6 +198,7 @@ const sanitizeSettings = (
     const numeric = Number(input.logLevel)
     if (
       Number.isFinite(numeric) &&
+      Number.isInteger(numeric) &&
       numeric >= LOG_LEVELS.DEBUG &&
       numeric <= LOG_LEVELS.NONE
     ) {

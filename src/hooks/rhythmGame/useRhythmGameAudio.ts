@@ -254,7 +254,7 @@ export const useRhythmGameAudio = ({
         stopAudio()
       }
     }
-  }, [initializeGigState, gameMap, player?.currentNodeId])
+  }, [initializeGigState])
 
   const retryAudioInitialization = useCallback(async () => {
     if (!isInitializingRef.current) {

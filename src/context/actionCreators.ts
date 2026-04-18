@@ -66,9 +66,9 @@ export const createUpdatePlayerAction = (
     const moneyValue = (updates as { money?: unknown }).money
     safeUpdates = {
       ...updates,
-      ...(typeof moneyValue === 'number'
-        ? { money: clampPlayerMoney(moneyValue) }
-        : {})
+      money: clampPlayerMoney(
+        typeof moneyValue === 'number' ? moneyValue : Number.NaN
+      )
     }
   }
   return {
@@ -101,9 +101,9 @@ export const createUpdateBandAction = (
     const harmonyValue = (updates as { harmony?: unknown }).harmony
     safeUpdates = {
       ...updates,
-      ...(typeof harmonyValue === 'number'
-        ? { harmony: clampBandHarmony(harmonyValue) }
-        : {})
+      harmony: clampBandHarmony(
+        typeof harmonyValue === 'number' ? harmonyValue : Number.NaN
+      )
     }
   }
   return {

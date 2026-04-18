@@ -501,12 +501,17 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     // Synchronize logger if logLevel is updated
     if (updates.logLevel !== undefined) {
       const numericLogLevel = Number(updates.logLevel)
-      if (Number.isFinite(numericLogLevel)) {
+      if (
+        Number.isFinite(numericLogLevel) &&
+        Number.isInteger(numericLogLevel) &&
+        numericLogLevel >= LOG_LEVELS.DEBUG &&
+        numericLogLevel <= LOG_LEVELS.NONE
+      ) {
         logger.setLevel(numericLogLevel)
       } else {
         logger.warn(
           'GameState',
-          'Rejected persisted non-finite logLevel update',
+          'Rejected persisted invalid logLevel update',
           updates.logLevel
         )
       }
