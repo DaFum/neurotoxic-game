@@ -26,7 +26,7 @@ export const AMP_CALIBRATION_TOLERANCE = 50
 
 export const DEFAULT_MINIGAME_STATE = {
   active: false,
-  type: null,
+  type: undefined,
   targetDestination: null,
   gigId: null,
   equipmentRemaining: 0,
