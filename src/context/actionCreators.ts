@@ -97,13 +97,12 @@ export const createUpdateBandAction = (
     updates &&
     typeof updates === 'object' &&
     Object.hasOwn(updates, 'harmony')
-  ) {
     const harmonyValue = (updates as { harmony?: unknown }).harmony
     safeUpdates = {
       ...updates,
-      harmony: clampBandHarmony(
-        typeof harmonyValue === 'number' ? harmonyValue : Number.NaN
-      )
+      harmony: typeof harmonyValue === 'number'
+        ? clampBandHarmony(harmonyValue)
+        : clampBandHarmony(1)
     }
   }
   return {
