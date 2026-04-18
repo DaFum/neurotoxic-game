@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react'
+import type { TFunction } from 'i18next'
 import { audioManager } from '../../utils/AudioManager'
 import { stopAudio } from '../../utils/audioEngine'
 import { handleError } from '../../utils/errorHandler'
@@ -10,6 +11,33 @@ import {
   playSongSequence,
   resetGigStateTracking
 } from '../../utils/rhythmGameAudioUtils'
+import type {
+  GameMap,
+  GameState,
+  GigModifiers,
+  PlayerState
+} from '../../types/game'
+import type {
+  RhythmGameRefState,
+  RhythmStateSetters
+} from './useRhythmGameState'
+
+type RhythmGameAudioParams = {
+  gameStateRef: { current: RhythmGameRefState }
+  setters: Pick<RhythmStateSetters, 'setIsAudioReady'>
+  contextState: {
+    band: GameState['band']
+    gameMap: GameMap | null
+    player: PlayerState
+    setlist: Array<string | { id?: string }>
+    gigModifiers: GigModifiers
+    currentGig: GameState['currentGig']
+  }
+  contextActions: {
+    addToast: (message: string, type?: string) => void
+    t: TFunction
+  }
+}
 
 /**
  * Manages audio initialization, playback, and setup for the gig.
@@ -25,7 +53,7 @@ export const useRhythmGameAudio = ({
   setters,
   contextState,
   contextActions
-}) => {
+}: RhythmGameAudioParams) => {
   const { setIsAudioReady } = setters
   const { band, gameMap, player, setlist, gigModifiers, currentGig } =
     contextState
@@ -33,7 +61,7 @@ export const useRhythmGameAudio = ({
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
-  const abortControllerRef = useRef(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const latestContextRef = useRef({
     band,
     gameMap,
@@ -129,7 +157,9 @@ export const useRhythmGameAudio = ({
       hasInitializedRef.current = true
 
       // Reset cross-song tracking state for a new gig
-      resetGigStateTracking(gameStateRef)
+      resetGigStateTracking(
+        gameStateRef as unknown as Parameters<typeof resetGigStateTracking>[0]
+      )
 
       const setlistFirstId =
         typeof currentSetlist?.[0] === 'string'
@@ -148,10 +178,10 @@ export const useRhythmGameAudio = ({
       const physicsSetup = setupGigPhysics(
         currentBand,
         currentGigModifiers,
-        activeGig?.songId,
+        typeof activeGig?.songId === 'string' ? activeGig.songId : undefined,
         currentGameMap,
         currentPlayer?.currentNodeId,
-        setlistFirstId
+        typeof setlistFirstId === 'string' ? setlistFirstId : undefined
       )
       if (!physicsSetup) {
         hasInitializedRef.current = false
@@ -164,7 +194,9 @@ export const useRhythmGameAudio = ({
       gameStateRef.current.lanes[1].hitWindow = physicsSetup.hitWindows[1]
       gameStateRef.current.lanes[2].hitWindow = physicsSetup.hitWindows[2]
 
-      const activeSetlist = resolveActiveSetlist(currentSetlist)
+      const activeSetlist = resolveActiveSetlist(
+        currentSetlist as unknown as Parameters<typeof resolveActiveSetlist>[0]
+      )
 
       if (isAborted()) {
         setAudioReady(false)
@@ -175,7 +207,7 @@ export const useRhythmGameAudio = ({
         await playSongSequence(
           0,
           activeSetlist,
-          gameStateRef,
+          gameStateRef as unknown as Parameters<typeof playSongSequence>[2],
           currentAddToast,
           currentT
         )

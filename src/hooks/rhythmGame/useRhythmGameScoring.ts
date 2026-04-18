@@ -21,6 +21,36 @@ import {
   calculateFinalScore,
   calculateMissImpact
 } from '../../utils/rhythmGameScoringUtils'
+import type {
+  RhythmGameRefState,
+  RhythmStateSetters
+} from './useRhythmGameState'
+
+type RhythmPerformance = {
+  crowdDecay?: number
+  guitarDifficulty?: number
+  drumMultiplier?: number
+}
+
+type RhythmGameScoringParams = {
+  gameStateRef: { current: RhythmGameRefState }
+  setters: Pick<
+    RhythmStateSetters,
+    | 'setScore'
+    | 'setCombo'
+    | 'setHealth'
+    | 'setOverload'
+    | 'setIsToxicMode'
+    | 'setIsGameOver'
+    | 'setAccuracy'
+  >
+  performance: RhythmPerformance
+  contextActions: {
+    addToast: (message: string, type?: string) => void
+    setLastGigStats: (stats: unknown) => void
+    endGig: () => void
+  }
+}
 
 /**
  * Handles scoring logic including hits, misses, toxic mode, and game over.
@@ -37,7 +67,7 @@ export const useRhythmGameScoring = ({
   setters,
   performance,
   contextActions
-}) => {
+}: RhythmGameScoringParams) => {
   const { t } = useTranslation('ui')
   const {
     setScore,
@@ -55,7 +85,7 @@ export const useRhythmGameScoring = ({
   const guitarDifficulty = performance?.guitarDifficulty ?? 1.0
   const drumMultiplier = performance?.drumMultiplier ?? 1.0
 
-  const gameOverTimerRef = useRef(null)
+  const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Cleanup game over timer on unmount
   useEffect(() => {
@@ -160,7 +190,9 @@ export const useRhythmGameScoring = ({
             gameStateRef.current.score,
             gameStateRef.current.stats,
             gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats || []
+            (gameStateRef.current.songStats || []) as Parameters<
+              typeof buildGigStatsSnapshot
+            >[3]
           )
         )
         endGig()
@@ -188,7 +220,7 @@ export const useRhythmGameScoring = ({
    * @returns {boolean} True when the hit registers.
    */
   const handleHit = useCallback(
-    laneIndex => {
+    (laneIndex: number) => {
       const state = gameStateRef.current
       if (laneIndex < 0 || laneIndex >= state.lanes.length) return false
       // Use Tone.js AudioContext clock for hit detection
@@ -197,21 +229,29 @@ export const useRhythmGameScoring = ({
 
       const hitWindow = calculateDynamicHitWindow(
         state.lanes[laneIndex].hitWindow,
-        state.modifiers.hitWindowBonus || 0,
+        (state.modifiers.hitWindowBonus as number | undefined) || 0,
         laneIndex,
         guitarDifficulty
       )
 
-      const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
+      const note = checkHit(
+        state.notes as unknown as Parameters<typeof checkHit>[0],
+        laneIndex,
+        elapsed,
+        hitWindow
+      )
 
       if (note) {
         note.hit = true
         note.visible = false // consumed
 
         // Play the specific note pitch
-        if (note.originalNote && Number.isFinite(note.originalNote.p)) {
-          const velocity = Number.isFinite(note.originalNote.v)
-            ? note.originalNote.v
+        const originalNote = note.originalNote as
+          | ({ p?: number; v?: number } & Record<string, unknown>)
+          | undefined
+        if (originalNote && Number.isFinite(originalNote.p)) {
+          const velocity = Number.isFinite(originalNote.v)
+            ? originalNote.v
             : 127
           const toneNowMs = getAudioTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
@@ -221,7 +261,7 @@ export const useRhythmGameScoring = ({
             maxLeadMs: 30
           })
           playNoteAtTime(
-            note.originalNote.p,
+            Number(originalNote.p),
             state.lanes[laneIndex].id,
             scheduledMs / 1000,
             velocity
@@ -233,13 +273,14 @@ export const useRhythmGameScoring = ({
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to
         // the static performance value if audio hasn't initialized yet.
         const activeDrumMultiplier =
-          state.modifiers.drumMultiplier || drumMultiplier
+          (state.modifiers.drumMultiplier as number | undefined) ||
+          drumMultiplier
         const basePoints = calculatePoints(
           laneIndex,
           activeDrumMultiplier,
-          state.modifiers.guitarScoreMult || 1.0,
-          state.modifiers.bassScoreMult || 1.0,
-          state.modifiers.guestlist || false
+          (state.modifiers.guitarScoreMult as number | undefined) || 1.0,
+          (state.modifiers.bassScoreMult as number | undefined) || 1.0,
+          Boolean(state.modifiers.guestlist)
         )
 
         // Update hits immediately for accuracy calculation
@@ -255,7 +296,7 @@ export const useRhythmGameScoring = ({
           basePoints,
           state.combo,
           toxicModeActive,
-          state.modifiers.hasPerfektionist || false,
+          Boolean(state.modifiers.hasPerfektionist),
           currentAccuracy
         )
 

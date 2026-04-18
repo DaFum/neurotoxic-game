@@ -45,7 +45,10 @@ export const CLINIC_CONFIG = Object.freeze({
   CYBER_LUNGS_TRAIT_ID: 'cyber_lungs'
 })
 
-export const calculateClinicCost = (baseCost, currentVisits) => {
+export const calculateClinicCost = (
+  baseCost: number,
+  currentVisits: number
+) => {
   return Math.floor(
     baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)
   )

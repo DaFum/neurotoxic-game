@@ -82,9 +82,11 @@ import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
   GameAction,
+  GameEvent,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
+  QuestState,
   SocialState,
   ToastPayload,
   TradeVoidItemPayload,
@@ -167,6 +169,9 @@ const createPersistedState = (currentState: GameState) => {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const isQuestStateLike = (value: unknown): value is QuestState =>
+  isPlainObject(value) && typeof value.id === 'string'
+
 const processAddQuests = (
   quests: unknown,
   currentDay: number,
@@ -181,7 +186,9 @@ const processAddQuests = (
       questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset || 0)
       delete questToAdd.deadlineOffset
     }
-    dispatch(createAddQuestAction(questToAdd))
+    if (isQuestStateLike(questToAdd)) {
+      dispatch(createAddQuestAction(questToAdd))
+    }
   })
 }
 
@@ -319,7 +326,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Sync Logger with settings on load/change
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
-      logger.setLevel(state.settings.logLevel)
+      logger.setLevel(Number(state.settings.logLevel))
     }
   }, [state.settings?.logLevel])
 
@@ -373,7 +380,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
     // Synchronize logger if logLevel is updated
     if (updates.logLevel !== undefined) {
-      logger.setLevel(updates.logLevel)
+      logger.setLevel(Number(updates.logLevel))
     }
 
     // Persist to global settings (persist across new games)
@@ -842,19 +849,19 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       const context = currentState
 
       let event = (
-        eventEngine.checkEvent as (
+        eventEngine.checkEvent as unknown as (
           categoryArg: string,
           contextArg: GameState,
           triggerArg?: string | null
-        ) => Record<string, unknown> | null
+        ) => GameEvent | null
       )(category, context, triggerPoint)
 
       if (event) {
         // Process dynamic options (Inventory checks)
         const processedEvent = eventEngine.processOptions(
-          event,
-          context
-        ) as Record<string, unknown> | null
+          event as unknown as Record<string, unknown>,
+          context as unknown as Parameters<typeof eventEngine.processOptions>[1]
+        ) as GameEvent | null
         if (!processedEvent) {
           return false
         }
@@ -962,7 +969,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
           // Game Over - Early Exit
           if (flags.gameOver) {
-            const context = currentState.activeEvent?.context || {}
+            const context = isPlainObject(currentState.activeEvent?.context)
+              ? currentState.activeEvent.context
+              : {}
             const translatedDesc = description
               ? tRef.current(description, context)
               : ''
@@ -983,7 +992,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // 5. Feedback (Success Path)
         if (outcomeText || description) {
-          const context = currentState.activeEvent?.context || {}
+          const context = isPlainObject(currentState.activeEvent?.context)
+            ? currentState.activeEvent.context
+            : {}
           const msgOutcome = outcomeText
             ? tRef.current(outcomeText, context)
             : ''

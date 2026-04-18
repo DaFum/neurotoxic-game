@@ -11,6 +11,21 @@ import {
   processRhythmGameTick,
   finalizeGig
 } from '../../utils/rhythmGameLoopUtils'
+import type {
+  RhythmGameRefState,
+  RhythmStateSetters
+} from './useRhythmGameState'
+
+type RhythmGameLoopParams = {
+  gameStateRef: { current: RhythmGameRefState }
+  scoringActions: { handleMiss: (count?: number, isEmptyHit?: boolean) => void }
+  setters: Pick<RhythmStateSetters, 'setIsToxicMode'>
+  contextState: { activeEvent: unknown }
+  contextActions: {
+    setLastGigStats: (stats: unknown) => void
+    endGig: () => void
+  }
+}
 
 export const useRhythmGameLoop = ({
   gameStateRef,
@@ -18,7 +33,7 @@ export const useRhythmGameLoop = ({
   setters,
   contextState,
   contextActions
-}) => {
+}: RhythmGameLoopParams) => {
   const { handleMiss } = scoringActions
   const { setIsToxicMode } = setters
   const { activeEvent } = contextState
@@ -50,19 +65,26 @@ export const useRhythmGameLoop = ({
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
   const finalizeGigCallback = useCallback(
-    stateRef => {
-      finalizeGig(stateRef, setLastGigStats, endGig, stopAudio)
+    (stateRef: RhythmGameRefState) => {
+      finalizeGig(
+        stateRef as unknown as Parameters<typeof finalizeGig>[0],
+        setLastGigStats,
+        endGig,
+        stopAudio
+      )
     },
     [endGig, setLastGigStats]
   )
 
   const update = useCallback(
-    deltaMS => {
+    (deltaMS: number) => {
       const transportState = getTransportState()
       const isTransportRunning = transportState === 'started'
 
       processRhythmGameTick({
-        stateRef: gameStateRef.current,
+        stateRef: gameStateRef.current as unknown as Parameters<
+          typeof processRhythmGameTick
+        >[0]['stateRef'],
         isTransportRunning,
         transportState,
         activeEvent,
@@ -72,10 +94,16 @@ export const useRhythmGameLoop = ({
         handleCollision,
         setIsToxicMode,
         handleMiss,
-        finalizeGigCallback,
+        finalizeGigCallback: finalizeGigCallback as unknown as Parameters<
+          typeof processRhythmGameTick
+        >[0]['finalizeGigCallback'],
         getGigTimeMs,
-        pauseAudio,
-        resumeAudio
+        pauseAudio: async () => {
+          await pauseAudio()
+        },
+        resumeAudio: async () => {
+          await resumeAudio()
+        }
       })
     },
     [

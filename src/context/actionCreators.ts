@@ -64,7 +64,7 @@ export const createUpdatePlayerAction = (
   ) {
     safeUpdates = {
       ...updates,
-      money: clampPlayerMoney((updates as { money?: number }).money)
+      money: clampPlayerMoney((updates as { money?: number }).money ?? 0)
     }
   }
   return {
@@ -96,7 +96,7 @@ export const createUpdateBandAction = (
   ) {
     safeUpdates = {
       ...updates,
-      harmony: clampBandHarmony((updates as { harmony?: number }).harmony)
+      harmony: clampBandHarmony((updates as { harmony?: number }).harmony ?? 1)
     }
   }
   return {

@@ -2,7 +2,88 @@ import { useReducer, useRef, useMemo, useState } from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'
 
-const INITIAL_UI_STATE = {
+type SetterPayload<T> = T | ((current: T) => T)
+
+export type RhythmUiState = {
+  score: number
+  combo: number
+  health: number
+  overload: number
+  isToxicMode: boolean
+  isGameOver: boolean
+  isAudioReady: boolean | null
+  accuracy: number
+}
+
+type RhythmStateAction =
+  | { type: 'SET_SCORE'; payload: SetterPayload<number> }
+  | { type: 'SET_COMBO'; payload: SetterPayload<number> }
+  | { type: 'SET_HEALTH'; payload: SetterPayload<number> }
+  | { type: 'SET_OVERLOAD'; payload: SetterPayload<number> }
+  | { type: 'SET_IS_TOXIC_MODE'; payload: SetterPayload<boolean> }
+  | { type: 'SET_IS_GAME_OVER'; payload: SetterPayload<boolean> }
+  | { type: 'SET_IS_AUDIO_READY'; payload: SetterPayload<boolean | null> }
+  | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
+
+export type RhythmLane = {
+  id: 'guitar' | 'drums' | 'bass'
+  key: 'ArrowLeft' | 'ArrowDown' | 'ArrowRight'
+  x: number
+  color: number
+  active: boolean
+  hitWindow: number
+}
+
+export type RhythmLiveStats = {
+  perfectHits: number
+  misses: number
+  maxCombo: number
+  peakHype: number
+}
+
+export type RhythmGameRefState = {
+  notes: Array<Record<string, unknown>>
+  nextMissCheckIndex: number
+  lanes: RhythmLane[]
+  speed: number
+  modifiers: Record<string, unknown>
+  stats: RhythmLiveStats
+  projectiles: unknown[]
+  combo: number
+  health: number
+  score: number
+  progress: number
+  isToxicMode: boolean
+  isGameOver: boolean
+  overload: number
+  totalDuration: number
+  hasSubmittedResults: boolean
+  songTransitioning: boolean
+  songStats: unknown[]
+  lastEndedSongIndex: number
+  currentSongStartScore: number
+  currentSongStartPerfectHits: number
+  currentSongStartMisses: number
+  setlistCompleted: boolean
+  notesVersion: number
+  transportPausedByOverlay: boolean
+  toxicTimeTotal: number
+  toxicModeEndTime: number
+  rng: () => number
+}
+
+export type RhythmStateSetters = {
+  setScore: (score: SetterPayload<number>) => void
+  setCombo: (combo: SetterPayload<number>) => void
+  setHealth: (health: SetterPayload<number>) => void
+  setOverload: (overload: SetterPayload<number>) => void
+  setIsToxicMode: (isToxicMode: SetterPayload<boolean>) => void
+  setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
+  setIsAudioReady: (isAudioReady: SetterPayload<boolean | null>) => void
+  setAccuracy: (accuracy: SetterPayload<number>) => void
+}
+
+const INITIAL_UI_STATE: RhythmUiState = {
   score: 0,
   combo: 0,
   health: 100,
@@ -13,11 +94,16 @@ const INITIAL_UI_STATE = {
   accuracy: 100
 }
 
-function resolvePayload(payload, currentStateValue) {
-  return typeof payload === 'function' ? payload(currentStateValue) : payload
+function resolvePayload<T>(payload: SetterPayload<T>, currentStateValue: T): T {
+  return typeof payload === 'function'
+    ? (payload as (current: T) => T)(currentStateValue)
+    : payload
 }
 
-function rhythmGameReducer(state, action) {
+function rhythmGameReducer(
+  state: RhythmUiState,
+  action: RhythmStateAction
+): RhythmUiState {
   switch (action.type) {
     case 'SET_SCORE':
       return { ...state, score: resolvePayload(action.payload, state.score) }
@@ -55,7 +141,7 @@ function rhythmGameReducer(state, action) {
   }
 }
 
-const INITIAL_GAME_STATE_REF = {
+const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   notes: [],
   nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
   lanes: [
@@ -131,9 +217,9 @@ export const useRhythmGameState = () => {
     ...structuredClone(INITIAL_GAME_STATE_REF),
     rng: getSafeRandom // Store RNG for consistency
   }))
-  const gameStateRef = useRef(initialRefValue)
+  const gameStateRef = useRef<RhythmGameRefState>(initialRefValue)
 
-  const setters = useMemo(
+  const setters = useMemo<RhythmStateSetters>(
     () => ({
       setScore: score => dispatch({ type: 'SET_SCORE', payload: score }),
       setCombo: combo => dispatch({ type: 'SET_COMBO', payload: combo }),

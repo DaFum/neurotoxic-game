@@ -206,7 +206,9 @@ export const initialState = {
  * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
  * @returns {Object} A new initial state object
  */
-export const createInitialState = (persistedData = {}) => ({
+export const createInitialState = (
+  persistedData: { settings?: Record<string, unknown>; unlocks?: unknown } = {}
+) => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
@@ -228,7 +230,11 @@ export const createInitialState = (persistedData = {}) => ({
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
   },
-  settings: { ...DEFAULT_SETTINGS, ...getSavedSettings(), ...(persistedData.settings || {}) },
+  settings: {
+    ...DEFAULT_SETTINGS,
+    ...getSavedSettings(),
+    ...(persistedData.settings || {})
+  },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: Array.isArray(persistedData.unlocks)

@@ -7,6 +7,13 @@ import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
 import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
+import type { GameState } from '../types/game'
+
+type RhythmGameActions = {
+  setLastGigStats: (stats: unknown) => void
+  addToast: (message: string, type?: string) => void
+  endGig: () => void
+}
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
@@ -14,19 +21,17 @@ import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
  */
 export const useRhythmGameLogic = () => {
   const { t } = useTranslation()
+  const gameState = useGameState() as GameState & RhythmGameActions
+  const { setLastGigStats, addToast, endGig } = gameState
   const {
     setlist,
     band,
     activeEvent,
-    setLastGigStats,
-    addToast,
     gameMap,
     player,
-    changeScene,
     gigModifiers,
-    currentGig,
-    endGig
-  } = useGameState()
+    currentGig
+  } = gameState
 
   // 1. Core State (React + Ref)
   const { gameStateRef, state, setters } = useRhythmGameState()
@@ -48,7 +53,7 @@ export const useRhythmGameLogic = () => {
       band,
       gameMap,
       player,
-      setlist,
+      setlist: setlist as Array<string | { id?: string }>,
       gigModifiers,
       currentGig
     },
@@ -60,12 +65,10 @@ export const useRhythmGameLogic = () => {
     gameStateRef,
     scoringActions,
     setters,
-    state,
     contextState: { activeEvent },
     contextActions: {
       setLastGigStats,
-      endGig,
-      changeScene
+      endGig
     }
   })
 
