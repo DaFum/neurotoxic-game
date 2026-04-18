@@ -21,7 +21,7 @@ export const handleChangeScene = (
   state: GameState,
   payload: string
 ): GameState => {
-  if (!VALID_SCENES.has(payload)) {
+  if (!isValidGamePhase(payload)) {
     logger.warn(
       'GameState',
       `Invalid scene transition ignored: ${state.currentScene} -> ${payload}`
@@ -30,5 +30,5 @@ export const handleChangeScene = (
   }
 
   logger.info('GameState', `Scene Change: ${state.currentScene} -> ${payload}`)
-  return { ...state, currentScene: payload as any }
+  return { ...state, currentScene: payload }
 }

@@ -1,3 +1,4 @@
+import type { BandMember } from '../types/game'
 import { hasActiveSponsorship } from '../utils/gameStateUtils'
 import { SOCIAL_PLATFORMS } from './platforms'
 import i18n from '../i18n'
@@ -18,7 +19,7 @@ const POST_BADGES = {
   STORY: '📖'
 }
 
-const getCost = inf => {
+const getCost = (inf: unknown): number => {
   if (
     !inf ||
     typeof inf !== 'object' ||
