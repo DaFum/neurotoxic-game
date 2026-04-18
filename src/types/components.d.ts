@@ -174,7 +174,7 @@ export interface BandMembersLayerProps {
 
 export interface RoadieControlsProps {
   showControls: boolean
-  setShowControls: (show: boolean) => void
+  setShowControls: React.Dispatch<React.SetStateAction<boolean>>
   handleMoveUp: () => void
   handleMoveLeft: () => void
   handleMoveDown: () => void
