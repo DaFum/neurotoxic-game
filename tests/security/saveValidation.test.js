@@ -80,7 +80,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   )
   assert.deepEqual(
     newState.toasts,
-    [{ id: 1, message: 'Hacked', type: 'info' }],
+    [{ id: '1', message: 'Hacked', type: 'info' }],
     'toasts should be loaded from save and sanitized'
   )
   assert.equal(
