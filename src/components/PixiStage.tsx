@@ -3,6 +3,7 @@ import { useEffect, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
 import { logger } from '../utils/logger'
+import type { PixiStageProps } from '../types/components'
 
 /**
  * Renders the Pixi.js stage for the rhythm game.
@@ -13,7 +14,7 @@ import { logger } from '../utils/logger'
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
 export const PixiStage = memo(
-  ({ gameStateRef, update, controllerFactory = createPixiStageController }) => {
+  ({ gameStateRef, update, controllerFactory = createPixiStageController }: PixiStageProps) => {
     const containerRef = useRef(null)
     const updateRef = useRef(update)
     const controllerRef = useRef(null)
