@@ -159,7 +159,7 @@ export const handleCompleteTravelMinigame = (
   return newState
 }
 
-export const handleStartRoadieMinigame = (state, payload) => {
+export const handleStartRoadieMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
   return {
@@ -175,7 +175,7 @@ export const handleStartRoadieMinigame = (state, payload) => {
   }
 }
 
-export const handleStartAmpCalibration = (state, payload) => {
+export const handleStartAmpCalibration = (state: GameState, payload: Record<string, unknown>): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
   return {
@@ -190,7 +190,7 @@ export const handleStartAmpCalibration = (state, payload) => {
   }
 }
 
-export const handleCompleteAmpCalibration = (state, payload) => {
+export const handleCompleteAmpCalibration = (state: GameState, payload: Record<string, unknown>): GameState => {
   const { score } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 

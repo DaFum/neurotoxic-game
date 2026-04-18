@@ -1,12 +1,12 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-
 import { useCallback } from 'react'
+import type { AmpControlsProps } from '../../../types/components'
 
 export const AmpControls = memo(function AmpControls({
   dialValue,
   setDialValue
-}) {
+}: AmpControlsProps) {
   const { t } = useTranslation(['ui'])
 
   const handleDialChange = useCallback(

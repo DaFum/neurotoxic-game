@@ -37,7 +37,7 @@ export const ClinicMemberCard = ({
   enhanceCostFame,
   healMember,
   enhanceMember
-}) => {
+}: ClinicMemberCardProps) => {
   const { t } = useTranslation(['ui'])
 
   return (
