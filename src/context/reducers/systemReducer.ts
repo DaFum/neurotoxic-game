@@ -213,7 +213,7 @@ const migratePlayerLocation = (location: unknown): string => {
   return `venues:${normalizedLocation}.name`
 }
 
-const migrateLegacyVenueId = id => {
+const migrateLegacyVenueId = (id: unknown): string => {
   if (typeof id !== 'string') return id
   return normalizeVenueId(id) ?? id
 }
