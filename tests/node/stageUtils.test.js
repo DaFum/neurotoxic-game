@@ -8,6 +8,7 @@ import {
   calculateCrowdOffset,
   buildRhythmLayout,
   loadTexture,
+  loadTextures,
   getOptimalResolution
 } from '../../src/components/stage/utils'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
@@ -202,6 +203,36 @@ test('stage utils', async t => {
     )
 
     await sub.test(
+      'treats relative URL with extension as extension URL',
+      async () => {
+        const mockAssetsLoad = t.mock.method(PIXI.Assets, 'load', async url => {
+          return { isPixiTexture: true, url }
+        })
+
+        const texture = await loadTexture('/textures/crowd.png?cache=1')
+
+        assert.equal(mockAssetsLoad.mock.calls.length, 1)
+        assert.ok(texture?.isPixiTexture)
+        assert.equal(texture?.url, '/textures/crowd.png?cache=1')
+
+        mockAssetsLoad.mock.restore()
+      }
+    )
+
+    await sub.test(
+      'returns null when Image fallback is unavailable',
+      async () => {
+        const OriginalImage = globalThis.Image
+        globalThis.Image = undefined
+        const texture = await loadTexture(
+          'https://example.com/no-extension-endpoint'
+        )
+        assert.equal(texture, null)
+        globalThis.Image = OriginalImage
+      }
+    )
+
+    await sub.test(
       'handles PIXI.Assets.load error by falling back to Image',
       async () => {
         const mockAssetsLoad = t.mock.method(PIXI.Assets, 'load', async () => {
@@ -234,6 +265,28 @@ test('stage utils', async t => {
 
         mockAssetsLoad.mock.restore()
         globalThis.Image = OriginalImage
+      }
+    )
+  })
+
+  await t.test('loadTextures', async sub => {
+    await sub.test(
+      'reports empty URL entries via onError and returns null',
+      async () => {
+        const errors = []
+        const result = await loadTextures(
+          {
+            empty: ''
+          },
+          (_err, message) => {
+            errors.push(message)
+          }
+        )
+
+        assert.equal(result.empty, null)
+        assert.ok(
+          errors.some(msg => msg.includes("Texture 'empty' was skipped"))
+        )
       }
     )
   })

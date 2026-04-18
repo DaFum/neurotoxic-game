@@ -83,4 +83,34 @@ test('AudioManager Tests', async t => {
     )
     assert.strictEqual(result, true)
   })
+
+  await t.test('setMusicVolume rejects non-finite values', () => {
+    const callsBefore = mockAudioEngine.setMusicVolume.mock.calls.length
+    const result = audioManager.setMusicVolume(Number.NaN)
+    assert.equal(result, false)
+    assert.equal(mockAudioEngine.setMusicVolume.mock.calls.length, callsBefore)
+  })
+
+  await t.test('setSFXVolume rejects non-finite values', () => {
+    const callsBefore = mockAudioEngine.setSFXVolume.mock.calls.length
+    const result = audioManager.setSFXVolume(Number.POSITIVE_INFINITY)
+    assert.equal(result, false)
+    assert.equal(mockAudioEngine.setSFXVolume.mock.calls.length, callsBefore)
+  })
+
+  await t.test(
+    'init still marks prefs as loaded when localStorage read fails',
+    () => {
+      const originalGetItem = globalThis.localStorage.getItem
+      globalThis.localStorage.getItem = mock.fn(() => {
+        throw new Error('storage denied')
+      })
+
+      audioManager.prefsLoaded = false
+      audioManager.init()
+
+      assert.equal(audioManager.prefsLoaded, true)
+      globalThis.localStorage.getItem = originalGetItem
+    }
+  )
 })

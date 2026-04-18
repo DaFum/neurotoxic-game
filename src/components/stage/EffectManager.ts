@@ -1,16 +1,30 @@
 // TODO: Review this file
-import { Container, Sprite, Texture } from 'pixi.js'
+import { Application, Container, Sprite, Texture } from 'pixi.js'
 import { EffectTextureManager } from './EffectTextureManager'
+
+type EffectSprite = Sprite & {
+  isSprite: boolean
+  life: number
+}
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
   static MAX_ACTIVE_EFFECTS = 50
+  app: Application
+  parentContainer: Container
+  container: Container | null
+  textureManager: EffectTextureManager
+  activeEffects: Array<EffectSprite | null>
+  effectCount: number
+  headIndex: number
+  tailIndex: number
+  spritePool: EffectSprite[]
 
   /**
    * @param {Application} app
    * @param {Container} parentContainer
    */
-  constructor(app, parentContainer) {
+  constructor(app: Application, parentContainer: Container) {
     this.app = app
     this.parentContainer = parentContainer
     this.container = null
@@ -27,16 +41,16 @@ export class EffectManager {
     this.spritePool = []
   }
 
-  init() {
+  init(): void {
     this.container = new Container()
     this.parentContainer.addChild(this.container)
   }
 
-  async loadAssets() {
+  async loadAssets(): Promise<void> {
     await this.textureManager.loadAssets()
   }
 
-  _evictOldestEffect() {
+  _evictOldestEffect(): void {
     // O(1) removal of the oldest effect (which is always at headIndex)
     const oldest = this.activeEffects[this.headIndex]
     this.releaseEffectToPool(oldest)
@@ -46,9 +60,9 @@ export class EffectManager {
     this.effectCount--
   }
 
-  _getSpriteFromPool(texture) {
+  _getSpriteFromPool(texture: Texture | null): EffectSprite {
     if (this.spritePool.length > 0) {
-      const sprite = this.spritePool.pop()
+      const sprite = this.spritePool.pop() as EffectSprite
       sprite.texture = texture || Texture.WHITE
       sprite.anchor.set(0.5)
       return sprite
@@ -56,13 +70,14 @@ export class EffectManager {
 
     // Create sprite, using generic texture if specific one is missing/not loaded
     // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
-    const effect = new Sprite(texture || Texture.WHITE)
+    const effect = new Sprite(texture || Texture.WHITE) as EffectSprite
     effect.isSprite = true
+    effect.life = 1
     effect.anchor.set(0.5)
     return effect
   }
 
-  spawnHitEffect(x, y, color) {
+  spawnHitEffect(x: number, y: number, color: number): void {
     if (!this.container) return
 
     // Cap active effects using MAX_ACTIVE_EFFECTS
@@ -91,7 +106,7 @@ export class EffectManager {
     this.effectCount++
   }
 
-  _handleDeadEffect(idx, i, count) {
+  _handleDeadEffect(idx: number, i: number, count: number): number {
     // If it's the head (oldest), we can easily advance head
     if (i === 0) {
       this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
@@ -118,7 +133,7 @@ export class EffectManager {
     }
   }
 
-  update(deltaMS) {
+  update(deltaMS: number): void {
     const deltaSec = deltaMS / 1000
     const decay = deltaSec * 3
 
@@ -130,6 +145,10 @@ export class EffectManager {
       // Index relative to head
       const idx = (this.headIndex + i) % EffectManager.MAX_ACTIVE_EFFECTS
       const effect = this.activeEffects[idx]
+      if (!effect) {
+        i++
+        continue
+      }
 
       const newLife = effect.life - decay // Fade out speed
       effect.life = newLife
@@ -147,7 +166,7 @@ export class EffectManager {
     }
   }
 
-  releaseEffectToPool(effect) {
+  releaseEffectToPool(effect: EffectSprite | null): void {
     if (!effect) return
 
     if (this.container) {
@@ -168,7 +187,7 @@ export class EffectManager {
     }
   }
 
-  dispose() {
+  dispose(): void {
     this.activeEffects = new Array(EffectManager.MAX_ACTIVE_EFFECTS)
     this.effectCount = 0
     this.headIndex = 0

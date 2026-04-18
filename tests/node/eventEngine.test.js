@@ -764,6 +764,26 @@ test('eventEngine.processEvent processes valid events successfully', () => {
   )
 })
 
+test('eventEngine.processEvent reports invalid non-function condition type', () => {
+  mockLogger.error.mock.resetCalls()
+
+  const invalidEvent = {
+    id: 'bad_condition_event',
+    condition: 'not-a-function'
+  }
+
+  const result = eventEngine.processEvent(invalidEvent, buildGameState())
+
+  assert.equal(result, null)
+  assert.strictEqual(mockLogger.error.mock.calls.length, 1)
+  const [channel, message, errArg] = mockLogger.error.mock.calls[0].arguments
+  assert.equal(channel, 'EventEngine')
+  assert.ok(
+    message.includes('Condition check failed for event bad_condition_event')
+  )
+  assert.ok(errArg instanceof TypeError, 'Should report a TypeError')
+})
+
 test('eventEngine.applyResult percentage_resource skips if no gameState', () => {
   const result = {
     type: 'percentage_resource',

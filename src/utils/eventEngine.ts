@@ -21,6 +21,113 @@ import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitLogic'
 import { calculateAppliedDelta } from './gameStateUtils'
 
+type TemplateContext = Record<string, string>
+type TriggerPoint = string | null
+type EngineEvent = {
+  id?: string
+  trigger?: string
+  category?: string
+  chance?: number
+  requiredFlag?: string
+  title?: string
+  description?: string
+  tags?: string[]
+  condition?: (gameState: EngineGameState) => unknown
+  options?: EventChoice[]
+  [key: string]: unknown
+}
+type EventChoice = {
+  effect?: EffectShape
+  flags?: string[]
+  nextEventId?: string
+  skillCheck?: {
+    stat: string
+    threshold: number
+    success: EffectShape
+    failure: EffectShape
+  }
+  outcomeText?: string
+}
+type EffectShape = {
+  type?: string
+  effects?: EffectShape[]
+  outcome?: string
+  description?: string
+  nextEventId?: string
+  [key: string]: unknown
+}
+type EngineGameState = {
+  eventCooldowns?: string[] | Set<string>
+  activeStoryFlags?: string[] | Set<string>
+  pendingEvents?: string[] | Set<string>
+  player?: {
+    money?: number
+    currentLocation?: string
+    time?: number
+    fame?: number
+    van?: Record<string, unknown>
+    stats?: Record<string, number>
+    [key: string]: unknown
+  }
+  band?: {
+    harmony?: number
+    skill?: number
+    luck?: number
+    members?: Array<
+      Record<string, unknown> & { baseStats?: Record<string, number> }
+    >
+    inventory?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  social?: Record<string, unknown>
+  activeEvent?: {
+    id?: string
+    tags?: string[]
+    context?: Record<string, unknown>
+  }
+  [key: string]: unknown
+}
+type EventDelta = {
+  player: Record<string, unknown> & {
+    van?: Record<string, unknown>
+    stats?: Record<string, number>
+    time?: number
+    money?: number
+    fame?: number
+  }
+  band: Record<string, unknown> & {
+    relationshipChange?: Array<{
+      member1: string
+      member2: string
+      change: unknown
+    }>
+    membersDelta?: Record<string, unknown>
+    inventory?: Record<string, unknown>
+    stashRemove?: string[]
+    harmony?: number
+    luck?: number
+    skill?: number
+  }
+  social: Record<string, unknown>
+  flags: Record<string, unknown> & {
+    queueEvent?: string
+    unlock?: unknown
+    gameOver?: boolean
+    addStoryFlag?: unknown
+    addCooldown?: unknown
+    addQuest?: unknown[]
+  }
+  score?: number
+}
+
+const asNumber = (value: unknown): number =>
+  typeof value === 'number' ? value : 0
+
+const toStringArray = (value: string[] | Set<string> | undefined): string[] => {
+  if (!value) return []
+  return Array.isArray(value) ? value : Array.from(value)
+}
+
 /**
  * Filters and selects an event based on context, priority, and probability.
  */
@@ -36,10 +143,13 @@ const toLowerCaseCache = Object.create(null)
  * @param {object} context - The context object containing replacement values.
  * @returns {string} The resolved string.
  */
-const resolveTemplateString = (str, context) => {
+const resolveTemplateString = (
+  str: string,
+  context: TemplateContext
+): string => {
   if (!str || typeof str !== 'string' || str.indexOf('{') === -1) return str
 
-  let lowerKeysMap = null
+  let lowerKeysMap: Record<string, string> | null = null
 
   return str.replace(TEMPLATE_REGEX, (match, key) => {
     // Reject forbidden keys immediately
@@ -55,6 +165,7 @@ const resolveTemplateString = (str, context) => {
     // Fallback: case-insensitive match (as the original implementation used 'gi')
     if (!lowerKeysMap) {
       lowerKeysMap = Object.create(null)
+      const lowerMap = lowerKeysMap as Record<string, string>
 
       for (const k of Object.keys(context)) {
         if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
@@ -67,8 +178,8 @@ const resolveTemplateString = (str, context) => {
           toLowerCaseCache[k] = lk
         }
 
-        if (lowerKeysMap[lk] === undefined) {
-          lowerKeysMap[lk] = k
+        if (lowerMap[lk] === undefined) {
+          lowerMap[lk] = k
         }
       }
     }
@@ -79,7 +190,7 @@ const resolveTemplateString = (str, context) => {
       toLowerCaseCache[key] = lowerKey
     }
 
-    const foundKey = lowerKeysMap[lowerKey]
+    const foundKey = (lowerKeysMap as Record<string, string>)[lowerKey]
 
     if (foundKey && typeof context[foundKey] === 'string') {
       return context[foundKey]
@@ -94,13 +205,16 @@ export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 
 const eventPoolMapCache = new WeakMap()
 
-const getEventMapForPool = pool => {
+const getEventMapForPool = (
+  pool: EngineEvent[]
+): Record<string, EngineEvent> => {
   let map = eventPoolMapCache.get(pool)
   if (!map) {
     map = Object.create(null)
     for (let i = 0; i < pool.length; i++) {
-      if (pool[i].id) {
-        map[pool[i].id] = pool[i]
+      const eventId = pool[i]?.id
+      if (typeof eventId === 'string') {
+        map[eventId] = pool[i]
       }
     }
     eventPoolMapCache.set(pool, map)
@@ -108,20 +222,28 @@ const getEventMapForPool = pool => {
   return map
 }
 
-const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
+const selectEvent = (
+  pool: EngineEvent[],
+  gameState: EngineGameState,
+  triggerPoint: TriggerPoint,
+  rng: () => number = secureRandom
+) => {
   // Optimization: Pre-calculate Sets for O(1) lookups
+  const eventCooldowns = toStringArray(gameState.eventCooldowns)
+  const activeStoryFlags = toStringArray(gameState.activeStoryFlags)
+  const pendingEvents = toStringArray(gameState.pendingEvents)
   const cooldownsSet =
-    gameState.eventCooldowns && gameState.eventCooldowns.length > 0
-      ? new Set(gameState.eventCooldowns)
-      : new Set()
+    eventCooldowns.length > 0
+      ? new Set<string>(eventCooldowns)
+      : new Set<string>()
   const flagsSet =
-    gameState.activeStoryFlags && gameState.activeStoryFlags.length > 0
-      ? new Set(gameState.activeStoryFlags)
-      : new Set()
+    activeStoryFlags.length > 0
+      ? new Set<string>(activeStoryFlags)
+      : new Set<string>()
   const pendingSet =
-    gameState.pendingEvents && gameState.pendingEvents.length > 0
-      ? new Set(gameState.pendingEvents)
-      : new Set()
+    pendingEvents.length > 0
+      ? new Set<string>(pendingEvents)
+      : new Set<string>()
 
   const optimizedState = {
     ...gameState,
@@ -131,23 +253,29 @@ const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
   }
 
   // 1. Pending Events (Highest Priority)
-  if (gameState.pendingEvents && gameState.pendingEvents.length > 0) {
-    const nextEventId = gameState.pendingEvents[0]
-    const pendingEvent = getEventMapForPool(pool)[nextEventId]
+  if (pendingEvents.length > 0) {
+    const nextEventId = pendingEvents[0]
+    const pendingEvent =
+      typeof nextEventId === 'string'
+        ? getEventMapForPool(pool)[nextEventId]
+        : undefined
     if (pendingEvent) {
       return pendingEvent
     }
   }
 
   // 2. Filter by Trigger & Condition
-  let eligibleEvents = []
+  let eligibleEvents: Array<{
+    event: EngineEvent
+    contextvars: Record<string, string>
+  }> = []
   for (const e of pool) {
     // Trigger check — events with trigger:'random' are eligible at any trigger point
     if (triggerPoint && e.trigger !== triggerPoint && e.trigger !== 'random')
       continue
 
     // Filter by Cooldown
-    if (cooldownsSet.has(e.id)) continue
+    if (typeof e.id === 'string' && cooldownsSet.has(e.id)) continue
 
     // Condition check
     if (!e.condition) {
@@ -174,7 +302,7 @@ const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
 
   for (const eligible of shuffled) {
     const { event, contextvars } = eligible
-    let chance = event.chance
+    let chance = event.chance ?? 0
 
     // Boost chance if flag matches
     if (event.requiredFlag && flagsSet.has(event.requiredFlag)) {
@@ -194,9 +322,9 @@ const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
       logger.debug('EventEngine', 'Event Selected', event.id)
 
       // Dynamic text parsing
-      const variables = {
+      const variables: Record<string, string> = {
         ...contextvars,
-        venue: gameState.player?.currentLocation || 'the venue'
+        venue: String(gameState.player?.currentLocation || 'the venue')
       }
 
       let title = event.title || ''
@@ -212,21 +340,26 @@ const selectEvent = (pool, gameState, triggerPoint, rng = secureRandom) => {
 }
 
 const EFFECT_HANDLERS = Object.assign(Object.create(null), {
-  relationship: (eff, delta, context) => {
+  relationship: (
+    eff: EffectShape,
+    delta: EventDelta,
+    context: TemplateContext
+  ) => {
     if (!delta.band.relationshipChange) delta.band.relationshipChange = []
-    const resolveName = str => resolveTemplateString(str, context)
+    const resolveName = (str: string) => resolveTemplateString(str, context)
     delta.band.relationshipChange.push({
-      member1: resolveName(eff.member1),
-      member2: resolveName(eff.member2),
+      member1: resolveName(String(eff.member1 ?? '')),
+      member2: resolveName(String(eff.member2 ?? '')),
       change: eff.value
     })
   },
-  resource: (eff, delta) => {
+  resource: (eff: EffectShape, delta: EventDelta) => {
     if (eff.resource === 'money')
-      delta.player.money = (delta.player.money || 0) + eff.value
+      delta.player.money = asNumber(delta.player.money) + asNumber(eff.value)
     if (eff.resource === 'fuel') {
       delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.fuel = (delta.player.van.fuel || 0) + eff.value
+      delta.player.van.fuel =
+        asNumber(delta.player.van.fuel) + asNumber(eff.value)
     }
   },
   /**
@@ -235,15 +368,22 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
    * enforced via Math.max, and `max` acts as the minimum *loss* (ceiling) enforced via Math.min.
    * Example: `min: -100` bedeutet "verliere maximal 100" bei negativen Prozentsätzen.
    */
-  percentage_resource: (eff, delta, _context, gameState) => {
+  percentage_resource: (
+    eff: EffectShape,
+    delta: EventDelta,
+    _context: TemplateContext,
+    gameState: EngineGameState | null
+  ) => {
     if (!gameState || !gameState.player) return
 
     if (eff.resource === 'money') {
       const current = gameState.player.money || 0
-      let amount = Math.round(current * (eff.percentage / 100))
+      const percentage = asNumber(eff.percentage)
+      let amount = Math.round(current * (percentage / 100))
 
       // Defensive guard: swap if min > max
-      let { min, max } = eff
+      let min = typeof eff.min === 'number' ? eff.min : undefined
+      let max = typeof eff.max === 'number' ? eff.max : undefined
       if (min !== undefined && max !== undefined && min > max) {
         ;[min, max] = [max, min]
       }
@@ -253,97 +393,108 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
       if (min !== undefined) amount = Math.max(min, amount)
       if (max !== undefined) amount = Math.min(max, amount)
 
-      delta.player.money = (delta.player.money || 0) + amount
+      delta.player.money = asNumber(delta.player.money) + amount
     }
   },
-  stat: (eff, delta) => {
+  stat: (eff: EffectShape, delta: EventDelta) => {
     if (eff.stat === 'time')
-      delta.player.time = (delta.player.time || 0) + eff.value
+      delta.player.time = asNumber(delta.player.time) + asNumber(eff.value)
     if (eff.stat === 'fame')
-      delta.player.fame = (delta.player.fame || 0) + eff.value
+      delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
     if (eff.stat === 'harmony')
-      delta.band.harmony = (delta.band.harmony || 0) + eff.value
+      delta.band.harmony = asNumber(delta.band.harmony) + asNumber(eff.value)
     if (eff.stat === 'mood') {
       delta.band.membersDelta = {
         ...(delta.band.membersDelta || {}),
-        moodChange: eff.value
+        moodChange: asNumber(eff.value)
       }
     }
     if (eff.stat === 'stamina') {
       delta.band.membersDelta = {
         ...(delta.band.membersDelta || {}),
-        staminaChange: eff.value
+        staminaChange: asNumber(eff.value)
       }
     }
     if (eff.stat === 'van_condition') {
       delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.condition = (delta.player.van.condition || 0) + eff.value
+      delta.player.van.condition =
+        asNumber(delta.player.van.condition) + asNumber(eff.value)
     }
     if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
-      delta.player.fame = (delta.player.fame || 0) + eff.value
+      delta.player.fame = asNumber(delta.player.fame) + asNumber(eff.value)
     if (eff.stat === 'viral')
-      delta.social.viral = (delta.social.viral || 0) + eff.value
+      delta.social.viral = asNumber(delta.social.viral) + asNumber(eff.value)
     if (eff.stat === 'controversyLevel')
       delta.social.controversyLevel =
-        (delta.social.controversyLevel || 0) + eff.value
+        asNumber(delta.social.controversyLevel) + asNumber(eff.value)
     if (eff.stat === 'loyalty')
-      delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
-    if (eff.stat === 'score') delta.score = (delta.score || 0) + eff.value
+      delta.social.loyalty =
+        asNumber(delta.social.loyalty) + asNumber(eff.value)
+    if (eff.stat === 'score')
+      delta.score = asNumber(delta.score) + asNumber(eff.value)
     if (eff.stat === 'luck')
-      delta.band.luck = (delta.band.luck || 0) + eff.value
+      delta.band.luck = asNumber(delta.band.luck) + asNumber(eff.value)
     if (eff.stat === 'skill')
-      delta.band.skill = (delta.band.skill || 0) + eff.value
+      delta.band.skill = asNumber(delta.band.skill) + asNumber(eff.value)
   },
-  stat_increment: (eff, delta) => {
+  stat_increment: (eff: EffectShape, delta: EventDelta) => {
     if (eff.stat === 'conflictsResolved') {
       if (!delta.player.stats) delta.player.stats = {}
       delta.player.stats.conflictsResolved =
-        (delta.player.stats.conflictsResolved || 0) + eff.value
+        asNumber(delta.player.stats.conflictsResolved) + asNumber(eff.value)
     }
     if (eff.stat === 'stageDives') {
       if (!delta.player.stats) delta.player.stats = {}
       delta.player.stats.stageDives =
-        (delta.player.stats.stageDives || 0) + eff.value
+        asNumber(delta.player.stats.stageDives) + asNumber(eff.value)
     }
   },
-  item: (eff, delta) => {
-    if (eff.item) {
+  item: (eff: EffectShape, delta: EventDelta) => {
+    if (typeof eff.item === 'string' && eff.item.length > 0) {
       if (!delta.band.inventory) delta.band.inventory = {}
       if (typeof eff.value === 'number') {
         const current =
           typeof delta.band.inventory[eff.item] === 'number'
             ? delta.band.inventory[eff.item]
             : 0
-        delta.band.inventory[eff.item] = current + eff.value
+        delta.band.inventory[eff.item] = asNumber(current) + eff.value
       } else {
         const val = eff.value !== undefined ? eff.value : true
         delta.band.inventory[eff.item] = val
       }
     }
   },
-  unlock: (eff, delta) => {
+  unlock: (eff: EffectShape, delta: EventDelta) => {
     delta.flags.unlock = eff.unlock
   },
-  game_over: (eff, delta) => {
+  game_over: (eff: EffectShape, delta: EventDelta) => {
     delta.flags.gameOver = true
   },
-  flag: (eff, delta) => {
+  flag: (eff: EffectShape, delta: EventDelta) => {
     delta.flags.addStoryFlag = eff.flag
   },
-  cooldown: (eff, delta) => {
+  cooldown: (eff: EffectShape, delta: EventDelta) => {
     delta.flags.addCooldown = eff.eventId
   },
-  social_set: (eff, delta) => {
-    delta.social[eff.stat] = eff.value
+  social_set: (eff: EffectShape, delta: EventDelta) => {
+    if (typeof eff.stat === 'string' && eff.stat.length > 0) {
+      delta.social[eff.stat] = eff.value
+    }
   },
-  chain: (eff, delta) => {
-    delta.flags.queueEvent = eff.eventId
+  chain: (eff: EffectShape, delta: EventDelta) => {
+    if (typeof eff.eventId === 'string') {
+      delta.flags.queueEvent = eff.eventId
+    }
   },
-  quest: (eff, delta) => {
+  quest: (eff: EffectShape, delta: EventDelta) => {
     if (!delta.flags.addQuest) delta.flags.addQuest = []
     delta.flags.addQuest.push(eff.quest)
   },
-  stash_confiscate: (eff, delta, context) => {
+  stash_confiscate: (
+    eff: EffectShape,
+    delta: EventDelta,
+    context: TemplateContext
+  ) => {
     // itemId can be provided explicitly on the effect or inherited from event context
     const itemId = eff.itemId || context?.riskItemId
     if (typeof itemId === 'string' && itemId.length > 0) {
@@ -356,15 +507,20 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
 /**
  * Processes a single effect object into state delta modifications.
  */
-const processEffect = (eff, delta, context = {}, gameState = null) => {
-  const handler = EFFECT_HANDLERS[eff.type]
+const processEffect = (
+  eff: EffectShape,
+  delta: EventDelta,
+  context: TemplateContext = {},
+  gameState: EngineGameState | null = null
+) => {
+  const handler = EFFECT_HANDLERS[String(eff.type)]
   if (typeof handler === 'function') {
     handler(eff, delta, context, gameState)
   }
 }
 
 export const eventEngine = {
-  handleError(err, eventId) {
+  handleError(err: unknown, eventId?: string) {
     logger.error(
       'EventEngine',
       `Condition check failed for event ${eventId || 'unknown'}`,
@@ -372,13 +528,25 @@ export const eventEngine = {
     )
   },
 
-  processEvent(event, optimizedState) {
+  processEvent(event: EngineEvent, optimizedState: EngineGameState) {
     try {
+      if (typeof event.condition !== 'function') {
+        this.handleError(
+          new TypeError(
+            `Invalid condition for event ${event.id}: expected function`
+          ),
+          event.id
+        )
+        return null
+      }
       const condResult = event.condition(optimizedState)
       if (condResult) {
         return {
           event: event,
-          contextvars: typeof condResult === 'object' ? condResult : {}
+          contextvars:
+            condResult && typeof condResult === 'object'
+              ? (condResult as Record<string, string>)
+              : {}
         }
       }
     } catch (err) {
@@ -396,12 +564,12 @@ export const eventEngine = {
    * @returns {object|null} The selected event object or null if none found.
    */
   checkEvent: (
-    category,
-    gameState,
-    triggerPoint = null,
-    rng = secureRandom
+    category: keyof typeof EVENTS_DB,
+    gameState: EngineGameState,
+    triggerPoint: TriggerPoint = null,
+    rng: () => number = secureRandom
   ) => {
-    const pool = EVENTS_DB[category]
+    const pool = EVENTS_DB[category] as EngineEvent[] | undefined
     if (!pool) return null
     return selectEvent(pool, gameState, triggerPoint, rng)
   },
@@ -413,13 +581,17 @@ export const eventEngine = {
    * @param {function} [rng=secureRandom] - Random number generator.
    * @returns {object} The result object containing effects and outcomes.
    */
-  resolveChoice: (choice, gameState, rng = secureRandom) => {
-    let result
+  resolveChoice: (
+    choice: EventChoice,
+    gameState: EngineGameState,
+    rng: () => number = secureRandom
+  ) => {
+    let result: EffectShape
 
     if (choice.skillCheck) {
       const { stat, threshold, success, failure } = choice.skillCheck
 
-      let skillValue
+      let skillValue = 0
 
       // WARNING: 'luck' check must come first!
       // The band object has a 'luck' property (default 0). If we checked band[stat] first,
@@ -427,33 +599,38 @@ export const eventEngine = {
       if (stat === 'luck') {
         // Luck check: ignore band stats, just roll
         skillValue = rng() * 10
-      } else if (gameState.band && typeof gameState.band[stat] === 'number') {
-        // Band stat check (e.g. harmony)
-        // Explicitly check for number to avoid using objects like 'inventory' or 'members' as stats
-        skillValue = gameState.band[stat] / 10
-      } else {
-        // Member stat check (e.g. skill)
-        // Ensure members array exists to prevent crash
-        const members = Array.isArray(gameState.band?.members)
-          ? gameState.band.members
-          : []
-        if (members.length > 0) {
-          skillValue = -Infinity
-          for (let i = 0; i < members.length; i++) {
-            const m = members[i]
-            // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
-            // Then check top-level (dynamic stats like mood/health 0-100)
-            // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
-            const val =
-              m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
-            const currentVal = val ?? 0
-            if (currentVal > skillValue) {
-              skillValue = currentVal
-            }
-          }
+      } else if (gameState.band) {
+        const bandStat = gameState.band[stat]
+        if (typeof bandStat === 'number') {
+          // Band stat check (e.g. harmony)
+          // Explicitly check for number to avoid using objects like 'inventory' or 'members' as stats
+          skillValue = bandStat / 10
         } else {
-          skillValue = 0
+          // Member stat check (e.g. skill)
+          // Ensure members array exists to prevent crash
+          const members = Array.isArray(gameState.band?.members)
+            ? gameState.band.members
+            : []
+          if (members.length > 0) {
+            skillValue = -Infinity
+            for (let i = 0; i < members.length; i++) {
+              const m = members[i]
+              // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
+              // Then check top-level (dynamic stats like mood/health 0-100)
+              // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
+              const val =
+                m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
+              const currentVal = asNumber(val)
+              if (currentVal > skillValue) {
+                skillValue = currentVal
+              }
+            }
+          } else {
+            skillValue = 0
+          }
         }
+      } else {
+        skillValue = 0
       }
 
       const roll = rng() * 10
@@ -496,7 +673,7 @@ export const eventEngine = {
       ) {
         if (result.type === 'composite') {
           // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
-          result = { ...result, effects: [...result.effects] }
+          result = { ...result, effects: [...(result.effects ?? [])] }
         } else {
           // Convert simple result to composite to add stat tracking
           const originalEffect = { ...result }
@@ -511,14 +688,16 @@ export const eventEngine = {
         }
 
         // Add the stat increment safely (array is now a fresh copy)
-        result.effects.push({
+        const effects = result.effects ?? []
+        result.effects = effects
+        effects.push({
           type: 'stat_increment',
           stat: 'conflictsResolved',
           value: 1
         })
       }
     } else {
-      result = { ...choice.effect, outcome: 'direct' }
+      result = { ...(choice.effect ?? {}), outcome: 'direct' }
     }
 
     // Track Stage Dive attempts for unlocking 'showman'
@@ -528,7 +707,7 @@ export const eventEngine = {
       choice.flags?.includes('stageDive')
     ) {
       if (result.type === 'composite') {
-        result = { ...result, effects: [...result.effects] }
+        result = { ...result, effects: [...(result.effects ?? [])] }
       } else {
         const originalEffect = { ...result }
         delete originalEffect.outcome
@@ -540,7 +719,9 @@ export const eventEngine = {
           description: result.description
         }
       }
-      result.effects.push({
+      const effects = result.effects ?? []
+      result.effects = effects
+      effects.push({
         type: 'stat_increment',
         stat: 'stageDives',
         value: 1
@@ -560,14 +741,14 @@ export const eventEngine = {
    * @param {object} gameState - The current game state.
    * @returns {object} The event object with processed options.
    */
-  processOptions: (event, gameState) => {
+  processOptions: (event: EngineEvent, gameState: EngineGameState) => {
     if (!event || !event.options) return event
 
     const processedEvent = { ...event, options: [...event.options] }
 
     if (
       event.id === 'van_breakdown_tire' &&
-      (gameState.band?.inventory?.spare_tire > 0 ||
+      (asNumber(gameState.band?.inventory?.spare_tire) > 0 ||
         gameState.band?.inventory?.spare_tire === true)
     ) {
       const spareTireOption = {
@@ -598,14 +779,18 @@ export const eventEngine = {
    * @param {object} context - Context variables from the event (e.g. member names).
    * @returns {object|null} A delta object representing state changes, or null.
    */
-  applyResult: (result, context = {}, gameState = null) => {
+  applyResult: (
+    result: EffectShape | null,
+    context: TemplateContext = {},
+    gameState: EngineGameState | null = null
+  ) => {
     if (!result) return null
 
-    const delta = { player: {}, band: {}, social: {}, flags: {} }
+    const delta: EventDelta = { player: {}, band: {}, social: {}, flags: {} }
 
     if (result.type === 'composite') {
       // ⚡ Optimization: Standard for loop instead of .forEach to avoid callback allocation
-      const effects = result.effects
+      const effects = result.effects ?? []
       for (let i = 0, len = effects.length; i < len; i++) {
         processEffect(effects[i], delta, context, gameState)
       }
@@ -621,8 +806,12 @@ export const eventEngine = {
   },
 
   selectEvent: selectEvent,
-  filterEvents(pool, trigger, state) {
-    const result = []
+  filterEvents(
+    pool: EngineEvent[],
+    trigger: string | null,
+    state: EngineGameState
+  ) {
+    const result: EngineEvent[] = []
     for (let i = 0, len = pool.length; i < len; i++) {
       const e = pool[i]
       // Match exact trigger OR 'random' events (eligible at any trigger point)
@@ -645,6 +834,18 @@ export const eventEngine = {
   }
 }
 
+const buildTemplateContext = (
+  input: Record<string, unknown> | undefined
+): TemplateContext => {
+  if (!input) return {}
+  const output: TemplateContext = {}
+  for (const key of Object.keys(input)) {
+    const value = input[key]
+    if (typeof value === 'string') output[key] = value
+  }
+  return output
+}
+
 /**
  * Resolves an event choice into result and state delta payloads.
  *
@@ -653,7 +854,11 @@ export const eventEngine = {
  * @param {function} [rng=secureRandom] - Random number generator.
  * @returns {{ result: object | null, delta: object | null, outcomeText: string, description: string }} Resolution payload.
  */
-export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
+export const resolveEventChoice = (
+  choice: EventChoice | null | undefined,
+  gameState: EngineGameState | null | undefined,
+  rng: () => number = secureRandom
+) => {
   if (!choice || !gameState) {
     return { result: null, delta: null, outcomeText: '', description: '' }
   }
@@ -661,7 +866,7 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   const result = eventEngine.resolveChoice(choice, gameState, rng)
   const delta = eventEngine.applyResult(
     result,
-    gameState.activeEvent?.context,
+    buildTemplateContext(gameState.activeEvent?.context),
     gameState
   )
 
@@ -681,6 +886,6 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
     delta,
     appliedDelta,
     outcomeText: choice.outcomeText ?? '',
-    description: result.description ?? ''
+    description: String(result?.description ?? '')
   }
 }
