@@ -240,7 +240,7 @@ export const handleStartKabelsalatMinigame = (state: GameState, payload: Record<
   }
 }
 
-export const handleCompleteKabelsalatMinigame = (state, payload) => {
+export const handleCompleteKabelsalatMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
