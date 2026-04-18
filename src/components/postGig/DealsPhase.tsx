@@ -5,8 +5,9 @@ import { useGameState } from '../../context/GameState'
 import { useDealNegotiation } from '../../hooks/useDealNegotiation'
 import { DealCard } from './DealCard'
 import { NegotiationModal } from './NegotiationModal'
+import type { DealsPhaseProps } from '../../types/components'
 
-const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
+const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
   const { t } = useTranslation()
   const { social } = useGameState()
 
