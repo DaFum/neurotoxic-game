@@ -50,14 +50,17 @@ export const handleSetSetlist = (state: GameState, payload: RhythmSetlistEntry[]
  * @param {Object|Function} payload - Modifiers update
  * @returns {Object} Updated state
  */
-export const handleSetGigModifiers = (state, payload) => {
+export const handleSetGigModifiers = (
+  state: GameState,
+  payload: Record<string, boolean> | ((mods: Record<string, boolean>) => Record<string, boolean>)
+): GameState => {
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ||
     {}
   return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
 }
 
-const handleRecordBadShow = state => {
+const handleRecordBadShow = (state: GameState): GameState => {
   let nextState = { ...state }
   const currentBadShows = (nextState.player.stats?.consecutiveBadShows || 0) + 1
 

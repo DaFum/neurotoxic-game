@@ -176,7 +176,15 @@ export interface RoadieControlsProps {
 }
 
 export interface RoadieHUDProps {
-  uiState: unknown
+  uiState: {
+    itemsRemaining: number
+    itemsDelivered: number
+    currentDamage: number
+    carrying?: {
+      type: string
+      [key: string]: unknown
+    } | null
+  }
 }
 
 export interface TourbusControlsProps {
@@ -199,36 +207,88 @@ export interface TravelingVanProps {
   onTravelComplete: () => void
 }
 
-export interface CompletePhasePops {
-  result: unknown
+export interface CompletePhasProps {
+  result: {
+    success: boolean
+    message: string
+    totalFollowers: number
+    platform: string
+    moneyChange?: number
+    harmonyChange?: number
+    controversyChange?: number
+    loyaltyChange?: number
+    staminaChange?: number
+    moodChange?: number
+    targetMember?: string
+  }
   onContinue: () => void
-  onSpinStory: () => void
-  player: unknown
-  social: unknown
+  onSpinStory?: () => void
+  player?: Pick<PlayerState, 'hqUpgrades'>
+  social?: {
+    controversyLevel?: number
+    [key: string]: unknown
+  }
+  isProcessingAction?: boolean
 }
 
 export interface DealCardProps {
-  displayDeal: unknown
-  isRevoked: boolean
-  brandReputation: number
+  deal: {
+    id: string
+    name: string
+    description: string
+    alignment?: string
+    offer: {
+      upfront: number
+      duration: number
+      perGig?: number
+      item?: string
+    }
+    penalty?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  negotiationState?: {
+    deal?: unknown
+    status?: string
+    feedback?: string
+    success?: boolean
+    [key: string]: unknown
+  }
+  brandReputation?: Record<string, number>
+  handleAcceptDeal: (deal: unknown) => void
+  handleNegotiationStart: (deal: unknown) => void
 }
 
-export interface DealCardDetailProps {
-  deal: unknown
-  displayDeal: unknown
-  isRevoked: boolean
-  hasNegotiated: boolean
-  negotiationState: unknown
-  handleAcceptDeal: (dealId: string) => void
-  handleNegotiationStart: (dealId: string) => void
+export interface DealImageProps {
+  alignment?: string
+  name: string
 }
 
-export interface DealCardNegotiationProps {
+export interface DealInfoProps {
+  displayDeal: {
+    name: string
+    description: string
+    alignment?: string
+    offer: {
+      upfront: number
+      duration: number
+      perGig?: number
+      item?: string
+    }
+    penalty?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  isRevoked?: boolean
+  brandReputation?: Record<string, number>
+}
+
+export interface DealActionsProps {
   deal: unknown
-  negotiationState: unknown
-  brandReputation: number
-  handleAcceptDeal: (dealId: string) => void
-  handleNegotiationStart: (dealId: string) => void
+  displayDeal: unknown
+  isRevoked?: boolean
+  hasNegotiated?: boolean
+  negotiationState?: unknown
+  handleAcceptDeal: (deal: unknown) => void
+  handleNegotiationStart: (deal: unknown) => void
 }
 
 export interface DealsPhaseProps {
