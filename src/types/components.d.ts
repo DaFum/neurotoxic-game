@@ -348,5 +348,5 @@ export interface ReportPhaseProps {
     expenses: FinancialCategory
     net: number
   }
-  onNext?: () => void
+  onNext: () => void
 }
