@@ -117,7 +117,7 @@ const handleRecordGoodShow = (state: GameState): GameState => {
   return nextState
 }
 
-export const handleSetLastGigStats = (state, payload) => {
+export const handleSetLastGigStats = (state: GameState, payload: Record<string, unknown>): GameState => {
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
     return {
