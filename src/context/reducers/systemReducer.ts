@@ -1,4 +1,5 @@
 // TODO: Review this file
+import type { GameState, PlayerState, BandState, ToastPayload } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,
@@ -37,7 +38,7 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.CLINIC
 ])
 
-const sanitizePlayer = loadedPlayer => {
+const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const rawPlayer = {
     ...DEFAULT_PLAYER_STATE,
     ...loadedPlayer,

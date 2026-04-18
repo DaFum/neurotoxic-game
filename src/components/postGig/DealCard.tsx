@@ -175,7 +175,7 @@ const DealActions = memo(
     negotiationState,
     handleAcceptDeal,
     handleNegotiationStart
-  }) => {
+  }: DealActionsProps) => {
     const { t } = useTranslation()
 
     return (
