@@ -1,3 +1,4 @@
+import type { GameState, SocialState } from '../../types/game'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import {
@@ -13,7 +14,10 @@ import {
  * @param {Object} payload - Social updates
  * @returns {Object} Updated state
  */
-export const handleUpdateSocial = (state, payload) => {
+export const handleUpdateSocial = (
+  state: GameState,
+  payload: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
+): GameState => {
   let updates = payload
 
   // Support functional updates: updateSocial(prev => ...)
