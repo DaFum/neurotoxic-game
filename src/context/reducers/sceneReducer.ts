@@ -1,11 +1,15 @@
 // TODO: Review this file
 import { GAME_PHASES } from '../gameConstants'
 import { logger } from '../../utils/logger'
-import type { GameState } from '../../types/game'
+import type { GameState, GamePhase } from '../../types/game'
 
 const VALID_SCENES: Set<string> = new Set(
   Object.values(GAME_PHASES) as string[]
 )
+
+const isValidGamePhase = (value: string): value is GamePhase => {
+  return VALID_SCENES.has(value)
+}
 
 /**
  * Handles scene change actions
