@@ -1,7 +1,8 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { RoadieHUDProps } from '../../../types/components'
 
-export const RoadieHUD = memo(function RoadieHUD({ uiState }) {
+export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {
   const { t } = useTranslation(['ui'])
 
   return (
