@@ -52,7 +52,10 @@ const isValidAndAffordableInfluencer = (
  * @param {string} traitId - The ID of the trait
  * @returns {object|undefined} The member object or undefined
  */
-function getMemberWithTrait(members, traitId) {
+function getMemberWithTrait(
+  members: unknown,
+  traitId: string
+): BandMember | undefined {
   if (!members || !members.length) return undefined
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
