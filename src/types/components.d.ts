@@ -169,7 +169,7 @@ export interface BandMembersLayerProps {
   matzeUrl: string
   mariusUrl: string
   larsUrl: string
-  setBandMemberRef: (id: number) => (ref: unknown) => void
+  setBandMemberRef: (index: number) => (el: HTMLElement | null) => void
 }
 
 export interface RoadieControlsProps {
