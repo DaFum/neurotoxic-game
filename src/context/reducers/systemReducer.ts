@@ -544,7 +544,7 @@ export const handleAdvanceDay = (state: GameState, payload: Record<string, unkno
  * @param {string} unlockId - Unlock ID to add
  * @returns {Object} Updated state
  */
-export const handleAddUnlock = (state, unlockId) => {
+export const handleAddUnlock = (state: GameState, unlockId: string): GameState => {
   if (!unlockId || typeof unlockId !== 'string') return state
   if (state.unlocks?.includes(unlockId)) return state
   return { ...state, unlocks: [...(state.unlocks ?? []), unlockId] }
