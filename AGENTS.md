@@ -18,6 +18,19 @@
 - PreGig modifier costs come from `MODIFIER_COSTS` in `src/utils/economyEngine.ts` (single source of truth).
 - **I18n**: All user-facing text via `t('key')` or `<Trans>`, namespaced (e.g., `ui:button.save`). Update both `public/locales/en/*.json` and `public/locales/de/*.json` in the same change.
 
+## TypeScript
+
+- Strict TS (`checkJs: true`) is enforced on `.js`/`.jsx` too. Migration is complete: `@ts-nocheck` budget is 0 (`.ci/ts-nocheck-budget.json`) — `pnpm run guard:nocheck` fails on any new occurrence in `src/`. Use `@ts-expect-error <reason>` only with a tracked follow-up; never `@ts-ignore`.
+- Never `any`. Use `unknown` and narrow at boundaries (API responses, `JSON.parse`, `localStorage`, `postMessage`). For untrusted property checks use `Object.hasOwn()` — not `in` / `hasOwnProperty` (tests assert forbidden keys like `__proto__` are stripped).
+- `isolatedModules: true` — type-only imports must use `import type` (mixed form: `import { Foo, type Bar }`). Symptom of getting it wrong: `tsc` complains but Vite still builds.
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>` (see `src/context/actionCreators.ts`). Do not hand-write `{ type, payload }` shapes — it breaks the discriminated union.
+- Reducer `default` branch must call `assertNever(action)` so adding a new action variant fails compile at every missing handler.
+- Apply bounded-state clamps once, in the action creator, via helpers in `src/utils/gameStateUtils.ts`. Reducers must not re-clamp.
+- Lookup constants use `as const satisfies Record<Union, T>` — `as Record<Union, T>` discards literal inference and breaks downstream narrowing.
+- Shared domain contracts live in `src/types/*.d.ts` (`game`, `audio`, `components`, `callbacks`, `rhythmGame`). Do not inline duplicate structural shapes in consumer modules.
+- `jsconfig.checkjs.json` scopes stricter CheckJS (adds `noUncheckedIndexedAccess`) to migrated domains. When moving a new domain into that scope, add it to the `include` list in the same PR.
+- Typecheck entry points: `pnpm run typecheck:core` (full `tsc --noEmit` via `jsconfig.checkjs.json`) and `pnpm run typecheck` (scoped reducer gate used in CI).
+
 ## Testing
 
 - Test runner choice is directory-based; match neighboring tests (don't mix `node:test` and Vitest in one file).

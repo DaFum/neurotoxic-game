@@ -10,11 +10,14 @@ Applies to `src/components/**`.
 - Keep Tailwind usage v4-compatible.
 - Keep text translatable via i18n keys/components.
 
-## React Rules
+## React + TypeScript Rules
 
-- React 19: pass `ref` as standard prop; do not introduce `React.forwardRef()`.
-- Keep components presentational where possible; push game-state mutations into hooks/context actions.
+- React 19: pass `ref` as a standard prop (`ref?: React.Ref<HTMLInputElement>`). Do not introduce `React.forwardRef()` — it is deprecated in this codebase.
+- Keep components presentational where possible; push game-state mutations into hooks/context action creators.
+- Type props explicitly at the component boundary. For DOM-wrapping components, extend the underlying element's props: `interface InputProps extends React.ComponentProps<'input'> { … }`.
+- Event handlers use the discriminated React event types (`React.ChangeEvent<HTMLInputElement>`, `React.MouseEvent<HTMLButtonElement>`) — never `any`.
+- Never typecast with `as any`; prefer `unknown` + a type guard if the prop source is genuinely untyped.
 
-## Migration Rules
+## Change Rules
 
-- Remove `@ts-nocheck` incrementally and avoid behavior + typing refactors in the same PR where possible.
+- Separate behavior refactors from typing refactors; keep type-only PRs behavior-preserving.

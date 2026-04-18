@@ -14,7 +14,12 @@ Applies to `src/utils/audio/**`.
 - Keep fallback path intact when OGG assets are unavailable (MIDI/procedural path must still work).
 - Preserve existing cleanup/dispose semantics in setup/playback/dispose helpers.
 
-## Migration Rules
+## TypeScript Patterns
+
+- Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.ts`. Import with `import type` and do not re-declare local structural clones.
+- This domain is in the stricter CheckJS scope (`jsconfig.checkjs.json` adds `noUncheckedIndexedAccess`) — always narrow array/map lookups before use (`const n = notes[i]; if (!n) return`). Do not silence with `!`.
+- For Tone.js / @tonejs/midi, rely on bundled declarations; do not add stub `.d.ts` shims.
+
+## Change Rules
 
 - Keep conversions behavior-preserving; separate refactors from type-shape changes.
-- If adding types for song/note data, align with `src/types/audio.d.ts` contracts.
