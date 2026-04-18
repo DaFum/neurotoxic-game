@@ -299,7 +299,7 @@ export interface GameState {
   activeStoryFlags: string[]
   eventCooldowns: string[]
   venueBlacklist: string[]
-  activeQuests: UnknownRecord[]
+  activeQuests: QuestState[]
   reputationByRegion: Record<string, number>
   settings: GameSettings
   npcs: Record<string, CharacterProfile>
