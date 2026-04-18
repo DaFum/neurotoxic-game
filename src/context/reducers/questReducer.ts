@@ -9,7 +9,10 @@ import {
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
 
-export const handleAddQuest = (state: GameState, quest: QuestState): GameState => {
+export const handleAddQuest = (
+  state: GameState,
+  quest: QuestState
+): GameState => {
   if (hasActiveQuest(state.activeQuests, quest.id)) return state
   return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
 }
@@ -22,11 +25,14 @@ export const handleCompleteQuest = (
   const questIndex = state.activeQuests.findIndex(q => q.id === questId)
   if (questIndex === -1) return state
 
-  const quest = state.activeQuests[questIndex]
+  const quest = state.activeQuests[questIndex] as QuestState | undefined
+  if (!quest) return state
   const nextState = { ...state }
 
-  // Remove from activeQuests using toSpliced
-  nextState.activeQuests = nextState.activeQuests.toSpliced(questIndex, 1)
+  // Remove from activeQuests
+  nextState.activeQuests = state.activeQuests
+    .slice(0, questIndex)
+    .concat(state.activeQuests.slice(questIndex + 1))
 
   // Apply generic quest rewards
   const generatedToasts = []
@@ -170,7 +176,11 @@ export const handleCompleteQuest = (
 
 export const handleAdvanceQuest = (
   state: GameState,
-  { questId, amount = 1, randomIdx }: { questId: string; amount?: number; randomIdx?: number }
+  {
+    questId,
+    amount = 1,
+    randomIdx
+  }: { questId: string; amount?: number; randomIdx?: number }
 ): GameState => {
   const nextState = { ...state }
   let questCompleted = false
