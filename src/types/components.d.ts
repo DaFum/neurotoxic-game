@@ -122,13 +122,27 @@ export interface ClinicMemberCardHeaderProps {
   children?: React.ReactNode
 }
 
-export interface ClinicMemberCardActionProps {
-  member: unknown
-  player: unknown
+export interface ClinicMemberCardProps {
+  member: BandMember
+  player: Pick<PlayerState, 'money' | 'fame'>
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void
-  enhanceMember: (memberId: string) => void
+  enhanceMember: (memberId: string, traitId: string) => void
+}
+
+export interface ClinicMemberCardActionProps {
+  member: BandMember
+  player: Pick<PlayerState, 'money' | 'fame'>
+  healCostMoney: number
+  enhanceCostFame: number
+  healMember: (memberId: string) => void
+  enhanceMember: (memberId: string, traitId: string) => void
+}
+
+export interface ActionButtonWrapperProps {
+  disabledReason?: string | null
+  children: React.ReactElement
 }
 
 export interface AmpControlsProps {

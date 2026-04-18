@@ -40,7 +40,7 @@ export const handleStartGig = (state: GameState, payload: Venue | null): GameSta
   }
 }
 
-export const handleSetSetlist = (state, payload) => {
+export const handleSetSetlist = (state: GameState, payload: RhythmSetlistEntry[]): GameState => {
   return { ...state, setlist: normalizeSetlistForSave(payload) }
 }
 
