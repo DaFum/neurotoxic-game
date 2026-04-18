@@ -1,22 +1,10 @@
 import type { ActionTypes } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
+import { GAME_PHASES } from '../context/gameConstants'
 
 export type ActionType = ActionTypes[keyof ActionTypes]
 
-export type GamePhase =
-  | 'OVERWORLD'
-  | 'TRAVEL_MINIGAME'
-  | 'PREGIG'
-  | 'PRE_GIG_MINIGAME'
-  | 'GIG'
-  | 'POSTGIG'
-  | 'PRACTICE'
-  | 'MENU'
-  | 'SETTINGS'
-  | 'CREDITS'
-  | 'GAMEOVER'
-  | 'INTRO'
-  | 'CLINIC'
+export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 
 export interface GameSettings {
   crtEnabled: boolean
