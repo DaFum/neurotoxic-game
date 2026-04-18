@@ -66,12 +66,7 @@ export const useRhythmGameLoop = ({
 
   const finalizeGigCallback = useCallback(
     (stateRef: RhythmGameRefState) => {
-      finalizeGig(
-        stateRef as unknown as Parameters<typeof finalizeGig>[0],
-        setLastGigStats,
-        endGig,
-        stopAudio
-      )
+      finalizeGig(stateRef, setLastGigStats, endGig, stopAudio)
     },
     [endGig, setLastGigStats]
   )
@@ -82,9 +77,7 @@ export const useRhythmGameLoop = ({
       const isTransportRunning = transportState === 'started'
 
       processRhythmGameTick({
-        stateRef: gameStateRef.current as unknown as Parameters<
-          typeof processRhythmGameTick
-        >[0]['stateRef'],
+        stateRef: gameStateRef.current,
         isTransportRunning,
         transportState,
         activeEvent,
@@ -94,16 +87,10 @@ export const useRhythmGameLoop = ({
         handleCollision,
         setIsToxicMode,
         handleMiss,
-        finalizeGigCallback: finalizeGigCallback as unknown as Parameters<
-          typeof processRhythmGameTick
-        >[0]['finalizeGigCallback'],
+        finalizeGigCallback,
         getGigTimeMs,
-        pauseAudio: async () => {
-          await pauseAudio()
-        },
-        resumeAudio: async () => {
-          await resumeAudio()
-        }
+        pauseAudio,
+        resumeAudio
       })
     },
     [

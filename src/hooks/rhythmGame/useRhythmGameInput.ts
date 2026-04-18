@@ -13,6 +13,10 @@ type RhythmGameInputParams = {
   contextState: { activeEvent: unknown }
 }
 
+export type RhythmGameInputReturn = {
+  registerInput: (laneIndex: number, isDown: boolean) => void
+}
+
 /**
  * Handles user input for the rhythm game.
  *
@@ -26,7 +30,7 @@ export const useRhythmGameInput = ({
   gameStateRef,
   scoringActions,
   contextState
-}: RhythmGameInputParams) => {
+}: RhythmGameInputParams): RhythmGameInputReturn => {
   const { handleHit } = scoringActions
   const { activeEvent } = contextState
   const lastInputTimesRef = useRef<number[]>([])

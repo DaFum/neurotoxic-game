@@ -186,9 +186,15 @@ const processAddQuests = (
       questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset || 0)
       delete questToAdd.deadlineOffset
     }
-    if (isQuestStateLike(questToAdd)) {
-      dispatch(createAddQuestAction(questToAdd))
+    if (!isQuestStateLike(questToAdd)) {
+      logger.warn(
+        'GameState',
+        'Skipping malformed quest payload in processAddQuests',
+        questToAdd
+      )
+      return
     }
+    dispatch(createAddQuestAction(questToAdd))
   })
 }
 
@@ -326,7 +332,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Sync Logger with settings on load/change
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
-      logger.setLevel(Number(state.settings.logLevel))
+      const numericLogLevel = Number(state.settings.logLevel)
+      if (Number.isFinite(numericLogLevel)) {
+        logger.setLevel(numericLogLevel)
+      }
     }
   }, [state.settings?.logLevel])
 
@@ -380,7 +389,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
     // Synchronize logger if logLevel is updated
     if (updates.logLevel !== undefined) {
-      logger.setLevel(Number(updates.logLevel))
+      const numericLogLevel = Number(updates.logLevel)
+      if (Number.isFinite(numericLogLevel)) {
+        logger.setLevel(numericLogLevel)
+      }
     }
 
     // Persist to global settings (persist across new games)

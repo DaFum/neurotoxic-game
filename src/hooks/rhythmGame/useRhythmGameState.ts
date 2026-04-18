@@ -1,4 +1,10 @@
-import { useReducer, useRef, useMemo, useState } from 'react'
+import {
+  useReducer,
+  useRef,
+  useMemo,
+  useState,
+  type MutableRefObject
+} from 'react'
 import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'
 
@@ -81,6 +87,12 @@ export type RhythmStateSetters = {
   setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
   setIsAudioReady: (isAudioReady: SetterPayload<boolean | null>) => void
   setAccuracy: (accuracy: SetterPayload<number>) => void
+}
+
+export type RhythmGameStateHookReturn = {
+  gameStateRef: MutableRefObject<RhythmGameRefState>
+  state: RhythmUiState
+  setters: RhythmStateSetters
 }
 
 const INITIAL_UI_STATE: RhythmUiState = {
@@ -207,7 +219,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
  *
  * @returns {{gameStateRef: React.MutableRefObject, state: Object, setters: Object}} State and setters.
  */
-export const useRhythmGameState = () => {
+export const useRhythmGameState = (): RhythmGameStateHookReturn => {
   // React State for UI
   const [state, dispatch] = useReducer(rhythmGameReducer, INITIAL_UI_STATE)
 

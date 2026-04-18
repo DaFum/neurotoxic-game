@@ -39,6 +39,10 @@ type RhythmGameAudioParams = {
   }
 }
 
+export type RhythmGameAudioReturn = {
+  retryAudioInitialization: () => Promise<void>
+}
+
 /**
  * Manages audio initialization, playback, and setup for the gig.
  *
@@ -53,7 +57,7 @@ export const useRhythmGameAudio = ({
   setters,
   contextState,
   contextActions
-}: RhythmGameAudioParams) => {
+}: RhythmGameAudioParams): RhythmGameAudioReturn => {
   const { setIsAudioReady } = setters
   const { band, gameMap, player, setlist, gigModifiers, currentGig } =
     contextState

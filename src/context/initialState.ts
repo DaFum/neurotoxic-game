@@ -207,7 +207,7 @@ export const initialState = {
  * @returns {Object} A new initial state object
  */
 export const createInitialState = (
-  persistedData: { settings?: Record<string, unknown>; unlocks?: unknown } = {}
+  persistedData: { settings?: Record<string, unknown>; unlocks?: string[] } = {}
 ) => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),

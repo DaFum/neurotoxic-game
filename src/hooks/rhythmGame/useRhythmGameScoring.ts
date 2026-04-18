@@ -59,7 +59,7 @@ type RhythmGameScoringParams = {
  * @param {Object} params.gameStateRef - Reference to the mutable game state.
  * @param {Object} params.setters - React state setters from useRhythmGameState.
  * @param {Object} params.performance - Band performance stats (modifiers).
- * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, setLastGigStats).
+ * @param {Object} params.contextActions - Actions from useGameState (addToast, setLastGigStats, endGig).
  * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({
@@ -249,10 +249,16 @@ export const useRhythmGameScoring = ({
         const originalNote = note.originalNote as
           | ({ p?: number; v?: number } & Record<string, unknown>)
           | undefined
-        if (originalNote && Number.isFinite(originalNote.p)) {
-          const velocity = Number.isFinite(originalNote.v)
-            ? originalNote.v
-            : 127
+        if (
+          originalNote &&
+          typeof originalNote.p === 'number' &&
+          Number.isFinite(originalNote.p)
+        ) {
+          const velocity =
+            typeof originalNote.v === 'number' &&
+            Number.isFinite(originalNote.v)
+              ? originalNote.v
+              : 127
           const toneNowMs = getAudioTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
             noteTimeMs: note.time,
@@ -261,7 +267,7 @@ export const useRhythmGameScoring = ({
             maxLeadMs: 30
           })
           playNoteAtTime(
-            Number(originalNote.p),
+            originalNote.p,
             state.lanes[laneIndex].id,
             scheduledMs / 1000,
             velocity

@@ -48,7 +48,7 @@ export const CLINIC_CONFIG = Object.freeze({
 export const calculateClinicCost = (
   baseCost: number,
   currentVisits: number
-) => {
+): number => {
   return Math.floor(
     baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)
   )

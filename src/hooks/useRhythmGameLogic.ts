@@ -8,6 +8,7 @@ import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
 import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { GameState } from '../types/game'
+import type { RhythmGameRefState } from './rhythmGame/useRhythmGameState'
 
 type RhythmGameActions = {
   setLastGigStats: (stats: unknown) => void
@@ -15,11 +16,35 @@ type RhythmGameActions = {
   endGig: () => void
 }
 
+type RhythmGameStats = {
+  score: number
+  combo: number
+  health: number
+  overload: number
+  isToxicMode: boolean
+  isGameOver: boolean
+  isAudioReady: boolean | null
+  accuracy: number
+}
+
+type RhythmGameLogicActions = {
+  registerInput: (laneIndex: number, isDown: boolean) => void
+  activateToxicMode: () => void
+  retryAudioInitialization: () => Promise<void>
+}
+
+export type RhythmGameLogicReturn = {
+  gameStateRef: { current: RhythmGameRefState }
+  stats: RhythmGameStats
+  actions: RhythmGameLogicActions
+  update: (deltaMS: number) => void
+}
+
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
-export const useRhythmGameLogic = () => {
+export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const { t } = useTranslation()
   const gameState = useGameState() as GameState & RhythmGameActions
   const { setLastGigStats, addToast, endGig } = gameState
