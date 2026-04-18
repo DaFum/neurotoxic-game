@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { TourbusControlsProps } from '../../../types/components'
 
-export const TourbusControls = ({ onMoveLeft, onMoveRight }) => {
+export const TourbusControls = ({ onMoveLeft, onMoveRight }: TourbusControlsProps) => {
   const { t } = useTranslation('minigame')
 
   return (
