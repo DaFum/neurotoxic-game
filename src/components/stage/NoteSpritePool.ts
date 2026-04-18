@@ -1,4 +1,4 @@
-import { Sprite, Texture } from 'pixi.js'
+import { Container, Sprite, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
 import { secureRandom } from '../../utils/crypto'
 
@@ -27,12 +27,12 @@ type NoteTextures = {
 
 export class NoteSpritePool {
   static MAX_POOL_SIZE = 64
-  container: { removeChild: (sprite: Sprite) => void } | null
+  container: Container | null
   spritePool: NoteSprite[]
   noteTextures: NoteTextures
   rngErrorReported: boolean
 
-  constructor(container: { removeChild: (sprite: Sprite) => void } | null) {
+  constructor(container: Container | null) {
     this.container = container
     this.spritePool = []
     this.noteTextures = { skull: null, lightning: null }

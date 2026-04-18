@@ -69,7 +69,7 @@ class AudioSystem {
    * Returns true when audio is actively playing through ambient OGG or Tone transport.
    * Keeps playback-state logic encapsulated for UI consumers.
    */
-  get isPlaying() {
+  get isPlaying(): boolean {
     return (
       this.currentSongId != null &&
       (audioEngine.isAmbientOggPlaying() ||
@@ -104,7 +104,7 @@ class AudioSystem {
   /**
    * Emits audio state updates to subscribers.
    */
-  emitChange() {
+  emitChange(): void {
     this.stateSnapshot = {
       musicVol: this.musicVolume,
       sfxVol: this.sfxVolume,

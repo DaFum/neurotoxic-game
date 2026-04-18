@@ -21,13 +21,15 @@ type CrowdColors = {
   ashGray: number
 }
 
-type CrowdMember = (Sprite | Graphics) & {
-  isSprite: boolean
+type CrowdMemberBase = {
   baseY: number
   radius: number
   currentFillColor: number
   tint: number
 }
+type CrowdSpriteMember = Sprite & CrowdMemberBase & { isSprite: true }
+type CrowdGraphicsMember = Graphics & CrowdMemberBase & { isSprite: false }
+type CrowdMember = CrowdSpriteMember | CrowdGraphicsMember
 
 export class CrowdManager {
   app: Application
@@ -109,20 +111,18 @@ export class CrowdManager {
    */
   _createCrowdMember(radius: number, fallbackColor: number): CrowdMember {
     if (this.textures.idle) {
-      const crowd = new Sprite(this.textures.idle)
+      const crowd = new Sprite(this.textures.idle) as CrowdSpriteMember
       crowd.anchor.set(0.5)
       crowd.width = radius * 2.5 // Adjust scale to match circle size approx
       crowd.height = radius * 2.5
-      const crowdMember = crowd as CrowdMember
-      crowdMember.isSprite = true
-      return crowdMember
+      crowd.isSprite = true
+      return crowd
     } else {
-      const crowd = new Graphics()
+      const crowd = new Graphics() as CrowdGraphicsMember
       crowd.circle(0, 0, radius)
       crowd.fill(fallbackColor)
-      const crowdMember = crowd as CrowdMember
-      crowdMember.isSprite = false
-      return crowdMember
+      crowd.isSprite = false
+      return crowd
     }
   }
 

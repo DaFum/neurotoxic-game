@@ -22,7 +22,7 @@ type StageState = {
   notes: StageNote[]
   notesVersion?: number
   lanes: StageLane[]
-  modifiers: { noteJitter?: boolean }
+  modifiers?: { noteJitter?: boolean }
   speed: number
 }
 type LaneLayout = { hitLineY?: number }

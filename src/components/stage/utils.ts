@@ -362,11 +362,18 @@ export const loadTextures = async (
     return {}
   }
 
-  const promises = new Array(length)
+  const promises: Array<Promise<Texture | null>> = new Array(length)
+  const skippedKeys = new Set<string>()
   for (let i = 0; i < length; i++) {
     const key = keys[i]
     if (!key) continue
-    promises[i] = loadTexture(urlMap[key] ?? '')
+    const url = urlMap[key]
+    if (!url) {
+      skippedKeys.add(key)
+      promises[i] = Promise.resolve(null)
+      continue
+    }
+    promises[i] = loadTexture(url)
   }
   const settledResults = await Promise.allSettled(promises)
 
@@ -378,6 +385,12 @@ export const loadTextures = async (
 
     if (res.status === 'fulfilled' && res.value !== null) {
       result[key] = res.value
+    } else if (
+      res.status === 'fulfilled' &&
+      res.value === null &&
+      skippedKeys.has(key)
+    ) {
+      result[key] = null
     } else {
       result[key] = null
       const error =

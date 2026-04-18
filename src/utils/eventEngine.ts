@@ -165,6 +165,7 @@ const resolveTemplateString = (
     // Fallback: case-insensitive match (as the original implementation used 'gi')
     if (!lowerKeysMap) {
       lowerKeysMap = Object.create(null)
+      const lowerMap = lowerKeysMap as Record<string, string>
 
       for (const k of Object.keys(context)) {
         if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
@@ -177,8 +178,6 @@ const resolveTemplateString = (
           toLowerCaseCache[k] = lk
         }
 
-        lowerKeysMap ??= Object.create(null)
-        const lowerMap = lowerKeysMap as Record<string, string>
         if (lowerMap[lk] === undefined) {
           lowerMap[lk] = k
         }
@@ -191,7 +190,7 @@ const resolveTemplateString = (
       toLowerCaseCache[key] = lowerKey
     }
 
-    const foundKey = (lowerKeysMap ?? {})[lowerKey]
+    const foundKey = (lowerKeysMap as Record<string, string>)[lowerKey]
 
     if (foundKey && typeof context[foundKey] === 'string') {
       return context[foundKey]
@@ -681,7 +680,9 @@ export const eventEngine = {
         }
 
         // Add the stat increment safely (array is now a fresh copy)
-        ;(result.effects ??= []).push({
+        const effects = result.effects ?? []
+        result.effects = effects
+        effects.push({
           type: 'stat_increment',
           stat: 'conflictsResolved',
           value: 1
@@ -710,7 +711,9 @@ export const eventEngine = {
           description: result.description
         }
       }
-      ;(result.effects ??= []).push({
+      const effects = result.effects ?? []
+      result.effects = effects
+      effects.push({
         type: 'stat_increment',
         stat: 'stageDives',
         value: 1

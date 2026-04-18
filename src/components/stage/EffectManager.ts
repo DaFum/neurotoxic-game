@@ -62,16 +62,7 @@ export class EffectManager {
 
   _getSpriteFromPool(texture: Texture | null): EffectSprite {
     if (this.spritePool.length > 0) {
-      const sprite = this.spritePool.pop()
-      if (!sprite) {
-        const fallbackSprite = new Sprite(
-          texture || Texture.WHITE
-        ) as EffectSprite
-        fallbackSprite.isSprite = true
-        fallbackSprite.life = 1
-        fallbackSprite.anchor.set(0.5)
-        return fallbackSprite
-      }
+      const sprite = this.spritePool.pop() as EffectSprite
       sprite.texture = texture || Texture.WHITE
       sprite.anchor.set(0.5)
       return sprite
