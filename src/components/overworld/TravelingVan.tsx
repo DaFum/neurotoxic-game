@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import type { TravelingVanProps } from '../../types/components'
 
 export const TravelingVan = React.memo(
   ({
@@ -10,7 +11,7 @@ export const TravelingVan = React.memo(
     vanUrl,
     travelCompletedRef,
     onTravelComplete
-  }) => {
+  }: TravelingVanProps) => {
     if (!isTraveling || !currentNode || !travelTarget) return null
 
     return (
