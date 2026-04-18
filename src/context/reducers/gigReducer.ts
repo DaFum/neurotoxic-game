@@ -106,7 +106,7 @@ const handleRecordBadShow = (state: GameState): GameState => {
   return nextState
 }
 
-const handleRecordGoodShow = state => {
+const handleRecordGoodShow = (state: GameState): GameState => {
   const nextState = { ...state }
 
   nextState.player = {
