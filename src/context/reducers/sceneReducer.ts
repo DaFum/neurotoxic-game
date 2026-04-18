@@ -26,5 +26,5 @@ export const handleChangeScene = (
   }
 
   logger.info('GameState', `Scene Change: ${state.currentScene} -> ${payload}`)
-  return { ...state, currentScene: payload }
+  return { ...state, currentScene: payload as any }
 }
