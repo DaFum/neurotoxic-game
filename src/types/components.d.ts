@@ -298,8 +298,8 @@ export interface DealsPhaseProps {
 }
 
 export interface FinancialListProps {
-  items: unknown[]
-  type: string
+  items: FinancialItem[]
+  type: 'income' | 'expense'
 }
 
 export interface NegotiationModalProps {

@@ -336,7 +336,7 @@ export const handleResetState = (state: GameState, payload: Record<string, unkno
   }
 }
 
-export const handleUpdateSettings = (state, payload) => {
+export const handleUpdateSettings = (state: GameState, payload: Record<string, unknown>): GameState => {
   if (!payload || typeof payload !== 'object') return state
   return { ...state, settings: { ...state.settings, ...payload } }
 }
