@@ -6,84 +6,81 @@ applyTo: '.'
 
 ## Purpose
 
-Minimal Copilot instructions for safe TypeScript migration tasks. Import `AGENTS.md` as the single source of truth and add only non-discoverable, failure-causing rules.
+Copilot instructions for TypeScript type-safety work in this repo. The JS→TS
+migration is complete (baseline `2026-04-16`, `@ts-nocheck` budget = 0). Use
+this file for: tightening existing types, adding types to new code, and
+resolving strict-mode errors. Defer to `AGENTS.md` for all project-wide rules.
 
 ## Critical Commands
 
-- Install dev deps: `pnpm add -D typescript @types/node @types/react @types/jest` (adjust list for used libs).
-- Typecheck: `pnpm run typecheck` (run after each migration PR).
-- Build: `pnpm run build` to validate bundling after conversion.
-- Tests: `pnpm run test` and `pnpm run test:ui` for UI-related changes.
+- Full typecheck: `pnpm run typecheck:core` (runs `tsc --noEmit` over
+  `jsconfig.checkjs.json` scope).
+- Reducer gate (CI): `pnpm run typecheck` — fails on any error inside
+  `gameReducer.ts`, `reducers/bandReducer.ts`, `reducers/eventReducer.ts`,
+  `reducers/sceneReducer.ts`, or any non-zero `tsc` status.
+- Nocheck budget guard: `pnpm run guard:nocheck` (must stay at 0 in `src/`).
+- Install type packages with pinned versions: `pnpm add -D @types/<pkg>` — do
+  not upgrade already-pinned deps without discussion.
 
-## Quick validation recipe
-
-- Run a focused local check before opening a PR:
+## Required Validation Before a PR
 
 ```bash
 pnpm install
+pnpm run guard:nocheck
 pnpm run typecheck
-pnpm run test      # optional, recommended for logic changes
-pnpm run test:ui   # run when touching UI or i18n
+pnpm run test:all
+pnpm run test:ui   # when touching UI or i18n
 ```
 
-## Architecture Constraints
+## Type-Safety Patterns (project-specific)
 
-- Prefer enabling `strict` mode in `tsconfig.json`. If enabling `strict` globally is risky, enable `noImplicitAny` and `strictNullChecks` as first steps.
-- Keep `tsconfig` paths aligned with Vite `resolve.alias` (update `vite.config.ts` if needed).
-- Use `.ts` for logic files and `.tsx` for React components.
+- Never `any`. Use `unknown` at external boundaries (API responses,
+  `JSON.parse`, `localStorage`) and narrow once with a type guard.
+- `Object.hasOwn()` for untrusted property checks — never `in` or
+  `hasOwnProperty`. Tests assert forbidden prototype keys (`__proto__`) are
+  stripped.
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`
+  — do not hand-write `{ type, payload }` shapes.
+- Reducer `default` must call `assertNever(action)` (exhaustive check).
+- Lookup constants: `as const satisfies Record<Union, T>` — `as Record<...>`
+  discards literal inference.
+- Type-only imports require `import type` (enforced by `isolatedModules`).
+- Shared domain contracts belong in `src/types/*.d.ts`; do not re-declare
+  structural clones in consumer modules.
+- Apply bounded-state clamps once, in the action creator, via
+  `src/utils/gameStateUtils.ts`. Do not re-clamp in reducers.
 
-If tests are noisy during validation: temporarily narrow `tsconfig.json` `include` to `src` only (or use an override `tsconfig.migration.json`) and re-introduce `tests/` in follow-up PRs. Do not leave tests excluded in the main branch.
+## Widening the Stricter Scope
 
-## Testing
+`jsconfig.checkjs.json` adds `noUncheckedIndexedAccess` for migrated domains
+(`src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, `src/ui/bandhq`).
+When graduating a new domain into this scope, add it to `include` in the same
+PR that lands the type-tightening.
 
-- Run `pnpm run typecheck` and fix type errors before opening a PR.
-- Use small migration PRs (3–8 files) to keep reviewable diffs and easier bisecting.
+## Suppression Policy
 
-If a migration PR touches UI-facing files or translations, run `pnpm run test:ui` to avoid regressions in rendering or i18n keys.
+- `@ts-nocheck` is banned in `src/` (budget 0).
+- `@ts-expect-error` must include a one-line reason and be scoped to one line;
+  prefer a tracked issue link. `@ts-ignore` is never acceptable — it silently
+  survives the underlying fix.
 
-## Style & Conventions
+## Third-Party Types
 
-- Add explicit public API types for exported functions and components.
-- For third-party packages without types, prefer `pnpm add -D @types/<pkg>` or create a `types/<pkg>.d.ts` stub (place under `src/types` or a top-level `types/`).
+- `framer-motion`, `lucide-react`, `pixi.js`, `tone`, `@tonejs/midi` ship their
+  own declarations — do not add stub `.d.ts` shims for them.
+- When a package genuinely lacks types, prefer `pnpm add -D @types/<pkg>`. As a
+  last resort, add a minimal stub under `src/types/` and document it in the PR.
 
 ## Gotchas
 
-- Do NOT convert files in auto-generated folders (e.g., `output/`, `public/`, `lib/`, or any `generated/` directory) — update generators instead.
-- Preserve game-specific runtime invariants (do not change audio timing sources or PIXI import locations). Verify behavior in `pnpm run test:ui`.
-- If `noImplicitAny` produces many errors, prefer staged enabling (tests → core libs → UI) rather than blanket disabling.
+- Generated output (`output/`, `public/`, `lib/`, anything `generated/`) is not
+  type-migrated — update the generator, not the output.
+- Keep `tsconfig.json` paths aligned with Vite `resolve.alias`; mismatches
+  silently break `@/*` imports at typecheck time.
+- `.cjs` extension is required for ad-hoc Node scripts using `require()`.
 
-- When adding `@types` packages, prefer pinned devDependencies (use project policy pins in `AGENTS.md`). If no `@types` exists, add a `types/<pkg>.d.ts` with minimal stubs under `src/types/` and document it in the PR.
+## Notes for Maintainers
 
-## Notes for maintainers
-
-- Keep these instructions minimal; if a rule belongs to project policy, add it to `AGENTS.md` instead.
-- If requested, the companion prompt (`.github/prompts/typescript-migration.prompt.md`) can generate an actionable migration plan and patches.
-
-## Type stubs & migration tsconfig
-
-- If a package lacks types, create a local stub under `src/types/` named `<pkg>.d.ts` with this minimal content:
-
-```ts
-declare module '<pkg>' {
-  const value: any
-  export default value
-}
-```
-
-- Example focused migration config (`tsconfig.migration.json`) to run targeted checks without affecting the main `tsconfig.json`:
-
-```json
-{
-  "extends": "./tsconfig.json",
-  "include": ["src"],
-  "compilerOptions": {
-    "noEmit": true,
-    "checkJs": true,
-    "typeRoots": ["src/types", "node_modules/@types"]
-  }
-}
-```
-
-Add the stub files to source control and document them in the PR when used.
-
-- Before running an automated migration across many files, create a short checklist in the PR description: scope, changed tsconfig flags (if any), `@types` added, and test commands run.
+- Keep this file minimal; fold durable rules into `AGENTS.md` instead.
+- The companion prompt (`.github/prompts/typescript-migration.prompt.md`)
+  targets type-tightening plans, not JS→TS conversion.
