@@ -321,7 +321,7 @@ export const handleLoadGame = (state: GameState, payload: unknown): GameState =>
   return migratedState
 }
 
-export const handleResetState = (state, payload = {}) => {
+export const handleResetState = (state: GameState, payload: Record<string, unknown> = {}): GameState => {
   logger.info('GameState', 'State Reset (Debug)')
 
   // Construct the data to preserve across reset
