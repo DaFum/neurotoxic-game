@@ -8,6 +8,7 @@ import {
   calculateCrowdOffset,
   buildRhythmLayout,
   loadTexture,
+  loadTextures,
   getOptimalResolution
 } from '../../src/components/stage/utils'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
@@ -264,6 +265,28 @@ test('stage utils', async t => {
 
         mockAssetsLoad.mock.restore()
         globalThis.Image = OriginalImage
+      }
+    )
+  })
+
+  await t.test('loadTextures', async sub => {
+    await sub.test(
+      'reports empty URL entries via onError and returns null',
+      async () => {
+        const errors = []
+        const result = await loadTextures(
+          {
+            empty: ''
+          },
+          (_err, message) => {
+            errors.push(message)
+          }
+        )
+
+        assert.equal(result.empty, null)
+        assert.ok(
+          errors.some(msg => msg.includes("Texture 'empty' was skipped"))
+        )
       }
     )
   })

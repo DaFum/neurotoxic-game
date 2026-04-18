@@ -393,7 +393,7 @@ const EFFECT_HANDLERS = Object.assign(Object.create(null), {
       if (min !== undefined) amount = Math.max(min, amount)
       if (max !== undefined) amount = Math.min(max, amount)
 
-      delta.player.money = (delta.player.money || 0) + amount
+      delta.player.money = asNumber(delta.player.money) + amount
     }
   },
   stat: (eff: EffectShape, delta: EventDelta) => {

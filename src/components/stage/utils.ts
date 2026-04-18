@@ -397,6 +397,17 @@ export const loadTextures = async (
     const url = urlMap[key]
     if (!url) {
       skippedKeys.add(key)
+      if (onError) {
+        onError(
+          new Error(`Texture '${key}' has an empty or missing URL.`),
+          `Texture '${key}' was skipped because URL is empty.`
+        )
+      } else {
+        logger.warn(
+          'loadTextures',
+          `Skipped texture '${key}' because URL is empty.`
+        )
+      }
       promises[i] = Promise.resolve(null)
       continue
     }
