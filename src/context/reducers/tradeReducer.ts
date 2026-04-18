@@ -1,3 +1,4 @@
+import type { GameState } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerFame,
@@ -22,7 +23,7 @@ const ESCAPE_MAP = {
  * @param {Object} payload - { contrabandId, fameCost, instanceId, successToast }
  * @returns {Object} Updated state
  */
-export const handleTradeVoidItem = (state, payload) => {
+export const handleTradeVoidItem = (state: GameState, payload: Record<string, unknown>): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for TRADE_VOID_ITEM')
     return state
