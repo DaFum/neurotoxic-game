@@ -1,3 +1,4 @@
+import type { GameState, QuestState } from '../../types/game'
 import {
   clampPlayerFame,
   clampBandHarmony,
@@ -8,7 +9,7 @@ import {
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
 
-export const handleAddQuest = (state, quest) => {
+export const handleAddQuest = (state: GameState, quest: QuestState): GameState => {
   if (hasActiveQuest(state.activeQuests, quest.id)) return state
   return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
 }

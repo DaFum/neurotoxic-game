@@ -3,6 +3,27 @@ import type { RhythmSetlistEntry } from './rhythmGame'
 
 export type ActionType = ActionTypes[keyof ActionTypes]
 
+export type GamePhase =
+  | 'OVERWORLD'
+  | 'TRAVEL_MINIGAME'
+  | 'PREGIG'
+  | 'PRE_GIG_MINIGAME'
+  | 'GIG'
+  | 'POSTGIG'
+  | 'PRACTICE'
+  | 'MENU'
+  | 'SETTINGS'
+  | 'CREDITS'
+  | 'GAMEOVER'
+  | 'INTRO'
+  | 'CLINIC'
+
+export interface GameSettings {
+  crtEnabled: boolean
+  tutorialSeen: boolean
+  logLevel: number
+}
+
 export type UnknownRecord = Record<string, unknown>
 
 export interface EventOption {
@@ -268,7 +289,7 @@ export interface MerchPressPayload {
 
 export interface GameState {
   version: number
-  currentScene: string
+  currentScene: GamePhase
   player: PlayerState
   band: BandState
   social: SocialState
@@ -285,7 +306,7 @@ export interface GameState {
   venueBlacklist: string[]
   activeQuests: UnknownRecord[]
   reputationByRegion: Record<string, number>
-  settings: UnknownRecord
+  settings: GameSettings
   npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers
   minigame: MinigameState

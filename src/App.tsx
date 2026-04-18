@@ -14,8 +14,9 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
 import { SceneRouter } from './components/SceneRouter.tsx'
+import type { GamePhase } from './types/game'
 
-const SCENES_WITHOUT_HUD = [
+const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.INTRO,
   GAME_PHASES.MENU,
   GAME_PHASES.SETTINGS,
@@ -24,7 +25,7 @@ const SCENES_WITHOUT_HUD = [
   GAME_PHASES.TRAVEL_MINIGAME,
   GAME_PHASES.PRE_GIG_MINIGAME,
   GAME_PHASES.CLINIC
-]
+])
 
 const resolveVercelTelemetryEnabled = () => {
   const viteFlag = import.meta.env?.VITE_ENABLE_VERCEL_TELEMETRY
@@ -100,7 +101,7 @@ function GameContent() {
       )}
 
       {/* Hide HUD in Intro/Menu/Settings/Credits/GameOver */}
-      {!SCENES_WITHOUT_HUD.includes(currentScene) && <HUD />}
+      {!SCENES_WITHOUT_HUD.has(currentScene) && <HUD />}
 
       <ToastOverlay />
 

@@ -10,6 +10,7 @@ import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import PropTypes from 'prop-types'
+import type { MinigameSceneFrameProps } from '../types/components'
 
 export const MinigameSceneFrame = ({
   controllerFactory,
@@ -20,7 +21,7 @@ export const MinigameSceneFrame = ({
   renderCompletionStats,
   completionButtonText = 'CONTINUE',
   children
-}) => {
+}: MinigameSceneFrameProps) => {
   const { settings } = useGameState()
   const continueButtonRef = useRef(null)
   const previousFocusRef = useRef(null)
