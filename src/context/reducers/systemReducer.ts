@@ -242,7 +242,7 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
 }
 
 const migratePlayerLocation = (location: unknown): string => {
-  if (typeof location !== 'string') return location
+  if (typeof location !== 'string') return ''
 
   let legacyLocation = location
   if (!location.startsWith('venues:') && location.endsWith('.name')) {
@@ -258,7 +258,7 @@ const migratePlayerLocation = (location: unknown): string => {
 }
 
 const migrateLegacyVenueId = (id: unknown): string => {
-  if (typeof id !== 'string') return id
+  if (typeof id !== 'string') return ''
   return normalizeVenueId(id) ?? id
 }
 
@@ -411,7 +411,7 @@ export const handleAddToast = (
 
 export const handleRemoveToast = (
   state: GameState,
-  payload: { toastId: string }
+  payload: string
 ): GameState => {
   return {
     ...state,
