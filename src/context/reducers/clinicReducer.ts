@@ -1,6 +1,9 @@
 // TODO: Review this file
 import type { GameState } from '../../types/game'
-import type { ClinicActionPayload, BloodBankDonatePayload } from '../../types/game'
+import type {
+  ClinicActionPayload,
+  BloodBankDonatePayload
+} from '../../types/game'
 import type { BandMember } from '../../types/game'
 import { CLINIC_CONFIG, calculateClinicCost } from '../gameConstants'
 import { logger } from '../../utils/logger'
@@ -76,7 +79,10 @@ const executeClinicAction = (
   const updatedMembers = state.band.members.map(member => {
     if (member.id !== memberId) return member
     memberUpdateResult = memberUpdater(member)
-    return (memberUpdateResult as Record<string, unknown>).updatedMember || memberUpdateResult
+    return (
+      (memberUpdateResult as Record<string, unknown>).updatedMember ||
+      memberUpdateResult
+    )
   })
 
   const nextFame = clampPlayerFame(playerFame - fameCost)
@@ -96,9 +102,11 @@ const executeClinicAction = (
   }
 
   // Append success toast atomically so it only appears when the action succeeds
-  const toastArgsArray = memberUpdateResult && (memberUpdateResult as Record<string, unknown>).toastArgs
-    ? (memberUpdateResult as Record<string, unknown>).toastArgs as unknown[]
-    : undefined
+  const toastArgsArray =
+    memberUpdateResult &&
+    (memberUpdateResult as Record<string, unknown>).toastArgs
+      ? ((memberUpdateResult as Record<string, unknown>).toastArgs as unknown[])
+      : undefined
   const finalSuccessToast =
     successToast ||
     (getSuccessToast && toastArgsArray
@@ -121,11 +129,20 @@ const executeClinicAction = (
  * @param {number} payload.moodGain - The mood gain.
  * @returns {Object} The updated game state.
  */
-export const handleClinicHeal = (state: GameState, payload: ClinicActionPayload): GameState => {
+export const handleClinicHeal = (
+  state: GameState,
+  payload: ClinicActionPayload
+): GameState => {
   const rawStamina = payload.staminaGain as number | undefined
   const rawMood = payload.moodGain as number | undefined
-  const staminaGain = Math.max(0, Number.isFinite(rawStamina ?? 0) ? (rawStamina ?? 0) : 0)
-  const moodGain = Math.max(0, Number.isFinite(rawMood ?? 0) ? (rawMood ?? 0) : 0)
+  const staminaGain = Math.max(
+    0,
+    Number.isFinite(rawStamina ?? 0) ? (rawStamina ?? 0) : 0
+  )
+  const moodGain = Math.max(
+    0,
+    Number.isFinite(rawMood ?? 0) ? (rawMood ?? 0) : 0
+  )
 
   return executeClinicAction(state, payload, member => {
     const prevStamina = member.stamina || 0
@@ -162,7 +179,10 @@ export const handleClinicHeal = (state: GameState, payload: ClinicActionPayload)
  * @param {Object} [payload.successToast] - Optional toast on success.
  * @returns {Object} The updated game state.
  */
-export const handleBloodBankDonate = (state: GameState, payload?: BloodBankDonatePayload): GameState => {
+export const handleBloodBankDonate = (
+  state: GameState,
+  payload?: BloodBankDonatePayload
+): GameState => {
   if (!state.player || !state.band || !state.social) {
     logger.warn(
       'ClinicReducer',
@@ -171,7 +191,12 @@ export const handleBloodBankDonate = (state: GameState, payload?: BloodBankDonat
     return state
   }
 
-  const safePayload = payload || { moneyGain: 0, harmonyCost: 0, staminaCost: 0, controversyGain: 0 }
+  const safePayload = payload || {
+    moneyGain: 0,
+    harmonyCost: 0,
+    staminaCost: 0,
+    controversyGain: 0
+  }
   const rawMoneyGain = Number(safePayload.moneyGain)
   const moneyGain = Number.isFinite(rawMoneyGain)
     ? Math.max(0, rawMoneyGain)
@@ -254,10 +279,11 @@ export const handleBloodBankDonate = (state: GameState, payload?: BloodBankDonat
       ...(state.toasts || []),
       {
         ...successToast,
-        id: successToast.id || 'blood-bank-donate',
-        type: successToast.type || 'success',
         options: {
-          ...((successToast as Record<string, unknown>).options as Record<string, unknown>) || {},
+          ...(((successToast as Record<string, unknown>).options as Record<
+            string,
+            unknown
+          >) || {}),
           deltaMoney,
           deltaHarmony,
           deltaControversy,
@@ -279,7 +305,10 @@ export const handleBloodBankDonate = (state: GameState, payload?: BloodBankDonat
  * @param {string} payload.trait - The trait to add or upgrade.
  * @returns {Object} The updated game state.
  */
-export const handleClinicEnhance = (state: GameState, payload: ClinicActionPayload): GameState => {
+export const handleClinicEnhance = (
+  state: GameState,
+  payload: ClinicActionPayload
+): GameState => {
   const { trait, memberId } = payload
 
   if (!trait) {
@@ -305,7 +334,14 @@ export const handleClinicEnhance = (state: GameState, payload: ClinicActionPaylo
         break
       }
     }
-    if (targetMember && targetMember.traits && Object.hasOwn(targetMember.traits as Record<string, unknown>, resolvedTrait.id)) {
+    if (
+      targetMember &&
+      targetMember.traits &&
+      Object.hasOwn(
+        targetMember.traits as Record<string, unknown>,
+        resolvedTrait.id
+      )
+    ) {
       logger.debug(
         'ClinicReducer',
         `Member ${memberId} already has trait ${resolvedTrait.id}, skipping`
