@@ -29,6 +29,7 @@ export const OverworldMenu = React.memo(
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
+              id='overworld-menu-panel'
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -134,6 +135,8 @@ export const OverworldMenu = React.memo(
           disabled={isTraveling}
           variant='primary'
           size='sm'
+          aria-expanded={isMenuOpen}
+          aria-controls='overworld-menu-panel'
         >
           {isMenuOpen
             ? `[${t('ui:menu.close', { defaultValue: 'CLOSE MENU' })}]`

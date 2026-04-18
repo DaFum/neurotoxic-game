@@ -174,6 +174,8 @@ export const HUD = () => {
             <button
               type='button'
               onClick={() => setShowHelp(prev => !prev)}
+              aria-expanded={showHelp}
+              aria-controls='shortcuts-panel'
               aria-label={t('ui:aria.shortcutsHelp', {
                 defaultValue: 'Toggle keyboard shortcuts help'
               })}
@@ -190,7 +192,7 @@ export const HUD = () => {
 
         {/* Keyboard Shortcuts Overlay */}
         {showHelp && (
-          <div className='pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_var(--color-toxic-green-20)] w-52'>
+          <div id='shortcuts-panel' className='pointer-events-auto bg-void-black/95 border border-toxic-green p-3 shadow-[0_0_12px_var(--color-toxic-green-20)] w-52'>
             <div className='text-[10px] text-toxic-green tracking-widest uppercase mb-2 border-b border-toxic-green/30 pb-1'>
               {t('ui:keyboardShortcuts', {
                 defaultValue: 'Keyboard Shortcuts'
