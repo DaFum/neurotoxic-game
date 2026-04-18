@@ -86,7 +86,7 @@ DealImage.propTypes = {
   name: PropTypes.string.isRequired
 }
 
-const DealInfo = memo(({ displayDeal, isRevoked, brandReputation }) => {
+const DealInfo = memo(({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
   const { t } = useTranslation()
 
   return (
