@@ -26,13 +26,16 @@ export const AMP_CALIBRATION_TOLERANCE = 50
 
 export const DEFAULT_MINIGAME_STATE = {
   active: false,
-  type: null as string | null,
+  type: null,
   targetDestination: null,
   gigId: null,
   equipmentRemaining: 0,
   accumulatedDamage: 0,
   score: 0
-}
+} as const satisfies Record<
+  keyof MinigameState,
+  MinigameState[keyof MinigameState]
+>
 
 export const DEFAULT_EQUIPMENT_COUNT = 10
 
