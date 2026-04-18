@@ -135,11 +135,16 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           defaultStash[item.id] = copy
         }
         return defaultStash
-      } else if (loadedBand?.stash && typeof loadedBand.stash === 'object') {
+      } else if (
+        typeof bandData.stash === 'object' &&
+        bandData.stash !== null &&
+        !Array.isArray(bandData.stash)
+      ) {
         const migrated = Object.create(null)
-        for (const id in loadedBand.stash) {
-          if (!Object.hasOwn(loadedBand.stash, id)) continue
-          const item = loadedBand.stash[id]
+        const stashObj = bandData.stash as Record<string, unknown>
+        for (const id in stashObj) {
+          if (!Object.hasOwn(stashObj, id)) continue
+          const item = stashObj[id]
           const baseItem = CONTRABAND_BY_ID.get(id)
           if (!baseItem) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
