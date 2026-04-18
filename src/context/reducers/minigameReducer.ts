@@ -40,7 +40,10 @@ export const handleStartTravelMinigame = (state: GameState, payload: { targetNod
   }
 }
 
-export const handleCompleteTravelMinigame = (state, payload) => {
+export const handleCompleteTravelMinigame = (
+  state: GameState,
+  payload: { damageTaken: number; itemsCollected: unknown[]; rngValue?: number; contrabandId?: string; instanceId?: string }
+): GameState => {
   const { damageTaken, itemsCollected, rngValue, contrabandId, instanceId } =
     payload
   logger.info('GameState', 'Travel Minigame Complete', payload)
