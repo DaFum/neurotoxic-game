@@ -231,7 +231,13 @@ export const useRhythmGameScoring = ({
   const handleHit = useCallback(
     (laneIndex: number) => {
       const state = gameStateRef.current
-      if (laneIndex < 0 || laneIndex >= state.lanes.length) return false
+      if (
+        !Number.isInteger(laneIndex) ||
+        laneIndex < 0 ||
+        laneIndex >= state.lanes.length
+      ) {
+        return false
+      }
       // Use Tone.js AudioContext clock for hit detection
       const elapsed = getGigTimeMs()
       const toxicModeActive = state.isToxicMode
@@ -253,8 +259,9 @@ export const useRhythmGameScoring = ({
         const originalNote = note.originalNote
         if (
           originalNote &&
-          typeof originalNote.p === 'number' &&
-          Number.isFinite(originalNote.p)
+          Number.isInteger(originalNote.p) &&
+          originalNote.p >= 0 &&
+          originalNote.p <= 127
         ) {
           const velocity =
             typeof originalNote.velocity === 'number' &&

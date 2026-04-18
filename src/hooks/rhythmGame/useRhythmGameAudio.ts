@@ -108,7 +108,7 @@ export const useRhythmGameAudio = ({
    */
   const initializeGigState = useCallback(async () => {
     // Prevent concurrent initialization
-    if (isInitializingRef.current) {
+    if (isInitializingRef.current || hasInitializedRef.current) {
       return
     }
     const ctx = latestContextRef.current
@@ -158,8 +158,6 @@ export const useRhythmGameAudio = ({
         setAudioReady(false)
         return
       }
-      setAudioReady(true)
-      hasInitializedRef.current = true
 
       // Reset cross-song tracking state for a new gig
       resetGigStateTracking(gameStateRef)
@@ -174,6 +172,9 @@ export const useRhythmGameAudio = ({
           'RhythmGame',
           'Missing gameMap nodes or current player node before gig physics setup'
         )
+        if (hasInitializedRef.current) {
+          setAudioReady(false)
+        }
         hasInitializedRef.current = false
         return
       }
@@ -187,6 +188,9 @@ export const useRhythmGameAudio = ({
         typeof setlistFirstId === 'string' ? setlistFirstId : undefined
       )
       if (!physicsSetup) {
+        if (hasInitializedRef.current) {
+          setAudioReady(false)
+        }
         hasInitializedRef.current = false
         return
       }
@@ -205,6 +209,8 @@ export const useRhythmGameAudio = ({
       }
 
       if (!isAborted()) {
+        setAudioReady(true)
+        hasInitializedRef.current = true
         await playSongSequence(
           0,
           activeSetlist,
@@ -248,7 +254,7 @@ export const useRhythmGameAudio = ({
         stopAudio()
       }
     }
-  }, [initializeGigState])
+  }, [initializeGigState, gameMap, player?.currentNodeId])
 
   const retryAudioInitialization = useCallback(async () => {
     if (!isInitializingRef.current) {

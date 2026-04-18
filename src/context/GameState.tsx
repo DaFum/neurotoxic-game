@@ -17,7 +17,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { MapGenerator } from '../utils/mapGenerator'
-import { logger } from '../utils/logger'
+import { logger, LOG_LEVELS } from '../utils/logger'
 import { secureRandom } from '../utils/crypto'
 import { pickRandomContraband } from '../utils/contrabandUtils'
 import {
@@ -167,11 +167,15 @@ type GameDispatchActions = {
   completeAmpCalibration: (
     payload: Parameters<typeof createCompleteAmpCalibrationAction>[0]
   ) => void
-  unlockTrait: (payload: Parameters<typeof createUnlockTraitAction>[0]) => void
+  unlockTrait: (
+    memberId: Parameters<typeof createUnlockTraitAction>[0],
+    traitId: Parameters<typeof createUnlockTraitAction>[1]
+  ) => void
   endGig: () => void
   addQuest: (payload: Parameters<typeof createAddQuestAction>[0]) => void
   advanceQuest: (
-    payload: Parameters<typeof createAdvanceQuestAction>[0]
+    questId: Parameters<typeof createAdvanceQuestAction>[0],
+    progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
   ) => void
   addVenueBlacklist: (
     payload: Parameters<typeof createAddVenueBlacklistAction>[0]
@@ -429,12 +433,17 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
       const numericLogLevel = Number(state.settings.logLevel)
-      if (Number.isFinite(numericLogLevel)) {
+      if (
+        Number.isFinite(numericLogLevel) &&
+        Number.isInteger(numericLogLevel) &&
+        numericLogLevel >= LOG_LEVELS.DEBUG &&
+        numericLogLevel <= LOG_LEVELS.NONE
+      ) {
         logger.setLevel(numericLogLevel)
       } else {
         logger.warn(
           'GameState',
-          'Rejected persisted non-finite logLevel from settings',
+          'Rejected persisted invalid logLevel from settings',
           state.settings.logLevel
         )
       }

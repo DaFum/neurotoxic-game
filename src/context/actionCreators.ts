@@ -63,9 +63,12 @@ export const createUpdatePlayerAction = (
     typeof updates === 'object' &&
     Object.hasOwn(updates, 'money')
   ) {
+    const moneyValue = (updates as { money?: unknown }).money
     safeUpdates = {
       ...updates,
-      money: clampPlayerMoney((updates as { money?: number }).money ?? 0)
+      ...(typeof moneyValue === 'number'
+        ? { money: clampPlayerMoney(moneyValue) }
+        : {})
     }
   }
   return {
@@ -95,9 +98,12 @@ export const createUpdateBandAction = (
     typeof updates === 'object' &&
     Object.hasOwn(updates, 'harmony')
   ) {
+    const harmonyValue = (updates as { harmony?: unknown }).harmony
     safeUpdates = {
       ...updates,
-      harmony: clampBandHarmony((updates as { harmony?: number }).harmony ?? 1)
+      ...(typeof harmonyValue === 'number'
+        ? { harmony: clampBandHarmony(harmonyValue) }
+        : {})
     }
   }
   return {
