@@ -1,4 +1,10 @@
-import type { EventOption, GameState, MapNode, PlayerState, BandMember } from './game'
+import type {
+  EventOption,
+  GameState,
+  MapNode,
+  PlayerState,
+  BandMember
+} from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 
 /**
@@ -207,7 +213,7 @@ export interface TravelingVanProps {
   onTravelComplete: () => void
 }
 
-export interface CompletePhasProps {
+export interface CompletePhaseProps {
   result: {
     success: boolean
     message: string
