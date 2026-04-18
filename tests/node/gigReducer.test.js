@@ -94,7 +94,7 @@ describe('gigReducer', () => {
     })
 
     it('should handle venue blacklisting on terrible reputation', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1' }
       baseState.reputationByRegion['venues:some_venue'] = -25
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
