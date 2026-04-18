@@ -350,7 +350,7 @@ export const handleAddToast = (state: GameState, payload: ToastPayload): GameSta
   return { ...state, toasts: [...state.toasts, payload] }
 }
 
-export const handleRemoveToast = (state, payload) => {
+export const handleRemoveToast = (state: GameState, payload: { toastId: string }): GameState => {
   return {
     ...state,
     toasts: state.toasts.filter(t => t.id !== payload)
