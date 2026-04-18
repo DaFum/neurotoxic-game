@@ -224,6 +224,7 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
           acc.push({
             ...toastObj,
             id: String(toastObj.id),
+            message,
             type: ['success', 'error', 'warning', 'info'].includes(
               String(toastObj.type)
             )
