@@ -650,7 +650,7 @@ export const generateBrandOffers = (
   }
 
   // Filter available deals
-  const eligibleDeals: Array<Record<string, any>> = []
+  const eligibleDeals: Array<Record<string, unknown>> = []
   for (const deal of BRAND_DEALS_BY_ID.values()) {
     // Check followers
     if (totalFollowers < deal.requirements.followers) continue
@@ -711,7 +711,7 @@ export const generateBrandOffers = (
   // Rep 50 -> +15% chance. Rep 100 -> +30% chance.
   // Negative reputation reduces chance? Assuming reputation is 0-100 based on validation, but logic might allow negative?
 
-  const pool: Array<Record<string, any>> = [...eligibleDeals]
+  const pool: Array<Record<string, unknown>> = [...eligibleDeals]
 
   // Partial Fisher-Yates inline to lazily yield random items without a full array shuffle.
   // We only swap elements as we evaluate them, stopping as soon as 2 offers are found.
