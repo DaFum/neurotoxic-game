@@ -34,7 +34,7 @@ export const handleSetGig = (
 }
 
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
-  logger.info('GameState', 'Starting Gig Sequence', payload?.name)
+  logger.info('GameState', 'Starting Gig Sequence', payload.name)
   return {
     ...state,
     currentGig: payload,

@@ -1,62 +1,83 @@
 // TODO: Review this file
+import type * as Tone from 'tone'
+
 /**
  * Shared mutable state for the audio engine.
  */
+type Nullable<T> = T | null
+
+type DrumKitSynth = {
+  kick: Nullable<Tone.MembraneSynth>
+  snare: Nullable<Tone.NoiseSynth>
+  hihat: Nullable<Tone.MetalSynth>
+  crash: Nullable<Tone.MetalSynth>
+}
+
+type InstrumentSynth = Tone.PolySynth | Tone.Synth
+type TonePart = Tone.Part<unknown>
+type ToneSequence = Tone.Sequence<string[]>
+type BufferSource = AudioBufferSourceNode
+type GigEndInfo = {
+  filename: string | null
+  durationMs: number | null
+  offsetMs: number
+}
+
 export const audioState = {
   // Instruments
-  guitar: null as unknown,
-  bass: null as unknown,
-  drumKit: null as unknown,
-  loop: null as unknown,
-  part: null as unknown,
-  midiParts: [] as unknown[],
-  sfxSynth: null as unknown,
-  sfxGain: null as unknown,
-  musicGain: null as unknown,
-  masterLimiter: null as unknown,
-  masterComp: null as unknown,
-  reverb: null as unknown,
-  reverbSend: null as unknown,
-  distortion: null as unknown,
-  guitarChorus: null as unknown,
-  guitarEq: null as unknown,
-  widener: null as unknown,
-  bassEq: null as unknown,
-  bassComp: null as unknown,
-  drumBus: null as unknown,
-  midiDryBus: null as unknown,
-  midiLead: null as unknown,
-  midiBass: null as unknown,
-  midiDrumKit: null as unknown,
-  midiReverb: null as unknown,
-  midiReverbSend: null as unknown,
+  guitar: null as Nullable<Tone.PolySynth>,
+  bass: null as Nullable<Tone.PolySynth>,
+  drumKit: null as Nullable<DrumKitSynth>,
+  loop: null as Nullable<ToneSequence>,
+  part: null as Nullable<TonePart>,
+  midiParts: [] as TonePart[],
+  sfxSynth: null as Nullable<InstrumentSynth>,
+  sfxGain: null as Nullable<Tone.Gain>,
+  musicGain: null as Nullable<Tone.Gain>,
+  masterLimiter: null as Nullable<Tone.Limiter>,
+  masterComp: null as Nullable<Tone.Compressor>,
+  reverb: null as Nullable<Tone.Reverb>,
+  reverbSend: null as Nullable<Tone.Gain>,
+  distortion: null as Nullable<Tone.Distortion>,
+  guitarChorus: null as Nullable<Tone.Chorus>,
+  guitarEq: null as Nullable<Tone.EQ3>,
+  widener: null as Nullable<Tone.StereoWidener>,
+  bassEq: null as Nullable<Tone.EQ3>,
+  bassComp: null as Nullable<Tone.Compressor>,
+  drumBus: null as Nullable<Tone.Gain>,
+  midiDryBus: null as Nullable<Tone.Gain>,
+  midiLead: null as Nullable<Tone.PolySynth>,
+  midiBass: null as Nullable<Tone.PolySynth>,
+  midiDrumKit: null as Nullable<DrumKitSynth>,
+  midiReverb: null as Nullable<Tone.Reverb>,
+  midiReverbSend: null as Nullable<Tone.Gain>,
 
   // State flags & IDs
   isSetup: false,
   playRequestId: 0,
-  transportEndEventId: null as unknown,
-  transportStopEventId: null as unknown,
+  transportEndEventId: null as Nullable<number>,
+  transportStopEventId: null as Nullable<number>,
 
   // Gig Playback State
-  gigSource: null as unknown,
-  gigBuffer: null as unknown,
-  gigFilename: null as unknown,
-  gigStartCtxTime: null as unknown,
+  gigSource: null as Nullable<BufferSource>,
+  gigBuffer: null as Nullable<AudioBuffer>,
+  gigFilename: null as Nullable<string>,
+  gigStartCtxTime: null as Nullable<number>,
   gigSeekOffsetMs: 0,
   gigBaseOffsetMs: 0,
-  gigDurationMs: null as unknown,
-  gigOnEnded: null as unknown,
+  gigDurationMs: null as Nullable<number>,
+  gigOnEnded: null as Nullable<(args: GigEndInfo) => void>,
   gigIsPaused: false,
 
   // Cache & Asset State
-  audioBufferCache: new Map(),
+  audioBufferCache: new Map<string, AudioBuffer>(),
   currentCacheByteSize: 0,
-  ambientSource: null as unknown,
+  ambientSource: null as Nullable<BufferSource>,
 
   // Setup/Rebuild Locks
-  setupLock: null as unknown,
-  setupError: null as unknown,
-  rebuildLock: null as unknown
+  setupLock: null as Nullable<Promise<void>>,
+  setupError: null as Nullable<unknown>,
+  rebuildLock: null as Nullable<Promise<void>>
 }
 
 /**

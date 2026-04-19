@@ -197,11 +197,33 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.modifiers = physicsSetup.mergedModifiers
       gameStateRef.current.speed = physicsSetup.speed
-      // Invariant: gameStateRef initializes exactly three lanes in rhythmGameStateFactory.
-      // Invariant: setupGigPhysics always returns exactly three hit windows.
-      gameStateRef.current.lanes[0]!.hitWindow = physicsSetup.hitWindows[0]!
-      gameStateRef.current.lanes[1]!.hitWindow = physicsSetup.hitWindows[1]!
-      gameStateRef.current.lanes[2]!.hitWindow = physicsSetup.hitWindows[2]!
+      const lanes = gameStateRef.current?.lanes
+      const hitWindows = physicsSetup.hitWindows
+      if (!Array.isArray(lanes) || lanes.length < 3) {
+        throw new Error('Rhythm game lanes are not initialized correctly')
+      }
+      if (!Array.isArray(hitWindows) || hitWindows.length < 3) {
+        throw new Error('Gig physics hit windows are not initialized correctly')
+      }
+      const lane0 = lanes[0]
+      const lane1 = lanes[1]
+      const lane2 = lanes[2]
+      const hitWindow0 = hitWindows[0]
+      const hitWindow1 = hitWindows[1]
+      const hitWindow2 = hitWindows[2]
+      if (!lane0 || !lane1 || !lane2) {
+        throw new Error('Rhythm game lane entries are missing')
+      }
+      if (
+        typeof hitWindow0 !== 'number' ||
+        typeof hitWindow1 !== 'number' ||
+        typeof hitWindow2 !== 'number'
+      ) {
+        throw new Error('Gig physics hit window values are invalid')
+      }
+      lane0.hitWindow = hitWindow0
+      lane1.hitWindow = hitWindow1
+      lane2.hitWindow = hitWindow2
 
       const activeSetlist = resolveActiveSetlist(currentSetlist)
 

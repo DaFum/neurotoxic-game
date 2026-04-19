@@ -94,21 +94,17 @@ export const handleCompleteTravelMinigame = (
     typeof targetNode.venue === 'object' && targetNode.venue !== null
       ? (targetNode.venue as Record<string, unknown>)
       : null
-  const normalizedVenueId =
+  const canonicalVenueId =
     normalizeVenueId(targetNode.venue) ??
     (typeof targetNode.venueId === 'string'
       ? normalizeVenueId(targetNode.venueId)
-      : null)
-  const resolvedLocation =
-    typeof venueObj?.name === 'string'
-      ? venueObj.name
-      : normalizedVenueId
-        ? `venues:${normalizedVenueId}.name`
-        : 'Unknown'
+      : typeof venueObj?.id === 'string'
+        ? normalizeVenueId(venueObj.id)
+        : null)
   const nextPlayer = {
     ...state.player,
     money: nextMoney,
-    location: resolvedLocation,
+    location: canonicalVenueId ?? 'Unknown',
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,
     van: {

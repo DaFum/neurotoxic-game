@@ -212,12 +212,14 @@ const processPurchaseUnlocks = (
     item,
     player,
     band,
+    social,
     playerPatch,
     bandPatch
   }: {
     item: PurchaseItem
     player: PlayerState
     band: BandState
+    social: SocialState
     playerPatch: PlayerPatch
     bandPatch: BandPatch
   },
@@ -241,7 +243,7 @@ const processPurchaseUnlocks = (
   const gearCount = getGearCount(nextBand.inventory, GEAR_LOOKUP)
 
   const purchaseUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social: {} },
+    { player: nextPlayer, band: nextBand, social },
     { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
   )
 
@@ -389,7 +391,7 @@ export const usePurchaseLogic = ({
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
-          { item, player, band, playerPatch, bandPatch },
+          { item, player, band, social, playerPatch, bandPatch },
           { updateBand, addToast, t }
         )
 

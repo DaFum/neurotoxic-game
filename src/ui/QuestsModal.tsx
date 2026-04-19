@@ -361,7 +361,7 @@ export const QuestsModal = ({
                     </div>
 
                     <p className='text-sm text-ash-gray mb-4 font-mono'>
-                      {t(quest.description)}
+                      {quest.description ? t(quest.description) : ''}
                     </p>
 
                     <div className='mb-3'>
@@ -384,17 +384,18 @@ export const QuestsModal = ({
                         {t('ui:quests.rewards')}
                       </span>
 
-                      {quest.moneyReward > 0 && (
-                        <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
-                          <IconCoin className='w-3 h-3' />{' '}
-                          {t('ui:quests.moneyReward', {
-                            amount: formatNumber(
-                              quest.moneyReward,
-                              i18n?.language
-                            )
-                          })}
-                        </span>
-                      )}
+                      {typeof quest.moneyReward === 'number' &&
+                        quest.moneyReward > 0 && (
+                          <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
+                            <IconCoin className='w-3 h-3' />{' '}
+                            {t('ui:quests.moneyReward', {
+                              amount: formatNumber(
+                                quest.moneyReward,
+                                i18n?.language
+                              )
+                            })}
+                          </span>
+                        )}
 
                       {quest.rewardType && (
                         <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono rounded'>

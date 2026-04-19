@@ -38,6 +38,18 @@ const isPlayerInCity = (state: GameState, citySlug: string) => {
   return location === citySlug || location.includes(`venues:${citySlug}`)
 }
 
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+const getInventoryAmount = (
+  inventory: Record<string, unknown> | undefined,
+  key: 'shirts' | 'hoodies'
+): number => {
+  if (!inventory || !Object.hasOwn(inventory, key)) return 0
+  const value = inventory[key]
+  return isFiniteNumber(value) ? value : 0
+}
+
 export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
   {
@@ -1936,13 +1948,13 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_294',
     weight: 6,
     condition: (state: GameState) =>
-      ((state.band.inventory?.shirts as number) ?? 0) < 10
+      getInventoryAmount(state.band.inventory, 'shirts') < 10
   },
   {
     text: 'chatter:standard.msg_295',
     weight: 6,
     condition: (state: GameState) =>
-      ((state.band.inventory?.hoodies as number) ?? 0) <= 0
+      getInventoryAmount(state.band.inventory, 'hoodies') <= 0
   },
 
   // --- CONDITION: GIG MODIFIERS ---

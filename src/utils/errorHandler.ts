@@ -268,28 +268,26 @@ const sanitizeContextPayload = (payload: unknown): Record<string, unknown> => {
   const visited = new WeakSet<object>()
 
   if (isPlainObject(payload)) {
-    const sanitized = sanitizeContextObject(payload, visited)
-    return typeof sanitized === 'string' ? { redacted: sanitized } : sanitized
+    return sanitizeContextObject(payload, visited) as Record<string, unknown>
   }
 
   if (payload instanceof Error) {
-    const sanitized = sanitizeContextObject(
+    return sanitizeContextObject(
       {
         name: payload.name,
         message: payload.message,
         stack: payload.stack
       },
       visited
-    )
-    return typeof sanitized === 'string' ? { redacted: sanitized } : sanitized
+    ) as Record<string, unknown>
   }
 
   if (payload !== null && typeof payload === 'object') {
-    const sanitized = sanitizeContextObject(
+    visited.add(payload)
+    return sanitizeContextObject(
       Object.assign({}, payload) as Record<string, unknown>,
       visited
-    )
-    return typeof sanitized === 'string' ? { redacted: sanitized } : sanitized
+    ) as Record<string, unknown>
   }
 
   return {}

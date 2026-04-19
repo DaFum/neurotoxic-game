@@ -25,15 +25,17 @@ export const MINIGAME_TYPES = {
 
 export const AMP_CALIBRATION_TOLERANCE = 50
 
-type DefaultMinigameState = Pick<
-  MinigameState,
-  | 'active'
-  | 'type'
-  | 'targetDestination'
-  | 'gigId'
-  | 'equipmentRemaining'
-  | 'accumulatedDamage'
-  | 'score'
+type DefaultMinigameState = Required<
+  Pick<
+    MinigameState,
+    | 'active'
+    | 'type'
+    | 'targetDestination'
+    | 'gigId'
+    | 'equipmentRemaining'
+    | 'accumulatedDamage'
+    | 'score'
+  >
 >
 
 export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {

@@ -287,34 +287,47 @@ const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
   const minigameObj = rawMinigame as Record<string, unknown>
   const nextMinigame = { ...DEFAULT_MINIGAME_STATE }
 
-  if (typeof minigameObj.active === 'boolean') {
+  if (
+    Object.hasOwn(minigameObj, 'active') &&
+    typeof minigameObj.active === 'boolean'
+  ) {
     nextMinigame.active = minigameObj.active
   }
-  if (typeof minigameObj.type === 'string' || minigameObj.type === null) {
+  if (
+    Object.hasOwn(minigameObj, 'type') &&
+    (typeof minigameObj.type === 'string' || minigameObj.type === null)
+  ) {
     nextMinigame.type = minigameObj.type
   }
   if (
-    typeof minigameObj.targetDestination === 'string' ||
-    minigameObj.targetDestination === null
+    Object.hasOwn(minigameObj, 'targetDestination') &&
+    (typeof minigameObj.targetDestination === 'string' ||
+      minigameObj.targetDestination === null)
   ) {
     nextMinigame.targetDestination = minigameObj.targetDestination
   }
-  if (typeof minigameObj.gigId === 'string' || minigameObj.gigId === null) {
+  if (
+    Object.hasOwn(minigameObj, 'gigId') &&
+    (typeof minigameObj.gigId === 'string' || minigameObj.gigId === null)
+  ) {
     nextMinigame.gigId = minigameObj.gigId
   }
   if (
+    Object.hasOwn(minigameObj, 'equipmentRemaining') &&
     typeof minigameObj.equipmentRemaining === 'number' &&
     Number.isFinite(minigameObj.equipmentRemaining)
   ) {
     nextMinigame.equipmentRemaining = minigameObj.equipmentRemaining
   }
   if (
+    Object.hasOwn(minigameObj, 'accumulatedDamage') &&
     typeof minigameObj.accumulatedDamage === 'number' &&
     Number.isFinite(minigameObj.accumulatedDamage)
   ) {
     nextMinigame.accumulatedDamage = minigameObj.accumulatedDamage
   }
   if (
+    Object.hasOwn(minigameObj, 'score') &&
     typeof minigameObj.score === 'number' &&
     Number.isFinite(minigameObj.score)
   ) {
