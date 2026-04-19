@@ -283,6 +283,12 @@ export interface MerchPressPayload {
   [key: string]: unknown
 }
 
+
+export interface LastGigStats {
+  score?: number
+  misses?: number
+  [key: string]: unknown
+}
 export interface GameState {
   version: number
   currentScene: GamePhase
@@ -292,7 +298,7 @@ export interface GameState {
   gameMap: GameMap | null
   currentGig: Venue | null
   setlist: RhythmSetlistEntry[]
-  lastGigStats: UnknownRecord | null
+  lastGigStats: LastGigStats | null
   activeEvent: GameEvent | null
   pendingEvents: string[]
   isScreenshotMode: boolean
