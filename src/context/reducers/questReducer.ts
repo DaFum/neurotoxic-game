@@ -188,8 +188,11 @@ export const handleAdvanceQuest = (
 
   nextState.activeQuests = nextState.activeQuests.map(q => {
     if (q.id === questId) {
-      const required = q.required ?? 0
+      const required = q.required
       const progress = q.progress ?? 0
+      if (typeof required !== 'number') {
+        return q
+      }
       const newProgress = Math.min(required, progress + (amount ?? 1))
       if (newProgress >= required) {
         questCompleted = true
