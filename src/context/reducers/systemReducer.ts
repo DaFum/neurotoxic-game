@@ -301,7 +301,11 @@ export const handleLoadGame = (
   const rawVersion =
     loadedState.version !== undefined ? loadedState.version : state.version
   const parsedVersion =
-    typeof rawVersion === 'string' ? Number.parseInt(rawVersion, 10) : NaN
+    typeof rawVersion === 'number'
+      ? rawVersion
+      : typeof rawVersion === 'string'
+        ? Number.parseInt(rawVersion, 10)
+        : NaN
   const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
 
   const safeState = {
