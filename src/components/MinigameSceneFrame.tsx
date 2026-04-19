@@ -5,7 +5,6 @@
  */
 // TODO: Review this file
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
@@ -45,7 +44,7 @@ export const MinigameSceneFrame = ({
   }, [uiState?.isGameOver])
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent | ReactKeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
       } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
