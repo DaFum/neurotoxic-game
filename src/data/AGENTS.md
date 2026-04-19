@@ -19,3 +19,9 @@ Applies to `src/data/**`.
 ## Migration Rules
 
 - Keep schema shape backward compatible for save/test fixtures.
+
+## Nested TypeScript Notes
+
+- Keep event/data module contracts stable; do not rename IDs or shape keys without migration support.
+- Annotate condition callbacks explicitly (`(state: GameState) => ...`) in data event pools to avoid implicit-`any` failures in CheckJS.
+- Use narrow literal unions/const assertions for category/type fields to preserve downstream type narrowing.

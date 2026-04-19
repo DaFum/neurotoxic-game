@@ -100,7 +100,7 @@ export interface MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps {
-  controllerFactory: (options: unknown) => PixiController
+  controllerFactory?: (options: unknown) => PixiController
   logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void

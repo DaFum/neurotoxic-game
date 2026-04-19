@@ -23,3 +23,9 @@ Applies to `src/types/**`.
 
 - Favor additive, backward-compatible edits. Breaking a contract requires updating `actionTypes`, reducer handling, and `actionCreators` in the same PR.
 - Avoid re-exporting third-party types wholesale — re-exports leak dependency surface and defeat tree-shaking.
+
+## Nested TypeScript Notes
+
+- `src/types/**` remains the cross-domain contract source; consumers must import and reuse these contracts instead of recreating local structural clones.
+- If optionality changes in a shared type, update corresponding runtime validators/PropTypes and affected tests in the same PR.
+- Prefer additive, backward-compatible contract evolution; breaking field changes require coordinated reducer/action updates.

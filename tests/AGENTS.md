@@ -17,3 +17,9 @@ Applies to `tests/**`.
 - For `react-i18next` mocks, include:
   `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Populate lookup maps (e.g., `SONGS_BY_ID`) explicitly in mocked fixture data when tests depend on ID resolution.
+
+## Nested TypeScript Notes
+
+- Build fixtures using canonical state keys (for example, settings whitelist keys) so tests mirror runtime sanitizers.
+- Add regression assertions when optionality changes in shared types (for example, optional props and fallback behavior).
+- Prefer explicit helper return types in reusable test utilities to prevent silent `any` leakage into assertions.

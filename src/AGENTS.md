@@ -22,3 +22,9 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 
 - `useArrivalLogic` owns arrival routing and scene transitions after travel completion.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must stay reactive-only (no direct PIXI imports).
+
+## Nested TypeScript Notes
+
+- In `src/**`, keep strict CheckJS discipline: no `@ts-nocheck`, no `any`, and use `import type` for type-only imports.
+- When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
+- For domains inside `jsconfig.checkjs.json`, guard indexed access and optional fields explicitly (`noUncheckedIndexedAccess`).

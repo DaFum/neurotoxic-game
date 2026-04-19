@@ -13,3 +13,9 @@ Applies to `src/assets/**`.
 ## Migration Rules
 
 - If asset path conventions change, update all loaders/tests in the same PR.
+
+## Nested TypeScript Notes
+
+- Keep asset metadata interfaces narrow and explicit; avoid loosely typed loader payloads.
+- If asset key/path conventions change, update typed import maps and all consuming loaders/tests together.
+- Prefer additive metadata fields over repurposing existing keys to preserve backward compatibility with save fixtures and tests.

@@ -23,3 +23,9 @@ Applies to `src/utils/audio/**`.
 ## Change Rules
 
 - Keep conversions behavior-preserving; separate refactors from type-shape changes.
+
+## Nested TypeScript Notes
+
+- Guard array/map index access in audio timing/note pipelines (`noUncheckedIndexedAccess`) before reading properties.
+- Reuse shared audio/rhythm contracts from `src/types/audio.d.ts` and `src/types/rhythmGame`; do not define local duplicate shapes.
+- Keep time/unit fields explicit (`ms`, beats, ticks) in type names or comments to prevent subtle conversion bugs.

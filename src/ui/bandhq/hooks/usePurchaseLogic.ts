@@ -414,7 +414,7 @@ export const usePurchaseLogic = ({
         return false
       }
     },
-    [player, band, updatePlayer, updateBand, addToast, t]
+    [player, band, social, updatePlayer, updateBand, addToast, t]
   )
 
   /**
