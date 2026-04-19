@@ -19,7 +19,8 @@ Applies to `src/scenes/**`.
 
 - Convert scene typing incrementally, validating each scene cluster with targeted UI tests.
 
-## Nested TypeScript Hinweise
+## Nested TypeScript Notes
 
-- Scene-Props eng typisieren und Routing-/Phase-Strings aus zentralen Constants beziehen.
-- Keine lokalen Struktur-Duplikate für `GameState`-Teile; stattdessen Shared Types importieren.
+- Scene transitions should use central constants/unions (not ad-hoc string literals) to preserve reducer safety.
+- Avoid duplicating `GameState`-like scene-local shapes; import shared contracts from `src/types`.
+- When scene payload contracts change, update related action creators and scene tests together.

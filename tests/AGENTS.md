@@ -18,7 +18,8 @@ Applies to `tests/**`.
   `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Populate lookup maps (e.g., `SONGS_BY_ID`) explicitly in mocked fixture data when tests depend on ID resolution.
 
-## Nested TypeScript Hinweise
+## Nested TypeScript Notes
 
-- Bei Test-Fixtures nur erlaubte Keys setzen (z. B. `settings`-Whitelist), damit CheckJS- und Sanitizer-Tests aussagekräftig bleiben.
-- Typ-/Runtime-Verträge gemeinsam testen: Wenn Props optional werden, Assertions für Fallback-Pfade ergänzen.
+- Build fixtures using canonical state keys (for example, settings whitelist keys) so tests mirror runtime sanitizers.
+- Add regression assertions when optionality changes in shared types (for example, optional props and fallback behavior).
+- Prefer explicit helper return types in reusable test utilities to prevent silent `any` leakage into assertions.

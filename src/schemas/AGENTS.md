@@ -14,7 +14,8 @@ Applies to `src/schemas/**`.
 
 - When updating schema typing, ensure consuming validators and tests remain in sync.
 
-## Nested TypeScript Hinweise
+## Nested TypeScript Notes
 
-- Schema-Änderungen sind Contract-Änderungen: zugehörige Typen und Validierungs-Tests zusammen aktualisieren.
-- Bei optionalen Feldern nullish-sicher modellieren (`??`), damit `0`/`''` als gültige Werte erhalten bleiben.
+- Treat schema files as contract sources: when a schema changes, update inferred/declared TypeScript types and validator tests in the same PR.
+- Preserve nullish semantics in optional schema fields (`??` patterns) so valid falsy values are not lost.
+- Keep schema helpers declarative and strongly typed; avoid embedding app-level side effects in schema modules.

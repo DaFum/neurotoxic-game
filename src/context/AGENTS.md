@@ -29,7 +29,8 @@ Applies to `src/context/**`.
 
 - For type-only PRs, preserve serialized state keys and payload shapes (saves and tests depend on them).
 
-## Nested TypeScript Hinweise
+## Nested TypeScript Notes
 
-- Neue Actions immer als diskriminierte Union integrieren (`ActionTypes` + `Extract`-Creator + `assertNever`).
-- Reducer-Inputs aus untrusted Quellen nur über `Object.hasOwn()` und Whitelists übernehmen.
+- New actions must preserve discriminated union safety: update `ActionTypes`, action creators (`Extract<...>`), reducer handling, and `assertNever` coverage together.
+- For load/reset/update reducers, whitelist fields from untrusted payloads instead of spreading generic objects into state.
+- Keep runtime clamps and action payload types aligned so reducers remain predictable and testable.

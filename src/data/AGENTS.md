@@ -20,7 +20,8 @@ Applies to `src/data/**`.
 
 - Keep schema shape backward compatible for save/test fixtures.
 
-## Nested TypeScript Hinweise
+## Nested TypeScript Notes
 
-- Datenmodule bleiben schema-stabil: IDs und Feldnamen nicht ohne Migration ändern.
-- Event-`condition`-Signaturen explizit typisieren (`(state: GameState) => ...`), um CheckJS-`any`-Leaks zu vermeiden.
+- Keep event/data module contracts stable; do not rename IDs or shape keys without migration support.
+- Annotate condition callbacks explicitly (`(state: GameState) => ...`) in data event pools to avoid implicit-`any` failures in CheckJS.
+- Use narrow literal unions/const assertions for category/type fields to preserve downstream type narrowing.
