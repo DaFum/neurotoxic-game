@@ -1,4 +1,6 @@
 // TODO: Review this file
+import type { GameState } from '../../types/game'
+
 export const QUEST_EVENTS = [
   {
     id: 'quest_trigger_pick_of_destiny',
@@ -7,7 +9,8 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_pick_of_destiny.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: state => !state.activeQuests || state.activeQuests.length === 0,
+    condition: (state: GameState) =>
+      !state.activeQuests || state.activeQuests.length === 0,
     options: [
       {
         label: 'events:quest_trigger_pick_of_destiny.opt1.label',
@@ -41,7 +44,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_viral_dance.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: state =>
+    condition: (state: GameState) =>
       (!state.activeQuests || state.activeQuests.length === 0) &&
       (state.social?.tiktok || 0) < 5000,
     options: [
@@ -77,7 +80,8 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_sponsor_demand.desc',
     trigger: 'random',
     chance: 0.08,
-    condition: state => !state.activeQuests || state.activeQuests.length === 0,
+    condition: (state: GameState) =>
+      !state.activeQuests || state.activeQuests.length === 0,
     options: [
       {
         label: 'events:quest_trigger_sponsor_demand.opt1.label',
@@ -111,7 +115,7 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_harmony_project.desc',
     trigger: 'random',
     chance: 0.3, // High chance if condition is met, reduced to 0.3 to prevent spam
-    condition: state =>
+    condition: (state: GameState) =>
       (!state.activeQuests || state.activeQuests.length === 0) &&
       (state.band?.harmony || 0) < 60,
     options: [
@@ -147,7 +151,8 @@ export const QUEST_EVENTS = [
     description: 'events:quest_trigger_local_legend.desc',
     trigger: 'random',
     chance: 0.07,
-    condition: state => !state.activeQuests || state.activeQuests.length === 0,
+    condition: (state: GameState) =>
+      !state.activeQuests || state.activeQuests.length === 0,
     options: [
       {
         label: 'events:quest_trigger_local_legend.opt1.label',
