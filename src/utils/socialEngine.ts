@@ -493,7 +493,13 @@ export const generateBrandName = (
   alignment: string,
   rng: RandomFn = secureRandom
 ): string => {
-  const pick = (arr: string[]): string => arr[Math.floor(rng() * arr.length)]
+  const pick = (arr: string[]): string => {
+    const idx = Math.max(
+      0,
+      Math.min(arr.length - 1, Math.floor(rng() * arr.length))
+    )
+    return arr[idx] ?? arr[0] ?? ''
+  }
 
   if (alignment === BRAND_ALIGNMENTS.EVIL) {
     const prefixes = [
