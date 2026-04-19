@@ -6,7 +6,7 @@ import { getSafeRandom } from '../utils/crypto'
 import { hasTrait } from '../utils/traitLogic'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
-import type { GameState } from "../types/game";
+import type { GameState } from '../types/game'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -180,7 +180,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
-    condition: ({ player }: GameState) => player?.stats?.proveYourselfMode === true,
+    condition: ({ player }: GameState) =>
+      player?.stats?.proveYourselfMode === true,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -298,7 +299,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ lastGigStats }: any) => lastGigStats && lastGigStats.accuracy < 60,
+    condition: ({ lastGigStats }: GameState) =>
+      Boolean(lastGigStats) && (lastGigStats?.accuracy ?? 0) < 60,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -317,7 +319,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL],
-    condition: ({ activeEvent, gigEvents }: any) =>
+    condition: ({ activeEvent, gigEvents }: GameState) =>
       activeEvent?.id === 'stage_diver' ||
       (gigEvents && gigEvents.includes('stage_diver')),
     resolve: () => ({
@@ -374,7 +376,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
-    condition: ({ lastGigStats }: any) => lastGigStats && (lastGigStats?.score as number) < 5000,
+    condition: ({ lastGigStats }: GameState) =>
+      Boolean(lastGigStats) && (lastGigStats?.score ?? 0) < 5000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -444,7 +447,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
-    condition: ({ activeEvent }: any) =>
+    condition: ({ activeEvent }: GameState) =>
       activeEvent?.type === 'negative_travel' ||
       activeEvent?.id === 'van_breakdown', // Simplified condition based on recent event
     resolve: () => ({
@@ -644,7 +647,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
-    condition: ({ lastGigStats }: any) => lastGigStats && (lastGigStats?.score as number) > 15000,
+    condition: ({ lastGigStats }: GameState) =>
+      Boolean(lastGigStats) && (lastGigStats?.score ?? 0) > 15000,
     resolve: ({ social }: GameState) => {
       // Hype to Money mechanic (using loyalty as proxy for hype for now)
       const hypeCash = Math.min((social.loyalty || 0) * 10, 1000)
@@ -729,7 +733,11 @@ export const POST_OPTIONS = [
       }
       return false
     },
-    resolve: ({ social, player, diceRoll }: GameState & { diceRoll: number }) => {
+    resolve: ({
+      social,
+      player,
+      diceRoll
+    }: GameState & { diceRoll: number }) => {
       const influencers = social?.influencers || {}
 
       // Filter by affordability

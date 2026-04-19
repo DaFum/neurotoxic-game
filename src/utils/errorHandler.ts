@@ -235,9 +235,9 @@ const sanitizeContextValue = (
 const sanitizeContextObject = (
   context: Record<string, unknown>,
   visited: WeakSet<object>
-): Record<string, unknown> => {
+): Record<string, unknown> | '[REDACTED]' => {
   if (visited.has(context)) {
-    return { '[REDACTED]': true }
+    return '[REDACTED]'
   }
 
   visited.add(context)
