@@ -102,14 +102,18 @@ export const sanitizeLoadedToast = (
   }
 
   if (
-    Number.isFinite(toastObj.timeout as number) &&
-    (toastObj.timeout as number) >= 0
+    typeof toastObj.timeout === 'number' &&
+    Number.isFinite(toastObj.timeout) &&
+    toastObj.timeout >= 0
   ) {
-    safeToast.timeout = toastObj.timeout as number
+    safeToast.timeout = toastObj.timeout
   }
 
-  if (Number.isFinite(toastObj.createdAt as number)) {
-    safeToast.createdAt = toastObj.createdAt as number
+  if (
+    typeof toastObj.createdAt === 'number' &&
+    Number.isFinite(toastObj.createdAt)
+  ) {
+    safeToast.createdAt = toastObj.createdAt
   }
 
   return safeToast
