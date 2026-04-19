@@ -15,7 +15,12 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
-import type { DealImageProps, DealInfoProps, DealActionsProps, DealCardProps } from '../../types/components'
+import type {
+  DealImageProps,
+  DealInfoProps,
+  DealActionsProps,
+  DealCardProps
+} from '../../types/components'
 
 const getAlignmentImagePrompt = alignment => {
   switch (alignment) {
@@ -86,79 +91,81 @@ DealImage.propTypes = {
   name: PropTypes.string.isRequired
 }
 
-const DealInfo = memo(({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
-  const { t } = useTranslation()
+const DealInfo = memo(
+  ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
+    const { t } = useTranslation()
 
-  return (
-    <div className='flex-1'>
-      <div className='flex items-baseline gap-3'>
-        <div
-          className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
-        >
-          {displayDeal.name}
-        </div>
-        {displayDeal.alignment && (
-          <span
-            className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+    return (
+      <div className='flex-1'>
+        <div className='flex items-baseline gap-3'>
+          <div
+            className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
           >
-            {getAlignmentBadge(displayDeal.alignment)}
-          </span>
-        )}
-      </div>
+            {displayDeal.name}
+          </div>
+          {displayDeal.alignment && (
+            <span
+              className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+            >
+              {getAlignmentBadge(displayDeal.alignment)}
+            </span>
+          )}
+        </div>
 
-      <div className='text-xs text-ash-gray italic mb-2'>
-        {displayDeal.description}
-      </div>
-      <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
-        <div>
-          💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
-          {displayDeal.offer.upfront}€
+        <div className='text-xs text-ash-gray italic mb-2'>
+          {displayDeal.description}
         </div>
-        <div>
-          📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
-          {displayDeal.offer.duration}{' '}
-          {t('ui:deals.gigs', { defaultValue: 'Gigs' })}
+        <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
+          <div>
+            💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}:{' '}
+            {displayDeal.offer.upfront}€
+          </div>
+          <div>
+            📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}:{' '}
+            {displayDeal.offer.duration}{' '}
+            {t('ui:deals.gigs', { defaultValue: 'Gigs' })}
+          </div>
+          {displayDeal.offer.perGig && (
+            <div>
+              💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
+              {displayDeal.offer.perGig}€
+            </div>
+          )}
+          {displayDeal.offer.item && (
+            <div>
+              🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
+              {displayDeal.offer.item}
+            </div>
+          )}
+          {displayDeal.penalty && (
+            <div className='text-blood-red'>
+              ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
+              {Object.entries(displayDeal.penalty)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(', ')}
+            </div>
+          )}
         </div>
-        {displayDeal.offer.perGig && (
-          <div>
-            💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
-            {displayDeal.offer.perGig}€
-          </div>
-        )}
-        {displayDeal.offer.item && (
-          <div>
-            🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
-            {displayDeal.offer.item}
-          </div>
-        )}
-        {displayDeal.penalty && (
-          <div className='text-blood-red'>
-            ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
-            {Object.entries(displayDeal.penalty)
-              .map(([k, v]) => `${k}: ${v}`)
-              .join(', ')}
-          </div>
-        )}
-      </div>
 
-      {/* Reputation Status */}
-      {brandReputation?.[displayDeal.alignment] !== undefined && (
-        <div className='mt-2 text-[10px] text-ash-gray'>
-          {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
-          <span
-            className={
-              brandReputation[displayDeal.alignment] > 0
-                ? 'text-toxic-green'
-                : 'text-blood-red'
-            }
-          >
-            {brandReputation[displayDeal.alignment]}
-          </span>
-        </div>
-      )}
-    </div>
-  )
-})
+        {/* Reputation Status */}
+        {brandReputation?.[displayDeal.alignment] !== undefined && (
+          <div className='mt-2 text-[10px] text-ash-gray'>
+            {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
+            <span
+              className={
+                brandReputation[displayDeal.alignment] > 0
+                  ? 'text-toxic-green'
+                  : 'text-blood-red'
+              }
+            >
+              {brandReputation[displayDeal.alignment]}
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+)
 DealInfo.displayName = 'DealInfo'
 DealInfo.propTypes = {
   displayDeal: PropTypes.object.isRequired,

@@ -2,7 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 import type { PauseOverlayProps } from '../../../types/components'
 
-export const PauseOverlay = ({ isPaused, onResume, onQuit }: PauseOverlayProps) => {
+export const PauseOverlay = ({
+  isPaused,
+  onResume,
+  onQuit
+}: PauseOverlayProps) => {
   const { t } = useTranslation()
 
   if (!isPaused) return null

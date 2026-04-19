@@ -121,60 +121,65 @@ interface ChatterMessageLifetimeBarProps {
   barColorClass: string
 }
 
-const resolveMessageTextColor = (msgType: ChatterMessageType, currentScene: string): string => {
+const resolveMessageTextColor = (
+  msgType: ChatterMessageType,
+  currentScene: string
+): string => {
   if (msgType === 'hate' || currentScene === GAME_PHASES.GAMEOVER) {
     return 'text-star-white chromatic-text'
   }
   return 'text-star-white'
 }
 
-const ChatterMessageHeader = memo(({
-  sceneStyle,
-  sceneLabel,
-  speaker
-}: ChatterMessageHeaderProps) => (
-  <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
-    <div className='flex items-center gap-1.5'>
-      <span className='text-[10px]'>{sceneStyle.icon}</span>
+const ChatterMessageHeader = memo(
+  ({ sceneStyle, sceneLabel, speaker }: ChatterMessageHeaderProps) => (
+    <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
+      <div className='flex items-center gap-1.5'>
+        <span className='text-[10px]'>{sceneStyle.icon}</span>
+        <p
+          className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
+        >
+          {sceneLabel}
+        </p>
+      </div>
       <p
-        className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
+        className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
       >
-        {sceneLabel}
+        {speaker}
       </p>
     </div>
-    <p
-      className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
-    >
-      {speaker}
-    </p>
-  </div>
-))
+  )
+)
 
 ChatterMessageHeader.displayName = 'ChatterMessageHeader'
 
-const ChatterMessageBody = memo(({ text, textColorClass }: ChatterMessageBodyProps) => (
-  <div className='pl-3 pr-2 py-2.5'>
-    <p className={`text-xs leading-snug ${FONT_UI_CLASS} ${textColorClass}`}>
-      {text}
-    </p>
-  </div>
-))
+const ChatterMessageBody = memo(
+  ({ text, textColorClass }: ChatterMessageBodyProps) => (
+    <div className='pl-3 pr-2 py-2.5'>
+      <p className={`text-xs leading-snug ${FONT_UI_CLASS} ${textColorClass}`}>
+        {text}
+      </p>
+    </div>
+  )
+)
 
 ChatterMessageBody.displayName = 'ChatterMessageBody'
 
-const ChatterMessageLifetimeBar = memo(({ barColorClass }: ChatterMessageLifetimeBarProps) => (
-  <div className='h-[2px] w-full bg-ash-gray/10'>
-    <motion.div
-      className={`h-full ${barColorClass} opacity-40`}
-      initial={{ width: '100%' }}
-      animate={{ width: '0%' }}
-      transition={{
-        duration: MESSAGE_LIFETIME_MS / 1000,
-        ease: 'linear'
-      }}
-    />
-  </div>
-))
+const ChatterMessageLifetimeBar = memo(
+  ({ barColorClass }: ChatterMessageLifetimeBarProps) => (
+    <div className='h-[2px] w-full bg-ash-gray/10'>
+      <motion.div
+        className={`h-full ${barColorClass} opacity-40`}
+        initial={{ width: '100%' }}
+        animate={{ width: '0%' }}
+        transition={{
+          duration: MESSAGE_LIFETIME_MS / 1000,
+          ease: 'linear'
+        }}
+      />
+    </div>
+  )
+)
 
 ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
 

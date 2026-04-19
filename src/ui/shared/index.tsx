@@ -110,7 +110,10 @@ const SIZE_CLASSES: Record<string, string> = {
 
 type ProgressBarSize = 'sm' | 'md' | 'mini'
 
-interface ProgressBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'color'> {
+interface ProgressBarProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'color'
+> {
   label?: string
   value?: number
   max: number

@@ -25,7 +25,10 @@ import {
   DEFAULT_EQUIPMENT_COUNT
 } from '../gameConstants'
 
-export const handleStartTravelMinigame = (state: GameState, payload: { targetNodeId: string }): GameState => {
+export const handleStartTravelMinigame = (
+  state: GameState,
+  payload: { targetNodeId: string }
+): GameState => {
   const { targetNodeId } = payload
   logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
   return {
@@ -42,7 +45,13 @@ export const handleStartTravelMinigame = (state: GameState, payload: { targetNod
 
 export const handleCompleteTravelMinigame = (
   state: GameState,
-  payload: { damageTaken: number; itemsCollected: unknown[]; rngValue?: number; contrabandId?: string; instanceId?: string }
+  payload: {
+    damageTaken: number
+    itemsCollected: unknown[]
+    rngValue?: number
+    contrabandId?: string
+    instanceId?: string
+  }
 ): GameState => {
   const { damageTaken, itemsCollected, rngValue, contrabandId, instanceId } =
     payload
@@ -159,7 +168,10 @@ export const handleCompleteTravelMinigame = (
   return newState
 }
 
-export const handleStartRoadieMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleStartRoadieMinigame = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
   return {
@@ -175,7 +187,10 @@ export const handleStartRoadieMinigame = (state: GameState, payload: Record<stri
   }
 }
 
-export const handleStartAmpCalibration = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleStartAmpCalibration = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
   return {
@@ -190,7 +205,10 @@ export const handleStartAmpCalibration = (state: GameState, payload: Record<stri
   }
 }
 
-export const handleCompleteAmpCalibration = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleCompleteAmpCalibration = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { score } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
@@ -225,7 +243,10 @@ export const handleCompleteAmpCalibration = (state: GameState, payload: Record<s
   }
 }
 
-export const handleStartKabelsalatMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleStartKabelsalatMinigame = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
   return {
@@ -240,7 +261,10 @@ export const handleStartKabelsalatMinigame = (state: GameState, payload: Record<
   }
 }
 
-export const handleCompleteKabelsalatMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleCompleteKabelsalatMinigame = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
@@ -278,7 +302,10 @@ export const handleCompleteKabelsalatMinigame = (state: GameState, payload: Reco
   }
 }
 
-export const handleCompleteRoadieMinigame = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleCompleteRoadieMinigame = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { equipmentDamage } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
