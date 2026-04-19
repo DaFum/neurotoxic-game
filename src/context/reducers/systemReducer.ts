@@ -233,6 +233,27 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
+const sanitizeSettingsPayload = (
+  rawSettings: Record<string, unknown>
+): Partial<GameSettings> => {
+  const sanitized: Partial<GameSettings> = {}
+
+  if (typeof rawSettings.crtEnabled === 'boolean') {
+    sanitized.crtEnabled = rawSettings.crtEnabled
+  }
+  if (typeof rawSettings.tutorialSeen === 'boolean') {
+    sanitized.tutorialSeen = rawSettings.tutorialSeen
+  }
+  if (
+    typeof rawSettings.logLevel === 'number' &&
+    Number.isFinite(rawSettings.logLevel)
+  ) {
+    sanitized.logLevel = Math.floor(rawSettings.logLevel)
+  }
+
+  return sanitized
+}
+
 const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return ''
 
@@ -455,7 +476,10 @@ export const handleUpdateSettings = (
   payload: Record<string, unknown>
 ): GameState => {
   if (!payload || typeof payload !== 'object') return state
-  return { ...state, settings: { ...state.settings, ...payload } }
+  return {
+    ...state,
+    settings: { ...state.settings, ...sanitizeSettingsPayload(payload) }
+  }
 }
 
 export const handleSetMap = (

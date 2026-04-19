@@ -425,7 +425,7 @@ const logErrorLocally = (errorInfo: ErrorInfoObject) => {
   }
 }
 
-const reportErrorRemote = (errorInfo: any) => {
+const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
   // Remote tracking stub
   if (typeof window !== 'undefined' && window.navigator?.onLine) {
     try {
@@ -456,7 +456,11 @@ const reportErrorRemote = (errorInfo: any) => {
   }
 }
 
-const showErrorToast = (errorInfo: any, silent: boolean, addToast: any) => {
+const showErrorToast = (
+  errorInfo: ErrorInfoObject,
+  silent: boolean,
+  addToast?: (message: string, type: string) => void
+) => {
   // Toast taxonomy mapping: high-severity failures => `error`, recoverable/medium issues => `warning`.
   // UI supports: success | error | info | warning.
   if (!silent && addToast) {
@@ -549,13 +553,13 @@ initGlobalErrorHandling()
  * @param {*} [fallbackValue] - Value to return on error
  * @returns {*} Result or fallback value
  */
-export const safeStorageOperation = (
+export const safeStorageOperation = <T>(
   operation: string,
-  fn: any,
-  fallbackValue = null
-) => {
+  fn: () => T,
+  fallbackValue: T | null = null
+): T | null => {
   let retries = 2
-  let lastError: any = null
+  let lastError: unknown = null
 
   while (retries >= 0) {
     try {
@@ -568,7 +572,8 @@ export const safeStorageOperation = (
 
   handleError(
     new StorageError(`Storage operation failed after retries: ${operation}`, {
-      originalError: (lastError as any)?.message
+      originalError:
+        lastError instanceof Error ? lastError.message : String(lastError)
     }),
     { silent: true }
   )
@@ -585,7 +590,14 @@ export const safeStorageOperation = (
  * @returns {Promise<*>} The result of the function.
  * @throws {Error} The final error if all retries fail.
  */
-export const withRetry = async (fn: any, options: any = {}) => {
+export const withRetry = async <T>(
+  fn: () => Promise<T>,
+  options: {
+    retries?: number
+    delay?: number
+    backoff?: number
+  } = {}
+): Promise<T> => {
   const { retries = 3, delay = 1000, backoff = 2 } = options
   const safeRetries = Number.isFinite(retries)
     ? Math.max(0, Math.floor(retries))
