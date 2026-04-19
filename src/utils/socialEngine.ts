@@ -706,9 +706,6 @@ export const generateBrandOffers = (
   }
 
   // Pick up to 3 random offers, weighted by reputation
-  type BrandDeal =
-    typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
-
   const offers: BrandDeal[] = []
 
   // Logic: Reputation increases the "chance" check.
