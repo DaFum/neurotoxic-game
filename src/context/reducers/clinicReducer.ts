@@ -76,19 +76,19 @@ const executeClinicAction = (
     return state
   }
 
-  let memberUpdateResult = null
+  let memberUpdateResult: Record<string, unknown> | null = null
 
-  const updatedMembers = state.band.members.map(member => {
+  const updatedMembers: BandMember[] = state.band.members.map(member => {
     if (member.id !== memberId) return member
     memberUpdateResult = memberUpdater(member)
     return (
-      (memberUpdateResult as Record<string, unknown>).updatedMember ||
-      memberUpdateResult
+      (memberUpdateResult.updatedMember as BandMember) ||
+      (memberUpdateResult as unknown as BandMember)
     )
   })
 
   const nextFame = clampPlayerFame(playerFame - fameCost)
-  const nextState = {
+  const nextState: GameState = {
     ...state,
     player: {
       ...state.player,
@@ -111,8 +111,8 @@ const executeClinicAction = (
       : undefined
   const finalSuccessToast =
     successToast ||
-    (getSuccessToast && toastArgsArray
-      ? getSuccessToast(...toastArgsArray)
+    (typeof getSuccessToast === 'function' && toastArgsArray
+      ? (getSuccessToast as (...args: unknown[]) => unknown)(...toastArgsArray)
       : null)
   const safeToast = sanitizeSuccessToast(finalSuccessToast, {
     fallbackId: getSafeUUID()

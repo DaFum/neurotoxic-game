@@ -58,8 +58,9 @@ export const handleCompleteTravelMinigame = (
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results
-  const targetId = state.minigame.targetDestination
-  const targetNode = state.gameMap?.nodes?.[targetId]
+  const targetDestination = state.minigame.targetDestination
+  const targetId = typeof targetDestination === 'string' ? targetDestination : null
+  const targetNode = targetId ? state.gameMap?.nodes?.[targetId] : undefined
   const currentNode = state.gameMap?.nodes?.[state.player.currentNodeId]
 
   if (!targetNode) {
@@ -115,7 +116,7 @@ export const handleCompleteTravelMinigame = (
     travelUnlocks
   )
 
-  let newState = {
+  let newState: GameState = {
     ...state,
     player: nextPlayer,
     band: traitResult.band,

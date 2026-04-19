@@ -145,7 +145,7 @@ export const handleSetLastGigStats = (
   })
   const traitResult = applyTraitUnlocks(state, performanceUnlocks)
 
-  let nextState = {
+  let nextState: GameState = {
     ...state,
     lastGigStats: payload,
     band: traitResult.band,
