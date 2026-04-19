@@ -37,6 +37,13 @@
 - Reducers/sanitizers must **whitelist** untrusted payload fields when constructing objects (e.g., save toasts), not spread unknown records into state.
 - Avoid truthy checks when `0`/`''` are valid values (e.g., use `value != null` for optional numeric/string payload fields).
 - When invariants must hold (dense arrays, required map hits), fail loudly with explicit errors instead of silently skipping iterations.
+- **`noUncheckedIndexedAccess` is active**: `array[i]` in for-loops returns `T | undefined`. Add `if (!item) continue` guards or use `item!` with a comment explaining the invariant holds (e.g., index is clamped). Never assume a valid index is safe without narrowing.
+- **`|| null` / `|| 0` coerces valid falsy values**: `duration || null` turns `duration=0` into `null`, breaking "expire immediately" semantics. Use `?? null` for nullish coalescing, or `value != null ? value : fallback` when 0/false are meaningful.
+- **Event condition arrow functions need explicit `GameState` annotation**: All `condition: state =>` in event pools (band, transport, crisis, consequences, relationship, quests) require `condition: (state: GameState) =>` — `checkJs` treats the implicit type as `any` and fails strict mode.
+- **Categorize/split functions need explicit named return types**: Return `{ band: T[]; financial: T[]; special: T[] }` instead of `Record<string, T[]>` so destructuring yields `T[]`, not `T[] | undefined` under `noUncheckedIndexedAccess`.
+- **Error-handler and boundary functions must use `unknown` not `any`**: `handleError(error: unknown)`, `isPlainObject(value: unknown)`, `sanitizeContextValue(value: unknown, visited: WeakSet<object>)`. Narrow with `instanceof Error` or `isPlainObject()` type predicates inside. `any` at boundaries defeats the entire type system.
+- **Align state field types with action payload types**: `GameState.lastGigStats` (`LastGigStats`) and the `SET_LAST_GIG_STATS` action payload (`GigStats`) must expose the same optional fields (`score`, `accuracy`, `combo`, `health`, `overload`). Misalignment forces `any` workarounds in consumers like `postOptions.ts`.
+- **Toast `options` values must be primitive-only**: When sanitizing `ToastPayload.options` from untrusted sources (save files, action payloads), iterate `Object.entries()` and allow only `string | number | boolean | null`. Spreading `Record<string, unknown>` directly risks prototype-pollution and breaks the whitelist pattern from AGENTS.md.
 
 ## Testing
 
@@ -54,6 +61,9 @@
 
 ## Gotchas
 
+- **`currentGig` IS the venue object** — access capacity and id directly as `state.currentGig?.capacity` and `state.currentGig?.id`. The old nested form `state.currentGig?.venue?.capacity` no longer exists. Getting this wrong silently returns `undefined`, which defaults to `0` and incorrectly activates small-venue quest paths.
+- **Band member self-relationships corrupt gameplay systems** — never add a member to their own `relationships` map (e.g., `Matze: 0` in Matze's entry). The `grudge_holder` trait unlocks immediately because it iterates all relationships and checks if any score `< 30`; self-references also trigger infighting events between a member and themselves.
+- **`createInitialState` settings sanitization strips unknown keys** — only `crtEnabled`, `tutorialSeen`, and `logLevel` survive `sanitizeSettings()`. Test fixtures that use arbitrary settings keys (e.g., `volume`) will silently lose them after reset. Update test payloads to use the three canonical keys.
 - `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
 - framer-motion, lucide-react, pixi.js, tone, and @tonejs/midi — these packages all include bundled TypeScript declarations and don't require stub files.
 - `lint-staged` now covers `*.{js,jsx,ts,tsx}` — all source files are auto-linted and formatted at commit time.
