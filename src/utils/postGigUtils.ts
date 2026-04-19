@@ -48,7 +48,7 @@ export const calculatePostGigStateUpdates = (
       context: {
         perfScore,
         band,
-        venue: currentGig?.venue,
+        venue: currentGig,
         events: lastGigStats?.events
       },
       roll: secureRandomValue

@@ -119,20 +119,21 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         for (let i = 0; i < stashArr.length; i++) {
           const item = stashArr[i]
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
-          const baseItem = CONTRABAND_BY_ID.get(item.id)
+          const itemObj = item as Record<string, unknown>
+          const baseItem = CONTRABAND_BY_ID.get(itemObj.id as string)
           if (!baseItem) continue
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...item }
-          copy.id = item.id // Ensure ID matches
+          const copy = { ...baseItem, ...itemObj }
+          copy.id = itemObj.id as string
           if (
             Object.hasOwn(item, 'remainingDuration') &&
-            Number.isFinite(item.remainingDuration)
+            Number.isFinite(itemObj.remainingDuration as number)
           ) {
-            copy.remainingDuration = item.remainingDuration
+            copy.remainingDuration = itemObj.remainingDuration as number | null
           } else {
             copy.remainingDuration = copy.duration || null
           }
-          defaultStash[item.id] = copy
+          defaultStash[itemObj.id as string] = copy
         }
         return defaultStash
       } else if (
@@ -148,14 +149,15 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           const baseItem = CONTRABAND_BY_ID.get(id)
           if (!baseItem) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+          const itemObj = item as Record<string, unknown>
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...item }
-          copy.id = id // Ensure ID matches loop key to prevent divergence
+          const copy = { ...baseItem, ...itemObj }
+          copy.id = id
           if (
             Object.hasOwn(item, 'remainingDuration') &&
-            Number.isFinite(item.remainingDuration)
+            Number.isFinite(itemObj.remainingDuration as number)
           ) {
-            copy.remainingDuration = item.remainingDuration
+            copy.remainingDuration = itemObj.remainingDuration as number | null
           } else {
             copy.remainingDuration = copy.duration || null
           }
@@ -200,7 +202,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
         stamina: clampMemberStamina(
           typeof m.stamina === 'number' ? m.stamina : 100,
-          m.staminaMax
+          (m as Record<string, unknown>).staminaMax as number | undefined
         )
       }))
     : []
@@ -275,14 +277,21 @@ export const handleLoadGame = (
 ): GameState => {
   logger.info('GameState', 'Game Loaded')
 
-  const loadedState = payload || {}
+  const loadedState: Record<string, unknown> = (
+    typeof payload === 'object' && payload !== null ? payload : {}
+  ) as Record<string, unknown>
 
   // 1. Sanitize Player
   const mergedPlayer = sanitizePlayer(loadedState.player)
   // 2. Sanitize Band
   const validatedBand = sanitizeBand(loadedState.band)
   // 3. Sanitize Social
-  const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
+  const mergedSocial = {
+    ...DEFAULT_SOCIAL_STATE,
+    ...(typeof loadedState.social === 'object' && loadedState.social !== null
+      ? (loadedState.social as Record<string, unknown>)
+      : {})
+  }
 
   // 4. Construct Safe State (Whitelist)
   const incomingVersion =
