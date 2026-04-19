@@ -157,11 +157,10 @@ export const handleSetLastGigStats = (
     typeof payload?.score === 'number' ? payload.score : 0
   ) as number
   const location = state.player?.location || 'Unknown'
-  const capacity = (
+  const capacity =
     typeof state.currentGig?.capacity === 'number'
       ? state.currentGig.capacity
-      : 0
-  ) as number
+      : Number.POSITIVE_INFINITY
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
