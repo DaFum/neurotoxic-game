@@ -30,7 +30,7 @@ export const sanitizeSuccessToast = (
       ? toastObj.id.trim()
       : fallbackId
   const rawType = typeof toastObj.type === 'string' ? toastObj.type : ''
-  const type = ALLOWED_TOAST_TYPES.includes(rawType as ToastPayload['type'])
+  const type = (ALLOWED_TOAST_TYPES as readonly string[]).includes(rawType)
     ? (rawType as ToastPayload['type'])
     : fallbackType
   const messageFromToast =

@@ -56,11 +56,12 @@ export const handleCompleteQuest = (
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
+    const itemKey = String(quest.rewardData.item)
     nextState.band = {
       ...nextState.band,
       inventory: {
         ...(nextState.band?.inventory || {}),
-        [quest.rewardData.item]: true
+        [itemKey]: true
       }
     }
     generatedToasts.push({
@@ -103,11 +104,16 @@ export const handleCompleteQuest = (
 
       const members = originalMembers.map((m, idx) => {
         if (idx === memberIdx) {
+          const baseStats = (m.baseStats || {}) as Record<string, unknown>
+          const currentSkill = m.baseStats
+            ? Number((m.baseStats as Record<string, unknown>).skill)
+            : Number((m as Record<string, unknown>).skill)
+          const skillValue = Number.isFinite(currentSkill) ? currentSkill : 0
           return {
             ...m,
             baseStats: {
-              ...(m.baseStats || {}),
-              skill: ((m.baseStats && m.baseStats.skill) || m.skill || 0) + 1
+              ...baseStats,
+              skill: skillValue + 1
             }
           }
         }
@@ -218,24 +224,36 @@ export const handleFailQuests = (state: GameState): GameState => {
 
   for (let i = 0; i < nextState.activeQuests.length; i++) {
     const quest = nextState.activeQuests[i]
+    const penalty = quest.failurePenalty as Record<string, unknown> | undefined
 
-    if (quest.deadline !== null && nextState.player.day > quest.deadline) {
+    if (
+      typeof quest.deadline === 'number' &&
+      nextState.player.day > quest.deadline
+    ) {
       hasExpired = true
-      if (quest.failurePenalty) {
-        if (quest.failurePenalty.social?.controversyLevel) {
+      if (penalty) {
+        const socialPenalty = penalty.social as
+          | Record<string, unknown>
+          | undefined
+        if (socialPenalty?.controversyLevel) {
           // Deep clone before mutating
           nextState.social = { ...nextState.social }
-          const penalty = Number(quest.failurePenalty.social.controversyLevel)
-          const validPenalty = Number.isFinite(penalty) ? penalty : 0
+          const controversyDelta = Number(socialPenalty.controversyLevel)
+          const validPenalty = Number.isFinite(controversyDelta)
+            ? controversyDelta
+            : 0
           nextState.social.controversyLevel = clampControversyLevel(
             (nextState.social.controversyLevel || 0) + validPenalty
           )
         }
-        if (quest.failurePenalty.band?.harmony) {
+        const bandPenalty = penalty.band as Record<string, unknown> | undefined
+        if (bandPenalty?.harmony) {
           // Deep clone before mutating
           nextState.band = { ...nextState.band }
+          const harmonyDelta = Number(bandPenalty.harmony)
           nextState.band.harmony = clampBandHarmony(
-            (nextState.band.harmony ?? 1) + quest.failurePenalty.band.harmony
+            (nextState.band.harmony ?? 1) +
+              (Number.isFinite(harmonyDelta) ? harmonyDelta : 0)
           )
         }
       }
