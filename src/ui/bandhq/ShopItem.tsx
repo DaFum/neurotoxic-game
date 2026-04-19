@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
+import { Tooltip } from '../shared'
 
 // ⚡ Bolt Optimization: Wrapped ShopItem in React.memo
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
@@ -37,7 +38,8 @@ export const ShopItem = React.memo(
           <div className='flex items-center gap-2 mb-2'>
             <img
               src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
-              alt={t(item.name)}
+              alt=""
+              aria-hidden="true"
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
@@ -70,22 +72,53 @@ export const ShopItem = React.memo(
             )}{' '}
             {item.currency === 'fame' ? '★' : '€'}
           </span>
-          <GlitchButton
-            onClick={handlePurchase}
-            disabled={
-              isDisabled ||
-              isPurchased ||
-              (isAnyProcessing && !isProcessingThis)
-            }
-            variant={isPurchased ? 'owned' : 'primary'}
-            isLoading={isProcessingThis}
-            size='sm'
-            className='min-w-[80px]'
-          >
-            {isPurchased
-              ? t('ui:hq.owned', { defaultValue: 'OWNED' })
-              : t('ui:hq.buy', { defaultValue: 'BUY' })}
-          </GlitchButton>
+          {isPurchased || isDisabled ? (
+            <Tooltip
+              content={
+                isPurchased
+                  ? t('ui:shop.messages.alreadyOwned', {
+                      itemName: t(item.name),
+                      defaultValue: 'Already owned!'
+                    })
+                  : t('ui:shop.messages.notEnough', {
+                      currency:
+                        item.currency === 'fame'
+                          ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
+                          : t('ui:shop.messages.money', { defaultValue: 'Money' }),
+                      itemName: t(item.name),
+                      defaultValue: 'Not enough currency.'
+                    })
+              }
+            >
+              <GlitchButton
+                onClick={handlePurchase}
+                disabled={
+                  isDisabled ||
+                  isPurchased ||
+                  (isAnyProcessing && !isProcessingThis)
+                }
+                variant={isPurchased ? 'owned' : 'primary'}
+                isLoading={isProcessingThis}
+                size='sm'
+                className='min-w-[80px]'
+              >
+                {isPurchased
+                  ? t('ui:hq.owned', { defaultValue: 'OWNED' })
+                  : t('ui:hq.buy', { defaultValue: 'BUY' })}
+              </GlitchButton>
+            </Tooltip>
+          ) : (
+            <GlitchButton
+              onClick={handlePurchase}
+              disabled={isAnyProcessing && !isProcessingThis}
+              variant='primary'
+              isLoading={isProcessingThis}
+              size='sm'
+              className='min-w-[80px]'
+            >
+              {t('ui:hq.buy', { defaultValue: 'BUY' })}
+            </GlitchButton>
+          )}
         </div>
       </div>
     )

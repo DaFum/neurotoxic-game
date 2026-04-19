@@ -26,6 +26,10 @@ vi.mock('../../src/ui/GlitchButton', () => ({
   )
 }))
 
+vi.mock('../../src/ui/shared', () => ({
+  Tooltip: ({ children }) => <>{children}</>
+}))
+
 describe('ShopItem', () => {
   const mockItem = {
     id: 'test-item',
@@ -50,12 +54,11 @@ describe('ShopItem', () => {
   })
 
   it('renders item details correctly', () => {
-    const { getByText, getByAltText } = render(<ShopItem {...defaultProps} />)
+    const { getByText } = render(<ShopItem {...defaultProps} />)
     expect(getByText('items:test-item.name')).toBeInTheDocument()
     expect(getByText('items:test-item.description')).toBeInTheDocument()
     expect(getByText(/100/)).toBeInTheDocument()
     expect(getByText(/€/)).toBeInTheDocument()
-    expect(getByAltText('items:test-item.name')).toBeInTheDocument()
   })
 
   it('renders fame currency correctly', () => {
