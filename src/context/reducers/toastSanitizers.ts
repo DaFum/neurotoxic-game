@@ -1,8 +1,15 @@
 import type { ToastPayload } from '../../types/game'
 
+export const ALLOWED_TOAST_TYPES = [
+  'success',
+  'error',
+  'warning',
+  'info'
+] as const satisfies readonly ToastPayload['type'][]
+
 type SuccessToastConfig = {
   fallbackId: string
-  fallbackType?: string
+  fallbackType?: ToastPayload['type']
   message?: string
   optionsPatch?: Record<string, unknown>
 }
@@ -22,7 +29,10 @@ export const sanitizeSuccessToast = (
     typeof toastObj.id === 'string' && toastObj.id.trim().length > 0
       ? toastObj.id.trim()
       : fallbackId
-  const type = typeof toastObj.type === 'string' ? toastObj.type : fallbackType
+  const rawType = typeof toastObj.type === 'string' ? toastObj.type : ''
+  const type = ALLOWED_TOAST_TYPES.includes(rawType as ToastPayload['type'])
+    ? (rawType as ToastPayload['type'])
+    : fallbackType
   const messageFromToast =
     typeof toastObj.message === 'string' ? toastObj.message.trim() : ''
   const finalMessage =
@@ -50,20 +60,24 @@ export const sanitizeSuccessToast = (
 
 export const sanitizeLoadedToast = (
   toast: unknown,
-  allowedToastTypes: readonly string[]
+  allowedToastTypes: readonly ToastPayload['type'][] = ALLOWED_TOAST_TYPES
 ): ToastPayload | null => {
   if (!toast || typeof toast !== 'object' || Array.isArray(toast)) return null
   const toastObj = toast as Record<string, unknown>
   const id = typeof toastObj.id === 'string' ? toastObj.id.trim() : ''
-  const hasMessage = toastObj.message !== undefined
-  const hasMessageKey = typeof toastObj.messageKey === 'string'
+  const hasMessage = typeof toastObj.message === 'string'
+  const hasMessageKey =
+    typeof toastObj.messageKey === 'string' &&
+    toastObj.messageKey.trim().length > 0
   if (!(id.length > 0 && (hasMessage || hasMessageKey))) return null
 
-  const message = hasMessage ? String(toastObj.message).trim() : ''
+  const message = hasMessage ? toastObj.message.trim() : ''
   if (!(message.length > 0 || hasMessageKey)) return null
 
   const toastType = String(toastObj.type)
-  const type = allowedToastTypes.includes(toastType) ? toastType : 'info'
+  const type = allowedToastTypes.includes(toastType as ToastPayload['type'])
+    ? (toastType as ToastPayload['type'])
+    : 'info'
 
   const safeToast: ToastPayload = {
     id,
@@ -74,8 +88,8 @@ export const sanitizeLoadedToast = (
     safeToast.message = message
   }
 
-  if (typeof toastObj.messageKey === 'string') {
-    safeToast.messageKey = toastObj.messageKey
+  if (hasMessageKey) {
+    safeToast.messageKey = (toastObj.messageKey as string).trim()
   }
 
   if (

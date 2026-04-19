@@ -30,7 +30,7 @@ import {
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
-import { sanitizeLoadedToast } from './toastSanitizers'
+import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
@@ -43,13 +43,6 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.CLINIC
 ])
-
-const ALLOWED_TOAST_TYPES = [
-  'success',
-  'error',
-  'warning',
-  'info'
-] as const satisfies readonly ToastPayload['type'][]
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const playerData =

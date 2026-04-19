@@ -94,6 +94,9 @@ DealImage.propTypes = {
 const DealInfo = memo(
   ({ displayDeal, isRevoked, brandReputation }: DealInfoProps) => {
     const { t } = useTranslation()
+    const alignment = displayDeal.alignment
+    const alignmentReputation =
+      alignment != null ? brandReputation?.[alignment] : undefined
 
     return (
       <div className='flex-1'>
@@ -148,17 +151,15 @@ const DealInfo = memo(
         </div>
 
         {/* Reputation Status */}
-        {brandReputation?.[displayDeal.alignment] !== undefined && (
+        {alignmentReputation !== undefined && (
           <div className='mt-2 text-[10px] text-ash-gray'>
             {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
             <span
               className={
-                brandReputation[displayDeal.alignment] > 0
-                  ? 'text-toxic-green'
-                  : 'text-blood-red'
+                alignmentReputation > 0 ? 'text-toxic-green' : 'text-blood-red'
               }
             >
-              {brandReputation[displayDeal.alignment]}
+              {alignmentReputation}
             </span>
           </div>
         )}

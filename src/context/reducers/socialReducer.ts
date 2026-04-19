@@ -197,15 +197,33 @@ export const handlePirateBroadcast = (
     return state
   }
 
-  const cost = Number(payload.cost) || 0
+  const cost = Number(payload.cost)
   const fameGain = Number(payload.fameGain) || 0
   const zealotryGain = Number(payload.zealotryGain) || 0
   const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost) || 0
+  const harmonyCost = Number(payload.harmonyCost)
   const successToast = payload.successToast
 
-  const currentMoney = Number(state.player.money) || 0
-  const currentHarmony = Number(state.band.harmony) || 0
+  if (!Number.isFinite(cost) || cost < 0) {
+    logger.warn('GameState', 'Invalid pirate broadcast cost payload')
+    return state
+  }
+  if (!Number.isFinite(harmonyCost) || harmonyCost < 0) {
+    logger.warn('GameState', 'Invalid pirate broadcast harmonyCost payload')
+    return state
+  }
+
+  const currentMoney = Number(state.player.money)
+  const currentHarmony = Number(state.band.harmony)
+  if (
+    !Number.isFinite(currentMoney) ||
+    !Number.isFinite(currentHarmony) ||
+    currentMoney < 0 ||
+    currentHarmony < 0
+  ) {
+    logger.warn('GameState', 'Invalid player funds or harmony state')
+    return state
+  }
 
   if (state.social.lastPirateBroadcastDay === state.player.day) {
     logger.warn('GameState', 'Pirate broadcast already triggered today')

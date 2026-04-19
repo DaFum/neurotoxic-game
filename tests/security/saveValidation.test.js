@@ -98,6 +98,41 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   )
 })
 
+test('gameReducer LOAD_GAME keeps messageKey-only toasts via sanitizeLoadedToast', () => {
+  const initialState = {
+    currentScene: GAME_PHASES.INTRO,
+    player: { money: 500 },
+    band: { harmony: 80 },
+    toasts: []
+  }
+
+  const maliciousPayload = {
+    player: { money: 500 },
+    band: { harmony: 80 },
+    social: { instagram: 1000 },
+    gameMap: { nodes: [] },
+    toasts: [
+      {
+        id: 'toast-key-only',
+        messageKey: 'ui:toasts.saved',
+        type: 'info',
+        extra: 'strip-me'
+      }
+    ]
+  }
+
+  const action = { type: ActionTypes.LOAD_GAME, payload: maliciousPayload }
+  const newState = gameReducer(initialState, action)
+
+  assert.deepEqual(newState.toasts, [
+    {
+      id: 'toast-key-only',
+      messageKey: 'ui:toasts.saved',
+      type: 'info'
+    }
+  ])
+})
+
 test('gameReducer LOAD_GAME handles missing optional fields gracefully', () => {
   const initialState = {
     settings: { crtEnabled: true }

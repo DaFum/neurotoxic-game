@@ -119,13 +119,16 @@ export const handleTradeVoidItem = (
 
             const sanitizeContextValue = (value: unknown): unknown => {
               if (typeof value === 'string') {
-                return value.replace(/[&<>"']/g, match => ESCAPE_MAP[match])
+                return value.replace(/[&<>"']/g, match => {
+                  const escapeKey = match as keyof typeof ESCAPE_MAP
+                  return ESCAPE_MAP[escapeKey]
+                })
               }
               if (Array.isArray(value)) {
                 return value.map(item => sanitizeContextValue(item))
               }
               if (value !== null && typeof value === 'object') {
-                const out = Object.create(null)
+                const out: Record<string, unknown> = Object.create(null)
                 for (const prop in value) {
                   if (!Object.hasOwn(value, prop)) continue
                   if (isForbiddenKey(prop)) continue
@@ -136,7 +139,10 @@ export const handleTradeVoidItem = (
               return value
             }
 
-            const finalSafeContext = sanitizeContextValue(rawContext)
+            const finalSafeContext = sanitizeContextValue(rawContext) as Record<
+              string,
+              unknown
+            >
             finalSafeContext.fame = actualDelta
             enrichedMessage = `${key}|${JSON.stringify(finalSafeContext)}`
           }
