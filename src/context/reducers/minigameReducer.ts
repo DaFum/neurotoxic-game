@@ -17,6 +17,7 @@ import {
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
+import { normalizeVenueId } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import {
   GAME_PHASES,
@@ -93,12 +94,20 @@ export const handleCompleteTravelMinigame = (
     typeof targetNode.venue === 'object' && targetNode.venue !== null
       ? (targetNode.venue as Record<string, unknown>)
       : null
+  const canonicalVenueId =
+    normalizeVenueId(targetNode.venue) ??
+    (typeof targetNode.venueId === 'string'
+      ? normalizeVenueId(targetNode.venueId)
+      : typeof venueObj?.id === 'string'
+        ? normalizeVenueId(venueObj.id)
+        : null)
   const nextLocation =
-    typeof venueObj?.name === 'string'
+    canonicalVenueId ??
+    (typeof venueObj?.name === 'string'
       ? venueObj.name
       : typeof targetNode.venue === 'string'
         ? targetNode.venue
-        : 'Unknown'
+        : 'Unknown')
   const nextPlayer = {
     ...state.player,
     money: nextMoney,
