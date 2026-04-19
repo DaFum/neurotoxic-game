@@ -5,6 +5,7 @@
  */
 // TODO: Review this file
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
@@ -23,12 +24,15 @@ export const MinigameSceneFrame = ({
   children
 }: MinigameSceneFrameProps) => {
   const { settings } = useGameState()
-  const continueButtonRef = useRef(null)
-  const previousFocusRef = useRef(null)
+  const continueButtonRef = useRef<HTMLButtonElement | null>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
-      previousFocusRef.current = document.activeElement
+      previousFocusRef.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null
       continueButtonRef.current?.focus()
     }
 
@@ -41,15 +45,19 @@ export const MinigameSceneFrame = ({
   }, [uiState?.isGameOver])
 
   useEffect(() => {
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: KeyboardEvent | ReactKeyboardEvent) => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
       } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
-          logic?.finishMinigame?.() ||
-            logic?.dispatch?.({ type: 'COMPLETE_MINIGAME' }) ||
+          if (logic?.finishMinigame) {
+            logic.finishMinigame()
+          } else if (logic?.dispatch) {
+            logic.dispatch({ type: 'COMPLETE_MINIGAME' })
+          } else {
             onComplete()
+          }
         }
       }
     }

@@ -93,14 +93,14 @@ export interface PauseOverlayProps {
 }
 
 export interface MinigameLogicBase {
-  gameStateRef: { current: GameState } | (() => GameState)
+  gameStateRef: { current: GameState }
   update: (state: unknown) => void
   finishMinigame?: () => void
   dispatch?: (action: unknown) => void
 }
 
 export interface MinigameSceneFrameProps {
-  controllerFactory?: (options: unknown) => unknown
+  controllerFactory?: (options: unknown) => PixiController
   logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void

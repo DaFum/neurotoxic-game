@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTutorial } from '../hooks/useTutorial'
 
-const getStepColorClass = (stepId, currentStep) => {
+const getStepColorClass = (stepId: number, currentStep: number): string => {
   if (stepId === currentStep) return 'bg-toxic-green'
   if (stepId < currentStep) return 'bg-toxic-green/40'
   return 'bg-ash-gray/30'
@@ -18,10 +18,11 @@ export const TutorialManager = () => {
     TUTORIAL_STEPS,
     t
   } = useTutorial()
+  const hasContent = isVisible && content !== null
 
   return (
     <AnimatePresence>
-      {isVisible && (
+      {hasContent && (
         <motion.div
           key={step}
           initial={{ opacity: 0, y: 20 }}

@@ -19,6 +19,8 @@ import {
 } from './gameStateUtils'
 
 type RandomFn = () => number
+type BrandDeal =
+  typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
 
 interface SocialEngineGameState {
   player: {
@@ -182,11 +184,9 @@ export const generatePostOptions = (
           if (isMatch) weight += 10.0
         }
 
-        if (opt.id) {
-          eligibleOptions.push({ ...opt, _weight: weight * rng() })
-          if (opt.id === 'comm_sellout_ad') {
-            sponsorIdx = eligibleOptions.length - 1
-          }
+        eligibleOptions.push({ ...opt, _weight: weight * rng() })
+        if (opt.id === 'comm_sellout_ad') {
+          sponsorIdx = eligibleOptions.length - 1
         }
       }
     } catch (e) {
@@ -472,7 +472,9 @@ export const applyReputationDecay = (
  * @param {Function} rng - Random number generator.
  * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
-export const generateDailyTrend = (rng: RandomFn = secureRandom): string => {
+export const generateDailyTrend = (
+  rng: RandomFn = secureRandom
+): (typeof ALLOWED_TRENDS)[number] => {
   // Weighted choice could go here, for now uniform random
   const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
   // Ensure valid index even if rng() === 1
@@ -631,10 +633,7 @@ export const calculateZealotryEffects = (
 export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
-): Array<Record<string, unknown>> => {
-  type BrandDeal =
-    typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
-
+): BrandDeal[] => {
   const social = gameState?.social || {}
   const band = gameState?.band || {}
   const reputation = social.brandReputation || {}
@@ -723,9 +722,11 @@ export const generateBrandOffers = (
 
   for (let i = n - 1; i >= 0 && found < 3; i--) {
     const j = Math.floor(rng() * (i + 1))
-    const temp = pool[i]
-    if (pool[j]) pool[i] = pool[j]
-    if (temp) pool[j] = temp
+    const a = pool[i]
+    const b = pool[j]
+    if (!a || !b) continue
+    pool[i] = b
+    pool[j] = a
     const deal = pool[i]
     if (!deal) continue
 

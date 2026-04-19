@@ -9,7 +9,11 @@ export const ToggleRadio = memo(() => {
   const { t } = useTranslation()
   const { audioState: isPlaying, handleAudioChange } = useAudioControl(
     useCallback(
-      state => state.currentSongId === 'ambient' && state.isPlaying,
+      (state: unknown) =>
+        typeof state === 'object' &&
+        state !== null &&
+        (state as { currentSongId?: unknown }).currentSongId === 'ambient' &&
+        (state as { isPlaying?: unknown }).isPlaying === true,
       []
     ),
     { pollEvenWithSubscribe: true, pollMs: 1000 }
