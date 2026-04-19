@@ -7,6 +7,11 @@ import type {
 } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 
+export interface PixiController {
+  init(): Promise<void>
+  dispose(): void
+}
+
 /**
  * Known chatter variants:
  * - `normal`: default emitted by `getRandomChatter`
@@ -95,7 +100,7 @@ export interface MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps {
-  controllerFactory: (options: unknown) => unknown
+  controllerFactory?: (options: unknown) => unknown
   logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void
@@ -108,7 +113,7 @@ export interface MinigameSceneFrameProps {
 export interface PixiStageProps {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
-  controllerFactory?: (options: unknown) => unknown
+  controllerFactory?: (options: unknown) => PixiController
 }
 
 export interface ToggleRadioProps {

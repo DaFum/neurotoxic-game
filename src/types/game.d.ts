@@ -126,6 +126,7 @@ export interface BandMember extends UnknownRecord {
   name?: string
   mood: number
   stamina: number
+  staminaMax?: number
   traits: Record<string, unknown>
   relationships: Record<string, number>
 }
