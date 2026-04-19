@@ -35,7 +35,13 @@ const isPlayerInCity = (state: GameState, citySlug: string) => {
   const location = state.player?.location
   if (!location) return false
 
-  return location === citySlug || location.includes(`venues:${citySlug}`)
+  if (location === citySlug || location.includes(`venues:${citySlug}`)) {
+    return true
+  }
+
+  // Canonical venue IDs can be stored without the legacy `venues:` prefix,
+  // e.g. `berlin_end_venue`; treat those as city matches too.
+  return location.startsWith(`${citySlug}_`)
 }
 
 const isFiniteNumber = (value: unknown): value is number =>

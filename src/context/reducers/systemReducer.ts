@@ -413,7 +413,9 @@ export const handleLoadGame = (
       ...(typeof loadedState.settings === 'object' &&
       loadedState.settings !== null &&
       !Array.isArray(loadedState.settings)
-        ? (loadedState.settings as Partial<GameSettings>)
+        ? sanitizeSettingsPayload(
+            loadedState.settings as Record<string, unknown>
+          )
         : {})
     },
     minigame: sanitizeMinigameState(loadedState.minigame),
@@ -478,7 +480,9 @@ export const handleResetState = (
       !Array.isArray(payload.settings)
         ? (payload.settings as Record<string, unknown>)
         : (state.settings as unknown as Record<string, unknown>),
-    unlocks: Array.isArray(payload.unlocks) ? (payload.unlocks as string[]) : []
+    unlocks: Array.isArray(payload.unlocks)
+      ? (payload.unlocks as string[])
+      : (state.unlocks ?? [])
   }
 
   return createInitialState(persistedData)

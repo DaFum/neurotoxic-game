@@ -286,7 +286,7 @@ test('systemReducer - RESET_STATE', async t => {
   })
 
   await t.test(
-    'falls back to current settings and empty unlocks if payload is empty',
+    'falls back to current settings and existing unlocks if payload is empty',
     () => {
       const initialState = createInitialState()
       const currentState = {
@@ -300,7 +300,7 @@ test('systemReducer - RESET_STATE', async t => {
 
       assert.equal(nextState.player.money, initialState.player.money) // Reset
       assert.equal(nextState.settings.crtEnabled, false) // Preserved from current state
-      assert.deepEqual(nextState.unlocks, []) // Default to empty array
+      assert.deepEqual(nextState.unlocks, ['unlock1', 'unlock2']) // Preserved from current state
     }
   )
 })
