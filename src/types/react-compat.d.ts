@@ -5,7 +5,7 @@ declare module 'react' {
     propTypes?: unknown
   }
 
-  interface NamedExoticComponent<P = {}> {
+  interface NamedExoticComponent<P extends object = object> {
     propTypes?: unknown
   }
 }

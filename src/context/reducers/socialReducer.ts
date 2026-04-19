@@ -33,7 +33,10 @@ export const handleUpdateSocial = (
 
   // Validate special fields
   if (updates.trend !== undefined) {
-    if (!ALLOWED_TRENDS.includes(updates.trend as (typeof ALLOWED_TRENDS)[number])) {
+    if (
+      typeof updates.trend !== 'string' ||
+      !(ALLOWED_TRENDS as readonly string[]).includes(updates.trend)
+    ) {
       logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
       delete updates.trend
     }

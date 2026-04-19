@@ -1,6 +1,6 @@
 import type { ActionTypes } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
-import { GAME_PHASES } from '../context/gameConstants'
+import type { GAME_PHASES } from '../context/gameConstants'
 
 export type ActionType = ActionTypes[keyof ActionTypes]
 

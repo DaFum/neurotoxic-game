@@ -33,10 +33,7 @@ export const DEFAULT_MINIGAME_STATE = {
   equipmentRemaining: 0,
   accumulatedDamage: 0,
   score: 0
-} as const satisfies Record<
-  keyof MinigameState,
-  MinigameState[keyof MinigameState]
->
+} as const satisfies MinigameState
 
 export const DEFAULT_EQUIPMENT_COUNT = 10
 
