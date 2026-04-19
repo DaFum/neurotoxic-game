@@ -72,30 +72,21 @@ export const DEFAULT_BAND_STATE = {
       mood: 80,
       stamina: 100,
       traits: Object.create(null),
-      relationships: { Matze: 0, Marius: 50, Lars: 50 } satisfies Record<
-        string,
-        number
-      >
+      relationships: { Marius: 50, Lars: 50 } satisfies Record<string, number>
     },
     {
       ...CHARACTERS.MARIUS,
       mood: 80,
       stamina: 100,
       traits: Object.create(null),
-      relationships: { Matze: 50, Marius: 0, Lars: 50 } satisfies Record<
-        string,
-        number
-      >
+      relationships: { Matze: 50, Lars: 50 } satisfies Record<string, number>
     },
     {
       ...CHARACTERS.LARS,
       mood: 80,
       stamina: 100,
       traits: Object.create(null),
-      relationships: { Matze: 50, Marius: 50, Lars: 0 } satisfies Record<
-        string,
-        number
-      >
+      relationships: { Matze: 50, Marius: 50 } satisfies Record<string, number>
     }
   ],
   harmony: 80,
