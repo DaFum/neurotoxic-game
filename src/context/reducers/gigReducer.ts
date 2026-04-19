@@ -33,10 +33,7 @@ export const handleSetGig = (
   return { ...state, currentGig: payload }
 }
 
-export const handleStartGig = (
-  state: GameState,
-  payload: Venue | null
-): GameState => {
+export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   logger.info('GameState', 'Starting Gig Sequence', payload?.name)
   return {
     ...state,
@@ -156,9 +153,10 @@ export const handleSetLastGigStats = (
   const score = typeof payload?.score === 'number' ? payload.score : 0
   const location = state.player?.location || 'Unknown'
   const capacity =
-    typeof state.currentGig?.capacity === 'number'
+    typeof state.currentGig?.capacity === 'number' &&
+    Number.isFinite(state.currentGig.capacity)
       ? state.currentGig.capacity
-      : 0
+      : null
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
@@ -199,6 +197,7 @@ export const handleSetLastGigStats = (
     nextState = handleRecordGoodShow(nextState)
     if (
       hasActiveQuest(nextState.activeQuests, QUEST_APOLOGY_TOUR) &&
+      capacity !== null &&
       capacity <= 300
     ) {
       nextState = handleAdvanceQuest(nextState, {
@@ -208,6 +207,7 @@ export const handleSetLastGigStats = (
     }
     if (
       hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF) &&
+      capacity !== null &&
       capacity <= 150
     ) {
       nextState = handleAdvanceQuest(nextState, {

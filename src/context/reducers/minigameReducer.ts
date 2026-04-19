@@ -17,6 +17,7 @@ import {
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
+import { normalizeVenueId } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import {
   GAME_PHASES,
@@ -59,7 +60,8 @@ export const handleCompleteTravelMinigame = (
 
   // Apply Travel Results
   const targetDestination = state.minigame.targetDestination
-  const targetId = typeof targetDestination === 'string' ? targetDestination : null
+  const targetId =
+    typeof targetDestination === 'string' ? targetDestination : null
   const targetNode = targetId ? state.gameMap?.nodes?.[targetId] : undefined
   const currentNode = state.gameMap?.nodes?.[state.player.currentNodeId]
 
@@ -92,10 +94,21 @@ export const handleCompleteTravelMinigame = (
     typeof targetNode.venue === 'object' && targetNode.venue !== null
       ? (targetNode.venue as Record<string, unknown>)
       : null
+  const normalizedVenueId =
+    normalizeVenueId(targetNode.venue) ??
+    (typeof targetNode.venueId === 'string'
+      ? normalizeVenueId(targetNode.venueId)
+      : null)
+  const resolvedLocation =
+    typeof venueObj?.name === 'string'
+      ? venueObj.name
+      : normalizedVenueId
+        ? `venues:${normalizedVenueId}.name`
+        : 'Unknown'
   const nextPlayer = {
     ...state.player,
     money: nextMoney,
-    location: typeof venueObj?.name === 'string' ? venueObj.name : 'Unknown',
+    location: resolvedLocation,
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,
     van: {
@@ -143,7 +156,9 @@ export const handleCompleteTravelMinigame = (
       ? Object.keys(newState.band.stash).length
       : 0
     const preStashItem = newState.band.stash
-      ? (newState.band.stash[contrabandId] as Record<string, unknown> | undefined)
+      ? (newState.band.stash[contrabandId] as
+          | Record<string, unknown>
+          | undefined)
       : undefined
     const preStacks = preStashItem
       ? (preStashItem.stacks as number | undefined) || 0
@@ -152,8 +167,12 @@ export const handleCompleteTravelMinigame = (
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band?.stash?.[contrabandId] as Record<string, unknown> | undefined
-    const postStacks = postItem ? (postItem.stacks as number | undefined) || 0 : 0
+    const postItem = newState.band?.stash?.[contrabandId] as
+      | Record<string, unknown>
+      | undefined
+    const postStacks = postItem
+      ? (postItem.stacks as number | undefined) || 0
+      : 0
     const postStashLength = Object.keys(newState.band?.stash || {}).length
 
     const wasAdded = postStashLength > preStashLength || postStacks > preStacks

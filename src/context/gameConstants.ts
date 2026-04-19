@@ -25,7 +25,18 @@ export const MINIGAME_TYPES = {
 
 export const AMP_CALIBRATION_TOLERANCE = 50
 
-export const DEFAULT_MINIGAME_STATE = {
+type DefaultMinigameState = Pick<
+  MinigameState,
+  | 'active'
+  | 'type'
+  | 'targetDestination'
+  | 'gigId'
+  | 'equipmentRemaining'
+  | 'accumulatedDamage'
+  | 'score'
+>
+
+export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
   active: false,
   type: null,
   targetDestination: null,
@@ -33,7 +44,7 @@ export const DEFAULT_MINIGAME_STATE = {
   equipmentRemaining: 0,
   accumulatedDamage: 0,
   score: 0
-} as const satisfies MinigameState
+}
 
 export const DEFAULT_EQUIPMENT_COUNT = 10
 

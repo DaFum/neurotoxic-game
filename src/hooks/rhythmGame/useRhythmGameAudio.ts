@@ -197,6 +197,8 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.modifiers = physicsSetup.mergedModifiers
       gameStateRef.current.speed = physicsSetup.speed
+      // Invariant: gameStateRef initializes exactly three lanes in rhythmGameStateFactory.
+      // Invariant: setupGigPhysics always returns exactly three hit windows.
       gameStateRef.current.lanes[0]!.hitWindow = physicsSetup.hitWindows[0]!
       gameStateRef.current.lanes[1]!.hitWindow = physicsSetup.hitWindows[1]!
       gameStateRef.current.lanes[2]!.hitWindow = physicsSetup.hitWindows[2]!

@@ -254,6 +254,55 @@ const migrateLegacyVenueId = (id: unknown): string => {
   return normalizeVenueId(id) ?? id
 }
 
+const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
+  if (
+    typeof rawMinigame !== 'object' ||
+    rawMinigame === null ||
+    Array.isArray(rawMinigame)
+  ) {
+    return { ...DEFAULT_MINIGAME_STATE }
+  }
+
+  const minigameObj = rawMinigame as Record<string, unknown>
+  const nextMinigame = { ...DEFAULT_MINIGAME_STATE }
+
+  if (typeof minigameObj.active === 'boolean') {
+    nextMinigame.active = minigameObj.active
+  }
+  if (typeof minigameObj.type === 'string' || minigameObj.type === null) {
+    nextMinigame.type = minigameObj.type
+  }
+  if (
+    typeof minigameObj.targetDestination === 'string' ||
+    minigameObj.targetDestination === null
+  ) {
+    nextMinigame.targetDestination = minigameObj.targetDestination
+  }
+  if (typeof minigameObj.gigId === 'string' || minigameObj.gigId === null) {
+    nextMinigame.gigId = minigameObj.gigId
+  }
+  if (
+    typeof minigameObj.equipmentRemaining === 'number' &&
+    Number.isFinite(minigameObj.equipmentRemaining)
+  ) {
+    nextMinigame.equipmentRemaining = minigameObj.equipmentRemaining
+  }
+  if (
+    typeof minigameObj.accumulatedDamage === 'number' &&
+    Number.isFinite(minigameObj.accumulatedDamage)
+  ) {
+    nextMinigame.accumulatedDamage = minigameObj.accumulatedDamage
+  }
+  if (
+    typeof minigameObj.score === 'number' &&
+    Number.isFinite(minigameObj.score)
+  ) {
+    nextMinigame.score = minigameObj.score
+  }
+
+  return nextMinigame
+}
+
 /**
  * Handles game load with migration and validation
  * @param {Object} state - Current state
@@ -333,10 +382,7 @@ export const handleLoadGame = (
         ? (loadedState.settings as Partial<GameSettings>)
         : {})
     },
-    minigame: {
-      ...DEFAULT_MINIGAME_STATE,
-      ...((loadedState.minigame as Record<string, unknown>) || {})
-    },
+    minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)
       ? (loadedState.unlocks as string[])
       : state.unlocks || []

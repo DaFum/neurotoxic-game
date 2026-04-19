@@ -72,8 +72,11 @@ export const sanitizeSuccessToast = (
 
   const safeToast: ToastPayload = {
     id,
-    type,
-    options: { ...safePrimitives, ...safeOptionsPatch }
+    type
+  }
+  const safeOptions = { ...safePrimitives, ...safeOptionsPatch }
+  if (Object.keys(safeOptions).length > 0) {
+    safeToast.options = safeOptions
   }
   if (finalMessage.length > 0) safeToast.message = finalMessage
   if (messageKey.length > 0) safeToast.messageKey = messageKey
