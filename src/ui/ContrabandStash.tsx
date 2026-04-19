@@ -29,16 +29,16 @@ export const ContrabandStash = ({
   setSelectedMember,
   handleUseItem,
   onClose
-}) => {
+}: any) => {
   const { t } = useTranslation(['ui', 'items'])
 
   const makeSelectMember = useCallback(
-    id => () => setSelectedMember(id),
+    (id: any) => () => setSelectedMember(id),
     [setSelectedMember]
   )
 
   const makeUseItem = useCallback(
-    (instanceId, item) => () => handleUseItem(instanceId, item),
+    (instanceId: any, item: any) => () => handleUseItem(instanceId, item),
     [handleUseItem]
   )
 
@@ -70,7 +70,7 @@ export const ContrabandStash = ({
             })}
           </h3>
           <div className='flex flex-wrap gap-2'>
-            {members.map(m => (
+            {members.map((m: any) => (
               <button
                 key={m.id}
                 type='button'
@@ -96,7 +96,7 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash.map(item => {
+            stash.map((item: any) => {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
               const stableKey = item.instanceId || `migrated-${item.id}`

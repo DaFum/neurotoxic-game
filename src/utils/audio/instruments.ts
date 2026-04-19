@@ -20,7 +20,7 @@ export function createLayeredSnare(bus: any): any {
   }).connect(snareBus)
   snareBody.volume.value = -4
   return {
-    triggerAttackRelease: (dur, time, vel = 1) => {
+    triggerAttackRelease: (dur: number | string, time: number | string, vel: number = 1) => {
       snareNoise.triggerAttackRelease(dur, time, vel)
       snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
     },

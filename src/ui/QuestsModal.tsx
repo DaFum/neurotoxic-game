@@ -16,6 +16,14 @@ const BaseIcon = memo(
     fill = 'currentColor',
     children,
     ...props
+  }: {
+    className?: string;
+    viewBox?: string;
+    title?: string;
+    fill?: string;
+    children?: React.ReactNode;
+    stroke?: string;
+    [key: string]: any;
   }) => {
     const titleId = useId()
     const isDecorative = !title || title.trim() === ''
@@ -39,12 +47,12 @@ const BaseIcon = memo(
   }
 )
 
-const IconStar = memo(({ className = '', title }) => (
+const IconStar = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon className={className} title={title}>
     <path d='M11.999 1.439l2.844 7.218 7.718.666-5.859 5.093 1.764 7.584-6.467-3.968-6.467 3.968 1.764-7.584-5.859-5.093 7.718-.666 2.844-7.218z' />
   </BaseIcon>
 ))
-const IconClock = memo(({ className = '', title }) => (
+const IconClock = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon
     className={className}
     title={title}
@@ -59,27 +67,27 @@ const IconClock = memo(({ className = '', title }) => (
     />
   </BaseIcon>
 ))
-const IconTrophy = memo(({ className = '', title }) => (
+const IconTrophy = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon className={className} title={title}>
     <path d='M21 4h-3V3a1 1 0 00-1-1H7a1 1 0 00-1 1v1H3a1 1 0 00-1 1v3c0 2.2 1.8 4 4 4h1v1.6c0 1.9 1.5 3.4 3.4 3.4H9v3a1 1 0 001 1h4a1 1 0 001-1v-3h-1.4c1.9 0 3.4-1.5 3.4-3.4V12h1c2.2 0 4-1.8 4-4V5a1 1 0 00-1-1zM6 10c-1.1 0-2-.9-2-2V6h2v4zm14-2c0 1.1-.9 2-2 2h-2V6h2v2z' />
   </BaseIcon>
 ))
-const IconCoin = memo(({ className = '', title }) => (
+const IconCoin = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon className={className} title={title}>
     <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.26.28 2.62 1.15 2.84 2.99h-1.96c-.15-.97-.9-1.62-2.31-1.62-1.45 0-2.13.79-2.13 1.48 0 .84.53 1.36 2.88 1.9 2.5.58 3.97 1.68 3.97 3.86 0 1.76-1.12 2.89-3.24 3.53z' />
   </BaseIcon>
 ))
-const IconFire = memo(({ className = '', title }) => (
+const IconFire = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon className={className} title={title}>
     <path d='M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12zm1 14a3 3 0 11-6 0c0-2 2-4 3-5 1 1 3 3 3 5z' />
   </BaseIcon>
 ))
-const IconThumbUp = memo(({ className = '', title }) => (
+const IconThumbUp = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon className={className} title={title}>
     <path d='M14 9V5a3 3 0 00-3-3l-4 9v11h11.3c1.4 0 2.6-1 2.8-2.3l2-11c.1-.8-.5-1.7-1.4-1.7H14zM4 11H1v11h3V11z' />
   </BaseIcon>
 ))
-const IconCube = memo(({ className = '', title }) => (
+const IconCube = memo(({ className = '', title }: { className?: string; title?: string; fill?: string; stroke?: string; }) => (
   <BaseIcon className={className} title={title}>
     <path
       d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
@@ -93,7 +101,7 @@ const IconCube = memo(({ className = '', title }) => (
 ))
 
 // Get translated reward text
-const getRewardText = (quest, t) => {
+const getRewardText = (quest: any, t: any) => {
   const value = quest.rewardData
   switch (quest.rewardType) {
     case 'item':
@@ -114,7 +122,7 @@ const getRewardText = (quest, t) => {
 }
 
 // Map a reward type to an icon
-const getRewardIcon = type => {
+const getRewardIcon = (type: string) => {
   switch (type) {
     case 'item':
       return <IconCube className='w-4 h-4 text-toxic-green' />
@@ -132,7 +140,7 @@ const getRewardIcon = type => {
   }
 }
 
-export const QuestsModal = ({ onClose, activeQuests, player }) => {
+export const QuestsModal = ({ onClose, activeQuests, player }: { onClose: () => void; activeQuests: any[]; player: any; }) => {
   const { t, i18n } = useTranslation(['ui', 'events'])
 
   // Animation variants
@@ -141,7 +149,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
     visible: { opacity: 1 }
   }
 
-  const modalVariants = {
+  const modalVariants: any = {
     hidden: { opacity: 0, scale: 0.95, y: 20 },
     visible: {
       opacity: 1,
@@ -170,7 +178,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
         <motion.div
           className='relative w-full max-w-2xl bg-void-black border-4 border-toxic-green shadow-[0_0_30px_var(--color-toxic-green-20)] p-6 max-h-[90vh] overflow-y-auto'
           variants={modalVariants}
-          onClick={e => e.stopPropagation()}
+          onClick={(e: any) => e.stopPropagation()}
         >
           {/* Header */}
           <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
@@ -214,7 +222,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
             </div>
           ) : (
             <div className='space-y-6'>
-              {activeQuests.map((quest, index) => {
+              {activeQuests.map((quest: any, index: number) => {
                 const isOverdue = quest.deadline && player.day > quest.deadline
 
                 // Safe progress calculation

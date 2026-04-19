@@ -1,28 +1,28 @@
-import type { GameState } from '../../types/game'
+import type { GameState, BandMember } from '../../types/game'
 import { GAME_PHASES } from '../../context/gameConstants'
 
 const getMinMood = (state: GameState, memo: Record<string, unknown>) =>
-  memo?.minMood ??
+  (memo?.minMood as number) ??
   (state.band?.members
-    ? Math.min(...state.band.members.map((m: any) => m.mood ?? Infinity))
+    ? Math.min(...state.band.members.map((m: BandMember) => m.mood ?? Infinity))
     : Infinity)
 
 const getMaxMood = (state: GameState, memo: Record<string, unknown>) =>
-  memo?.maxMood ??
+  (memo?.maxMood as number) ??
   (state.band?.members
-    ? Math.max(...state.band.members.map((m: any) => m.mood ?? -Infinity))
+    ? Math.max(...state.band.members.map((m: BandMember) => m.mood ?? -Infinity))
     : -Infinity)
 
 const getMinStamina = (state: GameState, memo: Record<string, unknown>) =>
-  memo?.minStamina ??
+  (memo?.minStamina as number) ??
   (state.band?.members
-    ? Math.min(...state.band.members.map((m: any) => m.stamina ?? Infinity))
+    ? Math.min(...state.band.members.map((m: BandMember) => m.stamina ?? Infinity))
     : Infinity)
 
 const getMaxStamina = (state: GameState, memo: Record<string, unknown>) =>
-  memo?.maxStamina ??
+  (memo?.maxStamina as number) ??
   (state.band?.members
-    ? Math.max(...state.band.members.map((m: any) => m.stamina ?? -Infinity))
+    ? Math.max(...state.band.members.map((m: BandMember) => m.stamina ?? -Infinity))
     : -Infinity)
 
 const isPlayerInCity = (state: GameState, citySlug: string) => {
@@ -796,7 +796,7 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      state.lastGigStats?.score > 10000
+      (((state.lastGigStats?.score as number) || 0) > 10000)
   },
   {
     text: 'chatter:standard.msg_098',
@@ -820,7 +820,7 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      state.lastGigStats?.misses > 10
+      (((state.lastGigStats?.misses as number) || 0) > 10)
   },
   {
     text: 'chatter:standard.msg_102',
@@ -1929,12 +1929,12 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_294',
     weight: 6,
-    condition: (state: GameState) => state.band.inventory?.shirts < 10
+    condition: (state: GameState) => (((state.band.inventory?.shirts as number) || 0) < 10)
   },
   {
     text: 'chatter:standard.msg_295',
     weight: 6,
-    condition: (state: GameState) => state.band.inventory?.hoodies <= 0
+    condition: (state: GameState) => (((state.band.inventory?.hoodies as number) || 0) <= 0)
   },
 
   // --- CONDITION: GIG MODIFIERS ---

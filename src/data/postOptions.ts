@@ -6,6 +6,7 @@ import { getSafeRandom } from '../utils/crypto'
 import { hasTrait } from '../utils/traitLogic'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
+import type { GameState } from "../types/game";
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -103,7 +104,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
-    condition: ({ social }) => (social?.instagram || 0) > 2000,
+    condition: ({ social }: GameState) => (social?.instagram || 0) > 2000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -124,7 +125,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.STORY],
-    condition: ({ social, activeQuests }) =>
+    condition: ({ social, activeQuests }: GameState) =>
       (social?.reputationCooldown || 0) === 0 &&
       hasActiveQuest(activeQuests, QUEST_APOLOGY_TOUR),
     resolve: () => ({
@@ -145,10 +146,10 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
-    condition: ({ social }) =>
+    condition: ({ social }: GameState) =>
       (social?.controversyLevel || 0) >= 50 &&
       (social?.reputationCooldown || 0) === 0,
-    resolve: ({ diceRoll }) => {
+    resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
       if (diceRoll < 0.55) {
         return {
           type: 'RNG_SUCCESS',
@@ -179,7 +180,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
-    condition: ({ player }) => player?.stats?.proveYourselfMode === true,
+    condition: ({ player }: GameState) => player?.stats?.proveYourselfMode === true,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -197,9 +198,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
-    condition: ({ social }) =>
+    condition: ({ social }: GameState) =>
       (social?.controversyLevel || 0) >= 40 && (social?.loyalty || 0) >= 20,
-    resolve: ({ social }) => {
+    resolve: ({ social }: GameState) => {
       const loyaltyVal = social?.loyalty || 0
       const moneyGain = Math.min(loyaltyVal * 8, 600)
       const loyaltyBurn = Math.floor(loyaltyVal * 0.3)
@@ -222,13 +223,13 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ player, band }) =>
+    condition: ({ player, band }: GameState) =>
       player &&
       typeof player.money === 'number' &&
       player.money > 500 &&
       Array.isArray(band?.members) &&
       band.members.length > 0,
-    resolve: ({ band, diceRoll }) => {
+    resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
       // Pick a random member directly from band.members to avoid O(N) allocation
       const target =
         band.members[Math.floor(diceRoll * band.members.length)].name
@@ -268,12 +269,12 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
-    condition: ({ lastGigStats, band }) =>
+    condition: ({ lastGigStats, band }: GameState) =>
       lastGigStats &&
-      lastGigStats.score > 25000 &&
+      (lastGigStats?.score as number) > 25000 &&
       Array.isArray(band?.members) &&
       band.members.length > 0,
-    resolve: ({ band }) => {
+    resolve: ({ band }: GameState) => {
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj =
         getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
@@ -297,7 +298,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ lastGigStats }) => lastGigStats && lastGigStats.accuracy < 60,
+    condition: ({ lastGigStats }: any) => lastGigStats && lastGigStats.accuracy < 60,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -316,7 +317,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL],
-    condition: ({ activeEvent, gigEvents }) =>
+    condition: ({ activeEvent, gigEvents }: any) =>
       activeEvent?.id === 'stage_diver' ||
       (gigEvents && gigEvents.includes('stage_diver')),
     resolve: () => ({
@@ -333,12 +334,12 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
-    condition: ({ lastGigStats, social, band }) => {
+    condition: ({ lastGigStats, social, band }: GameState) => {
       if (!Array.isArray(band?.members) || band.members.length === 0)
         return false
       const isVirtuoso = hasMemberWithTrait(band.members, 'virtuoso')
       return (
-        (lastGigStats && lastGigStats.score > 15000) ||
+        (lastGigStats && (lastGigStats?.score as number) > 15000) ||
         social?.egoFocus ||
         isVirtuoso
       )
@@ -373,7 +374,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
-    condition: ({ lastGigStats }) => lastGigStats && lastGigStats.score < 5000,
+    condition: ({ lastGigStats }: any) => lastGigStats && (lastGigStats?.score as number) < 5000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -393,7 +394,7 @@ export const POST_OPTIONS = [
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true, // Post-gig, always available
-    resolve: ({ diceRoll }) => {
+    resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
       // 70% success / 30% disaster
       if (diceRoll <= 0.7) {
         return {
@@ -443,7 +444,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
-    condition: ({ activeEvent }) =>
+    condition: ({ activeEvent }: any) =>
       activeEvent?.type === 'negative_travel' ||
       activeEvent?.id === 'van_breakdown', // Simplified condition based on recent event
     resolve: () => ({
@@ -461,7 +462,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
-    condition: ({ band }) => (band?.harmony ?? 0) > 70,
+    condition: ({ band }: GameState) => (band?.harmony ?? 0) > 70,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -498,9 +499,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
-    condition: ({ band }) =>
+    condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
-    resolve: ({ band, diceRoll }) => {
+    resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
       const targetObj = band.members[Math.floor(diceRoll * band.members.length)]
       const target = targetObj.name
       let successChance = 0.5
@@ -537,9 +538,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama', // or Lifestyle
     badges: [POST_BADGES.SAFE],
-    condition: ({ band }) =>
+    condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
-    resolve: ({ band }) => {
+    resolve: ({ band }: GameState) => {
       const gearNerd =
         getMemberWithTrait(band.members, 'gear_nerd')?.name ||
         band.members[0].name
@@ -576,9 +577,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ band }) =>
+    condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
-    resolve: ({ band }) => {
+    resolve: ({ band }: GameState) => {
       const prankster =
         getMemberWithTrait(band.members, 'party_animal')?.name ||
         band.members[1]?.name ||
@@ -601,7 +602,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY, POST_BADGES.SAFE],
-    condition: ({ band }) => (band?.harmony ?? 0) > 60,
+    condition: ({ band }: GameState) => (band?.harmony ?? 0) > 60,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -622,7 +623,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
-    condition: ({ social }) => hasActiveSponsorship(social),
+    condition: ({ social }: GameState) => hasActiveSponsorship(social),
     resolve: () => {
       return {
         type: 'FIXED',
@@ -643,8 +644,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
-    condition: ({ lastGigStats }) => lastGigStats && lastGigStats.score > 15000,
-    resolve: ({ social }) => {
+    condition: ({ lastGigStats }: any) => lastGigStats && (lastGigStats?.score as number) > 15000,
+    resolve: ({ social }: GameState) => {
       // Hype to Money mechanic (using loyalty as proxy for hype for now)
       const hypeCash = Math.min((social.loyalty || 0) * 10, 1000)
       const hypeBurn = Math.floor((social.loyalty || 0) * 0.5) // Burn only half hype instead of all
@@ -665,7 +666,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
-    condition: ({ player }) =>
+    condition: ({ player }: GameState) =>
       player && typeof player.money === 'number' && player.money < 100,
     resolve: () => ({
       type: 'FIXED',
@@ -684,11 +685,11 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.SAFE, POST_BADGES.COMMERCIAL],
-    condition: ({ band }) =>
+    condition: ({ band }: GameState) =>
       band?.inventory?.golden_pick === true &&
       Array.isArray(band?.members) &&
       band.members.length > 0,
-    resolve: ({ band }) => {
+    resolve: ({ band }: GameState) => {
       // Find potential gear nerd or fallback to first member
       const member =
         getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
@@ -714,7 +715,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
-    condition: ({ social, player }) => {
+    condition: ({ social, player }: GameState) => {
       const influencers = social?.influencers || {}
       if (!player || typeof player.money !== 'number') return false
 
@@ -728,7 +729,7 @@ export const POST_OPTIONS = [
       }
       return false
     },
-    resolve: ({ social, player, diceRoll }) => {
+    resolve: ({ social, player, diceRoll }: GameState & { diceRoll: number }) => {
       const influencers = social?.influencers || {}
 
       // Filter by affordability
@@ -821,7 +822,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial', // Fits TECH trend
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
-    condition: ({ band }) =>
+    condition: ({ band }: GameState) =>
       Array.isArray(band?.members) &&
       hasMemberWithTrait(band.members, 'gear_nerd', 'tech_wizard'),
     resolve: () => ({
@@ -840,7 +841,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Lifestyle', // Fits WHOLESOME trend logic
     badges: [POST_BADGES.SAFE],
-    condition: ({ band }) => band?.harmony > 50,
+    condition: ({ band }: GameState) => band?.harmony > 50,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -858,7 +859,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Performance', // Fits MUSIC trend
     badges: [POST_BADGES.STORY],
-    condition: ({ band }) =>
+    condition: ({ band }: GameState) =>
       Array.isArray(band?.members) &&
       hasMemberWithTrait(band.members, 'melodic_genius', 'virtuoso'),
     resolve: () => ({
@@ -878,7 +879,7 @@ export const POST_OPTIONS = [
     category: 'Drama', // Fits DRAMA trend
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true,
-    resolve: ({ diceRoll }) => {
+    resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
       if (diceRoll < 0.6) {
         return {
           type: 'RNG_SUCCESS',
