@@ -39,3 +39,6 @@ coverage/
 *.pid
 *.diff
 diff*.txt
+
+# Claude Code internal worktrees
+.claude/worktrees/
