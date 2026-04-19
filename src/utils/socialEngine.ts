@@ -49,7 +49,7 @@ interface SocialPostOption {
   category?: string
   badges?: string[]
   platform?: string
-  condition: (gameState: any) => boolean
+  condition: (gameState: SocialEngineGameState) => boolean
   resolve?: (
     gameState: SocialEngineGameState & { diceRoll: number }
   ) => Record<string, unknown>
@@ -632,6 +632,9 @@ export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
 ): Array<Record<string, unknown>> => {
+  type BrandDeal =
+    typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
+
   const social = gameState?.social || {}
   const band = gameState?.band || {}
   const reputation = social.brandReputation || {}
@@ -650,7 +653,7 @@ export const generateBrandOffers = (
   }
 
   // Filter available deals
-  const eligibleDeals: Array<Record<string, unknown>> = []
+  const eligibleDeals: BrandDeal[] = []
   for (const deal of BRAND_DEALS_BY_ID.values()) {
     // Check followers
     if (totalFollowers < deal.requirements.followers) continue
@@ -703,7 +706,10 @@ export const generateBrandOffers = (
   }
 
   // Pick up to 3 random offers, weighted by reputation
-  const offers: Array<Record<string, unknown>> = []
+  type BrandDeal =
+    typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
+
+  const offers: BrandDeal[] = []
 
   // Logic: Reputation increases the "chance" check.
   // Base chance 30%.
@@ -711,7 +717,7 @@ export const generateBrandOffers = (
   // Rep 50 -> +15% chance. Rep 100 -> +30% chance.
   // Negative reputation reduces chance? Assuming reputation is 0-100 based on validation, but logic might allow negative?
 
-  const pool: Array<Record<string, unknown>> = [...eligibleDeals]
+  const pool: BrandDeal[] = [...eligibleDeals]
 
   // Partial Fisher-Yates inline to lazily yield random items without a full array shuffle.
   // We only swap elements as we evaluate them, stopping as soon as 2 offers are found.

@@ -13,7 +13,7 @@ export const hasTrait = (member: unknown, traitId: string): boolean => {
   if (
     !member ||
     typeof member !== 'object' ||
-    !('traits' in member) ||
+    !Object.hasOwn(member, 'traits') ||
     !(member as Record<string, unknown>).traits ||
     typeof (member as Record<string, unknown>).traits !== 'object' ||
     Array.isArray((member as Record<string, unknown>).traits)
@@ -36,7 +36,7 @@ export const bandHasTrait = (bandState: unknown, traitId: string): boolean => {
   if (
     !bandState ||
     typeof bandState !== 'object' ||
-    !('members' in bandState) ||
+    !Object.hasOwn(bandState, 'members') ||
     !Array.isArray((bandState as Record<string, unknown>).members)
   ) {
     return false
