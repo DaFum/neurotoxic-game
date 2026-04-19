@@ -703,7 +703,7 @@ export const generateBrandOffers = (
   }
 
   // Pick up to 3 random offers, weighted by reputation
-  const offers = []
+  const offers: Array<Record<string, unknown>> = []
 
   // Logic: Reputation increases the "chance" check.
   // Base chance 30%.
@@ -720,7 +720,9 @@ export const generateBrandOffers = (
 
   for (let i = n - 1; i >= 0 && found < 3; i--) {
     const j = Math.floor(rng() * (i + 1))
-    ;[pool[i], pool[j]] = [pool[j], pool[i]]
+    const temp = pool[i]
+    pool[i] = pool[j]
+    pool[j] = temp
     const deal = pool[i]
     if (!deal) continue
 
