@@ -48,10 +48,24 @@ export const sanitizeSuccessToast = (
       ? (toastObj.options as Record<string, unknown>)
       : {}
 
+  // Whitelist primitive-only values to match sanitizeLoadedToast pattern
+  const safePrimitives: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(baseOptions)) {
+    const valueType = typeof value
+    if (
+      valueType === 'string' ||
+      valueType === 'number' ||
+      valueType === 'boolean' ||
+      value === null
+    ) {
+      safePrimitives[key] = value
+    }
+  }
+
   const safeToast: ToastPayload = {
     id,
     type,
-    options: { ...baseOptions, ...optionsPatch }
+    options: { ...safePrimitives, ...optionsPatch }
   }
   if (finalMessage.length > 0) safeToast.message = finalMessage
   if (messageKey.length > 0) safeToast.messageKey = messageKey
