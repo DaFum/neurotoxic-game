@@ -65,7 +65,10 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
     social: { instagram: 1000 },
     gameMap: { nodes: [] },
     currentScene: 'HACKED', // Should be ignored or reset
-    toasts: [{ id: 1, message: 'Hacked' }], // Invalid ID type should be dropped
+    toasts: [
+      { id: 1, message: 'Hacked' }, // Invalid ID type should be dropped
+      { id: 'good', message: 'Valid toast', extra: 'evil' } // Unexpected fields should be stripped
+    ],
     __proto__: { pollutions: 'poison' }
   }
 
@@ -80,8 +83,8 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   )
   assert.deepEqual(
     newState.toasts,
-    [],
-    'toasts with non-string IDs should be filtered out'
+    [{ id: 'good', message: 'Valid toast', type: 'info' }],
+    'toasts should keep only valid entries and strip unexpected fields'
   )
   assert.equal(
     Object.prototype.pollutions,

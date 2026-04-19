@@ -52,8 +52,6 @@ export const MinigameSceneFrame = ({
         if (!uiState?.isGameOver) {
           if (logic?.finishMinigame) {
             logic.finishMinigame()
-          } else if (logic?.dispatch) {
-            logic.dispatch({ type: 'COMPLETE_MINIGAME' })
           } else {
             onComplete()
           }
@@ -112,10 +110,7 @@ export const MinigameSceneFrame = ({
 MinigameSceneFrame.propTypes = {
   controllerFactory: PropTypes.func.isRequired,
   logic: PropTypes.shape({
-    gameStateRef: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.shape({ current: PropTypes.any })
-    ]).isRequired,
+    gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
     dispatch: PropTypes.func

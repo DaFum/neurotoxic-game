@@ -125,13 +125,13 @@ const DealInfo = memo(
             {displayDeal.offer.duration}{' '}
             {t('ui:deals.gigs', { defaultValue: 'Gigs' })}
           </div>
-          {displayDeal.offer.perGig && (
+          {displayDeal.offer.perGig != null && (
             <div>
               💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}:{' '}
               {displayDeal.offer.perGig}€
             </div>
           )}
-          {displayDeal.offer.item && (
+          {displayDeal.offer.item != null && (
             <div>
               🎁 {t('ui:deals.item', { defaultValue: 'Item' })}:{' '}
               {displayDeal.offer.item}

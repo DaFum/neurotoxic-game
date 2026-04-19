@@ -158,7 +158,7 @@ export const handleSetLastGigStats = (
   const capacity =
     typeof state.currentGig?.capacity === 'number'
       ? state.currentGig.capacity
-      : Number.POSITIVE_INFINITY
+      : 0
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {

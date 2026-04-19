@@ -231,16 +231,38 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
         const message = String(toastObj.message).trim()
         if (message.length > 0) {
           const toastType = String(toastObj.type)
-          acc.push({
-            ...toastObj,
+          const type = ALLOWED_TOAST_TYPES.includes(
+            toastType as ToastPayload['type']
+          )
+            ? (toastType as ToastPayload['type'])
+            : 'info'
+          const safeToast: ToastPayload = {
             id,
             message,
-            type: ALLOWED_TOAST_TYPES.includes(
-              toastType as ToastPayload['type']
-            )
-              ? (toastType as ToastPayload['type'])
-              : 'info'
-          } as ToastPayload)
+            type
+          }
+          if (typeof toastObj.messageKey === 'string') {
+            safeToast.messageKey = toastObj.messageKey
+          }
+          if (
+            typeof toastObj.options === 'object' &&
+            toastObj.options !== null &&
+            !Array.isArray(toastObj.options)
+          ) {
+            safeToast.options = toastObj.options as Record<string, unknown>
+          }
+          if (
+            Number.isFinite(toastObj.timeout as number) &&
+            (toastObj.timeout as number) >= 0
+          ) {
+            safeToast.timeout = toastObj.timeout as number
+          }
+          if (Number.isFinite(toastObj.createdAt as number)) {
+            safeToast.createdAt = toastObj.createdAt as number
+          }
+          acc.push({
+            ...safeToast
+          })
         }
       }
     }
@@ -298,14 +320,10 @@ export const handleLoadGame = (
   }
 
   // 4. Construct Safe State (Whitelist)
-  const rawVersion =
-    loadedState.version !== undefined ? loadedState.version : state.version
-  const parsedVersion =
-    typeof rawVersion === 'number'
-      ? rawVersion
-      : typeof rawVersion === 'string'
-        ? Number.parseInt(rawVersion, 10)
-        : NaN
+  const rawVersion = Object.hasOwn(loadedState, 'version')
+    ? loadedState.version
+    : state.version
+  const parsedVersion = Number(rawVersion)
   const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
 
   const safeState = {

@@ -724,7 +724,11 @@ export const generateBrandOffers = (
     const j = Math.floor(rng() * (i + 1))
     const a = pool[i]
     const b = pool[j]
-    if (!a || !b) continue
+    if (!a || !b) {
+      throw new StateError('Brand offer pool contained an invalid entry', {
+        meta: { i, j, poolLength: pool.length }
+      })
+    }
     pool[i] = b
     pool[j] = a
     const deal = pool[i]
