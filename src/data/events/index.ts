@@ -54,8 +54,16 @@ const validateEvents = (
 
 const categorizeEvents = (
   events: UnknownRecord[]
-): Record<string, UnknownRecord[]> => {
-  const result: Record<string, UnknownRecord[]> = {
+): {
+  band: UnknownRecord[]
+  financial: UnknownRecord[]
+  special: UnknownRecord[]
+} => {
+  const result: {
+    band: UnknownRecord[]
+    financial: UnknownRecord[]
+    special: UnknownRecord[]
+  } = {
     band: [],
     financial: [],
     special: []
@@ -63,9 +71,10 @@ const categorizeEvents = (
 
   for (let i = 0; i < events.length; i++) {
     const e = events[i]
+    if (!e) continue
     const category = typeof e.category === 'string' ? e.category : 'unknown'
-    if (Object.hasOwn(result, category)) {
-      ;(result[category] as UnknownRecord[]).push(e)
+    if (Object.hasOwn(result, category) && category in result) {
+      result[category as keyof typeof result].push(e)
     } else {
       logger.error(
         'EventCategorization',

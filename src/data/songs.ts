@@ -143,7 +143,7 @@ export const SONGS_BY_ID = new Map(SONGS_DB.map(song => [song.id, song]))
 export const SONGS_BY_MID = new Map<string, Song>()
 for (let i = 0; i < SONGS_DB.length; i++) {
   const song = SONGS_DB[i]
-  if (song.sourceMid) {
+  if (song && song.sourceMid) {
     SONGS_BY_MID.set(song.sourceMid, song)
   }
 }

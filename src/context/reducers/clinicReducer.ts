@@ -330,8 +330,9 @@ export const handleClinicEnhance = (
   if (state.band && Array.isArray(state.band.members)) {
     let targetMember = null
     for (let i = 0; i < state.band.members.length; i++) {
-      if (state.band.members[i].id === memberId) {
-        targetMember = state.band.members[i]
+      const m = state.band.members[i]
+      if (m && m.id === memberId) {
+        targetMember = m
         break
       }
     }

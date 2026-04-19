@@ -1,4 +1,4 @@
-import type { GameState, QuestState } from '../../types/game'
+import type { GameState, QuestState, ToastPayload } from '../../types/game'
 import {
   clampPlayerFame,
   clampBandHarmony,
@@ -121,10 +121,11 @@ export const handleCompleteQuest = (
       })
 
       nextState.band = { ...nextState.band, members }
+      const rewardedMember = members[memberIdx]
       generatedToasts.push({
         id: `${questId}-skill`,
         messageKey: 'ui:toast.quest_complete_skill',
-        options: { name: quest.label, member: members[memberIdx].name },
+        options: { name: quest.label, member: rewardedMember?.name },
         type: 'success'
       })
     }
@@ -219,11 +220,12 @@ export const handleFailQuests = (state: GameState): GameState => {
   if (!nextState.activeQuests) return state
 
   let hasExpired = false
-  const newActiveQuests = []
-  const newToasts = []
+  const newActiveQuests: QuestState[] = []
+  const newToasts: ToastPayload[] = []
 
   for (let i = 0; i < nextState.activeQuests.length; i++) {
     const quest = nextState.activeQuests[i]
+    if (!quest) continue
     const penalty = quest.failurePenalty as Record<string, unknown> | undefined
 
     if (

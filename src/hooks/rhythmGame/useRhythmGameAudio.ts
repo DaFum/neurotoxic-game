@@ -197,9 +197,9 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.modifiers = physicsSetup.mergedModifiers
       gameStateRef.current.speed = physicsSetup.speed
-      gameStateRef.current.lanes[0].hitWindow = physicsSetup.hitWindows[0]
-      gameStateRef.current.lanes[1].hitWindow = physicsSetup.hitWindows[1]
-      gameStateRef.current.lanes[2].hitWindow = physicsSetup.hitWindows[2]
+      gameStateRef.current.lanes[0]!.hitWindow = physicsSetup.hitWindows[0]!
+      gameStateRef.current.lanes[1]!.hitWindow = physicsSetup.hitWindows[1]!
+      gameStateRef.current.lanes[2]!.hitWindow = physicsSetup.hitWindows[2]!
 
       const activeSetlist = resolveActiveSetlist(currentSetlist)
 

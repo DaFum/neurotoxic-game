@@ -43,16 +43,18 @@ export const ErrorCategory = {
  * @extends Error
  */
 
-export type ErrorSeverityType = typeof ErrorSeverity[keyof typeof ErrorSeverity];
-export type ErrorCategoryType = typeof ErrorCategory[keyof typeof ErrorCategory];
+export type ErrorSeverityType =
+  (typeof ErrorSeverity)[keyof typeof ErrorSeverity]
+export type ErrorCategoryType =
+  (typeof ErrorCategory)[keyof typeof ErrorCategory]
 
 export class GameError extends Error {
-  public category: ErrorCategoryType;
-  public severity: ErrorSeverityType;
-  public context: Record<string, unknown>;
-  public recoverable: boolean;
-  public timestamp: number;
-  public source?: GameError | Error;
+  public category: ErrorCategoryType
+  public severity: ErrorSeverityType
+  public context: Record<string, unknown>
+  public recoverable: boolean
+  public timestamp: number
+  public source?: GameError | Error
 
   constructor(
     message: string,
@@ -62,31 +64,34 @@ export class GameError extends Error {
       context = {},
       recoverable = true
     }: {
-      category?: ErrorCategoryType;
-      severity?: ErrorSeverityType;
-      context?: Record<string, unknown>;
-      recoverable?: boolean;
+      category?: ErrorCategoryType
+      severity?: ErrorSeverityType
+      context?: Record<string, unknown>
+      recoverable?: boolean
     } = {}
   ) {
-    super(message);
-    this.name = 'GameError';
-    this.category = category;
-    this.severity = severity;
-    this.context = sanitizeContextValue(context, new WeakSet());
-    this.recoverable = recoverable;
-    this.timestamp = Date.now();
+    super(message)
+    this.name = 'GameError'
+    this.category = category
+    this.severity = severity
+    this.context = sanitizeContextValue(context, new WeakSet()) as Record<
+      string,
+      unknown
+    >
+    this.recoverable = recoverable
+    this.timestamp = Date.now()
   }
 
   static State(message: string, context: Record<string, unknown> = {}) {
-    return new StateError(message, context);
+    return new StateError(message, context)
   }
 
   static Render(message: string, context: Record<string, unknown> = {}) {
-    return new RenderError(message, context);
+    return new RenderError(message, context)
   }
 
   static Audio(message: string, context: Record<string, unknown> = {}) {
-    return new AudioError(message, context);
+    return new AudioError(message, context)
   }
   toLogObject() {
     return {
@@ -101,8 +106,6 @@ export class GameError extends Error {
     }
   }
 }
-
-
 
 export class StateError extends GameError {
   constructor(message: string, context: Record<string, unknown> = {}) {
@@ -156,7 +159,7 @@ export class AudioError extends GameError {
  * Error log storage for debugging
  * @type {Array<Object>}
  */
-const errorLog: GameError[] = []
+const errorLog: ErrorInfoObject[] = []
 const MAX_ERROR_LOG_SIZE = 100
 
 const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
@@ -182,7 +185,7 @@ const SENSITIVE_KEY_PATTERNS = [
   'cookie'
 ]
 
-const isPlainObject = (value: any) => {
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return (
     value !== null &&
     typeof value === 'object' &&
@@ -190,30 +193,34 @@ const isPlainObject = (value: any) => {
   )
 }
 
-const normalizeSeverity = (severity: ErrorSeverityType | null) => {
+const normalizeSeverity = (severity: unknown) => {
   if (typeof severity !== 'string') return null
   const normalized = severity.toLowerCase()
-  return VALID_SEVERITIES.has(normalized as any) ? (normalized as ErrorSeverityType) : null
+  return VALID_SEVERITIES.has(normalized as ErrorSeverityType)
+    ? (normalized as ErrorSeverityType)
+    : null
 }
 
 const isSensitiveContextKey = (key: string) => {
   if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
   for (let i = 0; i < SENSITIVE_KEY_PATTERNS.length; i++) {
-    if (key.includes(SENSITIVE_KEY_PATTERNS[i])) return true
+    const pattern = SENSITIVE_KEY_PATTERNS[i]
+    if (pattern && key.includes(pattern)) return true
   }
   return false
 }
 
-const sanitizeContextValue = (value: any, visited: WeakSet<any>): any => {
+const sanitizeContextValue = (
+  value: unknown,
+  visited: WeakSet<object>
+): unknown => {
   if (Array.isArray(value)) {
     if (visited.has(value)) return '[REDACTED]'
     visited.add(value)
-    // ⚡ BOLT OPTIMIZATION: Replaced .map() with pre-allocated array and for loop
-    // Reduces function allocation and call overhead during recursive traversal
     const len = value.length
-    const result = new Array(len)
+    const result: unknown[] = new Array(len)
     for (let i = 0; i < len; i++) {
-      (result as any)[i] = sanitizeContextValue((value as any)[i], visited)
+      result[i] = sanitizeContextValue(value[i], visited)
     }
     return result
   }
@@ -225,13 +232,16 @@ const sanitizeContextValue = (value: any, visited: WeakSet<any>): any => {
   return value
 }
 
-const sanitizeContextObject = (context: any, visited: WeakSet<any>): any => {
+const sanitizeContextObject = (
+  context: Record<string, unknown>,
+  visited: WeakSet<object>
+): Record<string, unknown> => {
   if (visited.has(context)) {
-    return '[REDACTED]'
+    return { '[REDACTED]': true }
   }
 
   visited.add(context)
-  const sanitized: Record<string, any> = {}
+  const sanitized: Record<string, unknown> = {}
 
   for (const key in context) {
     if (
@@ -244,18 +254,18 @@ const sanitizeContextObject = (context: any, visited: WeakSet<any>): any => {
     const value = context[key]
     const normalizedKey = key.toLowerCase()
     if (isSensitiveContextKey(normalizedKey)) {
-      (sanitized as any)[key] = '[REDACTED]'
+      sanitized[key] = '[REDACTED]'
       continue
     }
 
-    (sanitized as any)[key] = sanitizeContextValue(value, visited)
+    sanitized[key] = sanitizeContextValue(value, visited)
   }
 
   return sanitized
 }
 
-const sanitizeContextPayload = (payload: any): any => {
-  const visited = new WeakSet()
+const sanitizeContextPayload = (payload: unknown): Record<string, unknown> => {
+  const visited = new WeakSet<object>()
 
   if (isPlainObject(payload)) return sanitizeContextObject(payload, visited)
 
@@ -271,62 +281,92 @@ const sanitizeContextPayload = (payload: any): any => {
   }
 
   if (payload !== null && typeof payload === 'object') {
-    return sanitizeContextObject(Object.assign({}, payload), visited)
+    return sanitizeContextObject(
+      Object.assign({}, payload) as Record<string, unknown>,
+      visited
+    )
   }
 
   return {}
 }
 
-const normalizeHandleErrorOptions = (options: any) => {
+type NormalizedErrorOptions = {
+  source: string | undefined
+  errorInfo: Record<string, unknown> | null
+  severity: ErrorSeverityType | null
+}
+
+const normalizeHandleErrorOptions = (
+  options: unknown
+): NormalizedErrorOptions => {
   const safeOptions = isPlainObject(options) ? options : {}
 
-  const normalizedOptions = {
+  return {
     source:
       typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
     errorInfo:
       typeof safeOptions.errorInfo === 'object' &&
       safeOptions.errorInfo !== null
-        ? safeOptions.errorInfo
+        ? (safeOptions.errorInfo as Record<string, unknown>)
         : null,
-    severity: normalizeSeverity(safeOptions.severity)
+    severity: normalizeSeverity(
+      safeOptions.severity as ErrorSeverityType | null
+    )
   }
-
-  return normalizedOptions
 }
 
-const sanitizeErrorInfo = (errorInfo: any) => ({
+type ErrorInfoObject = {
+  name: string
+  message: string
+  category: ErrorCategoryType
+  severity: ErrorSeverityType
+  context: Record<string, unknown>
+  recoverable: boolean
+  timestamp: number
+  stack?: string
+  source?: string
+}
+
+const sanitizeErrorInfo = (errorInfo: ErrorInfoObject) => ({
   // Allowed fields for globally dispatched critical error events:
   // - message: user-safe error summary
   // - code: optional machine-readable code/category
   // - timestamp: event time for correlation
-  message: errorInfo?.message || 'Critical error',
-  code: errorInfo?.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo?.timestamp || Date.now()
+  message: errorInfo.message || 'Critical error',
+  code: errorInfo.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo.timestamp || Date.now()
 })
 
-const sanitizeTelemetryErrorInfo = (errorInfo: any) => ({
+const sanitizeTelemetryErrorInfo = (errorInfo: ErrorInfoObject) => ({
   // Telemetry intentionally excludes raw error messages to avoid leaking
   // sensitive/user-controlled values.
   message: 'Error captured',
-  code: errorInfo?.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo?.timestamp || Date.now()
+  code: errorInfo.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo.timestamp || Date.now()
 })
 
-const buildErrorInfo = (error: any, normalizedOptions: any, fallbackMessage: string) => {
-  let errorInfo
+const buildErrorInfo = (
+  error: unknown,
+  normalizedOptions: NormalizedErrorOptions,
+  fallbackMessage: string
+): ErrorInfoObject => {
+  let errorInfo: ErrorInfoObject
 
   if (error instanceof GameError) {
-    errorInfo = (error as any).toLogObject()
+    errorInfo = error.toLogObject() as ErrorInfoObject
   } else {
+    const errObj = error instanceof Error ? error : null
     errorInfo = {
-      name: error.name || 'Error',
-      message: error.message || fallbackMessage,
+      name: errObj?.name || 'Error',
+      message:
+        errObj?.message ||
+        (typeof error === 'string' ? error : fallbackMessage),
       category: ErrorCategory.UNKNOWN,
       severity: ErrorSeverity.MEDIUM,
       context: {},
       recoverable: true,
       timestamp: Date.now(),
-      stack: error.stack
+      stack: errObj?.stack
     }
   }
 
@@ -350,7 +390,7 @@ const buildErrorInfo = (error: any, normalizedOptions: any, fallbackMessage: str
   return errorInfo
 }
 
-const logErrorLocally = (errorInfo: any) => {
+const logErrorLocally = (errorInfo: ErrorInfoObject) => {
   // Log to error log
   errorLog.push(errorInfo)
   if (errorLog.length > MAX_ERROR_LOG_SIZE) {
@@ -434,13 +474,18 @@ const showErrorToast = (errorInfo: any, silent: boolean, addToast: any) => {
  * @param {string} [options.fallbackMessage] - Fallback message for unknown errors
  * @returns {Object} Processed error info
  */
-export const handleError = (error: any, options: any = {}) => {
+export const handleError = (error: unknown, options: unknown = {}) => {
   const safeOptions = isPlainObject(options) ? options : {}
-  const {
-    addToast,
-    silent = false,
-    fallbackMessage = 'An error occurred'
-  } = safeOptions
+  const addToast =
+    typeof safeOptions.addToast === 'function'
+      ? (safeOptions.addToast as (msg: string, type: string) => void)
+      : undefined
+  const silent =
+    typeof safeOptions.silent === 'boolean' ? safeOptions.silent : false
+  const fallbackMessage =
+    typeof safeOptions.fallbackMessage === 'string'
+      ? safeOptions.fallbackMessage
+      : 'An error occurred'
 
   const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
   const errorInfo = buildErrorInfo(error, normalizedOptions, fallbackMessage)
@@ -458,7 +503,7 @@ export const handleError = (error: any, options: any = {}) => {
 export const initGlobalErrorHandling = () => {
   const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
   if (typeof window === 'undefined' || (window as any)[INIT_SYMBOL]) return
-  (window as any)[INIT_SYMBOL] = true
+  ;(window as any)[INIT_SYMBOL] = true
   window.addEventListener('unhandledrejection', event => {
     const reason = event.reason
     let errorToHandle
@@ -499,7 +544,11 @@ initGlobalErrorHandling()
  * @param {*} [fallbackValue] - Value to return on error
  * @returns {*} Result or fallback value
  */
-export const safeStorageOperation = (operation: string, fn: any, fallbackValue = null) => {
+export const safeStorageOperation = (
+  operation: string,
+  fn: any,
+  fallbackValue = null
+) => {
   let retries = 2
   let lastError: any = null
 

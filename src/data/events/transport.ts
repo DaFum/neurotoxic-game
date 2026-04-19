@@ -1,4 +1,5 @@
 // TODO: Review this file
+import type { GameState } from '../../types/game'
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
 
 // Transport Events
@@ -228,7 +229,7 @@ export const TRANSPORT_EVENTS = [
     // Fires at 10% chance when carrying uncommon+ contraband.
     // The condition gates eligibility; the chance field provides final probability.
     chance: 0.1,
-    condition: state => {
+    condition: (state: GameState) => {
       const { bustChance, highestRiskItemId, highestRarity } =
         computeStashBustRisk(state.band?.stash)
       if (bustChance <= 0 || !highestRiskItemId) return null
