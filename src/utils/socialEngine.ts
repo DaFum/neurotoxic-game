@@ -477,7 +477,8 @@ export const generateDailyTrend = (rng: RandomFn = secureRandom): string => {
   const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
   // Ensure valid index even if rng() === 1
   const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
-  return ALLOWED_TRENDS[safeIdx]
+  const trend = ALLOWED_TRENDS[safeIdx]
+  return trend ?? 'NEUTRAL'
 }
 
 /**
