@@ -50,7 +50,9 @@ interface SocialPostOption {
   badges?: string[]
   platform?: string
   condition: (gameState: any) => boolean
-  resolve?: (gameState: SocialEngineGameState & { diceRoll: number }) => Record<string, unknown>
+  resolve?: (
+    gameState: SocialEngineGameState & { diceRoll: number }
+  ) => Record<string, unknown>
   [key: string]: unknown
 }
 
@@ -153,6 +155,7 @@ export const generatePostOptions = (
   const postOptions = POST_OPTIONS as unknown as SocialPostOption[]
   for (let i = 0; i < postOptions.length; i++) {
     const opt = postOptions[i]
+    if (!opt) continue
 
     // Filter by cooldown if active
     if (isCooldownActive && COOLDOWN_BLOCKED_IDS.has(opt.id)) {
@@ -179,9 +182,11 @@ export const generatePostOptions = (
           if (isMatch) weight += 10.0
         }
 
-        eligibleOptions.push({ ...opt, _weight: weight * rng() })
-        if (opt.id === 'comm_sellout_ad') {
-          sponsorIdx = eligibleOptions.length - 1
+        if (opt.id) {
+          eligibleOptions.push({ ...opt, _weight: weight * rng() })
+          if (opt.id === 'comm_sellout_ad') {
+            sponsorIdx = eligibleOptions.length - 1
+          }
         }
       }
     } catch (e) {
@@ -742,10 +747,12 @@ export const negotiateDeal = (
   rng: RandomFn = secureRandom
 ): {
   success: boolean
-  deal: (Record<string, unknown> & {
-    alignment?: string
-    offer: { upfront: number; perGig?: number; [key: string]: unknown }
-  }) | null
+  deal:
+    | (Record<string, unknown> & {
+        alignment?: string
+        offer: { upfront: number; perGig?: number; [key: string]: unknown }
+      })
+    | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
