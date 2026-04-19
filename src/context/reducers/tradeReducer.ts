@@ -1,4 +1,4 @@
-import type { GameState } from '../../types/game'
+import type { GameState, ToastPayload } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerFame,
@@ -7,6 +7,7 @@ import {
 } from '../../utils/gameStateUtils'
 import { addContrabandHelper } from './bandReducer'
 import { getSafeUUID } from '../../utils/crypto'
+import { sanitizeSuccessToast } from './toastSanitizers'
 
 const ESCAPE_MAP = {
   '&': '&amp;',
@@ -23,7 +24,10 @@ const ESCAPE_MAP = {
  * @param {Object} payload - { contrabandId, fameCost, instanceId, successToast }
  * @returns {Object} Updated state
  */
-export const handleTradeVoidItem = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleTradeVoidItem = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for TRADE_VOID_ITEM')
     return state
@@ -72,24 +76,28 @@ export const handleTradeVoidItem = (state: GameState, payload: Record<string, un
 
   if (successToast) {
     const actualDelta = currentFame - nextFame
-    let enrichedToast
+    const successToastObj =
+      typeof successToast === 'object' &&
+      successToast !== null &&
+      !Array.isArray(successToast)
+        ? (successToast as Record<string, unknown>)
+        : null
+    if (!successToastObj) return nextState
+
+    let enrichedToast: ToastPayload | null = null
 
     const toastId = instanceId || getSafeUUID()
 
     if (
-      typeof successToast.messageKey === 'string' &&
-      successToast.messageKey.length > 0
+      typeof successToastObj.messageKey === 'string' &&
+      successToastObj.messageKey.length > 0
     ) {
-      enrichedToast = {
-        ...successToast,
-        id: toastId,
-        options: {
-          ...successToast.options,
-          fame: actualDelta
-        }
-      }
+      enrichedToast = sanitizeSuccessToast(successToast, {
+        fallbackId: toastId,
+        optionsPatch: { fame: actualDelta }
+      })
     } else {
-      let enrichedMessage = successToast.message
+      let enrichedMessage = successToastObj.message
       try {
         if (
           typeof enrichedMessage === 'string' &&
@@ -111,13 +119,16 @@ export const handleTradeVoidItem = (state: GameState, payload: Record<string, un
 
             const sanitizeContextValue = (value: unknown): unknown => {
               if (typeof value === 'string') {
-                return value.replace(/[&<>"']/g, match => ESCAPE_MAP[match])
+                return value.replace(/[&<>"']/g, match => {
+                  const escapeKey = match as keyof typeof ESCAPE_MAP
+                  return ESCAPE_MAP[escapeKey]
+                })
               }
               if (Array.isArray(value)) {
                 return value.map(item => sanitizeContextValue(item))
               }
               if (value !== null && typeof value === 'object') {
-                const out = Object.create(null)
+                const out: Record<string, unknown> = Object.create(null)
                 for (const prop in value) {
                   if (!Object.hasOwn(value, prop)) continue
                   if (isForbiddenKey(prop)) continue
@@ -128,7 +139,10 @@ export const handleTradeVoidItem = (state: GameState, payload: Record<string, un
               return value
             }
 
-            const finalSafeContext = sanitizeContextValue(rawContext)
+            const finalSafeContext = sanitizeContextValue(rawContext) as Record<
+              string,
+              unknown
+            >
             finalSafeContext.fame = actualDelta
             enrichedMessage = `${key}|${JSON.stringify(finalSafeContext)}`
           }
@@ -137,17 +151,20 @@ export const handleTradeVoidItem = (state: GameState, payload: Record<string, un
         logger.warn('GameState', 'Failed to enrich successToast message', err)
       }
 
-      enrichedToast = {
-        ...successToast,
-        id: toastId,
-        message: enrichedMessage
-      }
+      enrichedToast = sanitizeSuccessToast(successToast, {
+        fallbackId: toastId,
+        message: typeof enrichedMessage === 'string' ? enrichedMessage : '',
+        optionsPatch: { fame: actualDelta }
+      })
     }
 
-    return {
-      ...nextState,
-      toasts: [...(nextState.toasts || []), enrichedToast]
+    if (enrichedToast) {
+      return {
+        ...nextState,
+        toasts: [...(nextState.toasts || []), enrichedToast]
+      }
     }
+    return nextState
   }
 
   return nextState

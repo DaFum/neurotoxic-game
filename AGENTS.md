@@ -31,6 +31,13 @@
 - `jsconfig.checkjs.json` scopes stricter CheckJS (adds `noUncheckedIndexedAccess`) to migrated domains. When moving a new domain into that scope, add it to the `include` list in the same PR.
 - Typecheck entry points: `pnpm run typecheck:core` (full `tsc --noEmit` via `jsconfig.checkjs.json`) and `pnpm run typecheck` (scoped reducer gate used in CI).
 
+### TypeScript Best-Practice Patterns (repo canonical)
+
+- Prefer `as const satisfies` for keyed configs/lookups so keys are checked but literals stay narrow; avoid `as Record<...>` unless you intentionally want widening.
+- Reducers/sanitizers must **whitelist** untrusted payload fields when constructing objects (e.g., save toasts), not spread unknown records into state.
+- Avoid truthy checks when `0`/`''` are valid values (e.g., use `value != null` for optional numeric/string payload fields).
+- When invariants must hold (dense arrays, required map hits), fail loudly with explicit errors instead of silently skipping iterations.
+
 ## Testing
 
 - Test runner choice is directory-based; match neighboring tests (don't mix `node:test` and Vitest in one file).

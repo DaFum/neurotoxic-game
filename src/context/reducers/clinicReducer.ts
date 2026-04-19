@@ -17,6 +17,8 @@ import {
   clampControversyLevel
 } from '../../utils/gameStateUtils'
 import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils'
+import { getSafeUUID } from '../../utils/crypto'
+import { sanitizeSuccessToast } from './toastSanitizers'
 
 /**
  * Common logic for clinic actions.
@@ -112,8 +114,11 @@ const executeClinicAction = (
     (getSuccessToast && toastArgsArray
       ? getSuccessToast(...toastArgsArray)
       : null)
-  if (finalSuccessToast) {
-    nextState.toasts = [...(state.toasts || []), finalSuccessToast]
+  const safeToast = sanitizeSuccessToast(finalSuccessToast, {
+    fallbackId: getSafeUUID()
+  })
+  if (safeToast) {
+    nextState.toasts = [...(state.toasts || []), safeToast]
   }
 
   return nextState
@@ -275,22 +280,18 @@ export const handleBloodBankDonate = (
     const deltaHarmony = currentHarmony - nextHarmony // Expressed as a positive cost
     const deltaControversy = nextControversy - currentControversy
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...(((successToast as Record<string, unknown>).options as Record<
-            string,
-            unknown
-          >) || {}),
-          deltaMoney,
-          deltaHarmony,
-          deltaControversy,
-          deltaStamina: totalStaminaLost
-        }
+    const safeToast = sanitizeSuccessToast(successToast, {
+      fallbackId: getSafeUUID(),
+      optionsPatch: {
+        deltaMoney,
+        deltaHarmony,
+        deltaControversy,
+        deltaStamina: totalStaminaLost
       }
-    ]
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState

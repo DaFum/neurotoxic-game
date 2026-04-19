@@ -1,12 +1,14 @@
 import type { GameState, SocialState } from '../../types/game'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
+import { getSafeUUID } from '../../utils/crypto'
 import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
   calculateFameLevel
 } from '../../utils/gameStateUtils'
+import { sanitizeSuccessToast } from './toastSanitizers'
 
 /**
  * Handles social update actions
@@ -102,7 +104,10 @@ export const handleAddVenueBlacklist = (
   return nextState
 }
 
-export const handleMerchPress = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handleMerchPress = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
     return state
@@ -165,40 +170,60 @@ export const handleMerchPress = (state: GameState, payload: Record<string, unkno
     const deltaFame = nextFame - currentFame
     const actualCost = currentMoney - nextMoney
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...successToast.options,
-          deltaLoyalty,
-          deltaControversy,
-          deltaHarmony,
-          deltaFame,
-          cost: actualCost
-        }
+    const safeToast = sanitizeSuccessToast(successToast, {
+      fallbackId: getSafeUUID(),
+      optionsPatch: {
+        deltaLoyalty,
+        deltaControversy,
+        deltaHarmony,
+        deltaFame,
+        cost: actualCost
       }
-    ]
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState
 }
 
-export const handlePirateBroadcast = (state: GameState, payload: Record<string, unknown>): GameState => {
+export const handlePirateBroadcast = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')
     return state
   }
 
-  const cost = Number(payload.cost) || 0
+  const cost = Number(payload.cost)
   const fameGain = Number(payload.fameGain) || 0
   const zealotryGain = Number(payload.zealotryGain) || 0
   const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost) || 0
+  const harmonyCost = Number(payload.harmonyCost)
   const successToast = payload.successToast
 
-  const currentMoney = Number(state.player.money) || 0
-  const currentHarmony = Number(state.band.harmony) || 0
+  if (!Number.isFinite(cost) || cost < 0) {
+    logger.warn('GameState', 'Invalid pirate broadcast cost payload')
+    return state
+  }
+  if (!Number.isFinite(harmonyCost) || harmonyCost < 0) {
+    logger.warn('GameState', 'Invalid pirate broadcast harmonyCost payload')
+    return state
+  }
+
+  const currentMoney = Number(state.player.money)
+  const currentHarmony = Number(state.band.harmony)
+  if (
+    !Number.isFinite(currentMoney) ||
+    !Number.isFinite(currentHarmony) ||
+    currentMoney < 0 ||
+    currentHarmony < 0
+  ) {
+    logger.warn('GameState', 'Invalid player funds or harmony state')
+    return state
+  }
 
   if (state.social.lastPirateBroadcastDay === state.player.day) {
     logger.warn('GameState', 'Pirate broadcast already triggered today')
@@ -253,20 +278,19 @@ export const handlePirateBroadcast = (state: GameState, payload: Record<string, 
     const deltaHarmony = nextHarmony - currentHarmony
     const actualCost = currentMoney - nextMoney
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...successToast.options,
-          deltaFame,
-          deltaZealotry,
-          deltaControversy,
-          deltaHarmony,
-          cost: actualCost
-        }
+    const safeToast = sanitizeSuccessToast(successToast, {
+      fallbackId: getSafeUUID(),
+      optionsPatch: {
+        deltaFame,
+        deltaZealotry,
+        deltaControversy,
+        deltaHarmony,
+        cost: actualCost
       }
-    ]
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState

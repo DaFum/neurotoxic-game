@@ -246,9 +246,7 @@ export const parseSongNotes = (
   const rawTempoMap = useTempoMap
     ? (song.tempoMap as TempoMapEntry[])
     : undefined
-  const activeTempoMap = useTempoMap
-    ? preprocessTempoMap(rawTempoMap, tpb)
-    : []
+  const activeTempoMap = useTempoMap ? preprocessTempoMap(rawTempoMap, tpb) : []
 
   // 2. Map and filter in a single pass, processing only every 4th note
   const gameNotes: ParsedGameNote[] = []
@@ -277,8 +275,7 @@ export const parseSongNotes = (
 
     if (
       excerptRelativeTimeMs < 0 ||
-      (excerptDurationMs !== null &&
-        excerptRelativeTimeMs > excerptDurationMs)
+      (excerptDurationMs !== null && excerptRelativeTimeMs > excerptDurationMs)
     ) {
       continue
     }

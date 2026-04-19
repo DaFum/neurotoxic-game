@@ -136,6 +136,25 @@ describe('gigReducer', () => {
       assert.strictEqual(quest.progress, 1)
     })
 
+    it('should treat missing capacity as small venue for quest advancement', () => {
+      baseState.currentGig = { id: 'v1' }
+      baseState.activeQuests = [
+        { id: 'quest_apology_tour', progress: 0, required: 5 },
+        { id: 'quest_prove_yourself', progress: 0, required: 5 }
+      ]
+      const payload = { score: 70 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      const apologyQuest = nextState.activeQuests.find(
+        q => q.id === 'quest_apology_tour'
+      )
+      const proveYourselfQuest = nextState.activeQuests.find(
+        q => q.id === 'quest_prove_yourself'
+      )
+      assert.strictEqual(apologyQuest.progress, 1)
+      assert.strictEqual(proveYourselfQuest.progress, 1)
+    })
+
     it('should auto-complete ego management quest on high harmony', () => {
       baseState.band.harmony = 60
       baseState.activeQuests = [

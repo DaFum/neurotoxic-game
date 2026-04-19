@@ -30,6 +30,7 @@ import {
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
+import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
@@ -138,8 +139,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         return defaultStash
       } else if (
         typeof bandData.stash === 'object' &&
-        bandData.stash !== null &&
-        !Array.isArray(bandData.stash)
+        bandData.stash !== null
       ) {
         const migrated = Object.create(null)
         const stashObj = bandData.stash as Record<string, unknown>
@@ -218,28 +218,8 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   if (!Array.isArray(loadedToasts)) return []
   const acc: ToastPayload[] = []
   for (const t of loadedToasts) {
-    if (t && typeof t === 'object') {
-      const toastObj = t as Record<string, unknown>
-      if (toastObj.id && toastObj.message) {
-        const message = String(toastObj.message).trim()
-        if (message.length > 0) {
-          acc.push({
-            ...toastObj,
-            id: String(toastObj.id),
-            message,
-            type: ['success', 'error', 'warning', 'info'].includes(
-              String(toastObj.type)
-            )
-              ? (String(toastObj.type) as
-                  | 'success'
-                  | 'error'
-                  | 'warning'
-                  | 'info')
-              : 'info'
-          } as ToastPayload)
-        }
-      }
-    }
+    const safeToast = sanitizeLoadedToast(t, ALLOWED_TOAST_TYPES)
+    if (safeToast) acc.push(safeToast)
   }
   return acc
 }
@@ -294,9 +274,10 @@ export const handleLoadGame = (
   }
 
   // 4. Construct Safe State (Whitelist)
-  const incomingVersion =
-    loadedState.version !== undefined ? loadedState.version : state.version
-  const parsedVersion = parseInt(incomingVersion, 10)
+  const rawVersion = Object.hasOwn(loadedState, 'version')
+    ? loadedState.version
+    : state.version
+  const parsedVersion = Number(rawVersion)
   const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
 
   const safeState = {
@@ -360,7 +341,9 @@ export const handleLoadGame = (
           ? migratePlayerLocation(safeState.player.location)
           : safeState.player.location
     },
-    venueBlacklist: safeState.venueBlacklist.map(migrateLegacyVenueId)
+    venueBlacklist: safeState.venueBlacklist
+      .map(migrateLegacyVenueId)
+      .filter((id): id is string => id.length > 0)
   }
 
   // Migration: energy -> catering

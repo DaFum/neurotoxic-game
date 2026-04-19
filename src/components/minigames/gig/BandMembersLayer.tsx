@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next'
 import type { BandMembersLayerProps } from '../../../types/components'
 
 export const BandMembersLayer = memo(
-  ({ matzeUrl, mariusUrl, larsUrl, setBandMemberRef }: BandMembersLayerProps) => {
+  ({
+    matzeUrl,
+    mariusUrl,
+    larsUrl,
+    setBandMemberRef
+  }: BandMembersLayerProps) => {
     const { t } = useTranslation()
 
     return (

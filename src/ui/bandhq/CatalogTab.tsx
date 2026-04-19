@@ -77,7 +77,9 @@ const balancesValidator = (props, propName, componentName) => {
     if (Object.hasOwn(value, key)) {
       hasKeys = true
       if (!Number.isFinite(value[key])) {
-        return new Error(`${componentName}: balances values must be finite numbers`)
+        return new Error(
+          `${componentName}: balances values must be finite numbers`
+        )
       }
     }
   }

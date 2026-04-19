@@ -8,10 +8,16 @@ import { Tooltip } from '../ui/shared'
 export const ToggleRadio = memo(() => {
   const { t } = useTranslation()
   const { audioState: isPlaying, handleAudioChange } = useAudioControl(
-    useCallback(
-      state => state.currentSongId === 'ambient' && state.isPlaying,
-      []
-    ),
+    useCallback((state: unknown) => {
+      if (typeof state !== 'object' || state === null) return false
+      const audioState = state as {
+        currentSongId?: unknown
+        isPlaying?: unknown
+      }
+      return (
+        audioState.currentSongId === 'ambient' && audioState.isPlaying === true
+      )
+    }, []),
     { pollEvenWithSubscribe: true, pollMs: 1000 }
   )
 

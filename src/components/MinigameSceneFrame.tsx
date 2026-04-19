@@ -23,12 +23,15 @@ export const MinigameSceneFrame = ({
   children
 }: MinigameSceneFrameProps) => {
   const { settings } = useGameState()
-  const continueButtonRef = useRef(null)
-  const previousFocusRef = useRef(null)
+  const continueButtonRef = useRef<HTMLButtonElement | null>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
-      previousFocusRef.current = document.activeElement
+      previousFocusRef.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null
       continueButtonRef.current?.focus()
     }
 
@@ -41,15 +44,17 @@ export const MinigameSceneFrame = ({
   }, [uiState?.isGameOver])
 
   useEffect(() => {
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
       } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
-          logic?.finishMinigame?.() ||
-            logic?.dispatch?.({ type: 'COMPLETE_MINIGAME' }) ||
+          if (logic?.finishMinigame) {
+            logic.finishMinigame()
+          } else {
             onComplete()
+          }
         }
       }
     }
@@ -105,10 +110,7 @@ export const MinigameSceneFrame = ({
 MinigameSceneFrame.propTypes = {
   controllerFactory: PropTypes.func.isRequired,
   logic: PropTypes.shape({
-    gameStateRef: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.shape({ current: PropTypes.any })
-    ]).isRequired,
+    gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
     dispatch: PropTypes.func
