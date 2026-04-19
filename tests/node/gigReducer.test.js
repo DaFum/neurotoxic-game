@@ -70,7 +70,7 @@ describe('gigReducer', () => {
     })
 
     it('should process bad show correctly', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
@@ -79,7 +79,7 @@ describe('gigReducer', () => {
     })
 
     it('should process 3 bad shows into prove yourself quest', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       baseState.player.stats.consecutiveBadShows = 2
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
