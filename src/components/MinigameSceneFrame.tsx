@@ -110,7 +110,7 @@ export const MinigameSceneFrame = ({
 }
 
 MinigameSceneFrame.propTypes = {
-  controllerFactory: PropTypes.func.isRequired,
+  controllerFactory: PropTypes.func,
   logic: PropTypes.shape({
     gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,

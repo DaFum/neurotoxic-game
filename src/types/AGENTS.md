@@ -23,3 +23,9 @@ Applies to `src/types/**`.
 
 - Favor additive, backward-compatible edits. Breaking a contract requires updating `actionTypes`, reducer handling, and `actionCreators` in the same PR.
 - Avoid re-exporting third-party types wholesale — re-exports leak dependency surface and defeat tree-shaking.
+
+## TypeScript Gotcha: Interface ↔ PropTypes Sync
+
+- If a React component exposes both a TypeScript props interface and `propTypes`, keep optional/required fields in strict sync in the same PR.
+- Example: if `controllerFactory?: ...` in `src/types/components.d.ts`, then the runtime contract must be `PropTypes.func` (not `PropTypes.func.isRequired`) in `src/components/MinigameSceneFrame.tsx`.
+

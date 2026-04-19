@@ -84,3 +84,9 @@
 - `.cjs` extension is required for ad-hoc Node scripts that use `require()`.
 - Use `process.env.VITE_VAR` for env vars needing Vite/node:test dual compatibility.
 - Pollinations API key is safe to publish.
+
+## TypeScript Gotcha: Interface ↔ PropTypes Sync
+
+- If a React component exposes both a TypeScript props interface and `propTypes`, keep optional/required fields in strict sync in the same PR.
+- Example: if `controllerFactory?: ...` in `src/types/components.d.ts`, then the runtime contract must be `PropTypes.func` (not `PropTypes.func.isRequired`) in `src/components/MinigameSceneFrame.tsx`.
+
