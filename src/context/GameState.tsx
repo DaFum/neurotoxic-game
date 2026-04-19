@@ -73,6 +73,7 @@ import {
   createClinicHealAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction,
+  createDarkWebLeakAction,
   createMerchPressAction,
   createTradeVoidItemAction,
   createBloodBankDonateAction,
@@ -645,6 +646,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Dispatches a pirate broadcast action.
    * @param {object} payload - The broadcast payload.
    */
+  const darkWebLeak = useCallback(
+    (payload: import('../types/game').DarkWebLeakPayload) =>
+      dispatch(createDarkWebLeakAction(payload)),
+    []
+  )
+
   const pirateBroadcast = useCallback(
     (payload: PirateBroadcastPayload) =>
       dispatch(createPirateBroadcastAction(payload)),
@@ -1061,6 +1068,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       useContraband,
       clinicHeal,
       clinicEnhance,
+      darkWebLeak,
       pirateBroadcast,
       merchPress,
       tradeVoidItem,
@@ -1105,6 +1113,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       useContraband,
       clinicHeal,
       clinicEnhance,
+      darkWebLeak,
       pirateBroadcast,
       merchPress,
       tradeVoidItem,

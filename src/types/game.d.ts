@@ -228,6 +228,15 @@ export interface ClinicActionPayload {
   [key: string]: unknown
 }
 
+export interface DarkWebLeakPayload {
+  cost: number
+  fameGain: number
+  zealotryGain: number
+  controversyGain: number
+  harmonyCost: number
+  successToast?: ToastData
+}
+
 export interface PirateBroadcastPayload {
   cost: number
   fameGain: number
@@ -364,3 +373,4 @@ export type GameAction =
   | Action<ActionTypes['MERCH_PRESS'], MerchPressPayload>
   | Action<ActionTypes['TRADE_VOID_ITEM'], TradeVoidItemPayload>
   | Action<ActionTypes['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
+  | Action<ActionTypes['DARK_WEB_LEAK'], DarkWebLeakPayload>

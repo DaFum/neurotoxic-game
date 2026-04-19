@@ -102,3 +102,6 @@ After travel the band can get an item with specials to use.
 ## 2026-04-11 - Amp Calibration Minigame
 **Feature:** Amp Calibration
 **Description:** Created a new minigame for PreGig phase alongside Roadie Run and Kabelsalat. The Amp Calibration minigame requires the player to match visual frequencies using a dial. It integrates with Tone.js for WebAudio integration and PixiJS for visual rendering (a waveform oscillating). Added core action creators, game state reducer logic (clamping scores, stress, harmony), hooked into SceneRouter, and modified the 1/3 RNG split in PreGig.jsx. Also implemented rigorous node tests and English/German translation files.
+## 2026-04-19 - Dark Web Data Leak
+**Feature:** Dark Web Data Leak Minigame/Event
+**Description:** Created a modal and action dispatch to let the user leak their track early for a quick hit of Fame and Zealotry, while damaging Harmony and increasing Controversy. Fully validated bounds with native helpers.

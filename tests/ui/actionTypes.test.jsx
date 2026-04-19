@@ -47,7 +47,8 @@ describe('ActionTypes', () => {
       'PIRATE_BROADCAST',
       'MERCH_PRESS',
       'TRADE_VOID_ITEM',
-      'BLOOD_BANK_DONATE'
+      'BLOOD_BANK_DONATE',
+      'DARK_WEB_LEAK'
     ]
 
     expectedTypes.forEach(type => {

@@ -18,6 +18,7 @@ export const OverworldMenu = React.memo(
     openPirateRadio,
     openMerchPress,
     openBloodBank,
+    openDarkWebLeak,
     openHQ,
     handleRefuel,
     handleRepair,
@@ -75,6 +76,14 @@ export const OverworldMenu = React.memo(
                 size='sm'
               >
                 [{t('ui:blood_bank.button', { defaultValue: 'VOID CLINIC' })}]
+              </GlitchButton>
+              <GlitchButton
+                onClick={openDarkWebLeak}
+                disabled={isTraveling}
+                variant='danger'
+                size='sm'
+              >
+                [DARK WEB LEAK]
               </GlitchButton>
               <GlitchButton
                 onClick={openHQ}

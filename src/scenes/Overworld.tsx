@@ -8,6 +8,7 @@ import { useContrabandStash } from '../hooks/useContrabandStash'
 import { usePirateRadio } from '../hooks/usePirateRadio'
 import { useMerchPress } from '../hooks/useMerchPress'
 import { useBloodBank } from '../hooks/useBloodBank'
+import { useDarkWebLeak } from '../hooks/useDarkWebLeak'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
@@ -21,6 +22,7 @@ import { ContrabandStash } from '../ui/ContrabandStash'
 import { PirateRadioModal } from '../ui/PirateRadioModal'
 import { MerchPressModal } from '../ui/MerchPressModal'
 import { BloodBankModal } from '../ui/BloodBankModal'
+import { DarkWebLeakModal } from '../ui/DarkWebLeakModal'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { calculateEffectiveTicketPrice } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
@@ -81,6 +83,16 @@ export const Overworld = () => {
     canDonate,
     config: bloodBankConfig
   } = useBloodBank()
+
+  const {
+    showDarkWebLeak,
+    hasLeakedToday,
+    openDarkWebLeak,
+    closeDarkWebLeak,
+    triggerLeak,
+    canLeak: canDarkWebLeak,
+    DARK_WEB_LEAK_CONFIG
+  } = useDarkWebLeak()
 
   const {
     isTraveling,
@@ -319,6 +331,7 @@ export const Overworld = () => {
         openPirateRadio={openPirateRadio}
         openMerchPress={openMerchPress}
         openBloodBank={openBloodBank}
+        openDarkWebLeak={openDarkWebLeak}
         openHQ={openHQ}
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
@@ -381,6 +394,15 @@ export const Overworld = () => {
           onDonate={triggerDonate}
           canDonate={canDonate}
           config={bloodBankConfig}
+        />
+      )}
+      {showDarkWebLeak && (
+        <DarkWebLeakModal
+          onCancel={closeDarkWebLeak}
+          onConfirm={triggerLeak}
+          canLeak={canDarkWebLeak}
+          hasLeakedToday={hasLeakedToday}
+          config={DARK_WEB_LEAK_CONFIG}
         />
       )}
     </div>

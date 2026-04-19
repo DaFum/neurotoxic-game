@@ -13,7 +13,8 @@ import {
   handleUpdateSocial,
   handleAddVenueBlacklist,
   handlePirateBroadcast,
-  handleMerchPress
+  handleMerchPress,
+  handleDarkWebLeak
 } from './reducers/socialReducer'
 import {
   handleSetGig,
@@ -99,6 +100,7 @@ const reducerMap = {
   [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
   [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
+  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
