@@ -33,7 +33,9 @@ export const handleTradeVoidItem = (
     return state
   }
 
-  const { contrabandId, fameCost, instanceId, successToast } = payload
+  const { fameCost, successToast } = payload
+  const contrabandId = typeof payload.contrabandId === 'string' ? payload.contrabandId : ''
+  const instanceId = typeof payload.instanceId === 'string' ? payload.instanceId : undefined
 
   const cost = Math.max(0, Number(fameCost) || 0)
   const currentFame = Number(state.player.fame) || 0
@@ -63,8 +65,8 @@ export const handleTradeVoidItem = (
       'GameState',
       'Failed to add void item to stash (max stacks or invalid item)'
     )
-    const failureToast = {
-      id: instanceId || getSafeUUID(),
+    const failureToast: ToastPayload = {
+      id: instanceId ?? getSafeUUID(),
       messageKey: 'ui:shop.messages.purchaseFailed',
       type: 'error'
     }
@@ -86,7 +88,7 @@ export const handleTradeVoidItem = (
 
     let enrichedToast: ToastPayload | null = null
 
-    const toastId = instanceId || getSafeUUID()
+    const toastId = instanceId ?? getSafeUUID()
 
     if (
       typeof successToastObj.messageKey === 'string' &&
@@ -115,7 +117,7 @@ export const handleTradeVoidItem = (
               Object.getPrototypeOf(parsedContext) === null)
 
           if (isPlainObject) {
-            const rawContext = parsedContext
+            const rawContext = parsedContext as Record<string, unknown>
 
             const sanitizeContextValue = (value: unknown): unknown => {
               if (typeof value === 'string') {
@@ -132,7 +134,7 @@ export const handleTradeVoidItem = (
                 for (const prop in value) {
                   if (!Object.hasOwn(value, prop)) continue
                   if (isForbiddenKey(prop)) continue
-                  out[prop] = sanitizeContextValue(value[prop])
+                  out[prop] = sanitizeContextValue((value as Record<string, unknown>)[prop])
                 }
                 return out
               }

@@ -88,10 +88,14 @@ export const handleCompleteTravelMinigame = (
     state.player.van.condition - conditionLoss
   )
 
+  const venueObj =
+    typeof targetNode.venue === 'object' && targetNode.venue !== null
+      ? (targetNode.venue as Record<string, unknown>)
+      : null
   const nextPlayer = {
     ...state.player,
     money: nextMoney,
-    location: targetNode.venue?.name || 'Unknown',
+    location: typeof venueObj?.name === 'string' ? venueObj.name : 'Unknown',
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,
     van: {
@@ -138,15 +142,18 @@ export const handleCompleteTravelMinigame = (
     const preStashLength = newState.band.stash
       ? Object.keys(newState.band.stash).length
       : 0
-    const preStacks = newState.band.stash
-      ? newState.band.stash[contrabandId]?.stacks || 0
+    const preStashItem = newState.band.stash
+      ? (newState.band.stash[contrabandId] as Record<string, unknown> | undefined)
+      : undefined
+    const preStacks = preStashItem
+      ? (preStashItem.stacks as number | undefined) || 0
       : 0
 
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band?.stash?.[contrabandId]
-    const postStacks = postItem ? postItem.stacks || 0 : 0
+    const postItem = newState.band?.stash?.[contrabandId] as Record<string, unknown> | undefined
+    const postStacks = postItem ? (postItem.stacks as number | undefined) || 0 : 0
     const postStashLength = Object.keys(newState.band?.stash || {}).length
 
     const wasAdded = postStashLength > preStashLength || postStacks > preStacks
@@ -171,7 +178,7 @@ export const handleCompleteTravelMinigame = (
 
 export const handleStartRoadieMinigame = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: { gigId: string }
 ): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
@@ -190,7 +197,7 @@ export const handleStartRoadieMinigame = (
 
 export const handleStartAmpCalibration = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: { gigId: string }
 ): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
@@ -246,7 +253,7 @@ export const handleCompleteAmpCalibration = (
 
 export const handleStartKabelsalatMinigame = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: { gigId: string }
 ): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
@@ -305,7 +312,7 @@ export const handleCompleteKabelsalatMinigame = (
 
 export const handleCompleteRoadieMinigame = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: { equipmentDamage: number }
 ): GameState => {
   const { equipmentDamage } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)

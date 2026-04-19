@@ -3,7 +3,10 @@ import type {
   GameState,
   PlayerState,
   BandState,
-  ToastPayload
+  BandMember,
+  ToastPayload,
+  GameMap,
+  GameSettings
 } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
@@ -124,7 +127,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           const baseItem = CONTRABAND_BY_ID.get(itemObj.id as string)
           if (!baseItem) continue
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...itemObj }
+          const copy = { ...baseItem, ...itemObj } as Record<string, unknown>
           copy.id = itemObj.id as string
           if (
             Object.hasOwn(item, 'remainingDuration') &&
@@ -132,7 +135,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           ) {
             copy.remainingDuration = itemObj.remainingDuration as number | null
           } else {
-            copy.remainingDuration = copy.duration || null
+            copy.remainingDuration = (copy.duration as number | undefined) || null
           }
           defaultStash[itemObj.id as string] = copy
         }
@@ -151,7 +154,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
           const itemObj = item as Record<string, unknown>
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...itemObj }
+          const copy = { ...baseItem, ...itemObj } as Record<string, unknown>
           copy.id = id
           if (
             Object.hasOwn(item, 'remainingDuration') &&
@@ -159,7 +162,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           ) {
             copy.remainingDuration = itemObj.remainingDuration as number | null
           } else {
-            copy.remainingDuration = copy.duration || null
+            copy.remainingDuration = (copy.duration as number | undefined) || null
           }
           migrated[id] = copy
         }
@@ -188,7 +191,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
   }
 
   // Validate Band Members
-  const validatedMembers = Array.isArray(rawBand.members)
+  const validatedMembers: BandMember[] = Array.isArray(rawBand.members)
     ? rawBand.members.map(m => ({
         ...m,
         // Backfill id from name for saves created before id fields were added
@@ -203,8 +206,12 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         stamina: clampMemberStamina(
           typeof m.stamina === 'number' ? m.stamina : 100,
           (m as Record<string, unknown>).staminaMax as number | undefined
-        )
-      }))
+        ),
+        relationships:
+          m.relationships && typeof m.relationships === 'object'
+            ? (m.relationships as unknown as Record<string, number>)
+            : ({} as Record<string, number>)
+      })) as BandMember[]
     : []
 
   return {
@@ -280,13 +287,13 @@ export const handleLoadGame = (
   const parsedVersion = Number(rawVersion)
   const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
 
-  const safeState = {
+  const safeState: GameState = {
     ...state,
     version: explicitVersion,
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
-    gameMap: loadedState.gameMap || state.gameMap,
+    gameMap: (loadedState.gameMap as GameMap | null) || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
@@ -297,42 +304,45 @@ export const handleLoadGame = (
     eventCooldowns: Array.isArray(loadedState.eventCooldowns)
       ? loadedState.eventCooldowns
       : [],
-    activeEvent: loadedState.activeEvent || null,
+    activeEvent: (loadedState.activeEvent as GameState['activeEvent']) || null,
     toasts: sanitizeToasts(loadedState.toasts),
-    reputationByRegion: loadedState.reputationByRegion || {},
+    reputationByRegion:
+      (loadedState.reputationByRegion as Record<string, number>) || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
-      ? loadedState.venueBlacklist
+      ? (loadedState.venueBlacklist as string[])
       : [],
     activeQuests: Array.isArray(loadedState.activeQuests)
       ? loadedState.activeQuests
       : [],
-    npcs: loadedState.npcs || {},
+    npcs:
+      (loadedState.npcs as GameState['npcs']) || {},
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
-      ...(loadedState.gigModifiers || {})
+      ...((loadedState.gigModifiers as Record<string, boolean>) || {})
     },
     currentScene: GAME_PHASES.OVERWORLD,
-    currentGig: loadedState.currentGig || null,
-    lastGigStats: loadedState.lastGigStats || null,
+    currentGig: (loadedState.currentGig as GameState['currentGig']) || null,
+    lastGigStats:
+      (loadedState.lastGigStats as GameState['lastGigStats']) || null,
     settings: {
       ...state.settings,
       ...(typeof loadedState.settings === 'object' &&
       loadedState.settings !== null &&
       !Array.isArray(loadedState.settings)
-        ? loadedState.settings
+        ? (loadedState.settings as Partial<GameSettings>)
         : {})
     },
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
-      ...(loadedState.minigame || {})
+      ...((loadedState.minigame as Record<string, unknown>) || {})
     },
     unlocks: Array.isArray(loadedState.unlocks)
-      ? loadedState.unlocks
+      ? (loadedState.unlocks as string[])
       : state.unlocks || []
   }
 
   // Apply venue migrations using spreads
-  const migratedState = {
+  const migratedState: GameState = {
     ...safeState,
     player: {
       ...safeState.player,
@@ -347,9 +357,10 @@ export const handleLoadGame = (
   }
 
   // Migration: energy -> catering
-  if (migratedState.gigModifiers.energy !== undefined) {
-    const { energy, ...restModifiers } = migratedState.gigModifiers
-    migratedState.gigModifiers = { ...restModifiers, catering: energy }
+  const gigModifiersLegacy = migratedState.gigModifiers as Record<string, boolean>
+  if (gigModifiersLegacy.energy !== undefined) {
+    const { energy, ...restModifiers } = gigModifiersLegacy
+    migratedState.gigModifiers = { ...DEFAULT_GIG_MODIFIERS, ...restModifiers, catering: energy }
   }
 
   // Version Migration Map
@@ -368,15 +379,20 @@ export const handleResetState = (
   logger.info('GameState', 'State Reset (Debug)')
 
   // Construct the data to preserve across reset
-  const persistedData = {
-    settings: payload.settings || state.settings,
-    unlocks: Array.isArray(payload.unlocks) ? payload.unlocks : []
+  const persistedData: { settings?: Record<string, unknown>; unlocks?: string[] } = {
+    settings:
+      payload.settings !== null &&
+      payload.settings !== undefined &&
+      typeof payload.settings === 'object' &&
+      !Array.isArray(payload.settings)
+        ? (payload.settings as Record<string, unknown>)
+        : (state.settings as unknown as Record<string, unknown>),
+    unlocks: Array.isArray(payload.unlocks)
+      ? (payload.unlocks as string[])
+      : []
   }
 
-  return {
-    ...createInitialState(persistedData),
-    settings: persistedData.settings
-  }
+  return createInitialState(persistedData)
 }
 
 export const handleUpdateSettings = (
@@ -392,7 +408,7 @@ export const handleSetMap = (
   payload: Record<string, unknown>
 ): GameState => {
   logger.info('GameState', 'Map Generated')
-  return { ...state, gameMap: payload }
+  return { ...state, gameMap: payload as GameMap }
 }
 
 export const handleAddToast = (
@@ -412,63 +428,66 @@ export const handleRemoveToast = (
   }
 }
 
-const EFFECT_REVERTERS = {
-  harmony: (band, value) => ({
+const EFFECT_REVERTERS: Record<
+  string,
+  (band: BandState, value: unknown) => BandState
+> = {
+  harmony: (band: BandState, value: unknown) => ({
     ...band,
-    harmony: clampBandHarmony((band.harmony || 0) - value)
+    harmony: clampBandHarmony((band.harmony || 0) - (value as number))
   }),
-  guitar_difficulty: (band, value) => ({
+  guitar_difficulty: (band: BandState, value: unknown) => ({
     ...band,
     performance: {
       ...band.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (band.performance?.guitarDifficulty || 1) - value
+        (band.performance?.guitarDifficulty || 1) - (value as number)
       )
     }
   }),
-  luck: (band, value) => ({
+  luck: (band: BandState, value: unknown) => ({
     ...band,
-    luck: Math.max(0, (band.luck || 0) - value)
+    luck: Math.max(0, ((band.luck as number) || 0) - (value as number))
   }),
-  stamina_max: (band, value) => ({
+  stamina_max: (band: BandState, value: unknown) => ({
     ...band,
-    members: (band.members || []).map(m => ({
+    members: (band.members || []).map((m: BandMember) => ({
       ...m,
-      staminaMax: Math.max(0, (m.staminaMax || 100) - value)
+      staminaMax: Math.max(0, ((m.staminaMax as number) || 100) - (value as number))
     }))
   }),
-  style: (band, value) => ({
+  style: (band: BandState, value: unknown) => ({
     ...band,
-    style: Math.max(0, (band.style || 0) - value)
+    style: Math.max(0, ((band.style as number) || 0) - (value as number))
   }),
-  tour_success: (band, value) => ({
+  tour_success: (band: BandState, value: unknown) => ({
     ...band,
-    tourSuccess: Math.max(0, (band.tourSuccess || 0) - value)
+    tourSuccess: Math.max(0, ((band.tourSuccess as number) || 0) - (value as number))
   }),
-  gig_modifier: (band, value) => ({
+  gig_modifier: (band: BandState, value: unknown) => ({
     ...band,
-    gigModifier: Math.max(0, (band.gigModifier || 0) - value)
+    gigModifier: Math.max(0, ((band.gigModifier as number) || 0) - (value as number))
   }),
-  tempo: (band, value) => ({
+  tempo: (band: BandState, value: unknown) => ({
     ...band,
-    tempo: Math.max(0, (band.tempo || 0) - value)
+    tempo: Math.max(0, ((band.tempo as number) || 0) - (value as number))
   }),
-  practice_gain: (band, value) => ({
+  practice_gain: (band: BandState, value: unknown) => ({
     ...band,
-    practiceGain: Math.max(0, (band.practiceGain || 0) - value)
+    practiceGain: Math.max(0, ((band.practiceGain as number) || 0) - (value as number))
   }),
-  crit: (band, value) => ({
+  crit: (band: BandState, value: unknown) => ({
     ...band,
-    crit: Math.max(0, (band.crit || 0) - value)
+    crit: Math.max(0, ((band.crit as number) || 0) - (value as number))
   }),
-  affinity: (band, value) => ({
+  affinity: (band: BandState, value: unknown) => ({
     ...band,
-    affinity: Math.max(0, (band.affinity || 0) - value)
+    affinity: Math.max(0, ((band.affinity as number) || 0) - (value as number))
   }),
-  crowd_control: (band, value) => ({
+  crowd_control: (band: BandState, value: unknown) => ({
     ...band,
-    crowdControl: Math.max(0, (band.crowdControl || 0) - value)
+    crowdControl: Math.max(0, ((band.crowdControl as number) || 0) - (value as number))
   })
 }
 
@@ -479,13 +498,16 @@ const EFFECT_REVERTERS = {
  */
 const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
-  const stillActive = []
-  const expired = []
+  const stillActive: unknown[] = []
+  const expired: Record<string, unknown>[] = []
 
   for (let i = 0; i < activeEffects.length; i++) {
+    const effect = activeEffects[i]
+    if (typeof effect !== 'object' || effect === null) continue
+    const effectObj = effect as Record<string, unknown>
     const updatedEffect = {
-      ...activeEffects[i],
-      remainingDuration: activeEffects[i].remainingDuration - 1
+      ...effectObj,
+      remainingDuration: (effectObj.remainingDuration as number) - 1
     }
     if (updatedEffect.remainingDuration > 0) {
       stillActive.push(updatedEffect)
@@ -499,13 +521,14 @@ const processContrabandExpiry = (band: BandState): BandState => {
   // Revert expired effects
   for (let i = 0; i < expired.length; i++) {
     const e = expired[i]
-    const reverter = EFFECT_REVERTERS[e.effectType]
+    const effectType = e.effectType as string
+    const reverter = EFFECT_REVERTERS[effectType]
     if (reverter) {
-      nextBand = reverter(nextBand, e.value, e)
+      nextBand = reverter(nextBand, e.value)
     } else {
       logger.warn(
         'SystemReducer',
-        `No reverter defined for expired effect type: ${e.effectType}`,
+        `No reverter defined for expired effect type: ${effectType}`,
         { value: e.value, effect: e }
       )
     }
@@ -519,9 +542,11 @@ const processContrabandExpiry = (band: BandState): BandState => {
       for (const itemKey in nextBand.stash) {
         if (!Object.hasOwn(nextBand.stash, itemKey)) continue
         const item = nextBand.stash[itemKey]
-        if (item.instanceId === e.instanceId) {
+        if (typeof item !== 'object' || item === null) continue
+        const itemObj = item as Record<string, unknown>
+        if (itemObj.instanceId === e.instanceId) {
           nextBand.stash[itemKey] = {
-            ...item,
+            ...itemObj,
             applied: false
           }
           break
@@ -543,7 +568,10 @@ export const handleAdvanceDay = (
   state: GameState,
   payload: Record<string, unknown>
 ): GameState => {
-  const rng = payload?.rng || getSafeRandom
+  const rng =
+    typeof payload?.rng === 'function'
+      ? (payload.rng as () => number)
+      : getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
     rng
@@ -574,7 +602,7 @@ export const handleAdvanceDay = (
 
   const newTrend = generateDailyTrend(rng)
 
-  let nextState = {
+  let nextState: GameState = {
     ...state,
     player: nextPlayer,
     band: finalBandState,
@@ -585,7 +613,11 @@ export const handleAdvanceDay = (
 
   nextState = handleFailQuests(nextState)
 
-  if (pendingFlags?.scandal) {
+  const pendingFlagsObj =
+    typeof pendingFlags === 'object' && pendingFlags !== null
+      ? (pendingFlags as Record<string, unknown>)
+      : null
+  if (pendingFlagsObj?.scandal) {
     nextState.pendingEvents = [
       ...(nextState.pendingEvents || []),
       'consequences_bandmate_scandal'

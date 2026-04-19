@@ -71,7 +71,7 @@ export const sanitizeLoadedToast = (
     toastObj.messageKey.trim().length > 0
   if (!(id.length > 0 && (hasMessage || hasMessageKey))) return null
 
-  const message = hasMessage ? toastObj.message.trim() : ''
+  const message = hasMessage ? (toastObj.message as string).trim() : ''
   if (!(message.length > 0 || hasMessageKey)) return null
 
   const toastType = String(toastObj.type)
