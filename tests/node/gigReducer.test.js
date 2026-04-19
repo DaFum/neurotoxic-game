@@ -105,7 +105,7 @@ describe('gigReducer', () => {
     })
 
     it('should process good show correctly and clear consecutive bad shows', () => {
-      baseState.currentGig = { venue: { id: 'v1', capacity: 100 } }
+      baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.player.stats.consecutiveBadShows = 2
       const payload = { score: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
@@ -115,7 +115,7 @@ describe('gigReducer', () => {
     })
 
     it('should apply bonus reputation for very high score', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1' }
       const payload = { score: 95 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
@@ -123,7 +123,7 @@ describe('gigReducer', () => {
     })
 
     it('should advance apology tour quest on good score and small capacity', () => {
-      baseState.currentGig = { venue: { capacity: 250 } }
+      baseState.currentGig = { id: 'v1', capacity: 250 }
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 }
       ]
