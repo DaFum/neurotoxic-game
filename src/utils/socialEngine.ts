@@ -722,6 +722,7 @@ export const generateBrandOffers = (
     const j = Math.floor(rng() * (i + 1))
     ;[pool[i], pool[j]] = [pool[j], pool[i]]
     const deal = pool[i]
+    if (!deal) continue
 
     const align = deal.alignment
     const rep = reputation[align] || 0
