@@ -30,6 +30,7 @@ import {
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
+import { sanitizeLoadedToast } from './toastSanitizers'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
@@ -224,50 +225,8 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   if (!Array.isArray(loadedToasts)) return []
   const acc: ToastPayload[] = []
   for (const t of loadedToasts) {
-    if (t && typeof t === 'object') {
-      const toastObj = t as Record<string, unknown>
-      const id = typeof toastObj.id === 'string' ? toastObj.id.trim() : ''
-      const hasMessage = toastObj.message !== undefined
-      const hasMessageKey = typeof toastObj.messageKey === 'string'
-      if (id.length > 0 && (hasMessage || hasMessageKey)) {
-        const message = hasMessage ? String(toastObj.message).trim() : ''
-        if (message.length > 0 || hasMessageKey) {
-          const toastType = String(toastObj.type)
-          const type = ALLOWED_TOAST_TYPES.includes(
-            toastType as ToastPayload['type']
-          )
-            ? (toastType as ToastPayload['type'])
-            : 'info'
-          const safeToast: ToastPayload = {
-            id,
-            message,
-            type
-          }
-          if (typeof toastObj.messageKey === 'string') {
-            safeToast.messageKey = toastObj.messageKey
-          }
-          if (
-            typeof toastObj.options === 'object' &&
-            toastObj.options !== null &&
-            !Array.isArray(toastObj.options)
-          ) {
-            safeToast.options = toastObj.options as Record<string, unknown>
-          }
-          if (
-            Number.isFinite(toastObj.timeout as number) &&
-            (toastObj.timeout as number) >= 0
-          ) {
-            safeToast.timeout = toastObj.timeout as number
-          }
-          if (Number.isFinite(toastObj.createdAt as number)) {
-            safeToast.createdAt = toastObj.createdAt as number
-          }
-          acc.push({
-            ...safeToast
-          })
-        }
-      }
-    }
+    const safeToast = sanitizeLoadedToast(t, ALLOWED_TOAST_TYPES)
+    if (safeToast) acc.push(safeToast)
   }
   return acc
 }

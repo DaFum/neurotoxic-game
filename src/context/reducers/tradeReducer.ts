@@ -7,6 +7,7 @@ import {
 } from '../../utils/gameStateUtils'
 import { addContrabandHelper } from './bandReducer'
 import { getSafeUUID } from '../../utils/crypto'
+import { sanitizeSuccessToast } from './toastSanitizers'
 
 const ESCAPE_MAP = {
   '&': '&amp;',
@@ -14,49 +15,6 @@ const ESCAPE_MAP = {
   '>': '&gt;',
   '"': '&quot;',
   "'": '&#39;'
-}
-
-const sanitizeSuccessToast = (
-  toast: unknown,
-  {
-    fallbackId,
-    fallbackType = 'info',
-    message,
-    optionsPatch = {}
-  }: {
-    fallbackId: string
-    fallbackType?: string
-    message?: string
-    optionsPatch?: Record<string, unknown>
-  }
-): ToastPayload | null => {
-  if (!toast || typeof toast !== 'object' || Array.isArray(toast)) return null
-  const toastObj = toast as Record<string, unknown>
-  const id =
-    typeof toastObj.id === 'string' && toastObj.id.trim().length > 0
-      ? toastObj.id.trim()
-      : fallbackId
-  const type = typeof toastObj.type === 'string' ? toastObj.type : fallbackType
-  const finalMessage = typeof message === 'string' ? message : undefined
-  const messageKey =
-    typeof toastObj.messageKey === 'string' ? toastObj.messageKey : ''
-  if (!finalMessage && messageKey.length === 0) return null
-
-  const baseOptions =
-    typeof toastObj.options === 'object' &&
-    toastObj.options !== null &&
-    !Array.isArray(toastObj.options)
-      ? (toastObj.options as Record<string, unknown>)
-      : {}
-
-  const safeToast: ToastPayload = {
-    id,
-    type,
-    options: { ...baseOptions, ...optionsPatch }
-  }
-  if (finalMessage) safeToast.message = finalMessage
-  if (messageKey.length > 0) safeToast.messageKey = messageKey
-  return safeToast
 }
 
 /**
