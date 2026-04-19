@@ -1,12 +1,47 @@
-import type { GameState, SocialState } from '../../types/game'
+import type { GameState, SocialState, ToastPayload } from '../../types/game'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
+import { getSafeUUID } from '../../utils/crypto'
 import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
   calculateFameLevel
 } from '../../utils/gameStateUtils'
+
+const sanitizeSuccessToast = (
+  toast: unknown,
+  optionsPatch: Record<string, unknown>
+): ToastPayload | null => {
+  if (!toast || typeof toast !== 'object' || Array.isArray(toast)) return null
+  const toastObj = toast as Record<string, unknown>
+  const id =
+    typeof toastObj.id === 'string' && toastObj.id.trim().length > 0
+      ? toastObj.id.trim()
+      : getSafeUUID()
+  const type = typeof toastObj.type === 'string' ? toastObj.type : 'info'
+  const message =
+    typeof toastObj.message === 'string' ? toastObj.message.trim() : ''
+  const messageKey =
+    typeof toastObj.messageKey === 'string' ? toastObj.messageKey : ''
+  if (message.length === 0 && messageKey.length === 0) return null
+
+  const baseOptions =
+    typeof toastObj.options === 'object' &&
+    toastObj.options !== null &&
+    !Array.isArray(toastObj.options)
+      ? (toastObj.options as Record<string, unknown>)
+      : {}
+
+  const safeToast: ToastPayload = {
+    id,
+    type,
+    options: { ...baseOptions, ...optionsPatch }
+  }
+  if (message.length > 0) safeToast.message = message
+  if (messageKey.length > 0) safeToast.messageKey = messageKey
+  return safeToast
+}
 
 /**
  * Handles social update actions
@@ -168,20 +203,16 @@ export const handleMerchPress = (
     const deltaFame = nextFame - currentFame
     const actualCost = currentMoney - nextMoney
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...successToast.options,
-          deltaLoyalty,
-          deltaControversy,
-          deltaHarmony,
-          deltaFame,
-          cost: actualCost
-        }
-      }
-    ]
+    const safeToast = sanitizeSuccessToast(successToast, {
+      deltaLoyalty,
+      deltaControversy,
+      deltaHarmony,
+      deltaFame,
+      cost: actualCost
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState
@@ -259,20 +290,16 @@ export const handlePirateBroadcast = (
     const deltaHarmony = nextHarmony - currentHarmony
     const actualCost = currentMoney - nextMoney
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...successToast.options,
-          deltaFame,
-          deltaZealotry,
-          deltaControversy,
-          deltaHarmony,
-          cost: actualCost
-        }
-      }
-    ]
+    const safeToast = sanitizeSuccessToast(successToast, {
+      deltaFame,
+      deltaZealotry,
+      deltaControversy,
+      deltaHarmony,
+      cost: actualCost
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState

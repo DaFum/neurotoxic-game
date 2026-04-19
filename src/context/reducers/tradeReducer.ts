@@ -1,4 +1,4 @@
-import type { GameState } from '../../types/game'
+import type { GameState, ToastPayload } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerFame,
@@ -14,6 +14,49 @@ const ESCAPE_MAP = {
   '>': '&gt;',
   '"': '&quot;',
   "'": '&#39;'
+}
+
+const sanitizeSuccessToast = (
+  toast: unknown,
+  {
+    fallbackId,
+    fallbackType = 'info',
+    message,
+    optionsPatch = {}
+  }: {
+    fallbackId: string
+    fallbackType?: string
+    message?: string
+    optionsPatch?: Record<string, unknown>
+  }
+): ToastPayload | null => {
+  if (!toast || typeof toast !== 'object' || Array.isArray(toast)) return null
+  const toastObj = toast as Record<string, unknown>
+  const id =
+    typeof toastObj.id === 'string' && toastObj.id.trim().length > 0
+      ? toastObj.id.trim()
+      : fallbackId
+  const type = typeof toastObj.type === 'string' ? toastObj.type : fallbackType
+  const finalMessage = typeof message === 'string' ? message : undefined
+  const messageKey =
+    typeof toastObj.messageKey === 'string' ? toastObj.messageKey : ''
+  if (!finalMessage && messageKey.length === 0) return null
+
+  const baseOptions =
+    typeof toastObj.options === 'object' &&
+    toastObj.options !== null &&
+    !Array.isArray(toastObj.options)
+      ? (toastObj.options as Record<string, unknown>)
+      : {}
+
+  const safeToast: ToastPayload = {
+    id,
+    type,
+    options: { ...baseOptions, ...optionsPatch }
+  }
+  if (finalMessage) safeToast.message = finalMessage
+  if (messageKey.length > 0) safeToast.messageKey = messageKey
+  return safeToast
 }
 
 /**
@@ -75,24 +118,28 @@ export const handleTradeVoidItem = (
 
   if (successToast) {
     const actualDelta = currentFame - nextFame
-    let enrichedToast
+    const successToastObj =
+      typeof successToast === 'object' &&
+      successToast !== null &&
+      !Array.isArray(successToast)
+        ? (successToast as Record<string, unknown>)
+        : null
+    if (!successToastObj) return nextState
+
+    let enrichedToast: ToastPayload | null = null
 
     const toastId = instanceId || getSafeUUID()
 
     if (
-      typeof successToast.messageKey === 'string' &&
-      successToast.messageKey.length > 0
+      typeof successToastObj.messageKey === 'string' &&
+      successToastObj.messageKey.length > 0
     ) {
-      enrichedToast = {
-        ...successToast,
-        id: toastId,
-        options: {
-          ...successToast.options,
-          fame: actualDelta
-        }
-      }
+      enrichedToast = sanitizeSuccessToast(successToast, {
+        fallbackId: toastId,
+        optionsPatch: { fame: actualDelta }
+      })
     } else {
-      let enrichedMessage = successToast.message
+      let enrichedMessage = successToastObj.message
       try {
         if (
           typeof enrichedMessage === 'string' &&
@@ -140,17 +187,20 @@ export const handleTradeVoidItem = (
         logger.warn('GameState', 'Failed to enrich successToast message', err)
       }
 
-      enrichedToast = {
-        ...successToast,
-        id: toastId,
-        message: enrichedMessage
-      }
+      enrichedToast = sanitizeSuccessToast(successToast, {
+        fallbackId: toastId,
+        message: typeof enrichedMessage === 'string' ? enrichedMessage : '',
+        optionsPatch: { fame: actualDelta }
+      })
     }
 
-    return {
-      ...nextState,
-      toasts: [...(nextState.toasts || []), enrichedToast]
+    if (enrichedToast) {
+      return {
+        ...nextState,
+        toasts: [...(nextState.toasts || []), enrichedToast]
+      }
     }
+    return nextState
   }
 
   return nextState

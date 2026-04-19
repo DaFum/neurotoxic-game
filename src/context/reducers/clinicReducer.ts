@@ -1,5 +1,5 @@
 // TODO: Review this file
-import type { GameState } from '../../types/game'
+import type { GameState, ToastPayload } from '../../types/game'
 import type {
   ClinicActionPayload,
   BloodBankDonatePayload
@@ -17,6 +17,41 @@ import {
   clampControversyLevel
 } from '../../utils/gameStateUtils'
 import { getTraitById, normalizeTraitMap } from '../../utils/traitUtils'
+import { getSafeUUID } from '../../utils/crypto'
+
+const sanitizeSuccessToast = (
+  toast: unknown,
+  optionsPatch: Record<string, unknown> = {}
+): ToastPayload | null => {
+  if (!toast || typeof toast !== 'object' || Array.isArray(toast)) return null
+  const toastObj = toast as Record<string, unknown>
+  const id =
+    typeof toastObj.id === 'string' && toastObj.id.trim().length > 0
+      ? toastObj.id.trim()
+      : getSafeUUID()
+  const type = typeof toastObj.type === 'string' ? toastObj.type : 'info'
+  const message =
+    typeof toastObj.message === 'string' ? toastObj.message.trim() : ''
+  const messageKey =
+    typeof toastObj.messageKey === 'string' ? toastObj.messageKey : ''
+  if (message.length === 0 && messageKey.length === 0) return null
+
+  const baseOptions =
+    typeof toastObj.options === 'object' &&
+    toastObj.options !== null &&
+    !Array.isArray(toastObj.options)
+      ? (toastObj.options as Record<string, unknown>)
+      : {}
+
+  const safeToast: ToastPayload = {
+    id,
+    type,
+    options: { ...baseOptions, ...optionsPatch }
+  }
+  if (message.length > 0) safeToast.message = message
+  if (messageKey.length > 0) safeToast.messageKey = messageKey
+  return safeToast
+}
 
 /**
  * Common logic for clinic actions.
@@ -112,8 +147,9 @@ const executeClinicAction = (
     (getSuccessToast && toastArgsArray
       ? getSuccessToast(...toastArgsArray)
       : null)
-  if (finalSuccessToast) {
-    nextState.toasts = [...(state.toasts || []), finalSuccessToast]
+  const safeToast = sanitizeSuccessToast(finalSuccessToast)
+  if (safeToast) {
+    nextState.toasts = [...(state.toasts || []), safeToast]
   }
 
   return nextState
@@ -275,22 +311,15 @@ export const handleBloodBankDonate = (
     const deltaHarmony = currentHarmony - nextHarmony // Expressed as a positive cost
     const deltaControversy = nextControversy - currentControversy
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...(((successToast as Record<string, unknown>).options as Record<
-            string,
-            unknown
-          >) || {}),
-          deltaMoney,
-          deltaHarmony,
-          deltaControversy,
-          deltaStamina: totalStaminaLost
-        }
-      }
-    ]
+    const safeToast = sanitizeSuccessToast(successToast, {
+      deltaMoney,
+      deltaHarmony,
+      deltaControversy,
+      deltaStamina: totalStaminaLost
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState

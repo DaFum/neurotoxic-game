@@ -227,9 +227,11 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
     if (t && typeof t === 'object') {
       const toastObj = t as Record<string, unknown>
       const id = typeof toastObj.id === 'string' ? toastObj.id.trim() : ''
-      if (id.length > 0 && toastObj.message) {
-        const message = String(toastObj.message).trim()
-        if (message.length > 0) {
+      const hasMessage = toastObj.message !== undefined
+      const hasMessageKey = typeof toastObj.messageKey === 'string'
+      if (id.length > 0 && (hasMessage || hasMessageKey)) {
+        const message = hasMessage ? String(toastObj.message).trim() : ''
+        if (message.length > 0 || hasMessageKey) {
           const toastType = String(toastObj.type)
           const type = ALLOWED_TOAST_TYPES.includes(
             toastType as ToastPayload['type']
