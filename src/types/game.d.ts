@@ -283,11 +283,13 @@ export interface MerchPressPayload {
   [key: string]: unknown
 }
 
-
-export interface LastGigStats {
+export interface LastGigStats extends UnknownRecord {
   score?: number
   misses?: number
-  [key: string]: unknown
+  accuracy?: number
+  combo?: number
+  health?: number
+  overload?: number
 }
 export interface GameState {
   version: number

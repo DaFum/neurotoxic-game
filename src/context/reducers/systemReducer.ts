@@ -545,6 +545,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
   // Revert expired effects
   for (let i = 0; i < expired.length; i++) {
     const e = expired[i]
+    if (!e) continue
     const effectType = e.effectType as string
     const reverter = EFFECT_REVERTERS[effectType]
     if (reverter) {
