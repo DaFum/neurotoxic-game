@@ -64,7 +64,7 @@ function getMemberWithTrait(
   if (!Array.isArray(members) || members.length === 0) return undefined
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
-    if (hasTrait(m, traitId)) return m as BandMember | undefined
+    if (hasTrait(m, traitId)) return m as BandMember
   }
   return undefined
 }
