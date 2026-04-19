@@ -243,6 +243,7 @@ export interface ClinicActionPayload {
   moodGain?: number
   trait?: string
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
+  getSuccessToast?: (...args: unknown[]) => unknown
   [key: string]: unknown
 }
 

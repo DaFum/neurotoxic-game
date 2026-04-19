@@ -233,6 +233,27 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   return acc
 }
 
+const sanitizeSettingsPayload = (
+  rawSettings: Record<string, unknown>
+): Partial<GameSettings> => {
+  const sanitized: Partial<GameSettings> = {}
+
+  if (typeof rawSettings.crtEnabled === 'boolean') {
+    sanitized.crtEnabled = rawSettings.crtEnabled
+  }
+  if (typeof rawSettings.tutorialSeen === 'boolean') {
+    sanitized.tutorialSeen = rawSettings.tutorialSeen
+  }
+  if (
+    typeof rawSettings.logLevel === 'number' &&
+    Number.isFinite(rawSettings.logLevel)
+  ) {
+    sanitized.logLevel = Math.floor(rawSettings.logLevel)
+  }
+
+  return sanitized
+}
+
 const migratePlayerLocation = (location: unknown): string => {
   if (typeof location !== 'string') return ''
 
@@ -252,6 +273,68 @@ const migratePlayerLocation = (location: unknown): string => {
 const migrateLegacyVenueId = (id: unknown): string => {
   if (typeof id !== 'string') return ''
   return normalizeVenueId(id) ?? id
+}
+
+const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
+  if (
+    typeof rawMinigame !== 'object' ||
+    rawMinigame === null ||
+    Array.isArray(rawMinigame)
+  ) {
+    return { ...DEFAULT_MINIGAME_STATE }
+  }
+
+  const minigameObj = rawMinigame as Record<string, unknown>
+  const nextMinigame = { ...DEFAULT_MINIGAME_STATE }
+
+  if (
+    Object.hasOwn(minigameObj, 'active') &&
+    typeof minigameObj.active === 'boolean'
+  ) {
+    nextMinigame.active = minigameObj.active
+  }
+  if (
+    Object.hasOwn(minigameObj, 'type') &&
+    (typeof minigameObj.type === 'string' || minigameObj.type === null)
+  ) {
+    nextMinigame.type = minigameObj.type
+  }
+  if (
+    Object.hasOwn(minigameObj, 'targetDestination') &&
+    (typeof minigameObj.targetDestination === 'string' ||
+      minigameObj.targetDestination === null)
+  ) {
+    nextMinigame.targetDestination = minigameObj.targetDestination
+  }
+  if (
+    Object.hasOwn(minigameObj, 'gigId') &&
+    (typeof minigameObj.gigId === 'string' || minigameObj.gigId === null)
+  ) {
+    nextMinigame.gigId = minigameObj.gigId
+  }
+  if (
+    Object.hasOwn(minigameObj, 'equipmentRemaining') &&
+    typeof minigameObj.equipmentRemaining === 'number' &&
+    Number.isFinite(minigameObj.equipmentRemaining)
+  ) {
+    nextMinigame.equipmentRemaining = minigameObj.equipmentRemaining
+  }
+  if (
+    Object.hasOwn(minigameObj, 'accumulatedDamage') &&
+    typeof minigameObj.accumulatedDamage === 'number' &&
+    Number.isFinite(minigameObj.accumulatedDamage)
+  ) {
+    nextMinigame.accumulatedDamage = minigameObj.accumulatedDamage
+  }
+  if (
+    Object.hasOwn(minigameObj, 'score') &&
+    typeof minigameObj.score === 'number' &&
+    Number.isFinite(minigameObj.score)
+  ) {
+    nextMinigame.score = minigameObj.score
+  }
+
+  return nextMinigame
 }
 
 /**
@@ -333,10 +416,7 @@ export const handleLoadGame = (
         ? (loadedState.settings as Partial<GameSettings>)
         : {})
     },
-    minigame: {
-      ...DEFAULT_MINIGAME_STATE,
-      ...((loadedState.minigame as Record<string, unknown>) || {})
-    },
+    minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)
       ? (loadedState.unlocks as string[])
       : state.unlocks || []
@@ -409,7 +489,10 @@ export const handleUpdateSettings = (
   payload: Record<string, unknown>
 ): GameState => {
   if (!payload || typeof payload !== 'object') return state
-  return { ...state, settings: { ...state.settings, ...payload } }
+  return {
+    ...state,
+    settings: { ...state.settings, ...sanitizeSettingsPayload(payload) }
+  }
 }
 
 export const handleSetMap = (

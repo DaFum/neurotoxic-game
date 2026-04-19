@@ -306,10 +306,22 @@ test('systemReducer - RESET_STATE', async t => {
 })
 
 test('systemReducer - UPDATE_SETTINGS', () => {
-  const state = { settings: { volume: 0.5, effects: true } }
+  const state = {
+    settings: {
+      crtEnabled: false,
+      tutorialSeen: true,
+      logLevel: 1,
+      volume: 0.5
+    }
+  }
 
-  assert.deepEqual(handleUpdateSettings(state, { volume: 0.8 }), {
-    settings: { volume: 0.8, effects: true }
+  assert.deepEqual(handleUpdateSettings(state, { volume: 0.8, logLevel: 3 }), {
+    settings: {
+      crtEnabled: false,
+      tutorialSeen: true,
+      logLevel: 3,
+      volume: 0.5
+    }
   })
 
   assert.equal(handleUpdateSettings(state, null), state)

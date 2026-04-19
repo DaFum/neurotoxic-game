@@ -136,7 +136,7 @@ describe('gigReducer', () => {
       assert.strictEqual(quest.progress, 1)
     })
 
-    it('should treat missing capacity as small venue for quest advancement', () => {
+    it('should not advance small-venue quests when capacity is missing', () => {
       baseState.currentGig = { id: 'v1' }
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 },
@@ -151,8 +151,8 @@ describe('gigReducer', () => {
       const proveYourselfQuest = nextState.activeQuests.find(
         q => q.id === 'quest_prove_yourself'
       )
-      assert.strictEqual(apologyQuest.progress, 1)
-      assert.strictEqual(proveYourselfQuest.progress, 1)
+      assert.strictEqual(apologyQuest.progress, 0)
+      assert.strictEqual(proveYourselfQuest.progress, 0)
     })
 
     it('should auto-complete ego management quest on high harmony', () => {

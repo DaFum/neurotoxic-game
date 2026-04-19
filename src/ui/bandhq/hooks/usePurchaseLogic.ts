@@ -26,8 +26,69 @@ import {
   clampPlayerFame,
   calculateFameLevel
 } from '../../../utils/gameStateUtils'
+import type {
+  BandState,
+  PlayerState,
+  SocialState,
+  ToastPayload
+} from '../../../types/game'
+import type {
+  ToastCallback,
+  TranslationCallback
+} from '../../../types/callbacks'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
+
+type PurchaseItem = {
+  id: string
+  name?: string
+  currency?: string
+  requiresReputation?: boolean
+  [key: string]: unknown
+}
+
+type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
+  van?: Partial<PlayerState['van']>
+}
+
+type BandPatch = Partial<BandState> | null
+
+type EffectMessage = {
+  messageKey?: string
+  fallback?: string
+  message?: string
+  options?: Record<string, unknown>
+  type?: ToastPayload['type']
+}
+
+type PurchaseEffectResult = {
+  errorType?: string
+  effectType?: string
+  playerPatch?: PlayerPatch
+  bandPatch?: BandPatch
+  messages?: EffectMessage[]
+}
+
+type PurchaseValidation = {
+  isValid: boolean
+  errorType?: string
+  effect?: { type?: string } | null
+  finalCost?: number
+  isConsumable?: boolean
+  payingWithFame?: boolean
+  startingCurrency?: number
+}
+
+type ToastFn = (
+  message: Parameters<ToastCallback>[0],
+  type?: Parameters<ToastCallback>[1]
+) => void
+type TranslateFn = (
+  key: Parameters<TranslationCallback>[0],
+  options?: Parameters<TranslationCallback>[1]
+) => ReturnType<TranslationCallback>
+type UpdatePlayerFn = (patch: PlayerPatch) => void
+type UpdateBandFn = (patch: Partial<BandState>) => void
 
 /**
  * Custom hook for managing shop purchase logic
@@ -45,8 +106,17 @@ export { getPrimaryEffect } // Re-export for backward compatibility if needed, t
  * @param {Function} addToast - Toast function
  * @param {Function} t - Translation function
  */
-const processTraitToasts = (toasts: any[], addToast: any, t: any) => {
-  toasts.forEach((toastItem: any) => {
+const processTraitToasts = (
+  toasts: Array<{
+    message?: string
+    messageKey?: string
+    options?: Record<string, unknown>
+    type?: ToastPayload['type']
+  }>,
+  addToast: ToastFn,
+  t: TranslateFn
+) => {
+  toasts.forEach(toastItem => {
     const safeOptions = toastItem.options
       ? translateContextKeys(toastItem.options, t)
       : {}
@@ -60,7 +130,12 @@ const processTraitToasts = (toasts: any[], addToast: any, t: any) => {
   })
 }
 
-const handlePurchaseValidationError = (validation: any, item: any, addToast: any, t: any) => {
+const handlePurchaseValidationError = (
+  validation: PurchaseValidation,
+  item: PurchaseItem,
+  addToast: ToastFn,
+  t: TranslateFn
+) => {
   if (validation.errorType === 'missing_effect') {
     handleError(
       new StateError('Purchase item is missing a primary effect', {
@@ -116,8 +191,12 @@ const buildInitialPlayerPatch = (
   }
 }
 
-const processEffectMessages = (messages: any[], addToast: any, t: any) => {
-  messages.forEach((msg: any) => {
+const processEffectMessages = (
+  messages: EffectMessage[],
+  addToast: ToastFn,
+  t: TranslateFn
+) => {
+  messages.forEach(msg => {
     const toastMsg = msg.messageKey
       ? t(msg.messageKey, {
           ...(msg.options || {}),
@@ -129,8 +208,26 @@ const processEffectMessages = (messages: any[], addToast: any, t: any) => {
 }
 
 const processPurchaseUnlocks = (
-  { item, player, band, playerPatch, bandPatch }: { item: any; player: any; band: any; playerPatch: any; bandPatch: any },
-  { updateBand, addToast, t }: { updateBand: any; addToast: any; t: any }
+  {
+    item,
+    player,
+    band,
+    social,
+    playerPatch,
+    bandPatch
+  }: {
+    item: PurchaseItem
+    player: PlayerState
+    band: BandState
+    social: SocialState
+    playerPatch: PlayerPatch
+    bandPatch: BandPatch
+  },
+  {
+    updateBand,
+    addToast,
+    t
+  }: { updateBand: UpdateBandFn; addToast: ToastFn; t: TranslateFn }
 ) => {
   const nextPlayer = {
     ...player,
@@ -146,7 +243,7 @@ const processPurchaseUnlocks = (
   const gearCount = getGearCount(nextBand.inventory, GEAR_LOOKUP)
 
   const purchaseUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social: {} },
+    { player: nextPlayer, band: nextBand, social },
     { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
   )
 
@@ -179,19 +276,19 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }: {
-  player: any;
-  band: any;
-  social: any;
-  updatePlayer: any;
-  updateBand: any;
-  addToast: any;
+  player: PlayerState
+  band: BandState
+  social: SocialState
+  updatePlayer: UpdatePlayerFn
+  updateBand: UpdateBandFn
+  addToast: ToastFn
 }) => {
   const { t } = useTranslation(['ui', 'items'])
   /**
    * Calculates the adjusted cost of an item based on active traits.
    */
   const getAdjustedCostCallback = useCallback(
-    (item: any) => getAdjustedCost(item, band),
+    (item: PurchaseItem) => getAdjustedCost(item, band),
     [band]
   )
 
@@ -199,7 +296,7 @@ export const usePurchaseLogic = ({
    * Checks if an item is already owned
    */
   const isItemOwnedCallback = useCallback(
-    (item: any) => isItemOwned(item, player, band),
+    (item: PurchaseItem) => isItemOwned(item, player, band),
     [player, band]
   )
 
@@ -207,7 +304,8 @@ export const usePurchaseLogic = ({
    * Checks if player can afford an item
    */
   const canAffordCallback = useCallback(
-    (item: any) => canAfford(item, player, getAdjustedCost(item, band)),
+    (item: PurchaseItem) =>
+      canAfford(item, player, getAdjustedCost(item, band)),
     [player, band]
   )
 
@@ -217,9 +315,13 @@ export const usePurchaseLogic = ({
    * @returns {boolean} True if purchase was successful
    */
   const handleBuy = useCallback(
-    (item: any) => {
+    (item: PurchaseItem) => {
       try {
-        const validation = validatePurchase(item, player, band)
+        const validation = validatePurchase(
+          item,
+          player,
+          band
+        ) as PurchaseValidation
 
         if (!validation.isValid) {
           handlePurchaseValidationError(validation, item, addToast, t)
@@ -242,17 +344,17 @@ export const usePurchaseLogic = ({
         )
 
         const effectResult = processPurchaseEffect(
-          effect as any,
+          effect ?? undefined,
           item,
           initialPlayerPatch,
           player,
           band
-        )
+        ) as PurchaseEffectResult
 
-        if ((effectResult as any).errorType === 'unknown_effect') {
+        if (effectResult.errorType === 'unknown_effect') {
           handleError(
-            new StateError(`Unknown effect type: ${(effectResult as any).effectType}`, {
-              effectType: (effectResult as any).effectType,
+            new StateError(`Unknown effect type: ${effectResult.effectType}`, {
+              effectType: effectResult.effectType,
               itemId: item.id,
               currency: item.currency
             }),
@@ -266,11 +368,11 @@ export const usePurchaseLogic = ({
           return false
         }
 
-        let playerPatch = (effectResult as any).playerPatch || initialPlayerPatch
-        let bandPatch = (effectResult as any).bandPatch || null
+        let playerPatch = effectResult.playerPatch || initialPlayerPatch
+        let bandPatch = effectResult.bandPatch || null
 
-        if ((effectResult as any).messages) {
-          processEffectMessages((effectResult as any).messages, addToast, t)
+        if (effectResult.messages) {
+          processEffectMessages(effectResult.messages, addToast, t)
         }
 
         // Ensure fame-based upgrades are tracked in van.upgrades for ownership detection
@@ -289,7 +391,7 @@ export const usePurchaseLogic = ({
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
-          { item, player, band, playerPatch, bandPatch },
+          { item, player, band, social, playerPatch, bandPatch },
           { updateBand, addToast, t }
         )
 
@@ -321,7 +423,7 @@ export const usePurchaseLogic = ({
    * @returns {boolean} True if disabled
    */
   const isItemDisabled = useCallback(
-    (item: any) => {
+    (item: PurchaseItem) => {
       const effect = getPrimaryEffect(item)
       if (!effect) return true
       if (item.requiresReputation && (social?.controversyLevel || 0) >= 50)

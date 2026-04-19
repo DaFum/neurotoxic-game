@@ -10,19 +10,25 @@ const getMinMood = (state: GameState, memo: Record<string, unknown>) =>
 const getMaxMood = (state: GameState, memo: Record<string, unknown>) =>
   (memo?.maxMood as number) ??
   (state.band?.members
-    ? Math.max(...state.band.members.map((m: BandMember) => m.mood ?? -Infinity))
+    ? Math.max(
+        ...state.band.members.map((m: BandMember) => m.mood ?? -Infinity)
+      )
     : -Infinity)
 
 const getMinStamina = (state: GameState, memo: Record<string, unknown>) =>
   (memo?.minStamina as number) ??
   (state.band?.members
-    ? Math.min(...state.band.members.map((m: BandMember) => m.stamina ?? Infinity))
+    ? Math.min(
+        ...state.band.members.map((m: BandMember) => m.stamina ?? Infinity)
+      )
     : Infinity)
 
 const getMaxStamina = (state: GameState, memo: Record<string, unknown>) =>
   (memo?.maxStamina as number) ??
   (state.band?.members
-    ? Math.max(...state.band.members.map((m: BandMember) => m.stamina ?? -Infinity))
+    ? Math.max(
+        ...state.band.members.map((m: BandMember) => m.stamina ?? -Infinity)
+      )
     : -Infinity)
 
 const isPlayerInCity = (state: GameState, citySlug: string) => {
@@ -30,6 +36,18 @@ const isPlayerInCity = (state: GameState, citySlug: string) => {
   if (!location) return false
 
   return location === citySlug || location.includes(`venues:${citySlug}`)
+}
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+const getInventoryAmount = (
+  inventory: Record<string, unknown> | undefined,
+  key: 'shirts' | 'hoodies'
+): number => {
+  if (!inventory || !Object.hasOwn(inventory, key)) return 0
+  const value = inventory[key]
+  return isFiniteNumber(value) ? value : 0
 }
 
 export const CHATTER_DB = [
@@ -796,7 +814,7 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      (((state.lastGigStats?.score as number) || 0) > 10000)
+      ((state.lastGigStats?.score as number) || 0) > 10000
   },
   {
     text: 'chatter:standard.msg_098',
@@ -820,7 +838,7 @@ export const CHATTER_DB = [
     weight: 5,
     condition: (state: GameState) =>
       state.currentScene === GAME_PHASES.POST_GIG &&
-      (((state.lastGigStats?.misses as number) || 0) > 10)
+      ((state.lastGigStats?.misses as number) || 0) > 10
   },
   {
     text: 'chatter:standard.msg_102',
@@ -1929,12 +1947,14 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_294',
     weight: 6,
-    condition: (state: GameState) => (((state.band.inventory?.shirts as number) || 0) < 10)
+    condition: (state: GameState) =>
+      getInventoryAmount(state.band.inventory, 'shirts') < 10
   },
   {
     text: 'chatter:standard.msg_295',
     weight: 6,
-    condition: (state: GameState) => (((state.band.inventory?.hoodies as number) || 0) <= 0)
+    condition: (state: GameState) =>
+      getInventoryAmount(state.band.inventory, 'hoodies') <= 0
   },
 
   // --- CONDITION: GIG MODIFIERS ---

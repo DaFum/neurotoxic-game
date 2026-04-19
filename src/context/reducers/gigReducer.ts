@@ -1,5 +1,5 @@
 // TODO: Review this file
-import type { GameState, Venue } from '../../types/game'
+import type { GameState, GigStats, Venue } from '../../types/game'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { getSafeUUID } from '../../utils/crypto'
@@ -33,11 +33,8 @@ export const handleSetGig = (
   return { ...state, currentGig: payload }
 }
 
-export const handleStartGig = (
-  state: GameState,
-  payload: Venue | null
-): GameState => {
-  logger.info('GameState', 'Starting Gig Sequence', payload?.name)
+export const handleStartGig = (state: GameState, payload: Venue): GameState => {
+  logger.info('GameState', 'Starting Gig Sequence', payload.name)
   return {
     ...state,
     currentGig: payload,
@@ -130,35 +127,44 @@ const handleRecordGoodShow = (state: GameState): GameState => {
 
 export const handleSetLastGigStats = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: GigStats | null
 ): GameState => {
+  if (payload === null) {
+    return {
+      ...state,
+      lastGigStats: null
+    }
+  }
+
+  const safePayload = payload
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
     return {
       ...state,
-      lastGigStats: payload
+      lastGigStats: safePayload
     }
   }
   const performanceUnlocks = checkTraitUnlocks(state, {
     type: 'GIG_COMPLETE',
-    gigStats: payload
+    gigStats: safePayload
   })
   const traitResult = applyTraitUnlocks(state, performanceUnlocks)
 
   let nextState: GameState = {
     ...state,
-    lastGigStats: payload,
+    lastGigStats: safePayload,
     band: traitResult.band,
     toasts: traitResult.toasts,
     reputationByRegion: { ...state.reputationByRegion }
   }
 
-  const score = typeof payload?.score === 'number' ? payload.score : 0
+  const score = typeof safePayload.score === 'number' ? safePayload.score : 0
   const location = state.player?.location || 'Unknown'
   const capacity =
-    typeof state.currentGig?.capacity === 'number'
+    typeof state.currentGig?.capacity === 'number' &&
+    Number.isFinite(state.currentGig.capacity)
       ? state.currentGig.capacity
-      : 0
+      : null
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
@@ -199,6 +205,7 @@ export const handleSetLastGigStats = (
     nextState = handleRecordGoodShow(nextState)
     if (
       hasActiveQuest(nextState.activeQuests, QUEST_APOLOGY_TOUR) &&
+      capacity !== null &&
       capacity <= 300
     ) {
       nextState = handleAdvanceQuest(nextState, {
@@ -208,6 +215,7 @@ export const handleSetLastGigStats = (
     }
     if (
       hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF) &&
+      capacity !== null &&
       capacity <= 150
     ) {
       nextState = handleAdvanceQuest(nextState, {

@@ -249,7 +249,7 @@ export const handleBloodBankDonate = (
     const prevStamina = member.stamina || 0
     const nextStamina = clampMemberStamina(
       prevStamina - staminaCost,
-      (member as Record<string, unknown>).staminaMax as number | undefined
+      member.staminaMax
     )
     totalStaminaLost += prevStamina - nextStamina
     return {

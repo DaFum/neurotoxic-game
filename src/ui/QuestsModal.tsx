@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
-import { useId, memo } from 'react'
+import { useId, memo, type MouseEvent, type ReactNode } from 'react'
 import { formatNumber } from '../utils/numberUtils'
+import type { Variants } from 'framer-motion'
+import type { PlayerState, QuestState } from '../types/game'
 
 // Helper component for accessible SVGs
 const BaseIcon = memo(
@@ -21,7 +23,7 @@ const BaseIcon = memo(
     viewBox?: string
     title?: string
     fill?: string
-    children?: React.ReactNode
+    children?: ReactNode
     stroke?: string
     [key: string]: unknown
   }) => {
@@ -170,8 +172,16 @@ const IconCube = memo(
   )
 )
 
+type QuestDisplayState = QuestState & {
+  description?: string
+  moneyReward?: number
+}
+
 // Get translated reward text
-const getRewardText = (quest: any, t: any) => {
+const getRewardText = (
+  quest: QuestDisplayState,
+  t: (key: string, options?: Record<string, unknown>) => string
+) => {
   const value = quest.rewardData
   switch (quest.rewardType) {
     case 'item':
@@ -216,8 +226,8 @@ export const QuestsModal = ({
   player
 }: {
   onClose: () => void
-  activeQuests: any[]
-  player: any
+  activeQuests: QuestDisplayState[]
+  player: PlayerState
 }) => {
   const { t, i18n } = useTranslation(['ui', 'events'])
 
@@ -227,7 +237,7 @@ export const QuestsModal = ({
     visible: { opacity: 1 }
   }
 
-  const modalVariants: any = {
+  const modalVariants: Variants = {
     hidden: { opacity: 0, scale: 0.95, y: 20 },
     visible: {
       opacity: 1,
@@ -256,7 +266,7 @@ export const QuestsModal = ({
         <motion.div
           className='relative w-full max-w-2xl bg-void-black border-4 border-toxic-green shadow-[0_0_30px_var(--color-toxic-green-20)] p-6 max-h-[90vh] overflow-y-auto'
           variants={modalVariants}
-          onClick={(e: any) => e.stopPropagation()}
+          onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           {/* Header */}
           <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
@@ -300,7 +310,7 @@ export const QuestsModal = ({
             </div>
           ) : (
             <div className='space-y-6'>
-              {activeQuests.map((quest: any, index: number) => {
+              {activeQuests.map((quest: QuestDisplayState, index: number) => {
                 const isOverdue = quest.deadline && player.day > quest.deadline
 
                 // Safe progress calculation
@@ -351,7 +361,7 @@ export const QuestsModal = ({
                     </div>
 
                     <p className='text-sm text-ash-gray mb-4 font-mono'>
-                      {t(quest.description)}
+                      {quest.description ? t(quest.description) : ''}
                     </p>
 
                     <div className='mb-3'>
@@ -374,17 +384,18 @@ export const QuestsModal = ({
                         {t('ui:quests.rewards')}
                       </span>
 
-                      {quest.moneyReward > 0 && (
-                        <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
-                          <IconCoin className='w-3 h-3' />{' '}
-                          {t('ui:quests.moneyReward', {
-                            amount: formatNumber(
-                              quest.moneyReward,
-                              i18n?.language
-                            )
-                          })}
-                        </span>
-                      )}
+                      {typeof quest.moneyReward === 'number' &&
+                        quest.moneyReward > 0 && (
+                          <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
+                            <IconCoin className='w-3 h-3' />{' '}
+                            {t('ui:quests.moneyReward', {
+                              amount: formatNumber(
+                                quest.moneyReward,
+                                i18n?.language
+                              )
+                            })}
+                          </span>
+                        )}
 
                       {quest.rewardType && (
                         <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono rounded'>

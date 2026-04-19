@@ -14,6 +14,24 @@ type SuccessToastConfig = {
   optionsPatch?: Record<string, unknown>
 }
 
+const sanitizePrimitiveOptions = (
+  options: Record<string, unknown>
+): Record<string, unknown> => {
+  const safePrimitives: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(options)) {
+    const valueType = typeof value
+    if (
+      valueType === 'string' ||
+      valueType === 'number' ||
+      valueType === 'boolean' ||
+      value === null
+    ) {
+      safePrimitives[key] = value
+    }
+  }
+  return safePrimitives
+}
+
 export const sanitizeSuccessToast = (
   toast: unknown,
   {
@@ -49,23 +67,16 @@ export const sanitizeSuccessToast = (
       : {}
 
   // Whitelist primitive-only values to match sanitizeLoadedToast pattern
-  const safePrimitives: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(baseOptions)) {
-    const valueType = typeof value
-    if (
-      valueType === 'string' ||
-      valueType === 'number' ||
-      valueType === 'boolean' ||
-      value === null
-    ) {
-      safePrimitives[key] = value
-    }
-  }
+  const safePrimitives = sanitizePrimitiveOptions(baseOptions)
+  const safeOptionsPatch = sanitizePrimitiveOptions(optionsPatch)
 
   const safeToast: ToastPayload = {
     id,
-    type,
-    options: { ...safePrimitives, ...optionsPatch }
+    type
+  }
+  const safeOptions = { ...safePrimitives, ...safeOptionsPatch }
+  if (Object.keys(safeOptions).length > 0) {
+    safeToast.options = safeOptions
   }
   if (finalMessage.length > 0) safeToast.message = finalMessage
   if (messageKey.length > 0) safeToast.messageKey = messageKey
@@ -112,18 +123,7 @@ export const sanitizeLoadedToast = (
     !Array.isArray(toastObj.options)
   ) {
     const opts = toastObj.options as Record<string, unknown>
-    const safePrimitives: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(opts)) {
-      const valueType = typeof value
-      if (
-        valueType === 'string' ||
-        valueType === 'number' ||
-        valueType === 'boolean' ||
-        value === null
-      ) {
-        safePrimitives[key] = value
-      }
-    }
+    const safePrimitives = sanitizePrimitiveOptions(opts)
     if (Object.keys(safePrimitives).length > 0) {
       safeToast.options = safePrimitives
     }
