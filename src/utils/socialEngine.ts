@@ -214,10 +214,12 @@ export const generatePostOptions = (
     // Force a specific commercial post or synthesize one
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
-      sponsorOpt._force = true
-      results.push(sponsorOpt)
-      // Remove in-place to avoid full array re-allocation
-      eligibleOptions.splice(sponsorIdx, 1)
+      if (sponsorOpt) {
+        sponsorOpt._force = true
+        results.push(sponsorOpt)
+        // Remove in-place to avoid full array re-allocation
+        eligibleOptions.splice(sponsorIdx, 1)
+      }
     }
   }
 
@@ -227,7 +229,10 @@ export const generatePostOptions = (
   // 3. Fill remaining slots to reach 3 total
   const needed = 3 - results.length
   for (let i = 0; i < needed && i < eligibleOptions.length; i++) {
-    results.push(eligibleOptions[i])
+    const opt = eligibleOptions[i]
+    if (opt) {
+      results.push(opt)
+    }
   }
 
   // 3a. Validate that exactly 3 options are available
