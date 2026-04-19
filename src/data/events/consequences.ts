@@ -1,3 +1,4 @@
+import type { GameState } from '../../types/game'
 import { hasStateItem } from '../../utils/gameStateUtils'
 
 // TODO: Review this file
@@ -16,7 +17,7 @@ export const CONSEQUENCE_EVENTS = [
     description: 'events:consequences_venue_complaint.desc',
     trigger: 'post_gig',
     chance: 0.85,
-    condition: state => {
+    condition: (state: GameState) => {
       const score = state.lastGigStats?.score ?? 0
       return (
         score < 30 &&
@@ -84,7 +85,7 @@ export const CONSEQUENCE_EVENTS = [
     description: 'events:consequences_ticket_sales_collapse.desc',
     trigger: 'post_gig',
     chance: 0.7,
-    condition: state => {
+    condition: (state: GameState) => {
       const consecutiveBadShows = state.player?.stats?.consecutiveBadShows || 0
       const controversy = state.social?.controversyLevel || 0
       return (
@@ -130,7 +131,7 @@ export const CONSEQUENCE_EVENTS = [
     description: 'events:consequences_bandmate_scandal.desc',
     trigger: 'post_gig',
     chance: 0.75,
-    condition: state => {
+    condition: (state: GameState) => {
       if (
         state.social?.egoFocus != null &&
         (state.social?.controversyLevel || 0) >= 30 &&
@@ -203,7 +204,7 @@ export const CONSEQUENCE_EVENTS = [
     description: 'events:consequences_cancel_culture_quest.desc',
     trigger: 'post_gig',
     chance: 0.9,
-    condition: state => {
+    condition: (state: GameState) => {
       const controversy = state.social?.controversyLevel || 0
       const flags = state.activeStoryFlags || []
       const quests = state.activeQuests || []
@@ -246,7 +247,7 @@ export const CONSEQUENCE_EVENTS = [
     description: 'events:consequences_ego_breakup_threat.desc',
     trigger: 'travel',
     chance: 0.8,
-    condition: state => {
+    condition: (state: GameState) => {
       const harmony = state.band?.harmony || 0
       const egoFocus = state.social?.egoFocus || null
       const flags = state.activeStoryFlags || []
@@ -288,7 +289,7 @@ export const CONSEQUENCE_EVENTS = [
     description: 'events:consequences_comeback_album.desc',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: state => {
+    condition: (state: GameState) => {
       return (
         hasStateItem(state.pendingEvents, 'consequences_comeback_album') &&
         !hasStateItem(state.activeStoryFlags, 'comeback_triggered')
