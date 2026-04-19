@@ -720,7 +720,7 @@ export const generateBrandOffers = (
 
   for (let i = n - 1; i >= 0 && found < 3; i--) {
     const j = Math.floor(rng() * (i + 1))
-    const temp = pool[i]
+    const temp: Record<string, any> | undefined = pool[i]
     pool[i] = pool[j]
     pool[j] = temp
     const deal = pool[i]
