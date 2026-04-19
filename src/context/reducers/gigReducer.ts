@@ -158,8 +158,8 @@ export const handleSetLastGigStats = (
   ) as number
   const location = state.player?.location || 'Unknown'
   const capacity =
-    typeof state.currentGig?.capacity === 'number'
-      ? state.currentGig.capacity
+    typeof state.currentGig?.venue?.capacity === 'number'
+      ? state.currentGig.venue.capacity
       : Number.POSITIVE_INFINITY
 
   if (score < 30) {
