@@ -32,6 +32,10 @@ import type {
   SocialState,
   ToastPayload
 } from '../../../types/game'
+import type {
+  ToastCallback,
+  TranslationCallback
+} from '../../../types/callbacks'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
 
@@ -75,11 +79,14 @@ type PurchaseValidation = {
   startingCurrency?: number
 }
 
-type ToastFn = (message: string, type?: ToastPayload['type']) => void
+type ToastFn = (
+  message: Parameters<ToastCallback>[0],
+  type?: Parameters<ToastCallback>[1]
+) => void
 type TranslateFn = (
-  key: string,
-  options?: { defaultValue?: string; [key: string]: unknown }
-) => string
+  key: Parameters<TranslationCallback>[0],
+  options?: Parameters<TranslationCallback>[1]
+) => ReturnType<TranslationCallback>
 type UpdatePlayerFn = (patch: PlayerPatch) => void
 type UpdateBandFn = (patch: Partial<BandState>) => void
 

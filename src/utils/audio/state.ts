@@ -2,63 +2,61 @@
 /**
  * Shared mutable state for the audio engine.
  */
-type NullableUnknown = unknown | null
-
 export const audioState = {
   // Instruments
-  guitar: null as NullableUnknown,
-  bass: null as NullableUnknown,
-  drumKit: null as NullableUnknown,
-  loop: null as NullableUnknown,
-  part: null as NullableUnknown,
+  guitar: null as unknown,
+  bass: null as unknown,
+  drumKit: null as unknown,
+  loop: null as unknown,
+  part: null as unknown,
   midiParts: [] as unknown[],
-  sfxSynth: null as NullableUnknown,
-  sfxGain: null as NullableUnknown,
-  musicGain: null as NullableUnknown,
-  masterLimiter: null as NullableUnknown,
-  masterComp: null as NullableUnknown,
-  reverb: null as NullableUnknown,
-  reverbSend: null as NullableUnknown,
-  distortion: null as NullableUnknown,
-  guitarChorus: null as NullableUnknown,
-  guitarEq: null as NullableUnknown,
-  widener: null as NullableUnknown,
-  bassEq: null as NullableUnknown,
-  bassComp: null as NullableUnknown,
-  drumBus: null as NullableUnknown,
-  midiDryBus: null as NullableUnknown,
-  midiLead: null as NullableUnknown,
-  midiBass: null as NullableUnknown,
-  midiDrumKit: null as NullableUnknown,
-  midiReverb: null as NullableUnknown,
-  midiReverbSend: null as NullableUnknown,
+  sfxSynth: null as unknown,
+  sfxGain: null as unknown,
+  musicGain: null as unknown,
+  masterLimiter: null as unknown,
+  masterComp: null as unknown,
+  reverb: null as unknown,
+  reverbSend: null as unknown,
+  distortion: null as unknown,
+  guitarChorus: null as unknown,
+  guitarEq: null as unknown,
+  widener: null as unknown,
+  bassEq: null as unknown,
+  bassComp: null as unknown,
+  drumBus: null as unknown,
+  midiDryBus: null as unknown,
+  midiLead: null as unknown,
+  midiBass: null as unknown,
+  midiDrumKit: null as unknown,
+  midiReverb: null as unknown,
+  midiReverbSend: null as unknown,
 
   // State flags & IDs
   isSetup: false,
   playRequestId: 0,
-  transportEndEventId: null as NullableUnknown,
-  transportStopEventId: null as NullableUnknown,
+  transportEndEventId: null as unknown,
+  transportStopEventId: null as unknown,
 
   // Gig Playback State
-  gigSource: null as NullableUnknown,
-  gigBuffer: null as NullableUnknown,
-  gigFilename: null as NullableUnknown,
-  gigStartCtxTime: null as NullableUnknown,
+  gigSource: null as unknown,
+  gigBuffer: null as unknown,
+  gigFilename: null as unknown,
+  gigStartCtxTime: null as unknown,
   gigSeekOffsetMs: 0,
   gigBaseOffsetMs: 0,
-  gigDurationMs: null as NullableUnknown,
-  gigOnEnded: null as NullableUnknown,
+  gigDurationMs: null as unknown,
+  gigOnEnded: null as unknown,
   gigIsPaused: false,
 
   // Cache & Asset State
   audioBufferCache: new Map(),
   currentCacheByteSize: 0,
-  ambientSource: null as NullableUnknown,
+  ambientSource: null as unknown,
 
   // Setup/Rebuild Locks
-  setupLock: null as NullableUnknown,
-  setupError: null as NullableUnknown,
-  rebuildLock: null as NullableUnknown
+  setupLock: null as unknown,
+  setupError: null as unknown,
+  rebuildLock: null as unknown
 }
 
 /**

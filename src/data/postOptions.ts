@@ -300,7 +300,7 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: ({ lastGigStats }: GameState) =>
-      Boolean(lastGigStats) && (lastGigStats?.accuracy ?? 0) < 60,
+      typeof lastGigStats?.accuracy === 'number' && lastGigStats.accuracy < 60,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -319,9 +319,10 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL],
-    condition: ({ activeEvent, gigEvents }: GameState) =>
-      activeEvent?.id === 'stage_diver' ||
-      (gigEvents && gigEvents.includes('stage_diver')),
+    condition: (state: GameState & { gigEvents?: string[] }) =>
+      state.activeEvent?.id === 'stage_diver' ||
+      (Array.isArray(state.gigEvents) &&
+        state.gigEvents.includes('stage_diver')),
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -377,7 +378,7 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.RISK],
     condition: ({ lastGigStats }: GameState) =>
-      Boolean(lastGigStats) && (lastGigStats?.score ?? 0) < 5000,
+      typeof lastGigStats?.score === 'number' && lastGigStats.score < 5000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
