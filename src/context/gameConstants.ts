@@ -14,7 +14,7 @@ export const GAME_PHASES = Object.freeze({
   GAMEOVER: 'GAMEOVER',
   INTRO: 'INTRO',
   CLINIC: 'CLINIC'
-})
+} as const satisfies Record<string, string>)
 
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',

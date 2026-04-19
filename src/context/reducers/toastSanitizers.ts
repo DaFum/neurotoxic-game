@@ -97,7 +97,8 @@ export const sanitizeLoadedToast = (
     toastObj.options !== null &&
     !Array.isArray(toastObj.options)
   ) {
-    safeToast.options = toastObj.options as Record<string, unknown>
+    const opts = toastObj.options as Record<string, unknown>
+    safeToast.options = { ...opts }
   }
 
   if (

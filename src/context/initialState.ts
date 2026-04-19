@@ -170,9 +170,10 @@ const getSavedSettings = () => {
 const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
-  logLevel: (import.meta as { env?: { DEV?: boolean } }).env?.DEV
-    ? LOG_LEVELS.DEBUG
-    : LOG_LEVELS.WARN
+  logLevel:
+    ((import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? true)
+      ? LOG_LEVELS.DEBUG
+      : LOG_LEVELS.WARN
 }
 
 const sanitizeSettings = (
