@@ -9,16 +9,21 @@
  * @param {string} traitId - The ID of the trait to check.
  * @returns {boolean} True if the member has the trait.
  */
-export const hasTrait = (member, traitId) => {
+export const hasTrait = (member: unknown, traitId: string): boolean => {
   if (
     !member ||
-    !member.traits ||
-    typeof member.traits !== 'object' ||
-    Array.isArray(member.traits)
+    !member ||
+    typeof member !== 'object' ||
+    !('traits' in member) ||
+    typeof (member as Record<string, unknown>).traits !== 'object' ||
+    Array.isArray((member as Record<string, unknown>).traits)
   ) {
     return false
   }
-  return Object.hasOwn(member.traits, traitId)
+  return Object.hasOwn(
+    (member as Record<string, unknown>).traits as Record<string, unknown>,
+    traitId
+  )
 }
 
 /**
