@@ -49,7 +49,7 @@ export interface LayeredSnare {
   dispose: () => void
 }
 
-export type DrumKitSynth = {
+export interface DrumKitSynth {
   kick: Tone.MembraneSynth
   snare: LayeredSnare
   hihat: Tone.MetalSynth

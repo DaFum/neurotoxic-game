@@ -1,9 +1,8 @@
 import * as Tone from 'tone'
 import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
-import type { LayeredSnare } from '../../types/audio'
+import type { DrumKitSynth, LayeredSnare } from '../../types/audio'
 
-import type { DrumKitSynth } from '../../types/audio'
 
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.

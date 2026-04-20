@@ -96,28 +96,6 @@ export interface MinigameLogicBase {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
   finishMinigame?: () => void
-  completeTravelMinigame?: (
-    damageTaken: number,
-    itemsCollected: unknown[],
-    rngValue?: number,
-    contrabandId?: string,
-    instanceId?: string
-  ) => void
-  completeRoadieMinigame?: (
-    equipmentDamage: number,
-    rngValue?: number,
-    instanceId?: string
-  ) => void
-  completeKabelsalatMinigame?: (
-    results: unknown,
-    rngValue?: number,
-    instanceId?: string
-  ) => void
-  completeAmpCalibration?: (
-    score: number,
-    rngValue?: number,
-    instanceId?: string
-  ) => void
   rngValue?: number
   contrabandId?: string
   instanceId?: string
