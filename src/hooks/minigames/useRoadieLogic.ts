@@ -254,7 +254,7 @@ export const useRoadieLogic = () => {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [move, completeRoadieMinigame])
+  }, [move])
 
   // Initial setup: pickup first item
   useEffect(() => {

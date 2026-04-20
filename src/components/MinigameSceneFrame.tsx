@@ -24,7 +24,13 @@ export const MinigameSceneFrame = ({
   completionButtonText = 'CONTINUE',
   children
 }: MinigameSceneFrameProps) => {
-  const { settings } = useGameState()
+  const {
+    settings,
+    completeTravelMinigame,
+    completeRoadieMinigame,
+    completeKabelsalatMinigame,
+    completeAmpCalibration
+  } = useGameState()
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const logicRef = useRef(logic)
@@ -54,7 +60,11 @@ export const MinigameSceneFrame = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
-      } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
+      } else if (
+        import.meta.env?.DEV &&
+        e.shiftKey &&
+        e.key.toUpperCase() === 'P'
+      ) {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
           const currentLogic = logicRef.current
@@ -63,35 +73,22 @@ export const MinigameSceneFrame = ({
           } else {
             const currentType =
               currentLogic?.gameStateRef?.current?.minigame?.type
-            const rngValue = currentLogic?.rngValue
-            const contrabandId = currentLogic?.contrabandId
-            const instanceId = currentLogic?.instanceId
 
-            if (
-              currentType === MINIGAME_TYPES.TOURBUS &&
-              currentLogic?.completeTravelMinigame
-            ) {
-              currentLogic.completeTravelMinigame(
-                0,
-                []
-              )
-            } else if (
-              currentType === MINIGAME_TYPES.ROADIE &&
-              currentLogic?.completeRoadieMinigame
-            ) {
-              currentLogic.completeRoadieMinigame(0)
-            } else if (
-              currentType === MINIGAME_TYPES.KABELSALAT &&
-              currentLogic?.completeKabelsalatMinigame
-            ) {
-              currentLogic.completeKabelsalatMinigame(
-                { isPoweredOn: true, timeLeft: 0 }
-              )
-            } else if (
-              currentType === MINIGAME_TYPES.AMP_CALIBRATION &&
-              currentLogic?.completeAmpCalibration
-            ) {
-              currentLogic.completeAmpCalibration(100)
+            if (currentType === MINIGAME_TYPES.TOURBUS) {
+              completeTravelMinigame(0, [])
+              onComplete()
+            } else if (currentType === MINIGAME_TYPES.ROADIE) {
+              completeRoadieMinigame(0)
+              onComplete()
+            } else if (currentType === MINIGAME_TYPES.KABELSALAT) {
+              completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
+              onComplete()
+            } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
+              completeAmpCalibration(100)
+              onComplete()
+            } else if (currentLogic?.dispatch) {
+              // Fallback to dispatch action if possible
+              currentLogic.dispatch({ type: ActionTypes.END_GIG })
             } else {
               console.warn(
                 'Minigame completion handlers unavailable for backdoor completion',
@@ -106,7 +103,14 @@ export const MinigameSceneFrame = ({
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onComplete, uiState?.isGameOver])
+  }, [
+    onComplete,
+    uiState?.isGameOver,
+    completeTravelMinigame,
+    completeRoadieMinigame,
+    completeKabelsalatMinigame,
+    completeAmpCalibration
+  ])
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>

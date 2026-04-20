@@ -227,7 +227,7 @@ export const useTourbusLogic = () => {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [moveLeft, moveRight, completeTravelMinigame])
+  }, [moveLeft, moveRight])
 
   return {
     gameStateRef, // Passed to Pixi
