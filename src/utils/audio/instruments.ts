@@ -1,25 +1,8 @@
 import * as Tone from 'tone'
 import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
+import type { DrumKitSynth, LayeredSnare } from '../../types/audio'
 
-type LayeredSnare = {
-  triggerAttackRelease: (
-    dur: number | string,
-    time: number | string,
-    vel?: number
-  ) => void
-  volume: Tone.Signal<'decibels'>
-  dispose: () => void
-  _noise: Tone.NoiseSynth
-  _body: Tone.MembraneSynth
-}
-
-type DrumKitSynth = {
-  kick: Tone.MembraneSynth
-  snare: LayeredSnare
-  hihat: Tone.MetalSynth
-  crash: Tone.MetalSynth
-}
 
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
@@ -52,9 +35,7 @@ export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
       snareNoise.dispose()
       snareBody.dispose()
       snareBus.dispose()
-    },
-    _noise: snareNoise,
-    _body: snareBody
+    }
   }
 }
 

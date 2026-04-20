@@ -18,7 +18,7 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 - `jsconfig.checkjs.json` scopes the stricter CheckJS (adds `noUncheckedIndexedAccess`) to `src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, and `src/ui/bandhq`. When moving a new domain into that scope, expand the `include` list in the same PR.
 - Shared domain contracts belong in `src/types/*.d.ts` — do not duplicate structural shapes inline across modules.
 - When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
-  - In domains covered by `jsconfig.checkjs.json`, guard indexed/optional access explicitly (`noUncheckedIndexedAccess`).
+- In domains covered by `jsconfig.checkjs.json`, explicitly guard indexed/optional access (`noUncheckedIndexedAccess`).
 
 ## Gotchas
 

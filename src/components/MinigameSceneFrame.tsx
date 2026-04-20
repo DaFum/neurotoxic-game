@@ -24,12 +24,21 @@ export const MinigameSceneFrame = ({
   completionButtonText = 'CONTINUE',
   children
 }: MinigameSceneFrameProps) => {
-  const { settings } = useGameState()
+  const {
+    settings,
+    completeTravelMinigame,
+    completeRoadieMinigame,
+    completeKabelsalatMinigame,
+    completeAmpCalibration,
+    endGig
+  } = useGameState()
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
-  const finishMinigame = logic?.finishMinigame
-  const dispatch = logic?.dispatch
-  const minigameType = logic?.gameStateRef?.current?.minigame?.type
+  const logicRef = useRef(logic)
+
+  useLayoutEffect(() => {
+    logicRef.current = logic
+  }, [logic])
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
@@ -52,44 +61,51 @@ export const MinigameSceneFrame = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
-      } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
+      } else if (
+        import.meta.env?.DEV &&
+        e.shiftKey &&
+        e.key.toUpperCase() === 'P'
+      ) {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
-          if (finishMinigame) {
-            finishMinigame()
-          } else if (dispatch) {
-            if (minigameType === MINIGAME_TYPES.TOURBUS) {
-              dispatch({
-                type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-                payload: { damageTaken: 0, itemsCollected: [] }
-              })
-            } else if (minigameType === MINIGAME_TYPES.ROADIE) {
-              dispatch({
-                type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
-                payload: { equipmentDamage: 0 }
-              })
-            } else if (minigameType === MINIGAME_TYPES.KABELSALAT) {
-              dispatch({
-                type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
-                payload: { results: { isPoweredOn: true, timeLeft: 0 } }
-              })
-            } else if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
-              dispatch({
-                type: ActionTypes.COMPLETE_AMP_CALIBRATION,
-                payload: { score: 100 }
-              })
+          const currentLogic = logicRef.current
+          if (currentLogic?.finishMinigame) {
+            currentLogic.finishMinigame()
+          } else {
+            const currentType =
+              currentLogic?.gameStateRef?.current?.minigame?.type
+
+            if (currentType === MINIGAME_TYPES.TOURBUS) {
+              completeTravelMinigame(0, [])
+              onComplete()
+            } else if (currentType === MINIGAME_TYPES.ROADIE) {
+              completeRoadieMinigame(0)
+              onComplete()
+            } else if (currentType === MINIGAME_TYPES.KABELSALAT) {
+              completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
+              onComplete()
+            } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
+              completeAmpCalibration(100)
+              onComplete()
             } else {
+              endGig()
               onComplete()
             }
-          } else {
-            onComplete()
           }
         }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [dispatch, finishMinigame, minigameType, onComplete, uiState?.isGameOver])
+  }, [
+    onComplete,
+    uiState?.isGameOver,
+    completeTravelMinigame,
+    completeRoadieMinigame,
+    completeKabelsalatMinigame,
+    completeAmpCalibration,
+    endGig
+  ])
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
@@ -142,7 +158,10 @@ MinigameSceneFrame.propTypes = {
     gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
-    dispatch: PropTypes.func
+    dispatch: PropTypes.func,
+    rngValue: PropTypes.number,
+    contrabandId: PropTypes.string,
+    instanceId: PropTypes.string
   }).isRequired,
   uiState: PropTypes.shape({
     isGameOver: PropTypes.bool

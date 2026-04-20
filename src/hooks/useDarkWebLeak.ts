@@ -1,9 +1,13 @@
+import type { DarkWebLeakConfig } from '../types/game'
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/AudioManager'
-import { checkHasLeakedToday, validateDarkWebLeak } from '../utils/darkWebLeakUtils'
+import {
+  checkHasLeakedToday,
+  validateDarkWebLeak
+} from '../utils/darkWebLeakUtils'
 
-export const DARK_WEB_LEAK_CONFIG = {
+export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
   COST: 500,
   FAME_GAIN: 300,
   ZEALOTRY_GAIN: 25,
@@ -20,10 +24,15 @@ export const useDarkWebLeak = () => {
   const closeDarkWebLeak = useCallback(() => setShowDarkWebLeak(false), [])
 
   const hasLeakedToday = checkHasLeakedToday(social, player.day)
-  const canLeak = validateDarkWebLeak(social, player, band, DARK_WEB_LEAK_CONFIG)
+  const canLeak = validateDarkWebLeak(
+    social,
+    player,
+    band,
+    DARK_WEB_LEAK_CONFIG
+  )
 
   const triggerLeak = useCallback(() => {
-    if (!canLeak) return
+    if (!canLeak || checkHasLeakedToday(social, player.day)) return
 
     audioManager.playSFX('cash')
 
@@ -34,13 +43,13 @@ export const useDarkWebLeak = () => {
       controversyGain: DARK_WEB_LEAK_CONFIG.CONTROVERSY_GAIN,
       harmonyCost: DARK_WEB_LEAK_CONFIG.HARMONY_COST,
       successToast: {
-        message: 'ui:dark_web_leak.success',
+        messageKey: 'ui:dark_web_leak.success',
         type: 'success'
       }
     })
 
     closeDarkWebLeak()
-  }, [canLeak, darkWebLeak, closeDarkWebLeak])
+  }, [canLeak, darkWebLeak, closeDarkWebLeak, social, player.day])
 
   return {
     showDarkWebLeak,

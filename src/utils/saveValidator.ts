@@ -215,6 +215,7 @@ const validateSocial = social => {
       throw new StateError(`Invalid social property format: ${key}`)
     }
     if (key === 'lastPirateBroadcastDay' && val === null) continue
+    if (key === 'lastDarkWebLeakDay' && val === null) continue
     if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue
 

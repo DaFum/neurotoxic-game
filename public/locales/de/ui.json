@@ -998,5 +998,17 @@
   "minigames.amp.controls.dialValue": "{{value}} Hz",
   "postOptions.selloutMessage": "Du wurdest bezahlt. Die Fans nennen euch Sellouts.",
   "postOptions.selloutName": "Schamloser Sellout-Sponsor",
-  "postOptions.comm_sellout_ad.name": "Schamloser Sellout-Sponsor"
+  "postOptions.comm_sellout_ad.name": "Schamloser Sellout-Sponsor",
+  "dark_web_leak.title": "Dark Web Datenleck",
+  "dark_web_leak.description": "Veröffentliche unveröffentlichte Tracks im Dark Web, um deinen Ruhm und deine Fanatiker sofort zu steigern. Aber Vorsicht, das wird Kontroversen auslösen und der Bandharmonie schaden.",
+  "dark_web_leak.cost": "KOSTEN:",
+  "dark_web_leak.fame": "RUHM:",
+  "dark_web_leak.zealotry": "FANATISMUS:",
+  "dark_web_leak.controversy": "KONTROVERSE:",
+  "dark_web_leak.harmony_cost": "HARMONIEKOSTEN:",
+  "dark_web_leak.leaked_today": "Daten für heute geleakt.",
+  "dark_web_leak.cancel": "ABBRECHEN",
+  "dark_web_leak.execute": "LEAK AUSFÜHREN",
+  "dark_web_leak.button": "DARK WEB LEAK",
+  "dark_web_leak.success": "Leak erfolgreich"
 }

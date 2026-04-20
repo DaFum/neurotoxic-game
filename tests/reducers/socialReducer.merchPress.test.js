@@ -14,7 +14,7 @@ const { handleMerchPress } =
 describe('socialReducer.merchPress', () => {
   test('rejects invalid payloads', () => {
     const state = {
-      player: { money: 1000 },
+      player: { money: 1000, fame: 0, fameLevel: 0 },
       band: { harmony: 100 },
       social: { loyalty: 0, controversyLevel: 0 }
     }
@@ -23,7 +23,7 @@ describe('socialReducer.merchPress', () => {
 
   test('rejects if insufficient funds', () => {
     const state = {
-      player: { money: 100 },
+      player: { money: 100, fame: 0, fameLevel: 0 },
       band: { harmony: 100 },
       social: { loyalty: 0, controversyLevel: 0 }
     }
@@ -33,7 +33,7 @@ describe('socialReducer.merchPress', () => {
 
   test('applies costs and gains', () => {
     const state = {
-      player: { money: 1000 },
+      player: { money: 1000, fame: 0, fameLevel: 0 },
       band: { harmony: 100, inventory: {} },
       social: { loyalty: 10, controversyLevel: 0 }
     }
@@ -52,7 +52,7 @@ describe('socialReducer.merchPress', () => {
 
   test('handles harmony cost on equipment failure', () => {
     const state = {
-      player: { money: 1000 },
+      player: { money: 1000, fame: 0, fameLevel: 0 },
       band: { harmony: 100, inventory: {} },
       social: { loyalty: 10, controversyLevel: 0 }
     }
@@ -69,7 +69,7 @@ describe('socialReducer.merchPress', () => {
 
   test('clamps bounds at 100 and 0', () => {
     const state = {
-      player: { money: 1000 },
+      player: { money: 1000, fame: 0, fameLevel: 0 },
       band: { harmony: 100, inventory: {} },
       social: { loyalty: 98, controversyLevel: 95 }
     }

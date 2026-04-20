@@ -13,7 +13,7 @@ export interface GameSettings {
 }
 
 export type UnknownRecord = Record<string, unknown>
-export type RawGameSettings = Partial<GameSettings> & UnknownRecord
+export type RawGameSettings = Partial<Record<keyof GameSettings, unknown>>
 
 export interface EventOption {
   id?: string
@@ -157,6 +157,7 @@ export interface SocialState {
   lastGigDay: number | null
   lastGigDifficulty: number | null
   lastPirateBroadcastDay: number | null
+  lastDarkWebLeakDay: number | null
   controversyLevel: number
   loyalty: number
   zealotry: number
@@ -248,13 +249,22 @@ export interface ClinicActionPayload {
   [key: string]: unknown
 }
 
+export interface DarkWebLeakConfig {
+  COST: number
+  FAME_GAIN: number
+  ZEALOTRY_GAIN: number
+  CONTROVERSY_GAIN: number
+  HARMONY_COST: number
+  REQUIRED_CONTROVERSY: number
+}
+
 export interface DarkWebLeakPayload {
   cost: number
   fameGain: number
   zealotryGain: number
   controversyGain: number
   harmonyCost: number
-  successToast?: ToastData
+  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 
 export interface PirateBroadcastPayload {
@@ -264,7 +274,6 @@ export interface PirateBroadcastPayload {
   controversyGain: number
   harmonyCost: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface BloodBankDonatePayload {
@@ -273,7 +282,6 @@ export interface BloodBankDonatePayload {
   staminaCost: number
   controversyGain: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface TradeVoidItemPayload {
@@ -281,7 +289,6 @@ export interface TradeVoidItemPayload {
   fameCost: number
   instanceId?: string
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface MerchPressPayload {
@@ -291,7 +298,6 @@ export interface MerchPressPayload {
   fameGain: number
   harmonyCost: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface LastGigStats extends UnknownRecord {

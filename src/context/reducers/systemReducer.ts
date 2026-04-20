@@ -196,7 +196,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
 
   // Validate Band Members
   const validatedMembers: BandMember[] = Array.isArray(rawBand.members)
-    ? (rawBand.members.map(m => ({
+    ? (rawBand.members.map((m, i) => ({
         ...m,
         // Backfill id from name for saves created before id fields were added
         id:
@@ -204,7 +204,9 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
             ? m.id
             : typeof m.name === 'string'
               ? m.name.toLowerCase()
-              : m.id,
+              : typeof m.id === 'number' || typeof m.id === 'boolean' || typeof m.id === 'bigint' || typeof m.id === 'symbol'
+                ? String(m.id)
+                : `member-${i}`,
         traits: normalizeTraitMap(m.traits),
         mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
         stamina: clampMemberStamina(
@@ -240,13 +242,20 @@ const sanitizeSettingsPayload = (
 ): Partial<GameSettings> => {
   const sanitized: Partial<GameSettings> = {}
 
-  if (typeof rawSettings.crtEnabled === 'boolean') {
+  if (
+    Object.hasOwn(rawSettings, 'crtEnabled') &&
+    typeof rawSettings.crtEnabled === 'boolean'
+  ) {
     sanitized.crtEnabled = rawSettings.crtEnabled
   }
-  if (typeof rawSettings.tutorialSeen === 'boolean') {
+  if (
+    Object.hasOwn(rawSettings, 'tutorialSeen') &&
+    typeof rawSettings.tutorialSeen === 'boolean'
+  ) {
     sanitized.tutorialSeen = rawSettings.tutorialSeen
   }
   if (
+    Object.hasOwn(rawSettings, 'logLevel') &&
     typeof rawSettings.logLevel === 'number' &&
     Number.isFinite(rawSettings.logLevel)
   ) {

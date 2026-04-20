@@ -36,7 +36,7 @@ const validateEvents = (
       return false
     }
     const eObj = e as Record<string, unknown>
-    if (typeof eObj.id !== 'string') {
+    if (typeof eObj.id !== 'string' || eObj.id.trim() === '') {
       logger.error('EventValidation', `Event missing ID in ${categoryName}`, e)
       return false
     }

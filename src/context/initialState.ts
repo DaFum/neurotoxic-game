@@ -126,6 +126,7 @@ export const DEFAULT_SOCIAL_STATE = {
   lastGigDay: null,
   lastGigDifficulty: null,
   lastPirateBroadcastDay: null,
+  lastDarkWebLeakDay: null,
   controversyLevel: 0,
   loyalty: 0,
   zealotry: 0,
