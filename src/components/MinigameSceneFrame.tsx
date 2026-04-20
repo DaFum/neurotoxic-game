@@ -57,19 +57,20 @@ export const MinigameSceneFrame = ({
       } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
-          if (finishMinigame) {
-            finishMinigame()
+          const currentLogic = logicRef.current
+          if (currentLogic?.finishMinigame) {
+            currentLogic.finishMinigame()
           } else {
-            const currentType = logic?.gameStateRef?.current?.minigame?.type
-            const rngValue = logic?.rngValue
-            const contrabandId = logic?.contrabandId
-            const instanceId = logic?.instanceId
+            const currentType = currentLogic?.gameStateRef?.current?.minigame?.type
+            const rngValue = currentLogic?.rngValue
+            const contrabandId = currentLogic?.contrabandId
+            const instanceId = currentLogic?.instanceId
 
             if (
               currentType === MINIGAME_TYPES.TOURBUS &&
-              logic?.completeTravelMinigame
+              currentLogic?.completeTravelMinigame
             ) {
-              logic.completeTravelMinigame(
+              currentLogic.completeTravelMinigame(
                 0,
                 [],
                 rngValue,
@@ -78,23 +79,23 @@ export const MinigameSceneFrame = ({
               )
             } else if (
               currentType === MINIGAME_TYPES.ROADIE &&
-              logic?.completeRoadieMinigame
+              currentLogic?.completeRoadieMinigame
             ) {
-              logic.completeRoadieMinigame(0, rngValue, instanceId)
+              currentLogic.completeRoadieMinigame(0, rngValue, instanceId)
             } else if (
               currentType === MINIGAME_TYPES.KABELSALAT &&
-              logic?.completeKabelsalatMinigame
+              currentLogic?.completeKabelsalatMinigame
             ) {
-              logic.completeKabelsalatMinigame(
+              currentLogic.completeKabelsalatMinigame(
                 { isPoweredOn: true, timeLeft: 0 },
                 rngValue,
                 instanceId
               )
             } else if (
               currentType === MINIGAME_TYPES.AMP_CALIBRATION &&
-              logic?.completeAmpCalibration
+              currentLogic?.completeAmpCalibration
             ) {
-              logic.completeAmpCalibration(100, rngValue, instanceId)
+              currentLogic.completeAmpCalibration(100, rngValue, instanceId)
             } else {
               onComplete()
             }

@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger'
+import { logger } from '../../utils/logger'
 // TODO: Review this file
 import type { GameState, BandMember } from '../../types/game'
 
@@ -11,7 +12,10 @@ const getFlatRelationships = (members: BandMember[]): RelPair[] => {
     const m1 = members[i]
     if (!m1 || !m1.relationships || typeof m1.name !== 'string') continue
     for (const [m2Name, score] of Object.entries(m1.relationships)) {
-      if (m2Name === m1.name) continue
+      if (m2Name === m1.name) {
+        logger.warn('EventEngine', `Band member ${m1.name} contains a self-relationship. This corrupts gameplay systems.`);
+        continue
+      }
       flat.push({
         member1: m1.name,
         member2: m2Name,

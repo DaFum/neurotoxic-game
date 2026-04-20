@@ -204,7 +204,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
             ? m.id
             : typeof m.name === 'string'
               ? m.name.toLowerCase()
-              : m.id,
+              : String(m.id || getSafeUUID()),
         traits: normalizeTraitMap(m.traits),
         mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
         stamina: clampMemberStamina(
