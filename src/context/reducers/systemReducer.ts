@@ -196,7 +196,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
 
   // Validate Band Members
   const validatedMembers: BandMember[] = Array.isArray(rawBand.members)
-    ? (rawBand.members.map(m => ({
+    ? (rawBand.members.map((m, i) => ({
         ...m,
         // Backfill id from name for saves created before id fields were added
         id:
@@ -204,7 +204,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
             ? m.id
             : typeof m.name === 'string'
               ? m.name.toLowerCase()
-              : String(m.id || getSafeUUID()),
+              : String(m.id || `member-${i}`),
         traits: normalizeTraitMap(m.traits),
         mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
         stamina: clampMemberStamina(

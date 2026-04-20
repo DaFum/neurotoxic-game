@@ -97,7 +97,8 @@ export const MinigameSceneFrame = ({
             ) {
               currentLogic.completeAmpCalibration(100, rngValue, instanceId)
             } else {
-              onComplete()
+              console.warn('Minigame completion handlers unavailable for backdoor completion', { currentLogic, currentType })
+              return
             }
           }
         }

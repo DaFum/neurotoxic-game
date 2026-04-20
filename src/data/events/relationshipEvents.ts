@@ -4,6 +4,8 @@ import type { GameState, BandMember } from '../../types/game'
 
 type RelPair = { member1: string; member2: string; score: number }
 
+const warnedSelfRelationshipNames = new Set<string>()
+
 const getFlatRelationships = (members: BandMember[]): RelPair[] => {
   const flat: RelPair[] = []
   const len = members.length
@@ -12,7 +14,10 @@ const getFlatRelationships = (members: BandMember[]): RelPair[] => {
     if (!m1 || !m1.relationships || typeof m1.name !== 'string') continue
     for (const [m2Name, score] of Object.entries(m1.relationships)) {
       if (m2Name === m1.name) {
-        logger.warn('EventEngine', `Band member ${m1.name} contains a self-relationship. This corrupts gameplay systems.`);
+        if (!warnedSelfRelationshipNames.has(m1.name)) {
+          logger.warn('EventEngine', `Band member ${m1.name} contains a self-relationship. This corrupts gameplay systems.`);
+          warnedSelfRelationshipNames.add(m1.name);
+        }
         continue
       }
       flat.push({

@@ -29,33 +29,33 @@ export const DarkWebLeakModal = ({
       onClose={onCancel}
       isOpen={true}
     >
-      <div className='flex flex-col gap-4 p-4 border border-zinc-700 bg-zinc-900/90 text-zinc-100'>
+      <div className='flex flex-col gap-4 p-4 border border-toxic-green bg-void-black/90 text-star-white'>
         <p className='text-sm'>
           {t('ui:dark_web_leak.description', {
             defaultValue:
               'Leak unreleased tracks to the dark web to instantly boost your fame and zealotry. But beware, it will spark controversy and damage band harmony.'
           })}
         </p>
-        <div className='flex flex-col gap-1 text-sm bg-black/50 p-2 border border-zinc-800'>
-          <div className='text-red-400'>
-            {t('ui:dark_web_leak.cost', { defaultValue: 'COST:' })} $
+        <div className='flex flex-col gap-1 text-sm bg-black/50 p-2 border border-toxic-green/50'>
+          <div className='text-blood-red'>
+            {t('ui:dark_web_leak.cost', { defaultValue: 'COST:' })} €
             {config.COST}
           </div>
-          <div className='text-green-400'>
+          <div className='text-stamina-green'>
             {t('ui:dark_web_leak.fame', { defaultValue: 'FAME:' })} +
             {config.FAME_GAIN}
           </div>
-          <div className='text-yellow-400'>
+          <div className='text-warning-yellow'>
             {t('ui:dark_web_leak.zealotry', { defaultValue: 'ZEALOTRY:' })} +
             {config.ZEALOTRY_GAIN}
           </div>
-          <div className='text-purple-400'>
+          <div className='text-toxic-green'>
             {t('ui:dark_web_leak.controversy', {
               defaultValue: 'CONTROVERSY:'
             })}{' '}
             +{config.CONTROVERSY_GAIN}
           </div>
-          <div className='text-orange-400'>
+          <div className='text-blood-red'>
             {t('ui:dark_web_leak.harmony_cost', {
               defaultValue: 'HARMONY COST:'
             })}{' '}
@@ -63,7 +63,7 @@ export const DarkWebLeakModal = ({
           </div>
         </div>
         {hasLeakedToday && (
-          <p className='text-red-500 text-sm font-bold border border-red-500 p-1 text-center'>
+          <p className='text-blood-red text-sm font-bold border border-blood-red p-1 text-center'>
             {t('ui:dark_web_leak.leaked_today', {
               defaultValue: 'Data leaked for today.'
             })}

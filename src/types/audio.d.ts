@@ -50,8 +50,8 @@ export interface LayeredSnare {
 }
 
 export type DrumKitSynth = {
-  kick: Tone.MembraneSynth | null
-  snare: LayeredSnare | null
-  hihat: Tone.MetalSynth | null
-  crash: Tone.MetalSynth | null
+  kick: Tone.MembraneSynth
+  snare: LayeredSnare
+  hihat: Tone.MetalSynth
+  crash: Tone.MetalSynth
 }

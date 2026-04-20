@@ -10,9 +10,13 @@ export const validateDarkWebLeak = (
   band: Partial<BandState> | undefined | null,
   config: DarkWebLeakConfig
 ) => {
-  if (checkHasLeakedToday(social, player?.day)) return false
-  if ((social?.controversyLevel ?? 0) < config.REQUIRED_CONTROVERSY) return false
-  if ((player?.money ?? 0) < config.COST) return false
-  if ((band?.harmony ?? 0) < config.HARMONY_COST) return false
+  if (!social || !player || !band) return false
+  if (typeof player.money !== 'number' || player.money < 0) return false
+  if (typeof band.harmony !== 'number' || band.harmony < 1 || band.harmony > 100) return false
+
+  if (checkHasLeakedToday(social, player.day)) return false
+  if ((social.controversyLevel as number) < config.REQUIRED_CONTROVERSY) return false
+  if (player.money < config.COST) return false
+  if (band.harmony < config.HARMONY_COST) return false
   return true
 }

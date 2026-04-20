@@ -38,8 +38,7 @@ export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
       snareBody.dispose()
       snareBus.dispose()
     },
-    _noise: snareNoise,
-    _body: snareBody
+
   }
 }
 

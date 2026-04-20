@@ -105,7 +105,8 @@ test('socialReducer - handleDarkWebLeak', async t => {
       band: { harmony: 50 },
       social: {
         controversyLevel: 10,
-        zealotry: 20
+        zealotry: 20,
+        lastDarkWebLeakDay: null
       }
     }
 

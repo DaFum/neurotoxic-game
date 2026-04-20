@@ -265,7 +265,6 @@ export interface DarkWebLeakPayload {
   controversyGain: number
   harmonyCost: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface PirateBroadcastPayload {
@@ -275,7 +274,6 @@ export interface PirateBroadcastPayload {
   controversyGain: number
   harmonyCost: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface BloodBankDonatePayload {
@@ -284,7 +282,6 @@ export interface BloodBankDonatePayload {
   staminaCost: number
   controversyGain: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface TradeVoidItemPayload {
@@ -292,7 +289,6 @@ export interface TradeVoidItemPayload {
   fameCost: number
   instanceId?: string
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface MerchPressPayload {
@@ -302,7 +298,6 @@ export interface MerchPressPayload {
   fameGain: number
   harmonyCost: number
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-  [key: string]: unknown
 }
 
 export interface LastGigStats extends UnknownRecord {

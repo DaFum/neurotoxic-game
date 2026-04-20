@@ -217,6 +217,7 @@ export const handlePirateBroadcast = (
   state: GameState,
   payload: PirateBroadcastPayload | null | undefined
 ): GameState => {
+  const playerDay = state.player.day ?? 0
   if (!payload) {
     logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')
     return state
@@ -262,7 +263,7 @@ export const handlePirateBroadcast = (
     return state
   }
 
-  if (state.social.lastPirateBroadcastDay === state.player.day) {
+  if (state.social.lastPirateBroadcastDay === playerDay) {
     logger.warn('GameState', 'Pirate broadcast already triggered today')
     return state
   }
@@ -304,7 +305,7 @@ export const handlePirateBroadcast = (
       ...state.social,
       zealotry: nextZealotry,
       controversyLevel: nextControversy,
-      lastPirateBroadcastDay: state.player.day
+      lastPirateBroadcastDay: playerDay
     }
   }
 
@@ -337,7 +338,8 @@ export const handleDarkWebLeak = (
   state: GameState,
   payload: DarkWebLeakPayload | null | undefined
 ): GameState => {
-  if (state.social.lastDarkWebLeakDay === state.player.day) {
+  const playerDay = state.player.day ?? 0
+  if (state.social.lastDarkWebLeakDay === playerDay) {
     logger.warn('GameState', 'Dark web leak already triggered today')
     return state
   }
@@ -411,7 +413,7 @@ export const handleDarkWebLeak = (
       ...state.social,
       zealotry: nextZealotry,
       controversyLevel: nextControversy,
-      lastDarkWebLeakDay: Number.isFinite(state.player.day) ? state.player.day : (state.player.day ?? 0)
+      lastDarkWebLeakDay: playerDay
     }
   }
 
