@@ -98,25 +98,16 @@ export interface MinigameLogicBase {
   finishMinigame?: () => void
   completeTravelMinigame?: (
     damageTaken: number,
-    itemsCollected: unknown[],
-    rngValue?: number,
-    contrabandId?: string,
-    instanceId?: string
+    itemsCollected: unknown[]
   ) => void
   completeRoadieMinigame?: (
-    equipmentDamage: number,
-    rngValue?: number,
-    instanceId?: string
+    equipmentDamage: number
   ) => void
   completeKabelsalatMinigame?: (
-    results: unknown,
-    rngValue?: number,
-    instanceId?: string
+    results: unknown
   ) => void
   completeAmpCalibration?: (
-    score: number,
-    rngValue?: number,
-    instanceId?: string
+    score: number
   ) => void
   rngValue?: number
   contrabandId?: string

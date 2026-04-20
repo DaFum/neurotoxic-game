@@ -73,35 +73,31 @@ export const MinigameSceneFrame = ({
             ) {
               currentLogic.completeTravelMinigame(
                 0,
-                [],
-                rngValue,
-                contrabandId,
-                instanceId
+                []
               )
             } else if (
               currentType === MINIGAME_TYPES.ROADIE &&
               currentLogic?.completeRoadieMinigame
             ) {
-              currentLogic.completeRoadieMinigame(0, rngValue, instanceId)
+              currentLogic.completeRoadieMinigame(0)
             } else if (
               currentType === MINIGAME_TYPES.KABELSALAT &&
               currentLogic?.completeKabelsalatMinigame
             ) {
               currentLogic.completeKabelsalatMinigame(
-                { isPoweredOn: true, timeLeft: 0 },
-                rngValue,
-                instanceId
+                { isPoweredOn: true, timeLeft: 0 }
               )
             } else if (
               currentType === MINIGAME_TYPES.AMP_CALIBRATION &&
               currentLogic?.completeAmpCalibration
             ) {
-              currentLogic.completeAmpCalibration(100, rngValue, instanceId)
+              currentLogic.completeAmpCalibration(100)
             } else {
               console.warn(
                 'Minigame completion handlers unavailable for backdoor completion',
                 { currentLogic, currentType }
               )
+              onComplete() // fallback
               return
             }
           }

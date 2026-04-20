@@ -251,16 +251,6 @@ export const useRoadieLogic = () => {
         e.preventDefault()
         move(0, 1)
       }
-      // Backdoor for E2E testing
-      if (import.meta.env?.DEV && e.code === 'KeyP' && e.shiftKey) {
-        e.preventDefault()
-        const game = gameStateRef.current
-        game.isGameOver = true
-        game.equipmentDamage = 5
-        hasTransitionedRef.current = true
-        completeRoadieMinigame(5)
-        setUiState(prev => ({ ...prev, currentDamage: 5, isGameOver: true }))
-      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)

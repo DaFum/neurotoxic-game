@@ -67,6 +67,9 @@ test('socialReducer - handleDarkWebLeak', async t => {
     assert.strictEqual(result.player.money, 1000)
     assert.strictEqual(result.player.fame, 100)
     assert.strictEqual(result.band.harmony, 50)
+    assert.strictEqual(result.social.controversyLevel, 10)
+    assert.strictEqual(result.social.zealotry, 20)
+    assert.strictEqual(result.social.lastDarkWebLeakDay, 42)
   })
 
   await t.test('clamps values to correct boundaries', () => {
