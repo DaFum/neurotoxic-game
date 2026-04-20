@@ -298,3 +298,83 @@ export const handlePirateBroadcast = (
 
   return nextState
 }
+
+export const handleDarkWebLeak = (state, payload) => {
+  if (!payload || typeof payload !== 'object') {
+    logger.warn('GameState', 'Invalid payload for DARK_WEB_LEAK')
+    return state
+  }
+
+  const cost = Number(payload.cost) || 0
+  const fameGain = Number(payload.fameGain) || 0
+  const zealotryGain = Number(payload.zealotryGain) || 0
+  const controversyGain = Number(payload.controversyGain) || 0
+  const harmonyCost = Number(payload.harmonyCost) || 0
+  const successToast = payload.successToast
+
+  const currentMoney = Number(state.player.money) || 0
+  const currentHarmony = Number(state.band.harmony) || 0
+
+  if (currentMoney < cost || currentHarmony < harmonyCost) {
+    logger.warn('GameState', 'Insufficient funds or harmony for dark web leak')
+    return state
+  }
+
+  const currentFame = Number(state.player.fame) || 0
+  const currentZealotry = Number(state.social.zealotry) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
+
+  const nextMoney = clampPlayerMoney(currentMoney - cost)
+  const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
+  const nextFame = clampPlayerFame(currentFame + fameGain)
+  const nextZealotry = Math.max(
+    0,
+    Math.min(100, currentZealotry + zealotryGain)
+  )
+  const nextControversy = Math.max(
+    0,
+    Math.min(100, currentControversy + controversyGain)
+  )
+
+  const nextState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney,
+      fame: nextFame,
+      fameLevel: calculateFameLevel(nextFame)
+    },
+    band: {
+      ...state.band,
+      harmony: nextHarmony
+    },
+    social: {
+      ...state.social,
+      zealotry: nextZealotry,
+      controversyLevel: nextControversy,
+      lastDarkWebLeakDay: state.player.day || 0
+    }
+  }
+
+  if (successToast) {
+    const deltaFame = nextFame - currentFame
+    const deltaZealotry = nextZealotry - currentZealotry
+    const deltaControversy = nextControversy - currentControversy
+    const messages = []
+
+    if (deltaFame > 0) messages.push(`FAME +${deltaFame}`)
+    if (deltaZealotry > 0) messages.push(`ZEALOTRY +${deltaZealotry}`)
+    if (deltaControversy > 0) messages.push(`CONTROVERSY +${deltaControversy}`)
+    if (harmonyCost > 0) messages.push(`HARMONY -${harmonyCost}`)
+
+    nextState.toasts = [
+      ...(state.toasts || []),
+      {
+        ...successToast,
+        message: `${successToast.message} (${messages.join(' | ')})`
+      }
+    ]
+  }
+
+  return nextState
+}

@@ -27,7 +27,8 @@ import type {
   TradeVoidItemPayload,
   UpdateBandPayload,
   UpdatePlayerPayload,
-  SocialState
+  SocialState,
+  DarkWebLeakPayload
 } from '../types/game'
 
 /**
@@ -716,6 +717,32 @@ export const createTradeVoidItemAction = (
  * @param {Object} [payload.successToast] - Toast object appended to state on success.
  * @returns {Object} Action object
  */
+/**
+ * Creates an action to trigger a dark web leak.
+ * @param {Object} payload
+ * @param {number} payload.cost - Money cost.
+ * @param {number} payload.fameGain - Fame gained.
+ * @param {number} payload.zealotryGain - Zealotry gained.
+ * @param {number} payload.controversyGain - Controversy gained.
+ * @param {number} payload.harmonyCost - Band harmony lost.
+ * @param {Object} [payload.successToast] - Toast object appended to state on success.
+ * @returns {Object} Action object
+ */
+export const createDarkWebLeakAction = (
+  payload: DarkWebLeakPayload
+): Extract<GameAction, { type: typeof ActionTypes.DARK_WEB_LEAK }> => ({
+  type: ActionTypes.DARK_WEB_LEAK,
+  payload:
+    payload && typeof payload === 'object'
+      ? {
+          ...payload,
+          successToast: payload.successToast
+            ? { ...payload.successToast, id: getSafeUUID() }
+            : undefined
+        }
+      : payload
+})
+
 export const createMerchPressAction = (
   payload: MerchPressPayload
 ): Extract<GameAction, { type: typeof ActionTypes.MERCH_PRESS }> => ({
