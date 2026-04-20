@@ -224,10 +224,23 @@ export const useTourbusLogic = () => {
         e.preventDefault()
         moveRight()
       }
+      // Backdoor for E2E testing
+      if (import.meta.env?.DEV && e.code === 'KeyP' && e.shiftKey) {
+        e.preventDefault()
+        if (gameStateRef.current.isGameOver) return
+        gameStateRef.current.distance = TOURBUS_TARGET_DISTANCE
+        gameStateRef.current.isGameOver = true
+        completeTravelMinigame(0, [])
+        setUiState(prev => ({
+          ...prev,
+          distance: TOURBUS_TARGET_DISTANCE,
+          isGameOver: true
+        }))
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [moveLeft, moveRight])
+  }, [moveLeft, moveRight, completeTravelMinigame])
 
   return {
     gameStateRef, // Passed to Pixi

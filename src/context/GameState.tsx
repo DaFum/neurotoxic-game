@@ -190,9 +190,6 @@ type GameDispatchActions = {
   clinicEnhance: (
     payload: Parameters<typeof createClinicEnhanceAction>[0]
   ) => void
-  darkWebLeak: (
-    payload: Parameters<typeof createDarkWebLeakAction>[0]
-  ) => void
   pirateBroadcast: (
     payload: Parameters<typeof createPirateBroadcastAction>[0]
   ) => void
@@ -787,8 +784,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   )
 
   /**
-   * Dispatches a pirate broadcast action.
-   * @param {object} payload - The broadcast payload.
+   * Dispatches a dark web leak action.
+   * @param {object} payload - The leak payload.
    */
   const darkWebLeak = useCallback(
     (payload: import('../types/game').DarkWebLeakPayload) =>

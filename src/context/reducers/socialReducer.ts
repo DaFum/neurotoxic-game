@@ -233,9 +233,10 @@ export const handlePirateBroadcast = (
   if (
     !Number.isFinite(parsedCost) ||
     parsedCost < 0 ||
-    (payload.fameGain != null && (!Number.isFinite(parsedFameGain) || parsedFameGain < 0)) ||
-    (payload.zealotryGain != null && (!Number.isFinite(parsedZealotryGain) || parsedZealotryGain < 0)) ||
-    (payload.controversyGain != null && (!Number.isFinite(parsedControversyGain) || parsedControversyGain < 0)) ||
+    (payload.fameGain != null && !Number.isFinite(parsedFameGain)) ||
+    (payload.zealotryGain != null && !Number.isFinite(parsedZealotryGain)) ||
+    (payload.controversyGain != null &&
+      !Number.isFinite(parsedControversyGain)) ||
     !Number.isFinite(parsedHarmonyCost) ||
     parsedHarmonyCost < 0
   ) {
@@ -256,8 +257,7 @@ export const handlePirateBroadcast = (
     !Number.isFinite(currentMoney) ||
     !Number.isFinite(currentHarmony) ||
     currentMoney < 0 ||
-    currentHarmony < 1 ||
-    currentHarmony > 100
+    currentHarmony < 0
   ) {
     logger.warn('GameState', 'Invalid player funds or harmony state')
     return state
@@ -378,19 +378,8 @@ export const handleDarkWebLeak = (
   const controversyGain = parsedControversyGain
   const harmonyCost = parsedHarmonyCost
 
-  const currentMoney = Number(state.player.money)
-  const currentHarmony = Number(state.band.harmony)
-
-  if (
-    !Number.isFinite(currentMoney) ||
-    !Number.isFinite(currentHarmony) ||
-    currentMoney < 0 ||
-    currentHarmony < 1 ||
-    currentHarmony > 100
-  ) {
-    logger.warn('GameState', 'Invalid player funds or harmony state')
-    return state
-  }
+  const currentMoney = Number(state.player.money) || 0
+  const currentHarmony = Number(state.band.harmony) || 0
 
   if (currentMoney < cost || currentHarmony < harmonyCost) {
     logger.warn('GameState', 'Insufficient funds or harmony for dark web leak')
