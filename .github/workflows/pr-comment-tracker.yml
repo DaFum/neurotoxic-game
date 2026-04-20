@@ -9,8 +9,6 @@ on:
     types: [opened, reopened, synchronize]
   pull_request_review:
     types: [submitted, edited]
-  pull_request_review_thread:
-    types: [resolved, unresolved]
 
 jobs:
   update-summary-and-check:
@@ -85,22 +83,26 @@ jobs:
               c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
             );
 
-            if (existingBotComment) {
-              console.log(`Aktualisiere bestehenden Kommentar (ID: ${existingBotComment.id})...`);
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existingBotComment.id,
-                body: body
-              });
-            } else {
-              console.log("Erstelle neuen Zusammenfassungs-Kommentar...");
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: prNumber,
-                body: body
-              });
+            try {
+              if (existingBotComment) {
+                console.log(`Aktualisiere bestehenden Kommentar (ID: ${existingBotComment.id})...`);
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existingBotComment.id,
+                  body: body
+                });
+              } else {
+                console.log("Erstelle neuen Zusammenfassungs-Kommentar...");
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: body
+                });
+              }
+            } catch (err) {
+              core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
             // 6. Workflow-Status basierend auf ungelösten Review-Threads via GraphQL setzen
