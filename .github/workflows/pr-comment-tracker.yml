@@ -49,7 +49,7 @@ jobs:
             ]);
 
             // Review-Zusammenfassungen in das gleiche Format bringen wie andere Kommentare
-            const reviewSummaries = reviews.filter(r => r.body && r.body.trim().length > 0).map(r => ({
+            const reviewSummaries = reviews.filter(r => r.body && r.body.trim().length > 0 && r.user).map(r => ({
               ...r,
               created_at: r.submitted_at || r.created_at
             }));
