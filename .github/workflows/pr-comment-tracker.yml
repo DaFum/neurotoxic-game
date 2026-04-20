@@ -41,7 +41,22 @@ jobs:
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
             const marker = "<!-- PR_COMMENT_TRACKER_MARKER -->";
 
-            // 2. Ungelöste Review-Threads via GraphQL ermitteln
+            // 2. Den bestehenden Kommentar abrufen, um bereits gemeldete Threads zu identifizieren
+            const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber });
+            const existingBotComment = issueComments.find(
+              c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
+            );
+
+            // Bereits gemeldete Thread-IDs aus dem bestehenden Kommentar extrahieren
+            let reportedThreadIds = new Set();
+            if (existingBotComment) {
+              const match = existingBotComment.body.match(/<!-- REPORTED_THREADS: (.*?) -->/);
+              if (match && match[1]) {
+                reportedThreadIds = new Set(match[1].split(',').filter(Boolean));
+              }
+            }
+
+            // 3. Ungelöste Review-Threads via GraphQL ermitteln
             let hasNextPage = true;
             let cursor = null;
             const unresolvedThreads = [];
@@ -57,6 +72,7 @@ jobs:
                           endCursor
                         }
                         nodes {
+                          id
                           isResolved
                           comments(first: 1) {
                             nodes {
@@ -84,9 +100,11 @@ jobs:
               cursor = threads.pageInfo.endCursor;
             }
 
-            // 3. Den kopierbaren Block formatieren - NUR offene Review Threads
+            // 4. Den kopierbaren Block formatieren - NUR offene Review Threads
             const seenSignatures = new Set();
             const validThreads = [];
+            const newThreads = [];
+            const newThreadIds = new Set(reportedThreadIds);
 
             const formattedComments = unresolvedThreads.map(t => {
               const firstComment = t.comments.nodes[0];
@@ -107,6 +125,13 @@ jobs:
               seenSignatures.add(signature);
 
               validThreads.push(t);
+              newThreadIds.add(t.id); // Alle gültigen aktuellen Thread-IDs merken
+
+              // Für core.setFailed nur die neuen Threads filtern, die wir noch nicht gemeldet hatten
+              if (!reportedThreadIds.has(t.id)) {
+                newThreads.push(`- [${login}]: ${cleanBody}`);
+              }
+
               return `- [${login}]: ${cleanBody}`;
             }).filter(Boolean).join('\n');
 
@@ -116,9 +141,12 @@ jobs:
 
             const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Wird automatisch aktualisiert, sobald sich Kommentare ändern.*\n\n\`\`\`text\n`;
             const footer = `\n\`\`\`\n`;
+
+            // Die Thread-IDs als versteckten HTML-Kommentar abspeichern
+            const idsStateMarker = `\n<!-- REPORTED_THREADS: ${Array.from(newThreadIds).join(',')} -->`;
             const MAX_COMMENT_SIZE = 65536;
             const extraText = "\n... (truncated)";
-            const fixedLength = marker.length + header.length + footer.length;
+            const fixedLength = marker.length + header.length + footer.length + idsStateMarker.length;
 
             if (fixedLength + copyableBlock.length > MAX_COMMENT_SIZE) {
               const allowedLength = MAX_COMMENT_SIZE - fixedLength - extraText.length;
@@ -126,14 +154,9 @@ jobs:
             }
 
             // Das endgültige Markdown für den Bot-Kommentar
-            const body = marker + header + copyableBlock + footer;
+            const body = marker + header + copyableBlock + footer + idsStateMarker;
 
-            // 4. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
-            const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber });
-            const existingBotComment = issueComments.find(
-              c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
-            );
-
+            // 5. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
             try {
               if (existingBotComment) {
                 console.log(`Aktualisiere bestehenden Kommentar (ID: ${existingBotComment.id})...`);
@@ -156,10 +179,11 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 5. Workflow-Status auswerten - Bot blockiert nur anhand der deduplizierten offenen Review Threads
-            if (validThreads.length > 0) {
-              // Schreibe den formatierten Text der blockierenden Review-Threads in core.setFailed (wie im Kommentar)
-              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${validThreads.length} ungelöste(r) Review-Thread(s):\n\n${formattedComments}`);
+            // 6. Workflow-Status auswerten - Bot blockiert nur anhand NEUER, noch nicht gemeldeter Review Threads
+            if (newThreads.length > 0) {
+              // Schreibe den formatierten Text der blockierenden NEUEN Review-Threads in core.setFailed
+              const newThreadsBlock = newThreads.join('\n');
+              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${newThreads.length} NEUE ungelöste(r) Review-Thread(s):\n\n${newThreadsBlock}`);
             } else {
-              console.log("Keine blockierenden Review-Threads vorhanden. Workflow erfolgreich.");
+              console.log("Keine neuen blockierenden Review-Threads vorhanden. Workflow erfolgreich.");
             }
