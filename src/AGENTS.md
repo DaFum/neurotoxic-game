@@ -17,14 +17,10 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 - Keep behavior unchanged in type-only PRs; separate refactors from type-shape changes.
 - `jsconfig.checkjs.json` scopes the stricter CheckJS (adds `noUncheckedIndexedAccess`) to `src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, and `src/ui/bandhq`. When moving a new domain into that scope, expand the `include` list in the same PR.
 - Shared domain contracts belong in `src/types/*.d.ts` — do not duplicate structural shapes inline across modules.
+- When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
+  - In domains covered by `jsconfig.checkjs.json`, guard indexed/optional access explicitly (`noUncheckedIndexedAccess`).
 
 ## Gotchas
 
 - `useArrivalLogic` owns arrival routing and scene transitions after travel completion.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must stay reactive-only (no direct PIXI imports).
-
-## Nested TypeScript Notes
-
-- In `src/**`, keep strict CheckJS discipline: no `@ts-nocheck`, no `any`, and use `import type` for type-only imports.
-- When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
-- For domains inside `jsconfig.checkjs.json`, guard indexed access and optional fields explicitly (`noUncheckedIndexedAccess`).

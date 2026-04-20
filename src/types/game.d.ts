@@ -10,10 +10,10 @@ export interface GameSettings {
   crtEnabled: boolean
   tutorialSeen: boolean
   logLevel: number
-  [key: string]: unknown
 }
 
 export type UnknownRecord = Record<string, unknown>
+export type RawGameSettings = Partial<GameSettings> & UnknownRecord
 
 export interface EventOption {
   id?: string
@@ -180,7 +180,7 @@ export interface GigModifiers {
 
 export interface ToastPayload {
   id: string
-  type: string
+  type: 'success' | 'error' | 'warning' | 'info'
   message?: unknown
   messageKey?: string
   options?: Record<string, unknown>
@@ -189,6 +189,7 @@ export interface ToastPayload {
 
 export interface GigStats extends UnknownRecord {
   score?: number
+  misses?: number
   accuracy?: number
   combo?: number
   health?: number
@@ -208,7 +209,7 @@ export interface QuestState extends UnknownRecord {
 }
 
 export interface ResetStatePayload extends UnknownRecord {
-  settings?: UnknownRecord
+  settings?: RawGameSettings
   unlocks?: string[]
 }
 

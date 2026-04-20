@@ -25,12 +25,27 @@ const validateEvents = (
   events: unknown[],
   categoryName = 'unknown'
 ): UnknownRecord[] => {
-  const ids = new Set()
+  const ids = new Set<string>()
   return events.filter((e: unknown) => {
-    const eObj =
-      typeof e === 'object' && e !== null ? (e as Record<string, unknown>) : {}
-    if (!eObj.id) {
+    if (!e || typeof e !== 'object' || Array.isArray(e)) {
+      logger.error(
+        'EventValidation',
+        `Event must be an object in ${categoryName}`,
+        e
+      )
+      return false
+    }
+    const eObj = e as Record<string, unknown>
+    if (typeof eObj.id !== 'string') {
       logger.error('EventValidation', `Event missing ID in ${categoryName}`, e)
+      return false
+    }
+    if (typeof eObj.category !== 'string') {
+      logger.error(
+        'EventValidation',
+        `Event missing category in ${categoryName}: ${eObj.id}`,
+        e
+      )
       return false
     }
     if (ids.has(eObj.id)) {
@@ -41,10 +56,11 @@ const validateEvents = (
       return false
     }
     ids.add(eObj.id)
-    if (!VALID_CATEGORIES.has(eObj.category as string)) {
+    if (!VALID_CATEGORIES.has(eObj.category)) {
       logger.error(
         'EventValidation',
-        `Invalid Event Category in ${categoryName}: ${eObj.category} for event ${eObj.id}`
+        `Invalid Event Category in ${categoryName}: ${eObj.category} for event ${eObj.id}`,
+        e
       )
       return false
     }
@@ -73,7 +89,7 @@ const categorizeEvents = (
     const e = events[i]
     if (!e) continue
     const category = typeof e.category === 'string' ? e.category : 'unknown'
-    if (Object.hasOwn(result, category) && category in result) {
+    if (Object.hasOwn(result, category)) {
       result[category as keyof typeof result].push(e)
     } else {
       logger.error(

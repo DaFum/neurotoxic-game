@@ -6,7 +6,9 @@ import type {
   BandMember,
   ToastPayload,
   GameMap,
-  GameSettings
+  GameSettings,
+  RawGameSettings,
+  ResetStatePayload
 } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
@@ -234,7 +236,7 @@ const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
 }
 
 const sanitizeSettingsPayload = (
-  rawSettings: Record<string, unknown>
+  rawSettings: RawGameSettings | Record<string, unknown>
 ): Partial<GameSettings> => {
   const sanitized: Partial<GameSettings> = {}
 
@@ -464,13 +466,13 @@ export const handleLoadGame = (
 
 export const handleResetState = (
   state: GameState,
-  payload: Record<string, unknown> = {}
+  payload: ResetStatePayload = {}
 ): GameState => {
   logger.info('GameState', 'State Reset (Debug)')
 
   // Construct the data to preserve across reset
   const persistedData: {
-    settings?: Record<string, unknown>
+    settings?: Partial<GameSettings>
     unlocks?: string[]
   } = {
     settings:
@@ -478,8 +480,8 @@ export const handleResetState = (
       payload.settings !== undefined &&
       typeof payload.settings === 'object' &&
       !Array.isArray(payload.settings)
-        ? (payload.settings as Record<string, unknown>)
-        : (state.settings as unknown as Record<string, unknown>),
+        ? sanitizeSettingsPayload(payload.settings as RawGameSettings)
+        : state.settings,
     unlocks: Array.isArray(payload.unlocks)
       ? (payload.unlocks as string[])
       : (state.unlocks ?? [])

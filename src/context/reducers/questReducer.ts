@@ -237,7 +237,7 @@ export const handleFailQuests = (state: GameState): GameState => {
         const socialPenalty = penalty.social as
           | Record<string, unknown>
           | undefined
-        if (socialPenalty?.controversyLevel) {
+        if (socialPenalty?.controversyLevel != null) {
           // Deep clone before mutating
           nextState.social = { ...nextState.social }
           const controversyDelta = Number(socialPenalty.controversyLevel)
@@ -249,7 +249,7 @@ export const handleFailQuests = (state: GameState): GameState => {
           )
         }
         const bandPenalty = penalty.band as Record<string, unknown> | undefined
-        if (bandPenalty?.harmony) {
+        if (bandPenalty?.harmony != null) {
           // Deep clone before mutating
           nextState.band = { ...nextState.band }
           const harmonyDelta = Number(bandPenalty.harmony)

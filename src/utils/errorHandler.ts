@@ -312,9 +312,7 @@ const normalizeHandleErrorOptions = (
       safeOptions.errorInfo !== null
         ? (safeOptions.errorInfo as Record<string, unknown>)
         : null,
-    severity: normalizeSeverity(
-      safeOptions.severity as ErrorSeverityType | null
-    )
+    severity: normalizeSeverity(safeOptions.severity)
   }
 }
 
@@ -509,8 +507,10 @@ export const handleError = (error: unknown, options: unknown = {}) => {
  */
 export const initGlobalErrorHandling = () => {
   const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
-  if (typeof window === 'undefined' || (window as any)[INIT_SYMBOL]) return
-  ;(window as any)[INIT_SYMBOL] = true
+  if (typeof window === 'undefined') return
+  const windowSymbolState = window as Window & Record<symbol, unknown>
+  if (windowSymbolState[INIT_SYMBOL] === true) return
+  windowSymbolState[INIT_SYMBOL] = true
   window.addEventListener('unhandledrejection', event => {
     const reason = event.reason
     let errorToHandle

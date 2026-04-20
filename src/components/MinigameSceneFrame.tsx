@@ -11,6 +11,8 @@ import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import PropTypes from 'prop-types'
 import type { MinigameSceneFrameProps } from '../types/components'
+import { ActionTypes } from '../context/actionTypes'
+import { MINIGAME_TYPES } from '../context/gameConstants'
 
 export const MinigameSceneFrame = ({
   controllerFactory,
@@ -25,6 +27,9 @@ export const MinigameSceneFrame = ({
   const { settings } = useGameState()
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const finishMinigame = logic?.finishMinigame
+  const dispatch = logic?.dispatch
+  const minigameType = logic?.gameStateRef?.current?.minigame?.type
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
@@ -50,10 +55,32 @@ export const MinigameSceneFrame = ({
       } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
-          if (logic?.finishMinigame) {
-            logic.finishMinigame()
-          } else if (logic?.dispatch) {
-            logic.dispatch({ type: 'COMPLETE_MINIGAME' })
+          if (finishMinigame) {
+            finishMinigame()
+          } else if (dispatch) {
+            if (minigameType === MINIGAME_TYPES.TOURBUS) {
+              dispatch({
+                type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+                payload: { damageTaken: 0, itemsCollected: [] }
+              })
+            } else if (minigameType === MINIGAME_TYPES.ROADIE) {
+              dispatch({
+                type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
+                payload: { equipmentDamage: 0 }
+              })
+            } else if (minigameType === MINIGAME_TYPES.KABELSALAT) {
+              dispatch({
+                type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
+                payload: { results: { isPoweredOn: true, timeLeft: 0 } }
+              })
+            } else if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
+              dispatch({
+                type: ActionTypes.COMPLETE_AMP_CALIBRATION,
+                payload: { score: 100 }
+              })
+            } else {
+              onComplete()
+            }
           } else {
             onComplete()
           }
@@ -62,7 +89,7 @@ export const MinigameSceneFrame = ({
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [uiState?.isGameOver, onComplete, logic])
+  }, [dispatch, finishMinigame, minigameType, onComplete, uiState?.isGameOver])
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>

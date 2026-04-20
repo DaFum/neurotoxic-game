@@ -1,4 +1,9 @@
-import type { GameState, SocialState } from '../../types/game'
+import type {
+  GameState,
+  SocialState,
+  MerchPressPayload,
+  PirateBroadcastPayload
+} from '../../types/game'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import { getSafeUUID } from '../../utils/crypto'
@@ -109,18 +114,34 @@ export const handleAddVenueBlacklist = (
 
 export const handleMerchPress = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: MerchPressPayload | null | undefined
 ): GameState => {
-  if (!payload || typeof payload !== 'object') {
+  if (!payload) {
     logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
     return state
   }
 
-  const cost = Math.max(0, Number(payload.cost) || 0)
-  const loyaltyGain = Number(payload.loyaltyGain) || 0
-  const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Math.max(0, Number(payload.harmonyCost) || 0)
-  const fameGain = Math.max(0, Number(payload.fameGain) || 0)
+  const parsedCost = Number(payload.cost)
+  const parsedLoyaltyGain = Number(payload.loyaltyGain)
+  const parsedControversyGain = Number(payload.controversyGain)
+  const parsedHarmonyCost = Number(payload.harmonyCost)
+  const parsedFameGain = payload.fameGain == null ? 0 : Number(payload.fameGain)
+  if (
+    !Number.isFinite(parsedCost) ||
+    !Number.isFinite(parsedLoyaltyGain) ||
+    !Number.isFinite(parsedControversyGain) ||
+    !Number.isFinite(parsedHarmonyCost) ||
+    !Number.isFinite(parsedFameGain)
+  ) {
+    logger.warn('GameState', 'Invalid numeric payload for MERCH_PRESS')
+    return state
+  }
+
+  const cost = Math.max(0, parsedCost)
+  const loyaltyGain = parsedLoyaltyGain
+  const controversyGain = parsedControversyGain
+  const harmonyCost = Math.max(0, parsedHarmonyCost)
+  const fameGain = Math.max(0, parsedFameGain)
   const successToast = payload.successToast
 
   const currentMoney = Number(state.player.money) || 0
@@ -193,9 +214,9 @@ export const handleMerchPress = (
 
 export const handlePirateBroadcast = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: PirateBroadcastPayload | null | undefined
 ): GameState => {
-  if (!payload || typeof payload !== 'object') {
+  if (!payload) {
     logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')
     return state
   }

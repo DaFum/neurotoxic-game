@@ -10,7 +10,7 @@ import { LOG_LEVELS } from '../utils/logger'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
-import type { GameState } from '../types/game'
+import type { GameState, GameSettings } from '../types/game'
 
 /**
  * Brand alignment constants
@@ -248,7 +248,7 @@ export const initialState: GameState = {
  * @returns {Object} A new initial state object
  */
 export const createInitialState = (
-  persistedData: { settings?: Record<string, unknown>; unlocks?: string[] } = {}
+  persistedData: { settings?: Partial<GameSettings>; unlocks?: string[] } = {}
 ): GameState => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),

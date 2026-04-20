@@ -197,13 +197,25 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.modifiers = physicsSetup.mergedModifiers
       gameStateRef.current.speed = physicsSetup.speed
-      const lanes = gameStateRef.current?.lanes
+      const lanes = gameStateRef.current.lanes
       const hitWindows = physicsSetup.hitWindows
       if (!Array.isArray(lanes) || lanes.length < 3) {
-        throw new Error('Rhythm game lanes are not initialized correctly')
+        logger.error(
+          'RhythmGame',
+          'Rhythm game lanes are not initialized correctly'
+        )
+        setAudioReady(false)
+        hasInitializedRef.current = false
+        return
       }
       if (!Array.isArray(hitWindows) || hitWindows.length < 3) {
-        throw new Error('Gig physics hit windows are not initialized correctly')
+        logger.error(
+          'RhythmGame',
+          'Gig physics hit windows are not initialized correctly'
+        )
+        setAudioReady(false)
+        hasInitializedRef.current = false
+        return
       }
       const lane0 = lanes[0]
       const lane1 = lanes[1]
@@ -212,14 +224,20 @@ export const useRhythmGameAudio = ({
       const hitWindow1 = hitWindows[1]
       const hitWindow2 = hitWindows[2]
       if (!lane0 || !lane1 || !lane2) {
-        throw new Error('Rhythm game lane entries are missing')
+        logger.error('RhythmGame', 'Rhythm game lane entries are missing')
+        setAudioReady(false)
+        hasInitializedRef.current = false
+        return
       }
       if (
         typeof hitWindow0 !== 'number' ||
         typeof hitWindow1 !== 'number' ||
         typeof hitWindow2 !== 'number'
       ) {
-        throw new Error('Gig physics hit window values are invalid')
+        logger.error('RhythmGame', 'Gig physics hit window values are invalid')
+        setAudioReady(false)
+        hasInitializedRef.current = false
+        return
       }
       lane0.hitWindow = hitWindow0
       lane1.hitWindow = hitWindow1

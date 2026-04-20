@@ -67,7 +67,10 @@ test('Minigame State Transitions', async t => {
 
       assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
       assert.strictEqual(newState.player.currentNodeId, 'node_1')
-      assert.strictEqual(newState.player.location, 'berlin_end_venue')
+      assert.strictEqual(
+        newState.player.location,
+        'venues:berlin_end_venue.name'
+      )
       assert.strictEqual(newState.currentScene, GAME_PHASES.TRAVEL_MINIGAME)
 
       // Check costs
