@@ -29,7 +29,8 @@ export const MinigameSceneFrame = ({
     completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
-    completeAmpCalibration
+    completeAmpCalibration,
+    endGig
   } = useGameState()
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -86,16 +87,9 @@ export const MinigameSceneFrame = ({
             } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
               completeAmpCalibration(100)
               onComplete()
-            } else if (currentLogic?.dispatch) {
-              // Fallback to dispatch action if possible
-              currentLogic.dispatch({ type: ActionTypes.END_GIG })
             } else {
-              console.warn(
-                'Minigame completion handlers unavailable for backdoor completion',
-                { currentLogic, currentType }
-              )
-              onComplete() // fallback
-              return
+              endGig()
+              onComplete()
             }
           }
         }
@@ -109,7 +103,8 @@ export const MinigameSceneFrame = ({
     completeTravelMinigame,
     completeRoadieMinigame,
     completeKabelsalatMinigame,
-    completeAmpCalibration
+    completeAmpCalibration,
+    endGig
   ])
 
   return (
@@ -164,10 +159,6 @@ MinigameSceneFrame.propTypes = {
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
     dispatch: PropTypes.func,
-    completeTravelMinigame: PropTypes.func,
-    completeRoadieMinigame: PropTypes.func,
-    completeKabelsalatMinigame: PropTypes.func,
-    completeAmpCalibration: PropTypes.func,
     rngValue: PropTypes.number,
     contrabandId: PropTypes.string,
     instanceId: PropTypes.string
