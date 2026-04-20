@@ -41,21 +41,29 @@ jobs:
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
             const marker = "<!-- PR_COMMENT_TRACKER_MARKER -->";
 
-            // 2. Normale Issue-Kommentare und Review-Kommentare abrufen (mit Pagination)
-            const [issueComments, reviewComments] = await Promise.all([
+            // 2. Normale Issue-Kommentare, Review-Kommentare und Review-Zusammenfassungen abrufen (mit Pagination)
+            const [issueComments, reviewComments, reviews] = await Promise.all([
               github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber }),
-              github.paginate(github.rest.pulls.listReviewComments, { owner, repo, pull_number: prNumber })
+              github.paginate(github.rest.pulls.listReviewComments, { owner, repo, pull_number: prNumber }),
+              github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: prNumber })
             ]);
 
+            // Review-Zusammenfassungen in das gleiche Format bringen wie andere Kommentare
+            const reviewSummaries = reviews.filter(r => r.body && r.body.trim().length > 0).map(r => ({
+              ...r,
+              created_at: r.submitted_at || r.created_at
+            }));
+
             // 3. Eigene Bot-Kommentare filtern, Null-User abfangen und nach Erstellungsdatum sortieren
-            const allComments = [...issueComments, ...reviewComments]
+            const allComments = [...issueComments, ...reviewComments, ...reviewSummaries]
               .filter(comment => comment.user && comment.user.type !== "Bot") // Andere Bots und gelöschte Nutzer ignorieren
               .filter(comment => comment.body && !comment.body.includes(marker)) // Den Bot selbst ignorieren
               .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
             // 4. Den kopierbaren Block formatieren
             const formattedComments = allComments.map(c => {
-              const cleanBody = c.body.replace(/\r?\n|\r/g, ' ').trim();
+              // Verhindere das Ausbrechen aus dem Markdown Code-Block, indem Backticks maskiert werden
+              const cleanBody = c.body.replace(/\r?\n|\r/g, ' ').replace(/```/g, '\\`\\`\\`').trim();
               return `- [${c.user.login}]: ${cleanBody}`;
             }).join('\n');
 
