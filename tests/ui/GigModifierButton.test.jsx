@@ -62,3 +62,23 @@ test('GigModifierButton applies inactive states correctly', () => {
   )
   expect(shimmer).toBeInTheDocument()
 })
+
+test('GigModifierButton handles disabled state correctly', () => {
+  const handleClick = vi.fn()
+  render(
+    <GigModifierButton
+      item={mockItem}
+      isActive={false}
+      onClick={handleClick}
+      disabled={true}
+    />
+  )
+
+  const button = screen.getByRole('button')
+  expect(button).toBeDisabled()
+  expect(button).toHaveClass('disabled:opacity-40')
+  expect(button).toHaveClass('disabled:cursor-not-allowed')
+
+  fireEvent.click(button)
+  expect(handleClick).not.toHaveBeenCalled()
+})
