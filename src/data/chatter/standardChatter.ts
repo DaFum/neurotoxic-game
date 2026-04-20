@@ -1,35 +1,49 @@
 import type { GameState, BandMember } from '../../types/game'
 import { GAME_PHASES } from '../../context/gameConstants'
 
-const getMinMood = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.minMood as number) ??
-  (state.band?.members
-    ? Math.min(...state.band.members.map((m: BandMember) => m.mood ?? Infinity))
-    : Infinity)
+const getMinMood = (state: GameState, memo: Record<string, unknown>) => {
+  if (memo?.minMood !== undefined) return memo.minMood as number
+  if (!state.band?.members) return Infinity
+  let min = Infinity
+  for (const m of state.band.members) {
+    const val = m.mood ?? Infinity
+    if (val < min) min = val
+  }
+  return min
+}
 
-const getMaxMood = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.maxMood as number) ??
-  (state.band?.members
-    ? Math.max(
-        ...state.band.members.map((m: BandMember) => m.mood ?? -Infinity)
-      )
-    : -Infinity)
+const getMaxMood = (state: GameState, memo: Record<string, unknown>) => {
+  if (memo?.maxMood !== undefined) return memo.maxMood as number
+  if (!state.band?.members) return -Infinity
+  let max = -Infinity
+  for (const m of state.band.members) {
+    const val = m.mood ?? -Infinity
+    if (val > max) max = val
+  }
+  return max
+}
 
-const getMinStamina = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.minStamina as number) ??
-  (state.band?.members
-    ? Math.min(
-        ...state.band.members.map((m: BandMember) => m.stamina ?? Infinity)
-      )
-    : Infinity)
+const getMinStamina = (state: GameState, memo: Record<string, unknown>) => {
+  if (memo?.minStamina !== undefined) return memo.minStamina as number
+  if (!state.band?.members) return Infinity
+  let min = Infinity
+  for (const m of state.band.members) {
+    const val = m.stamina ?? Infinity
+    if (val < min) min = val
+  }
+  return min
+}
 
-const getMaxStamina = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.maxStamina as number) ??
-  (state.band?.members
-    ? Math.max(
-        ...state.band.members.map((m: BandMember) => m.stamina ?? -Infinity)
-      )
-    : -Infinity)
+const getMaxStamina = (state: GameState, memo: Record<string, unknown>) => {
+  if (memo?.maxStamina !== undefined) return memo.maxStamina as number
+  if (!state.band?.members) return -Infinity
+  let max = -Infinity
+  for (const m of state.band.members) {
+    const val = m.stamina ?? -Infinity
+    if (val > max) max = val
+  }
+  return max
+}
 
 const isPlayerInCity = (state: GameState, citySlug: string) => {
   const location = state.player?.location
