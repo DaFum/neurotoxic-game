@@ -41,35 +41,63 @@ jobs:
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
             const marker = "<!-- PR_COMMENT_TRACKER_MARKER -->";
 
-            // 2. Normale Issue-Kommentare, Review-Kommentare und Review-Zusammenfassungen abrufen (mit Pagination)
-            const [issueComments, reviewComments, reviews] = await Promise.all([
-              github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber }),
-              github.paginate(github.rest.pulls.listReviewComments, { owner, repo, pull_number: prNumber }),
-              github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: prNumber })
-            ]);
+            // 2. Ungelöste Review-Threads via GraphQL ermitteln
+            let hasNextPage = true;
+            let cursor = null;
+            const unresolvedThreads = [];
 
-            // Review-Zusammenfassungen in das gleiche Format bringen wie andere Kommentare
-            const reviewSummaries = reviews.filter(r => r.body && r.body.trim().length > 0 && r.user).map(r => ({
-              ...r,
-              created_at: r.submitted_at || r.created_at
-            }));
+            while (hasNextPage) {
+              const query = `
+                query($owner: String!, $repo: String!, $prNumber: Int!, $cursor: String) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequest(number: $prNumber) {
+                      reviewThreads(first: 100, after: $cursor) {
+                        pageInfo {
+                          hasNextPage
+                          endCursor
+                        }
+                        nodes {
+                          isResolved
+                          comments(first: 1) {
+                            nodes {
+                              author {
+                                login
+                              }
+                              body
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+              const result = await github.graphql(query, { owner, repo, prNumber, cursor });
+              const threads = result.repository.pullRequest.reviewThreads;
 
-            // 3. Kommentare filtern: Null-User abfangen, BOTS BEHALTEN, nur den Tracker-Bot selbst ignorieren
-            const allComments = [...issueComments, ...reviewComments, ...reviewSummaries]
-              .filter(comment => comment.user) // Alle existierenden Nutzer und Bots zulassen
-              .filter(comment => comment.body && !comment.body.includes(marker)) // Den Tracker-Bot selbst ignorieren
-              .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+              // Alle ungelösten Threads sammeln (inklusive Threads von Bots)
+              // Da Bots einen eigenen Thread erstellen, wird dieser als ein einzelner Thread getrackt
+              const openThreads = threads.nodes.filter(t => !t.isResolved);
+              unresolvedThreads.push(...openThreads);
 
-            // 4. Den kopierbaren Block formatieren
-            const formattedComments = allComments.map(c => {
+              hasNextPage = threads.pageInfo.hasNextPage;
+              cursor = threads.pageInfo.endCursor;
+            }
+
+            // 3. Den kopierbaren Block formatieren - NUR offene Review Threads
+            const formattedComments = unresolvedThreads.map(t => {
+              const firstComment = t.comments.nodes[0];
+              if (!firstComment) return null;
+
+              const login = firstComment.author ? firstComment.author.login : "unknown";
               // Verhindere das Ausbrechen aus dem Markdown Code-Block, indem Backticks maskiert werden
-              const cleanBody = c.body.replace(/\r?\n|\r/g, ' ').replace(/```/g, '\\`\\`\\`').trim();
-              return `- [${c.user.login}]: ${cleanBody}`;
-            }).join('\n');
+              const cleanBody = firstComment.body.replace(/\r?\n|\r/g, ' ').replace(/```/g, '\\`\\`\\`').trim();
+              return `- [${login}]: ${cleanBody}`;
+            }).filter(Boolean).join('\n');
 
             let copyableBlock = formattedComments.length > 0
               ? formattedComments
-              : "Keine Kommentare vorhanden.";
+              : "Keine offenen Review-Threads vorhanden.";
 
             const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Wird automatisch aktualisiert, sobald sich Kommentare ändern.*\n\n\`\`\`text\n`;
             const footer = `\n\`\`\`\n`;
@@ -85,7 +113,8 @@ jobs:
             // Das endgültige Markdown für den Bot-Kommentar
             const body = marker + header + copyableBlock + footer;
 
-            // 5. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
+            // 4. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
+            const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber });
             const existingBotComment = issueComments.find(
               c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
             );
@@ -112,51 +141,10 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 6. Workflow-Status auswerten
-
-            // 6.a) Ungelöste Code-Review-Threads via GraphQL ermitteln
-            let unresolvedCount = 0;
-            let hasNextPage = true;
-            let cursor = null;
-
-            while (hasNextPage) {
-              const query = `
-                query($owner: String!, $repo: String!, $prNumber: Int!, $cursor: String) {
-                  repository(owner: $owner, name: $repo) {
-                    pullRequest(number: $prNumber) {
-                      reviewThreads(first: 100, after: $cursor) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          isResolved
-                        }
-                      }
-                    }
-                  }
-                }
-              `;
-              const result = await github.graphql(query, { owner, repo, prNumber, cursor });
-              const threads = result.repository.pullRequest.reviewThreads;
-
-              // Alle ungelösten Threads zählen (inklusive Threads von Bots)
-              unresolvedCount += threads.nodes.filter(t => !t.isResolved).length;
-
-              hasNextPage = threads.pageInfo.hasNextPage;
-              cursor = threads.pageInfo.endCursor;
-            }
-
-            // 6.b) Allgemeine Issue-Kommentare zählen (die keine Code-Reviews sind)
-            // Diese haben keinen "Resolved"-Status und müssen gelöscht werden
-            const activeIssueComments = issueComments
-              .filter(c => c.user)
-              .filter(c => c.body && !c.body.includes(marker));
-
-            const totalBlockers = unresolvedCount + activeIssueComments.length;
-
-            if (totalBlockers > 0) {
-              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${unresolvedCount} ungelöste(r) Review-Thread(s) und ${activeIssueComments.length} offene(r) allgemeine(r) Kommentar(e).`);
+            // 5. Workflow-Status auswerten - Bot blockiert nur anhand der offenen Review Threads
+            if (unresolvedThreads.length > 0) {
+              // Schreibe den formatierten Text der blockierenden Review-Threads in core.setFailed (wie im Kommentar)
+              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${unresolvedThreads.length} ungelöste(r) Review-Thread(s):\n\n${formattedComments}`);
             } else {
-              console.log("Keine blockierenden Kommentare vorhanden. Workflow erfolgreich.");
+              console.log("Keine blockierenden Review-Threads vorhanden. Workflow erfolgreich.");
             }
