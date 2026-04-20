@@ -25,14 +25,14 @@ const LaneInputZone = memo(function LaneInputZone({
     [laneIndex, onLaneInput]
   )
   const handleTouchStart = useCallback(
-    (e: ReactTouchEvent<HTMLDivElement>) => {
+    (e: ReactTouchEvent<HTMLButtonElement>) => {
       e.preventDefault()
       onLaneInput?.(laneIndex, true)
     },
     [laneIndex, onLaneInput]
   )
   const handleTouchEnd = useCallback(
-    (e: ReactTouchEvent<HTMLDivElement>) => {
+    (e: ReactTouchEvent<HTMLButtonElement>) => {
       e.preventDefault()
       onLaneInput?.(laneIndex, false)
     },
@@ -40,10 +40,10 @@ const LaneInputZone = memo(function LaneInputZone({
   )
 
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       aria-label={`${LANE_NAMES[laneIndex]} lane`}
-      className='flex-1 h-full cursor-pointer hover:bg-star-white/5 active:bg-star-white/10 transition-colors duration-75 pointer-events-auto relative'
+      className='flex-1 h-full cursor-pointer hover:bg-star-white/5 active:bg-star-white/10 transition-colors duration-75 pointer-events-auto relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset'
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -54,7 +54,7 @@ const LaneInputZone = memo(function LaneInputZone({
       {laneIndex < 2 && (
         <div className='absolute right-0 top-0 h-full w-[1px] bg-toxic-green/10 pointer-events-none' />
       )}
-    </div>
+    </button>
   )
 })
 
