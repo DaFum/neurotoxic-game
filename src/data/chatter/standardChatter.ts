@@ -1,35 +1,38 @@
 import type { GameState, BandMember } from '../../types/game'
 import { GAME_PHASES } from '../../context/gameConstants'
 
+const getBandStat = (
+  state: GameState,
+  memo: Record<string, unknown>,
+  memoKey: string,
+  memberKey: 'mood' | 'stamina',
+  isMax: boolean
+): number => {
+  const memoVal = memo?.[memoKey]
+  if (typeof memoVal === 'number') return memoVal
+
+  const members = state.band?.members
+  if (!members) return isMax ? -Infinity : Infinity
+
+  let result = isMax ? -Infinity : Infinity
+  for (const m of members) {
+    const val = (m[memberKey] as number) ?? result
+    if (isMax ? val > result : val < result) result = val
+  }
+  return result
+}
+
 const getMinMood = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.minMood as number) ??
-  (state.band?.members
-    ? Math.min(...state.band.members.map((m: BandMember) => m.mood ?? Infinity))
-    : Infinity)
+  getBandStat(state, memo, 'minMood', 'mood', false)
 
 const getMaxMood = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.maxMood as number) ??
-  (state.band?.members
-    ? Math.max(
-        ...state.band.members.map((m: BandMember) => m.mood ?? -Infinity)
-      )
-    : -Infinity)
+  getBandStat(state, memo, 'maxMood', 'mood', true)
 
 const getMinStamina = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.minStamina as number) ??
-  (state.band?.members
-    ? Math.min(
-        ...state.band.members.map((m: BandMember) => m.stamina ?? Infinity)
-      )
-    : Infinity)
+  getBandStat(state, memo, 'minStamina', 'stamina', false)
 
 const getMaxStamina = (state: GameState, memo: Record<string, unknown>) =>
-  (memo?.maxStamina as number) ??
-  (state.band?.members
-    ? Math.max(
-        ...state.band.members.map((m: BandMember) => m.stamina ?? -Infinity)
-      )
-    : -Infinity)
+  getBandStat(state, memo, 'maxStamina', 'stamina', true)
 
 const isPlayerInCity = (state: GameState, citySlug: string) => {
   const location = state.player?.location
