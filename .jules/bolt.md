@@ -58,17 +58,17 @@
 **Learning:** `structuredClone` has significant overhead (~660ms vs ~10ms for 100k iterations) when used for duplicating simple nested objects on hot paths, like in `negotiateDeal`.
 **Action:** Use manual shallow copying with object spread syntax (`{ ...obj, nested: { ...obj.nested } }`) instead of `structuredClone` when deep cloning is not strictly necessary or when only specific nested objects are mutated.
 
-## 2026-05-28 - Component List Memoization
+## 2026-04-20 - Component List Memoization
 
 **Learning:** Mapping arrays of complex sub-components without `React.memo` (like `ShopItem` inside `ShopTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
 **Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
 
-## 2026-05-28 - Loop Unrolling Tradeoffs
+## 2026-04-20 - Loop Unrolling Tradeoffs
 
 **Learning:** Unrolling loops across configuration objects (e.g., `SOCIAL_PLATFORMS`) provides minor speed improvements but introduces significant maintainability regressions by hardcoding dynamic keys.
 **Action:** Never unroll iterations that loop over configuration data or sources of truth. Reserve loop unrolling for pure computational arrays of fixed size.
 
-## 2026-05-28 - Component List Memoization
+## 2026-04-20 - Component List Memoization
 
 **Learning:** Mapping arrays of complex sub-components without `React.memo` (like `SongRow` inside `SetlistTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
 **Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
@@ -78,7 +78,7 @@
 **Learning:** In high-frequency paths like PixiJS render loops (e.g., `RoadieStageController.js`, `EffectManager.js`), using `instanceof Sprite` checks introduces significant overhead due to prototype chain traversal.
 **Action:** Replace `instanceof` checks with direct boolean property lookups by assigning `.isSprite = true` upon object instantiation.
 
-## 2026-05-28 - Array Allocations in Random Utilities
+## 2026-04-20 - Array Allocations in Random Utilities
 
 **Learning:** Using `[...arr]` shallow-copying inside generic random sub-set utility methods like `pickRandomSubset` is highly detrimental for performance and GC when array sizes scale or frequency is high, and had been bottlenecking performance.
 **Action:** When implementing generic subset or shuffling algorithms, always prefer direct index lookups (for k=1, k=2) or Sparse Fisher-Yates with Map (for small subsets relative to array length) rather than unconditionally shallow-copying the entire source array.
@@ -108,6 +108,6 @@
 **Learning:** In a high-frequency animation loop using `requestAnimationFrame`, modifying DOM properties like `node.style.top` and `node.style.left` causes layout thrashing and triggers layout and paint operations which are slow.
 **Action:** Always prefer `node.style.transform` with `translate3d(x, y, 0)` for positional animations as it utilizes hardware acceleration and avoids triggering costly layout recalculations.
 
-## 2026-05-28 - Optimize array map/filter chains in post-gig logic
+## 2026-04-20 - Optimize array map/filter chains in post-gig logic
 **Learning:** Chained array methods like `.map().filter()` on array structures during high-frequency simulation steps (e.g., in `postGigUtils.ts`) cause unnecessary intermediate array allocations, adding GC pressure.
 **Action:** Replace map/filter chains that iterate over objects like `activeDeals` with a single `for` loop, pushing valid and mapped updates directly to a new array to bypass intermediate array construction and improve efficiency.

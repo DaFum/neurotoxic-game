@@ -321,7 +321,9 @@ export const getAcceptDealSocialUpdateFactory = (deal: any) => {
   }
 }
 
-export const getSpinStoryMoneyUpdate = ({ player }: { player: any }) => {
+import type { GameState } from '../types/game'
+
+export const getSpinStoryMoneyUpdate = ({ player }: { player: GameState['player'] }) => {
   if (player.money < 200) {
     return { success: false }
   }
@@ -338,7 +340,7 @@ export const getSpinStoryMoneyUpdate = ({ player }: { player: any }) => {
 }
 
 export const getSpinStorySocialUpdateFactory = () => {
-  return (prevSocial: any) => ({
+  return (prevSocial: GameState['social']) => ({
     controversyLevel: clampControversyLevel(
       (prevSocial.controversyLevel || 0) - 25
     )
