@@ -100,7 +100,32 @@ jobs:
               cursor = threads.pageInfo.endCursor;
             }
 
-            // 4. Den kopierbaren Block formatieren - NUR offene Review Threads
+            // 4. Sanitize-Funktion, um HTML-Kommentare, <details> und Badges zu entfernen
+            function sanitizeComment(text) {
+              if (!text) return "";
+              return text
+                // Entferne Devin-Badge HTML-Block (zusammenhängende a/picture/img Struktur)
+                .replace(/<a[^>]*>\s*<picture[^>]*>[\s\S]*?<\/picture>\s*<\/a>/gi, '')
+                // Entferne alle HTML-Kommentare
+                .replace(/<!--[\s\S]*?-->/g, '')
+                // Entferne <details> Blöcke inklusive Inhalt
+                .replace(/<details[^>]*>[\s\S]*?<\/details>/gi, '')
+                // Entferne Markdown Bilder/Badges: [![alt](url)](url) und ![alt](url)
+                .replace(/\[!\[[^\]]*\]\([^)]+\)\]\([^)]+\)/g, '')
+                .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+                // Entferne übrig gebliebene <picture> oder <img> Tags
+                .replace(/<picture[^>]*>[\s\S]*?<\/picture>/gi, '')
+                .replace(/<img[^>]*>/gi, '')
+                // Maskiere Backticks, um Ausbrechen aus dem Markdown Code-Block zu verhindern
+                .replace(/```/g, '\\`\\`\\`')
+                // Zeilenumbrüche durch Leerzeichen ersetzen
+                .replace(/\r?\n|\r/g, ' ')
+                // Mehrfache Leerzeichen bereinigen
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+            }
+
+            // 5. Den kopierbaren Block formatieren - NUR offene Review Threads
             const seenSignatures = new Set();
             const validThreads = [];
             const newThreads = [];
@@ -113,8 +138,7 @@ jobs:
               const author = firstComment.author;
               const login = author ? author.login : "unknown";
 
-              // Verhindere das Ausbrechen aus dem Markdown Code-Block, indem Backticks maskiert werden
-              const cleanBody = firstComment.body.replace(/\r?\n|\r/g, ' ').replace(/```/g, '\\`\\`\\`').trim();
+              const cleanBody = sanitizeComment(firstComment.body);
 
               // Deduplizierung: Wir prüfen für alle Threads, ob wir exakt diesen Kommentar schon gelistet haben
               // Wir nutzen den Autoren-Namen + die ersten 80 Zeichen als eindeutige Signatur
@@ -156,7 +180,7 @@ jobs:
             // Das endgültige Markdown für den Bot-Kommentar
             const body = marker + header + copyableBlock + footer + idsStateMarker;
 
-            // 5. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
+            // 6. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
             try {
               if (existingBotComment) {
                 console.log(`Aktualisiere bestehenden Kommentar (ID: ${existingBotComment.id})...`);
@@ -179,7 +203,7 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 6. Workflow-Status auswerten - Bot blockiert nur anhand NEUER, noch nicht gemeldeter Review Threads
+            // 7. Workflow-Status auswerten - Bot blockiert nur anhand NEUER, noch nicht gemeldeter Review Threads
             if (newThreads.length > 0) {
               // Schreibe den formatierten Text der blockierenden NEUEN Review-Threads in core.setFailed
               const newThreadsBlock = newThreads.join('\n');
