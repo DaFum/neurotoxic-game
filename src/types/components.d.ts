@@ -96,6 +96,9 @@ export interface MinigameLogicBase {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
   finishMinigame?: () => void
+  rngValue?: number
+  contrabandId?: string
+  instanceId?: string
   dispatch?: (action: unknown) => void
 }
 

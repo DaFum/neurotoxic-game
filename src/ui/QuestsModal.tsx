@@ -266,9 +266,10 @@ export const QuestsModal = ({
                   )
                 )
 
-                const timeRemaining = quest.deadline
-                  ? Math.max(0, quest.deadline - player.day)
-                  : null
+                const timeRemaining =
+                  quest.deadline != null
+                    ? Math.max(0, quest.deadline - player.day)
+                    : null
 
                 return (
                   <motion.div

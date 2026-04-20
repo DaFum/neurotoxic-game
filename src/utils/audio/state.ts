@@ -1,13 +1,12 @@
 // TODO: Review this file
 import type * as Tone from 'tone'
+import type { DrumKitSynth } from '../../types/audio'
 import type { buildDrumKit } from './instruments'
 
 /**
  * Shared mutable state for the audio engine.
  */
 type Nullable<T> = T | null
-
-type DrumKitSynth = ReturnType<typeof buildDrumKit>
 
 type InstrumentSynth = Tone.PolySynth | Tone.Synth
 type TonePart = Tone.Part<unknown>

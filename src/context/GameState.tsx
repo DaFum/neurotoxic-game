@@ -190,6 +190,9 @@ type GameDispatchActions = {
   clinicEnhance: (
     payload: Parameters<typeof createClinicEnhanceAction>[0]
   ) => void
+  darkWebLeak: (
+    payload: Parameters<typeof createDarkWebLeakAction>[0]
+  ) => void
   pirateBroadcast: (
     payload: Parameters<typeof createPirateBroadcastAction>[0]
   ) => void

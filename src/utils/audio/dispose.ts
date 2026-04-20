@@ -12,7 +12,7 @@ import {
  * @param {object} node - The Tone.js node to dispose.
  * @returns {null} Always returns null.
  */
-export function safeDispose(node) {
+export function safeDispose<T>(node: T | null): null {
   if (node && typeof node.dispose === 'function') {
     try {
       node.dispose()
