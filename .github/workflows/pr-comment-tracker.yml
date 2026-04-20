@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Track, Summarize and Validate Comments
         uses: actions/github-script@v7
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           script: |
             // 1. PR-Nummer aus dem Trigger-Event ermitteln
@@ -112,6 +114,16 @@ jobs:
                         }
                         nodes {
                           isResolved
+                          comments(first: 1) {
+                            nodes {
+                              author {
+                                login
+                                ... on Bot {
+                                  id
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -120,7 +132,20 @@ jobs:
               `;
               const result = await github.graphql(query, { owner, repo, prNumber, cursor });
               const threads = result.repository.pullRequest.reviewThreads;
-              unresolvedCount += threads.nodes.filter(t => !t.isResolved).length;
+
+              // Filter ungelöste Threads, bei denen der Autor des ersten Kommentars kein Bot ist
+              unresolvedCount += threads.nodes.filter(t => {
+                if (t.isResolved) return false;
+                const firstComment = t.comments.nodes[0];
+                const author = firstComment ? firstComment.author : null;
+
+                // Wenn author __typename === 'Bot' (oder login als fallback) ignorieren
+                if (author && (author.login === "github-actions" || author.login.includes("bot") || author.__typename === 'Bot' || 'id' in author)) {
+                  return false; // Ist ein Bot-Thread, also ignorieren
+                }
+                return true;
+              }).length;
+
               hasNextPage = threads.pageInfo.hasNextPage;
               cursor = threads.pageInfo.endCursor;
             }

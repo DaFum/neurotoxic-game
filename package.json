@@ -42,6 +42,7 @@
     ]
   },
   "dependencies": {
+    "@octokit/graphql": "^9.0.3",
     "@tonejs/midi": "2.0.28",
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "2.0.0",
