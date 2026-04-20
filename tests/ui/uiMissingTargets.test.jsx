@@ -26,7 +26,8 @@ vi.mock('../../src/ui/shared', () => ({
       <button onClick={() => onLogLevelChange('warn')}>log-warn</button>
       <button onClick={onDeleteSave}>delete-save</button>
     </div>
-  )
+  ),
+  Tooltip: ({ children }) => <>{children}</>
 }))
 
 vi.mock('../../src/utils/imageGen', () => ({
