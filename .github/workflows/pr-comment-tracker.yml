@@ -10,7 +10,7 @@ on:
   pull_request_review:
     types: [submitted, edited]
   pull_request_review_thread:
-    types: [created, resolved]
+    types: [resolved, unresolved]
 
 jobs:
   update-summary-and-check:
@@ -125,9 +125,6 @@ jobs:
                               author {
                                 __typename
                                 login
-                                ... on Bot {
-                                  id
-                                }
                               }
                             }
                           }
@@ -146,7 +143,7 @@ jobs:
                 const firstComment = t.comments.nodes[0];
                 const author = firstComment ? firstComment.author : null;
 
-                if (author && (author.__typename === 'Bot' || Object.hasOwn(author, 'id'))) {
+                if (author && author.__typename === 'Bot') {
                   return false; // Ist ein Bot-Thread, also ignorieren
                 }
                 return true;
