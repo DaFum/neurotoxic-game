@@ -79,6 +79,7 @@
 
 **Learning:** When components like `GigModifiersBlock` use interactive nested buttons (like "Band Meeting") without explicit `focus-visible` styling, keyboard users lack visual feedback for navigation.
 **Action:** When extracting or creating new interactive blocks that use generic HTML `<button>` inside them, always explicitly apply `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-<color> focus-visible:ring-offset-2 focus-visible:ring-offset-void-black` on the button elements.
+
 ## 2025-02-18 - Tooltip Container Layout
 
 **Learning:** When conditionally wrapping full-width components (like buttons) in a `Tooltip` component (which defaults to an `inline-block` layout), the wrapper can cause the inner button to shrink unexpectedly. Passing class names from the parent can lead to class conflicts (e.g. `block` vs `inline-block` in Tailwind).
@@ -88,6 +89,10 @@
 
 **Learning:** Locked items (like songs) in list selections often lack context as to _why_ they are locked, especially when the locking condition is tied to a specific game mode (e.g., 'Prove Yourself' mode). While adding a tooltip directly to a disabled `<button>` is tempting, it often fails accessibility and interaction tests because disabled elements do not trigger mouse or keyboard events reliably across browsers.
 **Action:** Pass the disabled control directly into `Tooltip` (e.g., `Tooltip` children) and let `Tooltip` supply the focusable wrapper for disabled elements, rather than manually wrapping controls in a `<span tabIndex={0}>` at call sites. This ensures the reason for the disabled state is accessible without duplicate wrapper logic.
-## 2023-11-09 - Added aria-pressed to ContrabandStash target member selection buttons
-**Learning:** Target member selection buttons in the ContrabandStash component lacked `aria-pressed`, meaning screen readers couldn't identify the actively selected member button visually represented by active classes.
-**Action:** Bound the `aria-pressed` attribute to the boolean expression evaluating if the button's specific state (e.g. `selectedMember === m.id`) is matched to reflect visual state audibly.
+
+
+## 2026-06-06 - Missing focus rings in ContrabandStash member target buttons
+
+**Learning:** Target member selection buttons in the ContrabandStash component lacked `aria-pressed`, meaning screen readers couldn't identify the actively selected member button visually represented by active classes. Furthermore, the buttons lacked explicit focus rings.
+
+**Action:** Bound the `aria-pressed` attribute to the boolean expression evaluating if the button's specific state (e.g. `selectedMember === m.id`) is matched to reflect visual state audibly. Also, added explicit `focus-visible` ring utilities to ensure keyboard navigability.
