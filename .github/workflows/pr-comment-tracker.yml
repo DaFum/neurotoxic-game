@@ -62,6 +62,7 @@ jobs:
                             nodes {
                               author {
                                 login
+                                __typename
                               }
                               body
                             }
@@ -75,8 +76,7 @@ jobs:
               const result = await github.graphql(query, { owner, repo, prNumber, cursor });
               const threads = result.repository.pullRequest.reviewThreads;
 
-              // Alle ungelösten Threads sammeln (inklusive Threads von Bots)
-              // Da Bots einen eigenen Thread erstellen, wird dieser als ein einzelner Thread getrackt
+              // Alle ungelösten Threads sammeln
               const openThreads = threads.nodes.filter(t => !t.isResolved);
               unresolvedThreads.push(...openThreads);
 
@@ -85,13 +85,31 @@ jobs:
             }
 
             // 3. Den kopierbaren Block formatieren - NUR offene Review Threads
+            const seenBotSignatures = new Set();
+            const validThreads = [];
+
             const formattedComments = unresolvedThreads.map(t => {
               const firstComment = t.comments.nodes[0];
               if (!firstComment) return null;
 
-              const login = firstComment.author ? firstComment.author.login : "unknown";
+              const author = firstComment.author;
+              const login = author ? author.login : "unknown";
+              const isBot = author ? author.__typename === 'Bot' : false;
+
               // Verhindere das Ausbrechen aus dem Markdown Code-Block, indem Backticks maskiert werden
               const cleanBody = firstComment.body.replace(/\r?\n|\r/g, ' ').replace(/```/g, '\\`\\`\\`').trim();
+
+              // Deduplizierung: Wenn es ein Bot ist, prüfen wir, ob wir exakt diesen Fehler schon gelistet haben
+              if (isBot) {
+                // Wir nutzen den Bot-Namen + die ersten 80 Zeichen als eindeutige Signatur
+                const signature = `${login}:${cleanBody.substring(0, 80)}`;
+                if (seenBotSignatures.has(signature)) {
+                  return null; // Überspringen, Thread wurde quasi schon erfasst
+                }
+                seenBotSignatures.add(signature);
+              }
+
+              validThreads.push(t);
               return `- [${login}]: ${cleanBody}`;
             }).filter(Boolean).join('\n');
 
@@ -141,10 +159,10 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 5. Workflow-Status auswerten - Bot blockiert nur anhand der offenen Review Threads
-            if (unresolvedThreads.length > 0) {
+            // 5. Workflow-Status auswerten - Bot blockiert nur anhand der deduplizierten offenen Review Threads
+            if (validThreads.length > 0) {
               // Schreibe den formatierten Text der blockierenden Review-Threads in core.setFailed (wie im Kommentar)
-              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${unresolvedThreads.length} ungelöste(r) Review-Thread(s):\n\n${formattedComments}`);
+              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${validThreads.length} ungelöste(r) Review-Thread(s):\n\n${formattedComments}`);
             } else {
               console.log("Keine blockierenden Review-Threads vorhanden. Workflow erfolgreich.");
             }
