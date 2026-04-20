@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger'
 // TODO: Review this file
 import type { GameState, BandMember } from '../../types/game'
 

@@ -27,8 +27,11 @@ export const MinigameSceneFrame = ({
   const { settings } = useGameState()
   const continueButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
-  const finishMinigame = logic?.finishMinigame
-  const dispatch = logic?.dispatch
+  const logicRef = useRef(logic)
+
+  useLayoutEffect(() => {
+    logicRef.current = logic
+  }, [logic])
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
@@ -101,7 +104,7 @@ export const MinigameSceneFrame = ({
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [dispatch, finishMinigame, logic, onComplete, uiState?.isGameOver])
+  }, [onComplete, uiState?.isGameOver])
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>

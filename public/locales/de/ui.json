@@ -1000,17 +1000,17 @@
   "postOptions.selloutName": "Schamloser Sellout-Sponsor",
   "postOptions.comm_sellout_ad.name": "Schamloser Sellout-Sponsor",
   "dark_web_leak": {
-    "title": "Dark Web Data Leak",
-    "description": "Leak unreleased tracks to the dark web to instantly boost your fame and zealotry. But beware, it will spark controversy and damage band harmony.",
-    "cost": "COST:",
-    "fame": "FAME:",
-    "zealotry": "ZEALOTRY:",
-    "controversy": "CONTROVERSY:",
-    "harmony_cost": "HARMONY COST:",
-    "leaked_today": "Data leaked for today.",
-    "cancel": "CANCEL",
-    "execute": "EXECUTE LEAK",
+    "title": "Dark Web Datenleck",
+    "description": "Veröffentliche unveröffentlichte Tracks im Dark Web, um deinen Ruhm und deine Fanatiker sofort zu steigern. Aber Vorsicht, das wird Kontroversen auslösen und der Bandharmonie schaden.",
+    "cost": "KOSTEN:",
+    "fame": "RUHM:",
+    "zealotry": "FANATISMUS:",
+    "controversy": "KONTROVERSE:",
+    "harmony_cost": "HARMONIEKOSTEN:",
+    "leaked_today": "Daten für heute geleakt.",
+    "cancel": "ABBRECHEN",
+    "execute": "LEAK AUSFÜHREN",
     "button": "DARK WEB LEAK",
-    "success": "Leak successful"
+    "success": "Leak erfolgreich"
   }
 }

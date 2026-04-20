@@ -6,7 +6,7 @@ import {
   validateDarkWebLeak
 } from '../utils/darkWebLeakUtils'
 
-export const DARK_WEB_LEAK_CONFIG = {
+export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
   COST: 500,
   FAME_GAIN: 300,
   ZEALOTRY_GAIN: 25,
@@ -48,7 +48,7 @@ export const useDarkWebLeak = () => {
     })
 
     closeDarkWebLeak()
-  }, [canLeak, darkWebLeak, closeDarkWebLeak])
+  }, [canLeak, darkWebLeak, closeDarkWebLeak, social, player.day])
 
   return {
     showDarkWebLeak,

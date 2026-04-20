@@ -249,6 +249,15 @@ export interface ClinicActionPayload {
   [key: string]: unknown
 }
 
+export interface DarkWebLeakConfig {
+  COST: number
+  FAME_GAIN: number
+  ZEALOTRY_GAIN: number
+  CONTROVERSY_GAIN: number
+  HARMONY_COST: number
+  REQUIRED_CONTROVERSY: number
+}
+
 export interface DarkWebLeakPayload {
   cost: number
   fameGain: number

@@ -3,8 +3,10 @@ import { Modal } from './shared/Modal'
 import { GlitchButton } from './GlitchButton'
 import { useTranslation } from 'react-i18next'
 
+import type { DarkWebLeakConfig } from '../types/game'
+
 export interface DarkWebLeakModalProps {
-  config: typeof import('../hooks/useDarkWebLeak').DARK_WEB_LEAK_CONFIG
+  config: DarkWebLeakConfig
   canLeak: boolean
   onConfirm: () => void
   onCancel: () => void

@@ -1,3 +1,4 @@
+import type * as Tone from 'tone'
 export type NoteType = 'tap' | 'hold' | 'slide' | 'special' | string
 
 export interface Note {
@@ -36,4 +37,21 @@ export interface Song {
   sourceMid?: string
   sourceOgg?: string | null
   tpb?: number
+}
+
+export interface LayeredSnare {
+  triggerAttackRelease: (
+    dur: number | string,
+    time: number | string,
+    vel?: number
+  ) => void
+  volume: Tone.Signal<'decibels'>
+  dispose: () => void
+}
+
+export type DrumKitSynth = {
+  kick: Tone.MembraneSynth | null
+  snare: LayeredSnare | null
+  hihat: Tone.MetalSynth | null
+  crash: Tone.MetalSynth | null
 }

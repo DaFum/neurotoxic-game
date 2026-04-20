@@ -39,6 +39,36 @@ test('socialReducer - handleDarkWebLeak', async t => {
     }
   )
 
+  await t.test('aborts if leaked on the same day', () => {
+    const initialState = {
+      player: { money: 1000, fame: 100, day: 42 },
+      band: { harmony: 50 },
+      social: {
+        controversyLevel: 10,
+        zealotry: 20,
+        lastDarkWebLeakDay: 42
+      }
+    }
+
+    const action = {
+      type: ActionTypes.DARK_WEB_LEAK,
+      payload: {
+        cost: 500,
+        fameGain: 300,
+        zealotryGain: 25,
+        controversyGain: 30,
+        harmonyCost: 20
+      }
+    }
+
+    const result = handleDarkWebLeak(initialState, action.payload)
+
+    // Should return original state (money stays 1000)
+    assert.strictEqual(result.player.money, 1000)
+    assert.strictEqual(result.player.fame, 100)
+    assert.strictEqual(result.band.harmony, 50)
+  })
+
   await t.test('clamps values to correct boundaries', () => {
     const initialState = {
       player: { money: 1000, fame: 999990, day: 1 },

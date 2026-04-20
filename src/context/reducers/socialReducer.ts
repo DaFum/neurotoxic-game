@@ -2,7 +2,8 @@ import type {
   GameState,
   SocialState,
   MerchPressPayload,
-  PirateBroadcastPayload
+  PirateBroadcastPayload,
+  DarkWebLeakPayload
 } from '../../types/game'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
@@ -332,7 +333,10 @@ export const handlePirateBroadcast = (
   return nextState
 }
 
-export const handleDarkWebLeak = (state, payload) => {
+export const handleDarkWebLeak = (
+  state: GameState,
+  payload: DarkWebLeakPayload | null | undefined
+): GameState => {
   if (state.social.lastDarkWebLeakDay === state.player.day) {
     logger.warn('GameState', 'Dark web leak already triggered today')
     return state
@@ -343,12 +347,29 @@ export const handleDarkWebLeak = (state, payload) => {
     return state
   }
 
-  const cost = Number(payload.cost) || 0
-  const fameGain = Number(payload.fameGain) || 0
-  const zealotryGain = Number(payload.zealotryGain) || 0
-  const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost) || 0
+  const parsedCost = Number(payload.cost)
+  const parsedFameGain = Number(payload.fameGain)
+  const parsedZealotryGain = Number(payload.zealotryGain)
+  const parsedControversyGain = Number(payload.controversyGain)
+  const parsedHarmonyCost = Number(payload.harmonyCost)
   const successToast = payload.successToast
+
+  if (
+    !Number.isFinite(parsedCost) || parsedCost < 0 ||
+    !Number.isFinite(parsedFameGain) ||
+    !Number.isFinite(parsedZealotryGain) ||
+    !Number.isFinite(parsedControversyGain) ||
+    !Number.isFinite(parsedHarmonyCost) || parsedHarmonyCost < 0
+  ) {
+    logger.warn('GameState', 'Invalid dark web leak payload')
+    return state
+  }
+
+  const cost = parsedCost
+  const fameGain = parsedFameGain
+  const zealotryGain = parsedZealotryGain
+  const controversyGain = parsedControversyGain
+  const harmonyCost = parsedHarmonyCost
 
   const currentMoney = Number(state.player.money) || 0
   const currentHarmony = Number(state.band.harmony) || 0
@@ -390,7 +411,7 @@ export const handleDarkWebLeak = (state, payload) => {
       ...state.social,
       zealotry: nextZealotry,
       controversyLevel: nextControversy,
-      lastDarkWebLeakDay: state.player.day || 0
+      lastDarkWebLeakDay: Number.isFinite(state.player.day) ? state.player.day : (state.player.day ?? 0)
     }
   }
 
