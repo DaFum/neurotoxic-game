@@ -85,7 +85,7 @@ jobs:
             }
 
             // 3. Den kopierbaren Block formatieren - NUR offene Review Threads
-            const seenBotSignatures = new Set();
+            const seenSignatures = new Set();
             const validThreads = [];
 
             const formattedComments = unresolvedThreads.map(t => {
@@ -94,20 +94,17 @@ jobs:
 
               const author = firstComment.author;
               const login = author ? author.login : "unknown";
-              const isBot = author ? author.__typename === 'Bot' : false;
 
               // Verhindere das Ausbrechen aus dem Markdown Code-Block, indem Backticks maskiert werden
               const cleanBody = firstComment.body.replace(/\r?\n|\r/g, ' ').replace(/```/g, '\\`\\`\\`').trim();
 
-              // Deduplizierung: Wenn es ein Bot ist, prüfen wir, ob wir exakt diesen Fehler schon gelistet haben
-              if (isBot) {
-                // Wir nutzen den Bot-Namen + die ersten 80 Zeichen als eindeutige Signatur
-                const signature = `${login}:${cleanBody.substring(0, 80)}`;
-                if (seenBotSignatures.has(signature)) {
-                  return null; // Überspringen, Thread wurde quasi schon erfasst
-                }
-                seenBotSignatures.add(signature);
+              // Deduplizierung: Wir prüfen für alle Threads, ob wir exakt diesen Kommentar schon gelistet haben
+              // Wir nutzen den Autoren-Namen + die ersten 80 Zeichen als eindeutige Signatur
+              const signature = `${login}:${cleanBody.substring(0, 80)}`;
+              if (seenSignatures.has(signature)) {
+                return null; // Überspringen, Thread (identischer Kommentar) wurde bereits erfasst
               }
+              seenSignatures.add(signature);
 
               validThreads.push(t);
               return `- [${login}]: ${cleanBody}`;
