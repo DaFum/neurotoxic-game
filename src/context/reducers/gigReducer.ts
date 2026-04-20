@@ -1,4 +1,6 @@
 // TODO: Review this file
+import type { GameState, GigStats, Venue } from '../../types/game'
+import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
 import { getSafeUUID } from '../../utils/crypto'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
@@ -23,13 +25,16 @@ import { normalizeSetlistForSave } from '../../utils/gameStateUtils'
 const MIN_REPUTATION = -100
 const MAX_REPUTATION = 100
 
-export const handleSetGig = (state, payload) => {
+export const handleSetGig = (
+  state: GameState,
+  payload: Venue | null
+): GameState => {
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
 }
 
-export const handleStartGig = (state, payload) => {
-  logger.info('GameState', 'Starting Gig Sequence', payload?.name)
+export const handleStartGig = (state: GameState, payload: Venue): GameState => {
+  logger.info('GameState', 'Starting Gig Sequence', payload.name)
   return {
     ...state,
     currentGig: payload,
@@ -38,7 +43,10 @@ export const handleStartGig = (state, payload) => {
   }
 }
 
-export const handleSetSetlist = (state, payload) => {
+export const handleSetSetlist = (
+  state: GameState,
+  payload: RhythmSetlistEntry[]
+): GameState => {
   return { ...state, setlist: normalizeSetlistForSave(payload) }
 }
 
@@ -48,14 +56,19 @@ export const handleSetSetlist = (state, payload) => {
  * @param {Object|Function} payload - Modifiers update
  * @returns {Object} Updated state
  */
-export const handleSetGigModifiers = (state, payload) => {
+export const handleSetGigModifiers = (
+  state: GameState,
+  payload:
+    | Record<string, boolean>
+    | ((mods: Record<string, boolean>) => Record<string, boolean>)
+): GameState => {
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ||
     {}
   return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
 }
 
-const handleRecordBadShow = state => {
+const handleRecordBadShow = (state: GameState): GameState => {
   let nextState = { ...state }
   const currentBadShows = (nextState.player.stats?.consecutiveBadShows || 0) + 1
 
@@ -101,7 +114,7 @@ const handleRecordBadShow = state => {
   return nextState
 }
 
-const handleRecordGoodShow = state => {
+const handleRecordGoodShow = (state: GameState): GameState => {
   const nextState = { ...state }
 
   nextState.player = {
@@ -112,31 +125,46 @@ const handleRecordGoodShow = state => {
   return nextState
 }
 
-export const handleSetLastGigStats = (state, payload) => {
+export const handleSetLastGigStats = (
+  state: GameState,
+  payload: GigStats | null
+): GameState => {
+  if (payload === null) {
+    return {
+      ...state,
+      lastGigStats: null
+    }
+  }
+
+  const safePayload = payload
   // Prevent trait unlocks during practice mode
   if (state.currentGig?.isPractice) {
     return {
       ...state,
-      lastGigStats: payload
+      lastGigStats: safePayload
     }
   }
   const performanceUnlocks = checkTraitUnlocks(state, {
     type: 'GIG_COMPLETE',
-    gigStats: payload
+    gigStats: safePayload
   })
   const traitResult = applyTraitUnlocks(state, performanceUnlocks)
 
-  let nextState = {
+  let nextState: GameState = {
     ...state,
-    lastGigStats: payload,
+    lastGigStats: safePayload,
     band: traitResult.band,
     toasts: traitResult.toasts,
     reputationByRegion: { ...state.reputationByRegion }
   }
 
-  const score = payload?.score ?? 0
+  const score = typeof safePayload.score === 'number' ? safePayload.score : 0
   const location = state.player?.location || 'Unknown'
-  const capacity = state.currentGig?.venue?.capacity || 0
+  const capacity =
+    typeof state.currentGig?.capacity === 'number' &&
+    Number.isFinite(state.currentGig.capacity)
+      ? state.currentGig.capacity
+      : null
 
   if (score < 30) {
     if (!isForbiddenKey(location)) {
@@ -149,7 +177,7 @@ export const handleSetLastGigStats = (state, payload) => {
         `Regional reputation loss in ${location} due to poor gig performance (-10)`
       )
       if ((nextState.reputationByRegion[location] || 0) <= -30) {
-        const gigVenueId = state.currentGig?.venue?.id || 'unknown_venue'
+        const gigVenueId = state.currentGig?.id || 'unknown_venue'
         nextState = handleAddVenueBlacklist(nextState, {
           venueId: gigVenueId,
           toastId: `${gigVenueId}-blacklisted`
@@ -177,6 +205,7 @@ export const handleSetLastGigStats = (state, payload) => {
     nextState = handleRecordGoodShow(nextState)
     if (
       hasActiveQuest(nextState.activeQuests, QUEST_APOLOGY_TOUR) &&
+      capacity !== null &&
       capacity <= 300
     ) {
       nextState = handleAdvanceQuest(nextState, {
@@ -186,6 +215,7 @@ export const handleSetLastGigStats = (state, payload) => {
     }
     if (
       hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF) &&
+      capacity !== null &&
       capacity <= 150
     ) {
       nextState = handleAdvanceQuest(nextState, {

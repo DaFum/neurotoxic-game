@@ -13,3 +13,9 @@ Applies to `src/schemas/**`.
 ## Migration Rules
 
 - When updating schema typing, ensure consuming validators and tests remain in sync.
+
+## Nested TypeScript Notes
+
+- Treat schema files as contract sources: when a schema changes, update inferred/declared TypeScript types and validator tests in the same PR.
+- Preserve nullish semantics in optional schema fields (`??` patterns) so valid falsy values are not lost.
+- Keep schema helpers declarative and strongly typed; avoid embedding app-level side effects in schema modules.

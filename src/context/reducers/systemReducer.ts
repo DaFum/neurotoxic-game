@@ -1,4 +1,13 @@
 // TODO: Review this file
+import type {
+  GameState,
+  PlayerState,
+  BandState,
+  BandMember,
+  ToastPayload,
+  GameMap,
+  GameSettings
+} from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampBandHarmony,
@@ -24,6 +33,7 @@ import {
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
+import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
@@ -37,17 +47,25 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.CLINIC
 ])
 
-const sanitizePlayer = loadedPlayer => {
+const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
+  const playerData =
+    typeof loadedPlayer === 'object' && loadedPlayer !== null
+      ? (loadedPlayer as Record<string, unknown>)
+      : {}
   const rawPlayer = {
     ...DEFAULT_PLAYER_STATE,
-    ...loadedPlayer,
+    ...playerData,
     van: {
       ...DEFAULT_PLAYER_STATE.van,
-      ...(loadedPlayer?.van || {})
+      ...(typeof playerData.van === 'object' && playerData.van !== null
+        ? (playerData.van as Record<string, unknown>)
+        : {})
     },
     stats: {
       ...DEFAULT_PLAYER_STATE.stats,
-      ...(loadedPlayer?.stats || {})
+      ...(typeof playerData.stats === 'object' && playerData.stats !== null
+        ? (playerData.stats as Record<string, unknown>)
+        : {})
     }
   }
 
@@ -74,62 +92,79 @@ const sanitizePlayer = loadedPlayer => {
   }
 }
 
-const sanitizeBand = loadedBand => {
+const sanitizeBand = (loadedBand: unknown): BandState => {
+  const bandData =
+    typeof loadedBand === 'object' && loadedBand !== null
+      ? (loadedBand as Record<string, unknown>)
+      : {}
   const rawBand = {
     ...DEFAULT_BAND_STATE,
-    ...loadedBand,
+    ...bandData,
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(loadedBand?.performance || {})
+      ...(typeof bandData.performance === 'object' &&
+      bandData.performance !== null
+        ? (bandData.performance as Record<string, unknown>)
+        : {})
     },
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
-      ...(loadedBand?.inventory || {})
+      ...(typeof bandData.inventory === 'object' && bandData.inventory !== null
+        ? (bandData.inventory as Record<string, unknown>)
+        : {})
     },
     stash: (() => {
       const defaultStash = Object.assign(
         Object.create(null),
         DEFAULT_BAND_STATE.stash
       )
-      if (Array.isArray(loadedBand?.stash)) {
-        const stashArr = loadedBand.stash
+      if (Array.isArray(bandData.stash)) {
+        const stashArr = bandData.stash as unknown[]
         for (let i = 0; i < stashArr.length; i++) {
           const item = stashArr[i]
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
-          const baseItem = CONTRABAND_BY_ID.get(item.id)
+          const itemObj = item as Record<string, unknown>
+          const baseItem = CONTRABAND_BY_ID.get(itemObj.id as string)
           if (!baseItem) continue
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...item }
-          copy.id = item.id // Ensure ID matches
+          const copy = { ...baseItem, ...itemObj } as Record<string, unknown>
+          copy.id = itemObj.id as string
           if (
             Object.hasOwn(item, 'remainingDuration') &&
-            Number.isFinite(item.remainingDuration)
+            Number.isFinite(itemObj.remainingDuration as number)
           ) {
-            copy.remainingDuration = item.remainingDuration
+            copy.remainingDuration = itemObj.remainingDuration as number | null
           } else {
-            copy.remainingDuration = copy.duration || null
+            copy.remainingDuration =
+              typeof copy.duration === 'number' ? copy.duration : null
           }
-          defaultStash[item.id] = copy
+          defaultStash[itemObj.id as string] = copy
         }
         return defaultStash
-      } else if (loadedBand?.stash && typeof loadedBand.stash === 'object') {
+      } else if (
+        typeof bandData.stash === 'object' &&
+        bandData.stash !== null
+      ) {
         const migrated = Object.create(null)
-        for (const id in loadedBand.stash) {
-          if (!Object.hasOwn(loadedBand.stash, id)) continue
-          const item = loadedBand.stash[id]
+        const stashObj = bandData.stash as Record<string, unknown>
+        for (const id in stashObj) {
+          if (!Object.hasOwn(stashObj, id)) continue
+          const item = stashObj[id]
           const baseItem = CONTRABAND_BY_ID.get(id)
           if (!baseItem) continue
           if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+          const itemObj = item as Record<string, unknown>
           if (Object.hasOwn(item, '__proto__')) continue
-          const copy = { ...baseItem, ...item }
-          copy.id = id // Ensure ID matches loop key to prevent divergence
+          const copy = { ...baseItem, ...itemObj } as Record<string, unknown>
+          copy.id = id
           if (
             Object.hasOwn(item, 'remainingDuration') &&
-            Number.isFinite(item.remainingDuration)
+            Number.isFinite(itemObj.remainingDuration as number)
           ) {
-            copy.remainingDuration = item.remainingDuration
+            copy.remainingDuration = itemObj.remainingDuration as number | null
           } else {
-            copy.remainingDuration = copy.duration || null
+            copy.remainingDuration =
+              typeof copy.duration === 'number' ? copy.duration : null
           }
           migrated[id] = copy
         }
@@ -137,21 +172,29 @@ const sanitizeBand = loadedBand => {
       }
       return defaultStash
     })(),
-    activeContrabandEffects: Array.isArray(loadedBand?.activeContrabandEffects)
-      ? loadedBand.activeContrabandEffects.map(effect => ({
-          ...effect,
-          remainingDuration:
-            Number.isFinite(effect.remainingDuration) &&
-            effect.remainingDuration >= 0
-              ? effect.remainingDuration
-              : 0
-        }))
+    activeContrabandEffects: Array.isArray(bandData.activeContrabandEffects)
+      ? (bandData.activeContrabandEffects as unknown[]).map(
+          (effect: unknown) => {
+            const effectObj =
+              typeof effect === 'object' && effect !== null
+                ? (effect as Record<string, unknown>)
+                : {}
+            return {
+              ...effectObj,
+              remainingDuration:
+                Number.isFinite(effectObj.remainingDuration as number) &&
+                (effectObj.remainingDuration as number) >= 0
+                  ? (effectObj.remainingDuration as number)
+                  : 0
+            }
+          }
+        )
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
 
   // Validate Band Members
-  const validatedMembers = Array.isArray(rawBand.members)
-    ? rawBand.members.map(m => ({
+  const validatedMembers: BandMember[] = Array.isArray(rawBand.members)
+    ? (rawBand.members.map(m => ({
         ...m,
         // Backfill id from name for saves created before id fields were added
         id:
@@ -164,9 +207,13 @@ const sanitizeBand = loadedBand => {
         mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
         stamina: clampMemberStamina(
           typeof m.stamina === 'number' ? m.stamina : 100,
-          m.staminaMax
-        )
-      }))
+          (m as Record<string, unknown>).staminaMax as number | undefined
+        ),
+        relationships:
+          m.relationships && typeof m.relationships === 'object'
+            ? (m.relationships as unknown as Record<string, number>)
+            : ({} as Record<string, number>)
+      })) as BandMember[])
     : []
 
   return {
@@ -176,28 +223,39 @@ const sanitizeBand = loadedBand => {
   }
 }
 
-const sanitizeToasts = loadedToasts => {
+const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   if (!Array.isArray(loadedToasts)) return []
-  const acc = []
+  const acc: ToastPayload[] = []
   for (const t of loadedToasts) {
-    if (t && typeof t === 'object' && t.id && t.message) {
-      const message = String(t.message).trim()
-      if (message.length > 0) {
-        acc.push({
-          ...t,
-          message,
-          type: ['success', 'error', 'warning', 'info'].includes(t.type)
-            ? t.type
-            : 'info'
-        })
-      }
-    }
+    const safeToast = sanitizeLoadedToast(t, ALLOWED_TOAST_TYPES)
+    if (safeToast) acc.push(safeToast)
   }
   return acc
 }
 
-const migratePlayerLocation = location => {
-  if (typeof location !== 'string') return location
+const sanitizeSettingsPayload = (
+  rawSettings: Record<string, unknown>
+): Partial<GameSettings> => {
+  const sanitized: Partial<GameSettings> = {}
+
+  if (typeof rawSettings.crtEnabled === 'boolean') {
+    sanitized.crtEnabled = rawSettings.crtEnabled
+  }
+  if (typeof rawSettings.tutorialSeen === 'boolean') {
+    sanitized.tutorialSeen = rawSettings.tutorialSeen
+  }
+  if (
+    typeof rawSettings.logLevel === 'number' &&
+    Number.isFinite(rawSettings.logLevel)
+  ) {
+    sanitized.logLevel = Math.floor(rawSettings.logLevel)
+  }
+
+  return sanitized
+}
+
+const migratePlayerLocation = (location: unknown): string => {
+  if (typeof location !== 'string') return ''
 
   let legacyLocation = location
   if (!location.startsWith('venues:') && location.endsWith('.name')) {
@@ -212,9 +270,71 @@ const migratePlayerLocation = location => {
   return `venues:${normalizedLocation}.name`
 }
 
-const migrateLegacyVenueId = id => {
-  if (typeof id !== 'string') return id
+const migrateLegacyVenueId = (id: unknown): string => {
+  if (typeof id !== 'string') return ''
   return normalizeVenueId(id) ?? id
+}
+
+const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
+  if (
+    typeof rawMinigame !== 'object' ||
+    rawMinigame === null ||
+    Array.isArray(rawMinigame)
+  ) {
+    return { ...DEFAULT_MINIGAME_STATE }
+  }
+
+  const minigameObj = rawMinigame as Record<string, unknown>
+  const nextMinigame = { ...DEFAULT_MINIGAME_STATE }
+
+  if (
+    Object.hasOwn(minigameObj, 'active') &&
+    typeof minigameObj.active === 'boolean'
+  ) {
+    nextMinigame.active = minigameObj.active
+  }
+  if (
+    Object.hasOwn(minigameObj, 'type') &&
+    (typeof minigameObj.type === 'string' || minigameObj.type === null)
+  ) {
+    nextMinigame.type = minigameObj.type
+  }
+  if (
+    Object.hasOwn(minigameObj, 'targetDestination') &&
+    (typeof minigameObj.targetDestination === 'string' ||
+      minigameObj.targetDestination === null)
+  ) {
+    nextMinigame.targetDestination = minigameObj.targetDestination
+  }
+  if (
+    Object.hasOwn(minigameObj, 'gigId') &&
+    (typeof minigameObj.gigId === 'string' || minigameObj.gigId === null)
+  ) {
+    nextMinigame.gigId = minigameObj.gigId
+  }
+  if (
+    Object.hasOwn(minigameObj, 'equipmentRemaining') &&
+    typeof minigameObj.equipmentRemaining === 'number' &&
+    Number.isFinite(minigameObj.equipmentRemaining)
+  ) {
+    nextMinigame.equipmentRemaining = minigameObj.equipmentRemaining
+  }
+  if (
+    Object.hasOwn(minigameObj, 'accumulatedDamage') &&
+    typeof minigameObj.accumulatedDamage === 'number' &&
+    Number.isFinite(minigameObj.accumulatedDamage)
+  ) {
+    nextMinigame.accumulatedDamage = minigameObj.accumulatedDamage
+  }
+  if (
+    Object.hasOwn(minigameObj, 'score') &&
+    typeof minigameObj.score === 'number' &&
+    Number.isFinite(minigameObj.score)
+  ) {
+    nextMinigame.score = minigameObj.score
+  }
+
+  return nextMinigame
 }
 
 /**
@@ -223,31 +343,42 @@ const migrateLegacyVenueId = id => {
  * @param {Object} payload - Loaded save data
  * @returns {Object} Updated state
  */
-export const handleLoadGame = (state, payload) => {
+export const handleLoadGame = (
+  state: GameState,
+  payload: unknown
+): GameState => {
   logger.info('GameState', 'Game Loaded')
 
-  const loadedState = payload || {}
+  const loadedState: Record<string, unknown> = (
+    typeof payload === 'object' && payload !== null ? payload : {}
+  ) as Record<string, unknown>
 
   // 1. Sanitize Player
   const mergedPlayer = sanitizePlayer(loadedState.player)
   // 2. Sanitize Band
   const validatedBand = sanitizeBand(loadedState.band)
   // 3. Sanitize Social
-  const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
+  const mergedSocial = {
+    ...DEFAULT_SOCIAL_STATE,
+    ...(typeof loadedState.social === 'object' && loadedState.social !== null
+      ? (loadedState.social as Record<string, unknown>)
+      : {})
+  }
 
   // 4. Construct Safe State (Whitelist)
-  const incomingVersion =
-    loadedState.version !== undefined ? loadedState.version : state.version
-  const parsedVersion = parseInt(incomingVersion, 10)
+  const rawVersion = Object.hasOwn(loadedState, 'version')
+    ? loadedState.version
+    : state.version
+  const parsedVersion = Number(rawVersion)
   const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
 
-  const safeState = {
+  const safeState: GameState = {
     ...state,
     version: explicitVersion,
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
-    gameMap: loadedState.gameMap || state.gameMap,
+    gameMap: (loadedState.gameMap as GameMap | null) || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
@@ -258,42 +389,43 @@ export const handleLoadGame = (state, payload) => {
     eventCooldowns: Array.isArray(loadedState.eventCooldowns)
       ? loadedState.eventCooldowns
       : [],
-    activeEvent: loadedState.activeEvent || null,
+    activeEvent: (loadedState.activeEvent as GameState['activeEvent']) || null,
     toasts: sanitizeToasts(loadedState.toasts),
-    reputationByRegion: loadedState.reputationByRegion || {},
+    reputationByRegion:
+      (loadedState.reputationByRegion as Record<string, number>) || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
-      ? loadedState.venueBlacklist
+      ? (loadedState.venueBlacklist as string[])
       : [],
     activeQuests: Array.isArray(loadedState.activeQuests)
       ? loadedState.activeQuests
       : [],
-    npcs: loadedState.npcs || {},
+    npcs: (loadedState.npcs as GameState['npcs']) || {},
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
-      ...(loadedState.gigModifiers || {})
+      ...((loadedState.gigModifiers as Record<string, boolean>) || {})
     },
     currentScene: GAME_PHASES.OVERWORLD,
-    currentGig: loadedState.currentGig || null,
-    lastGigStats: loadedState.lastGigStats || null,
+    currentGig: (loadedState.currentGig as GameState['currentGig']) || null,
+    lastGigStats:
+      (loadedState.lastGigStats as GameState['lastGigStats']) || null,
     settings: {
       ...state.settings,
       ...(typeof loadedState.settings === 'object' &&
       loadedState.settings !== null &&
       !Array.isArray(loadedState.settings)
-        ? loadedState.settings
+        ? sanitizeSettingsPayload(
+            loadedState.settings as Record<string, unknown>
+          )
         : {})
     },
-    minigame: {
-      ...DEFAULT_MINIGAME_STATE,
-      ...(loadedState.minigame || {})
-    },
+    minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)
-      ? loadedState.unlocks
+      ? (loadedState.unlocks as string[])
       : state.unlocks || []
   }
 
   // Apply venue migrations using spreads
-  const migratedState = {
+  const migratedState: GameState = {
     ...safeState,
     player: {
       ...safeState.player,
@@ -302,13 +434,23 @@ export const handleLoadGame = (state, payload) => {
           ? migratePlayerLocation(safeState.player.location)
           : safeState.player.location
     },
-    venueBlacklist: safeState.venueBlacklist.map(migrateLegacyVenueId)
+    venueBlacklist: safeState.venueBlacklist
+      .map(migrateLegacyVenueId)
+      .filter((id): id is string => id.length > 0)
   }
 
   // Migration: energy -> catering
-  if (migratedState.gigModifiers.energy !== undefined) {
-    const { energy, ...restModifiers } = migratedState.gigModifiers
-    migratedState.gigModifiers = { ...restModifiers, catering: energy }
+  const gigModifiersLegacy = migratedState.gigModifiers as Record<
+    string,
+    boolean
+  >
+  if (gigModifiersLegacy.energy !== undefined) {
+    const { energy, ...restModifiers } = gigModifiersLegacy
+    migratedState.gigModifiers = {
+      ...DEFAULT_GIG_MODIFIERS,
+      ...restModifiers,
+      catering: energy
+    }
   }
 
   // Version Migration Map
@@ -320,99 +462,143 @@ export const handleLoadGame = (state, payload) => {
   return migratedState
 }
 
-export const handleResetState = (state, payload = {}) => {
+export const handleResetState = (
+  state: GameState,
+  payload: Record<string, unknown> = {}
+): GameState => {
   logger.info('GameState', 'State Reset (Debug)')
 
   // Construct the data to preserve across reset
-  const persistedData = {
-    settings: payload.settings || state.settings,
-    unlocks: Array.isArray(payload.unlocks) ? payload.unlocks : []
+  const persistedData: {
+    settings?: Record<string, unknown>
+    unlocks?: string[]
+  } = {
+    settings:
+      payload.settings !== null &&
+      payload.settings !== undefined &&
+      typeof payload.settings === 'object' &&
+      !Array.isArray(payload.settings)
+        ? (payload.settings as Record<string, unknown>)
+        : (state.settings as unknown as Record<string, unknown>),
+    unlocks: Array.isArray(payload.unlocks)
+      ? (payload.unlocks as string[])
+      : (state.unlocks ?? [])
   }
 
-  return {
-    ...createInitialState(persistedData),
-    settings: persistedData.settings
-  }
+  return createInitialState(persistedData)
 }
 
-export const handleUpdateSettings = (state, payload) => {
+export const handleUpdateSettings = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') return state
-  return { ...state, settings: { ...state.settings, ...payload } }
+  return {
+    ...state,
+    settings: { ...state.settings, ...sanitizeSettingsPayload(payload) }
+  }
 }
 
-export const handleSetMap = (state, payload) => {
+export const handleSetMap = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   logger.info('GameState', 'Map Generated')
-  return { ...state, gameMap: payload }
+  return { ...state, gameMap: payload as GameMap }
 }
 
-export const handleAddToast = (state, payload) => {
+export const handleAddToast = (
+  state: GameState,
+  payload: ToastPayload
+): GameState => {
   return { ...state, toasts: [...state.toasts, payload] }
 }
 
-export const handleRemoveToast = (state, payload) => {
+export const handleRemoveToast = (
+  state: GameState,
+  payload: string
+): GameState => {
   return {
     ...state,
     toasts: state.toasts.filter(t => t.id !== payload)
   }
 }
 
-const EFFECT_REVERTERS = {
-  harmony: (band, value) => ({
+const EFFECT_REVERTERS: Record<
+  string,
+  (band: BandState, value: unknown) => BandState
+> = {
+  harmony: (band: BandState, value: unknown) => ({
     ...band,
-    harmony: clampBandHarmony((band.harmony || 0) - value)
+    harmony: clampBandHarmony((band.harmony || 0) - (value as number))
   }),
-  guitar_difficulty: (band, value) => ({
+  guitar_difficulty: (band: BandState, value: unknown) => ({
     ...band,
     performance: {
       ...band.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (band.performance?.guitarDifficulty || 1) - value
+        (band.performance?.guitarDifficulty || 1) - (value as number)
       )
     }
   }),
-  luck: (band, value) => ({
+  luck: (band: BandState, value: unknown) => ({
     ...band,
-    luck: Math.max(0, (band.luck || 0) - value)
+    luck: Math.max(0, ((band.luck as number) || 0) - (value as number))
   }),
-  stamina_max: (band, value) => ({
+  stamina_max: (band: BandState, value: unknown) => ({
     ...band,
-    members: (band.members || []).map(m => ({
+    members: (band.members || []).map((m: BandMember) => ({
       ...m,
-      staminaMax: Math.max(0, (m.staminaMax || 100) - value)
+      staminaMax: Math.max(
+        0,
+        ((m.staminaMax as number) || 100) - (value as number)
+      )
     }))
   }),
-  style: (band, value) => ({
+  style: (band: BandState, value: unknown) => ({
     ...band,
-    style: Math.max(0, (band.style || 0) - value)
+    style: Math.max(0, ((band.style as number) || 0) - (value as number))
   }),
-  tour_success: (band, value) => ({
+  tour_success: (band: BandState, value: unknown) => ({
     ...band,
-    tourSuccess: Math.max(0, (band.tourSuccess || 0) - value)
+    tourSuccess: Math.max(
+      0,
+      ((band.tourSuccess as number) || 0) - (value as number)
+    )
   }),
-  gig_modifier: (band, value) => ({
+  gig_modifier: (band: BandState, value: unknown) => ({
     ...band,
-    gigModifier: Math.max(0, (band.gigModifier || 0) - value)
+    gigModifier: Math.max(
+      0,
+      ((band.gigModifier as number) || 0) - (value as number)
+    )
   }),
-  tempo: (band, value) => ({
+  tempo: (band: BandState, value: unknown) => ({
     ...band,
-    tempo: Math.max(0, (band.tempo || 0) - value)
+    tempo: Math.max(0, ((band.tempo as number) || 0) - (value as number))
   }),
-  practice_gain: (band, value) => ({
+  practice_gain: (band: BandState, value: unknown) => ({
     ...band,
-    practiceGain: Math.max(0, (band.practiceGain || 0) - value)
+    practiceGain: Math.max(
+      0,
+      ((band.practiceGain as number) || 0) - (value as number)
+    )
   }),
-  crit: (band, value) => ({
+  crit: (band: BandState, value: unknown) => ({
     ...band,
-    crit: Math.max(0, (band.crit || 0) - value)
+    crit: Math.max(0, ((band.crit as number) || 0) - (value as number))
   }),
-  affinity: (band, value) => ({
+  affinity: (band: BandState, value: unknown) => ({
     ...band,
-    affinity: Math.max(0, (band.affinity || 0) - value)
+    affinity: Math.max(0, ((band.affinity as number) || 0) - (value as number))
   }),
-  crowd_control: (band, value) => ({
+  crowd_control: (band: BandState, value: unknown) => ({
     ...band,
-    crowdControl: Math.max(0, (band.crowdControl || 0) - value)
+    crowdControl: Math.max(
+      0,
+      ((band.crowdControl as number) || 0) - (value as number)
+    )
   })
 }
 
@@ -421,15 +607,18 @@ const EFFECT_REVERTERS = {
  * @param {Object} band - The current band state
  * @returns {Object} Updated band state
  */
-const processContrabandExpiry = band => {
+const processContrabandExpiry = (band: BandState): BandState => {
   const activeEffects = band.activeContrabandEffects || []
-  const stillActive = []
-  const expired = []
+  const stillActive: unknown[] = []
+  const expired: Record<string, unknown>[] = []
 
   for (let i = 0; i < activeEffects.length; i++) {
+    const effect = activeEffects[i]
+    if (typeof effect !== 'object' || effect === null) continue
+    const effectObj = effect as Record<string, unknown>
     const updatedEffect = {
-      ...activeEffects[i],
-      remainingDuration: activeEffects[i].remainingDuration - 1
+      ...effectObj,
+      remainingDuration: (effectObj.remainingDuration as number) - 1
     }
     if (updatedEffect.remainingDuration > 0) {
       stillActive.push(updatedEffect)
@@ -443,13 +632,15 @@ const processContrabandExpiry = band => {
   // Revert expired effects
   for (let i = 0; i < expired.length; i++) {
     const e = expired[i]
-    const reverter = EFFECT_REVERTERS[e.effectType]
+    if (!e) continue
+    const effectType = e.effectType as string
+    const reverter = EFFECT_REVERTERS[effectType]
     if (reverter) {
-      nextBand = reverter(nextBand, e.value, e)
+      nextBand = reverter(nextBand, e.value)
     } else {
       logger.warn(
         'SystemReducer',
-        `No reverter defined for expired effect type: ${e.effectType}`,
+        `No reverter defined for expired effect type: ${effectType}`,
         { value: e.value, effect: e }
       )
     }
@@ -463,9 +654,11 @@ const processContrabandExpiry = band => {
       for (const itemKey in nextBand.stash) {
         if (!Object.hasOwn(nextBand.stash, itemKey)) continue
         const item = nextBand.stash[itemKey]
-        if (item.instanceId === e.instanceId) {
+        if (typeof item !== 'object' || item === null) continue
+        const itemObj = item as Record<string, unknown>
+        if (itemObj.instanceId === e.instanceId) {
           nextBand.stash[itemKey] = {
-            ...item,
+            ...itemObj,
             applied: false
           }
           break
@@ -483,8 +676,14 @@ const processContrabandExpiry = band => {
  * @param {Object} state - Current state
  * @returns {Object} Updated state
  */
-export const handleAdvanceDay = (state, payload) => {
-  const rng = payload?.rng || getSafeRandom
+export const handleAdvanceDay = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
+  const rng =
+    typeof payload?.rng === 'function'
+      ? (payload.rng as () => number)
+      : getSafeRandom
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
     rng
@@ -515,7 +714,7 @@ export const handleAdvanceDay = (state, payload) => {
 
   const newTrend = generateDailyTrend(rng)
 
-  let nextState = {
+  let nextState: GameState = {
     ...state,
     player: nextPlayer,
     band: finalBandState,
@@ -526,7 +725,11 @@ export const handleAdvanceDay = (state, payload) => {
 
   nextState = handleFailQuests(nextState)
 
-  if (pendingFlags?.scandal) {
+  const pendingFlagsObj =
+    typeof pendingFlags === 'object' && pendingFlags !== null
+      ? (pendingFlags as Record<string, unknown>)
+      : null
+  if (pendingFlagsObj?.scandal) {
     nextState.pendingEvents = [
       ...(nextState.pendingEvents || []),
       'consequences_bandmate_scandal'
@@ -543,7 +746,10 @@ export const handleAdvanceDay = (state, payload) => {
  * @param {string} unlockId - Unlock ID to add
  * @returns {Object} Updated state
  */
-export const handleAddUnlock = (state, unlockId) => {
+export const handleAddUnlock = (
+  state: GameState,
+  unlockId: string
+): GameState => {
   if (!unlockId || typeof unlockId !== 'string') return state
   if (state.unlocks?.includes(unlockId)) return state
   return { ...state, unlocks: [...(state.unlocks ?? []), unlockId] }

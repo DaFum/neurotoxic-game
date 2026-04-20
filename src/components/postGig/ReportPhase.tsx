@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { FinancialColumn } from './FinancialColumn'
 import { NetResult } from './NetResult'
+import type { ReportPhaseProps } from '../../types/components'
 
-export const ReportPhase = ({ financials, onNext }) => {
+export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
   const { t } = useTranslation('economy')
 
   if (!financials) {

@@ -1,7 +1,17 @@
 import type { ActionTypes } from '../context/actionTypes'
 import type { RhythmSetlistEntry } from './rhythmGame'
+import type { GAME_PHASES } from '../context/gameConstants'
 
 export type ActionType = ActionTypes[keyof ActionTypes]
+
+export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
+
+export interface GameSettings {
+  crtEnabled: boolean
+  tutorialSeen: boolean
+  logLevel: number
+  [key: string]: unknown
+}
 
 export type UnknownRecord = Record<string, unknown>
 
@@ -62,9 +72,15 @@ export interface GameMap {
 }
 
 export interface MinigameState {
-  type?: string
+  type?: string | null
   isActive?: boolean
   targetNodeId?: string | null
+  active?: boolean
+  targetDestination?: unknown
+  gigId?: string | null
+  equipmentRemaining?: number
+  accumulatedDamage?: number
+  score?: number
   roadie?: UnknownRecord
   amp?: UnknownRecord
   travel?: UnknownRecord
@@ -110,6 +126,7 @@ export interface BandMember extends UnknownRecord {
   name?: string
   mood: number
   stamina: number
+  staminaMax?: number
   traits: Record<string, unknown>
   relationships: Record<string, number>
 }
@@ -226,6 +243,7 @@ export interface ClinicActionPayload {
   moodGain?: number
   trait?: string
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
+  getSuccessToast?: (...args: unknown[]) => unknown
   [key: string]: unknown
 }
 
@@ -266,16 +284,24 @@ export interface MerchPressPayload {
   [key: string]: unknown
 }
 
+export interface LastGigStats extends UnknownRecord {
+  score?: number
+  misses?: number
+  accuracy?: number
+  combo?: number
+  health?: number
+  overload?: number
+}
 export interface GameState {
   version: number
-  currentScene: string
+  currentScene: GamePhase
   player: PlayerState
   band: BandState
   social: SocialState
   gameMap: GameMap | null
   currentGig: Venue | null
   setlist: RhythmSetlistEntry[]
-  lastGigStats: UnknownRecord | null
+  lastGigStats: LastGigStats | null
   activeEvent: GameEvent | null
   pendingEvents: string[]
   isScreenshotMode: boolean
@@ -283,9 +309,9 @@ export interface GameState {
   activeStoryFlags: string[]
   eventCooldowns: string[]
   venueBlacklist: string[]
-  activeQuests: UnknownRecord[]
+  activeQuests: QuestState[]
   reputationByRegion: Record<string, number>
-  settings: UnknownRecord
+  settings: GameSettings
   npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers
   minigame: MinigameState

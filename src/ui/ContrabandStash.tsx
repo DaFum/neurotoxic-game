@@ -6,6 +6,7 @@
 // TODO: Review this file
 import { useCallback } from 'react'
 import PropTypes from 'prop-types'
+import type { UnknownRecord } from '../types/game'
 import {
   Modal,
   Panel,
@@ -22,6 +23,15 @@ import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
  * Displays acquired relics and consumables.
  */
 
+interface ContrabandStashProps {
+  stash?: UnknownRecord[]
+  members?: UnknownRecord[]
+  selectedMember?: string | null
+  setSelectedMember?: (id: unknown) => void
+  handleUseItem?: (instanceId: unknown, item: unknown) => void
+  onClose?: () => void
+}
+
 export const ContrabandStash = ({
   stash = [],
   members = [],
@@ -29,16 +39,17 @@ export const ContrabandStash = ({
   setSelectedMember,
   handleUseItem,
   onClose
-}) => {
+}: ContrabandStashProps) => {
   const { t } = useTranslation(['ui', 'items'])
 
   const makeSelectMember = useCallback(
-    id => () => setSelectedMember(id),
+    (id: unknown) => () => setSelectedMember?.(id),
     [setSelectedMember]
   )
 
   const makeUseItem = useCallback(
-    (instanceId, item) => () => handleUseItem(instanceId, item),
+    (instanceId: unknown, item: unknown) => () =>
+      handleUseItem?.(instanceId, item),
     [handleUseItem]
   )
 
@@ -70,7 +81,7 @@ export const ContrabandStash = ({
             })}
           </h3>
           <div className='flex flex-wrap gap-2'>
-            {members.map(m => (
+            {members.map((m: any) => (
               <button
                 key={m.id}
                 type='button'
@@ -96,7 +107,7 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash.map(item => {
+            stash.map((item: any) => {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
               const stableKey = item.instanceId || `migrated-${item.id}`

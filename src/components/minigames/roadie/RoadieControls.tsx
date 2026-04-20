@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { RoadieControlsProps } from '../../../types/components'
 
 export const RoadieControls = memo(function RoadieControls({
   showControls,
@@ -8,7 +9,7 @@ export const RoadieControls = memo(function RoadieControls({
   handleMoveLeft,
   handleMoveDown,
   handleMoveRight
-}) {
+}: RoadieControlsProps) {
   const { t } = useTranslation(['ui'])
 
   return (

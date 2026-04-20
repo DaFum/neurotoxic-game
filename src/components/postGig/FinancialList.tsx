@@ -2,8 +2,9 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { formatNumber } from '../../utils/numberUtils'
+import type { FinancialListProps } from '../../types/components'
 
-export const FinancialList = ({ items, type }) => {
+export const FinancialList = ({ items, type }: FinancialListProps) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   return (

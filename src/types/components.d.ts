@@ -1,5 +1,16 @@
-import type { EventOption, GameState, MapNode } from './game'
+import type {
+  EventOption,
+  GameState,
+  MapNode,
+  PlayerState,
+  BandMember
+} from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
+
+export interface PixiController {
+  init(): Promise<void>
+  dispose(): void
+}
 
 /**
  * Known chatter variants:
@@ -79,4 +90,268 @@ export interface PauseOverlayProps {
   isPaused: boolean
   onResume: () => void
   onQuit: () => void
+}
+
+export interface MinigameLogicBase {
+  gameStateRef: { current: GameState }
+  update: (state: unknown) => void
+  finishMinigame?: () => void
+  dispatch?: (action: unknown) => void
+}
+
+export interface MinigameSceneFrameProps {
+  controllerFactory?: (options: unknown) => PixiController
+  logic: MinigameLogicBase
+  uiState?: { isGameOver?: boolean }
+  onComplete: () => void
+  completionTitle?: string
+  renderCompletionStats?: (stats: unknown) => React.ReactNode
+  completionButtonText?: string
+  children?: React.ReactNode
+}
+
+export interface PixiStageProps {
+  gameStateRef: { current: GameState }
+  update: (state: unknown) => void
+  controllerFactory?: (options: unknown) => PixiController
+}
+
+export interface ToggleRadioProps {
+  state: unknown
+}
+
+export interface TutorialManagerProps {
+  onStepComplete?: (stepId: string) => void
+}
+
+export interface ClinicHeaderProps {
+  player: Pick<PlayerState, 'money' | 'fame'>
+}
+
+export interface ClinicMemberCardHeaderProps {
+  disabledReason?: string
+  children?: React.ReactNode
+}
+
+export interface ClinicMemberCardProps {
+  member: BandMember
+  player: Pick<PlayerState, 'money' | 'fame'>
+  healCostMoney: number
+  enhanceCostFame: number
+  healMember: (memberId: string) => void
+  enhanceMember: (memberId: string, traitId: string) => void
+}
+
+export interface ClinicMemberCardActionProps {
+  member: BandMember
+  player: Pick<PlayerState, 'money' | 'fame'>
+  healCostMoney: number
+  enhanceCostFame: number
+  healMember: (memberId: string) => void
+  enhanceMember: (memberId: string, traitId: string) => void
+}
+
+export interface ActionButtonWrapperProps {
+  disabledReason?: string | null
+  children: React.ReactElement
+}
+
+export interface AmpControlsProps {
+  dialValue: number
+  setDialValue: React.Dispatch<React.SetStateAction<number>>
+}
+
+export interface AmpHUDProps {
+  timeLeft: number
+  score: number
+}
+
+export interface AudioLockedOverlayProps {
+  onInitializeAudio: () => void
+}
+
+export interface BandMembersLayerProps {
+  matzeUrl: string
+  mariusUrl: string
+  larsUrl: string
+  setBandMemberRef: (index: number) => (el: HTMLElement | null) => void
+}
+
+export interface RoadieControlsProps {
+  showControls: boolean
+  setShowControls: React.Dispatch<React.SetStateAction<boolean>>
+  handleMoveUp: () => void
+  handleMoveLeft: () => void
+  handleMoveDown: () => void
+  handleMoveRight: () => void
+}
+
+export interface RoadieHUDProps {
+  uiState: {
+    itemsRemaining: number
+    itemsDelivered: number
+    currentDamage: number
+    carrying?: {
+      type: string
+      [key: string]: unknown
+    } | null
+  }
+}
+
+export interface TourbusControlsProps {
+  onMoveLeft: () => void
+  onMoveRight: () => void
+}
+
+export interface TourbusHUDProps {
+  distance: number
+  damage: number
+}
+
+export interface TravelingVanProps {
+  t: TranslationCallback
+  isTraveling: boolean
+  currentNode: MapNode | null
+  travelTarget: MapNode | null
+  vanUrl: string
+  travelCompletedRef: { current: unknown }
+  onTravelComplete: (node?: MapNode) => void
+}
+
+export interface CompletePhaseProps {
+  result: {
+    success: boolean
+    message: string
+    totalFollowers: number
+    platform: string
+    moneyChange?: number
+    harmonyChange?: number
+    controversyChange?: number
+    loyaltyChange?: number
+    staminaChange?: number
+    moodChange?: number
+    targetMember?: string
+  }
+  onContinue: () => void
+  onSpinStory?: () => void
+  player?: Pick<PlayerState, 'hqUpgrades'>
+  social?: {
+    controversyLevel?: number
+    [key: string]: unknown
+  }
+  isProcessingAction?: boolean
+}
+
+export interface DealCardProps {
+  deal: {
+    id: string
+    name: string
+    description: string
+    alignment?: string
+    offer: {
+      upfront: number
+      duration: number
+      perGig?: number
+      item?: string
+    }
+    penalty?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  negotiationState?: {
+    deal?: unknown
+    status?: string
+    feedback?: string
+    success?: boolean
+    [key: string]: unknown
+  }
+  brandReputation?: Record<string, number>
+  handleAcceptDeal: (deal: unknown) => void
+  handleNegotiationStart: (deal: unknown) => void
+}
+
+export interface DealImageProps {
+  alignment?: string
+  name: string
+}
+
+export interface DealInfoProps {
+  displayDeal: {
+    name: string
+    description: string
+    alignment?: string
+    offer: {
+      upfront: number
+      duration: number
+      perGig?: number
+      item?: string
+    }
+    penalty?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  isRevoked?: boolean
+  brandReputation?: Record<string, number>
+}
+
+export interface DealActionsProps {
+  deal: unknown
+  displayDeal: unknown
+  isRevoked?: boolean
+  hasNegotiated?: boolean
+  negotiationState?: unknown
+  handleAcceptDeal: (deal: unknown) => void
+  handleNegotiationStart: (deal: unknown) => void
+}
+
+export interface DealsPhaseProps {
+  offers: Array<{
+    id: string
+    name: string
+    description: string
+    alignment?: string
+    offer: {
+      upfront: number
+      duration: number
+      perGig?: number
+      item?: string
+    }
+    penalty?: Record<string, unknown>
+    [key: string]: unknown
+  }>
+  onAccept: (dealId: string) => void
+  onSkip: () => void
+}
+
+export interface FinancialListProps {
+  items: FinancialItem[]
+  type: 'income' | 'expense'
+}
+
+export interface NegotiationModalProps {
+  isOpen: boolean
+  onClose: () => void
+  negotiationResult: unknown
+  handleNegotiationSubmit: (submission: unknown) => void
+}
+
+export interface FinancialItem {
+  label?: string
+  labelKey: string
+  value: number
+  detail?: string
+  detailKey?: string
+  detailParams?: Record<string, unknown>
+}
+
+export interface FinancialCategory {
+  total: number
+  breakdown: FinancialItem[]
+}
+
+export interface ReportPhaseProps {
+  financials?: {
+    income: FinancialCategory
+    expenses: FinancialCategory
+    net: number
+  }
+  onNext: () => void
 }

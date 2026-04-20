@@ -61,6 +61,7 @@ test('systemReducer - LOAD_GAME', async t => {
         id: 'm1',
         mood: 80,
         stamina: 70,
+        relationships: {},
         traits: Object.assign(Object.create(null), {
           trait1: { id: 'trait1', name: 'Trait 1' }
         })
@@ -265,47 +266,62 @@ test('systemReducer - RESET_STATE', async t => {
     const currentState = {
       ...initialState,
       player: { ...initialState.player, money: 9999 },
-      settings: { volume: 0.5 },
+      settings: { ...initialState.settings, crtEnabled: true },
       unlocks: ['unlock1', 'unlock2']
     }
 
+    // Use valid settings keys (crtEnabled, tutorialSeen, logLevel) since
+    // createInitialState sanitizes settings and strips unknown keys
     const payload = {
-      settings: { volume: 0.8 },
+      settings: { crtEnabled: false, tutorialSeen: true },
       unlocks: ['unlock3']
     }
 
     const nextState = handleResetState(currentState, payload)
 
     assert.equal(nextState.player.money, initialState.player.money) // Reset
-    assert.deepEqual(nextState.settings, { volume: 0.8 }) // Preserved from payload
-    assert.deepEqual(nextState.unlocks, ['unlock3']) // Unlocks are generated via createInitialState with preserved unlocks? Wait, createInitialState(persistedData) uses unlocks.
+    assert.equal(nextState.settings.crtEnabled, false) // Preserved from payload
+    assert.equal(nextState.settings.tutorialSeen, true) // Preserved from payload
+    assert.deepEqual(nextState.unlocks, ['unlock3'])
   })
 
   await t.test(
-    'falls back to current settings and empty unlocks if payload is empty',
+    'falls back to current settings and existing unlocks if payload is empty',
     () => {
       const initialState = createInitialState()
       const currentState = {
         ...initialState,
         player: { ...initialState.player, money: 9999 },
-        settings: { volume: 0.5 },
+        settings: { ...initialState.settings, crtEnabled: false },
         unlocks: ['unlock1', 'unlock2']
       }
 
       const nextState = handleResetState(currentState)
 
       assert.equal(nextState.player.money, initialState.player.money) // Reset
-      assert.deepEqual(nextState.settings, { volume: 0.5 }) // Preserved from current state
-      assert.deepEqual(nextState.unlocks, []) // Default to empty array
+      assert.equal(nextState.settings.crtEnabled, false) // Preserved from current state
+      assert.deepEqual(nextState.unlocks, ['unlock1', 'unlock2']) // Preserved from current state
     }
   )
 })
 
 test('systemReducer - UPDATE_SETTINGS', () => {
-  const state = { settings: { volume: 0.5, effects: true } }
+  const state = {
+    settings: {
+      crtEnabled: false,
+      tutorialSeen: true,
+      logLevel: 1,
+      volume: 0.5
+    }
+  }
 
-  assert.deepEqual(handleUpdateSettings(state, { volume: 0.8 }), {
-    settings: { volume: 0.8, effects: true }
+  assert.deepEqual(handleUpdateSettings(state, { volume: 0.8, logLevel: 3 }), {
+    settings: {
+      crtEnabled: false,
+      tutorialSeen: true,
+      logLevel: 3,
+      volume: 0.5
+    }
   })
 
   assert.equal(handleUpdateSettings(state, null), state)

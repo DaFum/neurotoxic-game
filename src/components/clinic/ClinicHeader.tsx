@@ -5,8 +5,9 @@
  */
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { ClinicHeaderProps } from '../../types/components'
 
-export const ClinicHeader = ({ player }) => {
+export const ClinicHeader = ({ player }: ClinicHeaderProps) => {
   const { t } = useTranslation(['ui'])
 
   return (

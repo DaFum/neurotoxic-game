@@ -72,21 +72,21 @@ export const DEFAULT_BAND_STATE = {
       mood: 80,
       stamina: 100,
       traits: Object.create(null),
-      relationships: { Marius: 50, Lars: 50 }
+      relationships: { Marius: 50, Lars: 50 } satisfies Record<string, number>
     },
     {
       ...CHARACTERS.MARIUS,
       mood: 80,
       stamina: 100,
       traits: Object.create(null),
-      relationships: { Matze: 50, Lars: 50 }
+      relationships: { Matze: 50, Lars: 50 } satisfies Record<string, number>
     },
     {
       ...CHARACTERS.LARS,
       mood: 80,
       stamina: 100,
       traits: Object.create(null),
-      relationships: { Matze: 50, Marius: 50 }
+      relationships: { Matze: 50, Marius: 50 } satisfies Record<string, number>
     }
   ],
   harmony: 80,
@@ -170,7 +170,10 @@ const getSavedSettings = () => {
 const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
-  logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN
+  logLevel:
+    ((import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? true)
+      ? LOG_LEVELS.DEBUG
+      : LOG_LEVELS.WARN
 }
 
 const sanitizeSettings = (

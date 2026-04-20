@@ -21,3 +21,9 @@ Applies to `src/hooks/**`.
 
 - `useArrivalLogic` owns arrival routing decisions.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must not import PIXI directly — they return reactive state only.
+
+## Nested TypeScript Notes
+
+- Exported hooks should expose explicit return contracts; avoid relying on inferred structural types for public hook APIs.
+- Keep callback dependencies complete (`t`, derived state slices, handlers) to prevent stale closures despite valid typings.
+- Use precise `useRef` and `useState` generics at hook boundaries to avoid hidden widening to `any`.

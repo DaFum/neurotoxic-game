@@ -21,3 +21,9 @@ Applies to `src/components/**`.
 ## Change Rules
 
 - Separate behavior refactors from typing refactors; keep type-only PRs behavior-preserving.
+
+## Nested TypeScript Notes
+
+- Keep component prop interfaces and runtime `propTypes` optional/required flags synchronized.
+- For reusable components, export explicit prop types and avoid `any` passthrough props.
+- When a prop accepts external/untrusted objects, type as `unknown` at the boundary and narrow before access.

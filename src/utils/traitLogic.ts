@@ -9,16 +9,21 @@
  * @param {string} traitId - The ID of the trait to check.
  * @returns {boolean} True if the member has the trait.
  */
-export const hasTrait = (member, traitId) => {
+export const hasTrait = (member: unknown, traitId: string): boolean => {
   if (
     !member ||
-    !member.traits ||
-    typeof member.traits !== 'object' ||
-    Array.isArray(member.traits)
+    typeof member !== 'object' ||
+    !Object.hasOwn(member, 'traits') ||
+    !(member as Record<string, unknown>).traits ||
+    typeof (member as Record<string, unknown>).traits !== 'object' ||
+    Array.isArray((member as Record<string, unknown>).traits)
   ) {
     return false
   }
-  return Object.hasOwn(member.traits, traitId)
+  return Object.hasOwn(
+    (member as Record<string, unknown>).traits as Record<string, unknown>,
+    traitId
+  )
 }
 
 /**
@@ -27,14 +32,20 @@ export const hasTrait = (member, traitId) => {
  * @param {string} traitId - The ID of the trait to check.
  * @returns {boolean} True if any member has the trait.
  */
-export const bandHasTrait = (bandState, traitId) => {
-  if (!bandState || !bandState.members || !Array.isArray(bandState.members)) {
+export const bandHasTrait = (bandState: unknown, traitId: string): boolean => {
+  if (
+    !bandState ||
+    typeof bandState !== 'object' ||
+    !Object.hasOwn(bandState, 'members') ||
+    !Array.isArray((bandState as Record<string, unknown>).members)
+  ) {
     return false
   }
+  const members = (bandState as Record<string, unknown>).members as unknown[]
   // Using a for loop instead of .some() to avoid array allocation if performance is critical,
   // though band members array is small (usually 3-4).
-  for (let i = 0; i < bandState.members.length; i++) {
-    if (hasTrait(bandState.members[i], traitId)) {
+  for (let i = 0; i < members.length; i++) {
+    if (hasTrait(members[i], traitId)) {
       return true
     }
   }

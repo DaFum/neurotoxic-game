@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
+import type { NegotiationModalProps } from '../../types/components'
 
 const TACTICS = [
   {
@@ -41,7 +42,7 @@ export const NegotiationModal = ({
   onClose,
   negotiationResult,
   handleNegotiationSubmit
-}) => {
+}: NegotiationModalProps) => {
   const { t } = useTranslation()
 
   return (

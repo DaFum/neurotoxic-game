@@ -84,7 +84,10 @@ export const checkVenueAccess = ({
   reputationByRegion?: Record<string, number>
   venueBlacklist?: string[]
   venuesMap: VenueMap
-  getLocationName: (location: string | undefined, venueId: string | undefined) => string
+  getLocationName: (
+    location: string | undefined,
+    venueId: string | undefined
+  ) => string
 }): VenueAccessResult => {
   if (node.type === 'START' || !node.venue) {
     return { allowed: true }

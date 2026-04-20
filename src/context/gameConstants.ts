@@ -1,4 +1,5 @@
 // TODO: Review this file
+import type { MinigameState } from '../types/game'
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',
@@ -13,7 +14,7 @@ export const GAME_PHASES = Object.freeze({
   GAMEOVER: 'GAMEOVER',
   INTRO: 'INTRO',
   CLINIC: 'CLINIC'
-})
+} as const satisfies Record<string, string>)
 
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
@@ -24,7 +25,20 @@ export const MINIGAME_TYPES = {
 
 export const AMP_CALIBRATION_TOLERANCE = 50
 
-export const DEFAULT_MINIGAME_STATE = {
+type DefaultMinigameState = Required<
+  Pick<
+    MinigameState,
+    | 'active'
+    | 'type'
+    | 'targetDestination'
+    | 'gigId'
+    | 'equipmentRemaining'
+    | 'accumulatedDamage'
+    | 'score'
+  >
+>
+
+export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
   active: false,
   type: null,
   targetDestination: null,

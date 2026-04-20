@@ -1,15 +1,19 @@
 // TODO: Review this file
-const getFlatRelationships = members => {
-  const flat = []
+import type { GameState, BandMember } from '../../types/game'
+
+type RelPair = { member1: unknown; member2: string; score: number }
+
+const getFlatRelationships = (members: BandMember[]): RelPair[] => {
+  const flat: RelPair[] = []
   const len = members.length
   for (let i = 0; i < len; i++) {
     const m1 = members[i]
-    if (!m1.relationships) continue
+    if (!m1 || !m1.relationships) continue
     for (const m2Name in m1.relationships) {
       flat.push({
         member1: m1.name,
         member2: m2Name,
-        score: m1.relationships[m2Name]
+        score: m1.relationships[m2Name] ?? 0
       })
     }
   }
@@ -25,7 +29,7 @@ export const RELATIONSHIP_EVENTS = [
     description: 'events:toxic_infighting.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: state => {
+    condition: (state: GameState) => {
       // Find two members with relationship < 20
       const members = state.band?.members
       if (!members) return false
@@ -33,8 +37,9 @@ export const RELATIONSHIP_EVENTS = [
       const rels = getFlatRelationships(members)
       const len = rels.length
       for (let i = 0; i < len; i++) {
-        if (rels[i].score < 20)
-          return { member1: rels[i].member1, member2: rels[i].member2 }
+        const rel = rels[i]
+        if (rel && rel.score < 20)
+          return { member1: rel.member1, member2: rel.member2 }
       }
       return false
     },
@@ -87,7 +92,7 @@ export const RELATIONSHIP_EVENTS = [
     description: 'events:synergy_moment.desc',
     trigger: 'random',
     chance: 0.1,
-    condition: state => {
+    condition: (state: GameState) => {
       // Find two members with relationship > 80
       const members = state.band?.members
       if (!members) return false
@@ -95,8 +100,9 @@ export const RELATIONSHIP_EVENTS = [
       const rels = getFlatRelationships(members)
       const len = rels.length
       for (let i = 0; i < len; i++) {
-        if (rels[i].score > 80)
-          return { member1: rels[i].member1, member2: rels[i].member2 }
+        const rel = rels[i]
+        if (rel && rel.score > 80)
+          return { member1: rel.member1, member2: rel.member2 }
       }
       return false
     },

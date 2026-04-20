@@ -1,4 +1,5 @@
 // TODO: Review this file
+import type { GameState } from '../../types/game'
 import { logger } from '../../utils/logger'
 import {
   clampVanCondition,
@@ -16,6 +17,7 @@ import {
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
+import { normalizeVenueId } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import {
   GAME_PHASES,
@@ -24,7 +26,10 @@ import {
   DEFAULT_EQUIPMENT_COUNT
 } from '../gameConstants'
 
-export const handleStartTravelMinigame = (state, payload) => {
+export const handleStartTravelMinigame = (
+  state: GameState,
+  payload: { targetNodeId: string }
+): GameState => {
   const { targetNodeId } = payload
   logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
   return {
@@ -39,14 +44,25 @@ export const handleStartTravelMinigame = (state, payload) => {
   }
 }
 
-export const handleCompleteTravelMinigame = (state, payload) => {
+export const handleCompleteTravelMinigame = (
+  state: GameState,
+  payload: {
+    damageTaken: number
+    itemsCollected: unknown[]
+    rngValue?: number
+    contrabandId?: string
+    instanceId?: string
+  }
+): GameState => {
   const { damageTaken, itemsCollected, rngValue, contrabandId, instanceId } =
     payload
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results
-  const targetId = state.minigame.targetDestination
-  const targetNode = state.gameMap?.nodes?.[targetId]
+  const targetDestination = state.minigame.targetDestination
+  const targetId =
+    typeof targetDestination === 'string' ? targetDestination : null
+  const targetNode = targetId ? state.gameMap?.nodes?.[targetId] : undefined
   const currentNode = state.gameMap?.nodes?.[state.player.currentNodeId]
 
   if (!targetNode) {
@@ -74,10 +90,28 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     state.player.van.condition - conditionLoss
   )
 
+  const venueObj =
+    typeof targetNode.venue === 'object' && targetNode.venue !== null
+      ? (targetNode.venue as Record<string, unknown>)
+      : null
+  const canonicalVenueId =
+    normalizeVenueId(targetNode.venue) ??
+    (typeof targetNode.venueId === 'string'
+      ? normalizeVenueId(targetNode.venueId)
+      : typeof venueObj?.id === 'string'
+        ? normalizeVenueId(venueObj.id)
+        : null)
+  const nextLocation =
+    canonicalVenueId ??
+    (typeof venueObj?.name === 'string'
+      ? venueObj.name
+      : typeof targetNode.venue === 'string'
+        ? targetNode.venue
+        : 'Unknown')
   const nextPlayer = {
     ...state.player,
     money: nextMoney,
-    location: targetNode.venue?.name || 'Unknown',
+    location: nextLocation,
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,
     van: {
@@ -102,7 +136,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     travelUnlocks
   )
 
-  let newState = {
+  let newState: GameState = {
     ...state,
     player: nextPlayer,
     band: traitResult.band,
@@ -124,15 +158,24 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     const preStashLength = newState.band.stash
       ? Object.keys(newState.band.stash).length
       : 0
-    const preStacks = newState.band.stash
-      ? newState.band.stash[contrabandId]?.stacks || 0
+    const preStashItem = newState.band.stash
+      ? (newState.band.stash[contrabandId] as
+          | Record<string, unknown>
+          | undefined)
+      : undefined
+    const preStacks = preStashItem
+      ? (preStashItem.stacks as number | undefined) || 0
       : 0
 
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band?.stash?.[contrabandId]
-    const postStacks = postItem ? postItem.stacks || 0 : 0
+    const postItem = newState.band?.stash?.[contrabandId] as
+      | Record<string, unknown>
+      | undefined
+    const postStacks = postItem
+      ? (postItem.stacks as number | undefined) || 0
+      : 0
     const postStashLength = Object.keys(newState.band?.stash || {}).length
 
     const wasAdded = postStashLength > preStashLength || postStacks > preStacks
@@ -155,7 +198,10 @@ export const handleCompleteTravelMinigame = (state, payload) => {
   return newState
 }
 
-export const handleStartRoadieMinigame = (state, payload) => {
+export const handleStartRoadieMinigame = (
+  state: GameState,
+  payload: { gigId: string }
+): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
   return {
@@ -171,7 +217,10 @@ export const handleStartRoadieMinigame = (state, payload) => {
   }
 }
 
-export const handleStartAmpCalibration = (state, payload) => {
+export const handleStartAmpCalibration = (
+  state: GameState,
+  payload: { gigId: string }
+): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Amp Calibration Minigame for Gig ${gigId}`)
   return {
@@ -186,7 +235,10 @@ export const handleStartAmpCalibration = (state, payload) => {
   }
 }
 
-export const handleCompleteAmpCalibration = (state, payload) => {
+export const handleCompleteAmpCalibration = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { score } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
@@ -221,7 +273,10 @@ export const handleCompleteAmpCalibration = (state, payload) => {
   }
 }
 
-export const handleStartKabelsalatMinigame = (state, payload) => {
+export const handleStartKabelsalatMinigame = (
+  state: GameState,
+  payload: { gigId: string }
+): GameState => {
   const { gigId } = payload
   logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
   return {
@@ -236,7 +291,10 @@ export const handleStartKabelsalatMinigame = (state, payload) => {
   }
 }
 
-export const handleCompleteKabelsalatMinigame = (state, payload) => {
+export const handleCompleteKabelsalatMinigame = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   const { results } = payload
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
@@ -274,7 +332,10 @@ export const handleCompleteKabelsalatMinigame = (state, payload) => {
   }
 }
 
-export const handleCompleteRoadieMinigame = (state, payload) => {
+export const handleCompleteRoadieMinigame = (
+  state: GameState,
+  payload: { equipmentDamage: number }
+): GameState => {
   const { equipmentDamage } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 

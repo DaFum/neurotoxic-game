@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { SideEffectsSummary } from './SideEffectsSummary'
+import type { CompletePhaseProps } from '../../types/components'
 
 export const CompletePhase = ({
   result,
@@ -12,7 +13,7 @@ export const CompletePhase = ({
   player,
   social,
   isProcessingAction = false
-}) => {
+}: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50

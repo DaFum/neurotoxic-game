@@ -1257,8 +1257,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     // Safely check for DEV environment to avoid crashes in test runners that don't polyfill import.meta.env
     const isDev =
       typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.DEV
+      (import.meta as unknown as Record<string, unknown>).env &&
+      (
+        (import.meta as unknown as Record<string, unknown>).env as Record<
+          string,
+          unknown
+        >
+      ).DEV
     if (isDev) {
       Object.defineProperty(window, 'gameState', {
         configurable: true,

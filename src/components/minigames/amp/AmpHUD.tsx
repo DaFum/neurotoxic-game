@@ -1,7 +1,8 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { AmpHUDProps } from '../../../types/components'
 
-export const AmpHUD = memo(function AmpHUD({ timeLeft, score }) {
+export const AmpHUD = memo(function AmpHUD({ timeLeft, score }: AmpHUDProps) {
   const { t } = useTranslation(['ui'])
 
   return (

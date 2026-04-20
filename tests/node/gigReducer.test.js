@@ -70,7 +70,7 @@ describe('gigReducer', () => {
     })
 
     it('should process bad show correctly', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
@@ -79,7 +79,7 @@ describe('gigReducer', () => {
     })
 
     it('should process 3 bad shows into prove yourself quest', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       baseState.player.stats.consecutiveBadShows = 2
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
@@ -94,7 +94,7 @@ describe('gigReducer', () => {
     })
 
     it('should handle venue blacklisting on terrible reputation', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1' }
       baseState.reputationByRegion['venues:some_venue'] = -25
       const payload = { score: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
@@ -105,7 +105,7 @@ describe('gigReducer', () => {
     })
 
     it('should process good show correctly and clear consecutive bad shows', () => {
-      baseState.currentGig = { venue: { id: 'v1', capacity: 100 } }
+      baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.player.stats.consecutiveBadShows = 2
       const payload = { score: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
@@ -115,7 +115,7 @@ describe('gigReducer', () => {
     })
 
     it('should apply bonus reputation for very high score', () => {
-      baseState.currentGig = { venue: { id: 'v1' } }
+      baseState.currentGig = { id: 'v1' }
       const payload = { score: 95 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
@@ -123,7 +123,7 @@ describe('gigReducer', () => {
     })
 
     it('should advance apology tour quest on good score and small capacity', () => {
-      baseState.currentGig = { venue: { capacity: 250 } }
+      baseState.currentGig = { id: 'v1', capacity: 250 }
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 }
       ]
@@ -134,6 +134,25 @@ describe('gigReducer', () => {
         q => q.id === 'quest_apology_tour'
       )
       assert.strictEqual(quest.progress, 1)
+    })
+
+    it('should not advance small-venue quests when capacity is missing', () => {
+      baseState.currentGig = { id: 'v1' }
+      baseState.activeQuests = [
+        { id: 'quest_apology_tour', progress: 0, required: 5 },
+        { id: 'quest_prove_yourself', progress: 0, required: 5 }
+      ]
+      const payload = { score: 70 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      const apologyQuest = nextState.activeQuests.find(
+        q => q.id === 'quest_apology_tour'
+      )
+      const proveYourselfQuest = nextState.activeQuests.find(
+        q => q.id === 'quest_prove_yourself'
+      )
+      assert.strictEqual(apologyQuest.progress, 0)
+      assert.strictEqual(proveYourselfQuest.progress, 0)
     })
 
     it('should auto-complete ego management quest on high harmony', () => {

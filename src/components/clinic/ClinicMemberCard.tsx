@@ -10,8 +10,15 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../ui/GlitchButton'
 import { Tooltip } from '../../ui/shared'
 import { CLINIC_CONFIG } from '../../context/gameConstants'
+import type {
+  ClinicMemberCardProps,
+  ActionButtonWrapperProps
+} from '../../types/components'
 
-const ActionButtonWrapper = ({ disabledReason, children }) => {
+const ActionButtonWrapper = ({
+  disabledReason,
+  children
+}: ActionButtonWrapperProps) => {
   // eslint-disable-next-line @eslint-react/no-clone-element
   const buttonWithDisabled = React.cloneElement(children, {
     disabled: Boolean(disabledReason)
@@ -36,7 +43,7 @@ export const ClinicMemberCard = ({
   enhanceCostFame,
   healMember,
   enhanceMember
-}) => {
+}: ClinicMemberCardProps) => {
   const { t } = useTranslation(['ui'])
 
   return (

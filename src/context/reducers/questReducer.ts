@@ -1,3 +1,4 @@
+import type { GameState, QuestState, ToastPayload } from '../../types/game'
 import {
   clampPlayerFame,
   clampBandHarmony,
@@ -8,21 +9,30 @@ import {
 import { QUEST_PROVE_YOURSELF } from '../../data/questsConstants'
 import { hasActiveQuest } from '../../utils/questUtils'
 
-export const handleAddQuest = (state, quest) => {
+export const handleAddQuest = (
+  state: GameState,
+  quest: QuestState
+): GameState => {
   if (hasActiveQuest(state.activeQuests, quest.id)) return state
   return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
 }
 
-export const handleCompleteQuest = (state, { questId, randomIdx }) => {
+export const handleCompleteQuest = (
+  state: GameState,
+  { questId, randomIdx }: { questId: string; randomIdx?: number }
+): GameState => {
   if (!state.activeQuests) return state
   const questIndex = state.activeQuests.findIndex(q => q.id === questId)
   if (questIndex === -1) return state
 
-  const quest = state.activeQuests[questIndex]
+  const quest = state.activeQuests[questIndex] as QuestState | undefined
+  if (!quest) return state
   const nextState = { ...state }
 
-  // Remove from activeQuests using toSpliced
-  nextState.activeQuests = nextState.activeQuests.toSpliced(questIndex, 1)
+  // Remove from activeQuests
+  nextState.activeQuests = state.activeQuests
+    .slice(0, questIndex)
+    .concat(state.activeQuests.slice(questIndex + 1))
 
   // Apply generic quest rewards
   const generatedToasts = []
@@ -46,11 +56,12 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
+    const itemKey = String(quest.rewardData.item)
     nextState.band = {
       ...nextState.band,
       inventory: {
         ...(nextState.band?.inventory || {}),
-        [quest.rewardData.item]: true
+        [itemKey]: true
       }
     }
     generatedToasts.push({
@@ -93,11 +104,16 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 
       const members = originalMembers.map((m, idx) => {
         if (idx === memberIdx) {
+          const baseStats = (m.baseStats || {}) as Record<string, unknown>
+          const currentSkill = m.baseStats
+            ? Number((m.baseStats as Record<string, unknown>).skill)
+            : Number((m as Record<string, unknown>).skill)
+          const skillValue = Number.isFinite(currentSkill) ? currentSkill : 0
           return {
             ...m,
             baseStats: {
-              ...(m.baseStats || {}),
-              skill: ((m.baseStats && m.baseStats.skill) || m.skill || 0) + 1
+              ...baseStats,
+              skill: skillValue + 1
             }
           }
         }
@@ -105,10 +121,11 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       })
 
       nextState.band = { ...nextState.band, members }
+      const rewardedMember = members[memberIdx]
       generatedToasts.push({
         id: `${questId}-skill`,
         messageKey: 'ui:toast.quest_complete_skill',
-        options: { name: quest.label, member: members[memberIdx].name },
+        options: { name: quest.label, member: rewardedMember?.name },
         type: 'success'
       })
     }
@@ -165,17 +182,26 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 }
 
 export const handleAdvanceQuest = (
-  state,
-  { questId, amount = 1, randomIdx }
-) => {
+  state: GameState,
+  {
+    questId,
+    amount = 1,
+    randomIdx
+  }: { questId: string; amount?: number; randomIdx?: number }
+): GameState => {
   const nextState = { ...state }
   let questCompleted = false
   if (!nextState.activeQuests) return state
 
   nextState.activeQuests = nextState.activeQuests.map(q => {
     if (q.id === questId) {
-      const newProgress = Math.min(q.required, q.progress + amount)
-      if (newProgress >= q.required) {
+      const required = q.required
+      const progress = q.progress ?? 0
+      if (typeof required !== 'number') {
+        return q
+      }
+      const newProgress = Math.min(required, progress + (amount ?? 1))
+      if (newProgress >= required) {
         questCompleted = true
       }
       return { ...q, progress: newProgress }
@@ -189,34 +215,47 @@ export const handleAdvanceQuest = (
   return nextState
 }
 
-export const handleFailQuests = state => {
+export const handleFailQuests = (state: GameState): GameState => {
   const nextState = { ...state }
   if (!nextState.activeQuests) return state
 
   let hasExpired = false
-  const newActiveQuests = []
-  const newToasts = []
+  const newActiveQuests: QuestState[] = []
+  const newToasts: ToastPayload[] = []
 
   for (let i = 0; i < nextState.activeQuests.length; i++) {
     const quest = nextState.activeQuests[i]
+    if (!quest) continue
+    const penalty = quest.failurePenalty as Record<string, unknown> | undefined
 
-    if (quest.deadline !== null && nextState.player.day > quest.deadline) {
+    if (
+      typeof quest.deadline === 'number' &&
+      nextState.player.day > quest.deadline
+    ) {
       hasExpired = true
-      if (quest.failurePenalty) {
-        if (quest.failurePenalty.social?.controversyLevel) {
+      if (penalty) {
+        const socialPenalty = penalty.social as
+          | Record<string, unknown>
+          | undefined
+        if (socialPenalty?.controversyLevel) {
           // Deep clone before mutating
           nextState.social = { ...nextState.social }
-          const penalty = Number(quest.failurePenalty.social.controversyLevel)
-          const validPenalty = Number.isFinite(penalty) ? penalty : 0
+          const controversyDelta = Number(socialPenalty.controversyLevel)
+          const validPenalty = Number.isFinite(controversyDelta)
+            ? controversyDelta
+            : 0
           nextState.social.controversyLevel = clampControversyLevel(
             (nextState.social.controversyLevel || 0) + validPenalty
           )
         }
-        if (quest.failurePenalty.band?.harmony) {
+        const bandPenalty = penalty.band as Record<string, unknown> | undefined
+        if (bandPenalty?.harmony) {
           // Deep clone before mutating
           nextState.band = { ...nextState.band }
+          const harmonyDelta = Number(bandPenalty.harmony)
           nextState.band.harmony = clampBandHarmony(
-            (nextState.band.harmony ?? 1) + quest.failurePenalty.band.harmony
+            (nextState.band.harmony ?? 1) +
+              (Number.isFinite(harmonyDelta) ? harmonyDelta : 0)
           )
         }
       }

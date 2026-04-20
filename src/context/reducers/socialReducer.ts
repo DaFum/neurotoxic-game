@@ -1,11 +1,14 @@
+import type { GameState, SocialState } from '../../types/game'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
+import { getSafeUUID } from '../../utils/crypto'
 import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
   calculateFameLevel
 } from '../../utils/gameStateUtils'
+import { sanitizeSuccessToast } from './toastSanitizers'
 
 /**
  * Handles social update actions
@@ -13,7 +16,10 @@ import {
  * @param {Object} payload - Social updates
  * @returns {Object} Updated state
  */
-export const handleUpdateSocial = (state, payload) => {
+export const handleUpdateSocial = (
+  state: GameState,
+  payload: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
+): GameState => {
   let updates = payload
 
   // Support functional updates: updateSocial(prev => ...)
@@ -27,7 +33,10 @@ export const handleUpdateSocial = (state, payload) => {
 
   // Validate special fields
   if (updates.trend !== undefined) {
-    if (!ALLOWED_TRENDS.includes(updates.trend)) {
+    if (
+      typeof updates.trend !== 'string' ||
+      !(ALLOWED_TRENDS as readonly string[]).includes(updates.trend)
+    ) {
       logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
       delete updates.trend
     }
@@ -63,7 +72,10 @@ export const handleUpdateSocial = (state, payload) => {
   return { ...state, social: { ...state.social, ...updates } }
 }
 
-export const handleAddVenueBlacklist = (state, { venueId, toastId }) => {
+export const handleAddVenueBlacklist = (
+  state: GameState,
+  { venueId, toastId }: { venueId: string; toastId: string }
+): GameState => {
   let nextState = { ...state }
   // Intentional design: If loyalty is high enough (>= 30), loyal fans will defend the band
   // and prevent the venue from blacklisting them, at the cost of 15 loyalty points.
@@ -95,7 +107,10 @@ export const handleAddVenueBlacklist = (state, { venueId, toastId }) => {
   return nextState
 }
 
-export const handleMerchPress = (state, payload) => {
+export const handleMerchPress = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
     return state
@@ -158,40 +173,60 @@ export const handleMerchPress = (state, payload) => {
     const deltaFame = nextFame - currentFame
     const actualCost = currentMoney - nextMoney
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...successToast.options,
-          deltaLoyalty,
-          deltaControversy,
-          deltaHarmony,
-          deltaFame,
-          cost: actualCost
-        }
+    const safeToast = sanitizeSuccessToast(successToast, {
+      fallbackId: getSafeUUID(),
+      optionsPatch: {
+        deltaLoyalty,
+        deltaControversy,
+        deltaHarmony,
+        deltaFame,
+        cost: actualCost
       }
-    ]
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState
 }
 
-export const handlePirateBroadcast = (state, payload) => {
+export const handlePirateBroadcast = (
+  state: GameState,
+  payload: Record<string, unknown>
+): GameState => {
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')
     return state
   }
 
-  const cost = Number(payload.cost) || 0
+  const cost = Number(payload.cost)
   const fameGain = Number(payload.fameGain) || 0
   const zealotryGain = Number(payload.zealotryGain) || 0
   const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost) || 0
+  const harmonyCost = Number(payload.harmonyCost)
   const successToast = payload.successToast
 
-  const currentMoney = Number(state.player.money) || 0
-  const currentHarmony = Number(state.band.harmony) || 0
+  if (!Number.isFinite(cost) || cost < 0) {
+    logger.warn('GameState', 'Invalid pirate broadcast cost payload')
+    return state
+  }
+  if (!Number.isFinite(harmonyCost) || harmonyCost < 0) {
+    logger.warn('GameState', 'Invalid pirate broadcast harmonyCost payload')
+    return state
+  }
+
+  const currentMoney = Number(state.player.money)
+  const currentHarmony = Number(state.band.harmony)
+  if (
+    !Number.isFinite(currentMoney) ||
+    !Number.isFinite(currentHarmony) ||
+    currentMoney < 0 ||
+    currentHarmony < 0
+  ) {
+    logger.warn('GameState', 'Invalid player funds or harmony state')
+    return state
+  }
 
   if (state.social.lastPirateBroadcastDay === state.player.day) {
     logger.warn('GameState', 'Pirate broadcast already triggered today')
@@ -246,20 +281,19 @@ export const handlePirateBroadcast = (state, payload) => {
     const deltaHarmony = nextHarmony - currentHarmony
     const actualCost = currentMoney - nextMoney
 
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        options: {
-          ...successToast.options,
-          deltaFame,
-          deltaZealotry,
-          deltaControversy,
-          deltaHarmony,
-          cost: actualCost
-        }
+    const safeToast = sanitizeSuccessToast(successToast, {
+      fallbackId: getSafeUUID(),
+      optionsPatch: {
+        deltaFame,
+        deltaZealotry,
+        deltaControversy,
+        deltaHarmony,
+        cost: actualCost
       }
-    ]
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState

@@ -1,3 +1,5 @@
+import type { GameState } from '../../types/game'
+import type { UnknownRecord } from '../../types/game'
 import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { secureRandom } from '../../utils/crypto'
 import { validateCrisisEvent } from '../../utils/eventValidator'
@@ -15,8 +17,12 @@ import { hasStateItem } from '../../utils/gameStateUtils'
  * @param {string} [description] - Optionale Beschreibung, die dem Composite hinzugefügt wird.
  * @returns {object} Das erzeugte Composite-Objekt mit den kombinierten Effekten und einem angehängten Cooldown.
  */
-function createCooldownComposite(eventId, effects, description) {
-  const composite = {
+function createCooldownComposite(
+  eventId: string,
+  effects: UnknownRecord[],
+  description?: string
+): UnknownRecord {
+  const composite: UnknownRecord = {
     type: 'composite',
     effects: [...effects, { type: 'cooldown', eventId }]
   }
@@ -35,7 +41,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_bad_review.desc',
     trigger: 'post_gig',
     chance: 0.55,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 20 &&
       (gs.band?.harmony ?? 100) < 75 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_bad_review'),
@@ -90,7 +96,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_online_backlash.desc',
     trigger: 'post_gig',
     chance: 0.6,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 50 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_online_backlash'),
     options: [
@@ -145,7 +151,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_shadowban_scare.desc',
     trigger: 'travel',
     chance: 0.7,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 80 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_shadowban_scare'),
     options: [
@@ -201,7 +207,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_venue_cancels.desc',
     trigger: 'post_gig',
     chance: 0.5,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 65 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_venue_cancels'),
     options: [
@@ -256,7 +262,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_redemption_charity.desc',
     trigger: 'travel',
     chance: 0.3,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 40 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_redemption_charity'),
     options: [
@@ -295,7 +301,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_sponsor_ultimatum.desc',
     trigger: 'post_gig',
     chance: 0.8,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 80 &&
       (gs.social?.activeDeals?.length ?? 0) > 0 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_sponsor_ultimatum'),
@@ -351,7 +357,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_poor_performance.desc',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.lastGigStats?.score ?? 100) < 30 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_poor_performance'),
     options: [
@@ -397,7 +403,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_leaked_story.desc',
     trigger: 'travel',
     chance: 0.4,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 60 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_leaked_story'),
     options: [
@@ -427,7 +433,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_mass_unfollow.desc',
     trigger: 'post_gig',
     chance: 0.5,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 75 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_mass_unfollow'),
     options: [
@@ -449,7 +455,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_ego_clash.desc',
     trigger: 'travel',
     chance: 0.6,
-    condition: gs =>
+    condition: (gs: GameState) =>
       gs.social?.egoFocus != null &&
       (gs.band?.harmony ?? 100) < 40 &&
       !hasStateItem(gs.eventCooldowns, 'crisis_ego_clash'),
@@ -496,7 +502,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_notice_50.desc',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 50 &&
       !hasStateItem(gs.activeStoryFlags, 'saw_crisis_50'),
     options: [
@@ -522,7 +528,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_notice_80.desc',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 80 &&
       !hasStateItem(gs.activeStoryFlags, 'saw_crisis_80'),
     options: [
@@ -548,7 +554,7 @@ export const CRISIS_EVENTS = [
     description: 'events:crisis_notice_100.desc',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs =>
+    condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 100 &&
       !hasStateItem(gs.activeStoryFlags, 'saw_crisis_100'),
     options: [
@@ -575,7 +581,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     // The chance is explicitly set to the computed raidProbability from our new feature
     chance: 1.0,
-    condition: gs => {
+    condition: (gs: GameState) => {
       if ((gs.social?.zealotry ?? 0) === 0) return false
       if (hasStateItem(gs.eventCooldowns, 'crisis_police_raid_zealotry'))
         return false

@@ -19,6 +19,8 @@ import {
 } from './gameStateUtils'
 
 type RandomFn = () => number
+type BrandDeal =
+  typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
 
 interface SocialEngineGameState {
   player: {
@@ -49,8 +51,10 @@ interface SocialPostOption {
   category?: string
   badges?: string[]
   platform?: string
-  condition: (gameState: any) => boolean
-  resolve?: (gameState: SocialEngineGameState & { diceRoll: number }) => Record<string, unknown>
+  condition: (gameState: SocialEngineGameState) => boolean
+  resolve?: (
+    gameState: SocialEngineGameState & { diceRoll: number }
+  ) => Record<string, unknown>
   [key: string]: unknown
 }
 
@@ -153,6 +157,7 @@ export const generatePostOptions = (
   const postOptions = POST_OPTIONS as unknown as SocialPostOption[]
   for (let i = 0; i < postOptions.length; i++) {
     const opt = postOptions[i]
+    if (!opt) continue
 
     // Filter by cooldown if active
     if (isCooldownActive && COOLDOWN_BLOCKED_IDS.has(opt.id)) {
@@ -209,10 +214,12 @@ export const generatePostOptions = (
     // Force a specific commercial post or synthesize one
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
-      sponsorOpt._force = true
-      results.push(sponsorOpt)
-      // Remove in-place to avoid full array re-allocation
-      eligibleOptions.splice(sponsorIdx, 1)
+      if (sponsorOpt) {
+        sponsorOpt._force = true
+        results.push(sponsorOpt)
+        // Remove in-place to avoid full array re-allocation
+        eligibleOptions.splice(sponsorIdx, 1)
+      }
     }
   }
 
@@ -222,7 +229,10 @@ export const generatePostOptions = (
   // 3. Fill remaining slots to reach 3 total
   const needed = 3 - results.length
   for (let i = 0; i < needed && i < eligibleOptions.length; i++) {
-    results.push(eligibleOptions[i])
+    const opt = eligibleOptions[i]
+    if (opt) {
+      results.push(opt)
+    }
   }
 
   // 3a. Validate that exactly 3 options are available
@@ -249,8 +259,11 @@ export const generatePostOptions = (
   // 4. Return new array and objects without _weight and _force
   const finalResults: SocialPostOption[] = []
   for (let i = 0; i < results.length; i++) {
-    const { _weight, _force, ...rest } = results[i]
-    finalResults.push(rest)
+    const result = results[i]
+    if (result) {
+      const { _weight, _force, ...rest } = result
+      finalResults.push(rest)
+    }
   }
 
   return finalResults
@@ -459,12 +472,15 @@ export const applyReputationDecay = (
  * @param {Function} rng - Random number generator.
  * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
-export const generateDailyTrend = (rng: RandomFn = secureRandom): string => {
+export const generateDailyTrend = (
+  rng: RandomFn = secureRandom
+): (typeof ALLOWED_TRENDS)[number] => {
   // Weighted choice could go here, for now uniform random
   const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
   // Ensure valid index even if rng() === 1
   const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
-  return ALLOWED_TRENDS[safeIdx]
+  const trend = ALLOWED_TRENDS[safeIdx]
+  return trend ?? 'NEUTRAL'
 }
 
 /**
@@ -479,7 +495,13 @@ export const generateBrandName = (
   alignment: string,
   rng: RandomFn = secureRandom
 ): string => {
-  const pick = (arr: string[]): string => arr[Math.floor(rng() * arr.length)]
+  const pick = (arr: string[]): string => {
+    const idx = Math.max(
+      0,
+      Math.min(arr.length - 1, Math.floor(rng() * arr.length))
+    )
+    return arr[idx] ?? arr[0] ?? ''
+  }
 
   if (alignment === BRAND_ALIGNMENTS.EVIL) {
     const prefixes = [
@@ -611,7 +633,7 @@ export const calculateZealotryEffects = (
 export const generateBrandOffers = (
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
-): Array<Record<string, unknown>> => {
+): BrandDeal[] => {
   const social = gameState?.social || {}
   const band = gameState?.band || {}
   const reputation = social.brandReputation || {}
@@ -630,7 +652,7 @@ export const generateBrandOffers = (
   }
 
   // Filter available deals
-  const eligibleDeals: Array<Record<string, any>> = []
+  const eligibleDeals: BrandDeal[] = []
   for (const deal of BRAND_DEALS_BY_ID.values()) {
     // Check followers
     if (totalFollowers < deal.requirements.followers) continue
@@ -683,7 +705,7 @@ export const generateBrandOffers = (
   }
 
   // Pick up to 3 random offers, weighted by reputation
-  const offers = []
+  const offers: BrandDeal[] = []
 
   // Logic: Reputation increases the "chance" check.
   // Base chance 30%.
@@ -691,7 +713,7 @@ export const generateBrandOffers = (
   // Rep 50 -> +15% chance. Rep 100 -> +30% chance.
   // Negative reputation reduces chance? Assuming reputation is 0-100 based on validation, but logic might allow negative?
 
-  const pool = [...eligibleDeals]
+  const pool: BrandDeal[] = [...eligibleDeals]
 
   // Partial Fisher-Yates inline to lazily yield random items without a full array shuffle.
   // We only swap elements as we evaluate them, stopping as soon as 2 offers are found.
@@ -700,8 +722,17 @@ export const generateBrandOffers = (
 
   for (let i = n - 1; i >= 0 && found < 3; i--) {
     const j = Math.floor(rng() * (i + 1))
-    ;[pool[i], pool[j]] = [pool[j], pool[i]]
+    const a = pool[i]
+    const b = pool[j]
+    if (!a || !b) {
+      throw new StateError('Brand offer pool contained an invalid entry', {
+        meta: { i, j, poolLength: pool.length }
+      })
+    }
+    pool[i] = b
+    pool[j] = a
     const deal = pool[i]
+    if (!deal) continue
 
     const align = deal.alignment
     const rep = reputation[align] || 0
@@ -742,10 +773,12 @@ export const negotiateDeal = (
   rng: RandomFn = secureRandom
 ): {
   success: boolean
-  deal: (Record<string, unknown> & {
-    alignment?: string
-    offer: { upfront: number; perGig?: number; [key: string]: unknown }
-  }) | null
+  deal:
+    | (Record<string, unknown> & {
+        alignment?: string
+        offer: { upfront: number; perGig?: number; [key: string]: unknown }
+      })
+    | null
   feedback: string
   status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
 } => {
