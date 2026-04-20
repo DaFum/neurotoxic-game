@@ -54,10 +54,10 @@ jobs:
               created_at: r.submitted_at || r.created_at
             }));
 
-            // 3. Eigene Bot-Kommentare filtern, Null-User abfangen und nach Erstellungsdatum sortieren
+            // 3. Kommentare filtern: Null-User abfangen, BOTS BEHALTEN, nur den Tracker-Bot selbst ignorieren
             const allComments = [...issueComments, ...reviewComments, ...reviewSummaries]
-              .filter(comment => comment.user && comment.user.type !== "Bot") // Andere Bots und gelöschte Nutzer ignorieren
-              .filter(comment => comment.body && !comment.body.includes(marker)) // Den Bot selbst ignorieren
+              .filter(comment => comment.user) // Alle existierenden Nutzer und Bots zulassen
+              .filter(comment => comment.body && !comment.body.includes(marker)) // Den Tracker-Bot selbst ignorieren
               .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
             // 4. Den kopierbaren Block formatieren
@@ -73,7 +73,6 @@ jobs:
 
             const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Wird automatisch aktualisiert, sobald sich Kommentare ändern.*\n\n\`\`\`text\n`;
             const footer = `\n\`\`\`\n`;
-
             const MAX_COMMENT_SIZE = 65536;
             const extraText = "\n... (truncated)";
             const fixedLength = marker.length + header.length + footer.length;
@@ -113,7 +112,9 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 6. Workflow-Status basierend auf ungelösten Review-Threads via GraphQL setzen
+            // 6. Workflow-Status auswerten
+
+            // 6.a) Ungelöste Code-Review-Threads via GraphQL ermitteln
             let unresolvedCount = 0;
             let hasNextPage = true;
             let cursor = null;
@@ -130,14 +131,6 @@ jobs:
                         }
                         nodes {
                           isResolved
-                          comments(first: 1) {
-                            nodes {
-                              author {
-                                __typename
-                                login
-                              }
-                            }
-                          }
                         }
                       }
                     }
@@ -147,24 +140,23 @@ jobs:
               const result = await github.graphql(query, { owner, repo, prNumber, cursor });
               const threads = result.repository.pullRequest.reviewThreads;
 
-              // Filter ungelöste Threads, bei denen der Autor des ersten Kommentars kein Bot ist
-              unresolvedCount += threads.nodes.filter(t => {
-                if (t.isResolved) return false;
-                const firstComment = t.comments.nodes[0];
-                const author = firstComment ? firstComment.author : null;
-
-                if (author && author.__typename === 'Bot') {
-                  return false; // Ist ein Bot-Thread, also ignorieren
-                }
-                return true;
-              }).length;
+              // Alle ungelösten Threads zählen (inklusive Threads von Bots)
+              unresolvedCount += threads.nodes.filter(t => !t.isResolved).length;
 
               hasNextPage = threads.pageInfo.hasNextPage;
               cursor = threads.pageInfo.endCursor;
             }
 
-            if (unresolvedCount > 0) {
-              core.setFailed(`Der Workflow blockiert den PR, da aktuell ${unresolvedCount} ungelöste(r) Review-Thread(s) existieren.`);
+            // 6.b) Allgemeine Issue-Kommentare zählen (die keine Code-Reviews sind)
+            // Diese haben keinen "Resolved"-Status und müssen gelöscht werden
+            const activeIssueComments = issueComments
+              .filter(c => c.user)
+              .filter(c => c.body && !c.body.includes(marker));
+
+            const totalBlockers = unresolvedCount + activeIssueComments.length;
+
+            if (totalBlockers > 0) {
+              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${unresolvedCount} ungelöste(r) Review-Thread(s) und ${activeIssueComments.length} offene(r) allgemeine(r) Kommentar(e).`);
             } else {
-              console.log("Keine ungelösten Review-Threads vorhanden. Workflow erfolgreich.");
+              console.log("Keine blockierenden Kommentare vorhanden. Workflow erfolgreich.");
             }
