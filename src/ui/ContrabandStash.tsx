@@ -118,6 +118,7 @@ export const ContrabandStash = ({
               <button
                 key={m.id}
                 type='button'
+                aria-pressed={selectedMember === m.id}
                 onClick={makeSelectMember(m.id)}
                 className={`px-4 py-2 border font-mono text-sm transition-colors ${
                   selectedMember === m.id
