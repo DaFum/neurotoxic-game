@@ -1067,10 +1067,7 @@
     },
     {
       "file": ".agents/skills/skilltest/scripts/validate-skills.mjs",
-      "exports": [
-        "validateSkills",
-        "formatReport"
-      ],
+      "exports": ["validateSkills", "formatReport"],
       "classes": []
     },
     {
@@ -1088,17 +1085,12 @@
     },
     {
       "file": ".claude/skills/playwright-screenshot/scripts/browser-launcher.js",
-      "exports": [
-        "launchBrowserWithFallback",
-        "findCachedBrowser"
-      ],
+      "exports": ["launchBrowserWithFallback", "findCachedBrowser"],
       "classes": []
     },
     {
       "file": ".claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js",
-      "exports": [
-        "BASE_STATE"
-      ],
+      "exports": ["BASE_STATE"],
       "classes": []
     },
     {
@@ -1128,503 +1120,343 @@
     },
     {
       "file": ".claude/skills/skilltest/scripts/validate-skills.mjs",
-      "exports": [
-        "validateSkills",
-        "formatReport"
-      ],
+      "exports": ["validateSkills", "formatReport"],
       "classes": []
     },
     {
       "file": "api/leaderboard/song.js",
-      "exports": [
-        "default:async"
-      ],
+      "exports": ["default:async"],
       "classes": []
     },
     {
       "file": "api/leaderboard/stats.js",
-      "exports": [
-        "default:async"
-      ],
+      "exports": ["default:async"],
       "classes": []
     },
     {
       "file": "lib/apiUtils.js",
-      "exports": [
-        "normalizeIp"
-      ],
+      "exports": ["normalizeIp"],
       "classes": []
     },
     {
       "file": "lib/redis.js",
-      "exports": [
-        "default:client"
-      ],
+      "exports": ["default:client"],
       "classes": []
     },
     {
       "file": "playwright.config.js",
-      "exports": [
-        "default:defineConfig"
-      ],
+      "exports": ["default:defineConfig"],
       "classes": []
     },
     {
       "file": "scripts/game-balance-simulation.mjs",
-      "exports": [
-        "SIMULATION_CONSTANTS",
-        "SCENARIOS",
-        "runSimulationSuite"
-      ],
+      "exports": ["SIMULATION_CONSTANTS", "SCENARIOS", "runSimulationSuite"],
       "classes": []
     },
     {
       "file": "scripts/utils/parallelism.mjs",
-      "exports": [
-        "computeWorkerCount"
-      ],
+      "exports": ["computeWorkerCount"],
       "classes": []
     },
     {
       "file": "src/App.jsx",
-      "exports": [
-        "default:function"
-      ],
+      "exports": ["default:function"],
       "classes": []
     },
     {
       "file": "src/components/ChatterOverlay.jsx",
-      "exports": [
-        "ChatterOverlay"
-      ],
+      "exports": ["ChatterOverlay"],
       "classes": []
     },
     {
       "file": "src/components/GigHUD.jsx",
-      "exports": [
-        "GigHUD"
-      ],
+      "exports": ["GigHUD"],
       "classes": []
     },
     {
       "file": "src/components/HecklerOverlay.jsx",
-      "exports": [
-        "HecklerOverlay"
-      ],
+      "exports": ["HecklerOverlay"],
       "classes": []
     },
     {
       "file": "src/components/MapConnection.jsx",
-      "exports": [
-        "MapConnection"
-      ],
+      "exports": ["MapConnection"],
       "classes": []
     },
     {
       "file": "src/components/MapNode.jsx",
-      "exports": [
-        "MapNode"
-      ],
+      "exports": ["MapNode"],
       "classes": []
     },
     {
       "file": "src/components/MinigameSceneFrame.jsx",
-      "exports": [
-        "MinigameSceneFrame"
-      ],
+      "exports": ["MinigameSceneFrame"],
       "classes": []
     },
     {
       "file": "src/components/PixiStage.jsx",
-      "exports": [
-        "PixiStage"
-      ],
+      "exports": ["PixiStage"],
       "classes": []
     },
     {
       "file": "src/components/PixiStageController.js",
-      "exports": [
-        "createPixiStageController"
-      ],
-      "classes": [
-        "size",
-        "PixiStageController"
-      ]
+      "exports": ["createPixiStageController"],
+      "classes": ["size", "PixiStageController"]
     },
     {
       "file": "src/components/SceneRouter.jsx",
-      "exports": [
-        "SceneRouter"
-      ],
+      "exports": ["SceneRouter"],
       "classes": []
     },
     {
       "file": "src/components/ToggleRadio.jsx",
-      "exports": [
-        "ToggleRadio"
-      ],
+      "exports": ["ToggleRadio"],
       "classes": []
     },
     {
       "file": "src/components/TutorialManager.jsx",
-      "exports": [
-        "TutorialManager"
-      ],
+      "exports": ["TutorialManager"],
       "classes": []
     },
     {
       "file": "src/components/clinic/ClinicHeader.jsx",
-      "exports": [
-        "ClinicHeader"
-      ],
+      "exports": ["ClinicHeader"],
       "classes": []
     },
     {
       "file": "src/components/clinic/ClinicMemberCard.jsx",
-      "exports": [
-        "ClinicMemberCard"
-      ],
+      "exports": ["ClinicMemberCard"],
       "classes": []
     },
     {
       "file": "src/components/hud/ComboDisplay.jsx",
-      "exports": [
-        "ComboDisplay"
-      ],
+      "exports": ["ComboDisplay"],
       "classes": []
     },
     {
       "file": "src/components/hud/ControlsHint.jsx",
-      "exports": [
-        "ControlsHint"
-      ],
+      "exports": ["ControlsHint"],
       "classes": []
     },
     {
       "file": "src/components/hud/GameOverOverlay.jsx",
-      "exports": [
-        "GameOverOverlay"
-      ],
+      "exports": ["GameOverOverlay"],
       "classes": []
     },
     {
       "file": "src/components/hud/HealthBar.jsx",
-      "exports": [
-        "HealthBar"
-      ],
+      "exports": ["HealthBar"],
       "classes": []
     },
     {
       "file": "src/components/hud/LaneInputArea.jsx",
-      "exports": [
-        "LaneInputArea"
-      ],
+      "exports": ["LaneInputArea"],
       "classes": []
     },
     {
       "file": "src/components/hud/OverloadMeter.jsx",
-      "exports": [
-        "OverloadMeter"
-      ],
+      "exports": ["OverloadMeter"],
       "classes": []
     },
     {
       "file": "src/components/hud/OverloadWarning.jsx",
-      "exports": [
-        "OverloadWarning"
-      ],
+      "exports": ["OverloadWarning"],
       "classes": []
     },
     {
       "file": "src/components/hud/PauseButton.jsx",
-      "exports": [
-        "PauseButton"
-      ],
+      "exports": ["PauseButton"],
       "classes": []
     },
     {
       "file": "src/components/hud/ScoreDisplay.jsx",
-      "exports": [
-        "ScoreDisplay"
-      ],
+      "exports": ["ScoreDisplay"],
       "classes": []
     },
     {
       "file": "src/components/hud/StatsOverlay.jsx",
-      "exports": [
-        "StatsOverlay"
-      ],
+      "exports": ["StatsOverlay"],
       "classes": []
     },
     {
       "file": "src/components/hud/ToxicHazardTicker.jsx",
-      "exports": [
-        "ToxicHazardTicker"
-      ],
+      "exports": ["ToxicHazardTicker"],
       "classes": []
     },
     {
       "file": "src/components/hud/ToxicModeFlash.jsx",
-      "exports": [
-        "ToxicModeFlash"
-      ],
+      "exports": ["ToxicModeFlash"],
       "classes": []
     },
     {
       "file": "src/components/minigames/amp/AmpControls.jsx",
-      "exports": [
-        "AmpControls"
-      ],
+      "exports": ["AmpControls"],
       "classes": []
     },
     {
       "file": "src/components/minigames/amp/AmpHUD.jsx",
-      "exports": [
-        "AmpHUD"
-      ],
+      "exports": ["AmpHUD"],
       "classes": []
     },
     {
       "file": "src/components/minigames/gig/AudioLockedOverlay.jsx",
-      "exports": [
-        "AudioLockedOverlay"
-      ],
+      "exports": ["AudioLockedOverlay"],
       "classes": []
     },
     {
       "file": "src/components/minigames/gig/BandMembersLayer.jsx",
-      "exports": [
-        "BandMembersLayer"
-      ],
+      "exports": ["BandMembersLayer"],
       "classes": []
     },
     {
       "file": "src/components/minigames/gig/PauseOverlay.jsx",
-      "exports": [
-        "PauseOverlay"
-      ],
+      "exports": ["PauseOverlay"],
       "classes": []
     },
     {
       "file": "src/components/minigames/roadie/RoadieControls.jsx",
-      "exports": [
-        "RoadieControls"
-      ],
+      "exports": ["RoadieControls"],
       "classes": []
     },
     {
       "file": "src/components/minigames/roadie/RoadieHUD.jsx",
-      "exports": [
-        "RoadieHUD"
-      ],
+      "exports": ["RoadieHUD"],
       "classes": []
     },
     {
       "file": "src/components/minigames/tourbus/TourbusControls.jsx",
-      "exports": [
-        "TourbusControls"
-      ],
+      "exports": ["TourbusControls"],
       "classes": []
     },
     {
       "file": "src/components/minigames/tourbus/TourbusHUD.jsx",
-      "exports": [
-        "TourbusHUD"
-      ],
+      "exports": ["TourbusHUD"],
       "classes": []
     },
     {
       "file": "src/components/overworld/TravelingVan.jsx",
-      "exports": [
-        "TravelingVan"
-      ],
+      "exports": ["TravelingVan"],
       "classes": []
     },
     {
       "file": "src/components/postGig/CompletePhase.jsx",
-      "exports": [
-        "CompletePhase"
-      ],
+      "exports": ["CompletePhase"],
       "classes": []
     },
     {
       "file": "src/components/postGig/DealCard.jsx",
-      "exports": [
-        "DealCard"
-      ],
+      "exports": ["DealCard"],
       "classes": []
     },
     {
       "file": "src/components/postGig/DealsPhase.jsx",
-      "exports": [
-        "DealsPhase"
-      ],
+      "exports": ["DealsPhase"],
       "classes": []
     },
     {
       "file": "src/components/postGig/FinancialColumn.jsx",
-      "exports": [
-        "FinancialColumn"
-      ],
+      "exports": ["FinancialColumn"],
       "classes": []
     },
     {
       "file": "src/components/postGig/FinancialList.jsx",
-      "exports": [
-        "FinancialList"
-      ],
+      "exports": ["FinancialList"],
       "classes": []
     },
     {
       "file": "src/components/postGig/NegotiationModal.jsx",
-      "exports": [
-        "NegotiationModal"
-      ],
+      "exports": ["NegotiationModal"],
       "classes": []
     },
     {
       "file": "src/components/postGig/NetResult.jsx",
-      "exports": [
-        "NetResult"
-      ],
+      "exports": ["NetResult"],
       "classes": []
     },
     {
       "file": "src/components/postGig/ReportPhase.jsx",
-      "exports": [
-        "ReportPhase"
-      ],
+      "exports": ["ReportPhase"],
       "classes": []
     },
     {
       "file": "src/components/postGig/SideEffectsPreview.jsx",
-      "exports": [
-        "SideEffectsPreview"
-      ],
+      "exports": ["SideEffectsPreview"],
       "classes": []
     },
     {
       "file": "src/components/postGig/SideEffectsSummary.jsx",
-      "exports": [
-        "SideEffectsSummary"
-      ],
+      "exports": ["SideEffectsSummary"],
       "classes": []
     },
     {
       "file": "src/components/postGig/SocialOptionButton.jsx",
-      "exports": [
-        "SocialOptionButton"
-      ],
+      "exports": ["SocialOptionButton"],
       "classes": []
     },
     {
       "file": "src/components/postGig/SocialPhase.jsx",
-      "exports": [
-        "SocialPhase"
-      ],
+      "exports": ["SocialPhase"],
       "classes": []
     },
     {
       "file": "src/components/postGig/ZealotryGauge.jsx",
-      "exports": [
-        "ZealotryGauge"
-      ],
+      "exports": ["ZealotryGauge"],
       "classes": []
     },
     {
       "file": "src/components/pregig/GigModifiersBlock.jsx",
-      "exports": [
-        "GigModifiersBlock"
-      ],
+      "exports": ["GigModifiersBlock"],
       "classes": []
     },
     {
       "file": "src/components/pregig/PreGigHeader.jsx",
-      "exports": [
-        "PreGigHeader"
-      ],
+      "exports": ["PreGigHeader"],
       "classes": []
     },
     {
       "file": "src/components/pregig/PreGigStartButton.jsx",
-      "exports": [
-        "PreGigStartButton"
-      ],
+      "exports": ["PreGigStartButton"],
       "classes": []
     },
     {
       "file": "src/components/pregig/SetlistBlock.jsx",
-      "exports": [
-        "SetlistBlock"
-      ],
+      "exports": ["SetlistBlock"],
       "classes": []
     },
     {
       "file": "src/components/stage/AmpStageController.js",
-      "exports": [
-        "AmpStageController",
-        "createAmpStageController"
-      ],
-      "classes": [
-        "AmpStageController"
-      ]
+      "exports": ["AmpStageController", "createAmpStageController"],
+      "classes": ["AmpStageController"]
     },
     {
       "file": "src/components/stage/BaseStageController.js",
-      "exports": [
-        "BaseStageController"
-      ],
-      "classes": [
-        "BaseStageController",
-        "cleanup",
-        "logic"
-      ]
+      "exports": ["BaseStageController"],
+      "classes": ["BaseStageController", "cleanup", "logic"]
     },
     {
       "file": "src/components/stage/CrowdManager.js",
-      "exports": [
-        "CrowdManager"
-      ],
-      "classes": [
-        "CrowdManager"
-      ]
+      "exports": ["CrowdManager"],
+      "classes": ["CrowdManager"]
     },
     {
       "file": "src/components/stage/EffectManager.js",
-      "exports": [
-        "EffectManager"
-      ],
-      "classes": [
-        "EffectManager"
-      ]
+      "exports": ["EffectManager"],
+      "classes": ["EffectManager"]
     },
     {
       "file": "src/components/stage/EffectTextureManager.js",
-      "exports": [
-        "EffectTextureManager"
-      ],
-      "classes": [
-        "EffectTextureManager"
-      ]
+      "exports": ["EffectTextureManager"],
+      "classes": ["EffectTextureManager"]
     },
     {
       "file": "src/components/stage/LaneManager.js",
-      "exports": [
-        "LaneManager"
-      ],
-      "classes": [
-        "LaneRenderer",
-        "LaneManager"
-      ]
+      "exports": ["LaneManager"],
+      "classes": ["LaneRenderer", "LaneManager"]
     },
     {
       "file": "src/components/stage/NoteManager.js",
-      "exports": [
-        "NoteManager"
-      ],
-      "classes": [
-        "NoteManager"
-      ]
+      "exports": ["NoteManager"],
+      "classes": ["NoteManager"]
     },
     {
       "file": "src/components/stage/NoteSpritePool.js",
@@ -1638,37 +1470,22 @@
         "NOTE_LIGHTNING_LANE_INDEX",
         "NoteSpritePool"
       ],
-      "classes": [
-        "NoteSpritePool"
-      ]
+      "classes": ["NoteSpritePool"]
     },
     {
       "file": "src/components/stage/RoadieStageController.js",
-      "exports": [
-        "createRoadieStageController"
-      ],
-      "classes": [
-        "RoadieStageController"
-      ]
+      "exports": ["createRoadieStageController"],
+      "classes": ["RoadieStageController"]
     },
     {
       "file": "src/components/stage/TourbusStageController.js",
-      "exports": [
-        "createTourbusStageController"
-      ],
-      "classes": [
-        "TourbusStageController"
-      ]
+      "exports": ["createTourbusStageController"],
+      "classes": ["TourbusStageController"]
     },
     {
       "file": "src/components/stage/pixiAppTeardown.js",
-      "exports": [
-        "isBenignDestroyError",
-        "destroyPixiApp"
-      ],
-      "classes": [
-        "or"
-      ]
+      "exports": ["isBenignDestroyError", "destroyPixiApp"],
+      "classes": ["or"]
     },
     {
       "file": "src/components/stage/utils.js",
@@ -1749,9 +1566,7 @@
     },
     {
       "file": "src/context/actionTypes.js",
-      "exports": [
-        "ActionTypes"
-      ],
+      "exports": ["ActionTypes"],
       "classes": []
     },
     {
@@ -1769,10 +1584,7 @@
     },
     {
       "file": "src/context/gameReducer.js",
-      "exports": [
-        "gameReducer",
-        "ActionTypes"
-      ],
+      "exports": ["gameReducer", "ActionTypes"],
       "classes": []
     },
     {
@@ -1848,10 +1660,7 @@
     },
     {
       "file": "src/context/reducers/playerReducer.js",
-      "exports": [
-        "handleUpdatePlayer",
-        "playerReducer"
-      ],
+      "exports": ["handleUpdatePlayer", "playerReducer"],
       "classes": []
     },
     {
@@ -1866,9 +1675,7 @@
     },
     {
       "file": "src/context/reducers/sceneReducer.js",
-      "exports": [
-        "handleChangeScene"
-      ],
+      "exports": ["handleChangeScene"],
       "classes": []
     },
     {
@@ -1898,49 +1705,32 @@
     },
     {
       "file": "src/context/reducers/tradeReducer.js",
-      "exports": [
-        "handleTradeVoidItem"
-      ],
+      "exports": ["handleTradeVoidItem"],
       "classes": []
     },
     {
       "file": "src/data/brandDeals.js",
-      "exports": [
-        "BRAND_DEALS",
-        "BRAND_DEALS_BY_ID"
-      ],
+      "exports": ["BRAND_DEALS", "BRAND_DEALS_BY_ID"],
       "classes": []
     },
     {
       "file": "src/data/characters.js",
-      "exports": [
-        "CHARACTERS"
-      ],
+      "exports": ["CHARACTERS"],
       "classes": []
     },
     {
       "file": "src/data/chatter/index.js",
-      "exports": [
-        "getRandomChatter",
-        "CHATTER_DB",
-        "ALLOWED_DEFAULT_SCENES"
-      ],
+      "exports": ["getRandomChatter", "CHATTER_DB", "ALLOWED_DEFAULT_SCENES"],
       "classes": []
     },
     {
       "file": "src/data/chatter/standardChatter.js",
-      "exports": [
-        "CHATTER_DB",
-        "ALLOWED_DEFAULT_SCENES"
-      ],
+      "exports": ["CHATTER_DB", "ALLOWED_DEFAULT_SCENES"],
       "classes": []
     },
     {
       "file": "src/data/chatter/venueChatter.js",
-      "exports": [
-        "VENUE_CHATTER_DB",
-        "VENUE_CHATTER_LOOKUP"
-      ],
+      "exports": ["VENUE_CHATTER_DB", "VENUE_CHATTER_LOOKUP"],
       "classes": []
     },
     {
@@ -1956,100 +1746,72 @@
     },
     {
       "file": "src/data/events/band.js",
-      "exports": [
-        "BAND_EVENTS"
-      ],
+      "exports": ["BAND_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/consequences.js",
-      "exports": [
-        "CONSEQUENCE_EVENTS"
-      ],
+      "exports": ["CONSEQUENCE_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/constants.js",
-      "exports": [
-        "EVENT_STRINGS"
-      ],
+      "exports": ["EVENT_STRINGS"],
       "classes": []
     },
     {
       "file": "src/data/events/crisis.js",
-      "exports": [
-        "CRISIS_EVENTS"
-      ],
+      "exports": ["CRISIS_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/financial.js",
-      "exports": [
-        "FINANCIAL_EVENTS"
-      ],
+      "exports": ["FINANCIAL_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/gig.js",
-      "exports": [
-        "GIG_EVENTS"
-      ],
+      "exports": ["GIG_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/index.js",
-      "exports": [
-        "EVENTS_DB"
-      ],
+      "exports": ["EVENTS_DB"],
       "classes": []
     },
     {
       "file": "src/data/events/quests.js",
-      "exports": [
-        "QUEST_EVENTS"
-      ],
+      "exports": ["QUEST_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/relationshipEvents.js",
-      "exports": [
-        "RELATIONSHIP_EVENTS"
-      ],
+      "exports": ["RELATIONSHIP_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/special.js",
-      "exports": [
-        "SPECIAL_EVENTS"
-      ],
+      "exports": ["SPECIAL_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/events/transport.js",
-      "exports": [
-        "TRANSPORT_EVENTS"
-      ],
+      "exports": ["TRANSPORT_EVENTS"],
       "classes": []
     },
     {
       "file": "src/data/hqItems.js",
-      "exports": [
-        "HQ_ITEMS"
-      ],
+      "exports": ["HQ_ITEMS"],
       "classes": []
     },
     {
       "file": "src/data/platforms.js",
-      "exports": [
-        "SOCIAL_PLATFORMS"
-      ],
+      "exports": ["SOCIAL_PLATFORMS"],
       "classes": []
     },
     {
       "file": "src/data/postOptions.js",
-      "exports": [
-        "POST_OPTIONS"
-      ],
+      "exports": ["POST_OPTIONS"],
       "classes": []
     },
     {
@@ -2063,10 +1825,7 @@
     },
     {
       "file": "src/data/socialTrends.js",
-      "exports": [
-        "ALLOWED_TRENDS",
-        "ALLOWED_TRENDS_SET"
-      ],
+      "exports": ["ALLOWED_TRENDS", "ALLOWED_TRENDS_SET"],
       "classes": []
     },
     {
@@ -2081,23 +1840,17 @@
     },
     {
       "file": "src/data/upgradeCatalog.js",
-      "exports": [
-        "getUnifiedUpgradeCatalog"
-      ],
+      "exports": ["getUnifiedUpgradeCatalog"],
       "classes": []
     },
     {
       "file": "src/data/venues.js",
-      "exports": [
-        "ALL_VENUES"
-      ],
+      "exports": ["ALL_VENUES"],
       "classes": []
     },
     {
       "file": "src/hooks/buildQuestsProps.js",
-      "exports": [
-        "buildQuestsProps"
-      ],
+      "exports": ["buildQuestsProps"],
       "classes": []
     },
     {
@@ -2120,9 +1873,7 @@
     },
     {
       "file": "src/hooks/minigames/useAmpLogic.js",
-      "exports": [
-        "useAmpLogic"
-      ],
+      "exports": ["useAmpLogic"],
       "classes": []
     },
     {
@@ -2155,44 +1906,32 @@
     },
     {
       "file": "src/hooks/rhythmGame/useRhythmGameAudio.js",
-      "exports": [
-        "useRhythmGameAudio"
-      ],
+      "exports": ["useRhythmGameAudio"],
       "classes": []
     },
     {
       "file": "src/hooks/rhythmGame/useRhythmGameInput.js",
-      "exports": [
-        "useRhythmGameInput"
-      ],
+      "exports": ["useRhythmGameInput"],
       "classes": []
     },
     {
       "file": "src/hooks/rhythmGame/useRhythmGameLoop.js",
-      "exports": [
-        "useRhythmGameLoop"
-      ],
+      "exports": ["useRhythmGameLoop"],
       "classes": []
     },
     {
       "file": "src/hooks/rhythmGame/useRhythmGameScoring.js",
-      "exports": [
-        "useRhythmGameScoring"
-      ],
+      "exports": ["useRhythmGameScoring"],
       "classes": []
     },
     {
       "file": "src/hooks/rhythmGame/useRhythmGameState.js",
-      "exports": [
-        "useRhythmGameState"
-      ],
+      "exports": ["useRhythmGameState"],
       "classes": []
     },
     {
       "file": "src/hooks/useArrivalLogic.js",
-      "exports": [
-        "useArrivalLogic"
-      ],
+      "exports": ["useArrivalLogic"],
       "classes": []
     },
     {
@@ -2208,44 +1947,32 @@
     },
     {
       "file": "src/hooks/useBandHQModal.js",
-      "exports": [
-        "useBandHQModal"
-      ],
+      "exports": ["useBandHQModal"],
       "classes": []
     },
     {
       "file": "src/hooks/useBloodBank.js",
-      "exports": [
-        "useBloodBank"
-      ],
+      "exports": ["useBloodBank"],
       "classes": []
     },
     {
       "file": "src/hooks/useChatterLogic.js",
-      "exports": [
-        "useChatterLogic"
-      ],
+      "exports": ["useChatterLogic"],
       "classes": []
     },
     {
       "file": "src/hooks/useClinicLogic.js",
-      "exports": [
-        "useClinicLogic"
-      ],
+      "exports": ["useClinicLogic"],
       "classes": []
     },
     {
       "file": "src/hooks/useContrabandStash.js",
-      "exports": [
-        "useContrabandStash"
-      ],
+      "exports": ["useContrabandStash"],
       "classes": []
     },
     {
       "file": "src/hooks/useDealNegotiation.js",
-      "exports": [
-        "useDealNegotiation"
-      ],
+      "exports": ["useDealNegotiation"],
       "classes": []
     },
     {
@@ -2260,9 +1987,7 @@
     },
     {
       "file": "src/hooks/useGigInput.js",
-      "exports": [
-        "useGigInput"
-      ],
+      "exports": ["useGigInput"],
       "classes": []
     },
     {
@@ -2278,17 +2003,12 @@
     },
     {
       "file": "src/hooks/useMerchPress.js",
-      "exports": [
-        "useMerchPress"
-      ],
+      "exports": ["useMerchPress"],
       "classes": []
     },
     {
       "file": "src/hooks/usePirateRadio.js",
-      "exports": [
-        "PIRATE_RADIO_CONFIG",
-        "usePirateRadio"
-      ],
+      "exports": ["PIRATE_RADIO_CONFIG", "usePirateRadio"],
       "classes": []
     },
     {
@@ -2302,419 +2022,287 @@
     },
     {
       "file": "src/hooks/useQuestsModal.js",
-      "exports": [
-        "useQuestsModal"
-      ],
+      "exports": ["useQuestsModal"],
       "classes": []
     },
     {
       "file": "src/hooks/useRhythmGameLogic.js",
-      "exports": [
-        "useRhythmGameLogic"
-      ],
+      "exports": ["useRhythmGameLogic"],
       "classes": []
     },
     {
       "file": "src/hooks/useSettingsActions.js",
-      "exports": [
-        "useSettingsActions"
-      ],
+      "exports": ["useSettingsActions"],
       "classes": []
     },
     {
       "file": "src/hooks/useTravelLogic.js",
-      "exports": [
-        "useTravelLogic"
-      ],
+      "exports": ["useTravelLogic"],
       "classes": []
     },
     {
       "file": "src/hooks/useTutorial.js",
-      "exports": [
-        "TUTORIAL_STEPS",
-        "TOTAL_STEPS",
-        "useTutorial"
-      ],
+      "exports": ["TUTORIAL_STEPS", "TOTAL_STEPS", "useTutorial"],
       "classes": []
     },
     {
       "file": "src/i18n.js",
-      "exports": [
-        "default:i18n"
-      ],
+      "exports": ["default:i18n"],
       "classes": []
     },
     {
       "file": "src/scenes/AmpCalibrationScene.jsx",
-      "exports": [
-        "AmpCalibrationScene",
-        "default:AmpCalibrationScene"
-      ],
+      "exports": ["AmpCalibrationScene", "default:AmpCalibrationScene"],
       "classes": []
     },
     {
       "file": "src/scenes/ClinicScene.jsx",
-      "exports": [
-        "ClinicScene",
-        "default:ClinicScene"
-      ],
+      "exports": ["ClinicScene", "default:ClinicScene"],
       "classes": []
     },
     {
       "file": "src/scenes/Credits.jsx",
-      "exports": [
-        "Credits",
-        "default:Credits"
-      ],
+      "exports": ["Credits", "default:Credits"],
       "classes": []
     },
     {
       "file": "src/scenes/GameOver.jsx",
-      "exports": [
-        "GameOver",
-        "default:GameOver"
-      ],
+      "exports": ["GameOver", "default:GameOver"],
       "classes": []
     },
     {
       "file": "src/scenes/Gig.jsx",
-      "exports": [
-        "Gig",
-        "default:Gig"
-      ],
+      "exports": ["Gig", "default:Gig"],
       "classes": []
     },
     {
       "file": "src/scenes/IntroVideo.jsx",
-      "exports": [
-        "IntroVideo",
-        "default:IntroVideo"
-      ],
+      "exports": ["IntroVideo", "default:IntroVideo"],
       "classes": []
     },
     {
       "file": "src/scenes/KabelsalatScene.jsx",
-      "exports": [
-        "KabelsalatScene",
-        "default:KabelsalatScene"
-      ],
+      "exports": ["KabelsalatScene", "default:KabelsalatScene"],
       "classes": []
     },
     {
       "file": "src/scenes/MainMenu.jsx",
-      "exports": [
-        "MainMenu"
-      ],
+      "exports": ["MainMenu"],
       "classes": []
     },
     {
       "file": "src/scenes/Overworld.jsx",
-      "exports": [
-        "Overworld",
-        "default:Overworld"
-      ],
+      "exports": ["Overworld", "default:Overworld"],
       "classes": []
     },
     {
       "file": "src/scenes/PostGig.jsx",
-      "exports": [
-        "PostGig",
-        "default:PostGig"
-      ],
+      "exports": ["PostGig", "default:PostGig"],
       "classes": []
     },
     {
       "file": "src/scenes/PreGig.jsx",
-      "exports": [
-        "_resetLastMinigameFallback",
-        "PreGig",
-        "default:PreGig"
-      ],
+      "exports": ["_resetLastMinigameFallback", "PreGig", "default:PreGig"],
       "classes": []
     },
     {
       "file": "src/scenes/RoadieRunScene.jsx",
-      "exports": [
-        "RoadieRunScene",
-        "default:RoadieRunScene"
-      ],
+      "exports": ["RoadieRunScene", "default:RoadieRunScene"],
       "classes": []
     },
     {
       "file": "src/scenes/Settings.jsx",
-      "exports": [
-        "Settings",
-        "default:Settings"
-      ],
+      "exports": ["Settings", "default:Settings"],
       "classes": []
     },
     {
       "file": "src/scenes/TourbusScene.jsx",
-      "exports": [
-        "TourbusScene",
-        "default:TourbusScene"
-      ],
+      "exports": ["TourbusScene", "default:TourbusScene"],
       "classes": []
     },
     {
       "file": "src/scenes/credits/CreditEntry.jsx",
-      "exports": [
-        "CreditEntry"
-      ],
+      "exports": ["CreditEntry"],
       "classes": []
     },
     {
       "file": "src/scenes/credits/CreditFooter.jsx",
-      "exports": [
-        "CreditFooter"
-      ],
+      "exports": ["CreditFooter"],
       "classes": []
     },
     {
       "file": "src/scenes/credits/CreditHeader.jsx",
-      "exports": [
-        "CreditHeader"
-      ],
+      "exports": ["CreditHeader"],
       "classes": []
     },
     {
       "file": "src/scenes/gameover/GameOverBackground.jsx",
-      "exports": [
-        "GameOverBackground"
-      ],
+      "exports": ["GameOverBackground"],
       "classes": []
     },
     {
       "file": "src/scenes/gameover/GameOverButtons.jsx",
-      "exports": [
-        "GameOverButtons"
-      ],
+      "exports": ["GameOverButtons"],
       "classes": []
     },
     {
       "file": "src/scenes/gameover/GameOverHeader.jsx",
-      "exports": [
-        "GameOverHeader"
-      ],
+      "exports": ["GameOverHeader"],
       "classes": []
     },
     {
       "file": "src/scenes/gameover/GameOverStats.jsx",
-      "exports": [
-        "GameOverStats"
-      ],
+      "exports": ["GameOverStats"],
       "classes": []
     },
     {
       "file": "src/scenes/intro/components/AutoplayOverlay.jsx",
-      "exports": [
-        "AutoplayOverlay"
-      ],
+      "exports": ["AutoplayOverlay"],
       "classes": []
     },
     {
       "file": "src/scenes/intro/components/SkipButton.jsx",
-      "exports": [
-        "SkipButton"
-      ],
+      "exports": ["SkipButton"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/CableItem.jsx",
-      "exports": [
-        "CableItem"
-      ],
+      "exports": ["CableItem"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/CableList.jsx",
-      "exports": [
-        "CableList"
-      ],
+      "exports": ["CableList"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/ConnectionPath.jsx",
-      "exports": [
-        "ConnectionPath"
-      ],
+      "exports": ["ConnectionPath"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/ConnectionPaths.jsx",
-      "exports": [
-        "ConnectionPaths"
-      ],
+      "exports": ["ConnectionPaths"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/HardwareProps.jsx",
-      "exports": [
-        "RackScrew",
-        "RackPanel",
-        "PowerIndicator"
-      ],
+      "exports": ["RackScrew", "RackPanel", "PowerIndicator"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/Header.jsx",
-      "exports": [
-        "Header"
-      ],
+      "exports": ["Header"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/HeaderTimer.jsx",
-      "exports": [
-        "HeaderTimer"
-      ],
+      "exports": ["HeaderTimer"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/HeaderTitle.jsx",
-      "exports": [
-        "HeaderTitle"
-      ],
+      "exports": ["HeaderTitle"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/LightningEffects.jsx",
-      "exports": [
-        "LightningEffects"
-      ],
+      "exports": ["LightningEffects"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/Overlays.jsx",
-      "exports": [
-        "Overlays"
-      ],
+      "exports": ["Overlays"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/PlugGraphics.jsx",
-      "exports": [
-        "PlugGraphics"
-      ],
+      "exports": ["PlugGraphics"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/Rules.jsx",
-      "exports": [
-        "Rules"
-      ],
+      "exports": ["Rules"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/SocketGraphics.jsx",
-      "exports": [
-        "SocketGraphics"
-      ],
+      "exports": ["SocketGraphics"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/SocketItem.jsx",
-      "exports": [
-        "SocketItem"
-      ],
+      "exports": ["SocketItem"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/SocketList.jsx",
-      "exports": [
-        "SocketList"
-      ],
+      "exports": ["SocketList"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/overlays/GameOverOverlay.jsx",
-      "exports": [
-        "GameOverOverlay"
-      ],
+      "exports": ["GameOverOverlay"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/overlays/PoweredOnOverlay.jsx",
-      "exports": [
-        "PoweredOnOverlay"
-      ],
+      "exports": ["PoweredOnOverlay"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/overlays/ShockOverlay.jsx",
-      "exports": [
-        "ShockOverlay"
-      ],
+      "exports": ["ShockOverlay"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/plugs/DcPlug.jsx",
-      "exports": [
-        "DcPlug"
-      ],
+      "exports": ["DcPlug"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/plugs/IecPlug.jsx",
-      "exports": [
-        "IecPlug"
-      ],
+      "exports": ["IecPlug"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/plugs/JackPlug.jsx",
-      "exports": [
-        "JackPlug"
-      ],
+      "exports": ["JackPlug"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/plugs/MidiPlug.jsx",
-      "exports": [
-        "MidiPlug"
-      ],
+      "exports": ["MidiPlug"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/plugs/XlrPlug.jsx",
-      "exports": [
-        "XlrPlug"
-      ],
+      "exports": ["XlrPlug"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/sockets/DcSocket.jsx",
-      "exports": [
-        "DcSocket"
-      ],
+      "exports": ["DcSocket"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/sockets/IecSocket.jsx",
-      "exports": [
-        "IecSocket"
-      ],
+      "exports": ["IecSocket"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/sockets/JackSocket.jsx",
-      "exports": [
-        "JackSocket"
-      ],
+      "exports": ["JackSocket"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/sockets/MidiSocket.jsx",
-      "exports": [
-        "MidiSocket"
-      ],
+      "exports": ["MidiSocket"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/components/sockets/XlrSocket.jsx",
-      "exports": [
-        "XlrSocket"
-      ],
+      "exports": ["XlrSocket"],
       "classes": []
     },
     {
@@ -2732,317 +2320,222 @@
     },
     {
       "file": "src/scenes/kabelsalat/useKabelsalatState.js",
-      "exports": [
-        "useKabelsalatState"
-      ],
+      "exports": ["useKabelsalatState"],
       "classes": []
     },
     {
       "file": "src/scenes/kabelsalat/utils.js",
-      "exports": [
-        "generateLightningSeeds",
-        "getMessyPath"
-      ],
+      "exports": ["generateLightningSeeds", "getMessyPath"],
       "classes": []
     },
     {
       "file": "src/scenes/mainmenu/MainMenuExistingSavePrompt.jsx",
-      "exports": [
-        "MainMenuExistingSavePrompt"
-      ],
+      "exports": ["MainMenuExistingSavePrompt"],
       "classes": []
     },
     {
       "file": "src/scenes/mainmenu/MainMenuFeatures.jsx",
-      "exports": [
-        "MainMenuFeatures"
-      ],
+      "exports": ["MainMenuFeatures"],
       "classes": []
     },
     {
       "file": "src/scenes/mainmenu/MainMenuNameInputPrompt.jsx",
-      "exports": [
-        "MainMenuNameInputPrompt"
-      ],
+      "exports": ["MainMenuNameInputPrompt"],
       "classes": []
     },
     {
       "file": "src/scenes/mainmenu/MainMenuSocials.jsx",
-      "exports": [
-        "MainMenuSocials"
-      ],
+      "exports": ["MainMenuSocials"],
       "classes": []
     },
     {
       "file": "src/ui/BandHQ.jsx",
-      "exports": [
-        "BandHQ"
-      ],
-      "classes": [
-        "name"
-      ]
+      "exports": ["BandHQ"],
+      "classes": ["name"]
     },
     {
       "file": "src/ui/BloodBankModal.jsx",
-      "exports": [
-        "BloodBankModal"
-      ],
+      "exports": ["BloodBankModal"],
       "classes": []
     },
     {
       "file": "src/ui/ContrabandStash.jsx",
-      "exports": [
-        "ContrabandStash"
-      ],
+      "exports": ["ContrabandStash"],
       "classes": []
     },
     {
       "file": "src/ui/CrashHandler.jsx",
-      "exports": [
-        "ErrorBoundary"
-      ],
-      "classes": [
-        "ErrorBoundaryComponent"
-      ]
+      "exports": ["ErrorBoundary"],
+      "classes": ["ErrorBoundaryComponent"]
     },
     {
       "file": "src/ui/DebugLogViewer.jsx",
-      "exports": [
-        "DebugLogViewer"
-      ],
+      "exports": ["DebugLogViewer"],
       "classes": []
     },
     {
       "file": "src/ui/EventModal.jsx",
-      "exports": [
-        "EventModal"
-      ],
+      "exports": ["EventModal"],
       "classes": []
     },
     {
       "file": "src/ui/GigModifierButton.jsx",
-      "exports": [
-        "default:GigModifierButton"
-      ],
+      "exports": ["default:GigModifierButton"],
       "classes": []
     },
     {
       "file": "src/ui/GlitchButton.jsx",
-      "exports": [
-        "GlitchButton"
-      ],
+      "exports": ["GlitchButton"],
       "classes": []
     },
     {
       "file": "src/ui/HUD.jsx",
-      "exports": [
-        "HUD"
-      ],
+      "exports": ["HUD"],
       "classes": []
     },
     {
       "file": "src/ui/MerchPressModal.jsx",
-      "exports": [
-        "MerchPressModal"
-      ],
+      "exports": ["MerchPressModal"],
       "classes": []
     },
     {
       "file": "src/ui/PirateRadioModal.jsx",
-      "exports": [
-        "PirateRadioModal"
-      ],
+      "exports": ["PirateRadioModal"],
       "classes": []
     },
     {
       "file": "src/ui/QuestsModal.jsx",
-      "exports": [
-        "QuestsModal"
-      ],
+      "exports": ["QuestsModal"],
       "classes": []
     },
     {
       "file": "src/ui/ToastOverlay.jsx",
-      "exports": [
-        "ToastOverlay"
-      ],
+      "exports": ["ToastOverlay"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/CatalogTab.jsx",
-      "exports": [
-        "CatalogTab"
-      ],
+      "exports": ["CatalogTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/DetailedStatsTab.jsx",
-      "exports": [
-        "DetailedStatsTab"
-      ],
+      "exports": ["DetailedStatsTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/LeaderboardTab.jsx",
-      "exports": [
-        "LeaderboardTab"
-      ],
+      "exports": ["LeaderboardTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/SetlistTab.jsx",
-      "exports": [
-        "SetlistTab"
-      ],
+      "exports": ["SetlistTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/SettingsTab.jsx",
-      "exports": [
-        "SettingsTab"
-      ],
+      "exports": ["SettingsTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/ShopItem.jsx",
-      "exports": [
-        "ShopItem"
-      ],
+      "exports": ["ShopItem"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/ShopTab.jsx",
-      "exports": [
-        "ShopTab"
-      ],
+      "exports": ["ShopTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/StatsTab.jsx",
-      "exports": [
-        "StatsTab"
-      ],
+      "exports": ["StatsTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/UpgradesTab.jsx",
-      "exports": [
-        "UpgradesTab"
-      ],
+      "exports": ["UpgradesTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/VoidTraderTab.jsx",
-      "exports": [
-        "VoidTraderTab"
-      ],
+      "exports": ["VoidTraderTab"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/hooks/useBandHQLogic.js",
-      "exports": [
-        "useBandHQLogic"
-      ],
+      "exports": ["useBandHQLogic"],
       "classes": []
     },
     {
       "file": "src/ui/bandhq/hooks/usePurchaseLogic.js",
-      "exports": [
-        "usePurchaseLogic",
-        "getPrimaryEffect"
-      ],
+      "exports": ["usePurchaseLogic", "getPrimaryEffect"],
       "classes": []
     },
     {
       "file": "src/ui/overworld/EventLog.jsx",
-      "exports": [
-        "EventLog"
-      ],
+      "exports": ["EventLog"],
       "classes": []
     },
     {
       "file": "src/ui/overworld/OverworldHeader.jsx",
-      "exports": [
-        "OverworldHeader"
-      ],
+      "exports": ["OverworldHeader"],
       "classes": []
     },
     {
       "file": "src/ui/overworld/OverworldMenu.jsx",
-      "exports": [
-        "OverworldMenu"
-      ],
+      "exports": ["OverworldMenu"],
       "classes": []
     },
     {
       "file": "src/ui/settings/AudioSettings.jsx",
-      "exports": [
-        "AudioSettings"
-      ],
+      "exports": ["AudioSettings"],
       "classes": []
     },
     {
       "file": "src/ui/settings/DataManagement.jsx",
-      "exports": [
-        "DataManagement"
-      ],
+      "exports": ["DataManagement"],
       "classes": []
     },
     {
       "file": "src/ui/settings/LanguageSettings.jsx",
-      "exports": [
-        "LanguageSettings"
-      ],
+      "exports": ["LanguageSettings"],
       "classes": []
     },
     {
       "file": "src/ui/settings/LogSettings.jsx",
-      "exports": [
-        "LogSettings"
-      ],
+      "exports": ["LogSettings"],
       "classes": []
     },
     {
       "file": "src/ui/settings/SettingsPanel.jsx",
-      "exports": [
-        "SettingsPanel"
-      ],
+      "exports": ["SettingsPanel"],
       "classes": []
     },
     {
       "file": "src/ui/settings/SettingsReturnButton.jsx",
-      "exports": [
-        "SettingsReturnButton"
-      ],
+      "exports": ["SettingsReturnButton"],
       "classes": []
     },
     {
       "file": "src/ui/settings/SettingsTitle.jsx",
-      "exports": [
-        "SettingsTitle"
-      ],
+      "exports": ["SettingsTitle"],
       "classes": []
     },
     {
       "file": "src/ui/settings/VisualSettings.jsx",
-      "exports": [
-        "VisualSettings"
-      ],
+      "exports": ["VisualSettings"],
       "classes": []
     },
     {
       "file": "src/ui/shared/ActionButton.jsx",
-      "exports": [
-        "ActionButton"
-      ],
+      "exports": ["ActionButton"],
       "classes": []
     },
     {
       "file": "src/ui/shared/AnimatedTypography.jsx",
-      "exports": [
-        "AnimatedDivider",
-        "AnimatedSubtitle"
-      ],
+      "exports": ["AnimatedDivider", "AnimatedSubtitle"],
       "classes": []
     },
     {
@@ -3097,30 +2590,22 @@
     },
     {
       "file": "src/ui/shared/Modal.jsx",
-      "exports": [
-        "Modal"
-      ],
+      "exports": ["Modal"],
       "classes": []
     },
     {
       "file": "src/ui/shared/ToggleSwitch.jsx",
-      "exports": [
-        "ToggleSwitch"
-      ],
+      "exports": ["ToggleSwitch"],
       "classes": []
     },
     {
       "file": "src/ui/shared/Tooltip.jsx",
-      "exports": [
-        "Tooltip"
-      ],
+      "exports": ["Tooltip"],
       "classes": []
     },
     {
       "file": "src/ui/shared/VolumeSlider.jsx",
-      "exports": [
-        "VolumeSlider"
-      ],
+      "exports": ["VolumeSlider"],
       "classes": []
     },
     {
@@ -3180,20 +2665,13 @@
     },
     {
       "file": "src/ui/shared/propTypes.js",
-      "exports": [
-        "AudioStatePropType",
-        "OnAudioChangePropType"
-      ],
+      "exports": ["AudioStatePropType", "OnAudioChangePropType"],
       "classes": []
     },
     {
       "file": "src/utils/AudioManager.js",
-      "exports": [
-        "audioManager"
-      ],
-      "classes": [
-        "AudioSystem"
-      ]
+      "exports": ["audioManager"],
+      "classes": ["AudioSystem"]
     },
     {
       "file": "src/utils/arrivalUtils.js",
@@ -3207,11 +2685,7 @@
     },
     {
       "file": "src/utils/audio/assets.js",
-      "exports": [
-        "midiUrlMap",
-        "oggCandidates",
-        "hasAudioAsset"
-      ],
+      "exports": ["midiUrlMap", "oggCandidates", "hasAudioAsset"],
       "classes": []
     },
     {
@@ -3251,17 +2725,12 @@
     },
     {
       "file": "src/utils/audio/dispose.js",
-      "exports": [
-        "safeDispose",
-        "disposeAudio"
-      ],
+      "exports": ["safeDispose", "disposeAudio"],
       "classes": []
     },
     {
       "file": "src/utils/audio/drumMappings.js",
-      "exports": [
-        "playDrumNote"
-      ],
+      "exports": ["playDrumNote"],
       "classes": []
     },
     {
@@ -3280,9 +2749,7 @@
     },
     {
       "file": "src/utils/audio/midiPlayback.js",
-      "exports": [
-        "playNoteAtTime"
-      ],
+      "exports": ["playNoteAtTime"],
       "classes": []
     },
     {
@@ -3335,39 +2802,27 @@
     },
     {
       "file": "src/utils/audio/selectionUtils.js",
-      "exports": [
-        "selectRandomItem"
-      ],
+      "exports": ["selectRandomItem"],
       "classes": []
     },
     {
       "file": "src/utils/audio/sharedBufferUtils.js",
-      "exports": [
-        "createAndConnectBufferSource"
-      ],
+      "exports": ["createAndConnectBufferSource"],
       "classes": []
     },
     {
       "file": "src/utils/audio/songUtils.js",
-      "exports": [
-        "getSongId",
-        "resolveSongPlaybackWindow"
-      ],
+      "exports": ["getSongId", "resolveSongPlaybackWindow"],
       "classes": []
     },
     {
       "file": "src/utils/audio/state.js",
-      "exports": [
-        "audioState",
-        "resetGigState"
-      ],
+      "exports": ["audioState", "resetGigState"],
       "classes": []
     },
     {
       "file": "src/utils/audio/timingUtils.js",
-      "exports": [
-        "getScheduledHitTimeMs"
-      ],
+      "exports": ["getScheduledHitTimeMs"],
       "classes": []
     },
     {
@@ -3422,9 +2877,7 @@
     },
     {
       "file": "src/utils/audioService.js",
-      "exports": [
-        "audioService"
-      ],
+      "exports": ["audioService"],
       "classes": []
     },
     {
@@ -3438,10 +2891,7 @@
     },
     {
       "file": "src/utils/contrabandStashUtils.js",
-      "exports": [
-        "validateStashItemSelection",
-        "getStashItemUseMessage"
-      ],
+      "exports": ["validateStashItemSelection", "getStashItemUseMessage"],
       "classes": []
     },
     {
@@ -3506,9 +2956,7 @@
     },
     {
       "file": "src/utils/effectFormatter.js",
-      "exports": [
-        "generateEffectText"
-      ],
+      "exports": ["generateEffectText"],
       "classes": []
     },
     {
@@ -3525,12 +2973,7 @@
         "safeStorageOperation",
         "withRetry"
       ],
-      "classes": [
-        "GameError",
-        "StateError",
-        "StorageError",
-        "AudioError"
-      ]
+      "classes": ["GameError", "StateError", "StorageError", "AudioError"]
     },
     {
       "file": "src/utils/eventEngine.js",
@@ -3544,9 +2987,7 @@
     },
     {
       "file": "src/utils/eventValidator.js",
-      "exports": [
-        "validateCrisisEvent"
-      ],
+      "exports": ["validateCrisisEvent"],
       "classes": []
     },
     {
@@ -3622,30 +3063,18 @@
     },
     {
       "file": "src/utils/locationI18n.js",
-      "exports": [
-        "translateLocation"
-      ],
+      "exports": ["translateLocation"],
       "classes": []
     },
     {
       "file": "src/utils/logger.js",
-      "exports": [
-        "LOG_LEVELS",
-        "Logger",
-        "logger"
-      ],
-      "classes": [
-        "Logger"
-      ]
+      "exports": ["LOG_LEVELS", "Logger", "logger"],
+      "classes": ["Logger"]
     },
     {
       "file": "src/utils/mapGenerator.js",
-      "exports": [
-        "MapGenerator"
-      ],
-      "classes": [
-        "MapGenerator"
-      ]
+      "exports": ["MapGenerator"],
+      "classes": ["MapGenerator"]
     },
     {
       "file": "src/utils/mapUtils.js",
@@ -3659,18 +3088,12 @@
     },
     {
       "file": "src/utils/numberUtils.js",
-      "exports": [
-        "formatNumber",
-        "formatCurrency"
-      ],
+      "exports": ["formatNumber", "formatCurrency"],
       "classes": []
     },
     {
       "file": "src/utils/pirateRadioUtils.js",
-      "exports": [
-        "checkHasBroadcastedToday",
-        "validatePirateBroadcast"
-      ],
+      "exports": ["checkHasBroadcastedToday", "validatePirateBroadcast"],
       "classes": []
     },
     {
@@ -3710,16 +3133,12 @@
     },
     {
       "file": "src/utils/questUtils.js",
-      "exports": [
-        "hasActiveQuest"
-      ],
+      "exports": ["hasActiveQuest"],
       "classes": []
     },
     {
       "file": "src/utils/randomUtils.js",
-      "exports": [
-        "pickRandomSubset"
-      ],
+      "exports": ["pickRandomSubset"],
       "classes": []
     },
     {
@@ -3734,19 +3153,12 @@
     },
     {
       "file": "src/utils/rhythmGameInputUtils.js",
-      "exports": [
-        "DEBOUNCE_MS",
-        "canProcessInput",
-        "processLaneInput"
-      ],
+      "exports": ["DEBOUNCE_MS", "canProcessInput", "processLaneInput"],
       "classes": []
     },
     {
       "file": "src/utils/rhythmGameLoopUtils.js",
-      "exports": [
-        "finalizeGig",
-        "processRhythmGameTick"
-      ],
+      "exports": ["finalizeGig", "processRhythmGameTick"],
       "classes": []
     },
     {
@@ -3773,9 +3185,7 @@
     },
     {
       "file": "src/utils/saveValidator.js",
-      "exports": [
-        "validateSaveData"
-      ],
+      "exports": ["validateSaveData"],
       "classes": []
     },
     {
@@ -3809,40 +3219,27 @@
     },
     {
       "file": "src/utils/stringUtils.js",
-      "exports": [
-        "hashString"
-      ],
+      "exports": ["hashString"],
       "classes": []
     },
     {
       "file": "src/utils/traitLogic.js",
-      "exports": [
-        "hasTrait",
-        "bandHasTrait"
-      ],
+      "exports": ["hasTrait", "bandHasTrait"],
       "classes": []
     },
     {
       "file": "src/utils/traitUtils.js",
-      "exports": [
-        "getTraitById",
-        "normalizeTraitMap",
-        "applyTraitUnlocks"
-      ],
+      "exports": ["getTraitById", "normalizeTraitMap", "applyTraitUnlocks"],
       "classes": []
     },
     {
       "file": "src/utils/translationUtils.js",
-      "exports": [
-        "translateContextKeys"
-      ],
+      "exports": ["translateContextKeys"],
       "classes": []
     },
     {
       "file": "src/utils/travelLogicUtils.js",
-      "exports": [
-        "getTravelArrivalUpdates"
-      ],
+      "exports": ["getTravelArrivalUpdates"],
       "classes": []
     },
     {
@@ -3858,48 +3255,33 @@
     },
     {
       "file": "src/utils/unlockCheck.js",
-      "exports": [
-        "checkTraitUnlocks"
-      ],
+      "exports": ["checkTraitUnlocks"],
       "classes": []
     },
     {
       "file": "src/utils/unlockManager.js",
-      "exports": [
-        "getUnlocks",
-        "addUnlock"
-      ],
+      "exports": ["getUnlocks", "addUnlock"],
       "classes": []
     },
     {
       "file": "src/utils/upgradeUtils.js",
-      "exports": [
-        "hasUpgrade",
-        "calcBaseBreakdownChance"
-      ],
+      "exports": ["hasUpgrade", "calcBaseBreakdownChance"],
       "classes": []
     },
     {
       "file": "tests/hooks/useTravelLogic.test.jsx",
       "exports": [],
-      "classes": [
-        "StateError"
-      ]
+      "classes": ["StateError"]
     },
     {
       "file": "tests/integration/GameState.comprehensive.test.jsx",
       "exports": [],
-      "classes": [
-        "StorageError",
-        "StateError"
-      ]
+      "classes": ["StorageError", "StateError"]
     },
     {
       "file": "tests/integration/GigIntegration.test.jsx",
       "exports": [],
-      "classes": [
-        "MockAudioNode"
-      ]
+      "classes": ["MockAudioNode"]
     },
     {
       "file": "tests/mainMenuAudioTestUtils.js",
@@ -3953,109 +3335,71 @@
     {
       "file": "tests/node/LaneManager.test.js",
       "exports": [],
-      "classes": [
-        "MockGraphics",
-        "MockContainer"
-      ]
+      "classes": ["MockGraphics", "MockContainer"]
     },
     {
       "file": "tests/node/NoteManager.test.js",
       "exports": [],
-      "classes": [
-        "MockNoteSpritePool"
-      ]
+      "classes": ["MockNoteSpritePool"]
     },
     {
       "file": "tests/node/PixiStageController.test.js",
       "exports": [],
-      "classes": [
-        "ResizeObserver"
-      ]
+      "classes": ["ResizeObserver"]
     },
     {
       "file": "tests/node/TourbusStageController.test.js",
       "exports": [],
-      "classes": [
-        "MockApp",
-        "Container"
-      ]
+      "classes": ["MockApp", "Container"]
     },
     {
       "file": "tests/node/audioProcedural.test.js",
       "exports": [],
-      "classes": [
-        "MockPart",
-        "MockMidi",
-        "or"
-      ]
+      "classes": ["MockPart", "MockMidi", "or"]
     },
     {
       "file": "tests/node/audioProceduralMetal.test.js",
       "exports": [],
-      "classes": [
-        "MockSequence"
-      ]
+      "classes": ["MockSequence"]
     },
     {
       "file": "tests/node/audioProceduralPlaySong.test.js",
       "exports": [],
-      "classes": [
-        "MockPart"
-      ]
+      "classes": ["MockPart"]
     },
     {
       "file": "tests/node/errorHandler.test.js",
       "exports": [],
-      "classes": [
-        "CustomObj"
-      ]
+      "classes": ["CustomObj"]
     },
     {
       "file": "tests/node/eventEngine.test.js",
       "exports": [],
-      "classes": [
-        "Logger"
-      ]
+      "classes": ["Logger"]
     },
     {
       "file": "tests/node/rhythmGameLogicMultiSong.test.js",
       "exports": [],
-      "classes": [
-        "GameError",
-        "AudioError",
-        "StateError"
-      ]
+      "classes": ["GameError", "AudioError", "StateError"]
     },
     {
       "file": "tests/performance/EffectManager.spec.js",
       "exports": [],
-      "classes": [
-        "Container",
-        "_Sprite"
-      ]
+      "classes": ["Container", "_Sprite"]
     },
     {
       "file": "tests/performance/noteFallback.bench.js",
       "exports": [],
-      "classes": [
-        "MockGraphics",
-        "MockSprite"
-      ]
+      "classes": ["MockGraphics", "MockSprite"]
     },
     {
       "file": "tests/simulationTestUtils.js",
-      "exports": [
-        "buildBandState",
-        "buildBandWithMembers"
-      ],
+      "exports": ["buildBandState", "buildBandWithMembers"],
       "classes": []
     },
     {
       "file": "tests/testUtils.js",
-      "exports": [
-        "setupJSDOM",
-        "teardownJSDOM"
-      ],
+      "exports": ["setupJSDOM", "teardownJSDOM"],
       "classes": []
     },
     {
@@ -4073,23 +3417,17 @@
     {
       "file": "tests/ui/Gig.scene.test.jsx",
       "exports": [],
-      "classes": [
-        "to"
-      ]
+      "classes": ["to"]
     },
     {
       "file": "tests/ui/GigHUD.test.jsx",
       "exports": [],
-      "classes": [
-        "inside"
-      ]
+      "classes": ["inside"]
     },
     {
       "file": "tests/ui/useRhythmGameAudio.test.jsx",
       "exports": [],
-      "classes": [
-        "AudioError"
-      ]
+      "classes": ["AudioError"]
     },
     {
       "file": "tests/useArrivalLogicTestUtils.js",
@@ -4131,9 +3469,7 @@
         "assertTravelPrevented",
         "setupTravelScenario"
       ],
-      "classes": [
-        "MockStateError"
-      ]
+      "classes": ["MockStateError"]
     },
     {
       "file": "tests/utils/localeTestUtils.js",
@@ -4153,36 +3489,26 @@
     {
       "file": "tests/vitest.setup.js",
       "exports": [],
-      "classes": [
-        "ResizeObserver"
-      ]
+      "classes": ["ResizeObserver"]
     },
     {
       "file": "vite.config.js",
-      "exports": [
-        "default:defineConfig"
-      ],
+      "exports": ["default:defineConfig"],
       "classes": []
     },
     {
       "file": "vitest.config.js",
-      "exports": [
-        "default:defineConfig"
-      ],
+      "exports": ["default:defineConfig"],
       "classes": []
     },
     {
       "file": "vitest.config.node.js",
-      "exports": [
-        "default:defineConfig"
-      ],
+      "exports": ["default:defineConfig"],
       "classes": []
     },
     {
       "file": "vitest.config.perf.js",
-      "exports": [
-        "default:defineConfig"
-      ],
+      "exports": ["default:defineConfig"],
       "classes": []
     }
   ],

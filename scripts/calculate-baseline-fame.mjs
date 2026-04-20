@@ -153,9 +153,9 @@ while (state.day <= TARGET_DAYS) {
       const dampFactor =
         previousFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
           ? `(Dampened: ${Math.exp(
-              -(previousFame -
-                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
-                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
+              -(
+                previousFame - FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
+              ) * FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
             ).toFixed(2)}x)`
           : ''
       outcomeText = `Great Show! Fame +${fameDelta} ${dampFactor}`
@@ -171,9 +171,9 @@ while (state.day <= TARGET_DAYS) {
       const dampFactor =
         previousFame > FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
           ? `(Dampened: ${Math.exp(
-              -(previousFame -
-                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START) *
-                FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
+              -(
+                previousFame - FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_START
+              ) * FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE
             ).toFixed(2)}x)`
           : ''
       outcomeText = `Decent Show  Fame +${fameDelta} ${dampFactor}`

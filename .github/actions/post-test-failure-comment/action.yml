@@ -19,7 +19,7 @@ inputs:
     required: true
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Comment failed tests on PR — update existing sticky comment
       uses: actions/github-script@v9

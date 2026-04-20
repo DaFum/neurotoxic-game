@@ -48,8 +48,14 @@ describe('API Prototype Pollution Security Tests', () => {
 
     // Before fix, this will likely be 200 because the check is shallow
     // After fix, it should be 400
-    assert.strictEqual(res.status.mock.calls[0][0], 400, 'Nested prototype pollution in Stats API should be blocked')
-    assert.deepStrictEqual(res.json.mock.calls[0][0], { error: 'Invalid payload structure' })
+    assert.strictEqual(
+      res.status.mock.calls[0][0],
+      400,
+      'Nested prototype pollution in Stats API should be blocked'
+    )
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
+      error: 'Invalid payload structure'
+    })
   })
 
   test('Song API should block nested prototype pollution', async () => {
@@ -62,7 +68,7 @@ describe('API Prototype Pollution Security Tests', () => {
         songId: 'song1',
         score: 100,
         nested: {
-          'constructor': { 'prototype': { 'polluted': true } }
+          constructor: { prototype: { polluted: true } }
         }
       }
     }
@@ -73,8 +79,14 @@ describe('API Prototype Pollution Security Tests', () => {
 
     await songHandler(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0][0], 400, 'Nested prototype pollution in Song API should be blocked')
-    assert.deepStrictEqual(res.json.mock.calls[0][0], { error: 'Invalid payload structure' })
+    assert.strictEqual(
+      res.status.mock.calls[0][0],
+      400,
+      'Nested prototype pollution in Song API should be blocked'
+    )
+    assert.deepStrictEqual(res.json.mock.calls[0][0], {
+      error: 'Invalid payload structure'
+    })
   })
 
   test('Stats API should block prototype pollution inside arrays', async () => {
@@ -92,11 +104,15 @@ describe('API Prototype Pollution Security Tests', () => {
 
     await statsHandler(req, res)
 
-    assert.strictEqual(res.status.mock.calls[0][0], 400, 'Prototype pollution inside arrays should be blocked')
+    assert.strictEqual(
+      res.status.mock.calls[0][0],
+      400,
+      'Prototype pollution inside arrays should be blocked'
+    )
   })
 
   test('Stats API should still allow valid shallow payloads', async () => {
-     const req = {
+    const req = {
       method: 'POST',
       headers: { 'x-forwarded-for': '127.0.0.1' },
       body: {

@@ -1,11 +1,13 @@
 # Travel/Arrival Consolidation Note
 
 ## Goal
+
 Reduce overlap in travel completion behavior while preserving the existing two-hook orchestration model.
 
 ## Previous path
 
 ### Overworld travel path
+
 - `useTravelLogic.onTravelComplete()`:
   - applied travel costs and node transition,
   - advanced day and autosaved,
@@ -13,6 +15,7 @@ Reduce overlap in travel completion behavior while preserving the existing two-h
   - delegated node-type handling to `handleNodeArrival()`.
 
 ### Minigame arrival path
+
 - `useArrivalLogic.handleArrivalSequence()`:
   - advanced day and autosaved,
   - applied harmony-regen behavior,
@@ -41,28 +44,34 @@ The repository keeps **two orchestration entry points** (Overworld click-travel 
 ## Agent guidance
 
 ### Canonical primitive agents may use
+
 - Agents may call `arrivalUtils.processTravelEvents(node, triggerEvent)` as the canonical travel-event primitive.
 - This primitive is an event trigger helper only; it does **not** replace human-reviewed orchestration in `useTravelLogic` or `useArrivalLogic`.
 
 ### Allowed actions for agents
+
 - Read-only diagnostics and consistency checks around travel/arrival flow.
 - Safe event triggering through `processTravelEvents` after validating node/context assumptions.
 - Automated test execution and reporting for arrival/travel regressions.
 
 ### Disallowed actions for agents
+
 - Performing stateful sequencing such as `advanceDay` or `saveGame`.
 - Direct node-type routing decisions or bypassing `handleNodeArrival`.
 - Altering harmony-regen behavior or introducing parallel arrival side-effect paths.
 
 ### When to use agents
+
 - Diagnostics, automated tests, and constrained event-trigger checks.
 
 ### When not to use agents
+
 - Authoritative game-state transitions and hook-owned sequencing responsibilities.
 
 ## Follow-up recommendation
 
 If a larger refactor is approved, extract a single tested arrival orchestration service/hook for:
+
 - `advanceDay` + `saveGame` sequencing,
 - harmony regen,
 - travel-event phase,

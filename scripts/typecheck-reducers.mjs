@@ -1,8 +1,12 @@
 import { spawnSync } from 'node:child_process'
 
-const tsc = spawnSync('pnpm', ['exec', 'tsc', '--noEmit', '--pretty', 'false'], {
-  encoding: 'utf8'
-})
+const tsc = spawnSync(
+  'pnpm',
+  ['exec', 'tsc', '--noEmit', '--pretty', 'false'],
+  {
+    encoding: 'utf8'
+  }
+)
 
 const output = `${tsc.stdout ?? ''}${tsc.stderr ?? ''}`
 

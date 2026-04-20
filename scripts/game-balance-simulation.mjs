@@ -78,7 +78,7 @@ export const SIMULATION_CONSTANTS = {
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
   contrabandDropChance: 0.11,
-  hqUpgradeCost: 25000,  // Tier 2 HQ Upgrade cost
+  hqUpgradeCost: 25000, // Tier 2 HQ Upgrade cost
   vanUpgradeCost: 1500, // Tier 2 Van Upgrade cost
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
@@ -463,7 +463,10 @@ const buildFameBalanceAudit = () => {
       mostExpensiveShopItem,
       performanceScore
     )
-    const shopOnly = simulateFameCatalogClear(SHOP_FAME_CATALOG, performanceScore)
+    const shopOnly = simulateFameCatalogClear(
+      SHOP_FAME_CATALOG,
+      performanceScore
+    )
     const shopPlusLegacy = simulateFameCatalogClear(
       [...SHOP_FAME_CATALOG, ...LEGACY_FAME_CATALOG],
       performanceScore
@@ -475,7 +478,9 @@ const buildFameBalanceAudit = () => {
       gigsToReachLabelCost: reachLabel.gigs,
       gigsToBuyShopOnly: shopOnly.gigs,
       gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs,
-      verdict: getFameAuditVerdict({ gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs })
+      verdict: getFameAuditVerdict({
+        gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs
+      })
     }
   })
 
@@ -660,7 +665,6 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
   return eventsApplied
 }
 
-
 const maybeShiftSocialTrend = (state, rng, counters) => {
   if (rng() >= SIMULATION_CONSTANTS.trendShiftChance) return
   const nextTrend = ALLOWED_TRENDS[Math.floor(rng() * ALLOWED_TRENDS.length)]
@@ -675,8 +679,8 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
   if (currentlyHasDeal) {
     // Determine chance to randomly drop deal
     if (rng() < 0.05) {
-       state.social.activeDeals = []
-       counters.sponsorDrops += 1
+      state.social.activeDeals = []
+      counters.sponsorDrops += 1
     }
     return
   }
@@ -789,7 +793,9 @@ const applyCatalogPurchase = (state, candidate, counters) => {
         )
       }
     : {
-        money: clampPlayerMoney((state.player.money ?? 0) - validation.finalCost)
+        money: clampPlayerMoney(
+          (state.player.money ?? 0) - validation.finalCost
+        )
       }
 
   const effectResult = processPurchaseEffect(
@@ -1006,7 +1012,6 @@ const runMinigameLayer = (state, scenario, rng, counters) => {
   counters.kabelsalatMinigames += 1
 }
 
-
 const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
@@ -1028,17 +1033,21 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
     }
   }
 
-  if (state.player.money > SIMULATION_CONSTANTS.hqUpgradeCost * 1.5 && rng() < 0.3) {
+  if (
+    state.player.money > SIMULATION_CONSTANTS.hqUpgradeCost * 1.5 &&
+    rng() < 0.3
+  ) {
     const hqUpgrade = UPGRADE_CATALOG.find(
       item => item.id === 'hq_room_beer_pipeline'
     )
     applyCatalogPurchase(state, hqUpgrade, counters)
   }
 
-  if (state.player.money > SIMULATION_CONSTANTS.vanUpgradeCost * 1.5 && rng() < 0.2) {
-    const vanUpgrade = UPGRADE_CATALOG.find(
-      item => item.id === 'hq_van_tuning'
-    )
+  if (
+    state.player.money > SIMULATION_CONSTANTS.vanUpgradeCost * 1.5 &&
+    rng() < 0.2
+  ) {
+    const vanUpgrade = UPGRADE_CATALOG.find(item => item.id === 'hq_van_tuning')
     applyCatalogPurchase(state, vanUpgrade, counters)
   }
 }
@@ -1200,8 +1209,8 @@ const runSingleSimulation = (scenario, seed) => {
   let totalHitWindowSum = 0
   let totalMissesSum = 0
   let totalPerfScoreSum = 0
-  let gigScoreLow = 0  // score < 50
-  let gigScoreMid = 0  // score 50–70
+  let gigScoreLow = 0 // score < 50
+  let gigScoreMid = 0 // score 50–70
   let gigScoreHigh = 0 // score > 70
 
   const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
@@ -1377,7 +1386,8 @@ const runSingleSimulation = (scenario, seed) => {
         regionRep: Math.round(
           (state.player.fame - state.social.controversyLevel) * 0.4
         ),
-        daysSinceLastGig: state.player.day - (state.social.lastGigDay ?? state.player.day),
+        daysSinceLastGig:
+          state.player.day - (state.social.lastGigDay ?? state.player.day),
         lastGigDifficulty: state.social.lastGigDifficulty ?? null
       }
     })
@@ -1497,7 +1507,8 @@ const summarizeScenario = runs => {
       acc.finalControversy += run.finalControversy
       acc.totalGigNet += run.totalGigNet
       acc.gigsPlayed += run.gigsPlayed
-      acc.maxPeakToTroughDrop = (acc.maxPeakToTroughDrop || 0) + (run.maxPeakToTroughDrop || 0)
+      acc.maxPeakToTroughDrop =
+        (acc.maxPeakToTroughDrop || 0) + (run.maxPeakToTroughDrop || 0)
       acc.peakMoney += run.peakMoney
       acc.lowestMoney += run.lowestMoney
       acc.bankruptcies += run.bankrupt ? 1 : 0
@@ -1597,8 +1608,12 @@ const summarizeScenario = runs => {
     avgPeakMoney: Math.round(totals.peakMoney / count),
     avgLowestMoney: Math.round(totals.lowestMoney / count),
     avgGigsPlayed: Number((totals.gigsPlayed / count).toFixed(2)),
-    avgPeakToTroughDrop: totals.maxPeakToTroughDrop ? Number((totals.maxPeakToTroughDrop * 100 / count).toFixed(1)) : 0,
-    gigCapHits: Number((totals.gigCapHits / Math.max(1, totals.gigsPlayed) * 100).toFixed(1)),
+    avgPeakToTroughDrop: totals.maxPeakToTroughDrop
+      ? Number(((totals.maxPeakToTroughDrop * 100) / count).toFixed(1))
+      : 0,
+    gigCapHits: Number(
+      ((totals.gigCapHits / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
+    ),
     avgGigNet: Math.round(totals.totalGigNet / Math.max(1, totals.gigsPlayed)),
     bankruptcyRate: Number(((totals.bankruptcies / count) * 100).toFixed(2)),
     avgSponsorSignings: Number((totals.sponsorSignings / count).toFixed(2)),
@@ -1660,13 +1675,20 @@ const summarizeScenario = runs => {
       (totals.totalGigNet / Math.max(1, totals.totalTravelCostGigs)).toFixed(1)
     ),
     sinkToIncomeRatio: Number(
-      ((totals.totalTravelCostGigs + totals.repairs * 150 + totals.refuels * 80) / Math.max(1, totals.totalGigNet)).toFixed(2)
+      (
+        (totals.totalTravelCostGigs +
+          totals.repairs * 150 +
+          totals.refuels * 80) /
+        Math.max(1, totals.totalGigNet)
+      ).toFixed(2)
     ),
-    avgFameProgress: Math.round(
-      fameProgressTotal / count
-    ),
+    avgFameProgress: Math.round(fameProgressTotal / count),
     avgFameProgressPerGig: Number(
-      (fameProgressTotal / count / Math.max(1, totals.gigsPlayed / count)).toFixed(2)
+      (
+        fameProgressTotal /
+        count /
+        Math.max(1, totals.gigsPlayed / count)
+      ).toFixed(2)
     ),
     gigsToAffordHqUpgrade: Number(
       (
@@ -1738,7 +1760,10 @@ const getBandHealthInsight = s => {
 
 const getEventsInsight = s => {
   const totalEvents =
-    s.avgSpecialEvents + s.avgCashSwings + s.avgBandEvents + s.avgEquipmentEvents
+    s.avgSpecialEvents +
+    s.avgCashSwings +
+    s.avgBandEvents +
+    s.avgEquipmentEvents
   if (totalEvents > 10) {
     return '⚠️ Hohe Event-Dichte – Chaos-Faktor vs. Spielkontrolle abwägen.'
   }
@@ -1922,8 +1947,7 @@ const checkKpi = (id, summary) => {
 
   const fame = summary.avgFameProgressPerGig ?? 0
   const fameRange = t.fameProgressPerGigMax - t.fameProgressPerGigMin
-  const fameCenter =
-    (t.fameProgressPerGigMin + t.fameProgressPerGigMax) / 2
+  const fameCenter = (t.fameProgressPerGigMin + t.fameProgressPerGigMax) / 2
   const fameDeviation =
     fameRange > 0 ? Math.abs(fame - fameCenter) / (fameRange / 2) : 0
   let fameBewertung
@@ -2113,7 +2137,9 @@ const buildMarkdownReport = payload => {
   lines.push(
     '| Szenario | Startkapital | Startfame | Ø Endgeld | Peak-Drop | S2I-Ratio | Cap-Hits | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |'
   )
-  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
+  lines.push(
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|'
+  )
 
   for (const scenario of payload.results) {
     const s = scenario.summary
@@ -2285,13 +2311,15 @@ const buildMarkdownReport = payload => {
       label: 'Meiste Ø Gigs',
       key: s => s.avgGigsPlayed,
       fmt: v => String(v),
-      bewertung: 'Gig-Frequenz ist direkt mit dem Tourstil verknüpft – korrektes Pacing.'
+      bewertung:
+        'Gig-Frequenz ist direkt mit dem Tourstil verknüpft – korrektes Pacing.'
     },
     {
       label: 'Meiste Ø Events',
       key: s => s.avgEventsApplied,
       fmt: v => v.toFixed(2),
-      bewertung: 'Chaotische Spielweisen triggern signifikant mehr Zufallsereignisse.'
+      bewertung:
+        'Chaotische Spielweisen triggern signifikant mehr Zufallsereignisse.'
     }
   ]
   lines.push('| Metrik | Gewinner | Wert | Bewertung |')
@@ -2501,7 +2529,10 @@ export const runSimulationSuite = async (options = {}) => {
   )
 
   if (options.writeBaselinePath) {
-    const writeBaselinePath = path.resolve(PROJECT_ROOT, options.writeBaselinePath)
+    const writeBaselinePath = path.resolve(
+      PROJECT_ROOT,
+      options.writeBaselinePath
+    )
     await fs.mkdir(path.dirname(writeBaselinePath), { recursive: true })
     await fs.writeFile(
       writeBaselinePath,

@@ -24,7 +24,9 @@ vi.mock('pixi.js', () => {
         this.screen = { width: 800, height: 600 }
         this.canvas = document.createElement('canvas')
       }
-      init() { return Promise.resolve() }
+      init() {
+        return Promise.resolve()
+      }
       destroy() {}
     },
     Container: class {
@@ -48,7 +50,6 @@ vi.mock('../../src/components/stage/pixiAppTeardown', () => ({
 vi.mock('../../src/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
 }))
-
 
 describe('AmpStageController', () => {
   let controller

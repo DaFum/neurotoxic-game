@@ -58,17 +58,17 @@
 **Learning:** `structuredClone` has significant overhead (~660ms vs ~10ms for 100k iterations) when used for duplicating simple nested objects on hot paths, like in `negotiateDeal`.
 **Action:** Use manual shallow copying with object spread syntax (`{ ...obj, nested: { ...obj.nested } }`) instead of `structuredClone` when deep cloning is not strictly necessary or when only specific nested objects are mutated.
 
-## 2026-05-28 - Component List Memoization
+## 2026-04-20 - Component List Memoization
 
 **Learning:** Mapping arrays of complex sub-components without `React.memo` (like `ShopItem` inside `ShopTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
 **Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
 
-## 2026-05-28 - Loop Unrolling Tradeoffs
+## 2026-04-20 - Loop Unrolling Tradeoffs
 
 **Learning:** Unrolling loops across configuration objects (e.g., `SOCIAL_PLATFORMS`) provides minor speed improvements but introduces significant maintainability regressions by hardcoding dynamic keys.
 **Action:** Never unroll iterations that loop over configuration data or sources of truth. Reserve loop unrolling for pure computational arrays of fixed size.
 
-## 2026-05-28 - Component List Memoization
+## 2026-04-20 - Component List Memoization
 
 **Learning:** Mapping arrays of complex sub-components without `React.memo` (like `SongRow` inside `SetlistTab`) causes O(N) re-renders when parent states change, even if the sub-component props are referentially stable or primitives.
 **Action:** Always wrap mapping children inside high-frequency parent components with `React.memo` and ensure the passed functions use `useCallback` to prevent deep virtual DOM diffing.
@@ -78,7 +78,7 @@
 **Learning:** In high-frequency paths like PixiJS render loops (e.g., `RoadieStageController.js`, `EffectManager.js`), using `instanceof Sprite` checks introduces significant overhead due to prototype chain traversal.
 **Action:** Replace `instanceof` checks with direct boolean property lookups by assigning `.isSprite = true` upon object instantiation.
 
-## 2026-05-28 - Array Allocations in Random Utilities
+## 2026-04-20 - Array Allocations in Random Utilities
 
 **Learning:** Using `[...arr]` shallow-copying inside generic random sub-set utility methods like `pickRandomSubset` is highly detrimental for performance and GC when array sizes scale or frequency is high, and had been bottlenecking performance.
 **Action:** When implementing generic subset or shuffling algorithms, always prefer direct index lookups (for k=1, k=2) or Sparse Fisher-Yates with Map (for small subsets relative to array length) rather than unconditionally shallow-copying the entire source array.
@@ -87,17 +87,27 @@
 
 **Learning:** Using `map.forEach()` inside high-frequency update loops like `requestAnimationFrame` (e.g., `HecklerOverlay.jsx`) creates unnecessary closure allocations on every frame, which can contribute to garbage collection pauses.
 **Action:** Always prefer `for (const key of map.keys())` over `map.forEach()` in hot rendering loops to eliminate function allocation overhead.
+
 ## 2026-04-12 - [useRhythmGameAudio Infinite Loop and Lock Starvation]
+
 **Learning:** `useRhythmGameAudio` suffered from an OOM infinite loop because it passed complex objects (`band`, `gameMap`, `setlist`) into its `useCallback` dependency array, causing `initializeGigState` to recreate on every render. This masked a lock starvation issue where `isInitializingRef` was never released if the setup was aborted. Furthermore, the test suite (`rhythmGameLogicMultiSong.test.js`) relied on repeated re-invocation from this infinite re-render loop, so it failed once the hook was stabilized.
 **Action:** Stabilized `useCallback`/`useEffect` dependencies using strictly mapped primitives (`band?.members?.length`, `band?.harmony`, `player?.currentNodeId`, `setlist?.length`, etc.) and wrapped initialization in a `try/finally` block to guarantee lock release.
+
 ## 2026-04-12 - Optimization: eventEngine.filterEvents
+
 **Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
 **Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, creating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
+
 ## 2026-04-15 - Vitest Projects & Setup Guarding
 
-**Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for *every single test file* in the worker process, leading to severe redundant initialization delays.
+**Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for _every single test file_ in the worker process, leading to severe redundant initialization delays.
 **Action:** Split test suites into separate Vitest projects (`node` and `jsdom` environments) based on their actual requirements. For `jsdom` projects, always wrap heavy, one-time global mock initializations in `setupFiles` with a `globalThis.__SETUP_DONE__` guard so they are only executed once per worker process.
 
 ## 2025-04-15 - [Heckler Overlay Rendering Optimization]
+
 **Learning:** In a high-frequency animation loop using `requestAnimationFrame`, modifying DOM properties like `node.style.top` and `node.style.left` causes layout thrashing and triggers layout and paint operations which are slow.
 **Action:** Always prefer `node.style.transform` with `translate3d(x, y, 0)` for positional animations as it utilizes hardware acceleration and avoids triggering costly layout recalculations.
+
+## 2026-04-20 - Optimize array map/filter chains in post-gig logic
+**Learning:** Chained array methods like `.map().filter()` on array structures during high-frequency simulation steps (e.g., in `postGigUtils.ts`) cause unnecessary intermediate array allocations, adding GC pressure.
+**Action:** Replace map/filter chains that iterate over objects like `activeDeals` with a single `for` loop, pushing valid and mapped updates directly to a new array to bypass intermediate array construction and improve efficiency.

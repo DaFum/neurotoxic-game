@@ -54,15 +54,15 @@ from outliving the bug.
 
 ## Project Conventions Cheat Sheet
 
-| Area | Rule | Source |
-|---|---|---|
-| Shared types | Live in `src/types/*.d.ts` (`game.d.ts`, `audio.d.ts`, `components.d.ts`) | `src/types/index.ts` |
-| Action types | `as const` object + `keyof typeof` for the union | `src/context/actionTypes.ts` |
-| Action creators | Return `Extract<GameAction, { type: typeof ActionTypes.X }>` | `src/context/actionCreators.ts` |
-| Clamps | Apply at the action creator, not the reducer | `createUpdatePlayerAction` |
-| Lookup maps | `Map<ID, T>`, populated once, consumers use `.get()?` | `SONGS_BY_ID` |
-| Type-only imports | Required — `isolatedModules: true` | `tsconfig.json` |
-| Strict JS | `checkJs: true` — `.js` files are type-checked | `tsconfig.json` |
+| Area              | Rule                                                                      | Source                          |
+| ----------------- | ------------------------------------------------------------------------- | ------------------------------- |
+| Shared types      | Live in `src/types/*.d.ts` (`game.d.ts`, `audio.d.ts`, `components.d.ts`) | `src/types/index.ts`            |
+| Action types      | `as const` object + `keyof typeof` for the union                          | `src/context/actionTypes.ts`    |
+| Action creators   | Return `Extract<GameAction, { type: typeof ActionTypes.X }>`              | `src/context/actionCreators.ts` |
+| Clamps            | Apply at the action creator, not the reducer                              | `createUpdatePlayerAction`      |
+| Lookup maps       | `Map<ID, T>`, populated once, consumers use `.get()?`                     | `SONGS_BY_ID`                   |
+| Type-only imports | Required — `isolatedModules: true`                                        | `tsconfig.json`                 |
+| Strict JS         | `checkJs: true` — `.js` files are type-checked                            | `tsconfig.json`                 |
 
 ---
 
@@ -79,7 +79,9 @@ interface MapNode {
   y: number
   neighbors?: string[]
 }
-interface VenueNode extends MapNode { venueId: string }
+interface VenueNode extends MapNode {
+  venueId: string
+}
 ```
 
 `type` for **unions, intersections, aliases, computed, and tuple types**:
@@ -88,7 +90,7 @@ interface VenueNode extends MapNode { venueId: string }
 // src/context/actionTypes.ts
 export const ActionTypes = {
   CHANGE_SCENE: 'CHANGE_SCENE',
-  UPDATE_PLAYER: 'UPDATE_PLAYER',
+  UPDATE_PLAYER: 'UPDATE_PLAYER'
   // ...
 } as const
 export type ActionType = (typeof ActionTypes)[keyof typeof ActionTypes]
@@ -108,7 +110,7 @@ objects instead:
 // Good — runtime object + type derived from it
 export const ActionTypes = {
   CHANGE_SCENE: 'CHANGE_SCENE',
-  UPDATE_PLAYER: 'UPDATE_PLAYER',
+  UPDATE_PLAYER: 'UPDATE_PLAYER'
 } as const
 export type ActionType = (typeof ActionTypes)[keyof typeof ActionTypes]
 // ActionType = 'CHANGE_SCENE' | 'UPDATE_PLAYER'
@@ -133,7 +135,7 @@ export const createChangeSceneAction = (
   scene: string
 ): Extract<GameAction, { type: typeof ActionTypes.CHANGE_SCENE }> => ({
   type: ActionTypes.CHANGE_SCENE,
-  payload: scene,
+  payload: scene
 })
 ```
 
@@ -212,26 +214,28 @@ Tests assert the forbidden keys are stripped using
 
 ## Utility Types — Used in This Project
 
-| Utility | Project use |
-|---|---|
-| `Partial<T>` | `UpdatePlayerPayload = Partial<PlayerState> \| ((s) => Partial<PlayerState>)` |
-| `Pick<T, K>` | Narrow a context value passed to a sub-component |
-| `Omit<T, K>` | Strip `id` before persisting, add it back on load |
-| `Extract<U, V>` | Action creator return types (see above) |
-| `Exclude<U, V>` | Remove a scene from the allowed list for a sub-flow |
-| `ReturnType<F>` | Infer reducer or selector output without re-declaring |
-| `Parameters<F>` | Mirror a callback signature in a mock or wrapper |
-| `NonNullable<T>` | After `.filter(Boolean)` / `.find(x => x)` narrowing |
-| `Record<K, V>` | Dictionaries keyed on a string union (`Record<SceneName, Config>`) |
-| `Readonly<T>` | Frozen constants (`Object.freeze` + `Readonly`) |
+| Utility          | Project use                                                                   |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `Partial<T>`     | `UpdatePlayerPayload = Partial<PlayerState> \| ((s) => Partial<PlayerState>)` |
+| `Pick<T, K>`     | Narrow a context value passed to a sub-component                              |
+| `Omit<T, K>`     | Strip `id` before persisting, add it back on load                             |
+| `Extract<U, V>`  | Action creator return types (see above)                                       |
+| `Exclude<U, V>`  | Remove a scene from the allowed list for a sub-flow                           |
+| `ReturnType<F>`  | Infer reducer or selector output without re-declaring                         |
+| `Parameters<F>`  | Mirror a callback signature in a mock or wrapper                              |
+| `NonNullable<T>` | After `.filter(Boolean)` / `.find(x => x)` narrowing                          |
+| `Record<K, V>`   | Dictionaries keyed on a string union (`Record<SceneName, Config>`)            |
+| `Readonly<T>`    | Frozen constants (`Object.freeze` + `Readonly`)                               |
 
 ```ts
 // Extract a payload type by action name — project-idiomatic
-type PayloadFor<T extends ActionType> =
-  Extract<GameAction, { type: T }>['payload']
+type PayloadFor<T extends ActionType> = Extract<
+  GameAction,
+  { type: T }
+>['payload']
 
 // Usage
-type ScenePayload = PayloadFor<typeof ActionTypes.CHANGE_SCENE>  // string
+type ScenePayload = PayloadFor<typeof ActionTypes.CHANGE_SCENE> // string
 ```
 
 ---
@@ -245,7 +249,10 @@ inferred shape. Use it for config objects keyed on a union:
 type SceneName = 'MENU' | 'OVERWORLD' | 'PREGIG' | 'GIG' | 'POSTGIG'
 
 // Bad: `as Record<SceneName, string>` discards literal types
-const SCENE_BG = { MENU: 'menu.png', OVERWORLD: 'map.png' /* ... */ } as Record<SceneName, string>
+const SCENE_BG = { MENU: 'menu.png', OVERWORLD: 'map.png' /* ... */ } as Record<
+  SceneName,
+  string
+>
 
 // Good: satisfies preserves literal inference AND checks keys exhaust the union
 const SCENE_BG = {
@@ -253,10 +260,10 @@ const SCENE_BG = {
   OVERWORLD: 'map.png',
   PREGIG: 'pregig.png',
   GIG: 'gig.png',
-  POSTGIG: 'postgig.png',
+  POSTGIG: 'postgig.png'
 } as const satisfies Record<SceneName, string>
 
-SCENE_BG.MENU  // type: 'menu.png' (not string)
+SCENE_BG.MENU // type: 'menu.png' (not string)
 ```
 
 Rule of thumb: `satisfies` when you want the compiler to validate _and_ keep the
@@ -273,7 +280,7 @@ esbuild). Type-only imports must be explicit:
 ```ts
 // Good — elided at build time, no runtime import
 import type { GameAction, PlayerState } from '../types/game'
-import { ActionTypes } from './actionTypes'  // runtime value
+import { ActionTypes } from './actionTypes' // runtime value
 
 // Bad — may cause "isolatedModules" errors if the file only exports types
 import { GameAction } from '../types/game'
@@ -302,12 +309,17 @@ function clamp(v: number, min: number, max: number): number {
 }
 
 // Good — typed lookup wrapper
-function getById<T extends { id: string }>(map: Map<string, T>, id: string): T | undefined {
+function getById<T extends { id: string }>(
+  map: Map<string, T>,
+  id: string
+): T | undefined {
   return map.get(id)
 }
 
 // Bad — too loose, T is unused
-function logIt<T>(x: T): void { console.log(x) }  // just take unknown
+function logIt<T>(x: T): void {
+  console.log(x)
+} // just take unknown
 ```
 
 ### Typed Map lookup (project pattern)
@@ -315,12 +327,12 @@ function logIt<T>(x: T): void { console.log(x) }  // just take unknown
 ```ts
 // src/data/songs.ts
 export const SONGS_BY_ID: Map<string, Song> = new Map(
-  songs.map((s) => [s.id, s] as const)
+  songs.map(s => [s.id, s] as const)
 )
 
 // Consumer
 const song = SONGS_BY_ID.get(id)
-if (!song) return  // narrows .get() from Song | undefined -> Song below
+if (!song) return // narrows .get() from Song | undefined -> Song below
 const leaderboardId = song.leaderboardId
 ```
 
@@ -335,15 +347,21 @@ Never pretend `.get()` returns non-undefined via `!` — always narrow.
 ```tsx
 // Inline for one-off components
 function ScoreDisplay({ score, label }: { score: number; label: string }) {
-  return <div>{label}: {score}</div>
+  return (
+    <div>
+      {label}: {score}
+    </div>
+  )
 }
 
 // Named interface for shared/documented props
 interface OverloadMeterProps {
-  value: number   // 0–100
+  value: number // 0–100
   className?: string
 }
-function OverloadMeter({ value, className }: OverloadMeterProps) { /* ... */ }
+function OverloadMeter({ value, className }: OverloadMeterProps) {
+  /* ... */
+}
 ```
 
 ### Ref as prop (NOT `forwardRef`)
@@ -367,7 +385,9 @@ const [scene, setScene] = useState<SceneName>('MENU')
 const canvasRef = useRef<HTMLCanvasElement>(null)
 
 // Event handlers
-const onChange = (e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ }
+const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /* ... */
+}
 ```
 
 ### `t` in deps
@@ -379,18 +399,18 @@ stable across renders but linted. (See AGENTS.md.)
 
 ## Common Anti-Patterns (Found in Real Reviews)
 
-| Anti-pattern | Why it bites | Fix |
-|---|---|---|
-| `as any` | Disables all downstream checking; silent breakage | `unknown` + guard, or proper type |
-| `// @ts-ignore` | Hides errors forever, survives refactors | `// @ts-expect-error <reason>` — auto-fails when fixed |
-| `[key: string]: any` | Defeats key safety | `Record<K, V>` with explicit key union |
-| `object` | Too broad — no property access | Specific interface or `Record<string, unknown>` |
-| `as X` without narrowing first | Unsafe at runtime | Narrow via guard, then cast if needed |
-| `Function` | No signature check | `(...args: A) => R` |
-| `?.` as nullability-escape | Hides the real optional field | Fix the source type |
-| Casting action types | Breaks discriminated union | Use `Extract<GameAction, { type: ... }>` |
-| Re-clamping in the reducer | Work duplicated from action creator | Clamp once in `createUpdate*Action` |
-| `as const` missing on lookup objects | Values widen, union collapses | Add `as const satisfies Record<K, V>` |
+| Anti-pattern                         | Why it bites                                      | Fix                                                    |
+| ------------------------------------ | ------------------------------------------------- | ------------------------------------------------------ |
+| `as any`                             | Disables all downstream checking; silent breakage | `unknown` + guard, or proper type                      |
+| `// @ts-ignore`                      | Hides errors forever, survives refactors          | `// @ts-expect-error <reason>` — auto-fails when fixed |
+| `[key: string]: any`                 | Defeats key safety                                | `Record<K, V>` with explicit key union                 |
+| `object`                             | Too broad — no property access                    | Specific interface or `Record<string, unknown>`        |
+| `as X` without narrowing first       | Unsafe at runtime                                 | Narrow via guard, then cast if needed                  |
+| `Function`                           | No signature check                                | `(...args: A) => R`                                    |
+| `?.` as nullability-escape           | Hides the real optional field                     | Fix the source type                                    |
+| Casting action types                 | Breaks discriminated union                        | Use `Extract<GameAction, { type: ... }>`               |
+| Re-clamping in the reducer           | Work duplicated from action creator               | Clamp once in `createUpdate*Action`                    |
+| `as const` missing on lookup objects | Values widen, union collapses                     | Add `as const satisfies Record<K, V>`                  |
 
 ---
 
@@ -437,8 +457,8 @@ Run through this when reviewing a TS diff:
 
 For deeper dives, load from `references/`:
 
-| Topic | File |
-|---|---|
-| Conditional types, `infer`, template literals, branded types | `references/advanced-types.md` |
-| Module augmentation, declaration merging, `.d.ts` authoring | `references/module-augmentation.md` |
-| tsconfig options deep-dive, `isolatedModules` edge cases | `references/tsconfig.md` |
+| Topic                                                        | File                                |
+| ------------------------------------------------------------ | ----------------------------------- |
+| Conditional types, `infer`, template literals, branded types | `references/advanced-types.md`      |
+| Module augmentation, declaration merging, `.d.ts` authoring  | `references/module-augmentation.md` |
+| tsconfig options deep-dive, `isolatedModules` edge cases     | `references/tsconfig.md`            |

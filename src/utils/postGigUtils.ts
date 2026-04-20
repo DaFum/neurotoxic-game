@@ -152,9 +152,15 @@ export const calculatePostGigStateUpdates = (
 
   // Automatically decrement all active deals every gig
   if (updatedSocial.activeDeals && updatedSocial.activeDeals.length > 0) {
-    updatedSocial.activeDeals = updatedSocial.activeDeals
-      .map(deal => ({ ...deal, remainingGigs: (deal.remainingGigs || 1) - 1 }))
-      .filter(deal => deal.remainingGigs > 0)
+    const nextDeals = []
+    for (let i = 0; i < updatedSocial.activeDeals.length; i++) {
+      const deal = updatedSocial.activeDeals[i]
+      const nextRemainingGigs = (deal.remainingGigs || 1) - 1
+      if (nextRemainingGigs > 0) {
+        nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
+      }
+    }
+    updatedSocial.activeDeals = nextDeals
   }
 
   // Handle comm_sellout_ad
@@ -315,7 +321,9 @@ export const getAcceptDealSocialUpdateFactory = (deal: any) => {
   }
 }
 
-export const getSpinStoryMoneyUpdate = ({ player }: { player: any }) => {
+import type { GameState } from '../types/game'
+
+export const getSpinStoryMoneyUpdate = ({ player }: { player: GameState['player'] }) => {
   if (player.money < 200) {
     return { success: false }
   }
@@ -332,7 +340,7 @@ export const getSpinStoryMoneyUpdate = ({ player }: { player: any }) => {
 }
 
 export const getSpinStorySocialUpdateFactory = () => {
-  return (prevSocial: any) => ({
+  return (prevSocial: GameState['social']) => ({
     controversyLevel: clampControversyLevel(
       (prevSocial.controversyLevel || 0) - 25
     )
