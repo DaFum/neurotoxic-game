@@ -5,6 +5,12 @@ on:
     types: [created, edited, deleted]
   pull_request_review_comment:
     types: [created, edited, deleted]
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, edited]
+  pull_request_review_thread:
+    types: [created, resolved]
 
 jobs:
   update-summary-and-check:
@@ -57,7 +63,7 @@ jobs:
 
             let copyableBlock = formattedComments.length > 0
               ? formattedComments
-              : "Aktuell keine ungelösten Kommentare vorhanden.";
+              : "Keine Kommentare vorhanden.";
 
             const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Wird automatisch aktualisiert, sobald sich Kommentare ändern.*\n\n\`\`\`text\n`;
             const footer = `\n\`\`\`\n`;
@@ -117,6 +123,7 @@ jobs:
                           comments(first: 1) {
                             nodes {
                               author {
+                                __typename
                                 login
                                 ... on Bot {
                                   id
@@ -139,8 +146,7 @@ jobs:
                 const firstComment = t.comments.nodes[0];
                 const author = firstComment ? firstComment.author : null;
 
-                // Wenn author __typename === 'Bot' (oder login als fallback) ignorieren
-                if (author && (author.login === "github-actions" || author.login.includes("bot") || author.__typename === 'Bot' || 'id' in author)) {
+                if (author && (author.__typename === 'Bot' || Object.hasOwn(author, 'id'))) {
                   return false; // Ist ein Bot-Thread, also ignorieren
                 }
                 return true;
