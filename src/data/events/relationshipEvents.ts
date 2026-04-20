@@ -1,19 +1,19 @@
 // TODO: Review this file
 import type { GameState, BandMember } from '../../types/game'
 
-type RelPair = { member1: unknown; member2: string; score: number }
+type RelPair = { member1: string; member2: string; score: number }
 
 const getFlatRelationships = (members: BandMember[]): RelPair[] => {
   const flat: RelPair[] = []
   const len = members.length
   for (let i = 0; i < len; i++) {
     const m1 = members[i]
-    if (!m1 || !m1.relationships) continue
-    for (const m2Name in m1.relationships) {
+    if (!m1 || !m1.relationships || typeof m1.name !== 'string') continue
+    for (const [m2Name, score] of Object.entries(m1.relationships)) {
       flat.push({
         member1: m1.name,
         member2: m2Name,
-        score: m1.relationships[m2Name] ?? 0
+        score: score ?? 0
       })
     }
   }

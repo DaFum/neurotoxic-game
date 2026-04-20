@@ -2,12 +2,31 @@ import * as Tone from 'tone'
 import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
 
+type LayeredSnare = {
+  triggerAttackRelease: (
+    dur: number | string,
+    time: number | string,
+    vel?: number
+  ) => void
+  volume: Tone.Signal<'decibels'>
+  dispose: () => void
+  _noise: Tone.NoiseSynth
+  _body: Tone.MembraneSynth
+}
+
+type DrumKitSynth = {
+  kick: Tone.MembraneSynth
+  snare: LayeredSnare
+  hihat: Tone.MetalSynth
+  crash: Tone.MetalSynth
+}
+
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
  * @param {object} bus - Tone.js audio node to connect the snare to.
  * @returns {object} Proxy object with triggerAttackRelease, volume, and dispose methods.
  */
-export function createLayeredSnare(bus: any): any {
+export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
   const snareBus = new Tone.Volume(0).connect(bus)
   const snareNoise = new Tone.NoiseSynth({
     envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
@@ -20,7 +39,11 @@ export function createLayeredSnare(bus: any): any {
   }).connect(snareBus)
   snareBody.volume.value = -4
   return {
-    triggerAttackRelease: (dur: number | string, time: number | string, vel: number = 1) => {
+    triggerAttackRelease: (
+      dur: number | string,
+      time: number | string,
+      vel: number = 1
+    ) => {
       snareNoise.triggerAttackRelease(dur, time, vel)
       snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
     },
@@ -107,7 +130,10 @@ export function setupBass(): void {
   audioState.bass.volume.value = 0
 }
 
-export function buildDrumKit(bus: any, kickOverrides: any = {}): any {
+export function buildDrumKit(
+  bus: Tone.InputNode,
+  kickOverrides: Partial<Tone.MembraneSynthOptions> = {}
+): DrumKitSynth {
   const safeKickOverrides =
     kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
   return {

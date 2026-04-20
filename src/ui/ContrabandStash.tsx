@@ -32,6 +32,39 @@ interface ContrabandStashProps {
   onClose?: () => void
 }
 
+type BandMemberItem = {
+  id: string | number
+  name?: string
+}
+
+type StashItem = {
+  id: string
+  instanceId?: string | number
+  effectType?: string
+  rarity?: string
+  type?: string
+  duration?: number
+  imagePrompt?: string
+  description?: string
+  applied?: boolean
+  applyOnAdd?: boolean
+}
+
+const isBandMember = (value: unknown): value is BandMemberItem => {
+  if (!value || typeof value !== 'object') return false
+  const obj = value as Record<string, unknown>
+  return (
+    (typeof obj.id === 'string' || typeof obj.id === 'number') &&
+    (obj.name === undefined || typeof obj.name === 'string')
+  )
+}
+
+const isStashItem = (value: unknown): value is StashItem => {
+  if (!value || typeof value !== 'object') return false
+  const obj = value as Record<string, unknown>
+  return typeof obj.id === 'string'
+}
+
 export const ContrabandStash = ({
   stash = [],
   members = [],
@@ -81,7 +114,7 @@ export const ContrabandStash = ({
             })}
           </h3>
           <div className='flex flex-wrap gap-2'>
-            {members.map((m: any) => (
+            {members.filter(isBandMember).map(m => (
               <button
                 key={m.id}
                 type='button'
@@ -107,7 +140,7 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash.map((item: any) => {
+            stash.filter(isStashItem).map(item => {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
               const stableKey = item.instanceId || `migrated-${item.id}`
@@ -269,12 +302,12 @@ ContrabandStash.propTypes = {
   ),
   members: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       name: PropTypes.string
     })
   ),
-  selectedMember: PropTypes.string,
-  setSelectedMember: PropTypes.func.isRequired,
-  handleUseItem: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired
+  selectedMember: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  setSelectedMember: PropTypes.func,
+  handleUseItem: PropTypes.func,
+  onClose: PropTypes.func
 }

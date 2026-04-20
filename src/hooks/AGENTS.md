@@ -16,14 +16,9 @@ Applies to `src/hooks/**`.
 - Use `useState<T>` generics when the initial value doesn't carry the full type (e.g. `useState<SceneName>('MENU')`, `useState<User | null>(null)`).
 - Annotate `useRef` with the precise element or value type (`useRef<HTMLCanvasElement>(null)`). Avoid `useRef<any>`.
 - For pure logic reused across hooks, extract it to a plain function (outside the hook) and unit-test via `node:test` — see `CLAUDE.md` testing supplements.
+- Keep callback dependencies complete (`t`, derived state slices, handlers) to prevent stale closures despite valid typings.
 
 ## Domain Gotchas
 
 - `useArrivalLogic` owns arrival routing decisions.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must not import PIXI directly — they return reactive state only.
-
-## Nested TypeScript Notes
-
-- Exported hooks should expose explicit return contracts; avoid relying on inferred structural types for public hook APIs.
-- Keep callback dependencies complete (`t`, derived state slices, handlers) to prevent stale closures despite valid typings.
-- Use precise `useRef` and `useState` generics at hook boundaries to avoid hidden widening to `any`.

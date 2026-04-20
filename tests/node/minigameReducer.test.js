@@ -77,10 +77,10 @@ describe('minigameReducer', () => {
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
 
-    it('should use normalized venue id when venue object has id without name', () => {
+    it('should prefer venue.id over venue.name when both exist', () => {
       baseState.gameMap.nodes.node2 = {
         id: 'node2',
-        venue: { id: 'berlin_end_venue' },
+        venue: { id: 'berlin_end_venue', name: 'some_other_name' },
         x: 100,
         y: 0
       }
@@ -89,7 +89,10 @@ describe('minigameReducer', () => {
       const payload = { damageTaken: 10, itemsCollected: [] }
       const nextState = handleCompleteTravelMinigame(baseState, payload)
 
-      assert.strictEqual(nextState.player.location, 'berlin_end_venue')
+      assert.strictEqual(
+        nextState.player.location,
+        'venues:berlin_end_venue.name'
+      )
     })
 
     it('should return safely if invalid targetNode and preserve currentScene', () => {

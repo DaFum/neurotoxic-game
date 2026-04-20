@@ -232,8 +232,9 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
       // Pick a random member directly from band.members to avoid O(N) allocation
-      const target =
-        band.members[Math.floor(diceRoll * band.members.length)].name
+      const rawIndex = Math.floor(diceRoll * band.members.length)
+      const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
+      const target = band.members[safeIndex].name
       return {
         type: 'FIXED',
         success: true,
@@ -271,8 +272,9 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.RISK],
     condition: ({ lastGigStats, band }: GameState) =>
-      lastGigStats &&
-      (lastGigStats?.score as number) > 25000 &&
+      lastGigStats != null &&
+      typeof lastGigStats.score === 'number' &&
+      lastGigStats.score > 25000 &&
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
@@ -342,7 +344,9 @@ export const POST_OPTIONS = [
         return false
       const isVirtuoso = hasMemberWithTrait(band.members, 'virtuoso')
       return (
-        (lastGigStats && (lastGigStats?.score as number) > 15000) ||
+        (lastGigStats != null &&
+          typeof lastGigStats.score === 'number' &&
+          lastGigStats.score > 15000) ||
         social?.egoFocus ||
         isVirtuoso
       )
@@ -506,7 +510,9 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      const targetObj = band.members[Math.floor(diceRoll * band.members.length)]
+      const rawIndex = Math.floor(diceRoll * band.members.length)
+      const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
+      const targetObj = band.members[safeIndex]
       const target = targetObj.name
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {

@@ -19,3 +19,4 @@ Applies to `src/components/minigames/**`.
 
 - Do not import PIXI into logic-only hooks; scene/frame components should consume prepared logic objects.
 - Completion overlays should use provided completion state instead of recomputing reducer data.
+- Arrival routing is owned by `useArrivalLogic`: components/controllers must dispatch completion results (completion action/event) and let shared arrival routing + scene transition logic run there.

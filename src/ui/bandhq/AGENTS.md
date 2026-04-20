@@ -17,5 +17,5 @@ Applies to `src/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
 
 ## Gotchas
 
-- Bounded values (money/harmony/fame) must reflect canonical clamp helpers in action creators.
+- Bounded-state guidance should follow canonical helpers in `src/utils/gameStateUtils.ts`: `player.money >= 0` and `band.harmony` clamped to `1..100`.
 - Do not bypass centralized cost/effect engines when deriving UI decisions.
