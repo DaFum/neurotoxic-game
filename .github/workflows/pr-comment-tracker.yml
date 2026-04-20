@@ -116,6 +116,8 @@ jobs:
                 // Entferne übrig gebliebene <picture> oder <img> Tags
                 .replace(/<picture[^>]*>[\s\S]*?<\/picture>/gi, '')
                 .replace(/<img[^>]*>/gi, '')
+                // Entferne Feedback-Zeile von Bot-Kommentaren
+                .replace(/---\s*\*Was this helpful\? React with 👍 or 👎 to provide feedback\.\*/g, '')
                 // Maskiere Backticks, um Ausbrechen aus dem Markdown Code-Block zu verhindern
                 .replace(/```/g, '\\`\\`\\`')
                 // Zeilenumbrüche durch Leerzeichen ersetzen
