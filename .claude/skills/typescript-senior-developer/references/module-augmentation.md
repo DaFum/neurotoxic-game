@@ -46,7 +46,7 @@ Add to the global scope from inside a module:
 
 ```ts
 // src/types/globals.d.ts
-export {}  // makes this a module
+export {} // makes this a module
 
 declare global {
   interface Window {
@@ -74,9 +74,9 @@ declare module '*.ogg' {
 
 ## When to Use Each
 
-| Technique | Use case |
-|---|---|
-| Module augmentation | Extend third-party library types (react-i18next, window) |
-| Declaration merging | Plugin/extension patterns, gradual type additions |
-| Ambient declarations | Non-TS file types (SVG, OGG, WASM) |
-| Global augmentation | Browser globals, test utilities on `globalThis` |
+| Technique            | Use case                                                 |
+| -------------------- | -------------------------------------------------------- |
+| Module augmentation  | Extend third-party library types (react-i18next, window) |
+| Declaration merging  | Plugin/extension patterns, gradual type additions        |
+| Ambient declarations | Non-TS file types (SVG, OGG, WASM)                       |
+| Global augmentation  | Browser globals, test utilities on `globalThis`          |

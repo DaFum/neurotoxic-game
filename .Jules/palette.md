@@ -79,6 +79,7 @@
 
 **Learning:** When components like `GigModifiersBlock` use interactive nested buttons (like "Band Meeting") without explicit `focus-visible` styling, keyboard users lack visual feedback for navigation.
 **Action:** When extracting or creating new interactive blocks that use generic HTML `<button>` inside them, always explicitly apply `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-<color> focus-visible:ring-offset-2 focus-visible:ring-offset-void-black` on the button elements.
+
 ## 2025-02-18 - Tooltip Container Layout
 
 **Learning:** When conditionally wrapping full-width components (like buttons) in a `Tooltip` component (which defaults to an `inline-block` layout), the wrapper can cause the inner button to shrink unexpectedly. Passing class names from the parent can lead to class conflicts (e.g. `block` vs `inline-block` in Tailwind).

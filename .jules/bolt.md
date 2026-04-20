@@ -87,17 +87,27 @@
 
 **Learning:** Using `map.forEach()` inside high-frequency update loops like `requestAnimationFrame` (e.g., `HecklerOverlay.jsx`) creates unnecessary closure allocations on every frame, which can contribute to garbage collection pauses.
 **Action:** Always prefer `for (const key of map.keys())` over `map.forEach()` in hot rendering loops to eliminate function allocation overhead.
+
 ## 2026-04-12 - [useRhythmGameAudio Infinite Loop and Lock Starvation]
+
 **Learning:** `useRhythmGameAudio` suffered from an OOM infinite loop because it passed complex objects (`band`, `gameMap`, `setlist`) into its `useCallback` dependency array, causing `initializeGigState` to recreate on every render. This masked a lock starvation issue where `isInitializingRef` was never released if the setup was aborted. Furthermore, the test suite (`rhythmGameLogicMultiSong.test.js`) relied on repeated re-invocation from this infinite re-render loop, so it failed once the hook was stabilized.
 **Action:** Stabilized `useCallback`/`useEffect` dependencies using strictly mapped primitives (`band?.members?.length`, `band?.harmony`, `player?.currentNodeId`, `setlist?.length`, etc.) and wrapped initialization in a `try/finally` block to guarantee lock release.
+
 ## 2026-04-12 - Optimization: eventEngine.filterEvents
+
 **Learning:** The callback in Array.prototype.filter has significant overhead when called repeatedly. A standard for-loop with direct condition evaluation is significantly faster (~30-40% improvement in benchmarks).
 **Action:** Replaced `pool.filter` in `src/utils/eventEngine.js` with a manual for-loop, creating an empty array, and strictly controlling execution with `continue` rather than executing a high-frequency callback.
+
 ## 2026-04-15 - Vitest Projects & Setup Guarding
 
-**Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for *every single test file* in the worker process, leading to severe redundant initialization delays.
+**Learning:** Running all tests (including pure Node logic tests) inside a global `jsdom` environment with heavy setup files (like complex Browser API mocks) creates massive overhead. Furthermore, Vitest's `isolate: true` causes the heavy `setupFiles` to be re-executed for _every single test file_ in the worker process, leading to severe redundant initialization delays.
 **Action:** Split test suites into separate Vitest projects (`node` and `jsdom` environments) based on their actual requirements. For `jsdom` projects, always wrap heavy, one-time global mock initializations in `setupFiles` with a `globalThis.__SETUP_DONE__` guard so they are only executed once per worker process.
 
 ## 2025-04-15 - [Heckler Overlay Rendering Optimization]
+
 **Learning:** In a high-frequency animation loop using `requestAnimationFrame`, modifying DOM properties like `node.style.top` and `node.style.left` causes layout thrashing and triggers layout and paint operations which are slow.
 **Action:** Always prefer `node.style.transform` with `translate3d(x, y, 0)` for positional animations as it utilizes hardware acceleration and avoids triggering costly layout recalculations.
+
+## 2026-05-28 - Optimize array map/filter chains in post-gig logic
+**Learning:** Chained array methods like `.map().filter()` on array structures during high-frequency simulation steps (e.g., in `postGigUtils.ts`) cause unnecessary intermediate array allocations, adding GC pressure.
+**Action:** Replace map/filter chains that iterate over objects like `activeDeals` with a single `for` loop, pushing valid and mapped updates directly to a new array to bypass intermediate array construction and improve efficiency.

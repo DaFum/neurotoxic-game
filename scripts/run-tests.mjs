@@ -15,9 +15,7 @@ if (!baseEnv.VITEST_MAX_WORKERS) {
 
 const command = process.platform === 'win32' ? 'cmd.exe' : 'pnpm'
 const mkArgs = script =>
-  process.platform === 'win32'
-    ? ['/c', 'pnpm', 'run', script]
-    : ['run', script]
+  process.platform === 'win32' ? ['/c', 'pnpm', 'run', script] : ['run', script]
 
 const runScript = script =>
   new Promise(resolve => {

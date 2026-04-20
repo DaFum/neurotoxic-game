@@ -37,7 +37,7 @@ type NonNullable<T> = T extends null | undefined ? never : T
 To prevent distribution, wrap in a tuple:
 
 ```ts
-type IsUnion<T> = [T] extends [T] ? false : true  // prevents distribution
+type IsUnion<T> = [T] extends [T] ? false : true // prevents distribution
 ```
 
 ---
@@ -97,7 +97,7 @@ Validate a value against a type without widening:
 ```ts
 const config = {
   theme: 'dark',
-  volume: 0.8,
+  volume: 0.8
 } satisfies Partial<AppConfig>
 // config.theme is still 'dark' (not widened to string)
 ```
@@ -111,9 +111,9 @@ Useful for config objects and records where you want both safety and inference.
 Mark type parameters explicitly for better variance checking:
 
 ```ts
-type Producer<out T> = () => T         // covariant
-type Consumer<in T> = (x: T) => void   // contravariant
-type Both<in out T> = (x: T) => T      // invariant
+type Producer<out T> = () => T // covariant
+type Consumer<in T> = (x: T) => void // contravariant
+type Both<in out T> = (x: T) => T // invariant
 ```
 
 ---
@@ -123,7 +123,9 @@ type Both<in out T> = (x: T) => T      // invariant
 Preserve literal types in generic functions:
 
 ```ts
-function identity<const T>(value: T): T { return value }
+function identity<const T>(value: T): T {
+  return value
+}
 const x = identity(['a', 'b'])
 // x: readonly ['a', 'b']  — not string[]
 ```

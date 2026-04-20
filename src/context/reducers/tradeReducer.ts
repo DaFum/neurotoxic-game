@@ -34,8 +34,10 @@ export const handleTradeVoidItem = (
   }
 
   const { fameCost, successToast } = payload
-  const contrabandId = typeof payload.contrabandId === 'string' ? payload.contrabandId : ''
-  const instanceId = typeof payload.instanceId === 'string' ? payload.instanceId : undefined
+  const contrabandId =
+    typeof payload.contrabandId === 'string' ? payload.contrabandId : ''
+  const instanceId =
+    typeof payload.instanceId === 'string' ? payload.instanceId : undefined
 
   const cost = Math.max(0, Number(fameCost) || 0)
   const currentFame = Number(state.player.fame) || 0
@@ -134,7 +136,9 @@ export const handleTradeVoidItem = (
                 for (const prop in value) {
                   if (!Object.hasOwn(value, prop)) continue
                   if (isForbiddenKey(prop)) continue
-                  out[prop] = sanitizeContextValue((value as Record<string, unknown>)[prop])
+                  out[prop] = sanitizeContextValue(
+                    (value as Record<string, unknown>)[prop]
+                  )
                 }
                 return out
               }

@@ -41,7 +41,13 @@ vi.mock('../../src/utils/AudioManager', () => ({
 
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
-  safeStorageOperation: vi.fn((op, fn, fallback = null) => { try { return fn() } catch { return fallback } })
+  safeStorageOperation: vi.fn((op, fn, fallback = null) => {
+    try {
+      return fn()
+    } catch {
+      return fallback
+    }
+  })
 }))
 
 vi.mock('../../src/ui/BandHQ', () => ({

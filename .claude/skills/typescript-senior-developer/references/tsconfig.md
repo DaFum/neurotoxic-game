@@ -4,27 +4,27 @@
 
 ```json
 {
-  "strict": true,           // enables all strict checks below
+  "strict": true, // enables all strict checks below
   "strictNullChecks": true, // null/undefined are not assignable to other types
-  "noImplicitAny": true,    // error on inferred `any`
-  "noEmit": true,           // type-check only; Vite handles transpilation
-  "isolatedModules": true,  // each file must be independently transpilable (Vite/esbuild requirement)
+  "noImplicitAny": true, // error on inferred `any`
+  "noEmit": true, // type-check only; Vite handles transpilation
+  "isolatedModules": true, // each file must be independently transpilable (Vite/esbuild requirement)
   "moduleResolution": "bundler", // modern resolution matching Vite's behavior
-  "allowJs": true,          // JS files included in type checking
-  "checkJs": true           // type errors reported in JS files too
+  "allowJs": true, // JS files included in type checking
+  "checkJs": true // type errors reported in JS files too
 }
 ```
 
 ## Key `strict` Sub-Flags
 
-| Flag | What it catches |
-|---|---|
-| `strictNullChecks` | `null`/`undefined` not assignable without explicit union |
-| `noImplicitAny` | Parameters/variables without inferable type |
-| `strictFunctionTypes` | Contravariant function parameter checking |
-| `strictPropertyInitialization` | Class properties must be initialized in constructor |
-| `strictBindCallApply` | Type-safe `.bind()`, `.call()`, `.apply()` |
-| `useUnknownInCatchVariables` | `catch (e)` binds `e` as `unknown`, not `any` |
+| Flag                           | What it catches                                          |
+| ------------------------------ | -------------------------------------------------------- |
+| `strictNullChecks`             | `null`/`undefined` not assignable without explicit union |
+| `noImplicitAny`                | Parameters/variables without inferable type              |
+| `strictFunctionTypes`          | Contravariant function parameter checking                |
+| `strictPropertyInitialization` | Class properties must be initialized in constructor      |
+| `strictBindCallApply`          | Type-safe `.bind()`, `.call()`, `.apply()`               |
+| `useUnknownInCatchVariables`   | `catch (e)` binds `e` as `unknown`, not `any`            |
 
 ## `isolatedModules` Constraints
 
@@ -39,7 +39,7 @@ import type { GameState } from '../types/game'
 import { type SceneName, getScene } from '../scenes'
 
 // Bad — may cause runtime errors with isolatedModules
-import { GameState } from '../types/game'  // if GameState is type-only
+import { GameState } from '../types/game' // if GameState is type-only
 ```
 
 ## Path Aliases
@@ -62,13 +62,13 @@ TypeScript only type-checks; it never emits JS. Vite handles transpilation indep
 
 ## Common tsconfig Pitfalls
 
-| Problem | Cause | Fix |
-|---|---|---|
-| `Cannot find module '@/...'` in tests | `paths` not in vitest config | Add `resolve.alias` to `vitest.config.js` |
-| `const enum` errors | `isolatedModules: true` | Use regular `enum` or string union |
-| `.js` import not resolved | `moduleResolution` mismatch | Use `"bundler"` to match Vite |
-| Type errors in `node_modules` | `skipLibCheck: false` | Set `skipLibCheck: true` |
-| Class field init errors | `useDefineForClassFields: true` | Initialize in constructor or use `!` assertion |
+| Problem                               | Cause                           | Fix                                            |
+| ------------------------------------- | ------------------------------- | ---------------------------------------------- |
+| `Cannot find module '@/...'` in tests | `paths` not in vitest config    | Add `resolve.alias` to `vitest.config.js`      |
+| `const enum` errors                   | `isolatedModules: true`         | Use regular `enum` or string union             |
+| `.js` import not resolved             | `moduleResolution` mismatch     | Use `"bundler"` to match Vite                  |
+| Type errors in `node_modules`         | `skipLibCheck: false`           | Set `skipLibCheck: true`                       |
+| Class field init errors               | `useDefineForClassFields: true` | Initialize in constructor or use `!` assertion |
 
 ## Useful CLI Flags
 

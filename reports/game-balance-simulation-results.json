@@ -33,11 +33,7 @@
       "eventIntensity": 0.35,
       "maintenanceDiscipline": 0.7,
       "minigameSkill": 0.62,
-      "traitPack": [
-        "bandleader",
-        "gear_nerd",
-        "party_animal"
-      ],
+      "traitPack": ["bandleader", "gear_nerd", "party_animal"],
       "modifierBias": {
         "promo": 0.35,
         "merch": 0.3,
@@ -69,9 +65,7 @@
       "eventIntensity": 0.5,
       "maintenanceDiscipline": 0.45,
       "minigameSkill": 0.42,
-      "traitPack": [
-        "road_warrior"
-      ],
+      "traitPack": ["road_warrior"],
       "modifierBias": {
         "promo": 0.15,
         "merch": 0.25,
@@ -103,10 +97,7 @@
       "eventIntensity": 0.62,
       "maintenanceDiscipline": 0.63,
       "minigameSkill": 0.58,
-      "traitPack": [
-        "social_manager",
-        "tech_wizard"
-      ],
+      "traitPack": ["social_manager", "tech_wizard"],
       "modifierBias": {
         "promo": 0.78,
         "merch": 0.65,
@@ -138,10 +129,7 @@
       "eventIntensity": 0.75,
       "maintenanceDiscipline": 0.6,
       "minigameSkill": 0.5,
-      "traitPack": [
-        "bandleader",
-        "melodic_genius"
-      ],
+      "traitPack": ["bandleader", "melodic_genius"],
       "modifierBias": {
         "promo": 0.2,
         "merch": 0.35,
@@ -173,11 +161,7 @@
       "eventIntensity": 0.4,
       "maintenanceDiscipline": 0.75,
       "minigameSkill": 0.66,
-      "traitPack": [
-        "tech_wizard",
-        "blast_machine",
-        "social_manager"
-      ],
+      "traitPack": ["tech_wizard", "blast_machine", "social_manager"],
       "modifierBias": {
         "promo": 0.56,
         "merch": 0.5,
@@ -209,9 +193,7 @@
       "eventIntensity": 0.95,
       "maintenanceDiscipline": 0.35,
       "minigameSkill": 0.35,
-      "traitPack": [
-        "party_animal"
-      ],
+      "traitPack": ["party_animal"],
       "modifierBias": {
         "promo": 0.55,
         "merch": 0.5,
@@ -243,11 +225,7 @@
       "eventIntensity": 0.55,
       "maintenanceDiscipline": 0.58,
       "minigameSkill": 0.64,
-      "traitPack": [
-        "social_manager",
-        "tech_wizard",
-        "gear_nerd"
-      ],
+      "traitPack": ["social_manager", "tech_wizard", "gear_nerd"],
       "modifierBias": {
         "promo": 0.88,
         "merch": 0.72,
@@ -312,9 +290,7 @@
       "eventIntensity": 0.4,
       "maintenanceDiscipline": 0.65,
       "minigameSkill": 0.55,
-      "traitPack": [
-        "bandleader"
-      ],
+      "traitPack": ["bandleader"],
       "modifierBias": {
         "promo": 0.28,
         "merch": 0.25,
@@ -347,10 +323,7 @@
       "eventIntensity": 0.5,
       "maintenanceDiscipline": 0.72,
       "minigameSkill": 0.65,
-      "traitPack": [
-        "bandleader",
-        "gear_nerd"
-      ],
+      "traitPack": ["bandleader", "gear_nerd"],
       "modifierBias": {
         "promo": 0.55,
         "merch": 0.45,
@@ -388,9 +361,7 @@
           "police_control",
           "police_contraband"
         ],
-        "triggers": [
-          "travel"
-        ]
+        "triggers": ["travel"]
       },
       "band": {
         "count": 40,
@@ -401,11 +372,7 @@
           "ego_clash",
           "gear_upgrade_argument"
         ],
-        "triggers": [
-          "random",
-          "post_gig",
-          "travel"
-        ]
+        "triggers": ["random", "post_gig", "travel"]
       },
       "gig": {
         "count": 19,
@@ -416,10 +383,7 @@
           "crowd_surf_disaster",
           "gig_intro_dead_air"
         ],
-        "triggers": [
-          "gig_mid",
-          "gig_intro"
-        ]
+        "triggers": ["gig_mid", "gig_intro"]
       },
       "financial": {
         "count": 27,
@@ -430,10 +394,7 @@
           "tax_audit",
           "broken_merch_box"
         ],
-        "triggers": [
-          "random",
-          "post_gig"
-        ]
+        "triggers": ["random", "post_gig"]
       },
       "special": {
         "count": 13,
@@ -444,23 +405,12 @@
           "legendary_patch_trader",
           "midnight_radio"
         ],
-        "triggers": [
-          "special_location",
-          "travel",
-          "post_gig",
-          "random"
-        ]
+        "triggers": ["special_location", "travel", "post_gig", "random"]
       }
     },
     "brandDeals": 54,
     "postOptions": 32,
-    "trends": [
-      "NEUTRAL",
-      "DRAMA",
-      "TECH",
-      "MUSIC",
-      "WHOLESOME"
-    ],
+    "trends": ["NEUTRAL", "DRAMA", "TECH", "MUSIC", "WHOLESOME"],
     "socialPlatforms": [
       {
         "id": "instagram",

@@ -38,8 +38,8 @@ export const ShopItem = React.memo(
           <div className='flex items-center gap-2 mb-2'>
             <img
               src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
-              alt=""
-              aria-hidden="true"
+              alt=''
+              aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
@@ -84,7 +84,9 @@ export const ShopItem = React.memo(
                       currency:
                         item.currency === 'fame'
                           ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
-                          : t('ui:shop.messages.money', { defaultValue: 'Money' }),
+                          : t('ui:shop.messages.money', {
+                              defaultValue: 'Money'
+                            }),
                       itemName: t(item.name),
                       defaultValue: 'Not enough currency.'
                     })
