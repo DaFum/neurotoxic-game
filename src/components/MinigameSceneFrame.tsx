@@ -61,7 +61,8 @@ export const MinigameSceneFrame = ({
           if (currentLogic?.finishMinigame) {
             currentLogic.finishMinigame()
           } else {
-            const currentType = currentLogic?.gameStateRef?.current?.minigame?.type
+            const currentType =
+              currentLogic?.gameStateRef?.current?.minigame?.type
             const rngValue = currentLogic?.rngValue
             const contrabandId = currentLogic?.contrabandId
             const instanceId = currentLogic?.instanceId
@@ -97,7 +98,10 @@ export const MinigameSceneFrame = ({
             ) {
               currentLogic.completeAmpCalibration(100, rngValue, instanceId)
             } else {
-              console.warn('Minigame completion handlers unavailable for backdoor completion', { currentLogic, currentType })
+              console.warn(
+                'Minigame completion handlers unavailable for backdoor completion',
+                { currentLogic, currentType }
+              )
               return
             }
           }

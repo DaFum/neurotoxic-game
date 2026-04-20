@@ -230,9 +230,12 @@ export const useRhythmGameAudio = ({
         return
       }
       if (
-        typeof hitWindow0 !== 'number' || !Number.isFinite(hitWindow0) ||
-        typeof hitWindow1 !== 'number' || !Number.isFinite(hitWindow1) ||
-        typeof hitWindow2 !== 'number' || !Number.isFinite(hitWindow2)
+        typeof hitWindow0 !== 'number' ||
+        !Number.isFinite(hitWindow0) ||
+        typeof hitWindow1 !== 'number' ||
+        !Number.isFinite(hitWindow1) ||
+        typeof hitWindow2 !== 'number' ||
+        !Number.isFinite(hitWindow2)
       ) {
         logger.error('RhythmGame', 'Gig physics hit window values are invalid')
         setAudioReady(false)

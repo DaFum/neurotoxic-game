@@ -3,7 +3,6 @@ import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
 import type { LayeredSnare } from '../../types/audio'
 
-
 import type { DrumKitSynth } from '../../types/audio'
 
 /**
@@ -37,8 +36,7 @@ export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
       snareNoise.dispose()
       snareBody.dispose()
       snareBus.dispose()
-    },
-
+    }
   }
 }
 

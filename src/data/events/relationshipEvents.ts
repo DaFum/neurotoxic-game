@@ -15,8 +15,11 @@ const getFlatRelationships = (members: BandMember[]): RelPair[] => {
     for (const [m2Name, score] of Object.entries(m1.relationships)) {
       if (m2Name === m1.name) {
         if (!warnedSelfRelationshipNames.has(m1.name)) {
-          logger.warn('EventEngine', `Band member ${m1.name} contains a self-relationship. This corrupts gameplay systems.`);
-          warnedSelfRelationshipNames.add(m1.name);
+          logger.warn(
+            'EventEngine',
+            `Band member ${m1.name} contains a self-relationship. This corrupts gameplay systems.`
+          )
+          warnedSelfRelationshipNames.add(m1.name)
         }
         continue
       }

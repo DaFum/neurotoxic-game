@@ -357,11 +357,16 @@ export const handleDarkWebLeak = (
   const successToast = payload.successToast
 
   if (
-    !Number.isFinite(parsedCost) || parsedCost < 0 ||
+    !Number.isFinite(parsedCost) ||
+    parsedCost < 0 ||
     !Number.isFinite(parsedFameGain) ||
+    parsedFameGain < 0 ||
     !Number.isFinite(parsedZealotryGain) ||
+    parsedZealotryGain < 0 ||
     !Number.isFinite(parsedControversyGain) ||
-    !Number.isFinite(parsedHarmonyCost) || parsedHarmonyCost < 0
+    parsedControversyGain < 0 ||
+    !Number.isFinite(parsedHarmonyCost) ||
+    parsedHarmonyCost < 0
   ) {
     logger.warn('GameState', 'Invalid dark web leak payload')
     return state
