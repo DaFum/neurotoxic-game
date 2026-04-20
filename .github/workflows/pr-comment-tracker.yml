@@ -10,6 +10,9 @@ jobs:
   update-summary-and-check:
     name: Aggregate Comments & Enforce Resolution
     runs-on: ubuntu-latest
+    concurrency:
+      group: pr-comment-tracker-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: true
     # Stellt sicher, dass der Workflow nur in Pull Requests läuft
     if: ${{ github.event.issue.pull_request || github.event.pull_request }}
 
@@ -32,16 +35,16 @@ jobs:
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
             const marker = "<!-- PR_COMMENT_TRACKER_MARKER -->";
 
-            // 2. Normale Issue-Kommentare und Review-Kommentare abrufen
-            const [issueCommentsRes, reviewCommentsRes] = await Promise.all([
-              github.rest.issues.listComments({ owner, repo, issue_number: prNumber }),
-              github.rest.pulls.listReviewComments({ owner, repo, pull_number: prNumber })
+            // 2. Normale Issue-Kommentare und Review-Kommentare abrufen (mit Pagination)
+            const [issueComments, reviewComments] = await Promise.all([
+              github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber }),
+              github.paginate(github.rest.pulls.listReviewComments, { owner, repo, pull_number: prNumber })
             ]);
 
-            // 3. Eigene Bot-Kommentare filtern und nach Erstellungsdatum sortieren
-            const allComments = [...issueCommentsRes.data, ...reviewCommentsRes.data]
-              .filter(comment => !comment.body.includes(marker)) // Den Bot selbst ignorieren
-              .filter(comment => comment.user.type !== "Bot")    // Optional: Andere Bots ignorieren
+            // 3. Eigene Bot-Kommentare filtern, Null-User abfangen und nach Erstellungsdatum sortieren
+            const allComments = [...issueComments, ...reviewComments]
+              .filter(comment => comment.user && comment.user.type !== "Bot") // Andere Bots und gelöschte Nutzer ignorieren
+              .filter(comment => comment.body && !comment.body.includes(marker)) // Den Bot selbst ignorieren
               .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
             // 4. Den kopierbaren Block formatieren
@@ -50,22 +53,29 @@ jobs:
               return `- [${c.user.login}]: ${cleanBody}`;
             }).join('\n');
 
-            const copyableBlock = formattedComments.length > 0
+            let copyableBlock = formattedComments.length > 0
               ? formattedComments
               : "Aktuell keine ungelösten Kommentare vorhanden.";
 
-            // Das endgültige Markdown für den Bot-Kommentar
-            const body = `${marker}
-            ### 📝 PR Kommentar-Zusammenfassung
-            *Wird automatisch aktualisiert, sobald sich Kommentare ändern.*
+            const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Wird automatisch aktualisiert, sobald sich Kommentare ändern.*\n\n\`\`\`text\n`;
+            const footer = `\n\`\`\`\n`;
 
-            \`\`\`text
-            ${copyableBlock}
-            \`\`\`
-            `;
+            const MAX_COMMENT_SIZE = 65536;
+            const extraText = "\n... (truncated)";
+            const fixedLength = marker.length + header.length + footer.length;
+
+            if (fixedLength + copyableBlock.length > MAX_COMMENT_SIZE) {
+              const allowedLength = MAX_COMMENT_SIZE - fixedLength - extraText.length;
+              copyableBlock = copyableBlock.substring(0, allowedLength) + extraText;
+            }
+
+            // Das endgültige Markdown für den Bot-Kommentar
+            const body = marker + header + copyableBlock + footer;
 
             // 5. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
-            const existingBotComment = issueCommentsRes.data.find(c => c.body.includes(marker));
+            const existingBotComment = issueComments.find(
+              c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
+            );
 
             if (existingBotComment) {
               console.log(`Aktualisiere bestehenden Kommentar (ID: ${existingBotComment.id})...`);
@@ -85,9 +95,38 @@ jobs:
               });
             }
 
-            // 6. Workflow-Status basierend auf Kommentaren setzen
-            if (allComments.length > 0) {
-              core.setFailed(`Der Workflow blockiert den PR, da aktuell ${allComments.length} offene(r) Kommentar(e) existieren.`);
+            // 6. Workflow-Status basierend auf ungelösten Review-Threads via GraphQL setzen
+            let unresolvedCount = 0;
+            let hasNextPage = true;
+            let cursor = null;
+
+            while (hasNextPage) {
+              const query = `
+                query($owner: String!, $repo: String!, $prNumber: Int!, $cursor: String) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequest(number: $prNumber) {
+                      reviewThreads(first: 100, after: $cursor) {
+                        pageInfo {
+                          hasNextPage
+                          endCursor
+                        }
+                        nodes {
+                          isResolved
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+              const result = await github.graphql(query, { owner, repo, prNumber, cursor });
+              const threads = result.repository.pullRequest.reviewThreads;
+              unresolvedCount += threads.nodes.filter(t => !t.isResolved).length;
+              hasNextPage = threads.pageInfo.hasNextPage;
+              cursor = threads.pageInfo.endCursor;
+            }
+
+            if (unresolvedCount > 0) {
+              core.setFailed(`Der Workflow blockiert den PR, da aktuell ${unresolvedCount} ungelöste(r) Review-Thread(s) existieren.`);
             } else {
-              console.log("Keine Kommentare vorhanden. Workflow erfolgreich.");
+              console.log("Keine ungelösten Review-Threads vorhanden. Workflow erfolgreich.");
             }
