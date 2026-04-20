@@ -1,0 +1,93 @@
+name: PR Comment Tracker
+
+on:
+  issue_comment:
+    types: [created, edited, deleted]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+jobs:
+  update-summary-and-check:
+    name: Aggregate Comments & Enforce Resolution
+    runs-on: ubuntu-latest
+    # Stellt sicher, dass der Workflow nur in Pull Requests läuft
+    if: ${{ github.event.issue.pull_request || github.event.pull_request }}
+
+    # Berechtigungen zum Lesen und Schreiben in PRs
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Track, Summarize and Validate Comments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 1. PR-Nummer aus dem Trigger-Event ermitteln
+            const prNumber = context.payload.issue
+              ? context.payload.issue.number
+              : context.payload.pull_request.number;
+            const { owner, repo } = context.repo;
+
+            // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
+            const marker = "<!-- PR_COMMENT_TRACKER_MARKER -->";
+
+            // 2. Normale Issue-Kommentare und Review-Kommentare abrufen
+            const [issueCommentsRes, reviewCommentsRes] = await Promise.all([
+              github.rest.issues.listComments({ owner, repo, issue_number: prNumber }),
+              github.rest.pulls.listReviewComments({ owner, repo, pull_number: prNumber })
+            ]);
+
+            // 3. Eigene Bot-Kommentare filtern und nach Erstellungsdatum sortieren
+            const allComments = [...issueCommentsRes.data, ...reviewCommentsRes.data]
+              .filter(comment => !comment.body.includes(marker)) // Den Bot selbst ignorieren
+              .filter(comment => comment.user.type !== "Bot")    // Optional: Andere Bots ignorieren
+              .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            // 4. Den kopierbaren Block formatieren
+            const formattedComments = allComments.map(c => {
+              const cleanBody = c.body.replace(/\r?\n|\r/g, ' ').trim();
+              return `- [${c.user.login}]: ${cleanBody}`;
+            }).join('\n');
+
+            const copyableBlock = formattedComments.length > 0
+              ? formattedComments
+              : "Aktuell keine ungelösten Kommentare vorhanden.";
+
+            // Das endgültige Markdown für den Bot-Kommentar
+            const body = `${marker}
+            ### 📝 PR Kommentar-Zusammenfassung
+            *Wird automatisch aktualisiert, sobald sich Kommentare ändern.*
+
+            \`\`\`text
+            ${copyableBlock}
+            \`\`\`
+            `;
+
+            // 5. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
+            const existingBotComment = issueCommentsRes.data.find(c => c.body.includes(marker));
+
+            if (existingBotComment) {
+              console.log(`Aktualisiere bestehenden Kommentar (ID: ${existingBotComment.id})...`);
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingBotComment.id,
+                body: body
+              });
+            } else {
+              console.log("Erstelle neuen Zusammenfassungs-Kommentar...");
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: body
+              });
+            }
+
+            // 6. Workflow-Status basierend auf Kommentaren setzen
+            if (allComments.length > 0) {
+              core.setFailed(`Der Workflow blockiert den PR, da aktuell ${allComments.length} offene(r) Kommentar(e) existieren.`);
+            } else {
+              console.log("Keine Kommentare vorhanden. Workflow erfolgreich.");
+            }
