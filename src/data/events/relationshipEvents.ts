@@ -10,6 +10,7 @@ const getFlatRelationships = (members: BandMember[]): RelPair[] => {
     const m1 = members[i]
     if (!m1 || !m1.relationships || typeof m1.name !== 'string') continue
     for (const [m2Name, score] of Object.entries(m1.relationships)) {
+      if (m2Name === m1.name) continue
       flat.push({
         member1: m1.name,
         member2: m2Name,

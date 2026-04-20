@@ -221,21 +221,33 @@ export const handlePirateBroadcast = (
     return state
   }
 
-  const cost = Number(payload.cost)
-  const fameGain = Number(payload.fameGain) || 0
-  const zealotryGain = Number(payload.zealotryGain) || 0
-  const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost)
+  const parsedCost = Number(payload.cost)
+  const parsedFameGain = Number(payload.fameGain)
+  const parsedZealotryGain = Number(payload.zealotryGain)
+  const parsedControversyGain = Number(payload.controversyGain)
+  const parsedHarmonyCost = Number(payload.harmonyCost)
   const successToast = payload.successToast
 
-  if (!Number.isFinite(cost) || cost < 0) {
-    logger.warn('GameState', 'Invalid pirate broadcast cost payload')
+  if (
+    !Number.isFinite(parsedCost) ||
+    parsedCost < 0 ||
+    (payload.fameGain != null && !Number.isFinite(parsedFameGain)) ||
+    (payload.zealotryGain != null && !Number.isFinite(parsedZealotryGain)) ||
+    (payload.controversyGain != null &&
+      !Number.isFinite(parsedControversyGain)) ||
+    !Number.isFinite(parsedHarmonyCost) ||
+    parsedHarmonyCost < 0
+  ) {
+    logger.warn('GameState', 'Invalid pirate broadcast payload')
     return state
   }
-  if (!Number.isFinite(harmonyCost) || harmonyCost < 0) {
-    logger.warn('GameState', 'Invalid pirate broadcast harmonyCost payload')
-    return state
-  }
+
+  const cost = parsedCost
+  const fameGain = payload.fameGain != null ? parsedFameGain : 0
+  const zealotryGain = payload.zealotryGain != null ? parsedZealotryGain : 0
+  const controversyGain =
+    payload.controversyGain != null ? parsedControversyGain : 0
+  const harmonyCost = parsedHarmonyCost
 
   const currentMoney = Number(state.player.money)
   const currentHarmony = Number(state.band.harmony)
@@ -321,6 +333,11 @@ export const handlePirateBroadcast = (
 }
 
 export const handleDarkWebLeak = (state, payload) => {
+  if (state.social.lastDarkWebLeakDay === state.player.day) {
+    logger.warn('GameState', 'Dark web leak already triggered today')
+    return state
+  }
+
   if (!payload || typeof payload !== 'object') {
     logger.warn('GameState', 'Invalid payload for DARK_WEB_LEAK')
     return state
@@ -381,20 +398,22 @@ export const handleDarkWebLeak = (state, payload) => {
     const deltaFame = nextFame - currentFame
     const deltaZealotry = nextZealotry - currentZealotry
     const deltaControversy = nextControversy - currentControversy
-    const messages = []
+    const deltaHarmony = nextHarmony - currentHarmony
+    const actualCost = currentMoney - nextMoney
 
-    if (deltaFame > 0) messages.push(`FAME +${deltaFame}`)
-    if (deltaZealotry > 0) messages.push(`ZEALOTRY +${deltaZealotry}`)
-    if (deltaControversy > 0) messages.push(`CONTROVERSY +${deltaControversy}`)
-    if (harmonyCost > 0) messages.push(`HARMONY -${harmonyCost}`)
-
-    nextState.toasts = [
-      ...(state.toasts || []),
-      {
-        ...successToast,
-        message: `${successToast.message} (${messages.join(' | ')})`
+    const safeToast = sanitizeSuccessToast(successToast, {
+      fallbackId: getSafeUUID(),
+      optionsPatch: {
+        deltaFame,
+        deltaZealotry,
+        deltaControversy,
+        deltaHarmony,
+        cost: actualCost
       }
-    ]
+    })
+    if (safeToast) {
+      nextState.toasts = [...(state.toasts || []), safeToast]
+    }
   }
 
   return nextState

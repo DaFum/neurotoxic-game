@@ -4,44 +4,49 @@ import { handleDarkWebLeak } from '../../src/context/reducers/socialReducer.js'
 import { ActionTypes } from '../../src/context/actionTypes.js'
 import { clampPlayerFame } from '../../src/utils/gameStateUtils.js'
 
-test('socialReducer - handleDarkWebLeak', async (t) => {
-  await t.test('applies exact stat changes without exceeding boundaries', () => {
-    const initialState = {
-      player: { money: 1000, fame: 100 },
-      band: { harmony: 50 },
-      social: {
-        controversyLevel: 10,
-        zealotry: 20
+test('socialReducer - handleDarkWebLeak', async t => {
+  await t.test(
+    'applies exact stat changes without exceeding boundaries',
+    () => {
+      const initialState = {
+        player: { money: 1000, fame: 100, day: 1 },
+        band: { harmony: 50 },
+        social: {
+          controversyLevel: 10,
+          zealotry: 20,
+          lastDarkWebLeakDay: null
+        }
       }
-    }
 
-    const action = {
-      type: ActionTypes.DARK_WEB_LEAK,
-      payload: {
-        cost: 500,
-        fameGain: 300,
-        zealotryGain: 25,
-        controversyGain: 30,
-        harmonyCost: 20
+      const action = {
+        type: ActionTypes.DARK_WEB_LEAK,
+        payload: {
+          cost: 500,
+          fameGain: 300,
+          zealotryGain: 25,
+          controversyGain: 30,
+          harmonyCost: 20
+        }
       }
+
+      const result = handleDarkWebLeak(initialState, action.payload)
+
+      assert.strictEqual(result.player.money, 500)
+      assert.strictEqual(result.player.fame, 400)
+      assert.strictEqual(result.band.harmony, 30)
+      assert.strictEqual(result.social.controversyLevel, 40)
+      assert.strictEqual(result.social.zealotry, 45)
     }
-
-    const result = handleDarkWebLeak(initialState, action.payload)
-
-    assert.strictEqual(result.player.money, 500)
-    assert.strictEqual(result.player.fame, 400)
-    assert.strictEqual(result.band.harmony, 30)
-    assert.strictEqual(result.social.controversyLevel, 40)
-    assert.strictEqual(result.social.zealotry, 45)
-  })
+  )
 
   await t.test('clamps values to correct boundaries', () => {
     const initialState = {
-      player: { money: 1000, fame: 999990 },
+      player: { money: 1000, fame: 999990, day: 1 },
       band: { harmony: 10 },
       social: {
         controversyLevel: 90,
-        zealotry: 95
+        zealotry: 95,
+        lastDarkWebLeakDay: null
       }
     }
 

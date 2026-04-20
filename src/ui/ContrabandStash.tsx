@@ -33,7 +33,7 @@ interface ContrabandStashProps {
 }
 
 type BandMemberItem = {
-  id: string | number
+  id: string
   name?: string
 }
 
@@ -54,7 +54,7 @@ const isBandMember = (value: unknown): value is BandMemberItem => {
   if (!value || typeof value !== 'object') return false
   const obj = value as Record<string, unknown>
   return (
-    (typeof obj.id === 'string' || typeof obj.id === 'number') &&
+    typeof obj.id === 'string' &&
     (obj.name === undefined || typeof obj.name === 'string')
   )
 }
@@ -302,7 +302,7 @@ ContrabandStash.propTypes = {
   ),
   members: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      id: PropTypes.string.isRequired,
       name: PropTypes.string
     })
   ),

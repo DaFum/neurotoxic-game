@@ -7,7 +7,12 @@ import type { buildDrumKit } from './instruments'
  */
 type Nullable<T> = T | null
 
-type DrumKitSynth = ReturnType<typeof buildDrumKit>
+type DrumKitSynth = {
+  kick: Tone.MembraneSynth | null
+  snare: ReturnType<typeof import('./instruments').createLayeredSnare> | null
+  hihat: Tone.MetalSynth | null
+  crash: Tone.MetalSynth | null
+}
 
 type InstrumentSynth = Tone.PolySynth | Tone.Synth
 type TonePart = Tone.Part<unknown>

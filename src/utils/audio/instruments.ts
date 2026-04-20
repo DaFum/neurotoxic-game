@@ -10,8 +10,6 @@ type LayeredSnare = {
   ) => void
   volume: Tone.Signal<'decibels'>
   dispose: () => void
-  _noise: Tone.NoiseSynth
-  _body: Tone.MembraneSynth
 }
 
 type DrumKitSynth = {

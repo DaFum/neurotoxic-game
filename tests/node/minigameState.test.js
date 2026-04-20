@@ -95,6 +95,57 @@ test('Minigame State Transitions', async t => {
     }
   )
 
+  await t.test(
+    'COMPLETE_TRAVEL_MINIGAME applies results and updates location with legacy venue string',
+    () => {
+      // Setup state with legacy string format for venue
+      const activeState = {
+        ...initialState,
+        gameMap: {
+          nodes: {
+            node_0: {
+              id: 'node_0',
+              x: 0,
+              y: 0,
+              venue: 'start_venue'
+            },
+            node_1: {
+              id: 'node_1',
+              x: 10,
+              y: 10,
+              venue: 'legacy_berlin_venue' // legacy string
+            }
+          }
+        },
+        player: {
+          ...initialState.player,
+          currentNodeId: 'node_0',
+          money: 1000,
+          van: { fuel: 100, condition: 100 }
+        },
+        currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+        minigame: {
+          ...DEFAULT_MINIGAME_STATE,
+          active: true,
+          type: MINIGAME_TYPES.TOURBUS,
+          targetDestination: 'node_1'
+        }
+      }
+
+      const action = {
+        type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+        payload: { damageTaken: 0, itemsCollected: [] }
+      }
+      const newState = gameReducer(activeState, action)
+
+      assert.strictEqual(newState.player.currentNodeId, 'node_1')
+      assert.strictEqual(
+        newState.player.location,
+        'venues:legacy_berlin_venue.name'
+      )
+    }
+  )
+
   await t.test('START_ROADIE_MINIGAME updates state correctly', () => {
     const action = {
       type: ActionTypes.START_ROADIE_MINIGAME,

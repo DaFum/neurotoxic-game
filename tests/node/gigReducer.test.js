@@ -136,7 +136,7 @@ describe('gigReducer', () => {
       assert.strictEqual(quest.progress, 1)
     })
 
-    it('should not advance small-venue quests when capacity is missing', () => {
+    it('should not advance quest_apology_tour when capacity is missing', () => {
       baseState.currentGig = { id: 'v1' }
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 }

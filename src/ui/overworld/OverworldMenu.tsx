@@ -84,7 +84,11 @@ export const OverworldMenu = React.memo(
                 variant='danger'
                 size='sm'
               >
-                [DARK WEB LEAK]
+                [
+                {t('ui:dark_web_leak.button', {
+                  defaultValue: 'DARK WEB LEAK'
+                })}
+                ]
               </GlitchButton>
               <GlitchButton
                 onClick={openHQ}

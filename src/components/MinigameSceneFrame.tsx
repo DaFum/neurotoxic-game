@@ -29,7 +29,6 @@ export const MinigameSceneFrame = ({
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const finishMinigame = logic?.finishMinigame
   const dispatch = logic?.dispatch
-  const minigameType = logic?.gameStateRef?.current?.minigame?.type
 
   useLayoutEffect(() => {
     if (uiState?.isGameOver) {
@@ -57,39 +56,52 @@ export const MinigameSceneFrame = ({
         if (!uiState?.isGameOver) {
           if (finishMinigame) {
             finishMinigame()
-          } else if (dispatch) {
-            if (minigameType === MINIGAME_TYPES.TOURBUS) {
-              dispatch({
-                type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-                payload: { damageTaken: 0, itemsCollected: [] }
-              })
-            } else if (minigameType === MINIGAME_TYPES.ROADIE) {
-              dispatch({
-                type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
-                payload: { equipmentDamage: 0 }
-              })
-            } else if (minigameType === MINIGAME_TYPES.KABELSALAT) {
-              dispatch({
-                type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
-                payload: { results: { isPoweredOn: true, timeLeft: 0 } }
-              })
-            } else if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
-              dispatch({
-                type: ActionTypes.COMPLETE_AMP_CALIBRATION,
-                payload: { score: 100 }
-              })
+          } else {
+            const currentType = logic?.gameStateRef?.current?.minigame?.type
+            const rngValue = logic?.rngValue
+            const contrabandId = logic?.contrabandId
+            const instanceId = logic?.instanceId
+
+            if (
+              currentType === MINIGAME_TYPES.TOURBUS &&
+              logic?.completeTravelMinigame
+            ) {
+              logic.completeTravelMinigame(
+                0,
+                [],
+                rngValue,
+                contrabandId,
+                instanceId
+              )
+            } else if (
+              currentType === MINIGAME_TYPES.ROADIE &&
+              logic?.completeRoadieMinigame
+            ) {
+              logic.completeRoadieMinigame(0, rngValue, instanceId)
+            } else if (
+              currentType === MINIGAME_TYPES.KABELSALAT &&
+              logic?.completeKabelsalatMinigame
+            ) {
+              logic.completeKabelsalatMinigame(
+                { isPoweredOn: true, timeLeft: 0 },
+                rngValue,
+                instanceId
+              )
+            } else if (
+              currentType === MINIGAME_TYPES.AMP_CALIBRATION &&
+              logic?.completeAmpCalibration
+            ) {
+              logic.completeAmpCalibration(100, rngValue, instanceId)
             } else {
               onComplete()
             }
-          } else {
-            onComplete()
           }
         }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [dispatch, finishMinigame, minigameType, onComplete, uiState?.isGameOver])
+  }, [dispatch, finishMinigame, logic, onComplete, uiState?.isGameOver])
 
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
@@ -142,7 +154,14 @@ MinigameSceneFrame.propTypes = {
     gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
-    dispatch: PropTypes.func
+    dispatch: PropTypes.func,
+    completeTravelMinigame: PropTypes.func,
+    completeRoadieMinigame: PropTypes.func,
+    completeKabelsalatMinigame: PropTypes.func,
+    completeAmpCalibration: PropTypes.func,
+    rngValue: PropTypes.number,
+    contrabandId: PropTypes.string,
+    instanceId: PropTypes.string
   }).isRequired,
   uiState: PropTypes.shape({
     isGameOver: PropTypes.bool

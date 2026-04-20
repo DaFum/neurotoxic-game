@@ -13,7 +13,7 @@ export interface GameSettings {
 }
 
 export type UnknownRecord = Record<string, unknown>
-export type RawGameSettings = Partial<GameSettings> & UnknownRecord
+export type RawGameSettings = Partial<Record<keyof GameSettings, unknown>>
 
 export interface EventOption {
   id?: string
@@ -157,6 +157,7 @@ export interface SocialState {
   lastGigDay: number | null
   lastGigDifficulty: number | null
   lastPirateBroadcastDay: number | null
+  lastDarkWebLeakDay: number | null
   controversyLevel: number
   loyalty: number
   zealotry: number
@@ -254,7 +255,8 @@ export interface DarkWebLeakPayload {
   zealotryGain: number
   controversyGain: number
   harmonyCost: number
-  successToast?: ToastData
+  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
+  [key: string]: unknown
 }
 
 export interface PirateBroadcastPayload {

@@ -240,13 +240,20 @@ const sanitizeSettingsPayload = (
 ): Partial<GameSettings> => {
   const sanitized: Partial<GameSettings> = {}
 
-  if (typeof rawSettings.crtEnabled === 'boolean') {
+  if (
+    Object.hasOwn(rawSettings, 'crtEnabled') &&
+    typeof rawSettings.crtEnabled === 'boolean'
+  ) {
     sanitized.crtEnabled = rawSettings.crtEnabled
   }
-  if (typeof rawSettings.tutorialSeen === 'boolean') {
+  if (
+    Object.hasOwn(rawSettings, 'tutorialSeen') &&
+    typeof rawSettings.tutorialSeen === 'boolean'
+  ) {
     sanitized.tutorialSeen = rawSettings.tutorialSeen
   }
   if (
+    Object.hasOwn(rawSettings, 'logLevel') &&
     typeof rawSettings.logLevel === 'number' &&
     Number.isFinite(rawSettings.logLevel)
   ) {
