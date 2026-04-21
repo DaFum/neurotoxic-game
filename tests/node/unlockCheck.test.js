@@ -91,9 +91,10 @@ describe('checkTraitUnlocks', () => {
     })
 
     it('unlocks Tech Wizard for Matze with technical song (>3 difficulty) and 100% accuracy', () => {
-      // Give Matze 'perfektionist' so only 'tech_wizard' is unlocked
+      // Give Matze 'perfektionist' and 'virtuoso' so only 'tech_wizard' is unlocked
       const matze = createMember('Matze', {
-        perfektionist: { id: 'perfektionist' }
+        perfektionist: { id: 'perfektionist' },
+        virtuoso: { id: 'virtuoso' }
       })
       const state = createState([matze])
       const context = {
