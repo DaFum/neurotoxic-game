@@ -93,7 +93,7 @@ export const useMainMenu = () => {
       )
   }, [reportAudioIssue, startAmbientSafely])
 
-  const proceedToTour = useCallback(async () => {
+  const proceedToTour = useCallback(() => {
     setIsStarting(true)
 
     // Optimization: Artificial delay removed
@@ -190,7 +190,7 @@ export const useMainMenu = () => {
   /**
    * Handles loading a saved game.
    */
-  const handleLoad = useCallback(async () => {
+  const handleLoad = useCallback(() => {
     setIsLoadingGame(true)
 
     if (!isMountedRef.current) return
