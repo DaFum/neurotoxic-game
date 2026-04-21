@@ -1,8 +1,21 @@
 import { spawnSync } from 'node:child_process'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+let tscPath
+try {
+  tscPath = require.resolve('typescript/bin/tsc')
+} catch (err) {
+  console.error(
+    'Failed to resolve TypeScript binary. Ensure "typescript" is installed.'
+  )
+  console.error(err?.message ?? err)
+  process.exit(1)
+}
 
 const tsc = spawnSync(
-  'pnpm',
-  ['exec', 'tsc', '--noEmit', '--pretty', 'false'],
+  process.execPath,
+  [tscPath, '--noEmit', '--pretty', 'false'],
   {
     encoding: 'utf8'
   }
@@ -36,6 +49,7 @@ if (reducerErrors.length > 0) {
 
 if (tsc.status !== 0) {
   console.error('TypeScript compiler reported non-zero exit status.')
+  console.error(output)
   process.exit(tsc.status)
 }
 

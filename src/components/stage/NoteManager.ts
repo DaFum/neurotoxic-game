@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Application, Container, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'

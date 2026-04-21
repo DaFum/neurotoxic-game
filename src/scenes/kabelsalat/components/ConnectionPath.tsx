@@ -1,13 +1,24 @@
 /*
  * (#1) Actual Updates: Extracted ConnectionPath component from ConnectionPaths.tsx for better maintainability. Added a guard clause to return null if the cable is not found in CABLE_MAP to prevent runtime errors.
- * (#2) Next Steps: N/A
+
  * (#3) Found Errors + Solutions: Component assumed cabId was always valid, which could cause a runtime error if undefined. Solution: Return null if CABLE_MAP[cabId] is undefined.
  */
-import { CABLE_MAP } from '../constants'
+import { CABLE_MAP, SOCKET_DEFS } from '../constants'
 import { getMessyPath } from '../utils'
 import PropTypes from 'prop-types'
+import type { FC } from 'react'
 
-export const ConnectionPath = ({
+type SocketId = keyof typeof SOCKET_DEFS
+type CableId = keyof typeof CABLE_MAP
+
+export type ConnectionPathProps = {
+  sockId: SocketId
+  cabId: CableId
+  isPowerConnected: boolean
+  socketOrder: SocketId[]
+}
+
+export const ConnectionPath: FC<ConnectionPathProps> = ({
   sockId,
   cabId,
   isPowerConnected,
@@ -20,7 +31,9 @@ export const ConnectionPath = ({
   }
 
   const isActive = isPowerConnected || cabId === 'iec'
-  const cableColor = isActive ? cable.color : 'var(--color-concrete-gray)'
+  const cableColor = isActive
+    ? (cable.color as string)
+    : 'var(--color-concrete-gray)'
 
   return (
     <path
@@ -40,8 +53,7 @@ export const ConnectionPath = ({
     />
   )
 }
-
-ConnectionPath.propTypes = {
+;(ConnectionPath as any).propTypes = {
   sockId: PropTypes.string.isRequired,
   cabId: PropTypes.string.isRequired,
   isPowerConnected: PropTypes.bool.isRequired,

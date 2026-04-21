@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Checks whether a specific upgrade is owned.
  * Pure function extracted from useGameState to allow direct testing

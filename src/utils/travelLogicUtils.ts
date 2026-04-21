@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted pure logic from useTravelLogic into utility functions.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import { normalizeVenueId } from './mapUtils'
 import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'

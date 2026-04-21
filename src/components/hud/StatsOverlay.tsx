@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { memo } from 'react'
 import { ScoreDisplay } from './ScoreDisplay'
 import { ComboDisplay } from './ComboDisplay'

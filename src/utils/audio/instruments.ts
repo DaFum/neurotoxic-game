@@ -3,7 +3,6 @@ import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
 import type { DrumKitSynth, LayeredSnare } from '../../types/audio'
 
-
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
  * @param {object} bus - Tone.js audio node to connect the snare to.

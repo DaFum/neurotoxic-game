@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
 import { isPlainObject, normalizeSetlistForSave } from '../utils/gameStateUtils'
 import {
@@ -664,8 +663,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => {
-    const unlocks =
-      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
+    const unlocks: string[] =
+      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
     dispatch(createResetStateAction({ unlocks }))
   }, [])
 
@@ -957,7 +956,19 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           return false
         }
 
-        dispatch(createLoadGameAction({ ...parsed, unlocks: getUnlocks() }))
+        // Ensure saved 'unlocks' cannot be null; prefer validated save unlocks when available
+        const parsedObj = parsed as Record<string, unknown>
+        const rawUnlocks = Array.isArray(parsedObj.unlocks)
+          ? (parsedObj.unlocks as string[])
+          : getUnlocks()
+        const savedUnlocks: string[] = rawUnlocks ?? []
+
+        dispatch(
+          createLoadGameAction({
+            ...(parsedObj as Partial<import('../types/game').GameState>),
+            unlocks: savedUnlocks
+          })
+        )
         return true
       },
       false
@@ -1030,7 +1041,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * @returns {object} Object containing { outcomeText, description, result }.
    */
   const resolveEvent = useCallback(
-    (choice: Record<string, unknown> | null) => {
+    (
+      choice: Record<string, unknown> | null
+    ): { outcomeText: string; description: string; result: unknown } => {
       // 1. Validation
       if (!choice) {
         setActiveEvent(null)
@@ -1116,7 +1129,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
             )
             changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
-            return { outcomeText, description, result }
+            return {
+              outcomeText: outcomeText ?? '',
+              description: description ?? '',
+              result
+            }
           }
         }
 
@@ -1146,7 +1163,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // 6. Cleanup
         setActiveEvent(null)
-        return { outcomeText, description, result }
+        return {
+          outcomeText: outcomeText ?? '',
+          description: description ?? '',
+          result
+        }
       } catch (error) {
         // 7. Error Handling
         logger.error('Event', 'Failed to resolve event choice:', error)

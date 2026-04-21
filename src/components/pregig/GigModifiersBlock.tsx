@@ -1,7 +1,7 @@
 /**
  * (#1) Actual Updates: Extracted GigModifiersBlock from PreGig scene
  * (#2) Next Steps: Extract remaining logic
- * (#3) Found Errors + Solutions: N/A
+
  */
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'

@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { safeStorageOperation } from './errorHandler'
 
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
@@ -7,14 +6,14 @@ const UNLOCKS_KEY = 'neurotoxic_unlocks'
  * Loads and validates unlocks from local storage.
  * @returns {string[]} Array of unlocked strings.
  */
-export const getUnlocks = () => {
-  return safeStorageOperation(
+export const getUnlocks = (): string[] => {
+  const maybe = safeStorageOperation<string[]>(
     'loadUnlocks',
     () => {
       const raw = localStorage.getItem(UNLOCKS_KEY)
       if (!raw) return []
 
-      let parsed
+      let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch (_e) {
@@ -24,10 +23,12 @@ export const getUnlocks = () => {
       if (!Array.isArray(parsed)) return []
 
       // Filter out non-string elements to ensure type safety
-      return parsed.filter(item => typeof item === 'string')
+      return parsed.filter(item => typeof item === 'string') as string[]
     },
     []
   )
+
+  return maybe ?? []
 }
 
 /**
@@ -35,7 +36,7 @@ export const getUnlocks = () => {
  * @param {string} unlockId - The ID of the unlock to add.
  * @returns {boolean} True if the unlock was added (wasn't already present).
  */
-export const addUnlock = unlockId => {
+export const addUnlock = (unlockId: string): boolean => {
   if (typeof unlockId !== 'string') return false
 
   // Get current validated unlocks
@@ -46,12 +47,14 @@ export const addUnlock = unlockId => {
 
   currentUnlocks.push(unlockId)
 
-  return safeStorageOperation(
-    'saveUnlocks',
-    () => {
-      localStorage.setItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks))
-      return true
-    },
-    false
+  return (
+    safeStorageOperation<boolean>(
+      'saveUnlocks',
+      () => {
+        localStorage.setItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks))
+        return true
+      },
+      false
+    ) ?? false
   )
 }

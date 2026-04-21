@@ -1,12 +1,21 @@
 /*
  * (#1) Actual Updates: Extracted HeaderTitle component.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import React from 'react'
 import PropTypes from 'prop-types'
+import type { FC } from 'react'
+import type { TFunction } from 'i18next'
 
-export const HeaderTitle = React.memo(
+interface HeaderTitleProps {
+  t: TFunction
+  isShocked: boolean
+  isPoweredOn: boolean
+  isGameOver: boolean
+}
+
+export const HeaderTitle: FC<HeaderTitleProps> = React.memo(
   ({ t, isShocked, isGameOver, isPoweredOn }) => (
     <div>
       <h2 className='text-2xl font-bold text-toxic-green tracking-[0.2em] relative'>

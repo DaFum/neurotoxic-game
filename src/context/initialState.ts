@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Initial State Definition for the Game
  * This module defines the default state structure for the entire game.

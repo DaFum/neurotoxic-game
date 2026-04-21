@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted ClinicMemberCard into a separate component.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import React from 'react'
 import PropTypes from 'prop-types'

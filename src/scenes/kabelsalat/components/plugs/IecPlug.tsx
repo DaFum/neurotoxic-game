@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted IecPlug into a static UI component.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import React from 'react'
 

@@ -1,4 +1,3 @@
-// TODO: Review this file
 import type {
   GameState,
   PlayerState,
@@ -204,7 +203,10 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
             ? m.id
             : typeof m.name === 'string'
               ? m.name.toLowerCase()
-              : typeof m.id === 'number' || typeof m.id === 'boolean' || typeof m.id === 'bigint' || typeof m.id === 'symbol'
+              : typeof m.id === 'number' ||
+                  typeof m.id === 'boolean' ||
+                  typeof m.id === 'bigint' ||
+                  typeof m.id === 'symbol'
                 ? String(m.id)
                 : `member-${i}`,
         traits: normalizeTraitMap(m.traits),

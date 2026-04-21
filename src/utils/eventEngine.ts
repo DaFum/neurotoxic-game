@@ -1,5 +1,5 @@
 /**
- * REVIEW.md Compliance Block
+
  *
  * (#1) Actual Updates:
  * - Optimized `resolveTemplateString` by replacing `for...in` and `Object.hasOwn` with `Object.keys()` to avoid prototype chain overhead.
@@ -13,7 +13,6 @@
  * - Found repeated string allocation for `.toLowerCase()` in a hot loop path. Solved by introducing a module-level `toLowerCaseCache`.
  */
 
-// TODO: Review this file
 import { EVENTS_DB } from '../data/events/index'
 import { EVENT_STRINGS } from '../data/events/constants'
 import { logger } from './logger'

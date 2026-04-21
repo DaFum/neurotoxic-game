@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted CableItem component, wrapped in React.memo
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'

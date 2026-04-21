@@ -1,4 +1,4 @@
-import { test, describe, beforeEach, afterEach, vi } from 'vitest'
+import { test, describe, beforeEach, vi } from 'vitest'
 import assert from 'node:assert'
 
 const mockRedisClient = {

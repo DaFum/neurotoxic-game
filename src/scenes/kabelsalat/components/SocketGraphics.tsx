@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted socket graphics to sub-components, removed TODO.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../constants'
@@ -11,7 +11,9 @@ import { DcSocket } from './sockets/DcSocket.tsx'
 import { IecSocket } from './sockets/IecSocket.tsx'
 import { MidiSocket } from './sockets/MidiSocket.tsx'
 
-export const SocketGraphics = ({ type }) => {
+type ConnectorType = 'xlr' | 'jack' | 'dc' | 'iec' | 'midi'
+
+export const SocketGraphics = ({ type }: { type: ConnectorType | string }) => {
   switch (type) {
     case 'xlr':
       return <XlrSocket />

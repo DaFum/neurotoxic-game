@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Cryptographically secure random number generator between 0 and 1.
  * Replacement for Math.random().
@@ -6,11 +5,11 @@
 import { handleError } from './errorHandler'
 
 const BATCH_SIZE = 1024
-let batchArray = null
+let batchArray: Uint32Array | null = null
 let batchIndex = BATCH_SIZE
 let secureRandomErrorReported = false
 
-const lut = []
+const lut: string[] = []
 for (let i = 0; i < 256; i++) {
   lut[i] = (i < 16 ? '0' : '') + i.toString(16)
 }
@@ -20,7 +19,7 @@ for (let i = 0; i < 256; i++) {
  * Throws an error if the Crypto API is not available.
  * @returns {number}
  */
-export const secureRandom = () => {
+export const secureRandom = (): number => {
   const crypto = globalThis.crypto || window?.crypto
 
   if (!crypto?.getRandomValues) {
@@ -36,13 +35,17 @@ export const secureRandom = () => {
 
   // Refill the batch when it's exhausted
   if (batchIndex >= BATCH_SIZE) {
-    crypto.getRandomValues(batchArray)
+    type CryptoGetRandom = {
+      getRandomValues: (arr: Uint32Array) => Uint32Array
+    }
+    const c = crypto as unknown as CryptoGetRandom
+    c.getRandomValues(batchArray!)
     batchIndex = 0
   }
 
   // 0xFFFFFFFF + 1 is 2^32 (4294967296)
   // This provides a float in the range [0, 1)
-  return batchArray[batchIndex++] / 4294967296
+  return batchArray![batchIndex++] / 4294967296
 }
 
 /**
@@ -51,7 +54,7 @@ export const secureRandom = () => {
  * is unavailable.
  * @returns {number}
  */
-export const getSafeRandom = () => {
+export const getSafeRandom = (): number => {
   try {
     return secureRandom()
   } catch (error) {
@@ -72,7 +75,7 @@ export const getSafeRandom = () => {
  * but falls back to a generated string if unavailable.
  * @returns {string}
  */
-export const getSafeUUID = () => {
+export const getSafeUUID = (): string => {
   const crypto = globalThis.crypto || window?.crypto
   try {
     const uuid = crypto?.randomUUID?.()
@@ -87,7 +90,9 @@ export const getSafeUUID = () => {
     if (typeof crypto?.getRandomValues !== 'function') {
       throw new Error('getRandomValues not supported')
     }
-    crypto.getRandomValues(buffer)
+    type CryptoGetRandom = { getRandomValues: (arr: Uint8Array) => Uint8Array }
+    const c = crypto as unknown as CryptoGetRandom
+    c.getRandomValues(buffer)
   } catch {
     // Intentionally use Math.random() directly only as a last resort to avoid
     // circular dependency with getSafeRandom -> handleError -> logger ->
@@ -130,7 +135,7 @@ export const getSafeUUID = () => {
 /**
  * Resets the batch and error flag for testing purposes.
  */
-export const resetSecureRandomBatchForTesting = () => {
+export const resetSecureRandomBatchForTesting = (): void => {
   batchArray = null
   batchIndex = BATCH_SIZE
   secureRandomErrorReported = false

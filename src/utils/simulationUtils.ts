@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Added missing REVIEW.md comment block.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 // Utility functions for Simulation <-> Action connection
 import { CHARACTERS } from '../data/characters'
@@ -18,6 +18,14 @@ import {
   clampMemberMood,
   BALANCE_CONSTANTS
 } from './gameStateUtils'
+import type { BandState, GameState, BandMember } from '../types/game'
+import type { Song } from '../types/audio'
+
+type ActiveEffect = {
+  key: string
+  fallback?: string
+  options?: Record<string, unknown>
+}
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -25,14 +33,24 @@ import {
  * @param {object} [gigModifiers={}] - Active PreGig modifiers (e.g. catering, soundcheck).
  * @returns {object} An object containing numeric modifiers and active effect descriptions.
  */
-export const getGigModifiers = (bandState, gigModifiers = {}) => {
-  const modifiers = {
+export const getGigModifiers = (
+  bandState: BandState,
+  gigModifiers: Record<string, unknown> = {}
+) => {
+  const modifiers: {
+    hitWindowBonus: number
+    noteJitter: boolean
+    drumSpeedMult: number
+    guitarScoreMult: number
+    activeEffects: ActiveEffect[]
+    [key: string]: unknown
+  } = {
     hitWindowBonus: 0,
     noteJitter: false,
     drumSpeedMult: 1.0,
     guitarScoreMult: 1.0,
     ...gigModifiers, // Merge active PreGig toggles (soundcheck, energy, etc)
-    activeEffects: [] // Text descriptions for UI
+    activeEffects: [] as ActiveEffect[] // Text descriptions for UI
   }
 
   const members = Array.isArray(bandState.members) ? bandState.members : []
@@ -95,7 +113,7 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
  * @param {object} bandState
  * @param {object} song
  */
-export const calculateGigPhysics = (bandState, song) => {
+export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   const members = Array.isArray(bandState.members) ? bandState.members : []
 
   // Pre-calculate song properties
@@ -114,8 +132,8 @@ export const calculateGigPhysics = (bandState, song) => {
     else if (m.name === CHARACTERS.LARS.name) Lars = m
   }
 
-  const getMemberSkill = member =>
-    member?.baseStats?.skill ?? member?.skill ?? 0
+  const getMemberSkill = (member?: BandMember): number =>
+    member?.baseStats?.skill ?? (member?.skill as number) ?? 0
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,
     drums: 120 + getMemberSkill(Marius) * 4,
@@ -213,7 +231,10 @@ export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
-export const calculateDailyUpdates = (currentState, rng = getSafeRandom) => {
+export const calculateDailyUpdates = (
+  currentState: GameState,
+  rng: () => number = getSafeRandom
+) => {
   const nextPlayer = {
     ...currentState.player,
     day: currentState.player.day + 1

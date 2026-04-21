@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import {

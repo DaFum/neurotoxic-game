@@ -11,6 +11,8 @@ migration is complete (baseline `2026-04-16`, `@ts-nocheck` budget = 0). Use
 this file for: tightening existing types, adding types to new code, and
 resolving strict-mode errors. Defer to `AGENTS.md` for all project-wide rules.
 
+- Read the needed AGENTS.md files (`api\AGENTS.md`, `api\leaderboard\AGENTS.md`, `src\components\AGENTS.md`, `src\components\minigames\AGENTS.md`, `src\context\AGENTS.md`, `src\context\reducers\AGENTS.md`, `src\data\AGENTS.md`, `src\data\chatter\AGENTS.md`, `src\scenes\AGENTS.md`, `src\schemas\AGENTS.md`, `src\utils\audio\AGENTS.md`, `tests\AGENTS.md`, `tests\context\reducers\AGENTS.md`, `tests\node\AGENTS.md`, `tests\ui\AGENTS.md`) first before changing any code. This is the source of truth for architecture, style, and conventions.
+
 ## Critical Commands
 
 - Full typecheck: `pnpm run typecheck:core` (runs `tsc --noEmit` over

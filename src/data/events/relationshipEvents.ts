@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-// TODO: Review this file
+
 import type { GameState, BandMember } from '../../types/game'
 
 type RelPair = { member1: string; member2: string; score: number }

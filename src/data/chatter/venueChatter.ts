@@ -1,4 +1,3 @@
-// TODO: Review this file
 export const VENUE_CHATTER_DB = [
   // STENDAL / TANGERMÜNDE / MAGDEBURG
   {

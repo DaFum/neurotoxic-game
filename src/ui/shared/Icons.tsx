@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { useId, memo, type ReactNode, type SVGProps } from 'react'
 
 interface IconProps extends SVGProps<SVGSVGElement> {

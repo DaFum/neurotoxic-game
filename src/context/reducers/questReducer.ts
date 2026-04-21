@@ -35,7 +35,7 @@ export const handleCompleteQuest = (
     .concat(state.activeQuests.slice(questIndex + 1))
 
   // Apply generic quest rewards
-  const generatedToasts = []
+  const generatedToasts: ToastPayload[] = []
 
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
     const previousMoney = nextState.player?.money || 0

@@ -1,9 +1,9 @@
 /*
  * (#1) Actual Updates: Added specific PropTypes and cleaned up imports.
  * (#2) Next Steps: Consider pagination if stash grows too large.
- * (#3) Found Errors + Solutions: N/A
+
  */
-// TODO: Review this file
+
 import { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import type { UnknownRecord } from '../types/game'

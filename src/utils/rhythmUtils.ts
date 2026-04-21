@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
 import type { Note, Song } from '../types/audio'
@@ -233,6 +232,7 @@ export const parseSongNotes = (
   const validNotes: Note[] = []
   for (let i = 0; i < song.notes.length; i++) {
     const n = song.notes[i]
+    if (!n) continue
     if (typeof n.t === 'number' && Number.isFinite(n.t)) {
       validNotes.push(n)
     }
@@ -252,13 +252,16 @@ export const parseSongNotes = (
   const gameNotes: ParsedGameNote[] = []
   for (let i = 0; i < validNotes.length; i += 4) {
     const n = validNotes[i]
+    if (!n) continue
+
     const noteTick = n.t ?? 0
-    const laneIndex = laneMap[n.lane]
+    const laneKey = typeof n.lane === 'string' ? n.lane : undefined
+    const laneIndex = laneKey ? laneMap[laneKey] : undefined
 
     if (laneIndex === undefined) {
       if (onWarn)
         onWarn(
-          `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
+          `parseSongNotes: Unknown lane "${String(n.lane)}" for note at tick ${String(n.t)}. Skipping.`
         )
       continue
     }
@@ -339,7 +342,12 @@ export const checkHit = (
 
   while (lo <= hi) {
     const mid = (lo + hi) >>> 1
-    if (notes[mid].time >= windowStart) {
+    const midNote = notes[mid]
+    if (!midNote) {
+      lo = mid + 1
+      continue
+    }
+    if (midNote.time >= windowStart) {
       firstValidIndex = mid
       hi = mid - 1
     } else {
@@ -350,6 +358,7 @@ export const checkHit = (
   // Scan forward through candidates within the time window
   for (let i = firstValidIndex; i < notes.length; i++) {
     const n = notes[i]
+    if (!n) continue
     if (n.time >= windowEnd) break
 
     if (

@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'

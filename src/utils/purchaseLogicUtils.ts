@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { HQ_ITEMS } from '../data/hqItems'
 import { bandHasTrait } from './traitLogic'
 import {

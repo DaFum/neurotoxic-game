@@ -1,12 +1,27 @@
 /*
  * (#1) Actual Updates: Extracted SocketItem component to improve maintainability.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import PropTypes from 'prop-types'
+import type { FC } from 'react'
 import { SocketItem } from './SocketItem.tsx'
 
-export const SocketList = ({
+interface SocketListProps {
+  t: (key: string, options?: unknown) => string
+  socketOrder: Array<keyof typeof import('../constants').SOCKET_DEFS>
+  connections: Partial<
+    Record<keyof typeof import('../constants').SOCKET_DEFS, string>
+  >
+  isPowerConnected: boolean
+  selectedCable?: string | null
+  isGameOver: boolean
+  handleSocketClick: (
+    id: keyof typeof import('../constants').SOCKET_DEFS
+  ) => void
+}
+
+export const SocketList: FC<SocketListProps> = ({
   t,
   socketOrder,
   connections,

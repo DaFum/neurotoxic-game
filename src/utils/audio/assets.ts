@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { logger } from '../logger'
 import {
   buildAssetUrlMap,

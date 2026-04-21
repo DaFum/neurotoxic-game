@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { memo } from 'react'
 import { HazardTicker } from '../../ui/shared'
 import { useTranslation } from 'react-i18next'

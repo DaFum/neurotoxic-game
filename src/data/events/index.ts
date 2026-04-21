@@ -1,4 +1,3 @@
-// TODO: Review this file
 // Aggregate all event categories
 import type { UnknownRecord } from '../../types/game'
 import { TRANSPORT_EVENTS } from './transport'

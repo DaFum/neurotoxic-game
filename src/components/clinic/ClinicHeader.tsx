@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted ClinicHeader into a separate component.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'

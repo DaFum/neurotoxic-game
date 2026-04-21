@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { logger } from '../../utils/logger'
 import { applyEventDelta } from '../../utils/gameStateUtils'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'

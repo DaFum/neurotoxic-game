@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Extracted plug graphics to sub-components, removed TODO.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import PropTypes from 'prop-types'
 import { CONNECTOR_TYPES } from '../constants'
@@ -11,7 +11,9 @@ import { DcPlug } from './plugs/DcPlug.tsx'
 import { IecPlug } from './plugs/IecPlug.tsx'
 import { MidiPlug } from './plugs/MidiPlug.tsx'
 
-export const PlugGraphics = ({ type }) => {
+type ConnectorType = 'xlr' | 'jack' | 'dc' | 'iec' | 'midi'
+
+export const PlugGraphics = ({ type }: { type: ConnectorType | string }) => {
   switch (type) {
     case 'xlr':
       return <XlrPlug />

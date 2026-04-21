@@ -1,4 +1,3 @@
-// TODO: Review this file
 import {
   CONTRABAND_RARITY_WEIGHTS,
   CONTRABAND_BY_RARITY

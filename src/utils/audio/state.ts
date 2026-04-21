@@ -1,4 +1,3 @@
-// TODO: Review this file
 import type * as Tone from 'tone'
 import type { DrumKitSynth } from '../../types/audio'
 import type { buildDrumKit } from './instruments'
