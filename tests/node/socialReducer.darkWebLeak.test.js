@@ -1,8 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import { handleDarkWebLeak } from '../../src/context/reducers/socialReducer.js'
-import { ActionTypes } from '../../src/context/actionTypes.js'
-import { clampPlayerFame } from '../../src/utils/gameStateUtils.js'
+import { handleDarkWebLeak } from '../../src/context/reducers/socialReducer.ts'
+import { ActionTypes } from '../../src/context/actionTypes.ts'
+import { clampPlayerFame } from '../../src/utils/gameStateUtils.ts'
 
 test('socialReducer - handleDarkWebLeak', async t => {
   await t.test(
@@ -48,19 +48,20 @@ test('socialReducer - handleDarkWebLeak', async t => {
         zealotry: 20,
         lastDarkWebLeakDay: 42
       }
+    }
 
-      const action = {
-        type: ActionTypes.DARK_WEB_LEAK,
-        payload: {
-          cost: 500,
-          fameGain: 300,
-          zealotryGain: 25,
-          controversyGain: 30,
-          harmonyCost: 20
-        }
+    const action = {
+      type: ActionTypes.DARK_WEB_LEAK,
+      payload: {
+        cost: 500,
+        fameGain: 300,
+        zealotryGain: 25,
+        controversyGain: 30,
+        harmonyCost: 20
       }
+    }
 
-      const result = handleDarkWebLeak(initialState, action.payload)
+    const result = handleDarkWebLeak(initialState, action.payload)
 
     // Should return original state (money stays 1000)
     assert.strictEqual(result.player.money, 1000)

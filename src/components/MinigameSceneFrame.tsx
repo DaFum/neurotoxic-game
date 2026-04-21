@@ -77,19 +77,22 @@ export const MinigameSceneFrame = ({
 
             if (currentType === MINIGAME_TYPES.TOURBUS) {
               completeTravelMinigame(0, [])
-              onComplete()
+              return
             } else if (currentType === MINIGAME_TYPES.ROADIE) {
               completeRoadieMinigame(0)
-              onComplete()
+              return
             } else if (currentType === MINIGAME_TYPES.KABELSALAT) {
               completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
-              onComplete()
+              return
             } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
               completeAmpCalibration(100)
-              onComplete()
+              return
             } else {
-              endGig()
-              onComplete()
+              console.warn(
+                'Unhandled minigame type for completion: ',
+                currentType
+              )
+              return
             }
           }
         }

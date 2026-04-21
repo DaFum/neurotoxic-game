@@ -45,7 +45,7 @@ export interface LayeredSnare {
     time: number | string,
     vel?: number
   ) => void
-  volume: Tone.Signal<'decibels'>
+  volume: Tone.Param<'decibels'>
   dispose: () => void
 }
 

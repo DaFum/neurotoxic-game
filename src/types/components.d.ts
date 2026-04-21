@@ -96,15 +96,18 @@ export interface MinigameLogicBase {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
   finishMinigame?: () => void
+  dispatch?: (action: unknown) => void
+}
+
+export interface TourbusMinigameLogic extends MinigameLogicBase {
   rngValue?: number
   contrabandId?: string
   instanceId?: string
-  dispatch?: (action: unknown) => void
 }
 
 export interface MinigameSceneFrameProps {
   controllerFactory?: (options: unknown) => PixiController
-  logic: MinigameLogicBase
+  logic: MinigameLogicBase | TourbusMinigameLogic
   uiState?: { isGameOver?: boolean }
   onComplete: () => void
   completionTitle?: string
