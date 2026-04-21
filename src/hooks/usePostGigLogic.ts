@@ -6,6 +6,8 @@ import { generatePostOptions } from '../utils/socialEngine'
 import { logger } from '../utils/logger'
 import { usePostGigHandlers, DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
 
+export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers';
+
 export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
   'Social options are unavailable right now.'
 
@@ -76,7 +78,7 @@ export const usePostGigLogic = () => {
     }
   }, [currentGig, activeEvent, triggerEvent])
 
-  const gigContextRef = useRef<any>(null)
+  const gigContextRef = useRef<{ daysSinceLastGig: number; lastGigDifficulty: number | null } | null>(null)
   if (!gigContextRef.current && currentGig && social && player) {
     gigContextRef.current = {
       daysSinceLastGig: player.day - (social.lastGigDay ?? player.day),

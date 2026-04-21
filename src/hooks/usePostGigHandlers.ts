@@ -28,6 +28,42 @@ import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 
 export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 
+
+export interface UsePostGigHandlersReturn {
+  isProcessingAction: boolean;
+  handlePostSelection: (option: any) => void;
+  handleAcceptDeal: (deal: any) => void;
+  handleRejectDeals: () => void;
+  handleSpinStory: () => void;
+  handleContinue: () => void;
+  handleNextPhase: () => void;
+}
+
+export interface UsePostGigHandlersProps {
+  player: any;
+  band: any;
+  social: any;
+  lastGigStats: any;
+  currentGig: any;
+  perfScore: number;
+  financials: any;
+  activeStoryFlags: any;
+  setlist: any;
+  updatePlayer: (updates: any) => void;
+  updateBand: (updates: any) => void;
+  updateSocial: (updates: any) => void;
+  unlockTrait: (memberId: string, traitId: string) => void;
+  addToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  saveGame: (force: boolean) => void;
+  changeScene: (scene: string) => void;
+  addQuest: (quest: any) => void;
+  setPhase: (phase: string) => void;
+  setPostResult: (result: any) => void;
+  setBrandOffers: (offers: any) => void;
+  t: (key: string, options?: any) => string;
+}
+
+
 export const usePostGigHandlers = ({
   player,
   band,
@@ -50,7 +86,7 @@ export const usePostGigHandlers = ({
   setPostResult,
   setBrandOffers,
   t
-}: any) => {
+}: UsePostGigHandlersProps): UsePostGigHandlersReturn => {
   const isProcessingActionRef = useRef(false)
   const [isProcessingAction, setIsProcessingAction] = useState(false)
 

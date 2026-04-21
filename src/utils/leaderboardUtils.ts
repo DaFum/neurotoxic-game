@@ -1,3 +1,4 @@
+import type { GameState, GigStats, GigData, SetlistItem } from '../types/game';
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 
@@ -7,10 +8,10 @@ export const submitLeaderboardScores = ({
   currentGig,
   setlist
 }: {
-  player: any
-  lastGigStats: any
-  currentGig: any
-  setlist: any
+  player: GameState['player']
+  lastGigStats: GigStats | null
+  currentGig: GigData | null
+  setlist: GameState['setlist']
 }) => {
   if (!player.playerId || !player.playerName) return
 
@@ -19,7 +20,7 @@ export const submitLeaderboardScores = ({
 
   if (lastGigStats?.songStats && lastGigStats.songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    songsToSubmit = lastGigStats.songStats.map((stat: any) => ({
+    songsToSubmit = lastGigStats.songStats.map((stat: {songId: string, score: number, accuracy: number}) => ({
       songId: stat.songId,
       score: stat.score,
       accuracy: stat.accuracy
@@ -39,7 +40,7 @@ export const submitLeaderboardScores = ({
   }
 
   // Submit each song individually
-  songsToSubmit.forEach((songData: any) => {
+  songsToSubmit.forEach((songData: {songId: string, score: number, accuracy: number}) => {
     // Resolve to leaderboardId (API-safe slug)
     const leaderboardSongId = SONGS_BY_ID.get(songData.songId)?.leaderboardId
 
