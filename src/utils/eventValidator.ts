@@ -115,8 +115,18 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
+
+  if (typeof e.trigger !== 'string' || !['random', 'stat_threshold', 'travel_incident', 'day_end', 'gig_end', 'passive', 'tour_end', 'post_gig', 'social_media', 'travel'].includes(e.trigger as string)) {
+    throw new Error('Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id))
+  }
+
   if (!Array.isArray(e.tags) || !(e.tags as unknown[]).includes('crisis')) {
-    throw new Error('Event ' + String(e.id) + ' must have crisis tag')
+    throw new Error('Event ' + String(e.id) + ' must have "crisis" tag')
+  }
+
+
+  if ('condition' in e && typeof e.condition !== 'function') {
+    throw new Error('Condition must be a function for event ' + String(e.id));
   }
 
   if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
