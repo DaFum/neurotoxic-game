@@ -96,7 +96,7 @@ export interface MinigameLogicBase {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
   finishMinigame?: () => void
-  dispatch?: (action: unknown) => void
+  dispatch?: (action: import('../types/game').GameAction) => void
 }
 
 export interface TourbusMinigameLogic extends MinigameLogicBase {
@@ -107,7 +107,7 @@ export interface TourbusMinigameLogic extends MinigameLogicBase {
 
 export interface MinigameSceneFrameProps {
   controllerFactory?: (options: unknown) => PixiController
-  logic: MinigameLogicBase | TourbusMinigameLogic
+  logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void
   completionTitle?: string

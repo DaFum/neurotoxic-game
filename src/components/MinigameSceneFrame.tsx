@@ -80,12 +80,15 @@ export const MinigameSceneFrame = ({
               return
             } else if (currentType === MINIGAME_TYPES.ROADIE) {
               completeRoadieMinigame(0)
+              onComplete()
               return
             } else if (currentType === MINIGAME_TYPES.KABELSALAT) {
               completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
+              onComplete()
               return
             } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
               completeAmpCalibration(100)
+              onComplete()
               return
             } else {
               console.warn(

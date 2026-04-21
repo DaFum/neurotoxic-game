@@ -128,4 +128,40 @@ test('socialReducer - handleDarkWebLeak', async t => {
 
     assert.strictEqual(result.social.lastDarkWebLeakDay, 42)
   })
+
+  await t.test(
+    'aborts if leaked on same day with non-finite day value (e.g. NaN -> 0)',
+    () => {
+      const initialState = {
+        player: { money: 1000, fame: 100, day: NaN },
+        band: { harmony: 50 },
+        social: {
+          controversyLevel: 10,
+          zealotry: 20,
+          lastDarkWebLeakDay: 0
+        }
+      }
+
+      const action = {
+        type: ActionTypes.DARK_WEB_LEAK,
+        payload: {
+          cost: 500,
+          fameGain: 300,
+          zealotryGain: 25,
+          controversyGain: 30,
+          harmonyCost: 20
+        }
+      }
+
+      const result = handleDarkWebLeak(initialState, action.payload)
+
+      // Should return original state (money stays 1000)
+      assert.strictEqual(result.player.money, 1000)
+      assert.strictEqual(result.player.fame, 100)
+      assert.strictEqual(result.band.harmony, 50)
+      assert.strictEqual(result.social.controversyLevel, 10)
+      assert.strictEqual(result.social.zealotry, 20)
+      assert.strictEqual(result.social.lastDarkWebLeakDay, 0)
+    }
+  )
 })

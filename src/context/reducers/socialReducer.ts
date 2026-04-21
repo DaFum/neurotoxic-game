@@ -145,15 +145,12 @@ export const handleMerchPress = (
   const fameGain = Math.max(0, parsedFameGain)
   const successToast = payload.successToast
 
-  const currentMoney = Number(state.player.money)
-  const currentHarmony = Number(state.band.harmony)
+  const currentMoney = clampPlayerMoney(state.player.money)
+  const currentHarmony = clampBandHarmony(state.band.harmony)
 
   if (
-    !Number.isFinite(currentMoney) ||
-    !Number.isFinite(currentHarmony) ||
-    currentMoney < 0 ||
-    currentHarmony < 1 ||
-    currentHarmony > 100
+    currentMoney !== state.player.money ||
+    currentHarmony !== state.band.harmony
   ) {
     logger.warn('GameState', 'Invalid player funds or harmony state')
     return state
