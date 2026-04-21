@@ -383,9 +383,15 @@ export const VOID_TRADER_COSTS = {
  * O(1) Lookup Map for Contraband Items
  * @type {Map<string, Object>}
  */
-export const CONTRABAND_BY_ID = new Map(
-  CONTRABAND_DB.map(item => [item.id, item])
-)
+// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
+// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
+export const CONTRABAND_BY_ID = new Map<
+  string,
+  (typeof CONTRABAND_DB)[number]
+>()
+for (const item of CONTRABAND_DB) {
+  CONTRABAND_BY_ID.set(item.id, item)
+}
 
 export const CONTRABAND_BY_RARITY = {
   common: CONTRABAND_DB.filter(i => i.rarity === 'common'),

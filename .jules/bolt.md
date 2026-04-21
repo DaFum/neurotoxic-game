@@ -112,3 +112,6 @@
 
 **Learning:** Chained array methods like `.map().filter()` on array structures during high-frequency simulation steps (e.g., in `postGigUtils.ts`) cause unnecessary intermediate array allocations, adding GC pressure.
 **Action:** Replace map/filter chains that iterate over objects like `activeDeals` with a single `for` loop, pushing valid and mapped updates directly to a new array to bypass intermediate array construction and improve efficiency.
+## 2026-04-21 - [Optimize Map Construction]
+**Learning:** Replaced the `new Map(array.map(...))` pattern with a manual `for...of` loop using `.set()`. This avoids the allocation of an intermediate tuple array, reducing memory usage and GC overhead during initialization. Applied across `brandDeals.ts`, `contraband.ts`, `songs.ts`, and `useTravelLogic.ts`.
+**Action:** Always use `for...of` with `.set()` for Map initialization from large arrays to prevent intermediate tuple array allocations.

@@ -1108,18 +1108,27 @@ export const BRAND_DEALS = [
   }
 ]
 
-export const BRAND_DEALS_BY_ID = new Map(
-  BRAND_DEALS.map(deal => [
-    deal.id,
-    {
-      ...deal,
-      requirements: {
+// Helper to derive the return type for BRAND_DEALS_BY_ID since we're adding trendSet
+type TransformedBrandDeal = (typeof BRAND_DEALS)[number] & {
+  requirements?: {
+    trendSet?: Set<string>
+  }
+}
+
+// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
+// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
+export const BRAND_DEALS_BY_ID = new Map<string, TransformedBrandDeal>()
+for (const deal of BRAND_DEALS) {
+  const transformedDeal: TransformedBrandDeal = { ...deal }
+
+  if (deal.requirements) {
+    if (Array.isArray(deal.requirements.trend)) {
+      transformedDeal.requirements = {
         ...deal.requirements,
-        trendSet:
-          deal.requirements && Array.isArray(deal.requirements.trend)
-            ? new Set(deal.requirements.trend)
-            : undefined
+        trendSet: new Set(deal.requirements.trend)
       }
     }
-  ])
-)
+  }
+
+  BRAND_DEALS_BY_ID.set(deal.id, transformedDeal)
+}

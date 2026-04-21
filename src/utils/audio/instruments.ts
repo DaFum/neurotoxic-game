@@ -218,10 +218,7 @@ export function setupMidiChain(): void {
       attack: 0.001,
       decay: 0.35,
       sustain: 0,
-      release: 0.2,
-      attackCurve: 'linear',
-      decayCurve: 'linear',
-      releaseCurve: 'linear'
+      release: 0.2
     }
   })
 
