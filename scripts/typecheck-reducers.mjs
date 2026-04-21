@@ -49,7 +49,7 @@ if (reducerErrors.length > 0) {
 
 if (tsc.status !== 0) {
   console.error('TypeScript compiler reported non-zero exit status.')
-  console.error(output)
+  console.error(tsc.stdout ?? tsc.stderr ?? '')
   process.exit(tsc.status)
 }
 

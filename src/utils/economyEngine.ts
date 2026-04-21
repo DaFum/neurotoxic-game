@@ -19,6 +19,14 @@ export const BAR_RATE_NORMAL = 0.15
 export const AVG_SPEND_PER_PERSON_AT_BAR = 5
 export const ZEALOTRY_PROMO_THRESHOLD = 80
 
+// Standardized breakdown item used across economy reports
+export type FinancialBreakdownItem = {
+  labelKey: string
+  value: number
+  detailKey?: string
+  detailParams?: Record<string, unknown>
+}
+
 export const EXPENSE_CONSTANTS = {
   DAILY: {
     BASE_COST: 62
@@ -505,7 +513,10 @@ export const calculateSponsorshipBonuses = (gigStats: any = {}) => {
  */
 export const calculateGigExpenses = (modifiers: any = {}) => {
   modifiers = modifiers || {}
-  const expenses = { total: 0, breakdown: [] as any[] }
+  const expenses: { total: number; breakdown: FinancialBreakdownItem[] } = {
+    total: 0,
+    breakdown: []
+  }
 
   // Operational Expenses (Modifiers)
   // Transport and subsistence are now exclusively handled during travel phase.
@@ -589,9 +600,13 @@ export const calculateGigFinancials = ({
   const effectivePrice = calculateEffectiveTicketPrice(gigData, context)
   const effectiveGigData = { ...gigData, price: effectivePrice }
 
-  const report = {
-    income: { total: 0, breakdown: [] as any[] },
-    expenses: { total: 0, breakdown: [] as any[] },
+  const report: {
+    income: { total: number; breakdown: FinancialBreakdownItem[] }
+    expenses: { total: number; breakdown: FinancialBreakdownItem[] }
+    net: number
+  } = {
+    income: { total: 0, breakdown: [] },
+    expenses: { total: 0, breakdown: [] },
     net: 0
   }
 

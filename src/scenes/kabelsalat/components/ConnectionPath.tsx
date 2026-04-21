@@ -53,7 +53,7 @@ export const ConnectionPath: FC<ConnectionPathProps> = ({
     />
   )
 }
-;(ConnectionPath as any).propTypes = {
+ConnectionPath.propTypes = {
   sockId: PropTypes.string.isRequired,
   cabId: PropTypes.string.isRequired,
   isPowerConnected: PropTypes.bool.isRequired,

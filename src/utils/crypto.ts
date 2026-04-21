@@ -9,10 +9,9 @@ let batchArray: Uint32Array | null = null
 let batchIndex = BATCH_SIZE
 let secureRandomErrorReported = false
 
-const lut: string[] = []
-for (let i = 0; i < 256; i++) {
-  lut[i] = (i < 16 ? '0' : '') + i.toString(16)
-}
+const lut: string[] = Array.from({ length: 256 }, (_, i) =>
+  i.toString(16).padStart(2, '0')
+)
 
 /**
  * Returns a cryptographically secure random number between 0 and 1.

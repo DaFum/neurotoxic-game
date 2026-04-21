@@ -39,7 +39,7 @@ export const ConnectionPaths = ({
     </>
   )
 }
-;(ConnectionPaths as any).propTypes = {
+ConnectionPaths.propTypes = {
   connections: PropTypes.objectOf(PropTypes.string).isRequired,
   isPowerConnected: PropTypes.bool.isRequired,
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired

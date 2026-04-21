@@ -104,12 +104,12 @@ export const normalizeTraitMap = (
  * @returns {object} An object containing the updated { band, toasts } to be merged into state.
  */
 export const applyTraitUnlocks = (
-  currentState: GameState,
+  currentState: { band?: BandState; toasts?: ToastPayload[] } | GameState,
   unlocks: Array<{ memberId?: string; traitId?: string }>
 ): { band: BandState; toasts: ToastPayload[] } => {
   if (!unlocks || unlocks.length === 0) {
     return {
-      band: currentState.band,
+      band: currentState.band ?? ({} as BandState),
       toasts: (currentState.toasts ?? []) as ToastPayload[]
     }
   }

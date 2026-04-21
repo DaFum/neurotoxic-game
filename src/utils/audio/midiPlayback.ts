@@ -18,6 +18,23 @@ import { playDrumNote } from './drumMappings'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
+// Local lightweight types for MIDI/song note shapes used in scheduling
+type SongLikeNote = {
+  t?: number
+  p?: number
+  v?: number
+  lane?: string
+  [key: string]: unknown
+}
+
+type ProcessedSongEvent = {
+  time: number
+  note: number
+  noteName: string | null
+  velocity: number
+  lane: string
+}
+
 /**
  * Internal helper to trigger instrument notes.
  */
@@ -71,8 +88,9 @@ export function playNoteAtTime(
 /**
  * Validates the song data and audio components readiness.
  */
-function validateSongReady(song: any): boolean {
-  if (!Array.isArray(song.notes)) {
+function validateSongReady(song: unknown): boolean {
+  const s = song as { notes?: unknown }
+  if (!Array.isArray(s.notes)) {
     logger.error('AudioEngine', 'playSongFromData: song.notes is not an array')
     return false
   }
@@ -92,17 +110,19 @@ function validateSongReady(song: any): boolean {
  * Processes song notes into schedulable events.
  */
 function processSongEvents(
-  song: any,
+  song: { notes?: unknown },
   bpm: number,
   tpb: number,
   useTempoMap: boolean,
-  activeTempoMap: any[]
-): { events: any[]; lastTime: number } | null {
-  const events: any[] = []
+  activeTempoMap: unknown[]
+): { events: ProcessedSongEvent[]; lastTime: number } | null {
+  const events: ProcessedSongEvent[] = []
   let lastTime = 0
 
-  for (let i = 0; i < song.notes.length; i++) {
-    const n = song.notes[i]
+  const notes = Array.isArray(song.notes) ? (song.notes as SongLikeNote[]) : []
+
+  for (let i = 0; i < notes.length; i++) {
+    const n = notes[i]
 
     if (
       typeof n.t !== 'number' ||
@@ -116,26 +136,26 @@ function processSongEvents(
     }
 
     const time = useTempoMap
-      ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
-      : (n.t / tpb) * (60 / bpm)
+      ? calculateTimeFromTicks(n.t!, tpb, activeTempoMap as any, 's')
+      : (n.t! / tpb) * (60 / bpm)
 
     const finalTime = Number.isFinite(time) ? time : -1
 
     if (finalTime >= 0) {
-      const rawVelocity = Math.max(0, Math.min(127, n.v))
+      const rawVelocity = Math.max(0, Math.min(127, n.v!))
 
       if (finalTime > lastTime) {
         lastTime = finalTime
       }
 
-      const noteName = n.lane !== 'drums' ? getNoteName(n.p) : null
+      const noteName = n.lane !== 'drums' ? getNoteName(n.p!) : null
 
       events.push({
         time: finalTime,
-        note: n.p,
+        note: n.p!,
         noteName,
         velocity: rawVelocity / 127,
-        lane: n.lane
+        lane: (n.lane as string) || 'guitar'
       })
     }
   }
@@ -154,8 +174,8 @@ function processSongEvents(
 /**
  * Creates the Tone.Part for the song events.
  */
-function createSongPart(events: any[]) {
-  return new Tone.Part((time: number, value: any) => {
+function createSongPart(events: ProcessedSongEvent[]) {
+  return new Tone.Part((time: number, value: ProcessedSongEvent) => {
     try {
       if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
 
@@ -207,28 +227,31 @@ function scheduleSongPlayback(
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
 export async function playSongFromData(
-  song: any,
+  song:
+    | { notes?: unknown; bpm?: number; tpb?: number; tempoMap?: unknown[] }
+    | unknown,
   delay = 0,
-  options: any = {}
+  options: unknown = {}
 ): Promise<boolean> {
-  const { success, reqId, normalizedOptions } =
-    await prepareTransportPlayback(options)
+  const { success, reqId, normalizedOptions } = await prepareTransportPlayback(
+    options as any
+  )
   if (!success) return false
   const { onEnded } = normalizedOptions
-
-  const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
-  const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
+  const s = song as { bpm?: number; tpb?: number; tempoMap?: unknown[] }
+  const bpm = Math.max(1, s.bpm || 120) // Ensure BPM is positive
+  const tpb = Math.max(1, s.tpb || 480) // Ensure TPB is positive
 
   if (!validateSongReady(song)) return false
 
-  const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+  const useTempoMap = Array.isArray(s.tempoMap) && s.tempoMap.length > 0
   const activeTempoMap = useTempoMap
-    ? preprocessTempoMap(song.tempoMap, tpb)
+    ? preprocessTempoMap(s.tempoMap as any, tpb)
     : []
   const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
   const processingResult = processSongEvents(
-    song,
+    { notes: (song as any)?.notes },
     bpm,
     tpb,
     useTempoMap,

@@ -5,6 +5,7 @@
  */
 import { hasTrait } from './traitLogic'
 import { CHARACTERS } from '../data/characters'
+import type { GameState } from '../types/game'
 
 /**
  * Checks for trait unlocks based on game state changes.
@@ -12,7 +13,7 @@ import { CHARACTERS } from '../data/characters'
  * @param {object} context - Contextual data (gigStats, purchaseItem, etc.).
  * @returns {Array} List of { memberId, traitId } to unlock.
  */
-export const checkTraitUnlocks = (state, context = {}) => {
+export const checkTraitUnlocks = (state: GameState, context = {}) => {
   const newUnlocks = []
   const { band, player, social } = state
   const members = band?.members || []

@@ -79,7 +79,9 @@ interface Message {
 interface StatBlockProps {
   label: string
   value: number | string
-  icon?: ComponentType<SvgIconProps> | ReactNode
+  // Icon must be a component accepting `SvgIconProps` because
+  // `StatBlock` renders it as `<Icon className=... />`.
+  icon?: ComponentType<SvgIconProps>
 }
 
 interface BrutalFaderProps {

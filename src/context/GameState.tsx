@@ -956,17 +956,26 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           return false
         }
 
-        // Ensure saved 'unlocks' cannot be null; prefer validated save unlocks when available
+        // Ensure saved 'unlocks' cannot be null; do not allow save files to
+        // silently overwrite separately persisted unlocks. Prefer the
+        // authoritative persisted unlock list (`getUnlocks()`) and merge any
+        // additional validated string IDs from the save file.
         const parsedObj = parsed as Record<string, unknown>
-        const rawUnlocks = Array.isArray(parsedObj.unlocks)
-          ? (parsedObj.unlocks as string[])
-          : getUnlocks()
-        const savedUnlocks: string[] = rawUnlocks ?? []
+        const savedRaw = Array.isArray(parsedObj.unlocks)
+          ? (parsedObj.unlocks as unknown[])
+          : []
+        const savedUnlocks = savedRaw.filter(
+          (u): u is string => typeof u === 'string'
+        )
+        const persistentUnlocks = getUnlocks()
+        const mergedUnlocks = Array.from(
+          new Set([...persistentUnlocks, ...savedUnlocks])
+        )
 
         dispatch(
           createLoadGameAction({
             ...(parsedObj as Partial<import('../types/game').GameState>),
-            unlocks: savedUnlocks
+            unlocks: mergedUnlocks
           })
         )
         return true

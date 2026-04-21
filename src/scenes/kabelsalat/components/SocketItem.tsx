@@ -132,11 +132,11 @@ const SocketItemComponent: FC<SocketItemProps> = ({
         <g
           style={{
             color: showColor
-              ? (connectedCable as { color: string }).color
+              ? connectedCable!.color
               : 'var(--color-concrete-gray)'
           }}
         >
-          <PlugGraphics type={(connectedCable as { type: string }).type} />
+          <PlugGraphics type={connectedCable!.type} />
         </g>
       )}
     </g>

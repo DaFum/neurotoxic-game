@@ -719,24 +719,15 @@ export const applyEventDelta = (state: any, delta: any): any => {
         if (memberHasChanges) {
           if (!bandChanged) {
             bandChanged = true
-            updatedMembers = new Array(memberCount)
-            for (let k = 0; k < i; k++) {
-              updatedMembers[k] = nextBand.members[k]
-            }
+            updatedMembers = [...nextBand.members]
           }
           if (!updatedMembers) {
-            updatedMembers = new Array(memberCount)
-            for (let k = 0; k < i; k++) {
-              updatedMembers[k] = nextBand.members[k]
-            }
+            updatedMembers = [...nextBand.members]
           }
           updatedMembers[i] = nextMember
         } else if (bandChanged) {
           if (!updatedMembers) {
-            updatedMembers = new Array(memberCount)
-            for (let k = 0; k < i; k++) {
-              updatedMembers[k] = nextBand.members[k]
-            }
+            updatedMembers = [...nextBand.members]
           }
           updatedMembers[i] = member
         }
