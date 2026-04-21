@@ -49,7 +49,12 @@ import { getTravelArrivalUpdates } from '../utils/travelLogicUtils'
  * Pre-computed map of venues for O(1) lookups during travel logic
  * @constant {Map<string, Object>}
  */
-const VENUES_MAP = new Map(ALL_VENUES.map(v => [v.id, v]))
+// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
+// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
+const VENUES_MAP = new Map<string, (typeof ALL_VENUES)[number]>()
+for (const v of ALL_VENUES) {
+  VENUES_MAP.set(v.id, v)
+}
 
 /**
  * Failsafe timeout duration in milliseconds
