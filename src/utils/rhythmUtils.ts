@@ -1,19 +1,9 @@
-// TODO: Review this file
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
 import type { Note, Song } from '../types/audio'
+import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
 
 type RandomFn = () => number
-
-interface TempoMapEntry {
-  tick: number
-  usPerBeat: number
-}
-
-interface ProcessedTempoMapEntry extends TempoMapEntry {
-  _startTick: number
-  _accumulatedMicros: number
-}
 
 interface ParsedGameNote {
   time: number
@@ -96,19 +86,18 @@ export const preprocessTempoMap = (
   tpb: number
 ): ProcessedTempoMapEntry[] => {
   if (!tempoMap || tempoMap.length === 0) return []
-
-  const processed = []
+  const processed: ProcessedTempoMapEntry[] = []
   let currentTick = 0
   let totalTimeMicros = 0
 
   for (let i = 0; i < tempoMap.length; i++) {
-    const currentTempo = tempoMap[i]
-    const nextTempo = tempoMap[i + 1]
+    const currentTempo = tempoMap[i] as TempoMapEntry
+    const nextTempo = tempoMap[i + 1] as TempoMapEntry | undefined
 
     // Store the state at the START of this segment
-    // _startTick aligns with the 'currentTick' iterator from the legacy calculation loop
     processed.push({
-      ...currentTempo,
+      tick: currentTempo.tick,
+      usPerBeat: currentTempo.usPerBeat,
       _startTick: currentTick,
       _accumulatedMicros: totalTimeMicros
     })
@@ -136,11 +125,18 @@ const findTempoSegment = (
 ): ProcessedTempoMapEntry => {
   let lo = 0
   let hi = processedMap.length - 1
-  let candidate = processedMap[0]
+  let candidate = processedMap[0] as ProcessedTempoMapEntry
 
   while (lo <= hi) {
     const mid = (lo + hi) >>> 1
     const entry = processedMap[mid]
+
+    if (!entry) {
+      // Tempo map should be dense after preprocessing. A missing entry indicates
+      // a corrupted or sparse tempo map; fail loudly to avoid subtle binary
+      // search corruption.
+      throw new Error(`findTempoSegment: sparse tempo map at index ${mid}`)
+    }
 
     if (entry._startTick <= ticks) {
       // Valid candidate, try to find a later one
@@ -150,7 +146,7 @@ const findTempoSegment = (
       hi = mid - 1
     }
   }
-  return candidate
+  return candidate!
 }
 
 /**
@@ -233,6 +229,7 @@ export const parseSongNotes = (
   const validNotes: Note[] = []
   for (let i = 0; i < song.notes.length; i++) {
     const n = song.notes[i]
+    if (!n) continue
     if (typeof n.t === 'number' && Number.isFinite(n.t)) {
       validNotes.push(n)
     }
@@ -252,13 +249,16 @@ export const parseSongNotes = (
   const gameNotes: ParsedGameNote[] = []
   for (let i = 0; i < validNotes.length; i += 4) {
     const n = validNotes[i]
+    if (!n) continue
+
     const noteTick = n.t ?? 0
-    const laneIndex = laneMap[n.lane]
+    const laneKey = typeof n.lane === 'string' ? n.lane : undefined
+    const laneIndex = laneKey ? laneMap[laneKey] : undefined
 
     if (laneIndex === undefined) {
       if (onWarn)
         onWarn(
-          `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
+          `parseSongNotes: Unknown lane "${String(n.lane)}" for note at tick ${String(n.t)}. Skipping.`
         )
       continue
     }
@@ -339,7 +339,12 @@ export const checkHit = (
 
   while (lo <= hi) {
     const mid = (lo + hi) >>> 1
-    if (notes[mid].time >= windowStart) {
+    const midNote = notes[mid]
+    if (!midNote) {
+      lo = mid + 1
+      continue
+    }
+    if (midNote.time >= windowStart) {
       firstValidIndex = mid
       hi = mid - 1
     } else {
@@ -350,6 +355,7 @@ export const checkHit = (
   // Scan forward through candidates within the time window
   for (let i = firstValidIndex; i < notes.length; i++) {
     const n = notes[i]
+    if (!n) continue
     if (n.time >= windowEnd) break
 
     if (

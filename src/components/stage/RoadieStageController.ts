@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import {
@@ -142,7 +141,11 @@ class RoadieStageController extends BaseStageController {
         GUITAR: loaded.guitar
       }
     } catch (e) {
-      handleError(new GameError('Asset load failed', { cause: e } as any))
+      handleError(
+        new GameError('Asset load failed', {
+          context: { originalError: e instanceof Error ? e : String(e) }
+        })
+      )
     }
   }
 

@@ -3,6 +3,16 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from '../shared/VolumeSlider'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
+import type { ChangeEvent } from 'react'
+
+type AudioSettingsProps = {
+  musicVol: number
+  sfxVol: number
+  isMuted: boolean
+  onMusicChange: (v: number) => void
+  onSfxChange: (v: number) => void
+  onToggleMute: () => void
+}
 
 export const AudioSettings = memo(function AudioSettings({
   musicVol,
@@ -11,16 +21,24 @@ export const AudioSettings = memo(function AudioSettings({
   onMusicChange,
   onSfxChange,
   onToggleMute
-}) {
+}: AudioSettingsProps) {
   const { t } = useTranslation()
 
   const handleMusicChange = useCallback(
-    e => onMusicChange(parseFloat(e.target.value)),
+    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) => {
+      const raw = (e as any).target?.value
+      const num = typeof raw === 'number' ? raw : parseFloat(String(raw))
+      onMusicChange(num)
+    },
     [onMusicChange]
   )
 
   const handleSfxChange = useCallback(
-    e => onSfxChange(parseFloat(e.target.value)),
+    (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) => {
+      const raw = (e as any).target?.value
+      const num = typeof raw === 'number' ? raw : parseFloat(String(raw))
+      onSfxChange(num)
+    },
     [onSfxChange]
   )
 

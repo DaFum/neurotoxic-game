@@ -13,7 +13,8 @@ const isTranslatableKey = (key: unknown): boolean => {
   if (typeof key !== 'string') return false
   const parts = key.split(':')
   if (parts.length > 1) {
-    return VALID_NAMESPACES.includes(parts[0])
+    const ns = parts[0] ?? ''
+    return VALID_NAMESPACES.includes(ns)
   }
   return false
 }

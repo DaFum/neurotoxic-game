@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Added null guard for gigEvents in calculateViralityScore to prevent crashes when gigEvents is null/undefined.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto'
@@ -17,6 +17,8 @@ import {
   clampPlayerMoney,
   clampBandHarmony
 } from './gameStateUtils'
+
+type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 
 type RandomFn = () => number
 type BrandDeal =
@@ -658,14 +660,15 @@ export const generateBrandOffers = (
     if (totalFollowers < deal.requirements.followers) continue
 
     // Check trend match using O(1) loop or Set check if available
-    if (social.trend && deal.requirements.trend) {
+    const trendVal = social.trend as AllowedTrend | undefined
+    if (trendVal && deal.requirements.trend) {
       // Defend against unknown/invalid trend values and avoid runtime errors.
       // We first check if social.trend is valid globally via ALLOWED_TRENDS_SET.
-      if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(social.trend)) continue
+      if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(trendVal)) continue
 
       if (deal.requirements.trendSet) {
-        if (!deal.requirements.trendSet.has(social.trend)) continue
-      } else if (!deal.requirements.trend.includes(social.trend)) {
+        if (!deal.requirements.trendSet.has(trendVal)) continue
+      } else if (!deal.requirements.trend.includes(trendVal)) {
         continue
       }
     }

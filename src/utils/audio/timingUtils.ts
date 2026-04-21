@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Calculates a scheduled Tone.js time in milliseconds for hit playback.
  * @param {object} params - Timing parameters.
@@ -13,7 +12,12 @@ export const getScheduledHitTimeMs = ({
   gigTimeMs,
   audioTimeMs,
   maxLeadMs = 30
-}) => {
+}: {
+  noteTimeMs: number
+  gigTimeMs: number
+  audioTimeMs: number
+  maxLeadMs?: number
+}): number => {
   const safeNoteTimeMs = Number.isFinite(noteTimeMs) ? noteTimeMs : 0
   const safeGigTimeMs = Number.isFinite(gigTimeMs) ? gigTimeMs : 0
   const safeAudioTimeMs = Number.isFinite(audioTimeMs) ? audioTimeMs : 0

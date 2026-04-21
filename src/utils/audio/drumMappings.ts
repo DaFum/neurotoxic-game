@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { audioState } from './state'
 
 // ⚡ BOLT OPTIMIZATION: Direct handler dispatch avoids string comparisons and property lookups
@@ -10,19 +9,46 @@ const DRUM_HANDLER_IDX = {
   CRASH: 3
 }
 
-const DRUM_HANDLERS = [
+type DrumMap = {
+  handler: number
+  note?: string
+  duration?: string
+  freq?: number
+  velScale?: number
+}
+
+type DrumKit = NonNullable<typeof audioState.drumKit>
+
+export const DRUM_HANDLERS: Array<
+  (kit: DrumKit, map: DrumMap, time: number, vel: number) => void
+> = [
   // 0: Kick (note, duration)
   (kit, map, time, vel) =>
-    kit.kick.triggerAttackRelease(map.note, map.duration, time, vel),
+    kit.kick.triggerAttackRelease(
+      map.note ?? 'C1',
+      map.duration ?? '8n',
+      time,
+      vel
+    ),
   // 1: Snare (duration)
   (kit, map, time, vel) =>
-    kit.snare.triggerAttackRelease(map.duration, time, vel),
+    kit.snare.triggerAttackRelease(map.duration ?? '16n', time, vel),
   // 2: HiHat (freq, duration)
   (kit, map, time, vel) =>
-    kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel),
+    kit.hihat.triggerAttackRelease(
+      map.freq ?? 8000,
+      map.duration ?? '32n',
+      time,
+      vel
+    ),
   // 3: Crash (freq, duration)
   (kit, map, time, vel) =>
-    kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
+    kit.crash.triggerAttackRelease(
+      map.freq ?? 4000,
+      map.duration ?? '4n',
+      time,
+      vel
+    )
 ]
 
 const DRUM_MAPPING = new Array(128)
@@ -150,23 +176,23 @@ DRUM_MAPPING[50] = {
  * @param {object} [kit=audioState.drumKit] - Das Schlagzeug-Kit/Synth-Objekt, das die Trigger-Methoden bereitstellt.
  */
 export function playDrumNote(
-  midiPitch,
-  time,
-  velocity,
-  kit = audioState.drumKit
+  midiPitch: number,
+  time: number,
+  velocity: number,
+  kit: DrumKit = audioState.drumKit as DrumKit
 ) {
   if (!kit) return
 
   const velRaw = Number.isFinite(velocity) ? velocity : 0
   const vel = Math.max(0, Math.min(1, velRaw))
 
-  // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution
-  const map = DRUM_MAPPING[midiPitch]
+  const map = DRUM_MAPPING[midiPitch] as DrumMap | undefined
   const handler = map ? DRUM_HANDLERS[map.handler] : null
 
-  if (handler) {
+  if (handler && map) {
     try {
-      handler(kit, map, time, vel * map.velScale)
+      const scale = typeof map.velScale === 'number' ? map.velScale : 1
+      handler(kit, map, time, vel * scale)
     } catch (_e) {
       // Ignored: Tone.js node likely disposed or context suspended
     }

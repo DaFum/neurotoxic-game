@@ -1,4 +1,3 @@
-// TODO: Review this file
 import React, {
   useState,
   useId,
@@ -8,6 +7,7 @@ import React, {
 } from 'react'
 import { logger } from '../../utils/logger'
 import PropTypes from 'prop-types'
+import type { ReactElement, ReactNode, SyntheticEvent } from 'react'
 
 /**
  * Tooltip - Displays a floating tooltip on hover.
@@ -16,54 +16,74 @@ import PropTypes from 'prop-types'
  * @param {React.ReactNode} props.content - The tooltip content.
  * @param {string} [props.className] - Additional CSS classes for the container.
  */
-export const Tooltip = ({ children, content, className = '' }) => {
+export const Tooltip = ({
+  children,
+  content,
+  className = ''
+}: {
+  children: ReactElement
+  content: ReactNode
+  className?: string
+}) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
 
+  const child = children as ReactElement & { props: Record<string, unknown> }
+  const childProps = child.props as Record<string, unknown>
+
   const isDisabled =
-    children?.props?.disabled ||
-    children?.props?.['aria-disabled'] === true ||
-    children?.props?.['aria-disabled'] === 'true' ||
-    (typeof children?.props?.className === 'string' &&
-      children.props.className.split(' ').includes('pointer-events-none')) ||
-    children?.props?.style?.pointerEvents === 'none'
+    Boolean(childProps.disabled) ||
+    childProps['aria-disabled'] === true ||
+    childProps['aria-disabled'] === 'true' ||
+    (typeof childProps.className === 'string' &&
+      (childProps.className as string)
+        .split(' ')
+        .includes('pointer-events-none')) ||
+    (childProps.style &&
+      (childProps.style as Record<string, unknown>).pointerEvents === 'none')
 
   const handleMouseEnter = useCallback(
-    e => {
+    (e: SyntheticEvent) => {
       setIsVisible(true)
-      if (!isDisabled && children?.props?.onMouseEnter)
-        children.props.onMouseEnter(e)
+      const fn = childProps.onMouseEnter
+      if (!isDisabled && typeof fn === 'function')
+        (fn as (...args: unknown[]) => void)(e)
     },
-    [children?.props, isDisabled]
+    [childProps, isDisabled]
   )
 
   const handleMouseLeave = useCallback(
-    e => {
+    (e: SyntheticEvent) => {
       setIsVisible(false)
-      if (!isDisabled && children?.props?.onMouseLeave)
-        children.props.onMouseLeave(e)
+      const fn = childProps.onMouseLeave
+      if (!isDisabled && typeof fn === 'function')
+        (fn as (...args: unknown[]) => void)(e)
     },
-    [children?.props, isDisabled]
+    [childProps, isDisabled]
   )
 
   const handleFocus = useCallback(
-    e => {
+    (e: SyntheticEvent) => {
       setIsVisible(true)
-      if (!isDisabled && children?.props?.onFocus) children.props.onFocus(e)
+      const fn = childProps.onFocus
+      if (!isDisabled && typeof fn === 'function')
+        (fn as (...args: unknown[]) => void)(e)
     },
-    [children?.props, isDisabled]
+    [childProps, isDisabled]
   )
 
   const handleBlur = useCallback(
-    e => {
+    (e: SyntheticEvent) => {
       setIsVisible(false)
-      if (!isDisabled && children?.props?.onBlur) children.props.onBlur(e)
+      const fn = childProps.onBlur
+      if (!isDisabled && typeof fn === 'function')
+        (fn as (...args: unknown[]) => void)(e)
     },
-    [children?.props, isDisabled]
+    [childProps, isDisabled]
   )
 
   const isValid = isValidElement(children)
-  const isFragment = children && children.type === React.Fragment
+  const isFragment = children && (children as any).type === React.Fragment
 
   React.useEffect(() => {
     if (!isValid) {
@@ -84,7 +104,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
   }
 
   const computedAriaDescribedBy = (() => {
-    const existing = children.props['aria-describedby']
+    const existing = childProps['aria-describedby'] as string | undefined
     if (!isVisible) return existing
     if (!existing) return tooltipId
     const ids = existing.split(' ').filter(Boolean)
@@ -93,8 +113,8 @@ export const Tooltip = ({ children, content, className = '' }) => {
   })()
 
   const isFullWidth =
-    typeof children.props.className === 'string' &&
-    children.props.className.split(' ').includes('w-full')
+    typeof childProps.className === 'string' &&
+    (childProps.className as string).split(' ').includes('w-full')
 
   const trigger = isDisabled ? (
     <span
@@ -110,13 +130,16 @@ export const Tooltip = ({ children, content, className = '' }) => {
     </span>
   ) : (
     // eslint-disable-next-line @eslint-react/no-clone-element
-    cloneElement(children, {
-      onMouseEnter: handleMouseEnter,
-      onMouseLeave: handleMouseLeave,
-      onFocus: handleFocus,
-      onBlur: handleBlur,
-      'aria-describedby': computedAriaDescribedBy
-    })
+    cloneElement(
+      children as ReactElement<any, any>,
+      {
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: handleMouseLeave,
+        onFocus: handleFocus,
+        onBlur: handleBlur,
+        'aria-describedby': computedAriaDescribedBy
+      } as any
+    )
   )
 
   return (

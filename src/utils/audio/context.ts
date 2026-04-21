@@ -107,14 +107,16 @@ export async function ensureAudioContext(): Promise<boolean> {
     }
   }
 
-  const ensureRebuild = async reasonState => {
+  const ensureRebuild = async (
+    reasonState: string | null
+  ): Promise<boolean> => {
     if (audioState.rebuildLock) {
       await audioState.rebuildLock
       return audioState.isSetup
     }
 
-    let resolveRebuild
-    audioState.rebuildLock = new Promise(r => {
+    let resolveRebuild: (() => void) | undefined
+    audioState.rebuildLock = new Promise<void>(r => {
       resolveRebuild = r
     })
 

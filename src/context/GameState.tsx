@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { getSafeUUID } from '../utils/crypto'
 import { isPlainObject, normalizeSetlistForSave } from '../utils/gameStateUtils'
 import {
@@ -341,7 +340,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Lazy initialization of state to ensure fresh data fetch on mount
   const initGameState = (): GameState => {
     const unlocks =
-      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
+      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
     const freshState = createInitialState({ unlocks })
 
     // Check for test-injected state (screenshot testing).
@@ -664,8 +663,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => {
-    const unlocks =
-      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) || []
+    const unlocks: string[] =
+      safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
     dispatch(createResetStateAction({ unlocks }))
   }, [])
 
@@ -957,7 +956,28 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           return false
         }
 
-        dispatch(createLoadGameAction({ ...parsed, unlocks: getUnlocks() }))
+        // Ensure saved 'unlocks' cannot be null; do not allow save files to
+        // silently overwrite separately persisted unlocks. Prefer the
+        // authoritative persisted unlock list (`getUnlocks()`) and merge any
+        // additional validated string IDs from the save file.
+        const parsedObj = parsed as Record<string, unknown>
+        const savedRaw = Array.isArray(parsedObj.unlocks)
+          ? (parsedObj.unlocks as unknown[])
+          : []
+        const savedUnlocks = savedRaw.filter(
+          (u): u is string => typeof u === 'string'
+        )
+        const persistentUnlocks = getUnlocks()
+        const mergedUnlocks = Array.from(
+          new Set([...persistentUnlocks, ...savedUnlocks])
+        )
+
+        dispatch(
+          createLoadGameAction({
+            ...(parsedObj as Partial<GameState>),
+            unlocks: mergedUnlocks
+          })
+        )
         return true
       },
       false
@@ -1030,7 +1050,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * @returns {object} Object containing { outcomeText, description, result }.
    */
   const resolveEvent = useCallback(
-    (choice: Record<string, unknown> | null) => {
+    (
+      choice: Record<string, unknown> | null
+    ): { outcomeText: string; description: string; result: unknown } => {
       // 1. Validation
       if (!choice) {
         setActiveEvent(null)
@@ -1116,7 +1138,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
             )
             changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
-            return { outcomeText, description, result }
+            return {
+              outcomeText: outcomeText ?? '',
+              description: description ?? '',
+              result
+            }
           }
         }
 
@@ -1146,7 +1172,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         // 6. Cleanup
         setActiveEvent(null)
-        return { outcomeText, description, result }
+        return {
+          outcomeText: outcomeText ?? '',
+          description: description ?? '',
+          result
+        }
       } catch (error) {
         // 7. Error Handling
         logger.error('Event', 'Failed to resolve event choice:', error)

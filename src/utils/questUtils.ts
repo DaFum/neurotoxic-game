@@ -6,10 +6,13 @@
  * @param {string} questId - The ID of the quest to find.
  * @returns {boolean} True if the quest is active.
  */
-export const hasActiveQuest = (activeQuests, questId) => {
+export const hasActiveQuest = (
+  activeQuests: Array<{ id: string } | undefined> | undefined,
+  questId: string
+): boolean => {
   if (!activeQuests || activeQuests.length === 0) return false
   for (let i = 0; i < activeQuests.length; i++) {
-    if (activeQuests[i].id === questId) return true
+    if (activeQuests[i]?.id === questId) return true
   }
   return false
 }

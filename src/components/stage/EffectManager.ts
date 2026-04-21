@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Application, Container, Sprite, Texture } from 'pixi.js'
 import { EffectTextureManager } from './EffectTextureManager'
 

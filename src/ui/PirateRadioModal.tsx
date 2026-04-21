@@ -1,7 +1,7 @@
 /*
  * (#1) Actual Updates: Added PropTypes.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'

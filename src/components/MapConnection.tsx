@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { memo } from 'react'
 
 type NodeVisibility = 'visible' | 'dimmed' | 'hidden'

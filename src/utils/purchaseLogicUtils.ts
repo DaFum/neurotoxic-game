@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { HQ_ITEMS } from '../data/hqItems'
 import { bandHasTrait } from './traitLogic'
 import {
@@ -48,6 +47,33 @@ type EffectHandler = (
 ) =>
   | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: any[] }
   | undefined
+
+// Safely read a numeric property from an unknown object.
+const getNumericProp = (
+  obj: unknown,
+  key?: string,
+  fallback?: number
+): number | undefined => {
+  if (!key) return fallback
+  if (obj == null || typeof obj !== 'object') return fallback
+  const o = obj as Record<string, unknown>
+  const raw = o[key]
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  if (
+    typeof raw === 'string' &&
+    raw.trim() !== '' &&
+    !Number.isNaN(Number(raw))
+  )
+    return Number(raw)
+  return fallback
+}
+
+// Safely set a property on an unknown object.
+const setProp = (obj: unknown, key?: string, value?: unknown): void => {
+  if (!key) return
+  if (obj == null || typeof obj !== 'object') return
+  ;(obj as Record<string, unknown>)[key] = value
+}
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -250,67 +276,65 @@ export const applyStatModifier = (
   player: PlayerState,
   band: BandState
 ): { playerPatch: PlayerPatch; bandPatch: BandPatch } => {
-  const val = effect.value
+  const val = Number(effect.value ?? 0)
   let nextPlayerPatch: PlayerPatch = { ...playerPatch }
   let nextBandPatch: BandPatch = null
 
   switch (effect.target) {
-    case 'van':
+    case 'van': {
+      const base = getNumericProp(player.van ?? {}, effect.stat, 0) || 0
       nextPlayerPatch.van = {
         ...(player.van ?? {}),
-        [effect.stat as string]: Math.max(
-          0,
-          (((player.van ?? {}) as any)[effect.stat as string] || 0) + val
-        )
+        [effect.stat as string]: Math.max(0, base + val)
       }
       break
+    }
 
     case 'player': {
-      const basePlayerStat = ((nextPlayerPatch as any)[effect.stat as string] ??
-        (player as any)[effect.stat as string] ??
-        0) as number
+      const basePlayerStat =
+        getNumericProp(nextPlayerPatch, effect.stat) ??
+        getNumericProp(player, effect.stat) ??
+        0
 
       if (effect.stat === 'money') {
-        ;(nextPlayerPatch as any)[effect.stat as string] = clampPlayerMoney(
-          basePlayerStat + val
+        setProp(
+          nextPlayerPatch,
+          effect.stat,
+          clampPlayerMoney(basePlayerStat + val)
         )
       } else if (effect.stat === 'fame') {
         const clampedFame = clampPlayerFame(basePlayerStat + val)
         nextPlayerPatch.fame = clampedFame
         nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
       } else {
-        ;(nextPlayerPatch as any)[effect.stat as string] = Math.max(
-          0,
-          basePlayerStat + val
-        )
+        setProp(nextPlayerPatch, effect.stat, Math.max(0, basePlayerStat + val))
       }
       break
     }
 
-    case 'band':
+    case 'band': {
       if (effect.stat === 'harmony') {
         nextBandPatch = {
           harmony: clampBandHarmony((band.harmony || 0) + val)
         }
       } else {
+        const base = getNumericProp(band, effect.stat, 0) || 0
         nextBandPatch = {
-          [effect.stat as string]: Math.max(
-            0,
-            ((band as any)[effect.stat as string] || 0) + val
-          )
+          [effect.stat as string]: Math.max(0, base + val)
         }
       }
       break
+    }
 
-    default: // performance or undefined (assumed performance)
+    default: {
+      const base = getNumericProp(band.performance ?? {}, effect.stat, 0) || 0
       nextBandPatch = {
         performance: {
           ...(band.performance ?? {}),
-          [effect.stat as string]:
-            (((band.performance ?? {}) as any)[effect.stat as string] || 0) +
-            val
+          [effect.stat as string]: base + val
         }
       }
+    }
   }
 
   return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
@@ -550,7 +574,7 @@ export const applyUnlockHQ = (
               ...m,
               stamina: clampMemberStamina(
                 (m.stamina ?? 0) + 30,
-                (m as any).staminaMax
+                getNumericProp(m, 'staminaMax', 100)
               )
             }
           case 'hq_room_old_couch':
@@ -558,7 +582,7 @@ export const applyUnlockHQ = (
               ...m,
               stamina: clampMemberStamina(
                 (m.stamina ?? 0) + 10,
-                (m as any).staminaMax
+                getNumericProp(m, 'staminaMax', 100)
               )
             }
           default:
@@ -594,7 +618,7 @@ export const applyPassive = (
   if (effect.key === 'harmony_regen_travel') {
     nextBandPatch = { harmonyRegenTravel: true }
   } else if (effect.key === 'passive_followers') {
-    const val = Number(effect.value) || 0
+    const val = getNumericProp(effect, 'value', 0) ?? 0
     nextPlayerPatch.passiveFollowers =
       (player.passiveFollowers || 0) + Math.max(0, val)
   }

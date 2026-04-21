@@ -90,7 +90,6 @@
 **Learning:** Locked items (like songs) in list selections often lack context as to _why_ they are locked, especially when the locking condition is tied to a specific game mode (e.g., 'Prove Yourself' mode). While adding a tooltip directly to a disabled `<button>` is tempting, it often fails accessibility and interaction tests because disabled elements do not trigger mouse or keyboard events reliably across browsers.
 **Action:** Pass the disabled control directly into `Tooltip` (e.g., `Tooltip` children) and let `Tooltip` supply the focusable wrapper for disabled elements, rather than manually wrapping controls in a `<span tabIndex={0}>` at call sites. This ensures the reason for the disabled state is accessible without duplicate wrapper logic.
 
-
 ## 2026-06-06 - Missing focus rings in ContrabandStash member target buttons
 
 **Learning:** Target member selection buttons in the ContrabandStash component lacked `aria-pressed`, meaning screen readers couldn't identify the actively selected member button visually represented by active classes. Furthermore, the buttons lacked explicit focus rings.

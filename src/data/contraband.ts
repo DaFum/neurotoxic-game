@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Contraband & Relics Data Catalog
  * Artifacts gathered from the void during tour.

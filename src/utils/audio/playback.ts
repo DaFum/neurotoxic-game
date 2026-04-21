@@ -1,4 +1,3 @@
-// TODO: Review this file
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'
@@ -116,8 +115,12 @@ export const calculateGigTimeMs = ({
   startCtxTimeSec: number | null
   offsetMs?: number
 }): number => {
-  const safeOffset = Number.isFinite(offsetMs) ? offsetMs : 0
-  if (!Number.isFinite(contextTimeSec) || !Number.isFinite(startCtxTimeSec)) {
+  const safeOffset = Number.isFinite(offsetMs) ? (offsetMs as number) : 0
+  if (
+    !Number.isFinite(contextTimeSec) ||
+    typeof startCtxTimeSec !== 'number' ||
+    !Number.isFinite(startCtxTimeSec)
+  ) {
     return safeOffset
   }
   return (contextTimeSec - startCtxTimeSec) * 1000 + safeOffset
@@ -195,9 +198,10 @@ export const calculateGigPlaybackWindow = ({
   const safeBufferDurationSec = Number.isFinite(bufferDurationSec)
     ? Math.max(0, bufferDurationSec)
     : 0
-  const safeDurationMs = Number.isFinite(durationMs)
-    ? Math.max(0, durationMs)
-    : null
+  const safeDurationMs =
+    typeof durationMs === 'number' && Number.isFinite(durationMs)
+      ? Math.max(0, durationMs)
+      : null
   let nextBaseOffsetMs = safeBaseOffsetMs
   let nextSeekOffsetMs = safeSeekOffsetMs
   const requestedOffsetSeconds = (safeBaseOffsetMs + safeSeekOffsetMs) / 1000
@@ -286,9 +290,10 @@ export async function startGigPlayback({
   audioState.gigFilename = filename
   audioState.gigBaseOffsetMs = Math.max(0, bufferOffsetMs)
   audioState.gigSeekOffsetMs = 0
-  audioState.gigDurationMs = Number.isFinite(durationMs)
-    ? Math.max(0, durationMs)
-    : null
+  audioState.gigDurationMs =
+    typeof durationMs === 'number' && Number.isFinite(durationMs)
+      ? Math.max(0, durationMs)
+      : null
   audioState.gigOnEnded = typeof onEnded === 'function' ? onEnded : null
   audioState.gigIsPaused = false
 
@@ -566,8 +571,9 @@ export async function pauseAudio(): Promise<void> {
   try {
     if (Tone.getTransport().state === 'started') {
       const p = Tone.getTransport().pause()
-      if (p && typeof p.then === 'function') {
-        await p
+      const maybeThenable = p as unknown as { then?: unknown }
+      if (maybeThenable && typeof maybeThenable.then === 'function') {
+        await (p as unknown as Promise<unknown>)
       }
     }
   } catch (err) {
@@ -588,8 +594,9 @@ export async function resumeAudio(): Promise<boolean> {
   try {
     if (Tone.getTransport().state === 'paused') {
       const p = Tone.getTransport().start()
-      if (p && typeof p.then === 'function') {
-        await p
+      const maybeThenable = p as unknown as { then?: unknown }
+      if (maybeThenable && typeof maybeThenable.then === 'function') {
+        await (p as unknown as Promise<unknown>)
       }
     }
   } catch (err) {

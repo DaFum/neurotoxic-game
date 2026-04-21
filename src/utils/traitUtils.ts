@@ -1,34 +1,57 @@
-// TODO: Review this file
 import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'
 import { getSafeUUID } from '../utils/crypto'
+import type {
+  GameState,
+  BandMember,
+  BandState,
+  ToastPayload
+} from '../types/game'
+
+type TraitDef = {
+  id: string
+  name?: string
+  desc?: string
+  effect?: string
+  unlockHint?: string
+  [key: string]: unknown
+}
 
 /**
  * Pre-calculated lookup for character trait definitions.
  * Maps: charKey -> { traitId -> traitDef }
  * Provides O(1) lookup for trait definitions instead of O(N) searching.
  */
-const TRAIT_DEFS_BY_CHAR = Object.create(null)
+const TRAIT_DEFS_BY_CHAR: Record<
+  string,
+  Record<string, TraitDef>
+> = Object.create(null)
 /**
  * Flat lookup for all trait definitions by traitId.
  * Maps: traitId -> traitDef
  */
-const TRAIT_DEFS_BY_ID = new Map()
+const TRAIT_DEFS_BY_ID: Map<string, TraitDef> = new Map()
 
-for (const charKey in CHARACTERS) {
-  if (Object.hasOwn(CHARACTERS, charKey)) {
-    const traits = CHARACTERS[charKey].traits || []
-    TRAIT_DEFS_BY_CHAR[charKey] = Object.create(null)
-    for (const trait of traits) {
-      TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
-      if (TRAIT_DEFS_BY_ID.has(trait.id)) {
-        logger.warn(
-          'traitUtils',
-          `Duplicate trait ID found during initialization: ${trait.id}`
-        )
-      }
-      TRAIT_DEFS_BY_ID.set(trait.id, trait)
+for (const charKey of Object.keys(CHARACTERS) as Array<
+  keyof typeof CHARACTERS
+>) {
+  const char = CHARACTERS[charKey]
+  const traits = (char.traits ?? []) as TraitDef[]
+  TRAIT_DEFS_BY_CHAR[charKey as string] = Object.create(null)
+  const bucket = TRAIT_DEFS_BY_CHAR[charKey as string] as Record<
+    string,
+    TraitDef
+  >
+  for (const trait of traits) {
+    const t = trait as TraitDef
+    bucket[t.id] = t
+    if (TRAIT_DEFS_BY_ID.has(t.id)) {
+      logger.warn(
+        'traitUtils',
+        `Duplicate trait ID found during initialization: ${t.id}`
+      )
     }
+    TRAIT_DEFS_BY_ID.set(t.id, t)
   }
 }
 
@@ -37,8 +60,9 @@ for (const charKey in CHARACTERS) {
  * @param {string} traitId
  * @returns {object|null}
  */
-export const getTraitById = traitId => {
-  return TRAIT_DEFS_BY_ID.get(traitId) || null
+export const getTraitById = (traitId: string): TraitDef | null => {
+  if (!traitId) return null
+  return TRAIT_DEFS_BY_ID.get(traitId) ?? null
 }
 
 /**
@@ -47,23 +71,27 @@ export const getTraitById = traitId => {
  * @param {object|Array} traits - The raw traits to normalize.
  * @returns {object} A null-prototype object with normalized trait data.
  */
-export const normalizeTraitMap = traits => {
+export const normalizeTraitMap = (
+  traits: unknown
+): Record<string, TraitDef> => {
   if (Array.isArray(traits)) {
-    const traitsMap = Object.create(null)
+    const traitsMap: Record<string, TraitDef> = Object.create(null)
     for (const t of traits) {
-      if (t && t.id) {
-        traitsMap[t.id] = t
+      if (t && typeof t === 'object' && Object.hasOwn(t, 'id')) {
+        const td = t as TraitDef
+        if (td.id) traitsMap[td.id] = td
       }
     }
     return traitsMap
   }
   if (traits && typeof traits === 'object') {
-    const traitsMap = Object.create(null)
-    for (const key in traits) {
-      if (!Object.hasOwn(traits, key)) continue
-      const t = traits[key]
-      if (t && t.id) {
-        traitsMap[t.id] = t
+    const traitsMap: Record<string, TraitDef> = Object.create(null)
+    for (const key in traits as Record<string, unknown>) {
+      if (!Object.hasOwn(traits as Record<string, unknown>, key)) continue
+      const t = (traits as Record<string, unknown>)[key]
+      if (t && typeof t === 'object' && Object.hasOwn(t, 'id')) {
+        const td = t as TraitDef
+        if (td.id) traitsMap[td.id] = td
       }
     }
     return traitsMap
@@ -79,27 +107,32 @@ export const normalizeTraitMap = traits => {
  * @param {Array} unlocks - Array of { memberId, traitId } objects.
  * @returns {object} An object containing the updated { band, toasts } to be merged into state.
  */
-export const applyTraitUnlocks = (currentState, unlocks) => {
+export const applyTraitUnlocks = (
+  currentState: { band?: BandState; toasts?: ToastPayload[] } | GameState,
+  unlocks: Array<{ memberId?: string; traitId?: string }>
+): { band: BandState; toasts: ToastPayload[] } => {
   if (!unlocks || unlocks.length === 0) {
     return {
-      band: currentState.band,
-      toasts: currentState.toasts ?? []
+      band: currentState.band ?? ({} as BandState),
+      toasts: (currentState.toasts ?? []) as ToastPayload[]
     }
   }
 
   // Create shallow copy of band and members for immutable update
-  const members = currentState.band?.members ?? []
-  const nextBand = {
-    ...currentState.band,
-    members: members.map(m => ({
-      ...m,
-      traits: normalizeTraitMap(m.traits)
-    }))
+  const members: BandMember[] = currentState.band?.members ?? []
+  type MemberWithTraits = BandMember & { traits: Record<string, TraitDef> }
+  const nextMembers: MemberWithTraits[] = members.map(m => ({
+    ...m,
+    traits: normalizeTraitMap(m.traits)
+  }))
+  const nextBand: BandState & { members: MemberWithTraits[] } = {
+    ...(currentState.band ?? ({} as BandState)),
+    members: nextMembers
   }
-  const nextToasts = [...(currentState.toasts ?? [])]
+  const nextToasts: ToastPayload[] = [...(currentState.toasts ?? [])]
 
   // Create a map for O(1) member lookup by ID and lowercase name
-  const memberLookup = new Map()
+  const memberLookup = new Map<string, number>()
   nextBand.members.forEach((m, idx) => {
     if (m.id && !memberLookup.has(m.id)) {
       memberLookup.set(m.id, idx)
@@ -112,29 +145,33 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     }
   })
 
-  unlocks.forEach(u => {
+  for (const u of unlocks) {
+    if (!u || typeof u.memberId !== 'string' || typeof u.traitId !== 'string')
+      continue
+
     // Find member by ID or case-insensitive name
     let memberIndex = memberLookup.get(u.memberId)
-    if (memberIndex === undefined && typeof u.memberId === 'string') {
+    if (memberIndex === undefined) {
       memberIndex = memberLookup.get(u.memberId.toLowerCase())
     }
 
-    if (memberIndex === undefined) return
+    if (memberIndex === undefined) continue
 
     const member = nextBand.members[memberIndex]
 
     // Check if trait is already unlocked
-    if (Object.hasOwn(member.traits, u.traitId)) return
+    if (Object.hasOwn(member.traits, u.traitId)) continue
 
     // Find trait definition using the member's name to resolve static character data
-    // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
     const charKey =
       typeof member.name === 'string' && member.name
-        ? member.name.toUpperCase()
+        ? (member.name.toUpperCase() as keyof typeof CHARACTERS)
         : null
-    const traitDef = charKey ? TRAIT_DEFS_BY_CHAR[charKey]?.[u.traitId] : null
+    const traitDef = charKey
+      ? (TRAIT_DEFS_BY_CHAR[charKey as string] ?? {})[u.traitId]
+      : undefined
 
-    if (!traitDef) return
+    if (!traitDef) continue
 
     // Apply trait
     member.traits[u.traitId] = traitDef
@@ -147,7 +184,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
       message: `Unlocked Trait: ${traitDef.name} (${u.memberId})`,
       type: 'success'
     })
-  })
+  }
 
   return {
     band: nextBand,

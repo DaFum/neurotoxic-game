@@ -1,4 +1,3 @@
-// TODO: Review this file
 import * as Tone from 'tone'
 import { audioState } from './state'
 import { ensureAudioContext } from './context'
@@ -9,9 +8,11 @@ import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
  * @param {object} [options] - Playback options.
  * @returns {Promise<{success: boolean, reqId: number, normalizedOptions: object}>}
  */
-export async function prepareTransportPlayback(
-  options: any = {}
-): Promise<{ success: boolean; reqId: number; normalizedOptions: any }> {
+export async function prepareTransportPlayback(options: unknown = {}): Promise<{
+  success: boolean
+  reqId: number
+  normalizedOptions: ReturnType<typeof normalizeMidiPlaybackOptions>
+}> {
   const normalizedOptions = normalizeMidiPlaybackOptions(options)
   const reqId = ++audioState.playRequestId
   const unlocked = await ensureAudioContext()
@@ -37,24 +38,30 @@ export async function prepareTransportPlayback(
  * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null, startTimeSec: number|null}} Normalized options.
  */
 export const normalizeMidiPlaybackOptions = (
-  options: any
+  options: unknown
 ): {
   useCleanPlayback: boolean
-  onEnded: ((...args: any[]) => void) | null
+  onEnded: ((...args: unknown[]) => void) | null
   stopAfterSeconds: number | null
   startTimeSec: number | null
 } => {
+  const opt =
+    typeof options === 'object' && options !== null
+      ? (options as Record<string, unknown>)
+      : {}
   const useCleanPlayback =
-    typeof options?.useCleanPlayback === 'boolean'
-      ? options.useCleanPlayback
+    typeof opt.useCleanPlayback === 'boolean'
+      ? Boolean(opt.useCleanPlayback)
       : true
   const onEnded =
-    typeof options?.onEnded === 'function' ? options.onEnded : null
-  const stopAfterSeconds = Number.isFinite(options?.stopAfterSeconds)
-    ? Math.max(0, options.stopAfterSeconds)
+    typeof opt.onEnded === 'function'
+      ? (opt.onEnded as (...args: unknown[]) => void)
+      : null
+  const stopAfterSeconds = Number.isFinite(opt.stopAfterSeconds as number)
+    ? Math.max(0, Number(opt.stopAfterSeconds))
     : null
-  const startTimeSec = Number.isFinite(options?.startTimeSec)
-    ? Math.max(0, options.startTimeSec)
+  const startTimeSec = Number.isFinite(opt.startTimeSec as number)
+    ? Math.max(0, Number(opt.startTimeSec))
     : null
 
   return {
@@ -70,7 +77,7 @@ export const normalizeMidiPlaybackOptions = (
  */
 export const PATH_PREFIX_REGEX = /^\.?\//
 
-let cachedAssetPaths = null
+let cachedAssetPaths: { baseUrl: string; publicBasePath: string } | null = null
 
 /**
  * Derives the base asset path and public base path from import.meta.
@@ -82,12 +89,8 @@ export const getBaseAssetPath = (): {
   publicBasePath: string
 } => {
   if (!cachedAssetPaths) {
-    const rawBaseUrl =
-      typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.BASE_URL
-        ? import.meta.env.BASE_URL
-        : './'
+    const meta = import.meta as unknown as { env?: { BASE_URL?: string } }
+    const rawBaseUrl = meta?.env?.BASE_URL ? meta.env.BASE_URL : './'
     const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
     const publicBasePath = `${baseUrl}assets`
     cachedAssetPaths = { baseUrl, publicBasePath }
@@ -165,14 +168,17 @@ export const resolveAssetUrl = (
  * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
  */
 export const buildAssetUrlMap = (
-  assetGlob: any,
+  assetGlob: unknown,
   warn: (message: string) => void = console.warn,
   label = 'Asset'
 ): Record<string, string> => {
-  const accumulator = {}
-  for (const path in assetGlob || {}) {
-    if (Object.hasOwn(assetGlob, path)) {
-      const url = assetGlob[path]
+  const accumulator: Record<string, string> = {}
+  if (!assetGlob || typeof assetGlob !== 'object') return accumulator
+  const map = assetGlob as Record<string, unknown>
+  for (const path in map) {
+    if (Object.hasOwn(map, path)) {
+      const urlRaw = map[path]
+      const url = typeof urlRaw === 'string' ? urlRaw : String(urlRaw)
       const relativePath = path.replace('../assets/', '')
       if (!accumulator[relativePath]) {
         accumulator[relativePath] = url

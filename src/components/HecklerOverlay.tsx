@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { useEffect, useRef, memo } from 'react'
 
 type ProjectileId = string | number

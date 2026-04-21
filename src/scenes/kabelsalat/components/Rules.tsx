@@ -1,11 +1,17 @@
 /*
  * (#1) Actual Updates: Added PropTypes.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import PropTypes from 'prop-types'
+import type { FC } from 'react'
 
-const RuleItem = ({ label, text }) => (
+interface RuleItemProps {
+  label?: string
+  text: string
+}
+
+const RuleItem: FC<RuleItemProps> = ({ label, text }) => (
   <li>
     {label ? (
       <>
@@ -22,7 +28,11 @@ RuleItem.propTypes = {
   text: PropTypes.string.isRequired
 }
 
-export const Rules = ({ t }) => (
+interface RulesProps {
+  t: (key: string, options?: unknown) => string
+}
+
+export const Rules: FC<RulesProps> = ({ t }) => (
   <div className='mt-6 border border-warning-yellow bg-warning-yellow/10 p-4 text-sm text-warning-yellow max-w-4xl w-full'>
     <h4 className='font-bold tracking-widest mb-2 border-b border-warning-yellow/30 pb-1'>
       == {t('ui:minigames.kabelsalat.rulesTitle')} ==

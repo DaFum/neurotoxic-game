@@ -3,7 +3,6 @@ import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
 import type { DrumKitSynth, LayeredSnare } from '../../types/audio'
 
-
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
  * @param {object} bus - Tone.js audio node to connect the snare to.
@@ -42,17 +41,24 @@ export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
 export function setupMasterChain(): void {
   // Nodes
   // Limiter prevents clipping, Compressor glues the mix
-  audioState.masterLimiter = new Tone.Limiter(-3).toDestination()
-  audioState.masterComp = new Tone.Compressor(-18, 4)
-  audioState.musicGain = new Tone.Gain(1)
+  const masterLimiter = new Tone.Limiter(-3).toDestination()
+  const masterComp = new Tone.Compressor(-18, 4)
+  const musicGain = new Tone.Gain(1)
 
   // Global reverb for natural space
-  audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })
-  audioState.reverbSend = new Tone.Gain(0.3)
+  const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })
+  const reverbSend = new Tone.Gain(0.3)
 
-  // Signal Routing
-  audioState.musicGain.chain(audioState.masterComp, audioState.masterLimiter)
-  audioState.reverbSend.chain(audioState.reverb, audioState.musicGain)
+  // Assign to shared state after construction
+  audioState.masterLimiter = masterLimiter
+  audioState.masterComp = masterComp
+  audioState.musicGain = musicGain
+  audioState.reverb = reverb
+  audioState.reverbSend = reverbSend
+
+  // Signal Routing using local non-null instances
+  musicGain.chain(masterComp, masterLimiter)
+  reverbSend.chain(reverb, musicGain)
 }
 
 export function setupGuitar(): void {
@@ -76,14 +82,20 @@ export function setupGuitar(): void {
   audioState.guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
   audioState.widener = new Tone.StereoWidener(0.5)
 
+  const musicGain = audioState.musicGain
+  const reverbSend = audioState.reverbSend
+  if (!musicGain || !reverbSend) {
+    throw new Error('setupMasterChain must be called before setupGuitar')
+  }
+
   audioState.guitar.chain(
     audioState.distortion,
     audioState.guitarChorus,
     audioState.guitarEq,
     audioState.widener,
-    audioState.musicGain
+    musicGain
   )
-  audioState.guitar.connect(audioState.reverbSend)
+  audioState.guitar.connect(reverbSend)
   audioState.guitar.volume.value = -2
 }
 
@@ -103,11 +115,11 @@ export function setupBass(): void {
 
   audioState.bassEq = new Tone.EQ3(3, -1, -4)
   audioState.bassComp = new Tone.Compressor(-15, 5)
-  audioState.bass.chain(
-    audioState.bassComp,
-    audioState.bassEq,
-    audioState.musicGain
-  )
+  const musicGain = audioState.musicGain
+  if (!musicGain)
+    throw new Error('setupMasterChain must be called before setupBass')
+
+  audioState.bass.chain(audioState.bassComp, audioState.bassEq, musicGain)
   audioState.bass.volume.value = 0
 }
 
@@ -133,8 +145,14 @@ export function buildDrumKit(
 
 export function setupDrums(): void {
   // Drum bus with own reverb send
-  audioState.drumBus = new Tone.Gain(1).connect(audioState.musicGain)
-  audioState.drumBus.connect(audioState.reverbSend)
+  const musicGain = audioState.musicGain
+  const reverbSend = audioState.reverbSend
+  if (!musicGain || !reverbSend) {
+    throw new Error('setupMasterChain must be called before setupDrums')
+  }
+
+  audioState.drumBus = new Tone.Gain(1).connect(musicGain)
+  audioState.drumBus.connect(reverbSend)
 
   audioState.drumKit = buildDrumKit(audioState.drumBus)
 
@@ -146,7 +164,11 @@ export function setupDrums(): void {
 }
 
 export function setupSFX(): void {
-  audioState.sfxGain = new Tone.Gain(0.25).connect(audioState.masterLimiter)
+  const masterLimiter = audioState.masterLimiter
+  if (!masterLimiter)
+    throw new Error('setupMasterChain must be called before setupSFX')
+
+  audioState.sfxGain = new Tone.Gain(0.25).connect(masterLimiter)
   audioState.sfxSynth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'triangle' },
     envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
@@ -156,11 +178,15 @@ export function setupSFX(): void {
 export function setupMidiChain(): void {
   // Used for ambient playback. Richer synths with subtle spatial processing
   // to faithfully represent the MIDI content without heavy coloration.
-  audioState.midiDryBus = new Tone.Gain(1).connect(audioState.musicGain)
+  const musicGain = audioState.musicGain
+  if (!musicGain)
+    throw new Error('setupMasterChain must be called before setupMidiChain')
+
+  audioState.midiDryBus = new Tone.Gain(1).connect(musicGain)
 
   // Subtle reverb for spatial depth on ambient MIDI playback
   audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
-    audioState.musicGain
+    musicGain
   )
   audioState.midiReverbSend = new Tone.Gain(0.25).connect(audioState.midiReverb)
   audioState.midiDryBus.connect(audioState.midiReverbSend)
@@ -188,7 +214,15 @@ export function setupMidiChain(): void {
   audioState.midiBass.volume.value = -3
 
   audioState.midiDrumKit = buildDrumKit(audioState.midiDryBus, {
-    envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
+    envelope: {
+      attack: 0.001,
+      decay: 0.35,
+      sustain: 0,
+      release: 0.2,
+      attackCurve: 'linear',
+      decayCurve: 'linear',
+      releaseCurve: 'linear'
+    }
   })
 
   // MIDI drum levels

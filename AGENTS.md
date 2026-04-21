@@ -1,5 +1,9 @@
 # Neurotoxic — Agent Instructions
 
+## Workflow
+
+- Read the needed AGENTS.md files (`api\AGENTS.md`, `api\leaderboard\AGENTS.md`, `src\components\AGENTS.md`, `src\components\minigames\AGENTS.md`, `src\context\AGENTS.md`, `src\context\reducers\AGENTS.md`, `src\data\AGENTS.md`, `src\data\chatter\AGENTS.md`, `src\scenes\AGENTS.md`, `src\schemas\AGENTS.md`, `src\utils\audio\AGENTS.md`, `tests\AGENTS.md`, `tests\context\reducers\AGENTS.md`, `tests\node\AGENTS.md`, `tests\ui\AGENTS.md`) first before changing any code. This is the source of truth for architecture, style, and conventions.
+
 ## Critical Commands
 
 - Full quality gate: `pnpm run test:all` (required before PR).

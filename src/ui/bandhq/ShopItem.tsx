@@ -1,4 +1,3 @@
-// TODO: Review this file
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'

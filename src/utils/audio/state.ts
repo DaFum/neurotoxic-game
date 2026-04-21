@@ -1,4 +1,3 @@
-// TODO: Review this file
 import type * as Tone from 'tone'
 import type { DrumKitSynth } from '../../types/audio'
 import type { buildDrumKit } from './instruments'
@@ -10,7 +9,8 @@ type Nullable<T> = T | null
 
 type InstrumentSynth = Tone.PolySynth | Tone.Synth
 type TonePart = Tone.Part<unknown>
-type ToneSequence = Tone.Sequence<string[]>
+// Tone sequences can carry either single-note values or nested arrays (polyrhythms).
+type ToneSequence = Tone.Sequence<string | null> | Tone.Sequence<string[]>
 type BufferSource = AudioBufferSourceNode
 type GigEndInfo = {
   filename: string | null

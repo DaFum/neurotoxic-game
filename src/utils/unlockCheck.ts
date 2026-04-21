@@ -1,10 +1,11 @@
 /*
  * (#1) Actual Updates: Refactored Grudge holder check to use for...in loop, added Object.hasOwn guard.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import { hasTrait } from './traitLogic'
 import { CHARACTERS } from '../data/characters'
+import type { GameState } from '../types/game'
 
 /**
  * Checks for trait unlocks based on game state changes.
@@ -12,8 +13,9 @@ import { CHARACTERS } from '../data/characters'
  * @param {object} context - Contextual data (gigStats, purchaseItem, etc.).
  * @returns {Array} List of { memberId, traitId } to unlock.
  */
-export const checkTraitUnlocks = (state, context = {}) => {
+export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   const newUnlocks = []
+  const ctx = context as Record<string, unknown>
   const { band, player, social } = state
   const members = band?.members || []
 
@@ -27,8 +29,19 @@ export const checkTraitUnlocks = (state, context = {}) => {
   }
 
   // 1. Performance Unlocks (Post-Gig)
-  if (context.type === 'GIG_COMPLETE' && context.gigStats) {
-    const { accuracy, misses, song, maxCombo } = context.gigStats
+  if (
+    ctx.type === 'GIG_COMPLETE' &&
+    ctx.gigStats &&
+    typeof ctx.gigStats === 'object'
+  ) {
+    const gigStats = ctx.gigStats as Record<string, unknown>
+    const accuracy =
+      typeof gigStats.accuracy === 'number' ? gigStats.accuracy : 0
+    const misses = typeof gigStats.misses === 'number' ? gigStats.misses : 0
+    const song =
+      (gigStats.song as Record<string, unknown> | undefined) ?? undefined
+    const maxCombo =
+      typeof gigStats.maxCombo === 'number' ? gigStats.maxCombo : 0
 
     // Virtuoso (Matze): 100% Accuracy (0 Misses)
     if (Matze && !hasTrait(Matze, 'virtuoso') && misses === 0) {
@@ -42,7 +55,8 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
     // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
     if (Marius && !hasTrait(Marius, 'blast_machine')) {
-      const isFast = typeof song?.bpm === 'number' && song.bpm > 160
+      const isFast =
+        typeof song?.bpm === 'number' && (song!.bpm as number) > 160
       if (isFast && maxCombo > 50) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
       }
@@ -66,7 +80,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
   }
 
   // 2. Travel Unlocks
-  if (context.type === 'TRAVEL_COMPLETE') {
+  if (ctx.type === 'TRAVEL_COMPLETE') {
     // Road Warrior (Lars): Travel 5000km total (match UI hint)
     if (Lars && !hasTrait(Lars, 'road_warrior')) {
       if ((player.stats?.totalDistance || 0) >= 5000) {
@@ -76,13 +90,14 @@ export const checkTraitUnlocks = (state, context = {}) => {
   }
 
   // 3. Purchase Unlocks
-  if (context.type === 'PURCHASE') {
-    const { item } = context
+  if (ctx.type === 'PURCHASE') {
+    const item = ctx.item as Record<string, unknown> | undefined
 
     // Party Animal (Marius): Own a Beer Fridge
     if (Marius && !hasTrait(Marius, 'party_animal')) {
       if (
-        item?.id === 'hq_room_cheap_beer_fridge' ||
+        (typeof item?.id === 'string' &&
+          item.id === 'hq_room_cheap_beer_fridge') ||
         (player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')
       ) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'party_animal' })
@@ -97,7 +112,8 @@ export const checkTraitUnlocks = (state, context = {}) => {
        * which filters inventory against HQ_ITEMS to ensure only GEAR/INSTRUMENT categories count.
        * We rely on this count being >= 5.
        */
-      if ((context.gearCount || 0) >= 5) {
+      const gearCount = typeof ctx.gearCount === 'number' ? ctx.gearCount : 0
+      if ((gearCount || 0) >= 5) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })
       }
     }

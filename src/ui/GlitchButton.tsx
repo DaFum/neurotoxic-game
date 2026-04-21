@@ -1,4 +1,3 @@
-// TODO: Review this file
 import PropTypes from 'prop-types'
 import { Loader2 } from 'lucide-react'
 

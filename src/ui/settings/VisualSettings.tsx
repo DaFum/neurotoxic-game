@@ -3,10 +3,15 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ToggleSwitch } from '../shared/ToggleSwitch'
 
+type VisualSettingsProps = {
+  crtEnabled: boolean
+  onToggleCRT: () => void
+}
+
 export const VisualSettings = memo(function VisualSettings({
   crtEnabled,
   onToggleCRT
-}) {
+}: VisualSettingsProps) {
   const { t } = useTranslation()
 
   return (

@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Returns the most reliable AudioContext state using raw context first.
  * @param {object} params - Candidate context states.
@@ -9,7 +8,10 @@
 export function getPreferredAudioContextState({
   rawContextState,
   toneContextState
-}) {
+}: {
+  rawContextState?: string | null
+  toneContextState?: string | null
+}): string {
   if (typeof rawContextState === 'string') return rawContextState
   if (typeof toneContextState === 'string') return toneContextState
   return 'unknown'
@@ -20,7 +22,7 @@ export function getPreferredAudioContextState({
  * @param {string} state - AudioContext state.
  * @returns {boolean} True when `resume()` is a valid recovery path.
  */
-export function canResumeAudioContextState(state) {
+export function canResumeAudioContextState(state: string): boolean {
   return state === 'suspended' || state === 'interrupted'
 }
 
@@ -29,6 +31,6 @@ export function canResumeAudioContextState(state) {
  * @param {string} state - AudioContext state.
  * @returns {boolean} True when the context is closed and must be rebuilt.
  */
-export function isClosedAudioContextState(state) {
+export function isClosedAudioContextState(state: string): boolean {
   return state === 'closed'
 }

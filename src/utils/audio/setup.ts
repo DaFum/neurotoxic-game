@@ -24,8 +24,8 @@ export async function setupAudio() {
     return
   }
 
-  let resolveLock
-  audioState.setupLock = new Promise(r => {
+  let resolveLock: (() => void) | undefined
+  audioState.setupLock = new Promise<void>(r => {
     resolveLock = r
   })
   audioState.setupError = null
@@ -53,20 +53,24 @@ export async function setupAudio() {
     const previousRawContext =
       previousToneContext?.rawContext ?? previousToneContext
     const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
-    if (
-      previousRawContext &&
-      previousRawContext !== nextRawContext &&
-      typeof previousRawContext.close === 'function' &&
-      previousRawContext.state !== 'closed'
-    ) {
-      try {
-        await previousRawContext.close()
-      } catch (error) {
-        logger.warn(
-          'AudioEngine',
-          'Failed to close previous Tone context',
-          error
-        )
+    if (previousRawContext && previousRawContext !== nextRawContext) {
+      const maybeClosable = previousRawContext as unknown as {
+        close?: () => Promise<void>
+        state?: string
+      }
+      if (
+        typeof maybeClosable.close === 'function' &&
+        maybeClosable.state !== 'closed'
+      ) {
+        try {
+          await maybeClosable.close()
+        } catch (error) {
+          logger.warn(
+            'AudioEngine',
+            'Failed to close previous Tone context',
+            error
+          )
+        }
       }
     }
 

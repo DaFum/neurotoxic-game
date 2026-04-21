@@ -1,4 +1,3 @@
-// TODO: Review this file
 import type { GameState, GigStats, Venue } from '../../types/game'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'

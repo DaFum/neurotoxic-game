@@ -12,12 +12,12 @@ import {
  * @param {object} node - The Tone.js node to dispose.
  * @returns {null} Always returns null.
  */
-export function safeDispose<T>(node: T | null): null {
+export function safeDispose(node: { dispose?: () => void } | null): null {
   if (node && typeof node.dispose === 'function') {
     try {
       node.dispose()
-    } catch (error) {
-      logger.debug('AudioEngine', 'Node disposal failed (likely benign)', error)
+    } catch (err) {
+      logger.debug('AudioEngine', 'Node disposal failed (likely benign)', err)
     }
   }
   return null
@@ -68,10 +68,10 @@ export function disposeAudio() {
   audioState.bass = safeDispose(audioState.bass)
 
   if (audioState.drumKit) {
-    audioState.drumKit.kick = safeDispose(audioState.drumKit.kick)
-    audioState.drumKit.snare = safeDispose(audioState.drumKit.snare)
-    audioState.drumKit.hihat = safeDispose(audioState.drumKit.hihat)
-    audioState.drumKit.crash = safeDispose(audioState.drumKit.crash)
+    safeDispose(audioState.drumKit.kick)
+    safeDispose(audioState.drumKit.snare)
+    safeDispose(audioState.drumKit.hihat)
+    safeDispose(audioState.drumKit.crash)
     audioState.drumKit = null
   }
 
@@ -82,10 +82,10 @@ export function disposeAudio() {
   audioState.midiBass = safeDispose(audioState.midiBass)
 
   if (audioState.midiDrumKit) {
-    audioState.midiDrumKit.kick = safeDispose(audioState.midiDrumKit.kick)
-    audioState.midiDrumKit.snare = safeDispose(audioState.midiDrumKit.snare)
-    audioState.midiDrumKit.hihat = safeDispose(audioState.midiDrumKit.hihat)
-    audioState.midiDrumKit.crash = safeDispose(audioState.midiDrumKit.crash)
+    safeDispose(audioState.midiDrumKit.kick)
+    safeDispose(audioState.midiDrumKit.snare)
+    safeDispose(audioState.midiDrumKit.hihat)
+    safeDispose(audioState.midiDrumKit.crash)
     audioState.midiDrumKit = null
   }
 
@@ -97,12 +97,12 @@ export function disposeAudio() {
   if (audioState.guitarChorus && !audioState.guitarChorus.disposed) {
     try {
       audioState.guitarChorus.stop?.()
-    } catch (error) {
-      if (error.name !== 'InvalidStateError') {
+    } catch (err) {
+      if (!(err instanceof Error) || err.name !== 'InvalidStateError') {
         logger.debug(
           'AudioEngine',
           'guitarChorus.stop() failed (likely benign)',
-          error
+          err
         )
       }
     }

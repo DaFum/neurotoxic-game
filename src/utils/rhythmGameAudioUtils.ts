@@ -16,12 +16,13 @@ import { calculateGigPhysics, getGigModifiers } from './simulationUtils'
 import { generateNotesForSong, parseSongNotes } from './rhythmUtils'
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { getSafeRandom } from './crypto'
-import type { Song } from '../types/audio'
+import type { Song, Note } from '../types/audio'
 import type { BandState, GameMap, GigModifiers } from '../types/game'
 import type {
   RhythmGameRefState,
   RhythmNote,
-  RhythmSetlistEntry
+  RhythmSetlistEntry,
+  RhythmModifiers
 } from '../types/rhythmGame'
 import type { ToastCallback, TranslationCallback } from '../types/callbacks'
 
@@ -41,9 +42,28 @@ type ActiveSong = Partial<Song> & {
   bpm: number
   duration: number
   difficulty: number
-  notes?: unknown[]
+  notes?: Note[]
   sourceMid?: string
   sourceOgg?: string | null
+}
+
+const hasNotesField = (
+  v: unknown
+): v is {
+  notes: Note[]
+  id?: string
+  name?: string
+  bpm?: number
+  duration?: number
+  difficulty?: number
+  sourceMid?: string
+  sourceOgg?: string | null
+} => {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    Array.isArray((v as { notes?: unknown }).notes)
+  )
 }
 
 export const setupGigPhysics = (
@@ -54,11 +74,32 @@ export const setupGigPhysics = (
   playerNodeId: string,
   setlistFirstId: string | undefined
 ): {
-  mergedModifiers: Record<string, unknown>
+  mergedModifiers: RhythmModifiers
   speed: number
   hitWindows: number[]
 } | null => {
-  const activeModifiers = getGigModifiers(band, gigModifiers)
+  // Narrow the modifiers returned from simulation layer to the RhythmModifiers shape
+  const maybeActiveModifiers = getGigModifiers(band, gigModifiers)
+  const isRhythmModifiers = (v: unknown): v is RhythmModifiers => {
+    if (typeof v !== 'object' || v === null) return false
+    const obj = v as Record<string, unknown>
+    // Basic sanity checks for commonly used numeric fields
+    if (
+      (obj['drumMultiplier'] !== undefined &&
+        typeof obj['drumMultiplier'] !== 'number') ||
+      (obj['guitarScoreMult'] !== undefined &&
+        typeof obj['guitarScoreMult'] !== 'number')
+    ) {
+      return false
+    }
+    return true
+  }
+
+  const activeModifiers: RhythmModifiers = isRhythmModifiers(
+    maybeActiveModifiers
+  )
+    ? maybeActiveModifiers
+    : {}
 
   const songId = currentGigId || setlistFirstId || 'neurotoxic_1'
   const DEFAULT_SONG = { id: 'default', bpm: 120 }
@@ -74,22 +115,28 @@ export const setupGigPhysics = (
   const layer = currentNode.layer || 0
   const speedMult = 1.0 + layer * 0.05
 
-  const mergedModifiers = {
+  const mergedModifiers: RhythmModifiers = {
     ...activeModifiers,
     drumMultiplier: physics.multipliers.drums,
     guitarScoreMult:
-      physics.multipliers.guitar * (activeModifiers.guitarScoreMult ?? 1.0),
+      physics.multipliers.guitar *
+      (typeof activeModifiers.guitarScoreMult === 'number'
+        ? activeModifiers.guitarScoreMult
+        : 1.0),
     bassScoreMult:
-      physics.multipliers.bass * (activeModifiers.bassScoreMult ?? 1.0),
+      physics.multipliers.bass *
+      (typeof activeModifiers.bassScoreMult === 'number'
+        ? activeModifiers.bassScoreMult
+        : 1.0),
     hasPerfektionist: physics.hasPerfektionist
   }
 
   let speed = 500 * speedMult * physics.speedModifier
-  if (mergedModifiers.drumSpeedMult > 1.0)
-    speed *= mergedModifiers.drumSpeedMult
+  const drumSpeedMult = mergedModifiers.drumSpeedMult ?? 1
+  if (drumSpeedMult > 1.0) speed *= drumSpeedMult
   if (mergedModifiers.catering) speed = 500 * speedMult
 
-  let hitWindowBonus = mergedModifiers.hitWindowBonus || 0
+  let hitWindowBonus = mergedModifiers.hitWindowBonus ?? 0
   if (mergedModifiers.soundcheck) hitWindowBonus += 30
 
   return {
@@ -122,14 +169,15 @@ export const resolveActiveSetlist = (
         }
       )
     }
-    if (Array.isArray(songRef.notes) && songRef.notes.length > 0) {
+    if (hasNotesField(songRef) && songRef.notes.length > 0) {
       return {
         ...songRef,
         id: songRef.id ?? 'jam',
         name: songRef.name ?? songRef.id ?? 'Jam',
         bpm: songRef.bpm ?? 120,
         duration: songRef.duration ?? 60,
-        difficulty: songRef.difficulty ?? 2
+        difficulty: songRef.difficulty ?? 2,
+        notes: songRef.notes
       }
     }
 
@@ -142,7 +190,8 @@ export const resolveActiveSetlist = (
         name: songRef.name ?? resolvedSong?.name ?? songRef.id ?? 'Jam',
         bpm: songRef.bpm ?? resolvedSong?.bpm ?? 120,
         duration: songRef.duration ?? resolvedSong?.duration ?? 60,
-        difficulty: songRef.difficulty ?? resolvedSong?.difficulty ?? 2
+        difficulty: songRef.difficulty ?? resolvedSong?.difficulty ?? 2,
+        notes: hasNotesField(songRef) ? songRef.notes : resolvedSong?.notes
       }
     }
     return {
@@ -151,7 +200,8 @@ export const resolveActiveSetlist = (
       name: songRef.name ?? songRef.id ?? 'Jam',
       bpm: songRef.bpm ?? 120,
       duration: songRef.duration ?? 60,
-      difficulty: songRef.difficulty ?? 2
+      difficulty: songRef.difficulty ?? 2,
+      notes: hasNotesField(songRef) ? songRef.notes : undefined
     }
   })
 }
@@ -168,10 +218,12 @@ const playOggBuffer = async (
     { defaultDurationMs: 0 }
   )
   const oggFilename =
-    currentSong.sourceOgg || currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
-  const assetFound = hasAudioAsset(oggFilename)
+    currentSong.sourceOgg ||
+    (typeof currentSong.sourceMid === 'string'
+      ? currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+      : null)
 
-  if (!assetFound) {
+  if (typeof oggFilename !== 'string' || !hasAudioAsset(oggFilename)) {
     handleError(
       new AudioError(
         `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
@@ -182,7 +234,8 @@ const playOggBuffer = async (
     return false
   }
 
-  const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
+  const lastNote = notes[notes.length - 1]
+  const maxNoteTimeSoFar = lastNote?.time ?? 0
   const oggDurationMs =
     maxNoteTimeSoFar > 0
       ? maxNoteTimeSoFar + NOTE_TAIL_MS
@@ -219,7 +272,8 @@ const playMidiSynthesis = async (
     { defaultDurationMs: 0 }
   )
   const offsetSeconds = Math.max(0, excerptStartMs / 1000)
-  const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
+  const lastNote = notes[notes.length - 1]
+  const maxNoteTimeSoFar = lastNote?.time ?? 0
   const midiDurationMs =
     maxNoteTimeSoFar > 0
       ? maxNoteTimeSoFar + NOTE_TAIL_MS
@@ -323,10 +377,13 @@ const playAudioForSong = async (
 
   if (finalNotes.length === 0 || !bgAudioStarted) {
     if (finalNotes.length === 0) {
-      const songNotes = generateNotesForSong(currentSong, {
-        leadIn: NOTE_LEAD_IN_MS,
-        random: rng
-      })
+      const songNotes = generateNotesForSong(
+        currentSong as Pick<Song, 'id' | 'bpm' | 'duration' | 'difficulty'>,
+        {
+          leadIn: NOTE_LEAD_IN_MS,
+          random: rng
+        }
+      )
       finalNotes = finalNotes.concat(songNotes)
     }
 
@@ -413,6 +470,17 @@ export const playSongSequence = async (
   }
 
   const currentSong = activeSetlist[index]
+  if (!currentSong) {
+    logger.error(
+      'RhythmGame',
+      `playSongSequence: missing song at index ${index}`
+    )
+    if (gameStateRef.current) {
+      gameStateRef.current.setlistCompleted = true
+      gameStateRef.current.songTransitioning = false
+    }
+    return
+  }
   let notes: RhythmNote[] = []
   const rng = getSafeRandom
   gameStateRef.current.rng = rng
@@ -423,7 +491,7 @@ export const playSongSequence = async (
   gameStateRef.current.nextMissCheckIndex = 0
 
   if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
-    const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
+    const parsedNotes = parseSongNotes(currentSong as Song, NOTE_LEAD_IN_MS, {
       onWarn: msg => logger.warn('RhythmGame', msg)
     }) as RhythmNote[]
     if (parsedNotes.length > 0) {
@@ -479,8 +547,8 @@ export const playSongSequence = async (
   gameStateRef.current.nextMissCheckIndex = 0
   gameStateRef.current.notesVersion = gameStateRef.current.notesVersion + 1
 
-  const maxNoteTime =
-    finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
+  const lastFinal = finalNotes[finalNotes.length - 1]
+  const maxNoteTime = lastFinal?.time ?? 0
   const buffer = 4000
   const noteDuration = maxNoteTime + buffer
 

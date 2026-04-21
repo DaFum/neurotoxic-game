@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Action type constants.
  * Centralizes all action type strings to prevent typos.

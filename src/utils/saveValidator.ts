@@ -1,11 +1,10 @@
-// TODO: Review this file
 /**
  * Save Data Validation Utility
  * Performs deep schema validation on loaded game state to prevent
  * data corruption and malicious injection.
  */
 
-import { ALLOWED_TRENDS_SET } from '../data/socialTrends'
+import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import { StateError } from './errorHandler'
 import {
   clampBandHarmony,
@@ -13,7 +12,7 @@ import {
   clampNonNegative
 } from './gameStateUtils'
 
-const isPlainObject = value =>
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**
@@ -21,7 +20,7 @@ const isPlainObject = value =>
  * @param {any} data - The parsed JSON data from localStorage.
  * @returns {boolean} True if valid, throws error if invalid.
  */
-export const validateSaveData = data => {
+export const validateSaveData = (data: unknown): boolean => {
   checkPrototypePollution(data)
 
   if (!isPlainObject(data)) {
@@ -56,63 +55,60 @@ export const validateSaveData = data => {
   return true
 }
 
-const validatePlayer = player => {
+const validatePlayer = (player: unknown): void => {
   if (!isPlainObject(player)) throw new StateError('player must be an object')
+
+  const p = player as Record<string, unknown>
 
   const numericFields = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
   for (const field of numericFields) {
-    if (player[field] !== undefined && typeof player[field] !== 'number') {
+    const val = p[field]
+    if (val !== undefined && typeof val !== 'number') {
       throw new StateError(`player.${field} must be a number`)
     }
-    if (
-      (field === 'fame' || field === 'score') &&
-      player[field] !== undefined
-    ) {
-      player[field] = clampNonNegative(player[field])
+    if ((field === 'fame' || field === 'score') && val !== undefined) {
+      p[field] = clampNonNegative(val as number)
     }
   }
 
-  if (player.money !== undefined) {
-    if (!Number.isFinite(player.money)) {
+  if (p.money !== undefined) {
+    if (!Number.isFinite(p.money as number)) {
       throw new StateError('player.money must be a finite number')
     }
-    player.money = clampPlayerMoney(player.money)
+    p.money = clampPlayerMoney(p.money as number)
   }
 
-  if (player.van && !isPlainObject(player.van)) {
+  if (p.van && !isPlainObject(p.van)) {
     throw new StateError('player.van must be an object')
   }
 
   // Backfill/Validate clinicVisits
   if (
-    player.clinicVisits === undefined ||
-    typeof player.clinicVisits !== 'number' ||
-    !Number.isFinite(player.clinicVisits)
+    p.clinicVisits === undefined ||
+    typeof p.clinicVisits !== 'number' ||
+    !Number.isFinite(p.clinicVisits as number)
   ) {
-    player.clinicVisits = 0
+    p.clinicVisits = 0
   } else {
-    player.clinicVisits = clampNonNegative(Math.floor(player.clinicVisits))
+    p.clinicVisits = clampNonNegative(Math.floor(p.clinicVisits as number))
   }
 
   if (
-    player.playerId !== undefined &&
-    player.playerId !== null &&
-    typeof player.playerId !== 'string'
+    p.playerId !== undefined &&
+    p.playerId !== null &&
+    typeof p.playerId !== 'string'
   ) {
     throw new StateError('player.playerId must be a string or null')
   }
 
-  if (
-    player.playerName !== undefined &&
-    typeof player.playerName !== 'string'
-  ) {
+  if (p.playerName !== undefined && typeof p.playerName !== 'string') {
     throw new StateError('player.playerName must be a string')
   }
 }
 
 const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
-const checkPrototypePollution = obj => {
+const checkPrototypePollution = (obj: unknown): void => {
   if (typeof obj !== 'object' || obj === null) return
 
   // Explicitly reject forbidden own-properties before iterating because
@@ -128,60 +124,68 @@ const checkPrototypePollution = obj => {
   }
 
   // Iterate over properties to recursively check nested objects
-  for (const key in obj) {
-    if (!Object.hasOwn(obj, key)) continue
+  const asObj = obj as Record<string, unknown>
+  for (const key in asObj) {
+    if (!Object.hasOwn(asObj, key)) continue
     if (BANNED_KEYS.has(key)) {
       throw new StateError(`Prototype pollution detected: ${key}`)
     }
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      checkPrototypePollution(obj[key])
+    const nested = asObj[key]
+    if (typeof nested === 'object' && nested !== null) {
+      checkPrototypePollution(nested)
     }
   }
 }
 
-const validateBand = band => {
+const validateBand = (band: unknown): void => {
   if (!isPlainObject(band)) throw new StateError('band must be an object')
 
-  if (band.members && !Array.isArray(band.members)) {
+  const typedBand = band as Record<string, unknown>
+  if (typedBand.members && !Array.isArray(typedBand.members)) {
     throw new StateError('band.members must be an array')
   }
 
-  if (band.members) {
-    band.members.forEach((member, index) => {
+  if (Array.isArray(typedBand.members)) {
+    const members = typedBand.members as unknown[]
+    members.forEach((member: unknown, index: number) => {
       if (!isPlainObject(member)) {
         throw new StateError(`band.members[${index}] must be an object`)
       }
-      if (typeof member.name !== 'string') {
+      const m = member as Record<string, unknown>
+      if (typeof m.name !== 'string') {
         throw new StateError(`band.members[${index}].name must be a string`)
       }
-      for (const stat of ['mood', 'stamina']) {
-        if (member[stat] !== undefined) {
-          if (
-            typeof member[stat] !== 'number' ||
-            !Number.isFinite(member[stat])
-          ) {
+      for (const stat of ['mood', 'stamina'] as const) {
+        const val = m[stat]
+        if (val !== undefined) {
+          if (typeof val !== 'number' || !Number.isFinite(val)) {
             throw new StateError(
               `band.members[${index}].${stat} must be a finite number`
             )
           }
-          member[stat] = Math.min(100, clampNonNegative(member[stat]))
+          m[stat] = Math.min(100, clampNonNegative(val as number))
         }
       }
-      if (member.relationships !== undefined) {
-        if (!isPlainObject(member.relationships)) {
+      if (m.relationships !== undefined) {
+        if (!isPlainObject(m.relationships)) {
           throw new StateError(
             `band.members[${index}].relationships must be an object`
           )
         }
-        for (const relKey in member.relationships) {
-          if (!Object.hasOwn(member.relationships, relKey)) continue
-          const relVal = member.relationships[relKey]
+        const rels = m.relationships as Record<string, unknown>
+        for (const relKey in rels) {
+          if (!Object.hasOwn(rels, relKey)) continue
+          const relVal = rels[relKey]
           if (BANNED_KEYS.has(relKey)) {
             throw new StateError(
               `band.members[${index}].relationships.${relKey} is a reserved key`
             )
           }
-          if (!Number.isFinite(relVal) || relVal < 0 || relVal > 100) {
+          if (
+            !Number.isFinite(relVal as number) ||
+            (relVal as number) < 0 ||
+            (relVal as number) > 100
+          ) {
             throw new StateError(
               `band.members[${index}].relationships.${relKey} must be a finite number in [0, 100]`
             )
@@ -191,23 +195,24 @@ const validateBand = band => {
     })
   }
 
-  if (band.harmony !== undefined) {
-    if (typeof band.harmony !== 'number') {
+  if (typedBand.harmony !== undefined) {
+    if (typeof typedBand.harmony !== 'number') {
       throw new StateError('band.harmony must be a number')
     }
-    if (!Number.isFinite(band.harmony)) {
+    if (!Number.isFinite(typedBand.harmony as number)) {
       throw new StateError('band.harmony must be a finite number')
     }
-    band.harmony = clampBandHarmony(band.harmony)
+    typedBand.harmony = clampBandHarmony(typedBand.harmony as number)
   }
 }
 
-const validateSocial = social => {
+const validateSocial = (social: unknown): void => {
   if (!isPlainObject(social)) throw new StateError('social must be an object')
 
-  for (const key in social) {
-    if (!Object.hasOwn(social, key)) continue
-    const val = social[key]
+  const typedSocial = social as Record<string, unknown>
+  for (const key in typedSocial) {
+    if (!Object.hasOwn(typedSocial, key)) continue
+    const val = typedSocial[key]
     if (key === 'lastGigDay' && val === null) continue
     if (key === 'lastGigDifficulty') {
       if (val === null) continue
@@ -223,19 +228,24 @@ const validateSocial = social => {
     if (key === 'sponsorActive' && typeof val === 'boolean') continue
 
     if (key === 'trend') {
-      if (typeof val === 'string' && ALLOWED_TRENDS_SET.has(val)) continue
+      if (
+        typeof val === 'string' &&
+        ALLOWED_TRENDS_SET.has(val as (typeof ALLOWED_TRENDS)[number])
+      )
+        continue
       throw new StateError(`Social trend "${val}" is invalid`)
     }
 
     if (key === 'activeDeals') {
       if (!Array.isArray(val))
         throw new StateError('social.activeDeals must be an array')
-      val.forEach((deal, i) => {
+      ;(val as unknown[]).forEach((deal, i) => {
         if (!isPlainObject(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
-        if (typeof deal.id !== 'string')
+        const d = deal as Record<string, unknown>
+        if (typeof d.id !== 'string')
           throw new StateError(`activeDeals[${i}].id must be a string`)
-        if (typeof deal.remainingGigs !== 'number')
+        if (typeof d.remainingGigs !== 'number')
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a number`
           )
@@ -246,9 +256,10 @@ const validateSocial = social => {
     if (key === 'brandReputation') {
       if (!isPlainObject(val))
         throw new StateError('social.brandReputation must be an object')
-      for (const align in val) {
-        if (!Object.hasOwn(val, align)) continue
-        const score = val[align]
+      const br = val as Record<string, unknown>
+      for (const align in br) {
+        if (!Object.hasOwn(br, align)) continue
+        const score = br[align]
         if (typeof score !== 'number')
           throw new StateError(`brandReputation.${align} must be a number`)
       }
@@ -258,18 +269,20 @@ const validateSocial = social => {
     if (key === 'influencers') {
       if (!isPlainObject(val))
         throw new StateError('social.influencers must be an object')
-      for (const id in val) {
-        if (!Object.hasOwn(val, id)) continue
-        const influencer = val[id]
+      const infs = val as Record<string, unknown>
+      for (const id in infs) {
+        if (!Object.hasOwn(infs, id)) continue
+        const influencer = infs[id]
         if (!isPlainObject(influencer))
           throw new StateError(`social.influencers.${id} must be an object`)
-        if (typeof influencer.tier !== 'string')
+        const inf = influencer as Record<string, unknown>
+        if (typeof inf.tier !== 'string')
           throw new StateError(`social.influencers.${id}.tier must be a string`)
-        if (typeof influencer.trait !== 'string')
+        if (typeof inf.trait !== 'string')
           throw new StateError(
             `social.influencers.${id}.trait must be a string`
           )
-        if (typeof influencer.score !== 'number')
+        if (typeof inf.score !== 'number')
           throw new StateError(
             `social.influencers.${id}.score must be a number`
           )

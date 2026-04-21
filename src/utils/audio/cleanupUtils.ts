@@ -1,4 +1,3 @@
-// TODO: Review this file
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState, resetGigState } from './state'
@@ -8,12 +7,12 @@ import { audioState, resetGigState } from './state'
  * @param {number|null} id - Event ID.
  * @param {string} name - Event name for logging.
  */
-export function clearTransportEvent(id, name) {
+export function clearTransportEvent(id: number | null, name: string): void {
   if (id == null) return
   try {
     Tone.getTransport().clear(id)
-  } catch (error) {
-    logger.warn('AudioEngine', `Failed to clear transport ${name} event`, error)
+  } catch (err) {
+    logger.warn('AudioEngine', `Failed to clear transport ${name} event`, err)
   }
 }
 
@@ -22,20 +21,23 @@ export function clearTransportEvent(id, name) {
  * @param {AudioNode|null} source - The source node.
  * @param {string} name - Name for logging.
  */
-export function stopAndDisconnectSource(source, name) {
+export function stopAndDisconnectSource(
+  source: AudioNode | null,
+  name: string
+): void {
   if (!source) return
-  if (typeof source.stop === 'function') {
+  if (typeof (source as any).stop === 'function') {
     try {
-      source.stop()
-    } catch (error) {
-      logger.debug('AudioEngine', `${name} source stop failed`, error)
+      ;(source as any).stop()
+    } catch (err) {
+      logger.debug('AudioEngine', `${name} source stop failed`, err)
     }
   }
-  if (typeof source.disconnect === 'function') {
+  if (typeof (source as any).disconnect === 'function') {
     try {
-      source.disconnect()
-    } catch (error) {
-      logger.debug('AudioEngine', `${name} source disconnect failed`, error)
+      ;(source as any).disconnect()
+    } catch (err) {
+      logger.debug('AudioEngine', `${name} source disconnect failed`, err)
     }
   }
 }

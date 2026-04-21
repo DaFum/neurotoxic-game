@@ -1,7 +1,6 @@
 import type { GameState } from '../../types/game'
 import { hasStateItem } from '../../utils/gameStateUtils'
 
-// TODO: Review this file
 /**
  * Consequences Event Pool
  */

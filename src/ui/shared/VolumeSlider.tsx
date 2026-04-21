@@ -1,12 +1,18 @@
-// TODO: Review this file
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { ChangeEvent } from 'react'
 
 export const VolumeSlider = memo(function VolumeSlider({
   label,
   value,
   onChange
+}: {
+  label: string
+  value: number
+  onChange: (
+    e: ChangeEvent<HTMLInputElement> | { target: { value: number } }
+  ) => void
 }) {
   const { t } = useTranslation(['ui'])
   const clampedValue = Math.min(1, Math.max(0, value))

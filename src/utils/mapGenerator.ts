@@ -6,7 +6,6 @@
  * - Optimized `pickRandomSubset` to avoid shallow copying the source array when picking small subsets (k = 1 or k = 2), avoiding heap allocations in hot loops.
  * - Added a sparse Fisher-Yates shuffle optimization using a Map for small sample sizes (`k < n/4`) to avoid `O(n)` array shallow copy overhead.
  *
- * #2 Next Steps:
  * - Monitor performance for exceptionally large maps (depth > 50).
  * - Consider WebWorker offloading if `resolveOverlaps` becomes a bottleneck on mobile.
  *

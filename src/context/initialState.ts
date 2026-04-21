@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * Initial State Definition for the Game
  * This module defines the default state structure for the entire game.
@@ -10,7 +9,7 @@ import { LOG_LEVELS } from '../utils/logger'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
-import type { GameState, GameSettings } from '../types/game'
+import type { GameState, GameSettings, BandState } from '../types/game'
 
 /**
  * Brand alignment constants
@@ -65,7 +64,7 @@ export const DEFAULT_PLAYER_STATE = {
  * Default band state configuration
  * @type {Object}
  */
-export const DEFAULT_BAND_STATE = {
+export const DEFAULT_BAND_STATE: BandState = {
   members: [
     {
       ...CHARACTERS.MATZE,

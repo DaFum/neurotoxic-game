@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { hasTrait } from './traitLogic'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
@@ -219,7 +218,10 @@ export const clampVanFuel = (
  * @param {boolean|number} deltaValue - Delta to apply.
  * @returns {boolean|number|undefined} Updated inventory value.
  */
-export const applyInventoryItemDelta = (currentValue, deltaValue) => {
+export const applyInventoryItemDelta = (
+  currentValue: boolean | number | undefined,
+  deltaValue: boolean | number
+): boolean | number | undefined => {
   if (deltaValue === true || deltaValue === false) {
     return deltaValue
   }
@@ -239,7 +241,7 @@ export const applyInventoryItemDelta = (currentValue, deltaValue) => {
  * Usage ensures event deltas cannot maliciously or accidentally mutate the global Object space.
  */
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
+export const isForbiddenKey = (key: string): boolean => FORBIDDEN_KEYS.has(key)
 
 /**
  * Applies event delta changes to the current game state.
@@ -250,13 +252,19 @@ export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  * @returns {object} Updated game state.
  */
 
-const calculateClampedStatDelta = (currentValue, deltaValue) => {
+const calculateClampedStatDelta = (
+  currentValue: number | null | undefined,
+  deltaValue: number
+): number => {
   const baseValue = typeof currentValue === 'number' ? currentValue : 0
   const nextValue = Math.max(0, baseValue + deltaValue)
   return nextValue - baseValue
 }
 
-const calculateClampedControversyDelta = (currentValue, deltaValue) => {
+const calculateClampedControversyDelta = (
+  currentValue: number | null | undefined,
+  deltaValue: number
+): number => {
   const baseValue = typeof currentValue === 'number' ? currentValue : 0
   const nextValue = clampControversyLevel(baseValue + deltaValue)
   return nextValue - baseValue
@@ -711,18 +719,18 @@ export const applyEventDelta = (state: any, delta: any): any => {
         if (memberHasChanges) {
           if (!bandChanged) {
             bandChanged = true
-            updatedMembers = new Array(memberCount)
-            for (let k = 0; k < i; k++) {
-              updatedMembers[k] = nextBand.members[k]
-            }
+            updatedMembers = [...nextBand.members]
           }
+          // updatedMembers is initialized above when bandChanged flips to true
           updatedMembers[i] = nextMember
         } else if (bandChanged) {
+          // If bandChanged already true, ensure updatedMembers exists then assign
+          if (!updatedMembers) updatedMembers = [...nextBand.members]
           updatedMembers[i] = member
         }
       }
 
-      if (bandChanged) {
+      if (bandChanged && updatedMembers) {
         nextBand.members = updatedMembers
       }
     }

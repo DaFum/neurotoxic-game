@@ -1,6 +1,5 @@
-// TODO: Review this file
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
-import type { MouseEvent, ComponentType } from 'react'
+import type { MouseEvent, ComponentType, KeyboardEvent, ReactNode } from 'react'
 import { getSafeUUID } from '../../utils/crypto'
 import { secureRandom } from '../../utils/crypto'
 
@@ -28,7 +27,73 @@ interface UplinkButtonProps {
   Icon?: ComponentType<SvgIconProps>
 }
 
-type AnyProps = Record<string, any>
+// Local prop types for components in this file (avoid `any`)
+interface BrutalToggleProps {
+  label: string
+  initialState?: boolean
+}
+
+interface DeadmanButtonProps {
+  label: string
+  onConfirm?: () => void
+}
+
+interface TerminalLogLine {
+  id: string
+  key: string
+  type: 'info' | 'warn' | 'ok' | 'error'
+}
+
+interface BrutalSlotItem {
+  name: string
+  icon?: ReactNode
+}
+
+interface BrutalSlotProps {
+  label: string
+  item?: BrutalSlotItem | null
+}
+
+interface VoidLoaderProps {
+  size?: string
+}
+
+interface CorruptedTextProps {
+  text: string
+  delay?: number
+}
+
+interface Task {
+  id: number
+  key: string
+  completed: boolean
+}
+
+interface Message {
+  id: number | string
+  user: string
+  text: string
+  type: 'hate' | 'system'
+}
+
+interface StatBlockProps {
+  label: string
+  value: number | string
+  // Icon must be a component accepting `SvgIconProps` because
+  // `StatBlock` renders it as `<Icon className=... />`.
+  icon?: ComponentType<SvgIconProps>
+}
+
+interface BrutalFaderProps {
+  label: string
+  initialValue?: number
+  max?: number
+}
+
+interface CrisisModalProps {
+  isOpen: boolean
+  onClose?: () => void
+}
 
 export const UplinkButton = memo(
   ({ title, url, subtitle, type, Icon }: UplinkButtonProps) => {
@@ -693,10 +758,10 @@ import { Tooltip } from './Tooltip'
 
 // 1. Industrial Toggle
 export const BrutalToggle = memo(
-  ({ label, initialState = false }: AnyProps) => {
+  ({ label, initialState = false }: BrutalToggleProps) => {
     const { t } = useTranslation()
-    const [isOn, setIsOn] = useState(initialState)
-    const [isGlitching, setIsGlitching] = useState(false)
+    const [isOn, setIsOn] = useState<boolean>(initialState)
+    const [isGlitching, setIsGlitching] = useState<boolean>(false)
     const glitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const labelId = useId()
 
@@ -850,25 +915,27 @@ export const BrutalTabs = memo(() => {
 })
 
 // 4. Data/Stat Block
-export const StatBlock = memo(({ label, value, icon: Icon }: AnyProps) => (
-  <div className='relative w-32 h-24 bg-void-black flex flex-col items-center justify-center group overflow-hidden'>
-    <HexBorder className='absolute inset-0 w-full h-full text-toxic-green/50 group-hover:text-toxic-green transition-colors' />
-    <div className='absolute inset-0 bg-gradient-to-b from-transparent via-toxic-green/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
-    <div className='z-10 flex flex-col items-center gap-1'>
-      {Icon && <Icon className='w-5 h-5 text-toxic-green' />}
-      <span className='text-2xl font-bold tracking-wider'>{value}</span>
-      <span className='text-[9px] tracking-[0.2em] opacity-60 uppercase'>
-        {label}
-      </span>
+export const StatBlock = memo(
+  ({ label, value, icon: Icon }: StatBlockProps) => (
+    <div className='relative w-32 h-24 bg-void-black flex flex-col items-center justify-center group overflow-hidden'>
+      <HexBorder className='absolute inset-0 w-full h-full text-toxic-green/50 group-hover:text-toxic-green transition-colors' />
+      <div className='absolute inset-0 bg-gradient-to-b from-transparent via-toxic-green/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
+      <div className='z-10 flex flex-col items-center gap-1'>
+        {Icon && <Icon className='w-5 h-5 text-toxic-green' />}
+        <span className='text-2xl font-bold tracking-wider'>{value}</span>
+        <span className='text-[9px] tracking-[0.2em] opacity-60 uppercase'>
+          {label}
+        </span>
+      </div>
     </div>
-  </div>
-))
+  )
+)
 
 // 5. Brutal Amp Fader (Custom Slider)
 export const BrutalFader = memo(
-  ({ label, initialValue = 7, max = 10 }: AnyProps) => {
+  ({ label, initialValue = 7, max = 10 }: BrutalFaderProps) => {
     const { t } = useTranslation(['ui'])
-    const [val, setVal] = useState(initialValue)
+    const [val, setVal] = useState<number>(initialValue)
     const segments = Array.from({ length: max }, (_, i) => i + 1)
 
     return (
@@ -989,7 +1056,7 @@ export const SetlistSelector = memo(() => {
 })
 
 // 7. Crisis Modal Overlay
-export const CrisisModal = memo(({ isOpen, onClose }: AnyProps) => {
+export const CrisisModal = memo(({ isOpen, onClose }: CrisisModalProps) => {
   const { t } = useTranslation(['ui'])
   if (!isOpen) return null
   return (
@@ -1066,122 +1133,131 @@ export const CrisisModal = memo(({ isOpen, onClose }: AnyProps) => {
 })
 
 // 8. Deadman Button (Hold to Confirm)
-export const DeadmanButton = memo(({ label, onConfirm }: AnyProps) => {
-  const { t } = useTranslation()
-  const [progress, setProgress] = useState(0)
-  const [isHolding, setIsHolding] = useState(false)
-  const progressRef = useRef(0)
-  const intervalRef = useRef(null)
-  const drainIntervalRef = useRef(null)
+export const DeadmanButton = memo(
+  ({ label, onConfirm }: DeadmanButtonProps) => {
+    const { t } = useTranslation()
+    const [progress, setProgress] = useState<number>(0)
+    const [isHolding, setIsHolding] = useState<boolean>(false)
+    const progressRef = useRef<number>(0)
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const drainIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  useEffect(() => {
-    progressRef.current = progress
-  }, [progress])
+    useEffect(() => {
+      progressRef.current = progress
+    }, [progress])
 
-  const startHold = () => {
-    if (progressRef.current >= 100) return
-    setIsHolding(true)
-    if (drainIntervalRef.current) clearInterval(drainIntervalRef.current)
-    if (intervalRef.current) clearInterval(intervalRef.current)
+    const startHold = () => {
+      if (progressRef.current >= 100) return
+      setIsHolding(true)
+      if (drainIntervalRef.current != null)
+        clearInterval(drainIntervalRef.current)
+      if (intervalRef.current != null) clearInterval(intervalRef.current)
 
-    intervalRef.current = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(intervalRef.current)
-          intervalRef.current = null
-          setIsHolding(false)
-          if (onConfirm) onConfirm()
-          return 100
-        }
-        return prev + 2 // Speed of fill
-      })
-    }, 20) // 20ms tick
-  }
-
-  const stopHold = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current)
-    intervalRef.current = null
-    setIsHolding(false)
-
-    if (progressRef.current < 100) {
-      // Rapid drain if let go too early
-      if (drainIntervalRef.current) clearInterval(drainIntervalRef.current)
-      drainIntervalRef.current = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         setProgress(prev => {
-          if (prev <= 0) {
-            clearInterval(drainIntervalRef.current)
-            drainIntervalRef.current = null
-            return 0
+          if (prev >= 100) {
+            if (intervalRef.current != null) {
+              clearInterval(intervalRef.current)
+              intervalRef.current = null
+            }
+            setIsHolding(false)
+            if (onConfirm) onConfirm()
+            return 100
           }
-          return prev - 5
+          return prev + 2 // Speed of fill
         })
-      }, 20)
+      }, 20) // 20ms tick
     }
-  }
 
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-      if (drainIntervalRef.current) clearInterval(drainIntervalRef.current)
+    const stopHold = () => {
+      if (intervalRef.current != null) clearInterval(intervalRef.current)
       intervalRef.current = null
-      drainIntervalRef.current = null
+      setIsHolding(false)
+
+      if (progressRef.current < 100) {
+        // Rapid drain if let go too early
+        if (drainIntervalRef.current != null)
+          clearInterval(drainIntervalRef.current)
+        drainIntervalRef.current = setInterval(() => {
+          setProgress(prev => {
+            if (prev <= 0) {
+              if (drainIntervalRef.current != null) {
+                clearInterval(drainIntervalRef.current)
+                drainIntervalRef.current = null
+              }
+              return 0
+            }
+            return prev - 5
+          })
+        }, 20)
+      }
     }
-  }, [])
 
-  const isComplete = progress >= 100
+    useEffect(() => {
+      return () => {
+        if (intervalRef.current != null) clearInterval(intervalRef.current)
+        if (drainIntervalRef.current != null)
+          clearInterval(drainIntervalRef.current)
+        intervalRef.current = null
+        drainIntervalRef.current = null
+      }
+    }, [])
 
-  return (
-    <div className='w-full flex flex-col gap-1'>
-      <span className='text-[10px] tracking-widest uppercase opacity-50 text-center'>
-        {t('ui:holdToOverride', 'HOLD TO OVERRIDE')}
-      </span>
-      <button
-        type='button'
-        onMouseDown={startHold}
-        onMouseUp={stopHold}
-        onMouseLeave={stopHold}
-        onTouchStart={startHold}
-        onTouchEnd={stopHold}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            if (e.key === ' ') e.preventDefault()
-            if (!e.repeat) startHold()
-          }
-        }}
-        onKeyUp={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            stopHold()
-          }
-        }}
-        onBlur={stopHold}
-        className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
-          ${isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
-      >
-        {/* Progress Fill Background */}
-        <div
-          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green-bright'}`}
-          style={{ width: `${progress}%` }}
-        ></div>
+    const isComplete = progress >= 100
 
-        {/* Scanline FX on fill */}
-        {isHolding && !isComplete && (
-          <div className='absolute inset-0 scanline-overlay opacity-50 z-10 pointer-events-none'></div>
-        )}
-
-        {/* Text */}
-        <span
-          className={`relative z-20 font-bold tracking-[0.2em] uppercase mix-blend-difference
-          ${isComplete ? 'text-void-black' : 'text-toxic-green-bright'}`}
-        >
-          {isComplete ? t('ui:executed', 'EXECUTED') : label}
+    return (
+      <div className='w-full flex flex-col gap-1'>
+        <span className='text-[10px] tracking-widest uppercase opacity-50 text-center'>
+          {t('ui:holdToOverride', 'HOLD TO OVERRIDE')}
         </span>
-      </button>
-    </div>
-  )
-})
+        <button
+          type='button'
+          onMouseDown={startHold}
+          onMouseUp={stopHold}
+          onMouseLeave={stopHold}
+          onTouchStart={startHold}
+          onTouchEnd={stopHold}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === ' ') e.preventDefault()
+              if (!e.repeat) startHold()
+            }
+          }}
+          onKeyUp={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              stopHold()
+            }
+          }}
+          onBlur={stopHold}
+          className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
+          ${isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
+        >
+          {/* Progress Fill Background */}
+          <div
+            className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green-bright'}`}
+            style={{ width: `${progress}%` }}
+          ></div>
+
+          {/* Scanline FX on fill */}
+          {isHolding && !isComplete && (
+            <div className='absolute inset-0 scanline-overlay opacity-50 z-10 pointer-events-none'></div>
+          )}
+
+          {/* Text */}
+          <span
+            className={`relative z-20 font-bold tracking-[0.2em] uppercase mix-blend-difference
+          ${isComplete ? 'text-void-black' : 'text-toxic-green-bright'}`}
+          >
+            {isComplete ? t('ui:executed', 'EXECUTED') : label}
+          </span>
+        </button>
+      </div>
+    )
+  }
+)
 
 // 9. Terminal Readout (Log)
-const FULL_LOG_KEYS = [
+const FULL_LOG_KEYS: TerminalLogLine[] = [
   { id: 'log_1', key: 'ui:terminal.log1', type: 'info' },
   { id: 'log_2', key: 'ui:terminal.log2', type: 'info' },
   { id: 'log_3', key: 'ui:terminal.log3', type: 'ok' },
@@ -1194,8 +1270,8 @@ const FULL_LOG_KEYS = [
 
 export const TerminalReadout = memo(() => {
   const { t } = useTranslation(['ui'])
-  const [lines, setLines] = useState([])
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [lines, setLines] = useState<TerminalLogLine[]>([])
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
 
   useEffect(() => {
     if (currentIndex < FULL_LOG_KEYS.length) {
@@ -1231,7 +1307,7 @@ export const TerminalReadout = memo(() => {
 })
 
 // 10. Hardware Inventory Slot
-export const BrutalSlot = memo(({ label, item = null }) => {
+export const BrutalSlot = memo(({ label, item = null }: BrutalSlotProps) => {
   const { t } = useTranslation(['ui'])
 
   const tooltipText = item
@@ -1274,7 +1350,7 @@ export const BrutalSlot = memo(({ label, item = null }) => {
 })
 
 // 11. Void Loader (Geometric Spinner)
-export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
+export const VoidLoader = memo(({ size = 'w-16 h-16' }: VoidLoaderProps) => {
   return (
     <div className={`relative ${size} flex items-center justify-center`}>
       {/* Outer Hex - Slow counter-clockwise */}
@@ -1317,20 +1393,20 @@ export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
 })
 
 // 13. Corrupted Data Stream (Text Reveal Effect)
-export const CorruptedText = memo(({ text, delay = 0 }) => {
-  const [displayedText, setDisplayedText] = useState('')
+export const CorruptedText = memo(({ text, delay = 0 }: CorruptedTextProps) => {
+  const [displayedText, setDisplayedText] = useState<string>('')
   const chars = '!<>-_\\/[]{}—=+*^?#________'
 
   useEffect(() => {
     let iteration = 0
-    let interval = null
+    let interval: ReturnType<typeof setInterval> | null = null
 
     const startEffect = () => {
       interval = setInterval(() => {
         setDisplayedText(
           text
             .split('')
-            .map((char, index) => {
+            .map((char: string, index: number) => {
               if (index < iteration) {
                 return char
               }
@@ -1340,17 +1416,20 @@ export const CorruptedText = memo(({ text, delay = 0 }) => {
         )
 
         if (iteration >= text.length) {
-          clearInterval(interval)
+          if (interval != null) clearInterval(interval)
         }
 
         iteration += 1 / 3 // Speed of reveal
       }, 30)
     }
 
-    const timeout = setTimeout(startEffect, delay)
+    const timeout: ReturnType<typeof setTimeout> = setTimeout(
+      startEffect,
+      delay
+    )
     return () => {
       clearTimeout(timeout)
-      clearInterval(interval)
+      if (interval != null) clearInterval(interval)
     }
   }, [text, delay])
 
@@ -1389,7 +1468,7 @@ export const HazardTicker = memo(({ message }: HazardTickerProps) => {
 // 15. Industrial Checklist (Pre-Gig Setup)
 export const IndustrialChecklist = memo(() => {
   const { t } = useTranslation(['ui'])
-  const [tasks, setTasks] = useState(() => [
+  const [tasks, setTasks] = useState<Task[]>(() => [
     {
       id: 1,
       key: 'ui:checklist.task1',
@@ -1412,7 +1491,7 @@ export const IndustrialChecklist = memo(() => {
     }
   ])
 
-  const toggleTask = id => {
+  const toggleTask = (id: number) => {
     setTasks(
       tasks.map(task =>
         task.id === id ? { ...task, completed: !task.completed } : task
@@ -1482,9 +1561,9 @@ export const IndustrialChecklist = memo(() => {
 // 16. Rhythm Lane Matrix (Simulation of the Rhythm Engine)
 export const RhythmMatrix = memo(() => {
   const { t } = useTranslation(['ui'])
-  const [hits, setHits] = useState([false, false, false])
+  const [hits, setHits] = useState<boolean[]>([false, false, false])
 
-  const triggerHit = index => {
+  const triggerHit = (index: number) => {
     setHits(prev => {
       const newHits = [...prev]
       newHits[index] = true
@@ -1643,7 +1722,7 @@ export const SelloutContract = memo(() => {
 // 18. Toxic Hate Feed (Chatter Overlay)
 export const ToxicChatter = memo(() => {
   const { t } = useTranslation(['ui'])
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { id: 1, user: 'VOID_WALKER', text: 'ui:chatter.msg1', type: 'hate' },
     { id: 2, user: 'TRUE_SCUM', text: 'ui:chatter.msg2', type: 'hate' },
     {
@@ -1655,7 +1734,7 @@ export const ToxicChatter = memo(() => {
   ])
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval: ReturnType<typeof setInterval> = setInterval(() => {
       const newHate = [
         'ui:chatter.random1',
         'ui:chatter.random2',
@@ -1666,16 +1745,13 @@ export const ToxicChatter = memo(() => {
       const uuid = getSafeUUID()
       const randomHate = newHate[Math.floor(secureRandom() * newHate.length)]
       setMessages(prev => {
-        const updated = [
-          ...prev,
-          {
-            id: uuid,
-            user: `USER_${uuid.split('-')[0].toUpperCase()}`,
-            text: randomHate,
-            type: 'hate'
-          }
-        ]
-        return updated.slice(-5) // Keep only last 5
+        const newMsg: Message = {
+          id: uuid,
+          user: `USER_${uuid.split('-')[0].toUpperCase()}`,
+          text: randomHate,
+          type: 'hate'
+        }
+        return [...prev, newMsg].slice(-5) // Keep only last 5
       })
     }, 3000)
     return () => clearInterval(interval)
@@ -1714,7 +1790,7 @@ export const VoidDecryptor = memo(() => {
   const [glitchEffect, setGlitchEffect] = useState('')
 
   useEffect(() => {
-    let interval
+    let interval: ReturnType<typeof setInterval> | null = null
     if (!decrypted) {
       interval = setInterval(() => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'
@@ -1725,7 +1801,7 @@ export const VoidDecryptor = memo(() => {
       }, 50)
     }
     return () => {
-      if (interval) clearInterval(interval)
+      if (interval != null) clearInterval(interval)
     }
   }, [decrypted])
 

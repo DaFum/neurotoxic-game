@@ -1,11 +1,23 @@
 /*
  * (#1) Actual Updates: Extracted CableItem for maintainability. Added Set optimization for O(1) lookups.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
-import { CABLES } from '../constants'
+import { CABLES, SOCKET_DEFS } from '../constants'
 import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.tsx'
+import type { TFunction } from 'i18next'
+
+type SocketId = keyof typeof SOCKET_DEFS
+
+type CableListProps = {
+  t: TFunction
+  connections: Partial<Record<SocketId, string>>
+  selectedCable?: string | null
+  isShocked: boolean
+  isGameOver: boolean
+  handleCableClick: (id: string) => void
+}
 
 export const CableList = ({
   t,
@@ -14,8 +26,10 @@ export const CableList = ({
   isShocked,
   isGameOver,
   handleCableClick
-}) => {
-  const connectedCableIds = new Set(Object.values(connections))
+}: CableListProps) => {
+  const connectedCableIds = new Set(
+    Object.values(connections).filter(Boolean) as string[]
+  )
 
   return (
     <>

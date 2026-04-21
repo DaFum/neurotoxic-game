@@ -1,4 +1,3 @@
-// TODO: Review this file
 import type { GameState } from '../../types/game'
 
 export const QUEST_EVENTS = [

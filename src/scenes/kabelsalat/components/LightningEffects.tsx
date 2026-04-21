@@ -1,13 +1,25 @@
 /*
  * (#1) Actual Updates: Added PropTypes.
- * (#2) Next Steps: N/A
- * (#3) Found Errors + Solutions: N/A
+
+
  */
 import PropTypes from 'prop-types'
+import type { FC } from 'react'
 
 const LIGHTNING_Y_COORDS = [0, 200, 400, 600]
 
-export const LightningEffects = ({ lightningSeeds }) => (
+type LightningSeed = {
+  id: string | number
+  startX: number
+  o1: number
+  o2: number
+  o3: number
+  w: number
+}
+
+export const LightningEffects: FC<{ lightningSeeds: LightningSeed[] }> = ({
+  lightningSeeds
+}) => (
   <g>
     {lightningSeeds.map(seed => (
       <path

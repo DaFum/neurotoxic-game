@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { memo } from 'react'
 import { HecklerOverlay } from './HecklerOverlay'
 import { LaneInputArea } from './hud/LaneInputArea'

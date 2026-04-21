@@ -1,4 +1,3 @@
-// TODO: Review this file
 /**
  * UI Strings and constants for the event system.
  * This file centralizes hardcoded narrative additions to support maintainability and localization.

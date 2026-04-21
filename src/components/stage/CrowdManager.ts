@@ -1,4 +1,3 @@
-// TODO: Review this file
 import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js'
 import {
   calculateCrowdOffset,

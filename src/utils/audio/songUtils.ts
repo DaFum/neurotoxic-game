@@ -1,10 +1,13 @@
-// TODO: Review this file
+import type { Song } from '../../types/audio'
+
 /**
  * Normalizes a song entry to its ID.
  * @param {string|object} item - The song entry (ID string or object with ID).
- * @returns {string} The normalized song ID.
+ * @returns {string|undefined} The normalized song ID.
  */
-export const getSongId = item => (typeof item === 'string' ? item : item?.id)
+export const getSongId = (
+  item: string | Partial<Pick<Song, 'id'>> | undefined
+): string | undefined => (typeof item === 'string' ? item : item?.id)
 
 /**
  * Resolves playback window metadata for a song excerpt.
@@ -20,37 +23,45 @@ export const getSongId = item => (typeof item === 'string' ? item : item?.id)
  * @param {number} [options.defaultDurationMs=0] - Fallback duration.
  * @returns {{ excerptStartMs: number, excerptEndMs: number|null, excerptDurationMs: number }}
  */
-export const resolveSongPlaybackWindow = (song, options = {}) => {
+export const resolveSongPlaybackWindow = (
+  song: Partial<Song> | null | undefined,
+  options: { defaultDurationMs?: number } = {}
+): {
+  excerptStartMs: number
+  excerptEndMs: number | null
+  excerptDurationMs: number
+} => {
   const defaultDurationMs = Number.isFinite(options.defaultDurationMs)
-    ? Math.max(0, options.defaultDurationMs)
+    ? Math.max(0, options.defaultDurationMs as number)
     : 0
 
   const excerptStartMs = Number.isFinite(song?.excerptStartMs)
-    ? Math.max(0, song.excerptStartMs)
+    ? Math.max(0, song!.excerptStartMs as number)
     : 0
 
   const excerptEndMs = Number.isFinite(song?.excerptEndMs)
-    ? Math.max(0, song.excerptEndMs)
+    ? Math.max(0, song!.excerptEndMs as number)
     : null
 
   const derivedDurationMs =
-    Number.isFinite(excerptEndMs) && excerptEndMs > excerptStartMs
+    excerptEndMs != null &&
+    Number.isFinite(excerptEndMs) &&
+    excerptEndMs > excerptStartMs
       ? excerptEndMs - excerptStartMs
       : null
 
   const explicitDurationMs = Number.isFinite(song?.excerptDurationMs)
-    ? Math.max(0, song.excerptDurationMs)
+    ? Math.max(0, song!.excerptDurationMs as number)
     : null
 
   const authoredDurationMs = Number.isFinite(song?.durationMs)
-    ? Math.max(0, song.durationMs)
+    ? Math.max(0, song!.durationMs as number)
     : null
 
-  const excerptDurationMs =
-    derivedDurationMs ??
+  const excerptDurationMs = (derivedDurationMs ??
     explicitDurationMs ??
     authoredDurationMs ??
-    defaultDurationMs
+    defaultDurationMs) as number
 
   return { excerptStartMs, excerptEndMs, excerptDurationMs }
 }

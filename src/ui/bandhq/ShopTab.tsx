@@ -1,4 +1,3 @@
-// TODO: Review this file
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../../data/hqItems'
 import { CatalogTab } from './CatalogTab'
