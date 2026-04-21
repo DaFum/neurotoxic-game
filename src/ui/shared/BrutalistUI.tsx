@@ -1153,11 +1153,11 @@ export const DeadmanButton = memo(
         clearInterval(drainIntervalRef.current)
       if (intervalRef.current != null) clearInterval(intervalRef.current)
 
-      intervalRef.current = setInterval(() => {
+      const intervalId = setInterval(() => {
         setProgress(prev => {
           if (prev >= 100) {
-            if (intervalRef.current != null) {
-              clearInterval(intervalRef.current)
+            if (intervalRef.current === intervalId) {
+              clearInterval(intervalId)
               intervalRef.current = null
             }
             setIsHolding(false)
@@ -1167,6 +1167,7 @@ export const DeadmanButton = memo(
           return prev + 2 // Speed of fill
         })
       }, 20) // 20ms tick
+      intervalRef.current = intervalId
     }
 
     const stopHold = () => {
@@ -1178,11 +1179,11 @@ export const DeadmanButton = memo(
         // Rapid drain if let go too early
         if (drainIntervalRef.current != null)
           clearInterval(drainIntervalRef.current)
-        drainIntervalRef.current = setInterval(() => {
+        const drainId = setInterval(() => {
           setProgress(prev => {
             if (prev <= 0) {
-              if (drainIntervalRef.current != null) {
-                clearInterval(drainIntervalRef.current)
+              if (drainIntervalRef.current === drainId) {
+                clearInterval(drainId)
                 drainIntervalRef.current = null
               }
               return 0
@@ -1190,6 +1191,7 @@ export const DeadmanButton = memo(
             return prev - 5
           })
         }, 20)
+        drainIntervalRef.current = drainId
       }
     }
 

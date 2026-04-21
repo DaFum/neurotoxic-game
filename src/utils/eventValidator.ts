@@ -115,7 +115,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  if (!VALID_TRIGGERS.includes(String(e.trigger))) {
+  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger)) {
     throw new Error(
       'Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id)
     )
@@ -153,7 +153,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  if (e.condition && typeof e.condition !== 'function') {
+  if (Object.hasOwn(e, 'condition') && e.condition !== undefined && typeof e.condition !== 'function') {
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 
