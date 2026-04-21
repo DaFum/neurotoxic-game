@@ -1,8 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import { handleDarkWebLeak } from '../../src/context/reducers/socialReducer.ts'
-import { ActionTypes } from '../../src/context/actionTypes.ts'
-import { clampPlayerFame } from '../../src/utils/gameStateUtils.ts'
+import { handleDarkWebLeak } from '../../src/context/reducers/socialReducer.js'
+import { ActionTypes } from '../../src/context/actionTypes.js'
+import { clampPlayerFame } from '../../src/utils/gameStateUtils.js'
 
 test('socialReducer - handleDarkWebLeak', async t => {
   await t.test(

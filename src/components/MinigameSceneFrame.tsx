@@ -161,10 +161,7 @@ MinigameSceneFrame.propTypes = {
     gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
-    dispatch: PropTypes.func,
-    rngValue: PropTypes.number,
-    contrabandId: PropTypes.string,
-    instanceId: PropTypes.string
+    dispatch: PropTypes.func
   }).isRequired,
   uiState: PropTypes.shape({
     isGameOver: PropTypes.bool
