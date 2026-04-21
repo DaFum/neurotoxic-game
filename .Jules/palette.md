@@ -95,3 +95,7 @@
 **Learning:** Target member selection buttons in the ContrabandStash component lacked `aria-pressed`, meaning screen readers couldn't identify the actively selected member button visually represented by active classes. Furthermore, the buttons lacked explicit focus rings.
 
 **Action:** Bound the `aria-pressed` attribute to the boolean expression evaluating if the button's specific state (e.g. `selectedMember === m.id`) is matched to reflect visual state audibly. Also, added explicit `focus-visible` ring utilities to ensure keyboard navigability.
+
+## 2024-04-21 - Mute/Unmute Toggle Button Accessibility
+**Learning:** Found that the main volume toggle (Mute/Unmute) button in the HUD was missing the `aria-pressed` attribute, which provides a stable name for the control. Without `aria-pressed`, screen reader users might not know the toggle status of the button immediately.
+**Action:** Always ensure that toggle buttons reflect their state using the `aria-pressed` attribute, with a stable accessible `aria-label`.
