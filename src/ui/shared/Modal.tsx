@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef } from 'react'
+import type { ReactNode, MouseEvent } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
@@ -19,6 +20,15 @@ import { Tooltip } from './Tooltip'
  * @param {string} [props.contentClassName] - Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto).
  * @param {string} [props.className] - Additional CSS classes for the dialog wrapper (defaults to max-w-md).
  */
+type ModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  children?: ReactNode
+  contentClassName?: string
+  className?: string
+}
+
 export const Modal = ({
   isOpen,
   onClose,
@@ -26,12 +36,12 @@ export const Modal = ({
   children,
   contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto',
   className = 'max-w-md'
-}) => {
-  const dialogRef = useRef(null)
+}: ModalProps) => {
+  const dialogRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation(['ui'])
 
   useEffect(() => {
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         onClose()
       }
@@ -40,9 +50,10 @@ export const Modal = ({
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown)
       // Focus the dialog for accessibility ONLY if there isn't an input actively focused inside it
-      const timer = setTimeout(() => {
+      const timer = window.setTimeout(() => {
         if (
           dialogRef.current &&
+          dialogRef.current instanceof HTMLElement &&
           !dialogRef.current.contains(document.activeElement)
         ) {
           dialogRef.current.focus()
@@ -62,7 +73,7 @@ export const Modal = ({
   return (
     <div
       className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-2 sm:p-4'
-      onClick={e => {
+      onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >

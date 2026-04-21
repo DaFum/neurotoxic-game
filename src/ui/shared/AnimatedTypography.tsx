@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion'
+import type { Transition } from 'framer-motion'
 import PropTypes from 'prop-types'
 
 export const AnimatedDivider = ({
   width = '100%',
   transition,
   className = ''
+}: {
+  width?: string | number
+  transition?: Transition
+  className?: string
 }) => (
   <motion.div
     initial={{ width: 0 }}
@@ -27,8 +32,16 @@ export const AnimatedSubtitle = ({
   transition,
   className = '',
   children
+}: {
+  as?: string | React.ElementType
+  initial?: unknown
+  animate?: unknown
+  transition?: Transition
+  className?: string
+  children: React.ReactNode
 }) => {
-  const MotionComponent = motion[as] || motion.h2
+  // Access motion[...] dynamically; framer-motion provides typed helpers
+  const MotionComponent = (motion as any)[as] || motion.h2
 
   return (
     <MotionComponent

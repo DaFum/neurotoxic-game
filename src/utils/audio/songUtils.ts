@@ -29,7 +29,7 @@ export const resolveSongPlaybackWindow = (
 ): {
   excerptStartMs: number
   excerptEndMs: number | null
-  excerptDurationMs: number | null
+  excerptDurationMs: number
 } => {
   const defaultDurationMs = Number.isFinite(options.defaultDurationMs)
     ? Math.max(0, options.defaultDurationMs as number)
@@ -58,11 +58,10 @@ export const resolveSongPlaybackWindow = (
     ? Math.max(0, song!.durationMs as number)
     : null
 
-  const excerptDurationMs =
-    derivedDurationMs ??
+  const excerptDurationMs = (derivedDurationMs ??
     explicitDurationMs ??
     authoredDurationMs ??
-    defaultDurationMs
+    defaultDurationMs) as number
 
   return { excerptStartMs, excerptEndMs, excerptDurationMs }
 }

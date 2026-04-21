@@ -1,0 +1,5 @@
+
+> neurotoxic-game@0.0.0 typecheck C:\Users\andre.oswald\Code\Neuro\neurotoxic-game
+> node ./scripts/typecheck-reducers.mjs
+
+ÔÇëELIFECYCLEÔÇë Command failed with exit code 2.

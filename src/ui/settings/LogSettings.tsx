@@ -2,15 +2,22 @@ import { memo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { LOG_LEVELS } from '../../utils/logger'
+import type { ChangeEvent } from 'react'
+
+type LogSettingsProps = {
+  logLevel: number
+  onLogLevelChange: (level: number) => void
+}
 
 export const LogSettings = memo(function LogSettings({
   logLevel,
   onLogLevelChange
-}) {
+}: LogSettingsProps) {
   const { t } = useTranslation()
 
   const handleLogLevelSelect = useCallback(
-    e => onLogLevelChange(parseInt(e.target.value, 10)),
+    (e: ChangeEvent<HTMLSelectElement>) =>
+      onLogLevelChange(parseInt(e.target.value, 10)),
     [onLogLevelChange]
   )
 

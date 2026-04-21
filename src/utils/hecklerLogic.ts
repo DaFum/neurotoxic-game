@@ -103,18 +103,21 @@ export const trySpawnProjectile = (
 ): any | null => {
   // Adaptive difficulty AI tuning based on stats
   let spawnChance = SPAWN_CHANCE_CONFIG.BASE
+  // Normalize optional stats
+  const combo = typeof stats.combo === 'number' ? stats.combo : 0
+  const health = typeof stats.health === 'number' ? stats.health : 100
 
   // Jealousy from high combo
-  if (stats.combo > SPAWN_CHANCE_CONFIG.COMBO_HIGH_THRESHOLD) {
+  if (combo > SPAWN_CHANCE_CONFIG.COMBO_HIGH_THRESHOLD) {
     spawnChance += SPAWN_CHANCE_CONFIG.COMBO_HIGH_BONUS
-  } else if (stats.combo > SPAWN_CHANCE_CONFIG.COMBO_MEDIUM_THRESHOLD) {
+  } else if (combo > SPAWN_CHANCE_CONFIG.COMBO_MEDIUM_THRESHOLD) {
     spawnChance += SPAWN_CHANCE_CONFIG.COMBO_MEDIUM_BONUS
   }
 
   // Desperation when health is low (piling on)
-  if (stats.health < SPAWN_CHANCE_CONFIG.HEALTH_LOW_THRESHOLD) {
+  if (health < SPAWN_CHANCE_CONFIG.HEALTH_LOW_THRESHOLD) {
     spawnChance += SPAWN_CHANCE_CONFIG.HEALTH_LOW_BONUS
-  } else if (stats.health < SPAWN_CHANCE_CONFIG.HEALTH_MEDIUM_THRESHOLD) {
+  } else if (health < SPAWN_CHANCE_CONFIG.HEALTH_MEDIUM_THRESHOLD) {
     spawnChance += SPAWN_CHANCE_CONFIG.HEALTH_MEDIUM_BONUS
   }
 

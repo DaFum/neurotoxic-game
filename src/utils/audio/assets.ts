@@ -14,18 +14,26 @@ import {
   MAX_AUDIO_BUFFER_BYTE_SIZE
 } from './constants'
 
-// Import all MIDI files as URLs
-const midiGlob: any = import.meta.glob('../../assets/**/*.mid', {
-  query: '?url',
-  import: 'default',
-  eager: true
-})
+// Import all MIDI/OGG files as URLs (Vite `import.meta.glob`).
+// Use the literal `import.meta.glob(...)` call so Vite's transform can
+// statically replace the call at build/test time.
+const midiGlob =
+  typeof import.meta.glob === 'function'
+    ? import.meta.glob('../../assets/**/*.mid', {
+        query: '?url',
+        import: 'default',
+        eager: true
+      })
+    : {}
 
-const oggGlob: any = import.meta.glob('../../assets/**/*.ogg', {
-  query: '?url',
-  import: 'default',
-  eager: true
-})
+const oggGlob =
+  typeof import.meta.glob === 'function'
+    ? import.meta.glob('../../assets/**/*.ogg', {
+        query: '?url',
+        import: 'default',
+        eager: true
+      })
+    : {}
 
 // Create a map of relative asset path + basename -> URL
 // Key format in glob is "../../assets/path/to/filename.mid"
@@ -93,8 +101,9 @@ function canPlayAudioType(mimeType: string): boolean {
 export function hasAudioAsset(filename: string): boolean {
   if (typeof filename !== 'string') return false
   const normalized = filename.replace(PATH_PREFIX_REGEX, '')
+  const basename = normalized.split('/').pop()
   return Boolean(
-    oggUrlMap?.[normalized] || oggUrlMap?.[normalized.split('/').pop()]
+    oggUrlMap?.[normalized] || (basename ? oggUrlMap?.[basename] : undefined)
   )
 }
 
@@ -121,10 +130,12 @@ export async function loadAudioBuffer(
   const cacheKey = filename.replace(PATH_PREFIX_REGEX, '')
   if (audioState.audioBufferCache.has(cacheKey)) {
     const cached = audioState.audioBufferCache.get(cacheKey)
-    // Promote to most-recently-used for LRU eviction
-    audioState.audioBufferCache.delete(cacheKey)
-    audioState.audioBufferCache.set(cacheKey, cached)
-    return cached
+    if (cached) {
+      // Promote to most-recently-used for LRU eviction
+      audioState.audioBufferCache.delete(cacheKey)
+      audioState.audioBufferCache.set(cacheKey, cached)
+      return cached
+    }
   }
 
   // Return existing promise if already loading
@@ -201,16 +212,17 @@ async function loadAudioBufferInternal(
         AUDIO_BUFFER_DECODE_TIMEOUT_MS
       )
     })
-    let buffer = null
+    let buffer: AudioBuffer | null = null
     try {
-      buffer = await Promise.race([
+      buffer = (await Promise.race([
         rawContext.decodeAudioData(arrayBuffer),
         decodeTimeoutPromise
-      ])
+      ])) as AudioBuffer | null
     } finally {
       if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
     }
 
+    if (!buffer) return null
     const newBufferSize = getAudioBufferSize(buffer)
 
     // Evict items until we are within both size and count limits.
@@ -237,13 +249,13 @@ async function loadAudioBufferInternal(
       `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz, ${(newBufferSize / 1024 / 1024).toFixed(2)}MB). Cache: ${audioState.audioBufferCache.size} items, ${(audioState.currentCacheByteSize / 1024 / 1024).toFixed(2)}MB`
     )
     return buffer
-  } catch (error) {
-    if (error.name === 'AbortError') {
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
       logger.warn(
         'AudioEngine',
         `Audio fetch timed out for "${filename}" (${url})`
       )
-    } else if (error?.message === 'AUDIO_DECODE_TIMEOUT') {
+    } else if (err instanceof Error && err.message === 'AUDIO_DECODE_TIMEOUT') {
       logger.warn(
         'AudioEngine',
         `Audio decode timed out for "${filename}" (${url})`
@@ -257,7 +269,7 @@ async function loadAudioBufferInternal(
       logger.warn(
         'AudioEngine',
         `Failed to decode audio buffer for "${filename}".${codecHint}`,
-        error
+        err
       )
     }
     return null

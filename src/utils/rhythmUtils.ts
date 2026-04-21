@@ -1,18 +1,9 @@
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
 import type { Note, Song } from '../types/audio'
+import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
 
 type RandomFn = () => number
-
-interface TempoMapEntry {
-  tick: number
-  usPerBeat: number
-}
-
-interface ProcessedTempoMapEntry extends TempoMapEntry {
-  _startTick: number
-  _accumulatedMicros: number
-}
 
 interface ParsedGameNote {
   time: number

@@ -3,7 +3,13 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { DeadmanButton } from '../shared/BrutalistUI'
 
-export const DataManagement = memo(function DataManagement({ onDeleteSave }) {
+type DataManagementProps = {
+  onDeleteSave: () => void
+}
+
+export const DataManagement = memo(function DataManagement({
+  onDeleteSave
+}: DataManagementProps) {
   const { t } = useTranslation()
 
   return (

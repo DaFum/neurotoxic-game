@@ -8,21 +8,22 @@ import { secureRandom } from '../crypto'
 import { ensureAudioContext } from './context'
 import { playMidiFileInternal } from './midiPlayback'
 import { SONGS_DB, SONGS_BY_MID } from '../../data/songs'
+import type { Song } from '../../types/audio'
 
-const customSongsMapCache = new WeakMap()
+const customSongsMapCache = new WeakMap<Song[], Map<string, Song>>()
 
 /**
  * Memoizes metadata lookup for custom songs arrays to O(1).
  * @param {Array} songs
  * @returns {Map}
  */
-function getCustomSongsMap(songs) {
+function getCustomSongsMap(songs: Song[]): Map<string, Song> {
   let map = customSongsMapCache.get(songs)
   if (!map) {
-    map = new Map()
+    map = new Map<string, Song>()
     for (let i = 0; i < songs.length; i++) {
       const song = songs[i]
-      if (song.sourceMid) {
+      if (song && song.sourceMid) {
         map.set(song.sourceMid, song)
       }
     }
@@ -38,9 +39,9 @@ function getCustomSongsMap(songs) {
  * @returns {Promise<boolean>} Whether playback started successfully.
  */
 export async function playRandomAmbientMidi(
-  songs = SONGS_DB,
+  songs: Song[] = SONGS_DB,
   rng = secureRandom
-) {
+): Promise<boolean> {
   logger.debug('AudioEngine', 'playRandomAmbientMidi called')
   // Requirement: Stop transport before starting ambient
   stopAudio()

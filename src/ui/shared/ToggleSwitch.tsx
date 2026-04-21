@@ -1,4 +1,5 @@
 import { memo, useState, useRef, useEffect, useId, useCallback } from 'react'
+import type { MouseEvent } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
@@ -11,23 +12,30 @@ import { useTranslation } from 'react-i18next'
  * @param {string} props.ariaLabel - Accessible label.
  * @param {string} [props.className] - Additional CSS classes.
  */
+type ToggleSwitchProps = {
+  isOn: boolean
+  onToggle: () => void
+  ariaLabel: string
+  className?: string
+}
+
 const ToggleSwitchComponent = ({
   isOn,
   onToggle,
   ariaLabel,
   className = ''
-}) => {
+}: ToggleSwitchProps) => {
   const { t } = useTranslation()
   const labelId = useId()
   const [isGlitching, setIsGlitching] = useState(false)
-  const glitchTimerRef = useRef(null)
+  const glitchTimerRef = useRef<number | null>(null)
 
   const handleToggle = useCallback(() => {
     setIsGlitching(true)
     if (glitchTimerRef.current) {
-      clearTimeout(glitchTimerRef.current)
+      window.clearTimeout(glitchTimerRef.current)
     }
-    glitchTimerRef.current = setTimeout(() => setIsGlitching(false), 150)
+    glitchTimerRef.current = window.setTimeout(() => setIsGlitching(false), 150)
     onToggle()
   }, [onToggle])
 
