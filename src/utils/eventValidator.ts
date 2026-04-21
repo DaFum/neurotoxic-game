@@ -109,7 +109,10 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     throw new Error('Invalid event id: ' + String(e.id))
   }
 
-  if (!VALID_CATEGORIES.includes(String(e.category))) {
+  if (
+    typeof e.category !== 'string' ||
+    !VALID_CATEGORIES.includes(e.category)
+  ) {
     throw new Error(
       'Invalid category: ' + String(e.category) + ' for event ' + String(e.id)
     )
@@ -119,7 +122,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     throw new Error('Event ' + String(e.id) + ' must have crisis tag')
   }
 
-  if (!VALID_TRIGGERS.includes(String(e.trigger))) {
+  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger)) {
     throw new Error(
       'Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id)
     )

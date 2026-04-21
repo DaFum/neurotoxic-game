@@ -1122,9 +1122,11 @@ for (const deal of BRAND_DEALS) {
   const transformedDeal: TransformedBrandDeal = { ...deal }
 
   if (deal.requirements) {
-    transformedDeal.requirements = { ...deal.requirements }
     if (Array.isArray(deal.requirements.trend)) {
-      transformedDeal.requirements.trendSet = new Set(deal.requirements.trend)
+      transformedDeal.requirements = {
+        ...deal.requirements,
+        trendSet: new Set(deal.requirements.trend)
+      }
     }
   }
 
