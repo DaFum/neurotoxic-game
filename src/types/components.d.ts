@@ -96,10 +96,13 @@ export interface MinigameLogicBase {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
   finishMinigame?: () => void
+  dispatch?: (action: import('../types/game').GameAction) => void
+}
+
+export interface TourbusMinigameLogic extends MinigameLogicBase {
   rngValue?: number
   contrabandId?: string
   instanceId?: string
-  dispatch?: (action: unknown) => void
 }
 
 export interface MinigameSceneFrameProps {

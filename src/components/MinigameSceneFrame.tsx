@@ -77,19 +77,25 @@ export const MinigameSceneFrame = ({
 
             if (currentType === MINIGAME_TYPES.TOURBUS) {
               completeTravelMinigame(0, [])
-              onComplete()
+              return
             } else if (currentType === MINIGAME_TYPES.ROADIE) {
               completeRoadieMinigame(0)
               onComplete()
+              return
             } else if (currentType === MINIGAME_TYPES.KABELSALAT) {
               completeKabelsalatMinigame({ isPoweredOn: true, timeLeft: 0 })
               onComplete()
+              return
             } else if (currentType === MINIGAME_TYPES.AMP_CALIBRATION) {
               completeAmpCalibration(100)
               onComplete()
+              return
             } else {
-              endGig()
-              onComplete()
+              console.warn(
+                'Unhandled minigame type for completion: ',
+                currentType
+              )
+              return
             }
           }
         }
@@ -158,10 +164,7 @@ MinigameSceneFrame.propTypes = {
     gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
     update: PropTypes.func.isRequired,
     finishMinigame: PropTypes.func,
-    dispatch: PropTypes.func,
-    rngValue: PropTypes.number,
-    contrabandId: PropTypes.string,
-    instanceId: PropTypes.string
+    dispatch: PropTypes.func
   }).isRequired,
   uiState: PropTypes.shape({
     isGameOver: PropTypes.bool
