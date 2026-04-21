@@ -722,7 +722,9 @@ export const applyEventDelta = (state: any, delta: any): any => {
             updatedMembers = [...nextBand.members]
           }
           // updatedMembers is initialized above when bandChanged flips to true
-          updatedMembers[i] = nextMember
+          if (updatedMembers) {
+            updatedMembers[i] = nextMember
+          }
         } else if (bandChanged) {
           // If bandChanged already true, ensure updatedMembers exists then assign
           if (!updatedMembers) updatedMembers = [...nextBand.members]

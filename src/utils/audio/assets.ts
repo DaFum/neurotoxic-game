@@ -17,23 +17,17 @@ import {
 // Import all MIDI/OGG files as URLs (Vite `import.meta.glob`).
 // Use the literal `import.meta.glob(...)` call so Vite's transform can
 // statically replace the call at build/test time.
-const midiGlob =
-  typeof import.meta.glob === 'function'
-    ? import.meta.glob('../../assets/**/*.mid', {
-        query: '?url',
-        import: 'default',
-        eager: true
-      })
-    : {}
+const midiGlob = import.meta.glob('../../assets/**/*.mid', {
+  query: '?url',
+  import: 'default',
+  eager: true
+})
 
-const oggGlob =
-  typeof import.meta.glob === 'function'
-    ? import.meta.glob('../../assets/**/*.ogg', {
-        query: '?url',
-        import: 'default',
-        eager: true
-      })
-    : {}
+const oggGlob = import.meta.glob('../../assets/**/*.ogg', {
+  query: '?url',
+  import: 'default',
+  eager: true
+})
 
 // Create a map of relative asset path + basename -> URL
 // Key format in glob is "../../assets/path/to/filename.mid"
