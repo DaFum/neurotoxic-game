@@ -156,7 +156,12 @@ export const HUD = () => {
                   ? t('ui:aria.unmuteSystem', { defaultValue: 'Unmute system' })
                   : t('ui:aria.muteSystem', { defaultValue: 'Mute system' })
               }
-              className='pointer-events-auto bg-void-black/90 border border-toxic-green/60 p-2 text-toxic-green w-fit hover:bg-toxic-green hover:text-void-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors block'
+              aria-pressed={audioState.isMuted}
+              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 ${
+                audioState.isMuted
+                  ? 'border-ash-gray text-ash-gray hover:bg-ash-gray hover:text-void-black focus-visible:ring-ash-gray'
+                  : 'border-toxic-green/60 text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
+              }`}
             >
               {audioState.isMuted ? (
                 <VolumeX size={14} />
