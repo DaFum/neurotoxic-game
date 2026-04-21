@@ -35,6 +35,14 @@ type ProcessedSongEvent = {
   lane: string
 }
 
+// Local copy of processed tempo map entry shape (keeps this module self-contained)
+type ProcessedTempoMapEntryLocal = {
+  tick: number
+  usPerBeat: number
+  _startTick: number
+  _accumulatedMicros: number
+}
+
 /**
  * Internal helper to trigger instrument notes.
  */
@@ -114,7 +122,7 @@ function processSongEvents(
   bpm: number,
   tpb: number,
   useTempoMap: boolean,
-  activeTempoMap: unknown[]
+  activeTempoMap: ProcessedTempoMapEntryLocal[]
 ): { events: ProcessedSongEvent[]; lastTime: number } | null {
   const events: ProcessedSongEvent[] = []
   let lastTime = 0
@@ -123,39 +131,41 @@ function processSongEvents(
 
   for (let i = 0; i < notes.length; i++) {
     const n = notes[i]
+    if (!n) continue
 
     if (
       typeof n.t !== 'number' ||
-      !isFinite(n.t) ||
+      !Number.isFinite(n.t) ||
       typeof n.p !== 'number' ||
-      !isFinite(n.p) ||
+      !Number.isFinite(n.p) ||
       typeof n.v !== 'number' ||
-      !isFinite(n.v)
+      !Number.isFinite(n.v)
     ) {
       continue
     }
 
     const time = useTempoMap
-      ? calculateTimeFromTicks(n.t!, tpb, activeTempoMap as any, 's')
-      : (n.t! / tpb) * (60 / bpm)
+      ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
+      : (n.t / tpb) * (60 / bpm)
 
     const finalTime = Number.isFinite(time) ? time : -1
 
     if (finalTime >= 0) {
-      const rawVelocity = Math.max(0, Math.min(127, n.v!))
+      const rawVelocity = Math.max(0, Math.min(127, n.v))
 
       if (finalTime > lastTime) {
         lastTime = finalTime
       }
 
-      const noteName = n.lane !== 'drums' ? getNoteName(n.p!) : null
+      const noteName = n.lane !== 'drums' ? getNoteName(n.p) : null
+      const lane = typeof n.lane === 'string' ? n.lane : 'guitar'
 
       events.push({
         time: finalTime,
-        note: n.p!,
+        note: n.p,
         noteName,
         velocity: rawVelocity / 127,
-        lane: (n.lane as string) || 'guitar'
+        lane
       })
     }
   }
@@ -233,25 +243,53 @@ export async function playSongFromData(
   delay = 0,
   options: unknown = {}
 ): Promise<boolean> {
-  const { success, reqId, normalizedOptions } = await prepareTransportPlayback(
-    options as any
-  )
+  const { success, reqId, normalizedOptions } =
+    await prepareTransportPlayback(options)
   if (!success) return false
   const { onEnded } = normalizedOptions
-  const s = song as { bpm?: number; tpb?: number; tempoMap?: unknown[] }
+  const s = song as {
+    notes?: unknown
+    bpm?: number
+    tpb?: number
+    tempoMap?: unknown[]
+  }
   const bpm = Math.max(1, s.bpm || 120) // Ensure BPM is positive
   const tpb = Math.max(1, s.tpb || 480) // Ensure TPB is positive
 
   if (!validateSongReady(song)) return false
 
   const useTempoMap = Array.isArray(s.tempoMap) && s.tempoMap.length > 0
-  const activeTempoMap = useTempoMap
-    ? preprocessTempoMap(s.tempoMap as any, tpb)
-    : []
+  let activeTempoMap: ProcessedTempoMapEntryLocal[] = []
+  if (useTempoMap && Array.isArray(s.tempoMap)) {
+    // Sanitize incoming tempo map entries to the expected shape before preprocessing
+    const rawTempo = s.tempoMap
+    const sanitized: { tick: number; usPerBeat: number }[] = []
+    for (let i = 0; i < rawTempo.length; i++) {
+      const e = rawTempo[i]
+      if (
+        typeof e === 'object' &&
+        e !== null &&
+        'tick' in e &&
+        'usPerBeat' in e
+      ) {
+        const obj = e as Record<string, unknown>
+        const tickVal = obj['tick']
+        const usPerBeatVal = obj['usPerBeat']
+        if (typeof tickVal === 'number' && typeof usPerBeatVal === 'number') {
+          sanitized.push({ tick: tickVal, usPerBeat: usPerBeatVal })
+        }
+      }
+    }
+    activeTempoMap = preprocessTempoMap(sanitized, tpb)
+  }
   const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
   const processingResult = processSongEvents(
-    { notes: (song as any)?.notes },
+    {
+      notes: Array.isArray((s as { notes?: unknown }).notes)
+        ? ((s as { notes?: unknown }).notes as SongLikeNote[])
+        : undefined
+    },
     bpm,
     tpb,
     useTempoMap,

@@ -53,7 +53,9 @@ export const getGigModifiers = (
     activeEffects: [] as ActiveEffect[] // Text descriptions for UI
   }
 
-  const members = Array.isArray(bandState.members) ? bandState.members : []
+  const members: BandMember[] = Array.isArray(bandState.members)
+    ? (bandState.members as BandMember[])
+    : []
 
   // 1. Harmony Logic
   if (bandState.harmony > 80) {
@@ -81,6 +83,7 @@ export const getGigModifiers = (
   let matze, Marius
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
+    if (!m) continue
     if (m.name === CHARACTERS.MATZE.name) matze = m
     else if (m.name === CHARACTERS.MARIUS.name) Marius = m
   }
@@ -127,6 +130,7 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   let matze, Marius, Lars
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
+    if (!m) continue
     if (m.name === CHARACTERS.MATZE.name) matze = m
     else if (m.name === CHARACTERS.MARIUS.name) Marius = m
     else if (m.name === CHARACTERS.LARS.name) Lars = m
@@ -150,7 +154,9 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   // members array is already guarded above
   let totalStamina = 0
   for (let i = 0; i < members.length; i++) {
-    totalStamina += members[i].stamina || 0
+    const m = members[i]
+    if (!m) continue
+    totalStamina += m.stamina || 0
   }
   const avgStamina = members.length ? totalStamina / members.length : 0
 

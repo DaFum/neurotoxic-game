@@ -974,7 +974,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         dispatch(
           createLoadGameAction({
-            ...(parsedObj as Partial<import('../types/game').GameState>),
+            ...(parsedObj as Partial<GameState>),
             unlocks: mergedUnlocks
           })
         )

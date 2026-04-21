@@ -4,6 +4,13 @@
  */
 import { handleError } from './errorHandler'
 
+// Module-scoped helper type describing the minimal subset of the Web Crypto
+// interface used by this module. Extracted to avoid repeating inline
+// declarations and to keep casts explicit and localized.
+type CryptoGetRandom = {
+  getRandomValues: (arr: Uint8Array | Uint32Array) => Uint8Array | Uint32Array
+}
+
 const BATCH_SIZE = 1024
 let batchArray: Uint32Array | null = null
 let batchIndex = BATCH_SIZE
@@ -34,10 +41,7 @@ export const secureRandom = (): number => {
 
   // Refill the batch when it's exhausted
   if (batchIndex >= BATCH_SIZE) {
-    type CryptoGetRandom = {
-      getRandomValues: (arr: Uint32Array) => Uint32Array
-    }
-    const c = crypto as unknown as CryptoGetRandom
+    const c = crypto as CryptoGetRandom
     c.getRandomValues(batchArray!)
     batchIndex = 0
   }
@@ -89,8 +93,7 @@ export const getSafeUUID = (): string => {
     if (typeof crypto?.getRandomValues !== 'function') {
       throw new Error('getRandomValues not supported')
     }
-    type CryptoGetRandom = { getRandomValues: (arr: Uint8Array) => Uint8Array }
-    const c = crypto as unknown as CryptoGetRandom
+    const c = crypto as CryptoGetRandom
     c.getRandomValues(buffer)
   } catch {
     // Intentionally use Math.random() directly only as a last resort to avoid

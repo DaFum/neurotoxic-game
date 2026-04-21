@@ -618,7 +618,7 @@ export const applyPassive = (
   if (effect.key === 'harmony_regen_travel') {
     nextBandPatch = { harmonyRegenTravel: true }
   } else if (effect.key === 'passive_followers') {
-    const val = Number(effect.value) || 0
+    const val = getNumericProp(effect, 'value', 0) ?? 0
     nextPlayerPatch.passiveFollowers =
       (player.passiveFollowers || 0) + Math.max(0, val)
   }

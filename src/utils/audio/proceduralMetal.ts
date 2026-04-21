@@ -3,6 +3,7 @@ import { audioState } from './state'
 import { prepareTransportPlayback } from './playbackUtils'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
+import type { Song } from '../../types/audio'
 
 /**
  * Generates a procedural riff pattern.
@@ -10,9 +11,12 @@ import { secureRandom } from '../crypto'
  * @param {Function} random - Random number generator function.
  * @returns {Array} Array of note strings or nulls.
  */
-function generateRiffPattern(diff, random) {
+function generateRiffPattern(
+  diff: number,
+  random: () => number
+): Array<string | null> {
   const steps = 16
-  const pattern = []
+  const pattern: Array<string | null> = []
   const density = 0.3 + diff * 0.1
 
   for (let i = 0; i < steps; i++) {
@@ -22,7 +26,7 @@ function generateRiffPattern(diff, random) {
         pattern.push(random() > 0.7 ? (random() > 0.5 ? 'F2' : 'G2') : 'E2')
       else {
         const notes = ['E2', 'A#2', 'F2', 'C3', 'D#3']
-        pattern.push(notes[Math.floor(random() * notes.length)])
+        pattern.push(notes[Math.floor(random() * notes.length)] ?? null)
       }
     } else {
       pattern.push(null)
@@ -38,24 +42,32 @@ function generateRiffPattern(diff, random) {
  * @param {string|null} note - The guitar note played on this step.
  * @param {Function} random - Random number generator.
  */
-function playDrumsLegacy(time, diff, note, random) {
+function playDrumsLegacy(
+  time: number,
+  diff: number,
+  note: string | null,
+  random: () => number
+): void {
+  const drumKit = audioState.drumKit
+  if (!drumKit) return
+
   if (diff === 5) {
-    audioState.drumKit.kick.triggerAttackRelease('C1', '16n', time)
+    drumKit.kick.triggerAttackRelease('C1', '16n', time)
     if (random() > 0.5) {
-      audioState.drumKit.snare.triggerAttackRelease('16n', time)
+      drumKit.snare.triggerAttackRelease('16n', time)
     }
-    audioState.drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
+    drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
   } else {
     if (note === 'E2' || random() < diff * 0.1) {
-      audioState.drumKit.kick.triggerAttackRelease('C1', '8n', time)
+      drumKit.kick.triggerAttackRelease('C1', '8n', time)
     }
     if (random() > 0.9) {
-      audioState.drumKit.snare.triggerAttackRelease('16n', time)
+      drumKit.snare.triggerAttackRelease('16n', time)
     }
     // Hihat on the beat — the 0.1 lower bound is intentional for musical density
     const beatPhase = time % 0.25
     if (beatPhase < 0.1 || beatPhase > 0.24) {
-      audioState.drumKit.hihat.triggerAttackRelease(8000, '32n', time)
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time)
     }
   }
 }
@@ -69,11 +81,11 @@ function playDrumsLegacy(time, diff, note, random) {
  * @returns {Promise<boolean>}
  */
 export async function startMetalGenerator(
-  song,
+  song: Partial<Song>,
   delay = 0,
-  options = {},
-  random = secureRandom
-) {
+  options: Record<string, unknown> = {},
+  random: () => number = secureRandom
+): Promise<boolean> {
   const { success, reqId, normalizedOptions } =
     await prepareTransportPlayback(options)
   if (!success) return false
@@ -88,15 +100,15 @@ export async function startMetalGenerator(
 
   const pattern = generateRiffPattern(song.difficulty ?? 2, random)
 
-  audioState.loop = new Tone.Sequence(
-    (time, note) => {
+  audioState.loop = new Tone.Sequence<string | null>(
+    (time, note: string | null) => {
       if (!audioState.guitar || !audioState.drumKit) return
       if (audioState.guitar.disposed || audioState.drumKit.kick.disposed) return
       try {
         if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
         playDrumsLegacy(time, song.difficulty ?? 2, note, random)
       } catch (err) {
-        if (err.name === 'InvalidStateError') {
+        if (err instanceof Error && err.name === 'InvalidStateError') {
           logger.warn(
             'AudioEngine',
             'Sequence callback InvalidStateError (context closing?)',
@@ -111,7 +123,7 @@ export async function startMetalGenerator(
     '16n'
   )
 
-  audioState.loop.start(0)
+  if (audioState.loop) audioState.loop.start(0)
 
   // Explicit race condition check with cleanup for robustness
   if (reqId !== audioState.playRequestId) {

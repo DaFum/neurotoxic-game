@@ -78,7 +78,28 @@ export const setupGigPhysics = (
   speed: number
   hitWindows: number[]
 } | null => {
-  const activeModifiers = getGigModifiers(band, gigModifiers) as RhythmModifiers
+  // Narrow the modifiers returned from simulation layer to the RhythmModifiers shape
+  const maybeActiveModifiers = getGigModifiers(band, gigModifiers)
+  const isRhythmModifiers = (v: unknown): v is RhythmModifiers => {
+    if (typeof v !== 'object' || v === null) return false
+    const obj = v as Record<string, unknown>
+    // Basic sanity checks for commonly used numeric fields
+    if (
+      (obj['drumMultiplier'] !== undefined &&
+        typeof obj['drumMultiplier'] !== 'number') ||
+      (obj['guitarScoreMult'] !== undefined &&
+        typeof obj['guitarScoreMult'] !== 'number')
+    ) {
+      return false
+    }
+    return true
+  }
+
+  const activeModifiers: RhythmModifiers = isRhythmModifiers(
+    maybeActiveModifiers
+  )
+    ? maybeActiveModifiers
+    : {}
 
   const songId = currentGigId || setlistFirstId || 'neurotoxic_1'
   const DEFAULT_SONG = { id: 'default', bpm: 120 }
@@ -95,14 +116,18 @@ export const setupGigPhysics = (
   const speedMult = 1.0 + layer * 0.05
 
   const mergedModifiers: RhythmModifiers = {
-    ...(activeModifiers as RhythmModifiers),
+    ...activeModifiers,
     drumMultiplier: physics.multipliers.drums,
     guitarScoreMult:
       physics.multipliers.guitar *
-      ((activeModifiers as RhythmModifiers).guitarScoreMult ?? 1.0),
+      (typeof activeModifiers.guitarScoreMult === 'number'
+        ? activeModifiers.guitarScoreMult
+        : 1.0),
     bassScoreMult:
       physics.multipliers.bass *
-      ((activeModifiers as RhythmModifiers).bassScoreMult ?? 1.0),
+      (typeof activeModifiers.bassScoreMult === 'number'
+        ? activeModifiers.bassScoreMult
+        : 1.0),
     hasPerfektionist: physics.hasPerfektionist
   }
 
@@ -445,6 +470,17 @@ export const playSongSequence = async (
   }
 
   const currentSong = activeSetlist[index]
+  if (!currentSong) {
+    logger.error(
+      'RhythmGame',
+      `playSongSequence: missing song at index ${index}`
+    )
+    if (gameStateRef.current) {
+      gameStateRef.current.setlistCompleted = true
+      gameStateRef.current.songTransitioning = false
+    }
+    return
+  }
   let notes: RhythmNote[] = []
   const rng = getSafeRandom
   gameStateRef.current.rng = rng

@@ -69,7 +69,7 @@ export const normalizeMidiPlaybackOptions = (
  */
 export const PATH_PREFIX_REGEX = /^\.?\//
 
-let cachedAssetPaths = null
+let cachedAssetPaths: { baseUrl: string; publicBasePath: string } | null = null
 
 /**
  * Derives the base asset path and public base path from import.meta.
@@ -81,12 +81,8 @@ export const getBaseAssetPath = (): {
   publicBasePath: string
 } => {
   if (!cachedAssetPaths) {
-    const rawBaseUrl =
-      typeof import.meta !== 'undefined' &&
-      import.meta.env &&
-      import.meta.env.BASE_URL
-        ? import.meta.env.BASE_URL
-        : './'
+    const meta = import.meta as unknown as { env?: { BASE_URL?: string } }
+    const rawBaseUrl = meta?.env?.BASE_URL ? meta.env.BASE_URL : './'
     const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
     const publicBasePath = `${baseUrl}assets`
     cachedAssetPaths = { baseUrl, publicBasePath }
@@ -168,7 +164,7 @@ export const buildAssetUrlMap = (
   warn: (message: string) => void = console.warn,
   label = 'Asset'
 ): Record<string, string> => {
-  const accumulator = {}
+  const accumulator: Record<string, string> = {}
   for (const path in assetGlob || {}) {
     if (Object.hasOwn(assetGlob, path)) {
       const url = assetGlob[path]

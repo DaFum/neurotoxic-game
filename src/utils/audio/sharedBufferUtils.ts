@@ -9,7 +9,10 @@ import { getRawAudioContext } from './context'
  * @param {(source: AudioBufferSourceNode) => void} [onEnded] - Callback when playback ends naturally.
  * @returns {AudioBufferSourceNode|null} The created source or null on error.
  */
-export function createAndConnectBufferSource(buffer, onEnded = null) {
+export function createAndConnectBufferSource(
+  buffer: AudioBuffer,
+  onEnded: ((source: AudioBufferSourceNode) => void) | null = null
+): AudioBufferSourceNode | null {
   const rawContext = getRawAudioContext()
   const source = rawContext.createBufferSource()
   source.buffer = buffer

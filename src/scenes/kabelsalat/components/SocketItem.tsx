@@ -31,12 +31,12 @@ const SocketItemComponent: FC<SocketItemProps> = ({
   const y = 120
 
   const isConnected = !!connections[socketId]
-  const connectedCable = isConnected
-    ? (CABLE_MAP[connections[socketId] as string] as {
-        type: string
-        color: string
-      })
-    : null
+  const cableId = connections[socketId]
+  const connectedCable =
+    isConnected && typeof cableId === 'string'
+      ? ((CABLE_MAP[cableId] as { type: string; color: string } | undefined) ??
+        null)
+      : null
   const showColor = isPowerConnected
   const socketDisplayColor = showColor ? socket.color : 'var(--color-ash-gray)'
 
@@ -128,15 +128,15 @@ const SocketItemComponent: FC<SocketItemProps> = ({
         {t(socket.labelKey)}
       </text>
 
-      {isConnected && (
+      {isConnected && connectedCable && (
         <g
           style={{
             color: showColor
-              ? connectedCable!.color
+              ? connectedCable.color
               : 'var(--color-concrete-gray)'
           }}
         >
-          <PlugGraphics type={connectedCable!.type} />
+          <PlugGraphics type={connectedCable.type} />
         </g>
       )}
     </g>

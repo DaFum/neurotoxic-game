@@ -38,9 +38,13 @@ for (const charKey of Object.keys(CHARACTERS) as Array<
   const char = CHARACTERS[charKey]
   const traits = (char.traits ?? []) as TraitDef[]
   TRAIT_DEFS_BY_CHAR[charKey as string] = Object.create(null)
+  const bucket = TRAIT_DEFS_BY_CHAR[charKey as string] as Record<
+    string,
+    TraitDef
+  >
   for (const trait of traits) {
     const t = trait as TraitDef
-    TRAIT_DEFS_BY_CHAR[charKey as string][t.id] = t
+    bucket[t.id] = t
     if (TRAIT_DEFS_BY_ID.has(t.id)) {
       logger.warn(
         'traitUtils',

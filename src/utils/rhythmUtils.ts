@@ -95,19 +95,18 @@ export const preprocessTempoMap = (
   tpb: number
 ): ProcessedTempoMapEntry[] => {
   if (!tempoMap || tempoMap.length === 0) return []
-
-  const processed = []
+  const processed: ProcessedTempoMapEntry[] = []
   let currentTick = 0
   let totalTimeMicros = 0
 
   for (let i = 0; i < tempoMap.length; i++) {
-    const currentTempo = tempoMap[i]
-    const nextTempo = tempoMap[i + 1]
+    const currentTempo = tempoMap[i] as TempoMapEntry
+    const nextTempo = tempoMap[i + 1] as TempoMapEntry | undefined
 
     // Store the state at the START of this segment
-    // _startTick aligns with the 'currentTick' iterator from the legacy calculation loop
     processed.push({
-      ...currentTempo,
+      tick: currentTempo.tick,
+      usPerBeat: currentTempo.usPerBeat,
       _startTick: currentTick,
       _accumulatedMicros: totalTimeMicros
     })
@@ -135,11 +134,18 @@ const findTempoSegment = (
 ): ProcessedTempoMapEntry => {
   let lo = 0
   let hi = processedMap.length - 1
-  let candidate = processedMap[0]
+  let candidate = processedMap[0] as ProcessedTempoMapEntry
 
   while (lo <= hi) {
     const mid = (lo + hi) >>> 1
     const entry = processedMap[mid]
+
+    if (!entry) {
+      // Tempo map should be dense after preprocessing. A missing entry indicates
+      // a corrupted or sparse tempo map; fail loudly to avoid subtle binary
+      // search corruption.
+      throw new Error(`findTempoSegment: sparse tempo map at index ${mid}`)
+    }
 
     if (entry._startTick <= ticks) {
       // Valid candidate, try to find a later one
@@ -149,7 +155,7 @@ const findTempoSegment = (
       hi = mid - 1
     }
   }
-  return candidate
+  return candidate!
 }
 
 /**

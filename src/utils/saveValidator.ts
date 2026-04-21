@@ -4,7 +4,7 @@
  * data corruption and malicious injection.
  */
 
-import { ALLOWED_TRENDS_SET } from '../data/socialTrends'
+import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import { StateError } from './errorHandler'
 import {
   clampBandHarmony,
@@ -228,7 +228,11 @@ const validateSocial = (social: unknown): void => {
     if (key === 'sponsorActive' && typeof val === 'boolean') continue
 
     if (key === 'trend') {
-      if (typeof val === 'string' && ALLOWED_TRENDS_SET.has(val)) continue
+      if (
+        typeof val === 'string' &&
+        ALLOWED_TRENDS_SET.has(val as (typeof ALLOWED_TRENDS)[number])
+      )
+        continue
       throw new StateError(`Social trend "${val}" is invalid`)
     }
 
