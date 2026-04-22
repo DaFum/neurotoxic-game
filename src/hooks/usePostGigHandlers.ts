@@ -413,13 +413,11 @@ export const usePostGigHandlers = ({
       )
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
-      saveGame(false)
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       queueMicrotask(() => {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
-        saveGame(false)
         changeScene(GAME_PHASES.OVERWORLD)
       })
     }
