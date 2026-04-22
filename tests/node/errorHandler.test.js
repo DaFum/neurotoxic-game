@@ -686,11 +686,17 @@ describe('safeStorageOperation', () => {
     assert.strictEqual(result, 'fallback')
   })
 
-  it('should return null as default fallback when error is thrown and no fallback provided', () => {
-    const result = safeStorageOperation('test', () => {
-      throw new Error('Storage error without explicit fallback')
-    })
-    assert.strictEqual(result, null)
+  it('should throw StorageError when error is thrown and no fallback provided', () => {
+    assert.throws(
+      () => {
+        safeStorageOperation('test', () => {
+          throw new Error('Storage error without explicit fallback')
+        })
+      },
+      err =>
+        err.name === 'StorageError' ||
+        err.message.includes('Storage operation failed after retries: test')
+    )
   })
 })
 

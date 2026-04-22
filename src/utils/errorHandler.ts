@@ -568,13 +568,24 @@ export const safeStorageOperation = <T>(
     }
   }
 
-  handleError(
-    new StorageError(`Storage operation failed after retries: ${operation}`, {
+  const storageError = new StorageError(
+    `Storage operation failed after retries: ${operation}`,
+    {
       originalError:
         lastError instanceof Error ? lastError.message : String(lastError)
-    }),
-    { silent: true }
+    }
   )
+
+  // Log the failure but behave deterministically:
+  // - If a fallbackValue was explicitly supplied, return it.
+  // - If no fallback was provided (null), surface the StorageError to callers.
+  handleError(storageError, { silent: true })
+
+  if (fallbackValue === null) {
+    // No safe fallback was provided by the caller — surface the error.
+    throw storageError
+  }
+
   return fallbackValue
 }
 
