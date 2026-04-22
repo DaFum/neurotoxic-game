@@ -179,7 +179,7 @@ class RoadieStageController extends BaseStageController {
     if (this.playerManager) {
       this.playerManager.updatePlayerPosition(state, cellW, cellH)
       this.playerManager.updateCarryingVisuals(state, cellW, cellH)
-      this.playerManager.checkDamageTriggers(state, this.isDisposed)
+      this.playerManager.checkDamageTriggers(state)
     }
 
     if (this.trafficManager) {

@@ -74,14 +74,14 @@ export class RoadiePlayerManager {
     this.effectManager = effectManager
   }
 
-  updatePlayerPosition(state: any, cellW: any, cellH: any) {
+  updatePlayerPosition(state: any, cellW: number, cellH: number) {
     if (this.playerContainer) {
       this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
       this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
     }
   }
 
-  updateCarryingVisuals(state: any, cellW: any, cellH: any) {
+  updateCarryingVisuals(state: any, cellW: number, cellH: number) {
     if (this.itemSprite && this.textures.items) {
       if (state.carrying) {
         this.itemSprite.visible = true
@@ -103,7 +103,7 @@ export class RoadiePlayerManager {
     }
   }
 
-  checkDamageTriggers(state: any, isDisposed: boolean) {
+  checkDamageTriggers(state: any) {
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
       const redColor = this.colors.bloodRed
@@ -121,7 +121,7 @@ export class RoadiePlayerManager {
         this.playerSprite.tint = redColor
         if (this._flashTimeout) clearTimeout(this._flashTimeout)
         this._flashTimeout = setTimeout(() => {
-          if (this.playerSprite && !isDisposed)
+          if (this.playerSprite)
             this.playerSprite.tint = this.colors.starWhite
           this._flashTimeout = null
         }, 200)
@@ -133,6 +133,15 @@ export class RoadiePlayerManager {
     if (this._flashTimeout) {
       clearTimeout(this._flashTimeout)
       this._flashTimeout = null
+    }
+    if (this.playerSprite) {
+        this.playerSprite.destroy()
+    }
+    if (this.itemSprite) {
+        this.itemSprite.destroy()
+    }
+    if (this.playerContainer) {
+        this.playerContainer.destroy({ children: true })
     }
     this.playerContainer = null
     this.playerSprite = null

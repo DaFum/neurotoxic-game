@@ -128,10 +128,6 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     throw new Error('Event ' + String(e.id) + ' must have "crisis" tag')
   }
 
-  if (Object.hasOwn(e, 'condition') && typeof e.condition !== 'function') {
-    throw new Error('Condition must be a function for event ' + String(e.id))
-  }
-
   if (typeof e.title !== 'string' || !e.title.startsWith('events:')) {
     throw new Error(
       'Invalid title key: ' + String(e.title) + ' for event ' + String(e.id)
@@ -160,7 +156,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  if (Object.hasOwn(e, 'condition') && e.condition !== undefined && typeof e.condition !== 'function') {
+  if (Object.hasOwn(e, 'condition') && typeof e.condition !== 'function') {
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 

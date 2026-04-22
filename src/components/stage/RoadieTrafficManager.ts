@@ -39,7 +39,7 @@ export class RoadieTrafficManager {
       const texIndex =
         Math.floor(Math.abs(textureHash)) % this.textures.cars.length
       sprite = new Sprite(this.textures.cars[texIndex])
-      ;(sprite as any).isSprite = true
+
       sprite.anchor.set(0.5)
     } else {
       sprite = new Graphics()
@@ -71,7 +71,7 @@ export class RoadieTrafficManager {
       }
 
       // Adjust Scale if texture — constrain both width AND height
-      if ((sprite as any).isSprite && (sprite as Sprite).texture?.width > 0) {
+      if (sprite instanceof Sprite && (sprite as Sprite).texture?.width > 0) {
         const texSprite = sprite as Sprite
         const targetW = car.width * cellW
         const targetH = cellH * 0.7
