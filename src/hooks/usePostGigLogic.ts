@@ -4,7 +4,7 @@ import { useGameState } from '../context/GameState'
 import { calculateGigFinancials } from '../utils/economyEngine'
 import { generatePostOptions } from '../utils/socialEngine'
 import { logger } from '../utils/logger'
-import { usePostGigHandlers, DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
+import { usePostGigHandlers } from './usePostGigHandlers'
 
 export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers';
 
@@ -43,7 +43,7 @@ export const usePostGigLogic = () => {
   const [postResult, setPostResult] = useState(null)
   const [brandOffers, setBrandOffers] = useState([])
   const [postOptionsError, setPostOptionsError] = useState(false)
-  const errorHandledRef = useRef(false)
+  const errorHandledRef = useRef<boolean | Error | unknown>(false)
 
   const phaseTitleKey =
     {
@@ -143,7 +143,7 @@ export const usePostGigLogic = () => {
       // Store the error fact silently inside ref,
       // which we will read in the useEffect below.
       if (!errorHandledRef.current) {
-        errorHandledRef.current = e as any
+        errorHandledRef.current = e
       }
       return []
     }
@@ -161,7 +161,7 @@ export const usePostGigLogic = () => {
       // eslint-disable-next-line @eslint-react/set-state-in-effect
       setPostOptionsError(true)
     }
-  }, []) // trigger when postOptions updates
+  }, [postOptionsError, postOptions, currentGig, lastGigStats, player, band, social, activeEvent])
 
   // Handle post options generation error side effects purely in an effect
   useEffect(() => {
@@ -179,7 +179,7 @@ export const usePostGigLogic = () => {
         followers: 0,
         moneyChange: 0,
         message: fallbackMsg
-      } as any)
+      })
       // eslint-disable-next-line @eslint-react/set-state-in-effect
       setPhase('COMPLETE')
       addToast(fallbackMsg, 'error')

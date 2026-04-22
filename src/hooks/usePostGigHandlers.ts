@@ -1,3 +1,7 @@
+import type { RhythmSetlistEntry } from '../types/rhythmGame';
+import type { GameState, GigStats, Venue, UpdatePlayerPayload, } from '../types/game';
+import type { SocialPostOption } from '../utils/socialEngine';
+import type { BrandDeal } from '../data/brandDeals';
 import { useCallback, useRef, useState } from 'react'
 import { GAME_PHASES } from '../context/gameConstants'
 import { secureRandom } from '../utils/crypto'
@@ -31,38 +35,42 @@ export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 
 export interface UsePostGigHandlersReturn {
   isProcessingAction: boolean;
-  handlePostSelection: (option: any) => void;
-  handleAcceptDeal: (deal: any) => void;
+  handlePostSelection: (option: SocialPostOption) => void;
+  handleAcceptDeal: (deal: BrandDeal) => void;
   handleRejectDeals: () => void;
   handleSpinStory: () => void;
   handleContinue: () => void;
   handleNextPhase: () => void;
 }
 
+
+
+
+export type PostResult = Record<string, any>;
+
 export interface UsePostGigHandlersProps {
-  player: any;
-  band: any;
-  social: any;
-  lastGigStats: any;
-  currentGig: any;
+  player: GameState['player'];
+  band: GameState['band'];
+  social: GameState['social'];
+  lastGigStats: GigStats | null;
+  currentGig: Venue | null;
   perfScore: number;
-  financials: any;
-  activeStoryFlags: any;
-  setlist: any;
-  updatePlayer: (updates: any) => void;
-  updateBand: (updates: any) => void;
-  updateSocial: (updates: any) => void;
+  financials: Record<string, number>;
+  activeStoryFlags: string[];
+  setlist: RhythmSetlistEntry[];
+  updatePlayer: (updates: UpdatePlayerPayload) => void;
+  updateBand: (updates: Partial<GameState['band']> | ((prev: GameState['band']) => GameState['band'])) => void;
+  updateSocial: (updates: Partial<GameState['social']> | ((prev: GameState['social']) => GameState['social'])) => void;
   unlockTrait: (memberId: string, traitId: string) => void;
   addToast: (message: string, type: 'success' | 'error' | 'info') => void;
   saveGame: (force: boolean) => void;
   changeScene: (scene: string) => void;
   addQuest: (quest: any) => void;
-  setPhase: (phase: string) => void;
-  setPostResult: (result: any) => void;
-  setBrandOffers: (offers: any) => void;
-  t: (key: string, options?: any) => string;
+  setPhase: (phase: 'REPORT'|'SOCIAL'|'DEALS'|'COMPLETE') => void;
+  setPostResult: (result: PostResult) => void;
+  setBrandOffers: (offers: BrandDeal[]) => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }
-
 
 export const usePostGigHandlers = ({
   player,
@@ -91,8 +99,8 @@ export const usePostGigHandlers = ({
   const [isProcessingAction, setIsProcessingAction] = useState(false)
 
   const handlePostSelection = useCallback(
-    (option: any) => {
-      let updates
+    (option: SocialPostOption) => {
+      let updates: ReturnType<typeof calculatePostGigStateUpdates>;
       try {
         updates = calculatePostGigStateUpdates({
           option,
@@ -103,16 +111,16 @@ export const usePostGigHandlers = ({
           currentGig,
           perfScore,
           secureRandomValue: secureRandom()
-        })
+        });
       } catch (e) {
-        logger.error('PostGig', 'Failed to resolve selected post', e)
+        logger.error('PostGig', 'Failed to resolve selected post', e);
         addToast(
           t('ui:postGig.postResolutionFailed', {
             defaultValue: DEFAULT_POST_FAILED_MSG
           }),
           'error'
-        )
-        return
+        );
+        return;
       }
 
       const {
@@ -123,7 +131,7 @@ export const usePostGigHandlers = ({
         nextMoney,
         appliedMoneyDelta,
         updatedSocial
-      } = updates
+      } = updates;
 
       setPostResult(finalResult)
 
@@ -169,12 +177,13 @@ export const usePostGigHandlers = ({
 
       updateSocial(updatedSocial)
 
+      const playerUpdated = { ...player, money: nextMoney };
       // Generate brand offers with UPDATED state (Post-Social-Update)
       const updatedGameState = {
-        player, // Money update handled separately but not critical for offer generation
+        player: playerUpdated,
         band: hasBandUpdates ? newBand : band,
         social: { ...social, ...updatedSocial }
-      }
+      } as GameState;
 
       const offers = generateBrandOffers(updatedGameState, secureRandom)
       setBrandOffers(offers)
@@ -206,7 +215,7 @@ export const usePostGigHandlers = ({
   )
 
   const handleAcceptDeal = useCallback(
-    (deal: any) => {
+    (deal: BrandDeal) => {
       try {
         const { nextMoney, appliedMoneyDelta } = getAcceptDealMoneyUpdate({
           deal,
@@ -375,14 +384,15 @@ export const usePostGigHandlers = ({
       )
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
+      saveGame(false)
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
-      window.setTimeout(() => {
+      queueMicrotask(() => {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
         saveGame(false)
         changeScene(GAME_PHASES.OVERWORLD)
-      }, 0)
+      })
     }
   }, [
     financials,

@@ -1,8 +1,10 @@
-import type { GameState, GigStats, GigData, SetlistItem } from '../types/game';
+import type { GameState, GigStats, Venue } from '../types/game';
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
 
-export const submitLeaderboardScores = ({
+export interface SongStat { songId: string; score: number; accuracy: number; }
+
+export const submitLeaderboardScores = async ({
   player,
   lastGigStats,
   currentGig,
@@ -10,17 +12,17 @@ export const submitLeaderboardScores = ({
 }: {
   player: GameState['player']
   lastGigStats: GigStats | null
-  currentGig: GigData | null
+  currentGig: Venue | null
   setlist: GameState['setlist']
 }) => {
   if (!player.playerId || !player.playerName) return
 
   // Create a unified list of song stats to submit
-  let songsToSubmit
+  let songsToSubmit: SongStat[]
 
   if (lastGigStats?.songStats && lastGigStats.songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    songsToSubmit = lastGigStats.songStats.map((stat: {songId: string, score: number, accuracy: number}) => ({
+    songsToSubmit = lastGigStats.songStats.map((stat: any) => ({
       songId: stat.songId,
       score: stat.score,
       accuracy: stat.accuracy
@@ -29,23 +31,31 @@ export const submitLeaderboardScores = ({
     // Fallback for legacy saves or early aborted gigs without per-song stats
     const setlistFirstId =
       typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-    const playedSongId = currentGig?.songId || setlistFirstId
-    songsToSubmit = [
-      {
-        songId: playedSongId,
-        score: lastGigStats?.score || 0,
-        accuracy: lastGigStats?.accuracy || 0
-      }
-    ]
+    const playedSongId = currentGig?.songId ?? setlistFirstId
+    if (playedSongId) {
+      songsToSubmit = [
+        {
+          songId: playedSongId,
+          score: lastGigStats?.score ?? 0,
+          accuracy: lastGigStats?.accuracy ?? 0
+        }
+      ]
+    } else {
+      logger.warn('PostGig', 'No valid songId found for legacy fallback')
+      return
+    }
   }
 
   // Submit each song individually
-  songsToSubmit.forEach((songData: {songId: string, score: number, accuracy: number}) => {
+  const fetchPromises = songsToSubmit.map((songData: SongStat) => {
     // Resolve to leaderboardId (API-safe slug)
     const leaderboardSongId = SONGS_BY_ID.get(songData.songId)?.leaderboardId
 
     if (leaderboardSongId) {
-      fetch('/api/leaderboard/song', {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000)
+
+      return fetch('/api/leaderboard/song', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,21 +64,27 @@ export const submitLeaderboardScores = ({
           songId: leaderboardSongId,
           score: songData.score,
           accuracy: songData.accuracy
-        })
+        }),
+        signal: controller.signal
       })
         .then(async res => {
+          clearTimeout(timeoutId)
           if (!res.ok) {
             const err = await res.text()
             throw new Error(`HTTP ${res.status}: ${err}`)
           }
         })
-        .catch(err =>
+        .catch(err => {
+          clearTimeout(timeoutId)
           logger.error(
             'PostGig',
             `Score submit failed for ${leaderboardSongId}`,
             err
           )
-        )
+        })
     }
+    return Promise.resolve()
   })
+
+  await Promise.allSettled(fetchPromises)
 }
