@@ -492,7 +492,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       updates:
         | Partial<SocialState>
         | ((prev: SocialState) => Partial<SocialState>)
-    ) => dispatch(createUpdateSocialAction(updates)), // Type cast needed since actionCreator doesn't formally accept the function
+    ) => dispatch(createUpdateSocialAction(updates)),
     []
   )
 

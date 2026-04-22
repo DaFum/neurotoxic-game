@@ -345,7 +345,10 @@ export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], string>
   | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
-  | Action<ActionTypes['UPDATE_SOCIAL'], Partial<SocialState>>
+  | Action<
+      ActionTypes['UPDATE_SOCIAL'],
+      Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
+    >
   | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
   | Action<ActionTypes['SET_MAP'], GameMap>
   | Action<ActionTypes['SET_GIG'], Venue | null>
