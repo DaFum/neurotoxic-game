@@ -33,11 +33,14 @@ vi.mock('../../src/utils/errorHandler', async importOriginal => {
   return {
     ...actual,
     handleError: vi.fn(),
-    safeStorageOperation: vi.fn((op, fn, fallback = null) => {
+    safeStorageOperation: vi.fn((op, fn, fallbackValue) => {
       try {
         return fn()
-      } catch {
-        return fallback
+      } catch (error) {
+        if (fallbackValue === undefined) {
+          throw error
+        }
+        return fallbackValue
       }
     })
   }

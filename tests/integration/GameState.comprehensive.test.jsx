@@ -62,11 +62,14 @@ vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn(),
   StorageError: class StorageError extends Error {},
   StateError: class StateError extends Error {},
-  safeStorageOperation: vi.fn((name, fn, fallback) => {
+  safeStorageOperation: vi.fn((name, fn, fallbackValue) => {
     try {
       return fn()
-    } catch {
-      return fallback
+    } catch (error) {
+      if (fallbackValue === undefined) {
+        throw error
+      }
+      return fallbackValue
     }
   })
 }))
