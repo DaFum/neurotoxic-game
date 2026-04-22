@@ -746,7 +746,6 @@ describe('PostGig Component - Complete Phase', () => {
       )
 
       // Saves and changes scene
-      expect(mockSaveGame).toHaveBeenCalledWith(false)
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
   })

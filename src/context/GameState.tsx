@@ -889,8 +889,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     previousSceneRef.current = state.currentScene
 
     const shouldAutosaveOnTransition =
-      previousScene === GAME_PHASES.GIG &&
-      state.currentScene === GAME_PHASES.POST_GIG
+      (previousScene === GAME_PHASES.GIG &&
+        state.currentScene === GAME_PHASES.POST_GIG) ||
+      (previousScene === GAME_PHASES.POST_GIG &&
+        (state.currentScene === GAME_PHASES.GAMEOVER ||
+          state.currentScene === GAME_PHASES.OVERWORLD))
 
     if (shouldAutosaveOnTransition) {
       saveGame(false)
@@ -1137,7 +1140,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
               'error'
             )
             saveGame(false)
-        changeScene(GAME_PHASES.GAMEOVER)
+            changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
             return {
               outcomeText: outcomeText ?? '',
@@ -1193,7 +1196,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         }
       }
     },
-    [setActiveEvent, addToast, changeScene]
+    [setActiveEvent, addToast, changeScene, saveGame]
   )
 
   const dispatchValue = useMemo(

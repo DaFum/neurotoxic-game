@@ -408,3 +408,14 @@ export type GameAction =
   | Action<ActionTypes['TRADE_VOID_ITEM'], TradeVoidItemPayload>
   | Action<ActionTypes['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
   | Action<ActionTypes['DARK_WEB_LEAK'], DarkWebLeakPayload>
+
+export interface PostResult {
+  platform: string
+  success: boolean
+  followers?: number
+  totalFollowers?: number
+  moneyChange?: number
+  message?: string
+  unlockTrait?: { memberId: string; traitId: string } | null
+  [key: string]: unknown
+}

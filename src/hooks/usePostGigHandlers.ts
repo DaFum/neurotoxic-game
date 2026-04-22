@@ -1,7 +1,13 @@
-import type { RhythmSetlistEntry } from '../types/rhythmGame';
-import type { GameState, GigStats, Venue, UpdatePlayerPayload, } from '../types/game';
-import type { SocialPostOption } from '../utils/socialEngine';
-import type { BrandDeal } from '../data/brandDeals';
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
+import type {
+  GameState,
+  GigStats,
+  Venue,
+  UpdatePlayerPayload,
+  PostResult
+} from '../types/game'
+import type { SocialPostOption } from '../utils/socialEngine'
+import type { BrandDeal } from '../data/brandDeals'
 import { useCallback, useRef, useState } from 'react'
 import { GAME_PHASES } from '../context/gameConstants'
 import { secureRandom } from '../utils/crypto'
@@ -32,44 +38,50 @@ import { submitLeaderboardScores } from '../utils/leaderboardUtils'
 
 export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 
-
 export interface UsePostGigHandlersReturn {
-  isProcessingAction: boolean;
-  handlePostSelection: (option: SocialPostOption) => void;
-  handleAcceptDeal: (deal: BrandDeal) => void;
-  handleRejectDeals: () => void;
-  handleSpinStory: () => void;
-  handleContinue: () => void;
-  handleNextPhase: () => void;
+  isProcessingAction: boolean
+  handlePostSelection: (option: SocialPostOption) => void
+  handleAcceptDeal: (deal: BrandDeal) => void
+  handleRejectDeals: () => void
+  handleSpinStory: () => void
+  handleContinue: () => void
+  handleNextPhase: () => void
 }
 
-
-
-
-export type PostResult = Record<string, any>;
-
 export interface UsePostGigHandlersProps {
-  player: GameState['player'];
-  band: GameState['band'];
-  social: GameState['social'];
-  lastGigStats: GigStats | null;
-  currentGig: Venue | null;
-  perfScore: number;
-  financials: Record<string, number>;
-  activeStoryFlags: string[];
-  setlist: RhythmSetlistEntry[];
-  updatePlayer: (updates: UpdatePlayerPayload) => void;
-  updateBand: (updates: Partial<GameState['band']> | ((prev: GameState['band']) => GameState['band'])) => void;
-  updateSocial: (updates: Partial<GameState['social']> | ((prev: GameState['social']) => GameState['social'])) => void;
-  unlockTrait: (memberId: string, traitId: string) => void;
-  addToast: (message: string, type: 'success' | 'error' | 'info') => void;
-  saveGame: (force: boolean) => void;
-  changeScene: (scene: string) => void;
-  addQuest: (quest: any) => void;
-  setPhase: (phase: 'REPORT'|'SOCIAL'|'DEALS'|'COMPLETE') => void;
-  setPostResult: (result: PostResult) => void;
-  setBrandOffers: (offers: BrandDeal[]) => void;
-  t: (key: string, options?: Record<string, unknown>) => string;
+  player: GameState['player']
+  band: GameState['band']
+  social: GameState['social']
+  lastGigStats: GigStats | null
+  currentGig: Venue | null
+  perfScore: number
+  financials: Record<string, number>
+  activeStoryFlags: string[]
+  setlist: RhythmSetlistEntry[]
+  updatePlayer: (updates: UpdatePlayerPayload) => void
+  updateBand: (
+    updates:
+      | Partial<GameState['band']>
+      | ((prev: GameState['band']) => GameState['band'])
+  ) => void
+  updateSocial: (
+    updates:
+      | Partial<GameState['social']>
+      | ((prev: GameState['social']) => GameState['social'])
+  ) => void
+  unlockTrait: (memberId: string, traitId: string) => void
+  addToast: (message: string, type: 'success' | 'error' | 'info') => void
+  saveGame: (force: boolean) => void
+  changeScene: (scene: string) => void
+  addQuest: (
+    quest: Parameters<
+      typeof import('../context/actionCreators').createAddQuestAction
+    >[0]
+  ) => void
+  setPhase: (phase: 'REPORT' | 'SOCIAL' | 'DEALS' | 'COMPLETE') => void
+  setPostResult: (result: PostResult) => void
+  setBrandOffers: (offers: BrandDeal[]) => void
+  t: (key: string, options?: Record<string, unknown>) => string
 }
 
 export const usePostGigHandlers = ({
@@ -100,99 +112,107 @@ export const usePostGigHandlers = ({
 
   const handlePostSelection = useCallback(
     (option: SocialPostOption) => {
-      let updates: ReturnType<typeof calculatePostGigStateUpdates>;
+      if (isProcessingActionRef.current) return
+      isProcessingActionRef.current = true
+      setIsProcessingAction(true)
       try {
-        updates = calculatePostGigStateUpdates({
-          option,
-          player,
-          band,
-          social,
-          lastGigStats,
-          currentGig,
-          perfScore,
-          secureRandomValue: secureRandom()
-        });
-      } catch (e) {
-        logger.error('PostGig', 'Failed to resolve selected post', e);
-        addToast(
-          t('ui:postGig.postResolutionFailed', {
-            defaultValue: DEFAULT_POST_FAILED_MSG
-          }),
-          'error'
-        );
-        return;
-      }
+        let updates: ReturnType<typeof calculatePostGigStateUpdates>
+        try {
+          updates = calculatePostGigStateUpdates({
+            option,
+            player,
+            band,
+            social,
+            lastGigStats,
+            currentGig,
+            perfScore,
+            secureRandomValue: secureRandom()
+          })
+        } catch (e) {
+          logger.error('PostGig', 'Failed to resolve selected post', e)
+          addToast(
+            t('ui:postGig.postResolutionFailed', {
+              defaultValue: DEFAULT_POST_FAILED_MSG
+            }),
+            'error'
+          )
+          return
+        }
 
-      const {
-        finalResult,
-        newBand,
-        hasBandUpdates,
-        appliedHarmonyDelta,
-        nextMoney,
-        appliedMoneyDelta,
-        updatedSocial
-      } = updates;
+        const {
+          finalResult,
+          newBand,
+          hasBandUpdates,
+          appliedHarmonyDelta,
+          nextMoney,
+          appliedMoneyDelta,
+          updatedSocial
+        } = updates
 
-      setPostResult(finalResult)
+        setPostResult(finalResult)
 
-      if (hasBandUpdates) {
-        updateBand(newBand)
-      }
+        if (hasBandUpdates) {
+          updateBand(newBand)
+        }
 
-      if (appliedHarmonyDelta !== 0) {
-        const sign = appliedHarmonyDelta > 0 ? '+' : ''
-        addToast(
-          `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedHarmonyDelta}`,
-          appliedHarmonyDelta > 0 ? 'success' : 'error'
-        )
-      }
+        if (appliedHarmonyDelta !== 0) {
+          const sign = appliedHarmonyDelta > 0 ? '+' : ''
+          addToast(
+            `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedHarmonyDelta}`,
+            appliedHarmonyDelta > 0 ? 'success' : 'error'
+          )
+        }
 
-      if (appliedMoneyDelta !== 0) {
-        updatePlayer({ money: nextMoney })
-        const sign = appliedMoneyDelta > 0 ? '+' : ''
-        addToast(
-          `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedMoneyDelta}€`,
-          appliedMoneyDelta > 0 ? 'success' : 'error'
-        )
-      } else if (finalResult.moneyChange) {
-        updatePlayer({ money: nextMoney })
-      }
+        if (appliedMoneyDelta !== 0) {
+          updatePlayer({ money: nextMoney })
+          const sign = appliedMoneyDelta > 0 ? '+' : ''
+          addToast(
+            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedMoneyDelta}€`,
+            appliedMoneyDelta > 0 ? 'success' : 'error'
+          )
+        } else if (finalResult.moneyChange) {
+          updatePlayer({ money: nextMoney })
+        }
 
-      if (finalResult.unlockTrait) {
-        unlockTrait(
-          finalResult.unlockTrait.memberId,
-          finalResult.unlockTrait.traitId
-        )
-        const traitName = finalResult.unlockTrait.traitId
-          .replace(/_/g, ' ')
-          .toUpperCase()
-        addToast(
-          t('ui:postGig.traitUnlocked', {
-            traitName,
-            defaultValue: 'Trait Unlocked: {{traitName}}'
-          }),
-          'success'
-        )
-      }
+        if (finalResult.unlockTrait) {
+          unlockTrait(
+            finalResult.unlockTrait.memberId,
+            finalResult.unlockTrait.traitId
+          )
+          const traitName = finalResult.unlockTrait.traitId
+            .replace(/_/g, ' ')
+            .toUpperCase()
+          addToast(
+            t('ui:postGig.traitUnlocked', {
+              traitName,
+              defaultValue: 'Trait Unlocked: {{traitName}}'
+            }),
+            'success'
+          )
+        }
 
-      updateSocial(updatedSocial)
+        updateSocial(updatedSocial)
 
-      const playerUpdated = { ...player, money: nextMoney };
-      // Generate brand offers with UPDATED state (Post-Social-Update)
-      const updatedGameState = {
-        player: playerUpdated,
-        band: hasBandUpdates ? newBand : band,
-        social: { ...social, ...updatedSocial }
-      } as GameState;
+        const playerUpdated = { ...player, money: nextMoney }
+        // Generate brand offers with UPDATED state (Post-Social-Update)
+        const updatedGameState = {
+          player: playerUpdated,
+          band: hasBandUpdates ? newBand : band,
+          social: { ...social, ...updatedSocial }
+        } as GameState
 
-      const offers = generateBrandOffers(updatedGameState, secureRandom)
-      setBrandOffers(offers)
+        const offers = generateBrandOffers(updatedGameState, secureRandom)
+        setBrandOffers(offers)
 
-      // If there are brand offers, go to DEALS phase, else COMPLETE
-      if (offers.length > 0) {
-        setPhase('DEALS')
-      } else {
-        setPhase('COMPLETE')
+        // If there are brand offers, go to DEALS phase, else COMPLETE
+        if (offers.length > 0) {
+          setPhase('DEALS')
+        } else {
+          setPhase('COMPLETE')
+        }
+      } finally {
+        isProcessingActionRef.current = false
+        setIsProcessingAction(false)
       }
     },
     [
@@ -235,7 +255,11 @@ export const usePostGigHandlers = ({
         updateSocial(socialUpdateFactory)
 
         const moneyText =
-          appliedMoneyDelta !== 0 ? ` (+${appliedMoneyDelta}€)` : ''
+          appliedMoneyDelta === 0
+            ? ''
+            : appliedMoneyDelta > 0
+              ? ` (+${appliedMoneyDelta}€)`
+              : ` (${appliedMoneyDelta}€)`
         addToast(
           t('ui:postGig.acceptedDeal', {
             dealName: deal.name,
@@ -373,7 +397,12 @@ export const usePostGigHandlers = ({
       })
     }
 
-    submitLeaderboardScores({ player, lastGigStats, currentGig, setlist })
+    submitLeaderboardScores({
+      player,
+      lastGigStats,
+      currentGig,
+      setlist
+    }).catch(err => logger.error('PostGig', err, { player, currentGig }))
 
     if (shouldTriggerBankruptcy(stats.newMoney, financials.net)) {
       addToast(
@@ -384,13 +413,11 @@ export const usePostGigHandlers = ({
       )
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
-      saveGame(false)
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       queueMicrotask(() => {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
-        saveGame(false)
         changeScene(GAME_PHASES.OVERWORLD)
       })
     }

@@ -283,10 +283,6 @@ describe('PostGig Leaderboard Submission', () => {
     await waitFor(() =>
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     )
-    expect(mockSaveGame).toHaveBeenCalled()
-    expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
-      mockChangeScene.mock.invocationCallOrder[0]
-    )
   })
 
   it('resolves song via setlist if currentGig.songId is missing and songStats is undefined', async () => {
@@ -591,10 +587,6 @@ describe('PostGig Leaderboard Submission', () => {
     expect(mockFetch).not.toHaveBeenCalled()
     await waitFor(() =>
       expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
-    )
-    expect(mockSaveGame).toHaveBeenCalled()
-    expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
-      mockChangeScene.mock.invocationCallOrder[0]
     )
   })
 })
