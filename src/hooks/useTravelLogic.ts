@@ -684,9 +684,9 @@ export const useTravelLogic = ({
           'error'
         )
         timeoutRef.current = setTimeout(() => {
-          saveGame(false);
-          changeScene(GAME_PHASES.GAMEOVER);
-        }, 3000);
+          saveGame(false)
+          changeScene(GAME_PHASES.GAMEOVER)
+        }, 3000)
       }
     } else {
       if (timeoutRef.current) {
@@ -701,7 +701,7 @@ export const useTravelLogic = ({
         timeoutRef.current = null
       }
     }
-  }, [player, band, gameMap, isTraveling, changeScene, addToast])
+  }, [player, band, gameMap, isTraveling, changeScene, addToast, saveGame])
 
   // Cleanup all timeouts on unmount
   useEffect(() => {

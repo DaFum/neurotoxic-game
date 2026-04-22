@@ -1,4 +1,4 @@
-import type { RhythmSetlistEntry } from '../types/rhythmGame';
+import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import {
   checkViralEvent,
   calculateSocialGrowth,
@@ -16,9 +16,9 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
-import type { GameState, GigStats, Venue, } from '../types/game';
-import type { SocialPostOption } from './socialEngine';
-import type { BrandDeal } from '../data/brandDeals';
+import type { GameState, GigStats, Venue } from '../types/game'
+import type { SocialPostOption } from './socialEngine'
+import type { BrandDeal } from '../data/brandDeals'
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -280,7 +280,7 @@ export const getAcceptDealMoneyUpdate = ({
 }
 
 export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
-  return (prevBand: any) => {
+  return (prevBand: GameState['band']): GameState['band'] => {
     if (!deal.offer.item) return prevBand
     return {
       ...prevBand,
@@ -290,8 +290,8 @@ export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
 }
 
 export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
-  return (prevSocial: any) => {
-    const updates: Record<string, any> = {}
+  return (prevSocial: GameState['social']): Partial<GameState['social']> => {
+    const updates: Partial<GameState['social']> = {}
 
     if (deal.penalty) {
       if (deal.penalty.loyalty) {
@@ -325,14 +325,12 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
   }
 }
 
-
-
 export const getSpinStoryMoneyUpdate = ({
   player
 }: {
   player: GameState['player']
 }) => {
-  if (player.money < 200) {
+  if ((player.money ?? 0) < 200) {
     return { success: false }
   }
 
@@ -368,13 +366,13 @@ export const calculateContinueStats = ({
 }: {
   player: GameState['player']
   perfScore: number
-  financials: any
+  financials: Record<string, number>
   misses?: number
   calculateFameGain: (a: number, b: number, c: number) => number
   calculateFameLevel: (fame: number) => number
   clampPlayerFame: (n: number) => number
   clampPlayerMoney: (n: number) => number
-  BALANCE_CONSTANTS: any
+  BALANCE_CONSTANTS: typeof import('./gameStateUtils').BALANCE_CONSTANTS
 }) => {
   const prevFame = player.fame ?? 0
 

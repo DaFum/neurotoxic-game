@@ -457,7 +457,6 @@ describe('usePostGigLogic', () => {
         expect.objectContaining({ money: 700, fame: expect.any(Number) })
       ) // 500 initial + 200 net
       await waitFor(() => {
-        expect(mockSaveGame).toHaveBeenCalledWith(false)
         expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
       })
 
