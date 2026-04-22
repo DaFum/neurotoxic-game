@@ -694,10 +694,21 @@ describe('safeStorageOperation', () => {
         })
       },
       err =>
-        err.name === 'StorageError' ||
+        err.name === 'StorageError' &&
         err.message.includes('Storage operation failed after retries: test')
     )
   })
+})
+
+it('should return null when null is explicitly passed as fallback', () => {
+  const result = safeStorageOperation(
+    'test-null',
+    () => {
+      throw new Error('Storage error')
+    },
+    null
+  )
+  assert.strictEqual(result, null)
 })
 
 describe('withRetry', () => {
