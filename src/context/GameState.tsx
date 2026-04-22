@@ -488,8 +488,17 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateSocial = useCallback(
-    (updates: Partial<SocialState>) =>
-      dispatch(createUpdateSocialAction(updates)),
+    (
+      updates:
+        | Partial<SocialState>
+        | ((prev: SocialState) => Partial<SocialState>)
+    ) => {
+      if (typeof updates === 'function') {
+        dispatch(createUpdateSocialAction(updates(stateRef.current.social)))
+      } else {
+        dispatch(createUpdateSocialAction(updates))
+      }
+    },
     []
   )
 

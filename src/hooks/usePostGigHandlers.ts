@@ -170,7 +170,7 @@ export const usePostGigHandlers = ({
             `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedMoneyDelta}€`,
             appliedMoneyDelta > 0 ? 'success' : 'error'
           )
-        } else if (finalResult.moneyChange && appliedMoneyDelta !== 0) {
+        } else if (finalResult.moneyChange) {
           updatePlayer({ money: nextMoney })
         }
 
@@ -210,10 +210,9 @@ export const usePostGigHandlers = ({
         } else {
           setPhase('COMPLETE')
         }
-      } catch (e) {
+      } finally {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
-        throw e
       }
     },
     [
@@ -414,11 +413,13 @@ export const usePostGigHandlers = ({
       )
       isProcessingActionRef.current = false
       setIsProcessingAction(false)
+      saveGame(false)
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       queueMicrotask(() => {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
+        saveGame(false)
         changeScene(GAME_PHASES.OVERWORLD)
       })
     }
