@@ -72,7 +72,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
 
     // Tech Wizard (Matze): Technical Song (Difficulty > 3) && 100% Accuracy
     if (Matze && !hasTrait(Matze, 'tech_wizard')) {
-      const isTechnical = (song?.difficulty || 0) > 3
+      const isTechnical = (song && typeof song === 'object' && 'difficulty' in song ? Number(song.difficulty) || 0 : 0) > 3
       if (isTechnical && accuracy === 100) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'tech_wizard' })
       }
@@ -120,7 +120,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   }
 
   // 4. Social Unlocks
-  if (context.type === 'SOCIAL_UPDATE') {
+  if (ctx.type === 'SOCIAL_UPDATE') {
     // Social Manager (Lars): 1000+ Followers on any channel
     if (Lars && !hasTrait(Lars, 'social_manager')) {
       const maxFollowers = Math.max(
@@ -135,7 +135,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   }
 
   // 5. Event Unlocks
-  if (context.type === 'EVENT_RESOLVED') {
+  if (ctx.type === 'EVENT_RESOLVED') {
     // Bandleader (Lars): Resolve 3 conflicts
     if (Lars && !hasTrait(Lars, 'bandleader')) {
       if ((player.stats?.conflictsResolved || 0) >= 3) {
