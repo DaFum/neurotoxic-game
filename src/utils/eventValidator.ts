@@ -156,11 +156,7 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  if (Object.hasOwn(e, 'condition') && typeof e.condition !== 'function') {
-    throw new Error('Condition must be a function for event ' + String(e.id))
-  }
-
-  if (Object.hasOwn(e, 'condition') && typeof e.condition !== 'function') {
+  if (e.condition !== undefined && typeof e.condition !== 'function') {
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 
