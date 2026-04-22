@@ -683,10 +683,10 @@ export const useTravelLogic = ({
           }),
           'error'
         )
-        timeoutRef.current = setTimeout(
-          () => changeScene(GAME_PHASES.GAMEOVER),
-          3000
-        )
+        timeoutRef.current = setTimeout(() => {
+          saveGame(false);
+          changeScene(GAME_PHASES.GAMEOVER);
+        }, 3000);
       }
     } else {
       if (timeoutRef.current) {

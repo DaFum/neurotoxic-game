@@ -1136,7 +1136,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
               tRef.current('ui:game_over', { description: translatedDesc }),
               'error'
             )
-            changeScene(GAME_PHASES.GAMEOVER)
+            saveGame(false)
+        changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
             return {
               outcomeText: outcomeText ?? '',

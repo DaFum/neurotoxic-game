@@ -118,24 +118,17 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  if (
-    typeof e.trigger !== 'string' ||
-    !VALID_TRIGGERS.includes(e.trigger as string)
-  ) {
+  if (!Array.isArray(e.tags) || !(e.tags as unknown[]).includes('crisis')) {
+    throw new Error('Event ' + String(e.id) + ' must have "crisis" tag')
+  }
+
+  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger)) {
     throw new Error(
       'Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id)
     )
   }
 
-  if (!Array.isArray(e.tags) || !(e.tags as unknown[]).includes('crisis')) {
-    throw new Error('Event ' + String(e.id) + ' must have crisis tag')
-  }
-
-  if (
-    Object.hasOwn(e, 'condition') &&
-    e.condition !== undefined &&
-    typeof e.condition !== 'function'
-  ) {
+  if (e.condition !== undefined && typeof e.condition !== 'function') {
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 

@@ -1,3 +1,4 @@
+import type { RhythmSetlistEntry } from '../types/rhythmGame';
 import {
   checkViralEvent,
   calculateSocialGrowth,
@@ -15,13 +16,16 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
-type CalculatePostGigStateParams = {
-  option: any
-  player: any
-  band: any
-  social: any
-  lastGigStats?: any
-  currentGig?: any
+import type { GameState, GigStats, Venue, } from '../types/game';
+import type { SocialPostOption } from './socialEngine';
+import type { BrandDeal } from '../data/brandDeals';
+export type CalculatePostGigStateParams = {
+  option: SocialPostOption
+  player: GameState['player']
+  band: GameState['band']
+  social: GameState['social']
+  lastGigStats?: GigStats | null
+  currentGig?: Venue | null
   perfScore?: number
   secureRandomValue?: number
 }
@@ -260,8 +264,8 @@ export const getAcceptDealMoneyUpdate = ({
   deal,
   player
 }: {
-  deal: any
-  player: any
+  deal: BrandDeal
+  player: GameState['player']
 }) => {
   let appliedMoneyDelta = 0
   let nextMoney = player.money ?? 0
@@ -275,7 +279,7 @@ export const getAcceptDealMoneyUpdate = ({
   return { nextMoney, appliedMoneyDelta }
 }
 
-export const getAcceptDealBandUpdateFactory = (deal: any) => {
+export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
   return (prevBand: any) => {
     if (!deal.offer.item) return prevBand
     return {
@@ -285,7 +289,7 @@ export const getAcceptDealBandUpdateFactory = (deal: any) => {
   }
 }
 
-export const getAcceptDealSocialUpdateFactory = (deal: any) => {
+export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
   return (prevSocial: any) => {
     const updates: Record<string, any> = {}
 
@@ -321,7 +325,7 @@ export const getAcceptDealSocialUpdateFactory = (deal: any) => {
   }
 }
 
-import type { GameState } from '../types/game'
+
 
 export const getSpinStoryMoneyUpdate = ({
   player
@@ -362,7 +366,7 @@ export const calculateContinueStats = ({
   clampPlayerMoney,
   BALANCE_CONSTANTS
 }: {
-  player: any
+  player: GameState['player']
   perfScore: number
   financials: any
   misses?: number
