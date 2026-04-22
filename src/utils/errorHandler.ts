@@ -554,7 +554,7 @@ initGlobalErrorHandling()
 export const safeStorageOperation = <T>(
   operation: string,
   fn: () => T,
-  fallbackValue: T | null = null
+  fallbackValue?: T | null
 ): T | null => {
   let retries = 2
   let lastError: unknown = null
@@ -568,13 +568,25 @@ export const safeStorageOperation = <T>(
     }
   }
 
-  handleError(
-    new StorageError(`Storage operation failed after retries: ${operation}`, {
+  const storageError = new StorageError(
+    `Storage operation failed after retries: ${operation}`,
+    {
       originalError:
         lastError instanceof Error ? lastError.message : String(lastError)
-    }),
-    { silent: true }
+    }
   )
+
+  // Behave deterministically:
+  // - If a fallbackValue was explicitly supplied (even null), return it.
+  // - If no fallback was provided (undefined), surface the StorageError to callers.
+
+  if (fallbackValue === undefined) {
+    // No safe fallback was provided by the caller — surface the error without logging it twice
+    throw storageError
+  }
+
+  // Only log if we are gracefully degrading to a fallback
+  handleError(storageError, { silent: true })
   return fallbackValue
 }
 

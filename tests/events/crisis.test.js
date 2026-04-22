@@ -231,7 +231,7 @@ describe('CRISIS_EVENTS', () => {
       const invalidEvent = { ...CRISIS_EVENTS[0], tags: ['reputation'] }
       assert.throws(
         () => validateCrisisEvent(invalidEvent),
-        /must have crisis tag/
+        /must have "crisis" tag/
       )
     })
 
