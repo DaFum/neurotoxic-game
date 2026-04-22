@@ -35,7 +35,7 @@ export const submitLeaderboardScores = async ({
     // Fallback for legacy saves or early aborted gigs without per-song stats
     const setlistFirstId =
       typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-    const playedSongId = setlistFirstId
+    const playedSongId = currentGig?.songId ?? setlistFirstId
     if (playedSongId) {
       songsToSubmit = [
         {

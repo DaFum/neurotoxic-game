@@ -170,7 +170,7 @@ export const usePostGigHandlers = ({
             `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedMoneyDelta}€`,
             appliedMoneyDelta > 0 ? 'success' : 'error'
           )
-        } else if (finalResult.moneyChange) {
+        } else if (finalResult.moneyChange && appliedMoneyDelta !== 0) {
           updatePlayer({ money: nextMoney })
         }
 
@@ -199,7 +199,7 @@ export const usePostGigHandlers = ({
           player: playerUpdated,
           band: hasBandUpdates ? newBand : band,
           social: { ...social, ...updatedSocial }
-        } as GameState
+        } as Partial<GameState> as GameState
 
         const offers = generateBrandOffers(updatedGameState, secureRandom)
         setBrandOffers(offers)
@@ -210,9 +210,10 @@ export const usePostGigHandlers = ({
         } else {
           setPhase('COMPLETE')
         }
-      } finally {
+      } catch (e) {
         isProcessingActionRef.current = false
         setIsProcessingAction(false)
+        throw e
       }
     },
     [
