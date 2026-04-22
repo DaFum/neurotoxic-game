@@ -160,6 +160,10 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 
+  if (Object.hasOwn(e, 'condition') && typeof e.condition !== 'function') {
+    throw new Error('Condition must be a function for event ' + String(e.id))
+  }
+
   if (!Array.isArray(e.options) || (e.options as unknown[]).length === 0) {
     throw new Error('Event ' + String(e.id) + ' must have at least one option')
   }
