@@ -120,7 +120,7 @@ export const createUpdateBandAction = (
  * @returns {Object} Action object
  */
 export const createUpdateSocialAction = (
-  updates: Partial<SocialState>
+  updates: Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
 ): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SOCIAL }> => ({
   type: ActionTypes.UPDATE_SOCIAL,
   payload: updates
