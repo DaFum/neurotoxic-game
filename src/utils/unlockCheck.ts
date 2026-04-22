@@ -30,7 +30,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
 
   // 1. Performance Unlocks (Post-Gig)
   if (
-    ctx.type === 'GIG_COMPLETE' &&
+    ctx?.['type'] === 'GIG_COMPLETE' &&
     ctx.gigStats &&
     typeof ctx.gigStats === 'object'
   ) {
@@ -72,7 +72,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
 
     // Tech Wizard (Matze): Technical Song (Difficulty > 3) && 100% Accuracy
     if (Matze && !hasTrait(Matze, 'tech_wizard')) {
-      const isTechnical = (song && typeof song === 'object' && 'difficulty' in song ? Number(song.difficulty) || 0 : 0) > 3
+      const isTechnical = (Number(song?.['difficulty']) || 0) > 3
       if (isTechnical && accuracy === 100) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'tech_wizard' })
       }
@@ -80,7 +80,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   }
 
   // 2. Travel Unlocks
-  if (ctx.type === 'TRAVEL_COMPLETE') {
+  if (ctx?.['type'] === 'TRAVEL_COMPLETE') {
     // Road Warrior (Lars): Travel 5000km total (match UI hint)
     if (Lars && !hasTrait(Lars, 'road_warrior')) {
       if ((player.stats?.totalDistance || 0) >= 5000) {
@@ -90,7 +90,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   }
 
   // 3. Purchase Unlocks
-  if (ctx.type === 'PURCHASE') {
+  if (ctx?.['type'] === 'PURCHASE') {
     const item = ctx.item as Record<string, unknown> | undefined
 
     // Party Animal (Marius): Own a Beer Fridge
@@ -120,7 +120,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   }
 
   // 4. Social Unlocks
-  if (ctx.type === 'SOCIAL_UPDATE') {
+  if (ctx?.['type'] === 'SOCIAL_UPDATE') {
     // Social Manager (Lars): 1000+ Followers on any channel
     if (Lars && !hasTrait(Lars, 'social_manager')) {
       const maxFollowers = Math.max(
@@ -135,7 +135,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   }
 
   // 5. Event Unlocks
-  if (ctx.type === 'EVENT_RESOLVED') {
+  if (ctx?.['type'] === 'EVENT_RESOLVED') {
     // Bandleader (Lars): Resolve 3 conflicts
     if (Lars && !hasTrait(Lars, 'bandleader')) {
       if ((player.stats?.conflictsResolved || 0) >= 3) {
