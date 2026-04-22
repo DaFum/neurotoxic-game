@@ -27,18 +27,38 @@ vi.mock('../../src/utils/AudioManager', () => ({
   }
 }))
 
-vi.mock('../../src/utils/errorHandler', () => ({
-  safeStorageOperation: vi.fn((op, fn, fallbackValue) => {
-    try {
-      return fn()
-    } catch (error) {
-      if (fallbackValue === undefined) {
-        throw error
-      }
-      return fallbackValue
+vi.mock('../../src/utils/errorHandler', () => {
+  const mockHandleError = vi.fn()
+  class MockStorageError extends Error {
+    constructor(message, options) {
+      super(message)
+      this.name = 'StorageError'
+      this.originalError = options?.originalError
     }
-  })
-}))
+  }
+  return {
+    handleError: mockHandleError,
+    StorageError: MockStorageError,
+    safeStorageOperation: vi.fn((op, fn, fallbackValue) => {
+      try {
+        return fn()
+      } catch (error) {
+        const storageError = new MockStorageError(
+          `Storage operation failed after retries: ${op}`,
+          {
+            originalError:
+              error instanceof Error ? error.message : String(error)
+          }
+        )
+        if (fallbackValue === undefined) {
+          throw storageError
+        }
+        mockHandleError(storageError, { silent: true })
+        return fallbackValue
+      }
+    })
+  }
+})
 describe('MainMenu Identity Flow', () => {
   const mockUpdatePlayer = vi.fn()
   const mockChangeScene = vi.fn()

@@ -58,21 +58,39 @@ vi.mock('../../src/utils/eventEngine', () => ({
   }))
 }))
 
-vi.mock('../../src/utils/errorHandler', () => ({
-  handleError: vi.fn(),
-  StorageError: class StorageError extends Error {},
-  StateError: class StateError extends Error {},
-  safeStorageOperation: vi.fn((name, fn, fallbackValue) => {
-    try {
-      return fn()
-    } catch (error) {
-      if (fallbackValue === undefined) {
-        throw error
-      }
-      return fallbackValue
+vi.mock('../../src/utils/errorHandler', () => {
+  const mockHandleError = vi.fn()
+  class MockStorageError extends Error {
+    constructor(message, options) {
+      super(message)
+      this.name = 'StorageError'
+      this.originalError = options?.originalError
     }
-  })
-}))
+  }
+  return {
+    handleError: mockHandleError,
+    StorageError: MockStorageError,
+    StateError: class StateError extends Error {},
+    safeStorageOperation: vi.fn((name, fn, fallbackValue) => {
+      try {
+        return fn()
+      } catch (error) {
+        const storageError = new MockStorageError(
+          `Storage operation failed after retries: ${name}`,
+          {
+            originalError:
+              error instanceof Error ? error.message : String(error)
+          }
+        )
+        if (fallbackValue === undefined) {
+          throw storageError
+        }
+        mockHandleError(storageError, { silent: true })
+        return fallbackValue
+      }
+    })
+  }
+})
 
 vi.mock('../../src/utils/saveValidator', () => ({
   validateSaveData: vi.fn()
