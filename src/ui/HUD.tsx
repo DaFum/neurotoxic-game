@@ -151,7 +151,9 @@ export const HUD = () => {
             <button
               type='button'
               onClick={handleAudioChange.toggleMute}
-              aria-label={t('ui:aria.toggleMuteSystem', { defaultValue: 'Toggle mute system' })}
+              aria-label={t('ui:aria.toggleMuteSystem', {
+                defaultValue: 'Toggle mute system'
+              })}
               aria-pressed={audioState.isMuted}
               className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 ${
                 audioState.isMuted
