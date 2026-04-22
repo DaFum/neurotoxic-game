@@ -118,34 +118,17 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-<<<<<<< palette/hud-mute-button-ux-18084880281229113400
-
-  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger as string)) {
-    throw new Error('Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id))
-=======
   if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger)) {
     throw new Error(
       'Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id)
     )
->>>>>>> main
   }
 
   if (!Array.isArray(e.tags) || !(e.tags as unknown[]).includes('crisis')) {
     throw new Error('Event ' + String(e.id) + ' must have "crisis" tag')
   }
 
-<<<<<<< palette/hud-mute-button-ux-18084880281229113400
-
   if (Object.hasOwn(e, 'condition') && typeof e.condition !== 'function') {
-=======
-  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger)) {
-    throw new Error(
-      'Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id)
-    )
-  }
-
-  if (e.condition !== undefined && typeof e.condition !== 'function') {
->>>>>>> main
     throw new Error('Condition must be a function for event ' + String(e.id))
   }
 

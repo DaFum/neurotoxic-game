@@ -1,5 +1,7 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
+import { RoadieTrafficManager } from './RoadieTrafficManager'
+import { RoadiePlayerManager } from './RoadiePlayerManager'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT
@@ -12,14 +14,7 @@ import { handleError, GameError } from '../../utils/errorHandler'
 import { hashString } from '../../utils/stringUtils'
 
 class RoadieStageController extends BaseStageController {
-  playerContainer: Container | null
-  playerSprite: Sprite | Graphics | null
-  itemSprite: Sprite | null
-  carSprites: Map<string | number, Sprite | Graphics> | null
-  currentIds: Set<string | number>
   effectManager: EffectManager | null
-  _flashTimeout: ReturnType<typeof setTimeout> | null
-  lastDamage: number
   textures: {
     roadie: import('pixi.js').Texture | null
     cars: import('pixi.js').Texture[]
@@ -34,18 +29,15 @@ class RoadieStageController extends BaseStageController {
     venueColor: number
   }
   bgGraphics: Graphics | null
+  trafficManager: RoadieTrafficManager | null
+  playerManager: RoadiePlayerManager | null
 
   constructor(params: any) {
     super(params)
-    this.playerContainer = null
-    this.playerSprite = null
-    this.itemSprite = null
-    this.carSprites = new Map()
-    this.currentIds = new Set() // Reuse Set to avoid GC
     this.effectManager = null
+    this.trafficManager = null
+    this.playerManager = null
 
-    this._flashTimeout = null
-    this.lastDamage = 0
     this.textures = {
       roadie: null,
       cars: [],
@@ -73,40 +65,18 @@ class RoadieStageController extends BaseStageController {
     await Promise.all([this.loadAssets(), this.effectManager.loadAssets()])
     if (this.isDisposed) return
 
-    // Player Container (Groups body + item)
-    this.playerContainer = new Container()
-    this.container.addChild(this.playerContainer)
-
-    // Compute cell dimensions for sprite sizing
     const screenW = this.app.screen.width
     const screenH = this.app.screen.height
     const cellW = screenW / ROADIE_GRID_WIDTH
     const cellH = screenH / ROADIE_GRID_HEIGHT
 
-    // Player Sprite
-    if (this.textures.roadie) {
-      this.playerSprite = new Sprite(this.textures.roadie)
-      this.playerSprite.anchor.set(0.5)
-      // Scale to fit ~1 cell
-      const playerScale =
-        Math.min(
-          cellW / this.textures.roadie.width,
-          cellH / this.textures.roadie.height
-        ) * 0.8
-      this.playerSprite.scale.set(playerScale)
-    } else {
-      this.playerSprite = new Graphics()
-      this.playerSprite.circle(0, 0, 20)
-      this.playerSprite.fill(this.colors.toxicGreen)
+    this.playerManager = new RoadiePlayerManager(this.textures, this.colors)
+    this.playerManager.setup(this.container, cellW, cellH)
+    if (this.effectManager) {
+      this.playerManager.setEffectManager(this.effectManager)
     }
-    this.playerContainer.addChild(this.playerSprite)
 
-    // Item Sprite (Placeholder for now, visible only when carrying)
-    this.itemSprite = new Sprite()
-    this.itemSprite.anchor.set(0.5)
-    this.itemSprite.y = -(cellH * 0.3) // Above head
-    this.itemSprite.visible = false
-    this.playerContainer.addChild(this.itemSprite)
+    this.trafficManager = new RoadieTrafficManager(this.container, this.textures, this.colors)
   }
 
   async loadAssets() {
@@ -192,7 +162,7 @@ class RoadieStageController extends BaseStageController {
   }
 
   update(dt: any) {
-    if (this.isDisposed || !this.app || !this.playerContainer) return
+    if (this.isDisposed || !this.app || !this.playerManager?.playerContainer) return
 
     if (this.effectManager) this.effectManager.update(dt)
 
@@ -206,177 +176,27 @@ class RoadieStageController extends BaseStageController {
     const cellW = screenW / ROADIE_GRID_WIDTH
     const cellH = screenH / ROADIE_GRID_HEIGHT
 
-    this._updatePlayerPosition(state, cellW, cellH)
-    this._updateCarryingVisuals(state, cellW, cellH)
-    this._checkDamageTriggers(state)
-    this._renderTraffic(state, cellW, cellH)
-    this._cleanupTraffic()
-  }
-
-  _updatePlayerPosition(state: any, cellW: any, cellH: any) {
-    if (this.playerContainer) {
-      this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
-      this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
-    }
-  }
-
-  _updateCarryingVisuals(state: any, cellW: any, cellH: any) {
-    if (this.itemSprite && this.textures.items) {
-      if (state.carrying) {
-        this.itemSprite.visible = true
-        // Set texture based on type
-        const tex = this.textures.items[state.carrying.type]
-        if (tex && tex.width > 0 && tex.height > 0) {
-          this.itemSprite.texture = tex
-          // Scale item to fit ~0.6 of a cell
-          const itemScale =
-            Math.min(cellW / tex.width, cellH / tex.height) * 0.6
-          this.itemSprite.scale.set(itemScale)
-        } else {
-          this.itemSprite.texture = Texture.WHITE
-          this.itemSprite.scale.set(0.3)
-        }
-      } else {
-        this.itemSprite.visible = false
-      }
-    }
-  }
-
-  _checkDamageTriggers(state: any) {
-    if (state.equipmentDamage > this.lastDamage) {
-      // Trigger Hit Effect
-      const redColor = this.colors.bloodRed
-      if (this.effectManager) {
-        this.effectManager.spawnHitEffect(
-          this.playerContainer.x,
-          this.playerContainer.y,
-          redColor
-        )
-      }
-      this.lastDamage = state.equipmentDamage
-
-      // Flash player
-      if (this.playerSprite) {
-        this.playerSprite.tint = redColor
-        if (this._flashTimeout) clearTimeout(this._flashTimeout)
-        this._flashTimeout = setTimeout(() => {
-          if (this.playerSprite && !this.isDisposed)
-            this.playerSprite.tint = this.colors.starWhite
-          this._flashTimeout = null
-        }, 200)
-      }
-    }
-  }
-
-  _getOrCreateCarSprite(car: any) {
-    let sprite = this.carSprites.get(car.id)
-    if (sprite) return sprite
-
-    if (this.textures.cars.length > 0) {
-      let textureHash = car.textureHash
-      if (!Number.isFinite(textureHash)) {
-        textureHash = hashString(
-          String(car.id ?? `car_${car.row}_${car.speed}`)
-        )
-      }
-      const texIndex =
-        Math.floor(Math.abs(textureHash)) % this.textures.cars.length
-      sprite = new Sprite(this.textures.cars[texIndex])
-      sprite.isSprite = true
-      sprite.anchor.set(0.5)
-    } else {
-      sprite = new Graphics()
-      sprite.rect(-30, -20, 60, 40)
-      sprite.fill(this.colors.bloodRed)
+    if (this.playerManager) {
+      this.playerManager.updatePlayerPosition(state, cellW, cellH)
+      this.playerManager.updateCarryingVisuals(state, cellW, cellH)
+      this.playerManager.checkDamageTriggers(state, this.isDisposed)
     }
 
-    this.container.addChild(sprite)
-    this.carSprites.set(car.id, sprite)
-    return sprite
-  }
-
-  _renderTraffic(state: any, cellW: any, cellH: any) {
-    if (!Array.isArray(state.traffic)) return
-
-    this.currentIds.clear()
-    for (const car of state.traffic) {
-      this.currentIds.add(car.id)
-      const sprite = this._getOrCreateCarSprite(car)
-
-      sprite.x = (car.x + car.width / 2) * cellW
-      sprite.y = (car.row + 0.5) * cellH
-
-      // Flip if moving left
-      if (car.speed < 0) {
-        sprite.scale.x = -Math.abs(sprite.scale.x)
-      } else {
-        sprite.scale.x = Math.abs(sprite.scale.x)
-      }
-
-      // Adjust Scale if texture — constrain both width AND height
-      if (sprite.isSprite && sprite.texture?.width > 0) {
-        const targetW = car.width * cellW
-        const targetH = cellH * 0.7
-        const scale = Math.min(
-          targetW / sprite.texture.width,
-          targetH / sprite.texture.height
-        )
-        sprite.scale.set(
-          Math.abs(scale) * Math.sign(sprite.scale.x),
-          Math.abs(scale)
-        )
-      } else {
-        // Fallback or Graphics
-        sprite.width = car.width * cellW
-        sprite.height = cellH * 0.7
-      }
-    }
-  }
-
-  _cleanupTraffic() {
-    if (this.carSprites && this.carSprites.size > 0) {
-      for (const id of this.carSprites.keys()) {
-        if (!this.currentIds.has(id)) {
-          const sprite = this.carSprites.get(id)
-          try {
-            this.container.removeChild(sprite)
-          } catch (error) {
-            logger.error(
-              'RoadieStageController',
-              `Error removing sprite from container for id ${id}:`,
-              error
-            )
-          }
-
-          try {
-            sprite.destroy()
-          } catch (error) {
-            logger.error(
-              'RoadieStageController',
-              `Error destroying sprite for id ${id}:`,
-              error
-            )
-          } finally {
-            this.carSprites.delete(id)
-          }
-        }
-      }
+    if (this.trafficManager) {
+      this.trafficManager.renderTraffic(state, cellW, cellH)
+      this.trafficManager.cleanupTraffic()
     }
   }
 
   dispose() {
-    if (this._flashTimeout) {
-      clearTimeout(this._flashTimeout)
-      this._flashTimeout = null
+    if (this.playerManager) {
+      this.playerManager.dispose()
+      this.playerManager = null
     }
 
-    // Clean up car sprites explicitly
-    if (this.carSprites) {
-      for (const sprite of this.carSprites.values()) {
-        sprite.destroy()
-      }
-      this.carSprites.clear()
-      this.carSprites = null
+    if (this.trafficManager) {
+      this.trafficManager.dispose()
+      this.trafficManager = null
     }
 
     if (this.effectManager) {

@@ -62,13 +62,13 @@ describe('validateCrisisEvent', () => {
   test('throws if tags are invalid or missing "crisis"', () => {
     const ev = getValidEvent()
     delete ev.tags
-    assert.throws(() => validateCrisisEvent(ev), /must have crisis tag/)
+    assert.throws(() => validateCrisisEvent(ev), /must have "crisis" tag/)
 
     ev.tags = ['other_tag']
-    assert.throws(() => validateCrisisEvent(ev), /must have crisis tag/)
+    assert.throws(() => validateCrisisEvent(ev), /must have "crisis" tag/)
 
     ev.tags = 'crisis'
-    assert.throws(() => validateCrisisEvent(ev), /must have crisis tag/)
+    assert.throws(() => validateCrisisEvent(ev), /must have "crisis" tag/)
   })
 
   test('throws if title is invalid', () => {
