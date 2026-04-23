@@ -25,33 +25,13 @@ type NoteTextures = {
   lightning: Texture | null
 }
 
-export class NoteSpritePool {
-  static MAX_POOL_SIZE = 64
-  container: Container | null
-  spritePool: NoteSprite[]
+export class NoteSpriteFactory {
   noteTextures: NoteTextures
   rngErrorReported: boolean
 
-  constructor(container: Container | null) {
-    this.container = container
-    this.spritePool = []
+  constructor() {
     this.noteTextures = { skull: null, lightning: null }
     this.rngErrorReported = false
-  }
-
-  acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
-    let sprite: NoteSprite | undefined
-    if (this.spritePool.length > 0) {
-      sprite = this.spritePool.pop()
-    } else {
-      sprite = this.createNoteSprite(laneIndex)
-    }
-
-    if (!sprite) {
-      sprite = this.createNoteSprite(laneIndex)
-    }
-    this.initializeNoteSprite(sprite, lane, laneIndex)
-    return sprite
   }
 
   _getEffectiveTexture(laneIndex: number): Texture | null {
@@ -131,6 +111,57 @@ export class NoteSpritePool {
       sprite.width = NOTE_SPRITE_SIZE
       sprite.height = NOTE_SPRITE_SIZE
     }
+  }
+}
+
+export class NoteSpritePool {
+  static MAX_POOL_SIZE = 64
+  container: Container | null
+  spritePool: NoteSprite[]
+  private factory: NoteSpriteFactory
+
+  constructor(container: Container | null) {
+    this.container = container
+    this.spritePool = []
+    this.factory = new NoteSpriteFactory()
+  }
+
+  get noteTextures(): NoteTextures {
+    return this.factory.noteTextures
+  }
+
+  set noteTextures(value: NoteTextures) {
+    this.factory.noteTextures = value
+  }
+
+  get rngErrorReported(): boolean {
+    return this.factory.rngErrorReported
+  }
+
+  set rngErrorReported(value: boolean) {
+    this.factory.rngErrorReported = value
+  }
+
+  _getEffectiveTexture(laneIndex: number): Texture | null {
+    return this.factory._getEffectiveTexture(laneIndex)
+  }
+
+  createNoteSprite(laneIndex: number): NoteSprite {
+    return this.factory.createNoteSprite(laneIndex)
+  }
+
+  initializeNoteSprite(
+    sprite: NoteSprite,
+    lane: LaneData,
+    laneIndex: number
+  ): void {
+    return this.factory.initializeNoteSprite(sprite, lane, laneIndex)
+  }
+
+  acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
+    const sprite = this.spritePool.pop() ?? this.factory.createNoteSprite(laneIndex)
+    this.factory.initializeNoteSprite(sprite, lane, laneIndex)
+    return sprite
   }
 
   destroyNoteSprite(sprite: NoteSprite | null | undefined): void {
