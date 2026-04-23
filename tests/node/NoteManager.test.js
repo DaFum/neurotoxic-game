@@ -196,9 +196,9 @@ describe('NoteManager', () => {
 
     await uninitializedNoteManager.loadAssets()
 
-    assert.equal(uninitializedNoteManager.noteTextures.skull, mockTextureSkull)
+    assert.equal(uninitializedNoteManager.textureManager.noteTextures.skull, mockTextureSkull)
     assert.equal(
-      uninitializedNoteManager.noteTextures.lightning,
+      uninitializedNoteManager.textureManager.noteTextures.lightning,
       mockTextureLightning
     )
 
@@ -234,10 +234,10 @@ describe('NoteManager', () => {
 
     await noteManager.loadAssets()
 
-    assert.equal(noteManager.noteTextures.skull, null)
-    assert.equal(noteManager.noteTextures.lightning, null)
-    assert.equal(mockNoteTextures.skull, null)
-    assert.equal(mockNoteTextures.lightning, null)
+    assert.equal(noteManager.textureManager.noteTextures.skull, null)
+    assert.equal(noteManager.textureManager.noteTextures.lightning, null)
+    assert.equal(noteManager.pool.noteTextures.skull, null)
+    assert.equal(noteManager.pool.noteTextures.lightning, null)
     assert.equal(mockHandleError.mock.calls.length, 2)
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
     assert.equal(
