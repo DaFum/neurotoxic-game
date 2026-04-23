@@ -13,7 +13,8 @@ import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
 
-let lastMinigameFallback = null
+type Minigame = 'roadie' | 'kabelsalat' | 'amp'
+let lastMinigameFallback: Minigame | null = null
 
 // Exported exclusively for test cleanup
 export const _resetLastMinigameFallback = () => {
@@ -21,6 +22,13 @@ export const _resetLastMinigameFallback = () => {
 }
 
 const BAND_MEETING_COST = 50
+
+export type ModifierOption = {
+  key: keyof typeof MODIFIER_COSTS
+  label: string
+  cost: number
+  desc: string
+}
 
 export interface PreGigLogicReturn {
   t: (key: string, options?: unknown) => string
@@ -33,18 +41,18 @@ export interface PreGigLogicReturn {
   selectedSongIds: Set<unknown>
   calculatedBudget: number
   isStarting: boolean
-  GIG_MODIFIER_OPTIONS: Record<string, unknown>[]
+  GIG_MODIFIER_OPTIONS: ModifierOption[]
   BAND_MEETING_COST: number
   handleBandMeeting: () => void
   toggleSong: (song: Song) => void
-  toggleModifier: (key: string) => void
+  toggleModifier: (key: keyof typeof MODIFIER_COSTS) => void
   handleStartShow: () => Promise<void>
 }
 
 export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
 
-  const GIG_MODIFIER_OPTIONS = useMemo(
+  const GIG_MODIFIER_OPTIONS = useMemo<ModifierOption[]>(
     () => [
       {
         key: 'soundcheck',
@@ -130,7 +138,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       return
     }
 
-    const prevHarmony = band.harmony || 1
+    const prevHarmony = band.harmony ?? 1
     if (prevHarmony >= 100) {
       addToast(
         t('ui:pregig.toasts.meetingHeldMax', {
@@ -153,15 +161,17 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     )
   }, [player.money, addToast, t, updatePlayer, band.harmony, updateBand])
 
+  const hasRunRef = useRef(false)
   useEffect(() => {
+    if (hasRunRef.current) return
     if (!activeEvent && !isScreenshotMode) {
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
         triggerEvent('gig', 'pre_gig')
       }
+      hasRunRef.current = true
     }
-    // eslint-disable-next-line @eslint-react/exhaustive-deps
-  }, [])
+  }, [activeEvent, isScreenshotMode, triggerEvent])
 
   const toggleSong = useCallback(song => {
     if (selectedSongIds.has(song.id)) {
@@ -177,16 +187,16 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     let acc = 0
     for (const key in gigModifiers) {
       if (Object.hasOwn(gigModifiers, key) && gigModifiers[key]) {
-        acc += MODIFIER_COSTS[key] || 0
+        acc += MODIFIER_COSTS[key as keyof typeof MODIFIER_COSTS] ?? 0
       }
     }
     return acc
   }, [gigModifiers])
 
   const toggleModifier = useCallback(
-    key => {
+    (key: keyof typeof MODIFIER_COSTS) => {
       const isActive = gigModifiers[key]
-      const cost = MODIFIER_COSTS[key] || 0
+      const cost = MODIFIER_COSTS[key] ?? 0
 
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
@@ -204,7 +214,11 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const handleStartShow = useCallback(async () => {
     setIsStarting(true)
     try {
-      await audioManager.ensureAudioContext()
+      const audioOk = await audioManager.ensureAudioContext()
+      if (!audioOk) {
+        setIsStarting(false)
+        return
+      }
       const gigId = currentGig?.id || `gig_${getSafeUUID()}`
 
       let lastMinigame = lastMinigameFallback
@@ -216,14 +230,14 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
         // Ignore SecurityError or other storage errors
       }
 
-      let weights = {
+      const weights: Record<Minigame, number> = {
         roadie: 1,
         kabelsalat: 1,
         amp: 1
       }
 
-      if (lastMinigame && weights[lastMinigame] !== undefined) {
-        weights[lastMinigame] = 0.2
+      if (lastMinigame && Object.hasOwn(weights, lastMinigame)) {
+        weights[lastMinigame as Minigame] = 0.2
       }
 
       const totalWeight = weights.roadie + weights.kabelsalat + weights.amp
