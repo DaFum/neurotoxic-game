@@ -236,8 +236,8 @@ describe('NoteManager', () => {
 
     assert.equal(noteManager.textureManager.noteTextures.skull, null)
     assert.equal(noteManager.textureManager.noteTextures.lightning, null)
-    assert.equal(mockNoteTextures.skull, null)
-    assert.equal(mockNoteTextures.lightning, null)
+    assert.equal(noteManager.pool.noteTextures.skull, null)
+    assert.equal(noteManager.pool.noteTextures.lightning, null)
     assert.equal(mockHandleError.mock.calls.length, 2)
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
     assert.equal(
