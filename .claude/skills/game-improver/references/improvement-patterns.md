@@ -1,5 +1,13 @@
 # Improvement Patterns & Examples
 
+## Table of Contents
+- [Pattern 1: Bug Fix (Logic Error)](#pattern-1-bug-fix-logic-error)
+- [Pattern 2: New Feature (Item/Upgrade Addition)](#pattern-2-new-feature-itemupgrade-addition)
+- [Pattern 3: Performance Optimization (Memory Leak)](#pattern-3-performance-optimization-memory-leak)
+- [Pattern 4: Refactoring (Extract Component)](#pattern-4-refactoring-extract-component)
+- [Common Mistakes to Avoid](#common-mistakes-to-avoid)
+
+
 Complete, real-world patterns for common game improvements.
 
 ## Pattern 1: Bug Fix (Logic Error)

@@ -1,5 +1,17 @@
 # CI Integration Guide
 
+## Table of Contents
+- [Project CI Configuration](#project-ci-configuration)
+- [Minimal CI Workflow](#minimal-ci-workflow)
+- [Running All E2E Tests in CI](#running-all-e2e-tests-in-ci)
+- [Running the Screenshot Scripts in CI](#running-the-screenshot-scripts-in-ci)
+- [Updating Snapshot Baselines](#updating-snapshot-baselines)
+- [Tolerance Configuration](#tolerance-configuration)
+- [Disabling CRT for Stable Baselines](#disabling-crt-for-stable-baselines)
+- [Common CI Failures and Fixes](#common-ci-failures-and-fixes)
+- [Snapshot Storage Location](#snapshot-storage-location)
+
+
 How to run Playwright screenshots and visual regression tests in GitHub Actions CI.
 
 ---

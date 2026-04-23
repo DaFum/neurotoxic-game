@@ -18,6 +18,24 @@ description: >
 
 # TypeScript Senior Developer
 
+## Table of Contents
+- [Core Principles](#core-principles)
+- [Project Conventions Cheat Sheet](#project-conventions-cheat-sheet)
+- [Type vs Interface](#type-vs-interface)
+- [`as const` + `keyof typeof` for Enum-Like Objects](#as-const-keyof-typeof-for-enum-like-objects)
+- [Discriminated Unions + `Extract<>`](#discriminated-unions-extract)
+- [Narrowing `unknown` at Boundaries](#narrowing-unknown-at-boundaries)
+- [Utility Types — Used in This Project](#utility-types-used-in-this-project)
+- [`satisfies` — Prefer Over `as`](#satisfies-prefer-over-as)
+- [`import type` and `isolatedModules`](#import-type-and-isolatedmodules)
+- [Generics — Constrain Narrowly](#generics-constrain-narrowly)
+- [React 19 + TypeScript](#react-19-typescript)
+- [Common Anti-Patterns (Found in Real Reviews)](#common-anti-patterns-found-in-real-reviews)
+- [Migration Guide (JS → TS)](#migration-guide-js-ts)
+- [Review Checklist](#review-checklist)
+- [References](#references)
+
+
 Expert TypeScript guidance for strict, idiomatic, production-quality code in this
 codebase. The project runs `strict: true`, `strictNullChecks`, `noImplicitAny`,
 `checkJs`, `isolatedModules`, `moduleResolution: "bundler"`, with zero tolerance

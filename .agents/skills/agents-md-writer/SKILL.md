@@ -13,6 +13,35 @@ license: 'Proprietary. See LICENSE.txt for terms'
 
 # AGENTS.md Writer
 
+## Table of Contents
+- [Why This Skill Exists](#why-this-skill-exists)
+- [Before Writing: Gather Information](#before-writing-gather-information)
+- [The Golden Rule](#the-golden-rule)
+- [Context File Structure](#context-file-structure)
+- [Critical Commands](#critical-commands)
+- [Architecture Constraints](#architecture-constraints)
+- [Testing](#testing)
+- [Style & Conventions](#style-conventions)
+- [Gotchas](#gotchas)
+- [Section-by-Section Guidance](#section-by-section-guidance)
+- [Critical Commands](#critical-commands)
+- [Commands](#commands)
+- [What to NEVER Include](#what-to-never-include)
+- [Choosing the Filename](#choosing-the-filename)
+- [Writing Process](#writing-process)
+- [Quality Checklist](#quality-checklist)
+- [Example: Minimal but Effective Context File](#example-minimal-but-effective-context-file)
+- [Critical Commands](#critical-commands)
+- [Testing](#testing)
+- [Gotchas](#gotchas)
+- [Example: Bloated and Harmful Context File (DO NOT write like this)](#example-bloated-and-harmful-context-file-do-not-write-like-this)
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Development Guidelines](#development-guidelines)
+- [Improving an Existing Context File](#improving-an-existing-context-file)
+
+
 Write effective repository-level context files (AGENTS.md, AGENTS.md, CODEX.md) that actually improve coding agent performance.
 
 ## Why This Skill Exists

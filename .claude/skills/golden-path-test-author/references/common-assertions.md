@@ -1,5 +1,15 @@
 # Common Assertions & Patterns
 
+## Table of Contents
+- [Resource Boundary Checks](#resource-boundary-checks)
+- [State Mutation Checks](#state-mutation-checks)
+- [Inventory & Consumables](#inventory-consumables)
+- [Modifier & Configuration](#modifier-configuration)
+- [Multi-Action Sequences](#multi-action-sequences)
+- [Edge Cases & Errors](#edge-cases-errors)
+- [Helper Utility](#helper-utility)
+
+
 Standard assertion patterns for golden path tests.
 
 ## Resource Boundary Checks

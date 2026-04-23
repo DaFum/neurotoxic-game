@@ -13,6 +13,17 @@ license: "Proprietary. See LICENSE.txt for terms"
 
 # React Performance Optimization
 
+## Table of Contents
+- [When to Use This Skill](#when-to-use-this-skill)
+- [Core Concepts](#core-concepts)
+- [Quick Reference](#quick-reference)
+- [Optimization Workflow](#optimization-workflow)
+- [Common Patterns](#common-patterns)
+- [Common Mistakes](#common-mistakes)
+- [Performance Checklist](#performance-checklist)
+- [Resources](#resources)
+
+
 Expert guidance for optimizing React application performance through memoization, code splitting, virtualization, and efficient rendering strategies.
 
 ## When to Use This Skill

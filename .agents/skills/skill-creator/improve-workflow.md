@@ -1,5 +1,12 @@
 # Improve Mode Workflow
 
+## Table of Contents
+- [Setup Phase](#setup-phase)
+- [Iteration Loop](#iteration-loop)
+- [Final Report](#final-report)
+- [Without Subagents](#without-subagents)
+
+
 Complete iteration loop for improving an existing skill through evaluation, comparison, and analysis.
 
 ## Setup Phase

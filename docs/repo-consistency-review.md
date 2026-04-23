@@ -1,5 +1,12 @@
 # Repository Consistency Review (2026-04-16)
 
+## Table of Contents
+- [Scope](#scope)
+- [Findings and actions](#findings-and-actions)
+- [Open points (intentionally not fully resolved in this pass)](#open-points-intentionally-not-fully-resolved-in-this-pass)
+- [Risk assessment](#risk-assessment)
+
+
 ## Scope
 
 Review and remediation focused on:

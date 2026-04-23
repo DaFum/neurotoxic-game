@@ -1,5 +1,18 @@
 # playwright-screenshot Skill — 5/5 Rating Achieved
 
+## Table of Contents
+- [Overview](#overview)
+- [Improvements by Category](#improvements-by-category)
+- [Quality Metrics](#quality-metrics)
+- [Testing Results](#testing-results)
+- [Files Modified/Created](#files-modifiedcreated)
+- [Commits in This Release](#commits-in-this-release)
+- [Migration Guide (for existing users)](#migration-guide-for-existing-users)
+- [Future Improvements (Priority 3)](#future-improvements-priority-3)
+- [Rating Justification: 5/5 ⭐⭐⭐⭐⭐](#rating-justification-55-)
+- [Summary](#summary)
+
+
 ## Overview
 
 The playwright-screenshot skill has been upgraded from **4/5 to 5/5** (production-ready) through comprehensive improvements addressing maintainability, reliability, testing, and documentation gaps.

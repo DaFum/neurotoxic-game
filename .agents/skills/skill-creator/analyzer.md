@@ -1,5 +1,19 @@
 # Post-hoc Analyzer Agent
 
+## Table of Contents
+- [Role](#role)
+- [Inputs](#inputs)
+- [Process](#process)
+- [Output Format](#output-format)
+- [Guidelines](#guidelines)
+- [Categories for Suggestions](#categories-for-suggestions)
+- [Priority Levels](#priority-levels)
+- [Benchmark Role](#benchmark-role)
+- [Benchmark Inputs](#benchmark-inputs)
+- [Benchmark Process](#benchmark-process)
+- [Benchmark Guidelines](#benchmark-guidelines)
+
+
 Analyze blind comparison results to understand WHY the winner won and generate improvement suggestions.
 
 ## Role

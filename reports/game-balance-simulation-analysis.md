@@ -1,5 +1,24 @@
 # Game Balance Simulation – Analyse
 
+## Table of Contents
+- [Simulationseinstellungen](#simulationseinstellungen)
+- [Fame-Shop-Audit](#fame-shop-audit)
+- [Feature-Snapshot der App](#feature-snapshot-der-app)
+- [Ergebnis-Matrix](#ergebnis-matrix)
+- [Wirtschaft im Detail](#wirtschaft-im-detail)
+- [Kapital-Progressionskurve](#kapital-progressionskurve)
+- [Einkommensstruktur & Sink-Analyse](#einkommensstruktur-sink-analyse)
+- [Gig-Performance-Kalibrierung](#gig-performance-kalibrierung)
+- [Bandgesundheit im Detail](#bandgesundheit-im-detail)
+- [Events & Social im Detail](#events-social-im-detail)
+- [Minigame-Abdeckung im Detail](#minigame-abdeckung-im-detail)
+- [Cross-Szenario-Vergleich (Höchstwerte)](#cross-szenario-vergleich-höchstwerte)
+- [KPI-Zielkorridore (Health Check)](#kpi-zielkorridore-health-check)
+- [Rebalance-Regressionsvergleich (Alt vs Neu)](#rebalance-regressionsvergleich-alt-vs-neu)
+- [Feature-Abdeckung in der Simulation](#feature-abdeckung-in-der-simulation)
+- [Kurzfazit](#kurzfazit)
+
+
 Erstellt am: 2026-04-16T09:49:42.256Z
 
 ## Simulationseinstellungen

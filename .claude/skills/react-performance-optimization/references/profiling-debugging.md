@@ -1,5 +1,15 @@
 # Profiling and Debugging
 
+## Table of Contents
+- [React DevTools Profiler](#react-devtools-profiler)
+- [Browser Performance API](#browser-performance-api)
+- [Why Did You Render](#why-did-you-render)
+- [Chrome DevTools Performance Tab](#chrome-devtools-performance-tab)
+- [Lighthouse Performance Audit](#lighthouse-performance-audit)
+- [Performance Monitoring in Production](#performance-monitoring-in-production)
+- [Common Performance Patterns to Look For](#common-performance-patterns-to-look-for)
+
+
 ## React DevTools Profiler
 
 **Identify and diagnose performance bottlenecks:**

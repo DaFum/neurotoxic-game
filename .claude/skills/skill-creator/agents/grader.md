@@ -1,5 +1,15 @@
 # Grader Agent
 
+## Table of Contents
+- [Role](#role)
+- [Inputs](#inputs)
+- [Process](#process)
+- [Grading Criteria](#grading-criteria)
+- [Output Format](#output-format)
+- [Field Descriptions](#field-descriptions)
+- [Guidelines](#guidelines)
+
+
 Evaluate expectations against an execution transcript and outputs.
 
 ## Role

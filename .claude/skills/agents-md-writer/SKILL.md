@@ -5,6 +5,40 @@ description: Write high-quality AGENTS.md, CLAUDE.md, or CODEX.md context files 
 
 # AGENTS.md Writer
 
+## Table of Contents
+- [Why This Skill Exists](#why-this-skill-exists)
+- [The Multi-Tool Landscape (2026)](#the-multi-tool-landscape-2026)
+- [Before Writing: Gather Information](#before-writing-gather-information)
+- [The Golden Rule](#the-golden-rule)
+- [Context File Structure](#context-file-structure)
+- [Critical Commands](#critical-commands)
+- [Architecture Constraints](#architecture-constraints)
+- [Testing](#testing)
+- [Style & Conventions](#style-conventions)
+- [Gotchas](#gotchas)
+- [Section-by-Section Guidance](#section-by-section-guidance)
+- [Critical Commands](#critical-commands)
+- [Commands](#commands)
+- [What to NEVER Include](#what-to-never-include)
+- [Choosing Your File Strategy](#choosing-your-file-strategy)
+- [CLAUDE.md — Advanced Features](#claudemd-advanced-features)
+- [Migrating from Other Tools](#migrating-from-other-tools)
+- [Validation](#validation)
+- [Writing Process](#writing-process)
+- [Quality Checklist](#quality-checklist)
+- [Example: Minimal but Effective Context File](#example-minimal-but-effective-context-file)
+- [Critical Commands](#critical-commands)
+- [Testing](#testing)
+- [Gotchas](#gotchas)
+- [Example: Multi-Tool Setup](#example-multi-tool-setup)
+- [Claude-Specific](#claude-specific)
+- [Example: Bloated and Harmful Context File (DO NOT write like this)](#example-bloated-and-harmful-context-file-do-not-write-like-this)
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Development Guidelines](#development-guidelines)
+- [Improving an Existing Context File](#improving-an-existing-context-file)
+
+
 Write effective repository-level context files (AGENTS.md, CLAUDE.md, CODEX.md, etc.) that actually improve coding agent performance — across the entire multi-tool ecosystem.
 
 ## Why This Skill Exists

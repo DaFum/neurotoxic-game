@@ -5,6 +5,15 @@ description: Align skills with repository conventions and detect drift across th
 
 # Skill Aligner
 
+## Table of Contents
+- [When to Use This Skill](#when-to-use-this-skill)
+- [Drift Detection Patterns](#drift-detection-patterns)
+- [Workflow: Three Phases](#workflow-three-phases)
+- [Common Scenarios](#common-scenarios)
+- [Error Recovery](#error-recovery)
+- [When to Escalate to skill-creator](#when-to-escalate-to-skill-creator)
+
+
 Detect and fix drift between skills and the repository. Drift happens when the repository changes (new versions, restructured paths, new commands) but skills still reference the old state. This skill helps you find drift systematically and fix it safely.
 
 ## When to Use This Skill

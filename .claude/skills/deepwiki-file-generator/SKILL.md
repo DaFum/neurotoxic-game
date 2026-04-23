@@ -11,6 +11,17 @@ description: >
 
 # DeepWiki wiki.json Generator
 
+## Table of Contents
+- [When This Skill Applies](#when-this-skill-applies)
+- [Workflow](#workflow)
+- [Quick Reference: Limits](#quick-reference-limits)
+- [JSON Schema](#json-schema)
+- [Critical Rules](#critical-rules)
+- [Common Patterns](#common-patterns)
+- [Troubleshooting](#troubleshooting)
+- [Reference](#reference)
+
+
 Generate `.devin/wiki.json` files that steer Devin's DeepWiki documentation generation for repositories.
 
 ## When This Skill Applies

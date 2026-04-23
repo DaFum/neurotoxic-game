@@ -5,6 +5,23 @@ description: Take Playwright screenshots of any Neurotoxic game scene (INTRO, ME
 
 # Playwright Screenshot Skill
 
+## Table of Contents
+- [✨ Recent Improvements (2026-03-21)](#-recent-improvements-2026-03-21)
+- [Agent Execution Workflow](#agent-execution-workflow)
+- [Quick Reference](#quick-reference)
+- [Core Screenshot API](#core-screenshot-api)
+- [Navigating to Each Scene](#navigating-to-each-scene)
+- [Screenshot Patterns by Use Case](#screenshot-patterns-by-use-case)
+- [Waiting Correctly Before Shooting](#waiting-correctly-before-shooting)
+- [Selectors Reference](#selectors-reference)
+- [Output Directory Convention](#output-directory-convention)
+- [Running the Scripts](#running-the-scripts)
+- [Working Script Explanation: screenshot-game-flow.js](#working-script-explanation-screenshot-game-flowjs)
+- [Troubleshooting](#troubleshooting)
+- [Captured Screenshots Should Look Like](#captured-screenshots-should-look-like)
+- [CI Usage](#ci-usage)
+
+
 Takes precise screenshots of the Neurotoxic game using Playwright. Covers all scenes, element crops, PixiJS canvas, overlay states, and CI-ready visual regression baselines.
 
 ## ✨ Recent Improvements (2026-03-21)

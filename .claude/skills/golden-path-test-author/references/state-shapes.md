@@ -1,5 +1,13 @@
 # Game State Shapes & Structures
 
+## Table of Contents
+- [Root State Shape](#root-state-shape)
+- [Common Preconditions](#common-preconditions)
+- [Key Constraints](#key-constraints)
+- [Accessing Nested State](#accessing-nested-state)
+- [State Mutation Rules](#state-mutation-rules)
+
+
 Reference for the game state object used in golden path tests.
 
 ## Root State Shape

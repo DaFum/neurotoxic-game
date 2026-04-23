@@ -1,5 +1,18 @@
 # Neurotoxic Skills Compliance Report
 
+## Table of Contents
+- [Executive Summary](#executive-summary)
+- [Tier 1: Metadata Completion ✓](#tier-1-metadata-completion-)
+- [Tier 2: Discovery & Routing Infrastructure ✓](#tier-2-discovery-routing-infrastructure-)
+- [Tier 2: Allowed-Tools for High-Impact Skills ✓](#tier-2-allowed-tools-for-high-impact-skills-)
+- [Tier 3: Advanced Integration ✓](#tier-3-advanced-integration-)
+- [Files Generated / Updated](#files-generated-updated)
+- [Compliance Checklist](#compliance-checklist)
+- [Next Steps & Recommendations](#next-steps-recommendations)
+- [Validation Results](#validation-results)
+- [Summary](#summary)
+
+
 **Generated:** 2026-03-18
 **Compliance Status:** 100% (TIER 1 & TIER 2 Complete)
 

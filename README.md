@@ -1,8 +1,21 @@
 # [NEUROTOXIC: GRIND THE VOID v3.0](https://www.instagram.com/neurotoxicband/)
 
-This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, carved out like a blastbeat across the void.
+A rhythm-based roguelike metal band management game where you survive the void and carve out a blastbeat legacy.
 
-## Design Dogma: Void Worship
+This is the designer-driven incarnation of the NEUROTOXIC game concept. We built this project to provide an intense, audio-driven metal experience combining brutal aesthetics, custom rhythm engines, and ruthless resource management.
+
+## Table of Contents
+- [Design Dogma](#design-dogma)
+- [Tech Stack](#tech-stack)
+- [Core Systems](#core-systems)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Controls](#controls)
+- [Localization & Review Update](#localization-review-update)
+- [Links](#links)
+- [Credits](#credits)
+
+## Design Dogma
 
 - **Aesthetic First**: Toxic Green on Void Black, enforced globally like a permanent blackout show, no mercy, no light mode.
 - **Typography**: Metal Mania for screaming headers, Courier‑style monospaced body copy for that terminal bunker vibe.
@@ -25,40 +38,60 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 - **Economy System**: Stripped‑down money loop for upgrades, tuned for MVP grind instead of spreadsheet sim.
 - **Audio System**: Tone.js drives generative metal riffs, ambient MIDI, and gig playback via WebAudio buffers.
 
-## Rituals: Run, Test, Deploy
+## Installation
 
-- **Prerequisites**
+```bash
+# Clone the repository
+git clone https://github.com/your-username/neurotoxic.git
+cd neurotoxic
 
-- Node.js >= 22.13.0 is required. (Run `nvm use` to align with `.nvmrc`)
+# Node.js >= 22.13.0 is required
+nvm use
 
-- **Run**
-  1. `pnpm install`
-  2. `pnpm run dev`
+# Install dependencies using pnpm
+pnpm install
+```
 
-- **Testing**  
-  Game logic (economy, simulation, rhythm math) is wired into an automated test gauntlet.
+## Quick Start
 
-  ```bash
-  pnpm run test
-  ```
+Run the game locally in development mode:
 
-- **Production Build**
+```bash
+pnpm run dev
+```
+> **Expected Output:** The Vite development server will start on `http://localhost:5173`. Open this URL in your browser to play the game.
 
-  ```bash
-  pnpm run build
-  ```
+### Testing
 
-  Output is emitted into the `dist/` directory, ready to be served to the void.
+Game logic (economy, simulation, rhythm math) is wired into an automated test gauntlet.
 
-  The audio stack depends on external audio assets and the Web Audio API, so production deployments must run over **HTTPS** to avoid mixed‑content issues and broken sound.
+```bash
+pnpm run test
+```
 
-## Controls: Limb‑Loss Protocol
+### Production Build
+
+```bash
+pnpm run build
+```
+
+Output is emitted into the `dist/` directory, ready to be served to the void.
+The audio stack depends on external audio assets and the Web Audio API, so production deployments must run over **HTTPS** to avoid mixed-content issues and broken sound.
+
+## Controls
 
 - **Intro Video**: Starts on boot and transitions into the Main Menu.
 - **Overworld**: Click nodes to travel; use the Radio widget (▶/■) to toggle ambient music on and off.
 - **Gig**:
   - Inputs: Left Arrow = Guitar, Down Arrow = Drums, Right Arrow = Bass.
   - Pause: Hit `Escape` to pause/resume or abandon the current gig mid‑set.
+
+
+## Links
+- [License](LICENSE)
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
 
 ## Credits
 

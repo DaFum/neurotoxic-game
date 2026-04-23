@@ -10,6 +10,17 @@ description: |
 
 # Golden Path Test Author
 
+## Table of Contents
+- [What Is a Golden Path Test?](#what-is-a-golden-path-test)
+- [Core Workflow](#core-workflow)
+- [Complete Example: Travel + Day Advance](#complete-example-travel-day-advance)
+- [State Safety Checklist](#state-safety-checklist)
+- [Multi-Step Sequences (Advanced)](#multi-step-sequences-advanced)
+- [Debugging Failed Tests](#debugging-failed-tests)
+- [Testing All 5 Transitions](#testing-all-5-transitions)
+- [Existing Tests](#existing-tests)
+
+
 Ensure the critical game loop—**INTRO → MENU → OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD**—works without regression. Validates state transitions, resource boundaries (money ≥ 0, harmony ∈ [1,100], fuel ∈ [0,100]), and scene sequencing.
 
 ## What Is a Golden Path Test?

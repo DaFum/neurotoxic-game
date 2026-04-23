@@ -1,5 +1,12 @@
 # Debugging Failed Golden Path Tests
 
+## Table of Contents
+- [Quick Diagnosis Flow](#quick-diagnosis-flow)
+- [Common Failure Patterns](#common-failure-patterns)
+- [Running Tests to Debug](#running-tests-to-debug)
+- [Checklist Before Submitting](#checklist-before-submitting)
+
+
 Systematic guide for diagnosing and fixing failing golden path tests.
 
 ## Quick Diagnosis Flow

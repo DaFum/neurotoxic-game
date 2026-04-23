@@ -1,5 +1,20 @@
 # CI/CD Integration Guide for playwright-screenshot
 
+## Table of Contents
+- [GitHub Actions Workflow Example](#github-actions-workflow-example)
+- [Pre-Flight Checks](#pre-flight-checks)
+- [Environment Variables for CI](#environment-variables-for-ci)
+- [Handling Browser Installation](#handling-browser-installation)
+- [Visual Regression Testing](#visual-regression-testing)
+- [Handling Flaky Tests](#handling-flaky-tests)
+- [Best Practices](#best-practices)
+- [Example: Parallel Scene Capture](#example-parallel-scene-capture)
+- [Troubleshooting CI Failures](#troubleshooting-ci-failures)
+- [Monitoring & Alerts](#monitoring-alerts)
+- [Local Reproduction](#local-reproduction)
+- [Success Metrics](#success-metrics)
+
+
 This guide shows how to integrate screenshot testing into your CI pipeline (GitHub Actions, GitLab CI, etc.).
 
 ## GitHub Actions Workflow Example

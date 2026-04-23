@@ -1,5 +1,20 @@
 # Neurotoxic Skills Library Index
 
+## Table of Contents
+- [Quick Start](#quick-start)
+- [Skills by Category](#skills-by-category)
+- [Key Metadata Files](#key-metadata-files)
+- [Asset Files (Token Maps)](#asset-files-token-maps)
+- [Validation & CI](#validation-ci)
+- [Compliance Report](#compliance-report)
+- [Top 10 High-Impact Skills](#top-10-high-impact-skills)
+- [Maturity Tiers](#maturity-tiers)
+- [Bundled References](#bundled-references)
+- [Integration Examples](#integration-examples)
+- [Documentation](#documentation)
+- [Summary](#summary)
+
+
 **Status:** 100% Compliant with Agent Skills Specification  
 **Last Updated:** 2026-03-18  
 **Total Skills:** 30 (22 stable, 8 beta)

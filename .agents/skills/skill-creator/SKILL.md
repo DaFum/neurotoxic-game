@@ -13,6 +13,27 @@ license: 'Proprietary. See LICENSE.txt for terms'
 
 # Skill Creator
 
+## Table of Contents
+- [How This Works](#how-this-works)
+- [Talking to the User](#talking-to-the-user)
+- [Modes](#modes)
+- [Creating a Skill](#creating-a-skill)
+- [Skill Writing Guide](#skill-writing-guide)
+- [Common Anti-Patterns](#common-anti-patterns)
+- [Debugging Skills](#debugging-skills)
+- [Improving a Skill](#improving-a-skill)
+- [Eval Mode](#eval-mode)
+- [Benchmark Mode](#benchmark-mode)
+- [Building Blocks](#building-blocks)
+- [Environment and Delegation](#environment-and-delegation)
+- [Task Tracking](#task-tracking)
+- [Workspace Structure](#workspace-structure)
+- [Coordinator Responsibilities](#coordinator-responsibilities)
+- [Intent Routing Matrix](#intent-routing-matrix)
+- [Output Contract (Skill-Creator Specific)](#output-contract-skill-creator-specific)
+- [Cut-List Checklist (Do Not Ship Without)](#cut-list-checklist-do-not-ship-without)
+
+
 Create new skills, improve existing ones, and measure their performance through structured evaluation.
 
 ## How This Works

@@ -1,5 +1,18 @@
 # State Mutations & Patterns
 
+## Table of Contents
+- [The Three-Part Rule](#the-three-part-rule)
+- [Pattern 1: Adding a New Action Type](#pattern-1-adding-a-new-action-type)
+- [Pattern 2: Updating Nested State Safely](#pattern-2-updating-nested-state-safely)
+- [Pattern 3: Batch Updates (Multiple Properties)](#pattern-3-batch-updates-multiple-properties)
+- [Pattern 4: Array Updates (Items, Band Members)](#pattern-4-array-updates-items-band-members)
+- [Pattern 5: Clamping Resource Bounds](#pattern-5-clamping-resource-bounds)
+- [Pattern 6: Conditional Updates](#pattern-6-conditional-updates)
+- [Pattern 7: Computed Derived State](#pattern-7-computed-derived-state)
+- [Testing State Mutations](#testing-state-mutations)
+- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+
+
 Clear, proven patterns for managing game state correctly.
 
 ## The Three-Part Rule

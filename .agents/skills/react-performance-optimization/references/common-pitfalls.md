@@ -1,5 +1,16 @@
 # Common Performance Pitfalls
 
+## Table of Contents
+- [1. Inline Object/Array Props](#1-inline-objectarray-props)
+- [2. Anonymous Functions in JSX](#2-anonymous-functions-in-jsx)
+- [3. Over-Memoization](#3-over-memoization)
+- [4. Deriving State Unnecessarily](#4-deriving-state-unnecessarily)
+- [5. Incorrect Dependencies](#5-incorrect-dependencies)
+- [6. Context Performance Issues](#6-context-performance-issues)
+- [7. Large Component Files](#7-large-component-files)
+- [8. Image Loading Issues](#8-image-loading-issues)
+
+
 ## 1. Inline Object/Array Props
 
 ### The Problem

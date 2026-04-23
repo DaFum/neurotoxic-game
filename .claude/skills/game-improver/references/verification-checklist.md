@@ -1,5 +1,14 @@
 # Verification Checklist
 
+## Table of Contents
+- [Pre-Submit Verification](#pre-submit-verification)
+- [Code-Level Checks](#code-level-checks)
+- [Common Verification Issues](#common-verification-issues)
+- [Final Sign-Off](#final-sign-off)
+- [Debugging Failed Checks](#debugging-failed-checks)
+- [Full Verification Command](#full-verification-command)
+
+
 Complete checklist to verify that improvements are production-ready.
 
 ## Pre-Submit Verification

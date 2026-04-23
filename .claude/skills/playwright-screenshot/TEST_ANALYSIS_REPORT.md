@@ -1,5 +1,16 @@
 # Screenshot Skill — Test & Analysis Report
 
+## Table of Contents
+- [Executive Summary](#executive-summary)
+- [Detailed Test Results](#detailed-test-results)
+- [Root Cause Analysis](#root-cause-analysis)
+- [What's Working Perfectly](#whats-working-perfectly)
+- [Recommendations](#recommendations)
+- [Next Steps (Action Items)](#next-steps-action-items)
+- [Test Summary Table](#test-summary-table)
+- [Conclusion](#conclusion)
+
+
 **Date:** 2026-03-21
 **Status:** ⚠️ **Partial Success** — Infrastructure Solid, Game Routing Issue Detected
 

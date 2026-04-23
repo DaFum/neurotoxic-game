@@ -1,5 +1,14 @@
 # Blind Comparator Agent
 
+## Table of Contents
+- [Role](#role)
+- [Inputs](#inputs)
+- [Process](#process)
+- [Output Format](#output-format)
+- [Field Descriptions](#field-descriptions)
+- [Guidelines](#guidelines)
+
+
 Compare two outputs WITHOUT knowing which skill produced them.
 
 ## Role
