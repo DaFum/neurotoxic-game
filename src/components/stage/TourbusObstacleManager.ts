@@ -14,14 +14,25 @@ export class TourbusObstacleManager {
     bloodRed: number
     toxicGreen: number
   }
-  obstacleMap: Map<string | number, Sprite | Graphics | any>
+  obstacleMap: Map<
+    string | number,
+    (Sprite | Graphics) & { hasExploded?: boolean }
+  >
   currentIds: Set<string | number>
 
   constructor(
     container: Container,
     effectManager: EffectManager,
-    textures: any,
-    colors: any
+    textures: {
+      rock: Texture | null
+      barrier: Texture | null
+      fuel: Texture | null
+    },
+    colors: {
+      warningYellow: number
+      bloodRed: number
+      toxicGreen: number
+    }
   ) {
     this.container = container
     this.effectManager = effectManager
@@ -32,7 +43,7 @@ export class TourbusObstacleManager {
     this.currentIds = new Set()
   }
 
-  updateObstacles(state: any, height: any, laneWidth: any) {
+  updateObstacles(state: any, height: number, laneWidth: number) {
     this.currentIds.clear()
 
     for (let i = 0, len = state.obstacles.length; i < len; i++) {
