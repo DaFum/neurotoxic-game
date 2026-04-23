@@ -42,6 +42,7 @@ export interface Venue {
   region?: string
   capacity?: number
   difficulty?: number
+  diff?: number
   reputation?: number
   [key: string]: unknown
 }
