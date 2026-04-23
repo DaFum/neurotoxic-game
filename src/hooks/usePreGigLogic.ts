@@ -217,6 +217,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       const audioOk = await audioManager.ensureAudioContext()
       if (!audioOk) {
         setIsStarting(false)
+        addToast(t('ui:pregig.toasts.audioFail'), 'error')
         return
       }
       const gigId = currentGig?.id || `gig_${getSafeUUID()}`

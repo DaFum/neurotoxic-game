@@ -22,7 +22,7 @@ vi.mock('framer-motion', () => ({
 // Mock audioManager
 vi.mock('../../src/utils/AudioManager', () => ({
   audioManager: {
-    ensureAudioContext: vi.fn(),
+    ensureAudioContext: vi.fn(() => Promise.resolve(true)),
     play: vi.fn()
   }
 }))

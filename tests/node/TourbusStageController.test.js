@@ -248,7 +248,11 @@ describe('TourbusStageController', () => {
   })
 
   afterEach(() => {
-    mock.reset()
+    // Only clear call counts to keep mock.module alive
+    currentTickerAdd.mock.resetCalls();
+    currentTickerRemove.mock.resetCalls();
+    currentAppDestroy.mock.resetCalls();
+    currentLoad.mock.resetCalls();
   })
 
   it('should initialize correctly', async () => {
