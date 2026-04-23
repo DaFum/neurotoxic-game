@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
-import { SONGS_DB } from '../data/songs'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { getGigModifiers } from '../utils/simulationUtils'
@@ -20,7 +19,26 @@ export const _resetLastMinigameFallback = () => {
 
 const BAND_MEETING_COST = 50
 
-export const usePreGigLogic = () => {
+export interface PreGigLogicReturn {
+  t: (key: string, options?: unknown) => string
+  i18n: { language: string }
+  currentGig: Record<string, unknown>
+  player: Record<string, unknown>
+  setlist: Record<string, unknown>[]
+  gigModifiers: Record<string, boolean>
+  currentModifiers: { activeEffects: Record<string, unknown>[] }
+  selectedSongIds: Set<unknown>
+  calculatedBudget: number
+  isStarting: boolean
+  GIG_MODIFIER_OPTIONS: Record<string, unknown>[]
+  BAND_MEETING_COST: number
+  handleBandMeeting: () => void
+  toggleSong: (song: Record<string, unknown>) => void
+  toggleModifier: (key: string) => void
+  handleStartShow: () => Promise<void>
+}
+
+export const usePreGigLogic = (): PreGigLogicReturn => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
 
   const GIG_MODIFIER_OPTIONS = useMemo(
@@ -102,7 +120,7 @@ export const usePreGigLogic = () => {
     }
   }, [currentGig, changeScene, addToast])
 
-  const handleBandMeeting = () => {
+  const handleBandMeeting = useCallback(() => {
     const cost = BAND_MEETING_COST
     if (player.money < cost) {
       addToast(t('ui:pregig.toasts.noMoneySnacks'), 'error')
@@ -129,7 +147,7 @@ export const usePreGigLogic = () => {
         'info'
       )
     }
-  }
+  }, [player.money, addToast, t, updatePlayer, band.harmony, updateBand])
 
   useEffect(() => {
     if (!activeEvent && !isScreenshotMode) {
@@ -141,7 +159,7 @@ export const usePreGigLogic = () => {
     // eslint-disable-next-line @eslint-react/exhaustive-deps
   }, [])
 
-  const toggleSong = song => {
+  const toggleSong = useCallback(song => {
     if (selectedSongIds.has(song.id)) {
       setSetlist(setlist.filter(s => getSongId(s) !== song.id))
     } else {
@@ -149,7 +167,7 @@ export const usePreGigLogic = () => {
         setSetlist([...setlist, { id: song.id }])
       }
     }
-  }
+  }, [selectedSongIds, setSetlist, setlist])
 
   const calculatedBudget = useMemo(() => {
     let acc = 0
@@ -219,8 +237,7 @@ export const usePreGigLogic = () => {
       lastMinigameFallback = chosenGame
       try {
         sessionStorage.setItem('neurotoxic_last_minigame', chosenGame)
-      } catch (_storageErr) {
-      }
+      } catch (_storageErr) {}
 
       if (chosenGame === 'roadie') {
         startRoadieMinigame(gigId)
