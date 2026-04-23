@@ -6,12 +6,12 @@ This is the designer-driven incarnation of the NEUROTOXIC game concept. We built
 
 ## Table of Contents
 - [Design Dogma](#design-dogma)
-- [Tech Stack](#tech-stack)
-- [Core Systems](#core-systems)
+- [Tech Stack](#tech-stack-gear-list-of-doom)
+- [Core Systems](#core-systems-architectures-of-suffering)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Controls](#controls)
-- [Localization & Review Update](#localization-review-update)
+- [Localization & Review Update](#localization--review-update)
 - [Links](#links)
 - [Credits](#credits)
 
@@ -42,8 +42,8 @@ This is the designer-driven incarnation of the NEUROTOXIC game concept. We built
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/neurotoxic.git
-cd neurotoxic
+git clone https://github.com/DaFum/neurotoxic-game.git
+cd neurotoxic-game
 
 # Node.js >= 22.13.0 is required
 nvm use

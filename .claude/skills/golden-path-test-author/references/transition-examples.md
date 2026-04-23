@@ -3,8 +3,8 @@
 ## Table of Contents
 - [Transition 1: MENU → OVERWORLD (Game Start)](#transition-1-menu-overworld-game-start)
 - [Transition 2: OVERWORLD → PRE_GIG (Start Gig)](#transition-2-overworld-pre_gig-start-gig)
-- [Transition 3: PRE_GIQ → GIG (Performance Starts)](#transition-3-pre_giq-gig-performance-starts)
-- [Transition 4: GIG → POST_GIQ (Score Capture)](#transition-4-gig-post_giq-score-capture)
+- [Transition 3: PRE_GIG → GIG (Performance Starts)](#transition-3-pre_giq-gig-performance-starts)
+- [Transition 4: GIG → POST_GIG (Score Capture)](#transition-4-gig-post_giq-score-capture)
 - [Transition 5: POST_GIG → OVERWORLD (Return Home)](#transition-5-post_gig-overworld-return-home)
 - [Edge Case: Bankruptcy Path (POST_GIG → GAMEOVER)](#edge-case-bankruptcy-path-post_gig-gameover)
 
@@ -148,7 +148,7 @@ test('Golden Path: OVERWORLD → PRE_GIG setup', async t => {
 })
 ```
 
-## Transition 3: PRE_GIQ → GIG (Performance Starts)
+## Transition 3: PRE_GIG → GIG (Performance Starts)
 
 Tests entering the rhythm game and capturing performance stats.
 
@@ -206,7 +206,7 @@ test('Golden Path: PRE_GIG → GIG performance', async t => {
 })
 ```
 
-## Transition 4: GIG → POST_GIQ (Score Capture)
+## Transition 4: GIG → POST_GIG (Score Capture)
 
 Tests ending performance and moving to financial settlement.
 
@@ -391,7 +391,7 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
       peakHype: 20,
       toxicTimeTotal: 0
     })
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIQ)
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIG)
   })
 
   await t.test('Apply large loss', () => {

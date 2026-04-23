@@ -7,9 +7,15 @@ We welcome contributions! Please follow these guidelines when contributing:
 2. Clone your fork and install dependencies using `pnpm install`.
 3. Run `pnpm run dev` to start the development server.
 
+
 ## Making Changes
 - Create a feature branch: `git checkout -b feature-name`
-- Ensure all tests pass: `pnpm run test`
+- Before submitting a PR, validate with:
+  - `pnpm install`
+  - `pnpm run guard:nocheck`
+  - `pnpm run typecheck`
+  - `pnpm run test:all`
+  - `pnpm run test:ui` (when touching UI or i18n)
 - Format and lint code: `pnpm run lint`
 
 ## Submitting a Pull Request
