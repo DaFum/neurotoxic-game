@@ -133,7 +133,7 @@ export const useClinicLogic = (): {
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void
-  enhanceMember: (memberId: string) => void
+  enhanceMember: (memberId: string, traitId: string) => void
   leaveClinic: () => void
 } => {
   const { t } = useTranslation(['ui'])

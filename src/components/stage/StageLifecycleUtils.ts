@@ -21,6 +21,6 @@ export const isLifecycleRaceError = (
   isDisposed: boolean
 ): boolean => {
   if (isDisposed || currentApp !== app) return true
-  const message = e ? String(e.message || e) : ''
+  const message = e ? e instanceof Error ? e.message : String(e) : ''
   return message.includes('updateLocalTransform')
 }

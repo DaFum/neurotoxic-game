@@ -39,7 +39,7 @@ export class LaneRenderer {
     container.addChild(this.active)
   }
 
-  draw(lane: unknown, renderX: number, layout: any) {
+  draw(lane: { color: number }, renderX: number, layout: any) {
     this.static.clear()
     this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })

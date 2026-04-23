@@ -5,13 +5,13 @@ import { LaneRenderer } from './LaneRenderer'
 const LANE_GAP = 20
 
 export class LaneManager {
-  app: unknown
+  app: import('pixi.js').Application
   stageContainer: Container
-  gameStateRef: unknown
+  gameStateRef: { current: any }
   rhythmContainer: Container | null
-  laneLayout: unknown
+  laneLayout: any
   laneGraphics: LaneRenderer[]
-  lastLaneActive: unknown[]
+  lastLaneActive: boolean[]
   lastScreenWidth: number
   lastScreenHeight: number
 
@@ -20,7 +20,7 @@ export class LaneManager {
    * @param {Container} stageContainer
    * @param {object} gameStateRef
    */
-  constructor(app: unknown, stageContainer: Container, gameStateRef: unknown) {
+  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: any }) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
@@ -97,7 +97,7 @@ export class LaneManager {
     }
   }
 
-  updateLaneVisibility(lane: unknown, index: number, graphicsSet: unknown) {
+  updateLaneVisibility(lane: { active: boolean }, index: number, graphicsSet: LaneRenderer) {
     const wasActive = this.lastLaneActive[index]
 
     // Update visibility only when activity state changes
