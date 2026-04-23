@@ -329,6 +329,24 @@ describe('PreGig', () => {
       soundcheck: false
     })
   })
+  test('aborts startup and shows toast when audio context fails', async () => {
+    // Override the global mock just for this test
+    const { audioManager } = await import('../../src/utils/AudioManager')
+    audioManager.ensureAudioContext.mockResolvedValueOnce(false)
+
+    mockUseGameState.setlist = [{ id: 'song1' }]
+    const { findByText } = render(React.createElement(PreGig))
+    const startBtn = await findByText(/ui:pregig.startShow/i)
+
+    fireEvent.click(startBtn)
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith('ui:pregig.toasts.audioFail', 'error')
+    expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
+    expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
+    expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
+  })
+
 
   test('handles sessionStorage errors gracefully', async () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
