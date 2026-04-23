@@ -1,4 +1,5 @@
 import { Container } from 'pixi.js'
+import type { RhythmGameRefState } from '../rhythm/useRhythmGameLogic'
 import { buildRhythmLayout } from './utils'
 import { LaneRenderer } from './LaneRenderer'
 
@@ -7,7 +8,7 @@ const LANE_GAP = 20
 export class LaneManager {
   app: import('pixi.js').Application
   stageContainer: Container
-  gameStateRef: import('react').RefObject<import('../rhythm/useRhythmGameLogic').RhythmGameRefState>
+  gameStateRef: { current: RhythmGameRefState }
   rhythmContainer: Container | null
   laneLayout: ReturnType<typeof buildRhythmLayout> | null
   laneGraphics: LaneRenderer[]
@@ -17,7 +18,7 @@ export class LaneManager {
 
     /**
    */
-  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: import('react').RefObject<import('../rhythm/useRhythmGameLogic').RhythmGameRefState>) {
+  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: RhythmGameRefState }) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
