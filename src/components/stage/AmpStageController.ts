@@ -1,13 +1,27 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
-import { AMP_CALIBRATION_TOLERANCE } from '../../context/gameConstants'
+import { AmpWaveManager } from './AmpWaveManager'
+import { RefObject, MutableRefObject } from 'react'
+
+export interface StageControllerOptions {
+  containerRef: RefObject<HTMLElement | null>
+  gameStateRef: RefObject<any>
+  updateRef: MutableRefObject<((dt: number) => void) | null>
+  [key: string]: any
+}
 
 export class AmpStageController extends BaseStageController {
-  constructor(options) {
+  waveManager: AmpWaveManager | null
+  bg: PIXI.Graphics | null
+  targetFreq: number
+  currentFreq: number
+  time: number
+
+  constructor(options: StageControllerOptions) {
     super(options)
 
-    this.waveGraphics = null
+    this.waveManager = null
     this.bg = null
     this.targetFreq = 500
     this.currentFreq = 500
@@ -18,12 +32,11 @@ export class AmpStageController extends BaseStageController {
     this.bg = new PIXI.Graphics()
     this.container.addChildAt(this.bg, 0)
 
-    this.waveGraphics = new PIXI.Graphics()
-    this.container.addChild(this.waveGraphics)
+    this.waveManager = new AmpWaveManager(this.container, this.app)
 
     this.syncState()
     this.drawBackground()
-    this.drawWaves()
+    this.waveManager.drawWaves(this.targetFreq, this.currentFreq, this.time)
   }
 
   syncState() {
@@ -56,74 +69,22 @@ export class AmpStageController extends BaseStageController {
     this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
   }
 
-  update(dt) {
+  update(dt: number) {
     this.syncState()
 
     this.time += dt * 0.1
-    this.drawWaves()
-  }
-
-  drawWaves() {
-    if (!this.waveGraphics || !this.app || !this.app.screen) return
-
-    this.waveGraphics.clear()
-
-    const width = this.app.screen.width
-    const height = this.app.screen.height
-
-    if (width <= 0 || height <= 0) return
-
-    const centerY = height / 2
-
-    // Determine if frequencies match within tolerance
-    const diff = Math.abs(this.targetFreq - this.currentFreq)
-    const isMatching = diff <= AMP_CALIBRATION_TOLERANCE
-
-    const targetColor = isMatching
-      ? getPixiColorFromToken('--toxic-green')
-      : getPixiColorFromToken('--blood-red')
-
-    // Draw Target Wave
-    const targetPeriod = width / (this.targetFreq / 50 + 1)
-    const firstTargetY = centerY + Math.sin(0 / targetPeriod + this.time) * 100
-    this.waveGraphics.moveTo(0, firstTargetY)
-
-    for (let x = 5; x < width; x += 5) {
-      const y = centerY + Math.sin(x / targetPeriod + this.time) * 100
-      this.waveGraphics.lineTo(x, y)
-    }
-    this.waveGraphics.stroke({
-      width: 2,
-      color: targetColor,
-      alpha: isMatching ? 0.8 : 0.5
-    })
-
-    // Draw Current Wave (Always Green)
-    const currentPeriod = width / (this.currentFreq / 50 + 1)
-    const firstCurrentY =
-      centerY + Math.sin(0 / currentPeriod + this.time) * 100
-    this.waveGraphics.moveTo(0, firstCurrentY)
-
-    for (let x = 5; x < width; x += 5) {
-      const y = centerY + Math.sin(x / currentPeriod + this.time) * 100
-      this.waveGraphics.lineTo(x, y)
-    }
-    this.waveGraphics.stroke({
-      width: 4,
-      color: getPixiColorFromToken('--toxic-green'),
-      alpha: 0.8
-    })
+    this.waveManager?.drawWaves(this.targetFreq, this.currentFreq, this.time)
   }
 
   draw() {
     this.drawBackground()
-    this.drawWaves()
+    this.waveManager?.drawWaves(this.targetFreq, this.currentFreq, this.time)
   }
 
   dispose() {
-    if (this.waveGraphics) {
-      this.waveGraphics.destroy({ children: true })
-      this.waveGraphics = null
+    if (this.waveManager) {
+      this.waveManager.dispose()
+      this.waveManager = null
     }
     if (this.bg) {
       this.bg.destroy({ children: true })
@@ -133,4 +94,4 @@ export class AmpStageController extends BaseStageController {
   }
 }
 
-export const createAmpStageController = params => new AmpStageController(params)
+export const createAmpStageController = (params: StageControllerOptions) => new AmpStageController(params)
