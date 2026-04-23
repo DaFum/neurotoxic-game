@@ -1,21 +1,9 @@
-/*
- * (#1) Actual Updates: Added PropTypes.
-
-
- */
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
 
 const LIGHTNING_Y_COORDS = [0, 200, 400, 600]
 
-type LightningSeed = {
-  id: string | number
-  startX: number
-  o1: number
-  o2: number
-  o3: number
-  w: number
-}
+import type { LightningSeed } from '../../../types/kabelsalat'
 
 export const LightningEffects: FC<{ lightningSeeds: LightningSeed[] }> = ({
   lightningSeeds
