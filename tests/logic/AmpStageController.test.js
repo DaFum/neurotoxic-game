@@ -84,7 +84,8 @@ describe('AmpStageController', () => {
     await controller.init()
 
     expect(controller.bg).toBeInstanceOf(PIXI.Graphics)
-    expect(controller.waveGraphics).toBeInstanceOf(PIXI.Graphics)
+    expect(controller.waveManager).toBeDefined();
+    expect(controller.waveManager.waveGraphics).toBeInstanceOf(PIXI.Graphics)
   })
 
   it('update applies sanitized values and draws waves', async () => {
@@ -114,7 +115,7 @@ describe('AmpStageController', () => {
     await controller.init()
 
     const bgDestroySpy = vi.spyOn(controller.bg, 'destroy')
-    const waveDestroySpy = vi.spyOn(controller.waveGraphics, 'destroy')
+    const waveDestroySpy = vi.spyOn(controller.waveManager.waveGraphics, 'destroy')
 
     controller.dispose()
 
@@ -122,7 +123,7 @@ describe('AmpStageController', () => {
     expect(waveDestroySpy).toHaveBeenCalledTimes(1)
 
     expect(controller.bg).toBeNull()
-    expect(controller.waveGraphics).toBeNull()
+    expect(controller.waveManager).toBeNull()
     expect(controller.isDisposed).toBe(true)
   })
 })
