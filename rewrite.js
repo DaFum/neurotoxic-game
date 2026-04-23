@@ -1,4 +1,6 @@
-/*
+import fs from 'fs'
+
+const code = `/*
  * REVIEW.md
  * (#1) Actual Updates:
  * - Extracted texture loading, generation, and resolution from EffectManager into EffectTextureManager.
@@ -8,7 +10,7 @@
  * - Consider creating dedicated asset bundles or pre-generating particle textures for all specific lane colors (red, green, blue) to remove the fallback-to-toxic behavior.
  * (#3) Found Errors + Solutions:
  * - Error: Memory leak when disposing EffectManager. Solution: Added .destroy(true) for textures before nulling them out.
- * - Error: Accidentally changed bass lane hit effect logic during refactor. Solution: Reverted the \`g > r && g > b\` logic to the original \`this.textures.toxic\` fallback so non-red colors (like blue bass and white fallback) render the toxic texture as originally designed.
+ * - Error: Accidentally changed bass lane hit effect logic during refactor. Solution: Reverted the \\\`g > r && g > b\\\` logic to the original \\\`this.textures.toxic\\\` fallback so non-red colors (like blue bass and white fallback) render the toxic texture as originally designed.
  */
 import { Graphics, Texture } from 'pixi.js'
 import type { Application } from 'pixi.js'
@@ -137,3 +139,6 @@ export class EffectTextureManager {
     this.textures = { blood: null, toxic: null }
   }
 }
+`
+
+fs.writeFileSync('src/components/stage/EffectTextureManager.ts', code)
