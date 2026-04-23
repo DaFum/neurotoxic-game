@@ -30,14 +30,26 @@ vi.mock('../../src/utils/AudioManager', () => ({
 
 vi.mock('../../src/utils/errorHandler', async importOriginal => {
   const actual = await importOriginal()
+  const mockHandleError = vi.fn()
   return {
     ...actual,
-    handleError: vi.fn(),
-    safeStorageOperation: vi.fn((op, fn, fallback = null) => {
+    handleError: mockHandleError,
+    safeStorageOperation: vi.fn((op, fn, fallbackValue) => {
       try {
         return fn()
-      } catch {
-        return fallback
+      } catch (error) {
+        const storageError = new actual.StorageError(
+          `Storage operation failed after retries: ${op}`,
+          {
+            originalError:
+              error instanceof Error ? error.message : String(error)
+          }
+        )
+        if (fallbackValue === undefined) {
+          throw storageError
+        }
+        mockHandleError(storageError, { silent: true })
+        return fallbackValue
       }
     })
   }

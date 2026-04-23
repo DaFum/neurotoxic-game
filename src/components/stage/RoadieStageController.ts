@@ -76,7 +76,11 @@ class RoadieStageController extends BaseStageController {
       this.playerManager.setEffectManager(this.effectManager)
     }
 
-    this.trafficManager = new RoadieTrafficManager(this.container, this.textures, this.colors)
+    this.trafficManager = new RoadieTrafficManager(
+      this.container,
+      this.textures,
+      this.colors
+    )
   }
 
   async loadAssets() {
@@ -162,7 +166,8 @@ class RoadieStageController extends BaseStageController {
   }
 
   update(dt: any) {
-    if (this.isDisposed || !this.app || !this.playerManager?.playerContainer) return
+    if (this.isDisposed || !this.app || !this.playerManager?.playerContainer)
+      return
 
     if (this.effectManager) this.effectManager.update(dt)
 
