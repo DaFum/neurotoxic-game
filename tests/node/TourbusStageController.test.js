@@ -126,7 +126,13 @@ mock.module('../../src/components/stage/TourbusObstacleManager', {
           }
         }
       }
-      dispose() {}
+      dispose() {
+        for (const sprite of this.obstacleMap.values()) {
+          if (sprite.destroy) sprite.destroy()
+        }
+        this.obstacleMap.clear()
+        this.currentIds.clear()
+      }
     }
   }
 })

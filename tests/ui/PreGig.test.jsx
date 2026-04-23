@@ -330,6 +330,7 @@ describe('PreGig', () => {
     const { audioManager } = await import('../../src/utils/AudioManager')
     const originalEnsure = audioManager.ensureAudioContext
     audioManager.ensureAudioContext = vi.fn().mockResolvedValueOnce(false)
+    mockUseGameState.addToast.mockClear()
 
     mockUseGameState.setlist = [{ id: 'song1' }]
     const { findByText } = render(React.createElement(PreGig))
@@ -338,6 +339,7 @@ describe('PreGig', () => {
     fireEvent.click(startBtn)
     await new Promise(resolve => setTimeout(resolve, 0))
 
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith('ui:pregig.toasts.audioFail', 'error')
     expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
@@ -359,7 +361,7 @@ describe('PreGig', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     // Assert the toast was shown by mockUseGameState via handleError
-    expect(mockUseGameState.addToast).toHaveBeenCalled()
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(expect.any(String), 'warning')
     expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
