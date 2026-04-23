@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, TilingSprite } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
+import { TourbusObstacleManager } from './TourbusObstacleManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
@@ -21,9 +22,7 @@ class TourbusStageController extends BaseStageController {
     this.effectManager = null
     this.roadStripes = null // TilingSprite for road
 
-    // Performance optimization: Pre-allocate Maps/Sets
-    this.obstacleMap = new Map()
-    this.currentIds = new Set()
+    this.obstacleManager = null
 
     // Animation state
     this.wobbleTime = 0
@@ -54,6 +53,13 @@ class TourbusStageController extends BaseStageController {
     // Initialize Effect Manager (on top of obstacles)
     this.effectManager = new EffectManager(this.app, this.container)
     this.effectManager.init()
+
+    this.obstacleManager = new TourbusObstacleManager(
+      this.obstacleContainer,
+      this.effectManager,
+      this.textures,
+      this.colors
+    )
 
     // Load Assets
     await this.loadAssets()
@@ -192,86 +198,6 @@ class TourbusStageController extends BaseStageController {
     }
   }
 
-  _updateObstacles(state: any, height: any) {
-    this.currentIds.clear()
-
-    for (let i = 0, len = state.obstacles.length; i < len; i++) {
-      const obs = state.obstacles[i]
-      this.currentIds.add(obs.id)
-      let sprite = this.obstacleMap.get(obs.id)
-
-      if (!sprite) {
-        // Choose texture
-        let tex = null
-        if (obs.type === 'FUEL') tex = this.textures.fuel
-        else if (obs.type === 'OBSTACLE') tex = this.textures.rock // Randomize?
-
-        if (tex) {
-          sprite = new Sprite(tex)
-          sprite.anchor.set(0.5)
-          // Scale to fit lane width AND a max height
-          const targetW = this.laneWidth * 0.4
-          const targetH = height * 0.15
-          const scale = Math.min(targetW / tex.width, targetH / tex.height)
-          sprite.scale.set(scale)
-        } else {
-          sprite = new Graphics()
-          if (obs.type === 'FUEL') {
-            sprite.circle(0, 0, 20)
-            sprite.fill(this.colors.warningYellow)
-          } else {
-            sprite.rect(-25, -25, 50, 50)
-            sprite.fill(this.colors.bloodRed)
-          }
-        }
-
-        // Custom property to track explosion state
-        sprite.hasExploded = false
-
-        this.obstacleContainer.addChild(sprite)
-        this.obstacleMap.set(obs.id, sprite)
-      } else if (!obs.collided) {
-        sprite.hasExploded = false
-        sprite.alpha = 1
-      }
-
-      // Update position
-      const x = obs.lane * this.laneWidth + this.laneWidth / 2
-      const y = (obs.y / 100) * height
-      sprite.x = x
-      sprite.y = y
-
-      // Visual feedback for collision
-      if (obs.collided) {
-        sprite.alpha = 0.5
-
-        if (!sprite.hasExploded) {
-          sprite.hasExploded = true
-          if (obs.type === 'OBSTACLE') {
-            this.effectManager.spawnHitEffect(x, y, this.colors.bloodRed) // Red explosion
-          } else if (obs.type === 'FUEL') {
-            this.effectManager.spawnHitEffect(x, y, this.colors.toxicGreen) // Green sparkle
-          }
-        }
-      } else {
-        sprite.hasExploded = false
-        sprite.alpha = 1
-      }
-    }
-  }
-
-  _cleanupObstacles() {
-    // Performance optimization: Iterate over the Map's keys instead of entries to prevent
-    // per-frame garbage collection pauses caused by allocating [id, sprite] arrays.
-    for (const id of this.obstacleMap.keys()) {
-      if (!this.currentIds.has(id)) {
-        const sprite = this.obstacleMap.get(id)
-        sprite.destroy() // PixiJS automatically removes from parent
-        this.obstacleMap.delete(id)
-      }
-    }
-  }
-
   update(dt: any) {
     if (this.effectManager) this.effectManager.update(dt)
 
@@ -282,8 +208,10 @@ class TourbusStageController extends BaseStageController {
 
     this._updateRoadScroll(state, dt, height)
     this._updateBusPosition(state, dt, height)
-    this._updateObstacles(state, height)
-    this._cleanupObstacles()
+    if (this.obstacleManager) {
+      this.obstacleManager.updateObstacles(state, height, this.laneWidth)
+      this.obstacleManager.cleanupObstacles()
+    }
   }
 
   dispose() {
@@ -292,14 +220,9 @@ class TourbusStageController extends BaseStageController {
       this.effectManager = null
     }
 
-    // Clear maps
-    if (this.obstacleMap) {
-      this.obstacleMap.clear()
-      this.obstacleMap = null
-    }
-    if (this.currentIds) {
-      this.currentIds.clear()
-      this.currentIds = null
+    if (this.obstacleManager) {
+      this.obstacleManager.dispose()
+      this.obstacleManager = null
     }
 
     super.dispose()
