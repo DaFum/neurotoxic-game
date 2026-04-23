@@ -1,12 +1,12 @@
-import { Container } from 'pixi.js'
-import type { RhythmGameRefState } from '../rhythm/useRhythmGameLogic'
+import { Container, type Application } from 'pixi.js'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
 import { buildRhythmLayout } from './utils'
 import { LaneRenderer } from './LaneRenderer'
 
 const LANE_GAP = 20
 
 export class LaneManager {
-  app: import('pixi.js').Application
+  app: Application
   stageContainer: Container
   gameStateRef: { current: RhythmGameRefState }
   rhythmContainer: Container | null
@@ -16,8 +16,6 @@ export class LaneManager {
   lastScreenWidth: number
   lastScreenHeight: number
 
-    /**
-   */
   constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: RhythmGameRefState }) {
     this.app = app
     this.stageContainer = stageContainer
@@ -63,7 +61,7 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(lane: import('../rhythm/useRhythmGameLogic').RhythmLane, index: number, laneX: number) {
+  _createLaneGraphics(lane: import('../../types/rhythmGame').RhythmLane, index: number, laneX: number) {
     const renderer = new LaneRenderer(index)
 
     // Set initial visibility based on lane state and initialize cache
@@ -76,7 +74,7 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state: import('../rhythm/useRhythmGameLogic').RhythmGameRefState) {
+  update(state: import('../../types/rhythmGame').RhythmGameRefState) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 

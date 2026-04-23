@@ -7,7 +7,7 @@ import type {
 } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
-import type { RhythmGameRefState } from '../components/rhythm/useRhythmGameLogic'
+import type { RhythmGameRefState } from './rhythmGame'
 
 export interface PixiController {
   init(): Promise<void>
