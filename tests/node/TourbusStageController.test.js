@@ -126,7 +126,13 @@ mock.module('../../src/components/stage/TourbusObstacleManager', {
           }
         }
       }
-      dispose() {}
+      dispose() {
+        for (const sprite of this.obstacleMap.values()) {
+          if (sprite.destroy) sprite.destroy()
+        }
+        this.obstacleMap.clear()
+        this.currentIds.clear()
+      }
     }
   }
 })
@@ -229,33 +235,9 @@ describe('TourbusStageController', () => {
       }
     })()
 
-    // Fix: We must call setup() or mock the internal obstacleManager to prevent null crashes
-    controller.obstacleManager = new (class MockObstacleManager {
-      constructor() {
-        this.obstacleMap = new Map();
-        this.currentIds = new Set();
-      }
-      updateObstacles(state, height, laneWidth) {
-        this.currentIds.clear();
-        for (const obs of state.obstacles) {
-          this.currentIds.add(obs.id);
-          let sprite = this.obstacleMap.get(obs.id);
-          if (!sprite) {
-            sprite = { y: (obs.y / 100) * height };
-            this.obstacleMap.set(obs.id, sprite);
-          }
-          sprite.y = (obs.y / 100) * height;
-        }
-      }
-      cleanupObstacles() {
-        for (const id of this.obstacleMap.keys()) {
-          if (!this.currentIds.has(id)) {
-             this.obstacleMap.delete(id);
-          }
-        }
-      }
-      dispose() {}
-    })();
+    // Setup internal obstacleManager naturally via the mock.module
+    const { TourbusObstacleManager } = await import('../../src/components/stage/TourbusObstacleManager')
+    controller.obstacleManager = new TourbusObstacleManager()
 
 
     controller.container = new (class Container {
@@ -273,7 +255,11 @@ describe('TourbusStageController', () => {
   })
 
   afterEach(() => {
-    mock.reset()
+    // Only clear call counts to keep mock.module alive
+    currentTickerAdd.mock.resetCalls();
+    currentTickerRemove.mock.resetCalls();
+    currentAppDestroy.mock.resetCalls();
+    currentLoad.mock.resetCalls();
   })
 
   it('should initialize correctly', async () => {
@@ -341,13 +327,16 @@ describe('TourbusStageController', () => {
   it('should dispose correctly', async () => {
     controller.isDisposed = false
 
+    const mgr = controller.obstacleManager
+    mock.method(mgr, 'dispose')
+
     controller.dispose()
 
     assert.strictEqual(controller.isDisposed, true)
     assert.strictEqual(controller.initPromise, null)
     // Verify destroy was called on app
     assert.strictEqual(currentAppDestroy.mock.calls.length, 1)
-    // assert.strictEqual(controller.obstacleMap, null)
-    // assert.strictEqual(controller.currentIds, null)
+    assert.strictEqual(mgr.dispose.mock.calls.length, 1)
+    assert.strictEqual(controller.obstacleManager, null)
   })
 })
