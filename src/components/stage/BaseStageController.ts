@@ -2,6 +2,8 @@ import { Application, Container } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
+import { StageResizeHandler } from './StageResizeHandler'
+import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
 
 export class BaseStageController {
   [key: string]: any
@@ -17,42 +19,33 @@ export class BaseStageController {
     // Bind methods
     this.handleTicker = this.handleTicker.bind(this)
     this.handleResize = this.handleResize.bind(this)
+
+    // Sub-components
+    this.resizeHandler = new StageResizeHandler(this.handleResize)
   }
 
   cleanupHostResizeListeners() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect()
-      this.resizeObserver = null
-    }
-    if (this._usingWindowResize) {
-      window.removeEventListener('resize', this.handleResize)
-      this._usingWindowResize = false
-    }
+    this.resizeHandler.cleanup()
   }
 
   _checkLifecycleRace(app: any) {
-    if (this.isDisposed || this.app !== app) {
-      if (this.app === app) this.app = null
-      destroyPixiApp(app, this.handleTicker, this.constructor.name)
-      return true
-    }
-    return false
+    const isRace = checkLifecycleRace(
+      app,
+      this.app,
+      this.isDisposed,
+      this.handleTicker,
+      this.constructor.name
+    )
+    if (isRace && this.app === app) this.app = null
+    return isRace
   }
 
   _setupResizeListeners(container: any) {
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.handleResize())
-      this.resizeObserver.observe(container)
-    } else {
-      window.addEventListener('resize', this.handleResize)
-      this._usingWindowResize = true
-    }
+    this.resizeHandler.setup(container)
   }
 
   _isLifecycleRaceError(e: any, app: any) {
-    if (this.isDisposed || this.app !== app) return true
-    const message = e ? String(e.message || e) : ''
-    return message.includes('updateLocalTransform')
+    return isLifecycleRaceError(e, app, this.app, this.isDisposed)
   }
 
   _executeDisposeWithFallback(app: any) {
