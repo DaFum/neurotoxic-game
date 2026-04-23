@@ -68,11 +68,11 @@ describe('EffectManager', () => {
 
     // 3. Assert pool size incremented
     expect(manager.effectCount).toBe(0)
-    expect(manager.spritePool.length).toBe(1)
+    expect(manager.spritePool.spritePool.length).toBe(1)
 
     // 4. Spawn again to reuse the pooled sprite
     manager.spawnHitEffect(0, 0, 0x00ff00)
-    expect(manager.spritePool.length).toBe(0)
+    expect(manager.spritePool.spritePool.length).toBe(0)
     expect(manager.effectCount).toBe(1)
     const reusedEffect = manager.activeEffects[manager.headIndex]
 
@@ -93,10 +93,10 @@ describe('EffectManager', () => {
     expect(manager.container.children.length).toBe(1)
 
     // Call releaseEffectToPool
-    manager.releaseEffectToPool(nonSpriteEffect)
+    manager.spritePool.releaseSprite(nonSpriteEffect)
 
     // Assert it was not added to the sprite pool
-    expect(manager.spritePool.length).toBe(0)
+    expect(manager.spritePool.spritePool.length).toBe(0)
 
     // Assert it was removed from the container
     expect(manager.container.children.length).toBe(0)
@@ -126,11 +126,11 @@ describe('EffectManager', () => {
     expect(manager.container.children.length).toBe(1)
 
     // Call releaseEffectToPool
-    manager.releaseEffectToPool(plainObjectEffect)
+    manager.spritePool.releaseSprite(plainObjectEffect)
 
     // Assert it WAS added to the sprite pool
-    expect(manager.spritePool.length).toBe(1)
-    expect(manager.spritePool[0]).toBe(plainObjectEffect)
+    expect(manager.spritePool.spritePool.length).toBe(1)
+    expect(manager.spritePool.spritePool[0]).toBe(plainObjectEffect)
 
     // Assert it was removed from the container
     expect(manager.container.children.length).toBe(0)
