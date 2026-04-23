@@ -7,9 +7,9 @@ const LANE_GAP = 20
 export class LaneManager {
   app: import('pixi.js').Application
   stageContainer: Container
-  gameStateRef: { current: any }
+  gameStateRef: { current: unknown }
   rhythmContainer: Container | null
-  laneLayout: any
+  laneLayout: ReturnType<typeof buildRhythmLayout> | null
   laneGraphics: LaneRenderer[]
   lastLaneActive: boolean[]
   lastScreenWidth: number
@@ -20,7 +20,7 @@ export class LaneManager {
    * @param {Container} stageContainer
    * @param {object} gameStateRef
    */
-  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: any }) {
+  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: unknown }) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef

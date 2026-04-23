@@ -222,9 +222,6 @@ class PixiStageController extends BaseStageController {
 
     if (this.stageContainer) {
       this.stageContainer.filters = null
-      this.stageContainer.removeChildren()
-
-
       this.stageContainer.destroy({ children: true })
       this.stageContainer = null
     }

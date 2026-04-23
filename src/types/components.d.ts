@@ -121,7 +121,7 @@ import type { RefObject, MutableRefObject } from 'react'
 
 export interface StageControllerOptions {
   containerRef: RefObject<HTMLElement | null>
-  gameStateRef: RefObject<GameState>
+  gameStateRef: RefObject<unknown>
   updateRef: MutableRefObject<((dt: number) => void) | null>
   [key: string]: unknown
 }
