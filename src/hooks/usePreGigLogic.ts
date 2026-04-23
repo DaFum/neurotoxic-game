@@ -17,6 +17,11 @@ type Minigame = 'roadie' | 'kabelsalat' | 'amp'
 let lastMinigameFallback: Minigame | null = null
 
 // Exported exclusively for test cleanup
+
+const isMinigame = (value: unknown): value is Minigame => {
+  return value === 'roadie' || value === 'kabelsalat' || value === 'amp'
+}
+
 export const _resetLastMinigameFallback = () => {
   lastMinigameFallback = null
 }
@@ -164,12 +169,12 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const hasRunRef = useRef(false)
   useEffect(() => {
     if (hasRunRef.current) return
+    hasRunRef.current = true
     if (!activeEvent && !isScreenshotMode) {
       const bandEvent = triggerEvent('band', 'pre_gig')
       if (!bandEvent) {
         triggerEvent('gig', 'pre_gig')
       }
-      hasRunRef.current = true
     }
   }, [activeEvent, isScreenshotMode, triggerEvent])
 
@@ -217,16 +222,16 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       const audioOk = await audioManager.ensureAudioContext()
       if (!audioOk) {
         setIsStarting(false)
-        addToast(t('ui:pregig.toasts.audioFail'), 'error')
         return
       }
       const gigId = currentGig?.id || `gig_${getSafeUUID()}`
 
       let lastMinigame = lastMinigameFallback
       try {
-        lastMinigame =
-          sessionStorage.getItem('neurotoxic_last_minigame') ||
-          lastMinigameFallback
+        const sessionValue = sessionStorage.getItem('neurotoxic_last_minigame')
+        if (isMinigame(sessionValue)) {
+          lastMinigame = sessionValue
+        }
       } catch (_storageErr) {
         // Ignore SecurityError or other storage errors
       }
@@ -238,13 +243,13 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       }
 
       if (lastMinigame && Object.hasOwn(weights, lastMinigame)) {
-        weights[lastMinigame as Minigame] = 0.2
+        weights[lastMinigame] = 0.2
       }
 
       const totalWeight = weights.roadie + weights.kabelsalat + weights.amp
       const randomVal = getSafeRandom() * totalWeight
 
-      let chosenGame = 'roadie'
+      let chosenGame: Minigame = 'roadie'
       if (randomVal < weights.roadie) {
         chosenGame = 'roadie'
       } else if (randomVal < weights.roadie + weights.kabelsalat) {

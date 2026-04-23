@@ -230,7 +230,8 @@ describe('TourbusStageController', () => {
     })()
 
     // Setup internal obstacleManager naturally via the mock.module
-    controller.obstacleManager = new (await import('../../src/components/stage/TourbusObstacleManager')).TourbusObstacleManager();
+    const { TourbusObstacleManager } = await import('../../src/components/stage/TourbusObstacleManager')
+    controller.obstacleManager = new TourbusObstacleManager()
 
 
     controller.container = new (class Container {
@@ -320,12 +321,16 @@ describe('TourbusStageController', () => {
   it('should dispose correctly', async () => {
     controller.isDisposed = false
 
+    const mgr = controller.obstacleManager
+    mock.method(mgr, 'dispose')
+
     controller.dispose()
 
     assert.strictEqual(controller.isDisposed, true)
     assert.strictEqual(controller.initPromise, null)
     // Verify destroy was called on app
     assert.strictEqual(currentAppDestroy.mock.calls.length, 1)
+    assert.strictEqual(mgr.dispose.mock.calls.length, 1)
     assert.strictEqual(controller.obstacleManager, null)
   })
 })
