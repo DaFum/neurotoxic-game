@@ -1,13 +1,8 @@
 import { Application, Container, Sprite, Texture } from 'pixi.js'
 import { EffectTextureManager } from './EffectTextureManager'
-
-type EffectSprite = Sprite & {
-  isSprite: boolean
-  life: number
-}
+import { EffectSprite, EffectSpritePool } from './EffectSpritePool'
 
 export class EffectManager {
-  static MAX_POOL_SIZE = 50
   static MAX_ACTIVE_EFFECTS = 50
   app: Application
   parentContainer: Container
@@ -17,7 +12,7 @@ export class EffectManager {
   effectCount: number
   headIndex: number
   tailIndex: number
-  spritePool: EffectSprite[]
+  spritePool: EffectSpritePool
 
   /**
    * @param {Application} app
@@ -37,12 +32,13 @@ export class EffectManager {
     this.tailIndex = 0
 
     // Pool for Sprites (no longer need separate graphics pool)
-    this.spritePool = []
+    this.spritePool = new EffectSpritePool()
   }
 
   init(): void {
     this.container = new Container()
     this.parentContainer.addChild(this.container)
+    this.spritePool.setContainer(this.container)
   }
 
   async loadAssets(): Promise<void> {
@@ -52,28 +48,11 @@ export class EffectManager {
   _evictOldestEffect(): void {
     // O(1) removal of the oldest effect (which is always at headIndex)
     const oldest = this.activeEffects[this.headIndex]
-    this.releaseEffectToPool(oldest)
+    this.spritePool.releaseSprite(oldest)
     this.activeEffects[this.headIndex] = null
 
     this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
     this.effectCount--
-  }
-
-  _getSpriteFromPool(texture: Texture | null): EffectSprite {
-    if (this.spritePool.length > 0) {
-      const sprite = this.spritePool.pop() as EffectSprite
-      sprite.texture = texture || Texture.WHITE
-      sprite.anchor.set(0.5)
-      return sprite
-    }
-
-    // Create sprite, using generic texture if specific one is missing/not loaded
-    // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
-    const effect = new Sprite(texture || Texture.WHITE) as EffectSprite
-    effect.isSprite = true
-    effect.life = 1
-    effect.anchor.set(0.5)
-    return effect
   }
 
   spawnHitEffect(x: number, y: number, color: number): void {
@@ -85,7 +64,7 @@ export class EffectManager {
     }
 
     const texture = this.textureManager.resolveHitTexture(color)
-    const effect = this._getSpriteFromPool(texture)
+    const effect = this.spritePool.getSprite(texture)
 
     effect.tint = color
     effect.x = x
@@ -153,7 +132,7 @@ export class EffectManager {
       effect.life = newLife
 
       if (newLife <= 0) {
-        this.releaseEffectToPool(effect)
+        this.spritePool.releaseSprite(effect)
         this.activeEffects[idx] = null
 
         count = this._handleDeadEffect(idx, i, count)
@@ -165,38 +144,13 @@ export class EffectManager {
     }
   }
 
-  releaseEffectToPool(effect: EffectSprite | null): void {
-    if (!effect) return
-
-    if (this.container) {
-      this.container.removeChild(effect)
-    }
-
-    effect.visible = false
-
-    // Only pool Sprites (legacy graphics would be destroyed if they existed)
-    if (effect.isSprite) {
-      if (this.spritePool.length < EffectManager.MAX_POOL_SIZE) {
-        this.spritePool.push(effect)
-      } else {
-        effect.destroy()
-      }
-    } else {
-      effect.destroy()
-    }
-  }
-
   dispose(): void {
     this.activeEffects = new Array(EffectManager.MAX_ACTIVE_EFFECTS)
     this.effectCount = 0
     this.headIndex = 0
     this.tailIndex = 0
 
-    // Destroy pool
-    for (let i = 0; i < this.spritePool.length; i++) {
-      this.spritePool[i].destroy()
-    }
-    this.spritePool = []
+    this.spritePool.dispose()
 
     this.textureManager.dispose()
 
