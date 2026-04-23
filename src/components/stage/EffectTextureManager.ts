@@ -10,22 +10,73 @@
  * - Error: Memory leak when disposing EffectManager. Solution: Added .destroy(true) for textures before nulling them out.
  * - Error: Accidentally changed bass lane hit effect logic during refactor. Solution: Reverted the `g > r && g > b` logic to the original `this.textures.toxic` fallback so non-red colors (like blue bass and white fallback) render the toxic texture as originally designed.
  */
-import { Graphics } from 'pixi.js'
+import { Graphics, Application, Texture } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { logger } from '../../utils/logger'
 import { loadTextures, getPixiColorFromToken } from './utils'
 
+/**
+ * Safely destroys a texture if it exists and has a destroy method.
+ */
+function safeDestroyTexture(texture: Texture | null): void {
+  if (texture && typeof texture.destroy === 'function') {
+    texture.destroy(true)
+  }
+}
+
+/**
+ * Creates a generic hit texture using PixiJS Graphics.
+ */
+function createGenericHitTexture(app: Application): Texture | null {
+  const graphics = new Graphics()
+  const whiteColor = getPixiColorFromToken('--star-white')
+
+  graphics.circle(0, 0, 40)
+  graphics.fill({ color: whiteColor, alpha: 0.8 })
+  graphics.stroke({ width: 4, color: whiteColor, alpha: 1.0 })
+
+  let texture: Texture | null = null
+
+  try {
+    if ((app.renderer as any)?.textureGenerator) {
+      texture = (app.renderer as any).textureGenerator.generateTexture({
+        target: graphics,
+        resolution: 1,
+        antialias: true
+      })
+    } else if ((app.renderer as any)?.generateTexture) {
+      texture = (app.renderer as any).generateTexture(graphics)
+    } else {
+      logger.warn(
+        'EffectTextureManager',
+        'Renderer not available for texture generation'
+      )
+    }
+  } catch (error) {
+    logger.warn(
+      'EffectTextureManager',
+      'Failed to generate generic hit texture',
+      error
+    )
+  } finally {
+    graphics.destroy()
+  }
+
+  return texture
+}
+
 export class EffectTextureManager {
-  /**
-   * @param {import('pixi.js').Application} app
-   */
-  constructor(app) {
+  app: Application
+  textures: { blood: Texture | null; toxic: Texture | null }
+  genericHitTexture: Texture | null
+
+  constructor(app: Application) {
     this.app = app
     this.textures = { blood: null, toxic: null }
     this.genericHitTexture = null
   }
 
-  async loadAssets() {
+  async loadAssets(): Promise<void> {
     try {
       const urls = {
         blood: getGenImageUrl(IMG_PROMPTS.HIT_BLOOD),
@@ -50,44 +101,12 @@ export class EffectTextureManager {
     }
   }
 
-  _createGenericHitTexture() {
+  _createGenericHitTexture(): void {
     if (this.genericHitTexture) return
-
-    const graphics = new Graphics()
-    const whiteColor = getPixiColorFromToken('--star-white')
-
-    graphics.circle(0, 0, 40)
-    graphics.fill({ color: whiteColor, alpha: 0.8 })
-    graphics.stroke({ width: 4, color: whiteColor, alpha: 1.0 })
-
-    try {
-      if (this.app?.renderer?.textureGenerator) {
-        this.genericHitTexture =
-          this.app.renderer.textureGenerator.generateTexture({
-            target: graphics,
-            resolution: 1,
-            antialias: true
-          })
-      } else if (this.app?.renderer?.generateTexture) {
-        this.genericHitTexture = this.app.renderer.generateTexture(graphics)
-      } else {
-        logger.warn(
-          'EffectTextureManager',
-          'Renderer not available for texture generation'
-        )
-      }
-    } catch (error) {
-      logger.warn(
-        'EffectTextureManager',
-        'Failed to generate generic hit texture',
-        error
-      )
-    } finally {
-      graphics.destroy()
-    }
+    this.genericHitTexture = createGenericHitTexture(this.app)
   }
 
-  resolveHitTexture(color) {
+  resolveHitTexture(color: number): Texture | null {
     const r = (color >> 16) & 0xff
     const g = (color >> 8) & 0xff
     const b = color & 0xff
@@ -104,26 +123,12 @@ export class EffectTextureManager {
     return this.genericHitTexture
   }
 
-  dispose() {
-    if (
-      this.genericHitTexture &&
-      typeof this.genericHitTexture.destroy === 'function'
-    ) {
-      this.genericHitTexture.destroy(true)
-      this.genericHitTexture = null
-    }
-    if (
-      this.textures.blood &&
-      typeof this.textures.blood.destroy === 'function'
-    ) {
-      this.textures.blood.destroy(true)
-    }
-    if (
-      this.textures.toxic &&
-      typeof this.textures.toxic.destroy === 'function'
-    ) {
-      this.textures.toxic.destroy(true)
-    }
+  dispose(): void {
+    safeDestroyTexture(this.genericHitTexture)
+    this.genericHitTexture = null
+
+    safeDestroyTexture(this.textures.blood)
+    safeDestroyTexture(this.textures.toxic)
     this.textures = { blood: null, toxic: null }
   }
 }
