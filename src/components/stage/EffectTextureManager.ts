@@ -50,7 +50,7 @@ function createGenericHitTexture(app: Application): Texture | null {
       })
     } else if (typeof renderer.generateTexture === 'function') {
       const generateTexture = renderer.generateTexture as (graphics: Graphics) => Texture
-      texture = generateTexture(graphics)
+      texture = generateTexture.call(renderer, graphics)
     } else {
       logger.warn(
         'EffectTextureManager',
