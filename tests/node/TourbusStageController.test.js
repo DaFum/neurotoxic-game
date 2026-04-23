@@ -282,7 +282,7 @@ describe('TourbusStageController', () => {
     controller.handleTicker(ticker)
 
     // Verify obstacle sprite created
-    // assert.strictEqual(controller.obstacleManager.obstacleMap.size, 1)
+    // // assert.strictEqual(controller.obstacleManager.obstacleMap.size, 1)
     const sprite = controller.obstacleManager.obstacleMap.get('obs1')
     assert.ok(sprite)
 
