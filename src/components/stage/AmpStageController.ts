@@ -2,6 +2,14 @@ import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
 import { AmpWaveManager } from './AmpWaveManager'
+import { RefObject, MutableRefObject } from 'react'
+
+export interface StageControllerOptions {
+  containerRef: RefObject<HTMLElement | null>
+  gameStateRef: RefObject<any>
+  updateRef: MutableRefObject<((dt: number) => void) | null>
+  [key: string]: any
+}
 
 export class AmpStageController extends BaseStageController {
   waveManager: AmpWaveManager | null
@@ -10,7 +18,7 @@ export class AmpStageController extends BaseStageController {
   currentFreq: number
   time: number
 
-  constructor(options: any) {
+  constructor(options: StageControllerOptions) {
     super(options)
 
     this.waveManager = null
@@ -86,4 +94,4 @@ export class AmpStageController extends BaseStageController {
   }
 }
 
-export const createAmpStageController = (params: any) => new AmpStageController(params)
+export const createAmpStageController = (params: StageControllerOptions) => new AmpStageController(params)
