@@ -10,11 +10,18 @@ const HIT_BAR_ACTIVE_ALPHA = 0.95
 const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
 
+export interface TaggedGraphics extends Graphics {
+  __laneIndex: number
+  __layer: string
+}
+
 export class LaneRenderer {
-  [key: string]: any
-  constructor(index: any) {
-    const createGraphicsLayer = (layer: any, isVisible = true) => {
-      const g = new Graphics() as any
+  static: TaggedGraphics
+  active: TaggedGraphics
+  inactive: TaggedGraphics
+    constructor(index: number) {
+    const createGraphicsLayer = (layer: string, isVisible = true) => {
+      const g = new Graphics() as TaggedGraphics
       g.__laneIndex = index
       g.__layer = layer
       g.visible = isVisible
@@ -26,13 +33,13 @@ export class LaneRenderer {
     this.inactive = createGraphicsLayer('inactive')
   }
 
-  addTo(container: any) {
+  addTo(container: import("pixi.js").Container) {
     container.addChild(this.static)
     container.addChild(this.inactive)
     container.addChild(this.active)
   }
 
-  draw(lane: any, renderX: any, layout: any) {
+  draw(lane: unknown, renderX: number, layout: any) {
     this.static.clear()
     this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
@@ -84,7 +91,7 @@ export class LaneRenderer {
     })
   }
 
-  setVisibility(isActive: any) {
+  setVisibility(isActive: boolean) {
     this.active.visible = !!isActive
     this.inactive.visible = !isActive
   }

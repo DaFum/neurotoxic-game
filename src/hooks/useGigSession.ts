@@ -80,26 +80,26 @@ export const useGigSession = ({
       })
     } finally {
       // Use fallback stats if gameStateRef is unavailable or uninitialized
-      const score = gameStateRef.current?.score || 0
+      const score = gameStateRef.current?.score ?? 0
       // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
-      const rawStats = gameStateRef.current?.stats || {}
+      const rawStats = gameStateRef.current?.stats ?? {}
       const statsSnapshot = {
-        perfectHits: rawStats.perfectHits || 0,
-        perfects: rawStats.perfects || 0, // Alias if used
-        hits: rawStats.hits || 0,
-        misses: rawStats.misses || 0,
-        earlyHits: rawStats.earlyHits || 0,
-        lateHits: rawStats.lateHits || 0,
-        maxCombo: rawStats.maxCombo || 0,
-        peakHype: rawStats.peakHype || 0
+        perfectHits: rawStats.perfectHits ?? 0,
+        perfects: rawStats.perfects ?? 0, // Alias if used
+        hits: rawStats.hits ?? 0,
+        misses: rawStats.misses ?? 0,
+        earlyHits: rawStats.earlyHits ?? 0,
+        lateHits: rawStats.lateHits ?? 0,
+        maxCombo: rawStats.maxCombo ?? 0,
+        peakHype: rawStats.peakHype ?? 0
       }
-      const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
+      const toxicTime = gameStateRef.current?.toxicTimeTotal ?? 0
 
       const snapshot = buildGigStatsSnapshot(
         score,
         statsSnapshot,
         toxicTime,
-        gameStateRef.current?.songStats || []
+        gameStateRef.current?.songStats ?? []
       )
       setLastGigStats(snapshot)
       endGig()

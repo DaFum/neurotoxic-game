@@ -6,7 +6,7 @@ import { StageResizeHandler } from './StageResizeHandler'
 import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
 
 export class BaseStageController {
-  [key: string]: any
+  [key: string]: unknown
   constructor({ containerRef, gameStateRef, updateRef }: any) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef

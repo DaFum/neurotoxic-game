@@ -54,6 +54,5 @@ export class ToxicFilterManager {
     }
 
     this.toxicFilters = null
-    this.stageContainer = null
   }
 }

@@ -45,6 +45,10 @@ export class EffectManager {
     await this.textureManager.loadAssets()
   }
 
+  releaseEffectToPool(effect: EffectSprite | null) {
+    this.spritePool.releaseSprite(effect)
+  }
+
   _evictOldestEffect(): void {
     // O(1) removal of the oldest effect (which is always at headIndex)
     const oldest = this.activeEffects[this.headIndex]

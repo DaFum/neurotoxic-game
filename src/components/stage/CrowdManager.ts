@@ -6,7 +6,7 @@ import {
   getPixiColorFromToken
 } from './utils'
 import { getSafeRandom } from '../../utils/crypto'
-import { CrowdTextureManager, CrowdTextures } from './CrowdTextureManager'
+import { CrowdTextureManager, type CrowdTextures } from './CrowdTextureManager'
 
 type CrowdColors = {
   toxicGreen: number

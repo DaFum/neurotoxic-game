@@ -5,13 +5,22 @@ import { LaneRenderer } from './LaneRenderer'
 const LANE_GAP = 20
 
 export class LaneManager {
-  [key: string]: any
-  /**
+  app: unknown
+  stageContainer: Container
+  gameStateRef: unknown
+  rhythmContainer: Container | null
+  laneLayout: unknown
+  laneGraphics: LaneRenderer[]
+  lastLaneActive: unknown[]
+  lastScreenWidth: number
+  lastScreenHeight: number
+
+    /**
    * @param {Application} app
    * @param {Container} stageContainer
    * @param {object} gameStateRef
    */
-  constructor(app: any, stageContainer: any, gameStateRef: any) {
+  constructor(app: unknown, stageContainer: Container, gameStateRef: unknown) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
@@ -56,7 +65,7 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(lane: any, index: any, laneX: any) {
+  _createLaneGraphics(lane: unknown, index: number, laneX: number) {
     const renderer = new LaneRenderer(index)
 
     // Set initial visibility based on lane state and initialize cache
@@ -69,7 +78,7 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state: any) {
+  update(state: unknown) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 
@@ -88,7 +97,7 @@ export class LaneManager {
     }
   }
 
-  updateLaneVisibility(lane: any, index: any, graphicsSet: any) {
+  updateLaneVisibility(lane: unknown, index: number, graphicsSet: unknown) {
     const wasActive = this.lastLaneActive[index]
 
     // Update visibility only when activity state changes

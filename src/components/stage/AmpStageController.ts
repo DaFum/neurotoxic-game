@@ -1,15 +1,9 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
+import type { StageControllerOptions } from '../../types/components'
 import { AmpWaveManager } from './AmpWaveManager'
 import { RefObject, MutableRefObject } from 'react'
-
-export interface StageControllerOptions {
-  containerRef: RefObject<HTMLElement | null>
-  gameStateRef: RefObject<any>
-  updateRef: MutableRefObject<((dt: number) => void) | null>
-  [key: string]: any
-}
 
 export class AmpStageController extends BaseStageController {
   waveManager: AmpWaveManager | null

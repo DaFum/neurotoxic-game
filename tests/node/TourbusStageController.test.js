@@ -107,7 +107,7 @@ mock.module('../../src/components/stage/TourbusObstacleManager', {
         this.obstacleMap = new Map();
         this.currentIds = new Set();
       }
-      updateObstacles(state, height, laneWidth) {
+      updateObstacles(state, height, _laneWidth) {
         this.currentIds.clear();
         for (const obs of state.obstacles) {
           this.currentIds.add(obs.id);

@@ -221,7 +221,10 @@ class PixiStageController extends BaseStageController {
     this.toxicFilterManager = null
 
     if (this.stageContainer) {
+      this.stageContainer.filters = null
       this.stageContainer.removeChildren()
+
+
       this.stageContainer.destroy({ children: true })
       this.stageContainer = null
     }

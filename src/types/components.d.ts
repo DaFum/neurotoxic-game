@@ -116,6 +116,16 @@ export interface MinigameSceneFrameProps {
   children?: React.ReactNode
 }
 
+
+import type { RefObject, MutableRefObject } from 'react'
+
+export interface StageControllerOptions {
+  containerRef: RefObject<HTMLElement | null>
+  gameStateRef: RefObject<{ current: GameState }>
+  updateRef: MutableRefObject<((dt: number) => void) | null>
+  [key: string]: unknown
+}
+
 export interface PixiStageProps {
   gameStateRef: { current: GameState }
   update: (state: unknown) => void
