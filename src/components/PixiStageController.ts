@@ -3,7 +3,7 @@
  * (#2) Next Steps: Continue monitoring class size.
  * (#3) Found Errors + Solutions: None.
  */
-import { ColorMatrixFilter } from 'pixi.js'
+import { ToxicFilterManager } from './stage/ToxicFilterManager'
 import { BaseStageController } from './stage/BaseStageController'
 import { CrowdManager } from './stage/CrowdManager'
 import { LaneManager } from './stage/LaneManager'
@@ -16,21 +16,18 @@ import { withTimeout } from './stage/utils'
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
 class PixiStageController extends BaseStageController {
-  colorMatrix: any
   stageContainer: any
   crowdManager: any
   laneManager: any
   effectManager: any
   noteManager: any
-  toxicFilters: any
-  isToxicActive: boolean
+  toxicFilterManager: any
 
   /**
    * @param {object} params - Controller dependencies.
    */
   constructor(params: any) {
     super(params)
-    this.colorMatrix = null
     this.stageContainer = null
 
     // Managers
@@ -38,9 +35,7 @@ class PixiStageController extends BaseStageController {
     this.laneManager = null
     this.effectManager = null
     this.noteManager = null
-
-    this.toxicFilters = null
-    this.isToxicActive = false
+    this.toxicFilterManager = null
   }
 
   /**
@@ -55,14 +50,12 @@ class PixiStageController extends BaseStageController {
   }
 
   /**
-   * Initializes filters and stage containers.
+   * Initializes stage container and toxic filters.
    * @private
    */
   _initFilters() {
-    this.isToxicActive = false
-    this.colorMatrix = new ColorMatrixFilter()
-    this.toxicFilters = [this.colorMatrix]
     this.stageContainer = this.container
+    this.toxicFilterManager = new ToxicFilterManager(this.stageContainer)
   }
 
   /**
@@ -147,7 +140,7 @@ class PixiStageController extends BaseStageController {
 
     const elapsed = getGigTimeMs()
 
-    this._updateToxicMode(state, elapsed)
+    this.toxicFilterManager.update(state, elapsed)
 
     this.laneManager.update(state)
     this.crowdManager.update(
@@ -173,32 +166,11 @@ class PixiStageController extends BaseStageController {
       this.crowdManager &&
       this.noteManager &&
       this.effectManager &&
-      this.toxicFilters
+      this.toxicFilterManager &&
+      this.toxicFilterManager.isReady()
     )
   }
 
-  /**
-   * Updates toxic mode filter effects based on game state.
-   * @param {object} state - The game state.
-   * @param {number} elapsed - The elapsed gig time.
-   * @private
-   */
-  _updateToxicMode(state: any, elapsed: number) {
-    if (state.isToxicMode) {
-      if (this.colorMatrix) {
-        this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
-      }
-      if (!this.isToxicActive) {
-        this.stageContainer.filters = this.toxicFilters
-        this.isToxicActive = true
-      }
-    } else {
-      if (this.isToxicActive) {
-        this.stageContainer.filters = null
-        this.isToxicActive = false
-      }
-    }
-  }
 
   /**
    * Disposes Pixi resources and removes the canvas.
@@ -209,27 +181,19 @@ class PixiStageController extends BaseStageController {
     this.effectManager?.dispose()
     this.laneManager?.dispose()
     this.crowdManager?.dispose()
+    this.toxicFilterManager?.dispose()
 
     this.noteManager = null
     this.effectManager = null
     this.laneManager = null
     this.crowdManager = null
+    this.toxicFilterManager = null
 
-    // Clear filters from container explicitly to release the array references
     if (this.stageContainer) {
-      this.stageContainer.filters = null
       this.stageContainer.removeChildren()
       this.stageContainer.destroy({ children: true })
       this.stageContainer = null
     }
-
-    // Destroy color matrix filter to free GPU memory
-    if (this.colorMatrix) {
-      this.colorMatrix.destroy()
-      this.colorMatrix = null
-    }
-
-    this.toxicFilters = null
 
     super.dispose()
   }
