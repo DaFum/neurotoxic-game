@@ -90,7 +90,8 @@ export const useGigSession = ({
         misses: rawStats.misses || 0,
         earlyHits: rawStats.earlyHits || 0,
         lateHits: rawStats.lateHits || 0,
-        maxCombo: rawStats.maxCombo || 0
+        maxCombo: rawStats.maxCombo || 0,
+        peakHype: rawStats.peakHype || 0
       }
       const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
 

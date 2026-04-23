@@ -18,7 +18,7 @@ export const useGigVisuals = ({
   currentGig,
   bandHarmony
 }: UseGigVisualsProps): UseGigVisualsReturn => {
-  // Determine Background URL
+    // Determine Background URL
   const bgUrl = useMemo(() => {
     let bgPrompt = IMG_PROMPTS.VENUE_CLUB
     if (currentGig?.name?.includes('Kaminstube'))
@@ -28,35 +28,17 @@ export const useGigVisuals = ({
       currentGig?.name?.includes('Open Air')
     )
       bgPrompt = IMG_PROMPTS.VENUE_FESTIVAL
-    else if (
-      currentGig?.difficulty !== undefined &&
-      currentGig.difficulty <= 2
-    )
+    else if (typeof currentGig?.diff === 'number' && currentGig.diff <= 2)
       bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
-    else if (
-      currentGig?.difficulty !== undefined &&
-      currentGig.difficulty >= 5
-    )
+    else if (typeof currentGig?.diff === 'number' && currentGig.diff >= 5)
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
-    // Note: the original code checked currentGig?.diff, but the interface says difficulty.
-    // However we'll support both in case diff is an untyped alias
-    else if (
-      (currentGig as any)?.diff !== undefined &&
-      (currentGig as any).diff <= 2
-    )
+    else if (currentGig?.difficulty !== undefined && currentGig.difficulty <= 2)
       bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
-    else if (
-      (currentGig as any)?.diff !== undefined &&
-      (currentGig as any).diff >= 5
-    )
+    else if (currentGig?.difficulty !== undefined && currentGig.difficulty >= 5)
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
     return getGenImageUrl(bgPrompt)
-  }, [
-    currentGig?.name,
-    currentGig?.difficulty,
-    (currentGig as any)?.diff
-  ])
+  }, [currentGig?.name, currentGig?.difficulty, currentGig?.diff])
 
   // Character Images based on Harmony
   const { matzeUrl, mariusUrl, larsUrl } = useMemo(() => {
