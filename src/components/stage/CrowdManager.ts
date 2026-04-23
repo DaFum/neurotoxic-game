@@ -1,11 +1,12 @@
-import { Application, Container, Graphics, Sprite } from 'pixi.js'
+import type { Application } from 'pixi.js'
+import { Container, Graphics, Sprite } from 'pixi.js'
 import {
   calculateCrowdOffset,
   CROWD_LAYOUT,
   getPixiColorFromToken
 } from './utils'
 import { getSafeRandom } from '../../utils/crypto'
-import { CrowdTextureManager } from './CrowdTextureManager'
+import { CrowdTextureManager, CrowdTextures } from './CrowdTextureManager'
 
 type CrowdColors = {
   toxicGreen: number
@@ -45,6 +46,11 @@ export class CrowdManager {
       starWhite: getPixiColorFromToken('--star-white'),
       ashGray: getPixiColorFromToken('--ash-gray')
     }
+  }
+
+  // Backwards compatibility alias for consumers that directly read/write crowdManager.textures.*
+  get textures(): CrowdTextures {
+    return this.textureManager.textures
   }
 
   async loadAssets(): Promise<void> {

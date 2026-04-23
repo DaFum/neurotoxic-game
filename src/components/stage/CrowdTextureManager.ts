@@ -1,4 +1,4 @@
-import { Texture } from 'pixi.js'
+import type { Texture } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
 import { loadTextures } from './utils'
@@ -25,7 +25,7 @@ export class CrowdTextureManager {
       const loadedTextures = await loadTextures(
         urls,
         (error, fallbackMessage) => {
-          handleError(error, { fallbackMessage })
+          handleError(error, { fallbackMessage, silent: true })
         }
       )
 
@@ -33,7 +33,8 @@ export class CrowdTextureManager {
       if (loadedTextures.mosh) this.textures.mosh = loadedTextures.mosh
     } catch (error) {
       handleError(error, {
-        fallbackMessage: 'Critical error loading crowd textures.'
+        fallbackMessage: 'Critical error loading crowd textures.',
+        silent: true
       })
     }
   }
@@ -43,6 +44,12 @@ export class CrowdTextureManager {
   }
 
   dispose(): void {
+    if (this.textures.idle && typeof this.textures.idle.destroy === 'function') {
+      this.textures.idle.destroy(true)
+    }
+    if (this.textures.mosh && typeof this.textures.mosh.destroy === 'function') {
+      this.textures.mosh.destroy(true)
+    }
     this.textures = { idle: null, mosh: null }
   }
 }
