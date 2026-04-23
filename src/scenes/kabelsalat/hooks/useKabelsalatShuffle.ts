@@ -1,7 +1,6 @@
-import { useEffect, useRef, MutableRefObject, Dispatch, SetStateAction, useMemo } from 'react'
+import { useEffect, type MutableRefObject, type Dispatch, type SetStateAction, useMemo } from 'react'
 import { INITIAL_SOCKET_ORDER } from '../constants'
-import { secureRandom, getSafeRandom } from '../../../utils/crypto'
-import { logger } from '../../../utils/logger'
+import { getSafeRandom } from '../../../utils/crypto'
 
 export const useKabelsalatShuffle = (
   isPoweredOn: boolean,
@@ -15,20 +14,7 @@ export const useKabelsalatShuffle = (
     return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
   }, [connections])
 
-  const randomFnRef = useRef(getSafeRandom)
-
-  useEffect(() => {
-    try {
-      secureRandom()
-      randomFnRef.current = secureRandom
-    } catch (e) {
-      logger.warn(
-        'secureRandom unavailable, falling back to getSafeRandom()',
-        e
-      )
-      randomFnRef.current = getSafeRandom
-    }
-  }, [])
+  const randomFn = getSafeRandom
 
   // Shuffle sockets
   useEffect(() => {
@@ -47,7 +33,7 @@ export const useKabelsalatShuffle = (
         const shuffled = [...unconnectedIds]
 
         for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(randomFnRef.current() * (i + 1))
+          const j = Math.floor(randomFn() * (i + 1))
           ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
         }
 

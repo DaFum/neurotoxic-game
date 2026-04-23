@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, MutableRefObject, Dispatch, SetStateAction } from 'react'
+import { useEffect, useCallback, useRef, type MutableRefObject, type Dispatch, type SetStateAction } from 'react'
 import { SOCKET_DEFS, CABLE_MAP } from '../constants'
 
 export const useKabelsalatInteractions = (
@@ -44,34 +44,12 @@ export const useKabelsalatInteractions = (
     (cableId: string) => {
       if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
-      // Performance: use Object iteration to find and remove connections in one pass
-      let connectionSocketId
-      const connectionKeys = Object.keys(connections)
-      for (let i = 0; i < connectionKeys.length; i++) {
-        const key = connectionKeys[i]
-        if (connections[key] === cableId) {
-          connectionSocketId = key
-          break
-        }
-      }
+      const connectionSocketId = Object.keys(connections).find(key => connections[key] === cableId)
 
       if (connectionSocketId) {
         setConnections(prev => {
-          let socketIdToRemove
-          const prevKeys = Object.keys(prev)
-          for (let i = 0; i < prevKeys.length; i++) {
-            const key = prevKeys[i]
-            if (prev[key] === cableId) {
-              socketIdToRemove = key
-              break
-            }
-          }
-          if (socketIdToRemove) {
-            const newConn = { ...prev }
-            delete newConn[socketIdToRemove]
-            return newConn
-          }
-          return prev
+          const { [connectionSocketId]: _, ...rest } = prev
+          return rest
         })
         setSelectedCable(null)
         return

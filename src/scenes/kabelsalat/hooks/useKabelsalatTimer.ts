@@ -1,4 +1,4 @@
-import { useEffect, useRef, MutableRefObject, Dispatch, SetStateAction } from 'react'
+import { useEffect, useRef, type MutableRefObject, type Dispatch, type SetStateAction } from 'react'
 import { SOCKET_DEFS } from '../constants'
 
 export const useKabelsalatTimer = (
