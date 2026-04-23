@@ -1,12 +1,12 @@
 import { Application, Container, Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
-import { calculateNoteY, loadTextures } from './utils'
+import { calculateNoteY } from './utils'
 import {
   NoteSpritePool,
   NOTE_CENTER_OFFSET,
   type NoteSprite
 } from './NoteSpritePool'
+import { NoteTextureManager, type NoteTextures } from './NoteTextureManager'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 
@@ -26,7 +26,6 @@ type StageState = {
 }
 type LaneLayout = { hitLineY?: number }
 type ActiveNoteEntity = { note: StageNote; sprite: NoteSprite }
-type NoteTextures = { skull: Texture | null; lightning: Texture | null }
 
 export class NoteManager {
   app: Application
@@ -38,7 +37,7 @@ export class NoteManager {
   activeEntities: ActiveNoteEntity[]
   nextRenderIndex: number
   lastNotesVersion: number | null
-  noteTextures: NoteTextures
+  textureManager: NoteTextureManager
 
   /**
    * @param {Application} app
@@ -61,7 +60,7 @@ export class NoteManager {
     this.activeEntities = [] // Track active {note, sprite} pairs for fast iteration
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
-    this.noteTextures = { skull: null, lightning: null }
+    this.textureManager = new NoteTextureManager()
   }
 
   init(): void {
@@ -69,36 +68,13 @@ export class NoteManager {
     this.parentContainer.addChild(this.container)
     this.pool = new NoteSpritePool(this.container)
     // Pass loaded textures to the pool
-    this.pool.noteTextures = this.noteTextures
+    this.pool.noteTextures = this.textureManager.noteTextures
   }
 
   async loadAssets(): Promise<void> {
-    try {
-      const urls = {
-        skull: getGenImageUrl(IMG_PROMPTS.NOTE_SKULL),
-        lightning: getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING)
-      }
-
-      const loadedTextures = await loadTextures(
-        urls,
-        (error, fallbackMessage) => {
-          handleError(error, { fallbackMessage })
-        }
-      )
-
-      if (loadedTextures.skull) {
-        this.noteTextures.skull = loadedTextures.skull
-        if (this.pool) this.pool.noteTextures.skull = loadedTextures.skull
-      }
-      if (loadedTextures.lightning) {
-        this.noteTextures.lightning = loadedTextures.lightning
-        if (this.pool)
-          this.pool.noteTextures.lightning = loadedTextures.lightning
-      }
-    } catch (error) {
-      handleError(error, {
-        fallbackMessage: 'Critical error loading note textures.'
-      })
+    await this.textureManager.loadAssets()
+    if (this.pool) {
+      this.pool.noteTextures = this.textureManager.noteTextures
     }
   }
 
@@ -204,6 +180,8 @@ export class NoteManager {
     this.activeEntities = []
     this.nextRenderIndex = 0
     this.lastNotesVersion = null
+
+    this.textureManager.dispose()
 
     if (this.pool) {
       this.pool.dispose()
