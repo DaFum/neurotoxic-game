@@ -1,0 +1,70 @@
+import { useEffect, useRef, MutableRefObject, Dispatch, SetStateAction, useMemo } from 'react'
+import { INITIAL_SOCKET_ORDER } from '../constants'
+import { secureRandom, getSafeRandom } from '../../../utils/crypto'
+import { logger } from '../../../utils/logger'
+
+export const useKabelsalatShuffle = (
+  isPoweredOn: boolean,
+  isGameOver: boolean,
+  isShocked: boolean,
+  connections: Record<string, string>,
+  isWinningRef: MutableRefObject<boolean>,
+  setSocketOrder: Dispatch<SetStateAction<string[]>>
+) => {
+  const unconnectedIds = useMemo(() => {
+    return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
+  }, [connections])
+
+  const randomFnRef = useRef(getSafeRandom)
+
+  useEffect(() => {
+    try {
+      secureRandom()
+      randomFnRef.current = secureRandom
+    } catch (e) {
+      logger.warn(
+        'secureRandom unavailable, falling back to getSafeRandom()',
+        e
+      )
+      randomFnRef.current = getSafeRandom
+    }
+  }, [])
+
+  // Shuffle sockets
+  useEffect(() => {
+    if (
+      isPoweredOn ||
+      isGameOver ||
+      isShocked ||
+      isWinningRef.current ||
+      unconnectedIds.length <= 1
+    ) {
+      return
+    }
+
+    const interval = setInterval(() => {
+      setSocketOrder(prevOrder => {
+        const shuffled = [...unconnectedIds]
+
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(randomFnRef.current() * (i + 1))
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        }
+
+        let shuffleIndex = 0
+        const newOrder = new Array(prevOrder.length)
+        for (let i = 0; i < prevOrder.length; i++) {
+          const id = prevOrder[i]
+          if (connections[id]) {
+            newOrder[i] = id
+          } else {
+            newOrder[i] = shuffled[shuffleIndex++]
+          }
+        }
+        return newOrder
+      })
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [isPoweredOn, isGameOver, isShocked, unconnectedIds, connections, isWinningRef, setSocketOrder])
+}
