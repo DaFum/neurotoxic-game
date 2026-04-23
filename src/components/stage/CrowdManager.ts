@@ -1,18 +1,11 @@
-import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js'
+import { Application, Container, Graphics, Sprite } from 'pixi.js'
 import {
   calculateCrowdOffset,
   CROWD_LAYOUT,
-  getPixiColorFromToken,
-  loadTextures
+  getPixiColorFromToken
 } from './utils'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
-import { handleError } from '../../utils/errorHandler'
 import { getSafeRandom } from '../../utils/crypto'
-
-type CrowdTextures = {
-  idle: Texture | null
-  mosh: Texture | null
-}
+import { CrowdTextureManager } from './CrowdTextureManager'
 
 type CrowdColors = {
   toxicGreen: number
@@ -35,7 +28,7 @@ export class CrowdManager {
   stageContainer: Container
   crowdMembers: CrowdMember[]
   container: Container | null
-  textures: CrowdTextures
+  textureManager: CrowdTextureManager
   colors: CrowdColors
   /**
    * @param {Application} app
@@ -46,7 +39,7 @@ export class CrowdManager {
     this.stageContainer = stageContainer
     this.crowdMembers = []
     this.container = null
-    this.textures = { idle: null, mosh: null }
+    this.textureManager = new CrowdTextureManager()
     this.colors = {
       toxicGreen: getPixiColorFromToken('--toxic-green'),
       starWhite: getPixiColorFromToken('--star-white'),
@@ -55,26 +48,7 @@ export class CrowdManager {
   }
 
   async loadAssets(): Promise<void> {
-    try {
-      const urls = {
-        idle: getGenImageUrl(IMG_PROMPTS.CROWD_IDLE),
-        mosh: getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
-      }
-
-      const loadedTextures = await loadTextures(
-        urls,
-        (error, fallbackMessage) => {
-          handleError(error, { fallbackMessage })
-        }
-      )
-
-      if (loadedTextures.idle) this.textures.idle = loadedTextures.idle
-      if (loadedTextures.mosh) this.textures.mosh = loadedTextures.mosh
-    } catch (error) {
-      handleError(error, {
-        fallbackMessage: 'Critical error loading crowd textures.'
-      })
-    }
+    await this.textureManager.loadAssets()
   }
 
   init(): void {
@@ -109,8 +83,9 @@ export class CrowdManager {
    * @private
    */
   _createCrowdMember(radius: number, fallbackColor: number): CrowdMember {
-    if (this.textures.idle) {
-      const crowd = new Sprite(this.textures.idle) as CrowdSpriteMember
+    const idleTexture = this.textureManager.textures.idle
+    if (idleTexture) {
+      const crowd = new Sprite(idleTexture) as CrowdSpriteMember
       crowd.anchor.set(0.5)
       crowd.width = radius * 2.5 // Adjust scale to match circle size approx
       crowd.height = radius * 2.5
@@ -134,8 +109,7 @@ export class CrowdManager {
         : this.colors.ashGray
 
     const shouldMosh = isToxicMode || combo > 20
-    const targetTexture =
-      shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
+    const targetTexture = this.textureManager.getTargetTexture(shouldMosh)
 
     for (let i = 0; i < this.crowdMembers.length; i++) {
       const member = this.crowdMembers[i]
@@ -162,5 +136,6 @@ export class CrowdManager {
       this.container = null
     }
     this.crowdMembers = []
+    this.textureManager.dispose()
   }
 }
