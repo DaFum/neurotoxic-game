@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import type { BandMember } from '../types/game'
+import type { TFunction } from 'i18next'
+import type { GameStateWithActions } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -17,9 +19,9 @@ const useClinicHeal = (
   playerMoney: number,
   currentVisits: number,
   membersMap: Map<string, BandMember>,
-  clinicHeal: (args: any) => void,
+  clinicHeal: GameStateWithActions['clinicHeal'],
   addToast: (msg: string, type: string) => void,
-  t: (key: string, options?: unknown) => string
+  t: TFunction
 ) => {
   const healCostMoney = calculateClinicCost(
     CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
@@ -73,9 +75,9 @@ const useClinicEnhance = (
   playerFame: number,
   currentVisits: number,
   membersMap: Map<string, BandMember>,
-  clinicEnhance: (args: any) => void,
+  clinicEnhance: GameStateWithActions['clinicEnhance'],
   addToast: (msg: string, type: string) => void,
-  t: (key: string, options?: unknown) => string
+  t: TFunction
 ) => {
   const enhanceCostFame = calculateClinicCost(
     CLINIC_CONFIG.ENHANCE_BASE_COST_FAME,
@@ -133,18 +135,16 @@ export const useClinicLogic = () => {
 
   const membersMap = useMemo(() => {
     const map = new Map<string, BandMember>()
-    const members = band?.members
-    if (members) {
-      for (let i = 0; i < members.length; i++) {
-        const m = members[i] as BandMember
+    band?.members?.forEach(m => {
+      if (m.id) {
         map.set(m.id, m)
       }
-    }
+    })
     return map
   }, [band?.members])
 
   const { healCostMoney, healMember } = useClinicHeal(
-    player?.money || 0,
+    player?.money ?? 0,
     currentVisits,
     membersMap,
     clinicHeal,
@@ -153,7 +153,7 @@ export const useClinicLogic = () => {
   )
 
   const { enhanceCostFame, enhanceMember } = useClinicEnhance(
-    player?.fame || 0,
+    player?.fame ?? 0,
     currentVisits,
     membersMap,
     clinicEnhance,
