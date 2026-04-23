@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import type { TFunction } from 'react-i18next'
+import type { PlayerState, Venue, GigModifiers } from '../types/game'
+import type { RhythmSetlistEntry, Song } from '../types/rhythmGame'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -22,10 +25,10 @@ const BAND_MEETING_COST = 50
 export interface PreGigLogicReturn {
   t: (key: string, options?: unknown) => string
   i18n: { language: string }
-  currentGig: Record<string, unknown>
-  player: Record<string, unknown>
-  setlist: Record<string, unknown>[]
-  gigModifiers: Record<string, boolean>
+  currentGig: Venue | null
+  player: PlayerState
+  setlist: RhythmSetlistEntry[]
+  gigModifiers: GigModifiers
   currentModifiers: { activeEffects: Record<string, unknown>[] }
   selectedSongIds: Set<unknown>
   calculatedBudget: number
@@ -33,7 +36,7 @@ export interface PreGigLogicReturn {
   GIG_MODIFIER_OPTIONS: Record<string, unknown>[]
   BAND_MEETING_COST: number
   handleBandMeeting: () => void
-  toggleSong: (song: Record<string, unknown>) => void
+  toggleSong: (song: Song) => void
   toggleModifier: (key: string) => void
   handleStartShow: () => Promise<void>
 }
@@ -108,7 +111,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     return ids
   }, [setlist])
 
-  const tRef = useRef(t)
+  const tRef = useRef<TFunction>(t)
   useEffect(() => {
     tRef.current = t
   }, [t])
