@@ -6,6 +6,8 @@ import type {
   BandMember
 } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
+import type { RefObject, MutableRefObject } from 'react'
+import type { RhythmGameRefState } from '../components/rhythm/useRhythmGameLogic'
 
 export interface PixiController {
   init(): Promise<void>
@@ -117,17 +119,14 @@ export interface MinigameSceneFrameProps {
 }
 
 
-import type { RefObject, MutableRefObject } from 'react'
-
 export interface StageControllerOptions {
   containerRef: RefObject<HTMLElement | null>
-  gameStateRef: RefObject<unknown>
+  gameStateRef: RefObject<GameState>
   updateRef: MutableRefObject<((dt: number) => void) | null>
-  [key: string]: unknown
 }
 
 export interface PixiStageProps {
-  gameStateRef: { current: GameState }
+  gameStateRef: { current: RhythmGameRefState }
   update: (state: unknown) => void
   controllerFactory?: (options: unknown) => PixiController
 }

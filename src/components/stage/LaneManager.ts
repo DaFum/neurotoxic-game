@@ -7,7 +7,7 @@ const LANE_GAP = 20
 export class LaneManager {
   app: import('pixi.js').Application
   stageContainer: Container
-  gameStateRef: { current: unknown }
+  gameStateRef: import('react').RefObject<import('../rhythm/useRhythmGameLogic').RhythmGameRefState>
   rhythmContainer: Container | null
   laneLayout: ReturnType<typeof buildRhythmLayout> | null
   laneGraphics: LaneRenderer[]
@@ -16,17 +16,14 @@ export class LaneManager {
   lastScreenHeight: number
 
     /**
-   * @param {Application} app
-   * @param {Container} stageContainer
-   * @param {object} gameStateRef
    */
-  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: unknown }) {
+  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: import('react').RefObject<import('../rhythm/useRhythmGameLogic').RhythmGameRefState>) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
     this.rhythmContainer = null
     this.laneLayout = null
-    this.laneGraphics = [] // LaneRenderer[]
+    this.laneGraphics = []
     this.lastLaneActive = []
     this.lastScreenWidth = -1
     this.lastScreenHeight = -1
@@ -65,7 +62,7 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(lane: unknown, index: number, laneX: number) {
+  _createLaneGraphics(lane: import('../rhythm/useRhythmGameLogic').RhythmLane, index: number, laneX: number) {
     const renderer = new LaneRenderer(index)
 
     // Set initial visibility based on lane state and initialize cache
@@ -78,7 +75,7 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state: unknown) {
+  update(state: import('../rhythm/useRhythmGameLogic').RhythmGameRefState) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 

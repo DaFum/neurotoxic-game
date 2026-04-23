@@ -1,5 +1,5 @@
-import { Graphics } from 'pixi.js'
-import { getPixiColorFromToken } from './utils'
+import { Graphics, type Container } from 'pixi.js'
+import { getPixiColorFromToken, type buildRhythmLayout } from './utils'
 
 const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
 const LANE_BASE_ALPHA = 0.7
@@ -9,6 +9,8 @@ const HIT_BAR_INACTIVE_ALPHA = 0.45
 const HIT_BAR_ACTIVE_ALPHA = 0.95
 const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
+
+type RhythmLayout = ReturnType<typeof buildRhythmLayout>
 
 export interface TaggedGraphics extends Graphics {
   __laneIndex: number
@@ -33,13 +35,13 @@ export class LaneRenderer {
     this.inactive = createGraphicsLayer('inactive')
   }
 
-  addTo(container: import("pixi.js").Container) {
+  addTo(container: Container) {
     container.addChild(this.static)
     container.addChild(this.inactive)
     container.addChild(this.active)
   }
 
-  draw(lane: { color: number }, renderX: number, layout: ReturnType<typeof import('./utils').buildRhythmLayout>) {
+  draw(lane: { color: number }, renderX: number, layout: RhythmLayout) {
     this.static.clear()
     this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })

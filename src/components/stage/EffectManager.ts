@@ -45,7 +45,7 @@ export class EffectManager {
     await this.textureManager.loadAssets()
   }
 
-  releaseEffectToPool(effect: EffectSprite | null) {
+  releaseEffectToPool(effect: EffectSprite | null): void {
     this.spritePool.releaseSprite(effect)
   }
 
