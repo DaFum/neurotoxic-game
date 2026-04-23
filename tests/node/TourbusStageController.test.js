@@ -229,6 +229,35 @@ describe('TourbusStageController', () => {
       }
     })()
 
+    // Fix: We must call setup() or mock the internal obstacleManager to prevent null crashes
+    controller.obstacleManager = new (class MockObstacleManager {
+      constructor() {
+        this.obstacleMap = new Map();
+        this.currentIds = new Set();
+      }
+      updateObstacles(state, height, laneWidth) {
+        this.currentIds.clear();
+        for (const obs of state.obstacles) {
+          this.currentIds.add(obs.id);
+          let sprite = this.obstacleMap.get(obs.id);
+          if (!sprite) {
+            sprite = { y: (obs.y / 100) * height };
+            this.obstacleMap.set(obs.id, sprite);
+          }
+          sprite.y = (obs.y / 100) * height;
+        }
+      }
+      cleanupObstacles() {
+        for (const id of this.obstacleMap.keys()) {
+          if (!this.currentIds.has(id)) {
+             this.obstacleMap.delete(id);
+          }
+        }
+      }
+      dispose() {}
+    })();
+
+
     controller.container = new (class Container {
       constructor() {
         this.addChild = mock.fn()
@@ -282,7 +311,7 @@ describe('TourbusStageController', () => {
     controller.handleTicker(ticker)
 
     // Verify obstacle sprite created
-    // // assert.strictEqual(controller.obstacleManager.obstacleMap.size, 1)
+    assert.strictEqual(controller.obstacleManager.obstacleMap.size, 1)
     const sprite = controller.obstacleManager.obstacleMap.get('obs1')
     assert.ok(sprite)
 
@@ -306,7 +335,7 @@ describe('TourbusStageController', () => {
     gameStateRef.current.obstacles = []
     controller.handleTicker({ deltaMS: 16 })
 
-    // assert.strictEqual(controller.obstacleManager.obstacleMap.size, 0)
+    assert.strictEqual(controller.obstacleManager.obstacleMap.size, 0)
   })
 
   it('should dispose correctly', async () => {
