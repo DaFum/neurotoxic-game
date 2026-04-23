@@ -1,14 +1,9 @@
-/*
- * (#1) Actual Updates: Extracted ConnectionPath component from ConnectionPaths.tsx for better maintainability. Added a guard clause to return null if the cable is not found in CABLE_MAP to prevent runtime errors.
-
- * (#3) Found Errors + Solutions: Component assumed cabId was always valid, which could cause a runtime error if undefined. Solution: Return null if CABLE_MAP[cabId] is undefined.
- */
-import { CABLE_MAP, SOCKET_DEFS } from '../constants'
+import { CABLE_MAP } from '../constants'
 import { getMessyPath } from '../utils'
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
 
-type SocketId = keyof typeof SOCKET_DEFS
+import type { SocketId } from '../../../types/kabelsalat'
 type CableId = keyof typeof CABLE_MAP
 
 export type ConnectionPathProps = {

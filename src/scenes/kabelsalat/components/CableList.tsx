@@ -1,14 +1,9 @@
-/*
- * (#1) Actual Updates: Extracted CableItem for maintainability. Added Set optimization for O(1) lookups.
-
-
- */
-import { CABLES, SOCKET_DEFS } from '../constants'
+import { CABLES } from '../constants'
 import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.tsx'
 import type { TFunction } from 'i18next'
 
-type SocketId = keyof typeof SOCKET_DEFS
+import type { SocketId } from '../../../types/kabelsalat'
 
 type CableListProps = {
   t: TFunction

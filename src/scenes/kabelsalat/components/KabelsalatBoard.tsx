@@ -15,16 +15,9 @@ import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import type { SOCKET_DEFS } from '../constants.ts'
 
-type SocketId = keyof typeof SOCKET_DEFS
+import type { SocketId, LightningSeed } from '../../../types/kabelsalat'
 
-type LightningSeed = {
-  id: string | number
-  startX: number
-  o1: number
-  o2: number
-  o3: number
-  w: number
-}
+
 
 interface KabelsalatBoardProps {
   t: TFunction
@@ -123,9 +116,18 @@ KabelsalatBoard.propTypes = {
   isGameOver: PropTypes.bool.isRequired,
   faultReason: PropTypes.string,
   isPowerConnected: PropTypes.bool.isRequired,
-  lightningSeeds: PropTypes.array.isRequired,
-  connections: PropTypes.object.isRequired,
-  socketOrder: PropTypes.array.isRequired,
+  lightningSeeds: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      startX: PropTypes.number.isRequired,
+      o1: PropTypes.number.isRequired,
+      o2: PropTypes.number.isRequired,
+      o3: PropTypes.number.isRequired,
+      w: PropTypes.number.isRequired
+    })
+  ).isRequired,
+  connections: PropTypes.objectOf(PropTypes.string).isRequired,
+  socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   selectedCable: PropTypes.string,
   handleSocketClick: PropTypes.func.isRequired,
   handleCableClick: PropTypes.func.isRequired
