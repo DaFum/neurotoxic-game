@@ -118,7 +118,7 @@ export class NoteSpritePool {
   static MAX_POOL_SIZE = 64
   container: Container | null
   spritePool: NoteSprite[]
-  factory: NoteSpriteFactory
+  private factory: NoteSpriteFactory
 
   constructor(container: Container | null) {
     this.container = container
@@ -134,17 +134,32 @@ export class NoteSpritePool {
     this.factory.noteTextures = value
   }
 
-  acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
-    let sprite: NoteSprite | undefined
-    if (this.spritePool.length > 0) {
-      sprite = this.spritePool.pop()
-    } else {
-      sprite = this.factory.createNoteSprite(laneIndex)
-    }
+  get rngErrorReported(): boolean {
+    return this.factory.rngErrorReported
+  }
 
-    if (!sprite) {
-      sprite = this.factory.createNoteSprite(laneIndex)
-    }
+  set rngErrorReported(value: boolean) {
+    this.factory.rngErrorReported = value
+  }
+
+  _getEffectiveTexture(laneIndex: number): Texture | null {
+    return this.factory._getEffectiveTexture(laneIndex)
+  }
+
+  createNoteSprite(laneIndex: number): NoteSprite {
+    return this.factory.createNoteSprite(laneIndex)
+  }
+
+  initializeNoteSprite(
+    sprite: NoteSprite,
+    lane: LaneData,
+    laneIndex: number
+  ): void {
+    return this.factory.initializeNoteSprite(sprite, lane, laneIndex)
+  }
+
+  acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
+    const sprite = this.spritePool.pop() ?? this.factory.createNoteSprite(laneIndex)
     this.factory.initializeNoteSprite(sprite, lane, laneIndex)
     return sprite
   }
