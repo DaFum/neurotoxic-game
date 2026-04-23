@@ -23,7 +23,7 @@ export const OverworldMap = React.memo(
     travelCompletedRef,
     onTravelComplete,
     activeStoryFlags
-  }) => {
+}: OverworldMapProps) => {
     // Memoized URL generators
     const mapBgUrl = useMemo(
       () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
@@ -83,12 +83,7 @@ export const OverworldMap = React.memo(
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
       const nodes = gameMap.nodes
-      const result = []
-
-      for (const key in nodes) {
-        if (!Object.hasOwn(nodes, key)) continue
-
-        const node = nodes[key]
+      return Object.values(nodes as Record<string, unknown>).map((node: unknown) => {
         const isCurrent = node.id === player.currentNodeId
         const visibility = getNodeVisibility(node.layer, currentLayer)
         const isReachable = isConnected(node.id) || node.type === 'START'
@@ -106,7 +101,7 @@ export const OverworldMap = React.memo(
           )
         })
 
-        result.push(
+        return (
           <MapNode
             key={node.id}
             node={node}
@@ -120,11 +115,9 @@ export const OverworldMap = React.memo(
             iconUrl={iconUrl}
             vanUrl={vanUrl}
             ticketPrice={effectivePrice}
-          />
-        )
-      }
-
-      return result
+        />
+      )
+    })
     }, [
       gameMap,
       player.currentNodeId,
