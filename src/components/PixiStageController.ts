@@ -16,12 +16,43 @@ import { withTimeout } from './stage/utils'
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
 class PixiStageController extends BaseStageController {
+
+  // Getters and Setters for backward compatibility with existing tests
+  get colorMatrix() {
+    return this.toxicFilterManager?.colorMatrix ?? null
+  }
+
+  set colorMatrix(value) {
+    if (this.toxicFilterManager) {
+      this.toxicFilterManager.colorMatrix = value
+    }
+  }
+
+  get toxicFilters() {
+    return this.toxicFilterManager?.toxicFilters ?? null
+  }
+
+  set toxicFilters(value) {
+    if (this.toxicFilterManager) {
+      this.toxicFilterManager.toxicFilters = value
+    }
+  }
+
+  get isToxicActive() {
+    return this.toxicFilterManager?.isToxicActive ?? false
+  }
+
+  set isToxicActive(value) {
+    if (this.toxicFilterManager) {
+      this.toxicFilterManager.isToxicActive = value
+    }
+  }
   stageContainer: any
   crowdManager: any
   laneManager: any
   effectManager: any
   noteManager: any
-  toxicFilterManager: any
+  toxicFilterManager: ToxicFilterManager | null
 
   /**
    * @param {object} params - Controller dependencies.
@@ -55,7 +86,7 @@ class PixiStageController extends BaseStageController {
    */
   _initFilters() {
     this.stageContainer = this.container
-    this.toxicFilterManager = new ToxicFilterManager(this.stageContainer)
+    this.toxicFilterManager = new ToxicFilterManager()
   }
 
   /**
@@ -140,7 +171,7 @@ class PixiStageController extends BaseStageController {
 
     const elapsed = getGigTimeMs()
 
-    this.toxicFilterManager.update(state, elapsed)
+    this.toxicFilterManager.update(state, elapsed, this.stageContainer)
 
     this.laneManager.update(state)
     this.crowdManager.update(
