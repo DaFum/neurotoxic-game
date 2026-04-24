@@ -1,3 +1,4 @@
+import { createUpdatePlayerAction } from '../../src/context/actionCreators'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -226,10 +227,8 @@ test('calculateGigFinancials: merch table modifier increases merch revenue', () 
 
 // --- REDUCER STATE SAFETY TESTS ---
 
-test('gameReducer: UPDATE_PLAYER clamping is handled by action creator', async () => {
+test('gameReducer: UPDATE_PLAYER clamping is handled by action creator', () => {
   const state = buildFullState()
-  // Use createUpdatePlayerAction instead of raw action payload
-  const { createUpdatePlayerAction } = await import('../../src/context/actionCreators')
   const action = createUpdatePlayerAction({ money: -100 })
   const result = gameReducer(state, action)
 
