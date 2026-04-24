@@ -8,7 +8,7 @@ metadata:
   category: 'ci'
   keywords: ['ci', 'github-actions', 'pipeline', 'safety']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # CI Hardener

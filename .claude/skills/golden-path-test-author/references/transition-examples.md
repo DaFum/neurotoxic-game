@@ -3,8 +3,8 @@
 ## Table of Contents
 - [Transition 1: MENU → OVERWORLD (Game Start)](#transition-1-menu-overworld-game-start)
 - [Transition 2: OVERWORLD → PRE_GIG (Start Gig)](#transition-2-overworld-pre_gig-start-gig)
-- [Transition 3: PRE_GIG → GIG (Performance Starts)](#transition-3-pre_giq-gig-performance-starts)
-- [Transition 4: GIG → POST_GIG (Score Capture)](#transition-4-gig-post_giq-score-capture)
+- [Transition 3: PRE_GIG → GIG (Performance Starts)](#transition-3-pre_gig-gig-performance-starts)
+- [Transition 4: GIG → POST_GIG (Score Capture)](#transition-4-gig-post_gig-score-capture)
 - [Transition 5: POST_GIG → OVERWORLD (Return Home)](#transition-5-post_gig-overworld-return-home)
 - [Edge Case: Bankruptcy Path (POST_GIG → GAMEOVER)](#edge-case-bankruptcy-path-post_gig-gameover)
 

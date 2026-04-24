@@ -8,7 +8,7 @@ metadata:
   category: 'audio'
   keywords: ['audio', 'webaudio', 'reliability', 'edge-cases']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # WebAudio Reliability Fixer

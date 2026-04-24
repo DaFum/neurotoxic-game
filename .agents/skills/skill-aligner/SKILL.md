@@ -8,7 +8,7 @@ metadata:
   category: 'meta'
   keywords: ['meta', 'skills', 'alignment', 'consistency']
   maturity: 'beta'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Skill Aligner

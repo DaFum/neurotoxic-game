@@ -42,8 +42,8 @@ This is the designer-driven incarnation of the NEUROTOXIC game concept. We built
 
 ```bash
 # Clone the repository
-git clone https://github.com/DaFum/neurotoxic-game.git
-cd neurotoxic-game
+git clone https://github.com/neurotoxicband/neurotoxic.git
+cd neurotoxic
 
 # Node.js >= 22.13.0 is required
 nvm use

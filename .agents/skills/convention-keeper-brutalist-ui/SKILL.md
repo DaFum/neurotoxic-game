@@ -8,7 +8,7 @@ metadata:
   category: 'ui'
   keywords: ['ui', 'tailwind', 'accessibility']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Brutalist UI Convention Keeper

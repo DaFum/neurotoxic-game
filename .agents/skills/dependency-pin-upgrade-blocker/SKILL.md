@@ -8,7 +8,7 @@ metadata:
   category: 'tooling'
   keywords: ['dependencies', 'versioning', 'pinning']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Dependency Pin Guard

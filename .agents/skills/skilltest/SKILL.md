@@ -8,7 +8,7 @@ metadata:
   category: 'meta'
   keywords: ['meta', 'skills', 'testing', 'validation']
   maturity: 'beta'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Skilltest Harness

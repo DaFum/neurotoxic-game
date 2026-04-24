@@ -8,7 +8,7 @@ metadata:
   category: 'state-management'
   keywords: ['state', 'redux', 'safety', 'actions']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # State Safety & Action Creator Guard

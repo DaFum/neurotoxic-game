@@ -8,7 +8,7 @@ metadata:
   category: 'performance'
   keywords: ['performance', 'memory', 'pixi.js', 'cleanup']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Pixi Lifecycle Sentinel

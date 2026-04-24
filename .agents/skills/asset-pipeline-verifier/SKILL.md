@@ -8,7 +8,7 @@ metadata:
   category: 'assets'
   keywords: ['assets', 'images', 'optimization', 'cdn']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Asset Pipeline Verifier

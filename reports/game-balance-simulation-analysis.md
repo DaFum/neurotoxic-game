@@ -10,7 +10,7 @@
 - [Einkommensstruktur & Sink-Analyse](#einkommensstruktur-sink-analyse)
 - [Gig-Performance-Kalibrierung](#gig-performance-kalibrierung)
 - [Bandgesundheit im Detail](#bandgesundheit-im-detail)
-- [Events & Social im Detail](#events-social-im-detail)
+- [Events & Social im Detail](#events--social-im-detail)
 - [Minigame-Abdeckung im Detail](#minigame-abdeckung-im-detail)
 - [Cross-Szenario-Vergleich (Höchstwerte)](#cross-szenario-vergleich-höchstwerte)
 - [KPI-Zielkorridore (Health Check)](#kpi-zielkorridore-health-check)

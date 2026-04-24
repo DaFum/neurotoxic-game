@@ -8,7 +8,7 @@ metadata:
   category: 'refactoring'
   keywords: ['refactoring', 'testing', 'safety']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Refactor with Safety

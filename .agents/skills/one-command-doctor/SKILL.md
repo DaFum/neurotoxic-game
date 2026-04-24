@@ -8,7 +8,7 @@ metadata:
   category: 'diagnostics'
   keywords: ['diagnostics', 'health-check', 'troubleshooting']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # One-Command Doctor

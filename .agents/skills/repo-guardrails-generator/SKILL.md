@@ -8,7 +8,7 @@ metadata:
   category: 'tooling'
   keywords: ['tooling', 'guardrails', 'automation']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Repo Guardrails Generator

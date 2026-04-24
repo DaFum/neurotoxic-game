@@ -8,7 +8,7 @@ metadata:
   category: 'documentation'
   keywords: ['documentation', 'context', 'project-guide']
   maturity: 'stable'
-license: 'Proprietary. See LICENSE.txt for terms'
+license: 'MIT. See LICENSE for terms'
 ---
 
 # Project Brain Codex
