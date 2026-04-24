@@ -108,7 +108,7 @@ export interface TourbusMinigameLogic extends MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps {
-  controllerFactory?: (options: StageControllerOptions) => PixiController
+  controllerFactory?: (options: any) => PixiController
   logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void
@@ -133,7 +133,7 @@ export interface StageControllerOptions<TState = unknown> {
 export interface PixiStageProps {
   gameStateRef: RefObject<RhythmGameRefState>
   update: (state: unknown) => void
-  controllerFactory?: (options: StageControllerOptions) => PixiController
+  controllerFactory?: (options: any) => PixiController
 }
 
 export interface ToggleRadioProps {
