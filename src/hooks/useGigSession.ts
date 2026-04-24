@@ -82,7 +82,7 @@ export const useGigSession = ({
       // Use fallback stats if gameStateRef is unavailable or uninitialized
       const score = gameStateRef.current?.score ?? 0
       // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
-      const rawStats = gameStateRef.current?.stats ?? {}
+      const rawStats = gameStateRef.current?.stats ?? {} as Partial<import('../types/rhythmGame').RhythmLiveStats>
       const statsSnapshot = {
         perfectHits: rawStats.perfectHits ?? 0,
         perfects: rawStats.perfects ?? 0, // Alias if used
