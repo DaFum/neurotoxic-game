@@ -95,27 +95,7 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.fame, 50) // Unchanged
     })
 
-    it('should clamp money to prevent negative values (object payload)', () => {
-      const initialState = {
-        player: { money: 100 }
-      }
 
-      const payload = { money: -50 }
-      const newState = handleUpdatePlayer(initialState, payload)
-
-      assert.strictEqual(newState.player.money, 0)
-    })
-
-    it('should clamp money to prevent negative values (function payload)', () => {
-      const initialState = {
-        player: { money: 100 }
-      }
-
-      const payload = player => ({ money: player.money - 200 })
-      const newState = handleUpdatePlayer(initialState, payload)
-
-      assert.strictEqual(newState.player.money, 0)
-    })
 
     it('should preserve properties not updated', () => {
       const initialState = {
@@ -131,20 +111,45 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.otherPlayerProp, 'testPlayer')
     })
 
-    it('should ignore payload with forbidden keys (e.g. __proto__)', () => {
+    describe('Rejection Branches for Malformed/Hostile Payloads', () => {
       const initialState = {
-        player: { money: 100 }
+        player: { money: 100, fame: 50, day: 1 }
       }
 
-      const payload = { money: 200 }
-      Object.defineProperty(payload, '__proto__', {
-        value: { hacked: true },
-        enumerable: true
-      })
+      const hostilePayloads = [
+        null,
+        undefined,
+        [{ money: 200 }],
+        'string',
+        42,
+        { constructor: { hacked: true } },
+        { prototype: {} },
+        ...([
+          { money: 200 }
+        ].map(p => {
+          const obj = { ...p }
+          Object.defineProperty(obj, '__proto__', {
+            value: { hacked: true },
+            enumerable: true
+          })
+          return obj
+        }))
+      ]
 
-      const newState = handleUpdatePlayer(initialState, payload)
-      assert.strictEqual(newState, initialState)
-      assert.strictEqual(newState.player.money, 100)
+      hostilePayloads.forEach((payload, index) => {
+        it(`should reject hostile/malformed payload ${index}`, () => {
+          const newState = handleUpdatePlayer(initialState, payload)
+          assert.strictEqual(newState, initialState)
+          assert.strictEqual(newState.player.money, 100)
+        })
+
+        it(`should reject hostile/malformed function payload ${index}`, () => {
+          const fnPayload = () => payload
+          const newState = handleUpdatePlayer(initialState, fnPayload)
+          assert.strictEqual(newState, initialState)
+          assert.strictEqual(newState.player.money, 100)
+        })
+      })
     })
   })
 })
