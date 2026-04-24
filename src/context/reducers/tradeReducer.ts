@@ -141,9 +141,6 @@ export const handleTradeVoidItem = (
 
           if (isPlainObject) {
             const rawContext = parsedContext as Record<string, unknown>
-
-
-
             const finalSafeContext = sanitizeContextValue(rawContext) as Record<
               string,
               unknown
