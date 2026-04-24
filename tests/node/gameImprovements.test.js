@@ -226,12 +226,12 @@ test('calculateGigFinancials: merch table modifier increases merch revenue', () 
 
 // --- REDUCER STATE SAFETY TESTS ---
 
-test('gameReducer: UPDATE_PLAYER clamps money to 0', () => {
+test('gameReducer: UPDATE_PLAYER clamping is handled by action creator', async () => {
   const state = buildFullState()
-  const result = gameReducer(state, {
-    type: ActionTypes.UPDATE_PLAYER,
-    payload: { money: -100 }
-  })
+  // Use createUpdatePlayerAction instead of raw action payload
+  const { createUpdatePlayerAction } = await import('../../src/context/actionCreators')
+  const action = createUpdatePlayerAction({ money: -100 })
+  const result = gameReducer(state, action)
 
   assert.equal(result.player.money, 0, 'Money should be clamped to 0')
 })

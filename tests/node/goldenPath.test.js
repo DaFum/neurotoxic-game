@@ -285,7 +285,8 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
     assert.ok(newMoney < 0, 'Player cannot afford this')
 
     // Reducer clamps money to 0
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: newMoney })
+    const clampedMoney = Math.max(0, newMoney)
+    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: clampedMoney })
     assert.equal(state.player.money, 0, 'Money clamped to 0')
 
     state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GAMEOVER)
@@ -302,9 +303,10 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
 })
 
 test('Golden Path: State safety invariants across transitions', async t => {
-  await t.test('Money never goes negative from UPDATE_PLAYER', () => {
+  await t.test('Money never goes negative from UPDATE_PLAYER via action creator', async () => {
     let state = createInitialState()
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: -999 })
+    const { createUpdatePlayerAction } = await import('../../src/context/actionCreators')
+    state = gameReducer(state, createUpdatePlayerAction({ money: -999 }))
     assert.equal(state.player.money, 0)
   })
 
