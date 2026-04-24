@@ -8,7 +8,7 @@ metadata:
   category: "performance"
   keywords: ["performance","react","optimization","profiling"]
   maturity: "beta"
-license: "Proprietary. See LICENSE.txt for terms"
+license: 'MIT. See LICENSE for terms'
 ---
 
 # React Performance Optimization

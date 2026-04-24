@@ -1,5 +1,6 @@
 ---
 name: typescript-senior-developer
+license: 'MIT. See LICENSE for terms'
 description: >
   TypeScript senior-developer guidance for the NEUROTOXIC codebase — writing,
   reviewing, refactoring, and migrating TypeScript with strict-mode discipline.
