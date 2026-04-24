@@ -235,5 +235,5 @@ class PixiStageController extends BaseStageController {
  * @param {object} params - Controller dependencies.
  * @returns {PixiStageController} Controller instance.
  */
-export const createPixiStageController = (params: any) =>
+export const createPixiStageController = (params: import("../types/components").StageControllerOptions<import("../types/rhythmGame").RhythmGameRefState>) =>
   new PixiStageController(params)

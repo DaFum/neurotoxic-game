@@ -128,8 +128,8 @@ const useClinicEnhance = (
 }
 
 export const useClinicLogic = (): {
-  player: PlayerState
-  band: BandState
+  player: PlayerState | undefined | null
+  band: BandState | undefined | null
   healCostMoney: number
   enhanceCostFame: number
   healMember: (memberId: string) => void

@@ -8,7 +8,7 @@ const LANE_GAP = 20
 export class LaneManager {
   app: Application
   stageContainer: Container
-  gameStateRef: { current: RhythmGameRefState }
+  gameStateRef: import('react').RefObject<RhythmGameRefState>
   rhythmContainer: Container | null
   laneLayout: ReturnType<typeof buildRhythmLayout> | null
   laneGraphics: LaneRenderer[]
@@ -50,8 +50,10 @@ export class LaneManager {
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
 
-    const lanes = this.gameStateRef.current.lanes
+    const lanes = this.gameStateRef.current?.lanes || []
     for (let index = 0, len = lanes.length; index < len; index++) {
+      const lane = lanes[index]
+      if (!lane || !this.laneLayout) continue
       const lane = lanes[index]
       const laneX = startX + index * (laneWidth + LANE_GAP)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
@@ -62,6 +64,8 @@ export class LaneManager {
   }
 
   _createLaneGraphics(lane: import('../../types/rhythmGame').RhythmLane, index: number, laneX: number) {
+    if (!this.rhythmContainer || !this.laneLayout) return
+
     const renderer = new LaneRenderer(index)
 
     // Set initial visibility based on lane state and initialize cache

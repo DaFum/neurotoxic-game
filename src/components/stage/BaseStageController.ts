@@ -1,18 +1,21 @@
-import { Application, Container } from 'pixi.js'
+import { Application, Container, type Ticker } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
 import { StageResizeHandler } from './StageResizeHandler'
 import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
 
-export class BaseStageController {
+export class BaseStageController<TState = unknown> {
 
   containerRef: import('react').RefObject<HTMLElement | null>
-  gameStateRef: import('react').RefObject<unknown>
+  gameStateRef: import('react').RefObject<TState>
   updateRef: import('react').MutableRefObject<((dt: number) => void) | null>
   app: Application | null
   isDisposed: boolean
-  constructor({ containerRef, gameStateRef, updateRef }: import("../../types/components").StageControllerOptions) {
+  initPromise: Promise<void> | null
+  container: Container | null
+  resizeHandler: StageResizeHandler
+  constructor({ containerRef, gameStateRef, updateRef }: import("../../types/components").StageControllerOptions<TState>) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
@@ -33,7 +36,7 @@ export class BaseStageController {
     this.resizeHandler.cleanup()
   }
 
-  _checkLifecycleRace(app: any) {
+  _checkLifecycleRace(app: Application) {
     const isRace = checkLifecycleRace(
       app,
       this.app,
@@ -45,15 +48,15 @@ export class BaseStageController {
     return isRace
   }
 
-  _setupResizeListeners(container: any) {
+  _setupResizeListeners(container: HTMLElement) {
     this.resizeHandler.setup(container)
   }
 
-  _isLifecycleRaceError(e: any, app: any) {
+  _isLifecycleRaceError(e: unknown, app: Application | null) {
     return isLifecycleRaceError(e, app, this.app, this.isDisposed)
   }
 
-  _executeDisposeWithFallback(app: any) {
+  _executeDisposeWithFallback(app: Application) {
     try {
       this.dispose()
     } catch (disposeError) {
@@ -68,7 +71,7 @@ export class BaseStageController {
     }
   }
 
-  _handleInitError(e: any, app: any) {
+  _handleInitError(e: unknown, app: Application | null) {
     const isLifecycleRace = this._isLifecycleRaceError(e, app)
     const shouldRethrow = !isLifecycleRace
 
@@ -90,7 +93,7 @@ export class BaseStageController {
     }
   }
 
-  async _performInit(options: any) {
+  async _performInit(options: Partial<import('pixi.js').ApplicationOptions>) {
     let app = null
     try {
       const container = this.containerRef.current
@@ -138,7 +141,7 @@ export class BaseStageController {
 
   // Abstract methods to be overridden
   async setup() {}
-  update(_dt: any) {}
+  update(_dt: number) {}
   draw() {}
 
   handleResize() {
@@ -146,11 +149,11 @@ export class BaseStageController {
     this.draw()
   }
 
-  handleTicker(ticker: any) {
+  handleTicker(ticker: Ticker) {
     if (this.isDisposed) return
-    if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
+    if (this.updateRef.current) this.updateRef.current(ticker.deltaTime)
 
-    this.update(ticker.deltaMS)
+    this.update(ticker.deltaTime)
   }
 
   dispose() {

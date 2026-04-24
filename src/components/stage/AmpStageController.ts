@@ -12,7 +12,7 @@ export class AmpStageController extends BaseStageController {
   currentFreq: number
   time: number
 
-  constructor(options: StageControllerOptions) {
+  constructor(options: StageControllerOptions<import("../../types/game").GameState>) {
     super(options)
 
     this.waveManager = null
@@ -88,4 +88,4 @@ export class AmpStageController extends BaseStageController {
   }
 }
 
-export const createAmpStageController = (params: StageControllerOptions) => new AmpStageController(params)
+export const createAmpStageController = (params: StageControllerOptions<import("../../types/game").GameState>) => new AmpStageController(params)
