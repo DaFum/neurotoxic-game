@@ -3,6 +3,7 @@ import type { TouchEvent as ReactTouchEvent } from 'react'
 import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils'
 
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
+const LANE_INDEX_VALUES = Object.values(LANE_INDICES)
 
 interface LaneInputAreaProps {
   onLaneInput?: (laneIndex: number, isDown: boolean, now?: number) => void
@@ -63,7 +64,7 @@ export const LaneInputArea = memo(function LaneInputArea({
 }: LaneInputAreaProps) {
   return (
     <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
-      {Object.values(LANE_INDICES).map(laneIndex => (
+      {LANE_INDEX_VALUES.map(laneIndex => (
         <LaneInputZone
           key={LANE_NAMES[laneIndex]}
           laneIndex={laneIndex}
