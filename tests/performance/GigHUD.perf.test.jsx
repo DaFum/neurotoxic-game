@@ -38,9 +38,9 @@ test('GigHUD: renders lane inputs and handles interactions', async () => {
   expect(laneInputs.length).toBe(3)
 
   // Verify labels
-  expect(laneInputs[0].getAttribute('aria-label')).toBe('Guitar lane')
-  expect(laneInputs[1].getAttribute('aria-label')).toBe('Drums lane')
-  expect(laneInputs[2].getAttribute('aria-label')).toBe('Bass lane')
+  expect(laneInputs[0].getAttribute('aria-label')).toBe('ui:rhythm.hit_lane')
+  expect(laneInputs[1].getAttribute('aria-label')).toBe('ui:rhythm.hit_lane')
+  expect(laneInputs[2].getAttribute('aria-label')).toBe('ui:rhythm.hit_lane')
 
   // Test MouseDown on first lane (Guitar)
   fireEvent.mouseDown(laneInputs[0])
