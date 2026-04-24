@@ -54,7 +54,6 @@ export class LaneManager {
     for (let index = 0, len = lanes.length; index < len; index++) {
       const lane = lanes[index]
       if (!lane || !this.laneLayout) continue
-      const lane = lanes[index]
       const laneX = startX + index * (laneWidth + LANE_GAP)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX

@@ -88,4 +88,4 @@ export class AmpStageController extends BaseStageController {
   }
 }
 
-export const createAmpStageController = (params: StageControllerOptions<import("../../types/game").GameState>) => new AmpStageController(params)
+export const createAmpStageController = (params: StageControllerOptions<{ targetValue: number, dialValue: number }>) => new AmpStageController(params)
