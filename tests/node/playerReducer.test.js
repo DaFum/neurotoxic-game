@@ -130,5 +130,21 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.money, 200)
       assert.strictEqual(newState.player.otherPlayerProp, 'testPlayer')
     })
+
+    it('should ignore payload with forbidden keys (e.g. __proto__)', () => {
+      const initialState = {
+        player: { money: 100 }
+      }
+
+      const payload = { money: 200 }
+      Object.defineProperty(payload, '__proto__', {
+        value: { hacked: true },
+        enumerable: true
+      })
+
+      const newState = handleUpdatePlayer(initialState, payload)
+      assert.strictEqual(newState, initialState)
+      assert.strictEqual(newState.player.money, 100)
+    })
   })
 })

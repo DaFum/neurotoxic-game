@@ -1,9 +1,9 @@
-// TODO: Review playerReducer.js for completeness (UPDATE_PLAYER) and verify edge cases are handled in the switch.
 import { logger } from '../../utils/logger'
 import {
   clampPlayerMoney,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  isForbiddenKey
 } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
@@ -27,7 +27,12 @@ export const handleUpdatePlayer = (
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload || {}
 
-  if (updates == null || typeof updates !== 'object') {
+  if (
+    !updates ||
+    typeof updates !== 'object' ||
+    Array.isArray(updates) ||
+    Object.keys(updates).some(isForbiddenKey)
+  ) {
     return state
   }
 
