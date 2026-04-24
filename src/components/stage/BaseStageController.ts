@@ -4,18 +4,21 @@ import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
 import { StageResizeHandler } from './StageResizeHandler'
 import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
+import type { RefObject, MutableRefObject } from 'react'
+import type { StageControllerOptions } from '../../types/components'
+import type { ApplicationOptions } from 'pixi.js'
 
 export class BaseStageController<TState = unknown> {
 
-  containerRef: import('react').RefObject<HTMLElement | null>
-  gameStateRef: import('react').RefObject<TState>
-  updateRef: import('react').MutableRefObject<((dt: number) => void) | null>
+  containerRef: RefObject<HTMLElement | null>
+  gameStateRef: RefObject<TState>
+  updateRef: MutableRefObject<((dt: number) => void) | null>
   app: Application | null
   isDisposed: boolean
   initPromise: Promise<void> | null
   container: Container | null
   resizeHandler: StageResizeHandler
-  constructor({ containerRef, gameStateRef, updateRef }: import("../../types/components").StageControllerOptions<TState>) {
+  constructor({ containerRef, gameStateRef, updateRef }: StageControllerOptions<TState>) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
@@ -93,7 +96,7 @@ export class BaseStageController<TState = unknown> {
     }
   }
 
-  async _performInit(options: Partial<import('pixi.js').ApplicationOptions>) {
+  async _performInit(options: Partial<ApplicationOptions>) {
     let app = null
     try {
       const container = this.containerRef.current
@@ -131,7 +134,7 @@ export class BaseStageController<TState = unknown> {
     }
   }
 
-  async init(options = {}) {
+  async init(options: Partial<ApplicationOptions> = {}) {
     this.isDisposed = false
     if (this.initPromise) return this.initPromise
 
@@ -151,9 +154,9 @@ export class BaseStageController<TState = unknown> {
 
   handleTicker(ticker: Ticker) {
     if (this.isDisposed) return
-    if (this.updateRef.current) this.updateRef.current(ticker.deltaTime)
+    if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
 
-    this.update(ticker.deltaTime)
+    this.update(ticker.deltaMS)
   }
 
   dispose() {

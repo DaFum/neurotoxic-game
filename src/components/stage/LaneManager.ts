@@ -50,7 +50,7 @@ export class LaneManager {
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
 
-    const lanes = this.gameStateRef.current?.lanes || []
+    const lanes = this.gameStateRef.current?.lanes ?? []
     for (let index = 0, len = lanes.length; index < len; index++) {
       const lane = lanes[index]
       if (!lane || !this.laneLayout) continue

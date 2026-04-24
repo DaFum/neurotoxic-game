@@ -12,7 +12,7 @@ export class AmpStageController extends BaseStageController {
   currentFreq: number
   time: number
 
-  constructor(options: StageControllerOptions<import("../../types/game").GameState>) {
+  constructor(options: StageControllerOptions<{ targetValue: number, dialValue: number }>) {
     super(options)
 
     this.waveManager = null

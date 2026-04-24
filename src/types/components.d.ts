@@ -8,6 +8,7 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type { RhythmGameRefState } from './rhythmGame'
+import type { GameState } from './game'
 
 export interface PixiController {
   init(): Promise<void>
@@ -128,7 +129,7 @@ export interface StageControllerOptions<TState = unknown> {
 export interface PixiStageProps {
   gameStateRef: RefObject<RhythmGameRefState>
   update: (state: unknown) => void
-  controllerFactory?: (options: unknown) => PixiController
+  controllerFactory?: (options: StageControllerOptions<RhythmGameRefState>) => PixiController
 }
 
 export interface ToggleRadioProps {
