@@ -58,7 +58,7 @@ export class BaseStageController<TState = unknown> {
     return isLifecycleRaceError(e, app, this.app, this.isDisposed)
   }
 
-  _executeDisposeWithFallback(app: Application) {
+  _executeDisposeWithFallback(app: Application | null) {
     try {
       this.dispose()
     } catch (disposeError) {
@@ -69,7 +69,7 @@ export class BaseStageController<TState = unknown> {
       )
       this.cleanupHostResizeListeners()
       if (this.app === app) this.app = null
-      destroyPixiApp(app, this.handleTicker, this.constructor.name)
+      if (app) destroyPixiApp(app, this.handleTicker, this.constructor.name)
     }
   }
 

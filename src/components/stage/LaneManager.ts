@@ -1,5 +1,6 @@
 import { Container, type Application } from 'pixi.js'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RefObject } from 'react'
 import { buildRhythmLayout } from './utils'
 import { LaneRenderer } from './LaneRenderer'
 
@@ -8,7 +9,7 @@ const LANE_GAP = 20
 export class LaneManager {
   app: Application
   stageContainer: Container
-  gameStateRef: import('react').RefObject<RhythmGameRefState>
+  gameStateRef: RefObject<RhythmGameRefState>
   rhythmContainer: Container | null
   laneLayout: ReturnType<typeof buildRhythmLayout> | null
   laneGraphics: LaneRenderer[]
@@ -16,7 +17,7 @@ export class LaneManager {
   lastScreenWidth: number
   lastScreenHeight: number
 
-  constructor(app: import('pixi.js').Application, stageContainer: Container, gameStateRef: { current: RhythmGameRefState }) {
+  constructor(app: Application, stageContainer: Container, gameStateRef: RefObject<RhythmGameRefState>) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
@@ -46,6 +47,7 @@ export class LaneManager {
 
   init() {
     this._initContainerAndLayout()
+    if (!this.laneLayout) return
 
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
@@ -84,9 +86,7 @@ export class LaneManager {
     for (let index = 0; index < state.lanes.length; index++) {
       const lane = state.lanes[index]
       const graphicsSet = this.laneGraphics[index]
-      if (!graphicsSet) {
-        continue
-      }
+      if (!lane || !graphicsSet || typeof lane.renderX !== 'number' || !layout) continue
 
       if (layoutUpdated) {
         graphicsSet.draw(lane, lane.renderX, layout)
