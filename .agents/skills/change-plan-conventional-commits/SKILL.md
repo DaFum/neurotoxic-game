@@ -8,7 +8,7 @@ metadata:
   category: 'workflow'
   keywords: ['commits', 'planning', 'workflow']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Change Plan & Conventional Commits

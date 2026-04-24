@@ -8,7 +8,7 @@ metadata:
   category: 'performance'
   keywords: ['performance', 'budget', 'metrics']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Performance Budget Enforcer

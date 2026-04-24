@@ -8,7 +8,7 @@ metadata:
   category: 'testing'
   keywords: ['testing', 'golden-path', 'e2e', 'automation']
   maturity: 'beta'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Golden Path Test Author

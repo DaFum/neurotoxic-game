@@ -41,5 +41,5 @@ This Code of Conduct applies within all community spaces, and it also applies wh
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders at neurotoxic@example.com. All complaints will be reviewed and
+reported to the community leaders at neurotoxic@void-records.com. All complaints will be reviewed and
 investigated promptly and fairly.

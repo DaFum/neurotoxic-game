@@ -8,7 +8,7 @@ metadata:
   category: 'documentation'
   keywords: ['documentation', 'release', 'notes', 'changelog']
   maturity: 'beta'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Release Notes Synthesizer

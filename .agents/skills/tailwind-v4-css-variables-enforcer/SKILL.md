@@ -8,7 +8,7 @@ metadata:
   category: 'ui'
   keywords: ['ui', 'tailwind', 'css', 'tokens']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Tailwind v4 Enforcer

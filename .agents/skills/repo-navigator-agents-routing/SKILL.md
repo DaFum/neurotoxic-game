@@ -8,7 +8,7 @@ metadata:
   category: 'infrastructure'
   keywords: ['routing', 'navigation', 'agents', 'infrastructure']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Repo Navigator

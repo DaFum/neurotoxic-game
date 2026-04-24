@@ -8,7 +8,7 @@ metadata:
   category: 'code-quality'
   keywords: ['testing', 'lint', 'build', 'quality-gate']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # One-Command Quality Gate

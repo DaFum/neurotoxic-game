@@ -8,7 +8,7 @@ metadata:
   category: 'audio'
   keywords: ['audio', 'debug', 'tone.js', 'playback']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Audio Debugger (Ambient vs Gig)

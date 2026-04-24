@@ -8,7 +8,7 @@ metadata:
   category: 'meta'
   keywords: ['meta', 'skills', 'qa', 'testing']
   maturity: 'beta'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Skill QA Harness

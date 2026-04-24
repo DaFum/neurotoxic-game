@@ -8,7 +8,7 @@ metadata:
   category: 'code-quality'
   keywords: ['linting', 'code-quality', 'snapshot']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Mega Lint Snapshot

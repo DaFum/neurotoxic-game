@@ -8,7 +8,7 @@ metadata:
   category: 'debugging'
   keywords: ['debugging', 'reproduction', 'isolation']
   maturity: 'beta'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Minimal Repro Builder

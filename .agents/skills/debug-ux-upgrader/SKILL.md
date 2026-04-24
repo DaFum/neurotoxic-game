@@ -8,7 +8,7 @@ metadata:
   category: 'ui'
   keywords: ['ui', 'ux', 'debug', 'user-experience']
   maturity: 'beta'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Debug UX Upgrader

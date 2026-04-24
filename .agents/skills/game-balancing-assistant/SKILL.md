@@ -8,7 +8,7 @@ metadata:
   category: 'game'
   keywords: ['game', 'balance', 'economy', 'tuning']
   maturity: 'stable'
-license: 'MIT. See LICENSE for terms'
+license: 'MIT. See /LICENSE for terms'
 ---
 
 # Game Balancing Assistant
