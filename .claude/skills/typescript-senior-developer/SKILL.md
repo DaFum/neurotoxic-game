@@ -1,4 +1,12 @@
 ---
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: "1.0.0"
+  author: "neurotoxic-project"
+  category: "development"
+  keywords: ["typescript", "typing", "refactoring"]
+  maturity: "beta"
+license: 'MIT. See /LICENSE for terms'
 name: typescript-senior-developer
 description: >
   TypeScript senior-developer guidance for the NEUROTOXIC codebase — writing,

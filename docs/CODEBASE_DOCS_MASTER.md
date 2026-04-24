@@ -91,7 +91,7 @@ _Last verified against code: 2026-04-13._
 ## Runtime stack
 
 - React `19.2.5`, React DOM `19.2.5`
-- Vite `8.0.8`
+- Vite `8.0.9`
 - Tailwind CSS `4.2.2`
 - Framer Motion `12.38.0`
 - Tone.js `15.5.6`
