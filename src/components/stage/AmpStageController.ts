@@ -3,7 +3,6 @@ import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
 import type { StageControllerOptions } from '../../types/components'
 import { AmpWaveManager } from './AmpWaveManager'
-import { RefObject, MutableRefObject } from 'react'
 
 export class AmpStageController extends BaseStageController {
   waveManager: AmpWaveManager | null
@@ -12,7 +11,7 @@ export class AmpStageController extends BaseStageController {
   currentFreq: number
   time: number
 
-  constructor(options: StageControllerOptions<{ targetValue: number, dialValue: number }>) {
+  constructor(options: StageControllerOptions<import('../../types/components').AmpStageOptions>) {
     super(options)
 
     this.waveManager = null
@@ -88,4 +87,4 @@ export class AmpStageController extends BaseStageController {
   }
 }
 
-export const createAmpStageController = (params: StageControllerOptions<{ targetValue: number, dialValue: number }>) => new AmpStageController(params)
+export const createAmpStageController = (params: StageControllerOptions<import('../../types/components').AmpStageOptions>) => new AmpStageController(params)

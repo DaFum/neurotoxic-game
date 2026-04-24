@@ -125,10 +125,12 @@ export class LaneManager {
     }
     const startX = this.laneLayout.startX
 
-    const lanes = this.gameStateRef.current.lanes
+    const lanes = this.gameStateRef.current?.lanes
+    if (!lanes) return true
     for (let index = 0, len = lanes.length; index < len; index++) {
-      lanes[index].renderX =
-        startX + index * (this.laneLayout.laneWidth + LANE_GAP)
+      const lane = lanes[index]
+      if (!lane) continue
+      lane.renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
     }
     return true
   }

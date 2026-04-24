@@ -8,7 +8,6 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type { RhythmGameRefState } from './rhythmGame'
-import type { GameState } from './game'
 
 export interface PixiController {
   init(): Promise<void>
@@ -119,6 +118,11 @@ export interface MinigameSceneFrameProps {
   children?: React.ReactNode
 }
 
+
+export interface AmpStageOptions {
+  targetValue: number
+  dialValue: number
+}
 
 export interface StageControllerOptions<TState = unknown> {
   containerRef: RefObject<HTMLElement | null>
