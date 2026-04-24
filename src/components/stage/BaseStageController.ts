@@ -1,4 +1,4 @@
-import { Application, Container, type Ticker } from 'pixi.js'
+import { Application, Container, type Ticker, type ApplicationOptions } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
@@ -6,7 +6,6 @@ import { StageResizeHandler } from './StageResizeHandler'
 import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
 import type { RefObject, MutableRefObject } from 'react'
 import type { StageControllerOptions } from '../../types/components'
-import type { ApplicationOptions } from 'pixi.js'
 
 export class BaseStageController<TState = unknown> {
 
