@@ -13,7 +13,6 @@ import { LightningEffects } from './LightningEffects.tsx'
 
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
-import type { SOCKET_DEFS } from '../constants.ts'
 
 import type { SocketId, LightningSeed } from '../../../types/kabelsalat'
 

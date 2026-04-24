@@ -1,26 +1,26 @@
 import { destroyPixiApp } from './pixiAppTeardown'
 
 export const checkLifecycleRace = (
-  app: any,
-  currentApp: any,
+  app: import("pixi.js").Application | null,
+  currentApp: import("pixi.js").Application | null,
   isDisposed: boolean,
-  handleTicker: any,
+  handleTicker: unknown,
   contextName: string
 ): boolean => {
   if (isDisposed || currentApp !== app) {
-    destroyPixiApp(app, handleTicker, contextName)
+    if (app) destroyPixiApp(app, handleTicker, contextName)
     return true
   }
   return false
 }
 
 export const isLifecycleRaceError = (
-  e: any,
-  app: any,
-  currentApp: any,
+  e: unknown,
+  app: import("pixi.js").Application | null,
+  currentApp: import("pixi.js").Application | null,
   isDisposed: boolean
 ): boolean => {
   if (isDisposed || currentApp !== app) return true
-  const message = e ? String(e.message || e) : ''
+  const message = e ? e instanceof Error ? e.message : String(e) : ''
   return message.includes('updateLocalTransform')
 }

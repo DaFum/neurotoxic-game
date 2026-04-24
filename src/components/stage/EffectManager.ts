@@ -45,6 +45,15 @@ export class EffectManager {
     await this.textureManager.loadAssets()
   }
 
+  /**
+   * Releases an effect sprite to the pool.
+   * NOTE: This method must ONLY be used for effects NOT tracked in the circular buffer (activeEffects),
+   * or the buffer state will become inconsistent.
+   */
+  releaseEffectToPool(effect: EffectSprite | null): void {
+    this.spritePool.releaseSprite(effect)
+  }
+
   _evictOldestEffect(): void {
     // O(1) removal of the oldest effect (which is always at headIndex)
     const oldest = this.activeEffects[this.headIndex]

@@ -221,7 +221,7 @@ class PixiStageController extends BaseStageController {
     this.toxicFilterManager = null
 
     if (this.stageContainer) {
-      this.stageContainer.removeChildren()
+      this.stageContainer.filters = null
       this.stageContainer.destroy({ children: true })
       this.stageContainer = null
     }
@@ -235,5 +235,5 @@ class PixiStageController extends BaseStageController {
  * @param {object} params - Controller dependencies.
  * @returns {PixiStageController} Controller instance.
  */
-export const createPixiStageController = (params: any) =>
+export const createPixiStageController = (params: import("../types/components").StageControllerOptions<import("../types/rhythmGame").RhythmGameRefState>) =>
   new PixiStageController(params)

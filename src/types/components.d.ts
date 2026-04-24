@@ -6,6 +6,8 @@ import type {
   BandMember
 } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
+import type { RefObject, MutableRefObject } from 'react'
+import type { RhythmGameRefState } from './rhythmGame'
 
 export interface PixiController {
   init(): Promise<void>
@@ -106,7 +108,7 @@ export interface TourbusMinigameLogic extends MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps {
-  controllerFactory?: (options: unknown) => PixiController
+  controllerFactory?: (options: any) => PixiController
   logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void
@@ -116,10 +118,22 @@ export interface MinigameSceneFrameProps {
   children?: React.ReactNode
 }
 
+
+export interface AmpStageOptions {
+  targetValue: number
+  dialValue: number
+}
+
+export interface StageControllerOptions<TState = unknown> {
+  containerRef: RefObject<HTMLElement | null>
+  gameStateRef: RefObject<TState>
+  updateRef: MutableRefObject<((dt: number) => void) | null>
+}
+
 export interface PixiStageProps {
-  gameStateRef: { current: GameState }
+  gameStateRef: RefObject<RhythmGameRefState>
   update: (state: unknown) => void
-  controllerFactory?: (options: unknown) => PixiController
+  controllerFactory?: (options: any) => PixiController
 }
 
 export interface ToggleRadioProps {

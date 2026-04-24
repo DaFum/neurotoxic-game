@@ -1,23 +1,29 @@
-import { Container } from 'pixi.js'
+import { Container, type Application } from 'pixi.js'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RefObject } from 'react'
 import { buildRhythmLayout } from './utils'
 import { LaneRenderer } from './LaneRenderer'
 
 const LANE_GAP = 20
 
 export class LaneManager {
-  [key: string]: any
-  /**
-   * @param {Application} app
-   * @param {Container} stageContainer
-   * @param {object} gameStateRef
-   */
-  constructor(app: any, stageContainer: any, gameStateRef: any) {
+  app: Application
+  stageContainer: Container
+  gameStateRef: RefObject<RhythmGameRefState>
+  rhythmContainer: Container | null
+  laneLayout: ReturnType<typeof buildRhythmLayout> | null
+  laneGraphics: LaneRenderer[]
+  lastLaneActive: boolean[]
+  lastScreenWidth: number
+  lastScreenHeight: number
+
+  constructor(app: Application, stageContainer: Container, gameStateRef: RefObject<RhythmGameRefState>) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
     this.rhythmContainer = null
     this.laneLayout = null
-    this.laneGraphics = [] // LaneRenderer[]
+    this.laneGraphics = []
     this.lastLaneActive = []
     this.lastScreenWidth = -1
     this.lastScreenHeight = -1
@@ -41,13 +47,15 @@ export class LaneManager {
 
   init() {
     this._initContainerAndLayout()
+    if (!this.laneLayout) return
 
     const startX = this.laneLayout.startX
     const laneWidth = this.laneLayout.laneWidth
 
-    const lanes = this.gameStateRef.current.lanes
+    const lanes = this.gameStateRef.current?.lanes ?? []
     for (let index = 0, len = lanes.length; index < len; index++) {
       const lane = lanes[index]
+      if (!lane || !this.laneLayout) continue
       const laneX = startX + index * (laneWidth + LANE_GAP)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
@@ -56,7 +64,9 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(lane: any, index: any, laneX: any) {
+  _createLaneGraphics(lane: import('../../types/rhythmGame').RhythmLane, index: number, laneX: number) {
+    if (!this.rhythmContainer || !this.laneLayout) return
+
     const renderer = new LaneRenderer(index)
 
     // Set initial visibility based on lane state and initialize cache
@@ -69,16 +79,14 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state: any) {
+  update(state: import('../../types/rhythmGame').RhythmGameRefState) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 
     for (let index = 0; index < state.lanes.length; index++) {
       const lane = state.lanes[index]
       const graphicsSet = this.laneGraphics[index]
-      if (!graphicsSet) {
-        continue
-      }
+      if (!lane || !graphicsSet || typeof lane.renderX !== 'number' || !layout) continue
 
       if (layoutUpdated) {
         graphicsSet.draw(lane, lane.renderX, layout)
@@ -88,7 +96,7 @@ export class LaneManager {
     }
   }
 
-  updateLaneVisibility(lane: any, index: any, graphicsSet: any) {
+  updateLaneVisibility(lane: { active: boolean }, index: number, graphicsSet: LaneRenderer) {
     const wasActive = this.lastLaneActive[index]
 
     // Update visibility only when activity state changes
@@ -117,10 +125,12 @@ export class LaneManager {
     }
     const startX = this.laneLayout.startX
 
-    const lanes = this.gameStateRef.current.lanes
+    const lanes = this.gameStateRef.current?.lanes
+    if (!lanes) return true
     for (let index = 0, len = lanes.length; index < len; index++) {
-      lanes[index].renderX =
-        startX + index * (this.laneLayout.laneWidth + LANE_GAP)
+      const lane = lanes[index]
+      if (!lane) continue
+      lane.renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
     }
     return true
   }

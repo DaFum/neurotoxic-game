@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next'
 import type { GameStateWithActions } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
 import { useTranslation } from 'react-i18next'
+import type { PlayerState, BandState } from '../types/game'
 import { useGameState } from '../context/GameState'
 import {
   GAME_PHASES,
@@ -20,7 +21,7 @@ const useClinicHeal = (
   currentVisits: number,
   membersMap: Map<string, BandMember>,
   clinicHeal: GameStateWithActions['clinicHeal'],
-  addToast: (msg: string, type: string) => void,
+  addToast: GameStateWithActions['addToast'],
   t: TFunction
 ) => {
   const healCostMoney = calculateClinicCost(
@@ -76,7 +77,7 @@ const useClinicEnhance = (
   currentVisits: number,
   membersMap: Map<string, BandMember>,
   clinicEnhance: GameStateWithActions['clinicEnhance'],
-  addToast: (msg: string, type: string) => void,
+  addToast: GameStateWithActions['addToast'],
   t: TFunction
 ) => {
   const enhanceCostFame = calculateClinicCost(
@@ -126,12 +127,20 @@ const useClinicEnhance = (
   return { enhanceCostFame, enhanceMember }
 }
 
-export const useClinicLogic = () => {
+export const useClinicLogic = (): {
+  player: PlayerState | undefined | null
+  band: BandState | undefined | null
+  healCostMoney: number
+  enhanceCostFame: number
+  healMember: (memberId: string) => void
+  enhanceMember: (memberId: string, traitId: string) => void
+  leaveClinic: () => void
+} => {
   const { t } = useTranslation(['ui'])
   const { player, band, changeScene, addToast, clinicHeal, clinicEnhance } =
     useGameState()
 
-  const currentVisits = player?.clinicVisits || 0
+  const currentVisits = player?.clinicVisits ?? 0
 
   const membersMap = useMemo(() => {
     const map = new Map<string, BandMember>()

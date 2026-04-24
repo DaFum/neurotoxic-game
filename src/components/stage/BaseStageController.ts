@@ -1,13 +1,23 @@
-import { Application, Container } from 'pixi.js'
+import { Application, Container, type Ticker, type ApplicationOptions } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
 import { StageResizeHandler } from './StageResizeHandler'
 import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'
+import type { RefObject, MutableRefObject } from 'react'
+import type { StageControllerOptions } from '../../types/components'
 
-export class BaseStageController {
-  [key: string]: any
-  constructor({ containerRef, gameStateRef, updateRef }: any) {
+export class BaseStageController<TState = unknown> {
+
+  containerRef: RefObject<HTMLElement | null>
+  gameStateRef: RefObject<TState>
+  updateRef: MutableRefObject<((dt: number) => void) | null>
+  app: Application | null
+  isDisposed: boolean
+  initPromise: Promise<void> | null
+  container: Container | null
+  resizeHandler: StageResizeHandler
+  constructor({ containerRef, gameStateRef, updateRef }: StageControllerOptions<TState>) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
@@ -28,7 +38,7 @@ export class BaseStageController {
     this.resizeHandler.cleanup()
   }
 
-  _checkLifecycleRace(app: any) {
+  _checkLifecycleRace(app: Application) {
     const isRace = checkLifecycleRace(
       app,
       this.app,
@@ -40,15 +50,15 @@ export class BaseStageController {
     return isRace
   }
 
-  _setupResizeListeners(container: any) {
+  _setupResizeListeners(container: HTMLElement) {
     this.resizeHandler.setup(container)
   }
 
-  _isLifecycleRaceError(e: any, app: any) {
+  _isLifecycleRaceError(e: unknown, app: Application | null) {
     return isLifecycleRaceError(e, app, this.app, this.isDisposed)
   }
 
-  _executeDisposeWithFallback(app: any) {
+  _executeDisposeWithFallback(app: Application | null) {
     try {
       this.dispose()
     } catch (disposeError) {
@@ -59,11 +69,11 @@ export class BaseStageController {
       )
       this.cleanupHostResizeListeners()
       if (this.app === app) this.app = null
-      destroyPixiApp(app, this.handleTicker, this.constructor.name)
+      if (app) destroyPixiApp(app, this.handleTicker, this.constructor.name)
     }
   }
 
-  _handleInitError(e: any, app: any) {
+  _handleInitError(e: unknown, app: Application | null) {
     const isLifecycleRace = this._isLifecycleRaceError(e, app)
     const shouldRethrow = !isLifecycleRace
 
@@ -85,7 +95,7 @@ export class BaseStageController {
     }
   }
 
-  async _performInit(options: any) {
+  async _performInit(options: Partial<ApplicationOptions>) {
     let app = null
     try {
       const container = this.containerRef.current
@@ -123,7 +133,7 @@ export class BaseStageController {
     }
   }
 
-  async init(options = {}) {
+  async init(options: Partial<ApplicationOptions> = {}) {
     this.isDisposed = false
     if (this.initPromise) return this.initPromise
 
@@ -133,7 +143,7 @@ export class BaseStageController {
 
   // Abstract methods to be overridden
   async setup() {}
-  update(_dt: any) {}
+  update(_dt: number) {}
   draw() {}
 
   handleResize() {
@@ -141,7 +151,7 @@ export class BaseStageController {
     this.draw()
   }
 
-  handleTicker(ticker: any) {
+  handleTicker(ticker: Ticker) {
     if (this.isDisposed) return
     if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
 

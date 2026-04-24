@@ -659,13 +659,10 @@ describe('PixiStageController', () => {
       await controller.init()
       const stageContainer = controller.stageContainer
       const destroySpy = mock.fn()
-      const removeChildrenSpy = mock.fn()
       stageContainer.destroy = destroySpy
-      stageContainer.removeChildren = removeChildrenSpy
 
       controller.dispose()
 
-      assert.equal(removeChildrenSpy.mock.calls.length, 1)
       assert.equal(destroySpy.mock.calls.length, 1)
       assert.deepEqual(destroySpy.mock.calls[0].arguments, [{ children: true }])
       assert.equal(controller.stageContainer, null)

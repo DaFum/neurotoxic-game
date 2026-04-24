@@ -1,5 +1,5 @@
-import { Graphics } from 'pixi.js'
-import { getPixiColorFromToken } from './utils'
+import { Graphics, type Container } from 'pixi.js'
+import { getPixiColorFromToken, type buildRhythmLayout } from './utils'
 
 const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
 const LANE_BASE_ALPHA = 0.7
@@ -10,11 +10,20 @@ const HIT_BAR_ACTIVE_ALPHA = 0.95
 const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
 
+type RhythmLayout = ReturnType<typeof buildRhythmLayout>
+
+export interface TaggedGraphics extends Graphics {
+  __laneIndex: number
+  __layer: string
+}
+
 export class LaneRenderer {
-  [key: string]: any
-  constructor(index: any) {
-    const createGraphicsLayer = (layer: any, isVisible = true) => {
-      const g = new Graphics() as any
+  static: TaggedGraphics
+  active: TaggedGraphics
+  inactive: TaggedGraphics
+    constructor(index: number) {
+    const createGraphicsLayer = (layer: string, isVisible = true) => {
+      const g = new Graphics() as TaggedGraphics
       g.__laneIndex = index
       g.__layer = layer
       g.visible = isVisible
@@ -26,13 +35,13 @@ export class LaneRenderer {
     this.inactive = createGraphicsLayer('inactive')
   }
 
-  addTo(container: any) {
+  addTo(container: Container) {
     container.addChild(this.static)
     container.addChild(this.inactive)
     container.addChild(this.active)
   }
 
-  draw(lane: any, renderX: any, layout: any) {
+  draw(lane: { color: number }, renderX: number, layout: RhythmLayout) {
     this.static.clear()
     this.static.rect(renderX, 0, layout.laneWidth, layout.laneHeight)
     this.static.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
@@ -84,7 +93,7 @@ export class LaneRenderer {
     })
   }
 
-  setVisibility(isActive: any) {
+  setVisibility(isActive: boolean) {
     this.active.visible = !!isActive
     this.inactive.visible = !isActive
   }

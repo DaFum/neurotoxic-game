@@ -32,9 +32,9 @@ export const useGigVisuals = ({
       bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
     else if (typeof currentGig?.diff === 'number' && currentGig.diff >= 5)
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
-    else if (currentGig?.difficulty !== undefined && currentGig.difficulty <= 2)
+    else if (typeof currentGig?.difficulty === 'number' && currentGig.difficulty <= 2)
       bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
-    else if (currentGig?.difficulty !== undefined && currentGig.difficulty >= 5)
+    else if (typeof currentGig?.difficulty === 'number' && currentGig.difficulty >= 5)
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
     return getGenImageUrl(bgPrompt)

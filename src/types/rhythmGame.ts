@@ -7,11 +7,16 @@ export type RhythmLane = {
   color: number
   active: boolean
   hitWindow: number
+  renderX?: number
 }
 
 export type RhythmLiveStats = {
   perfectHits: number
+  perfects?: number
+  hits?: number
   misses: number
+  earlyHits?: number
+  lateHits?: number
   maxCombo: number
   peakHype: number
 }
