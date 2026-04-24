@@ -25,11 +25,11 @@ This is the designer-driven incarnation of the NEUROTOXIC game concept. We built
 ## Tech Stack: Gear List of Doom
 
 - **React 19.2.5**: Core necromancer animating the UI shell.
-- **Pixi.js 8.17.1**: High‑performance 2D renderer driving the rhythm hellride at 60fps.
+- **Pixi.js 8.18.1**: High‑performance 2D renderer driving the rhythm hellride at 60fps.
 - **Tone.js 15.5.6**: WebAudio rig for procedural metal patterns and gig playback.
 - **Framer Motion 12.38.0**: Glitch injector and transition shredder for UI states.
-- **Tailwind CSS v4.2.2**: Utility riff machine for brutalist layout control.
-- **Vite 8.0.8**: Ultrafast dev and build pipeline for zero‑patience iteration.
+- **Tailwind CSS v4.2.3**: Utility riff machine for brutalist layout control.
+- **Vite 8.0.9**: Ultrafast dev and build pipeline for zero‑patience iteration.
 
 ## Core Systems: Architectures of Suffering
 
@@ -42,8 +42,8 @@ This is the designer-driven incarnation of the NEUROTOXIC game concept. We built
 
 ```bash
 # Clone the repository
-git clone https://github.com/neurotoxicband/neurotoxic.git
-cd neurotoxic
+git clone https://github.com/DaFum/neurotoxic-game.git
+cd neurotoxic-game
 
 # Node.js >= 22.13.0 is required
 nvm use
