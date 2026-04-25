@@ -17,6 +17,27 @@ const ESCAPE_MAP = {
   "'": '&#39;'
 }
 
+const sanitizeContextValue = (value: unknown): unknown => {
+  if (typeof value === 'string') {
+    return value.replace(/[&<>"']/g, match => {
+      const escapeKey = match as keyof typeof ESCAPE_MAP
+      return ESCAPE_MAP[escapeKey]
+    })
+  }
+  if (Array.isArray(value)) {
+    return value.map(item => sanitizeContextValue(item))
+  }
+  if (value !== null && typeof value === 'object') {
+    const out: Record<string, unknown> = Object.create(null)
+    for (const [prop, val] of Object.entries(value as Record<string, unknown>)) {
+      if (isForbiddenKey(prop)) continue
+      out[prop] = sanitizeContextValue(val)
+    }
+    return out
+  }
+  return value
+}
+
 /**
  * Handles purchasing an item from the Void Trader using Fame.
  * Validates cost, clamps new fame state, and calls addContrabandHelper.
@@ -120,31 +141,6 @@ export const handleTradeVoidItem = (
 
           if (isPlainObject) {
             const rawContext = parsedContext as Record<string, unknown>
-
-            const sanitizeContextValue = (value: unknown): unknown => {
-              if (typeof value === 'string') {
-                return value.replace(/[&<>"']/g, match => {
-                  const escapeKey = match as keyof typeof ESCAPE_MAP
-                  return ESCAPE_MAP[escapeKey]
-                })
-              }
-              if (Array.isArray(value)) {
-                return value.map(item => sanitizeContextValue(item))
-              }
-              if (value !== null && typeof value === 'object') {
-                const out: Record<string, unknown> = Object.create(null)
-                for (const prop in value) {
-                  if (!Object.hasOwn(value, prop)) continue
-                  if (isForbiddenKey(prop)) continue
-                  out[prop] = sanitizeContextValue(
-                    (value as Record<string, unknown>)[prop]
-                  )
-                }
-                return out
-              }
-              return value
-            }
-
             const finalSafeContext = sanitizeContextValue(rawContext) as Record<
               string,
               unknown
