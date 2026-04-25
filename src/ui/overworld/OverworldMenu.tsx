@@ -3,6 +3,28 @@ import { GAME_PHASES } from '../../context/gameConstants'
 import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
 import { GlitchButton } from '../../ui/GlitchButton'
 
+
+interface OverworldMenuProps {
+  t: (key: string, options?: any) => string;
+  isMenuOpen: boolean;
+  setIsMenuOpen: (open: boolean) => void;
+  isTraveling: boolean;
+  vanFuel: number;
+  vanCondition: number;
+  isSaving: boolean;
+  openStash: () => void;
+  openQuests: () => void;
+  openPirateRadio: () => void;
+  openMerchPress: () => void;
+  openBloodBank: () => void;
+  openDarkWebLeak: () => void;
+  openHQ: () => void;
+  handleRefuel: () => void;
+  handleRepair: () => void;
+  handleSaveWithDelay: () => void;
+  changeScene: (scene: string) => void;
+}
+
 export const OverworldMenu = React.memo(
   ({
     t,
@@ -23,7 +45,7 @@ export const OverworldMenu = React.memo(
     handleRepair,
     handleSaveWithDelay,
     changeScene
-  }: any) => {
+  }: OverworldMenuProps) => {
 
   const MENU_CATS = useMemo(() => [
     { id: 'management', label: t('ui:menu.management', { defaultValue: 'MANAGEMENT' }), icon: '📋', color: 'var(--color-toxic-green)', items: [
@@ -57,7 +79,7 @@ export const OverworldMenu = React.memo(
   };
 
   const actions: Record<string, () => void> = {
-    openHQ, openQuests, openStash, openPirateRadio, openMerchPress, openDarkWebLeak, openBloodBank: () => changeScene(GAME_PHASES.CLINIC), handleRefuel, handleRepair, handleSaveWithDelay
+    openHQ, openQuests, openStash, openPirateRadio, openMerchPress, openDarkWebLeak, openBloodBank, handleRefuel, handleRepair, handleSaveWithDelay
   };
 
   const handleClose = () => { setIsMenuOpen(false); setActiveCat(null); };
@@ -76,7 +98,7 @@ export const OverworldMenu = React.memo(
                 <>
                   <span style={{color:cat.color}}>{cat.icon}</span>
                   {cat.label}
-                  <span className="menu-panel-title-sub text-[8px] text-ash-gray tracking-[3px] font-mono drop-shadow-none ml-2">{cat.items.length} OPTIONS</span>
+                  <span className="menu-panel-title-sub text-[8px] text-ash-gray tracking-[3px] font-mono drop-shadow-none ml-2">{cat.items.length} {t('ui:menu.options_count', { defaultValue: 'OPTIONS' }).toUpperCase()}</span>
                 </>
               ) : (
                 <>{t('ui:menu.actions', { defaultValue: '◈ ACTIONS' })}</>
@@ -101,7 +123,7 @@ export const OverworldMenu = React.memo(
                       <span className="menu-cat-label font-[Metal_Mania] text-[14px] tracking-[1px]" style={{color:c.color}}>{c.label}</span>
                     </div>
                     <div className="menu-cat-right flex items-center gap-2">
-                      <span className="menu-cat-count text-[8px] text-ash-gray font-mono tracking-[1px]">{c.items.length} options</span>
+                      <span className="menu-cat-count text-[8px] text-ash-gray font-mono tracking-[1px]">{c.items.length} {t('ui:menu.options_count', { defaultValue: 'options' }).toLowerCase()}</span>
                       <span className="menu-cat-arrow text-[11px] opacity-60" style={{color:c.color}}>›</span>
                     </div>
                   </div>

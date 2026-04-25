@@ -1,6 +1,14 @@
 import React from 'react'
+import { type TranslationCallback } from '../../types/ui'
+
+export interface OverworldHeaderProps {
+  t: TranslationCallback
+  locationName: string
+  isTraveling: boolean
+}
+
 export const OverworldHeader = React.memo(
-  ({ t, locationName, isTraveling }: any) => {
+  ({ t, locationName, isTraveling }: OverworldHeaderProps) => {
     return (
       <>
         <div className="ow-title">{t('ui:overworld.header.tourPlan', { defaultValue: 'TOUR PLAN' })}: {locationName}</div>

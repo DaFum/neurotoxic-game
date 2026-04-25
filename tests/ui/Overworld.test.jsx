@@ -48,7 +48,7 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: {}
 }))
 
-vi.mock('../../src/utils/audioManager', () => ({
+vi.mock('../../src/utils/AudioManager', () => ({
   audioManager: {
     resumeMusic: vi.fn().mockResolvedValue(true),
     stopMusic: vi.fn(),

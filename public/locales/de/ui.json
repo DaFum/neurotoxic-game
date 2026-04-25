@@ -286,10 +286,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -312,10 +324,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -985,5 +1009,39 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen"
+  "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "menu": {
+    "management": "MANAGEMENT",
+    "hq_desc": "Manage members & gear",
+    "quests_desc": "Active objectives",
+    "stash_desc": "Contraband & inventory",
+    "side_hustles": "SIDE HUSTLES",
+    "radio_desc": "Boost reputation",
+    "merch_desc": "Print bootlegs",
+    "darkweb_desc": "Leak new tracks",
+    "logistics": "LOGISTICS",
+    "refuel_desc": "Gas up the van",
+    "repair_desc": "Fix van damage",
+    "clinic_desc": "Heal members",
+    "system": "SYSTEM",
+    "save_desc": "Record progress",
+    "options_count": "options",
+    "actions": "◈ ACTIONS",
+    "back_to_actions": "BACK TO ACTIONS",
+    "close": "CLOSE MENU",
+    "open": "OPEN MENU"
+  },
+  "overworld": {
+    "shortcuts": {
+      "help": "Toggle Help",
+      "mute": "Mute / Unmute",
+      "event": "Select Event Option",
+      "hit_notes": "Hit Notes (Gig)",
+      "close": "Close Overlays"
+    },
+    "low_fuel": "⚠ LOW FUEL",
+    "keyboard_shortcuts": "Keyboard Shortcuts",
+    "band_status": "Band Status",
+    "harmony": "Harmony"
+  }
 }
