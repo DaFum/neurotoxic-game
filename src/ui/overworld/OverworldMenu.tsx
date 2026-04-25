@@ -77,7 +77,7 @@ export const OverworldMenu = React.memo(
     handleRepair,
     handleSaveWithDelay
   }: OverworldMenuProps) => {
-    const MENU_CATS = useMemo<MenuCategory[]>(
+    const menuCategories = useMemo<MenuCategory[]>(
       () => [
         {
           id: 'management',
@@ -270,7 +270,7 @@ export const OverworldMenu = React.memo(
     }, [setIsMenuOpen])
     const handleBack = useCallback(() => setActiveCat(null), [])
 
-    const cat = MENU_CATS.find(c => c.id === activeCat)
+    const cat = menuCategories.find(c => c.id === activeCat)
 
     useEffect(() => {
       if (isMenuOpen) {
@@ -292,9 +292,6 @@ export const OverworldMenu = React.memo(
         })
         return () => {
           window.cancelAnimationFrame(rafId)
-          if (!isMenuOpen) {
-            didFocusMenuRef.current = false
-          }
         }
       }
       if (
@@ -373,7 +370,7 @@ export const OverworldMenu = React.memo(
             {/* Category list */}
             {!activeCat && (
               <div className='menu-cat-list flex flex-col p-1.5'>
-                {MENU_CATS.map(c => (
+                {menuCategories.map(c => (
                   <GlitchButton
                     key={c.id}
                     className='menu-cat-btn !border-none !bg-transparent w-full !mb-0 border-b border-ash-gray/15 hover:!bg-toxic-green/5 !px-3.5 !py-2.5'

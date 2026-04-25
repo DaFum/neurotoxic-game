@@ -7,11 +7,20 @@ export interface EventLogProps {
   locationName: string
 }
 
+type EventLogEntryType = 'system' | 'travel'
+
+interface EventLogEntry {
+  id: number
+  day: number
+  type: EventLogEntryType
+  msg: string
+}
+
 export const EventLog = React.memo(
   ({ t, day, locationName }: EventLogProps) => {
     const bodyRef = useRef<HTMLDivElement | null>(null)
     const entryIdRef = useRef(0)
-    const [entries, setEntries] = useState(() => [
+    const [entries, setEntries] = useState<EventLogEntry[]>(() => [
       {
         id: ++entryIdRef.current,
         day,
@@ -28,12 +37,7 @@ export const EventLog = React.memo(
 
     useEffect(() => {
       const previous = previousRef.current
-      const added: Array<{
-        id: number
-        day: number
-        type: string
-        msg: string
-      }> = []
+      const added: EventLogEntry[] = []
 
       if (!previous || previous.day !== day) {
         added.push({
