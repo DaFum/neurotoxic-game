@@ -5,7 +5,7 @@ import { GlitchButton } from '../../ui/GlitchButton'
 
 
 interface OverworldMenuProps {
-  t: (key: string, options?: any) => string;
+  t: import("../../types/callbacks").TranslationCallback;
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
   isTraveling: boolean;
@@ -98,10 +98,10 @@ export const OverworldMenu = React.memo(
                 <>
                   <span style={{color:cat.color}}>{cat.icon}</span>
                   {cat.label}
-                  <span className="menu-panel-title-sub text-[8px] text-ash-gray tracking-[3px] font-mono drop-shadow-none ml-2">{cat.items.length} {t('ui:menu.options_count', { defaultValue: 'OPTIONS' }).toUpperCase()}</span>
+                  <span className="menu-panel-title-sub text-[8px] text-ash-gray tracking-[3px] font-mono drop-shadow-none ml-2">{cat.items.length} {t('ui:menu.options_count_upper', { defaultValue: 'OPTIONS' })}</span>
                 </>
               ) : (
-                <>{t('ui:menu.actions', { defaultValue: '◈ ACTIONS' })}</>
+                <>◈ {t('ui:menu.actions', { defaultValue: 'ACTIONS' })}</>
               )}
             </div>
           </div>
@@ -123,7 +123,7 @@ export const OverworldMenu = React.memo(
                       <span className="menu-cat-label font-[Metal_Mania] text-[14px] tracking-[1px]" style={{color:c.color}}>{c.label}</span>
                     </div>
                     <div className="menu-cat-right flex items-center gap-2">
-                      <span className="menu-cat-count text-[8px] text-ash-gray font-mono tracking-[1px]">{c.items.length} {t('ui:menu.options_count', { defaultValue: 'options' }).toLowerCase()}</span>
+                      <span className="menu-cat-count text-[8px] text-ash-gray font-mono tracking-[1px]">{c.items.length} {t('ui:menu.options_count_lower', { defaultValue: 'options' })}</span>
                       <span className="menu-cat-arrow text-[11px] opacity-60" style={{color:c.color}}>›</span>
                     </div>
                   </div>

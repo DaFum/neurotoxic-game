@@ -65,19 +65,19 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
       void handleAudioChange.resumeMusic();
     }
   });
-  const displayMoney = useAnimatedNum(player.money || 0);
+  const displayMoney = useAnimatedNum(player.money ?? 0);
   const [moneyAnim, setMoneyAnim] = useState('');
-  const prevMoney = useRef(player.money || 0);
+  const prevMoney = useRef(player.money ?? 0);
   const vanFuel = player.van?.fuel ?? 100;
   const vanCondition = player.van?.condition ?? 100;
   const fuelLow = vanFuel < 20;
   const condLow = vanCondition < 25;
 
   useEffect(()=>{
-    if ((player.money || 0) !== prevMoney.current) {
-      setMoneyAnim((player.money || 0) > prevMoney.current ? 'money-anim-up' : 'money-anim-down');
+    if ((player.money ?? 0) !== prevMoney.current) {
+      setMoneyAnim((player.money ?? 0) > prevMoney.current ? 'money-anim-up' : 'money-anim-down');
       const t = setTimeout(()=>setMoneyAnim(''), 450);
-      prevMoney.current = player.money || 0;
+      prevMoney.current = player.money ?? 0;
       return ()=>clearTimeout(t);
     }
   },[player.money]);
@@ -94,11 +94,11 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
         <div className={`panel ${fuelLow ? 'fuel-warn' : ''}`}>
           <div className="money-row">
             <span style={{color:'var(--color-warning-yellow)',fontSize:14}}>$</span>
-            <span className={`money-val ${moneyAnim} ${(player.money || 0) < 40 ? 'low' : ''}`}>{displayMoney} €</span>
+            <span className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}>{displayMoney} €</span>
           </div>
           <div className="loc-row">
             <span style={{color:'var(--color-toxic-green)'}}>⬡</span>
-            <span>Day {player.day || 1} — {player.location || t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
+            <span>{t('ui:ui.day', { defaultValue: 'Day' })} {player.day ?? 1} — {player.location || t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
           </div>
           <div className="van-stats">
             <div className="van-row">

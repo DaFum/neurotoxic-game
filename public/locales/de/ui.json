@@ -1012,24 +1012,26 @@
   "volume.set": "Lautstärke auf {{pct}}% setzen",
   "menu": {
     "management": "MANAGEMENT",
-    "hq_desc": "Manage members & gear",
-    "quests_desc": "Active objectives",
-    "stash_desc": "Contraband & inventory",
-    "side_hustles": "SIDE HUSTLES",
-    "radio_desc": "Boost reputation",
-    "merch_desc": "Print bootlegs",
-    "darkweb_desc": "Leak new tracks",
-    "logistics": "LOGISTICS",
-    "refuel_desc": "Gas up the van",
-    "repair_desc": "Fix van damage",
-    "clinic_desc": "Heal members",
+    "hq_desc": "Band & Gear verwalten",
+    "quests_desc": "Aktive Ziele",
+    "stash_desc": "Schmuggelware & Inventar",
+    "side_hustles": "NEBENJOBS",
+    "radio_desc": "Ruf verbessern",
+    "merch_desc": "Bootlegs drucken",
+    "darkweb_desc": "Neue Tracks leaken",
+    "logistics": "LOGISTIK",
+    "refuel_desc": "Van volltanken",
+    "repair_desc": "Schäden reparieren",
+    "clinic_desc": "Mitglieder heilen",
     "system": "SYSTEM",
-    "save_desc": "Record progress",
+    "save_desc": "Fortschritt speichern",
     "options_count": "options",
-    "actions": "◈ ACTIONS",
-    "back_to_actions": "BACK TO ACTIONS",
+    "actions": "ACTIONS",
+    "back_to_actions": "ZURÜCK ZU ACTIONS",
     "close": "CLOSE MENU",
-    "open": "OPEN MENU"
+    "open": "OPEN MENU",
+    "options_count_upper": "OPTIONEN",
+    "options_count_lower": "optionen"
   },
   "overworld": {
     "shortcuts": {
@@ -1041,7 +1043,8 @@
     },
     "low_fuel": "⚠ LOW FUEL",
     "keyboard_shortcuts": "Keyboard Shortcuts",
-    "band_status": "Band Status",
-    "harmony": "Harmony"
+    "band_status": "BANDSTATUS",
+    "harmony": "Harmonie:",
+    "radio_station": "FM 66.6"
   }
 }
