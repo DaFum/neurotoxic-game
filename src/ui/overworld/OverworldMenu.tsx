@@ -224,6 +224,7 @@ export const OverworldMenu = React.memo(
     const menuRootRef = useRef<HTMLDivElement | null>(null)
     const previousFocusedElementRef = useRef<HTMLElement | null>(null)
     const didFocusMenuRef = useRef(false)
+    const prevIsMenuOpenRef = useRef(false)
 
     const isDisabled = useCallback(
       (item: MenuItem) => {
@@ -285,7 +286,7 @@ export const OverworldMenu = React.memo(
 
     useEffect(() => {
       if (isMenuOpen) {
-        if (!activeCat) {
+        if (!prevIsMenuOpenRef.current && !activeCat) {
           previousFocusedElementRef.current =
             document.activeElement instanceof HTMLElement
               ? document.activeElement
@@ -312,7 +313,12 @@ export const OverworldMenu = React.memo(
         previousFocusedElementRef.current?.focus()
       }
       didFocusMenuRef.current = false
+      prevIsMenuOpenRef.current = isMenuOpen
     }, [activeCat, isMenuOpen])
+
+    useEffect(() => {
+      prevIsMenuOpenRef.current = isMenuOpen
+    }, [isMenuOpen])
 
     useEffect(() => {
       const onKeyDown = (event: KeyboardEvent) => {

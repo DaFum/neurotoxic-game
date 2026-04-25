@@ -12,8 +12,12 @@ type EventLogEntryType = 'system' | 'travel'
 interface EventLogEntry {
   id: number
   day: number
-  type: EventLogEntryType
-  msg: string
+  kind: 'init' | 'tour_active' | 'location_secured'
+  payload: {
+    count?: number
+    date?: string
+    location?: string
+  }
 }
 
 export const EventLog = React.memo(
@@ -24,11 +28,8 @@ export const EventLog = React.memo(
       {
         id: ++entryIdRef.current,
         day,
-        type: 'system',
-        msg: t('ui:overworld.locations_loaded', {
-          count: ALL_VENUES.length,
-          defaultValue: `Tour initialized. ${ALL_VENUES.length} locations loaded.`
-        })
+        kind: 'init',
+        payload: { count: ALL_VENUES.length }
       }
     ])
     const previousRef = useRef<{ day: number; locationName: string } | null>(
@@ -43,11 +44,8 @@ export const EventLog = React.memo(
         added.push({
           id: ++entryIdRef.current,
           day,
-          type: 'system',
-          msg: t('ui:overworld.tour_active', {
-            date: `Day ${day}`,
-            defaultValue: `Day ${day}: Tour active.`
-          })
+          kind: 'tour_active',
+          payload: { date: `Day ${day}` }
         })
       }
 
@@ -55,11 +53,8 @@ export const EventLog = React.memo(
         added.push({
           id: ++entryIdRef.current,
           day,
-          type: 'travel',
-          msg: t('ui:overworld.location_secured', {
-            location: locationName,
-            defaultValue: `${locationName} secured.`
-          })
+          kind: 'location_secured',
+          payload: { location: locationName }
         })
       }
 
@@ -74,6 +69,32 @@ export const EventLog = React.memo(
       if (bodyRef.current)
         bodyRef.current.scrollTop = bodyRef.current.scrollHeight
     }, [entries])
+
+    const getEntryMessage = (entry: EventLogEntry) => {
+      if (entry.kind === 'init') {
+        return t('ui:overworld.locations_loaded', {
+          count: entry.payload.count ?? 0,
+          defaultValue: `Tour initialized. ${entry.payload.count ?? 0} locations loaded.`
+        })
+      }
+
+      if (entry.kind === 'tour_active') {
+        const date = entry.payload.date ?? `Day ${entry.day}`
+        return t('ui:overworld.tour_active', {
+          date,
+          defaultValue: `${date}: Tour active.`
+        })
+      }
+
+      const location = entry.payload.location ?? locationName
+      return t('ui:overworld.location_secured', {
+        location,
+        defaultValue: `${location} secured.`
+      })
+    }
+
+    const getEntryType = (entry: EventLogEntry): EventLogEntryType =>
+      entry.kind === 'location_secured' ? 'travel' : 'system'
 
     return (
       <div className='event-log absolute bottom-8 left-8 z-20 pointer-events-none'>
@@ -91,10 +112,14 @@ export const EventLog = React.memo(
           </span>
         </div>
         <div className='el-body' ref={bodyRef}>
-          {entries.map(e => (
-            <div className='el-entry' key={e.id}>
-              <span className='el-day'>[{String(e.day).padStart(2, '0')}]</span>
-              <span className={`el-msg t-${e.type}`}>&gt; {e.msg}</span>
+          {entries.map(entry => (
+            <div className='el-entry' key={entry.id}>
+              <span className='el-day'>
+                [{String(entry.day).padStart(2, '0')}]
+              </span>
+              <span className={`el-msg t-${getEntryType(entry)}`}>
+                &gt; {getEntryMessage(entry)}
+              </span>
             </div>
           ))}
           <div className='el-entry'>
