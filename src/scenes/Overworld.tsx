@@ -52,7 +52,7 @@ export const Overworld = () => {
     const id = setInterval(() => {
       if (Math.random() < 0.22) {
         const glitchType = TYPES[Math.floor(Math.random() * TYPES.length)]
-        setGlitch(t)
+        setGlitch(glitchType)
         timeoutId = setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
       }
     }, 4000)
@@ -192,7 +192,7 @@ export const Overworld = () => {
         locationName={locationName}
         isTraveling={isTraveling}
       />
-      <OverworldHUD player={player} band={band} harmony={band.harmony} />
+      <OverworldHUD player={player} band={band} />
             {/* Radio Widget */}
       <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-void-black border border-shadow-black p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--color-toxic-green-20)]'>
         <div className='w-2 h-2 rounded-full bg-blood-red animate-pulse' />
@@ -278,6 +278,7 @@ export const Overworld = () => {
           config={DARK_WEB_LEAK_CONFIG}
         />
       )}
+      <OverworldModals />
     </div>
   )
 }

@@ -8,15 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { type BandState } from '../../types/game';
 
 export interface OverworldHUDProps {
-  player: {
-    money?: number;
-    day?: number;
-    location?: string;
-    van?: {
-      fuel?: number;
-      condition?: number;
-    };
-  };
+  player: PlayerState;
   band: BandState;
   muted?: boolean;
   onToggleMute?: () => void;
@@ -59,13 +51,13 @@ export const OverworldHUD = React.memo(({ player, band, muted, onToggleMute }: O
   );
 
   const isMuted = muted ?? !isPlaying;
-  const handleToggleMute = onToggleMute ?? (() => {
+  const handleToggleMute = onToggleMute ?? useCallback(() => {
     if (isPlaying) {
       handleAudioChange.stopMusic();
     } else {
       void handleAudioChange.resumeMusic();
     }
-  });
+  }, [isPlaying, handleAudioChange]);
   const displayMoney = useAnimatedNum(player.money ?? 0);
   const [moneyAnim, setMoneyAnim] = useState('');
   const prevMoney = useRef(player.money ?? 0);

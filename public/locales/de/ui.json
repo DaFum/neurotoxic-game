@@ -1035,14 +1035,14 @@
   },
   "overworld": {
     "shortcuts": {
-      "help": "Toggle Help",
-      "mute": "Mute / Unmute",
-      "event": "Select Event Option",
-      "hit_notes": "Hit Notes (Gig)",
-      "close": "Close Overlays"
+      "help": "Hilfe umschalten",
+      "mute": "Stumm / Laut",
+      "event": "Event-Option wählen",
+      "hit_notes": "Noten treffen (Gig)",
+      "close": "Overlays schließen"
     },
-    "low_fuel": "⚠ LOW FUEL",
-    "keyboard_shortcuts": "Keyboard Shortcuts",
+    "low_fuel": "⚠ WENIG BENZIN",
+    "keyboard_shortcuts": "Tastenkürzel",
     "band_status": "BANDSTATUS",
     "harmony": "Harmonie:",
     "radio_station": "FM 66.6",

@@ -1,8 +1,14 @@
 import React, { useRef, useEffect } from 'react'
 import { ALL_VENUES } from '../../data/venues'
 
-export const EventLog = React.memo(({ t, day, locationName }) => {
-  const bodyRef = useRef(null);
+export interface EventLogProps {
+  t: import("../../types/callbacks").TranslationCallback;
+  day: number;
+  locationName: string;
+}
+
+export const EventLog = React.memo(({ t, day, locationName }: EventLogProps) => {
+  const bodyRef = useRef<HTMLDivElement | null>(null);
 
   const entries = [
     { day: 1, type: 'system', msg: t('ui:overworld.locations_loaded', { count: ALL_VENUES.length, defaultValue: `Tour initialized. ${ALL_VENUES.length} locations loaded.` }) },
