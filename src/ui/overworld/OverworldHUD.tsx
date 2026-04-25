@@ -1,4 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { GlitchButton } from '../GlitchButton';
+
+import { useAudioControl } from '../../hooks/useAudioControl';
+
+export interface OverworldHUDProps {
+  player: {
+    money?: number;
+    day?: number;
+    location?: string;
+    van?: {
+      fuel?: number;
+      condition?: number;
+    };
+  };
+  band: Record<string, { id: string; name: string; mood: number; stamina: number; }>;
+  harmony?: number;
+  muted?: boolean;
+  onToggleMute?: () => void;
+}
+
 
 function useAnimatedNum(value: number, ms=450) {
   const [cur, setCur] = useState(value);
@@ -21,8 +41,25 @@ function useAnimatedNum(value: number, ms=450) {
   return cur;
 }
 
-export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggleMute }: any) => {
+export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggleMute }: OverworldHUDProps) => {
   const [showSC, setShowSC] = useState(false);
+  const { audioState: isPlaying, handleAudioChange } = useAudioControl(
+    useCallback((state: unknown) => {
+      if (typeof state !== 'object' || state === null) return false;
+      const audioState = state as { currentSongId?: unknown; isPlaying?: unknown };
+      return audioState.currentSongId === 'ambient' && audioState.isPlaying === true;
+    }, []),
+    { pollEvenWithSubscribe: true, pollMs: 1000 }
+  );
+
+  const isMuted = muted ?? !isPlaying;
+  const handleToggleMute = onToggleMute ?? (() => {
+    if (isPlaying) {
+      handleAudioChange.stopMusic();
+    } else {
+      void handleAudioChange.resumeMusic();
+    }
+  });
   const displayMoney = useAnimatedNum(player.money || 0);
   const [moneyAnim, setMoneyAnim] = useState('');
   const prevMoney = useRef(player.money || 0);
@@ -65,16 +102,16 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
               <span className="mini-num" style={{color:fuelLow?'var(--color-blood-red)':undefined}}>{vanFuel}</span>
             </div>
             <div className="van-row">
-              <span className="van-icon" style={{color: condLow ? 'var(--color-blood-red)' : 'var(--color-holographic-blue)'}}>🔧</span>
-              <div className="mini-track"><div className="mini-fill" style={{width:`${vanCondition}%`,background:condLow?'var(--color-blood-red)':'var(--color-holographic-blue)'}}/></div>
+              <span className="van-icon" style={{color: condLow ? 'var(--color-blood-red)' : 'var(--color-condition-blue)'}}>🔧</span>
+              <div className="mini-track"><div className="mini-fill" style={{width:`${vanCondition}%`,background:condLow?'var(--color-blood-red)':'var(--color-condition-blue)'}}/></div>
               <span className="mini-num" style={{color:condLow?'var(--color-blood-red)':undefined}}>{vanCondition}</span>
             </div>
             {fuelLow && <div style={{fontSize:8,color:'var(--color-blood-red)',letterSpacing:'2px',textTransform:'uppercase',marginTop:2,animation:'blink-conf .6s step-end infinite'}}>⚠ LOW FUEL</div>}
           </div>
         </div>
         <div className="hud-btns pointer-events-auto">
-          <button className={`icon-btn ${muted?'off':''}`} onClick={onToggleMute}>{muted?'🔇':'🔊'}</button>
-          <button className={`icon-btn ${showSC?'active':''}`} style={showSC?{background:'var(--color-warning-yellow)',color:'var(--color-void-black)',borderColor:'var(--color-warning-yellow)'}:{}} onClick={()=>setShowSC(s=>!s)}>?</button>
+          <GlitchButton className={`!w-[30px] !h-[30px] !p-0 ${isMuted ? 'opacity-50' : ''}`} variant="primary" size="sm" onClick={handleToggleMute}>{isMuted ? '🔇' : '🔊'}</GlitchButton>
+          <GlitchButton className="!w-[30px] !h-[30px] !p-0" variant={showSC ? "warning" : "primary"} size="sm" onClick={() => setShowSC(s => !s)}>?</GlitchButton>
         </div>
         {showSC && (
           <div className="shortcuts-panel pointer-events-auto">
@@ -88,7 +125,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
       <div className="hud-right">
         <div className="panel band-panel">
           <div className="band-hdr">Band Status</div>
-          {Object.values(band || {}).map((m: any)=>{
+          {Object.values((band as any)?.members || {}).map((m: any)=>{
             const st = memberStatus(m);
             return (
               <div className="mbr-row" key={m.id}>
@@ -98,8 +135,8 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
                 </div>
                 <div className="mbr-bars">
                   <div className="bar-grp">
-                    <div className="bar-track"><div className="bar-fill" style={{width:`${m.mood}%`,background:m.mood<30?'var(--color-blood-red)':m.mood<50?'var(--color-warning-yellow)':'var(--color-neon-pink)'}}/></div>
-                    <span className="bar-pct" style={{color:m.mood<30?'var(--color-blood-red)':m.mood<50?'var(--color-warning-yellow)':'var(--color-neon-pink)'}}>{Math.round(m.mood)}%</span>
+                    <div className="bar-track"><div className="bar-fill" style={{width:`${m.mood}%`,background:m.mood<30?'var(--color-blood-red)':m.mood<50?'var(--color-warning-yellow)':'var(--color-mood-pink)'}}/></div>
+                    <span className="bar-pct" style={{color:m.mood<30?'var(--color-blood-red)':m.mood<50?'var(--color-warning-yellow)':'var(--color-mood-pink)'}}>{Math.round(m.mood)}%</span>
                   </div>
                   <div className="bar-grp">
                     <div className="bar-track"><div className="bar-fill" style={{width:`${m.stamina}%`,background:m.stamina<20?'var(--color-blood-red)':m.stamina<35?'var(--color-warning-yellow)':'var(--color-toxic-green)'}}/></div>

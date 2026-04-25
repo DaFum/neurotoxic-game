@@ -48,14 +48,18 @@ export const Overworld = () => {
   const [glitch, setGlitch] = useState('')
   useEffect(() => {
     const TYPES = ['glitch-on', 'g-hue', 'g-pixel']
+    let timeoutId: ReturnType<typeof setTimeout>;
     const id = setInterval(() => {
       if (Math.random() < 0.22) {
         const t = TYPES[Math.floor(Math.random() * TYPES.length)]
         setGlitch(t)
-        setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
+        timeoutId = setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
       }
     }, 4000)
-    return () => clearInterval(id)
+    return () => {
+      clearInterval(id)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [])
 
   const { showHQ, openHQ, closeHQ } = useBandHQModal()
@@ -188,10 +192,11 @@ export const Overworld = () => {
         locationName={locationName}
         isTraveling={isTraveling}
       />
-      <OverworldHUD player={player} band={band} harmony={player.harmony} muted={false} onToggleMute={() => {}} />
-      <div className="radio">
-        <div className="radio-dot" />
-        <span className="radio-freq">FM 66.6</span>
+      <OverworldHUD player={player} band={band} harmony={band.harmony} />
+            {/* Radio Widget */}
+      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-void-black border border-shadow-black p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--color-toxic-green-20)]'>
+        <div className='w-2 h-2 rounded-full bg-blood-red animate-pulse' />
+        <span className='text-xs text-ash-gray font-mono'>FM 66.6</span>
         <ToggleRadio />
       </div>
 
