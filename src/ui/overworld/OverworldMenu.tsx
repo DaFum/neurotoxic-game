@@ -14,7 +14,6 @@ interface OverworldMenuProps {
   openQuests: () => void
   openPirateRadio: () => void
   openMerchPress: () => void
-  openBloodBank: () => void
   openClinic: () => void
   openDarkWebLeak: () => void
   openHQ: () => void
@@ -29,7 +28,6 @@ type MenuAction =
   | 'openStash'
   | 'openPirateRadio'
   | 'openMerchPress'
-  | 'openBloodBank'
   | 'openClinic'
   | 'openDarkWebLeak'
   | 'handleRefuel'
@@ -70,7 +68,6 @@ export const OverworldMenu = React.memo(
     openPirateRadio,
     openMerchPress,
     openClinic,
-    openBloodBank,
     openDarkWebLeak,
     openHQ,
     handleRefuel,
@@ -244,7 +241,6 @@ export const OverworldMenu = React.memo(
           openMerchPress,
           openDarkWebLeak,
           openClinic,
-          openBloodBank,
           handleRefuel,
           handleRepair,
           handleSaveWithDelay
@@ -253,7 +249,6 @@ export const OverworldMenu = React.memo(
         handleRefuel,
         handleRepair,
         handleSaveWithDelay,
-        openBloodBank,
         openClinic,
         openDarkWebLeak,
         openHQ,
@@ -307,6 +302,7 @@ export const OverworldMenu = React.memo(
       const onKeyDown = (event: KeyboardEvent) => {
         if (!isMenuOpen) return
         if (event.key === 'Escape') {
+          event.stopImmediatePropagation()
           event.preventDefault()
           if (activeCat) {
             handleBack()

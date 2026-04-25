@@ -240,7 +240,6 @@ export const Overworld = () => {
         openQuests={openQuests}
         openPirateRadio={openPirateRadio}
         openMerchPress={openMerchPress}
-        openBloodBank={openBloodBank}
         openClinic={openClinic}
         openDarkWebLeak={openDarkWebLeak}
         openHQ={openHQ}

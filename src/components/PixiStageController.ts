@@ -11,6 +11,8 @@ import { EffectManager } from './stage/EffectManager'
 import { NoteManager } from './stage/NoteManager'
 import { getGigTimeMs } from '../utils/audioEngine'
 import { withTimeout } from './stage/utils'
+import type { StageControllerOptions } from '../types/components'
+import type { RhythmGameRefState } from '../types/rhythmGame'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -234,7 +236,5 @@ class PixiStageController extends BaseStageController {
  * @returns {PixiStageController} Controller instance.
  */
 export const createPixiStageController = (
-  params: import('../types/components').StageControllerOptions<
-    import('../types/rhythmGame').RhythmGameRefState
-  >
+  params: StageControllerOptions<RhythmGameRefState>
 ) => new PixiStageController(params)

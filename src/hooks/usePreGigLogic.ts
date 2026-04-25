@@ -179,7 +179,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   }, [activeEvent, isScreenshotMode, triggerEvent])
 
   const toggleSong = useCallback(
-    song => {
+    (song: Song) => {
       if (selectedSongIds.has(song.id)) {
         setSetlist(setlist.filter(s => getSongId(s) !== song.id))
       } else {

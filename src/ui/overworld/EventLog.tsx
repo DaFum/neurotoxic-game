@@ -84,7 +84,10 @@ export const EventLog = React.memo(
           </span>
           <span className='el-count'>
             {entries.length}{' '}
-            {t('ui:overworld.event_log_entries', { defaultValue: 'entries' })}
+            {t('ui:overworld.event_log_entries', {
+              count: entries.length,
+              defaultValue: 'entries'
+            })}
           </span>
         </div>
         <div className='el-body' ref={bodyRef}>

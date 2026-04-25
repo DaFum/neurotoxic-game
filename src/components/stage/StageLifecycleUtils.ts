@@ -1,8 +1,9 @@
 import { destroyPixiApp } from './pixiAppTeardown'
+import type { Application } from 'pixi.js'
 
 export const checkLifecycleRace = (
-  app: import('pixi.js').Application | null,
-  currentApp: import('pixi.js').Application | null,
+  app: Application | null,
+  currentApp: Application | null,
   isDisposed: boolean,
   handleTicker: unknown,
   contextName: string
@@ -16,8 +17,8 @@ export const checkLifecycleRace = (
 
 export const isLifecycleRaceError = (
   e: unknown,
-  app: import('pixi.js').Application | null,
-  currentApp: import('pixi.js').Application | null,
+  app: Application | null,
+  currentApp: Application | null,
   isDisposed: boolean
 ): boolean => {
   if (isDisposed || currentApp !== app) return true

@@ -1,5 +1,5 @@
 import { Container, type Application } from 'pixi.js'
-import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RhythmGameRefState, RhythmLane } from '../../types/rhythmGame'
 import type { RefObject } from 'react'
 import { buildRhythmLayout } from './utils'
 import { LaneRenderer } from './LaneRenderer'
@@ -68,11 +68,7 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(
-    lane: import('../../types/rhythmGame').RhythmLane,
-    index: number,
-    laneX: number
-  ) {
+  _createLaneGraphics(lane: RhythmLane, index: number, laneX: number) {
     if (!this.rhythmContainer || !this.laneLayout) return
 
     const renderer = new LaneRenderer(index)
@@ -87,7 +83,7 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state: import('../../types/rhythmGame').RhythmGameRefState) {
+  update(state: RhythmGameRefState) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 

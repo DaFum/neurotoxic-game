@@ -47,14 +47,15 @@ function createGenericHitTexture(app: Application): Texture | null {
   let texture: Texture | null = null
 
   try {
-    const renderer = app.renderer as unknown as Record<string, unknown>
+    const renderer = app.renderer
+    const rendererRecord = renderer as unknown as Record<string, unknown>
 
     if (
-      'textureGenerator' in renderer &&
-      typeof (renderer.textureGenerator as Record<string, unknown>)
+      Object.hasOwn(rendererRecord, 'textureGenerator') &&
+      typeof (rendererRecord.textureGenerator as Record<string, unknown>)
         ?.generateTexture === 'function'
     ) {
-      const textureGenerator = renderer.textureGenerator as {
+      const textureGenerator = rendererRecord.textureGenerator as {
         generateTexture: (options: unknown) => Texture
       }
       texture = textureGenerator.generateTexture({

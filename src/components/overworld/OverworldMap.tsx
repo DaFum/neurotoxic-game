@@ -4,6 +4,31 @@ import { MapNode } from '../MapNode'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import type {
+  MapNode as GameMapNode,
+  GameMap,
+  PlayerState
+} from '../../types/game'
+import type { TranslationCallback } from '../../types/callbacks'
+
+interface OverworldMapProps {
+  t: TranslationCallback
+  gameMap: GameMap | null
+  player: PlayerState
+  currentLayer: number
+  isTraveling: boolean
+  pendingTravelNode: GameMapNode | null
+  getNodeVisibility: (nodeLayer: number, currentLayer: number) => number
+  isConnected: (nodeId: string) => boolean
+  handleTravel: (node: GameMapNode) => void
+  setHoveredNode: React.Dispatch<React.SetStateAction<GameMapNode | null>>
+  hoveredNode: GameMapNode | null
+  currentNode: GameMapNode | null
+  travelTarget: GameMapNode | null
+  travelCompletedRef: React.MutableRefObject<boolean>
+  onTravelComplete: (node?: GameMapNode) => void
+  activeStoryFlags: string[]
+}
 
 export const OverworldMap = React.memo(
   ({
@@ -82,47 +107,41 @@ export const OverworldMap = React.memo(
     // Memoized node rendering
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
-      const nodes = gameMap.nodes
-      return Object.values(nodes as Record<string, unknown>).map(
-        (node: unknown) => {
-          const isCurrent = node.id === player.currentNodeId
-          const visibility = getNodeVisibility(node.layer, currentLayer)
-          const isReachable = isConnected(node.id) || node.type === 'START'
+      return Object.values(gameMap.nodes).map(node => {
+        const isCurrent = node.id === player.currentNodeId
+        const visibility = getNodeVisibility(node.layer, currentLayer)
+        const isReachable = isConnected(node.id) || node.type === 'START'
 
-          let iconUrl = pinClubUrl
-          if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
-          else if (node.type === 'START') iconUrl = pinHomeUrl
-          else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
-          else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
-          else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
+        let iconUrl = pinClubUrl
+        if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
+        else if (node.type === 'START') iconUrl = pinHomeUrl
+        else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
+        else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
+        else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
-          const effectivePrice = calculateEffectiveTicketPrice(
-            node.venue || {},
-            {
-              discountedTickets: activeStoryFlags?.includes(
-                'discounted_tickets_active'
-              )
-            }
+        const effectivePrice = calculateEffectiveTicketPrice(node.venue || {}, {
+          discountedTickets: activeStoryFlags?.includes(
+            'discounted_tickets_active'
           )
+        })
 
-          return (
-            <MapNode
-              key={node.id}
-              node={node}
-              isCurrent={isCurrent}
-              isTraveling={isTraveling}
-              visibility={visibility}
-              isReachable={isReachable}
-              isPendingConfirm={pendingTravelNode?.id === node.id}
-              handleTravel={handleTravel}
-              setHoveredNode={setHoveredNode}
-              iconUrl={iconUrl}
-              vanUrl={vanUrl}
-              ticketPrice={effectivePrice}
-            />
-          )
-        }
-      )
+        return (
+          <MapNode
+            key={node.id}
+            node={node}
+            isCurrent={isCurrent}
+            isTraveling={isTraveling}
+            visibility={visibility}
+            isReachable={isReachable}
+            isPendingConfirm={pendingTravelNode?.id === node.id}
+            handleTravel={handleTravel}
+            setHoveredNode={setHoveredNode}
+            iconUrl={iconUrl}
+            vanUrl={vanUrl}
+            ticketPrice={effectivePrice}
+          />
+        )
+      })
     }, [
       gameMap,
       player.currentNodeId,
