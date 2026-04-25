@@ -12,7 +12,7 @@ export const EventLog = React.memo(({ t, day, locationName }: EventLogProps) => 
 
   const entries = [
     { day: 1, type: 'system', msg: t('ui:overworld.locations_loaded', { count: ALL_VENUES.length, defaultValue: `Tour initialized. ${ALL_VENUES.length} locations loaded.` }) },
-    { day: day, type: 'system', msg: t('ui:overworld.tour_active', { date: `${String(day).padStart(2, '0')}.01.2026`, defaultValue: `${String(day).padStart(2, '0')}.01.2026: Tour active.` }) },
+    { day: day, type: 'system', msg: t('ui:overworld.tour_active', { day, defaultValue: `Day ${day}: Tour active.` }) },
     { day: day, type: 'travel', msg: t('ui:overworld.location_secured', { location: locationName, defaultValue: `${locationName} secured.` }) }
   ];
 

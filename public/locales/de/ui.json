@@ -1030,6 +1030,20 @@
     "locations_loaded": "Tour initialisiert. {{count}} Locations geladen.",
     "tour_active": "{{date}}: Tour aktiv.",
     "location_secured": "{{location}} gesichert.",
-    "event_log": "EVENT LOG"
+    "event_log": "EVENT LOG",
+    "header": {
+      "tourPlan": "TOURPLAN:"
+    },
+    "status": {
+      "traveling": "REISEN...",
+      "nextStop": "Nächster Halt",
+      "onRoad": "UNTERWEGS",
+      "selectLocation": "WÄHLE EINEN ORT"
+    },
+    "band_hq_button": "BAND HQ",
+    "refuel": "TANKEN",
+    "repair": "REPARIEREN",
+    "void_clinic_button": "VOID CLINIC",
+    "save_game": "SPIEL SPEICHERN"
   }
 }

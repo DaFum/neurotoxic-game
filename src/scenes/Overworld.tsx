@@ -18,6 +18,14 @@ import { EventLog } from '../ui/overworld/EventLog'
 import { audioManager } from '../utils/AudioManager'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
+import { BandHQ } from '../ui/BandHQ'
+import { QuestsModal } from '../ui/QuestsModal'
+import { ContrabandStash } from '../ui/ContrabandStash'
+import { PirateRadioModal } from '../ui/PirateRadioModal'
+import { MerchPressModal } from '../ui/MerchPressModal'
+import { BloodBankModal } from '../ui/BloodBankModal'
+import { DarkWebLeakModal } from '../ui/DarkWebLeakModal'
+
 
 /**
  * The map navigation scene where players select their next destination.

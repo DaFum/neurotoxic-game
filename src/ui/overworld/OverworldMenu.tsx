@@ -37,7 +37,7 @@ export const OverworldMenu = React.memo(
     openQuests,
     openPirateRadio,
     openMerchPress,
-    openClinic, openBloodBank,
+    openClinic,
     openDarkWebLeak,
     openHQ,
     handleRefuel,
@@ -77,7 +77,7 @@ export const OverworldMenu = React.memo(
   };
 
   const actions: Record<string, () => void> = {
-    openHQ, openQuests, openStash, openPirateRadio, openMerchPress, openDarkWebLeak, openClinic, openClinic, openBloodBank, handleRefuel, handleRepair, handleSaveWithDelay
+    openHQ, openQuests, openStash, openPirateRadio, openMerchPress, openDarkWebLeak, openClinic, openClinic, handleRefuel, handleRepair, handleSaveWithDelay
   };
 
   const handleClose = () => { setIsMenuOpen(false); setActiveCat(null); };
