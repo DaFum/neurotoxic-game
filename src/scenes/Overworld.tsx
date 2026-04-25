@@ -48,8 +48,7 @@ export const Overworld = () => {
     advanceDay,
     changeScene,
     startTravelMinigame,
-    activeStoryFlags,
-    settings
+    activeStoryFlags
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
