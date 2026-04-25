@@ -44,7 +44,7 @@ describe('loadAudioBuffer tests', () => {
 
   beforeEach(async () => {
     vi.resetModules() // clear any loaded module cache
-    vi.unmock('../../../src/utils/audio/assets')
+    vi.doUnmock('../../../src/utils/audio/assets')
 
     // Import assets AFTER setting up mocks, dynamically
     const assetsModule = await import('../../../src/utils/audio/assets')
