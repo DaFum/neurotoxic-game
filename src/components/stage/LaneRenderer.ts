@@ -21,7 +21,7 @@ export class LaneRenderer {
   static: TaggedGraphics
   active: TaggedGraphics
   inactive: TaggedGraphics
-    constructor(index: number) {
+  constructor(index: number) {
     const createGraphicsLayer = (layer: string, isVisible = true) => {
       const g = new Graphics() as TaggedGraphics
       g.__laneIndex = index

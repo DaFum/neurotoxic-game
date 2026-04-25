@@ -159,7 +159,8 @@ export class NoteSpritePool {
   }
 
   acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
-    const sprite = this.spritePool.pop() ?? this.factory.createNoteSprite(laneIndex)
+    const sprite =
+      this.spritePool.pop() ?? this.factory.createNoteSprite(laneIndex)
     this.factory.initializeNoteSprite(sprite, lane, laneIndex)
     return sprite
   }

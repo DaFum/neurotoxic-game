@@ -16,7 +16,6 @@ import { withTimeout } from './stage/utils'
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
 class PixiStageController extends BaseStageController {
-
   // Getters and Setters for backward compatibility with existing tests
   get colorMatrix() {
     return this.toxicFilterManager?.colorMatrix ?? null
@@ -202,7 +201,6 @@ class PixiStageController extends BaseStageController {
     )
   }
 
-
   /**
    * Disposes Pixi resources and removes the canvas.
    * @returns {void}
@@ -235,5 +233,8 @@ class PixiStageController extends BaseStageController {
  * @param {object} params - Controller dependencies.
  * @returns {PixiStageController} Controller instance.
  */
-export const createPixiStageController = (params: import("../types/components").StageControllerOptions<import("../types/rhythmGame").RhythmGameRefState>) =>
-  new PixiStageController(params)
+export const createPixiStageController = (
+  params: import('../types/components').StageControllerOptions<
+    import('../types/rhythmGame').RhythmGameRefState
+  >
+) => new PixiStageController(params)

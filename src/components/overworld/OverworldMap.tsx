@@ -23,7 +23,7 @@ export const OverworldMap = React.memo(
     travelCompletedRef,
     onTravelComplete,
     activeStoryFlags
-}: OverworldMapProps) => {
+  }: OverworldMapProps) => {
     // Memoized URL generators
     const mapBgUrl = useMemo(
       () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
@@ -83,41 +83,46 @@ export const OverworldMap = React.memo(
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
       const nodes = gameMap.nodes
-      return Object.values(nodes as Record<string, unknown>).map((node: unknown) => {
-        const isCurrent = node.id === player.currentNodeId
-        const visibility = getNodeVisibility(node.layer, currentLayer)
-        const isReachable = isConnected(node.id) || node.type === 'START'
+      return Object.values(nodes as Record<string, unknown>).map(
+        (node: unknown) => {
+          const isCurrent = node.id === player.currentNodeId
+          const visibility = getNodeVisibility(node.layer, currentLayer)
+          const isReachable = isConnected(node.id) || node.type === 'START'
 
-        let iconUrl = pinClubUrl
-        if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
-        else if (node.type === 'START') iconUrl = pinHomeUrl
-        else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
-        else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
-        else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
+          let iconUrl = pinClubUrl
+          if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
+          else if (node.type === 'START') iconUrl = pinHomeUrl
+          else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
+          else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
+          else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
-        const effectivePrice = calculateEffectiveTicketPrice(node.venue || {}, {
-          discountedTickets: activeStoryFlags?.includes(
-            'discounted_tickets_active'
+          const effectivePrice = calculateEffectiveTicketPrice(
+            node.venue || {},
+            {
+              discountedTickets: activeStoryFlags?.includes(
+                'discounted_tickets_active'
+              )
+            }
           )
-        })
 
-        return (
-          <MapNode
-            key={node.id}
-            node={node}
-            isCurrent={isCurrent}
-            isTraveling={isTraveling}
-            visibility={visibility}
-            isReachable={isReachable}
-            isPendingConfirm={pendingTravelNode?.id === node.id}
-            handleTravel={handleTravel}
-            setHoveredNode={setHoveredNode}
-            iconUrl={iconUrl}
-            vanUrl={vanUrl}
-            ticketPrice={effectivePrice}
-        />
+          return (
+            <MapNode
+              key={node.id}
+              node={node}
+              isCurrent={isCurrent}
+              isTraveling={isTraveling}
+              visibility={visibility}
+              isReachable={isReachable}
+              isPendingConfirm={pendingTravelNode?.id === node.id}
+              handleTravel={handleTravel}
+              setHoveredNode={setHoveredNode}
+              iconUrl={iconUrl}
+              vanUrl={vanUrl}
+              ticketPrice={effectivePrice}
+            />
+          )
+        }
       )
-    })
     }, [
       gameMap,
       player.currentNodeId,

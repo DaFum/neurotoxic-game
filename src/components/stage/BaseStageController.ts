@@ -1,4 +1,9 @@
-import { Application, Container, type Ticker, type ApplicationOptions } from 'pixi.js'
+import {
+  Application,
+  Container,
+  type Ticker,
+  type ApplicationOptions
+} from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 import { destroyPixiApp } from './pixiAppTeardown'
@@ -8,7 +13,6 @@ import type { RefObject, MutableRefObject } from 'react'
 import type { StageControllerOptions } from '../../types/components'
 
 export class BaseStageController<TState = unknown> {
-
   containerRef: RefObject<HTMLElement | null>
   gameStateRef: RefObject<TState>
   updateRef: MutableRefObject<((dt: number) => void) | null>
@@ -17,7 +21,11 @@ export class BaseStageController<TState = unknown> {
   initPromise: Promise<void> | null
   container: Container | null
   resizeHandler: StageResizeHandler
-  constructor({ containerRef, gameStateRef, updateRef }: StageControllerOptions<TState>) {
+  constructor({
+    containerRef,
+    gameStateRef,
+    updateRef
+  }: StageControllerOptions<TState>) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
