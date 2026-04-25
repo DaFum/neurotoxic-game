@@ -50,7 +50,8 @@ export const OverworldHUD = React.memo(
   ({ player, band }: OverworldHUDProps) => {
     const { t } = useTranslation(['ui'])
     const [showSC, setShowSC] = useState(false)
-    const { audioState: isPlaying, handleAudioChange } = useAudioControl()
+    const { audioState, handleAudioChange } = useAudioControl()
+    const isPlaying = typeof audioState === 'object' && audioState !== null && (audioState as Record<string, unknown>).isPlaying === true
     const displayMoney = useAnimatedNum(player.money ?? 0)
     const [moneyAnim, setMoneyAnim] = useState('')
     const prevMoney = useRef(player.money ?? 0)
