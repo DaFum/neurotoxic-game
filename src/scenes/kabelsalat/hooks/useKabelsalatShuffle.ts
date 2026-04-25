@@ -11,7 +11,14 @@ export const useKabelsalatShuffle = (
   setSocketOrder: Dispatch<SetStateAction<string[]>>
 ) => {
   const unconnectedIds = useMemo(() => {
-    return INITIAL_SOCKET_ORDER.filter(id => !connections[id])
+    const result: string[] = []
+    for (let i = 0; i < INITIAL_SOCKET_ORDER.length; i++) {
+      const id = INITIAL_SOCKET_ORDER[i]
+      if (!connections[id]) {
+        result.push(id)
+      }
+    }
+    return result
   }, [connections])
 
   const randomFn = getSafeRandom
