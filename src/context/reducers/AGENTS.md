@@ -19,3 +19,7 @@ Applies to `src/context/reducers/**`.
 
 - Travel/location fields are consumed by chatter, translation, and save migrations; update all readers/writers together.
 - Settings and unlock persistence behavior is regression-sensitive; keep tests aligned with intended semantics.
+
+## Recent Findings (2026-04)
+
+- Reintroduced actions should be validated for no-op safety when feature flags/state preconditions are missing; reducers must remain deterministic.

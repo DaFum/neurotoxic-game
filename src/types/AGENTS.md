@@ -29,3 +29,7 @@ Applies to `src/types/**`.
 - `src/types/**` remains the cross-domain contract source; consumers must import and reuse these contracts instead of recreating local structural clones.
 - If optionality changes in a shared type, update corresponding runtime validators/PropTypes and affected tests in the same PR.
 - Prefer additive, backward-compatible contract evolution; breaking field changes require coordinated reducer/action updates.
+
+## Recent Findings (2026-04)
+
+- Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.

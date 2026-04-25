@@ -18,3 +18,7 @@ Applies to `tests/node/**`.
 
 - When asserting travel/location behavior, include legacy and canonical venue ID cases.
 - When asserting load/reset behavior, verify whitelist sanitization instead of raw spread assumptions.
+
+## Recent Findings (2026-04)
+
+- Add reducer-level coverage when a feature can become unreachable from UI; this separates state contract validity from scene wiring regressions.

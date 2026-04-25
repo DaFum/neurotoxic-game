@@ -24,3 +24,7 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 
 - `useArrivalLogic` owns arrival routing and scene transitions after travel completion.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must stay reactive-only (no direct PIXI imports).
+
+## Recent Findings (2026-04)
+
+- Theme-token migrations should be completed per file: if one module switches to RGB token variables, finish all remaining literal color usages in that module before merging.

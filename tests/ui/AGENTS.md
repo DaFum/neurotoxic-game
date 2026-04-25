@@ -18,3 +18,7 @@ Applies to `tests/ui/**` unless a deeper `AGENTS.md` overrides it.
 
 - If runtime `propTypes` optionality changes, add/update UI coverage for missing-prop fallback behavior.
 - Keep i18n mocks consistent with repo conventions (`initReactI18next` stub).
+
+## Recent Findings (2026-04)
+
+- Add assertions that each legacy action remains reachable after menu redesigns (not just that modal components can render when force-opened).

@@ -19,3 +19,7 @@ Applies to `src/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
 
 - Bounded-state guidance should follow canonical helpers in `src/utils/gameStateUtils.ts`: `player.money >= 0` and `band.harmony` clamped to `1..100`.
 - Do not bypass centralized cost/effect engines when deriving UI decisions.
+
+## Recent Findings (2026-04)
+
+- Band HQ navigation should remain independent from Overworld action regrouping; HQ open behavior must not depend on category ordering side effects.
