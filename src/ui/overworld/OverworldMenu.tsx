@@ -143,7 +143,9 @@ export const OverworldMenu = React.memo(
               action: 'openMerchPress'
             },
             {
-              label: t('ui:dark_web_leak.button', { defaultValue: 'DARK WEB' }),
+              label: t('ui:dark_web_leak.button', {
+                defaultValue: 'DARK WEB LEAK'
+              }),
               desc: t('ui:menu.darkweb_desc', {
                 defaultValue: 'Leak new tracks'
               }),
@@ -185,7 +187,7 @@ export const OverworldMenu = React.memo(
                 defaultValue: 'Trade blood for cash'
               }),
               icon: '🩸',
-              v: 'w',
+              v: 'd',
               action: 'openBloodBank'
             },
             {
