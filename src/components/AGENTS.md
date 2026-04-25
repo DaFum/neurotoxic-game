@@ -27,3 +27,7 @@ Applies to `src/components/**`.
 - Keep component prop interfaces and runtime `propTypes` optional/required flags synchronized.
 - For reusable components, export explicit prop types and avoid `any` passthrough props.
 - When a prop accepts external/untrusted objects, type as `unknown` at the boundary and narrow before access.
+
+## Recent Findings (2026-04)
+
+- For categorized action menus, keep a one-to-one mapping between action unions and rendered items to prevent unreachable handlers hiding in lookup maps.

@@ -34,3 +34,7 @@ Applies to `src/context/**`.
 - New actions must preserve discriminated union safety: update `ActionTypes`, action creators (`Extract<...>`), reducer handling, and `assertNever` coverage together.
 - For load/reset/update reducers, whitelist fields from untrusted payloads instead of spreading generic objects into state.
 - Keep runtime clamps and action payload types aligned so reducers remain predictable and testable.
+
+## Recent Findings (2026-04)
+
+- UI refactors that add/remove actionable entries should audit action creators for orphaned dispatch paths and keep contracts explicit.

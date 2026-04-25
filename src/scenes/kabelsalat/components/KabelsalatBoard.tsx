@@ -16,8 +16,6 @@ import type { TFunction } from 'i18next'
 
 import type { SocketId, LightningSeed } from '../../../types/kabelsalat'
 
-
-
 interface KabelsalatBoardProps {
   t: TFunction
   isShocked: boolean

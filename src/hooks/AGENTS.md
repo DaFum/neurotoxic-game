@@ -22,3 +22,7 @@ Applies to `src/hooks/**`.
 
 - `useArrivalLogic` owns arrival routing decisions.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must not import PIXI directly — they return reactive state only.
+
+## Recent Findings (2026-04)
+
+- If a hook returns modal controls (`show/open/close/trigger`), verify at least one active caller consumes `open*`; otherwise remove the hook wiring or restore the entry point.

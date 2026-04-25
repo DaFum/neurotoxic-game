@@ -1,5 +1,5 @@
 import { Container, type Application } from 'pixi.js'
-import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { RhythmGameRefState, RhythmLane } from '../../types/rhythmGame'
 import type { RefObject } from 'react'
 import { buildRhythmLayout } from './utils'
 import { LaneRenderer } from './LaneRenderer'
@@ -17,7 +17,11 @@ export class LaneManager {
   lastScreenWidth: number
   lastScreenHeight: number
 
-  constructor(app: Application, stageContainer: Container, gameStateRef: RefObject<RhythmGameRefState>) {
+  constructor(
+    app: Application,
+    stageContainer: Container,
+    gameStateRef: RefObject<RhythmGameRefState>
+  ) {
     this.app = app
     this.stageContainer = stageContainer
     this.gameStateRef = gameStateRef
@@ -64,7 +68,7 @@ export class LaneManager {
     }
   }
 
-  _createLaneGraphics(lane: import('../../types/rhythmGame').RhythmLane, index: number, laneX: number) {
+  _createLaneGraphics(lane: RhythmLane, index: number, laneX: number) {
     if (!this.rhythmContainer || !this.laneLayout) return
 
     const renderer = new LaneRenderer(index)
@@ -79,14 +83,15 @@ export class LaneManager {
     this.laneGraphics[index] = renderer
   }
 
-  update(state: import('../../types/rhythmGame').RhythmGameRefState) {
+  update(state: RhythmGameRefState) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 
     for (let index = 0; index < state.lanes.length; index++) {
       const lane = state.lanes[index]
       const graphicsSet = this.laneGraphics[index]
-      if (!lane || !graphicsSet || typeof lane.renderX !== 'number' || !layout) continue
+      if (!lane || !graphicsSet || typeof lane.renderX !== 'number' || !layout)
+        continue
 
       if (layoutUpdated) {
         graphicsSet.draw(lane, lane.renderX, layout)
@@ -96,7 +101,11 @@ export class LaneManager {
     }
   }
 
-  updateLaneVisibility(lane: { active: boolean }, index: number, graphicsSet: LaneRenderer) {
+  updateLaneVisibility(
+    lane: { active: boolean },
+    index: number,
+    graphicsSet: LaneRenderer
+  ) {
     const wasActive = this.lastLaneActive[index]
 
     // Update visibility only when activity state changes

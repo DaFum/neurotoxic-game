@@ -24,3 +24,7 @@ Applies to `src/scenes/**`.
 - Scene transitions should use central constants/unions (not ad-hoc string literals) to preserve reducer safety.
 - Avoid duplicating `GameState`-like scene-local shapes; import shared contracts from `src/types`.
 - When scene payload contracts change, update related action creators and scene tests together.
+
+## Recent Findings (2026-04)
+
+- Scene modules should not keep dormant modal branches: either wire a reachable trigger or remove the render path and related hook usage together.

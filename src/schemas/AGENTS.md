@@ -19,3 +19,7 @@ Applies to `src/schemas/**`.
 - Treat schema files as contract sources: when a schema changes, update inferred/declared TypeScript types and validator tests in the same PR.
 - Preserve nullish semantics in optional schema fields (`??` patterns) so valid falsy values are not lost.
 - Keep schema helpers declarative and strongly typed; avoid embedding app-level side effects in schema modules.
+
+## Recent Findings (2026-04)
+
+- Treat UI reachability changes as potential schema-impacting events when persisted flags exist; stale flags should be either migrated or removed intentionally.

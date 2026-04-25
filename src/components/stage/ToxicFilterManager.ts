@@ -47,7 +47,6 @@ export class ToxicFilterManager {
    * Disposes Pixi resources related to toxic filters.
    */
   dispose(): void {
-
     if (this.colorMatrix) {
       this.colorMatrix.destroy()
       this.colorMatrix = null

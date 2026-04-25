@@ -178,15 +178,18 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     }
   }, [activeEvent, isScreenshotMode, triggerEvent])
 
-  const toggleSong = useCallback(song => {
-    if (selectedSongIds.has(song.id)) {
-      setSetlist(setlist.filter(s => getSongId(s) !== song.id))
-    } else {
-      if (setlist.length < 3) {
-        setSetlist([...setlist, { id: song.id }])
+  const toggleSong = useCallback(
+    (song: Song) => {
+      if (selectedSongIds.has(song.id)) {
+        setSetlist(setlist.filter(s => getSongId(s) !== song.id))
+      } else {
+        if (setlist.length < 3) {
+          setSetlist([...setlist, { id: song.id }])
+        }
       }
-    }
-  }, [selectedSongIds, setSetlist, setlist])
+    },
+    [selectedSongIds, setSetlist, setlist]
+  )
 
   const calculatedBudget = useMemo(() => {
     let acc = 0

@@ -3,14 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { Overworld } from '../../src/scenes/Overworld.tsx'
 import { GameStateProvider } from '../../src/context/GameState'
 
-
-
-
 // Mocks
-
-vi.mock('../../src/hooks/useSettings', () => ({
-  useSettings: () => ({ crtEnabled: true })
-}))
 
 vi.mock('../../src/hooks/useTravelLogic', () => ({
   useTravelLogic: () => ({
@@ -56,7 +49,15 @@ vi.mock('../../src/utils/AudioManager', () => ({
   audioManager: {
     resumeMusic: vi.fn().mockResolvedValue(true),
     stopMusic: vi.fn(),
-    getStateSnapshot: vi.fn(() => ({ currentSongId: 'ambient', isPlaying: true }))
+    getStateSnapshot: vi.fn(() => ({
+      musicVolume: 0.8,
+      sfxVolume: 0.8,
+      muted: false,
+      isPlaying: true,
+      currentSongId: 'ambient'
+    })),
+    subscribe: vi.fn(() => () => {}),
+    hasNativeSubscribe: () => true
   }
 }))
 
@@ -98,8 +99,6 @@ describe('Overworld Component', () => {
     // verify the menu is present
     expect(screen.getByText(/MANAGEMENT/i)).toBeInTheDocument()
   })
-
-
 
   it('triggers save game action when save button is clicked', async () => {
     vi.useFakeTimers()

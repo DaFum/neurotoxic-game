@@ -19,3 +19,7 @@ Applies to `api/**`.
 - Treat request bodies and query params as `unknown` at the route boundary, then narrow with explicit validators before use.
 - Keep API response shapes stable during type migrations; when a payload contract changes, update client consumers and API tests in the same PR.
 - Avoid widening handler-local data to `Record<string, any>`; prefer concrete interfaces or `Record<string, unknown>` with narrowing.
+
+## Recent Findings (2026-04)
+
+- Avoid backend endpoint additions for features that are not reachable in current UI flows; dead client paths create misleading API surface expectations.

@@ -19,3 +19,7 @@ Applies to `src/ui/bandhq/hooks/**`.
 
 - Ownership and affordability checks must match runtime effect handling paths.
 - Success/failure toast content must align with sanitized, actually-applied changes.
+
+## Recent Findings (2026-04)
+
+- Hook outputs consumed by tabs/modals should expose stable open/close semantics so scene-level menu refactors don’t require hook rewrites.

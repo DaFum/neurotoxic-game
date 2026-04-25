@@ -14,13 +14,21 @@ import { Graphics, Texture } from 'pixi.js'
 import type { Application } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { logger } from '../../utils/logger'
-import { loadTextures, getPixiColorFromToken, getOptimalResolution } from './utils'
+import {
+  loadTextures,
+  getPixiColorFromToken,
+  getOptimalResolution
+} from './utils'
 
 /**
  * Safely destroys a texture if it exists and has a destroy method.
  */
 function safeDestroyTexture(texture: Texture | null): void {
-  if (texture && texture !== Texture.WHITE && typeof texture.destroy === 'function') {
+  if (
+    texture &&
+    texture !== Texture.WHITE &&
+    typeof texture.destroy === 'function'
+  ) {
     texture.destroy(true)
   }
 }
@@ -39,17 +47,26 @@ function createGenericHitTexture(app: Application): Texture | null {
   let texture: Texture | null = null
 
   try {
-    const renderer = app.renderer as unknown as Record<string, unknown>
+    const renderer = app.renderer
+    const rendererRecord = renderer as unknown as Record<string, unknown>
 
-    if ('textureGenerator' in renderer && typeof (renderer.textureGenerator as Record<string, unknown>)?.generateTexture === 'function') {
-      const textureGenerator = renderer.textureGenerator as { generateTexture: (options: unknown) => Texture }
+    if (
+      Object.hasOwn(rendererRecord, 'textureGenerator') &&
+      typeof (rendererRecord.textureGenerator as Record<string, unknown>)
+        ?.generateTexture === 'function'
+    ) {
+      const textureGenerator = rendererRecord.textureGenerator as {
+        generateTexture: (options: unknown) => Texture
+      }
       texture = textureGenerator.generateTexture({
         target: graphics,
         resolution: getOptimalResolution(),
         antialias: true
       })
     } else if (typeof renderer.generateTexture === 'function') {
-      const generateTexture = renderer.generateTexture as (graphics: Graphics) => Texture
+      const generateTexture = renderer.generateTexture as (
+        graphics: Graphics
+      ) => Texture
       texture = generateTexture.call(renderer, graphics)
     } else {
       logger.warn(

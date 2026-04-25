@@ -4,6 +4,31 @@ import { MapNode } from '../MapNode'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import type {
+  MapNode as GameMapNode,
+  GameMap,
+  PlayerState
+} from '../../types/game'
+import type { TranslationCallback } from '../../types/callbacks'
+
+interface OverworldMapProps {
+  t: TranslationCallback
+  gameMap: GameMap | null
+  player: PlayerState
+  currentLayer: number
+  isTraveling: boolean
+  pendingTravelNode: GameMapNode | null
+  getNodeVisibility: (nodeLayer: number, currentLayer: number) => number
+  isConnected: (nodeId: string) => boolean
+  handleTravel: (node: GameMapNode) => void
+  setHoveredNode: React.Dispatch<React.SetStateAction<GameMapNode | null>>
+  hoveredNode: GameMapNode | null
+  currentNode: GameMapNode | null
+  travelTarget: GameMapNode | null
+  travelCompletedRef: React.MutableRefObject<boolean>
+  onTravelComplete: (node?: GameMapNode) => void
+  activeStoryFlags: string[]
+}
 
 export const OverworldMap = React.memo(
   ({
@@ -23,7 +48,7 @@ export const OverworldMap = React.memo(
     travelCompletedRef,
     onTravelComplete,
     activeStoryFlags
-}: OverworldMapProps) => {
+  }: OverworldMapProps) => {
     // Memoized URL generators
     const mapBgUrl = useMemo(
       () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
@@ -82,8 +107,7 @@ export const OverworldMap = React.memo(
     // Memoized node rendering
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
-      const nodes = gameMap.nodes
-      return Object.values(nodes as Record<string, unknown>).map((node: unknown) => {
+      return Object.values(gameMap.nodes).map(node => {
         const isCurrent = node.id === player.currentNodeId
         const visibility = getNodeVisibility(node.layer, currentLayer)
         const isReachable = isConnected(node.id) || node.type === 'START'
@@ -115,9 +139,9 @@ export const OverworldMap = React.memo(
             iconUrl={iconUrl}
             vanUrl={vanUrl}
             ticketPrice={effectivePrice}
-        />
-      )
-    })
+          />
+        )
+      })
     }, [
       gameMap,
       player.currentNodeId,

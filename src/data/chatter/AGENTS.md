@@ -20,3 +20,7 @@ Applies to `src/data/chatter/**`.
 - Avoid assumptions about display names vs IDs in condition matching.
 - Default chatter scenes are limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` entries are not included by default.
 - `GIG` chatter must use explicit `condition` matching to participate in arrival routing/filtering — do not assume default inclusion for new `GIG` rules.
+
+## Recent Findings (2026-04)
+
+- Chatter additions tied to new scene actions should be keyed to reachable states only; avoid introducing lines for actions that no longer have UI affordances.

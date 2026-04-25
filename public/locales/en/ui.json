@@ -286,22 +286,10 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        [
-          "ui:featureList.sec2.rows.0.0",
-          "ui:featureList.sec2.rows.0.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.1.0",
-          "ui:featureList.sec2.rows.1.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.2.0",
-          "ui:featureList.sec2.rows.2.1"
-        ],
-        [
-          "ui:featureList.sec2.rows.3.0",
-          "ui:featureList.sec2.rows.3.1"
-        ]
+        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
+        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
+        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
+        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -324,22 +312,10 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        [
-          "ui:featureList.sec4.rows.0.0",
-          "ui:featureList.sec4.rows.0.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.1.0",
-          "ui:featureList.sec4.rows.1.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.2.0",
-          "ui:featureList.sec4.rows.2.1"
-        ],
-        [
-          "ui:featureList.sec4.rows.3.0",
-          "ui:featureList.sec4.rows.3.1"
-        ]
+        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
+        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
+        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
+        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -1002,6 +978,7 @@
     "logistics": "LOGISTICS",
     "refuel_desc": "Gas up the van",
     "repair_desc": "Fix van damage",
+    "bloodbank_desc": "Trade blood for cash",
     "clinic_desc": "Heal members",
     "system": "SYSTEM",
     "save_desc": "Record progress",
@@ -1029,6 +1006,8 @@
     "harmony": "Harmony",
     "radio_station": "FM 66.6",
     "event_log_entries": "entries",
+    "event_log_entries_one": "entry",
+    "event_log_entries_other": "entries",
     "locations_loaded": "Tour initialized. {{count}} locations loaded.",
     "tour_active": "{{date}}: Tour active.",
     "location_secured": "{{location}} secured.",

@@ -25,3 +25,7 @@ Applies to `src/data/**`.
 - Keep event/data module contracts stable; do not rename IDs or shape keys without migration support.
 - Annotate condition callbacks explicitly (`(state: GameState) => ...`) in data event pools to avoid implicit-`any` failures in CheckJS.
 - Use narrow literal unions/const assertions for category/type fields to preserve downstream type narrowing.
+
+## Recent Findings (2026-04)
+
+- New menu-driven systems should reuse existing data keys where possible; introducing parallel IDs for the same feature increases save/test drift risk.
