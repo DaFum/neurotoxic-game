@@ -1046,6 +1046,10 @@
     "band_status": "BANDSTATUS",
     "harmony": "Harmonie:",
     "radio_station": "FM 66.6",
-    "event_log_entries": "einträge"
+    "event_log_entries": "einträge",
+    "locations_loaded": "Tour initialisiert. {{count}} Locations geladen.",
+    "tour_active": "{{date}}: Tour aktiv.",
+    "location_secured": "{{location}} gesichert.",
+    "event_log": "EVENT LOG"
   }
 }
