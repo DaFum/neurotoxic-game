@@ -499,6 +499,17 @@ const RAW_VENUES = [
     pay: 500,
     diff: 3,
     price: 15
+  },
+  {
+    id: 'the_void_stage',
+    name: 'venues:the_void_stage.name',
+    x: 70,
+    y: 80,
+    type: 'FESTIVAL',
+    capacity: 10000,
+    pay: 20000,
+    diff: 5,
+    price: 60
   }
 ]
 

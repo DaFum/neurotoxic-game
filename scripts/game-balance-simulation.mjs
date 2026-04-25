@@ -2,18 +2,18 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { ALL_VENUES } from '../src/data/venues.js'
-import { createInitialState } from '../src/context/initialState.js'
-import { EVENTS_DB } from '../src/data/events/index.js'
-import { BRAND_DEALS } from '../src/data/brandDeals.js'
-import { POST_OPTIONS } from '../src/data/postOptions.js'
-import { ALLOWED_TRENDS } from '../src/data/socialTrends.js'
-import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
-import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
-import { HQ_ITEMS } from '../src/data/hqItems.js'
-import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
-import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine.js'
-import { normalizeTraitMap } from '../src/utils/traitUtils.js'
+import { ALL_VENUES } from '../src/data/venues.ts'
+import { createInitialState } from '../src/context/initialState.ts'
+import { EVENTS_DB } from '../src/data/events/index.ts'
+import { BRAND_DEALS } from '../src/data/brandDeals.ts'
+import { POST_OPTIONS } from '../src/data/postOptions.ts'
+import { ALLOWED_TRENDS } from '../src/data/socialTrends.ts'
+import { SOCIAL_PLATFORMS } from '../src/data/platforms.ts'
+import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.ts'
+import { HQ_ITEMS } from '../src/data/hqItems.ts'
+import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.ts'
+import { eventEngine, resolveEventChoice } from '../src/utils/eventEngine.ts'
+import { normalizeTraitMap } from '../src/utils/traitUtils.ts'
 import {
   calculateFuelCost,
   calculateGigFinancials,
@@ -27,12 +27,12 @@ import {
   MAX_GIG_NET,
   MODIFIER_COSTS,
   shouldTriggerBankruptcy
-} from '../src/utils/economyEngine.js'
+} from '../src/utils/economyEngine.ts'
 import {
   calculateDailyUpdates,
   calculateGigPhysics,
   getGigModifiers
-} from '../src/utils/simulationUtils.js'
+} from '../src/utils/simulationUtils.ts'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -46,13 +46,13 @@ import {
   BALANCE_CONSTANTS,
   applyEventDelta,
   hasActiveSponsorship
-} from '../src/utils/gameStateUtils.js'
+} from '../src/utils/gameStateUtils.ts'
 import {
   validatePurchase,
   processPurchaseEffect
-} from '../src/utils/purchaseLogicUtils.js'
-import { calculateContinueStats } from '../src/utils/postGigUtils.js'
-import { logger, LOG_LEVELS } from '../src/utils/logger.js'
+} from '../src/utils/purchaseLogicUtils.ts'
+import { calculateContinueStats } from '../src/utils/postGigUtils.ts'
+import { logger, LOG_LEVELS } from '../src/utils/logger.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, '..')
