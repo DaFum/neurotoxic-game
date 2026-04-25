@@ -5,7 +5,7 @@ import { GlitchButton } from '../../ui/GlitchButton'
 interface OverworldMenuProps {
   t: import('../../types/callbacks').TranslationCallback
   isMenuOpen: boolean
-  setIsMenuOpen: (open: boolean) => void
+  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
   isTraveling: boolean
   vanFuel?: number
   vanCondition?: number

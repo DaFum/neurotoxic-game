@@ -100,7 +100,7 @@ function GameContent() {
         <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt) mix-blend-overlay opacity-50' />
       )}
 
-      {/* Hide HUD in Intro/Menu/Settings/Credits/GameOver */}
+      {/* Hide global HUD in scenes that provide their own overlays or no HUD UI. */}
       {!SCENES_WITHOUT_HUD.has(currentScene) && <HUD />}
 
       <ToastOverlay />
