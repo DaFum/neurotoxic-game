@@ -69,8 +69,8 @@ export const OverworldMenu = React.memo(
 
   const isDisabled = (item: { cond?: string; action: string }) => {
     if (isTraveling) return true;
-    if (item.cond === 'fuel'   && vanFuel >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL) return true;
-    if (item.cond === 'repair' && vanCondition >= 100)  return true;
+    if (item.cond === 'fuel'   && (vanFuel === undefined || vanFuel >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL)) return true;
+    if (item.cond === 'repair' && (vanCondition === undefined || vanCondition >= 100)) return true;
     if (item.action === 'handleSaveWithDelay' && isSaving) return true;
     return false;
   };
