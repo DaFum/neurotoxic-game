@@ -20,3 +20,7 @@ Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 
 - Location labels should go through translation helpers (for example `translateLocation`) instead of raw string assumptions.
 - Keep style tokens aligned with Tailwind v4 and project CSS variables.
+
+## Recent Findings (2026-04)
+
+- Re-adding a removed modal requires both trigger wiring and visible affordance updates; mounted-only modals are considered incomplete integrations.

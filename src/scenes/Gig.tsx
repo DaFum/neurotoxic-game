@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  lazy,
-  Suspense
-} from 'react'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'

@@ -88,3 +88,7 @@
 - `.cjs` extension is required for ad-hoc Node scripts that use `require()`.
 - Use `process.env.VITE_VAR` for env vars needing Vite/node:test dual compatibility.
 - Pollinations API key is safe to publish.
+
+## Recent Findings (2026-04)
+
+- Overworld regressions often come from action reachability; when refactoring grouped menus, explicitly preserve every legacy entry point or remove the backing hook in the same patch.

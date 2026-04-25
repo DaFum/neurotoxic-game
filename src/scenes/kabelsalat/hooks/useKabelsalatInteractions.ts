@@ -1,4 +1,11 @@
-import { useEffect, useCallback, useRef, type MutableRefObject, type Dispatch, type SetStateAction } from 'react'
+import {
+  useEffect,
+  useCallback,
+  useRef,
+  type MutableRefObject,
+  type Dispatch,
+  type SetStateAction
+} from 'react'
 import { SOCKET_DEFS, CABLE_MAP } from '../constants'
 
 export const useKabelsalatInteractions = (
@@ -23,28 +30,33 @@ export const useKabelsalatInteractions = (
     }
   }, [])
 
-  const triggerShock = useCallback((reason: string) => {
-    setIsShocked(true)
-    setFaultReason(reason)
-    setSelectedCable(null)
-    setConnections({})
+  const triggerShock = useCallback(
+    (reason: string) => {
+      setIsShocked(true)
+      setFaultReason(reason)
+      setSelectedCable(null)
+      setConnections({})
 
-    if (shockTimeoutRef.current) {
-      clearTimeout(shockTimeoutRef.current)
-    }
+      if (shockTimeoutRef.current) {
+        clearTimeout(shockTimeoutRef.current)
+      }
 
-    shockTimeoutRef.current = setTimeout(() => {
-      setIsShocked(false)
-      setFaultReason('')
-      shockTimeoutRef.current = null
-    }, 1200)
-  }, [setIsShocked, setFaultReason, setSelectedCable, setConnections])
+      shockTimeoutRef.current = setTimeout(() => {
+        setIsShocked(false)
+        setFaultReason('')
+        shockTimeoutRef.current = null
+      }, 1200)
+    },
+    [setIsShocked, setFaultReason, setSelectedCable, setConnections]
+  )
 
   const handleCableClick = useCallback(
     (cableId: string) => {
       if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
-      const connectionSocketId = Object.keys(connections).find(key => connections[key] === cableId)
+      const connectionSocketId = Object.keys(connections).find(
+        key => connections[key] === cableId
+      )
 
       if (connectionSocketId) {
         setConnections(prev => {
@@ -56,7 +68,15 @@ export const useKabelsalatInteractions = (
       }
       setSelectedCable(prev => (prev === cableId ? null : cableId))
     },
-    [isShocked, isPoweredOn, isGameOver, connections, isWinningRef, setConnections, setSelectedCable]
+    [
+      isShocked,
+      isPoweredOn,
+      isGameOver,
+      connections,
+      isWinningRef,
+      setConnections,
+      setSelectedCable
+    ]
   )
 
   const handleSocketClick = useCallback(

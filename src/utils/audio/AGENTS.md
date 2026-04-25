@@ -27,3 +27,7 @@ Applies to `src/utils/audio/**`.
 ## Nested TypeScript Notes
 
 - Keep time/unit fields explicit (`ms`, beats, ticks) in type names or comments to prevent subtle conversion bugs.
+
+## Recent Findings (2026-04)
+
+- Global keyboard listeners in UI overlays should consume Escape consistently to prevent accidental audio toggle/race behavior from competing handlers.

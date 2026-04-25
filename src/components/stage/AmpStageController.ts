@@ -1,7 +1,10 @@
 import * as PIXI from 'pixi.js'
 import { getPixiColorFromToken } from './utils'
 import { BaseStageController } from './BaseStageController'
-import type { StageControllerOptions, AmpStageOptions } from '../../types/components'
+import type {
+  StageControllerOptions,
+  AmpStageOptions
+} from '../../types/components'
 import { AmpWaveManager } from './AmpWaveManager'
 
 export class AmpStageController extends BaseStageController {
@@ -87,4 +90,6 @@ export class AmpStageController extends BaseStageController {
   }
 }
 
-export const createAmpStageController = (params: StageControllerOptions<AmpStageOptions>) => new AmpStageController(params)
+export const createAmpStageController = (
+  params: StageControllerOptions<AmpStageOptions>
+) => new AmpStageController(params)

@@ -118,7 +118,6 @@ export interface MinigameSceneFrameProps {
   children?: React.ReactNode
 }
 
-
 export interface AmpStageOptions {
   targetValue: number
   dialValue: number

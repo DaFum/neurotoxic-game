@@ -18,7 +18,7 @@ export const useGigVisuals = ({
   currentGig,
   bandHarmony
 }: UseGigVisualsProps): UseGigVisualsReturn => {
-    // Determine Background URL
+  // Determine Background URL
   const bgUrl = useMemo(() => {
     let bgPrompt = IMG_PROMPTS.VENUE_CLUB
     if (currentGig?.name?.includes('Kaminstube'))
@@ -32,9 +32,15 @@ export const useGigVisuals = ({
       bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
     else if (typeof currentGig?.diff === 'number' && currentGig.diff >= 5)
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
-    else if (typeof currentGig?.difficulty === 'number' && currentGig.difficulty <= 2)
+    else if (
+      typeof currentGig?.difficulty === 'number' &&
+      currentGig.difficulty <= 2
+    )
       bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
-    else if (typeof currentGig?.difficulty === 'number' && currentGig.difficulty >= 5)
+    else if (
+      typeof currentGig?.difficulty === 'number' &&
+      currentGig.difficulty >= 5
+    )
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
     return getGenImageUrl(bgPrompt)

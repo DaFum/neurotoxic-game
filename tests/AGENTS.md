@@ -27,3 +27,7 @@ Applies to `tests/**`.
 - Build fixtures using canonical state keys (for example, settings whitelist keys) so tests mirror runtime sanitizers.
 - Add regression assertions when optionality changes in shared types (for example, optional props and fallback behavior).
 - Prefer explicit helper return types in reusable test utilities to prevent silent `any` leakage into assertions.
+
+## Recent Findings (2026-04)
+
+- When UI controls are reorganized (category menus, tabs, accordions), add/adjust reachability assertions so hidden-but-mounted features do not silently become dead paths.

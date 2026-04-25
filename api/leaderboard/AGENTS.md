@@ -18,3 +18,7 @@ Applies to `api/leaderboard/**`.
 
 - Song IDs may require canonical mapping before submission; avoid trusting raw client IDs.
 - Maintain deterministic error payloads so tests and clients can branch predictably.
+
+## Recent Findings (2026-04)
+
+- Leaderboard submissions should stay decoupled from Overworld menu organization; UI nav changes must not affect song ID resolution or submit payload shape.

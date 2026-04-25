@@ -40,14 +40,22 @@ export class CrowdTextureManager {
   }
 
   getTargetTexture(shouldMosh: boolean): Texture | null {
-    return shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
+    return shouldMosh && this.textures.mosh
+      ? this.textures.mosh
+      : this.textures.idle
   }
 
   dispose(): void {
-    if (this.textures.idle && typeof this.textures.idle.destroy === 'function') {
+    if (
+      this.textures.idle &&
+      typeof this.textures.idle.destroy === 'function'
+    ) {
       this.textures.idle.destroy(true)
     }
-    if (this.textures.mosh && typeof this.textures.mosh.destroy === 'function') {
+    if (
+      this.textures.mosh &&
+      typeof this.textures.mosh.destroy === 'function'
+    ) {
       this.textures.mosh.destroy(true)
     }
     this.textures = { idle: null, mosh: null }

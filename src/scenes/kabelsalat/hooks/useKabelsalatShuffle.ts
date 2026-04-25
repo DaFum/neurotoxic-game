@@ -1,4 +1,10 @@
-import { useEffect, type MutableRefObject, type Dispatch, type SetStateAction, useMemo } from 'react'
+import {
+  useEffect,
+  type MutableRefObject,
+  type Dispatch,
+  type SetStateAction,
+  useMemo
+} from 'react'
 import { INITIAL_SOCKET_ORDER } from '../constants'
 import { getSafeRandom } from '../../../utils/crypto'
 
@@ -52,5 +58,13 @@ export const useKabelsalatShuffle = (
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [isPoweredOn, isGameOver, isShocked, unconnectedIds, connections, isWinningRef, setSocketOrder])
+  }, [
+    isPoweredOn,
+    isGameOver,
+    isShocked,
+    unconnectedIds,
+    connections,
+    isWinningRef,
+    setSocketOrder
+  ])
 }
