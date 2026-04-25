@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { ALL_VENUES } from '../../data/venues'
+import { translateLocation } from '../../utils/locationI18n'
 
 export interface EventLogProps {
   t: import('../../types/callbacks').TranslationCallback
   day: number
-  locationName: string
+  locationId: string
 }
 
 type EventLogEntryType = 'system' | 'travel'
@@ -21,7 +22,7 @@ interface EventLogEntry {
 }
 
 export const EventLog = React.memo(
-  ({ t, day, locationName }: EventLogProps) => {
+  ({ t, day, locationId }: EventLogProps) => {
     const bodyRef = useRef<HTMLDivElement | null>(null)
     const entryIdRef = useRef(0)
     const [entries, setEntries] = useState<EventLogEntry[]>(() => [
@@ -32,7 +33,7 @@ export const EventLog = React.memo(
         payload: { count: ALL_VENUES.length }
       }
     ])
-    const previousRef = useRef<{ day: number; locationName: string } | null>(
+    const previousRef = useRef<{ day: number; locationId: string } | null>(
       null
     )
 
@@ -45,16 +46,16 @@ export const EventLog = React.memo(
           id: ++entryIdRef.current,
           day,
           kind: 'tour_active',
-          payload: { date: `Day ${day}` }
+          payload: {}
         })
       }
 
-      if (!previous || previous.locationName !== locationName) {
+      if (!previous || previous.locationId !== locationId) {
         added.push({
           id: ++entryIdRef.current,
           day,
           kind: 'location_secured',
-          payload: { location: locationName }
+          payload: { location: locationId }
         })
       }
 
@@ -62,8 +63,8 @@ export const EventLog = React.memo(
         setEntries(prev => [...prev, ...added].slice(-20))
       }
 
-      previousRef.current = { day, locationName }
-    }, [day, locationName, t])
+      previousRef.current = { day, locationId }
+    }, [day, locationId])
 
     useEffect(() => {
       if (bodyRef.current)
@@ -79,14 +80,18 @@ export const EventLog = React.memo(
       }
 
       if (entry.kind === 'tour_active') {
-        const date = entry.payload.date ?? `Day ${entry.day}`
+        const date = t('ui:overworld.day_format', {
+          day: entry.day,
+          defaultValue: `Day ${entry.day}`
+        })
         return t('ui:overworld.tour_active', {
           date,
           defaultValue: `${date}: Tour active.`
         })
       }
 
-      const location = entry.payload.location ?? locationName
+      const rawLocation = entry.payload.location ?? locationId
+      const location = translateLocation(t, rawLocation, rawLocation)
       return t('ui:overworld.location_secured', {
         location,
         defaultValue: `${location} secured.`

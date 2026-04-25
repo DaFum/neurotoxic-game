@@ -995,7 +995,7 @@
   "overworld": {
     "shortcuts": {
       "help": "Hilfe umschalten",
-      "mute": "Stumm / Laut",
+      "mute": "Stumm / Ton an",
       "event": "Event-Option wählen",
       "hit_notes": "Noten treffen (Gig)",
       "close": "Overlays schließen"
@@ -1010,6 +1010,7 @@
     "event_log_entries_other": "einträge",
     "locations_loaded": "Tour initialisiert. {{count}} Locations geladen.",
     "tour_active": "{{date}}: Tour aktiv.",
+    "day_format": "Tag {{day}}",
     "location_secured": "{{location}} gesichert.",
     "event_log": "EVENT LOG",
     "header": {

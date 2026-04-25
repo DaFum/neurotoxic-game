@@ -168,10 +168,18 @@ export const Overworld = () => {
     if (isSaving) return
     setIsSaving(true)
     setTimeout(() => {
-      if (isMountedRef.current) {
-        saveGame()
-        setIsSaving(false)
+      const saveFn = async () => {
+        try {
+          await saveGame()
+        } catch (err) {
+          console.error('Save failed', err)
+        } finally {
+          if (isMountedRef.current) {
+            setIsSaving(false)
+          }
+        }
       }
+      saveFn()
     }, 500)
   }, [isSaving, saveGame])
 
@@ -206,13 +214,6 @@ export const Overworld = () => {
     <div
       className={`scene ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      {settings?.crtEnabled && (
-        <>
-          <div className='noise' />
-          <div className='crt' />
-          <div className='scan' />
-        </>
-      )}
       <OverworldHeader
         t={t}
         locationName={locationName}
@@ -268,7 +269,7 @@ export const Overworld = () => {
         activeStoryFlags={activeStoryFlags}
       />
 
-      <EventLog t={t} day={player.day} locationName={locationName} />
+      <EventLog t={t} day={player.day} locationId={player.location} />
 
       {showHQ && <BandHQ onClose={closeHQ} />}
       {showQuests && <QuestsModal {...questsProps} />}
