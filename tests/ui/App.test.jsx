@@ -247,6 +247,7 @@ describe('App', () => {
       GAME_PHASES.SETTINGS,
       GAME_PHASES.CREDITS,
       GAME_PHASES.GAMEOVER,
+      GAME_PHASES.OVERWORLD,
       GAME_PHASES.TRAVEL_MINIGAME,
       GAME_PHASES.PRE_GIG_MINIGAME,
       GAME_PHASES.CLINIC
@@ -260,13 +261,8 @@ describe('App', () => {
       unmount()
     }
 
-    mockGameState.currentScene = GAME_PHASES.OVERWORLD
-    let renderResult = render(<App />)
-    expect(screen.getByTestId('hud')).toBeTruthy()
-    renderResult.unmount()
-
     mockGameState.currentScene = GAME_PHASES.GIG
-    renderResult = render(<App />)
+    const renderResult = render(<App />)
     expect(screen.getByTestId('hud')).toBeTruthy()
     renderResult.unmount()
   })
