@@ -12,6 +12,8 @@ import { useDarkWebLeak } from '../hooks/useDarkWebLeak'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
+import { OverworldHUD } from '../ui/overworld/OverworldHUD'
+import { ToggleRadio } from '../components/ToggleRadio'
 import { EventLog } from '../ui/overworld/EventLog'
 import { audioManager } from '../utils/AudioManager'
 import { translateLocation } from '../utils/locationI18n'
@@ -42,6 +44,20 @@ export const Overworld = () => {
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
+
+  const [glitch, setGlitch] = useState('')
+  useEffect(() => {
+    const TYPES = ['glitch-on', 'g-hue', 'g-pixel']
+    const id = setInterval(() => {
+      if (Math.random() < 0.22) {
+        const t = TYPES[Math.floor(Math.random() * TYPES.length)]
+        setGlitch(t)
+        setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
+      }
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
+
   const { showHQ, openHQ, closeHQ } = useBandHQModal()
   const { showQuests, openQuests, questsProps } = useQuestsModal()
   const { showStash, openStash, stashProps } = useContrabandStash()
@@ -164,13 +180,20 @@ export const Overworld = () => {
 
   return (
     <div
-      className={`w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
+      className={`scene ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
+      <div className="noise" /><div className="crt" /><div className="scan" />
       <OverworldHeader
         t={t}
         locationName={locationName}
         isTraveling={isTraveling}
       />
+      <OverworldHUD player={player} band={band} harmony={player.harmony} muted={false} onToggleMute={() => {}} />
+      <div className="radio">
+        <div className="radio-dot" />
+        <span className="radio-freq">FM 66.6</span>
+        <ToggleRadio />
+      </div>
 
       <OverworldMenu
         t={t}

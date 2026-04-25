@@ -1,24 +1,29 @@
-import React, { useState } from 'react'
+import sys
+
+with open("src/ui/overworld/OverworldMenu.tsx", "r") as f:
+    content = f.read()
+
+new_menu = """import React, { useState } from 'react'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
 
 const MENU_CATS = [
-  { id: 'management', label: 'MANAGEMENT', icon: '📋', color: 'var(--color-toxic-green)', items: [
+  { id: 'management', label: 'MANAGEMENT', icon: '📋', color: 'var(--green)', items: [
     { label: 'BAND HQ', desc: 'Manage members & gear', icon: '🤘', v: 'p', action: 'openHQ' },
     { label: 'QUESTS',  desc: 'Active objectives', icon: '★', v: 'w', action: 'openQuests' },
     { label: 'STASH',   desc: 'Contraband & inventory', icon: '📦', v: 'd', action: 'openStash' },
   ]},
-  { id: 'hustles', label: 'SIDE HUSTLES', icon: '💰', color: 'var(--color-warning-yellow)', items: [
+  { id: 'hustles', label: 'SIDE HUSTLES', icon: '💰', color: 'var(--yellow)', items: [
     { label: 'PIRATE RADIO', desc: 'Boost reputation', icon: '📻', v: 'w', action: 'openPirateRadio' },
     { label: 'MERCH PRESS',  desc: 'Print bootlegs', icon: '👕', v: 'p', action: 'openMerchPress' },
     { label: 'DARK WEB',     desc: 'Leak new tracks', icon: '🕸', v: 'd', action: 'openDarkWebLeak' },
   ]},
-  { id: 'logistics', label: 'LOGISTICS', icon: '🚐', color: 'var(--color-holographic-blue)', items: [
+  { id: 'logistics', label: 'LOGISTICS', icon: '🚐', color: 'var(--blue)', items: [
     { label: 'REFUEL', desc: 'Gas up the van', icon: '⛽', v: 'w', cond: 'fuel', action: 'handleRefuel' },
     { label: 'REPAIR', desc: 'Fix van damage', icon: '🔧', v: 'p', cond: 'repair', action: 'handleRepair' },
     { label: 'VOID CLINIC', desc: 'Heal members', icon: '🏥', v: 'd', action: 'openBloodBank' },
   ]},
-  { id: 'system', label: 'SYSTEM', icon: '⚙', color: 'var(--color-ash-gray)', items: [
+  { id: 'system', label: 'SYSTEM', icon: '⚙', color: 'var(--ash)', items: [
     { label: 'SAVE GAME', desc: 'Record progress', icon: '💾', v: 'p', action: 'handleSaveWithDelay' },
   ]}
 ];
@@ -145,3 +150,7 @@ export const OverworldMenu = React.memo(
 })
 
 OverworldMenu.displayName = 'OverworldMenu'
+"""
+
+with open("src/ui/overworld/OverworldMenu.tsx", "w") as f:
+    f.write(new_menu)

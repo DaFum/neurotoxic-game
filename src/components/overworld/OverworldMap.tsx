@@ -157,7 +157,7 @@ export const OverworldMap = React.memo(
     }, [hoveredNode, isConnected, currentNode])
 
     return (
-      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-toxic-green bg-void-black/80 rounded-lg shadow-[0_0_50px_var(--color-toxic-green-20)] overflow-hidden'>
+      <div className='map-wrap relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-toxic-green bg-void-black/80 rounded-lg shadow-[0_0_50px_var(--color-toxic-green-20)] overflow-hidden'>
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert pointer-events-none'
           style={{

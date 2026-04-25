@@ -1,4 +1,9 @@
-import React from 'react'
+import sys
+
+with open("src/ui/overworld/OverworldHeader.tsx", "r") as f:
+    content = f.read()
+
+new_header = """import React from 'react'
 import { ToggleRadio } from '../../components/ToggleRadio'
 
 export const OverworldHeader = React.memo(
@@ -20,3 +25,7 @@ export const OverworldHeader = React.memo(
 )
 
 OverworldHeader.displayName = 'OverworldHeader'
+"""
+
+with open("src/ui/overworld/OverworldHeader.tsx", "w") as f:
+    f.write(new_header)

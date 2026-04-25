@@ -1,4 +1,6 @@
-import React, { useRef, useEffect } from 'react'
+import sys
+
+content = """import React, { useRef, useEffect } from 'react'
 import { ALL_VENUES } from '../../data/venues'
 
 export const EventLog = React.memo(({ t, day, locationName }) => {
@@ -34,3 +36,7 @@ export const EventLog = React.memo(({ t, day, locationName }) => {
 })
 
 EventLog.displayName = 'EventLog'
+"""
+
+with open("src/ui/overworld/EventLog.tsx", "w") as f:
+    f.write(content)
