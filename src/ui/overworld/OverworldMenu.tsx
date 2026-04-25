@@ -21,8 +21,7 @@ interface OverworldMenuProps {
   handleRefuel: () => void;
   handleRepair: () => void;
   handleSaveWithDelay: () => void;
-  changeScene: (scene: string) => void;
-}
+  }
 
 export const OverworldMenu = React.memo(
   ({

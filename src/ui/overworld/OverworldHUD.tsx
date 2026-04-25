@@ -18,7 +18,6 @@ export interface OverworldHUDProps {
     };
   };
   band: BandState;
-  harmony?: number;
   muted?: boolean;
   onToggleMute?: () => void;
 }
@@ -35,7 +34,9 @@ function useAnimatedNum(value: number, ms=450) {
     const tick = (t: number)=>{
       const p = Math.min(1,(t-t0)/ms);
       const e = p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-      setCur(Math.round(from+(to-from)*e));
+      const next = Math.round(from+(to-from)*e);
+      setCur(next);
+      prev.current = next;
       if(p<1) raf=requestAnimationFrame(tick);
       else { prev.current=to; setCur(to); }
     };
@@ -45,7 +46,7 @@ function useAnimatedNum(value: number, ms=450) {
   return cur;
 }
 
-export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggleMute }: OverworldHUDProps) => {
+export const OverworldHUD = React.memo(({ player, band, muted, onToggleMute }: OverworldHUDProps) => {
   const { t } = useTranslation(['ui']);
   const [showSC, setShowSC] = useState(false);
   const { audioState: isPlaying, handleAudioChange } = useAudioControl(
@@ -93,12 +94,12 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
       <div className="hud-left">
         <div className={`ow-panel ${fuelLow ? 'fuel-warn' : ''}`}>
           <div className="money-row">
-            <span style={{color:'var(--color-warning-yellow)',fontSize:14}}>$</span>
-            <span className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}>{displayMoney} €</span>
+            <span style={{color:'var(--color-warning-yellow)',fontSize:14}}>€</span>
+            <span className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}>{displayMoney}</span>
           </div>
           <div className="loc-row">
             <span style={{color:'var(--color-toxic-green)'}}>⬡</span>
-            <span>{t('ui:ui.day', { defaultValue: 'Day' })} {player.day ?? 1} — {player.location || t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
+            <span>{t('ui:ui.day', { defaultValue: 'Day' })} {player.day ?? 1} — {player.location ?? t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
           </div>
           <div className="van-stats">
             <div className="van-row">
@@ -121,7 +122,13 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
         {showSC && (
           <div className="shortcuts-panel pointer-events-auto">
             <div className="sc-title">{t('ui:overworld.keyboard_shortcuts', { defaultValue: 'Keyboard Shortcuts' })}</div>
-            {[['?, h', t('ui:overworld.shortcuts.help', { defaultValue: 'Toggle Help' })], ['M', t('ui:overworld.shortcuts.mute', { defaultValue: 'Mute / Unmute' })], ['1–4', t('ui:overworld.shortcuts.event', { defaultValue: 'Select Event Option' })], ['← ↓ →', t('ui:overworld.shortcuts.hit_notes', { defaultValue: 'Hit Notes (Gig)' })], ['ESC', t('ui:overworld.shortcuts.close', { defaultValue: 'Close Overlays' })]].map(([k,d])=>(
+            {((): [string, string][] => [
+              ['?, h', t('ui:overworld.shortcuts.help', { defaultValue: 'Toggle Help' })],
+              ['M', t('ui:overworld.shortcuts.mute', { defaultValue: 'Mute / Unmute' })],
+              ['1–4', t('ui:overworld.shortcuts.event', { defaultValue: 'Select Event Option' })],
+              ['← ↓ →', t('ui:overworld.shortcuts.hit_notes', { defaultValue: 'Hit Notes (Gig)' })],
+              ['ESC', t('ui:overworld.shortcuts.close', { defaultValue: 'Close Overlays' })]
+            ])().map(([k, d]) => (
               <div className="sc-row" key={k}><span className="sc-key">{k}</span><span className="sc-desc">{d}</span></div>
             ))}
           </div>
@@ -155,7 +162,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
             <span className="harmony-label">{t('ui:overworld.harmony', { defaultValue: 'Harmony' })}</span>
             <div className="harmony-bar-wrap">
               <div className="h-track"><div className="bar-fill" style={{width:`${band.harmony ?? 0}%`,background:(band.harmony ?? 0)<40?'var(--color-blood-red)':'var(--color-toxic-green)'}}/></div>
-              <span style={{fontSize:10,color:(harmony||0)<40?'var(--color-blood-red)':'var(--color-toxic-green)',width:28,textAlign:'right'}}>{Math.round(band.harmony ?? 0)}%</span>
+              <span style={{fontSize:10,color:(band.harmony ?? 0)<40?'var(--color-blood-red)':'var(--color-toxic-green)',width:28,textAlign:'right'}}>{Math.round(band.harmony ?? 0)}%</span>
             </div>
           </div>
         </div>

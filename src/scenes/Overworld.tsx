@@ -218,8 +218,7 @@ export const Overworld = () => {
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
         handleSaveWithDelay={handleSaveWithDelay}
-        changeScene={changeScene}
-      />
+        />
 
       <OverworldMap
         t={t}
