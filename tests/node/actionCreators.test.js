@@ -66,6 +66,22 @@ describe('Action Creators', () => {
       assert.strictEqual(action.type, ActionTypes.UPDATE_PLAYER)
       assert.deepStrictEqual(action.payload, { ...updates, fameLevel: 0 })
     })
+
+    it('should clamp negative money to 0', () => {
+      const updates = { money: -50 }
+      const action = createUpdatePlayerAction(updates)
+
+      assert.strictEqual(action.type, ActionTypes.UPDATE_PLAYER)
+      assert.strictEqual(action.payload.money, 0)
+    })
+
+    it('should clamp negative fame to 0', () => {
+      const updates = { fame: -10 }
+      const action = createUpdatePlayerAction(updates)
+
+      assert.strictEqual(action.type, ActionTypes.UPDATE_PLAYER)
+      assert.strictEqual(action.payload.fame, 0)
+    })
   })
 
   describe('createUpdateBandAction', () => {

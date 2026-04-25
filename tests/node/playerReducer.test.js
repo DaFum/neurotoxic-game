@@ -48,6 +48,25 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.fame, 50) // Unchanged
     })
 
+    it('should clamp negative money and fame to 0 when using a function payload', () => {
+      const initialState = {
+        player: { money: 100, fame: 50, day: 1 }
+      }
+      const action = {
+        type: ActionTypes.UPDATE_PLAYER,
+        payload: player => ({
+          money: player.money - 200, // Becomes -100
+          fame: player.fame - 100 // Becomes -50
+        })
+      }
+
+      const newState = playerReducer(initialState, action)
+
+      assert.strictEqual(newState.player.money, 0)
+      assert.strictEqual(newState.player.fame, 0)
+      assert.strictEqual(newState.player.day, 1) // Unchanged
+    })
+
     it('should ignore unhandled actions and return current state', () => {
       const initialState = {
         player: { money: 100, fame: 50, day: 1 }

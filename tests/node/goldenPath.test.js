@@ -286,9 +286,8 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
     const newMoney = state.player.money + netLoss
     assert.ok(newMoney < 0, 'Player cannot afford this')
 
-    // Reducer clamps money to 0
-    const clampedMoney = Math.max(0, newMoney)
-    state = gameReducer(state, createUpdatePlayerAction({ money: clampedMoney }))
+    // Action creator and reducer clamp money to 0
+    state = gameReducer(state, createUpdatePlayerAction({ money: newMoney }))
     assert.equal(state.player.money, 0, 'Money clamped to 0')
 
     state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GAMEOVER)

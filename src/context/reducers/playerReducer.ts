@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { isForbiddenKey, isPlainObject } from '../../utils/gameStateUtils'
+import { isForbiddenKey, isPlainObject, clampPlayerMoney, clampPlayerFame, calculateFameLevel } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
@@ -31,6 +31,18 @@ export const handleUpdatePlayer = (
   const mergedPlayer = {
     ...state.player,
     ...updates
+  }
+
+  // Ensure invariants are maintained after resolving function payloads
+  if (Object.hasOwn(updates, 'money')) {
+    mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)
+  }
+  if (Object.hasOwn(updates, 'fame')) {
+    mergedPlayer.fame = clampPlayerFame(mergedPlayer.fame)
+    // Auto-derive fameLevel if fame was updated and level wasn't explicitly provided
+    if (!Object.hasOwn(updates, 'fameLevel')) {
+      mergedPlayer.fameLevel = calculateFameLevel(mergedPlayer.fame)
+    }
   }
 
   return { ...state, player: mergedPlayer }
