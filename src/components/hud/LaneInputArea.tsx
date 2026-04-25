@@ -1,8 +1,13 @@
 import { memo, useCallback } from 'react'
 import type { TouchEvent as ReactTouchEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LANE_INDICES } from '../../utils/rhythmGameScoringUtils'
 
-const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
+const LANES = [
+  { index: LANE_INDICES.GUITAR, id: 'guitar' },
+  { index: LANE_INDICES.DRUMS, id: 'drums' },
+  { index: LANE_INDICES.BASS, id: 'bass' }
+]
 
 interface LaneInputAreaProps {
   onLaneInput?: (laneIndex: number, isDown: boolean, now?: number) => void
@@ -10,10 +15,12 @@ interface LaneInputAreaProps {
 
 interface LaneInputZoneProps extends LaneInputAreaProps {
   laneIndex: number
+  ariaLabel: string
 }
 
 const LaneInputZone = memo(function LaneInputZone({
   laneIndex,
+  ariaLabel,
   onLaneInput
 }: LaneInputZoneProps) {
   const handleMouseDown = useCallback(
@@ -42,7 +49,7 @@ const LaneInputZone = memo(function LaneInputZone({
   return (
     <button
       type='button'
-      aria-label={`${LANE_NAMES[laneIndex]} lane`}
+      aria-label={ariaLabel}
       className='flex-1 h-full cursor-pointer hover:bg-star-white/5 active:bg-star-white/10 transition-colors duration-75 pointer-events-auto relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset'
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
@@ -61,12 +68,15 @@ const LaneInputZone = memo(function LaneInputZone({
 export const LaneInputArea = memo(function LaneInputArea({
   onLaneInput
 }: LaneInputAreaProps) {
+  const { t } = useTranslation(['ui'])
+
   return (
     <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
-      {Object.values(LANE_INDICES).map(laneIndex => (
+      {LANES.map(lane => (
         <LaneInputZone
-          key={LANE_NAMES[laneIndex]}
-          laneIndex={laneIndex}
+          key={lane.id}
+          laneIndex={lane.index}
+          ariaLabel={t('ui:rhythm.hit_lane', { lane: t(`ui:rhythm.lane_${lane.id}`), defaultValue: 'Hit {{lane}} lane' })}
           onLaneInput={onLaneInput}
         />
       ))}
