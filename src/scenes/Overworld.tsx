@@ -194,7 +194,7 @@ export const Overworld = () => {
     <div
       className={`scene ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      {useGameState()?.gameState?.settings?.crtEnabled && <><div className="noise" /><div className="crt" /><div className="scan" /></>}
+      {gameState.settings?.crtEnabled && <><div className="noise" /><div className="crt" /><div className="scan" /></>}
       <OverworldHeader
         t={t}
         locationName={locationName}

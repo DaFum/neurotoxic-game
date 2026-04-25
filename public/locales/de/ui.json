@@ -1011,7 +1011,9 @@
     "close": "MENÜ SCHLIESSEN",
     "open": "MENÜ ÖFFNEN",
     "options_count_upper": "OPTIONEN",
-    "options_count_lower": "optionen"
+    "options_count_lower": "optionen",
+    "inventory": "INVENTAR",
+    "upgrades": "UPGRADES"
   },
   "overworld": {
     "shortcuts": {
@@ -1021,10 +1023,10 @@
       "hit_notes": "Noten treffen (Gig)",
       "close": "Overlays schließen"
     },
-    "low_fuel": "⚠ WENIG BENZIN",
+    "low_fuel": "WENIG BENZIN",
     "keyboard_shortcuts": "Tastenkürzel",
-    "band_status": "BANDSTATUS",
-    "harmony": "Harmonie:",
+    "band_status": "Band Status",
+    "harmony": "Harmonie",
     "radio_station": "FM 66.6",
     "event_log_entries": "einträge",
     "locations_loaded": "Tour initialisiert. {{count}} Locations geladen.",
@@ -1032,7 +1034,7 @@
     "location_secured": "{{location}} gesichert.",
     "event_log": "EVENT LOG",
     "header": {
-      "tourPlan": "TOURPLAN:"
+      "tourPlan": "TOURPLAN"
     },
     "status": {
       "traveling": "REISEN...",
@@ -1044,6 +1046,7 @@
     "refuel": "TANKEN",
     "repair": "REPARIEREN",
     "void_clinic_button": "VOID CLINIC",
-    "save_game": "SPIEL SPEICHERN"
+    "save_game": "SPIEL SPEICHERN",
+    "traveling_van": "Reisevan"
   }
 }

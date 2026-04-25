@@ -105,12 +105,12 @@ export const OverworldHUD = React.memo(({ player, band, muted, onToggleMute }: O
               <div className="mini-track"><div className="mini-fill" style={{width:`${vanCondition}%`,background:condLow?'var(--color-blood-red)':'var(--color-condition-blue)'}}/></div>
               <span className="mini-num" style={{color:condLow?'var(--color-blood-red)':undefined}}>{vanCondition}</span>
             </div>
-            {fuelLow && <div style={{fontSize:8,color:'var(--color-blood-red)',letterSpacing:'2px',textTransform:'uppercase',marginTop:2,animation:'blink-conf .6s step-end infinite'}}>{t('ui:overworld.low_fuel', { defaultValue: '⚠ LOW FUEL' })}</div>}
+            {fuelLow && <div style={{fontSize:8,color:'var(--color-blood-red)',letterSpacing:'2px',textTransform:'uppercase',marginTop:2,animation:'blink-conf .6s step-end infinite'}}>⚠ {t('ui:overworld.low_fuel', { defaultValue: 'LOW FUEL' })}</div>}
           </div>
         </div>
         <div className="hud-btns pointer-events-auto">
-          <GlitchButton className={`!w-[30px] !h-[30px] !p-0 ${isMuted ? 'opacity-50' : ''}`} variant="primary" size="sm" onClick={handleToggleMute}>{isMuted ? '🔇' : '🔊'}</GlitchButton>
-          <GlitchButton className="!w-[30px] !h-[30px] !p-0" variant={showSC ? "warning" : "primary"} size="sm" onClick={() => setShowSC(s => !s)}>?</GlitchButton>
+          <GlitchButton className={`!w-[30px] !h-[30px] !p-0 ${isMuted ? 'opacity-50' : ''}`} variant="primary" size="sm" onClick={handleToggleMute} aria-label={t('ui:overworld.shortcuts.mute', { defaultValue: 'Mute / Unmute' })} aria-pressed={isMuted}>{isMuted ? '🔇' : '🔊'}</GlitchButton>
+          <GlitchButton className="!w-[30px] !h-[30px] !p-0" variant={showSC ? "warning" : "primary"} size="sm" onClick={() => setShowSC(s => !s)} aria-label={t('ui:overworld.shortcuts.help', { defaultValue: 'Toggle Help' })} aria-pressed={showSC}>?</GlitchButton>
         </div>
         {showSC && (
           <div className="shortcuts-panel pointer-events-auto">

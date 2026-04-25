@@ -1011,7 +1011,9 @@
     "close": "CLOSE MENU",
     "open": "OPEN MENU",
     "options_count_upper": "OPTIONS",
-    "options_count_lower": "options"
+    "options_count_lower": "options",
+    "inventory": "INVENTORY",
+    "upgrades": "UPGRADES"
   },
   "overworld": {
     "shortcuts": {
@@ -1021,7 +1023,7 @@
       "hit_notes": "Hit Notes (Gig)",
       "close": "Close Overlays"
     },
-    "low_fuel": "⚠ LOW FUEL",
+    "low_fuel": "LOW FUEL",
     "keyboard_shortcuts": "Keyboard Shortcuts",
     "band_status": "Band Status",
     "harmony": "Harmony",
@@ -1032,7 +1034,7 @@
     "location_secured": "{{location}} secured.",
     "event_log": "EVENT LOG",
     "header": {
-      "tourPlan": "TOUR PLAN:"
+      "tourPlan": "TOUR PLAN"
     },
     "status": {
       "traveling": "TRAVELING...",
@@ -1044,6 +1046,7 @@
     "refuel": "REFUEL",
     "repair": "REPAIR",
     "void_clinic_button": "VOID CLINIC",
-    "save_game": "SAVE GAME"
+    "save_game": "SAVE GAME",
+    "traveling_van": "Traveling Van"
   }
 }
