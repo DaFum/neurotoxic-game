@@ -18,7 +18,7 @@ export const EventLog = React.memo(({ t, day, locationName }) => {
     <div className="event-log absolute bottom-8 left-8 z-20 pointer-events-none">
       <div className="el-header">
         <span className="el-title">// {t('ui:overworld.event_log', { defaultValue: 'EVENT LOG' })}</span>
-        <span className="el-count">{entries.length} {t('ui:menu.options_count', { defaultValue: 'entries' }).toLowerCase()}</span>
+        <span className="el-count">{entries.length} {t('ui:overworld.event_log_entries', { defaultValue: 'entries' })}</span>
       </div>
       <div className="el-body" ref={bodyRef}>
         {entries.map((e,i)=>(

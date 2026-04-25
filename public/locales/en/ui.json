@@ -1045,6 +1045,7 @@
     "keyboard_shortcuts": "Keyboard Shortcuts",
     "band_status": "Band Status",
     "harmony": "Harmony",
-    "radio_station": "FM 66.6"
+    "radio_station": "FM 66.6",
+    "event_log_entries": "entries"
   }
 }

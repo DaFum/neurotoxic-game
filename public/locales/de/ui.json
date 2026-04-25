@@ -1025,11 +1025,11 @@
     "clinic_desc": "Mitglieder heilen",
     "system": "SYSTEM",
     "save_desc": "Fortschritt speichern",
-    "options_count": "options",
-    "actions": "ACTIONS",
-    "back_to_actions": "ZURÜCK ZU ACTIONS",
-    "close": "CLOSE MENU",
-    "open": "OPEN MENU",
+    "options_count": "optionen",
+    "actions": "AKTIONEN",
+    "back_to_actions": "ZURÜCK ZU AKTIONEN",
+    "close": "MENÜ SCHLIESSEN",
+    "open": "MENÜ ÖFFNEN",
     "options_count_upper": "OPTIONEN",
     "options_count_lower": "optionen"
   },
@@ -1045,6 +1045,7 @@
     "keyboard_shortcuts": "Keyboard Shortcuts",
     "band_status": "BANDSTATUS",
     "harmony": "Harmonie:",
-    "radio_station": "FM 66.6"
+    "radio_station": "FM 66.6",
+    "event_log_entries": "einträge"
   }
 }

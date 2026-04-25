@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSettings } from '../hooks/useSettings'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useBandHQModal } from '../hooks/useBandHQModal'

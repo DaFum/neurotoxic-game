@@ -91,7 +91,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
   return (
     <div className="hud">
       <div className="hud-left">
-        <div className={`panel ${fuelLow ? 'fuel-warn' : ''}`}>
+        <div className={`ow-panel ${fuelLow ? 'fuel-warn' : ''}`}>
           <div className="money-row">
             <span style={{color:'var(--color-warning-yellow)',fontSize:14}}>$</span>
             <span className={`money-val ${moneyAnim} ${(player.money ?? 0) < 40 ? 'low' : ''}`}>{displayMoney} €</span>
@@ -128,7 +128,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
         )}
       </div>
       <div className="hud-right">
-        <div className="panel band-panel">
+        <div className="ow-panel band-panel">
           <div className="band-hdr">{t('ui:overworld.band_status', { defaultValue: 'Band Status' })}</div>
           {Object.values(band?.members || {}).map((m)=>{
             const st = memberStatus(m);
