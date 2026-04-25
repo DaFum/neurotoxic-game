@@ -3,6 +3,10 @@ import { GlitchButton } from '../GlitchButton';
 
 import { useAudioControl } from '../../hooks/useAudioControl';
 
+
+import { useTranslation } from 'react-i18next';
+import { type BandState } from '../../types/game';
+
 export interface OverworldHUDProps {
   player: {
     money?: number;
@@ -13,7 +17,7 @@ export interface OverworldHUDProps {
       condition?: number;
     };
   };
-  band: Record<string, { id: string; name: string; mood: number; stamina: number; }>;
+  band: BandState;
   harmony?: number;
   muted?: boolean;
   onToggleMute?: () => void;
@@ -42,6 +46,7 @@ function useAnimatedNum(value: number, ms=450) {
 }
 
 export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggleMute }: OverworldHUDProps) => {
+  const { t } = useTranslation(['ui']);
   const [showSC, setShowSC] = useState(false);
   const { audioState: isPlaying, handleAudioChange } = useAudioControl(
     useCallback((state: unknown) => {
@@ -77,7 +82,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
     }
   },[player.money]);
 
-  const memberStatus = (m: any) => {
+  const memberStatus = (m: NonNullable<BandState['members']>[number]) => {
     if (m.mood < 30 || m.stamina < 20) return 'crit';
     if (m.mood < 50 || m.stamina < 35) return 'low';
     return 'ok';
@@ -93,7 +98,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
           </div>
           <div className="loc-row">
             <span style={{color:'var(--color-toxic-green)'}}>⬡</span>
-            <span>Day {player.day || 1} — {player.location || 'UNKNOWN'}</span>
+            <span>Day {player.day || 1} — {player.location || t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
           </div>
           <div className="van-stats">
             <div className="van-row">
@@ -106,7 +111,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
               <div className="mini-track"><div className="mini-fill" style={{width:`${vanCondition}%`,background:condLow?'var(--color-blood-red)':'var(--color-condition-blue)'}}/></div>
               <span className="mini-num" style={{color:condLow?'var(--color-blood-red)':undefined}}>{vanCondition}</span>
             </div>
-            {fuelLow && <div style={{fontSize:8,color:'var(--color-blood-red)',letterSpacing:'2px',textTransform:'uppercase',marginTop:2,animation:'blink-conf .6s step-end infinite'}}>⚠ LOW FUEL</div>}
+            {fuelLow && <div style={{fontSize:8,color:'var(--color-blood-red)',letterSpacing:'2px',textTransform:'uppercase',marginTop:2,animation:'blink-conf .6s step-end infinite'}}>{t('ui:overworld.low_fuel', { defaultValue: '⚠ LOW FUEL' })}</div>}
           </div>
         </div>
         <div className="hud-btns pointer-events-auto">
@@ -115,8 +120,8 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
         </div>
         {showSC && (
           <div className="shortcuts-panel pointer-events-auto">
-            <div className="sc-title">Keyboard Shortcuts</div>
-            {[['?, h','Toggle Help'],['M','Mute / Unmute'],['1–4','Select Event Option'],['← ↓ →','Hit Notes (Gig)'],['ESC','Close Overlays']].map(([k,d])=>(
+            <div className="sc-title">{t('ui:overworld.keyboard_shortcuts', { defaultValue: 'Keyboard Shortcuts' })}</div>
+            {[['?, h', t('ui:overworld.shortcuts.help', { defaultValue: 'Toggle Help' })], ['M', t('ui:overworld.shortcuts.mute', { defaultValue: 'Mute / Unmute' })], ['1–4', t('ui:overworld.shortcuts.event', { defaultValue: 'Select Event Option' })], ['← ↓ →', t('ui:overworld.shortcuts.hit_notes', { defaultValue: 'Hit Notes (Gig)' })], ['ESC', t('ui:overworld.shortcuts.close', { defaultValue: 'Close Overlays' })]].map(([k,d])=>(
               <div className="sc-row" key={k}><span className="sc-key">{k}</span><span className="sc-desc">{d}</span></div>
             ))}
           </div>
@@ -124,8 +129,8 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
       </div>
       <div className="hud-right">
         <div className="panel band-panel">
-          <div className="band-hdr">Band Status</div>
-          {Object.values((band as any)?.members || {}).map((m: any)=>{
+          <div className="band-hdr">{t('ui:overworld.band_status', { defaultValue: 'Band Status' })}</div>
+          {Object.values(band?.members || {}).map((m)=>{
             const st = memberStatus(m);
             return (
               <div className="mbr-row" key={m.id}>
@@ -147,7 +152,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
             );
           })}
           <div className="harmony-row">
-            <span className="harmony-label">Harmony</span>
+            <span className="harmony-label">{t('ui:overworld.harmony', { defaultValue: 'Harmony' })}</span>
             <div className="harmony-bar-wrap">
               <div className="h-track"><div className="bar-fill" style={{width:`${harmony || 0}%`,background:(harmony || 0)<40?'var(--color-blood-red)':'var(--color-toxic-green)'}}/></div>
               <span style={{fontSize:10,color:(harmony||0)<40?'var(--color-blood-red)':'var(--color-toxic-green)',width:28,textAlign:'right'}}>{Math.round(harmony || 0)}%</span>

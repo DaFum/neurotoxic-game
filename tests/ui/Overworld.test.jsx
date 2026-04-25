@@ -56,14 +56,6 @@ vi.mock('../../src/utils/audioManager', () => ({
   }
 }))
 
-vi.mock('../../src/utils/AudioManager', () => ({
-  audioManager: {
-    resumeMusic: vi.fn(() => Promise.resolve(true)),
-    stopMusic: vi.fn(),
-    getStateSnapshot: vi.fn(() => ({ currentSongId: 'ambient', isPlaying: true }))
-  }
-}))
-
 vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div data-testid='band-hq' />
 }))
@@ -103,5 +95,43 @@ describe('Overworld Component', () => {
     expect(screen.getByText(/TOUR PLAN/i)).toBeInTheDocument()
   })
 
-  it.skip('triggers save game action when save button is clicked', async () => {})
+
+  it('triggers save game action when save button is clicked', async () => {
+    vi.useFakeTimers()
+    const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
+
+    render(
+      <GameStateProvider>
+        <Overworld />
+      </GameStateProvider>
+    )
+
+    const menuButton = screen.getByText(/OPEN MENU/i)
+    await act(async () => {
+      fireEvent.click(menuButton)
+    })
+
+    const sysCat = screen.getByText(/SYSTEM/i)
+    await act(async () => {
+      fireEvent.click(sysCat)
+    })
+
+    const saveButton = screen.getByText(/SAVE GAME/i)
+    await act(async () => {
+      fireEvent.click(saveButton)
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(setItemSpy).toHaveBeenCalledWith(
+      'neurotoxic_v3_save',
+      expect.any(String)
+    )
+
+    setItemSpy.mockRestore()
+    vi.useRealTimers()
+  })
+
 })

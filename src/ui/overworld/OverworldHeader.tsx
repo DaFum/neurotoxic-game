@@ -1,6 +1,4 @@
 import React from 'react'
-import { ToggleRadio } from '../../components/ToggleRadio'
-
 export const OverworldHeader = React.memo(
   ({ t, locationName, isTraveling }: any) => {
     return (
