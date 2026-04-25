@@ -6,7 +6,7 @@
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
-import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import { clampPlayerMoney, clampPlayerFame, calculateFameLevel, clampBandHarmony } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
@@ -59,17 +59,22 @@ export const createUpdatePlayerAction = (
   }
 
   let safeUpdates = updates
-  if (
-    updates &&
-    typeof updates === 'object' &&
-    Object.hasOwn(updates, 'money')
-  ) {
-    const moneyValue = (updates as { money?: unknown }).money
-    safeUpdates = {
-      ...updates,
-      money: clampPlayerMoney(
+  if (updates && typeof updates === 'object') {
+    safeUpdates = { ...updates }
+    if (Object.hasOwn(safeUpdates, 'money')) {
+      const moneyValue = (safeUpdates as { money?: unknown }).money
+      safeUpdates.money = clampPlayerMoney(
         typeof moneyValue === 'number' ? moneyValue : Number.NaN
       )
+    }
+    if (Object.hasOwn(safeUpdates, 'fame')) {
+      const fameValue = (safeUpdates as { fame?: unknown }).fame
+      safeUpdates.fame = clampPlayerFame(
+        typeof fameValue === 'number' ? fameValue : Number.NaN
+      )
+      if (!Object.hasOwn(safeUpdates, 'fameLevel')) {
+        safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+      }
     }
   }
   return {

@@ -1,3 +1,4 @@
+import { createUpdatePlayerAction } from '../../src/context/actionCreators'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../../src/context/gameConstants'
@@ -226,12 +227,10 @@ test('calculateGigFinancials: merch table modifier increases merch revenue', () 
 
 // --- REDUCER STATE SAFETY TESTS ---
 
-test('gameReducer: UPDATE_PLAYER clamps money to 0', () => {
+test('gameReducer: UPDATE_PLAYER clamping is handled by action creator', () => {
   const state = buildFullState()
-  const result = gameReducer(state, {
-    type: ActionTypes.UPDATE_PLAYER,
-    payload: { money: -100 }
-  })
+  const action = createUpdatePlayerAction({ money: -100 })
+  const result = gameReducer(state, action)
 
   assert.equal(result.player.money, 0, 'Money should be clamped to 0')
 })

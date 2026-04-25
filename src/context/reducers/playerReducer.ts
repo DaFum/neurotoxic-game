@@ -1,10 +1,5 @@
-// TODO: Review playerReducer.js for completeness (UPDATE_PLAYER) and verify edge cases are handled in the switch.
 import { logger } from '../../utils/logger'
-import {
-  clampPlayerMoney,
-  clampPlayerFame,
-  calculateFameLevel
-} from '../../utils/gameStateUtils'
+import { isForbiddenKey, isPlainObject } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
@@ -24,35 +19,18 @@ export const handleUpdatePlayer = (
   payload: UpdatePlayerPayload
 ): PlayerSlice => {
   logger.debug('GameState', 'Update Player', payload)
-  const updates =
-    typeof payload === 'function' ? payload(state.player) : payload || {}
+  const updates = typeof payload === 'function' ? payload(state.player) : payload
 
-  if (updates == null || typeof updates !== 'object') {
+  if (
+    !isPlainObject(updates) ||
+    Object.keys(updates).some(isForbiddenKey)
+  ) {
     return state
   }
 
-  const nextFame = clampPlayerFame(
-    Object.hasOwn(updates, 'fame')
-      ? (updates.fame as number)
-      : state.player.fame
-  )
-
-  const nextMoney = clampPlayerMoney(
-    Object.hasOwn(updates, 'money')
-      ? (updates.money as number)
-      : state.player.money
-  )
-
-  const nextFameLevel = Object.hasOwn(updates, 'fameLevel')
-    ? (updates.fameLevel as number)
-    : calculateFameLevel(nextFame)
-
   const mergedPlayer = {
     ...state.player,
-    ...updates,
-    money: nextMoney,
-    fame: nextFame,
-    fameLevel: nextFameLevel
+    ...updates
   }
 
   return { ...state, player: mergedPlayer }

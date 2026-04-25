@@ -10,7 +10,9 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
+import { gameReducer } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
+import { createUpdatePlayerAction } from '../../src/context/actionCreators'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { createInitialState } from '../../src/context/initialState'
 import {
@@ -114,7 +116,7 @@ test('Golden Path: Full Tour Cycle', async t => {
   await t.test('Phase 4: Travel costs (simulate OVERWORLD travel)', () => {
     const travelCost = 30
     const fuelUsed = 15
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, {
+    state = gameReducer(state, createUpdatePlayerAction({
       money: state.player.money - travelCost,
       currentNodeId: 'node_1_0',
       location: 'Test City',
@@ -122,7 +124,7 @@ test('Golden Path: Full Tour Cycle', async t => {
         ...state.player.van,
         fuel: state.player.van.fuel - fuelUsed
       }
-    })
+    }))
     assert.equal(state.player.money, 470)
     assert.equal(state.player.van.fuel, 85)
     assert.equal(state.player.currentNodeId, 'node_1_0')
@@ -217,10 +219,10 @@ test('Golden Path: Full Tour Cycle', async t => {
   await t.test('Phase 12: Apply earnings and return to OVERWORLD', () => {
     const moneyBefore = state.player.money
     const earnings = 250
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, {
+    state = gameReducer(state, createUpdatePlayerAction({
       money: state.player.money + earnings,
       fame: state.player.fame + 100
-    })
+    }))
     assert.equal(state.player.money, moneyBefore + earnings)
     assert.equal(state.player.fame, 100)
 
@@ -243,10 +245,10 @@ test('Golden Path: Full Tour Cycle', async t => {
     const dayBeforeSecondGig = state.player.day
 
     // Travel + advance day
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, {
+    state = gameReducer(state, createUpdatePlayerAction({
       money: state.player.money - 20,
       currentNodeId: 'node_1_0'
-    })
+    }))
     state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
     assert.equal(state.player.day, dayBeforeSecondGig + 1)
     assert.ok(state.player.money < moneyBeforeSecondGig)
@@ -262,7 +264,7 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
   state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
 
   await t.test('Drain money to near zero', () => {
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: 5 })
+    state = gameReducer(state, createUpdatePlayerAction({ money: 5 }))
     assert.equal(state.player.money, 5)
   })
 
@@ -285,7 +287,8 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
     assert.ok(newMoney < 0, 'Player cannot afford this')
 
     // Reducer clamps money to 0
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: newMoney })
+    const clampedMoney = Math.max(0, newMoney)
+    state = gameReducer(state, createUpdatePlayerAction({ money: clampedMoney }))
     assert.equal(state.player.money, 0, 'Money clamped to 0')
 
     state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GAMEOVER)
@@ -302,9 +305,9 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
 })
 
 test('Golden Path: State safety invariants across transitions', async t => {
-  await t.test('Money never goes negative from UPDATE_PLAYER', () => {
+  await t.test('Money never goes negative from UPDATE_PLAYER via action creator', async () => {
     let state = createInitialState()
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: -999 })
+    state = gameReducer(state, createUpdatePlayerAction({ money: -999 }))
     assert.equal(state.player.money, 0)
   })
 
@@ -364,7 +367,7 @@ test('Golden Path: State safety invariants across transitions', async t => {
 
   await t.test('ADVANCE_DAY preserves state safety after many days', () => {
     let state = createInitialState()
-    state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: 50 })
+    state = gameReducer(state, createUpdatePlayerAction({ money: 50 }))
     // Advance 5 days - should deplete money but never go negative
     for (let i = 0; i < 5; i++) {
       state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })

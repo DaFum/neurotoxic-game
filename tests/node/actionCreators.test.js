@@ -64,7 +64,7 @@ describe('Action Creators', () => {
       const action = createUpdatePlayerAction(updates)
 
       assert.strictEqual(action.type, ActionTypes.UPDATE_PLAYER)
-      assert.deepStrictEqual(action.payload, updates)
+      assert.deepStrictEqual(action.payload, { ...updates, fameLevel: 0 })
     })
   })
 
