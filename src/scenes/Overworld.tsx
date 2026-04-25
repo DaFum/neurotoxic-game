@@ -7,6 +7,7 @@ import { useQuestsModal } from '../hooks/useQuestsModal'
 import { useContrabandStash } from '../hooks/useContrabandStash'
 import { usePirateRadio } from '../hooks/usePirateRadio'
 import { useMerchPress } from '../hooks/useMerchPress'
+import { useBloodBank } from '../hooks/useBloodBank'
 import { useDarkWebLeak } from '../hooks/useDarkWebLeak'
 import { GAME_PHASES } from '../context/gameConstants'
 
@@ -23,6 +24,7 @@ import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'
 import { PirateRadioModal } from '../ui/PirateRadioModal'
 import { MerchPressModal } from '../ui/MerchPressModal'
+import { BloodBankModal } from '../ui/BloodBankModal'
 import { DarkWebLeakModal } from '../ui/DarkWebLeakModal'
 
 /**
@@ -98,6 +100,15 @@ export const Overworld = () => {
     canPress,
     config: merchPressConfig
   } = useMerchPress()
+
+  const {
+    showBloodBank,
+    openBloodBank,
+    closeBloodBank,
+    triggerDonate,
+    canDonate,
+    config: bloodBankConfig
+  } = useBloodBank()
 
   const {
     showDarkWebLeak,
@@ -229,6 +240,7 @@ export const Overworld = () => {
         openQuests={openQuests}
         openPirateRadio={openPirateRadio}
         openMerchPress={openMerchPress}
+        openBloodBank={openBloodBank}
         openClinic={openClinic}
         openDarkWebLeak={openDarkWebLeak}
         openHQ={openHQ}
@@ -276,6 +288,14 @@ export const Overworld = () => {
           onPress={triggerPress}
           canPress={canPress}
           config={merchPressConfig}
+        />
+      )}
+      {showBloodBank && (
+        <BloodBankModal
+          onClose={closeBloodBank}
+          onDonate={triggerDonate}
+          canDonate={canDonate}
+          config={bloodBankConfig}
         />
       )}
       {showDarkWebLeak && (

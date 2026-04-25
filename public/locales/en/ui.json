@@ -978,6 +978,7 @@
     "logistics": "LOGISTICS",
     "refuel_desc": "Gas up the van",
     "repair_desc": "Fix van damage",
+    "bloodbank_desc": "Trade blood for cash",
     "clinic_desc": "Heal members",
     "system": "SYSTEM",
     "save_desc": "Record progress",

@@ -14,6 +14,7 @@ interface OverworldMenuProps {
   openQuests: () => void
   openPirateRadio: () => void
   openMerchPress: () => void
+  openBloodBank: () => void
   openClinic: () => void
   openDarkWebLeak: () => void
   openHQ: () => void
@@ -28,6 +29,7 @@ type MenuAction =
   | 'openStash'
   | 'openPirateRadio'
   | 'openMerchPress'
+  | 'openBloodBank'
   | 'openClinic'
   | 'openDarkWebLeak'
   | 'handleRefuel'
@@ -67,6 +69,7 @@ export const OverworldMenu = React.memo(
     openQuests,
     openPirateRadio,
     openMerchPress,
+    openBloodBank,
     openClinic,
     openDarkWebLeak,
     openHQ,
@@ -177,6 +180,15 @@ export const OverworldMenu = React.memo(
               action: 'handleRepair'
             },
             {
+              label: t('ui:blood_bank.button', { defaultValue: 'BLOOD BANK' }),
+              desc: t('ui:menu.bloodbank_desc', {
+                defaultValue: 'Trade blood for cash'
+              }),
+              icon: '🩸',
+              v: 'w',
+              action: 'openBloodBank'
+            },
+            {
               label: t('ui:overworld.void_clinic_button', {
                 defaultValue: 'VOID CLINIC'
               }),
@@ -240,6 +252,7 @@ export const OverworldMenu = React.memo(
           openPirateRadio,
           openMerchPress,
           openDarkWebLeak,
+          openBloodBank,
           openClinic,
           handleRefuel,
           handleRepair,
@@ -249,6 +262,7 @@ export const OverworldMenu = React.memo(
         handleRefuel,
         handleRepair,
         handleSaveWithDelay,
+        openBloodBank,
         openClinic,
         openDarkWebLeak,
         openHQ,

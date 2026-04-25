@@ -978,6 +978,7 @@
     "logistics": "LOGISTIK",
     "refuel_desc": "Van volltanken",
     "repair_desc": "Schäden reparieren",
+    "bloodbank_desc": "Blut gegen Bargeld tauschen",
     "clinic_desc": "Mitglieder heilen",
     "system": "SYSTEM",
     "save_desc": "Fortschritt speichern",
