@@ -25,7 +25,7 @@ interface OverworldMapProps {
   hoveredNode: GameMapNode | null
   currentNode: GameMapNode | null
   travelTarget: GameMapNode | null
-  travelCompletedRef: React.RefObject<boolean>
+  travelCompletedRef: React.MutableRefObject<boolean>
   onTravelComplete: (node?: GameMapNode) => void
   activeStoryFlags: string[]
 }

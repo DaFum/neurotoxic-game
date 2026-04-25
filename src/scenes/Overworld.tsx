@@ -157,17 +157,21 @@ export const Overworld = () => {
     changeScene(GAME_PHASES.CLINIC)
   }, [changeScene])
   const isMountedRef = useRef(true)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     return () => {
       isMountedRef.current = false
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
     }
   }, [])
 
   const handleSaveWithDelay = useCallback(() => {
     if (isSaving) return
     setIsSaving(true)
-    setTimeout(() => {
+    saveTimeoutRef.current = setTimeout(() => {
       const saveFn = async () => {
         try {
           await saveGame()
