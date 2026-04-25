@@ -212,6 +212,7 @@ export const OverworldMenu = React.memo(
     const [activeCat, setActiveCat] = useState<string | null>(null)
     const menuRootRef = useRef<HTMLDivElement | null>(null)
     const previousFocusedElementRef = useRef<HTMLElement | null>(null)
+    const didFocusMenuRef = useRef(false)
 
     const isDisabled = useCallback(
       (item: MenuItem) => {
@@ -284,15 +285,25 @@ export const OverworldMenu = React.memo(
             menuRootRef.current?.querySelector<HTMLButtonElement>(
               '.menu-panel button'
             )
-          firstMenuButton?.focus()
+          if (firstMenuButton) {
+            firstMenuButton.focus()
+            didFocusMenuRef.current = true
+          }
         })
         return () => {
           window.cancelAnimationFrame(rafId)
+          if (!isMenuOpen) {
+            didFocusMenuRef.current = false
+          }
         }
       }
-      if (document.activeElement !== previousFocusedElementRef.current) {
+      if (
+        didFocusMenuRef.current &&
+        document.activeElement !== previousFocusedElementRef.current
+      ) {
         previousFocusedElementRef.current?.focus()
       }
+      didFocusMenuRef.current = false
     }, [activeCat, isMenuOpen])
 
     useEffect(() => {
@@ -422,7 +433,7 @@ export const OverworldMenu = React.memo(
                 <div className='menu-sub-items flex flex-col p-1.5'>
                   {cat.items.map(item => (
                     <GlitchButton
-                      key={item.label}
+                      key={item.action}
                       className={`menu-sub-item !border-transparent !bg-transparent !mb-1 !p-2 !w-full hover:enabled:-translate-x-[2px] v-${item.v}`}
                       disabled={isDisabled(item)}
                       onClick={() => {

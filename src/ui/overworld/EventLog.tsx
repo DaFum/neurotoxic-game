@@ -75,7 +75,8 @@ export const EventLog = React.memo(
       <div className='event-log absolute bottom-8 left-8 z-20 pointer-events-none'>
         <div className='el-header'>
           <span className='el-title'>
-            // {t('ui:overworld.event_log', { defaultValue: 'EVENT LOG' })}
+            {'// '}
+            {t('ui:overworld.event_log', { defaultValue: 'EVENT LOG' })}
           </span>
           <span className='el-count'>
             {entries.length}{' '}

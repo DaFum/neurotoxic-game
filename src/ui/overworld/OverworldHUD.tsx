@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { GlitchButton } from '../GlitchButton'
 import { useTranslation } from 'react-i18next'
 import { type BandState, type PlayerState } from '../../types/game'
@@ -41,7 +41,6 @@ function useAnimatedNum(value: number, ms = 450) {
     return () => {
       cancelled = true
       cancelAnimationFrame(raf)
-      prev.current = to
     }
   }, [value, ms])
   return cur
@@ -61,6 +60,41 @@ export const OverworldHUD = React.memo(
     const condLow = vanCondition < 25
     const locationName = translateLocation(t, player.location, player.location)
     const shortcutsPanelId = 'overworld-shortcuts-panel'
+    const shortcuts = useMemo<[string, string][]>(
+      () => [
+        [
+          '?, h',
+          t('ui:overworld.shortcuts.help', {
+            defaultValue: 'Toggle Help'
+          })
+        ],
+        [
+          'M',
+          t('ui:overworld.shortcuts.mute', {
+            defaultValue: 'Mute / Unmute'
+          })
+        ],
+        [
+          '1–4',
+          t('ui:overworld.shortcuts.event', {
+            defaultValue: 'Select Event Option'
+          })
+        ],
+        [
+          '← ↓ →',
+          t('ui:overworld.shortcuts.hit_notes', {
+            defaultValue: 'Hit Notes (Gig)'
+          })
+        ],
+        [
+          'ESC',
+          t('ui:overworld.shortcuts.close', {
+            defaultValue: 'Close Overlays'
+          })
+        ]
+      ],
+      [t]
+    )
 
     useEffect(() => {
       if ((player.money ?? 0) !== prevMoney.current) {
@@ -241,9 +275,8 @@ export const OverworldHUD = React.memo(
             </GlitchButton>
           </div>
           {showSC && (
-            <div
+            <section
               id={shortcutsPanelId}
-              role='region'
               aria-label={t('ui:overworld.keyboard_shortcuts', {
                 defaultValue: 'Keyboard Shortcuts'
               })}
@@ -254,44 +287,13 @@ export const OverworldHUD = React.memo(
                   defaultValue: 'Keyboard Shortcuts'
                 })}
               </div>
-              {((): [string, string][] => [
-                [
-                  '?, h',
-                  t('ui:overworld.shortcuts.help', {
-                    defaultValue: 'Toggle Help'
-                  })
-                ],
-                [
-                  'M',
-                  t('ui:overworld.shortcuts.mute', {
-                    defaultValue: 'Mute / Unmute'
-                  })
-                ],
-                [
-                  '1–4',
-                  t('ui:overworld.shortcuts.event', {
-                    defaultValue: 'Select Event Option'
-                  })
-                ],
-                [
-                  '← ↓ →',
-                  t('ui:overworld.shortcuts.hit_notes', {
-                    defaultValue: 'Hit Notes (Gig)'
-                  })
-                ],
-                [
-                  'ESC',
-                  t('ui:overworld.shortcuts.close', {
-                    defaultValue: 'Close Overlays'
-                  })
-                ]
-              ])().map(([k, d]) => (
+              {shortcuts.map(([k, d]) => (
                 <div className='sc-row' key={k}>
                   <span className='sc-key'>{k}</span>
                   <span className='sc-desc'>{d}</span>
                 </div>
               ))}
-            </div>
+            </section>
           )}
         </div>
         <div className='hud-right'>
