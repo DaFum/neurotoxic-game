@@ -3,6 +3,7 @@ import { GlitchButton } from '../GlitchButton'
 import { useTranslation } from 'react-i18next'
 import { type BandState, type PlayerState } from '../../types/game'
 import { translateLocation } from '../../utils/locationI18n'
+import { useAudioControl } from '../../hooks/useAudioControl'
 
 export interface OverworldHUDProps {
   player: PlayerState
@@ -50,6 +51,7 @@ export const OverworldHUD = React.memo(
   ({ player, band }: OverworldHUDProps) => {
     const { t } = useTranslation(['ui'])
     const [showSC, setShowSC] = useState(false)
+    const { audioState: isPlaying, handleAudioChange } = useAudioControl()
     const displayMoney = useAnimatedNum(player.money ?? 0)
     const [moneyAnim, setMoneyAnim] = useState('')
     const prevMoney = useRef(player.money ?? 0)
@@ -72,6 +74,47 @@ export const OverworldHUD = React.memo(
         return () => clearTimeout(timer)
       }
     }, [player.money])
+
+    useEffect(() => {
+      const isInputTarget = (target: EventTarget | null) => {
+        const element = target as HTMLElement | null
+        if (!element) return false
+        return (
+          element.tagName === 'INPUT' ||
+          element.tagName === 'TEXTAREA' ||
+          element.tagName === 'SELECT' ||
+          element.isContentEditable
+        )
+      }
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (isInputTarget(event.target)) return
+
+        if (
+          event.key === '?' ||
+          (event.key === 'h' && !event.ctrlKey && !event.metaKey)
+        ) {
+          setShowSC(prev => !prev)
+          return
+        }
+
+        if (event.key === 'm' && !event.ctrlKey && !event.metaKey) {
+          if (isPlaying) {
+            handleAudioChange.stopMusic()
+          } else {
+            void handleAudioChange.resumeMusic()
+          }
+          return
+        }
+
+        if (event.key === 'Escape') {
+          setShowSC(false)
+        }
+      }
+
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [handleAudioChange, isPlaying])
 
     const memberStatus = (m: NonNullable<BandState['members']>[number]) => {
       if (m.mood < 30 || m.stamina < 20) return 'crit'
@@ -216,6 +259,12 @@ export const OverworldHUD = React.memo(
                   '?, h',
                   t('ui:overworld.shortcuts.help', {
                     defaultValue: 'Toggle Help'
+                  })
+                ],
+                [
+                  'M',
+                  t('ui:overworld.shortcuts.mute', {
+                    defaultValue: 'Mute / Unmute'
                   })
                 ],
                 [
