@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react'
-import { GAME_PHASES } from '../../context/gameConstants'
 import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
 import { GlitchButton } from '../../ui/GlitchButton'
 
@@ -44,8 +43,7 @@ export const OverworldMenu = React.memo(
     handleRefuel,
     handleRepair,
     handleSaveWithDelay,
-    changeScene
-  }: OverworldMenuProps) => {
+    }: OverworldMenuProps) => {
 
   const MENU_CATS = useMemo(() => [
     { id: 'management', label: t('ui:menu.management', { defaultValue: 'MANAGEMENT' }), icon: '📋', color: 'var(--color-toxic-green)', items: [
@@ -70,7 +68,7 @@ export const OverworldMenu = React.memo(
 
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
-  const isDisabled = (item: any) => {
+  const isDisabled = (item: { cond?: string; action: string }) => {
     if (isTraveling) return true;
     if (item.cond === 'fuel'   && vanFuel >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL) return true;
     if (item.cond === 'repair' && vanCondition >= 100)  return true;

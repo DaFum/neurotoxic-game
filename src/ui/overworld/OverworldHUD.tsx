@@ -76,9 +76,9 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
   useEffect(()=>{
     if ((player.money ?? 0) !== prevMoney.current) {
       setMoneyAnim((player.money ?? 0) > prevMoney.current ? 'money-anim-up' : 'money-anim-down');
-      const t = setTimeout(()=>setMoneyAnim(''), 450);
+      const timer = setTimeout(()=>setMoneyAnim(''), 450);
       prevMoney.current = player.money ?? 0;
-      return ()=>clearTimeout(t);
+      return ()=>clearTimeout(timer);
     }
   },[player.money]);
 
@@ -130,7 +130,7 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
       <div className="hud-right">
         <div className="ow-panel band-panel">
           <div className="band-hdr">{t('ui:overworld.band_status', { defaultValue: 'Band Status' })}</div>
-          {Object.values(band?.members || {}).map((m)=>{
+          {(band?.members ?? []).map((m)=>{
             const st = memberStatus(m);
             return (
               <div className="mbr-row" key={m.id}>
@@ -154,8 +154,8 @@ export const OverworldHUD = React.memo(({ player, band, harmony, muted, onToggle
           <div className="harmony-row">
             <span className="harmony-label">{t('ui:overworld.harmony', { defaultValue: 'Harmony' })}</span>
             <div className="harmony-bar-wrap">
-              <div className="h-track"><div className="bar-fill" style={{width:`${harmony || 0}%`,background:(harmony || 0)<40?'var(--color-blood-red)':'var(--color-toxic-green)'}}/></div>
-              <span style={{fontSize:10,color:(harmony||0)<40?'var(--color-blood-red)':'var(--color-toxic-green)',width:28,textAlign:'right'}}>{Math.round(harmony || 0)}%</span>
+              <div className="h-track"><div className="bar-fill" style={{width:`${band.harmony ?? 0}%`,background:(band.harmony ?? 0)<40?'var(--color-blood-red)':'var(--color-toxic-green)'}}/></div>
+              <span style={{fontSize:10,color:(harmony||0)<40?'var(--color-blood-red)':'var(--color-toxic-green)',width:28,textAlign:'right'}}>{Math.round(band.harmony ?? 0)}%</span>
             </div>
           </div>
         </div>

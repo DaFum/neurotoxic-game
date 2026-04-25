@@ -12,7 +12,7 @@ export const EventLog = React.memo(({ t, day, locationName }) => {
 
   useEffect(()=>{
     if(bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
-  },[entries]);
+  }, [day, locationName]);
 
   return (
     <div className="event-log absolute bottom-8 left-8 z-20 pointer-events-none">

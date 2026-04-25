@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSettings } from '../hooks/useSettings'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useBandHQModal } from '../hooks/useBandHQModal'
@@ -52,7 +51,7 @@ export const Overworld = () => {
     let timeoutId: ReturnType<typeof setTimeout>;
     const id = setInterval(() => {
       if (Math.random() < 0.22) {
-        const t = TYPES[Math.floor(Math.random() * TYPES.length)]
+        const glitchType = TYPES[Math.floor(Math.random() * TYPES.length)]
         setGlitch(t)
         timeoutId = setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
       }

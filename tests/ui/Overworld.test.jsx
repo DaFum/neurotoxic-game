@@ -85,53 +85,55 @@ describe('Overworld Component', () => {
     expect(screen.getByTestId('toggle-radio')).toBeInTheDocument()
 
     // Open the menu first
-    const menuButton = screen.getByText(/MENU/i)
+    const menuButton = screen.getByRole('button', { name: /OPEN MENU/i })
     await act(async () => {
       fireEvent.click(menuButton)
     })
 
     // Check buttons
     // verify the menu is present
-    expect(screen.getByText(/TOUR PLAN/i)).toBeInTheDocument()
+    expect(screen.getByText(/MANAGEMENT/i)).toBeInTheDocument()
   })
+
 
 
   it('triggers save game action when save button is clicked', async () => {
     vi.useFakeTimers()
     const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
 
-    render(
-      <GameStateProvider>
-        <Overworld />
-      </GameStateProvider>
-    )
+    try {
+      render(
+        <GameStateProvider>
+          <Overworld />
+        </GameStateProvider>
+      )
 
-    const menuButton = screen.getByText(/OPEN MENU/i)
-    await act(async () => {
-      fireEvent.click(menuButton)
-    })
+      const menuButton = screen.getByRole('button', { name: /OPEN MENU/i })
+      await act(async () => {
+        fireEvent.click(menuButton)
+      })
 
-    const sysCat = screen.getByText(/SYSTEM/i)
-    await act(async () => {
-      fireEvent.click(sysCat)
-    })
+      const sysCat = screen.getByText('SYSTEM', { exact: true })
+      await act(async () => {
+        fireEvent.click(sysCat)
+      })
 
-    const saveButton = screen.getByText(/SAVE GAME/i)
-    await act(async () => {
-      fireEvent.click(saveButton)
-    })
+      const saveButton = screen.getByRole('button', { name: /SAVE GAME/i })
+      await act(async () => {
+        fireEvent.click(saveButton)
+      })
 
-    await act(async () => {
-      vi.advanceTimersByTime(500)
-    })
+      await act(async () => {
+        vi.advanceTimersByTime(500)
+      })
 
-    expect(setItemSpy).toHaveBeenCalledWith(
-      'neurotoxic_v3_save',
-      expect.any(String)
-    )
-
-    setItemSpy.mockRestore()
-    vi.useRealTimers()
+      expect(setItemSpy).toHaveBeenCalledWith(
+        'neurotoxic_v3_save',
+        expect.any(String)
+      )
+    } finally {
+      setItemSpy.mockRestore()
+      vi.useRealTimers()
+    }
   })
-
 })
