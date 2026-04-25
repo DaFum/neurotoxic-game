@@ -16,6 +16,7 @@ interface OverworldMenuProps {
   openPirateRadio: () => void;
   openMerchPress: () => void;
   openBloodBank: () => void;
+  openClinic: () => void;
   openDarkWebLeak: () => void;
   openHQ: () => void;
   handleRefuel: () => void;
@@ -36,7 +37,7 @@ export const OverworldMenu = React.memo(
     openQuests,
     openPirateRadio,
     openMerchPress,
-    openBloodBank,
+    openClinic, openBloodBank,
     openDarkWebLeak,
     openHQ,
     handleRefuel,
@@ -58,7 +59,7 @@ export const OverworldMenu = React.memo(
     { id: 'logistics', label: t('ui:menu.logistics', { defaultValue: 'LOGISTICS' }), icon: '🚐', color: 'var(--color-condition-blue)', items: [
       { label: t('ui:overworld.refuel', { defaultValue: 'REFUEL' }), desc: t('ui:menu.refuel_desc', { defaultValue: 'Gas up the van' }), icon: '⛽', v: 'w', cond: 'fuel', action: 'handleRefuel' },
       { label: t('ui:overworld.repair', { defaultValue: 'REPAIR' }), desc: t('ui:menu.repair_desc', { defaultValue: 'Fix van damage' }), icon: '🔧', v: 'p', cond: 'repair', action: 'handleRepair' },
-      { label: t('ui:overworld.void_clinic_button', { defaultValue: 'VOID CLINIC' }), desc: t('ui:menu.clinic_desc', { defaultValue: 'Heal members' }), icon: '🏥', v: 'd', action: 'openBloodBank' },
+      { label: t('ui:overworld.void_clinic_button', { defaultValue: 'VOID CLINIC' }), desc: t('ui:menu.clinic_desc', { defaultValue: 'Heal members' }), icon: '🏥', v: 'd', action: 'openClinic' },
     ]},
     { id: 'system', label: t('ui:menu.system', { defaultValue: 'SYSTEM' }), icon: '⚙', color: 'var(--color-ash-gray)', items: [
       { label: t('ui:overworld.save_game', { defaultValue: 'SAVE GAME' }), desc: t('ui:menu.save_desc', { defaultValue: 'Record progress' }), icon: '💾', v: 'p', action: 'handleSaveWithDelay' },
@@ -76,7 +77,7 @@ export const OverworldMenu = React.memo(
   };
 
   const actions: Record<string, () => void> = {
-    openHQ, openQuests, openStash, openPirateRadio, openMerchPress, openDarkWebLeak, openBloodBank, handleRefuel, handleRepair, handleSaveWithDelay
+    openHQ, openQuests, openStash, openPirateRadio, openMerchPress, openDarkWebLeak, openClinic, openClinic, openBloodBank, handleRefuel, handleRepair, handleSaveWithDelay
   };
 
   const handleClose = () => { setIsMenuOpen(false); setActiveCat(null); };

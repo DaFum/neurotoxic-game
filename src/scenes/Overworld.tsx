@@ -17,7 +17,7 @@ import { ToggleRadio } from '../components/ToggleRadio'
 import { EventLog } from '../ui/overworld/EventLog'
 import { audioManager } from '../utils/AudioManager'
 import { translateLocation } from '../utils/locationI18n'
-import { OverworldMap, OverworldModals } from '../components/overworld'
+import { OverworldMap } from '../components/overworld'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -186,7 +186,7 @@ export const Overworld = () => {
     <div
       className={`scene ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      <div className="noise" /><div className="crt" /><div className="scan" />
+      {useGameState()?.gameState?.settings?.crtEnabled && <><div className="noise" /><div className="crt" /><div className="scan" /></>}
       <OverworldHeader
         t={t}
         locationName={locationName}
@@ -278,7 +278,7 @@ export const Overworld = () => {
           config={DARK_WEB_LEAK_CONFIG}
         />
       )}
-      <OverworldModals />
+
     </div>
   )
 }

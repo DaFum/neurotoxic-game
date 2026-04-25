@@ -5,7 +5,7 @@ import { useAudioControl } from '../../hooks/useAudioControl';
 
 
 import { useTranslation } from 'react-i18next';
-import { type BandState } from '../../types/game';
+import { type BandState, type PlayerState } from '../../types/game';
 
 export interface OverworldHUDProps {
   player: PlayerState;
@@ -51,13 +51,14 @@ export const OverworldHUD = React.memo(({ player, band, muted, onToggleMute }: O
   );
 
   const isMuted = muted ?? !isPlaying;
-  const handleToggleMute = onToggleMute ?? useCallback(() => {
+  const defaultToggleMute = useCallback(() => {
     if (isPlaying) {
       handleAudioChange.stopMusic();
     } else {
       void handleAudioChange.resumeMusic();
     }
   }, [isPlaying, handleAudioChange]);
+  const handleToggleMute = onToggleMute ?? defaultToggleMute;
   const displayMoney = useAnimatedNum(player.money ?? 0);
   const [moneyAnim, setMoneyAnim] = useState('');
   const prevMoney = useRef(player.money ?? 0);
@@ -91,7 +92,7 @@ export const OverworldHUD = React.memo(({ player, band, muted, onToggleMute }: O
           </div>
           <div className="loc-row">
             <span style={{color:'var(--color-toxic-green)'}}>⬡</span>
-            <span>{t('ui:ui.day', { defaultValue: 'Day' })} {player.day ?? 1} — {player.location ?? t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
+            <span>{t('ui:ui.day', { defaultValue: 'Day' })} {player.day ?? 1} — {(player.location ? t(`venues:${player.location.toLowerCase().replace(/ /g, '_')}.name`, { defaultValue: player.location }) : null) ?? t('ui:map.unknown', { defaultValue: 'UNKNOWN' })}</span>
           </div>
           <div className="van-stats">
             <div className="van-row">

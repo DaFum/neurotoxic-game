@@ -8,6 +8,10 @@ import { GameStateProvider } from '../../src/context/GameState'
 
 // Mocks
 
+vi.mock('../../src/hooks/useSettings', () => ({
+  useSettings: () => ({ crtEnabled: true })
+}))
+
 vi.mock('../../src/hooks/useTravelLogic', () => ({
   useTravelLogic: () => ({
     isTraveling: false,
