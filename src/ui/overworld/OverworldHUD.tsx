@@ -209,7 +209,9 @@ export const OverworldHUD = React.memo(
                     color: fuelLow ? 'var(--color-blood-red)' : undefined
                   }}
                 >
-                  {vanFuel !== undefined ? vanFuel : 'N/A'}
+                  {vanFuel !== undefined
+                    ? vanFuel
+                    : t('ui:overworld.notAvailable', { defaultValue: 'N/A' })}
                 </span>
               </div>
               <div className='van-row'>
@@ -240,7 +242,9 @@ export const OverworldHUD = React.memo(
                     color: condLow ? 'var(--color-blood-red)' : undefined
                   }}
                 >
-                  {vanCondition !== undefined ? vanCondition : 'N/A'}
+                  {vanCondition !== undefined
+                    ? vanCondition
+                    : t('ui:overworld.notAvailable', { defaultValue: 'N/A' })}
                 </span>
               </div>
               {fuelLow && (

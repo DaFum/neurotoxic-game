@@ -1009,8 +1009,9 @@
     "event_log_entries_one": "eintrag",
     "event_log_entries_other": "einträge",
     "locations_loaded": "Tour initialisiert. {{count}} Locations geladen.",
-    "tour_active": "{{date}}: Tour aktiv.",
+    "tour_active": "{{label}}: Tour aktiv.",
     "day_format": "Tag {{day}}",
+    "notAvailable": "k.A.",
     "location_secured": "{{location}} gesichert.",
     "event_log": "EVENT LOG",
     "header": {

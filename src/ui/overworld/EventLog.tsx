@@ -80,13 +80,13 @@ export const EventLog = React.memo(
       }
 
       if (entry.kind === 'tour_active') {
-        const date = t('ui:overworld.day_format', {
+        const label = t('ui:overworld.day_format', {
           day: entry.day,
           defaultValue: `Day ${entry.day}`
         })
         return t('ui:overworld.tour_active', {
-          date,
-          defaultValue: `${date}: Tour active.`
+          label,
+          defaultValue: `${label}: Tour active.`
         })
       }
 
