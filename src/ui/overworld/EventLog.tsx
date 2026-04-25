@@ -27,37 +27,43 @@ export const EventLog = React.memo(
     )
 
     useEffect(() => {
-      setEntries(prev => {
-        const next = [...prev]
-        const previous = previousRef.current
+      const previous = previousRef.current
+      const added: Array<{
+        id: number
+        day: number
+        type: string
+        msg: string
+      }> = []
 
-        if (!previous || previous.day !== day) {
-          next.push({
-            id: ++entryIdRef.current,
-            day,
-            type: 'system',
-            msg: t('ui:overworld.tour_active', {
-              date: `Day ${day}`,
-              defaultValue: `Day ${day}: Tour active.`
-            })
+      if (!previous || previous.day !== day) {
+        added.push({
+          id: ++entryIdRef.current,
+          day,
+          type: 'system',
+          msg: t('ui:overworld.tour_active', {
+            date: `Day ${day}`,
+            defaultValue: `Day ${day}: Tour active.`
           })
-        }
+        })
+      }
 
-        if (!previous || previous.locationName !== locationName) {
-          next.push({
-            id: ++entryIdRef.current,
-            day,
-            type: 'travel',
-            msg: t('ui:overworld.location_secured', {
-              location: locationName,
-              defaultValue: `${locationName} secured.`
-            })
+      if (!previous || previous.locationName !== locationName) {
+        added.push({
+          id: ++entryIdRef.current,
+          day,
+          type: 'travel',
+          msg: t('ui:overworld.location_secured', {
+            location: locationName,
+            defaultValue: `${locationName} secured.`
           })
-        }
+        })
+      }
 
-        previousRef.current = { day, locationName }
-        return next.slice(-20)
-      })
+      if (added.length > 0) {
+        setEntries(prev => [...prev, ...added].slice(-20))
+      }
+
+      previousRef.current = { day, locationName }
     }, [day, locationName, t])
 
     useEffect(() => {

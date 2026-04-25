@@ -7,8 +7,8 @@ interface OverworldMenuProps {
   isMenuOpen: boolean
   setIsMenuOpen: (open: boolean) => void
   isTraveling: boolean
-  vanFuel: number
-  vanCondition: number
+  vanFuel?: number
+  vanCondition?: number
   isSaving: boolean
   openStash: () => void
   openQuests: () => void
@@ -273,10 +273,12 @@ export const OverworldMenu = React.memo(
 
     useEffect(() => {
       if (isMenuOpen) {
-        previousFocusedElementRef.current =
-          document.activeElement instanceof HTMLElement
-            ? document.activeElement
-            : null
+        if (!activeCat) {
+          previousFocusedElementRef.current =
+            document.activeElement instanceof HTMLElement
+              ? document.activeElement
+              : null
+        }
         const rafId = window.requestAnimationFrame(() => {
           const firstMenuButton =
             menuRootRef.current?.querySelector<HTMLButtonElement>(
@@ -291,7 +293,7 @@ export const OverworldMenu = React.memo(
       if (document.activeElement !== previousFocusedElementRef.current) {
         previousFocusedElementRef.current?.focus()
       }
-    }, [isMenuOpen])
+    }, [activeCat, isMenuOpen])
 
     useEffect(() => {
       const onKeyDown = (event: KeyboardEvent) => {
