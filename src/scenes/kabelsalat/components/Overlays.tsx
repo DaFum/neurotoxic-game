@@ -16,6 +16,7 @@ interface OverlaysProps {
   isGameOver: boolean
   isPoweredOn: boolean
   faultReason: string | null
+  onAdvance: (isPowered: boolean) => void
 }
 
 export const Overlays: FC<OverlaysProps> = ({
@@ -23,13 +24,16 @@ export const Overlays: FC<OverlaysProps> = ({
   isShocked,
   isGameOver,
   isPoweredOn,
-  faultReason
+  faultReason,
+  onAdvance
 }) => {
   return (
     <>
       {isShocked && <ShockOverlay t={t} faultReason={faultReason ?? ''} />}
-      {isGameOver && !isShocked && <GameOverOverlay t={t} />}
-      {isPoweredOn && <PoweredOnOverlay t={t} />}
+      {isGameOver && !isShocked && (
+        <GameOverOverlay t={t} onAdvance={() => onAdvance(false)} />
+      )}
+      {isPoweredOn && <PoweredOnOverlay t={t} onAdvance={() => onAdvance(true)} />}
     </>
   )
 }
@@ -39,5 +43,6 @@ Overlays.propTypes = {
   isShocked: PropTypes.bool.isRequired,
   isGameOver: PropTypes.bool.isRequired,
   isPoweredOn: PropTypes.bool.isRequired,
-  faultReason: PropTypes.string
+  faultReason: PropTypes.string,
+  onAdvance: PropTypes.func.isRequired
 }

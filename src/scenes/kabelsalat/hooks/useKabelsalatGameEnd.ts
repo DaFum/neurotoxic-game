@@ -12,64 +12,90 @@ export const useKabelsalatGameEnd = (
 
   const transitionedRef = useRef(false)
   const timeLeftRef = useRef(timeLeft)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     timeLeftRef.current = timeLeft
   }, [timeLeft])
 
-  const handleGameEnd = useCallback(
-    (delay: number, isPowered: boolean) => {
-      const timer = setTimeout(() => {
-        try {
-          completeKabelsalatMinigame({
-            isPoweredOn: isPowered,
-            timeLeft: isPowered ? timeLeftRef.current : 0
+  const finalizeGameEnd = useCallback(
+    (isPowered: boolean) => {
+      if (transitionedRef.current) return
+      transitionedRef.current = true
+
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+
+      try {
+        completeKabelsalatMinigame({
+          isPoweredOn: isPowered,
+          timeLeft: isPowered ? timeLeftRef.current : 0
+        })
+      } catch (error) {
+        import('../../../utils/errorHandler')
+          .then(({ handleError, StateError }) => {
+            const wrappedError =
+              error instanceof Error ? error : new Error(String(error))
+            handleError(
+              new StateError('Failed to complete minigame', {
+                originalError: wrappedError
+              })
+            )
           })
-        } catch (error) {
-          import('../../../utils/errorHandler')
-            .then(({ handleError, StateError }) => {
-              const wrappedError =
-                error instanceof Error ? error : new Error(String(error))
-              handleError(
-                new StateError('Failed to complete minigame', {
-                  originalError: wrappedError
-                })
+          .catch(err => {
+            const fallback = err instanceof Error ? err : new Error(String(err))
+            try {
+              const fallbackStateError = new Error(
+                'Failed to complete minigame (import error)'
               )
-            })
-            .catch(err => {
-              const fallback =
-                err instanceof Error ? err : new Error(String(err))
-              try {
-                const fallbackStateError = new Error(
-                  'Failed to complete minigame (import error)'
-                )
-                logger.error('Kabelsalat', fallback, fallbackStateError)
-              } catch (_e) {
-                // Ignore fallback error
-              }
-            })
-        } finally {
-          changeScene(GAME_PHASES.GIG)
-        }
-      }, delay)
-      return timer
+              logger.error('Kabelsalat', fallback, fallbackStateError)
+            } catch (_e) {
+              // Ignore fallback error
+            }
+          })
+      } finally {
+        changeScene(GAME_PHASES.GIG)
+      }
     },
     [completeKabelsalatMinigame, changeScene]
   )
 
-  useEffect(() => {
-    if (isPoweredOn && !transitionedRef.current) {
-      transitionedRef.current = true
-      const timer = handleGameEnd(2500, true)
-      return () => clearTimeout(timer)
-    }
-  }, [isPoweredOn, handleGameEnd])
+  const scheduleGameEnd = useCallback(
+    (delay: number, isPowered: boolean) => {
+      if (transitionedRef.current || timerRef.current) return
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null
+        finalizeGameEnd(isPowered)
+      }, delay)
+    },
+    [finalizeGameEnd]
+  )
 
   useEffect(() => {
-    if (isGameOver && !transitionedRef.current) {
-      transitionedRef.current = true
-      const timer = handleGameEnd(3500, false)
-      return () => clearTimeout(timer)
+    if (isPoweredOn) {
+      scheduleGameEnd(2500, true)
     }
-  }, [isGameOver, handleGameEnd])
+  }, [isPoweredOn, scheduleGameEnd])
+
+  useEffect(() => {
+    if (isGameOver) {
+      scheduleGameEnd(3500, false)
+    }
+  }, [isGameOver, scheduleGameEnd])
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    },
+    []
+  )
+
+  return {
+    forceAdvance: finalizeGameEnd
+  }
 }

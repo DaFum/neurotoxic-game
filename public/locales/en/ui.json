@@ -587,6 +587,7 @@
   "minigames.kabelsalat.systemShock": "SYSTEM SHOCK",
   "minigames.kabelsalat.tMinus": "T-MINUS",
   "minigames.kabelsalat.timeUp": "TIME'S UP",
+  "minigames.kabelsalat.continueButton": "CONTINUE TO GIG",
   "minigames.kabelsalat.timeValue": "{{count}}s",
   "minigames.kabelsalat.timeValue_one": "{{count}}s",
   "minigames.kabelsalat.timeValue_other": "{{count}}s",

@@ -29,6 +29,7 @@ interface KabelsalatBoardProps {
   selectedCable?: string | null
   handleSocketClick: (id: SocketId) => void
   handleCableClick: (id: string) => void
+  onAdvance: (isPowered: boolean) => void
 }
 
 export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
@@ -43,7 +44,8 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
   socketOrder,
   selectedCable,
   handleSocketClick,
-  handleCableClick
+  handleCableClick,
+  onAdvance
 }) => {
   return (
     <div
@@ -64,6 +66,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
         isGameOver={isGameOver}
         isPoweredOn={isPoweredOn}
         faultReason={faultReason}
+        onAdvance={onAdvance}
       />
 
       <svg
@@ -127,5 +130,6 @@ KabelsalatBoard.propTypes = {
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   selectedCable: PropTypes.string,
   handleSocketClick: PropTypes.func.isRequired,
-  handleCableClick: PropTypes.func.isRequired
+  handleCableClick: PropTypes.func.isRequired,
+  onAdvance: PropTypes.func.isRequired
 }

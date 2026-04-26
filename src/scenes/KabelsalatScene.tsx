@@ -18,7 +18,8 @@ export const KabelsalatScene = () => {
     bgTextureUrl,
     handleCableClick,
     handleSocketClick,
-    isPowerConnected
+    isPowerConnected,
+    forceAdvance
   } = useKabelsalatState()
 
   return (
@@ -54,6 +55,7 @@ export const KabelsalatScene = () => {
           selectedCable={selectedCable}
           handleSocketClick={handleSocketClick}
           handleCableClick={handleCableClick}
+          onAdvance={forceAdvance}
         />
 
         <Rules t={t} />

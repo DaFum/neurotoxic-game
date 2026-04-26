@@ -38,7 +38,7 @@ export const useKabelsalatState = () => {
   )
 
   // 3. Game End
-  useKabelsalatGameEnd(isPoweredOn, isGameOver, timeLeft)
+  const { forceAdvance } = useKabelsalatGameEnd(isPoweredOn, isGameOver, timeLeft)
 
   // 4. Shuffle
   useKabelsalatShuffle(
@@ -85,6 +85,7 @@ export const useKabelsalatState = () => {
     bgTextureUrl,
     handleCableClick,
     handleSocketClick,
-    isPowerConnected: !!connections['power']
+    isPowerConnected: !!connections['power'],
+    forceAdvance
   }
 }
