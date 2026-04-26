@@ -231,11 +231,10 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      // Pick a random member directly from band.members to avoid O(N) allocation
-      if (!band.members || band.members.length === 0) return { type: 'FIXED', success: false, platform: 'INSTAGRAM', followers: 0 };
+      // Condition guarantees band.members is a non-empty array.
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const target = (band.members as any)[safeIndex]?.name || ''
+      const target = band.members[safeIndex]?.name ?? ''
       return {
         type: 'FIXED',
         success: true,
@@ -280,7 +279,14 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
       // Dynamically select the lead singer or fallback to index 0
-      if (!band.members || band.members.length === 0) return { type: 'FIXED', success: false, platform: 'INSTAGRAM', followers: 0 };
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0
+        }
+      }
       const vocalistObj =
         getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
       const vocalist = vocalistObj.name
@@ -512,11 +518,18 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      if (!band.members || band.members.length === 0) return { type: 'FIXED', success: false, platform: 'INSTAGRAM', followers: 0 };
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0
+        }
+      }
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
       const targetObj = band.members[safeIndex]
-      const target = (targetObj as any)?.name || ''
+      const target = targetObj?.name ?? ''
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
@@ -554,10 +567,18 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }: GameState) => {
-      if (!band.members || band.members.length === 0) return { type: 'FIXED', success: false, platform: 'INSTAGRAM', followers: 0 };
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0
+        }
+      }
       const gearNerd =
         getMemberWithTrait(band.members, 'gear_nerd')?.name ||
-        band.members[0]?.name || ''
+        band.members[0]?.name ||
+        ''
       return {
         type: 'FIXED',
         success: true,
@@ -706,11 +727,18 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
       // Find potential gear nerd or fallback to first member
-      if (!band.members || band.members.length === 0) return { type: 'FIXED', success: false, platform: 'INSTAGRAM', followers: 0 };
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+          followers: 0
+        }
+      }
       const member =
         getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
-      const target = (member as any)?.name || ''
-      const memberId = (member as any)?.id || (member as any)?.name || '' // Use name as fallback ID
+      const target = member?.name ?? ''
+      const memberId = member?.id ?? member?.name ?? '' // Use name as fallback ID
 
       return {
         type: 'FIXED',

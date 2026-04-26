@@ -615,9 +615,10 @@ CRISIS_EVENTS.forEach(event => {
   try {
     validateCrisisEvent(event)
     validEvents.push(event)
-  } catch (err: any) {
-    logger.error('CrisisEventValidation', err.message, { eventId: event.id })
-    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    logger.error('CrisisEventValidation', message, { eventId: event.id })
+    if (!import.meta.env.PROD) {
       throw err
     }
   }
