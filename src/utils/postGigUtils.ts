@@ -170,11 +170,11 @@ export const calculatePostGigStateUpdates = (
   // Handle comm_sellout_ad
   if (
     option.id === 'comm_sellout_ad' &&
-    updatedSocial.activeDeals &&
-    updatedSocial.activeDeals.length > 0
+    social.activeDeals &&
+    social.activeDeals.length > 0
   ) {
     // Apply penalty from the sponsorship deal
-    const deal = updatedSocial.activeDeals.find(d => d.type === 'SPONSORSHIP') as BrandDeal | undefined
+    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP') as BrandDeal | undefined
     if (!deal)
       return {
         finalResult,
