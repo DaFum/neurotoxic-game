@@ -823,7 +823,9 @@ export const POST_OPTIONS = [
           })
       }
 
-      const displayName = influencer.name ?? selectedId.replace(/_/g, ' ')
+      const displayName =
+        influencer?.name ??
+        (selectedId ? selectedId.replace(/_/g, ' ') : 'Unknown')
 
       return {
         type: 'FIXED',

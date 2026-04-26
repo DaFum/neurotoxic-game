@@ -9,11 +9,11 @@ export const ShopTab = ({
   isItemDisabled,
   getAdjustedCost,
   processingItemId
-}) => {
+}: Record<string, unknown>) => {
   return (
     <CatalogTab
       items={[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments]}
-      balances={{ funds: player.money }}
+      balances={{ funds: (player as any).money }}
       handleBuy={handleBuy}
       isItemOwned={isItemOwned}
       isItemDisabled={isItemDisabled}

@@ -34,8 +34,8 @@ export const useBandHQLogic = ({
   const handleVoidTrade = useCallback(
     (item: any) => {
       if (processingItemIdRef.current !== null) return
-      processingItemIdRef.current = item.id
-      setProcessingItemId(item.id)
+      processingItemIdRef.current = (item as any).id
+      setProcessingItemId((item as any).id)
       try {
         const fameCost = VOID_TRADER_COSTS[item.rarity as keyof typeof VOID_TRADER_COSTS] ?? 1000
         if (player.fame < fameCost) {
@@ -49,7 +49,7 @@ export const useBandHQLogic = ({
         }
         const successToast = {
           messageKey: 'ui:toast.void_trade_success',
-          options: { itemName: `items:contraband.${item.id}.name` },
+          options: { itemName: `items:contraband.${(item as any).id}.name` },
           type: 'success'
         }
         tradeVoidItem(item.id, fameCost)

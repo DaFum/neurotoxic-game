@@ -25,7 +25,7 @@ export const BUST_CHANCE_BY_RARITY = {
  * @param {Object|null} stash - band.stash dictionary (keyed by item id)
  * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: string|null }}
  */
-export function computeStashBustRisk(stash: any) {
+export function computeStashBustRisk(stash: unknown) {
   if (!stash || typeof stash !== 'object') {
     return { bustChance: 0, highestRiskItemId: null, highestRarity: null }
   }

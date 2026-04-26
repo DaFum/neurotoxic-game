@@ -9,7 +9,7 @@ export const SettingsTab = ({
   onAudioChange,
   updateSettings,
   deleteSave
-}) => {
+}: Record<string, unknown>) => {
   const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(
     settings,
     updateSettings
@@ -19,12 +19,12 @@ export const SettingsTab = ({
     <div className='max-w-3xl mx-auto'>
       <SettingsPanel
         settings={settings}
-        musicVol={audioState.musicVol}
-        sfxVol={audioState.sfxVol}
-        isMuted={audioState.isMuted}
-        onMusicChange={onAudioChange.setMusic}
-        onSfxChange={onAudioChange.setSfx}
-        onToggleMute={onAudioChange.toggleMute}
+        musicVol={(audioState as any).musicVol}
+        sfxVol={(audioState as any).sfxVol}
+        isMuted={(audioState as any).isMuted}
+        onMusicChange={(onAudioChange as any).setMusic}
+        onSfxChange={(onAudioChange as any).setSfx}
+        onToggleMute={(onAudioChange as any).toggleMute}
         onToggleCRT={handleToggleCRT}
         onLogLevelChange={handleLogLevelChange}
         onDeleteSave={deleteSave}

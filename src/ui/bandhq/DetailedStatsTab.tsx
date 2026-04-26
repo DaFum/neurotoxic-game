@@ -327,7 +327,7 @@ const SocialReachSection = ({
           label={t('ui:stats.controversy', { defaultValue: 'Controversy' })}
           value={`${Math.min(100, social.controversyLevel || 0)}/100`}
           subtext={
-            social.controversyLevel >= 100
+            (social as any).controversyLevel >= 100
               ? t('ui:stats.shadowbanned', {
                   defaultValue: 'SHADOWBANNED (-75% Growth)'
                 })
@@ -778,14 +778,7 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {}
-}: {
-  player: PlayerData
-  band: BandData
-  social: SocialData
-  activeQuests?: ActiveQuest[]
-  venueBlacklist?: string[]
-  reputationByRegion?: Record<string, number>
-}) => {
+}: any) => {
   const { t } = useTranslation(['ui', 'items', 'venues', 'traits'])
 
   return (

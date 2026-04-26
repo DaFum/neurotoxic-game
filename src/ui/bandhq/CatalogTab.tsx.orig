@@ -75,7 +75,7 @@ const balancesValidator = (
   propName: unknown,
   componentName: unknown
 ) => {
-  const value = props[propName]
+  const value = (props as any)[(propName as any)]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return new Error(`${componentName}: balances must be an object`)
   }
@@ -116,16 +116,11 @@ CatalogTab.propTypes = {
     componentName: unknown,
     ...rest: any[]
   ) => {
-    const shapeError = (balancesShape as any)(
-      props,
-      propName,
-      componentName,
-      ...rest
-    )
+    const shapeError = balancesShape(props, propName, componentName, ...rest)
     if (shapeError) {
       return shapeError
     }
-    return (balancesValidator as any)(props, propName, componentName, ...rest)
+    return balancesValidator(props, propName, componentName, ...rest)
   },
   handleBuy: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,

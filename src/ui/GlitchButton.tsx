@@ -20,7 +20,7 @@ export const GlitchButton = ({
   size = 'lg',
   isLoading = false,
   ...props
-}) => {
+}: any) => {
   // If loading or owned, treat as disabled for interactions
   const isIntervention = disabled || isLoading || variant === 'owned'
 
@@ -69,7 +69,7 @@ export const GlitchButton = ({
       aria-disabled={isIntervention}
       aria-busy={isLoading}
       className={`
-        relative ${sizeClasses[size] || sizeClasses.lg} bg-void-black
+        relative ${(sizeClasses as any)[size] || sizeClasses.lg} bg-void-black
         font-[Metal_Mania] font-bold uppercase tracking-widest
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
