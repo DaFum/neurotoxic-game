@@ -465,6 +465,8 @@
   "leaderboard.load_error": "Could not load rankings.",
   "leaderboard.no_data": "NO DATA RECORDED YET.",
   "leaderboard.no_songs": "NO SONGS UNLOCKED",
+  "leaderboard.unknownError": "Unknown error",
+  "leaderboard.unknownPlayer": "Unknown",
   "leaderboard.select_song": "SELECT SONG:",
   "leaderboard.song_scores": "SONG SCORES",
   "leaderboard.stage_dives": "STAGE DIVES",

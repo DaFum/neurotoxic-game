@@ -46,9 +46,7 @@ export const LeaderboardTab = () => {
   const [error, setError] = useState<string | null>(null)
 
   const activeSongId = useMemo(() => {
-    if (view !== 'SONG') {
-      return selectedSongId
-    }
+    if (view !== 'SONG') return ''
 
     if (selectedSongId) {
       return selectedSongId
@@ -122,7 +120,7 @@ export const LeaderboardTab = () => {
             : t('ui:leaderboard.unknownError', {
                 defaultValue: 'Unknown error'
               })
-        setError(`${t('ui:leaderboard.failedLoad')}: ${message}`)
+        setError(`${t('ui:leaderboard.load_error')}: ${message}`)
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false)
