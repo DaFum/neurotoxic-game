@@ -174,7 +174,16 @@ export const calculatePostGigStateUpdates = (
     social.activeDeals.length > 0
   ) {
     // Apply penalty from the sponsorship deal
-    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP')
+    let deal: BrandDeal | undefined = undefined
+    const deals = social.activeDeals
+    const len = deals.length
+    for (let i = 0; i < len; i++) {
+      const d = deals[i]
+      if (d.type === 'SPONSORSHIP') {
+        deal = d
+        break
+      }
+    }
     if (!deal)
       return {
         finalResult,
