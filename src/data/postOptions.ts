@@ -784,7 +784,7 @@ export const POST_OPTIONS = [
         success: false,
         platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 0,
-        description: 'Failed to post.'
+        message: 'Failed to post.'
       }
       const influencer = influencers[selectedId]
       if (!influencer) return {
@@ -792,7 +792,7 @@ export const POST_OPTIONS = [
         success: false,
         platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 0,
-        description: 'Failed to post.'
+        message: 'Failed to post.'
       }
 
       const cost = getCost(influencer)

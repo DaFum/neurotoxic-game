@@ -13,8 +13,20 @@ export const useBandHQLogic = ({
   band,
   handleBuy,
   tradeVoidItem,
+  onComplete,
+  onStartMinigame,
+  onChangeTab,
   addToast
-}: any) => {
+}: {
+  player: import("../../../types/game").PlayerState;
+  band: import("../../../types/game").BandState;
+  handleBuy: (item: any) => void;
+  tradeVoidItem: (itemId: string, cost: number) => void;
+  onComplete: () => void;
+  onStartMinigame: (scene: string) => void;
+  onChangeTab: (tab: string) => void;
+  addToast: (message: string, type?: "error" | "warning" | "success" | "info") => void;
+}) => {
   const { t } = useTranslation()
   const [processingItemId, setProcessingItemId] = useState(null)
   const processingItemIdRef = useRef(null)
@@ -40,7 +52,7 @@ export const useBandHQLogic = ({
           options: { itemName: `items:contraband.${item.id}.name` },
           type: 'success'
         }
-        tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
+        tradeVoidItem(item.id, fameCost)
       } catch (err) {
         handleError(err, { addToast })
       } finally {
@@ -61,7 +73,7 @@ export const useBandHQLogic = ({
   const isVoidItemDisabled = useCallback(
     (item: any) => {
       const fameCost = VOID_TRADER_COSTS[item.rarity as keyof typeof VOID_TRADER_COSTS] ?? 1000
-      const currentQuantity = band.stash?.[item.id]?.stacks || 0
+      const currentQuantity = (band.stash?.[item.id] as any)?.stacks || 0
       const isMaxStacks =
         item.stackable && item.maxStacks && currentQuantity >= item.maxStacks
 

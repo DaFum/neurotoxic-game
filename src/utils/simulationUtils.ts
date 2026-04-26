@@ -137,7 +137,7 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   }
 
   const getMemberSkill = (member?: BandMember): number =>
-    (member?.baseStats as any)?.skill ?? ((member as any)?.skill as number) ?? 0
+    typeof member?.baseStats === 'object' && member?.baseStats !== null && 'skill' in member.baseStats ? (member.baseStats.skill as number) : (typeof member?.skill === 'number' ? member.skill : 0)
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,
     drums: 120 + getMemberSkill(Marius) * 4,
@@ -346,13 +346,13 @@ export const calculateDailyUpdates = (
   }
 
   // Ego System Drain (Lead Singer Syndrome)
-  let pendingFlags = {}
+  let pendingFlags: Record<string, boolean> = {}
   if (nextSocial.egoFocus) {
     const nextHarmonyEgo = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
     nextBand.harmony = nextHarmonyEgo
     // Proactive scandal trigger (12% daily chance)
     if (rng() < 0.12) {
-      (pendingFlags as any).scandal = true
+      pendingFlags.scandal = true
     }
     // Passive decay chance (20% per day to forget the drama)
     if (rng() < 0.2) {

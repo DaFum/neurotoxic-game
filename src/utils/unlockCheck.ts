@@ -157,7 +157,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
       for (const memberId in Matze.relationships) {
         if (
           Object.hasOwn(Matze.relationships, memberId) &&
-          (Matze.relationships[memberId] || 0) < 30
+          (Matze.relationships[memberId] ?? 50) < 30
         ) {
           hasGrudge = true
           break

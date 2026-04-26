@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { getSafeUUID } from './crypto'
 
 /**
@@ -125,7 +126,7 @@ export class Logger {
    */
   debug(channel: string, message: string, data?: any): void {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
-    if (!(import.meta as any).env?.PROD) {
+    if (!import.meta.env?.PROD) {
       console.debug(`[${channel}] ${message}`, data || '')
     }
     this._push(this._format('DEBUG', channel, message, data))
@@ -139,7 +140,7 @@ export class Logger {
    */
   info(channel: string, message: string, data?: any): void {
     if (this.minLevel > LOG_LEVELS.INFO) return
-    if (!(import.meta as any).env?.PROD) {
+    if (!import.meta.env?.PROD) {
       console.info(`[${channel}] ${message}`, data || '')
     }
     this._push(this._format('INFO', channel, message, data))

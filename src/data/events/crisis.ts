@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import type { GameState } from '../../types/game'
 import type { UnknownRecord } from '../../types/game'
 import { calculateZealotryEffects } from '../../utils/socialEngine'
@@ -610,14 +611,14 @@ export const CRISIS_EVENTS = [
 ]
 
 // Validate all crisis events on load (PR/issue #1234)
-const validEvents: any[] = []
+const validEvents: (typeof CRISIS_EVENTS)[number][] = []
 CRISIS_EVENTS.forEach(event => {
   try {
     validateCrisisEvent(event)
     validEvents.push(event)
   } catch (err) {
     logger.error('CrisisEventValidation', (err as Error).message, { eventId: event.id })
-    if (!(import.meta as any).env.PROD) {
+    if (!import.meta.env.PROD) {
       throw err
     }
   }

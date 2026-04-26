@@ -298,10 +298,10 @@ const selectEvent = (
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1))
     ;const temp = shuffled[i];
-    if (temp && shuffled[j]) {
-      shuffled[i] = shuffled[j]!;
-      shuffled[j] = temp;
-    }
+    const other = shuffled[j];
+    if (!temp || !other) throw new Error(`Dense array invariant violated at shuffle index i=${i}, j=${j}`);
+    shuffled[i] = other;
+    shuffled[j] = temp;
   }
 
   for (const eligible of shuffled) {

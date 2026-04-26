@@ -1,19 +1,20 @@
 import { useEffect } from 'react'
+/// <reference types="vite/client" />
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
 
-if ((import.meta as any).hot) {
-  (import.meta as any).hot.dispose(() => {
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
     hasLoggedUnavailableEndpoint = false
   })
 }
 
 const getLeaderboardSyncEnabledFlag = () => {
-  const viteFlag = (import.meta as any).env?.VITE_ENABLE_LEADERBOARD_SYNC
+  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
   if (typeof viteFlag === 'string') {
     return viteFlag.toLowerCase() !== 'false'
   }
@@ -37,7 +38,7 @@ const getLeaderboardSyncEnabledFlag = () => {
  * @param {number} money - The player's current money.
  * @returns {boolean} True if valid.
  */
-export const isValidForSync = (playerId: any, playerName: any, day: any, money: any) => {
+export const isValidForSync = (playerId: unknown, playerName: unknown, day: unknown, money: unknown) => {
   return (
     !!playerId &&
     !!playerName &&
@@ -78,15 +79,15 @@ export const calculateTotalFollowers = (social: any) => {
  * @returns {object} The payload object.
  */
 export const createSyncPayload = (
-  playerId: any,
-  playerName: any,
-  money: any,
-  day: any,
-  fame: any,
-  totalDistance: any,
-  conflictsResolved: any,
-  stageDives: any,
-  totalFollowers: any
+  playerId: unknown,
+  playerName: unknown,
+  money: unknown,
+  day: unknown,
+  fame: unknown,
+  totalDistance: unknown,
+  conflictsResolved: unknown,
+  stageDives: unknown,
+  totalFollowers: unknown
 ) => {
   return {
     playerId,
@@ -106,7 +107,7 @@ export const createSyncPayload = (
  * @param {object} payload - The data to sync.
  * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
  */
-export const syncLeaderboardStats = async (payload: any) => {
+export const syncLeaderboardStats = async (payload: unknown) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return false
   }
