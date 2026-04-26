@@ -30,12 +30,24 @@ export function useAmpLogic() {
     targetValueRef.current = targetValue
   }, [targetValue])
 
+  const finishCalledRef = useRef(false)
+
+  const finishMinigame = useCallback(() => {
+    if (finishCalledRef.current) return
+    finishCalledRef.current = true
+
+    const finalScore =
+      accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
+    completeAmpCalibration(finalScore)
+  }, [completeAmpCalibration])
+
   const handleComplete = useCallback(() => {
     if (isCompleteRef.current) return
     isCompleteRef.current = true
 
+    finishMinigame()
     setIsGameOver(true)
-  }, [])
+  }, [finishMinigame])
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
@@ -72,17 +84,6 @@ export function useAmpLogic() {
     },
     [handleComplete]
   )
-
-  const finishCalledRef = useRef(false)
-
-  const finishMinigame = useCallback(() => {
-    if (finishCalledRef.current) return
-    finishCalledRef.current = true
-
-    const finalScore =
-      accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
-    completeAmpCalibration(finalScore)
-  }, [completeAmpCalibration])
 
   // Keep gameStateRef up to date for Stage Controller
   useEffect(() => {
