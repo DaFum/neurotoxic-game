@@ -3,7 +3,7 @@ import { TFunction } from 'i18next'
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
-import type { RhythmGameRefState } from '../types/rhythmGame'
+import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
 
 type UseGigSessionProps = {
   addToast: (message: string, type: 'info' | 'error' | 'success') => void
@@ -84,7 +84,7 @@ export const useGigSession = ({
       // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
       const rawStats =
         gameStateRef.current?.stats ??
-        ({} as Partial<import('../types/rhythmGame').RhythmLiveStats>)
+        ({} as Partial<RhythmLiveStats>)
       const statsSnapshot = {
         perfectHits: rawStats.perfectHits ?? 0,
         perfects: rawStats.perfects ?? 0, // Alias if used

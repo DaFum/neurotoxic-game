@@ -1,0 +1,12 @@
+--- src/ui/bandhq/CatalogTab.tsx
++++ src/ui/bandhq/CatalogTab.tsx
+@@ -118,7 +118,7 @@
+   ) => {
+-    const shapeError = balancesShape(props, propName, componentName, ...rest: any[])
++    const shapeError = balancesShape(props, propName, componentName, ...(rest as any))
+     if (shapeError) {
+       return shapeError
+     }
+-    return balancesValidator(props, propName, componentName, ...rest: any[])
++    return balancesValidator(props, propName, componentName, ...(rest as any))
+   },

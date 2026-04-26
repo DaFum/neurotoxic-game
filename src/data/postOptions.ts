@@ -234,7 +234,7 @@ export const POST_OPTIONS = [
       // Condition guarantees band.members is a non-empty array.
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const target = band.members[safeIndex]?.name ?? ''
+      const target = band.members[safeIndex]?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -289,7 +289,7 @@ export const POST_OPTIONS = [
       }
       const vocalistObj =
         getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
-      const vocalist = vocalistObj.name
+      const vocalist = vocalistObj?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -529,7 +529,7 @@ export const POST_OPTIONS = [
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
       const targetObj = band.members[safeIndex]
-      const target = targetObj?.name ?? ''
+      const target = targetObj?.name || 'Unknown'
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
@@ -577,8 +577,7 @@ export const POST_OPTIONS = [
       }
       const gearNerd =
         getMemberWithTrait(band.members, 'gear_nerd')?.name ||
-        band.members[0]?.name ||
-        ''
+        band.members[0]?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -618,7 +617,7 @@ export const POST_OPTIONS = [
       const prankster =
         getMemberWithTrait(band.members, 'party_animal')?.name ||
         band.members[1]?.name ||
-        band.members[0].name
+        band.members[0]?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -737,8 +736,8 @@ export const POST_OPTIONS = [
       }
       const member =
         getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
-      const target = member?.name ?? ''
-      const memberId = member?.id ?? member?.name ?? '' // Use name as fallback ID
+      const target = member?.name || 'Unknown'
+      const memberId = member?.id || member?.name || 'Unknown' // Use name as fallback ID
 
       return {
         type: 'FIXED',
@@ -812,7 +811,21 @@ export const POST_OPTIONS = [
         affordableIds[
           Math.floor(roll * affordableIds.length) % affordableIds.length
         ]
+      if (!selectedId) return {
+        type: 'FIXED',
+        success: false,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 0,
+        message: 'Failed to post.'
+      }
       const influencer = influencers[selectedId]
+      if (!influencer) return {
+        type: 'FIXED',
+        success: false,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 0,
+        message: 'Failed to post.'
+      }
 
       const cost = getCost(influencer)
       let followersGain = 1000
@@ -842,7 +855,9 @@ export const POST_OPTIONS = [
           })
       }
 
-      const displayName = influencer.name ?? selectedId.replace(/_/g, ' ')
+      const displayName =
+        influencer?.name ??
+        (selectedId ? selectedId.replace(/_/g, ' ') : 'Unknown')
 
       return {
         type: 'FIXED',

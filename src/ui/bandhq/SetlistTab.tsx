@@ -6,70 +6,72 @@ import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
 import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
 
-const SongRow = React.memo(({ song, selected, toggleSongInSetlist, t }) => {
-  const handleToggle = useCallback(() => {
-    toggleSongInSetlist(song.id)
-  }, [song.id, toggleSongInSetlist])
+const SongRow = React.memo(
+  ({ song, selected, toggleSongInSetlist, t }: any) => {
+    const handleToggle = useCallback(() => {
+      toggleSongInSetlist(song.id)
+    }, [song.id, toggleSongInSetlist])
 
-  return (
-    <div
-      className={`flex items-center justify-between p-4 border-2 transition-colors
+    return (
+      <div
+        className={`flex items-center justify-between p-4 border-2 transition-colors
         ${
           selected
             ? 'border-toxic-green bg-toxic-green/20'
             : 'border-ash-gray bg-void-black/60'
         }`}
-    >
-      <div className='flex-1'>
-        <h4
-          className={`font-bold font-mono text-lg uppercase ${selected ? 'text-toxic-green' : 'text-star-white'}`}
-        >
-          {song.name}
-        </h4>
-        <div className='flex gap-4 text-xs font-mono text-ash-gray mt-1'>
-          <span>
-            {t('ui:bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
-            {song.difficulty}/7
-          </span>
-          <span>
-            {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
-          </span>
-          <span>
-            {t('ui:bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
-            {Math.floor(song.duration / 60)}:
-            {(song.duration % 60).toString().padStart(2, '0')}
-          </span>
+      >
+        <div className='flex-1'>
+          <h4
+            className={`font-bold font-mono text-lg uppercase ${selected ? 'text-toxic-green' : 'text-star-white'}`}
+          >
+            {song.name}
+          </h4>
+          <div className='flex gap-4 text-xs font-mono text-ash-gray mt-1'>
+            <span>
+              {t('ui:bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
+              {song.difficulty}/7
+            </span>
+            <span>
+              {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
+            </span>
+            <span>
+              {t('ui:bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
+              {Math.floor(song.duration / 60)}:
+              {(song.duration % 60).toString().padStart(2, '0')}
+            </span>
+          </div>
         </div>
-      </div>
-      <button
-        type='button'
-        onClick={handleToggle}
-        aria-pressed={selected}
-        aria-label={
-          selected
-            ? t('ui:hq.song_deselect_aria', {
-                name: song.name,
-                defaultValue: 'Remove {{name}} from setlist'
-              })
-            : t('ui:hq.song_select_aria', {
-                name: song.name,
-                defaultValue: 'Add {{name}} to setlist'
-              })
-        }
-        className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
+        <button
+          type='button'
+          onClick={handleToggle}
+          aria-pressed={selected}
+          aria-label={
+            selected
+              ? t('ui:hq.song_deselect_aria', {
+                  name: song.name,
+                  defaultValue: 'Remove {{name}} from setlist'
+                })
+              : t('ui:hq.song_select_aria', {
+                  name: song.name,
+                  defaultValue: 'Add {{name}} to setlist'
+                })
+          }
+          className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
           ${
             selected
               ? 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black'
               : 'border-ash-gray text-ash-gray hover:border-star-white hover:text-star-white'
           }`}
-      >
-        {selected
-          ? t('ui:hq.song_active', { defaultValue: 'ACTIVE' })
-          : t('ui:hq.song_select', { defaultValue: 'SELECT' })}
-      </button>
-    </div>
-  )
-})
+        >
+          {selected
+            ? t('ui:hq.song_active', { defaultValue: 'ACTIVE' })
+            : t('ui:hq.song_select', { defaultValue: 'SELECT' })}
+        </button>
+      </div>
+    )
+  }
+)
 
 SongRow.displayName = 'SongRow'
 
@@ -80,7 +82,9 @@ SongRow.propTypes = {
   t: PropTypes.func.isRequired
 }
 
-export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
+export const SetlistTab = (props: any) => {
+  const { setlist, setSetlist, addToast } = props
+  // { setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameState()
 
@@ -90,21 +94,23 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   }, [setlist])
 
   const isSongSelected = useCallback(
-    songId => {
-      return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
+    (songId: unknown) => {
+      return setlist.some(
+        (s: unknown) => (typeof s === 'string' ? s : (s as any).id) === songId
+      )
     },
     [setlist]
   )
 
   const toggleSongInSetlist = useCallback(
-    songId => {
+    (songId: unknown) => {
       const songObj = SONGS_BY_ID.get(songId)
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
       const currentList = latestSetlistRef.current
       const currentIndex = currentList.findIndex(
-        s => (typeof s === 'string' ? s : s.id) === songId
+        (s: unknown) => (typeof s === 'string' ? s : (s as any).id) === songId
       )
       const isSelected = currentIndex >= 0
 

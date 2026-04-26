@@ -711,15 +711,10 @@ export const handleAdvanceDay = (
   }
 
   // Check Social Unlocks
-  const socialUnlockState: GameState = {
-    ...state,
-    player: nextPlayer,
-    band: nextBand,
-    social
-  }
-  const socialUnlocks = checkTraitUnlocks(socialUnlockState, {
-    type: 'SOCIAL_UPDATE'
-  })
+  const socialUnlocks = checkTraitUnlocks(
+    { player: nextPlayer, band: nextBand, social } as unknown as GameState,
+    { type: 'SOCIAL_UPDATE' }
+  )
 
   const traitResult = applyTraitUnlocks(
     { band: nextBand, toasts: state.toasts },

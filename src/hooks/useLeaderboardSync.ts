@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+/// <reference types="vite/client" />
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types/game'
@@ -18,15 +19,15 @@ type LeaderboardStatsPayload = {
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
 
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
+if ((import.meta as any).hot) {
+  ;(import.meta as any).hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
     hasLoggedUnavailableEndpoint = false
   })
 }
 
 const getLeaderboardSyncEnabledFlag = () => {
-  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
+  const viteFlag = (import.meta as any).env?.VITE_ENABLE_LEADERBOARD_SYNC
   if (typeof viteFlag === 'string') {
     return viteFlag.toLowerCase() !== 'false'
   }

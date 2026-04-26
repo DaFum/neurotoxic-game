@@ -113,14 +113,12 @@ export const LeaderboardTab = () => {
           return
         }
 
-        logger.error('Leaderboard', 'Fetch failed', fetchError)
-        const message =
-          fetchError instanceof Error
-            ? fetchError.message
-            : t('ui:leaderboard.unknownError', {
-                defaultValue: 'Unknown error'
-              })
-        setError(`${t('ui:leaderboard.load_error')}: ${message}`)
+        const data = await res.json()
+        setRankings(data)
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return
+        logger.error('Leaderboard', 'Fetch failed', err)
+        setError(t('ui:leaderboard.load_error'))
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false)
@@ -237,84 +235,79 @@ export const LeaderboardTab = () => {
         aria-labelledby={`tab-${view}`}
         className='flex-1 overflow-hidden flex flex-col'
       >
-        <Panel
-          className='flex-1 overflow-hidden flex flex-col'
-          title={viewTitles[view]}
-        >
-          {isLoading && (
-            <div className='flex-1 flex items-center justify-center text-toxic-green animate-pulse font-mono'>
-              {t('ui:leaderboard.connecting')}
-            </div>
-          )}
+        {isLoading && (
+          <div className='flex-1 flex items-center justify-center text-toxic-green animate-pulse font-mono'>
+            {t('ui:leaderboard.connecting')}
+          </div>
+        )}
 
-          {error && (
-            <div className='flex-1 flex items-center justify-center text-blood-red font-mono'>
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className='flex-1 flex items-center justify-center text-blood-red font-mono'>
+            {error}
+          </div>
+        )}
 
-          {!isLoading && !error && rankings.length === 0 && (
-            <div className='flex-1 flex items-center justify-center text-ash-gray font-mono'>
-              {t('ui:leaderboard.no_data')}
-            </div>
-          )}
+        {!isLoading && !error && rankings.length === 0 && (
+          <div className='flex-1 flex items-center justify-center text-ash-gray font-mono'>
+            {t('ui:leaderboard.no_data')}
+          </div>
+        )}
 
-          {!isLoading && !error && rankings.length > 0 && (
-            <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-y touch-pinch-zoom'>
-              <table className='w-full text-left font-mono'>
-                <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
-                  <tr>
-                    <th className='py-2 px-2'>#</th>
-                    <th className='py-2 px-2'>
-                      {t('ui:leaderboard.col_player')}
-                    </th>
-                    <th className='py-2 px-2 text-right'>
-                      {view === 'BALANCE'
-                        ? t('ui:leaderboard.col_net_worth')
-                        : view === 'SONG'
-                          ? t('ui:leaderboard.col_score')
-                          : t('ui:leaderboard.col_value', {
-                              defaultValue: 'Value'
-                            })}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rankings.map(entry => {
-                    const safeScore = Number.isFinite(entry.score)
-                      ? entry.score
-                      : 0
-                    return (
-                      <tr
-                        key={`${entry.playerId}-${entry.rank}`}
-                        className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
-                      >
-                        <td className='py-2 px-2 text-toxic-green'>
-                          {entry.rank}
-                        </td>
-                        <td className='py-2 px-2 text-star-white'>
-                          {entry.playerName}
-                        </td>
-                        <td className='py-2 px-2 text-right text-toxic-green'>
-                          {view === 'BALANCE'
-                            ? `€${safeScore.toLocaleString()}`
-                            : view === 'DISTANCE'
-                              ? t('ui:leaderboard.col_value_km', {
-                                  value: safeScore.toLocaleString(),
-                                  unit: t('ui:unit.km', { defaultValue: 'km' }),
-                                  defaultValue: `${safeScore.toLocaleString()} km`
-                                })
-                              : safeScore.toLocaleString()}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Panel>
-      </div>
+        {!isLoading && !error && rankings.length > 0 && (
+          <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-y touch-pinch-zoom'>
+            <table className='w-full text-left font-mono'>
+              <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
+                <tr>
+                  <th className='py-2 px-2'>#</th>
+                  <th className='py-2 px-2'>
+                    {t('ui:leaderboard.col_player')}
+                  </th>
+                  <th className='py-2 px-2 text-right'>
+                    {view === 'BALANCE'
+                      ? t('ui:leaderboard.col_net_worth')
+                      : view === 'SONG'
+                        ? t('ui:leaderboard.col_score')
+                        : t('ui:leaderboard.col_value', {
+                            defaultValue: 'Value'
+                          })}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankings.map((entry: any) => {
+                  const safeScore = Number.isFinite(entry?.score)
+                    ? entry?.score
+                    : 0
+                  return (
+                    <tr
+                      key={entry?.playerId}
+                      className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
+                    >
+                      <td className='py-2 px-2 text-toxic-green'>
+                        {entry.rank}
+                      </td>
+                      <td className='py-2 px-2 text-star-white'>
+                        {entry.playerName}
+                      </td>
+                      <td className='py-2 px-2 text-right text-toxic-green'>
+                        {view === 'BALANCE'
+                          ? `€${safeScore.toLocaleString()}`
+                          : view === 'DISTANCE'
+                            ? t('ui:leaderboard.col_value_km', {
+                                value: safeScore.toLocaleString(),
+                                unit: t('ui:unit.km', { defaultValue: 'km' }),
+                                defaultValue: `${safeScore.toLocaleString()} km`
+                              })
+                            : safeScore.toLocaleString()}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Panel>
     </div>
   )
 }

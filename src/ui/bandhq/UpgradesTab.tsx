@@ -9,11 +9,11 @@ export const UpgradesTab = ({
   isItemDisabled,
   getAdjustedCost,
   processingItemId
-}) => {
+}: Record<string, unknown>) => {
   return (
     <CatalogTab
       items={upgrades}
-      balances={{ fame: player.fame, money: player.money }}
+      balances={{ fame: (player as any).fame, money: (player as any).money }}
       handleBuy={handleBuy}
       isItemOwned={isItemOwned}
       isItemDisabled={isItemDisabled}

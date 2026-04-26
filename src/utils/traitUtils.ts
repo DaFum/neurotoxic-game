@@ -158,6 +158,7 @@ export const applyTraitUnlocks = (
     if (memberIndex === undefined) continue
 
     const member = nextBand.members[memberIndex]
+    if (!member) continue
 
     // Check if trait is already unlocked
     if (Object.hasOwn(member.traits, u.traitId)) continue

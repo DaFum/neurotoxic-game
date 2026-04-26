@@ -68,7 +68,7 @@ export const useRhythmGameLoop = ({
 
   const finalizeGigCallback = useCallback(
     (stateRef: RhythmGameRefState) => {
-      finalizeGig(stateRef, setLastGigStats, endGig, stopAudio)
+      finalizeGig(stateRef, setLastGigStats as any, endGig, stopAudio)
     },
     [endGig, setLastGigStats]
   )
@@ -91,8 +91,8 @@ export const useRhythmGameLoop = ({
         handleMiss,
         finalizeGigCallback,
         getGigTimeMs,
-        pauseAudio,
-        resumeAudio
+        pauseAudio: pauseAudio as any,
+        resumeAudio: resumeAudio as any
       })
     },
     [

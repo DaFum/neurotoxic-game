@@ -780,14 +780,7 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {}
-}: {
-  player: PlayerData
-  band: BandData
-  social: SocialData
-  activeQuests?: ActiveQuest[]
-  venueBlacklist?: string[]
-  reputationByRegion?: Record<string, number>
-}) => {
+}: any) => {
   const { t } = useTranslation(['ui', 'items', 'venues', 'traits'])
 
   return (
