@@ -297,6 +297,24 @@ describe('KabelsalatScene - timer and game over', () => {
 
     expect(screen.getByText('9s')).toBeInTheDocument()
   })
+
+  it('routes to GIG on timeout loss path', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(25000)
+    })
+
+    expect(screen.getByText(/GIG CANCELLED/)).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(3500)
+    })
+
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
 })
 
 describe('KabelsalatScene - accessibility', () => {

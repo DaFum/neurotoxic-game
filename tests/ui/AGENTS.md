@@ -22,3 +22,4 @@ Applies to `tests/ui/**` unless a deeper `AGENTS.md` overrides it.
 ## Recent Findings (2026-04)
 
 - Add assertions that each legacy action remains reachable after menu redesigns (not just that modal components can render when force-opened).
+- For Kabelsalat regressions, assert both timeout-loss and fully-wired win paths eventually call `changeScene('GIG')`; validating only overlays/text is insufficient to guarantee scene routing.
