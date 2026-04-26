@@ -8,6 +8,10 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type { RhythmGameRefState } from './rhythmGame'
+import type {
+  AudioState as SharedAudioState,
+  OnAudioChange as SharedOnAudioChange
+} from './audio'
 
 export interface PixiController {
   init(): Promise<void>
@@ -420,14 +424,5 @@ export interface CatalogTabProps {
   processingItemId?: string
 }
 
-export type AudioState = {
-  musicVol: number
-  sfxVol: number
-  isMuted: boolean
-}
-
-export type OnAudioChange = {
-  setMusic: (value: number) => void
-  setSfx: (value: number) => void
-  toggleMute: () => void
-}
+export type AudioState = SharedAudioState
+export type OnAudioChange = SharedOnAudioChange

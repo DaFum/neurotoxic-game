@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import type { GameSettings } from '../../types/game'
 import type { GameStateWithActions } from '../../context/GameState'
-import type { AudioState, OnAudioChange } from '../../types/components'
+import type { AudioState, OnAudioChange } from '../../types/audio'
 import { SettingsPanel } from '../shared'
 import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 import { useSettingsActions } from '../../hooks/useSettingsActions'

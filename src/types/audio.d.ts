@@ -55,3 +55,15 @@ export interface DrumKitSynth {
   hihat: Tone.MetalSynth
   crash: Tone.MetalSynth
 }
+
+export interface AudioState {
+  musicVol: number
+  sfxVol: number
+  isMuted: boolean
+}
+
+export interface OnAudioChange {
+  setMusic: (value: number) => void
+  setSfx: (value: number) => void
+  toggleMute: () => void
+}
