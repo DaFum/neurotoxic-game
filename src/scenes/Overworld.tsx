@@ -48,8 +48,7 @@ export const Overworld = () => {
     advanceDay,
     changeScene,
     startTravelMinigame,
-    activeStoryFlags,
-    settings
+    activeStoryFlags
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -157,21 +156,32 @@ export const Overworld = () => {
     changeScene(GAME_PHASES.CLINIC)
   }, [changeScene])
   const isMountedRef = useRef(true)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {
       isMountedRef.current = false
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
     }
   }, [])
 
   const handleSaveWithDelay = useCallback(() => {
     if (isSaving) return
     setIsSaving(true)
-    setTimeout(() => {
-      if (isMountedRef.current) {
-        saveGame()
-        setIsSaving(false)
-      }
+    saveTimeoutRef.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await saveGame()
+        } catch (err) {
+          console.error('Save failed', err)
+        } finally {
+          if (isMountedRef.current) {
+            setIsSaving(false)
+          }
+        }
+      })()
     }, 500)
   }, [isSaving, saveGame])
 
@@ -206,13 +216,6 @@ export const Overworld = () => {
     <div
       className={`scene ${glitch} w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      {settings?.crtEnabled && (
-        <>
-          <div className='noise' />
-          <div className='crt' />
-          <div className='scan' />
-        </>
-      )}
       <OverworldHeader
         t={t}
         locationName={locationName}
@@ -268,7 +271,7 @@ export const Overworld = () => {
         activeStoryFlags={activeStoryFlags}
       />
 
-      <EventLog t={t} day={player.day} locationName={locationName} />
+      <EventLog t={t} day={player.day} locationId={player.location} />
 
       {showHQ && <BandHQ onClose={closeHQ} />}
       {showQuests && <QuestsModal {...questsProps} />}
