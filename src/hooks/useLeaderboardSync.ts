@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+/// <reference types="vite/client" />
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 
@@ -37,12 +38,7 @@ const getLeaderboardSyncEnabledFlag = () => {
  * @param {number} money - The player's current money.
  * @returns {boolean} True if valid.
  */
-export const isValidForSync = (
-  playerId: unknown,
-  playerName: unknown,
-  day: unknown,
-  money: unknown
-) => {
+export const isValidForSync = (playerId: unknown, playerName: unknown, day: unknown, money: unknown) => {
   return (
     !!playerId &&
     !!playerName &&
@@ -111,7 +107,7 @@ export const createSyncPayload = (
  * @param {object} payload - The data to sync.
  * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
  */
-export const syncLeaderboardStats = async (payload: any) => {
+export const syncLeaderboardStats = async (payload: unknown) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return false
   }

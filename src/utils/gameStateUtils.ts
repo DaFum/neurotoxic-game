@@ -407,6 +407,7 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
       const inventoryKeys = Object.keys(delta.band.inventory)
       for (let i = 0; i < inventoryKeys.length; i++) {
         const itemId = inventoryKeys[i]
+        if (!itemId) continue
         if (isForbiddenKey(itemId)) continue
 
         const qty = delta.band.inventory[itemId]
@@ -566,6 +567,7 @@ export const applyEventDelta = (state: any, delta: any): any => {
       const statKeys = Object.keys(delta.player.stats)
       for (let i = 0; i < statKeys.length; i++) {
         const key = statKeys[i]
+        if (!key) continue
         if (isForbiddenKey(key)) continue
 
         if (typeof delta.player.stats[key] === 'number') {
@@ -684,6 +686,7 @@ export const applyEventDelta = (state: any, delta: any): any => {
             const newRelKeys = Object.keys(newRelationships)
             for (let k = 0; k < newRelKeys.length; k++) {
               const key = newRelKeys[k]
+              if (!key) continue
               if (newRelationships[key] !== member.relationships?.[key]) {
                 relationshipsActuallyChanged = true
                 break
@@ -742,6 +745,7 @@ export const applyEventDelta = (state: any, delta: any): any => {
       const bandInventoryKeys = Object.keys(delta.band.inventory)
       for (let i = 0; i < bandInventoryKeys.length; i++) {
         const item = bandInventoryKeys[i]
+        if (!item) continue
         if (isForbiddenKey(item)) continue
         const val = delta.band.inventory[item]
         nextBand.inventory[item] = applyInventoryItemDelta(
@@ -755,6 +759,7 @@ export const applyEventDelta = (state: any, delta: any): any => {
       nextBand.stash = Object.assign(Object.create(null), nextBand.stash || {})
       for (let i = 0; i < delta.band.stashRemove.length; i++) {
         const itemId = delta.band.stashRemove[i]
+        if (!itemId) continue
         if (typeof itemId === 'string' && !isForbiddenKey(itemId)) {
           delete nextBand.stash[itemId]
         }
@@ -773,6 +778,7 @@ export const applyEventDelta = (state: any, delta: any): any => {
     const socialKeys = Object.keys(delta.social)
     for (let i = 0; i < socialKeys.length; i++) {
       const key = socialKeys[i]
+      if (!key) continue
       if (isForbiddenKey(key)) continue
       const value = delta.social[key]
 

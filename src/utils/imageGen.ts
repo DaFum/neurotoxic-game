@@ -9,7 +9,7 @@ const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
  * @param {string} description - The detailed prompt for the image.
  * @returns {string} The complete image URL.
  */
-export const getGenImageUrl = (description: unknown) => {
+export const getGenImageUrl = (description: string) => {
   const encodedDesc = encodeURIComponent(description)
   return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=` // "&=" is required to ensure working image generation
 }
@@ -19,7 +19,7 @@ export const getGenImageUrl = (description: unknown) => {
  * @param {string} description - The detailed prompt for the image.
  * @returns {Promise<Response>} The fetch response.
  */
-export const fetchGenImage = (description: unknown) => {
+export const fetchGenImage = (description: string) => {
   const encodedDesc = encodeURIComponent(description)
   return fetch(
     `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`, // "&=" is required to ensure working image generation
@@ -41,7 +41,7 @@ const objectUrlCache = new Map()
  * @param {string} description - The detailed prompt for the image.
  * @returns {Promise<string>} A blob object URL.
  */
-export const fetchGenImageAsObjectUrl = (description: unknown) => {
+export const fetchGenImageAsObjectUrl = (description: string) => {
   if (objectUrlCache.has(description)) {
     return objectUrlCache.get(description)
   }

@@ -58,11 +58,11 @@ export class MapGenerator {
       return { layers: [], nodes: {}, nodeList: [], connections: [] }
     }
 
-    const map = {
+    const map: any = {
       layers: [],
-      nodes: {}, // Map ID to Node Object
-      nodeList: [], // Pre-allocated list for performance and GC reduction
-      connections: [] // List of [fromId, toId]
+      nodes: {},
+      nodeList: [],
+      connections: []
     }
 
     // Layer 0: Stendal (Home)
@@ -101,16 +101,17 @@ export class MapGenerator {
     map.nodeList.push(startNode)
 
     // Filter venues by difficulty for progression
-    const easyVenues = []
-    const mediumVenues = []
-    const hardVenues = []
+    const easyVenues: any[] = []
+    const mediumVenues: any[] = []
+    const hardVenues: any[] = []
     for (let i = 0; i < ALL_VENUES.length; i++) {
       const v = ALL_VENUES[i]
-      if (v.diff <= 2) {
+      if (!v) continue
+      if (v.diff !== undefined && v.diff <= 2) {
         if (v.type !== 'HOME') easyVenues.push(v)
-      } else if (v.diff === 3) {
+      } else if (v.diff !== undefined && v.diff === 3) {
         mediumVenues.push(v)
-      } else if (v.diff >= 4) {
+      } else if (v.diff !== undefined && v.diff >= 4) {
         hardVenues.push(v)
       }
     }
@@ -464,7 +465,9 @@ export class MapGenerator {
 
         for (let c = 0; c < candidates.length; c++) {
           const k = candidates[c]
+          if (k === undefined) continue
           const n2 = nodeList[k]
+          if (!n2) continue
 
           let dx = n1.x - n2.x
           let dy = n1.y - n2.y

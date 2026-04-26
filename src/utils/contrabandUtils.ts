@@ -37,9 +37,10 @@ export function computeStashBustRisk(stash: unknown) {
   const keys = Object.keys(stash)
   for (let i = 0; i < keys.length; i++) {
     const itemId = keys[i]
+    if (!itemId) continue
     const item = stash[itemId]
     if (!item || typeof item.rarity !== 'string') continue
-    const chance = BUST_CHANCE_BY_RARITY[item.rarity] ?? 0
+    const chance = BUST_CHANCE_BY_RARITY[item.rarity as keyof typeof BUST_CHANCE_BY_RARITY] ?? 0
     if (chance > highestChance) {
       highestChance = chance
       highestRiskItemId = itemId
@@ -60,14 +61,14 @@ export function pickRarity(rng = secureRandom) {
   let total = 0
   for (const rarity in weights) {
     if (Object.hasOwn(weights, rarity)) {
-      total += weights[rarity]
+      total += weights[rarity as keyof typeof weights]
     }
   }
 
   let r = rng() * total
   for (const rarity in weights) {
     if (Object.hasOwn(weights, rarity)) {
-      const w = weights[rarity]
+      const w = weights[rarity as keyof typeof weights]
       if (r < w) return rarity
       r -= w
     }
@@ -81,13 +82,10 @@ export function pickRarity(rng = secureRandom) {
  * @param {Function} [rng=secureRandom]
  * @returns {string|null} ID of picked contraband or null if none found
  */
-export function pickRandomContrabandByRarity(
-  rarity: unknown,
-  rng = secureRandom
-) {
-  const pool = CONTRABAND_BY_RARITY[rarity] || []
+export function pickRandomContrabandByRarity(rarity: string, rng = secureRandom) {
+  const pool = CONTRABAND_BY_RARITY[rarity as keyof typeof CONTRABAND_BY_RARITY] || []
   if (pool.length === 0) return null
-  return pool[Math.floor(rng() * pool.length)].id
+  return pool[Math.floor(rng() * pool.length)]?.id ?? null
 }
 
 /**

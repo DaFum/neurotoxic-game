@@ -174,6 +174,7 @@ export const processRhythmGameTick = ({
 
   while (i < notes.length) {
     const note = notes[i]
+    if (!note) { i++; continue; }
 
     if (note.time > now + NOTE_MISS_WINDOW_MS) {
       break

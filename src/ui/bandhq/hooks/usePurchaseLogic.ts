@@ -126,7 +126,7 @@ const processTraitToasts = (
           defaultValue: toastItem.message
         })
       : toastItem.message
-    addToast(toastMsg, toastItem.type)
+    addToast(toastMsg || "", toastItem.type)
   })
 }
 
@@ -203,7 +203,7 @@ const processEffectMessages = (
           defaultValue: msg.fallback || msg.message || msg.messageKey
         })
       : msg.message
-    addToast(toastMsg, msg.type)
+    addToast(toastMsg || "", msg.type)
   })
 }
 
@@ -243,7 +243,7 @@ const processPurchaseUnlocks = (
   const gearCount = getGearCount(nextBand.inventory, GEAR_LOOKUP)
 
   const purchaseUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social },
+    { player: nextPlayer, band: nextBand, social } as any,
     { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
   )
 
@@ -260,7 +260,7 @@ const processPurchaseUnlocks = (
       members: traitResult.band.members
     }
 
-    processTraitToasts(traitResult.toasts, addToast, t)
+    processTraitToasts(traitResult.toasts as any, addToast, t)
   }
 
   if (finalBandPatch) {
@@ -276,12 +276,12 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }: {
-  player: PlayerState
-  band: BandState
-  social: SocialState
-  updatePlayer: UpdatePlayerFn
-  updateBand: UpdateBandFn
-  addToast: ToastFn
+  player: import("../../../types/game").PlayerState;
+  band: import("../../../types/game").BandState;
+  social: import("../../../types/game").SocialState;
+  updatePlayer: (patch: import("../../../types/game").UpdatePlayerPayload) => void;
+  updateBand: (patch: import("../../../types/game").UpdateBandPayload) => void;
+  addToast: ToastFn;
 }) => {
   const { t } = useTranslation(['ui', 'items'])
   /**
@@ -344,7 +344,7 @@ export const usePurchaseLogic = ({
         )
 
         const effectResult = processPurchaseEffect(
-          effect ?? undefined,
+          (effect ?? {}) as any,
           item,
           initialPlayerPatch,
           player,
@@ -382,12 +382,14 @@ export const usePurchaseLogic = ({
           effect?.type !== 'unlock_upgrade' &&
           effect?.type !== 'inventory_set'
         ) {
-          const vanState = playerPatch.van ?? player.van
-          playerPatch.van = buildVanWithUpgrade(vanState, item.id)
+          const pp = playerPatch as Record<string, unknown>;
+          const p = player as unknown as Record<string, unknown>;
+          const vanState = pp["van"] ?? p["van"];
+          pp["van"] = buildVanWithUpgrade(vanState as any, item.id);
         }
 
         // Apply updates
-        updatePlayer(playerPatch)
+        updatePlayer(playerPatch as import("../../../types/game").UpdatePlayerPayload)
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(

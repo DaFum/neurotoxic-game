@@ -48,7 +48,9 @@ export const secureRandom = (): number => {
 
   // 0xFFFFFFFF + 1 is 2^32 (4294967296)
   // This provides a float in the range [0, 1)
-  return batchArray![batchIndex++] / 4294967296
+  const val = batchArray![batchIndex++];
+  if (val === undefined) throw new Error('batchArray exhausted or undefined');
+  return val / 4294967296
 }
 
 /**
@@ -106,31 +108,31 @@ export const getSafeUUID = (): string => {
   }
 
   // Set version to 4
-  buffer[6] = (buffer[6] & 0x0f) | 0x40
+  buffer[6] = ((buffer[6] ?? 0) & 0x0f) | 0x40
   // Set variant to RFC4122
-  buffer[8] = (buffer[8] & 0x3f) | 0x80
+  buffer[8] = ((buffer[8] ?? 0) & 0x3f) | 0x80
 
   return (
-    lut[buffer[0]] +
-    lut[buffer[1]] +
-    lut[buffer[2]] +
-    lut[buffer[3]] +
+    (lut[buffer[0] ?? 0] || '') +
+    (lut[buffer[1] ?? 0] || '') +
+    (lut[buffer[2] ?? 0] || '') +
+    (lut[buffer[3] ?? 0] || '') +
     '-' +
-    lut[buffer[4]] +
-    lut[buffer[5]] +
+    (lut[buffer[4] ?? 0] || '') +
+    (lut[buffer[5] ?? 0] || '') +
     '-' +
-    lut[buffer[6]] +
-    lut[buffer[7]] +
+    (lut[buffer[6] ?? 0] || '') +
+    (lut[buffer[7] ?? 0] || '') +
     '-' +
-    lut[buffer[8]] +
-    lut[buffer[9]] +
+    (lut[buffer[8] ?? 0] || '') +
+    (lut[buffer[9] ?? 0] || '') +
     '-' +
-    lut[buffer[10]] +
-    lut[buffer[11]] +
-    lut[buffer[12]] +
-    lut[buffer[13]] +
-    lut[buffer[14]] +
-    lut[buffer[15]]
+    (lut[buffer[10] ?? 0] || '') +
+    (lut[buffer[11] ?? 0] || '') +
+    (lut[buffer[12] ?? 0] || '') +
+    (lut[buffer[13] ?? 0] || '') +
+    (lut[buffer[14] ?? 0] || '') +
+    (lut[buffer[15] ?? 0] || '')
   )
 }
 
