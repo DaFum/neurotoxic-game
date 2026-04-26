@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGameState } from '../../context/GameState'
+import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 
 const MINIGAME_DURATION = 15
+const FALLBACK_ADVANCE_DELAY_MS = 10_000
 
 export function useAmpLogic() {
-  const { completeAmpCalibration } = useGameState()
+  const { completeAmpCalibration, changeScene } = useGameState()
 
   const [dialValue, setDialValue] = useState(500)
   const [targetValue, setTargetValue] = useState(
@@ -36,6 +38,7 @@ export function useAmpLogic() {
   }, [timeLeft])
 
   const finishCalledRef = useRef(false)
+  const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const finishMinigame = useCallback(() => {
     if (finishCalledRef.current) return
@@ -53,6 +56,22 @@ export function useAmpLogic() {
 
     finishMinigame()
   }, [finishMinigame])
+
+  useEffect(() => {
+    if (!isGameOver || fallbackTimeoutRef.current) return
+
+    fallbackTimeoutRef.current = setTimeout(() => {
+      fallbackTimeoutRef.current = null
+      changeScene(GAME_PHASES.GIG)
+    }, FALLBACK_ADVANCE_DELAY_MS)
+
+    return () => {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current)
+        fallbackTimeoutRef.current = null
+      }
+    }
+  }, [isGameOver, changeScene])
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
