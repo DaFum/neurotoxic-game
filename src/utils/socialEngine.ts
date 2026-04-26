@@ -21,7 +21,7 @@ import {
 type AllowedTrend = (typeof ALLOWED_TRENDS)[number]
 
 type RandomFn = () => number
-type BrandDeal =
+export type BrandDeal =
   typeof BRAND_DEALS_BY_ID extends Map<string, infer Deal> ? Deal : never
 
 interface SocialEngineGameState {

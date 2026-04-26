@@ -18,7 +18,7 @@ import { SOCIAL_PLATFORMS } from '../data/platforms'
 
 import type { GameState, GigStats, Venue } from '../types/game'
 import type { SocialPostOption } from './socialEngine'
-import type { BrandDeal } from '../data/brandDeals'
+import type { BrandDeal } from './socialEngine'
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -174,7 +174,14 @@ export const calculatePostGigStateUpdates = (
     social.activeDeals.length > 0
   ) {
     // Apply penalty from the sponsorship deal
-    const deal = social.activeDeals.find(d => d.type === 'SPONSORSHIP') as BrandDeal | undefined
+    const deal = social.activeDeals.find(
+      (d): d is BrandDeal =>
+        d !== null &&
+        typeof d === 'object' &&
+        'type' in d &&
+        d.type === 'SPONSORSHIP' &&
+        'offer' in d
+    )
     if (!deal)
       return {
         finalResult,
