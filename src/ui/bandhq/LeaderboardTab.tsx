@@ -137,45 +137,51 @@ export const LeaderboardTab = () => {
     }
   }, [activeSongId, t, view])
 
-  const viewTitles: Record<LeaderboardView, string> = {
-    BALANCE: t('ui:leaderboard.top_100_wealth'),
-    SONG: t('ui:leaderboard.top_100_scores'),
-    FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
-    FOLLOWERS: t('ui:leaderboard.top_100_followers', {
-      defaultValue: 'Top 100 Followers'
+  const viewTitles: Record<LeaderboardView, string> = useMemo(
+    () => ({
+      BALANCE: t('ui:leaderboard.top_100_wealth'),
+      SONG: t('ui:leaderboard.top_100_scores'),
+      FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
+      FOLLOWERS: t('ui:leaderboard.top_100_followers', {
+        defaultValue: 'Top 100 Followers'
+      }),
+      DISTANCE: t('ui:leaderboard.top_100_distance', {
+        defaultValue: 'Top 100 Distance'
+      }),
+      CONFLICTS: t('ui:leaderboard.top_100_conflicts', {
+        defaultValue: 'Top 100 Conflicts'
+      }),
+      STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', {
+        defaultValue: 'Top 100 Stage Dives'
+      })
     }),
-    DISTANCE: t('ui:leaderboard.top_100_distance', {
-      defaultValue: 'Top 100 Distance'
-    }),
-    CONFLICTS: t('ui:leaderboard.top_100_conflicts', {
-      defaultValue: 'Top 100 Conflicts'
-    }),
-    STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', {
-      defaultValue: 'Top 100 Stage Dives'
-    })
-  }
+    [t]
+  )
 
-  const views: Array<{ id: LeaderboardView; label: string }> = [
-    { id: 'BALANCE', label: t('ui:leaderboard.global_wealth') },
-    { id: 'SONG', label: t('ui:leaderboard.song_scores') },
-    { id: 'FAME', label: t('ui:leaderboard.fame', { defaultValue: 'Fame' }) },
-    {
-      id: 'FOLLOWERS',
-      label: t('ui:leaderboard.followers', { defaultValue: 'Followers' })
-    },
-    {
-      id: 'DISTANCE',
-      label: t('ui:leaderboard.distance', { defaultValue: 'Distance' })
-    },
-    {
-      id: 'CONFLICTS',
-      label: t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' })
-    },
-    {
-      id: 'STAGE_DIVES',
-      label: t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' })
-    }
-  ]
+  const views: Array<{ id: LeaderboardView; label: string }> = useMemo(
+    () => [
+      { id: 'BALANCE', label: t('ui:leaderboard.global_wealth') },
+      { id: 'SONG', label: t('ui:leaderboard.song_scores') },
+      { id: 'FAME', label: t('ui:leaderboard.fame', { defaultValue: 'Fame' }) },
+      {
+        id: 'FOLLOWERS',
+        label: t('ui:leaderboard.followers', { defaultValue: 'Followers' })
+      },
+      {
+        id: 'DISTANCE',
+        label: t('ui:leaderboard.distance', { defaultValue: 'Distance' })
+      },
+      {
+        id: 'CONFLICTS',
+        label: t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' })
+      },
+      {
+        id: 'STAGE_DIVES',
+        label: t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' })
+      }
+    ],
+    [t]
+  )
 
   return (
     <div className='h-full flex flex-col gap-4'>
@@ -191,6 +197,7 @@ export const LeaderboardTab = () => {
             aria-controls={`panel-${id}`}
             id={`tab-${id}`}
             onClick={() => setView(id)}
+            disabled={view === id}
             className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
           >
             {label}
@@ -213,7 +220,7 @@ export const LeaderboardTab = () => {
             onChange={event => setSelectedSongId(event.target.value)}
           >
             {SONGS_DB.map(song => (
-              <option key={song.id} value={song.leaderboardId}>
+              <option key={song.id} value={song.leaderboardId ?? ''}>
                 {song.title || song.id}
               </option>
             ))}
