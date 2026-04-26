@@ -249,7 +249,7 @@ export const useRhythmGameScoring = ({
         guitarDifficulty
       )
 
-      const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
+      const note = checkHit(state.notes, laneIndex, elapsed, hitWindow) as any
 
       if (note) {
         note.hit = true
@@ -259,14 +259,14 @@ export const useRhythmGameScoring = ({
         const originalNote = note.originalNote
         if (
           originalNote &&
-          Number.isInteger(originalNote.p) &&
-          originalNote.p >= 0 &&
-          originalNote.p <= 127
+          Number.isInteger((originalNote as any)?.p) &&
+          (originalNote as any)?.p >= 0 &&
+          (originalNote as any)?.p <= 127
         ) {
           const velocity =
-            typeof originalNote.velocity === 'number' &&
-            Number.isFinite(originalNote.velocity)
-              ? originalNote.velocity
+            typeof (originalNote as any)?.velocity === 'number' &&
+            Number.isFinite((originalNote as any)?.velocity)
+              ? (originalNote as any)?.velocity
               : 127
           const toneNowMs = getAudioTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
@@ -276,7 +276,7 @@ export const useRhythmGameScoring = ({
             maxLeadMs: 30
           })
           playNoteAtTime(
-            originalNote.p,
+            (originalNote as any)?.p,
             state.lanes[laneIndex].id,
             scheduledMs / 1000,
             velocity

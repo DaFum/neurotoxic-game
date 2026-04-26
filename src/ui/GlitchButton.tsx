@@ -20,7 +20,16 @@ export const GlitchButton = ({
   size = 'lg',
   isLoading = false,
   ...props
-}) => {
+}: any) => {
+  /*
+  onClick,
+  children,
+  className = '',
+  disabled = false,
+  variant = 'primary',
+  size = 'lg',
+  isLoading = false,
+  */
   // If loading or owned, treat as disabled for interactions
   const isIntervention = disabled || isLoading || variant === 'owned'
 

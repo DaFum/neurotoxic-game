@@ -6,7 +6,7 @@ import { useCallback, useRef, useLayoutEffect } from 'react'
  * @param {function} updateSettings - The function to update the settings.
  * @returns {object} Object containing the handlers `handleToggleCRT` and `handleLogLevelChange`.
  */
-export const useSettingsActions = (settings, updateSettings) => {
+export const useSettingsActions = (settings: any, updateSettings: any) => {
   // We use settings.crtEnabled in the closure but don't add it to the dependency array.
   // We store the latest value in a ref so the callback identity remains stable.
   const crtRef = useRef(settings.crtEnabled)
@@ -21,7 +21,7 @@ export const useSettingsActions = (settings, updateSettings) => {
   }, [updateSettings])
 
   const handleLogLevelChange = useCallback(
-    level => {
+    (level: any) => {
       updateSettings({ logLevel: level })
     },
     [updateSettings]

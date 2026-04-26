@@ -26,12 +26,12 @@ interface RhythmTickArgs {
   finalizeGigCallback: (stateRef: RhythmGameRefState) => void
   getGigTimeMs: () => number
   pauseAudio: AsyncVoidCallback
-  resumeAudio: AsyncVoidCallback
+  resumeAudio: AsyncBooleanCallback
 }
 
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
-  setLastGigStats: (stats: unknown) => void,
+  setLastGigStats: (stats: import('../../types/game').GigStats) => void,
   endGig: VoidCallback,
   stopAudio: VoidCallback
 ): void => {

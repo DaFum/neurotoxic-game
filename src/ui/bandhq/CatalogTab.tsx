@@ -18,14 +18,22 @@ export const CatalogTab = ({
   isItemDisabled,
   getAdjustedCost,
   processingItemId
-}) => {
+}: any) => {
+  /*
+  items,
+  balances,
+  handleBuy,
+  isItemOwned,
+  isItemDisabled,
+  getAdjustedCost,
+  */
   const { t } = useTranslation()
 
   return (
     <div>
       <div className='mb-4 flex justify-end gap-4 font-mono text-star-white'>
         {Object.entries(balances).map(([key, value]) => {
-          const meta = BALANCE_DISPLAY_META[key] || {
+          const meta = (BALANCE_DISPLAY_META as any)[key] || {
             className: 'text-star-white',
             suffix: ''
           }
@@ -42,8 +50,8 @@ export const CatalogTab = ({
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
-        {items.map(item => (
-          <ShopItem
+        {items.map((item: any) => (
+          <ShopItem {...({} as any)}
             key={item.id}
             item={item}
             isOwned={isItemOwned(item)}
@@ -66,7 +74,7 @@ const balancesShape = PropTypes.shape({
   bonus: PropTypes.number
 })
 
-const balancesValidator = (props, propName, componentName) => {
+const balancesValidator = (props: any, propName: string, componentName: string, ...rest: any[]) => {
   const value = props[propName]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return new Error(`${componentName}: balances must be an object`)
