@@ -161,9 +161,11 @@ export const syncLeaderboardStats = async (
  * Hook to sync player stats to the global leaderboards.
  * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = (state: GameState) => {
-  const { player, social } = state
-  const { playerId, playerName, money, day, fame, stats } = player
+export const useLeaderboardSync = (state: GameState | null | undefined) => {
+  const player = state?.player
+  const social = state?.social
+  const { playerId, playerName, money, day, fame, stats } =
+    (player ?? {}) as Partial<GameState['player']>
   const { totalDistance, conflictsResolved, stageDives } = stats ?? {}
 
   const totalFollowers = calculateTotalFollowers(social)
