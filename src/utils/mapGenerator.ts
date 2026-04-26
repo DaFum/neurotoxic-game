@@ -321,6 +321,18 @@ export class MapGenerator {
               targetIndex--
             }
           }
+
+          if (!venue) {
+            throw new StateError(
+              `Failed to select venue from fallback pool at layer=${i} index=${j}`,
+              {
+                layer: i,
+                index: j,
+                targetIndex,
+                poolLength: fallbackArray.length
+              }
+            )
+          }
         }
 
         // Determine Node Type based on probability and venue

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { SONGS_DB } from '../../data/songs'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
-import { Panel } from '../shared'
 
 type LeaderboardView =
   | 'BALANCE'
@@ -125,27 +124,6 @@ export const LeaderboardTab = () => {
       controller.abort()
     }
   }, [activeSongId, t, view])
-
-  const viewTitles: Record<LeaderboardView, string> = useMemo(
-    () => ({
-      BALANCE: t('ui:leaderboard.top_100_wealth'),
-      SONG: t('ui:leaderboard.top_100_scores'),
-      FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
-      FOLLOWERS: t('ui:leaderboard.top_100_followers', {
-        defaultValue: 'Top 100 Followers'
-      }),
-      DISTANCE: t('ui:leaderboard.top_100_distance', {
-        defaultValue: 'Top 100 Distance'
-      }),
-      CONFLICTS: t('ui:leaderboard.top_100_conflicts', {
-        defaultValue: 'Top 100 Conflicts'
-      }),
-      STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', {
-        defaultValue: 'Top 100 Stage Dives'
-      })
-    }),
-    [t]
-  )
 
   const views: Array<{ id: LeaderboardView; label: string }> = useMemo(
     () => [
@@ -269,7 +247,7 @@ export const LeaderboardTab = () => {
                 </tr>
               </thead>
               <tbody>
-                {rankings.map((entry: any) => {
+                {rankings.map(entry => {
                   const safeScore = Number.isFinite(entry?.score)
                     ? entry?.score
                     : 0

@@ -33,3 +33,4 @@ Applies to `src/types/**`.
 ## Recent Findings (2026-04)
 
 - Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.
+- `AsyncCallback<TResult>` should stay backward-compatible with sync `void` returns for non-void specializations unless a coordinated contract migration is documented.

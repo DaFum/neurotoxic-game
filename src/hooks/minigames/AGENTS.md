@@ -17,3 +17,4 @@ Applies to `src/hooks/minigames/**`.
 ## Recent Findings (2026-04)
 
 - Minigame regressions commonly appear when completion side effects are triggered only from UI buttons; ensure logic-driven expiry and manual actions both finalize through shared callbacks.
+- Avoid dispatching context actions from inside React state-updater callbacks; compute expiry from refs and call shared finalize handlers from normal control flow.

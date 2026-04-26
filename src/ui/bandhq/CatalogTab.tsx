@@ -122,9 +122,15 @@ CatalogTab.propTypes = {
   balances: (
     props: Record<string, unknown>,
     propName: string,
-    componentName: string
+    componentName: string,
+    ...rest: unknown[]
   ) => {
-    const shapeError = balancesShape(props, propName, componentName)
+    const shapeError = balancesShape(
+      props,
+      propName,
+      componentName,
+      ...rest
+    )
     if (shapeError) {
       return shapeError
     }

@@ -20,6 +20,7 @@ export function useAmpLogic() {
   const accumulatedMsRef = useRef(0)
   const dialValueRef = useRef(dialValue)
   const targetValueRef = useRef(targetValue)
+  const timeLeftRef = useRef(timeLeft)
   const gameStateRef = useRef(null)
 
   useEffect(() => {
@@ -29,6 +30,10 @@ export function useAmpLogic() {
   useEffect(() => {
     targetValueRef.current = targetValue
   }, [targetValue])
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
 
   const finishCalledRef = useRef(false)
 
@@ -56,14 +61,15 @@ export function useAmpLogic() {
         return
 
       const deltaSec = deltaMS / 1000
-
-      setTimeLeft(prev => {
-        if (prev <= deltaSec) {
-          handleComplete()
-          return 0
-        }
-        return prev - deltaSec
-      })
+      const nextTimeLeft = timeLeftRef.current - deltaSec
+      if (nextTimeLeft <= 0) {
+        timeLeftRef.current = 0
+        setTimeLeft(0)
+        handleComplete()
+        return
+      }
+      timeLeftRef.current = nextTimeLeft
+      setTimeLeft(nextTimeLeft)
 
       // Approximately 5% chance per 100ms
       if (getSafeRandom() < 0.05 * (deltaMS / 100)) {

@@ -246,10 +246,19 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      // Condition guarantees band.members is a non-empty array.
-      const rawIndex = Math.floor(diceRoll * band.members.length)
-      const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const target = band.members[safeIndex]?.name ?? 'Unknown'
+      const members = requireBandMembers(band, 'perf_smashed_gear')
+      const rawIndex = Math.floor(diceRoll * members.length)
+      const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
+      const target = members[safeIndex]?.name
+      if (!target) {
+        throw new Error(
+          i18n.t('ui:postOptions.errors.missingBandMembers', {
+            postId: 'perf_smashed_gear',
+            defaultValue:
+              'Post option perf_smashed_gear requires at least one band member.'
+          })
+        )
+      }
       return {
         type: 'FIXED',
         success: true,

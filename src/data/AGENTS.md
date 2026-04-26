@@ -15,6 +15,7 @@ Applies to `src/data/**`.
 - `events/special` entries require unique IDs, `category: 'special'`, `events:` i18n keys, and a valid `options` array.
 - `hqItems` entries use singular `effect` object shape.
 - Consumables should use `inventory_add` effects and remain multi-purchase capable.
+- `postOptions` `resolve()` handlers should enforce member-list invariants with explicit guards when conditions assume non-empty `band.members`.
 
 ## Migration Rules
 
