@@ -14,19 +14,19 @@ export const useBandHQLogic = ({
   handleBuy,
   tradeVoidItem,
   addToast
-}) => {
+}: Record<string, unknown>) => {
   const { t } = useTranslation()
   const [processingItemId, setProcessingItemId] = useState(null)
   const processingItemIdRef = useRef(null)
 
   const handleVoidTrade = useCallback(
-    item => {
+    (item: unknown) => {
       if (processingItemIdRef.current !== null) return
-      processingItemIdRef.current = item.id
-      setProcessingItemId(item.id)
+      processingItemIdRef.current = (item as any).id
+      setProcessingItemId((item as any).id)
       try {
-        const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
-        if (player.fame < fameCost) {
+        const fameCost = VOID_TRADER_COSTS[(item as any).rarity] ?? 1000
+        if ((player as any).fame < fameCost) {
           throw new GameError(
             t('ui:error.insufficient_fame', {
               defaultValue: `Not enough fame. You need ${fameCost} fame.`,
@@ -37,7 +37,7 @@ export const useBandHQLogic = ({
         }
         const successToast = {
           messageKey: 'ui:toast.void_trade_success',
-          options: { itemName: `items:contraband.${item.id}.name` },
+          options: { itemName: `items:contraband.${(item as any).id}.name` },
           type: 'success'
         }
         tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
@@ -52,14 +52,14 @@ export const useBandHQLogic = ({
   )
 
   const isVoidItemOwned = useCallback(
-    item => {
+    (item: unknown) => {
       return !!(band.stash && band.stash[item.id])
     },
     [band.stash]
   )
 
   const isVoidItemDisabled = useCallback(
-    item => {
+    (item: unknown) => {
       const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
       const currentQuantity = band.stash?.[item.id]?.stacks || 0
       const isMaxStacks =
@@ -75,7 +75,7 @@ export const useBandHQLogic = ({
   )
 
   const handleBuyWithLock = useCallback(
-    async item => {
+    async (item: unknown) => {
       if (processingItemIdRef.current !== null) return
       processingItemIdRef.current = item.id
       setProcessingItemId(item.id)

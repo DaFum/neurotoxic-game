@@ -712,7 +712,7 @@ export const handleAdvanceDay = (
 
   // Check Social Unlocks
   const socialUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social },
+    { player: nextPlayer, band: nextBand, social } as unknown as GameState,
     { type: 'SOCIAL_UPDATE' }
   )
 

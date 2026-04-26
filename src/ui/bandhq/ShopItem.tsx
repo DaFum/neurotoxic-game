@@ -10,7 +10,14 @@ import { Tooltip } from '../shared'
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
 // (e.g. player money updates) if the item's specific props haven't changed.
 export const ShopItem = React.memo(
-  ({ item, isOwned, isDisabled, adjustedCost, onBuy, processingItemId }) => {
+  ({
+    item,
+    isOwned,
+    isDisabled,
+    adjustedCost,
+    onBuy,
+    processingItemId
+  }: any) => {
     const { t } = useTranslation(['items', 'ui'])
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'

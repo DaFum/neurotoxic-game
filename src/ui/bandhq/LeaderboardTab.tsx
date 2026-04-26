@@ -57,8 +57,8 @@ export const LeaderboardTab = () => {
 
         const data = await res.json()
         setRankings(data)
-      } catch (err) {
-        if (err.name === 'AbortError') return
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return
         logger.error('Leaderboard', 'Fetch failed', err)
         setError(t('ui:leaderboard.load_error'))
       } finally {
@@ -213,13 +213,13 @@ export const LeaderboardTab = () => {
                 </tr>
               </thead>
               <tbody>
-                {rankings.map(entry => {
-                  const safeScore = Number.isFinite(entry.score)
-                    ? entry.score
+                {rankings.map((entry: any) => {
+                  const safeScore = Number.isFinite(entry?.score)
+                    ? entry?.score
                     : 0
                   return (
                     <tr
-                      key={entry.playerId}
+                      key={entry?.playerId}
                       className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
                     >
                       <td className='py-2 px-2 text-toxic-green'>

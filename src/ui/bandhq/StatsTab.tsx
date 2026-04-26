@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { StatBox, ProgressBar } from '../shared'
 
-export const StatsTab = ({ player, band, social }) => {
+export const StatsTab = ({ player, band, social }: Record<string, unknown>) => {
   const { t } = useTranslation(['ui'])
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
@@ -15,26 +15,26 @@ export const StatsTab = ({ player, band, social }) => {
           <div className='grid grid-cols-2 gap-4'>
             <StatBox
               label={t('ui:stats.funds', { defaultValue: 'Funds' })}
-              value={`${player.money}€`}
+              value={`${(player as any).money}€`}
               icon='€'
             />
             <StatBox
               label={t('ui:stats.fame', { defaultValue: 'Fame' })}
-              value={player.fame}
+              value={(player as any).fame}
               icon='★'
             />
             <StatBox
               label={t('ui:ui.day', { defaultValue: 'Day' })}
-              value={player.day}
+              value={(player as any).day}
               icon='📅'
             />
             <StatBox
               label={t('ui:stats.followers', { defaultValue: 'Followers' })}
               value={
-                (social.instagram ?? 0) +
-                (social.tiktok ?? 0) +
-                (social.youtube ?? 0) +
-                (social.newsletter ?? 0)
+                ((social as any).instagram ?? 0) +
+                ((social as any).tiktok ?? 0) +
+                ((social as any).youtube ?? 0) +
+                ((social as any).newsletter ?? 0)
               }
               icon='👥'
             />
@@ -49,13 +49,13 @@ export const StatsTab = ({ player, band, social }) => {
           <div className='space-y-2'>
             <ProgressBar
               label={t('ui:stats.fuel', { defaultValue: 'Fuel' })}
-              value={player.van?.fuel}
+              value={(player as any).van?.fuel}
               max={100}
               color='bg-fuel-yellow'
             />
             <ProgressBar
               label={t('ui:stats.condition', { defaultValue: 'Condition' })}
-              value={player.van?.condition}
+              value={(player as any).van?.condition}
               max={100}
               color='bg-condition-blue'
               size='sm'
@@ -64,7 +64,8 @@ export const StatsTab = ({ player, band, social }) => {
               {t('ui:stats.breakdown_chance', {
                 defaultValue: 'Breakdown Chance'
               })}
-              : {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
+              : {(((player as any).van?.breakdownChance ?? 0) * 100).toFixed(1)}
+              %
             </div>
           </div>
           {/* jscpd:ignore-end */}
@@ -77,22 +78,22 @@ export const StatsTab = ({ player, band, social }) => {
           {t('ui:stats.band_status', { defaultValue: 'BAND STATUS' })}
         </h3>
         <div className='space-y-6'>
-          {(band.members || []).map(m => (
-            <div key={m.name} className='flex items-center gap-4'>
+          {((band as any).members || []).map((m: unknown) => (
+            <div key={(m as any).name} className='flex items-center gap-4'>
               <div className='w-20 font-bold text-star-white font-mono'>
-                {m.name}
+                {(m as any).name}
               </div>
               <div className='flex-1 space-y-1'>
                 <ProgressBar
                   label={t('ui:stats.stamina', { defaultValue: 'Stamina' })}
-                  value={m.stamina}
+                  value={(m as any).stamina}
                   max={100}
                   color='bg-stamina-green'
                   size='sm'
                 />
                 <ProgressBar
                   label={t('ui:stats.mood', { defaultValue: 'Mood' })}
-                  value={m.mood}
+                  value={(m as any).mood}
                   max={100}
                   color='bg-mood-pink'
                   size='sm'
@@ -110,7 +111,7 @@ export const StatsTab = ({ player, band, social }) => {
               :
             </span>
             <span className='text-star-white font-mono'>
-              {band.inventorySlots}
+              {(band as any).inventorySlots}
             </span>
           </div>
           <div className='flex justify-between items-center'>
@@ -118,7 +119,7 @@ export const StatsTab = ({ player, band, social }) => {
               {t('ui:stats.harmony', { defaultValue: 'Harmony' })}:
             </span>
             <span className='text-toxic-green font-mono'>
-              {band.harmony}/100
+              {(band as any).harmony}/100
             </span>
           </div>
         </div>

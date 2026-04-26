@@ -25,7 +25,7 @@ export const BUST_CHANCE_BY_RARITY = {
  * @param {Object|null} stash - band.stash dictionary (keyed by item id)
  * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: string|null }}
  */
-export function computeStashBustRisk(stash) {
+export function computeStashBustRisk(stash: unknown) {
   if (!stash || typeof stash !== 'object') {
     return { bustChance: 0, highestRiskItemId: null, highestRarity: null }
   }
@@ -81,7 +81,10 @@ export function pickRarity(rng = secureRandom) {
  * @param {Function} [rng=secureRandom]
  * @returns {string|null} ID of picked contraband or null if none found
  */
-export function pickRandomContrabandByRarity(rarity, rng = secureRandom) {
+export function pickRandomContrabandByRarity(
+  rarity: unknown,
+  rng = secureRandom
+) {
   const pool = CONTRABAND_BY_RARITY[rarity] || []
   if (pool.length === 0) return null
   return pool[Math.floor(rng() * pool.length)].id

@@ -10,7 +10,7 @@ export const VoidTraderTab = ({
   isItemOwned,
   isItemDisabled,
   processingItemId
-}) => {
+}: Record<string, unknown>) => {
   const { t } = useTranslation()
 
   // Filter for epic/rare contraband that are tradeable in the black market
@@ -43,7 +43,7 @@ export const VoidTraderTab = ({
             {t('ui:stats.fame', { defaultValue: 'FAME' })}
           </p>
           <p className='text-xl font-bold text-toxic-green tracking-widest'>
-            {player.fame}
+            {(player as any).fame}
           </p>
         </div>
       </div>
@@ -52,7 +52,7 @@ export const VoidTraderTab = ({
         {voidItems.map(item => {
           const isProcessingThis = processingItemId === item.id
           const isAnyProcessing = !!processingItemId
-          const disabled = isItemDisabled(item) || isAnyProcessing
+          const disabled = (isItemDisabled as any)(item) || isAnyProcessing
 
           return (
             <div
@@ -97,13 +97,13 @@ export const VoidTraderTab = ({
                 </div>
                 <ActionButton
                   variant='primary'
-                  onClick={() => handleTrade(item)}
+                  onClick={() => (handleTrade as any)(item)}
                   disabled={disabled}
                   className='text-xs py-1 px-4 min-w-[120px]'
                 >
                   {isProcessingThis
                     ? t('ui:loading', { defaultValue: 'PROCESSING...' })
-                    : isItemOwned(item) && !item.stackable
+                    : (isItemOwned as any)(item) && !item.stackable
                       ? t('ui:hq.owned', { defaultValue: 'OWNED' })
                       : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
                 </ActionButton>

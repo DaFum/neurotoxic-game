@@ -1,13 +1,17 @@
 const VENUE_NAMESPACE = 'venues:'
 const VENUE_NAME_SUFFIX = '.name'
 
-const toVenueKey = location => {
+const toVenueKey = (location: any) => {
   if (!location || typeof location !== 'string') return ''
   if (location.startsWith(VENUE_NAMESPACE)) return location
   return `${VENUE_NAMESPACE}${location}${VENUE_NAME_SUFFIX}`
 }
 
-export const translateLocation = (t, location, fallback = 'Unknown') => {
+export const translateLocation = (
+  t: any,
+  location: any,
+  fallback = 'Unknown'
+) => {
   if (typeof t !== 'function') return fallback
 
   const key = toVenueKey(location)
