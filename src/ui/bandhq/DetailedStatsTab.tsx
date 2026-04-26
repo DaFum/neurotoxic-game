@@ -325,9 +325,9 @@ const SocialReachSection = ({
         />
         <DetailRow
           label={t('ui:stats.controversy', { defaultValue: 'Controversy' })}
-          value={`${Math.min(100, social.controversyLevel || 0)}/100`}
+          value={`${Math.min(100, social?.controversyLevel ?? 0)}/100`}
           subtext={
-            (social as any).controversyLevel >= 100
+            (social?.controversyLevel ?? 0) >= 100
               ? t('ui:stats.shadowbanned', {
                   defaultValue: 'SHADOWBANNED (-75% Growth)'
                 })
@@ -335,7 +335,7 @@ const SocialReachSection = ({
                   defaultValue: 'Risk of Shadowban'
                 })
           }
-          locked={!isUnlocked(social.controversyLevel)}
+          locked={!isUnlocked(social?.controversyLevel ?? 0)}
         />
       </div>
     </Panel>
@@ -462,8 +462,8 @@ const ActiveQuestsSection = ({
               </span>
             </div>
             <ProgressBar
-              value={q.progress}
-              max={q.required}
+              value={q.progress || 0}
+              max={q.required || 1}
               color='bg-toxic-green'
               size='mini'
               showValue
@@ -491,7 +491,7 @@ const BandMetricsSection = ({
     </div>
     <DetailRow
       label={t('ui:detailedStats.luck', { defaultValue: 'Luck' })}
-      value={band.luck}
+      value={band.luck || 0}
       subtext={t('ui:detailedStats.luckDesc', {
         defaultValue: 'Affects random events'
       })}
@@ -608,14 +608,16 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
         className='w-full'
         content={
           <div className='text-left'>
-            <div className='font-bold mb-1'>{t(trait.name)}</div>
-            <div className='mb-2'>{t(trait.desc)}</div>
+            <div className='font-bold mb-1'>
+              {t(trait.name) as React.ReactNode}
+            </div>
+            <div className='mb-2'>{t(trait.desc) as React.ReactNode}</div>
             {!isTraitActive && (
               <div className='text-ash-gray italic border-t border-ash-gray/30 pt-1'>
                 {t('ui:detailedStats.toUnlock', {
                   defaultValue: 'To Unlock'
                 })}
-                : {t(trait.unlockHint)}
+                : {t(trait.unlockHint) as React.ReactNode}
               </div>
             )}
           </div>

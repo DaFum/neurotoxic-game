@@ -1,5 +1,17 @@
 import PropTypes from 'prop-types'
 import { Loader2 } from 'lucide-react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+
+type GlitchButtonVariant = 'primary' | 'danger' | 'owned' | 'warning'
+type GlitchButtonSize = 'sm' | 'lg'
+
+type GlitchButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'size'> & {
+  onClick: NonNullable<ComponentPropsWithoutRef<'button'>['onClick']>
+  children: ReactNode
+  variant?: GlitchButtonVariant
+  size?: GlitchButtonSize
+  isLoading?: boolean
+}
 
 /**
  * A stylized button component with glitch and hover effects.
@@ -20,7 +32,7 @@ export const GlitchButton = ({
   size = 'lg',
   isLoading = false,
   ...props
-}: any) => {
+}: GlitchButtonProps) => {
   // If loading or owned, treat as disabled for interactions
   const isIntervention = disabled || isLoading || variant === 'owned'
 
@@ -56,7 +68,7 @@ export const GlitchButton = ({
     }
   }
 
-  const sizeClasses = {
+  const sizeClasses: Record<GlitchButtonSize, string> = {
     sm: 'px-4 py-2 text-sm',
     lg: 'px-8 py-4 text-xl'
   }

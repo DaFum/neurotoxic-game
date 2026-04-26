@@ -465,6 +465,8 @@
   "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
   "leaderboard.no_data": "NOCH KEINE DATEN VORHANDEN.",
   "leaderboard.no_songs": "KEINE SONGS FREIGESCHALTET",
+  "leaderboard.unknownError": "Unbekannter Fehler",
+  "leaderboard.unknownPlayer": "Unbekannt",
   "leaderboard.select_song": "SONG WÄHLEN:",
   "leaderboard.song_scores": "SONG SCORES",
   "leaderboard.stage_dives": "STAGE DIVES",

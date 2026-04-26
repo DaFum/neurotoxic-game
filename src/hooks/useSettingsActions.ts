@@ -22,7 +22,7 @@ export const useSettingsActions = (settings: any, updateSettings: any) => {
 
   const handleLogLevelChange = useCallback(
     (level: any) => {
-      ;(updateSettings as any)({ logLevel: level })
+      updateSettings({ logLevel: level })
     },
     [updateSettings]
   )

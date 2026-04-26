@@ -2,32 +2,55 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ShopItem } from './ShopItem'
 
+type CatalogItem = {
+  id: string | number
+  name?: string
+  cost: number
+  description?: string
+  type?: string
+  effect?: Record<string, unknown>
+  currency?: string
+  img?: string
+}
+
+type Balances = Record<string, number>
+
+type CatalogTabProps = {
+  items: CatalogItem[]
+  balances: Balances
+  handleBuy: (item: CatalogItem) => void
+  isItemOwned: (item: CatalogItem) => boolean
+  isItemDisabled: (item: CatalogItem) => boolean
+  getAdjustedCost?: (item: CatalogItem) => number | undefined
+  processingItemId?: string
+}
+
 const BALANCE_DISPLAY_META = {
   fame: { className: 'text-warning-yellow', suffix: '★' },
   funds: { className: 'text-toxic-green', suffix: '€' },
   money: { className: 'text-toxic-green', suffix: '€' },
   credits: { className: 'text-toxic-green', suffix: '€' },
   bonus: { className: 'text-star-white', suffix: '' }
-}
+} as const
 
-export const CatalogTab = (props: any) => {
-  const {
-    items,
-    balances,
-    handleBuy,
-    isItemOwned,
-    isItemDisabled,
-    getAdjustedCost,
-    processingItemId
-  } = props
-
+export const CatalogTab = ({
+  items,
+  balances,
+  handleBuy,
+  isItemOwned,
+  isItemDisabled,
+  getAdjustedCost,
+  processingItemId
+}: CatalogTabProps) => {
   const { t } = useTranslation()
 
   return (
     <div>
       <div className='mb-4 flex justify-end gap-4 font-mono text-star-white'>
-        {Object.entries(balances || {}).map(([key, value]) => {
-          const meta = (BALANCE_DISPLAY_META as any)[key] || {
+        {Object.entries(balances).map(([key, value]) => {
+          const meta = BALANCE_DISPLAY_META[
+            key as keyof typeof BALANCE_DISPLAY_META
+          ] || {
             className: 'text-star-white',
             suffix: ''
           }
@@ -71,20 +94,21 @@ const balancesShape = PropTypes.shape({
 })
 
 const balancesValidator = (
-  props: unknown,
-  propName: unknown,
-  componentName: unknown
+  props: Record<string, unknown>,
+  propName: string,
+  componentName: string
 ) => {
   const value = props[propName]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return new Error(`${componentName}: balances must be an object`)
   }
 
+  const record = value as Record<string, unknown>
   let hasKeys = false
-  for (const key in value) {
-    if (Object.hasOwn(value, key)) {
+  for (const key in record) {
+    if (Object.hasOwn(record, key)) {
       hasKeys = true
-      if (!Number.isFinite(value[key])) {
+      if (!Number.isFinite(record[key])) {
         return new Error(
           `${componentName}: balances values must be finite numbers`
         )
@@ -125,7 +149,11 @@ CatalogTab.propTypes = {
     if (shapeError) {
       return shapeError
     }
-    return (balancesValidator as any)(props, propName, componentName, ...rest)
+    return balancesValidator(
+      props as Record<string, unknown>,
+      propName,
+      componentName
+    )
   },
   handleBuy: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,

@@ -231,7 +231,7 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      // Pick a random member directly from band.members to avoid O(N) allocation
+      // Condition guarantees band.members is a non-empty array.
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
       const target = band.members[safeIndex]?.name || 'Unknown'
@@ -279,6 +279,14 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
       // Dynamically select the lead singer or fallback to index 0
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0
+        }
+      }
       const vocalistObj =
         getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
       const vocalist = vocalistObj?.name || 'Unknown'
@@ -510,6 +518,14 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0
+        }
+      }
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
       const targetObj = band.members[safeIndex]
@@ -551,6 +567,14 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0
+        }
+      }
       const gearNerd =
         getMemberWithTrait(band.members, 'gear_nerd')?.name ||
         band.members[0]?.name || 'Unknown'
@@ -702,6 +726,14 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
       // Find potential gear nerd or fallback to first member
+      if (!band.members || band.members.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+          followers: 0
+        }
+      }
       const member =
         getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
       const target = member?.name || 'Unknown'
