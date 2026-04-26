@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { Loader2 } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
@@ -81,7 +80,7 @@ export const GlitchButton = ({
       aria-disabled={isIntervention}
       aria-busy={isLoading}
       className={`
-        relative ${(sizeClasses as any)[size] || sizeClasses.lg} bg-void-black
+        relative ${sizeClasses[size]} bg-void-black
         font-[Metal_Mania] font-bold uppercase tracking-widest
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
@@ -125,14 +124,4 @@ export const GlitchButton = ({
       )}
     </button>
   )
-}
-
-GlitchButton.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  disabled: PropTypes.bool,
-  variant: PropTypes.oneOf(['primary', 'danger', 'owned', 'warning']),
-  size: PropTypes.oneOf(['sm', 'lg']),
-  isLoading: PropTypes.bool
 }

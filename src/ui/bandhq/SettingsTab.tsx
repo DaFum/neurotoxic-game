@@ -1,7 +1,21 @@
 import PropTypes from 'prop-types'
+import type { GameSettings } from '../../types/game'
+import type { GameStateWithActions } from '../../context/GameState'
 import { SettingsPanel } from '../shared'
 import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 import { useSettingsActions } from '../../hooks/useSettingsActions'
+
+type SettingsTabProps = {
+  settings: GameSettings
+  audioState: { musicVol: number; sfxVol: number; isMuted: boolean }
+  onAudioChange: {
+    setMusic: (value: number) => void
+    setSfx: (value: number) => void
+    toggleMute: () => void
+  }
+  updateSettings: GameStateWithActions['updateSettings']
+  deleteSave: () => void
+}
 
 export const SettingsTab = ({
   settings,
@@ -9,7 +23,7 @@ export const SettingsTab = ({
   onAudioChange,
   updateSettings,
   deleteSave
-}: Record<string, unknown>) => {
+}: SettingsTabProps) => {
   const { handleToggleCRT, handleLogLevelChange } = useSettingsActions(
     settings,
     updateSettings
@@ -19,12 +33,12 @@ export const SettingsTab = ({
     <div className='max-w-3xl mx-auto'>
       <SettingsPanel
         settings={settings}
-        musicVol={(audioState as any).musicVol}
-        sfxVol={(audioState as any).sfxVol}
-        isMuted={(audioState as any).isMuted}
-        onMusicChange={(onAudioChange as any).setMusic}
-        onSfxChange={(onAudioChange as any).setSfx}
-        onToggleMute={(onAudioChange as any).toggleMute}
+        musicVol={audioState.musicVol}
+        sfxVol={audioState.sfxVol}
+        isMuted={audioState.isMuted}
+        onMusicChange={onAudioChange.setMusic}
+        onSfxChange={onAudioChange.setSfx}
+        onToggleMute={onAudioChange.toggleMute}
         onToggleCRT={handleToggleCRT}
         onLogLevelChange={handleLogLevelChange}
         onDeleteSave={deleteSave}

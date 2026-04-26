@@ -92,6 +92,21 @@ function hasMemberWithTrait(
   return false
 }
 
+const requireBandMembers = (
+  band: GameState['band'],
+  postId: string
+): BandMember[] => {
+  if (Array.isArray(band?.members) && band.members.length > 0) {
+    return band.members
+  }
+  throw new Error(
+    i18n.t('ui:postOptions.errors.missingBandMembers', {
+      postId,
+      defaultValue: `Post option ${postId} requires at least one band member.`
+    })
+  )
+}
+
 /**
  * Registry of all available social media post options.
  * Each option defines its conditions for appearing, base effects, and RNG logic.
@@ -234,7 +249,7 @@ export const POST_OPTIONS = [
       // Condition guarantees band.members is a non-empty array.
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const target = band.members[safeIndex]?.name || 'Unknown'
+      const target = band.members[safeIndex]?.name ?? 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -278,18 +293,11 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      const members = requireBandMembers(band, 'perf_ego_flex')
       // Dynamically select the lead singer or fallback to index 0
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0
-        }
-      }
       const vocalistObj =
-        getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
-      const vocalist = vocalistObj?.name || 'Unknown'
+        getMemberWithTrait(members, 'lead_singer') || members[0]
+      const vocalist = vocalistObj?.name ?? 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -518,18 +526,11 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0
-        }
-      }
-      const rawIndex = Math.floor(diceRoll * band.members.length)
-      const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const targetObj = band.members[safeIndex]
-      const target = targetObj?.name || 'Unknown'
+      const members = requireBandMembers(band, 'drama_crowdsurf_fail')
+      const rawIndex = Math.floor(diceRoll * members.length)
+      const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
+      const targetObj = members[safeIndex]
+      const target = targetObj?.name ?? 'Unknown'
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
@@ -567,17 +568,11 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }: GameState) => {
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0
-        }
-      }
+      const members = requireBandMembers(band, 'drama_gear_flex')
       const gearNerd =
-        getMemberWithTrait(band.members, 'gear_nerd')?.name ||
-        band.members[0]?.name || 'Unknown'
+        getMemberWithTrait(members, 'gear_nerd')?.name ||
+        members[0]?.name ||
+        'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -614,10 +609,14 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      const members = requireBandMembers(band, 'drama_tour_bus_prank')
       const prankster =
-        getMemberWithTrait(band.members, 'party_animal')?.name ||
-        band.members[1]?.name ||
-        band.members[0]?.name || 'Unknown'
+        getMemberWithTrait(members, 'party_animal')?.name ||
+        members[1]?.name ||
+        members[0]?.name ||
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
@@ -725,19 +724,11 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      const members = requireBandMembers(band, 'comm_gear_review')
       // Find potential gear nerd or fallback to first member
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.YOUTUBE.id,
-          followers: 0
-        }
-      }
-      const member =
-        getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
-      const target = member?.name || 'Unknown'
-      const memberId = member?.id || member?.name || 'Unknown' // Use name as fallback ID
+      const member = getMemberWithTrait(members, 'gear_nerd') || members[0]
+      const target = member?.name ?? 'Unknown'
+      const memberId = member?.id ?? member?.name ?? 'Unknown' // Use name as fallback ID
 
       return {
         type: 'FIXED',
@@ -811,21 +802,27 @@ export const POST_OPTIONS = [
         affordableIds[
           Math.floor(roll * affordableIds.length) % affordableIds.length
         ]
-      if (!selectedId) return {
-        type: 'FIXED',
-        success: false,
-        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-        followers: 0,
-        message: 'Failed to post.'
-      }
+      if (!selectedId)
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0,
+          message: i18n.t('ui:postOptions.failedToPost', {
+            defaultValue: 'Failed to post.'
+          })
+        }
       const influencer = influencers[selectedId]
-      if (!influencer) return {
-        type: 'FIXED',
-        success: false,
-        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-        followers: 0,
-        message: 'Failed to post.'
-      }
+      if (!influencer)
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: 0,
+          message: i18n.t('ui:postOptions.failedToPost', {
+            defaultValue: 'Failed to post.'
+          })
+        }
 
       const cost = getCost(influencer)
       let followersGain = 1000

@@ -297,11 +297,14 @@ const selectEvent = (
   // Fisher-Yates shuffle for unbiased randomness and better performance
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1))
-    ;const temp = shuffled[i];
-    const other = shuffled[j];
-    if (!temp || !other) throw new Error(`Dense array invariant violated at shuffle index i=${i}, j=${j}`);
-    shuffled[i] = other;
-    shuffled[j] = temp;
+    const temp = shuffled[i]
+    const other = shuffled[j]
+    if (!temp || !other)
+      throw new Error(
+        `Dense array invariant violated at shuffle index i=${i}, j=${j}`
+      )
+    shuffled[i] = other
+    shuffled[j] = temp
   }
 
   for (const eligible of shuffled) {
@@ -602,7 +605,7 @@ export const eventEngine = {
     if (choice.skillCheck) {
       const { stat, threshold, success, failure } = choice.skillCheck
 
-      let skillValue = 0
+      let skillValue: number
 
       // WARNING: 'luck' check must come first!
       // The band object has a 'luck' property (default 0). If we checked band[stat] first,
@@ -626,7 +629,13 @@ export const eventEngine = {
             skillValue = -Infinity
             for (let i = 0; i < members.length; i++) {
               const m = members[i]
-              if (!m) continue
+              if (!m) {
+                logger.error(
+                  'EventEngine',
+                  `Sparse members invariant violated at index ${i}`
+                )
+                continue
+              }
               // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
               // Then check top-level (dynamic stats like mood/health 0-100)
               // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
@@ -807,7 +816,7 @@ export const eventEngine = {
       // ⚡ Optimization: Standard for loop instead of .forEach to avoid callback allocation
       const effects = result.effects ?? []
       for (let i = 0, len = effects.length; i < len; i++) {
-        const eff = effects[i];
+        const eff = effects[i]
         if (eff) processEffect(eff, delta, context, gameState)
       }
     } else {

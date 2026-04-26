@@ -374,3 +374,44 @@ export interface ReportPhaseProps {
   }
   onNext: () => void
 }
+
+export interface Effect {
+  type?: string
+  item?: string
+  value?: unknown
+  target?: string
+  stat?: string
+  key?: string
+  id?: string
+}
+
+export interface PurchaseItem {
+  id?: string
+  name?: string
+  cost?: number
+  currency?: string
+  category?: string
+  description?: string
+  img?: string
+  effect?: Effect
+  effects?: Effect[]
+  oneTime?: boolean
+  [k: string]: unknown
+}
+
+export interface CatalogItem extends PurchaseItem {
+  id: string | number
+  cost: number
+}
+
+export type Balances = Record<string, number>
+
+export interface CatalogTabProps {
+  items: CatalogItem[]
+  balances: Balances
+  handleBuy: (item: CatalogItem) => void
+  isItemOwned: (item: CatalogItem) => boolean
+  isItemDisabled: (item: CatalogItem) => boolean
+  getAdjustedCost?: (item: CatalogItem) => number | undefined
+  processingItemId?: string
+}

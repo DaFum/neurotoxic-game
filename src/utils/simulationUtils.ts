@@ -136,8 +136,12 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
     else if (m.name === CHARACTERS.LARS.name) Lars = m
   }
 
-  const getMemberSkill = (member?: BandMember): number =>
-    typeof member?.baseStats === 'object' && member?.baseStats !== null && 'skill' in member.baseStats ? (member.baseStats.skill as number) : (typeof member?.skill === 'number' ? member.skill : 0)
+  const getMemberSkill = (member?: BandMember): number => {
+    if (typeof member?.baseStats?.skill === 'number') {
+      return member.baseStats.skill
+    }
+    return typeof member?.skill === 'number' ? member.skill : 0
+  }
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,
     drums: 120 + getMemberSkill(Marius) * 4,
@@ -442,7 +446,11 @@ export const calculateDailyUpdates = (
   const nextMembers = new Array(nextBand.members.length)
   for (let i = 0; i < nextBand.members.length; i++) {
     const m = nextBand.members[i]
-    if (!m) continue
+    if (!m) {
+      throw new Error(
+        `Sparse nextBand.members invariant violated at index ${i}`
+      )
+    }
 
     // 2a. Base Mood Drift
     let mood = m.mood
@@ -487,7 +495,7 @@ export const calculateDailyUpdates = (
   if (hasBeerFridge) {
     for (let i = 0; i < nextBand.members.length; i++) {
       const m = nextBand.members[i]
-    if (!m) continue
+      if (!m) continue
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
           m.stamina = clampMemberStamina(m.stamina - 5, m.staminaMax)

@@ -9,29 +9,9 @@ import {
   calculateFameLevel
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types/game'
+import type { Effect, PurchaseItem } from '../types/components'
 
 type Inventory = Record<string, unknown>
-
-type Effect = {
-  type?: string
-  item?: string
-  value?: any
-  target?: string
-  stat?: string
-  key?: string
-  id?: string
-}
-
-type PurchaseItem = {
-  id?: string
-  cost?: number
-  currency?: string
-  category?: string
-  effect?: Effect
-  effects?: Effect[]
-  oneTime?: boolean
-  [k: string]: any
-}
 
 type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
   van?: Partial<PlayerState['van']>
@@ -45,7 +25,7 @@ type EffectHandler = (
   player: PlayerState,
   band: BandState | null
 ) =>
-  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: any[] }
+  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: unknown[] }
   | undefined
 
 // Safely read a numeric property from an unknown object.

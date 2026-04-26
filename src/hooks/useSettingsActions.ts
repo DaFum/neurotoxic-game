@@ -1,4 +1,13 @@
 import { useCallback, useRef, useLayoutEffect } from 'react'
+import type { GameSettings } from '../types/game'
+import type { GameStateWithActions } from '../context/GameState'
+
+type UpdateSettings = GameStateWithActions['updateSettings']
+
+export type UseSettingsActionsReturn = {
+  handleToggleCRT: () => void
+  handleLogLevelChange: (level: GameSettings['logLevel']) => void
+}
 
 /**
  * Hook that provides shared settings action handlers.
@@ -6,7 +15,10 @@ import { useCallback, useRef, useLayoutEffect } from 'react'
  * @param {function} updateSettings - The function to update the settings.
  * @returns {object} Object containing the handlers `handleToggleCRT` and `handleLogLevelChange`.
  */
-export const useSettingsActions = (settings: any, updateSettings: any) => {
+export const useSettingsActions = (
+  settings: GameSettings,
+  updateSettings: UpdateSettings
+): UseSettingsActionsReturn => {
   // We use settings.crtEnabled in the closure but don't add it to the dependency array.
   // We store the latest value in a ref so the callback identity remains stable.
   const crtRef = useRef(settings.crtEnabled)
@@ -21,7 +33,7 @@ export const useSettingsActions = (settings: any, updateSettings: any) => {
   }, [updateSettings])
 
   const handleLogLevelChange = useCallback(
-    (level: any) => {
+    (level: GameSettings['logLevel']) => {
       updateSettings({ logLevel: level })
     },
     [updateSettings]

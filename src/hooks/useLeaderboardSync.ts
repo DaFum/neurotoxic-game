@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 /// <reference types="vite/client" />
+import { useEffect } from 'react'
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types/game'
@@ -19,22 +19,24 @@ type LeaderboardStatsPayload = {
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
 
-if ((import.meta as any).hot) {
-  ;(import.meta as any).hot.dispose(() => {
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
     hasLoggedUnavailableEndpoint = false
   })
 }
 
 const getLeaderboardSyncEnabledFlag = () => {
-  const viteFlag = (import.meta as any).env?.VITE_ENABLE_LEADERBOARD_SYNC
+  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
   if (typeof viteFlag === 'string') {
     return viteFlag.toLowerCase() !== 'false'
   }
 
   const processFlag =
-    typeof process !== 'undefined'
-      ? process?.env?.VITE_ENABLE_LEADERBOARD_SYNC
+    typeof globalThis === 'object' &&
+    'process' in globalThis &&
+    typeof globalThis.process === 'object'
+      ? globalThis.process?.env?.VITE_ENABLE_LEADERBOARD_SYNC
       : undefined
   if (typeof processFlag === 'string') {
     return processFlag.toLowerCase() !== 'false'
@@ -162,9 +164,9 @@ export const syncLeaderboardStats = async (
  * @param {object} state - The current game state.
  */
 export const useLeaderboardSync = (state: GameState) => {
-  const { player, social } = state || {}
-  const { playerId, playerName, money, day, fame, stats } = player || {}
-  const { totalDistance, conflictsResolved, stageDives } = stats || {}
+  const { player, social } = state
+  const { playerId, playerName, money, day, fame, stats } = player
+  const { totalDistance, conflictsResolved, stageDives } = stats ?? {}
 
   const totalFollowers = calculateTotalFollowers(social)
 

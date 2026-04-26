@@ -30,12 +30,15 @@ import type {
   BandState,
   PlayerState,
   SocialState,
-  ToastPayload
+  ToastPayload,
+  UpdateBandPayload,
+  UpdatePlayerPayload
 } from '../../../types/game'
 import type {
   ToastCallback,
   TranslationCallback
 } from '../../../types/callbacks'
+import type { Effect } from '../../../types/components'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
 
@@ -87,7 +90,6 @@ type TranslateFn = (
   key: Parameters<TranslationCallback>[0],
   options?: Parameters<TranslationCallback>[1]
 ) => ReturnType<TranslationCallback>
-type UpdatePlayerFn = (patch: PlayerPatch) => void
 type UpdateBandFn = (patch: Partial<BandState>) => void
 
 /**
@@ -107,12 +109,7 @@ type UpdateBandFn = (patch: Partial<BandState>) => void
  * @param {Function} t - Translation function
  */
 const processTraitToasts = (
-  toasts: Array<{
-    message?: string
-    messageKey?: string
-    options?: Record<string, unknown>
-    type?: ToastPayload['type']
-  }>,
+  toasts: ToastPayload[],
   addToast: ToastFn,
   t: TranslateFn
 ) => {
@@ -126,7 +123,13 @@ const processTraitToasts = (
           defaultValue: toastItem.message
         })
       : toastItem.message
-    addToast(toastMsg || "", toastItem.type)
+    if (typeof toastMsg === 'string' && toastMsg.trim() !== '') {
+      addToast(toastMsg, toastItem.type)
+      return
+    }
+    if (!import.meta.env.PROD) {
+      throw new Error('Invalid trait toast: empty message')
+    }
   })
 }
 
@@ -203,7 +206,13 @@ const processEffectMessages = (
           defaultValue: msg.fallback || msg.message || msg.messageKey
         })
       : msg.message
-    addToast(toastMsg || "", msg.type)
+    if (typeof toastMsg === 'string' && toastMsg.trim() !== '') {
+      addToast(toastMsg, msg.type)
+      return
+    }
+    if (!import.meta.env.PROD) {
+      throw new Error('Invalid effect toast: empty message')
+    }
   })
 }
 
@@ -242,10 +251,17 @@ const processPurchaseUnlocks = (
 
   const gearCount = getGearCount(nextBand.inventory, GEAR_LOOKUP)
 
-  const purchaseUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social } as any,
-    { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
-  )
+  const purchaseUnlockState = {
+    player: nextPlayer,
+    band: nextBand,
+    social
+  }
+  const purchaseUnlocks = checkTraitUnlocks(purchaseUnlockState, {
+    type: 'PURCHASE',
+    item,
+    inventory: nextBand.inventory,
+    gearCount
+  })
 
   let finalBandPatch = bandPatch
   if (purchaseUnlocks.length > 0) {
@@ -260,7 +276,7 @@ const processPurchaseUnlocks = (
       members: traitResult.band.members
     }
 
-    processTraitToasts(traitResult.toasts as any, addToast, t)
+    processTraitToasts(traitResult.toasts, addToast, t)
   }
 
   if (finalBandPatch) {
@@ -276,12 +292,12 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }: {
-  player: import("../../../types/game").PlayerState;
-  band: import("../../../types/game").BandState;
-  social: import("../../../types/game").SocialState;
-  updatePlayer: (patch: import("../../../types/game").UpdatePlayerPayload) => void;
-  updateBand: (patch: import("../../../types/game").UpdateBandPayload) => void;
-  addToast: ToastFn;
+  player: PlayerState
+  band: BandState
+  social: SocialState
+  updatePlayer: (patch: UpdatePlayerPayload) => void
+  updateBand: (patch: UpdateBandPayload) => void
+  addToast: ToastFn
 }) => {
   const { t } = useTranslation(['ui', 'items'])
   /**
@@ -343,8 +359,20 @@ export const usePurchaseLogic = ({
           (finalCost as number) || 0
         )
 
+        const resolvedEffect: Effect | undefined =
+          (effect as Effect | null | undefined) ?? getPrimaryEffect(item)
+        if (!resolvedEffect) {
+          handlePurchaseValidationError(
+            { isValid: false, errorType: 'missing_effect' },
+            item,
+            addToast,
+            t
+          )
+          return false
+        }
+
         const effectResult = processPurchaseEffect(
-          (effect ?? {}) as any,
+          resolvedEffect,
           item,
           initialPlayerPatch,
           player,
@@ -368,7 +396,9 @@ export const usePurchaseLogic = ({
           return false
         }
 
-        let playerPatch = effectResult.playerPatch || initialPlayerPatch
+        let playerPatch: PlayerPatch = {
+          ...(effectResult.playerPatch ?? initialPlayerPatch)
+        }
         let bandPatch = effectResult.bandPatch || null
 
         if (effectResult.messages) {
@@ -382,14 +412,16 @@ export const usePurchaseLogic = ({
           effect?.type !== 'unlock_upgrade' &&
           effect?.type !== 'inventory_set'
         ) {
-          const pp = playerPatch as Record<string, unknown>;
-          const p = player as unknown as Record<string, unknown>;
-          const vanState = pp["van"] ?? p["van"];
-          pp["van"] = buildVanWithUpgrade(vanState as any, item.id);
+          const vanState: PlayerState['van'] | Partial<PlayerState['van']> =
+            playerPatch.van ?? player.van
+          playerPatch = {
+            ...playerPatch,
+            van: buildVanWithUpgrade(vanState, item.id)
+          }
         }
 
         // Apply updates
-        updatePlayer(playerPatch as import("../../../types/game").UpdatePlayerPayload)
+        updatePlayer(playerPatch as UpdatePlayerPayload)
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(

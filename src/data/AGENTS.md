@@ -29,3 +29,4 @@ Applies to `src/data/**`.
 ## Recent Findings (2026-04)
 
 - New menu-driven systems should reuse existing data keys where possible; introducing parallel IDs for the same feature increases save/test drift risk.
+- Event-pool modules with growing condition complexity should live under `src/data/events/**` and follow the nested `src/data/events/AGENTS.md` guardrails for typed conditions and composite-effect validity.

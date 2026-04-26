@@ -22,14 +22,14 @@ type LeaderboardEntry = {
   score: number
 }
 
-const VIEW_TO_STAT: Record<Exclude<LeaderboardView, 'SONG'>, string> = {
+const VIEW_TO_STAT = {
   BALANCE: 'balance',
   FAME: 'fame',
   FOLLOWERS: 'followers',
   DISTANCE: 'distance',
   CONFLICTS: 'conflicts',
   STAGE_DIVES: 'stage_dives'
-}
+} as const satisfies Record<Exclude<LeaderboardView, 'SONG'>, string>
 
 const isAbortError = (error: unknown): boolean => {
   return error instanceof DOMException && error.name === 'AbortError'
@@ -108,16 +108,9 @@ export const LeaderboardTab = () => {
           }))
 
         setRankings(sanitizedEntries)
-      } catch (fetchError) {
-        if (isAbortError(fetchError)) {
-          return
-        }
-
-        const data = await res.json()
-        setRankings(data)
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === 'AbortError') return
-        logger.error('Leaderboard', 'Fetch failed', err)
+      } catch (fetchError: unknown) {
+        if (isAbortError(fetchError)) return
+        logger.error('Leaderboard', 'Fetch failed', fetchError)
         setError(t('ui:leaderboard.load_error'))
       } finally {
         if (!controller.signal.aborted) {
@@ -193,8 +186,7 @@ export const LeaderboardTab = () => {
             aria-controls={`panel-${id}`}
             id={`tab-${id}`}
             onClick={() => setView(id)}
-            disabled={view === id}
-            className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
+            className={`whitespace-nowrap ${view !== id ? 'opacity-50 cursor-default' : ''}`}
           >
             {label}
           </GlitchButton>
@@ -307,7 +299,7 @@ export const LeaderboardTab = () => {
             </table>
           </div>
         )}
-      </Panel>
+      </div>
     </div>
   )
 }

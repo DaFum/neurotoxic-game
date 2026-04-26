@@ -26,3 +26,4 @@ Applies to `src/hooks/**`.
 ## Recent Findings (2026-04)
 
 - If a hook returns modal controls (`show/open/close/trigger`), verify at least one active caller consumes `open*`; otherwise remove the hook wiring or restore the entry point.
+- Rhythm gameplay hooks now have nested guardrails in `src/hooks/rhythmGame/AGENTS.md`; keep scoring/timing edge-case handling there to avoid duplicated sparse-array fixes across hook files.

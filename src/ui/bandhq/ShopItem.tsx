@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { PurchaseItem } from '../../types/components'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
@@ -17,7 +18,14 @@ export const ShopItem = React.memo(
     adjustedCost,
     onBuy,
     processingItemId
-  }: any) => {
+  }: {
+    item: PurchaseItem
+    isOwned: boolean
+    isDisabled: boolean
+    adjustedCost?: number
+    onBuy: (item: PurchaseItem) => void
+    processingItemId?: string
+  }) => {
     const { t } = useTranslation(['items', 'ui'])
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'

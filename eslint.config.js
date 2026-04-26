@@ -1,6 +1,8 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import eslintReact from '@eslint-react/eslint-plugin'
+import tseslint from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 import prettier from 'eslint-config-prettier'
 
 export default [
@@ -61,10 +63,58 @@ export default [
     }
   },
   {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true
+        }
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        ...globals.node
+      }
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+      ...eslintReact.configs.recommended.plugins
+    },
+    rules: {
+      ...prettier.rules,
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/data/events.js'],
+              message:
+                'Use the canonical event DB entrypoint: src/data/events/index.js.'
+            }
+          ]
+        }
+      ],
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ]
+    }
+  },
+  {
     files: [
       '.eslintrc.cjs',
       'vite.config.js',
       '*.config.js',
+      '**/*.{config,setup}.{ts,mts,cts}',
       'tests/**/*.{js,jsx,mjs}',
       'e2e/**/*.{js,jsx,mjs}',
       'extract_venues.js',

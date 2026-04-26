@@ -325,9 +325,9 @@ const SocialReachSection = ({
         />
         <DetailRow
           label={t('ui:stats.controversy', { defaultValue: 'Controversy' })}
-          value={`${Math.min(100, social?.controversyLevel ?? 0)}/100`}
+          value={`${Math.min(100, social.controversyLevel ?? 0)}/100`}
           subtext={
-            (social?.controversyLevel ?? 0) >= 100
+            (social.controversyLevel ?? 0) >= 100
               ? t('ui:stats.shadowbanned', {
                   defaultValue: 'SHADOWBANNED (-75% Growth)'
                 })
@@ -335,7 +335,7 @@ const SocialReachSection = ({
                   defaultValue: 'Risk of Shadowban'
                 })
           }
-          locked={!isUnlocked(social?.controversyLevel ?? 0)}
+          locked={!isUnlocked(social.controversyLevel ?? 0)}
         />
       </div>
     </Panel>
@@ -450,26 +450,48 @@ const ActiveQuestsSection = ({
       </div>
     ) : (
       <div className='space-y-4'>
-        {activeQuests.map(q => (
-          <div
-            key={q.id}
-            className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
-          >
-            <div className='flex justify-between items-center text-xs'>
-              <span className='font-bold text-star-white'>{q.label}</span>
-              <span className='text-ash-gray'>
-                {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
-              </span>
+        {activeQuests.map(q => {
+          const hasValidRequired =
+            typeof q.required === 'number' && q.required >= 1
+          if (!hasValidRequired) {
+            return (
+              <div
+                key={q.id}
+                className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
+              >
+                <div className='flex justify-between items-center text-xs'>
+                  <span className='font-bold text-star-white'>{q.label}</span>
+                  <span className='text-blood-red'>
+                    {t('ui:detailedStats.invalidQuestRequirement', {
+                      defaultValue: 'Invalid quest requirement'
+                    })}
+                  </span>
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div
+              key={q.id}
+              className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
+            >
+              <div className='flex justify-between items-center text-xs'>
+                <span className='font-bold text-star-white'>{q.label}</span>
+                <span className='text-ash-gray'>
+                  {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
+                </span>
+              </div>
+              <ProgressBar
+                value={q.progress ?? 0}
+                max={q.required ?? 1}
+                color='bg-toxic-green'
+                size='mini'
+                showValue
+              />
             </div>
-            <ProgressBar
-              value={q.progress || 0}
-              max={q.required || 1}
-              color='bg-toxic-green'
-              size='mini'
-              showValue
-            />
-          </div>
-        ))}
+          )
+        })}
       </div>
     )}
   </Panel>
@@ -491,7 +513,7 @@ const BandMetricsSection = ({
     </div>
     <DetailRow
       label={t('ui:detailedStats.luck', { defaultValue: 'Luck' })}
-      value={band.luck || 0}
+      value={band.luck ?? 0}
       subtext={t('ui:detailedStats.luckDesc', {
         defaultValue: 'Affects random events'
       })}
@@ -608,16 +630,14 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
         className='w-full'
         content={
           <div className='text-left'>
-            <div className='font-bold mb-1'>
-              {t(trait.name) as React.ReactNode}
-            </div>
-            <div className='mb-2'>{t(trait.desc) as React.ReactNode}</div>
+            <div className='font-bold mb-1'>{t(trait.name)}</div>
+            <div className='mb-2'>{t(trait.desc)}</div>
             {!isTraitActive && (
               <div className='text-ash-gray italic border-t border-ash-gray/30 pt-1'>
                 {t('ui:detailedStats.toUnlock', {
                   defaultValue: 'To Unlock'
                 })}
-                : {t(trait.unlockHint) as React.ReactNode}
+                : {t(trait.unlockHint)}
               </div>
             )}
           </div>
@@ -780,7 +800,14 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {}
-}: any) => {
+}: {
+  player: PlayerData
+  band: BandData
+  social: SocialData
+  activeQuests?: ActiveQuest[]
+  venueBlacklist?: string[]
+  reputationByRegion?: Record<string, number>
+}) => {
   const { t } = useTranslation(['ui', 'items', 'venues', 'traits'])
 
   return (

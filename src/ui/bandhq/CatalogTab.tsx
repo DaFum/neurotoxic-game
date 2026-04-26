@@ -1,29 +1,7 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { CatalogItem, CatalogTabProps } from '../../types/components'
 import { ShopItem } from './ShopItem'
-
-type CatalogItem = {
-  id: string | number
-  name?: string
-  cost: number
-  description?: string
-  type?: string
-  effect?: Record<string, unknown>
-  currency?: string
-  img?: string
-}
-
-type Balances = Record<string, number>
-
-type CatalogTabProps = {
-  items: CatalogItem[]
-  balances: Balances
-  handleBuy: (item: CatalogItem) => void
-  isItemOwned: (item: CatalogItem) => boolean
-  isItemDisabled: (item: CatalogItem) => boolean
-  getAdjustedCost?: (item: CatalogItem) => number | undefined
-  processingItemId?: string
-}
 
 const BALANCE_DISPLAY_META = {
   fame: { className: 'text-warning-yellow', suffix: '★' },
@@ -32,6 +10,11 @@ const BALANCE_DISPLAY_META = {
   credits: { className: 'text-toxic-green', suffix: '€' },
   bonus: { className: 'text-star-white', suffix: '' }
 } as const
+
+const hasBalanceMetaKey = (
+  key: string
+): key is keyof typeof BALANCE_DISPLAY_META =>
+  Object.hasOwn(BALANCE_DISPLAY_META, key)
 
 export const CatalogTab = ({
   items,
@@ -48,12 +31,12 @@ export const CatalogTab = ({
     <div>
       <div className='mb-4 flex justify-end gap-4 font-mono text-star-white'>
         {Object.entries(balances).map(([key, value]) => {
-          const meta = BALANCE_DISPLAY_META[
-            key as keyof typeof BALANCE_DISPLAY_META
-          ] || {
-            className: 'text-star-white',
-            suffix: ''
-          }
+          const meta = hasBalanceMetaKey(key)
+            ? BALANCE_DISPLAY_META[key]
+            : {
+                className: 'text-star-white',
+                suffix: ''
+              }
           return (
             <span key={key}>
               {t(`ui:bandhq.${key}`)}:{' '}
@@ -67,15 +50,13 @@ export const CatalogTab = ({
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
-        {((items as any[]) || [])?.map((item: any) => (
+        {items.map(item => (
           <ShopItem
             key={item.id}
             item={item}
-            isOwned={(isItemOwned as any)(item)}
-            isDisabled={(isItemDisabled as any)(item)}
-            adjustedCost={
-              getAdjustedCost ? (getAdjustedCost as any)(item) : undefined
-            }
+            isOwned={isItemOwned(item)}
+            isDisabled={isItemDisabled(item)}
+            adjustedCost={getAdjustedCost ? getAdjustedCost(item) : undefined}
             onBuy={handleBuy}
             processingItemId={processingItemId}
           />
@@ -135,17 +116,11 @@ CatalogTab.propTypes = {
     })
   ).isRequired,
   balances: (
-    props: unknown,
-    propName: unknown,
-    componentName: unknown,
-    ...rest: any[]
+    props: Record<string, unknown>,
+    propName: string,
+    componentName: string
   ) => {
-    const shapeError = (balancesShape as any)(
-      props,
-      propName,
-      componentName,
-      ...rest
-    )
+    const shapeError = balancesShape(props, propName, componentName)
     if (shapeError) {
       return shapeError
     }
