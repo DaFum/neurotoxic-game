@@ -40,6 +40,7 @@ export const ToggleRadio = memo(() => {
         onClick={toggle}
         className='bg-void-black border border-toxic-green text-toxic-green w-8 h-8 flex items-center justify-center hover:bg-toxic-green/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
         aria-label={label}
+        aria-pressed={isPlaying}
       >
         {isPlaying ? (
           <span className='text-xl font-bold font-mono'>■</span>
