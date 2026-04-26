@@ -95,3 +95,4 @@
 - ESLint flat-config file globs must include both JS and TS domains used in CI (`src/**/*.ts(x)`); missing TS matching can silently bypass lint checks and surface as "File ignored because no matching configuration was supplied."
 - When wrapping PropTypes validators, forward the full validator argument list (`location`, qualified name, secret) to preserve actionable dev warnings.
 - Shared audio UI contracts belong in `src/types/audio.d.ts`; avoid duplicating `AudioState`/audio callback shapes in component-local or unrelated type modules.
+- Error handling is layered by boundary: strict throws in pure utilities, tolerant log-and-continue in frame/tick loops, and catch/recover at scene/context boundaries.

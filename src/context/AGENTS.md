@@ -38,3 +38,4 @@ Applies to `src/context/**`.
 ## Recent Findings (2026-04)
 
 - UI refactors that add/remove actionable entries should audit action creators for orphaned dispatch paths and keep contracts explicit.
+- Context boundary effects should catch and recover from strict utility failures (map/event generation) so invariant throws never blank the provider tree.

@@ -1,5 +1,6 @@
 import test, { mock } from 'node:test'
 import assert from 'node:assert/strict'
+import { StateError } from '../../src/utils/errorHandler'
 
 // Mock database
 const MOCK_EVENTS = {
@@ -237,6 +238,25 @@ test('eventEngine.resolveChoice handles skill checks (failure)', () => {
 
   const result = eventEngine.resolveChoice(option, state)
   assert.equal(result.value, -5)
+})
+
+test('eventEngine.resolveChoice throws StateError for sparse band members', () => {
+  const option = {
+    skillCheck: {
+      stat: 'skill',
+      threshold: 5,
+      success: { type: 'stat', stat: 'fame', value: 10 },
+      failure: { type: 'stat', stat: 'fame', value: -5 }
+    }
+  }
+  const state = buildGameState({ band: { members: [undefined, { skill: 7 }] } })
+
+  assert.throws(
+    () => eventEngine.resolveChoice(option, state),
+    error =>
+      error instanceof StateError &&
+      error.message.includes('Sparse members invariant violated')
+  )
 })
 
 test('eventEngine.resolveChoice handles luck checks', () => {

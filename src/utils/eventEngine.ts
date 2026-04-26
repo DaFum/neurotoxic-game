@@ -19,6 +19,7 @@ import { logger } from './logger'
 import { secureRandom } from './crypto'
 import { bandHasTrait } from './traitLogic'
 import { calculateAppliedDelta } from './gameStateUtils'
+import { StateError } from './errorHandler'
 import type { GameEvent, GameState } from '../types/game'
 
 type TemplateContext = Record<string, string>
@@ -630,7 +631,7 @@ export const eventEngine = {
             for (let i = 0; i < members.length; i++) {
               const m = members[i]
               if (!m) {
-                throw new Error(
+                throw new StateError(
                   `Sparse members invariant violated in band.members at index ${i}`
                 )
               }
