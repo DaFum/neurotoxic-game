@@ -28,3 +28,4 @@ Applies to `src/scenes/**`.
 ## Recent Findings (2026-04)
 
 - Scene modules should not keep dormant modal branches: either wire a reachable trigger or remove the render path and related hook usage together.
+- Kabelsalat routing guardrails now live in `src/scenes/kabelsalat/AGENTS.md`; preserve both timeout-loss and fully-wired win transitions to `GAME_PHASES.GIG` when refactoring scene/hook boundaries.

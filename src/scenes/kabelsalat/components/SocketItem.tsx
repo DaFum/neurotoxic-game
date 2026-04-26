@@ -4,16 +4,17 @@ import type { FC } from 'react'
 import { PlugGraphics } from './PlugGraphics.tsx'
 import { SocketGraphics } from './SocketGraphics.tsx'
 import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants'
+import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketItemProps {
   t: (key: string, options?: unknown) => string
-  socketId: keyof typeof SOCKET_DEFS
+  socketId: SocketId
   index: number
-  connections: Partial<Record<keyof typeof SOCKET_DEFS, string>>
+  connections: Partial<Record<SocketId, string>>
   isPowerConnected: boolean
   selectedCable?: string | null
   isGameOver: boolean
-  handleSocketClick: (id: keyof typeof SOCKET_DEFS) => void
+  handleSocketClick: (id: SocketId) => void
 }
 
 const SocketItemComponent: FC<SocketItemProps> = ({
@@ -33,9 +34,10 @@ const SocketItemComponent: FC<SocketItemProps> = ({
   const isConnected = !!connections[socketId]
   const cableId = connections[socketId]
   const connectedCable =
-    isConnected && typeof cableId === 'string'
-      ? ((CABLE_MAP[cableId] as { type: string; color: string } | undefined) ??
-        null)
+    isConnected &&
+    typeof cableId === 'string' &&
+    Object.hasOwn(CABLE_MAP, cableId)
+      ? CABLE_MAP[cableId]
       : null
   const showColor = isPowerConnected
   const socketDisplayColor = showColor ? socket.color : 'var(--color-ash-gray)'

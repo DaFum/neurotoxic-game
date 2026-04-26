@@ -3,8 +3,7 @@ import { getMessyPath } from '../utils'
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
 
-import type { SocketId } from '../../../types/kabelsalat'
-type CableId = keyof typeof CABLE_MAP
+import type { SocketId, CableId } from '../../../types/kabelsalat'
 
 export type ConnectionPathProps = {
   sockId: SocketId
@@ -26,9 +25,7 @@ export const ConnectionPath: FC<ConnectionPathProps> = ({
   }
 
   const isActive = isPowerConnected || cabId === 'iec'
-  const cableColor = isActive
-    ? (cable.color as string)
-    : 'var(--color-concrete-gray)'
+  const cableColor = isActive ? cable.color : 'var(--color-concrete-gray)'
 
   return (
     <path

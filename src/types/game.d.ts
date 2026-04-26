@@ -5,6 +5,7 @@ import type { GAME_PHASES } from '../context/gameConstants'
 export type ActionType = ActionTypes[keyof ActionTypes]
 
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 
 export interface GameSettings {
   crtEnabled: boolean

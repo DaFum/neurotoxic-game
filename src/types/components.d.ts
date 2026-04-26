@@ -386,7 +386,7 @@ export interface Effect {
 }
 
 export interface PurchaseItem {
-  id?: string
+  id?: string | number
   name?: string
   cost?: number
   currency?: string
@@ -409,9 +409,25 @@ export type Balances = Record<string, number>
 export interface CatalogTabProps {
   items: CatalogItem[]
   balances: Balances
-  handleBuy: (item: CatalogItem) => void
-  isItemOwned: (item: CatalogItem) => boolean
-  isItemDisabled: (item: CatalogItem) => boolean
-  getAdjustedCost?: (item: CatalogItem) => number | undefined
+  /**
+   * These must be one-argument callbacks already bound by usePurchaseLogic.
+   * Do not pass raw utility functions that require player/band arguments.
+   */
+  handleBuyCallback: (item: CatalogItem) => void
+  isItemOwnedCallback: (item: CatalogItem) => boolean
+  isItemDisabledCallback: (item: CatalogItem) => boolean
+  getAdjustedCostCallback?: (item: CatalogItem) => number | undefined
   processingItemId?: string
+}
+
+export type AudioState = {
+  musicVol: number
+  sfxVol: number
+  isMuted: boolean
+}
+
+export type OnAudioChange = {
+  setMusic: (value: number) => void
+  setSfx: (value: number) => void
+  toggleMute: () => void
 }

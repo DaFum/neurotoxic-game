@@ -235,13 +235,29 @@ export const applyInventoryAdd = (
   effect: Effect,
   bandInventory?: Inventory
 ) => ({
-  inventory: {
-    ...(bandInventory ?? {}),
-    [effect.item as string]:
-      ((bandInventory ?? {})[effect.item as string] || 0) + effect.value
-  }
+  ...(typeof effect.item === 'string'
+    ? {
+        inventory: {
+          ...(bandInventory ?? {}),
+          [effect.item]: (() => {
+            const previousValue = (bandInventory ?? {})[effect.item]
+            const safePrevious =
+              typeof previousValue === 'number' &&
+              Number.isFinite(previousValue)
+                ? previousValue
+                : 0
+            return safePrevious + Number(effect.value ?? 0)
+          })()
+        }
+      }
+    : { inventory: { ...(bandInventory ?? {}) } })
 })
 
+type UnlockMessage = {
+  messageKey: string
+  fallback?: string
+  type: string
+}
 /**
  * Applies stat modifier effect
  * @param {Object} effect - Effect configuration
@@ -497,7 +513,7 @@ export const applyUnlockHQ = (
     hqUpgrades: [...(player.hqUpgrades ?? []), item.id as string]
   }
   let nextBandPatch: BandPatch = null
-  let messages: any[] = []
+  let messages: UnlockMessage[] = []
 
   // Special item effects
   switch (item.id) {

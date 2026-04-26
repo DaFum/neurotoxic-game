@@ -630,11 +630,9 @@ export const eventEngine = {
             for (let i = 0; i < members.length; i++) {
               const m = members[i]
               if (!m) {
-                logger.error(
-                  'EventEngine',
-                  `Sparse members invariant violated at index ${i}`
+                throw new Error(
+                  `Sparse members invariant violated in band.members at index ${i}`
                 )
-                continue
               }
               // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
               // Then check top-level (dynamic stats like mood/health 0-100)

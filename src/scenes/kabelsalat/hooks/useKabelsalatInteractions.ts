@@ -91,8 +91,11 @@ export const useKabelsalatInteractions = (
         return
       if (connections[socketId]) return
 
+      if (!Object.hasOwn(SOCKET_DEFS, socketId)) return
+      if (!Object.hasOwn(CABLE_MAP, selectedCable)) return
+
       const targetSocket = SOCKET_DEFS[socketId as keyof typeof SOCKET_DEFS]
-      const incomingCable = CABLE_MAP[selectedCable as keyof typeof CABLE_MAP]
+      const incomingCable = CABLE_MAP[selectedCable]
 
       const hasPower = !!connections['power']
       const hasAmp = !!connections['amp']

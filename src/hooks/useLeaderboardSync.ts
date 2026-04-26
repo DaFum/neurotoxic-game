@@ -33,9 +33,7 @@ const getLeaderboardSyncEnabledFlag = () => {
   }
 
   const processFlag =
-    typeof globalThis === 'object' &&
-    'process' in globalThis &&
-    typeof globalThis.process === 'object'
+    typeof globalThis === 'object' && typeof globalThis.process === 'object'
       ? globalThis.process?.env?.VITE_ENABLE_LEADERBOARD_SYNC
       : undefined
   if (typeof processFlag === 'string') {

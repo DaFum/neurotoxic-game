@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 const VENUE_NAMESPACE = 'venues:'
 const VENUE_NAME_SUFFIX = '.name'
 
@@ -29,4 +31,3 @@ export const translateLocation = (
 
   return location || fallback
 }
-import type { TFunction } from 'i18next'

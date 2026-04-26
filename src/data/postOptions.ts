@@ -296,7 +296,7 @@ export const POST_OPTIONS = [
       const members = requireBandMembers(band, 'perf_ego_flex')
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj =
-        getMemberWithTrait(members, 'lead_singer') || members[0]
+        getMemberWithTrait(members, 'lead_singer') ?? members[0]
       const vocalist = vocalistObj?.name ?? 'Unknown'
       return {
         type: 'FIXED',
@@ -570,8 +570,8 @@ export const POST_OPTIONS = [
     resolve: ({ band }: GameState) => {
       const members = requireBandMembers(band, 'drama_gear_flex')
       const gearNerd =
-        getMemberWithTrait(members, 'gear_nerd')?.name ||
-        members[0]?.name ||
+        getMemberWithTrait(members, 'gear_nerd')?.name ??
+        members[0]?.name ??
         'Unknown'
       return {
         type: 'FIXED',
@@ -611,9 +611,9 @@ export const POST_OPTIONS = [
     resolve: ({ band }: GameState) => {
       const members = requireBandMembers(band, 'drama_tour_bus_prank')
       const prankster =
-        getMemberWithTrait(members, 'party_animal')?.name ||
-        members[1]?.name ||
-        members[0]?.name ||
+        getMemberWithTrait(members, 'party_animal')?.name ??
+        members[1]?.name ??
+        members[0]?.name ??
         i18n.t('ui:postOptions.errors.unknownMemberFallback', {
           defaultValue: 'Unknown'
         })
@@ -726,7 +726,7 @@ export const POST_OPTIONS = [
     resolve: ({ band }: GameState) => {
       const members = requireBandMembers(band, 'comm_gear_review')
       // Find potential gear nerd or fallback to first member
-      const member = getMemberWithTrait(members, 'gear_nerd') || members[0]
+      const member = getMemberWithTrait(members, 'gear_nerd') ?? members[0]
       const target = member?.name ?? 'Unknown'
       const memberId = member?.id ?? member?.name ?? 'Unknown' // Use name as fallback ID
 

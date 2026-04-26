@@ -14,10 +14,10 @@ export const UpgradesTab = ({
     <CatalogTab
       items={upgrades}
       balances={{ fame: (player as any).fame, money: (player as any).money }}
-      handleBuy={handleBuy}
-      isItemOwned={isItemOwned}
-      isItemDisabled={isItemDisabled}
-      getAdjustedCost={getAdjustedCost}
+      handleBuyCallback={handleBuy}
+      isItemOwnedCallback={isItemOwned}
+      isItemDisabledCallback={isItemDisabled}
+      getAdjustedCostCallback={getAdjustedCost}
       processingItemId={processingItemId}
     />
   )

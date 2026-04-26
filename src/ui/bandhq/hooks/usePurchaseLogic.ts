@@ -128,7 +128,7 @@ const processTraitToasts = (
       return
     }
     if (!import.meta.env.PROD) {
-      throw new Error('Invalid trait toast: empty message')
+      console.error('Invalid trait toast: empty message', toastItem)
     }
   })
 }
@@ -211,7 +211,7 @@ const processEffectMessages = (
       return
     }
     if (!import.meta.env.PROD) {
-      throw new Error('Invalid effect toast: empty message')
+      console.error('Invalid effect toast: empty message', msg)
     }
   })
 }
@@ -409,8 +409,8 @@ export const usePurchaseLogic = ({
         if (
           item.currency === 'fame' &&
           !isConsumable &&
-          effect?.type !== 'unlock_upgrade' &&
-          effect?.type !== 'inventory_set'
+          resolvedEffect?.type !== 'unlock_upgrade' &&
+          resolvedEffect?.type !== 'inventory_set'
         ) {
           const vanState: PlayerState['van'] | Partial<PlayerState['van']> =
             playerPatch.van ?? player.van

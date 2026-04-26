@@ -19,10 +19,10 @@ const hasBalanceMetaKey = (
 export const CatalogTab = ({
   items,
   balances,
-  handleBuy,
-  isItemOwned,
-  isItemDisabled,
-  getAdjustedCost,
+  handleBuyCallback,
+  isItemOwnedCallback,
+  isItemDisabledCallback,
+  getAdjustedCostCallback,
   processingItemId
 }: CatalogTabProps) => {
   const { t } = useTranslation()
@@ -54,10 +54,14 @@ export const CatalogTab = ({
           <ShopItem
             key={item.id}
             item={item}
-            isOwned={isItemOwned(item)}
-            isDisabled={isItemDisabled(item)}
-            adjustedCost={getAdjustedCost ? getAdjustedCost(item) : undefined}
-            onBuy={handleBuy}
+            isOwned={isItemOwnedCallback(item)}
+            isDisabled={isItemDisabledCallback(item)}
+            adjustedCost={
+              getAdjustedCostCallback
+                ? getAdjustedCostCallback(item)
+                : undefined
+            }
+            onBuy={handleBuyCallback}
             processingItemId={processingItemId}
           />
         ))}
@@ -130,9 +134,9 @@ CatalogTab.propTypes = {
       componentName
     )
   },
-  handleBuy: PropTypes.func.isRequired,
-  isItemOwned: PropTypes.func.isRequired,
-  isItemDisabled: PropTypes.func.isRequired,
-  getAdjustedCost: PropTypes.func,
+  handleBuyCallback: PropTypes.func.isRequired,
+  isItemOwnedCallback: PropTypes.func.isRequired,
+  isItemDisabledCallback: PropTypes.func.isRequired,
+  getAdjustedCostCallback: PropTypes.func,
   processingItemId: PropTypes.string
 }

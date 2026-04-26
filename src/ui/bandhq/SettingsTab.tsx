@@ -1,18 +1,15 @@
 import PropTypes from 'prop-types'
 import type { GameSettings } from '../../types/game'
 import type { GameStateWithActions } from '../../context/GameState'
+import type { AudioState, OnAudioChange } from '../../types/components'
 import { SettingsPanel } from '../shared'
 import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 import { useSettingsActions } from '../../hooks/useSettingsActions'
 
 type SettingsTabProps = {
   settings: GameSettings
-  audioState: { musicVol: number; sfxVol: number; isMuted: boolean }
-  onAudioChange: {
-    setMusic: (value: number) => void
-    setSfx: (value: number) => void
-    toggleMute: () => void
-  }
+  audioState: AudioState
+  onAudioChange: OnAudioChange
   updateSettings: GameStateWithActions['updateSettings']
   deleteSave: () => void
 }

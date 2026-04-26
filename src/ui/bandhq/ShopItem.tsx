@@ -7,6 +7,15 @@ import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
 
+export interface ShopItemProps {
+  item: PurchaseItem
+  isOwned: boolean
+  isDisabled: boolean
+  adjustedCost?: number
+  onBuy: (item: PurchaseItem) => void
+  processingItemId?: string
+}
+
 // ⚡ Bolt Optimization: Wrapped ShopItem in React.memo
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
 // (e.g. player money updates) if the item's specific props haven't changed.
@@ -18,14 +27,7 @@ export const ShopItem = React.memo(
     adjustedCost,
     onBuy,
     processingItemId
-  }: {
-    item: PurchaseItem
-    isOwned: boolean
-    isDisabled: boolean
-    adjustedCost?: number
-    onBuy: (item: PurchaseItem) => void
-    processingItemId?: string
-  }) => {
+  }: ShopItemProps) => {
     const { t } = useTranslation(['items', 'ui'])
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
@@ -145,7 +147,7 @@ ShopItem.displayName = 'ShopItem'
 
 ShopItem.propTypes = {
   item: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
     description: PropTypes.string,
     cost: PropTypes.number.isRequired,

@@ -26,9 +26,9 @@ type GeneratedMapNode = {
   layer: number
   venue: Venue
   status: 'unlocked' | 'completed' | 'locked'
-  type: 'START' | 'NORMAL' | 'BOSS' | 'END'
-  x?: number
-  y?: number
+  type: 'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+  x: number
+  y: number
 }
 type MapGeneratorState = {
   layers: GeneratedMapNode[][]
@@ -48,6 +48,11 @@ type VenuePools = {
 let cachedHomeVenue: Venue | null = null
 let cachedFinaleVenue: Venue | null = null
 let cachedVenuesLength: number = -1
+
+const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
+  const raw = venue[axis]
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
+}
 
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
@@ -120,7 +125,9 @@ export class MapGenerator {
       layer: 0,
       venue: homeVenue,
       status: 'unlocked', // unlocked, completed, locked
-      type: 'START'
+      type: 'START',
+      x: getVenueCoord(homeVenue, 'x', 50),
+      y: getVenueCoord(homeVenue, 'y', 10)
     }
     map.layers.push([startNode])
     map.nodes[startNode.id] = startNode
@@ -144,7 +151,7 @@ export class MapGenerator {
     }
 
     // Track used venues to avoid duplicates
-    const usedVenueIds = new Set()
+    const usedVenueIds = new Set<string>()
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
@@ -269,8 +276,15 @@ export class MapGenerator {
           }
 
           if (!venue) {
-            throw new Error(
-              `Failed to select venue from pool at layer=${i} index=${j} targetIndex=${targetIndex} poolLength=${poolArray.length} usedVenueIds=${usedVenueIds.size}`
+            throw new StateError(
+              `Failed to select venue from pool at layer=${i} index=${j}`,
+              {
+                layer: i,
+                index: j,
+                targetIndex,
+                poolLength: poolArray.length,
+                usedVenueIds: usedVenueIds.size
+              }
             )
           }
 
@@ -312,7 +326,7 @@ export class MapGenerator {
         // Determine Node Type based on probability and venue
         // ~70% GIG/FESTIVAL, ~20% REST_STOP, ~10% SPECIAL
         const typeRoll = this.random()
-        let nodeType = 'GIG'
+        let nodeType: GeneratedMapNode['type'] = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
         else if (venue.capacity >= 1000) nodeType = 'FESTIVAL'
@@ -322,7 +336,9 @@ export class MapGenerator {
           layer: i,
           venue, // Note: Venue references might be duplicated across layers, which is okay for "touring"
           status: 'locked',
-          type: nodeType
+          type: nodeType,
+          x: getVenueCoord(venue, 'x', 50),
+          y: getVenueCoord(venue, 'y', i * 10 + 10)
         }
         layerNodes.push(node)
         map.nodes[node.id] = node
@@ -400,7 +416,9 @@ export class MapGenerator {
       layer: depth,
       venue: finaleVenue,
       status: 'locked',
-      type: 'FINALE'
+      type: 'FINALE',
+      x: getVenueCoord(finaleVenue, 'x', 50),
+      y: getVenueCoord(finaleVenue, 'y', 90)
     }
     map.layers.push([endNode])
     map.nodes[endNode.id] = endNode
@@ -583,7 +601,12 @@ export class MapGenerator {
 
     if (k === 1) {
       const value = arr[Math.floor(this.random() * n)]
-      return value === undefined ? [] : [value]
+      if (value === undefined) {
+        throw new Error(
+          'Sparse array invariant violated in pickRandomSubset(k=1)'
+        )
+      }
+      return [value]
     }
 
     if (k === 2) {
@@ -592,19 +615,29 @@ export class MapGenerator {
       if (idx2 >= idx1) idx2++
       const first = arr[idx1]
       const second = arr[idx2]
-      return [first, second].filter((item): item is T => item !== undefined)
+      if (first === undefined || second === undefined) {
+        throw new Error(
+          'Sparse array invariant violated in pickRandomSubset(k=2)'
+        )
+      }
+      return [first, second]
     }
 
     // Sparse Fisher-Yates shuffle using Map to avoid O(n) copy for small k relative to n
     if (k < n / 4) {
-      const result = []
-      const swaps = new Map()
+      const result: T[] = []
+      const swaps = new Map<number, T>()
       for (let i = 0; i < k; i++) {
         const j = i + Math.floor(this.random() * (n - i))
 
         // Retrieve values, falling back to original array if not swapped
         const valI = swaps.has(i) ? swaps.get(i) : arr[i]
         const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
+        if (valI === undefined || valJ === undefined) {
+          throw new Error(
+            `Sparse array invariant violated in pickRandomSubset(fisher-yates) at i=${i}, j=${j}`
+          )
+        }
 
         result.push(valJ)
         // Since j = i + Math.floor(this.random() * (n - i)), it is guaranteed that j >= i.

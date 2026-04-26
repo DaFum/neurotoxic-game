@@ -5,6 +5,17 @@ import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import prettier from 'eslint-config-prettier'
 
+// Shared to keep JS/TS rulesets consistent.
+const RESTRICTED_IMPORTS = {
+  patterns: [
+    {
+      group: ['**/data/events.js'],
+      message:
+        'Use the canonical event DB entrypoint: src/data/events/index.js.'
+    }
+  ]
+}
+
 export default [
   {
     ignores: [
@@ -38,18 +49,7 @@ export default [
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
       ...prettier.rules,
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/data/events.js'],
-              message:
-                'Use the canonical event DB entrypoint: src/data/events/index.js.'
-            }
-          ]
-        }
-      ],
+      'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
       'no-unused-vars': [
         'warn',
         {
@@ -85,19 +85,9 @@ export default [
     },
     rules: {
       ...prettier.rules,
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/data/events.js'],
-              message:
-                'Use the canonical event DB entrypoint: src/data/events/index.js.'
-            }
-          ]
-        }
-      ],
-      '@typescript-eslint/no-explicit-any': 'off',
+      'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
+      // Project policy is "never any"; keep this visible in lint output.
+      '@typescript-eslint/no-explicit-any': 'warn',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',

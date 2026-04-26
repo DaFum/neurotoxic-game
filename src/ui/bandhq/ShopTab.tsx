@@ -14,10 +14,10 @@ export const ShopTab = ({
     <CatalogTab
       items={[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments]}
       balances={{ funds: (player as any).money }}
-      handleBuy={handleBuy}
-      isItemOwned={isItemOwned}
-      isItemDisabled={isItemDisabled}
-      getAdjustedCost={getAdjustedCost}
+      handleBuyCallback={handleBuy}
+      isItemOwnedCallback={isItemOwned}
+      isItemDisabledCallback={isItemDisabled}
+      getAdjustedCostCallback={getAdjustedCost}
       processingItemId={processingItemId}
     />
   )

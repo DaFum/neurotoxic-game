@@ -113,13 +113,17 @@ export const useBandHQLogic = ({
 
   const handleBuyWithLock = useCallback(
     async (item: PurchaseItem) => {
-      if (typeof item.id !== 'string') {
-        throw new StateError('Invalid purchase item id')
-      }
       if (processingItemIdRef.current !== null) return
-      processingItemIdRef.current = item.id
-      setProcessingItemId(item.id)
+      const itemId = typeof item.id === 'string' ? item.id : ''
+      processingItemIdRef.current = itemId
+      setProcessingItemId(itemId || null)
       try {
+        if (typeof item.id !== 'string') {
+          handleError(new StateError('Invalid purchase item id', { item }), {
+            addToast
+          })
+          return
+        }
         await handleBuy(item)
       } catch (err) {
         if (err instanceof GameError || err instanceof StateError) {

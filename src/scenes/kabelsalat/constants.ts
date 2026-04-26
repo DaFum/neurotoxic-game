@@ -39,14 +39,18 @@ export const CABLES = [
     y: 480,
     color: 'var(--color-info-blue)'
   }
-]
+] as const
 
-export const CABLE_MAP = Object.create(null)
-for (let i = 0; i < CABLES.length; i++) {
-  const cable = CABLES[i]
-  if (!cable) continue
-  CABLE_MAP[cable.id] = cable
-}
+export type Cable = (typeof CABLES)[number]
+export type CableId = Cable['id']
+type CableMap = Record<CableId, Cable>
+export const CABLE_MAP = CABLES.reduce<CableMap>((acc, cable, index) => {
+  if (!cable) {
+    throw new Error(`Missing cable definition at index ${index}`)
+  }
+  acc[cable.id] = cable
+  return acc
+}, {} as CableMap)
 
 export const SLOT_XS = [120, 260, 400, 540, 680]
 

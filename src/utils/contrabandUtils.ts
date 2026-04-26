@@ -3,6 +3,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../data/contraband'
 import { secureRandom } from './crypto'
+import type { Rarity } from '../types/game'
 
 export const DROP_BASE_CHANCE = 0.15
 export const LUCK_MOD_PER_POINT = 0.005
@@ -17,12 +18,12 @@ export const BUST_CHANCE_BY_RARITY = {
   uncommon: 0.05,
   rare: 0.15,
   epic: 0.3
-}
+} as const satisfies Record<Rarity, number>
 
 /**
  * Finds the highest-risk contraband item in band.stash.
  * Returns the item ID and rarity with the greatest bust potential.
- * @param {Object|null} stash - band.stash dictionary (keyed by item id)
+ * @param {Record<string, unknown>|null|undefined} stash - band.stash dictionary (keyed by item id)
  * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: string|null }}
  */
 export function computeStashBustRisk(stash: unknown) {
@@ -35,19 +36,17 @@ export function computeStashBustRisk(stash: unknown) {
   let highestRiskItemId = null
   let highestRarity = null
 
-  const keys = Object.keys(stash)
+  const keys = Object.keys(stashRecord)
   for (let i = 0; i < keys.length; i++) {
     const itemId = keys[i]
     if (!itemId) continue
     const item = stashRecord[itemId]
     if (!item || typeof item !== 'object') continue
+    const itemRecord = item as Record<string, unknown>
     const rarity =
-      typeof (item as Record<string, unknown>).rarity === 'string'
-        ? (item as Record<string, unknown>).rarity
-        : null
+      typeof itemRecord.rarity === 'string' ? itemRecord.rarity : null
     if (!rarity) continue
-    const chance =
-      BUST_CHANCE_BY_RARITY[rarity as keyof typeof BUST_CHANCE_BY_RARITY] ?? 0
+    const chance = BUST_CHANCE_BY_RARITY[rarity as Rarity] ?? 0
     if (chance > highestChance) {
       highestChance = chance
       highestRiskItemId = itemId

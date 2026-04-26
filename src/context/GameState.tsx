@@ -426,8 +426,26 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     if (!state.gameMap) {
       const generator = new MapGenerator(Date.now())
-      const newMap = generator.generateMap()
-      dispatch(createSetMapAction(newMap))
+      try {
+        const newMap = generator.generateMap()
+        dispatch(createSetMapAction(newMap))
+      } catch (error) {
+        handleError(
+          new StateError('Failed to generate map', {
+            originalError:
+              error instanceof Error ? error.message : String(error)
+          }),
+          { source: 'GameState.generateMap' }
+        )
+        dispatch(
+          createSetMapAction({
+            layers: [],
+            nodes: {},
+            nodeList: [],
+            connections: []
+          })
+        )
+      }
     }
   }, [state.gameMap, dispatch])
 

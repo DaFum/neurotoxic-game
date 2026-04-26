@@ -495,7 +495,11 @@ export const calculateDailyUpdates = (
   if (hasBeerFridge) {
     for (let i = 0; i < nextBand.members.length; i++) {
       const m = nextBand.members[i]
-      if (!m) continue
+      if (!m) {
+        throw new Error(
+          `Sparse nextBand.members invariant violated at index ${i} in party animal loop`
+        )
+      }
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
           m.stamina = clampMemberStamina(m.stamina - 5, m.staminaMax)

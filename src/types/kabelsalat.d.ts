@@ -1,6 +1,10 @@
-import type { SOCKET_DEFS } from '../scenes/kabelsalat/constants'
+import type {
+  SOCKET_DEFS,
+  CableId as ConstCableId
+} from '../scenes/kabelsalat/constants'
 
 export type SocketId = keyof typeof SOCKET_DEFS
+export type CableId = ConstCableId
 
 export interface LightningSeed {
   id: string | number
