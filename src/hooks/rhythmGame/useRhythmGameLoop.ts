@@ -24,7 +24,7 @@ type RhythmGameLoopParams = {
   setters: Pick<RhythmStateSetters, 'setIsToxicMode'>
   contextState: { activeEvent: GameEvent | null }
   contextActions: {
-    setLastGigStats: any
+    setLastGigStats: SetLastGigStats
     endGig: () => void
   }
 }
