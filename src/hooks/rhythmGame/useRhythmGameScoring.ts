@@ -243,7 +243,7 @@ export const useRhythmGameScoring = ({
       const toxicModeActive = state.isToxicMode
 
       const hitWindow = calculateDynamicHitWindow(
-        state.lanes[laneIndex].hitWindow,
+        (state.lanes[laneIndex]?.hitWindow ?? 120),
         state.modifiers.hitWindowBonus ?? 0,
         laneIndex,
         guitarDifficulty
@@ -259,9 +259,9 @@ export const useRhythmGameScoring = ({
         const originalNote = note.originalNote
         if (
           originalNote &&
-          Number.isInteger(originalNote.p) &&
-          originalNote.p >= 0 &&
-          originalNote.p <= 127
+          Number.isInteger(originalNote?.p) &&
+          (originalNote?.p || 0) >= 0 &&
+          (originalNote?.p || 0) <= 127
         ) {
           const velocity =
             typeof originalNote.velocity === 'number' &&
@@ -276,8 +276,8 @@ export const useRhythmGameScoring = ({
             maxLeadMs: 30
           })
           playNoteAtTime(
-            originalNote.p,
-            state.lanes[laneIndex].id,
+            (originalNote?.p || 0),
+            (state.lanes[laneIndex]?.id ?? 'unknown'),
             scheduledMs / 1000,
             velocity
           )

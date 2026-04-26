@@ -610,14 +610,14 @@ export const CRISIS_EVENTS = [
 ]
 
 // Validate all crisis events on load (PR/issue #1234)
-const validEvents = []
+const validEvents: any[] = []
 CRISIS_EVENTS.forEach(event => {
   try {
     validateCrisisEvent(event)
     validEvents.push(event)
   } catch (err) {
-    logger.error('CrisisEventValidation', err.message, { eventId: event.id })
-    if (!import.meta.env.PROD) {
+    logger.error('CrisisEventValidation', (err as Error).message, { eventId: event.id })
+    if (!(import.meta as any).env.PROD) {
       throw err
     }
   }

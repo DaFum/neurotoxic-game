@@ -5,15 +5,15 @@ import { logger } from '../utils/logger'
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
 
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
+if ((import.meta as any).hot) {
+  (import.meta as any).hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
     hasLoggedUnavailableEndpoint = false
   })
 }
 
 const getLeaderboardSyncEnabledFlag = () => {
-  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
+  const viteFlag = (import.meta as any).env?.VITE_ENABLE_LEADERBOARD_SYNC
   if (typeof viteFlag === 'string') {
     return viteFlag.toLowerCase() !== 'false'
   }
@@ -37,7 +37,7 @@ const getLeaderboardSyncEnabledFlag = () => {
  * @param {number} money - The player's current money.
  * @returns {boolean} True if valid.
  */
-export const isValidForSync = (playerId, playerName, day, money) => {
+export const isValidForSync = (playerId: any, playerName: any, day: any, money: any) => {
   return (
     !!playerId &&
     !!playerName &&
@@ -55,7 +55,7 @@ export const isValidForSync = (playerId, playerName, day, money) => {
  * @param {object} social - The social state object.
  * @returns {number} The total sum of followers.
  */
-export const calculateTotalFollowers = social => {
+export const calculateTotalFollowers = (social: any) => {
   return (
     (social?.instagram || 0) +
     (social?.tiktok || 0) +
@@ -78,15 +78,15 @@ export const calculateTotalFollowers = social => {
  * @returns {object} The payload object.
  */
 export const createSyncPayload = (
-  playerId,
-  playerName,
-  money,
-  day,
-  fame,
-  totalDistance,
-  conflictsResolved,
-  stageDives,
-  totalFollowers
+  playerId: any,
+  playerName: any,
+  money: any,
+  day: any,
+  fame: any,
+  totalDistance: any,
+  conflictsResolved: any,
+  stageDives: any,
+  totalFollowers: any
 ) => {
   return {
     playerId,
@@ -106,7 +106,7 @@ export const createSyncPayload = (
  * @param {object} payload - The data to sync.
  * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
  */
-export const syncLeaderboardStats = async payload => {
+export const syncLeaderboardStats = async (payload: any) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return false
   }
@@ -140,7 +140,7 @@ export const syncLeaderboardStats = async payload => {
  * Hook to sync player stats to the global leaderboards.
  * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = state => {
+export const useLeaderboardSync = (state: any) => {
   const { player, social } = state || {}
   const { playerId, playerName, money, day, fame, stats } = player || {}
   const { totalDistance, conflictsResolved, stageDives } = stats || {}

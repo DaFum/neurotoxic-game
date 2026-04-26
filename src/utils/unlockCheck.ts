@@ -23,6 +23,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
   let Matze, Marius, Lars
   for (let i = 0; i < members.length; i++) {
     const m = members[i]
+    if (!m) continue
     if (m.name === CHARACTERS.MATZE.name) Matze = m
     else if (m.name === CHARACTERS.MARIUS.name) Marius = m
     else if (m.name === CHARACTERS.LARS.name) Lars = m
@@ -156,7 +157,7 @@ export const checkTraitUnlocks = (state: GameState, context: unknown = {}) => {
       for (const memberId in Matze.relationships) {
         if (
           Object.hasOwn(Matze.relationships, memberId) &&
-          Matze.relationships[memberId] < 30
+          (Matze.relationships[memberId] || 0) < 30
         ) {
           hasGrudge = true
           break

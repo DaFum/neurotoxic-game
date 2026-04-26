@@ -137,7 +137,7 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   }
 
   const getMemberSkill = (member?: BandMember): number =>
-    member?.baseStats?.skill ?? (member?.skill as number) ?? 0
+    (member?.baseStats as any)?.skill ?? ((member as any)?.skill as number) ?? 0
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,
     drums: 120 + getMemberSkill(Marius) * 4,
@@ -352,7 +352,7 @@ export const calculateDailyUpdates = (
     nextBand.harmony = nextHarmonyEgo
     // Proactive scandal trigger (12% daily chance)
     if (rng() < 0.12) {
-      pendingFlags.scandal = true
+      (pendingFlags as any).scandal = true
     }
     // Passive decay chance (20% per day to forget the drama)
     if (rng() < 0.2) {
@@ -442,6 +442,7 @@ export const calculateDailyUpdates = (
   const nextMembers = new Array(nextBand.members.length)
   for (let i = 0; i < nextBand.members.length; i++) {
     const m = nextBand.members[i]
+    if (!m) continue
 
     // 2a. Base Mood Drift
     let mood = m.mood
@@ -486,6 +487,7 @@ export const calculateDailyUpdates = (
   if (hasBeerFridge) {
     for (let i = 0; i < nextBand.members.length; i++) {
       const m = nextBand.members[i]
+    if (!m) continue
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
           m.stamina = clampMemberStamina(m.stamina - 5, m.staminaMax)

@@ -275,14 +275,7 @@ export const usePurchaseLogic = ({
   updatePlayer,
   updateBand,
   addToast
-}: {
-  player: PlayerState
-  band: BandState
-  social: SocialState
-  updatePlayer: UpdatePlayerFn
-  updateBand: UpdateBandFn
-  addToast: ToastFn
-}) => {
+}: any) => {
   const { t } = useTranslation(['ui', 'items'])
   /**
    * Calculates the adjusted cost of an item based on active traits.
