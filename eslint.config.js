@@ -64,6 +64,7 @@ export default [
   },
   {
     files: ['**/*.{ts,tsx}'],
+    ...eslintReact.configs.recommended,
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -75,8 +76,7 @@ export default [
       },
       globals: {
         ...globals.browser,
-        ...globals.es2021,
-        ...globals.node
+        ...globals.es2021
       }
     },
     plugins: {
@@ -84,6 +84,8 @@ export default [
       ...eslintReact.configs.recommended.plugins
     },
     rules: {
+      ...js.configs.recommended.rules,
+      ...eslintReact.configs.recommended.rules,
       ...prettier.rules,
       'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
       // Project policy is "never any"; keep this visible in lint output.
@@ -106,6 +108,7 @@ export default [
       '*.config.js',
       '**/*.{config,setup}.{ts,mts,cts}',
       'tests/**/*.{js,jsx,mjs}',
+      'tests/**/*.{ts,tsx,mts,cts}',
       'e2e/**/*.{js,jsx,mjs}',
       'extract_venues.js',
       'scripts/**/*.{js,cjs,mjs}'

@@ -40,6 +40,8 @@ export function useAmpLogic() {
   const finishMinigame = useCallback(() => {
     if (finishCalledRef.current) return
     finishCalledRef.current = true
+    isCompleteRef.current = true
+    setIsGameOver(true)
 
     const finalScore =
       accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
@@ -48,10 +50,8 @@ export function useAmpLogic() {
 
   const handleComplete = useCallback(() => {
     if (isCompleteRef.current) return
-    isCompleteRef.current = true
 
     finishMinigame()
-    setIsGameOver(true)
   }, [finishMinigame])
 
   // Function called by PixiStage component to get latest state for rendering

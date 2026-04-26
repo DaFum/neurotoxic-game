@@ -96,3 +96,4 @@
 - When wrapping PropTypes validators, forward the full validator argument list (`location`, qualified name, secret) to preserve actionable dev warnings.
 - Shared audio UI contracts belong in `src/types/audio.d.ts`; avoid duplicating `AudioState`/audio callback shapes in component-local or unrelated type modules.
 - Error handling is layered by boundary: strict throws in pure utilities, tolerant log-and-continue in frame/tick loops, and catch/recover at scene/context boundaries.
+- Keep JS/TS lint parity: TS/TSX blocks must include the same baseline JS/React rules as JSX blocks, and Node globals should be scoped to test/config tooling overrides only.
