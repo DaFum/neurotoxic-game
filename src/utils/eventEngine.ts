@@ -297,7 +297,11 @@ const selectEvent = (
   // Fisher-Yates shuffle for unbiased randomness and better performance
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    ;const temp = shuffled[i];
+    const other = shuffled[j];
+    if (!temp || !other) throw new Error(`Dense array invariant violated at shuffle index i=${i}, j=${j}`);
+    shuffled[i] = other;
+    shuffled[j] = temp;
   }
 
   for (const eligible of shuffled) {
@@ -622,6 +626,7 @@ export const eventEngine = {
             skillValue = -Infinity
             for (let i = 0; i < members.length; i++) {
               const m = members[i]
+              if (!m) continue
               // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
               // Then check top-level (dynamic stats like mood/health 0-100)
               // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
@@ -802,7 +807,8 @@ export const eventEngine = {
       // ⚡ Optimization: Standard for loop instead of .forEach to avoid callback allocation
       const effects = result.effects ?? []
       for (let i = 0, len = effects.length; i < len; i++) {
-        processEffect(effects[i], delta, context, gameState)
+        const eff = effects[i];
+        if (eff) processEffect(eff, delta, context, gameState)
       }
     } else {
       processEffect(result, delta, context, gameState)
@@ -824,6 +830,7 @@ export const eventEngine = {
     const result: EngineEvent[] = []
     for (let i = 0, len = pool.length; i < len; i++) {
       const e = pool[i]
+      if (!e) continue
       // Match exact trigger OR 'random' events (eligible at any trigger point)
       if (trigger && e.trigger !== trigger && e.trigger !== 'random') {
         continue

@@ -137,7 +137,7 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   }
 
   const getMemberSkill = (member?: BandMember): number =>
-    member?.baseStats?.skill ?? (member?.skill as number) ?? 0
+    typeof member?.baseStats === 'object' && member?.baseStats !== null && 'skill' in member.baseStats ? (member.baseStats.skill as number) : (typeof member?.skill === 'number' ? member.skill : 0)
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,
     drums: 120 + getMemberSkill(Marius) * 4,
@@ -346,7 +346,7 @@ export const calculateDailyUpdates = (
   }
 
   // Ego System Drain (Lead Singer Syndrome)
-  let pendingFlags = {}
+  let pendingFlags: Record<string, boolean> = {}
   if (nextSocial.egoFocus) {
     const nextHarmonyEgo = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
     nextBand.harmony = nextHarmonyEgo
@@ -442,6 +442,7 @@ export const calculateDailyUpdates = (
   const nextMembers = new Array(nextBand.members.length)
   for (let i = 0; i < nextBand.members.length; i++) {
     const m = nextBand.members[i]
+    if (!m) continue
 
     // 2a. Base Mood Drift
     let mood = m.mood
@@ -486,6 +487,7 @@ export const calculateDailyUpdates = (
   if (hasBeerFridge) {
     for (let i = 0; i < nextBand.members.length; i++) {
       const m = nextBand.members[i]
+    if (!m) continue
       if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
         if (rng() < 0.3) {
           m.stamina = clampMemberStamina(m.stamina - 5, m.staminaMax)

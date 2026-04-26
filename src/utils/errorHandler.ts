@@ -508,7 +508,7 @@ export const handleError = (error: unknown, options: unknown = {}) => {
 export const initGlobalErrorHandling = () => {
   const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
   if (typeof window === 'undefined') return
-  const windowSymbolState = window as Window & Record<symbol, unknown>
+  const windowSymbolState = window as unknown as Record<symbol, unknown>
   if (windowSymbolState[INIT_SYMBOL] === true) return
   windowSymbolState[INIT_SYMBOL] = true
   window.addEventListener('unhandledrejection', event => {
@@ -638,4 +638,5 @@ export const withRetry = async <T>(
       currentDelay *= backoff
     }
   } while (attempt < maxAttempts)
+  throw new Error('Retries failed')
 }

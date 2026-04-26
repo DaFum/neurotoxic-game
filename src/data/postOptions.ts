@@ -234,7 +234,7 @@ export const POST_OPTIONS = [
       // Pick a random member directly from band.members to avoid O(N) allocation
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const target = band.members[safeIndex].name
+      const target = band.members[safeIndex]?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -281,7 +281,7 @@ export const POST_OPTIONS = [
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj =
         getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
-      const vocalist = vocalistObj.name
+      const vocalist = vocalistObj?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -513,7 +513,7 @@ export const POST_OPTIONS = [
       const rawIndex = Math.floor(diceRoll * band.members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
       const targetObj = band.members[safeIndex]
-      const target = targetObj.name
+      const target = targetObj?.name || 'Unknown'
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
@@ -553,7 +553,7 @@ export const POST_OPTIONS = [
     resolve: ({ band }: GameState) => {
       const gearNerd =
         getMemberWithTrait(band.members, 'gear_nerd')?.name ||
-        band.members[0].name
+        band.members[0]?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -593,7 +593,7 @@ export const POST_OPTIONS = [
       const prankster =
         getMemberWithTrait(band.members, 'party_animal')?.name ||
         band.members[1]?.name ||
-        band.members[0].name
+        band.members[0]?.name || 'Unknown'
       return {
         type: 'FIXED',
         success: true,
@@ -704,8 +704,8 @@ export const POST_OPTIONS = [
       // Find potential gear nerd or fallback to first member
       const member =
         getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
-      const target = member.name
-      const memberId = member.id || member.name // Use name as fallback ID
+      const target = member?.name || 'Unknown'
+      const memberId = member?.id || member?.name || 'Unknown' // Use name as fallback ID
 
       return {
         type: 'FIXED',
@@ -779,7 +779,21 @@ export const POST_OPTIONS = [
         affordableIds[
           Math.floor(roll * affordableIds.length) % affordableIds.length
         ]
+      if (!selectedId) return {
+        type: 'FIXED',
+        success: false,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 0,
+        message: 'Failed to post.'
+      }
       const influencer = influencers[selectedId]
+      if (!influencer) return {
+        type: 'FIXED',
+        success: false,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 0,
+        message: 'Failed to post.'
+      }
 
       const cost = getCost(influencer)
       let followersGain = 1000

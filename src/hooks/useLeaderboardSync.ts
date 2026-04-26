@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+/// <reference types="vite/client" />
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 
@@ -37,7 +38,7 @@ const getLeaderboardSyncEnabledFlag = () => {
  * @param {number} money - The player's current money.
  * @returns {boolean} True if valid.
  */
-export const isValidForSync = (playerId, playerName, day, money) => {
+export const isValidForSync = (playerId: unknown, playerName: unknown, day: unknown, money: unknown) => {
   return (
     !!playerId &&
     !!playerName &&
@@ -55,7 +56,7 @@ export const isValidForSync = (playerId, playerName, day, money) => {
  * @param {object} social - The social state object.
  * @returns {number} The total sum of followers.
  */
-export const calculateTotalFollowers = social => {
+export const calculateTotalFollowers = (social: any) => {
   return (
     (social?.instagram || 0) +
     (social?.tiktok || 0) +
@@ -78,15 +79,15 @@ export const calculateTotalFollowers = social => {
  * @returns {object} The payload object.
  */
 export const createSyncPayload = (
-  playerId,
-  playerName,
-  money,
-  day,
-  fame,
-  totalDistance,
-  conflictsResolved,
-  stageDives,
-  totalFollowers
+  playerId: unknown,
+  playerName: unknown,
+  money: unknown,
+  day: unknown,
+  fame: unknown,
+  totalDistance: unknown,
+  conflictsResolved: unknown,
+  stageDives: unknown,
+  totalFollowers: unknown
 ) => {
   return {
     playerId,
@@ -106,7 +107,7 @@ export const createSyncPayload = (
  * @param {object} payload - The data to sync.
  * @returns {Promise<boolean>} true when synced; false when intentionally skipped.
  */
-export const syncLeaderboardStats = async payload => {
+export const syncLeaderboardStats = async (payload: unknown) => {
   if (!getLeaderboardSyncEnabledFlag() || leaderboardStatsEndpointUnavailable) {
     return false
   }
@@ -140,7 +141,7 @@ export const syncLeaderboardStats = async payload => {
  * Hook to sync player stats to the global leaderboards.
  * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = state => {
+export const useLeaderboardSync = (state: any) => {
   const { player, social } = state || {}
   const { playerId, playerName, money, day, fame, stats } = player || {}
   const { totalDistance, conflictsResolved, stageDives } = stats || {}
