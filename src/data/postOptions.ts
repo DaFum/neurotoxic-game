@@ -267,7 +267,10 @@ export const POST_OPTIONS = [
         moneyChange: -300,
         targetMember: target,
         moodChange: -10,
-        message: `${target}'s gear was destroyed! Viral AF but expensive.`
+        message: i18n.t('ui:postOptions.perf_smashed_gear.message', {
+          defaultValue: "{{member}}'s gear was destroyed! Viral AF but expensive.",
+          member: target
+        })
       }
     }
   },
@@ -316,7 +319,11 @@ export const POST_OPTIONS = [
         moodChange: 15,
         harmonyChange: -5,
         egoDrop: vocalist, // Triggers ego tracking
-        message: `${vocalist} is feeling like a rock god. The rest of the band? Not so much.`
+        message: i18n.t('ui:postOptions.perf_ego_flex.message', {
+          defaultValue:
+            '{{member}} is feeling like a rock god. The rest of the band? Not so much.',
+          member: vocalist
+        })
       }
     }
   },
@@ -553,7 +560,11 @@ export const POST_OPTIONS = [
           followers: 1000,
           targetMember: target,
           staminaChange: -5,
-          message: `${target} ate pavement, but the fans thought it was hilarious.`
+          message: i18n.t('ui:postOptions.drama_crowdsurf_fail.successMessage', {
+            defaultValue:
+              '{{member}} ate pavement, but the fans thought it was hilarious.',
+            member: target
+          })
         }
       } else {
         return {
@@ -563,7 +574,10 @@ export const POST_OPTIONS = [
           followers: -500,
           targetMember: target,
           staminaChange: -5,
-          message: `${target} got dropped. It was just sad to watch.`
+          message: i18n.t('ui:postOptions.drama_crowdsurf_fail.failMessage', {
+            defaultValue: '{{member}} got dropped. It was just sad to watch.',
+            member: target
+          })
         }
       }
     }
@@ -589,7 +603,10 @@ export const POST_OPTIONS = [
         followers: 100, // Safe but low
         targetMember: gearNerd,
         moodChange: 5,
-        message: `Guitar geeks unite! ${gearNerd} is happy.`
+        message: i18n.t('ui:postOptions.drama_gear_flex.message', {
+          defaultValue: 'Guitar geeks unite! {{member}} is happy.',
+          member: gearNerd
+        })
       }
     }
   },
@@ -634,7 +651,10 @@ export const POST_OPTIONS = [
         targetMember: prankster,
         moodChange: 10,
         harmonyChange: -5,
-        message: `${prankster} loved it. The rest of the band is annoyed.`
+        message: i18n.t('ui:postOptions.drama_tour_bus_prank.message', {
+          defaultValue: '{{member}} loved it. The rest of the band is annoyed.',
+          member: prankster
+        })
       }
     }
   },
@@ -747,7 +767,11 @@ export const POST_OPTIONS = [
         moneyChange: 100,
         targetMember: target,
         moodChange: 20,
-        message: `${target} finally revealed the secret of the tone. Guitar nerds are losing it.`,
+        message: i18n.t('ui:postOptions.comm_gear_review.message', {
+          defaultValue:
+            '{{member}} finally revealed the secret of the tone. Guitar nerds are losing it.',
+          member: target
+        }),
         unlockTrait: { memberId, traitId: 'gear_nerd' }
       }
     }

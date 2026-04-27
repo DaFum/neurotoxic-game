@@ -17,7 +17,6 @@ export const AmpCalibrationScene = () => {
     score,
     isGameOver,
     update,
-    finishMinigame,
     gameStateRef
   } = useAmpLogic()
 
@@ -34,9 +33,8 @@ export const AmpCalibrationScene = () => {
   )
 
   const onComplete = useCallback(() => {
-    finishMinigame()
     changeScene(GAME_PHASES.GIG)
-  }, [finishMinigame, changeScene])
+  }, [changeScene])
 
   const renderCompletionStats = useCallback(
     () =>

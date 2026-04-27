@@ -20,3 +20,4 @@ Applies to `src/hooks/minigames/**`.
 - Avoid dispatching context actions from inside React state-updater callbacks; compute expiry from refs and call shared finalize handlers from normal control flow.
 - Shared completion callbacks invoked by both timer and button paths must set all termination refs/flags (`isCompleteRef`, `isGameOver`) themselves to prevent post-finish tick processing before unmount.
 - If a minigame waits on a post-game button, add a bounded fallback auto-transition timer so players cannot get stranded if the manual action is missed.
+- When hooks unify timer + button completion into a single finalize callback, scene-level completion buttons should only handle routing/UI continuation (not re-submit scores/effects), otherwise callers silently become no-ops and the contract gets confusing.

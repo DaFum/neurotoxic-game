@@ -14,6 +14,7 @@ Applies to `src/scenes/**`.
 
 - `START_GIG` resets gig modifiers.
 - `COMPLETE_TRAVEL_MINIGAME` does not perform routing reset; arrival flow is handled by `useArrivalLogic`.
+- For minigames that auto-finalize on timer expiry, scene-level completion handlers should trigger scene transitions only; completion payload submission must remain in the hook finalize path.
 
 ## Migration Rules
 

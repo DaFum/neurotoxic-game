@@ -88,6 +88,8 @@ export default [
       ...eslintReact.configs.recommended.rules,
       ...prettier.rules,
       'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
+      // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
+      '@eslint-react/no-prop-types': 'off',
       // Project policy is "never any"; keep this visible in lint output.
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-unused-vars': 'off',

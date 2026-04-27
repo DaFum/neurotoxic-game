@@ -31,3 +31,4 @@ Applies to `src/data/**`.
 
 - New menu-driven systems should reuse existing data keys where possible; introducing parallel IDs for the same feature increases save/test drift risk.
 - Event-pool modules with growing condition complexity should live under `src/data/events/**` and follow the nested `src/data/events/AGENTS.md` guardrails for typed conditions and composite-effect validity.
+- In `postOptions`, once a `resolve()` path is touched for invariant/type fixes (for example `requireBandMembers` guards), migrate neighboring user-facing `message` strings in that same resolver to `ui:postOptions.*` keys in both EN/DE locale files to avoid mixed i18n/raw-copy behavior.
