@@ -22,7 +22,7 @@ export interface KabelsalatState {
   timeLeft: number
   isGameOver: boolean
   socketOrder: SocketId[]
-  lightningSeeds: any[]
+  lightningSeeds: ReturnType<typeof generateLightningSeeds>
   bgTextureUrl: string | null
   handleCableClick: (cableId: CableId) => void
   handleSocketClick: (socketId: string) => void

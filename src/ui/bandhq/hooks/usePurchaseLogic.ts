@@ -406,11 +406,9 @@ export const usePurchaseLogic = ({
           const vanState: PlayerState['van'] | Partial<PlayerState['van']> =
             playerPatch.van ?? player.van
           const partialVan = buildVanWithUpgrade(vanState, String(item.id))
-          if (partialVan) {
-            playerPatch = {
-              ...playerPatch,
-              van: { ...player.van, ...partialVan } as PlayerState['van']
-            }
+          playerPatch = {
+            ...playerPatch,
+            van: { ...player.van, ...partialVan } as PlayerState['van']
           }
         }
 

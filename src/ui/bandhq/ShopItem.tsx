@@ -86,8 +86,10 @@ export const ShopItem = React.memo(
               </>
             ) : adjustedCost !== undefined ? (
               adjustedCost
-            ) : (
+            ) : item.cost !== undefined ? (
               item.cost
+            ) : (
+              0
             )}{' '}
             {item.currency === 'fame' ? '★' : '€'}
           </span>
@@ -96,7 +98,7 @@ export const ShopItem = React.memo(
               content={
                 isPurchased
                   ? t('ui:shop.messages.alreadyOwned', {
-                      itemName: t(item.name as string),
+                      itemName: typeof item.name === 'string' ? t(item.name) : t('ui:shop.messages.unknownItem', { defaultValue: 'Unknown Item' }),
                       defaultValue: 'Already owned!'
                     })
                   : t('ui:shop.messages.notEnough', {
@@ -106,7 +108,7 @@ export const ShopItem = React.memo(
                           : t('ui:shop.messages.money', {
                               defaultValue: 'Money'
                             }),
-                      itemName: t(item.name as string),
+                      itemName: typeof item.name === 'string' ? t(item.name) : t('ui:shop.messages.unknownItem', { defaultValue: 'Unknown Item' }),
                       defaultValue: 'Not enough currency.'
                     })
               }

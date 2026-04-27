@@ -20,7 +20,11 @@ export const VoidTraderTab = ({
       ...(CONTRABAND_BY_RARITY.rare || [])
     ].map(item => {
       // Determine cost in Fame based on rarity
-      const fameCost = VOID_TRADER_COSTS[item.rarity as keyof typeof VOID_TRADER_COSTS] ?? 1000
+      const rarityKey = item.rarity
+      const isKnownRarity = (val: string | undefined): val is keyof typeof VOID_TRADER_COSTS => {
+        return typeof val === 'string' && Object.hasOwn(VOID_TRADER_COSTS, val)
+      }
+      const fameCost = isKnownRarity(rarityKey) ? VOID_TRADER_COSTS[rarityKey] : 1000
       return { ...item, fameCost }
     })
   }, [])

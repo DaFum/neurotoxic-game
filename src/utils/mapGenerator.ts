@@ -445,8 +445,8 @@ export class MapGenerator {
     // Increased jitter to +/- 5 to help initial separation
     const nodeList = map.nodeList
     for (const node of nodeList) {
-      const baseX = node.x ?? node.venue?.x ?? 50
-      const baseY = node.y ?? node.venue?.y ?? 50
+      const baseX = node.x
+      const baseY = node.y
       node.x = baseX + (this.random() * 10 - 5)
       node.y = baseY + (this.random() * 10 - 5)
     }

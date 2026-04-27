@@ -235,7 +235,9 @@ export const applyInventoryAdd = (
   effect: Effect,
   bandInventory?: Inventory
 ) => {
-  if (typeof effect.item !== 'string') return {}
+  if (typeof effect.item !== 'string') {
+    throw new Error(`Invalid effect item for inventory_add: ${String(effect.item)}`)
+  }
   return {
     inventory: {
       ...(bandInventory ?? {}),

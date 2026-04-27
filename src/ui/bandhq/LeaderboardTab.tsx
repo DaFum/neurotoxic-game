@@ -251,7 +251,6 @@ export const LeaderboardTab = () => {
               </thead>
               <tbody>
                 {rankings.map(entry => {
-                  const safeScore = entry.score
                   return (
                     <tr
                       key={entry.playerId}
@@ -265,14 +264,14 @@ export const LeaderboardTab = () => {
                       </td>
                       <td className='py-2 px-2 text-right text-toxic-green'>
                         {view === 'BALANCE'
-                          ? `€${safeScore.toLocaleString()}`
+                          ? `€${entry.score.toLocaleString()}`
                           : view === 'DISTANCE'
                             ? t('ui:leaderboard.col_value_km', {
-                                value: safeScore.toLocaleString(),
+                                value: entry.score.toLocaleString(),
                                 unit: t('ui:unit.km', { defaultValue: 'km' }),
-                                defaultValue: `${safeScore.toLocaleString()} km`
+                                defaultValue: `${entry.score.toLocaleString()} km`
                               })
-                            : safeScore.toLocaleString()}
+                            : entry.score.toLocaleString()}
                       </td>
                     </tr>
                   )
