@@ -8,7 +8,7 @@ import {
   collectSourceFiles,
   resolveNamespaceKey,
   readLocaleJson
-} from '../utils/localeTestUtils'
+} from '../utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
