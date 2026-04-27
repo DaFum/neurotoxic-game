@@ -710,8 +710,7 @@ export const handleAdvanceDay = (
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
   }
 
-  const socialUnlockState: GameState = {
-    ...state,
+  const socialUnlockState: Pick<GameState, 'player' | 'band' | 'social'> = {
     player: nextPlayer,
     band: nextBand,
     social

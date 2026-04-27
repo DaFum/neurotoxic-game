@@ -4,6 +4,17 @@
 
 Applies to `src/hooks/minigames/**`.
 
+## What / When / Limitations
+
+- **What:** Minigame agents are strictly responsible for orchestrating state/timing, one-shot completion, and invoking shared finalize callbacks.
+- **When:** Consult this doc when implementing any `src/hooks/minigames/**` hook or unifying timer+button completion logic.
+- **Limitations:**
+  - **No rendering:** Rendering and scene components are completely out of scope.
+  - **No routing/UI:** Do not handle routing or UI-only button logic in these hooks.
+  - **No dispatches in updaters:** Avoid dispatching context actions from inside React state-updater callbacks.
+  - **Use guards:** Always use `useRef` guards (e.g., `isCompleteRef`, `finishCalledRef`) to ensure one-shot completion. Shared finalize callbacks must set these termination refs.
+  - **Auto-transition:** Add bounded fallback auto-transition timers if the game waits on a post-game button.
+
 ## Minigame Hook Rules
 
 - Keep minigame hooks focused on state/timing orchestration; rendering concerns belong in scene/components.

@@ -151,7 +151,7 @@ SocketItem.displayName = 'SocketItem'
 
 SocketItem.propTypes = {
   t: PropTypes.func.isRequired,
-  socketId: PropTypes.string.isRequired,
+  socketId: PropTypes.oneOf(Object.keys(SOCKET_DEFS)).isRequired,
   index: PropTypes.number.isRequired,
   connections: PropTypes.objectOf(PropTypes.string).isRequired,
   isPowerConnected: PropTypes.bool.isRequired,

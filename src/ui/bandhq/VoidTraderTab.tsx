@@ -20,7 +20,11 @@ export const VoidTraderTab = ({
       ...(CONTRABAND_BY_RARITY.rare || [])
     ].map(item => {
       // Determine cost in Fame based on rarity
-      const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
+      const rarityKey = item.rarity
+      const isKnownRarity = (val: string | undefined): val is keyof typeof VOID_TRADER_COSTS => {
+        return typeof val === 'string' && Object.hasOwn(VOID_TRADER_COSTS, val)
+      }
+      const fameCost = isKnownRarity(rarityKey) ? VOID_TRADER_COSTS[rarityKey] : 1000
       return { ...item, fameCost }
     })
   }, [])
@@ -51,7 +55,7 @@ export const VoidTraderTab = ({
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black'>
         {voidItems.map(item => {
           const isProcessingThis = processingItemId === item.id
-          const isAnyProcessing = !!processingItemId
+          const isAnyProcessing = processingItemId != null
           const disabled = (isItemDisabled as any)(item) || isAnyProcessing
 
           return (

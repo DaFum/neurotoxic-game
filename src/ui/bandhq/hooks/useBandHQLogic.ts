@@ -91,6 +91,7 @@ export const useBandHQLogic = ({
 
   const isVoidItemOwned = useCallback(
     (item: VoidTraderItem) => {
+      if (item.stackable) return false
       return !!(band.stash && band.stash[item.id])
     },
     [band.stash]

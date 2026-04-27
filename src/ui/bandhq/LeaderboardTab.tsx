@@ -91,19 +91,22 @@ export const LeaderboardTab = () => {
             ): entry is Partial<LeaderboardEntry> & Record<string, unknown> =>
               typeof entry === 'object' && entry !== null
           )
-          .map(entry => ({
+          .map((entry, index) => ({
             rank: typeof entry.rank === 'number' ? entry.rank : 0,
             playerId:
               typeof entry.playerId === 'string'
                 ? entry.playerId
-                : 'unknown-player',
+                : `unknown-player-${index}`,
             playerName:
               typeof entry.playerName === 'string'
                 ? entry.playerName
                 : t('ui:leaderboard.unknownPlayer', {
                     defaultValue: 'Unknown'
                   }),
-            score: typeof entry.score === 'number' ? entry.score : 0
+            score:
+              typeof entry.score === 'number' && Number.isFinite(entry.score)
+                ? entry.score
+                : 0
           }))
 
         setRankings(sanitizedEntries)
@@ -248,9 +251,6 @@ export const LeaderboardTab = () => {
               </thead>
               <tbody>
                 {rankings.map(entry => {
-                  const safeScore = Number.isFinite(entry.score)
-                    ? entry.score
-                    : 0
                   return (
                     <tr
                       key={entry.playerId}
@@ -264,14 +264,14 @@ export const LeaderboardTab = () => {
                       </td>
                       <td className='py-2 px-2 text-right text-toxic-green'>
                         {view === 'BALANCE'
-                          ? `€${safeScore.toLocaleString()}`
+                          ? `€${entry.score.toLocaleString()}`
                           : view === 'DISTANCE'
                             ? t('ui:leaderboard.col_value_km', {
-                                value: safeScore.toLocaleString(),
+                                value: entry.score.toLocaleString(),
                                 unit: t('ui:unit.km', { defaultValue: 'km' }),
-                                defaultValue: `${safeScore.toLocaleString()} km`
+                                defaultValue: `${entry.score.toLocaleString()} km`
                               })
-                            : safeScore.toLocaleString()}
+                            : entry.score.toLocaleString()}
                       </td>
                     </tr>
                   )

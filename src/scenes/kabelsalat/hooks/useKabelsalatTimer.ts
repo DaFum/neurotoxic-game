@@ -56,7 +56,7 @@ export const useKabelsalatTimer = (
   useEffect(() => {
     if (
       !finishedRef.current &&
-      Object.keys(connections).length === Object.keys(SOCKET_DEFS).length
+      Object.values(connections).filter(value => value != null).length === Object.keys(SOCKET_DEFS).length
     ) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true

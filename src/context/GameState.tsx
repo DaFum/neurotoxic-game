@@ -722,7 +722,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         new StateError('Failed to advance day', {
           originalError: error instanceof Error ? error.message : String(error)
         }),
-        { source: 'GameState.advanceDay', addToast }
+        { source: 'GameState.advanceDay', silent: true }
+      )
+      addToast(
+        tRef.current('ui:error.advanceDayFailed', {
+          defaultValue: 'Could not advance day. Please try again.'
+        }),
+        'error'
       )
     }
   }, [addToast])
