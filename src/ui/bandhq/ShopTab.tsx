@@ -28,7 +28,8 @@ export const ShopTab = ({
     .map(item => ({
       ...item,
       id: String(item.id),
-      cost: Number(item.cost)
+      cost: Number(item.cost),
+      effect: item.effect as import('../../types/components').Effect
     }))
 
   return (
