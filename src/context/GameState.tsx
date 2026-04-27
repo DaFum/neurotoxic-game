@@ -11,6 +11,7 @@ import {
   useCallback,
   useMemo,
   useRef,
+  useState,
   startTransition
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -426,6 +427,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   stateRef.current = state
   const mapGenerationAttemptsRef = useRef(0)
   const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [mapRetryCount, setMapRetryCount] = useState(0)
 
   // Initialize Map if needed
   useEffect(() => {
@@ -452,7 +454,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           }
           mapRetryTimeoutRef.current = setTimeout(() => {
             mapRetryTimeoutRef.current = null
-            dispatch(createSetMapAction(null))
+            setMapRetryCount((prev: number) => prev + 1)
           }, MAP_GENERATION_RETRY_DELAY_MS)
           // Do not return early — fall through so the cleanup function below is
           // always returned from this effect, ensuring the pending timeout is
@@ -483,7 +485,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         mapRetryTimeoutRef.current = null
       }
     }
-  }, [state.gameMap, dispatch])
+  }, [state.gameMap, mapRetryCount, dispatch])
 
   // Sync Logger with settings on load/change
   useEffect(() => {
