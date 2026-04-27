@@ -26,6 +26,15 @@ type StashEntry = {
   stacks?: number
 }
 
+const isStashEntry = (entry: unknown): entry is StashEntry => {
+  return (
+    entry !== null &&
+    typeof entry === 'object' &&
+    'stacks' in entry &&
+    typeof (entry as Record<string, unknown>).stacks === 'number'
+  )
+}
+
 type BandHQLogicParams = {
   player: PlayerState
   band: BandState
@@ -75,7 +84,7 @@ export const useBandHQLogic = ({
         }
         const successToast: Omit<ToastPayload, 'id'> = {
           messageKey: 'ui:toast.void_trade_success',
-          options: { itemName: `items:contraband.${item.id}.name` },
+          options: { itemName: t(`items:contraband.${item.id}.name`) },
           type: 'success'
         }
         tradeVoidItem({ contrabandId: item.id, fameCost, successToast })
@@ -102,10 +111,9 @@ export const useBandHQLogic = ({
       const fameCost =
         (item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined) ?? 1000
       const stashEntry = band.stash?.[item.id]
-      const currentQuantity =
-        typeof stashEntry === 'object' && stashEntry !== null
-          ? ((stashEntry as StashEntry).stacks ?? 0)
-          : 0
+      const currentQuantity = isStashEntry(stashEntry)
+        ? (stashEntry.stacks ?? 0)
+        : 0
       const isMaxStacks =
         item.stackable === true &&
         typeof item.maxStacks === 'number' &&
