@@ -713,10 +713,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const advanceDay = useCallback(() => {
     // Access state via ref to keep callback stable
     try {
-      const currentState = stateRef.current
-      const nextDay = currentState.player.day + 1
       dispatch(createAdvanceDayAction())
-      addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
     } catch (error) {
       handleError(
         new StateError('Failed to advance day', {
@@ -730,7 +727,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         }),
         'error'
       )
+      return
     }
+
+    const nextDay = stateRef.current.player.day
+    addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
   }, [addToast])
 
   /**

@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../../data/hqItems'
 import { CatalogTab } from './CatalogTab'
-import type { CatalogConsumerProps, CatalogItem, PurchaseItem } from '../../types/components'
+import type {
+  CatalogConsumerProps,
+  CatalogItem,
+  PurchaseItem
+} from '../../types/components'
 import type { PlayerState } from '../../types/game'
 
 type ShopTabProps = Omit<CatalogConsumerProps, 'items'> & {
@@ -22,14 +26,15 @@ export const ShopTab = ({
   ]
 
   const items: CatalogItem[] = rawItems
-    .filter((item): item is PurchaseItem & { id: string | number; cost: number } =>
-      item.id != null && item.cost != null
+    .filter(
+      (item): item is PurchaseItem & { id: string | number; cost: number } =>
+        item.id != null && item.cost != null
     )
     .map(item => ({
       ...item,
       id: String(item.id),
       cost: Number(item.cost),
-      effect: item.effect as import('../../types/components').Effect
+      effect: item.effect as import('../../types/components').Effect | undefined
     }))
 
   return (
