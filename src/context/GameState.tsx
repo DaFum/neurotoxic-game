@@ -724,15 +724,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         }),
         { source: 'GameState.advanceDay', addToast }
       )
-      dispatch(
-        createAddToastAction({
-          id: getSafeUUID(),
-          message: tRef.current('ui:error.advanceDayFailed', {
-            defaultValue: 'Could not advance day. Please try again.'
-          }),
-          type: 'error'
-        })
-      )
     }
   }, [addToast])
 
