@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import type { GameSettings } from '../../types/game'
 import type { GameStateWithActions } from '../../context/GameState'
-import type { AudioState, OnAudioChange } from '../../types/audio'
+import type { AudioState, AudioControls } from '../../types/audio'
 import { SettingsPanel } from '../shared'
 import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 import { useSettingsActions } from '../../hooks/useSettingsActions'
@@ -9,7 +9,7 @@ import { useSettingsActions } from '../../hooks/useSettingsActions'
 type SettingsTabProps = {
   settings: GameSettings
   audioState: AudioState
-  onAudioChange: OnAudioChange
+  onAudioChange: AudioControls
   updateSettings: GameStateWithActions['updateSettings']
   deleteSave: () => void
 }

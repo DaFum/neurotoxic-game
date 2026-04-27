@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useAmpLogic } from '../../src/hooks/minigames/useAmpLogic'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 const mockCompleteAmpCalibration = vi.fn()
 const mockChangeScene = vi.fn()
@@ -35,7 +36,7 @@ describe('useAmpLogic', () => {
 
     expect(mockCompleteAmpCalibration).toHaveBeenCalledTimes(1)
     expect(mockChangeScene).toHaveBeenCalledTimes(1)
-    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+    expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.GIG)
   })
 
   it('cleans up fallback timer on unmount', () => {

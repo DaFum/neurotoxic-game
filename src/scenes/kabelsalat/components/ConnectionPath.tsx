@@ -2,8 +2,9 @@ import { CABLE_MAP } from '../constants'
 import { getMessyPath } from '../utils'
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
+import type { CableId } from '../constants'
 
-import type { SocketId, CableId } from '../../../types/kabelsalat'
+import type { SocketId } from '../../../types/kabelsalat'
 
 export type ConnectionPathProps = {
   sockId: SocketId

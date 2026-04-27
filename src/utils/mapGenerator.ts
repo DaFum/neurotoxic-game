@@ -144,9 +144,9 @@ export class MapGenerator {
       if (typeof diff === 'number' && diff <= 2) {
         if (v.type !== 'HOME') easyVenues.push(v)
       } else if (diff === 3) {
-        mediumVenues.push(v)
+        if (v.type !== 'HOME') mediumVenues.push(v)
       } else if (typeof diff === 'number' && diff >= 4) {
-        hardVenues.push(v)
+        if (v.type !== 'HOME') hardVenues.push(v)
       }
     }
 

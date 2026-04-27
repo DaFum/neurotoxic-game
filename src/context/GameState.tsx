@@ -459,13 +459,16 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
         mapGenerationAttemptsRef.current = 0
         dispatch(
-          createSetMapAction({
-            layers: [],
-            nodes: {},
-            nodeList: [],
-            connections: []
+          createAddToastAction({
+            id: getSafeUUID(),
+            message: tRef.current('ui:error.mapGenerationFailedReturnToMenu', {
+              defaultValue:
+                'Map generation failed. Returning to menu for recovery.'
+            }),
+            type: 'error'
           })
         )
+        dispatch(createChangeSceneAction(GAME_PHASES.MENU))
       }
     }
 
@@ -702,10 +705,28 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    */
   const advanceDay = useCallback(() => {
     // Access state via ref to keep callback stable
-    const currentState = stateRef.current
-    const nextDay = currentState.player.day + 1
-    dispatch(createAdvanceDayAction())
-    addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
+    try {
+      const currentState = stateRef.current
+      const nextDay = currentState.player.day + 1
+      dispatch(createAdvanceDayAction())
+      addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
+    } catch (error) {
+      handleError(
+        new StateError('Failed to advance day', {
+          originalError: error instanceof Error ? error.message : String(error)
+        }),
+        { source: 'GameState.advanceDay', addToast }
+      )
+      dispatch(
+        createAddToastAction({
+          id: getSafeUUID(),
+          message: tRef.current('ui:error.advanceDayFailed', {
+            defaultValue: 'Could not advance day. Please try again.'
+          }),
+          type: 'error'
+        })
+      )
+    }
   }, [addToast])
 
   /**

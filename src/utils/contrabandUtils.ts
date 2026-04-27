@@ -24,7 +24,7 @@ export const BUST_CHANCE_BY_RARITY = {
  * Finds the highest-risk contraband item in band.stash.
  * Returns the item ID and rarity with the greatest bust potential.
  * @param {Record<string, unknown>|null|undefined} stash - band.stash dictionary (keyed by item id)
- * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: string|null }}
+ * @returns {{ bustChance: number, highestRiskItemId: string|null, highestRarity: Rarity|null }}
  */
 export function computeStashBustRisk(stash: unknown) {
   if (!stash || typeof stash !== 'object') {

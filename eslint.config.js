@@ -16,6 +16,37 @@ const RESTRICTED_IMPORTS = {
   ]
 }
 
+const UNUSED_VARS_IGNORE_PATTERNS = {
+  varsIgnorePattern: '^_',
+  argsIgnorePattern: '^_',
+  caughtErrorsIgnorePattern: '^_'
+}
+
+const BASE_LANGUAGE_OPTIONS = {
+  ecmaVersion: 2022,
+  sourceType: 'module',
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
+    }
+  },
+  globals: {
+    ...globals.browser,
+    ...globals.es2021
+  }
+}
+
+const BASE_PLUGINS = {
+  ...eslintReact.configs.recommended.plugins
+}
+
+const BASE_RULES = {
+  ...prettier.rules,
+  'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
+  'no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS],
+  '@typescript-eslint/no-explicit-any': 'warn'
+}
+
 export default [
   {
     ignores: [
@@ -29,78 +60,37 @@ export default [
   {
     files: ['**/*.{js,jsx,mjs,cjs}'],
     ...eslintReact.configs.recommended,
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true
-        }
-      },
-      globals: {
-        ...globals.browser,
-        ...globals.es2021
-      }
-    },
-    plugins: {
-      ...eslintReact.configs.recommended.plugins
-    },
+    languageOptions: BASE_LANGUAGE_OPTIONS,
+    plugins: BASE_PLUGINS,
     rules: {
+      ...BASE_RULES,
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
-      ...prettier.rules,
-      'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
-      'no-unused-vars': [
-        'warn',
-        {
-          varsIgnorePattern: '^_',
-          argsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_'
-        }
-      ],
       // PropTypes are intentionally used in this JS project for runtime type checking
-      '@eslint-react/no-prop-types': 'off'
+      '@eslint-react/no-prop-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     }
   },
   {
     files: ['**/*.{ts,tsx}'],
     ...eslintReact.configs.recommended,
     languageOptions: {
+      ...BASE_LANGUAGE_OPTIONS,
       parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true
-        }
-      },
-      globals: {
-        ...globals.browser,
-        ...globals.es2021
-      }
+      parserOptions: BASE_LANGUAGE_OPTIONS.parserOptions
     },
     plugins: {
+      ...BASE_PLUGINS,
       '@typescript-eslint': tseslint,
-      ...eslintReact.configs.recommended.plugins
     },
     rules: {
+      ...BASE_RULES,
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
-      ...prettier.rules,
-      'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
       // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
       '@eslint-react/no-prop-types': 'off',
-      // Project policy is "never any"; keep this visible in lint output.
-      '@typescript-eslint/no-explicit-any': 'warn',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          varsIgnorePattern: '^_',
-          argsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_'
-        }
-      ]
+      '@typescript-eslint/no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS]
     }
   },
   {

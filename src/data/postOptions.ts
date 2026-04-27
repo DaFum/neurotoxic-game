@@ -250,26 +250,22 @@ export const POST_OPTIONS = [
       const rawIndex = Math.floor(diceRoll * members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
       const target = members[safeIndex]?.name
-      if (!target) {
-        throw new Error(
-          i18n.t('ui:postOptions.errors.missingBandMembers', {
-            postId: 'perf_smashed_gear',
-            defaultValue:
-              'Post option perf_smashed_gear requires at least one band member.'
-          })
-        )
-      }
+      const targetName =
+        target ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
         platform: SOCIAL_PLATFORMS.TIKTOK.id,
         followers: 2500,
         moneyChange: -300,
-        targetMember: target,
+        targetMember: targetName,
         moodChange: -10,
         message: i18n.t('ui:postOptions.perf_smashed_gear.message', {
           defaultValue: "{{member}}'s gear was destroyed! Viral AF but expensive.",
-          member: target
+          member: targetName
         })
       }
     }
@@ -546,7 +542,11 @@ export const POST_OPTIONS = [
       const rawIndex = Math.floor(diceRoll * members.length)
       const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
       const targetObj = members[safeIndex]
-      const target = targetObj?.name ?? 'Unknown'
+      const target =
+        targetObj?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
@@ -756,7 +756,11 @@ export const POST_OPTIONS = [
       const members = requireBandMembers(band, 'comm_gear_review')
       // Find potential gear nerd or fallback to first member
       const member = getMemberWithTrait(members, 'gear_nerd') ?? members[0]
-      const target = member?.name ?? 'Unknown'
+      const target =
+        member?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       const memberId = member?.id ?? member?.name ?? 'Unknown' // Use name as fallback ID
 
       return {

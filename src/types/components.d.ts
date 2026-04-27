@@ -8,10 +8,7 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type { RhythmGameRefState } from './rhythmGame'
-import type {
-  AudioState as SharedAudioState,
-  OnAudioChange as SharedOnAudioChange
-} from './audio'
+export type { AudioState, AudioControls } from './audio'
 
 export interface PixiController {
   init(): Promise<void>
@@ -379,15 +376,25 @@ export interface ReportPhaseProps {
   onNext: () => void
 }
 
-export interface Effect {
-  type?: string
+type EffectBase = {
   item?: string
   value?: unknown
-  target?: string
+  target?: 'player' | 'band' | 'van'
   stat?: string
-  key?: string
   id?: string
 }
+
+export type Effect =
+  | (EffectBase & { type: 'inventory_add'; item: string; value: number })
+  | (EffectBase & { type: 'inventory_set'; item: string; value: unknown })
+  | (EffectBase & {
+      type: 'stat_modifier'
+      target: 'player' | 'band' | 'van'
+      stat: string
+      value: number
+    })
+  | (EffectBase & { type: 'unlock_upgrade'; id: string })
+  | (EffectBase & { type: 'unlock_hq'; id: string })
 
 export interface PurchaseItem {
   id?: string | number
@@ -400,7 +407,11 @@ export interface PurchaseItem {
   effect?: Effect
   effects?: Effect[]
   oneTime?: boolean
-  [k: string]: unknown
+  imgPrompt?: string
+  requiresReputation?: boolean
+  rarity?: string
+  stackable?: boolean
+  maxStacks?: number
 }
 
 export interface CatalogItem extends PurchaseItem {
@@ -409,6 +420,15 @@ export interface CatalogItem extends PurchaseItem {
 }
 
 export type Balances = Record<string, number>
+
+export interface CatalogConsumerProps {
+  items: CatalogItem[]
+  processingItemId?: string
+  handleBuy: (item: CatalogItem) => void
+  isItemOwned: (item: CatalogItem) => boolean
+  isItemDisabled: (item: CatalogItem) => boolean
+  getAdjustedCost?: (item: CatalogItem) => number | undefined
+}
 
 export interface CatalogTabProps {
   items: CatalogItem[]
@@ -424,5 +444,10 @@ export interface CatalogTabProps {
   processingItemId?: string
 }
 
-export type AudioState = SharedAudioState
-export type OnAudioChange = SharedOnAudioChange
+export type UnlockMessageKind = 'success' | 'error' | 'info'
+
+export type UnlockMessage = {
+  messageKey: string
+  fallback?: string
+  type: UnlockMessageKind
+}

@@ -34,4 +34,4 @@ Applies to `src/types/**`.
 
 - Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.
 - `AsyncCallback<TResult>` should stay backward-compatible with sync `void` returns for non-void specializations unless a coordinated contract migration is documented.
-- Audio UI contracts (`AudioState`, `OnAudioChange`) should live in `src/types/audio.d.ts`; consumers in UI tabs should import from `types/audio` rather than redefining or sourcing from unrelated domains.
+- Audio UI contracts (`AudioState`, `AudioControls`) should live in `src/types/audio.d.ts`; consumers in UI tabs should import from `types/audio` rather than redefining or sourcing from unrelated domains.

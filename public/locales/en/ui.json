@@ -242,6 +242,8 @@
   "enter_name_error": "Please enter a name",
   "enter_name_placeholder": "ENTER NAME...",
   "error.insufficient_fame": "Not enough fame. You need {{cost}} fame.",
+  "error.mapGenerationFailedReturnToMenu": "Map generation failed. Returning to menu for recovery.",
+  "error.advanceDayFailed": "Could not advance day. Please try again.",
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_cleanup_failed": "Audio cleanup failed.",
   "errors.audio_init_failed": "Audio initialization failed.",

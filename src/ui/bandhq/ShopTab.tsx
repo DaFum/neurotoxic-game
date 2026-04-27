@@ -1,6 +1,12 @@
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../../data/hqItems'
 import { CatalogTab } from './CatalogTab'
+import type { CatalogConsumerProps, CatalogItem } from '../../types/components'
+import type { PlayerState } from '../../types/game'
+
+type ShopTabProps = Omit<CatalogConsumerProps, 'items'> & {
+  player: Pick<PlayerState, 'money'>
+}
 
 export const ShopTab = ({
   player,
@@ -9,11 +15,13 @@ export const ShopTab = ({
   isItemDisabled,
   getAdjustedCost,
   processingItemId
-}: Record<string, unknown>) => {
+}: ShopTabProps) => {
+  const items: CatalogItem[] = [...HQ_ITEMS.gear, ...HQ_ITEMS.instruments]
+
   return (
     <CatalogTab
-      items={[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments]}
-      balances={{ funds: (player as any).money }}
+      items={items}
+      balances={{ funds: player.money }}
       handleBuyCallback={handleBuy}
       isItemOwnedCallback={isItemOwned}
       isItemDisabledCallback={isItemDisabled}

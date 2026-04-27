@@ -6,7 +6,7 @@ Applies to `src/utils/**` except subtrees with deeper `AGENTS.md` overrides.
 
 ## Utility Rules
 
-- Keep utilities pure and side-effect free unless the filename explicitly indicates IO/network/storage behavior.
+- Keep utilities pure and side-effect-free unless the filename explicitly indicates IO/network/storage behavior.
 - Treat external payloads and caught errors as `unknown` and narrow before access.
 
 ## Domain Gotchas

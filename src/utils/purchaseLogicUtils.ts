@@ -9,7 +9,7 @@ import {
   calculateFameLevel
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types/game'
-import type { Effect, PurchaseItem } from '../types/components'
+import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 
 type Inventory = Record<string, unknown>
 
@@ -253,11 +253,6 @@ export const applyInventoryAdd = (
     : { inventory: { ...(bandInventory ?? {}) } })
 })
 
-type UnlockMessage = {
-  messageKey: string
-  fallback?: string
-  type: string
-}
 /**
  * Applies stat modifier effect
  * @param {Object} effect - Effect configuration

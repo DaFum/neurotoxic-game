@@ -46,14 +46,11 @@ export const useKabelsalatGameEnd = (
           })
           .catch(err => {
             const fallback = err instanceof Error ? err : new Error(String(err))
-            try {
-              const fallbackStateError = new Error(
-                'Failed to complete minigame (import error)'
-              )
-              logger.error('Kabelsalat', fallback, fallbackStateError)
-            } catch (_e) {
-              // Ignore fallback error
-            }
+            logger.error(
+              'Kabelsalat',
+              'Failed to complete minigame (import error)',
+              fallback
+            )
           })
       } finally {
         changeScene(GAME_PHASES.GIG)

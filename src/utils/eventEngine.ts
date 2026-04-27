@@ -301,7 +301,7 @@ const selectEvent = (
     const temp = shuffled[i]
     const other = shuffled[j]
     if (!temp || !other)
-      throw new Error(
+      throw new StateError(
         `Dense array invariant violated at shuffle index i=${i}, j=${j}`
       )
     shuffled[i] = other

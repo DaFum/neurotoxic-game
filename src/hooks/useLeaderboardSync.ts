@@ -32,9 +32,12 @@ const getLeaderboardSyncEnabledFlag = () => {
     return viteFlag.toLowerCase() !== 'false'
   }
 
+  const processEnvSource = globalThis as {
+    process?: { env?: Record<string, string | undefined> }
+  }
   const processFlag =
-    typeof globalThis === 'object' && typeof globalThis.process === 'object'
-      ? globalThis.process?.env?.VITE_ENABLE_LEADERBOARD_SYNC
+    typeof processEnvSource.process === 'object'
+      ? processEnvSource.process.env?.VITE_ENABLE_LEADERBOARD_SYNC
       : undefined
   if (typeof processFlag === 'string') {
     return processFlag.toLowerCase() !== 'false'
@@ -161,12 +164,10 @@ export const syncLeaderboardStats = async (
  * Hook to sync player stats to the global leaderboards.
  * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = (state: GameState | null | undefined) => {
-  const player = state?.player
-  const social = state?.social
-  const { playerId, playerName, money, day, fame, stats } =
-    (player ?? {}) as Partial<GameState['player']>
-  const { totalDistance, conflictsResolved, stageDives } = stats ?? {}
+export const useLeaderboardSync = (state: GameState) => {
+  const { playerId, playerName, money, day, fame, stats } = state.player
+  const { totalDistance, conflictsResolved, stageDives } = stats
+  const social = state.social
 
   const totalFollowers = calculateTotalFollowers(social)
 

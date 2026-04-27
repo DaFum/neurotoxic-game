@@ -62,7 +62,7 @@ export interface AudioState {
   isMuted: boolean
 }
 
-export interface OnAudioChange {
+export interface AudioControls {
   setMusic: (value: number) => void
   setSfx: (value: number) => void
   toggleMute: () => void
