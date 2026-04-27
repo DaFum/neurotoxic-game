@@ -454,21 +454,26 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
             mapRetryTimeoutRef.current = null
             dispatch(createSetMapAction(null))
           }, MAP_GENERATION_RETRY_DELAY_MS)
-          return
+          // Do not return early — fall through so the cleanup function below is
+          // always returned from this effect, ensuring the pending timeout is
+          // cancelled if the component unmounts during the retry window.
+        } else {
+          mapGenerationAttemptsRef.current = 0
+          dispatch(
+            createAddToastAction({
+              id: getSafeUUID(),
+              message: tRef.current(
+                'ui:error.mapGenerationFailedReturnToMenu',
+                {
+                  defaultValue:
+                    'Map generation failed. Returning to menu for recovery.'
+                }
+              ),
+              type: 'error'
+            })
+          )
+          dispatch(createChangeSceneAction(GAME_PHASES.MENU))
         }
-
-        mapGenerationAttemptsRef.current = 0
-        dispatch(
-          createAddToastAction({
-            id: getSafeUUID(),
-            message: tRef.current('ui:error.mapGenerationFailedReturnToMenu', {
-              defaultValue:
-                'Map generation failed. Returning to menu for recovery.'
-            }),
-            type: 'error'
-          })
-        )
-        dispatch(createChangeSceneAction(GAME_PHASES.MENU))
       }
     }
 
