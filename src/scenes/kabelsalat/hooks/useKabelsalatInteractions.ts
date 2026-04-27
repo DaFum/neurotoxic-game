@@ -62,10 +62,9 @@ export const useKabelsalatInteractions = (
     (cableId: CableId) => {
       if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
-      const connectionEntry = (
-        Object.entries(connections) as [SocketId, CableId][]
-      ).find(([_, id]) => id === cableId)
-      const connectionSocketId = connectionEntry ? connectionEntry[0] : undefined
+      const connectionSocketId = (Object.keys(connections) as SocketId[]).find(
+        k => Object.hasOwn(connections, k) && connections[k] === cableId
+      )
 
       if (connectionSocketId) {
         setConnections(prev => {
@@ -102,11 +101,16 @@ export const useKabelsalatInteractions = (
       if (connections[socketId]) return
 
       if (!isCableId(selectedCable)) {
-        console.error(`Invalid selectedCable in useKabelsalatInteractions: ${selectedCable}`)
         if (import.meta.env.DEV) {
-          throw new Error(`Invalid selectedCable in useKabelsalatInteractions: ${selectedCable}`)
+          throw new Error(
+            `Invalid selectedCable in useKabelsalatInteractions: ${selectedCable}`
+          )
+        } else {
+          console.error(
+            `Invalid selectedCable in useKabelsalatInteractions: ${selectedCable}`
+          )
+          return
         }
-        return
       }
 
       const targetSocket = SOCKET_DEFS[socketId]

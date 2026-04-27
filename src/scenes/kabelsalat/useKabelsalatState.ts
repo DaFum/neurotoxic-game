@@ -13,7 +13,7 @@ import { useKabelsalatGameEnd } from './hooks/useKabelsalatGameEnd'
 import type { TFunction } from 'i18next'
 
 export interface KabelsalatState {
-  t: TFunction<["ui"], undefined>
+  t: TFunction<['ui'], undefined>
   selectedCable: CableId | null
   connections: Partial<Record<SocketId, CableId>>
   isShocked: boolean
@@ -25,7 +25,7 @@ export interface KabelsalatState {
   lightningSeeds: ReturnType<typeof generateLightningSeeds>
   bgTextureUrl: string | null
   handleCableClick: (cableId: CableId) => void
-  handleSocketClick: (socketId: string) => void
+  handleSocketClick: (socketId: SocketId) => void
   isPowerConnected: boolean
   forceAdvance: () => void
 }
@@ -63,7 +63,11 @@ export const useKabelsalatState = (): KabelsalatState => {
   )
 
   // 3. Game End
-  const { forceAdvance } = useKabelsalatGameEnd(isPoweredOn, isGameOver, timeLeft)
+  const { forceAdvance } = useKabelsalatGameEnd(
+    isPoweredOn,
+    isGameOver,
+    timeLeft
+  )
 
   // 4. Shuffle
   useKabelsalatShuffle(

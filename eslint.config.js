@@ -78,16 +78,20 @@ export default [
     },
     plugins: {
       ...BASE_PLUGINS,
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tseslint
     },
     rules: {
       ...BASE_RULES,
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
       // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
       '@eslint-react/no-prop-types': 'off',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        UNUSED_VARS_IGNORE_PATTERNS
+      ],
       // TODO: Create a tracked issue to move the rule to 'error' after cleaning up existing offenders in economyEngine, gameStateUtils, midiPlayback, logger
       '@typescript-eslint/no-explicit-any': 'warn'
     }

@@ -264,7 +264,8 @@ export const POST_OPTIONS = [
         targetMember: targetName,
         moodChange: -10,
         message: i18n.t('ui:postOptions.perf_smashed_gear.message', {
-          defaultValue: "{{member}}'s gear was destroyed! Viral AF but expensive.",
+          defaultValue:
+            "{{member}}'s gear was destroyed! Viral AF but expensive.",
           member: targetName
         })
       }
@@ -305,7 +306,11 @@ export const POST_OPTIONS = [
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj =
         getMemberWithTrait(members, 'lead_singer') ?? members[0]
-      const vocalist = vocalistObj?.name ?? i18n.t('ui:postOptions.errors.unknownMemberFallback', { defaultValue: 'Unknown' })
+      const vocalist =
+        vocalistObj?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
@@ -560,11 +565,14 @@ export const POST_OPTIONS = [
           followers: 1000,
           targetMember: target,
           staminaChange: -5,
-          message: i18n.t('ui:postOptions.drama_crowdsurf_fail.successMessage', {
-            defaultValue:
-              '{{member}} ate pavement, but the fans thought it was hilarious.',
-            member: target
-          })
+          message: i18n.t(
+            'ui:postOptions.drama_crowdsurf_fail.successMessage',
+            {
+              defaultValue:
+                '{{member}} ate pavement, but the fans thought it was hilarious.',
+              member: target
+            }
+          )
         }
       } else {
         return {
@@ -595,7 +603,9 @@ export const POST_OPTIONS = [
       const gearNerd =
         getMemberWithTrait(members, 'gear_nerd')?.name ??
         members[0]?.name ??
-        i18n.t('ui:postOptions.errors.unknownMemberFallback', { defaultValue: 'Unknown' })
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
@@ -756,12 +766,15 @@ export const POST_OPTIONS = [
       const members = requireBandMembers(band, 'comm_gear_review')
       // Find potential gear nerd or fallback to first member
       const member = getMemberWithTrait(members, 'gear_nerd') ?? members[0]
+      if (!member) {
+        throw new Error('Member is undefined in comm_gear_review resolve')
+      }
       const target =
         member?.name ??
         i18n.t('ui:postOptions.errors.unknownMemberFallback', {
           defaultValue: 'Unknown'
         })
-      const memberId = member?.id ?? member?.name ?? 'Unknown' // Use name as fallback ID
+      const memberId = member.id ?? member.name
 
       return {
         type: 'FIXED',
@@ -839,29 +852,21 @@ export const POST_OPTIONS = [
         affordableIds[
           Math.floor(roll * affordableIds.length) % affordableIds.length
         ]
-      if (!selectedId)
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0,
-          message: i18n.t('ui:postOptions.failedToPost', {
-            defaultValue: 'Failed to post.'
-          }),
-          moneyChange: 0
-        }
+      const instagramPostFailure = {
+        type: 'FIXED' as const,
+        success: false,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 0,
+        message: i18n.t('ui:postOptions.failedToPost', {
+          defaultValue: 'Failed to post.'
+        }),
+        moneyChange: 0
+      }
+
+      if (!selectedId) return instagramPostFailure
+
       const influencer = influencers[selectedId]
-      if (!influencer)
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0,
-          message: i18n.t('ui:postOptions.failedToPost', {
-            defaultValue: 'Failed to post.'
-          }),
-          moneyChange: 0
-        }
+      if (!influencer) return instagramPostFailure
 
       const cost = getCost(influencer)
       let followersGain = 1000

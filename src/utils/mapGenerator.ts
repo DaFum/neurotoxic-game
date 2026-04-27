@@ -121,8 +121,8 @@ export class MapGenerator {
       id: 'node_0_0',
       layer: 0,
       venue: homeVenue,
-      status: 'unlocked', // unlocked, completed, locked
-      type: 'START',
+      status: 'unlocked' as const, // unlocked, completed, locked
+      type: 'START' as const,
       x: getVenueCoord(homeVenue, 'x', 50),
       y: getVenueCoord(homeVenue, 'y', 10)
     }

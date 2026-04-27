@@ -3,6 +3,16 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
+import type { PlayerState } from '../../types/game'
+import type { PurchaseItem } from '../../types/components'
+
+interface VoidTraderTabProps {
+  player: PlayerState
+  handleTrade: (item: PurchaseItem) => void
+  isItemOwned: (item: PurchaseItem) => boolean
+  isItemDisabled: (item: PurchaseItem) => boolean
+  processingItemId?: string | number | null
+}
 
 export const VoidTraderTab = ({
   player,
@@ -10,14 +20,14 @@ export const VoidTraderTab = ({
   isItemOwned,
   isItemDisabled,
   processingItemId
-}: Record<string, unknown>) => {
+}: VoidTraderTabProps) => {
   const { t } = useTranslation()
 
   // Filter for epic/rare contraband that are tradeable in the black market
   const voidItems = useMemo(() => {
     return [
-      ...(CONTRABAND_BY_RARITY.epic || []),
-      ...(CONTRABAND_BY_RARITY.rare || [])
+      ...(CONTRABAND_BY_RARITY.epic ?? []),
+      ...(CONTRABAND_BY_RARITY.rare ?? [])
     ].map(item => {
       // Determine cost in Fame based on rarity
       const rarityKey = item.rarity
@@ -47,7 +57,7 @@ export const VoidTraderTab = ({
             {t('ui:stats.fame', { defaultValue: 'FAME' })}
           </p>
           <p className='text-xl font-bold text-toxic-green tracking-widest'>
-            {(player as any).fame}
+            {player.fame}
           </p>
         </div>
       </div>
@@ -56,7 +66,7 @@ export const VoidTraderTab = ({
         {voidItems.map(item => {
           const isProcessingThis = processingItemId === item.id
           const isAnyProcessing = processingItemId != null
-          const disabled = (isItemDisabled as any)(item) || isAnyProcessing
+          const disabled = isItemDisabled(item) || isAnyProcessing
 
           return (
             <div
@@ -101,13 +111,13 @@ export const VoidTraderTab = ({
                 </div>
                 <ActionButton
                   variant='primary'
-                  onClick={() => (handleTrade as any)(item)}
+                  onClick={() => handleTrade(item)}
                   disabled={disabled}
                   className='text-xs py-1 px-4 min-w-[120px]'
                 >
                   {isProcessingThis
                     ? t('ui:loading', { defaultValue: 'PROCESSING...' })
-                    : (isItemOwned as any)(item) && !item.stackable
+                    : isItemOwned(item) && !item.stackable
                       ? t('ui:hq.owned', { defaultValue: 'OWNED' })
                       : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
                 </ActionButton>
