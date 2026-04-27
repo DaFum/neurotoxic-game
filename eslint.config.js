@@ -43,8 +43,7 @@ const BASE_PLUGINS = {
 const BASE_RULES = {
   ...prettier.rules,
   'no-restricted-imports': ['error', RESTRICTED_IMPORTS],
-  'no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS],
-  '@typescript-eslint/no-explicit-any': 'warn'
+  'no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS]
 }
 
 export default [
@@ -67,8 +66,7 @@ export default [
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
       // PropTypes are intentionally used in this JS project for runtime type checking
-      '@eslint-react/no-prop-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'off'
+      '@eslint-react/no-prop-types': 'off'
     }
   },
   {
@@ -89,7 +87,8 @@ export default [
       // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
       '@eslint-react/no-prop-types': 'off',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS]
+      '@typescript-eslint/no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS],
+      '@typescript-eslint/no-explicit-any': 'warn'
     }
   },
   {

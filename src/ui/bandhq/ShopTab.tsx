@@ -16,7 +16,8 @@ export const ShopTab = ({
   getAdjustedCost,
   processingItemId
 }: ShopTabProps) => {
-  const items = [...HQ_ITEMS.gear, ...HQ_ITEMS.instruments] as unknown as CatalogItem[]
+  const rawItems: any[] = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
+  const items = rawItems as CatalogItem[]
 
   return (
     <CatalogTab

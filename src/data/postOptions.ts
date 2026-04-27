@@ -305,7 +305,7 @@ export const POST_OPTIONS = [
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj =
         getMemberWithTrait(members, 'lead_singer') ?? members[0]
-      const vocalist = vocalistObj?.name ?? 'Unknown'
+      const vocalist = vocalistObj?.name ?? i18n.t('ui:postOptions.errors.unknownMemberFallback', { defaultValue: 'Unknown' })
       return {
         type: 'FIXED',
         success: true,
@@ -595,7 +595,7 @@ export const POST_OPTIONS = [
       const gearNerd =
         getMemberWithTrait(members, 'gear_nerd')?.name ??
         members[0]?.name ??
-        'Unknown'
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', { defaultValue: 'Unknown' })
       return {
         type: 'FIXED',
         success: true,
@@ -847,7 +847,8 @@ export const POST_OPTIONS = [
           followers: 0,
           message: i18n.t('ui:postOptions.failedToPost', {
             defaultValue: 'Failed to post.'
-          })
+          }),
+          moneyChange: 0
         }
       const influencer = influencers[selectedId]
       if (!influencer)
@@ -858,7 +859,8 @@ export const POST_OPTIONS = [
           followers: 0,
           message: i18n.t('ui:postOptions.failedToPost', {
             defaultValue: 'Failed to post.'
-          })
+          }),
+          moneyChange: 0
         }
 
       const cost = getCost(influencer)

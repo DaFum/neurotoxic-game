@@ -10,7 +10,27 @@ import { useKabelsalatShuffle } from './hooks/useKabelsalatShuffle'
 import { useKabelsalatInteractions } from './hooks/useKabelsalatInteractions'
 import { useKabelsalatGameEnd } from './hooks/useKabelsalatGameEnd'
 
-export const useKabelsalatState = () => {
+import type { TFunction } from 'i18next'
+
+export interface KabelsalatState {
+  t: TFunction<["ui"], undefined>
+  selectedCable: CableId | null
+  connections: Partial<Record<SocketId, CableId>>
+  isShocked: boolean
+  faultReason: string
+  isPoweredOn: boolean
+  timeLeft: number
+  isGameOver: boolean
+  socketOrder: SocketId[]
+  lightningSeeds: any[]
+  bgTextureUrl: string | null
+  handleCableClick: (cableId: CableId) => void
+  handleSocketClick: (socketId: string) => void
+  isPowerConnected: boolean
+  forceAdvance: () => void
+}
+
+export const useKabelsalatState = (): KabelsalatState => {
   const { t } = useTranslation(['ui'])
 
   // Core State
