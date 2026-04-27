@@ -175,8 +175,8 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
       luck: 10,
       skill: 5, // starting at 7, clamps to 10 (applied 3)
       inventory: {
-        someItem: false, // will subtract 1
-        newItem: true,   // will add true
+        someItem: false,
+        newItem: true, // will add true
         constructor: { evil: 2 }
       },
       membersDelta: {
@@ -207,7 +207,7 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
   assert.equal(applied.band.luck, 10)
   assert.equal(applied.band.skill, 3)
   assert.deepEqual(applied.band.members, [{ skill: 3 }])
-  assert.equal(applied.band.inventory.someItem, -1)
+  assert.equal(applied.band.inventory.someItem, false)
   assert.equal(applied.band.inventory.newItem, true)
   assert.equal(applied.flags.someFlag, true)
 
@@ -216,4 +216,31 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
   assert.equal(Object.hasOwn(applied.player.stats, '__proto__'), false)
   assert.equal(Object.hasOwn(applied.band.inventory, 'constructor'), false)
   assert.equal(Object.hasOwn(applied.band.membersDelta, 'prototype'), false)
+})
+
+test('calculateAppliedDelta clamps inventory and member deltas to real applied values', () => {
+  const state = {
+    band: {
+      inventory: { beer: 1, sticker: false },
+      members: [{ mood: 95, stamina: 95 }]
+    }
+  }
+
+  const delta = {
+    band: {
+      inventory: {
+        beer: -5,
+        sticker: true
+      },
+      membersDelta: [{ moodChange: 20, staminaChange: 10 }]
+    }
+  }
+
+  const applied = calculateAppliedDelta(state, delta)
+
+  assert.equal(applied.band.inventory.beer, -1)
+  assert.equal(applied.band.inventory.sticker, true)
+  assert.deepEqual(applied.band.membersDelta, [
+    { moodChange: 5, staminaChange: 5 }
+  ])
 })

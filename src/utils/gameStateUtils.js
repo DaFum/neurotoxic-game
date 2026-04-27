@@ -137,12 +137,21 @@ export const calculateAppliedDelta = (state, delta) => {
     if (delta.player.van) {
       applied.player.van = {}
       if (typeof delta.player.van.fuel === 'number') {
-        const nextFuel = clampVanFuel((state.player?.van?.fuel || 0) + delta.player.van.fuel)
+        const nextFuel = clampVanFuel(
+          (state.player?.van?.fuel || 0) + delta.player.van.fuel
+        )
         applied.player.van.fuel = nextFuel - (state.player?.van?.fuel || 0)
       }
       if (typeof delta.player.van.condition === 'number') {
-        const nextCondition = Math.max(0, Math.min(100, (state.player?.van?.condition || 0) + delta.player.van.condition))
-        applied.player.van.condition = nextCondition - (state.player?.van?.condition || 0)
+        const nextCondition = Math.max(
+          0,
+          Math.min(
+            100,
+            (state.player?.van?.condition || 0) + delta.player.van.condition
+          )
+        )
+        applied.player.van.condition =
+          nextCondition - (state.player?.van?.condition || 0)
       }
     }
     if (typeof delta.player.day === 'number') {
@@ -188,18 +197,19 @@ export const calculateAppliedDelta = (state, delta) => {
       for (const [itemId, qty] of Object.entries(delta.band.inventory)) {
         if (isForbiddenKey(itemId)) continue
 
-        if (typeof qty === 'number') {
-          if (qty !== 0) {
-            applied.band.inventory[itemId] = qty
+        const currentValue = state.band?.inventory?.[itemId]
+        const nextValue = applyInventoryItemDelta(currentValue, qty)
+
+        if (typeof nextValue === 'number') {
+          const currentCount =
+            typeof currentValue === 'number' ? currentValue : 0
+          const appliedDelta = nextValue - currentCount
+          if (appliedDelta !== 0) {
+            applied.band.inventory[itemId] = appliedDelta
           }
-        } else if (qty === true) {
-          applied.band.inventory[itemId] = true
-        } else if (qty === false) {
-          const current = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
-          if (current > 0) {
-            applied.band.inventory[itemId] = -1
-          } else {
-            applied.band.inventory[itemId] = false
+        } else if (nextValue === true || nextValue === false) {
+          if (nextValue !== currentValue) {
+            applied.band.inventory[itemId] = nextValue
           }
         }
       }
@@ -211,13 +221,90 @@ export const calculateAppliedDelta = (state, delta) => {
         : delta.band.members
 
     if (membersDelta && !Array.isArray(membersDelta)) {
+      const memberTemplate = state.band?.members?.[0]
+      const currentMood =
+        typeof memberTemplate?.mood === 'number' ? memberTemplate.mood : null
+      const currentStamina =
+        typeof memberTemplate?.stamina === 'number'
+          ? memberTemplate.stamina
+          : null
+
       applied.band.membersDelta = {}
-      for (const key of Object.keys(membersDelta)) {
-        if (isForbiddenKey(key)) continue
-        applied.band.membersDelta[key] = membersDelta[key]
+
+      if (typeof membersDelta.moodChange === 'number') {
+        if (typeof currentMood === 'number') {
+          const nextMood = Math.max(
+            0,
+            Math.min(100, currentMood + membersDelta.moodChange)
+          )
+          const clampedMoodDelta = nextMood - currentMood
+          if (clampedMoodDelta !== 0) {
+            applied.band.membersDelta.moodChange = clampedMoodDelta
+          }
+        } else if (membersDelta.moodChange !== 0) {
+          applied.band.membersDelta.moodChange = membersDelta.moodChange
+        }
+      }
+
+      if (typeof membersDelta.staminaChange === 'number') {
+        if (typeof currentStamina === 'number') {
+          const nextStamina = Math.max(
+            0,
+            Math.min(100, currentStamina + membersDelta.staminaChange)
+          )
+          const clampedStaminaDelta = nextStamina - currentStamina
+          if (clampedStaminaDelta !== 0) {
+            applied.band.membersDelta.staminaChange = clampedStaminaDelta
+          }
+        } else if (membersDelta.staminaChange !== 0) {
+          applied.band.membersDelta.staminaChange = membersDelta.staminaChange
+        }
+      }
+
+      if (Object.keys(applied.band.membersDelta).length === 0) {
+        delete applied.band.membersDelta
       }
     } else if (membersDelta && Array.isArray(membersDelta)) {
-      applied.band.membersDelta = membersDelta
+      applied.band.membersDelta = membersDelta.map((memberDelta, index) => {
+        const member = state.band?.members?.[index]
+        const currentMood =
+          typeof member?.mood === 'number' ? member.mood : null
+        const currentStamina =
+          typeof member?.stamina === 'number' ? member.stamina : null
+        const appliedMemberDelta = {}
+
+        if (typeof memberDelta?.moodChange === 'number') {
+          if (typeof currentMood === 'number') {
+            const nextMood = Math.max(
+              0,
+              Math.min(100, currentMood + memberDelta.moodChange)
+            )
+            const clampedMoodDelta = nextMood - currentMood
+            if (clampedMoodDelta !== 0) {
+              appliedMemberDelta.moodChange = clampedMoodDelta
+            }
+          } else if (memberDelta.moodChange !== 0) {
+            appliedMemberDelta.moodChange = memberDelta.moodChange
+          }
+        }
+
+        if (typeof memberDelta?.staminaChange === 'number') {
+          if (typeof currentStamina === 'number') {
+            const nextStamina = Math.max(
+              0,
+              Math.min(100, currentStamina + memberDelta.staminaChange)
+            )
+            const clampedStaminaDelta = nextStamina - currentStamina
+            if (clampedStaminaDelta !== 0) {
+              appliedMemberDelta.staminaChange = clampedStaminaDelta
+            }
+          } else if (memberDelta.staminaChange !== 0) {
+            appliedMemberDelta.staminaChange = memberDelta.staminaChange
+          }
+        }
+
+        return appliedMemberDelta
+      })
     }
 
     if (typeof delta.band.luck === 'number') {
@@ -226,7 +313,9 @@ export const calculateAppliedDelta = (state, delta) => {
     }
 
     if (typeof delta.band.skill === 'number') {
-      const members = Array.isArray(state.band?.members) ? state.band.members : []
+      const members = Array.isArray(state.band?.members)
+        ? state.band.members
+        : []
       let totalSkillDelta = 0
       applied.band.members = []
       for (let i = 0; i < members.length; i++) {
@@ -234,7 +323,10 @@ export const calculateAppliedDelta = (state, delta) => {
           members[i].baseStats && typeof members[i].baseStats.skill === 'number'
             ? members[i].baseStats.skill
             : 5
-        const nextSkill = Math.max(1, Math.min(10, currentSkill + delta.band.skill))
+        const nextSkill = Math.max(
+          1,
+          Math.min(10, currentSkill + delta.band.skill)
+        )
         const memberDelta = nextSkill - currentSkill
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
@@ -251,7 +343,8 @@ export const calculateAppliedDelta = (state, delta) => {
         applied.band.relationshipChange = {}
         for (const key of Object.keys(delta.band.relationshipChange)) {
           if (isForbiddenKey(key)) continue
-          applied.band.relationshipChange[key] = delta.band.relationshipChange[key]
+          applied.band.relationshipChange[key] =
+            delta.band.relationshipChange[key]
         }
       }
     }
