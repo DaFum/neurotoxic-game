@@ -67,7 +67,7 @@ type PurchaseEffectResult = {
 type PurchaseValidation = {
   isValid: boolean
   errorType?: string
-  effect?: { type?: string } | null
+  effect?: Effect
   finalCost?: number
   isConsumable?: boolean
   payingWithFame?: boolean
@@ -351,8 +351,7 @@ export const usePurchaseLogic = ({
           (finalCost as number) || 0
         )
 
-        const resolvedEffect: Effect | undefined =
-          (effect as Effect | null | undefined) ?? getPrimaryEffect(item)
+        const resolvedEffect: Effect | undefined = effect ?? getPrimaryEffect(item)
         if (!resolvedEffect) {
           handlePurchaseValidationError(
             { isValid: false, errorType: 'missing_effect' },
@@ -406,9 +405,12 @@ export const usePurchaseLogic = ({
         ) {
           const vanState: PlayerState['van'] | Partial<PlayerState['van']> =
             playerPatch.van ?? player.van
-          playerPatch = {
-            ...playerPatch,
-            van: buildVanWithUpgrade(vanState, item.id)
+          const partialVan = buildVanWithUpgrade(vanState, String(item.id))
+          if (partialVan) {
+            playerPatch = {
+              ...playerPatch,
+              van: { ...player.van, ...partialVan } as PlayerState['van']
+            }
           }
         }
 

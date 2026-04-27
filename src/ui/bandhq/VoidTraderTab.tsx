@@ -20,7 +20,7 @@ export const VoidTraderTab = ({
       ...(CONTRABAND_BY_RARITY.rare || [])
     ].map(item => {
       // Determine cost in Fame based on rarity
-      const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
+      const fameCost = VOID_TRADER_COSTS[item.rarity as keyof typeof VOID_TRADER_COSTS] ?? 1000
       return { ...item, fameCost }
     })
   }, [])

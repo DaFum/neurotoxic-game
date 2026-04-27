@@ -215,7 +215,7 @@ export class MapGenerator {
 
       for (let j = 0; j < nodeCount; j++) {
         let poolArray: Venue[]
-        let poolLength
+        let poolLength: number
 
         if (i < 3) {
           poolArray = easyVenues

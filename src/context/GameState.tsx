@@ -474,6 +474,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
               type: 'error'
             })
           )
+          setMapRetryCount((prev: number) => prev + 1)
           dispatch(createChangeSceneAction(GAME_PHASES.MENU))
         }
       }

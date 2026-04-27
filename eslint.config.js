@@ -76,8 +76,7 @@ export default [
     ...eslintReact.configs.recommended,
     languageOptions: {
       ...BASE_LANGUAGE_OPTIONS,
-      parser: tsParser,
-      parserOptions: BASE_LANGUAGE_OPTIONS.parserOptions
+      parser: tsParser
     },
     plugins: {
       ...BASE_PLUGINS,

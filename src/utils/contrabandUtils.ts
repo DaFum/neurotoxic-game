@@ -43,14 +43,14 @@ export function computeStashBustRisk(stash: unknown) {
     const item = stashRecord[itemId]
     if (!item || typeof item !== 'object') continue
     const itemRecord = item as Record<string, unknown>
-    const rarity =
-      typeof itemRecord.rarity === 'string' ? itemRecord.rarity : null
-    if (!rarity) continue
-    const chance = BUST_CHANCE_BY_RARITY[rarity as Rarity] ?? 0
+    const rarityValue = typeof itemRecord.rarity === 'string' ? itemRecord.rarity : null
+    if (!rarityValue || !Object.hasOwn(BUST_CHANCE_BY_RARITY, rarityValue)) continue
+
+    const chance = BUST_CHANCE_BY_RARITY[rarityValue as keyof typeof BUST_CHANCE_BY_RARITY]
     if (chance > highestChance) {
       highestChance = chance
       highestRiskItemId = itemId
-      highestRarity = rarity
+      highestRarity = rarityValue
     }
   }
 

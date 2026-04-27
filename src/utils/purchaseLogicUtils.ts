@@ -25,7 +25,7 @@ type EffectHandler = (
   player: PlayerState,
   band: BandState | null
 ) =>
-  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: unknown[] }
+  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: UnlockMessage[] | undefined }
   | undefined
 
 // Safely read a numeric property from an unknown object.
@@ -234,26 +234,25 @@ export const applyInventorySet = (
 export const applyInventoryAdd = (
   effect: Effect,
   bandInventory?: Inventory
-) => ({
-  ...(typeof effect.item === 'string'
-    ? {
-        inventory: {
-          ...(bandInventory ?? {}),
-          [effect.item]: (() => {
-            const previousValue = (bandInventory ?? {})[effect.item]
-            const safePrevious =
-              typeof previousValue === 'number' &&
-              Number.isFinite(previousValue)
-                ? previousValue
-                : 0
-            const parsedAddend = Number(effect.value ?? 0)
-            const safeAddend = Number.isFinite(parsedAddend) ? parsedAddend : 0
-            return safePrevious + safeAddend
-          })()
-        }
-      }
-    : { inventory: { ...(bandInventory ?? {}) } })
-})
+) => {
+  if (typeof effect.item !== 'string') return {}
+  return {
+    inventory: {
+      ...(bandInventory ?? {}),
+      [effect.item]: (() => {
+        const previousValue = (bandInventory ?? {})[effect.item]
+        const safePrevious =
+          typeof previousValue === 'number' &&
+          Number.isFinite(previousValue)
+            ? previousValue
+            : 0
+        const parsedAddend = Number(effect.value ?? 0)
+        const safeAddend = Number.isFinite(parsedAddend) ? parsedAddend : 0
+        return safePrevious + safeAddend
+      })()
+    }
+  }
+}
 
 /**
  * Applies stat modifier effect

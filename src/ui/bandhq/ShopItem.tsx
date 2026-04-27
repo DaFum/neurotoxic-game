@@ -37,7 +37,7 @@ export const ShopItem = React.memo(
       processingItemId != null &&
       item.id != null &&
       String(processingItemId) === String(item.id)
-    const isAnyProcessing = !!processingItemId
+    const isAnyProcessing = processingItemId != null
 
     const handlePurchase = useCallback(() => {
       if (isDisabled || isPurchased || isAnyProcessing) return
@@ -77,7 +77,7 @@ export const ShopItem = React.memo(
                 : 'text-star-white'
             }`}
           >
-            {adjustedCost !== undefined && adjustedCost < item.cost ? (
+            {adjustedCost !== undefined && item.cost !== undefined && adjustedCost < item.cost ? (
               <>
                 <span className='line-through opacity-50 mr-2'>
                   {item.cost}
@@ -96,7 +96,7 @@ export const ShopItem = React.memo(
               content={
                 isPurchased
                   ? t('ui:shop.messages.alreadyOwned', {
-                      itemName: t(item.name),
+                      itemName: t(item.name as string),
                       defaultValue: 'Already owned!'
                     })
                   : t('ui:shop.messages.notEnough', {
@@ -106,7 +106,7 @@ export const ShopItem = React.memo(
                           : t('ui:shop.messages.money', {
                               defaultValue: 'Money'
                             }),
-                      itemName: t(item.name),
+                      itemName: t(item.name as string),
                       defaultValue: 'Not enough currency.'
                     })
               }
