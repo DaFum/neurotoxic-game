@@ -514,10 +514,10 @@ export const handleUpdateSettings = (
 
 export const handleSetMap = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: GameMap | null
 ): GameState => {
   logger.info('GameState', 'Map Generated')
-  return { ...state, gameMap: payload as GameMap }
+  return { ...state, gameMap: payload }
 }
 
 export const handleAddToast = (

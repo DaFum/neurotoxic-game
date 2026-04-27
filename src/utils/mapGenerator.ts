@@ -189,12 +189,7 @@ export class MapGenerator {
     depth: number,
     pools: VenuePools & { usedVenueIds: Set<string> }
   ): void {
-    let {
-      easyVenues,
-      mediumVenues,
-      hardVenues,
-      usedVenueIds
-    } = pools
+    let { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
     const countAvailableVenues = (pool: Venue[]) => {
       let available = 0
@@ -213,30 +208,46 @@ export class MapGenerator {
       // Determine node count for this layer (2-4 branching)
       const nodeCount = Math.floor(this.random() * 3) + 2
 
+      // Compute available counts once per layer, then decrement as venues are reserved
+      let easyAvailable = countAvailableVenues(easyVenues)
+      let mediumAvailable = countAvailableVenues(mediumVenues)
+      let hardAvailable = countAvailableVenues(hardVenues)
+
       for (let j = 0; j < nodeCount; j++) {
         let poolArray: Venue[]
         let poolLength
 
         if (i < 3) {
           poolArray = easyVenues
-          poolLength = countAvailableVenues(easyVenues)
+          poolLength = easyAvailable
         } else if (i < 7) {
           poolArray = mediumVenues
-          poolLength = countAvailableVenues(mediumVenues)
+          poolLength = mediumAvailable
         } else {
           poolArray = hardVenues
-          poolLength = countAvailableVenues(hardVenues)
+          poolLength = hardAvailable
         }
 
-        // Fallback to harder pools if the current pool is exhausted
+        // Fallback when primary pool is exhausted
         if (poolLength === 0) {
           if (i < 3) {
             poolArray = mediumVenues
-            poolLength = countAvailableVenues(mediumVenues)
-          }
-          if (poolLength === 0 && i < 7) {
+            poolLength = mediumAvailable
+            if (poolLength === 0) {
+              poolArray = hardVenues
+              poolLength = hardAvailable
+            }
+          } else if (i < 7) {
             poolArray = hardVenues
-            poolLength = countAvailableVenues(hardVenues)
+            poolLength = hardAvailable
+          } else {
+            // Hard pool exhausted: cascade down through medium then easy
+            poolArray = mediumVenues
+            poolLength = mediumAvailable
+            if (poolLength === 0) {
+              poolArray = easyVenues
+              poolLength = easyAvailable
+            }
           }
         }
 
@@ -271,6 +282,9 @@ export class MapGenerator {
           }
 
           usedVenueIds.add(venue.id)
+          if (poolArray === easyVenues) easyAvailable--
+          else if (poolArray === mediumVenues) mediumAvailable--
+          else hardAvailable--
         } else {
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
