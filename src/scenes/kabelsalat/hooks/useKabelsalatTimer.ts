@@ -6,9 +6,11 @@ import {
   type SetStateAction
 } from 'react'
 import { SOCKET_DEFS } from '../constants'
+import type { CableId } from '../constants'
+import type { SocketId } from '../../../types/kabelsalat'
 
 export const useKabelsalatTimer = (
-  connections: Record<string, string>,
+  connections: Partial<Record<SocketId, CableId>>,
   isPoweredOn: boolean,
   isGameOver: boolean,
   isWinningRef: MutableRefObject<boolean>,

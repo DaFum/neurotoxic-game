@@ -246,7 +246,9 @@ export const applyInventoryAdd = (
               Number.isFinite(previousValue)
                 ? previousValue
                 : 0
-            return safePrevious + Number(effect.value ?? 0)
+            const parsedAddend = Number(effect.value ?? 0)
+            const safeAddend = Number.isFinite(parsedAddend) ? parsedAddend : 0
+            return safePrevious + safeAddend
           })()
         }
       }

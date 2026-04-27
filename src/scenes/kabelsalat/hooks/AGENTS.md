@@ -13,3 +13,4 @@ Applies to `src/scenes/kabelsalat/hooks/**`.
 
 - Interaction hooks that read `CABLE_MAP` should fail loudly on impossible missing entries rather than silently no-op, to surface data-shape regressions early.
 - Game-end hooks should keep timer IDs in refs and clear them only on true unmount to survive React StrictMode mount/cleanup replay without losing scheduled transitions.
+- When interaction handlers accept boundary `string` IDs from UI events, narrow them to `SocketId`/`CableId` immediately via `Object.hasOwn`-based type guards before any map lookup to avoid downstream casts.

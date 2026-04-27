@@ -15,6 +15,7 @@ import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 
 import type { SocketId, LightningSeed } from '../../../types/kabelsalat'
+import type { CableId } from '../constants'
 
 interface KabelsalatBoardProps {
   t: TFunction
@@ -24,11 +25,11 @@ interface KabelsalatBoardProps {
   faultReason: string | null
   isPowerConnected: boolean
   lightningSeeds: LightningSeed[]
-  connections: Partial<Record<SocketId, string>>
+  connections: Partial<Record<SocketId, CableId>>
   socketOrder: SocketId[]
-  selectedCable?: string | null
+  selectedCable?: CableId | null
   handleSocketClick: (id: SocketId) => void
-  handleCableClick: (id: string) => void
+  handleCableClick: (id: CableId) => void
   onAdvance: (isPowered: boolean) => void
 }
 

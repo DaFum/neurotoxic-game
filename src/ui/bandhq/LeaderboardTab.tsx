@@ -248,12 +248,12 @@ export const LeaderboardTab = () => {
               </thead>
               <tbody>
                 {rankings.map(entry => {
-                  const safeScore = Number.isFinite(entry?.score)
-                    ? entry?.score
+                  const safeScore = Number.isFinite(entry.score)
+                    ? entry.score
                     : 0
                   return (
                     <tr
-                      key={entry?.playerId}
+                      key={entry.playerId}
                       className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
                     >
                       <td className='py-2 px-2 text-toxic-green'>

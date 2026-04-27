@@ -423,7 +423,7 @@ export type Balances = Record<string, number>
 
 export interface CatalogConsumerProps {
   items: CatalogItem[]
-  processingItemId?: string
+  processingItemId?: string | number
   handleBuy: (item: CatalogItem) => void
   isItemOwned: (item: CatalogItem) => boolean
   isItemDisabled: (item: CatalogItem) => boolean
@@ -441,7 +441,7 @@ export interface CatalogTabProps {
   isItemOwnedCallback: (item: CatalogItem) => boolean
   isItemDisabledCallback: (item: CatalogItem) => boolean
   getAdjustedCostCallback?: (item: CatalogItem) => number | undefined
-  processingItemId?: string
+  processingItemId?: string | number
 }
 
 export type UnlockMessageKind = 'success' | 'error' | 'info'

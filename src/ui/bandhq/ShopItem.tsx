@@ -13,7 +13,7 @@ export interface ShopItemProps {
   isDisabled: boolean
   adjustedCost?: number
   onBuy: (item: PurchaseItem) => void
-  processingItemId?: string
+  processingItemId?: string | number
 }
 
 // ⚡ Bolt Optimization: Wrapped ShopItem in React.memo
@@ -33,7 +33,10 @@ export const ShopItem = React.memo(
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
 
-    const isProcessingThis = processingItemId === item.id
+    const isProcessingThis =
+      processingItemId != null &&
+      item.id != null &&
+      String(processingItemId) === String(item.id)
     const isAnyProcessing = !!processingItemId
 
     const handlePurchase = useCallback(() => {
@@ -161,5 +164,5 @@ ShopItem.propTypes = {
   adjustedCost: PropTypes.number,
   /** Callback executed on purchase attempt. Parent handles lock. */
   onBuy: PropTypes.func.isRequired,
-  processingItemId: PropTypes.string
+  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }

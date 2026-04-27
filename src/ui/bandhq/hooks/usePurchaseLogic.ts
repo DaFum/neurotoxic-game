@@ -38,17 +38,9 @@ import type {
   ToastCallback,
   TranslationCallback
 } from '../../../types/callbacks'
-import type { Effect } from '../../../types/components'
+import type { Effect, PurchaseItem } from '../../../types/components'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
-
-type PurchaseItem = {
-  id: string
-  name?: string
-  currency?: string
-  requiresReputation?: boolean
-  [key: string]: unknown
-}
 
 type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
   van?: Partial<PlayerState['van']>

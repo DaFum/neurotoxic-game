@@ -40,5 +40,5 @@ UpgradesTab.propTypes = {
   isItemOwned: PropTypes.func.isRequired,
   isItemDisabled: PropTypes.func.isRequired,
   getAdjustedCost: PropTypes.func,
-  processingItemId: PropTypes.string
+  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }

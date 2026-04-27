@@ -37,13 +37,21 @@ type BandHQLogicParams = {
   ) => void
 }
 
+export interface BandHQLogicResult {
+  processingItemId: string | null
+  handleVoidTrade: (item: VoidTraderItem) => void
+  isVoidItemOwned: (item: VoidTraderItem) => boolean
+  isVoidItemDisabled: (item: VoidTraderItem) => boolean
+  handleBuyWithLock: (item: PurchaseItem) => Promise<void>
+}
+
 export const useBandHQLogic = ({
   player,
   band,
   handleBuy,
   tradeVoidItem,
   addToast
-}: BandHQLogicParams) => {
+}: BandHQLogicParams): BandHQLogicResult => {
   const { t } = useTranslation()
   const [processingItemId, setProcessingItemId] = useState<string | null>(null)
   const processingItemIdRef = useRef<string | null>(null)

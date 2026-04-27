@@ -144,5 +144,5 @@ CatalogTab.propTypes = {
   isItemOwnedCallback: PropTypes.func.isRequired,
   isItemDisabledCallback: PropTypes.func.isRequired,
   getAdjustedCostCallback: PropTypes.func,
-  processingItemId: PropTypes.string
+  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }

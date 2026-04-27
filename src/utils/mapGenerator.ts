@@ -40,9 +40,6 @@ type VenuePools = {
   easyVenues: Venue[]
   mediumVenues: Venue[]
   hardVenues: Venue[]
-  availableEasyLength: number
-  availableMediumLength: number
-  availableHardLength: number
 }
 
 let cachedHomeVenue: Venue | null = null
@@ -157,35 +154,11 @@ export class MapGenerator {
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
-    // Optimization: Maintain dynamic available lengths to avoid .filter() in loops
-    let availableEasyLength = 0
-    let availableMediumLength = 0
-    let availableHardLength = 0
-
-    for (let i = 0; i < easyVenues.length; i++) {
-      const easyVenue = easyVenues[i]
-      if (!easyVenue) continue
-      if (!usedVenueIds.has(easyVenue.id)) availableEasyLength++
-    }
-    for (let i = 0; i < mediumVenues.length; i++) {
-      const mediumVenue = mediumVenues[i]
-      if (!mediumVenue) continue
-      if (!usedVenueIds.has(mediumVenue.id)) availableMediumLength++
-    }
-    for (let i = 0; i < hardVenues.length; i++) {
-      const hardVenue = hardVenues[i]
-      if (!hardVenue) continue
-      if (!usedVenueIds.has(hardVenue.id)) availableHardLength++
-    }
-
     const pools = {
       easyVenues,
       mediumVenues,
       hardVenues,
-      usedVenueIds,
-      availableEasyLength,
-      availableMediumLength,
-      availableHardLength
+      usedVenueIds
     }
 
     this._generateIntermediateLayers(map, validDepth, pools)
@@ -220,11 +193,20 @@ export class MapGenerator {
       easyVenues,
       mediumVenues,
       hardVenues,
-      usedVenueIds,
-      availableEasyLength,
-      availableMediumLength,
-      availableHardLength
+      usedVenueIds
     } = pools
+
+    const countAvailableVenues = (pool: Venue[]) => {
+      let available = 0
+      for (let k = 0; k < pool.length; k++) {
+        const venue = pool[k]
+        if (!venue) continue
+        if (!usedVenueIds.has(venue.id)) {
+          available++
+        }
+      }
+      return available
+    }
 
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
@@ -237,24 +219,24 @@ export class MapGenerator {
 
         if (i < 3) {
           poolArray = easyVenues
-          poolLength = availableEasyLength
+          poolLength = countAvailableVenues(easyVenues)
         } else if (i < 7) {
           poolArray = mediumVenues
-          poolLength = availableMediumLength
+          poolLength = countAvailableVenues(mediumVenues)
         } else {
           poolArray = hardVenues
-          poolLength = availableHardLength
+          poolLength = countAvailableVenues(hardVenues)
         }
 
         // Fallback to harder pools if the current pool is exhausted
         if (poolLength === 0) {
           if (i < 3) {
             poolArray = mediumVenues
-            poolLength = availableMediumLength
+            poolLength = countAvailableVenues(mediumVenues)
           }
           if (poolLength === 0 && i < 7) {
             poolArray = hardVenues
-            poolLength = availableHardLength
+            poolLength = countAvailableVenues(hardVenues)
           }
         }
 
@@ -289,9 +271,6 @@ export class MapGenerator {
           }
 
           usedVenueIds.add(venue.id)
-          if (poolArray === easyVenues) availableEasyLength--
-          else if (poolArray === mediumVenues) availableMediumLength--
-          else if (poolArray === hardVenues) availableHardLength--
         } else {
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.

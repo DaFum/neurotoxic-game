@@ -4,15 +4,16 @@ import type { FC } from 'react'
 import { PlugGraphics } from './PlugGraphics.tsx'
 import { SocketGraphics } from './SocketGraphics.tsx'
 import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants'
+import type { CableId } from '../constants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketItemProps {
   t: (key: string, options?: unknown) => string
   socketId: SocketId
   index: number
-  connections: Partial<Record<SocketId, string>>
+  connections: Partial<Record<SocketId, CableId>>
   isPowerConnected: boolean
-  selectedCable?: string | null
+  selectedCable?: CableId | null
   isGameOver: boolean
   handleSocketClick: (id: SocketId) => void
 }

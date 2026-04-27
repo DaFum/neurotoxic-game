@@ -19,3 +19,4 @@ Applies to `src/utils/**` except subtrees with deeper `AGENTS.md` overrides.
 ## Recent Findings (2026-04)
 
 - Lint coverage drift can hide utility regressions: ensure `.ts` utility files stay inside active ESLint file globs when lint config changes.
+- Avoid storing mutable counters in shared config objects and then destructuring to primitives; mutations won’t propagate back and the object contract becomes misleading.

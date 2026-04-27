@@ -7,16 +7,24 @@ import {
   type SetStateAction
 } from 'react'
 import { SOCKET_DEFS, CABLE_MAP } from '../constants'
+import type { CableId } from '../constants'
+import type { SocketId } from '../../../types/kabelsalat'
+
+const isSocketId = (value: string): value is SocketId =>
+  Object.hasOwn(SOCKET_DEFS, value)
+
+const isCableId = (value: string): value is CableId =>
+  Object.hasOwn(CABLE_MAP, value)
 
 export const useKabelsalatInteractions = (
   t: (key: string) => string,
   isPoweredOn: boolean,
   isGameOver: boolean,
   isWinningRef: MutableRefObject<boolean>,
-  selectedCable: string | null,
-  setSelectedCable: Dispatch<SetStateAction<string | null>>,
-  connections: Record<string, string>,
-  setConnections: Dispatch<SetStateAction<Record<string, string>>>,
+  selectedCable: CableId | null,
+  setSelectedCable: Dispatch<SetStateAction<CableId | null>>,
+  connections: Partial<Record<SocketId, CableId>>,
+  setConnections: Dispatch<SetStateAction<Partial<Record<SocketId, CableId>>>>,
   isShocked: boolean,
   setIsShocked: Dispatch<SetStateAction<boolean>>,
   setFaultReason: Dispatch<SetStateAction<string>>
@@ -51,7 +59,7 @@ export const useKabelsalatInteractions = (
   )
 
   const handleCableClick = useCallback(
-    (cableId: string) => {
+    (cableId: CableId) => {
       if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
       const connectionSocketId = Object.keys(connections).find(
@@ -89,12 +97,12 @@ export const useKabelsalatInteractions = (
         !selectedCable
       )
         return
+      if (!isSocketId(socketId)) return
       if (connections[socketId]) return
 
-      if (!Object.hasOwn(SOCKET_DEFS, socketId)) return
-      if (!Object.hasOwn(CABLE_MAP, selectedCable)) return
+      if (!isCableId(selectedCable)) return
 
-      const targetSocket = SOCKET_DEFS[socketId as keyof typeof SOCKET_DEFS]
+      const targetSocket = SOCKET_DEFS[socketId]
       const incomingCable = CABLE_MAP[selectedCable]
 
       const hasPower = !!connections['power']

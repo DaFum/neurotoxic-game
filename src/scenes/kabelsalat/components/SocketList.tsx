@@ -6,19 +6,17 @@
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import { SocketItem } from './SocketItem.tsx'
+import type { CableId } from '../constants'
+import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketListProps {
   t: (key: string, options?: unknown) => string
-  socketOrder: Array<keyof typeof import('../constants').SOCKET_DEFS>
-  connections: Partial<
-    Record<keyof typeof import('../constants').SOCKET_DEFS, string>
-  >
+  socketOrder: SocketId[]
+  connections: Partial<Record<SocketId, CableId>>
   isPowerConnected: boolean
-  selectedCable?: string | null
+  selectedCable?: CableId | null
   isGameOver: boolean
-  handleSocketClick: (
-    id: keyof typeof import('../constants').SOCKET_DEFS
-  ) => void
+  handleSocketClick: (id: SocketId) => void
 }
 
 export const SocketList: FC<SocketListProps> = ({
