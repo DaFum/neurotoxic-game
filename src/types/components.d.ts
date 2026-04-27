@@ -382,6 +382,7 @@ type EffectBase = {
   target?: 'player' | 'band' | 'van'
   stat?: string
   id?: string
+  key?: string
 }
 
 export type Effect =

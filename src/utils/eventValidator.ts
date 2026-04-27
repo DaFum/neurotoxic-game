@@ -32,7 +32,7 @@ const validateEffect = (
       'Effect must have a type at index ' + idx + ' for event ' + eventId
     )
   }
-  if (effect.type === 'composite') {
+  if (ef.type === 'composite') {
     if (!Array.isArray(ef.effects) || (ef.effects as unknown[]).length === 0) {
       throw new Error(
         'Composite effect must have a non-empty effects array at index ' +
@@ -61,7 +61,7 @@ const validateEffect = (
         )
       }
     }
-  } else if (effect.type === 'skillCheck') {
+  } else if (ef.type === 'skillCheck') {
     for (const effectName of ['success', 'failure']) {
       const nestedEffect = ef[effectName]
       if (

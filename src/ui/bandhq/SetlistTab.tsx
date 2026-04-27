@@ -104,7 +104,7 @@ export const SetlistTab = (props: any) => {
 
   const toggleSongInSetlist = useCallback(
     (songId: unknown) => {
-      const songObj = SONGS_BY_ID.get(songId)
+      const songObj = SONGS_BY_ID.get(songId as string)
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
@@ -164,6 +164,7 @@ export const SetlistTab = (props: any) => {
               return
             }
             setCurrentGig({
+              id: 'practice_venue',
               name: t('venues:stendal_proberaum.name'),
               diff: 1,
               venue: t('ui:bandhq.venue', { defaultValue: 'Band HQ' }),

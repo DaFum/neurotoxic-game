@@ -1279,7 +1279,7 @@ export const TerminalReadout = memo(() => {
     if (currentIndex < FULL_LOG_KEYS.length) {
       const timer = setTimeout(
         () => {
-          setLines(prev => [...prev, FULL_LOG_KEYS[currentIndex]])
+          setLines(prev => [...prev, FULL_LOG_KEYS[currentIndex] as TerminalLogLine])
           setCurrentIndex(currentIndex + 1)
         },
         secureRandom() * 400 + 200
@@ -1749,8 +1749,8 @@ export const ToxicChatter = memo(() => {
       setMessages(prev => {
         const newMsg: Message = {
           id: uuid,
-          user: `USER_${uuid.split('-')[0].toUpperCase()}`,
-          text: randomHate,
+          user: `USER_${(uuid as string).split('-')[0]?.toUpperCase() ?? 'UNK'}`,
+          text: randomHate ?? '',
           type: 'hate'
         }
         return [...prev, newMsg].slice(-5) // Keep only last 5

@@ -53,14 +53,14 @@ export const generateNotesForSong = (
 
       if (shouldSpawn) {
         // Lane selection based on beat index
-        let laneIndex = laneMap[i % 4]
+        let laneIndex = laneMap[i % 4] ?? 0
         // Add some variation for harder levels
         if (diff > 3 && random() > 0.7) {
           laneIndex = Math.floor(random() * 3)
         }
 
         notes.push({
-          time: noteTime,
+          time: noteTime ?? 0,
           laneIndex,
           hit: false,
           visible: true,

@@ -73,8 +73,11 @@ export function setupGuitar(): void {
       attack: 0.01,
       decay: 0.2,
       sustain: 0.1,
-      release: 0.3
-    }
+      release: 0.2,
+      attackCurve: 'linear',
+      releaseCurve: 'linear',
+      decayCurve: 'linear'
+    } as any
   })
 
   audioState.distortion = new Tone.Distortion(0.4)
@@ -218,8 +221,11 @@ export function setupMidiChain(): void {
       attack: 0.001,
       decay: 0.35,
       sustain: 0,
-      release: 0.2
-    }
+      release: 0.2,
+      attackCurve: 'linear',
+      releaseCurve: 'linear',
+      decayCurve: 'linear'
+    } as any
   })
 
   // MIDI drum levels

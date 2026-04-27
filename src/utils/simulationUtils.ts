@@ -137,10 +137,10 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
   }
 
   const getMemberSkill = (member?: BandMember): number => {
-    if (typeof member?.baseStats?.skill === 'number') {
-      return member.baseStats.skill
+    if (typeof (member as any)?.baseStats?.skill === 'number') {
+      return (member as any).baseStats.skill
     }
-    return typeof member?.skill === 'number' ? member.skill : 0
+    return typeof (member as any)?.skill === 'number' ? (member as any).skill : 0
   }
   const hitWindows = {
     guitar: 120 + getMemberSkill(matze) * 4,

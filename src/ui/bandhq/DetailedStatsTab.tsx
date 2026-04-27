@@ -159,7 +159,7 @@ const CareerOverviewSection = ({
   player,
   t
 }: { player: PlayerData } & BasicTProps) => {
-  const locationName = translateLocation(t, player.location, player.location)
+  const locationName = translateLocation(t, player.location ?? '', player.location ?? '')
   return (
     <Panel
       title={t('ui:stats.career_overview', {
@@ -585,7 +585,7 @@ const InventoryEquipmentSection = ({
               ? t('ui:ui.owned', { defaultValue: 'OWNED' })
               : val === false
                 ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
-                : val
+                : String(val)
           }
           locked={!isUnlocked(val)}
         />

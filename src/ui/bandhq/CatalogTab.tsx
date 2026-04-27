@@ -61,7 +61,7 @@ export const CatalogTab = ({
                 ? getAdjustedCostCallback(item)
                 : undefined
             }
-            onBuy={handleBuyCallback}
+            onBuy={handleBuyCallback as (item: import('../../types/components').PurchaseItem) => void}
             processingItemId={processingItemId}
           />
         ))}
@@ -129,7 +129,8 @@ CatalogTab.propTypes = {
       props,
       propName,
       componentName,
-      ...rest
+      rest[0] as string,
+      rest[1] as string
     )
     if (shapeError) {
       return shapeError

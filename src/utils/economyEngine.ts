@@ -416,15 +416,15 @@ export const calculateVenueSplit = (ticketsRevenue = 0, gigData: any = {}) => {
         ? VENUE_SPLIT_RATES[gigData.diff as number]
         : 0
 
-  if (splitRate > 0) {
-    const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * splitRate)
+  if ((splitRate ?? 0) > 0) {
+    const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * (splitRate ?? 0))
     return {
       amount: splitAmount,
       expenseItem: {
         labelKey: 'economy:gigExpenses.venueSplit.label',
         value: splitAmount,
         detailKey: 'economy:gigExpenses.venueSplit.detail',
-        detailParams: { rate: splitRate * 100 }
+        detailParams: { rate: (splitRate ?? 0) * 100 }
       }
     }
   }

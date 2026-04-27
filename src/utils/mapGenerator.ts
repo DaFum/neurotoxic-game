@@ -117,7 +117,7 @@ export class MapGenerator {
         'Home venue "stendal_proberaum" not found in ALL_VENUES'
       )
     }
-    const startNode = {
+    const startNode: GeneratedMapNode = {
       id: 'node_0_0',
       layer: 0,
       venue: homeVenue,
@@ -334,13 +334,13 @@ export class MapGenerator {
         let nodeType: GeneratedMapNode['type'] = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
-        else if (venue.capacity >= 1000) nodeType = 'FESTIVAL'
+        else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
 
         const node: GeneratedMapNode = {
           id: `node_${i}_${j}`,
           layer: i,
           venue, // Note: Venue references might be duplicated across layers, which is okay for "touring"
-          status: 'locked',
+          status: 'locked' as 'locked',
           type: nodeType,
           x: getVenueCoord(venue, 'x', 50),
           y: getVenueCoord(venue, 'y', i * 10 + 10)
@@ -368,11 +368,13 @@ export class MapGenerator {
       const currentLayer = map.layers[i]
       const nextLayer = map.layers[i + 1]
 
+      if (!currentLayer) continue
+
       // Forward pass: ensure everyone connects forward
       for (const node of currentLayer) {
         // Pick 1-2 random targets in next layer
         const numTargets = Math.floor(this.random() * 2) + 1
-        const targets = this.pickRandomSubset(nextLayer, numTargets)
+        const targets = this.pickRandomSubset(nextLayer || [], numTargets)
         for (const target of targets) {
           map.connections.push({ from: node.id, to: target.id })
           connectedToIds.add(target.id)
@@ -381,13 +383,15 @@ export class MapGenerator {
 
       // Backward pass check: ensure everyone has a parent
       // (Simplified: Just ensure nextLayer nodes are reachable. If not, force connect from random parent)
-      for (const node of nextLayer) {
+      for (const node of (nextLayer || [])) {
         const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
           const randomParent =
             currentLayer[Math.floor(this.random() * currentLayer.length)]
-          map.connections.push({ from: randomParent.id, to: node.id })
-          connectedToIds.add(node.id)
+          if (randomParent) {
+            map.connections.push({ from: randomParent.id, to: node.id })
+            connectedToIds.add(node.id)
+          }
         }
       }
     }
@@ -431,8 +435,10 @@ export class MapGenerator {
 
     // Connect last layer to finale
     const lastLayer = map.layers[depth - 1]
-    for (const node of lastLayer) {
-      map.connections.push({ from: node.id, to: endNode.id })
+    if (lastLayer) {
+      for (const node of lastLayer) {
+        map.connections.push({ from: node.id, to: endNode.id })
+      }
     }
   }
 
@@ -467,7 +473,7 @@ export class MapGenerator {
     cellY: number,
     j: number
   ): number[] {
-    const candidates = []
+    const candidates: number[] = []
 
     for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
       for (let cy = cellY - 1; cy <= cellY + 1; cy++) {
@@ -477,6 +483,7 @@ export class MapGenerator {
 
         for (let c = 0; c < cell.length; c++) {
           const k = cell[c]
+          if (k === undefined) continue
           // Check only pairs once and preserve j < k direction
           if (k > j) {
             candidates.push(k)
@@ -658,8 +665,8 @@ export class MapGenerator {
     const shuffled = [...arr]
     for (let i = 0; i < k; i++) {
       const j = i + Math.floor(this.random() * (n - i))
-      const temp = shuffled[i]
-      shuffled[i] = shuffled[j]
+      const temp = shuffled[i] as T
+      shuffled[i] = shuffled[j] as T
       shuffled[j] = temp
     }
     return shuffled.slice(0, k)

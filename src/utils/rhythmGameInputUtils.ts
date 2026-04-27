@@ -64,12 +64,14 @@ export const processLaneInput = ({
   lastInputTimes: number[]
   handleHit: LaneHitHandler
 }): void => {
-  if (laneIndex < 0 || laneIndex >= state.lanes.length) return
+  if (!state.lanes || laneIndex < 0 || laneIndex >= state.lanes.length) return
+  if (!state.lanes[laneIndex]) return
 
   // Toggle the visual active state (this is read by the PixiJS game loop)
   state.lanes[laneIndex].active = isDown
 
   if (isDown) {
+    if (!lastInputTimes) return
     const lastInputTime = lastInputTimes[laneIndex] ?? -Infinity
     // Debounce to prevent multiple hits within 50ms
     if (now - lastInputTime < DEBOUNCE_MS) return
