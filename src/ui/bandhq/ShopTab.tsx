@@ -17,8 +17,8 @@ export const ShopTab = ({
   processingItemId
 }: ShopTabProps) => {
   const rawItems: PurchaseItem[] = [
-    ...(HQ_ITEMS.gear || []),
-    ...(HQ_ITEMS.instruments || [])
+    ...((HQ_ITEMS.gear as unknown as PurchaseItem[]) || []),
+    ...((HQ_ITEMS.instruments as unknown as PurchaseItem[]) || [])
   ]
 
   const items: CatalogItem[] = rawItems

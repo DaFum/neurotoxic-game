@@ -56,13 +56,13 @@ export const ShopItem = React.memo(
         <div>
           <div className='flex items-center gap-2 mb-2'>
             <img
-              src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
+              src={getGenImageUrl((IMG_PROMPTS as Record<string, string>)[item.img ?? ''] || (item.name as string) || '')}
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
-              {t(item.name)}
+              {typeof item.name === 'string' ? t(item.name as string) : item.name}
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>

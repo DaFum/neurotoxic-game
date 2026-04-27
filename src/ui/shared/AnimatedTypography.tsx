@@ -41,7 +41,7 @@ export const AnimatedSubtitle = ({
   children: React.ReactNode
 }) => {
   // Access motion[...] dynamically; framer-motion provides typed helpers
-  const MotionComponent = (motion as any)[as] || motion.h2
+  const MotionComponent = typeof as === 'string' ? (motion as Record<string, any>)[as] || motion.h2 : motion(as as React.ElementType)
 
   return (
     <MotionComponent

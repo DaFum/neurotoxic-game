@@ -97,7 +97,7 @@ export const processRhythmGameTick = ({
       try {
         stateRef.transportPausedByOverlay = false
         const res = resumeAudio()
-        if (res && typeof res.catch === 'function') {
+        if (res instanceof Promise) {
           res.catch(err => {
             logger.debug(
               'RhythmGameLoop',

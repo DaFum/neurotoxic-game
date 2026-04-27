@@ -192,7 +192,7 @@ export const useLeaderboardSync = (state: GameState) => {
       // 3. Sync Logic
       try {
         const payload = createSyncPayload(
-          playerId,
+          playerId ?? '',
           playerName,
           money,
           day,

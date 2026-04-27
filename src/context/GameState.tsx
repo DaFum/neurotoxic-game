@@ -764,7 +764,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           damageTaken,
           itemsCollected,
           rngValue,
-          contrabandId,
+          contrabandId ?? undefined,
           instanceId
         )
       )

@@ -76,7 +76,7 @@ const allGearItems = [
 
 allGearItems.forEach((item: PurchaseItem) => {
   if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
-    if (item.id) GEAR_LOOKUP.set(item.id, item)
+    if (item.id) GEAR_LOOKUP.set(String(item.id), item)
     const e = getPrimaryEffect(item)
     if (e?.item) {
       GEAR_LOOKUP.set(e.item, item)
@@ -450,13 +450,13 @@ export const processPurchaseEffect = (
   band: BandState
 ) => {
   if (!effect.type) {
-    return { errorType: 'unknown_effect', effectType: effect.type }
+    return { errorType: 'unknown_effect', effectType: (effect as Record<string, unknown>).type }
   }
 
-  const handler = EFFECT_HANDLERS[effect.type]
+  const handler = EFFECT_HANDLERS[(effect as Record<string, unknown>).type as string]
 
   if (!handler) {
-    return { errorType: 'unknown_effect', effectType: effect.type }
+    return { errorType: 'unknown_effect', effectType: (effect as Record<string, unknown>).type }
   }
 
   return handler(effect, item, initialPlayerPatch, player, band)

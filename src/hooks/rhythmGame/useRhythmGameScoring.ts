@@ -266,8 +266,8 @@ export const useRhythmGameScoring = ({
         if (
           originalNote &&
           Number.isInteger(originalNote.p) &&
-          originalNote.p >= 0 &&
-          originalNote.p <= 127
+          (originalNote.p as number) >= 0 &&
+          (originalNote.p as number) <= 127
         ) {
           const velocity =
             typeof originalNote.velocity === 'number' &&
@@ -281,7 +281,7 @@ export const useRhythmGameScoring = ({
             audioTimeMs: toneNowMs,
             maxLeadMs: 30
           })
-          playNoteAtTime(originalNote.p, lane.id, scheduledMs / 1000, velocity)
+          playNoteAtTime(originalNote.p as number, lane.id, scheduledMs / 1000, velocity)
         } else {
           audioManager.playSFX('hit') // Fallback
         }
