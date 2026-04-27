@@ -6,7 +6,12 @@
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
-import { clampPlayerMoney, clampPlayerFame, calculateFameLevel, clampBandHarmony } from '../utils/gameStateUtils'
+import {
+  clampPlayerMoney,
+  clampPlayerFame,
+  calculateFameLevel,
+  clampBandHarmony
+} from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
   BloodBankDonatePayload,
@@ -149,7 +154,7 @@ export const createUpdateSettingsAction = (
  * @returns {Object} Action object
  */
 export const createSetMapAction = (
-  map: GameMap
+  map: GameMap | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_MAP }> => ({
   type: ActionTypes.SET_MAP,
   payload: map

@@ -352,7 +352,7 @@ export type GameAction =
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
     >
   | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
-  | Action<ActionTypes['SET_MAP'], GameMap>
+  | Action<ActionTypes['SET_MAP'], GameMap | null>
   | Action<ActionTypes['SET_GIG'], Venue | null>
   | Action<ActionTypes['START_GIG'], Venue>
   | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>
