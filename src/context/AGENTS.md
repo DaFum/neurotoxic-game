@@ -39,3 +39,4 @@ Applies to `src/context/**`.
 
 - UI refactors that add/remove actionable entries should audit action creators for orphaned dispatch paths and keep contracts explicit.
 - Context boundary effects should catch and recover from strict utility failures (map/event generation) so invariant throws never blank the provider tree.
+- Map generation recovery should prefer bounded retry before committing an empty-map fallback; empty fallback prevents provider crashes but should only happen after retry budget is exhausted.

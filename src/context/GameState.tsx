@@ -202,6 +202,9 @@ type GameDispatchActions = {
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
 }
+
+const MAP_GENERATION_MAX_RETRIES = 2
+const MAP_GENERATION_RETRY_DELAY_MS = 250
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
     hasUpgrade: (upgradeId: string) => boolean
@@ -421,6 +424,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // This allows actions to be stable (memoized once) while still accessing current state.
   const stateRef = useRef(state)
   stateRef.current = state
+  const mapGenerationAttemptsRef = useRef(0)
+  const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Initialize Map if needed
   useEffect(() => {
@@ -428,15 +433,31 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       const generator = new MapGenerator(Date.now())
       try {
         const newMap = generator.generateMap()
+        mapGenerationAttemptsRef.current = 0
         dispatch(createSetMapAction(newMap))
       } catch (error) {
+        mapGenerationAttemptsRef.current += 1
         handleError(
           new StateError('Failed to generate map', {
             originalError:
-              error instanceof Error ? error.message : String(error)
+              error instanceof Error ? error.message : String(error),
+            attempt: mapGenerationAttemptsRef.current
           }),
           { source: 'GameState.generateMap' }
         )
+
+        if (mapGenerationAttemptsRef.current <= MAP_GENERATION_MAX_RETRIES) {
+          if (mapRetryTimeoutRef.current) {
+            clearTimeout(mapRetryTimeoutRef.current)
+          }
+          mapRetryTimeoutRef.current = setTimeout(() => {
+            mapRetryTimeoutRef.current = null
+            dispatch(createSetMapAction(null))
+          }, MAP_GENERATION_RETRY_DELAY_MS)
+          return
+        }
+
+        mapGenerationAttemptsRef.current = 0
         dispatch(
           createSetMapAction({
             layers: [],
@@ -445,6 +466,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
             connections: []
           })
         )
+      }
+    }
+
+    return () => {
+      if (mapRetryTimeoutRef.current) {
+        clearTimeout(mapRetryTimeoutRef.current)
+        mapRetryTimeoutRef.current = null
       }
     }
   }, [state.gameMap, dispatch])
