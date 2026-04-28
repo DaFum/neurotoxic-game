@@ -132,6 +132,14 @@ export interface BandMember extends UnknownRecord {
   staminaMax?: number
   traits: Record<string, unknown>
   relationships: Record<string, number>
+  baseStats?: Record<string, number>
+  skill?: number
+  charisma?: number
+  technical?: number
+  improv?: number
+  composition?: number
+  role?: string
+  equipment?: Record<string, unknown>
 }
 
 export interface BandState {

@@ -610,7 +610,7 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
 const MemberEquipment = ({
   member,
   t
-}: { member: BandMember & { equipment?: Record<string, unknown> } } & BasicTProps) => {
+}: { member: BandMember } & BasicTProps) => {
   if (!member.equipment) {
     return (
       <div className='text-xs text-ash-gray/50'>
@@ -629,21 +629,7 @@ const MemberEquipment = ({
   ))
 }
 
-const MemberCard = ({
-  member,
-  t
-}: {
-  member: BandMember & {
-    baseStats?: Record<string, number>
-    skill?: number
-    charisma?: number
-    technical?: number
-    improv?: number
-    composition?: number
-    role?: string
-    equipment?: Record<string, unknown>
-  }
-} & BasicTProps) => (
+const MemberCard = ({ member, t }: { member: BandMember } & BasicTProps) => (
   <div className='bg-void-black/60 border border-ash-gray p-4'>
     <div className='flex justify-between items-baseline mb-4'>
       <h4 className='text-lg font-bold text-toxic-green'>{member.name}</h4>

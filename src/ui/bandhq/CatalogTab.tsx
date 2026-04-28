@@ -82,8 +82,7 @@ const balancesValidator = (
   props: Record<string, unknown>,
   propName: string,
   componentName: string,
-  location: string,
-  propFullName: string
+  ..._rest: unknown[]
 ) => {
   const value = props[propName]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -125,16 +124,10 @@ CatalogTab.propTypes = {
     props: Record<string, unknown>,
     propName: string,
     componentName: string,
-    location: string,
-    propFullName: string
+    ...rest: any[]
   ) => {
-    const shapeError = balancesShape(
-      props,
-      propName,
-      componentName,
-      location,
-      propFullName
-    )
+    // @ts-expect-error React PropTypes type definition is too restrictive for spread args
+    const shapeError = balancesShape(props, propName, componentName, ...rest)
     if (shapeError) {
       return shapeError
     }
@@ -142,8 +135,7 @@ CatalogTab.propTypes = {
       props as Record<string, unknown>,
       propName,
       componentName,
-      location,
-      propFullName
+      ...rest
     )
   },
   handleBuyCallback: PropTypes.func.isRequired,
