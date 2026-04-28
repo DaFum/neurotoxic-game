@@ -126,7 +126,8 @@ CatalogTab.propTypes = {
     componentName: string,
     ...rest: unknown[]
   ) => {
-    // @ts-expect-error React PropTypes type definition is too restrictive for spread args
+    // @ts-expect-error React PropTypes type definition is too restrictive for spread args.
+    // TODO(TRACK-TS-PROP-TYPES-SPREAD): remove once upstream PropTypes type defs accept forwarded validator args.
     const shapeError = balancesShape(props, propName, componentName, ...rest)
     if (shapeError) {
       return shapeError

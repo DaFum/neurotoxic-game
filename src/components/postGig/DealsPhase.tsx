@@ -5,7 +5,7 @@ import { useGameState } from '../../context/GameState'
 import { useDealNegotiation } from '../../hooks/useDealNegotiation'
 import { DealCard } from './DealCard'
 import { NegotiationModal } from './NegotiationModal'
-import type { DealCardProps, DealsPhaseProps } from '../../types/components'
+import type { DealsPhaseProps } from '../../types/components'
 
 const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
   const { t } = useTranslation()
@@ -20,10 +20,6 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
     handleAcceptDeal,
     handleNegotiationSubmit
   } = useDealNegotiation({ onAccept })
-  const negotiatedById = negotiatedDeals as Record<
-    string,
-    DealCardProps['negotiationState']
-  >
 
   return (
     <div className='space-y-6'>
@@ -45,7 +41,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
           <DealCard
             key={deal.id}
             deal={deal}
-            negotiationState={negotiatedById[deal.id]}
+            negotiationState={negotiatedDeals[deal.id]}
             brandReputation={social?.brandReputation}
             handleAcceptDeal={handleAcceptDeal}
             handleNegotiationStart={handleNegotiationStart}

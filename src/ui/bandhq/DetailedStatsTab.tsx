@@ -9,17 +9,11 @@ import type {
   BandState,
   SocialState,
   BandMember as GameBandMember,
-  QuestState
+  QuestState,
+  CharacterTrait
 } from '../../types/game'
 
 // --- Helpers ---
-
-interface CharacterTrait {
-  id: string
-  name: string
-  desc: string
-  unlockHint: string
-}
 
 interface CharacterDefinition {
   name: string

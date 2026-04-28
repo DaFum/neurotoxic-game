@@ -7,13 +7,7 @@ import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import GigModifierButton from '../../ui/GigModifierButton'
 import type { TFunction } from 'i18next'
-
-type ModifierOption = {
-  key: string
-  label: string
-  desc?: string
-  cost: number
-}
+import type { ModifierOption } from '../../hooks/usePreGigLogic'
 
 type ActiveEffect =
   | string

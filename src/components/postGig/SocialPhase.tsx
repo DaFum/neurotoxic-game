@@ -3,13 +3,8 @@ import PropTypes from 'prop-types'
 import { Panel } from '../../ui/shared'
 import { ZealotryGauge } from './ZealotryGauge'
 import { SocialOptionButton } from './SocialOptionButton'
-type SocialOption = {
-  id: string | number
-  name: string
-  platform: string
-  category?: string
-  badges?: string[]
-}
+import type { SocialOption } from '../../types/components'
+
 type SocialPhaseProps = {
   options: SocialOption[]
   onSelect: (option: SocialOption) => void
@@ -67,8 +62,8 @@ SocialPhase.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string.isRequired,
-      platform: PropTypes.string.isRequired
+      name: PropTypes.string,
+      platform: PropTypes.string
     })
   ).isRequired,
   onSelect: PropTypes.func.isRequired,

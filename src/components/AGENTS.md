@@ -32,3 +32,4 @@ Applies to `src/components/**`.
 
 - For categorized action menus, keep a one-to-one mapping between action unions and rendered items to prevent unreachable handlers hiding in lookup maps.
 - In this codebase, TSX components still use runtime `propTypes`; do not drop `propTypes` just because TypeScript props exist, especially for components consumed from JS boundaries.
+- In optional numeric UI fields (`staminaChange`, `moodChange`, offer values), avoid truthy checks when rendering. Use explicit nullish checks so `0` displays as a meaningful value.

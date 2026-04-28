@@ -86,8 +86,8 @@ export interface ChatterMessageProps {
 
 export interface SocialOption extends EventOption {
   id: string | number
-  name: string
-  platform: string
+  name?: string
+  platform?: string
   category?: string
   badges?: string[]
 }
@@ -288,13 +288,7 @@ export interface DealContract {
 
 export interface DealCardProps {
   deal: DealContract
-  negotiationState?: {
-    deal?: DealContract | null
-    status?: string
-    feedback?: string
-    success?: boolean
-    [key: string]: unknown
-  }
+  negotiationState?: DealNegotiationState
   brandReputation?: Record<string, number>
   handleAcceptDeal: (deal: DealContract) => void | Promise<void>
   handleNegotiationStart: (deal: DealContract) => void
@@ -333,6 +327,34 @@ export interface DealActionsProps {
   handleNegotiationStart: (deal: DealContract) => void
 }
 
+export interface DealNegotiationState {
+  deal?: DealContract | null
+  status?: 'REVOKED' | 'FAILED' | 'SUCCESS' | 'WORSENED'
+  feedback?: string
+  success?: boolean
+  [key: string]: unknown
+}
+
+export interface NegotiationResult {
+  success: boolean
+  deal: DealContract | null
+  feedback: string
+  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
+}
+
+export interface DealNegotiationHook {
+  negotiatedDeals: Record<string, DealNegotiationState>
+  negotiationModalOpen: boolean
+  setNegotiationModalOpen: (open: boolean) => void
+  selectedDeal: DealContract | null
+  negotiationResult: NegotiationResult | null
+  handleNegotiationStart: (deal: DealContract) => void
+  handleAcceptDeal: (deal: DealContract) => Promise<void>
+  handleNegotiationSubmit: (
+    submission: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
+  ) => void
+}
+
 export interface DealsPhaseProps {
   offers: DealContract[]
   onAccept: (deal: DealContract) => void | Promise<void>
@@ -347,14 +369,36 @@ export interface FinancialListProps {
 export interface NegotiationModalProps {
   isOpen: boolean
   onClose: () => void
-  negotiationResult: {
-    success?: boolean
-    feedback?: string
-    status?: string
-  } | null
+  negotiationResult: NegotiationResult | null
   handleNegotiationSubmit: (
     submission: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
   ) => void
+}
+
+export interface EventModalOption extends EventOption {
+  label: string
+  flags?: string[]
+  disabled?: boolean
+  nextEventId?: string
+  skillCheck?: {
+    stat: string
+    threshold: number
+    success: Record<string, unknown>
+    failure: Record<string, unknown>
+  }
+  outcomeText?: string
+}
+
+export interface EventModalEvent extends GameEvent {
+  options?: EventModalOption[]
+}
+
+export interface EventModalPrecomputedResult {
+  result?: unknown
+  delta?: unknown
+  appliedDelta?: unknown
+  outcomeText?: string
+  description?: string
 }
 
 export interface FinancialItem {

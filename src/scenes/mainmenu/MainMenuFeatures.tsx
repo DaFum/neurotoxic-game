@@ -16,11 +16,37 @@ type FeatureSection = {
   rows?: string[][]
 }
 
+const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
+  if (!Array.isArray(value)) return false
+  return value.every(section => {
+    if (!section || typeof section !== 'object') return false
+    const item = section as Record<string, unknown>
+    if (typeof item.title !== 'string' || typeof item.description !== 'string') {
+      return false
+    }
+    if (item.items !== undefined && !Array.isArray(item.items)) return false
+    if (item.headers !== undefined && !Array.isArray(item.headers)) return false
+    if (
+      item.rows !== undefined &&
+      (!Array.isArray(item.rows) ||
+        item.rows.some(
+          row => !Array.isArray(row) || row.some(cell => typeof cell !== 'string')
+        ))
+    ) {
+      return false
+    }
+    return true
+  })
+}
+
 export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()
-  const featureList = t('ui:featureList', {
+  const featureListValue = t('ui:featureList', {
     returnObjects: true
-  }) as FeatureSection[]
+  }) as unknown
+  const featureList = isFeatureSectionArray(featureListValue)
+    ? featureListValue
+    : []
 
   return (
     <Modal
@@ -81,21 +107,29 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {section.rows.map((row: string[]) => (
-                      <tr
-                        key={row[0]}
-                        className='border-b border-toxic-green/10 last:border-0'
-                      >
+                    {section.rows.map((row: string[]) => {
+                      if (!row || row.length === 0) {
+                        throw new Error(
+                          `MainMenuFeatures: empty row in section "${section.title}"`
+                        )
+                      }
+                      const rowKey = row[0]
+                      return (
+                        <tr
+                          key={rowKey}
+                          className='border-b border-toxic-green/10 last:border-0'
+                        >
                         {row.map((cell: string) => (
                           <td
                             key={cell}
-                            className={`p-2 ${cell === row[0] ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
+                            className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
                           >
                             {t(cell)}
                           </td>
                         ))}
-                      </tr>
-                    ))}
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>

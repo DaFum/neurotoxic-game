@@ -8,44 +8,15 @@ import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
 import { resolveEventChoice } from '../utils/eventEngine'
 import { useGameState } from '../context/GameState'
-
-type EventModalOption = {
-  id?: string
-  label: string
-  effect?: Record<string, unknown>
-  flags?: string[]
-  disabled?: boolean
-  nextEventId?: string
-  skillCheck?: {
-    stat: string
-    threshold: number
-    success: Record<string, unknown>
-    failure: Record<string, unknown>
-  }
-  outcomeText?: string
-  [key: string]: unknown
-}
-
-type EventModalEvent = {
-  id?: string
-  category?: string
-  title: string
-  description: string
-  context?: Record<string, unknown>
-  options: EventModalOption[]
-}
-
-type PrecomputedResult = {
-  result?: unknown
-  delta?: unknown
-  appliedDelta?: unknown
-  outcomeText?: string
-  description?: string
-}
+import type {
+  EventModalEvent,
+  EventModalOption,
+  EventModalPrecomputedResult
+} from '../types/components'
 
 type EventOutcome = {
   option: EventModalOption
-  _precomputedResult?: PrecomputedResult
+  _precomputedResult?: EventModalPrecomputedResult
 }
 
 /**
@@ -63,7 +34,11 @@ export const EventModal = ({
   className = ''
 }: {
   event: EventModalEvent | null
-  onOptionSelect: (option: EventModalOption & { _precomputedResult?: PrecomputedResult }) => void
+  onOptionSelect: (
+    option: EventModalOption & {
+      _precomputedResult?: EventModalPrecomputedResult
+    }
+  ) => void
   className?: string
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
@@ -113,7 +88,7 @@ export const EventModal = ({
         _precomputedResult: {
           result,
           delta,
-          appliedDelta: appliedDelta || delta,
+          appliedDelta: appliedDelta ?? delta,
           outcomeText,
           description
         }
@@ -137,11 +112,14 @@ export const EventModal = ({
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
     if (!event || outcome) return
+    const eventOptions = Array.isArray(event.options)
+      ? (event.options as EventModalOption[])
+      : []
 
     const handleKey = (e: KeyboardEvent) => {
       const num = parseInt(e.key, 10)
-      if (num >= 1 && num <= event.options.length) {
-        const option = event.options[num - 1]
+      if (num >= 1 && num <= eventOptions.length) {
+        const option = eventOptions[num - 1]
         if (option && !option.disabled) {
           handleOptionSelect(option)
         }
@@ -166,23 +144,37 @@ export const EventModal = ({
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''
+    const eventContext =
+      typeof event.context === 'object' && event.context !== null
+        ? (event.context as Record<string, unknown>)
+        : undefined
     if (previewError)
       return t('ui:event_error', {
         defaultValue: 'An error occurred loading this event.',
-        ...event.context
+        ...eventContext
       })
 
     const texts = [
       outcome._precomputedResult?.outcomeText &&
-        t(outcome._precomputedResult.outcomeText, event.context),
+        t(outcome._precomputedResult.outcomeText, eventContext),
       outcome._precomputedResult?.description &&
-        t(outcome._precomputedResult.description, event.context)
+        t(outcome._precomputedResult.description, eventContext)
     ].filter(Boolean)
 
-    return texts.join(' ') || t('ui:event.resolved', event.context)
+    return texts.join(' ') || t('ui:event.resolved', eventContext)
   }, [outcome, t, event, previewError])
 
   if (!event) return null
+  const eventOptions = Array.isArray(event.options)
+    ? (event.options as EventModalOption[])
+    : []
+  const eventContext =
+    typeof event.context === 'object' && event.context !== null
+      ? (event.context as Record<string, unknown>)
+      : undefined
+  const titleKey = event.title ?? event.titleKey ?? 'ui:event.untitled'
+  const descriptionKey =
+    event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
     <div
@@ -228,10 +220,16 @@ export const EventModal = ({
                 id='event-title'
                 className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
               >
-                {t(event.title, event.context)}
+                {t(titleKey, {
+                  defaultValue: event.title || 'EVENT',
+                  ...eventContext
+                })}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
-                {t(event.description, event.context)}
+                {t(descriptionKey, {
+                  defaultValue: event.description || 'An event unfolds.',
+                  ...eventContext
+                })}
               </p>
             </div>
           </div>
@@ -264,7 +262,7 @@ export const EventModal = ({
             <>
               {/* Keyboard hint */}
               <p className='text-[10px] text-ash-gray font-mono uppercase tracking-widest text-center'>
-                {t('ui:keyboardHint', { count: event.options.length })}
+                {t('ui:keyboardHint', { count: eventOptions.length })}
               </p>
 
               <motion.div
@@ -275,7 +273,7 @@ export const EventModal = ({
                   visible: { transition: { staggerChildren: 0.08 } }
                 }}
               >
-                {event.options.map((option, index) => {
+                {eventOptions.map((option, index) => {
                   const isDisabled = option.disabled || false
                   const buttonContent = (
                     <motion.button
@@ -297,7 +295,7 @@ export const EventModal = ({
                     >
                       <span>
                         <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                        {String(t(option.label, event.context))}
+                        {String(t(option.label, eventContext))}
                       </span>
 
                       <div className='flex flex-col items-end text-right'>
@@ -332,8 +330,10 @@ export const EventModal = ({
 
 EventModal.propTypes = {
   event: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
+    title: PropTypes.string,
+    titleKey: PropTypes.string,
+    description: PropTypes.string,
+    descriptionKey: PropTypes.string,
     options: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string.isRequired,
@@ -341,7 +341,7 @@ EventModal.propTypes = {
         skillCheck: PropTypes.object,
         outcomeText: PropTypes.string
       })
-    ).isRequired
+    )
   }),
   onOptionSelect: PropTypes.func.isRequired,
   className: PropTypes.string

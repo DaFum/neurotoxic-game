@@ -1,44 +1,13 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { audioService } from '../utils/audioService'
 import { handleError } from '../utils/errorHandler'
-
-type AudioSnapshot = {
-  musicVol: number
-  sfxVol: number
-  isMuted: boolean
-  isPlaying?: boolean
-  currentSongId?: string | null
-}
-type AudioManagerLike = {
-  [key: string]: unknown
-  musicVolume?: number
-  sfxVolume?: number
-  muted?: boolean
-  isPlaying?: boolean
-  currentSongId?: string | null
-  getState?: () => AudioSnapshot
-  getStateSnapshot?: () => AudioSnapshot
-  hasNativeSubscribe?: () => boolean
-  subscribe?: (listener: () => void) => () => void
-  setMusicVolume?: (value: number) => unknown
-  setSfxVolume?: (value: number) => unknown
-  toggleMute?: () => unknown
-  stopMusic?: () => unknown
-  resumeMusic?: () => Promise<boolean> | boolean
-}
-
-type AudioHandlers = {
-  setMusic: (val: number) => unknown
-  setSfx: (val: number) => unknown
-  toggleMute: () => unknown
-  stopMusic: () => unknown
-  resumeMusic: () => unknown
-}
-
-type UseAudioControlOptions = {
-  pollEvenWithSubscribe?: boolean
-  pollMs?: number
-}
+import type {
+  AudioControlHandlers,
+  AudioManagerLike,
+  AudioSnapshot,
+  UseAudioControlOptions,
+  UseAudioControlResult
+} from '../types/audio'
 
 export const executeAudioAction = (
   manager: AudioManagerLike,
@@ -49,7 +18,7 @@ export const executeAudioAction = (
   try {
     const method = manager[methodName]
     if (typeof method !== 'function') return undefined
-    return method(...args)
+    return Reflect.apply(method, manager, args)
   } catch (error) {
     handleError(error, {
       fallbackMessage: `useAudioControl.${errorContext} failed`,
@@ -65,16 +34,19 @@ export const executeAudioAction = (
  * In production this is always `audioService`; custom managers in tests must
  * match this interface.
  */
-export const createAudioHandlers = (manager: AudioManagerLike): AudioHandlers => ({
+export const createAudioHandlers = (
+  manager: AudioManagerLike
+): AudioControlHandlers => ({
   setMusic: (val: number) =>
     executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
   setSfx: (val: number) =>
     executeAudioAction(manager, 'setSfxVolume', 'setSfx', val),
   toggleMute: () => executeAudioAction(manager, 'toggleMute', 'toggleMute'),
   stopMusic: () => executeAudioAction(manager, 'stopMusic', 'stopMusic'),
-  resumeMusic: () => {
+  resumeMusic: async () => {
     const result = executeAudioAction(manager, 'resumeMusic', 'resumeMusic')
-    return result === undefined ? false : result
+    if (result === undefined) return false
+    return Promise.resolve(result as boolean | Promise<boolean>)
   }
 })
 
@@ -152,10 +124,18 @@ export const createAudioSubscriber = (
  * @param {{ pollEvenWithSubscribe?: boolean, pollMs?: number }} [options] - Optional polling configuration.
  * @returns {{ audioState: any, handleAudioChange: { setMusic: Function, setSfx: Function, toggleMute: Function, stopMusic: Function, resumeMusic: Function } }}
  */
-export const useAudioControl = (
-  selector?: ((state: AudioSnapshot) => unknown) | null,
+export function useAudioControl(
+  selector?: null,
+  options?: UseAudioControlOptions
+): UseAudioControlResult<AudioSnapshot>
+export function useAudioControl<TSelected>(
+  selector: (state: AudioSnapshot) => TSelected,
+  options?: UseAudioControlOptions
+): UseAudioControlResult<TSelected>
+export function useAudioControl<TSelected = AudioSnapshot>(
+  selector?: ((state: AudioSnapshot) => TSelected) | null,
   options: UseAudioControlOptions = {}
-): { audioState: unknown; handleAudioChange: AudioHandlers } => {
+): UseAudioControlResult<TSelected> {
   const manager = useMemo(() => audioService as AudioManagerLike, [])
   const fallbackSnapshotRef = useRef<AudioSnapshot | null>(null)
   const selectorRef = useRef(selector)
@@ -207,5 +187,5 @@ export const useAudioControl = (
     [manager]
   )
 
-  return { audioState, handleAudioChange }
+  return { audioState: audioState as TSelected, handleAudioChange }
 }

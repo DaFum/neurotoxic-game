@@ -5,7 +5,15 @@ import type { GameState } from '../../types/game'
 
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
-type ChatterScene = 'ANY' | 'OVERWORLD' | 'PREGIG' | 'GIG' | 'POSTGIG'
+type ChatterScene =
+  | 'ANY'
+  | 'MENU'
+  | 'OVERWORLD'
+  | 'PREGIG'
+  | 'PRE_GIG_MINIGAME'
+  | 'TRAVEL_MINIGAME'
+  | 'GIG'
+  | 'POSTGIG'
 type VenueLinesByScene = Record<ChatterScene, string[]>
 type VenueChatterEntry = {
   linesByScene?: VenueLinesByScene
@@ -107,7 +115,7 @@ export const getRandomChatter = (state: GameState) => {
   for (let i = 0; i < pool.length; i++) {
     const entry = pool[i]
     if (!entry) continue
-    totalWeight += entry.weight || 1
+    totalWeight += entry.weight ?? 1
   }
 
   let roll = getSafeRandom() * totalWeight
@@ -116,7 +124,7 @@ export const getRandomChatter = (state: GameState) => {
   if (!item) return null
 
   for (const entry of pool) {
-    roll -= entry.weight || 1
+    roll -= entry.weight ?? 1
     if (roll <= 0) {
       item = entry
       break
