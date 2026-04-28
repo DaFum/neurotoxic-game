@@ -415,7 +415,7 @@ export const checkViralEvent = (
   legacyRoll = secureRandom()
 ): boolean => {
   // Backwards compatibility handling
-  let modifiers = 0
+  let modifiers: number
   let roll = legacyRoll
   let context: ViralContext | undefined
 
@@ -433,7 +433,7 @@ export const checkViralEvent = (
   // Using maxCombo directly.
   if (stats.maxCombo > 50) return true
 
-  let chance = 0.01
+  let chance: number
 
   // If we have context, use the full virality score logic (which includes traits like social_manager)
   if (context && typeof context.perfScore === 'number') {

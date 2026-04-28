@@ -372,7 +372,7 @@ export const handleUseContraband = (
   const newBand = applyContrabandEffect(state.band, item, memberId)
   if (!newBand) return state
 
-  let newStash = Object.assign(Object.create(null), stash)
+  const newStash = Object.assign(Object.create(null), stash)
 
   if (item.type === 'consumable') {
     if ((item.stacks as number) > 1) {

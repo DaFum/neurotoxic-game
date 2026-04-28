@@ -355,7 +355,7 @@ export const calculateDailyUpdates = (
   }
 
   // Ego System Drain (Lead Singer Syndrome)
-  let pendingFlags: Record<string, boolean> = {}
+  const pendingFlags: Record<string, boolean> = {}
   if (nextSocial.egoFocus) {
     const nextHarmonyEgo = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
     nextBand.harmony = nextHarmonyEgo

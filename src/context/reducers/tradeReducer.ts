@@ -109,7 +109,7 @@ export const handleTradeVoidItem = (
         : null
     if (!successToastObj) return nextState
 
-    let enrichedToast: ToastPayload | null = null
+    let enrichedToast: ToastPayload | null
 
     const toastId = instanceId ?? getSafeUUID()
 
