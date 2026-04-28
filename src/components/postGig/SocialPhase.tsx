@@ -3,13 +3,26 @@ import PropTypes from 'prop-types'
 import { Panel } from '../../ui/shared'
 import { ZealotryGauge } from './ZealotryGauge'
 import { SocialOptionButton } from './SocialOptionButton'
+type SocialOption = {
+  id: string | number
+  name: string
+  platform: string
+  category?: string
+  badges?: string[]
+}
+type SocialPhaseProps = {
+  options: SocialOption[]
+  onSelect: (option: SocialOption) => void
+  trend?: string
+  zealotryLevel?: number
+}
 
 export const SocialPhase = ({
   options,
   onSelect,
   trend,
   zealotryLevel = 0
-}) => {
+}: SocialPhaseProps) => {
   const { t } = useTranslation()
   return (
     <Panel contentClassName='space-y-6'>
@@ -37,7 +50,7 @@ export const SocialPhase = ({
         </div>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-        {options.map((opt, i) => (
+        {options.map((opt, i: number) => (
           <SocialOptionButton
             key={opt.id}
             opt={opt}

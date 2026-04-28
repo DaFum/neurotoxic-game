@@ -4,7 +4,9 @@ import PropTypes from 'prop-types'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 
-export const ZealotryGauge = memo(({ zealotryLevel }) => {
+type ZealotryGaugeProps = { zealotryLevel?: number }
+
+export const ZealotryGauge = memo(({ zealotryLevel = 0 }: ZealotryGaugeProps) => {
   const { t } = useTranslation()
 
   if (zealotryLevel <= 0) return null

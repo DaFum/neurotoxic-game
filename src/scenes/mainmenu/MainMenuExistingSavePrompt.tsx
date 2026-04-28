@@ -3,7 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
 
-export const MainMenuExistingSavePrompt = ({ onLoad, onStartNew, onClose }) => {
+export const MainMenuExistingSavePrompt = ({
+  onLoad,
+  onStartNew,
+  onClose
+}: {
+  onLoad: () => void
+  onStartNew: () => void
+  onClose: () => void
+}) => {
   const { t } = useTranslation()
 
   return (

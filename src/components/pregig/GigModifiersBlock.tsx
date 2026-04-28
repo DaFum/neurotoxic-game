@@ -6,6 +6,32 @@
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import GigModifierButton from '../../ui/GigModifierButton'
+import type { TFunction } from 'i18next'
+
+type ModifierOption = {
+  key: string
+  label: string
+  desc?: string
+  cost: number
+}
+
+type ActiveEffect =
+  | string
+  | {
+      key: string
+      fallback?: string
+      options?: Record<string, unknown>
+    }
+
+type GigModifiersBlockProps = {
+  t: TFunction
+  gigModifierOptions: ModifierOption[]
+  gigModifiers: Record<string, boolean>
+  toggleModifier: (key: string) => void
+  handleBandMeeting: () => void
+  bandMeetingCost: number
+  currentModifiers: { activeEffects: ActiveEffect[] }
+}
 
 export const GigModifiersBlock = ({
   t,
@@ -15,7 +41,7 @@ export const GigModifiersBlock = ({
   handleBandMeeting,
   bandMeetingCost,
   currentModifiers
-}) => {
+}: GigModifiersBlockProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -27,7 +53,7 @@ export const GigModifiersBlock = ({
         {t('ui:pregig.allocation')}
       </h3>
       <div className='flex flex-col gap-2.5'>
-        {gigModifierOptions.map(item => (
+        {gigModifierOptions.map((item: ModifierOption) => (
           <GigModifierButton
             key={item.key}
             item={item}
@@ -64,7 +90,7 @@ export const GigModifiersBlock = ({
         </h4>
         {currentModifiers.activeEffects.length > 0 ? (
           <ul className='text-xs space-y-1'>
-            {currentModifiers.activeEffects.map(eff => (
+            {currentModifiers.activeEffects.map((eff: ActiveEffect) => (
               <li
                 key={typeof eff === 'string' ? eff : eff.key}
                 className='text-star-white/60 flex items-center gap-1.5'
