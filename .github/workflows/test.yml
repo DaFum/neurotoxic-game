@@ -76,8 +76,8 @@ jobs:
         if: ${{ always() && steps.run-tests.outputs.exit_code != '0' }}
         run: exit 1
 
-  vitest:
-    name: Vitest
+  vitest-logic:
+    name: Vitest Logic
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -99,33 +99,85 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run Vitest suite
-        id: run-vitest
+      - name: Run Vitest Logic suite
+        id: run-vitest-logic
         shell: bash
         run: |
           rc=0
-          pnpm test:ui 2>&1 | tee test-output-vitest.txt || rc=$?
+          pnpm run test:vitest:logic 2>&1 | tee test-output-vitest-logic.txt || rc=$?
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
 
-      - name: Upload test log artifact (vitest)
+      - name: Upload test log artifact (vitest-logic)
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: test-output-vitest
-          path: test-output-vitest.txt
+          name: test-output-vitest-logic
+          path: test-output-vitest-logic.txt
 
-      - name: Comment failed tests on PR (vitest) — update existing sticky comment
-        if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+      - name: Comment failed tests on PR (vitest-logic) — update existing sticky comment
+        if: ${{ always() && steps.run-vitest-logic.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
         uses: ./.github/actions/post-test-failure-comment
         with:
-          marker: '<!-- test-results-vitest: do-not-edit -->'
-          file: 'test-output-vitest.txt'
-          regex: 'FAIL\b|^\s+[✕×✗]|AssertionError|Error:'
+          marker: '<!-- test-results-vitest-logic: do-not-edit -->'
+          file: 'test-output-vitest-logic.txt'
+          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError|Error:'
           max: ${{ env.MAX_FAILURE_LINES }}
-          header: '## ❌ Vitest tests failed'
+          header: '## ❌ Vitest Logic tests failed'
 
       - name: Fail if tests failed
-        if: ${{ always() && steps.run-vitest.outputs.exit_code != '0' }}
+        if: ${{ always() && steps.run-vitest-logic.outputs.exit_code != '0' }}
+        run: exit 1
+
+  vitest-ui:
+    name: Vitest UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository (merge ref)
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.13.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run Vitest UI suite
+        id: run-vitest-ui
+        shell: bash
+        run: |
+          rc=0
+          pnpm run test:ui 2>&1 | tee test-output-vitest-ui.txt || rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Upload test log artifact (vitest-ui)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-output-vitest-ui
+          path: test-output-vitest-ui.txt
+
+      - name: Comment failed tests on PR (vitest-ui) — update existing sticky comment
+        if: ${{ always() && steps.run-vitest-ui.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: ./.github/actions/post-test-failure-comment
+        with:
+          marker: '<!-- test-results-vitest-ui: do-not-edit -->'
+          file: 'test-output-vitest-ui.txt'
+          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError|Error:'
+          max: ${{ env.MAX_FAILURE_LINES }}
+          header: '## ❌ Vitest UI tests failed'
+
+      - name: Fail if tests failed
+        if: ${{ always() && steps.run-vitest-ui.outputs.exit_code != '0' }}
         run: exit 1
 
   ts-nocheck-guard:

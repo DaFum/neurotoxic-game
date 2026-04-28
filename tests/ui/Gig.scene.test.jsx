@@ -541,77 +541,7 @@ describe('Gig Scene Component', () => {
     })
   })
 
-  describe('Edge Cases', () => {
-    test('handles missing currentGig name gracefully', () => {
-      useGameState.mockReturnValue({
-        currentGig: { id: 'gig', diff: 3 },
-        changeScene: mockChangeScene,
-        addToast: mockAddToast,
-        setActiveEvent: mockSetActiveEvent,
-        setLastGigStats: mockSetLastGigStats,
-        band: { harmony: 70 },
-        endGig: mockEndGig
-      })
 
-      expect(() => render(<Gig />)).not.toThrow()
-    })
-
-    test('handles missing currentGig diff gracefully', () => {
-      useGameState.mockReturnValue({
-        currentGig: { id: 'gig', name: 'Test' },
-        changeScene: mockChangeScene,
-        addToast: mockAddToast,
-        setActiveEvent: mockSetActiveEvent,
-        setLastGigStats: mockSetLastGigStats,
-        band: { harmony: 70 },
-        endGig: mockEndGig
-      })
-
-      expect(() => render(<Gig />)).not.toThrow()
-    })
-
-    test('renders with minimum required props', () => {
-      useGameState.mockReturnValue({
-        currentGig: { id: 'gig' },
-        changeScene: mockChangeScene,
-        addToast: mockAddToast,
-        setActiveEvent: mockSetActiveEvent,
-        setLastGigStats: mockSetLastGigStats,
-        band: { harmony: 50 },
-        endGig: mockEndGig
-      })
-
-      expect(() => render(<Gig />)).not.toThrow()
-    })
-
-    test('handles festival venue names correctly', () => {
-      useGameState.mockReturnValue({
-        currentGig: { id: 'gig', name: 'Summer Festival', diff: 5 },
-        changeScene: mockChangeScene,
-        addToast: mockAddToast,
-        setActiveEvent: mockSetActiveEvent,
-        setLastGigStats: mockSetLastGigStats,
-        band: { harmony: 70 },
-        endGig: mockEndGig
-      })
-
-      expect(() => render(<Gig />)).not.toThrow()
-    })
-
-    test('handles open air venue names correctly', () => {
-      useGameState.mockReturnValue({
-        currentGig: { id: 'gig', name: 'Open Air Stage', diff: 4 },
-        changeScene: mockChangeScene,
-        addToast: mockAddToast,
-        setActiveEvent: mockSetActiveEvent,
-        setLastGigStats: mockSetLastGigStats,
-        band: { harmony: 70 },
-        endGig: mockEndGig
-      })
-
-      expect(() => render(<Gig />)).not.toThrow()
-    })
-  })
 
   describe('Accessibility', () => {
     test('pause modal has proper ARIA attributes', () => {
@@ -626,4 +556,28 @@ describe('Gig Scene Component', () => {
       expect(modal).toHaveAttribute('aria-modal', 'true')
     })
   })
+  describe('Edge Cases', () => {
+    test.each([
+      { desc: 'missing currentGig name', currentGig: { id: 'gig', diff: 3 } },
+      { desc: 'missing currentGig diff', currentGig: { id: 'gig', name: 'Test' } },
+      { desc: 'minimum required props', currentGig: { id: 'gig' } },
+      { desc: 'festival venue names', currentGig: { id: 'gig', name: 'Summer Festival', diff: 5 } },
+      { desc: 'open air venue names', currentGig: { id: 'gig', name: 'Open Air Stage', diff: 4 } }
+    ])('handles $desc gracefully', ({ currentGig }) => {
+      useGameState.mockReturnValue({
+        currentGig,
+        changeScene: vi.fn(),
+        addToast: vi.fn(),
+        setActiveEvent: vi.fn(),
+        setLastGigStats: vi.fn(),
+        band: { harmony: 70 },
+        endGig: vi.fn()
+      })
+
+      // We expect the fallback diff to be applied without crashing
+      render(<Gig />)
+      expect(screen.getByTestId('gig-hud')).toBeInTheDocument()
+    })
+  })
+
 })

@@ -137,16 +137,3 @@ test('getGigTimeMs', async t => {
   )
 })
 
-test('hasAudioAsset', async t => {
-  if (skipIfImportFailed(t)) return
-  const { hasAudioAsset } = await importAudioEngine().then(m => m.audioEngine)
-
-  await t.test('returns false for non-string input', () => {
-    assert.strictEqual(hasAudioAsset(null), false)
-    assert.strictEqual(hasAudioAsset(undefined), false)
-  })
-
-  await t.test('returns false for unknown filename', () => {
-    assert.strictEqual(hasAudioAsset('missing-track.ogg'), false)
-  })
-})

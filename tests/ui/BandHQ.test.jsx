@@ -1,127 +1,85 @@
-import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
+import { describe, expect, test, vi, beforeAll, afterEach } from 'vitest'
 
 import React from 'react'
-import { render, cleanup } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-// Mock react-i18next
-
-// Mock hooks
 vi.mock('../../src/context/GameState.tsx', () => ({
-  useGameSelector: selector =>
-    selector({
-      player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
-      band: { members: [] },
-      social: { instagram: 0, tiktok: 0 },
-      settings: {},
-      setlist: [],
-      activeQuests: [],
-      venueBlacklist: [],
-      reputationByRegion: {}
-    }),
+  useGameSelector: selector => selector({
+    player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
+    band: { members: [] },
+    social: { instagram: 0, tiktok: 0 },
+    settings: {},
+    setlist: [],
+    activeQuests: [],
+    venueBlacklist: [],
+    reputationByRegion: {}
+  }),
   useGameActions: () => ({
-    updatePlayer: () => {},
-    updateBand: () => {},
-    tradeVoidItem: () => {},
-    addToast: () => {},
-    updateSettings: () => {},
-    deleteSave: () => {},
-    setSetlist: () => {}
+    updatePlayer: vi.fn(),
+    updateBand: vi.fn(),
+    addToast: vi.fn(),
+    updateSettings: vi.fn(),
+    deleteSave: vi.fn(),
+    setSetlist: vi.fn()
   }),
   useGameState: () => ({
     player: { money: 100, fame: 50, day: 1, van: { upgrades: [] } },
     band: { members: [] },
     social: { instagram: 0, tiktok: 0 },
-    updatePlayer: () => {},
-    updateBand: () => {},
-    addToast: () => {},
     settings: {},
-    updateSettings: () => {},
-    deleteSave: () => {},
     setlist: [],
-    setSetlist: () => {},
     activeQuests: [],
     venueBlacklist: [],
-    reputationByRegion: {}
+    reputationByRegion: {},
+    updatePlayer: vi.fn(),
+    updateBand: vi.fn(),
+    addToast: vi.fn(),
+    updateSettings: vi.fn(),
+    deleteSave: vi.fn(),
+    setSetlist: vi.fn()
   })
 }))
 
 vi.mock('../../src/hooks/useAudioControl', () => ({
   useAudioControl: () => ({
     audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
-    handleAudioChange: {
-      setMusic: () => {},
-      setSfx: () => {},
-      toggleMute: () => {}
-    }
+    handleAudioChange: { setMusic: vi.fn(), setSfx: vi.fn(), toggleMute: vi.fn() }
   })
 }))
 
-// Mock dependencies
-vi.mock('../../src/data/hqItems', () => ({
-  HQ_ITEMS: { gear: [], instruments: [] }
-}))
-vi.mock('../../src/data/upgradeCatalog', () => ({
-  getUnifiedUpgradeCatalog: () => []
-}))
-vi.mock('../../src/data/songs', () => ({
-  SONGS_DB: []
-}))
-vi.mock('../../src/utils/imageGen', () => ({
-  getGenImageUrl: () => 'mock-url',
-  IMG_PROMPTS: {}
-}))
+vi.mock('../../src/data/hqItems', () => ({ HQ_ITEMS: { gear: [], instruments: [] } }))
+vi.mock('../../src/data/upgradeCatalog', () => ({ getUnifiedUpgradeCatalog: () => [] }))
+vi.mock('../../src/data/songs', () => ({ SONGS_DB: [] }))
+vi.mock('../../src/utils/imageGen', () => ({ getGenImageUrl: () => 'mock-url', IMG_PROMPTS: {} }))
 vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
-  usePurchaseLogic: () => ({
-    handleBuy: () => {},
-    isItemOwned: () => false,
-    isItemDisabled: () => false,
-    getAdjustedCost: item => item.cost // Mock passthrough
-  }),
+  usePurchaseLogic: () => ({ handleBuy: vi.fn(), isItemOwned: () => false, isItemDisabled: () => false, getAdjustedCost: item => item.cost }),
   getPrimaryEffect: () => ({})
 }))
-vi.mock('../../src/ui/shared/index.tsx', () => ({
-  StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
-  ProgressBar: () =>
-    React.createElement('div', { 'data-testid': 'progress-bar' }),
-  SettingsPanel: () =>
-    React.createElement('div', { 'data-testid': 'settings-panel' }),
-  Panel: ({ children }) =>
-    React.createElement('div', { 'data-testid': 'panel' }, children),
-  ActionButton: ({ children, type = 'button' }) => {
-    const validTypes = ['button', 'submit', 'reset']
-    const sanitizedType = validTypes.includes(type) ? type : 'button'
-    return React.createElement(
-      'button',
-      { 'data-testid': 'action-button', type: sanitizedType },
-      children
-    )
-  },
-  Tooltip: ({ children }) =>
-    React.createElement('div', { 'data-testid': 'tooltip' }, children)
-}))
 
-describe('BandHQ', () => {
+describe('BandHQ UI tests', () => {
+  afterEach(() => {
+    cleanup()
+  })
   let BandHQ
 
   beforeAll(async () => {
-    //  removed (handled by vitest env)
-    // Dynamic import
     const module = await import('../../src/ui/BandHQ.tsx')
     BandHQ = module.BandHQ
   })
 
-  afterEach(() => {
-    cleanup()
-  })
-
-  test('renders without crashing', () => {
-    const props = {
-      onClose: () => {}
-    }
-
+  test('basic tab reachability check', async () => {
+    const props = { onClose: () => {} }
     const { container } = render(React.createElement(BandHQ, props))
+
+    // Check render
     expect(container.querySelector('h2')).toBeTruthy()
-    // "BAND HQ" is the default fallback or key, adjust if needed
     expect(container.textContent).toContain('BAND HQ')
+
+    // Check reachability
+    const user = userEvent.setup()
+    const shopTab = screen.getByRole('tab', { name: /shop/i })
+    await user.click(shopTab)
+    expect(screen.getByRole('tabpanel', { name: /shop/i })).toBeVisible()
   })
 })

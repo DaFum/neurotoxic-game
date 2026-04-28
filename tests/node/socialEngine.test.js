@@ -515,3 +515,27 @@ test('negotiateDeal AGGRESSIVE strategy revokes deal on failure', () => {
   assert.equal(result.status, 'REVOKED')
   assert.equal(result.deal, null)
 })
+
+test('generateBrandOffers does not generate more than 3 offers', () => {
+  const gameState = {
+    social: {
+      instagram: 1000000,
+      tiktok: 1000000,
+      youtube: 1000000,
+      trend: 'TECH',
+      brandReputation: { [BRAND_ALIGNMENTS.EVIL]: 100 }
+    },
+    band: {
+      members: [],
+      traits: {}
+    }
+  }
+
+  // Add lots of traits to match many deals
+  gameState.band.members = [
+    { traits: { party_animal: { id: 'party_animal' }, tech_savvy: { id: 'tech_savvy' }, fashionista: { id: 'fashionista' } } }
+  ]
+
+  const offers = generateBrandOffers(gameState)
+  assert.ok(offers.length <= 3, 'Should not generate more than 3 offers')
+})
