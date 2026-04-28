@@ -17,6 +17,13 @@ type CrashHandlerState = {
   errorInfo: ErrorInfo | null
 }
 
+const isDevMode = (): boolean => {
+  const envOverride = (globalThis as { __IMPORT_META_ENV__?: { DEV?: boolean } })
+    .__IMPORT_META_ENV__
+  if (typeof envOverride?.DEV === 'boolean') return envOverride.DEV
+  return import.meta.env.DEV
+}
+
 class ErrorBoundaryComponent extends React.Component<
   CrashHandlerProps,
   CrashHandlerState
@@ -59,7 +66,7 @@ class ErrorBoundaryComponent extends React.Component<
             {t('ui:crash.message')}
           </p>
 
-          {import.meta.env.DEV && (
+          {isDevMode() && (
             <div className='bg-blood-red/20 border border-blood-red p-4 mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
               <p className='font-bold mb-2'>
                 {this.state.error && this.state.error.toString()}
