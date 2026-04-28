@@ -124,7 +124,7 @@ CatalogTab.propTypes = {
     props: Record<string, unknown>,
     propName: string,
     componentName: string,
-    ...rest: any[]
+    ...rest: unknown[]
   ) => {
     // @ts-expect-error React PropTypes type definition is too restrictive for spread args
     const shapeError = balancesShape(props, propName, componentName, ...rest)
