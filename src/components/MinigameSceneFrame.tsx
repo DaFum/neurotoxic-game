@@ -117,7 +117,7 @@ export const MinigameSceneFrame = ({
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
       <div className='absolute inset-0 pointer-events-none'>
         <PixiStage
-          gameStateRef={logic.gameStateRef}
+          gameStateRef={logic.gameStateRef as any}
           update={logic.update}
           controllerFactory={controllerFactory}
         />

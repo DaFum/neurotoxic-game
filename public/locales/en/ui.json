@@ -208,6 +208,7 @@
   "detailedStats.hqUpgrades.installed_other": "{{count}} Installed",
   "detailedStats.hqUpgrades.none": "None",
   "detailedStats.improv": "Improv",
+  "detailedStats.invalidQuestRequirement": "Invalid quest requirement",
   "detailedStats.inventorySlots": "Inventory Slots",
   "detailedStats.locked": "Locked",
   "detailedStats.luck": "Luck",
@@ -218,7 +219,6 @@
   "detailedStats.mode.restrictions": "Venue restrictions active",
   "detailedStats.mood": "Mood",
   "detailedStats.noActiveQuests": "No active quests. Stay toxic to trigger events.",
-  "detailedStats.invalidQuestRequirement": "Invalid quest requirement",
   "detailedStats.noRegionalData": "No regional data yet. Play gigs to build reputation.",
   "detailedStats.none": "None",
   "detailedStats.passiveFollowers": "Passive Followers",
@@ -241,9 +241,9 @@
   "enter_alias_desc": "Enter your alias for the global underground network.",
   "enter_name_error": "Please enter a name",
   "enter_name_placeholder": "ENTER NAME...",
+  "error.advanceDayFailed": "Could not advance day. Please try again.",
   "error.insufficient_fame": "Not enough fame. You need {{cost}} fame.",
   "error.mapGenerationFailedReturnToMenu": "Map generation failed. Returning to menu for recovery.",
-  "error.advanceDayFailed": "Could not advance day. Please try again.",
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_cleanup_failed": "Audio cleanup failed.",
   "errors.audio_init_failed": "Audio initialization failed.",
@@ -289,10 +289,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -315,10 +327,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -468,8 +492,6 @@
   "leaderboard.load_error": "Could not load rankings.",
   "leaderboard.no_data": "NO DATA RECORDED YET.",
   "leaderboard.no_songs": "NO SONGS UNLOCKED",
-  "leaderboard.unknownError": "Unknown error",
-  "leaderboard.unknownPlayer": "Unknown",
   "leaderboard.select_song": "SELECT SONG:",
   "leaderboard.song_scores": "SONG SCORES",
   "leaderboard.stage_dives": "STAGE DIVES",
@@ -480,6 +502,8 @@
   "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
   "leaderboard.top_100_stage_dives": "TOP 100 STAGE DIVES",
   "leaderboard.top_100_wealth": "TOP 100 WEALTHIEST",
+  "leaderboard.unknownError": "Unknown error",
+  "leaderboard.unknownPlayer": "Unknown",
   "load_game": "Load Game",
   "loading": "Loading",
   "loading_stage": "Loading Stage...",
@@ -511,6 +535,32 @@
   "map.vanAlt": "Van",
   "member": {
     "unknown": "Unknown"
+  },
+  "menu": {
+    "management": "MANAGEMENT",
+    "hq_desc": "Manage members & gear",
+    "quests_desc": "Active objectives",
+    "stash_desc": "Contraband & inventory",
+    "side_hustles": "SIDE HUSTLES",
+    "radio_desc": "Boost reputation",
+    "merch_desc": "Print bootlegs",
+    "darkweb_desc": "Leak new tracks",
+    "logistics": "LOGISTICS",
+    "refuel_desc": "Gas up the van",
+    "repair_desc": "Fix van damage",
+    "bloodbank_desc": "Trade blood for cash",
+    "clinic_desc": "Heal members",
+    "system": "SYSTEM",
+    "save_desc": "Record progress",
+    "options_count": "options",
+    "actions": "ACTIONS",
+    "back_to_actions": "BACK TO ACTIONS",
+    "close": "CLOSE MENU",
+    "open": "OPEN MENU",
+    "options_count_upper": "OPTIONS",
+    "options_count_lower": "options",
+    "inventory": "INVENTORY",
+    "upgrades": "UPGRADES"
   },
   "merch_press.button": "MERCH PRESS",
   "merch_press.confirm": "START PRESS",
@@ -564,6 +614,7 @@
   "minigames.kabelsalat.cables.midi": "MIDI",
   "minigames.kabelsalat.cables.pwr": "PWR",
   "minigames.kabelsalat.cables.xlr": "XLR",
+  "minigames.kabelsalat.continueButton": "CONTINUE TO GIG",
   "minigames.kabelsalat.errors.noAmp": "AMP IS OFF! VOLTAGE SPIKE DESTROYED SPEAKERS!",
   "minigames.kabelsalat.errors.noPower": "MISSING GROUND! CONNECT POWER (AC) FIRST!",
   "minigames.kabelsalat.errors.wrongCable": "WRONG CABLE! SHORT CIRCUIT!",
@@ -589,7 +640,6 @@
   "minigames.kabelsalat.systemShock": "SYSTEM SHOCK",
   "minigames.kabelsalat.tMinus": "T-MINUS",
   "minigames.kabelsalat.timeUp": "TIME'S UP",
-  "minigames.kabelsalat.continueButton": "CONTINUE TO GIG",
   "minigames.kabelsalat.timeValue": "{{count}}s",
   "minigames.kabelsalat.timeValue_one": "{{count}}s",
   "minigames.kabelsalat.timeValue_other": "{{count}}s",
@@ -604,6 +654,44 @@
   "no_save_found": "No save game found!",
   "nowPlaying": "Now Playing: {{name}}",
   "overload.toxic": "TOXIC OVERLOAD",
+  "overworld": {
+    "shortcuts": {
+      "help": "Toggle Help",
+      "mute": "Mute / Unmute",
+      "event": "Select Event Option",
+      "hit_notes": "Hit Notes (Gig)",
+      "close": "Close Overlays"
+    },
+    "low_fuel": "LOW FUEL",
+    "keyboard_shortcuts": "Keyboard Shortcuts",
+    "band_status": "Band Status",
+    "harmony": "Harmony",
+    "radio_station": "FM 66.6",
+    "event_log_entries": "entries",
+    "event_log_entries_one": "entry",
+    "event_log_entries_other": "entries",
+    "locations_loaded": "Tour initialized. {{count}} locations loaded.",
+    "tour_active": "{{label}}: Tour active.",
+    "day_format": "Day {{day}}",
+    "notAvailable": "N/A",
+    "location_secured": "{{location}} secured.",
+    "event_log": "EVENT LOG",
+    "header": {
+      "tourPlan": "TOUR PLAN"
+    },
+    "status": {
+      "traveling": "TRAVELING...",
+      "nextStop": "Next Stop",
+      "onRoad": "ON THE ROAD",
+      "selectLocation": "SELECT A LOCATION"
+    },
+    "band_hq_button": "BAND HQ",
+    "refuel": "REFUEL",
+    "repair": "REPAIR",
+    "void_clinic_button": "VOID CLINIC",
+    "save_game": "SAVE GAME",
+    "traveling_van": "Traveling Van"
+  },
   "pirate_radio.button": "PIRATE RADIO",
   "pirate_radio.controversy_gain": "CONTROVERSY",
   "pirate_radio.cooldown": "ON COOLDOWN",
@@ -654,23 +742,23 @@
   "postGig.tallyingReceipts": "TALLYING RECEIPTS...",
   "postGig.traitUnlocked": "Trait Unlocked: {{traitName}}",
   "postGig.viralHit": "VIRAL HIT!",
+  "postOptions.comm_gear_review.message": "{{member}} finally revealed the secret of the tone. Guitar nerds are losing it.",
   "postOptions.comm_sellout_ad.name": "Shameless Sellout Sponsorship",
+  "postOptions.drama_crowdsurf_fail.failMessage": "{{member}} got dropped. It was just sad to watch.",
+  "postOptions.drama_crowdsurf_fail.successMessage": "{{member}} ate pavement, but the fans thought it was hilarious.",
+  "postOptions.drama_gear_flex.message": "Guitar geeks unite! {{member}} is happy.",
+  "postOptions.drama_tour_bus_prank.message": "{{member}} loved it. The rest of the band is annoyed.",
+  "postOptions.errors.missingBandMembers": "Post option {{postId}} requires at least one band member.",
+  "postOptions.errors.unknownMemberFallback": "Unknown",
+  "postOptions.failedToPost": "Failed to post.",
   "postOptions.influencerSuccess": "Collaborated with {{selectedId}}. Cost {{cost}}€{{traitBonusText}}",
   "postOptions.influencerTraitDramaMagnet": "Massive reach, but it came with some toxic drama.",
   "postOptions.influencerTraitTechSavvy": "The gear nerds loved the technical breakdown.",
-  "postOptions.failedToPost": "Failed to post.",
   "postOptions.noAffordableInfluencers": "You cannot afford any available influencers right now.",
+  "postOptions.perf_ego_flex.message": "{{member}} is feeling like a rock god. The rest of the band? Not so much.",
+  "postOptions.perf_smashed_gear.message": "{{member}}'s gear was destroyed! Viral AF but expensive.",
   "postOptions.radicalize_fans.message": "Your hardcore fans loved it. Casuals were disturbed.",
   "postOptions.radicalize_fans.name": "Radicalize Fans",
-  "postOptions.errors.missingBandMembers": "Post option {{postId}} requires at least one band member.",
-  "postOptions.errors.unknownMemberFallback": "Unknown",
-  "postOptions.perf_smashed_gear.message": "{{member}}'s gear was destroyed! Viral AF but expensive.",
-  "postOptions.perf_ego_flex.message": "{{member}} is feeling like a rock god. The rest of the band? Not so much.",
-  "postOptions.drama_crowdsurf_fail.successMessage": "{{member}} ate pavement, but the fans thought it was hilarious.",
-  "postOptions.drama_crowdsurf_fail.failMessage": "{{member}} got dropped. It was just sad to watch.",
-  "postOptions.drama_gear_flex.message": "Guitar geeks unite! {{member}} is happy.",
-  "postOptions.drama_tour_bus_prank.message": "{{member}} loved it. The rest of the band is annoyed.",
-  "postOptions.comm_gear_review.message": "{{member}} finally revealed the secret of the tone. Guitar nerds are losing it.",
   "postOptions.selloutMessage": "You got paid. The fans are calling you sellouts.",
   "postOptions.selloutName": "Shameless Sellout Sponsorship",
   "pregig.activeModifiers": "ACTIVE MODIFIERS",
@@ -810,6 +898,7 @@
   "shop.messages.traitUnlocked": "Unlocked Trait: {{traitName}} ({{memberId}})",
   "shop.messages.unknownItem": "Unknown Item",
   "shop.messages.unknownEffect": "Purchase failed: Unknown effect type.",
+  "shop.messages.unknownItem": "Unknown Item",
   "shortcuts.closeOverlays": "Close overlays",
   "shortcuts.hitNotes": "Hit notes (Gig)",
   "shortcuts.mute": "Mute / Unmute",
@@ -982,69 +1071,5 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%",
-  "menu": {
-    "management": "MANAGEMENT",
-    "hq_desc": "Manage members & gear",
-    "quests_desc": "Active objectives",
-    "stash_desc": "Contraband & inventory",
-    "side_hustles": "SIDE HUSTLES",
-    "radio_desc": "Boost reputation",
-    "merch_desc": "Print bootlegs",
-    "darkweb_desc": "Leak new tracks",
-    "logistics": "LOGISTICS",
-    "refuel_desc": "Gas up the van",
-    "repair_desc": "Fix van damage",
-    "bloodbank_desc": "Trade blood for cash",
-    "clinic_desc": "Heal members",
-    "system": "SYSTEM",
-    "save_desc": "Record progress",
-    "options_count": "options",
-    "actions": "ACTIONS",
-    "back_to_actions": "BACK TO ACTIONS",
-    "close": "CLOSE MENU",
-    "open": "OPEN MENU",
-    "options_count_upper": "OPTIONS",
-    "options_count_lower": "options",
-    "inventory": "INVENTORY",
-    "upgrades": "UPGRADES"
-  },
-  "overworld": {
-    "shortcuts": {
-      "help": "Toggle Help",
-      "mute": "Mute / Unmute",
-      "event": "Select Event Option",
-      "hit_notes": "Hit Notes (Gig)",
-      "close": "Close Overlays"
-    },
-    "low_fuel": "LOW FUEL",
-    "keyboard_shortcuts": "Keyboard Shortcuts",
-    "band_status": "Band Status",
-    "harmony": "Harmony",
-    "radio_station": "FM 66.6",
-    "event_log_entries": "entries",
-    "event_log_entries_one": "entry",
-    "event_log_entries_other": "entries",
-    "locations_loaded": "Tour initialized. {{count}} locations loaded.",
-    "tour_active": "{{label}}: Tour active.",
-    "day_format": "Day {{day}}",
-    "notAvailable": "N/A",
-    "location_secured": "{{location}} secured.",
-    "event_log": "EVENT LOG",
-    "header": {
-      "tourPlan": "TOUR PLAN"
-    },
-    "status": {
-      "traveling": "TRAVELING...",
-      "nextStop": "Next Stop",
-      "onRoad": "ON THE ROAD",
-      "selectLocation": "SELECT A LOCATION"
-    },
-    "band_hq_button": "BAND HQ",
-    "refuel": "REFUEL",
-    "repair": "REPAIR",
-    "void_clinic_button": "VOID CLINIC",
-    "save_game": "SAVE GAME",
-    "traveling_van": "Traveling Van"
-  }
+  "volume.set": "Set volume to {{pct}}%"
 }

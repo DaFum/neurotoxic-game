@@ -62,9 +62,9 @@ export default [
     languageOptions: BASE_LANGUAGE_OPTIONS,
     plugins: BASE_PLUGINS,
     rules: {
-      ...BASE_RULES,
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
+      ...BASE_RULES,
       // PropTypes are intentionally used in this JS project for runtime type checking
       '@eslint-react/no-prop-types': 'off'
     }

@@ -31,10 +31,14 @@ export const VoidTraderTab = ({
     ].map(item => {
       // Determine cost in Fame based on rarity
       const rarityKey = item.rarity
-      const isKnownRarity = (val: string | undefined): val is keyof typeof VOID_TRADER_COSTS => {
+      const isKnownRarity = (
+        val: string | undefined
+      ): val is keyof typeof VOID_TRADER_COSTS => {
         return typeof val === 'string' && Object.hasOwn(VOID_TRADER_COSTS, val)
       }
-      const fameCost = isKnownRarity(rarityKey) ? VOID_TRADER_COSTS[rarityKey] : 1000
+      const fameCost = isKnownRarity(rarityKey)
+        ? VOID_TRADER_COSTS[rarityKey]
+        : 1000
       return { ...item, fameCost }
     })
   }, [])
@@ -135,5 +139,5 @@ VoidTraderTab.propTypes = {
   handleTrade: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
   isItemDisabled: PropTypes.func.isRequired,
-  processingItemId: PropTypes.string
+  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
