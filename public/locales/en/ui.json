@@ -896,6 +896,7 @@
   "shop.messages.purchaseSuccess": "{{itemName}} purchased!",
   "shop.messages.soundproofing": "Less noise, more peace. Harmony +5",
   "shop.messages.traitUnlocked": "Unlocked Trait: {{traitName}} ({{memberId}})",
+  "shop.messages.unknownItem": "Unknown Item",
   "shop.messages.unknownEffect": "Purchase failed: Unknown effect type.",
   "shop.messages.unknownItem": "Unknown Item",
   "shortcuts.closeOverlays": "Close overlays",

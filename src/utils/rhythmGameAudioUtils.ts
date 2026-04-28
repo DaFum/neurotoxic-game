@@ -102,7 +102,21 @@ export const setupGigPhysics = (
     : {}
 
   const songId = currentGigId || setlistFirstId || 'neurotoxic_1'
-  const DEFAULT_SONG = { id: 'default', bpm: 120 } as unknown as import('../types/audio').Song
+  const DEFAULT_SONG: Song = {
+    id: 'default',
+    leaderboardId: 'default',
+    title: 'Default Song',
+    name: 'Default Song',
+    bpm: 120,
+    difficulty: 2,
+    duration: 60,
+    durationMs: null,
+    excerptStartMs: 0,
+    excerptEndMs: null,
+    excerptDurationMs: null,
+    intensity: 'MEDIUM',
+    notes: []
+  }
   const activeSong = SONGS_BY_ID.get(songId) || SONGS_DB[0] || DEFAULT_SONG
   const physics = calculateGigPhysics(band, activeSong)
 

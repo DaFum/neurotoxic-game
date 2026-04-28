@@ -3,6 +3,16 @@ import { audioState } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
 import type { DrumKitSynth, LayeredSnare } from '../../types/audio'
 
+type EnvelopeWithCurves = {
+  attack: number
+  decay: number
+  sustain: number
+  release: number
+  attackCurve?: Tone.EnvelopeCurve
+  releaseCurve?: Tone.EnvelopeCurve
+  decayCurve?: Tone.EnvelopeCurve
+}
+
 /**
  * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
  * @param {object} bus - Tone.js audio node to connect the snare to.
@@ -62,6 +72,16 @@ export function setupMasterChain(): void {
 }
 
 export function setupGuitar(): void {
+  const guitarModulationEnvelope = {
+    attack: 0.01,
+    decay: 0.2,
+    sustain: 0.1,
+    release: 0.2,
+    attackCurve: 'linear',
+    releaseCurve: 'linear',
+    decayCurve: 'linear'
+  } satisfies EnvelopeWithCurves
+
   // FM synthesis for richer harmonic content
   audioState.guitar = new Tone.PolySynth(Tone.FMSynth, {
     harmonicity: 2,
@@ -69,15 +89,7 @@ export function setupGuitar(): void {
     oscillator: { type: 'sawtooth' },
     modulation: { type: 'square' },
     envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
-    modulationEnvelope: {
-      attack: 0.01,
-      decay: 0.2,
-      sustain: 0.1,
-      release: 0.2,
-      attackCurve: 'linear',
-      releaseCurve: 'linear',
-      decayCurve: 'linear'
-    } as any
+    modulationEnvelope: guitarModulationEnvelope
   })
 
   audioState.distortion = new Tone.Distortion(0.4)
@@ -216,16 +228,18 @@ export function setupMidiChain(): void {
   }).connect(audioState.midiDryBus)
   audioState.midiBass.volume.value = -3
 
+  const midiKickEnvelope = {
+    attack: 0.001,
+    decay: 0.35,
+    sustain: 0,
+    release: 0.2,
+    attackCurve: 'linear',
+    releaseCurve: 'linear',
+    decayCurve: 'linear'
+  } satisfies EnvelopeWithCurves
+
   audioState.midiDrumKit = buildDrumKit(audioState.midiDryBus, {
-    envelope: {
-      attack: 0.001,
-      decay: 0.35,
-      sustain: 0,
-      release: 0.2,
-      attackCurve: 'linear',
-      releaseCurve: 'linear',
-      decayCurve: 'linear'
-    } as any
+    envelope: midiKickEnvelope
   })
 
   // MIDI drum levels

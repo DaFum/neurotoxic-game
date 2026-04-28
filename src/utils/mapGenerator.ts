@@ -368,13 +368,22 @@ export class MapGenerator {
       const currentLayer = map.layers[i]
       const nextLayer = map.layers[i + 1]
 
-      if (!currentLayer) continue
+      if (!currentLayer) {
+        throw new StateError(
+          `Missing map layer ${i} during connection generation`
+        )
+      }
+      if (!nextLayer) {
+        throw new StateError(
+          `Missing map layer ${i + 1} during connection generation`
+        )
+      }
 
       // Forward pass: ensure everyone connects forward
       for (const node of currentLayer) {
         // Pick 1-2 random targets in next layer
         const numTargets = Math.floor(this.random() * 2) + 1
-        const targets = this.pickRandomSubset(nextLayer || [], numTargets)
+        const targets = this.pickRandomSubset(nextLayer, numTargets)
         for (const target of targets) {
           map.connections.push({ from: node.id, to: target.id })
           connectedToIds.add(target.id)
@@ -388,10 +397,13 @@ export class MapGenerator {
         if (!hasParent) {
           const randomParent =
             currentLayer[Math.floor(this.random() * currentLayer.length)]
-          if (randomParent) {
-            map.connections.push({ from: randomParent.id, to: node.id })
-            connectedToIds.add(node.id)
+          if (!randomParent) {
+            throw new StateError(
+              `Failed to select parent in layer ${i} for node ${node.id}`
+            )
           }
+          map.connections.push({ from: randomParent.id, to: node.id })
+          connectedToIds.add(node.id)
         }
       }
     }
