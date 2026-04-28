@@ -20,12 +20,7 @@ import {
 } from './gameStateUtils'
 import type { BandState, GameState, BandMember } from '../types/game'
 import type { Song } from '../types/audio'
-
-type ActiveEffect = {
-  key: string
-  fallback?: string
-  options?: Record<string, unknown>
-}
+import type { ActiveEffect } from '../types/components'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.

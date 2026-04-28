@@ -25,3 +25,4 @@ Applies to `src/data/chatter/**`.
 
 - Chatter additions tied to new scene actions should be keyed to reachable states only; avoid introducing lines for actions that no longer have UI affordances.
 - `entry.weight` nullish fallback semantics (`?? 1`) mean `weight: 0` fully disables an entry; do not use zero unless intentional suppression is desired.
+- Venue chatter ingestion must fail loudly for non-string or empty lines; silent `''` fallbacks hide malformed data and produce blank bubbles.

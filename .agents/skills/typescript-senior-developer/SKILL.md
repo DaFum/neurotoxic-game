@@ -14,9 +14,9 @@ Apply strict, idiomatic TypeScript guidance for the NEUROTOXIC codebase. Favor s
    - **Writing or editing code**: answer the immediate implementation need, then apply the project invariants below.
    - **Reviewing code or a diff**: use the review workflow and checklist before giving recommendations.
    - **Debugging TypeScript errors**: trace the error to the source type, not just the failing call site.
-2. If file access is available, inspect the relevant files before giving repo-specific advice. Do not rely on names from memory when exact local types, imports, or reducers can be read.
+2. Read the `AGENTS.md` files in each relevant directory before giving repo-specific advice. Treat those files as the authoritative source for local rules, architecture constraints, and gotchas.
 3. Prefer project-local patterns over generic TypeScript advice. When a pattern is unclear, look for nearby examples in `src/types`, `src/context`, reducers, utilities, and data maps.
-4. After code changes, run the closest available type check. Prefer the repo's documented command; otherwise use `npx tsc --noEmit`. Mention any check you could not run.
+4. After code changes, run the repo typecheck gates with pnpm only: use `pnpm run typecheck:core` for full `tsc --noEmit` coverage and `pnpm run typecheck` for the scoped reducer gate. Always use `pnpm` (never `npm` or `yarn`). Mention any check you could not run.
 
 ## Project Invariants
 
@@ -84,4 +84,3 @@ For deeper dives, load from `references/`:
 | Conditional types, `infer`, template literals, branded types | `references/advanced-types.md`      |
 | Module augmentation, declaration merging, `.d.ts` authoring  | `references/module-augmentation.md` |
 | tsconfig options deep-dive, `isolatedModules` edge cases     | `references/tsconfig.md`            |
-

@@ -2,7 +2,42 @@
 
 ## Workflow
 
-- Read the needed AGENTS.md files (`api\AGENTS.md`, `api\leaderboard\AGENTS.md`, `src\components\AGENTS.md`, `src\components\minigames\AGENTS.md`, `src\context\AGENTS.md`, `src\context\reducers\AGENTS.md`, `src\data\AGENTS.md`, `src\data\chatter\AGENTS.md`, `src\scenes\AGENTS.md`, `src\schemas\AGENTS.md`, `src\utils\audio\AGENTS.md`, `tests\AGENTS.md`, `tests\context\reducers\AGENTS.md`, `tests\node\AGENTS.md`, `tests\ui\AGENTS.md`) first before changing any code. This is the source of truth for architecture, style, and conventions.
+- Use the Superpower skill before starting any task.
+- Read the needed AGENTS.md files first before changing any code. This is the source of truth for architecture, style, and conventions. Current AGENTS.md inventory:
+  - `.agents/skills/typescript-senior-developer/AGENTS.md`
+  - `api/AGENTS.md`
+  - `api/leaderboard/AGENTS.md`
+  - `src/AGENTS.md`
+  - `src/assets/AGENTS.md`
+  - `src/components/AGENTS.md`
+  - `src/components/minigames/AGENTS.md`
+  - `src/components/postGig/AGENTS.md`
+  - `src/components/pregig/AGENTS.md`
+  - `src/components/stage/AGENTS.md`
+  - `src/context/AGENTS.md`
+  - `src/context/reducers/AGENTS.md`
+  - `src/data/AGENTS.md`
+  - `src/data/chatter/AGENTS.md`
+  - `src/data/events/AGENTS.md`
+  - `src/hooks/AGENTS.md`
+  - `src/hooks/minigames/AGENTS.md`
+  - `src/hooks/rhythmGame/AGENTS.md`
+  - `src/scenes/AGENTS.md`
+  - `src/scenes/kabelsalat/AGENTS.md`
+  - `src/scenes/kabelsalat/components/overlays/AGENTS.md`
+  - `src/scenes/kabelsalat/hooks/AGENTS.md`
+  - `src/scenes/mainmenu/AGENTS.md`
+  - `src/schemas/AGENTS.md`
+  - `src/types/AGENTS.md`
+  - `src/ui/AGENTS.md`
+  - `src/ui/bandhq/AGENTS.md`
+  - `src/ui/bandhq/hooks/AGENTS.md`
+  - `src/utils/AGENTS.md`
+  - `src/utils/audio/AGENTS.md`
+  - `tests/AGENTS.md`
+  - `tests/context/reducers/AGENTS.md`
+  - `tests/node/AGENTS.md`
+  - `tests/ui/AGENTS.md`
 
 ## Critical Commands
 

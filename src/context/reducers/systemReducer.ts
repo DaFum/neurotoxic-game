@@ -426,7 +426,8 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           (m as Record<string, unknown>).staminaMax as number | undefined
         ),
         ...(typeof m.baseStats === 'object' &&
-        m.baseStats !== null
+        m.baseStats !== null &&
+        !Array.isArray(m.baseStats)
           ? {
               baseStats: Object.fromEntries(
                 Object.entries(m.baseStats as Record<string, unknown>).filter(
@@ -452,7 +453,9 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           ? { composition: m.composition }
           : {}),
         ...(typeof m.role === 'string' ? { role: m.role } : {}),
-        ...(typeof m.equipment === 'object' && m.equipment !== null
+        ...(typeof m.equipment === 'object' &&
+        m.equipment !== null &&
+        !Array.isArray(m.equipment)
           ? { equipment: m.equipment as Record<string, unknown> }
           : {}),
         relationships:

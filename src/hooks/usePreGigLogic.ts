@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import type { TFunction } from 'react-i18next'
 import type { PlayerState, Venue, GigModifiers } from '../types/game'
 import type { RhythmSetlistEntry, Song } from '../types/rhythmGame'
+import type { ActiveEffectEntry } from '../types/components'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -42,7 +43,7 @@ export interface PreGigLogicReturn {
   player: PlayerState
   setlist: RhythmSetlistEntry[]
   gigModifiers: GigModifiers
-  currentModifiers: { activeEffects: Record<string, unknown>[] }
+  currentModifiers: { activeEffects: ActiveEffectEntry[] }
   selectedSongIds: Set<unknown>
   calculatedBudget: number
   isStarting: boolean

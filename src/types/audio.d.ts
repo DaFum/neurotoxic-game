@@ -68,7 +68,6 @@ export interface AudioSnapshot extends AudioState {
 }
 
 export interface AudioManagerLike {
-  [key: string]: unknown
   musicVolume?: number
   sfxVolume?: number
   muted?: boolean
@@ -82,7 +81,7 @@ export interface AudioManagerLike {
   setSfxVolume?: (value: number) => unknown
   toggleMute?: () => unknown
   stopMusic?: () => unknown
-  resumeMusic?: () => Promise<boolean>
+  resumeMusic?: () => boolean | Promise<boolean>
 }
 
 export interface UseAudioControlOptions {

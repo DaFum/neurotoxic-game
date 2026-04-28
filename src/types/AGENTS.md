@@ -35,3 +35,5 @@ Applies to `src/types/**`.
 - Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.
 - `AsyncCallback<TResult>` should stay backward-compatible with sync `void` returns for non-void specializations unless a coordinated contract migration is documented.
 - Audio UI contracts (`AudioState`, `AudioControls`) should live in `src/types/audio.d.ts`; consumers in UI tabs should import from `types/audio` rather than redefining or sourcing from unrelated domains.
+- `AudioManagerLike` should not use broad string index signatures; explicit method/property names preserve `keyof` safety and catch misspellings in shared audio helpers.
+- Shared gig modifier effect contracts belong in `src/types/components.d.ts`; keep utilities, hooks, and components on the same `ActiveEffect`/`ActiveEffectEntry` definitions.

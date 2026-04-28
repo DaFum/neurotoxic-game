@@ -8,14 +8,7 @@ import PropTypes from 'prop-types'
 import GigModifierButton from '../../ui/GigModifierButton'
 import type { TFunction } from 'i18next'
 import type { ModifierOption } from '../../hooks/usePreGigLogic'
-
-type ActiveEffect =
-  | string
-  | {
-      key: string
-      fallback?: string
-      options?: Record<string, unknown>
-    }
+import type { ActiveEffectEntry } from '../../types/components'
 
 type GigModifiersBlockProps = {
   t: TFunction
@@ -24,7 +17,29 @@ type GigModifiersBlockProps = {
   toggleModifier: (key: string) => void
   handleBandMeeting: () => void
   bandMeetingCost: number
-  currentModifiers: { activeEffects: ActiveEffect[] }
+  currentModifiers: { activeEffects: ActiveEffectEntry[] }
+}
+
+const sanitizeEffectOptions = (
+  options: Record<string, unknown> | undefined
+): Record<string, string | number | boolean | null> => {
+  if (!options) return {}
+  const sanitized: Record<string, string | number | boolean | null> = {}
+  const entries = Object.entries(options)
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
+    if (!entry) continue
+    const [key, value] = entry
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      value === null
+    ) {
+      sanitized[key] = value
+    }
+  }
+  return sanitized
 }
 
 export const GigModifiersBlock = ({
@@ -84,7 +99,7 @@ export const GigModifiersBlock = ({
         </h4>
         {currentModifiers.activeEffects.length > 0 ? (
           <ul className='text-xs space-y-1'>
-            {currentModifiers.activeEffects.map((eff: ActiveEffect) => (
+            {currentModifiers.activeEffects.map((eff: ActiveEffectEntry) => (
               <li
                 key={typeof eff === 'string' ? eff : eff.key}
                 className='text-star-white/60 flex items-center gap-1.5'
@@ -93,7 +108,7 @@ export const GigModifiersBlock = ({
                 {typeof eff === 'string'
                   ? eff
                   : t(eff.key, {
-                      ...eff.options,
+                      ...sanitizeEffectOptions(eff.options),
                       defaultValue: eff.fallback
                     })}
               </li>
@@ -118,7 +133,14 @@ GigModifiersBlock.propTypes = {
   bandMeetingCost: PropTypes.number.isRequired,
   currentModifiers: PropTypes.shape({
     activeEffects: PropTypes.arrayOf(
-      PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+      PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          key: PropTypes.string.isRequired,
+          fallback: PropTypes.string,
+          options: PropTypes.object
+        })
+      ])
     ).isRequired
   }).isRequired
 }

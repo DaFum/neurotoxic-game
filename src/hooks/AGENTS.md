@@ -29,3 +29,5 @@ Applies to `src/hooks/**`.
 - Rhythm gameplay hooks now have nested guardrails in `src/hooks/rhythmGame/AGENTS.md`; keep scoring/timing edge-case handling there to avoid duplicated sparse-array fixes across hook files.
 - Minigame completion lifecycles now have nested guardrails in `src/hooks/minigames/AGENTS.md`; keep timeout-driven and user-action completion paths unified through the same finalize callback.
 - Hooks that consume root context snapshots (for example leaderboard sync hooks) should accept concrete `GameState` contracts and rely on canonical required fields instead of defensive partial-object casts.
+- Audio control hooks should treat native subscription as valid only when a real `subscribe` function exists; otherwise polling must remain active.
+- If an audio manager exposes `getStateSnapshot()`, use it as the snapshot source even when native subscribe support is disabled.

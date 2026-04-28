@@ -23,3 +23,4 @@ Applies to `src/context/reducers/**`.
 ## Recent Findings (2026-04)
 
 - Reintroduced actions should be validated for no-op safety when feature flags/state preconditions are missing; reducers must remain deterministic.
+- Member payload sanitization must reject array values for record-like fields (`baseStats`, `equipment`) before casting to object maps.

@@ -38,7 +38,7 @@ For each finding, include:
 - [ ] Function-typed values have explicit signatures, not `Function`.
 - [ ] Index signatures are not broad escape hatches; prefer finite key unions and `Record<K, V>`.
 - [ ] React props and event handlers are typed at the component boundary.
-- [ ] New React 19 refs use ref-as-prop rather than `forwardRef`, unless compatibility with an existing pattern requires otherwise.
+- [ ] New React 19 refs must use ref-as-prop rather than `React.forwardRef()`.
 - [ ] Hooks that call `t('key')` include `t` in dependency arrays.
 - [ ] Changes keep runtime behavior stable unless the user explicitly asked for behavior changes.
 - [ ] The closest available typecheck and relevant tests were run or the limitation is stated.

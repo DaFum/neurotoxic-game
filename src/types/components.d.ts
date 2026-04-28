@@ -1,4 +1,5 @@
 import type {
+  GameEvent,
   EventOption,
   GameState,
   MapNode,
@@ -91,6 +92,18 @@ export interface SocialOption extends EventOption {
   category?: string
   badges?: string[]
 }
+
+export interface ActiveEffect {
+  key: string
+  fallback?: string
+  options?: Record<string, unknown>
+}
+
+/**
+ * String entries are retained for defensive parsing of legacy/untrusted payloads.
+ * New producers should emit `ActiveEffect` objects.
+ */
+export type ActiveEffectEntry = string | ActiveEffect
 
 export interface SocialOptionButtonProps {
   opt: SocialOption

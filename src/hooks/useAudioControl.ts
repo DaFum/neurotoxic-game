@@ -52,21 +52,37 @@ export const createAudioHandlers = (
 
 export const getAudioSnapshot = (
   manager: AudioManagerLike,
-  hasNativeSubscribe: boolean,
-  fallbackSnapshotRef: { current: AudioSnapshot | null }
+  hasNativeSubscribeOrFallbackRef: boolean | { current: AudioSnapshot | null },
+  fallbackSnapshotRefArg?: { current: AudioSnapshot | null }
 ): AudioSnapshot => {
-  const nextSnapshot =
+  const fallbackSnapshotRef =
+    typeof hasNativeSubscribeOrFallbackRef === 'boolean'
+      ? fallbackSnapshotRefArg
+      : hasNativeSubscribeOrFallbackRef
+  if (!fallbackSnapshotRef) {
+    throw new Error(
+      'getAudioSnapshot requires a fallback snapshot ref when called with hasNativeSubscribe'
+    )
+  }
+
+  const maybeManagedSnapshot =
     typeof manager.getState === 'function'
       ? manager.getState()
-      : hasNativeSubscribe && typeof manager.getStateSnapshot === 'function'
-          ? manager.getStateSnapshot()
-          : {
-            musicVol: manager.musicVolume ?? 1,
-            sfxVol: manager.sfxVolume ?? 1,
-            isMuted: manager.muted ?? false,
-            isPlaying: manager.isPlaying ?? false,
-            currentSongId: manager.currentSongId ?? null
-          }
+      : typeof manager.getStateSnapshot === 'function'
+        ? manager.getStateSnapshot()
+        : null
+  const nextSnapshot =
+    maybeManagedSnapshot &&
+    typeof maybeManagedSnapshot === 'object' &&
+    !Array.isArray(maybeManagedSnapshot)
+      ? maybeManagedSnapshot
+      : {
+          musicVol: manager.musicVolume ?? 1,
+          sfxVol: manager.sfxVolume ?? 1,
+          isMuted: manager.muted ?? false,
+          isPlaying: manager.isPlaying ?? false,
+          currentSongId: manager.currentSongId ?? null
+        }
 
   const previousSnapshot = fallbackSnapshotRef.current
   if (
@@ -142,9 +158,10 @@ export function useAudioControl<TSelected = AudioSnapshot>(
   selectorRef.current = selector
 
   const hasNativeSubscribe =
-    typeof manager.hasNativeSubscribe === 'function'
+    typeof manager.subscribe === 'function' &&
+    (typeof manager.hasNativeSubscribe === 'function'
       ? manager.hasNativeSubscribe()
-      : typeof manager.subscribe === 'function'
+      : true)
   const pollMs =
     Number.isFinite(options.pollMs ?? NaN) && (options.pollMs ?? 0) > 0
       ? (options.pollMs as number)
@@ -152,8 +169,8 @@ export function useAudioControl<TSelected = AudioSnapshot>(
   const pollEvenWithSubscribe = options.pollEvenWithSubscribe === true
 
   const getSnapshot = useCallback(
-    () => getAudioSnapshot(manager, hasNativeSubscribe, fallbackSnapshotRef),
-    [hasNativeSubscribe, manager]
+    () => getAudioSnapshot(manager, fallbackSnapshotRef),
+    [manager]
   )
 
   const subscribe = useMemo(
