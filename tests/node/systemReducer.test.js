@@ -288,8 +288,21 @@ test('systemReducer - LOAD_GAME', async t => {
         name: 'legacy map',
         version: 1,
         nodes: {
-          start: { id: 'start', x: 12, y: 34, neighbors: ['next', 7] },
-          next: { venueId: 'venue-1' },
+          start: {
+            id: 'start',
+            x: 12,
+            y: 34,
+            neighbors: ['next', 7],
+            type: 'GIG',
+            metadata: {
+              legacyType: 'boss',
+              difficulty: 2,
+              visited: false,
+              nested: { drop: true }
+            },
+            edges: [{ from: 'start', to: 'next', weight: 1 }]
+          },
+          next: { venueId: 'venue-1', label: 'Next', flags: ['legacy', 2] },
           bad: null
         },
         connections: [
@@ -309,8 +322,27 @@ test('systemReducer - LOAD_GAME', async t => {
         name: 'legacy map',
         version: 1,
         nodes: {
-          start: { id: 'start', x: 12, y: 34, neighbors: ['next'] },
-          next: { id: 'next', x: 0, y: 0, venueId: 'venue-1' }
+          start: {
+            id: 'start',
+            x: 12,
+            y: 34,
+            neighbors: ['next'],
+            type: 'GIG',
+            metadata: {
+              legacyType: 'boss',
+              difficulty: 2,
+              visited: false
+            },
+            edges: [{ from: 'start', to: 'next', weight: 1 }]
+          },
+          next: {
+            id: 'next',
+            x: 0,
+            y: 0,
+            venueId: 'venue-1',
+            label: 'Next',
+            flags: ['legacy', 2]
+          }
         },
         connections: [
           { from: 'start', to: 'next' },

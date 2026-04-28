@@ -11,7 +11,13 @@ interface VoidTraderTabProps {
   handleTrade: (item: VoidTraderItem) => void
   isItemOwned: (item: VoidTraderItem) => boolean
   isItemDisabled: (item: VoidTraderItem) => boolean
-  processingItemId?: string | null
+  processingItemId?: string | number | null
+}
+
+type VoidTraderCatalogItem = VoidTraderItem & {
+  name: string
+  description: string
+  fameCost: number
 }
 
 export const VoidTraderTab = ({
@@ -24,7 +30,7 @@ export const VoidTraderTab = ({
   const { t } = useTranslation()
 
   // Filter for epic/rare contraband that are tradeable in the black market
-  const voidItems = useMemo(() => {
+  const voidItems = useMemo<VoidTraderCatalogItem[]>(() => {
     return [
       ...(CONTRABAND_BY_RARITY.epic ?? []),
       ...(CONTRABAND_BY_RARITY.rare ?? [])
@@ -39,7 +45,11 @@ export const VoidTraderTab = ({
       const fameCost = isKnownRarity(rarityKey)
         ? VOID_TRADER_COSTS[rarityKey]
         : 1000
-      return { ...item, fameCost }
+      return {
+        ...item,
+        rarity: item.rarity as VoidTraderItem['rarity'],
+        fameCost
+      } as VoidTraderCatalogItem
     })
   }, [])
 
@@ -68,7 +78,9 @@ export const VoidTraderTab = ({
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black'>
         {voidItems.map(item => {
-          const isProcessingThis = processingItemId === item.id
+          const isProcessingThis =
+            processingItemId != null &&
+            String(processingItemId) === String(item.id)
           const isAnyProcessing = processingItemId != null
           const disabled = isItemDisabled(item) || isAnyProcessing
 

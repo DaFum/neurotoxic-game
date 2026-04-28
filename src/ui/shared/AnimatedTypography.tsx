@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
-import type { Transition } from 'framer-motion'
+import type { HTMLMotionProps, Transition } from 'framer-motion'
 import PropTypes from 'prop-types'
-import type { ElementType, ReactNode } from 'react'
+import type { ComponentType, ElementType, ReactNode } from 'react'
 
 export const AnimatedDivider = ({
   width = '100%',
@@ -26,6 +26,18 @@ AnimatedDivider.propTypes = {
   className: PropTypes.string
 }
 
+type MotionTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'
+
+const motionTagAllowlist = {
+  h1: motion.h1,
+  h2: motion.h2,
+  h3: motion.h3,
+  h4: motion.h4,
+  p: motion.p,
+  span: motion.span,
+  div: motion.div
+} as const satisfies Record<MotionTag, ElementType>
+
 export const AnimatedSubtitle = ({
   as = 'h2',
   initial,
@@ -34,27 +46,17 @@ export const AnimatedSubtitle = ({
   className = '',
   children
 }: {
-  as?: string | ElementType
-  initial?: unknown
-  animate?: unknown
+  as?: MotionTag | ComponentType
+  initial?: HTMLMotionProps<'div'>['initial']
+  animate?: HTMLMotionProps<'div'>['animate']
   transition?: Transition
   className?: string
   children: ReactNode
 }) => {
-  const motionTagAllowlist = {
-    h1: motion.h1,
-    h2: motion.h2,
-    h3: motion.h3,
-    h4: motion.h4,
-    p: motion.p,
-    span: motion.span,
-    div: motion.div
-  } as const satisfies Record<string, ElementType>
   const MotionComponent =
     typeof as === 'string'
-      ? Object.hasOwn(motionTagAllowlist, as)
-        ? motionTagAllowlist[as]
-        : motion.h2
+      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
+        motion.h2)
       : motion(as)
 
   return (

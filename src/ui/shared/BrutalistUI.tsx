@@ -1281,6 +1281,10 @@ export const TerminalReadout = memo(() => {
         () => {
           const nextLine = FULL_LOG_KEYS[currentIndex]
           if (nextLine === undefined) {
+            console.warn(
+              `Invariant: missing FULL_LOG_KEYS at currentIndex ${currentIndex}`
+            )
+            setCurrentIndex(currentIndex + 1)
             return
           }
           setLines(prev => [...prev, nextLine])

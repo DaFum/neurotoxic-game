@@ -54,6 +54,7 @@ export default [
   {
     ignores: [
       'dist/**',
+      'node_modules/**',
       'src/data/songs.js',
       '.agents/**',
       'report/**',

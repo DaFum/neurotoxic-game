@@ -165,7 +165,7 @@ export const syncLeaderboardStats = async (
  * Hook to sync player stats to the global leaderboards.
  * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = (state: GameState) => {
+export const useLeaderboardSync = (state: GameState): void => {
   const { playerId, playerName, money, day, fame, stats } = state.player
   const { totalDistance, conflictsResolved, stageDives } = stats
   const social = state.social
