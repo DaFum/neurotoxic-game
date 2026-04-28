@@ -39,3 +39,34 @@ test('DealCard ignores malformed negotiated deals without upfront/duration', () 
   expect(container).toHaveTextContent('1000€')
   expect(container).toHaveTextContent('3 Gigs')
 })
+
+test('DealCard ignores negotiated deals with missing description or non-finite numbers', () => {
+  const baseDeal = {
+    id: 'deal_base',
+    name: 'Base Deal',
+    description: 'Base description',
+    offer: { upfront: 1000, duration: 3 }
+  }
+
+  const { container } = render(
+    <DealCard
+      deal={baseDeal}
+      negotiationState={{
+        status: 'SUCCESS',
+        deal: {
+          id: 'bad_deal_2',
+          name: 'Bad Deal 2',
+          offer: { upfront: Number.NaN, duration: Number.POSITIVE_INFINITY }
+        }
+      }}
+      brandReputation={{}}
+      handleAcceptDeal={vi.fn()}
+      handleNegotiationStart={vi.fn()}
+    />
+  )
+
+  expect(screen.getByText('Base Deal')).toBeInTheDocument()
+  expect(container).toHaveTextContent('Base description')
+  expect(container).toHaveTextContent('1000€')
+  expect(container).toHaveTextContent('3 Gigs')
+})

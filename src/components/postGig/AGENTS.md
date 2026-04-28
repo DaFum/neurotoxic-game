@@ -8,6 +8,7 @@ Applies to `src/components/postGig/**`.
 
 - Side-effect deltas (`moneyChange`, `staminaChange`, `moodChange`, etc.) are optional numeric values where `0` is valid. Render guards must use `value != null`, not truthy checks.
 - Negotiated deals are untrusted at render time. Guard `offer.upfront` and `offer.duration` as required numbers before using negotiated payloads, otherwise fall back to the original deal object.
+- Negotiated deal guards should also require a string `description` plus finite `upfront`/`duration` values (`Number.isFinite`) to block `NaN`/`Infinity` UI leaks.
 
 ## Recent Findings (2026-04)
 

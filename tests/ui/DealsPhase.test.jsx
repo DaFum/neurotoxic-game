@@ -25,6 +25,7 @@ vi.mock('../../src/utils/socialEngine', () => ({
     deal: {
       id: 'test-deal',
       name: 'Sponsorship',
+      description: 'Negotiated sponsorship package',
       alignment: 'Corp',
       offer: { upfront: 600, duration: 3 }
     }
@@ -64,6 +65,7 @@ test('DealsPhase renders offers and handles negotiation', async () => {
     {
       id: 'deal-1',
       name: 'Test Deal',
+      description: 'Base deal description',
       alignment: 'Corp',
       offer: { upfront: 500, duration: 3 }
     }
@@ -112,6 +114,7 @@ test('DealsPhase handles negotiation error gracefully', async () => {
     {
       id: 'deal-error',
       name: 'Error Deal',
+      description: 'Error deal description',
       alignment: 'Corp',
       offer: { upfront: 500, duration: 3 }
     }
@@ -148,6 +151,7 @@ test('DealsPhase handles accept deal error gracefully', async () => {
     {
       id: 'deal-error',
       name: 'Error Deal',
+      description: 'Error deal description',
       alignment: 'Corp',
       offer: { upfront: 500, duration: 3 }
     }
