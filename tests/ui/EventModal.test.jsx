@@ -2,9 +2,14 @@ import { expect, test, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { EventModal } from '../../src/ui/EventModal.tsx'
 
+const translationBehavior = vi.hoisted(() => ({ useDefaultValue: false }))
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: key => key,
+    t: (key, options) =>
+      translationBehavior.useDefaultValue
+        ? (options?.defaultValue ?? key)
+        : key,
     i18n: { changeLanguage: () => new Promise(() => {}) }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
@@ -216,4 +221,26 @@ test('EventModal renders with fallback title/description when canonical GameEven
 
   expect(screen.getByText('ui:event.untitled')).toBeInTheDocument()
   expect(screen.getByText('ui:event.noDescription')).toBeInTheDocument()
+})
+
+test('EventModal preserves raw title/description text when translation lookup misses', () => {
+  translationBehavior.useDefaultValue = true
+  try {
+    render(
+      <EventModal
+        event={{
+          id: 'raw_copy_event',
+          title: 'Raw Event Title',
+          description: 'Raw event description.',
+          options: []
+        }}
+        onOptionSelect={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Raw Event Title')).toBeInTheDocument()
+    expect(screen.getByText('Raw event description.')).toBeInTheDocument()
+  } finally {
+    translationBehavior.useDefaultValue = false
+  }
 })

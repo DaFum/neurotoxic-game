@@ -102,7 +102,11 @@ const isDeal = (value: unknown): value is DealCardProps['deal'] => {
     typeof deal.id === 'string' &&
     typeof deal.name === 'string' &&
     typeof deal.offer === 'object' &&
-    deal.offer !== null
+    deal.offer !== null &&
+    Object.hasOwn(deal.offer, 'upfront') &&
+    Object.hasOwn(deal.offer, 'duration') &&
+    typeof (deal.offer as { upfront?: unknown }).upfront === 'number' &&
+    typeof (deal.offer as { duration?: unknown }).duration === 'number'
   )
 }
 

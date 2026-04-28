@@ -89,7 +89,7 @@ export const SideEffectsSummary = ({
             : t('ui:postGig.bandAffected', {
                 defaultValue: 'Band Affected'
               })}
-          {result.staminaChange ? (
+          {result.staminaChange != null ? (
             <span
               className={
                 result.staminaChange > 0
@@ -102,7 +102,7 @@ export const SideEffectsSummary = ({
               {t('ui:postGig.stamina', { defaultValue: 'Stamina' })}
             </span>
           ) : null}
-          {result.moodChange ? (
+          {result.moodChange != null ? (
             <span
               className={
                 result.moodChange > 0

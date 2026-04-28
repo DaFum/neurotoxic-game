@@ -28,3 +28,4 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 ## Recent Findings (2026-04)
 
 - Theme-token migrations should be completed per file: if one module switches to RGB token variables, finish all remaining literal color usages in that module before merging.
+- UI fallback copy that may receive raw text (for example event payloads) should use that raw field as `t(..., { defaultValue })` instead of generic placeholders to avoid masking real content.
