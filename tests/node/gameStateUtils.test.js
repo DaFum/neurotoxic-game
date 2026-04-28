@@ -275,6 +275,37 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
   )
 })
 
+test('calculateAppliedDelta emits empty applied delta for missing members', () => {
+  const state = {
+    band: {
+      members: [
+        null,
+        {
+          mood: 50,
+          stamina: 50,
+          staminaMax: 100
+        }
+      ]
+    }
+  }
+  const delta = {
+    band: {
+      membersDelta: [
+        { moodChange: -10, staminaChange: -10 },
+        { moodChange: -10, staminaChange: -10 }
+      ]
+    }
+  }
+
+  const applied = calculateAppliedDelta(state, delta)
+
+  assert.deepEqual(applied.band.membersDelta[0], Object.create(null))
+  assert.deepEqual(applied.band.membersDelta[1], {
+    moodChange: -10,
+    staminaChange: -10
+  })
+})
+
 test('clampVanFuel edge cases', () => {
   // Normal value
   assert.strictEqual(clampVanFuel(50), 50)

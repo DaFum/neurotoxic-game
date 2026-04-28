@@ -427,18 +427,18 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [mapRetryCount, setMapRetryCount] = useState(0)
 
-  const clearMapRetryTimeout = () => {
+  const clearMapRetryTimeout = useCallback(() => {
     if (mapRetryTimeoutRef.current) {
       clearTimeout(mapRetryTimeoutRef.current)
       mapRetryTimeoutRef.current = null
     }
-  }
+  }, [])
 
   const resetMapGenerationRetries = useCallback(() => {
     clearMapRetryTimeout()
     mapGenerationAttemptsRef.current = 0
     setMapRetryCount(0)
-  }, [])
+  }, [clearMapRetryTimeout])
 
   // Initialize Map if needed
   useEffect(() => {
@@ -472,6 +472,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           // cancelled if the component unmounts during the retry window.
         } else {
           dispatch(createSetMapAction(null))
+          mapGenerationAttemptsRef.current = 0
           dispatch(
             createAddToastAction({
               id: getSafeUUID(),

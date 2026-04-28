@@ -16,7 +16,8 @@ import {
   clampPlayerFame,
   clampMemberStamina,
   clampMemberMood,
-  calculateFameLevel
+  calculateFameLevel,
+  isForbiddenKey
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import { generateDailyTrend } from '../../utils/socialEngine'
@@ -61,13 +62,89 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     return null
   }
   const nodesRecord = mapRecord.nodes as Record<string, unknown>
-  const sanitizedNodes: Record<string, GameMap['nodes'][string]> = {}
+  const sanitizedNodes = Object.create(null) as Record<
+    string,
+    GameMap['nodes'][string]
+  >
 
   const normalizeCoordinate = (value: unknown): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : 0
+  const copySafeArray = (
+    value: unknown
+  ): Array<
+    | string
+    | number
+    | boolean
+    | null
+    | Record<string, string | number | boolean | null>
+  > | null => {
+    if (!Array.isArray(value)) return null
+    const copied: Array<
+      | string
+      | number
+      | boolean
+      | null
+      | Record<string, string | number | boolean | null>
+    > = []
+    for (let i = 0; i < value.length; i++) {
+      const entry = value[i]
+      if (
+        typeof entry === 'string' ||
+        typeof entry === 'number' ||
+        typeof entry === 'boolean' ||
+        entry === null
+      ) {
+        copied.push(entry)
+      } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        const entryRecord = entry as Record<string, unknown>
+        const copiedEntry: Record<string, string | number | boolean | null> = {}
+        for (const entryKey in entryRecord) {
+          if (!Object.hasOwn(entryRecord, entryKey)) continue
+          if (isForbiddenKey(entryKey)) continue
+          const entryValue = entryRecord[entryKey]
+          if (
+            typeof entryValue === 'string' ||
+            typeof entryValue === 'number' ||
+            typeof entryValue === 'boolean' ||
+            entryValue === null
+          ) {
+            copiedEntry[entryKey] = entryValue
+          }
+        }
+        if (Object.keys(copiedEntry).length > 0) {
+          copied.push(copiedEntry)
+        }
+      }
+    }
+    return copied
+  }
+  const copySafeFlatObject = (
+    value: unknown
+  ): Record<string, string | number | boolean | null> | null => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return null
+    }
+    const source = value as Record<string, unknown>
+    const copied: Record<string, string | number | boolean | null> = {}
+    for (const key in source) {
+      if (!Object.hasOwn(source, key)) continue
+      if (isForbiddenKey(key)) continue
+      const entry = source[key]
+      if (
+        typeof entry === 'string' ||
+        typeof entry === 'number' ||
+        typeof entry === 'boolean' ||
+        entry === null
+      ) {
+        copied[key] = entry
+      }
+    }
+    return Object.keys(copied).length > 0 ? copied : null
+  }
 
   for (const nodeKey in nodesRecord) {
     if (!Object.hasOwn(nodesRecord, nodeKey)) continue
+    if (isForbiddenKey(nodeKey)) continue
     const rawNode = nodesRecord[nodeKey]
     if (!rawNode || typeof rawNode !== 'object' || Array.isArray(rawNode)) {
       continue
@@ -80,6 +157,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       typeof nodeRecord.id === 'string' && nodeRecord.id.length > 0
         ? nodeRecord.id
         : nodeKey
+    if (isForbiddenKey(id)) continue
     const sanitizedNode: GameMap['nodes'][string] = { id, x, y }
 
     if (
@@ -100,6 +178,39 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         }
       }
       sanitizedNode.neighbors = neighbors
+    }
+    for (const key in nodeRecord) {
+      if (!Object.hasOwn(nodeRecord, key)) continue
+      if (
+        isForbiddenKey(key) ||
+        key === 'id' ||
+        key === 'x' ||
+        key === 'y' ||
+        key === 'layer' ||
+        key === 'venueId' ||
+        key === 'neighbors'
+      ) {
+        continue
+      }
+      const value = nodeRecord[key]
+      if (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean' ||
+        value === null
+      ) {
+        sanitizedNode[key] = value
+        continue
+      }
+      const copiedArray = copySafeArray(value)
+      if (copiedArray) {
+        sanitizedNode[key] = copiedArray
+        continue
+      }
+      const copiedObject = copySafeFlatObject(value)
+      if (copiedObject) {
+        sanitizedNode[key] = copiedObject
+      }
     }
 
     sanitizedNodes[id] = sanitizedNode
@@ -611,7 +722,11 @@ export const handleSetMap = (
   state: GameState,
   payload: GameMap | null
 ): GameState => {
-  logger.info('GameState', 'Map Generated')
+  if (payload) {
+    logger.info('GameState', 'Map Generated')
+  } else {
+    logger.warn('GameState', 'Map generation failed, null fallback applied')
+  }
   return { ...state, gameMap: payload }
 }
 

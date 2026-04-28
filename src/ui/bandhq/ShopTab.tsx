@@ -34,6 +34,8 @@ const isEffect = (obj: unknown): obj is Effect => {
     case 'unlock_upgrade':
     case 'unlock_hq':
       return typeof effect.id === 'string'
+    case 'passive':
+      return typeof effect.key === 'string'
     default:
       return false
   }
