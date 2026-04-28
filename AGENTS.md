@@ -100,3 +100,4 @@
 - `useReducer` dispatch is not synchronous for `stateRef` consumers; derive UI toast values (e.g., next day) from pre-dispatch state, not by reading refs immediately after dispatch.
 - Locale JSON can silently shadow duplicate keys; when touching locale files, run duplicate-key detection (not just JSON parsing) to avoid hidden translation loss.
 - For kabelsalat state contracts, keep `forceAdvance(isPowered: boolean)` typed end-to-end and keep socket-order literals typed (`as const`) to prevent accidental widening to `string[]`.
+- `pnpm run typecheck` is intentionally a scoped reducer gate; it must fail only on reducer typing regressions. Use `pnpm run typecheck:core` to enforce whole-project TS health.
