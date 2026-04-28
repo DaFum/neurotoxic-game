@@ -70,7 +70,7 @@ export interface MapNode {
 export interface GameMap {
   nodes: Record<string, MapNode>
   edges?: Array<{ from: string; to: string }>
-  connections?: Array<{ from: string; to: string }>
+  connections: Array<{ from: string; to: string }>
   [key: string]: unknown
 }
 

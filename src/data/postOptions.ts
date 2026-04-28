@@ -97,6 +97,16 @@ const requireBandMembers = (
   postId: string
 ): BandMember[] => {
   if (Array.isArray(band?.members) && band.members.length > 0) {
+    for (let i = 0; i < band.members.length; i++) {
+      if (band.members[i] == null) {
+        throw new Error(
+          i18n.t('ui:postOptions.errors.missingBandMembers', {
+            postId,
+            defaultValue: `Post option ${postId} requires at least one band member.`
+          })
+        )
+      }
+    }
     return band.members
   }
   throw new Error(
@@ -819,12 +829,13 @@ export const POST_OPTIONS = [
       diceRoll
     }: GameState & { diceRoll: number }) => {
       const influencers = social?.influencers || {}
+      const playerMoney = player?.money ?? 0
 
       // Filter by affordability
       const affordableIds = []
       for (const id in influencers) {
         if (!Object.hasOwn(influencers, id)) continue
-        if (isValidAndAffordableInfluencer(influencers[id], player.money)) {
+        if (isValidAndAffordableInfluencer(influencers[id], playerMoney)) {
           affordableIds.push(id)
         }
       }

@@ -30,7 +30,7 @@ const isStashEntry = (entry: unknown): entry is StashEntry => {
   return (
     entry !== null &&
     typeof entry === 'object' &&
-    'stacks' in entry &&
+    Object.hasOwn(entry, 'stacks') &&
     typeof (entry as Record<string, unknown>).stacks === 'number'
   )
 }

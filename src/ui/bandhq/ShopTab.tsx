@@ -4,7 +4,8 @@ import { CatalogTab } from './CatalogTab'
 import type {
   CatalogConsumerProps,
   CatalogItem,
-  PurchaseItem
+  PurchaseItem,
+  Effect
 } from '../../types/components'
 import type { PlayerState } from '../../types/game'
 
@@ -20,6 +21,34 @@ export const ShopTab = ({
   getAdjustedCost,
   processingItemId
 }: ShopTabProps) => {
+  const isEffect = (obj: unknown): obj is Effect => {
+    if (typeof obj !== 'object' || obj === null) return false
+    const effect = obj as Record<string, unknown>
+    if (typeof effect.type !== 'string') return false
+
+    switch (effect.type) {
+      case 'inventory_add':
+        return (
+          typeof effect.item === 'string' && typeof effect.value === 'number'
+        )
+      case 'inventory_set':
+        return typeof effect.item === 'string'
+      case 'stat_modifier':
+        return (
+          (effect.target === 'player' ||
+            effect.target === 'band' ||
+            effect.target === 'van') &&
+          typeof effect.stat === 'string' &&
+          typeof effect.value === 'number'
+        )
+      case 'unlock_upgrade':
+      case 'unlock_hq':
+        return typeof effect.id === 'string'
+      default:
+        return false
+    }
+  }
+
   const rawItems: PurchaseItem[] = [
     ...((HQ_ITEMS.gear as unknown as PurchaseItem[]) || []),
     ...((HQ_ITEMS.instruments as unknown as PurchaseItem[]) || [])
@@ -27,14 +56,29 @@ export const ShopTab = ({
 
   const items: CatalogItem[] = rawItems
     .filter(
-      (item): item is PurchaseItem & { id: string | number; cost: number } =>
-        item.id != null && item.cost != null
+      (
+        item
+      ): item is PurchaseItem & {
+        id: string | number
+        cost: number
+        effect?: Effect
+      } => {
+        if (item.id == null) return false
+        if (typeof item.cost !== 'number' || !Number.isFinite(item.cost))
+          return false
+        if (item.effect != null && !isEffect(item.effect)) {
+          throw new Error(
+            `Invalid effect shape in ShopTab for item "${String(item.id)}"`
+          )
+        }
+        return true
+      }
     )
     .map(item => ({
       ...item,
       id: String(item.id),
-      cost: Number(item.cost),
-      effect: item.effect as import('../../types/components').Effect | undefined
+      cost: item.cost,
+      effect: item.effect
     }))
 
   return (

@@ -48,6 +48,20 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.CLINIC
 ])
 
+const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
+  if (typeof gameMap !== 'object' || gameMap === null) {
+    return null
+  }
+  const mapRecord = gameMap as Record<string, unknown>
+  const normalizedConnections = Array.isArray(mapRecord.connections)
+    ? mapRecord.connections
+    : []
+  return {
+    ...mapRecord,
+    connections: normalizedConnections
+  } as GameMap
+}
+
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const playerData =
     typeof loadedPlayer === 'object' && loadedPlayer !== null
@@ -391,7 +405,7 @@ export const handleLoadGame = (
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
-    gameMap: (loadedState.gameMap as GameMap | null) || state.gameMap,
+    gameMap: normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
