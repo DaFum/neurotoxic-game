@@ -1,7 +1,7 @@
 ---
 name: typescript-senior-developer
 description: >
-  strict typescript guidance for the neurotoxic react/three.js game codebase. use when writing, reviewing, refactoring, or migrating typescript or checked javascript; fixing tsc errors; reducing any leaks; typing reducers, action creators, contexts, hooks, refs, localstorage/json/api boundaries, discriminated unions, lookup maps, config objects, utility types, declaration files, module augmentation, or tsconfig issues. also use when touching src/types, src/context/action*, gamestateutils clamps, songs_by_id-style maps, import type/isolatedmodules errors, react 19 props/refs, or @ts-expect-error suppressions.
+  Strict TypeScript guidance for the NEUROTOXIC React/Three.js game codebase. Use when writing, reviewing, or migrating TypeScript; fixing tsc errors; and handling project-specific patterns like discriminated unions, action creators, lookup maps, and React 19 refs. Also use when touching src/types, src/context/action*, gamestateutils clamps, or @ts-expect-error suppressions.
 ---
 
 # TypeScript Senior Developer
@@ -51,7 +51,7 @@ Apply strict, idiomatic TypeScript guidance for the NEUROTOXIC codebase. Favor s
 
 ## Review Workflow
 
-1. Classify findings as **blocking**, **important**, or **nit**.
+1. Classify findings by severity: **critical**, **high**, **medium**, or **low**.
 2. Review for type-safety regressions before style. Prioritize `any`, unsafe assertions, missing guards, widened discriminants, unchecked map lookups, and reducer exhaustiveness.
 3. For each finding, name the risk and give a concrete replacement pattern.
 4. Call out missing validation commands or checks separately from code findings.
