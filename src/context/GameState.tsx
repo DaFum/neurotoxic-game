@@ -83,14 +83,12 @@ import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
   GameAction,
-  GameEvent,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
   QuestState,
   SocialState,
-  ToastPayload,
   TradeVoidItemPayload,
   UpdateBandPayload,
   UpdatePlayerPayload
@@ -429,13 +427,22 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [mapRetryCount, setMapRetryCount] = useState(0)
 
+  const clearMapRetryTimeout = () => {
+    if (mapRetryTimeoutRef.current) {
+      clearTimeout(mapRetryTimeoutRef.current)
+      mapRetryTimeoutRef.current = null
+    }
+  }
+
+  const resetMapGenerationRetries = useCallback(() => {
+    clearMapRetryTimeout()
+    mapGenerationAttemptsRef.current = 0
+    setMapRetryCount(0)
+  }, [])
+
   // Initialize Map if needed
   useEffect(() => {
-    const retriesExhausted =
-      !state.gameMap &&
-      mapGenerationAttemptsRef.current > MAP_GENERATION_MAX_RETRIES
-
-    if (!state.gameMap && !retriesExhausted) {
+    if (!state.gameMap) {
       const generator = new MapGenerator(Date.now())
       try {
         const newMap = generator.generateMap()
@@ -743,10 +750,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => {
+    resetMapGenerationRetries()
     const unlocks: string[] =
       safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
     dispatch(createResetStateAction({ unlocks }))
-  }, [])
+  }, [resetMapGenerationRetries])
 
   // Minigame Actions
   const startTravelMinigame = useCallback(

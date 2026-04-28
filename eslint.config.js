@@ -45,6 +45,11 @@ const BASE_RULES = {
   'no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS]
 }
 
+const TYPESCRIPT_RECOMMENDED_RULES = Object.assign(
+  {},
+  ...tseslint.configs.recommended.map(config => config.rules ?? {})
+)
+
 export default [
   {
     ignores: [
@@ -82,7 +87,7 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
-      ...tseslint.configs.recommended.rules,
+      ...TYPESCRIPT_RECOMMENDED_RULES,
       ...BASE_RULES,
       // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
       '@eslint-react/no-prop-types': 'off',

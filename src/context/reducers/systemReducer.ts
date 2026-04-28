@@ -63,6 +63,9 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   const nodesRecord = mapRecord.nodes as Record<string, unknown>
   const sanitizedNodes: Record<string, GameMap['nodes'][string]> = {}
 
+  const normalizeCoordinate = (value: unknown): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : 0
+
   for (const nodeKey in nodesRecord) {
     if (!Object.hasOwn(nodesRecord, nodeKey)) continue
     const rawNode = nodesRecord[nodeKey]
@@ -70,10 +73,8 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       continue
     }
     const nodeRecord = rawNode as Record<string, unknown>
-    const x = nodeRecord.x
-    const y = nodeRecord.y
-    if (typeof x !== 'number' || !Number.isFinite(x)) continue
-    if (typeof y !== 'number' || !Number.isFinite(y)) continue
+    const x = normalizeCoordinate(nodeRecord.x)
+    const y = normalizeCoordinate(nodeRecord.y)
 
     const id =
       typeof nodeRecord.id === 'string' && nodeRecord.id.length > 0
