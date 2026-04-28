@@ -677,10 +677,27 @@ export class MapGenerator {
     const shuffled = [...arr]
     for (let i = 0; i < k; i++) {
       const j = i + Math.floor(this.random() * (n - i))
-      const temp = shuffled[i] as T
-      shuffled[i] = shuffled[j] as T
-      shuffled[j] = temp
+      const valueI = shuffled[i]
+      const valueJ = shuffled[j]
+      if (valueI === undefined || valueJ === undefined) {
+        throw new StateError(
+          `Sparse array invariant violated in pickRandomSubset(shallow-copy) at i=${i}, j=${j}`
+        )
+      }
+      shuffled[i] = valueJ
+      shuffled[j] = valueI
     }
-    return shuffled.slice(0, k)
+    const rawResult = shuffled.slice(0, k)
+    const result: T[] = []
+    for (let i = 0; i < rawResult.length; i++) {
+      const value = rawResult[i]
+      if (value === undefined) {
+        throw new StateError(
+          `Sparse array invariant violated in pickRandomSubset(result-slice) at i=${i}`
+        )
+      }
+      result.push(value)
+    }
+    return result
   }
 }

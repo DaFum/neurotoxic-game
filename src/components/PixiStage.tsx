@@ -17,7 +17,7 @@ export const PixiStage = memo(
     gameStateRef,
     update,
     controllerFactory = createPixiStageController
-  }: PixiStageProps) => {
+  }: PixiStageProps<unknown>) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
     const updateRef = useRef(update)
     const controllerRef = useRef<PixiController | null>(null)

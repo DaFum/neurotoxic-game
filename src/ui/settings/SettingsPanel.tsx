@@ -6,12 +6,10 @@ import { VisualSettings } from './VisualSettings'
 import { LogSettings } from './LogSettings'
 import { DataManagement } from './DataManagement'
 import { LOG_LEVELS } from '../../utils/logger'
+import type { GameSettings } from '../../types/game'
 
 export interface SettingsPanelProps {
-  settings?: {
-    crtEnabled?: boolean
-    logLevel?: number
-  }
+  settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
   musicVol?: number
   sfxVol?: number
   isMuted?: boolean

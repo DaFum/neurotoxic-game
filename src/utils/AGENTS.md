@@ -20,3 +20,5 @@ Applies to `src/utils/**` except subtrees with deeper `AGENTS.md` overrides.
 
 - Lint coverage drift can hide utility regressions: ensure `.ts` utility files stay inside active ESLint file globs when lint config changes.
 - Avoid storing mutable counters in shared config objects and then destructuring to primitives; mutations won’t propagate back and the object contract becomes misleading.
+- `pickRandomSubset` large-`k` branches must enforce sparse-array invariants explicitly (throw on holes) instead of using unchecked assertions; downstream map connection code assumes dense selections.
+- Purchase effect helpers should fail loudly for invalid numeric payloads (`inventory_add`) and normalize stored upgrade IDs to strings so `hasUpgrade`/breakdown reducers remain consistent.

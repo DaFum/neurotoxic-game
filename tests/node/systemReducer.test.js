@@ -258,6 +258,25 @@ test('systemReducer - LOAD_GAME', async t => {
       { id: '3', message: 'Valid', type: 'error' }
     ])
   })
+
+  await t.test('falls back to current gameMap when loaded gameMap lacks nodes', () => {
+    const initialState = {
+      ...createInitialState(),
+      gameMap: {
+        nodes: { start: { id: 'start' } },
+        connections: []
+      }
+    }
+    const loadedState = {
+      gameMap: {
+        connections: [{ from: 'start', to: 'next' }]
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.deepEqual(nextState.gameMap, initialState.gameMap)
+  })
 })
 
 test('systemReducer - RESET_STATE', async t => {

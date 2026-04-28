@@ -431,7 +431,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   // Initialize Map if needed
   useEffect(() => {
-    if (!state.gameMap) {
+    const retriesExhausted =
+      !state.gameMap &&
+      mapGenerationAttemptsRef.current > MAP_GENERATION_MAX_RETRIES
+
+    if (!state.gameMap && !retriesExhausted) {
       const generator = new MapGenerator(Date.now())
       try {
         const newMap = generator.generateMap()
@@ -460,8 +464,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           // always returned from this effect, ensuring the pending timeout is
           // cancelled if the component unmounts during the retry window.
         } else {
-          mapGenerationAttemptsRef.current = 0
-          setMapRetryCount(0)
           dispatch(createSetMapAction(null))
           dispatch(
             createAddToastAction({
@@ -714,6 +716,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    */
   const advanceDay = useCallback(() => {
     // Access state via ref to keep callback stable
+    const currentState = stateRef.current
+    const nextDay = currentState.player.day + 1
     try {
       dispatch(createAdvanceDayAction())
     } catch (error) {
@@ -732,7 +736,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       return
     }
 
-    const nextDay = stateRef.current.player.day
     addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
   }, [addToast])
 

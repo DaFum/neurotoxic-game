@@ -1,18 +1,18 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
-import type { PurchaseItem } from '../../types/components'
+import type { CatalogItem } from '../../types/components'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
 
 export interface ShopItemProps {
-  item: PurchaseItem
+  item: CatalogItem
   isOwned: boolean
   isDisabled: boolean
   adjustedCost?: number
-  onBuy: (item: PurchaseItem) => void
+  onBuy: (item: CatalogItem) => void
   processingItemId?: string | number
 }
 
@@ -66,7 +66,11 @@ export const ShopItem = React.memo(
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
-              {typeof item.name === 'string' ? t(item.name) : item.name}
+              {typeof item.name === 'string'
+                ? t(item.name)
+                : t('ui:shop.messages.unknownItem', {
+                    defaultValue: 'Unknown Item'
+                  })}
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>

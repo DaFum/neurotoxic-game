@@ -27,7 +27,7 @@ export interface KabelsalatState {
   handleCableClick: (cableId: CableId) => void
   handleSocketClick: (socketId: SocketId) => void
   isPowerConnected: boolean
-  forceAdvance: () => void
+  forceAdvance: (isPowered: boolean) => void
 }
 
 export const useKabelsalatState = (): KabelsalatState => {
@@ -43,8 +43,9 @@ export const useKabelsalatState = (): KabelsalatState => {
   const [isPoweredOn, setIsPoweredOn] = useState(false)
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
   const [isGameOver, setIsGameOver] = useState(false)
-  const [socketOrder, setSocketOrder] =
-    useState<SocketId[]>(INITIAL_SOCKET_ORDER)
+  const [socketOrder, setSocketOrder] = useState<SocketId[]>([
+    ...INITIAL_SOCKET_ORDER
+  ])
 
   const isWinningRef = useRef(false)
 

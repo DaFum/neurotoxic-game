@@ -779,6 +779,11 @@ export const POST_OPTIONS = [
       if (!member) {
         throw new Error('Member is undefined in comm_gear_review resolve')
       }
+      if (member.id == null && member.name == null) {
+        throw new Error(
+          'Member is missing both id and name in comm_gear_review resolve'
+        )
+      }
       const target =
         member?.name ??
         i18n.t('ui:postOptions.errors.unknownMemberFallback', {

@@ -36,6 +36,7 @@ const getLeaderboardSyncEnabledFlag = () => {
     process?: { env?: Record<string, string | undefined> }
   }
   const processFlag =
+    processEnvSource.process != null &&
     typeof processEnvSource.process === 'object'
       ? processEnvSource.process.env?.VITE_ENABLE_LEADERBOARD_SYNC
       : undefined

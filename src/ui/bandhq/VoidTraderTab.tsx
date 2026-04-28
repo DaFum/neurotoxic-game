@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
 import type { PlayerState } from '../../types/game'
-import type { PurchaseItem } from '../../types/components'
+import type { VoidTraderItem } from '../../types/components'
 
 interface VoidTraderTabProps {
   player: PlayerState
-  handleTrade: (item: PurchaseItem) => void
-  isItemOwned: (item: PurchaseItem) => boolean
-  isItemDisabled: (item: PurchaseItem) => boolean
-  processingItemId?: string | number | null
+  handleTrade: (item: VoidTraderItem) => void
+  isItemOwned: (item: VoidTraderItem) => boolean
+  isItemDisabled: (item: VoidTraderItem) => boolean
+  processingItemId?: string | null
 }
 
 export const VoidTraderTab = ({

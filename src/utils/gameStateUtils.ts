@@ -411,7 +411,10 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
         if (isForbiddenKey(itemId)) continue
 
         const qty = delta.band.inventory[itemId]
-        const currentCount = typeof state.band?.inventory?.[itemId] === 'number' ? state.band.inventory[itemId] : 0
+        const currentCount =
+          typeof state.band?.inventory?.[itemId] === 'number'
+            ? state.band.inventory[itemId]
+            : 0
 
         if (typeof qty === 'number') {
           if (qty !== 0) {
@@ -448,25 +451,39 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
 
       for (let i = 0; i < members.length; i++) {
         const member = members[i]
-        const mDelta = isArrayDelta ? membersDelta[i] || {} : membersDelta
+        if (!member) continue
+        const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
+        const mDelta =
+          rawMemberDelta && typeof rawMemberDelta === 'object'
+            ? copyFilteredProperties(rawMemberDelta)
+            : Object.create(null)
 
-        const moodChange = typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
-        const staminaChange = typeof mDelta.staminaChange === 'number' ? mDelta.staminaChange : 0
+        const moodChange =
+          typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
+        const staminaChange =
+          typeof mDelta.staminaChange === 'number' ? mDelta.staminaChange : 0
 
         const currentMood = typeof member.mood === 'number' ? member.mood : 0
-        const currentStamina = typeof member.stamina === 'number' ? member.stamina : 0
-        const staminaMax = typeof member.staminaMax === 'number' ? member.staminaMax : 100
+        const currentStamina =
+          typeof member.stamina === 'number' ? member.stamina : 0
+        const staminaMax =
+          typeof member.staminaMax === 'number' ? member.staminaMax : 100
 
-        const newMood = Math.max(0, Math.min(100, Math.floor(currentMood + moodChange)))
-        const newStamina = Math.max(0, Math.min(staminaMax, Math.floor(currentStamina + staminaChange)))
+        const newMood = clampMemberMood(currentMood + moodChange)
+        const newStamina = clampMemberStamina(
+          currentStamina + staminaChange,
+          staminaMax
+        )
 
         const actualMoodChange = newMood - currentMood
         const actualStaminaChange = newStamina - currentStamina
 
         // Keep all other properties of the original delta, override only mood and stamina if they exist
-        const newDelta = { ...mDelta }
-        if (typeof mDelta.moodChange === 'number') newDelta.moodChange = actualMoodChange
-        if (typeof mDelta.staminaChange === 'number') newDelta.staminaChange = actualStaminaChange
+        const newDelta = copyFilteredProperties(mDelta)
+        if (typeof mDelta.moodChange === 'number')
+          newDelta.moodChange = actualMoodChange
+        if (typeof mDelta.staminaChange === 'number')
+          newDelta.staminaChange = actualStaminaChange
 
         computedMembersDelta.push(newDelta)
       }

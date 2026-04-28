@@ -254,8 +254,12 @@ export const applyInventoryAdd = (
             ? previousValue
             : 0
         const parsedAddend = Number(effect.value ?? 0)
-        const safeAddend = Number.isFinite(parsedAddend) ? parsedAddend : 0
-        return safePrevious + safeAddend
+        if (!Number.isFinite(parsedAddend)) {
+          throw new Error(
+            `Invalid inventory_add value for "${effect.item}": ${String(effect.value)}`
+          )
+        }
+        return safePrevious + parsedAddend
       })()
     }
   }
@@ -478,12 +482,13 @@ export const applyUnlockUpgrade = (
   playerVan: Partial<PlayerState['van']> | undefined
 ): PlayerPatch => {
   const upgradeId = effect.id ? effect.id : item.id
-  if (typeof upgradeId !== 'string') {
+  if (upgradeId == null) {
     return playerPatch
   }
+  const upgradeIdStr = String(upgradeId)
   const currentUpgrades = playerVan?.upgrades ?? []
 
-  if (currentUpgrades.includes(upgradeId)) {
+  if (currentUpgrades.includes(upgradeIdStr)) {
     return playerPatch
   }
 
@@ -491,7 +496,7 @@ export const applyUnlockUpgrade = (
     ...playerPatch,
     van: {
       ...(playerVan ?? {}),
-      upgrades: [...currentUpgrades, upgradeId]
+      upgrades: [...currentUpgrades, upgradeIdStr]
     }
   }
 }
@@ -512,7 +517,7 @@ export const applyUnlockHQ = (
 ) => {
   let nextPlayerPatch: PlayerPatch = {
     ...playerPatch,
-    hqUpgrades: [...(player.hqUpgrades ?? []), item.id as string]
+    hqUpgrades: [...(player.hqUpgrades ?? []), String(item.id)]
   }
   let nextBandPatch: BandPatch = null
   let messages: UnlockMessage[] = []
