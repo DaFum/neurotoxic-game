@@ -10,9 +10,6 @@ import { SOCKET_DEFS, CABLE_MAP } from '../constants'
 import type { CableId } from '../constants'
 import type { SocketId } from '../../../types/kabelsalat'
 
-const isSocketId = (value: string): value is SocketId =>
-  Object.hasOwn(SOCKET_DEFS, value)
-
 const isCableId = (value: string): value is CableId =>
   Object.hasOwn(CABLE_MAP, value)
 
@@ -88,7 +85,7 @@ export const useKabelsalatInteractions = (
   )
 
   const handleSocketClick = useCallback(
-    (socketId: string) => {
+    (socketId: SocketId) => {
       if (
         isShocked ||
         isPoweredOn ||
@@ -97,18 +94,6 @@ export const useKabelsalatInteractions = (
         !selectedCable
       )
         return
-      if (!isSocketId(socketId)) {
-        if (import.meta.env.DEV) {
-          throw new Error(
-            `Invalid socketId "${socketId}" in useKabelsalatInteractions.handleSocketClick (CABLE_MAP/Cable lookup context)`
-          )
-        } else {
-          console.error(
-            `Invalid socketId "${socketId}" in useKabelsalatInteractions.handleSocketClick (CABLE_MAP/Cable lookup context)`
-          )
-          return
-        }
-      }
       if (connections[socketId]) return
 
       if (!isCableId(selectedCable)) {

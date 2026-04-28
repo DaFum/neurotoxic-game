@@ -123,7 +123,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
     this.noteManager = new NoteManager(
       this.app!,
       rhythmContainer,
-      this.gameStateRef as unknown as Record<string, unknown>,
+      this.gameStateRef,
       (x: any, y: any, color: any) =>
         this.effectManager.spawnHitEffect(x, y, color)
     )
@@ -174,10 +174,14 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
     if (!stageContainer) {
       return
     }
+    const toxic = this.toxicFilterManager
+    if (!toxic) {
+      return
+    }
 
     const elapsed = getGigTimeMs()
 
-    this.toxicFilterManager.update(state, elapsed, stageContainer)
+    toxic.update(state, elapsed, stageContainer)
 
     this.laneManager.update(state)
     this.crowdManager.update(

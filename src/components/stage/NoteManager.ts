@@ -1,4 +1,5 @@
 import { Application, Container, Texture } from 'pixi.js'
+import type { RefObject } from 'react'
 import { handleError } from '../../utils/errorHandler'
 import { calculateNoteY } from './utils'
 import {
@@ -10,7 +11,7 @@ import { NoteTextureManager, type NoteTextures } from './NoteTextureManager'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 
-type StageLane = { color: number; renderX: number }
+type StageLane = { color: number; renderX?: number }
 type StageNote = {
   time: number
   visible: boolean
@@ -30,7 +31,7 @@ type ActiveNoteEntity = { note: StageNote; sprite: NoteSprite }
 export class NoteManager {
   app: Application
   parentContainer: Container
-  gameStateRef: Record<string, unknown>
+  gameStateRef: RefObject<StageState>
   onHit: ((x: number, y: number, color: number) => void) | null
   container: Container | null
   pool: NoteSpritePool | null
@@ -48,7 +49,7 @@ export class NoteManager {
   constructor(
     app: Application,
     parentContainer: Container,
-    gameStateRef: Record<string, unknown>,
+    gameStateRef: RefObject<StageState>,
     onHit: ((x: number, y: number, color: number) => void) | null
   ) {
     this.app = app
@@ -111,7 +112,11 @@ export class NoteManager {
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
           if (lane && this.pool && this.container) {
-            const sprite = this.pool.acquireSpriteFromPool(lane, note.laneIndex)
+            const renderLane = { ...lane, renderX: lane.renderX ?? 0 }
+            const sprite = this.pool.acquireSpriteFromPool(
+              renderLane,
+              note.laneIndex
+            )
             this.container.addChild(sprite)
             this.activeEntities.push({ note, sprite })
           }
@@ -162,7 +167,7 @@ export class NoteManager {
         continue
       }
       sprite.x =
-        lane.renderX +
+        (lane.renderX ?? 0) +
         NOTE_CENTER_OFFSET +
         (sprite.isFallback ? 0 : jitterOffset)
 

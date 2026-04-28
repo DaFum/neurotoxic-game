@@ -275,8 +275,10 @@ const calculateClampedControversyDelta = (
  * @param {object} source - Source object to copy from.
  * @returns {object} New object with filtered properties.
  */
-const copyFilteredProperties = (source: any) => {
-  if (!source) return Object.create(null)
+type FilteredRecord = Record<string, unknown>
+
+const copyFilteredProperties = (source: unknown): FilteredRecord => {
+  if (typeof source !== 'object' || source === null) return Object.create(null)
 
   // Explicit check for prototype pollution before copying properties
   if (
@@ -291,12 +293,13 @@ const copyFilteredProperties = (source: any) => {
   }
 
   // Create an object with no prototype to safely copy properties into
-  const destination = Object.create(null)
+  const destination: FilteredRecord = Object.create(null)
+  const sourceRecord = source as Record<string, unknown>
 
-  for (const key in source) {
-    if (!Object.hasOwn(source, key)) continue
+  for (const key in sourceRecord) {
+    if (!Object.hasOwn(sourceRecord, key)) continue
     if (!isForbiddenKey(key)) {
-      destination[key] = source[key]
+      destination[key] = sourceRecord[key]
     }
   }
   return destination
@@ -447,16 +450,19 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
         ? state.band.members
         : []
 
-      const computedMembersDelta: any[] = []
+      const computedMembersDelta: FilteredRecord[] = []
 
       for (let i = 0; i < members.length; i++) {
         const member = members[i]
-        if (!member) continue
         const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
         const mDelta =
           rawMemberDelta && typeof rawMemberDelta === 'object'
             ? copyFilteredProperties(rawMemberDelta)
             : Object.create(null)
+        if (!member) {
+          computedMembersDelta.push(mDelta)
+          continue
+        }
 
         const moodChange =
           typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0

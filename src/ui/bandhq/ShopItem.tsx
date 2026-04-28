@@ -32,6 +32,18 @@ export const ShopItem = React.memo(
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
+    const imagePromptKey = String(item.img ?? '')
+    const localizedUnknownItem = t('ui:shop.messages.unknownItem', {
+      defaultValue: 'Unknown Item'
+    })
+    const sanitizedPrompt =
+      Object.hasOwn(IMG_PROMPTS, imagePromptKey) &&
+      typeof IMG_PROMPTS[imagePromptKey as keyof typeof IMG_PROMPTS] ===
+        'string'
+        ? IMG_PROMPTS[imagePromptKey as keyof typeof IMG_PROMPTS]
+        : typeof item.name === 'string'
+          ? item.name
+          : localizedUnknownItem
 
     const isProcessingThis =
       processingItemId != null &&
@@ -56,11 +68,7 @@ export const ShopItem = React.memo(
         <div>
           <div className='flex items-center gap-2 mb-2'>
             <img
-              src={getGenImageUrl(
-                (IMG_PROMPTS as Record<string, string>)[item.img ?? ''] ||
-                  item.name ||
-                  ''
-              )}
+              src={getGenImageUrl(sanitizedPrompt)}
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
@@ -68,9 +76,7 @@ export const ShopItem = React.memo(
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
               {typeof item.name === 'string'
                 ? t(item.name)
-                : t('ui:shop.messages.unknownItem', {
-                    defaultValue: 'Unknown Item'
-                  })}
+                : localizedUnknownItem}
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>
@@ -169,8 +175,7 @@ export const ShopItem = React.memo(
 )
 
 ShopItem.displayName = 'ShopItem'
-
-ShopItem.propTypes = {
+;(ShopItem as typeof ShopItem & { propTypes: unknown }).propTypes = {
   item: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,

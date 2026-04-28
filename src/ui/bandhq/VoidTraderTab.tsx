@@ -11,7 +11,7 @@ interface VoidTraderTabProps {
   handleTrade: (item: VoidTraderItem) => void
   isItemOwned: (item: VoidTraderItem) => boolean
   isItemDisabled: (item: VoidTraderItem) => boolean
-  processingItemId?: string | null
+  processingItemId?: string | number | null
 }
 
 export const VoidTraderTab = ({
