@@ -25,7 +25,11 @@ type EffectHandler = (
   player: PlayerState,
   band: BandState | null
 ) =>
-  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: UnlockMessage[] | undefined }
+  | {
+      playerPatch?: PlayerPatch
+      bandPatch?: BandPatch
+      messages?: UnlockMessage[] | undefined
+    }
   | undefined
 
 // Safely read a numeric property from an unknown object.
@@ -236,7 +240,9 @@ export const applyInventoryAdd = (
   bandInventory?: Inventory
 ) => {
   if (typeof effect.item !== 'string') {
-    throw new Error(`Invalid effect item for inventory_add: ${String(effect.item)}`)
+    throw new Error(
+      `Invalid effect item for inventory_add: ${String(effect.item)}`
+    )
   }
   return {
     inventory: {
@@ -244,8 +250,7 @@ export const applyInventoryAdd = (
       [effect.item]: (() => {
         const previousValue = (bandInventory ?? {})[effect.item]
         const safePrevious =
-          typeof previousValue === 'number' &&
-          Number.isFinite(previousValue)
+          typeof previousValue === 'number' && Number.isFinite(previousValue)
             ? previousValue
             : 0
         const parsedAddend = Number(effect.value ?? 0)
@@ -381,7 +386,7 @@ export const validatePurchase = (
 /**
  * Registry of effect handlers to process different purchase effect types
  */
-export const EFFECT_HANDLERS: Record<string, EffectHandler> = {
+export const EFFECT_HANDLERS: Record<Effect['type'], EffectHandler> = {
   inventory_set: (effect, _item, _playerPatch, _player, band) => {
     return { bandPatch: applyInventorySet(effect, band?.inventory) }
   },
@@ -449,14 +454,10 @@ export const processPurchaseEffect = (
   player: PlayerState,
   band: BandState
 ) => {
-  if (!effect.type) {
-    return { errorType: 'unknown_effect', effectType: (effect as Record<string, unknown>).type }
-  }
-
-  const handler = EFFECT_HANDLERS[(effect as Record<string, unknown>).type as string]
+  const handler = EFFECT_HANDLERS[effect.type]
 
   if (!handler) {
-    return { errorType: 'unknown_effect', effectType: (effect as Record<string, unknown>).type }
+    return { errorType: 'unknown_effect', effectType: effect.type }
   }
 
   return handler(effect, item, initialPlayerPatch, player, band)
@@ -477,9 +478,12 @@ export const applyUnlockUpgrade = (
   playerVan: Partial<PlayerState['van']> | undefined
 ): PlayerPatch => {
   const upgradeId = effect.id ? effect.id : item.id
+  if (typeof upgradeId !== 'string') {
+    return playerPatch
+  }
   const currentUpgrades = playerVan?.upgrades ?? []
 
-  if (currentUpgrades.includes(upgradeId as string)) {
+  if (currentUpgrades.includes(upgradeId)) {
     return playerPatch
   }
 
@@ -487,7 +491,7 @@ export const applyUnlockUpgrade = (
     ...playerPatch,
     van: {
       ...(playerVan ?? {}),
-      upgrades: [...currentUpgrades, upgradeId as string]
+      upgrades: [...currentUpgrades, upgradeId]
     }
   }
 }

@@ -97,8 +97,8 @@ export const processRhythmGameTick = ({
       try {
         stateRef.transportPausedByOverlay = false
         const res = resumeAudio()
-        if (res instanceof Promise) {
-          res.catch(err => {
+        if (res && typeof res === 'object' && typeof res.catch === 'function') {
+          res.catch((err: unknown) => {
             logger.debug(
               'RhythmGameLoop',
               'Failed to resume audio via overlay',

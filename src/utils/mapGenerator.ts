@@ -340,7 +340,7 @@ export class MapGenerator {
           id: `node_${i}_${j}`,
           layer: i,
           venue, // Note: Venue references might be duplicated across layers, which is okay for "touring"
-          status: 'locked' as 'locked',
+          status: 'locked',
           type: nodeType,
           x: getVenueCoord(venue, 'x', 50),
           y: getVenueCoord(venue, 'y', i * 10 + 10)
@@ -368,13 +368,22 @@ export class MapGenerator {
       const currentLayer = map.layers[i]
       const nextLayer = map.layers[i + 1]
 
-      if (!currentLayer) continue
+      if (!currentLayer) {
+        throw new StateError(
+          `Missing map layer ${i} during connection generation`
+        )
+      }
+      if (!nextLayer) {
+        throw new StateError(
+          `Missing map layer ${i + 1} during connection generation`
+        )
+      }
 
       // Forward pass: ensure everyone connects forward
       for (const node of currentLayer) {
         // Pick 1-2 random targets in next layer
         const numTargets = Math.floor(this.random() * 2) + 1
-        const targets = this.pickRandomSubset(nextLayer || [], numTargets)
+        const targets = this.pickRandomSubset(nextLayer, numTargets)
         for (const target of targets) {
           map.connections.push({ from: node.id, to: target.id })
           connectedToIds.add(target.id)
@@ -383,15 +392,18 @@ export class MapGenerator {
 
       // Backward pass check: ensure everyone has a parent
       // (Simplified: Just ensure nextLayer nodes are reachable. If not, force connect from random parent)
-      for (const node of (nextLayer || [])) {
+      for (const node of nextLayer) {
         const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
           const randomParent =
             currentLayer[Math.floor(this.random() * currentLayer.length)]
-          if (randomParent) {
-            map.connections.push({ from: randomParent.id, to: node.id })
-            connectedToIds.add(node.id)
+          if (!randomParent) {
+            throw new StateError(
+              `Failed to select parent in layer ${i} for node ${node.id}`
+            )
           }
+          map.connections.push({ from: randomParent.id, to: node.id })
+          connectedToIds.add(node.id)
         }
       }
     }

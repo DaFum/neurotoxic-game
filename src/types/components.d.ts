@@ -7,6 +7,7 @@ import type {
 } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
+import type * as React from 'react'
 import type { RhythmGameRefState } from './rhythmGame'
 export type { AudioState, AudioControls } from './audio'
 
@@ -395,6 +396,7 @@ export type Effect =
       value: number
     })
   | (EffectBase & { type: 'unlock_upgrade'; id: string })
+  | (EffectBase & { type: 'passive'; key: string; value?: unknown })
   | (EffectBase & { type: 'unlock_hq'; id: string })
 
 export interface PurchaseItem {

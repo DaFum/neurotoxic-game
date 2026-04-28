@@ -56,13 +56,17 @@ export const ShopItem = React.memo(
         <div>
           <div className='flex items-center gap-2 mb-2'>
             <img
-              src={getGenImageUrl((IMG_PROMPTS as Record<string, string>)[item.img ?? ''] || (item.name as string) || '')}
+              src={getGenImageUrl(
+                (IMG_PROMPTS as Record<string, string>)[item.img ?? ''] ||
+                  item.name ||
+                  ''
+              )}
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
-              {typeof item.name === 'string' ? t(item.name as string) : item.name}
+              {typeof item.name === 'string' ? t(item.name) : item.name}
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>
@@ -77,7 +81,9 @@ export const ShopItem = React.memo(
                 : 'text-star-white'
             }`}
           >
-            {adjustedCost !== undefined && item.cost !== undefined && adjustedCost < item.cost ? (
+            {adjustedCost !== undefined &&
+            item.cost !== undefined &&
+            adjustedCost < item.cost ? (
               <>
                 <span className='line-through opacity-50 mr-2'>
                   {item.cost}
@@ -98,7 +104,12 @@ export const ShopItem = React.memo(
               content={
                 isPurchased
                   ? t('ui:shop.messages.alreadyOwned', {
-                      itemName: typeof item.name === 'string' ? t(item.name) : t('ui:shop.messages.unknownItem', { defaultValue: 'Unknown Item' }),
+                      itemName:
+                        typeof item.name === 'string'
+                          ? t(item.name)
+                          : t('ui:shop.messages.unknownItem', {
+                              defaultValue: 'Unknown Item'
+                            }),
                       defaultValue: 'Already owned!'
                     })
                   : t('ui:shop.messages.notEnough', {
@@ -108,7 +119,12 @@ export const ShopItem = React.memo(
                           : t('ui:shop.messages.money', {
                               defaultValue: 'Money'
                             }),
-                      itemName: typeof item.name === 'string' ? t(item.name) : t('ui:shop.messages.unknownItem', { defaultValue: 'Unknown Item' }),
+                      itemName:
+                        typeof item.name === 'string'
+                          ? t(item.name)
+                          : t('ui:shop.messages.unknownItem', {
+                              defaultValue: 'Unknown Item'
+                            }),
                       defaultValue: 'Not enough currency.'
                     })
               }
