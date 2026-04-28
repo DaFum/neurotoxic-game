@@ -28,6 +28,11 @@ type StageState = {
 type LaneLayout = { hitLineY?: number }
 type ActiveNoteEntity = { note: StageNote; sprite: NoteSprite }
 
+const getLaneRenderX = (lane: StageLane): number =>
+  // RhythmGameRefState keeps renderX optional while lanes are being laid out.
+  // Before layout completes, render notes at the left edge instead of crashing.
+  lane.renderX ?? 0
+
 export class NoteManager {
   app: Application
   parentContainer: Container
@@ -112,7 +117,7 @@ export class NoteManager {
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
           if (lane && this.pool && this.container) {
-            const renderLane = { ...lane, renderX: lane.renderX ?? 0 }
+            const renderLane = { ...lane, renderX: getLaneRenderX(lane) }
             const sprite = this.pool.acquireSpriteFromPool(
               renderLane,
               note.laneIndex
@@ -167,7 +172,7 @@ export class NoteManager {
         continue
       }
       sprite.x =
-        (lane.renderX ?? 0) +
+        getLaneRenderX(lane) +
         NOTE_CENTER_OFFSET +
         (sprite.isFallback ? 0 : jitterOffset)
 
