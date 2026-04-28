@@ -538,7 +538,7 @@ const InventoryEquipmentSection = ({
 )
 
 const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
-  const def = CHAR_MAP[member.name]
+  const def = member.name ? CHAR_MAP[member.name] : undefined
 
   const potentialTraits = useMemo(() => {
     // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
@@ -547,7 +547,7 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
     if (baseTraits.length === 0 && runtimeTraits.length === 0) return []
 
     const merged = [...baseTraits]
-    const seen = new Set(baseTraits.map(bt => bt.id))
+    const seen = new Set(baseTraits.map((bt: CharacterTrait) => bt.id))
 
     for (const rt of runtimeTraits as CharacterTrait[]) {
       if (rt?.id && !seen.has(rt.id)) {
@@ -610,7 +610,7 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
 const MemberEquipment = ({
   member,
   t
-}: { member: BandMember } & BasicTProps) => {
+}: { member: BandMember & { equipment?: Record<string, unknown> } } & BasicTProps) => {
   if (!member.equipment) {
     return (
       <div className='text-xs text-ash-gray/50'>
@@ -629,7 +629,21 @@ const MemberEquipment = ({
   ))
 }
 
-const MemberCard = ({ member, t }: { member: BandMember } & BasicTProps) => (
+const MemberCard = ({
+  member,
+  t
+}: {
+  member: BandMember & {
+    baseStats?: Record<string, number>
+    skill?: number
+    charisma?: number
+    technical?: number
+    improv?: number
+    composition?: number
+    role?: string
+    equipment?: Record<string, unknown>
+  }
+} & BasicTProps) => (
   <div className='bg-void-black/60 border border-ash-gray p-4'>
     <div className='flex justify-between items-baseline mb-4'>
       <h4 className='text-lg font-bold text-toxic-green'>{member.name}</h4>

@@ -35,7 +35,7 @@ export const calcBaseBreakdownChance = (
 
   for (const upgradeId of uniqueUpgrades) {
     if (Object.hasOwn(BREAKDOWN_REDUCTIONS, upgradeId)) {
-      base -= BREAKDOWN_REDUCTIONS[upgradeId]
+      base -= BREAKDOWN_REDUCTIONS[upgradeId as keyof typeof BREAKDOWN_REDUCTIONS]
     }
   }
 

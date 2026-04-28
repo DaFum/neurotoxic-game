@@ -82,7 +82,8 @@ const balancesValidator = (
   props: Record<string, unknown>,
   propName: string,
   componentName: string,
-  ..._rest: unknown[]
+  location: string,
+  propFullName: string
 ) => {
   const value = props[propName]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -124,9 +125,16 @@ CatalogTab.propTypes = {
     props: Record<string, unknown>,
     propName: string,
     componentName: string,
-    ...rest: unknown[]
+    location: string,
+    propFullName: string
   ) => {
-    const shapeError = balancesShape(props, propName, componentName, ...rest)
+    const shapeError = balancesShape(
+      props,
+      propName,
+      componentName,
+      location,
+      propFullName
+    )
     if (shapeError) {
       return shapeError
     }
@@ -134,7 +142,8 @@ CatalogTab.propTypes = {
       props as Record<string, unknown>,
       propName,
       componentName,
-      ...rest
+      location,
+      propFullName
     )
   },
   handleBuyCallback: PropTypes.func.isRequired,
