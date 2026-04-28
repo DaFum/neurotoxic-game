@@ -24,6 +24,11 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
     string,
     DealCardProps['negotiationState']
   >
+  const hasNegotiationResult =
+    negotiationResult &&
+    typeof negotiationResult === 'object' &&
+    Object.hasOwn(negotiationResult, 'success') &&
+    Object.hasOwn(negotiationResult, 'feedback')
 
   return (
     <div className='space-y-6'>
@@ -67,7 +72,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }: DealsPhaseProps) => {
 
       <NegotiationModal
         isOpen={negotiationModalOpen}
-        onClose={() => !negotiationResult && setNegotiationModalOpen(false)}
+        onClose={() => !hasNegotiationResult && setNegotiationModalOpen(false)}
         negotiationResult={negotiationResult}
         handleNegotiationSubmit={handleNegotiationSubmit}
       />

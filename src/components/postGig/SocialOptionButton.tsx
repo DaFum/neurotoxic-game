@@ -5,20 +5,7 @@ import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
-
-type SocialOption = {
-  id: string | number
-  name: string
-  platform: string
-  category?: string
-  badges?: string[]
-}
-
-type SocialOptionButtonProps = {
-  opt: SocialOption
-  index: number
-  onSelect: (option: SocialOption) => void
-}
+import type { SocialOptionButtonProps } from '../../types/components'
 
 const CATEGORY_PROMPTS = {
   Drama: IMG_PROMPTS.SOCIAL_POST_DRAMA,

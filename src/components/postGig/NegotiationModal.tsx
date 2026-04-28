@@ -35,7 +35,7 @@ const TACTICS = [
     descKey: 'ui:deals.aggressiveDesc',
     descDefault: 'Demand +50% upfront. Failure loses the deal completely.'
   }
-]
+] as const
 
 export const NegotiationModal = ({
   isOpen,

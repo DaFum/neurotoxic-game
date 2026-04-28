@@ -1,14 +1,7 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { audioService } from '../utils/audioService'
 import { handleError } from '../utils/errorHandler'
-
-type AudioSnapshot = {
-  musicVol: number
-  sfxVol: number
-  isMuted: boolean
-  isPlaying?: boolean
-  currentSongId?: string | null
-}
+import type { AudioControlHandlers, AudioSnapshot } from '../types/audio'
 type AudioManagerLike = {
   [key: string]: unknown
   musicVolume?: number
@@ -25,14 +18,6 @@ type AudioManagerLike = {
   toggleMute?: () => unknown
   stopMusic?: () => unknown
   resumeMusic?: () => Promise<boolean> | boolean
-}
-
-type AudioHandlers = {
-  setMusic: (val: number) => unknown
-  setSfx: (val: number) => unknown
-  toggleMute: () => unknown
-  stopMusic: () => unknown
-  resumeMusic: () => unknown
 }
 
 type UseAudioControlOptions = {
@@ -65,7 +50,9 @@ export const executeAudioAction = (
  * In production this is always `audioService`; custom managers in tests must
  * match this interface.
  */
-export const createAudioHandlers = (manager: AudioManagerLike): AudioHandlers => ({
+export const createAudioHandlers = (
+  manager: AudioManagerLike
+): AudioControlHandlers => ({
   setMusic: (val: number) =>
     executeAudioAction(manager, 'setMusicVolume', 'setMusic', val),
   setSfx: (val: number) =>
@@ -74,7 +61,9 @@ export const createAudioHandlers = (manager: AudioManagerLike): AudioHandlers =>
   stopMusic: () => executeAudioAction(manager, 'stopMusic', 'stopMusic'),
   resumeMusic: () => {
     const result = executeAudioAction(manager, 'resumeMusic', 'resumeMusic')
-    return result === undefined ? false : result
+    return result === undefined
+      ? Promise.resolve(false)
+      : Promise.resolve(Boolean(result))
   }
 })
 
@@ -155,7 +144,7 @@ export const createAudioSubscriber = (
 export const useAudioControl = (
   selector?: ((state: AudioSnapshot) => unknown) | null,
   options: UseAudioControlOptions = {}
-): { audioState: unknown; handleAudioChange: AudioHandlers } => {
+): { audioState: unknown; handleAudioChange: AudioControlHandlers } => {
   const manager = useMemo(() => audioService as AudioManagerLike, [])
   const fallbackSnapshotRef = useRef<AudioSnapshot | null>(null)
   const selectorRef = useRef(selector)

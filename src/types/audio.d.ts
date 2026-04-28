@@ -62,8 +62,18 @@ export interface AudioState {
   isMuted: boolean
 }
 
+export interface AudioSnapshot extends AudioState {
+  isPlaying?: boolean
+  currentSongId?: string | null
+}
+
 export interface AudioControls {
   setMusic: (value: number) => void
   setSfx: (value: number) => void
   toggleMute: () => void
+}
+
+export interface AudioControlHandlers extends AudioControls {
+  stopMusic: () => unknown
+  resumeMusic: () => Promise<boolean>
 }

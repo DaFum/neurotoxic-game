@@ -6,7 +6,7 @@ import type { GameState } from '../../types/game'
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
 type ChatterScene = 'ANY' | 'OVERWORLD' | 'PREGIG' | 'GIG' | 'POSTGIG'
-type VenueLinesByScene = Record<ChatterScene, string[]>
+type VenueLinesByScene = Partial<Record<ChatterScene, string[]>>
 type VenueChatterEntry = {
   linesByScene?: VenueLinesByScene
   lines?: string[]
@@ -41,9 +41,10 @@ export const getRandomChatter = (state: GameState) => {
       | undefined
 
     if (venueEntry?.linesByScene) {
-      const scene = state.currentScene as ChatterScene
-      const venueLines =
-        venueEntry.linesByScene[scene] ?? venueEntry.linesByScene.ANY ?? []
+      const sceneLines = Object.hasOwn(venueEntry.linesByScene, state.currentScene)
+        ? venueEntry.linesByScene[state.currentScene as ChatterScene]
+        : undefined
+      const venueLines = sceneLines ?? venueEntry.linesByScene.ANY ?? []
 
       // Give venue lines higher priority, but not always dominating
       for (let i = 0; i < venueLines.length; i++) {
