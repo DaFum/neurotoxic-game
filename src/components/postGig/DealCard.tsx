@@ -22,7 +22,19 @@ import type {
   DealCardProps
 } from '../../types/components'
 
-const getAlignmentImagePrompt = alignment => {
+const getNegotiationStatus = (value: unknown): string | undefined => {
+  if (
+    value &&
+    typeof value === 'object' &&
+    Object.hasOwn(value, 'status') &&
+    typeof (value as { status?: unknown }).status === 'string'
+  ) {
+    return (value as { status: string }).status
+  }
+  return undefined
+}
+
+const getAlignmentImagePrompt = (alignment?: string) => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
       return IMG_PROMPTS.BRAND_DEAL_EVIL
@@ -37,7 +49,7 @@ const getAlignmentImagePrompt = alignment => {
   }
 }
 
-const getAlignmentBadge = alignment => {
+const getAlignmentBadge = (alignment?: string) => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
       return '😈 EVIL'
@@ -56,7 +68,7 @@ const getAlignmentBadge = alignment => {
   }
 }
 
-const getAlignmentColor = alignment => {
+const getAlignmentColor = (alignment?: string) => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
       return 'text-toxic-green'
@@ -185,6 +197,7 @@ const DealActions = memo(
     handleNegotiationStart
   }: DealActionsProps) => {
     const { t } = useTranslation()
+    const negotiationStatus = getNegotiationStatus(negotiationState)
 
     return (
       <div className='flex flex-col gap-2 ml-4 z-10 min-w-[140px]'>
@@ -207,13 +220,13 @@ const DealActions = memo(
             )}
             {hasNegotiated && (
               <div
-                className={`text-center text-[10px] font-mono tracking-wider ${negotiationState?.status === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
+                className={`text-center text-[10px] font-mono tracking-wider ${negotiationStatus === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
               >
-                {negotiationState?.status === 'SUCCESS'
+                {negotiationStatus === 'SUCCESS'
                   ? t('ui:deals.termImproved', {
                       defaultValue: 'TERM IMPROVED'
                     })
-                  : negotiationState?.status === 'WORSENED'
+                  : negotiationStatus === 'WORSENED'
                     ? t('ui:deals.termsWorsened', {
                         defaultValue: 'TERMS WORSENED'
                       })
@@ -252,7 +265,8 @@ export const DealCard = memo(
     handleNegotiationStart
   }: DealCardProps) => {
     const isRevoked = negotiationState?.status === 'REVOKED'
-    const displayDeal = negotiationState?.deal || deal
+    const negotiatedDeal = negotiationState?.deal as DealCardProps['deal'] | undefined
+    const displayDeal = negotiatedDeal ?? deal
     const hasNegotiated = !!negotiationState
 
     return (

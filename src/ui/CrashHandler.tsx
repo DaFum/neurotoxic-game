@@ -1,26 +1,43 @@
 import React from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import PropTypes from 'prop-types'
 import { withTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { VoidSkullIcon } from './shared/Icons'
 import { handleError } from '../utils/errorHandler'
 
-class ErrorBoundaryComponent extends React.Component {
-  constructor(props) {
+type CrashHandlerProps = {
+  children: ReactNode
+  t: (key: string) => string
+}
+
+type CrashHandlerState = {
+  hasError: boolean
+  error: Error | null
+  errorInfo: ErrorInfo | null
+}
+
+class ErrorBoundaryComponent extends React.Component<
+  CrashHandlerProps,
+  CrashHandlerState
+> {
+  constructor(props: CrashHandlerProps) {
     super(props)
     this.state = { hasError: false, error: null, errorInfo: null }
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(
+    error: Error
+  ): Pick<CrashHandlerState, 'hasError' | 'error'> {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     handleError(error, { source: 'CrashHandler', errorInfo })
     this.setState({ errorInfo })
   }
 
-  handleReboot = () => {
+  handleReboot = (): void => {
     this.setState({ hasError: false, error: null, errorInfo: null })
     window.location.reload()
   }
@@ -42,7 +59,7 @@ class ErrorBoundaryComponent extends React.Component {
             {t('ui:crash.message')}
           </p>
 
-          {globalThis.__IMPORT_META_ENV__?.DEV && (
+          {import.meta.env.DEV && (
             <div className='bg-blood-red/20 border border-blood-red p-4 mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
               <p className='font-bold mb-2'>
                 {this.state.error && this.state.error.toString()}

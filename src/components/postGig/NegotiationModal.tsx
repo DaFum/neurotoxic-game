@@ -44,6 +44,17 @@ export const NegotiationModal = ({
   handleNegotiationSubmit
 }: NegotiationModalProps) => {
   const { t } = useTranslation()
+  const typedResult =
+    negotiationResult &&
+    typeof negotiationResult === 'object' &&
+    Object.hasOwn(negotiationResult, 'success') &&
+    Object.hasOwn(negotiationResult, 'feedback')
+      ? (negotiationResult as {
+          success?: boolean
+          feedback?: string
+          status?: string
+        })
+      : null
 
   return (
     <Modal
@@ -53,7 +64,7 @@ export const NegotiationModal = ({
         defaultValue: 'NEGOTIATION TACTICS'
       })}
     >
-      {!negotiationResult ? (
+      {!typedResult ? (
         <div className='space-y-4'>
           <p className='text-sm text-ash-gray text-center mb-4'>
             {t('ui:deals.chooseApproach', {
@@ -81,16 +92,16 @@ export const NegotiationModal = ({
       ) : (
         <div className='text-center py-6'>
           <div
-            className={`text-4xl mb-4 ${negotiationResult.success ? 'text-toxic-green' : 'text-blood-red'}`}
+            className={`text-4xl mb-4 ${typedResult?.success ? 'text-toxic-green' : 'text-blood-red'}`}
           >
-            {negotiationResult.success
+            {typedResult?.success
               ? t('ui:deals.success', { defaultValue: 'SUCCESS!' })
               : t('ui:deals.failure', { defaultValue: 'FAILURE' })}
           </div>
           <div className='text-lg font-bold text-star-white mb-2'>
-            {negotiationResult.feedback}
+            {typedResult?.feedback}
           </div>
-          {negotiationResult.status === 'REVOKED' && (
+          {typedResult?.status === 'REVOKED' && (
             <div className='text-blood-red font-mono uppercase tracking-widest mt-4'>
               {t('ui:deals.dealLost', { defaultValue: 'DEAL LOST' })}
             </div>

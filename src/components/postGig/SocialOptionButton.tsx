@@ -6,19 +6,41 @@ import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 
+type SocialOption = {
+  id: string | number
+  name: string
+  platform: string
+  category?: string
+  badges?: string[]
+}
+
+type SocialOptionButtonProps = {
+  opt: SocialOption
+  index: number
+  onSelect: (option: SocialOption) => void
+}
+
 const CATEGORY_PROMPTS = {
   Drama: IMG_PROMPTS.SOCIAL_POST_DRAMA,
   Performance: IMG_PROMPTS.SOCIAL_POST_MUSIC,
   Commercial: IMG_PROMPTS.SOCIAL_POST_COMMERCIAL,
   Lifestyle: IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
-}
+} as const satisfies Record<string, string>
 
-const getImagePromptForCategory = (category, badges) => {
+const getImagePromptForCategory = (category?: string, badges?: string[]) => {
   if (badges?.includes('🔥')) return IMG_PROMPTS.SOCIAL_POST_VIRAL
-  return CATEGORY_PROMPTS[category] || IMG_PROMPTS.SOCIAL_POST_TECH
+  return (
+    (category
+      ? (CATEGORY_PROMPTS as Record<string, string>)[category]
+      : undefined) || IMG_PROMPTS.SOCIAL_POST_TECH
+  )
 }
 
-export const SocialOptionButton = memo(({ opt, index, onSelect }) => {
+export const SocialOptionButton = memo(function SocialOptionButton({
+  opt,
+  index,
+  onSelect
+}: SocialOptionButtonProps) {
   const { t } = useTranslation()
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
 
@@ -46,7 +68,7 @@ export const SocialOptionButton = memo(({ opt, index, onSelect }) => {
             {t(`ui:postOptions.${opt.id}.name`, { defaultValue: opt.name })}
           </div>
           <div className='flex gap-1 text-sm px-1 rounded backdrop-blur-sm'>
-            {opt.badges?.map(b => (
+            {opt.badges?.map((b: string) => (
               <span key={b}>{b}</span>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCallback } from 'react'
 import type { AmpControlsProps } from '../../../types/components'
@@ -10,14 +10,14 @@ export const AmpControls = memo(function AmpControls({
   const { t } = useTranslation(['ui'])
 
   const handleDialChange = useCallback(
-    e => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       setDialValue(Number(e.target.value))
     },
     [setDialValue]
   )
 
   const handleKeyDown = useCallback(
-    e => {
+    (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
         setDialValue(prev => Math.max(0, prev - 10))

@@ -4,9 +4,19 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
 import { formatNumber } from '../../utils/numberUtils'
+import type { FinancialItem } from '../../types/components'
+
+type FinancialColumnProps = {
+  titleKey: string
+  type: 'income' | 'expense'
+  items: FinancialItem[]
+  total: number
+  delay: number
+  initialX: number
+}
 
 export const FinancialColumn = React.memo(
-  ({ titleKey, type, items, total, delay, initialX }) => {
+  ({ titleKey, type, items, total, delay, initialX }: FinancialColumnProps) => {
     const { t, i18n } = useTranslation(['economy', 'ui'])
 
     const isIncome = type === 'income'

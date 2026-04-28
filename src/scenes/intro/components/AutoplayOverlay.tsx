@@ -6,7 +6,11 @@
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 
-export const AutoplayOverlay = ({ onPlay }) => {
+type AutoplayOverlayProps = {
+  onPlay: () => void
+}
+
+export const AutoplayOverlay = ({ onPlay }: AutoplayOverlayProps) => {
   const { t } = useTranslation()
 
   return (

@@ -1,8 +1,34 @@
 /** Utility for robust PixiJS application teardown. */
 import { logger } from '../../utils/logger'
 
-export function isBenignDestroyError(error) {
-  const message = String(error?.message || error || '')
+type DestroyableApp = {
+  _cancelResize?: (() => void) | null
+  resizeTo?: unknown
+  queueResize?: (() => void) | null
+  destroy?: (rendererOptions?: unknown, destroyOptions?: unknown) => void
+  stage?: {
+    destroy?: (options?: {
+      children?: boolean
+      texture?: boolean
+      textureSource?: boolean
+    }) => void
+  } | null
+  renderer?: { destroy?: (options?: unknown) => void } | null
+  canvas?: { parentNode?: { removeChild: (node: unknown) => void } | null } | null
+  ticker?: { remove?: (...args: unknown[]) => void } | null
+}
+
+const isErrorWithMessage = (
+  value: unknown
+): value is { message?: string | undefined } =>
+  typeof value === 'object' && value !== null
+
+export function isBenignDestroyError(error: unknown): boolean {
+  const errorMessage =
+    isErrorWithMessage(error) && typeof error.message === 'string'
+      ? error.message
+      : ''
+  const message = String(errorMessage || error || '')
   const benignPhrases = [
     "reading '_cancelResize'",
     "reading 'destroy'",
@@ -12,27 +38,27 @@ export function isBenignDestroyError(error) {
   return benignPhrases.some(phrase => message.includes(phrase))
 }
 
-function teardownCancelResize(app) {
+function teardownCancelResize(app: DestroyableApp): void {
   try {
     if (typeof app._cancelResize === 'function') {
       app._cancelResize()
     }
-  } catch (_e) {
+  } catch {
     // Ignore plugin teardown races
   }
 }
 
-function teardownResizeTo(app) {
+function teardownResizeTo(app: DestroyableApp): void {
   try {
     if ('resizeTo' in app) {
       app.resizeTo = null
     }
-  } catch (_e) {
+  } catch {
     // Ignore plugin teardown races
   }
 }
 
-function teardownQueueResize(app) {
+function teardownQueueResize(app: DestroyableApp): void {
   try {
     if (
       typeof globalThis?.removeEventListener === 'function' &&
@@ -40,12 +66,12 @@ function teardownQueueResize(app) {
     ) {
       globalThis.removeEventListener('resize', app.queueResize)
     }
-  } catch (_e) {
+  } catch {
     // Ignore plugin teardown races
   }
 }
 
-function teardownResizePlugin(app) {
+function teardownResizePlugin(app: DestroyableApp): void {
   teardownCancelResize(app)
   teardownResizeTo(app)
   teardownQueueResize(app)
@@ -55,7 +81,7 @@ function teardownResizePlugin(app) {
   }
 }
 
-function destroyApp(app, contextName) {
+function destroyApp(app: DestroyableApp, contextName: string): boolean {
   if (typeof app.destroy !== 'function') return false
 
   try {
@@ -66,96 +92,88 @@ function destroyApp(app, contextName) {
     return true
   } catch (destroyError) {
     handleDestroyError(destroyError, contextName)
-    // Fall through to partial-init fallback for known races.
     return false
   }
 }
 
-function fallbackDestroyStage(app, contextName) {
+function fallbackDestroyStage(app: DestroyableApp, contextName: string): void {
   try {
     app.stage?.destroy?.({
       children: true,
       texture: true,
       textureSource: true
     })
-  } catch (e) {
-    handleDestroyError(e, contextName)
+  } catch (error) {
+    handleDestroyError(error, contextName)
   }
 }
 
-function fallbackDestroyRenderer(app, contextName) {
+function fallbackDestroyRenderer(app: DestroyableApp, contextName: string): void {
   try {
     app.renderer?.destroy?.({ removeView: true })
-  } catch (e) {
-    handleDestroyError(e, contextName)
+  } catch (error) {
+    handleDestroyError(error, contextName)
   }
 }
 
-function fallbackRemoveCanvas(app, contextName) {
-  let canvas = null
+function fallbackRemoveCanvas(app: DestroyableApp, contextName: string): void {
+  let canvas: DestroyableApp['canvas'] = null
   try {
-    canvas = app.canvas
-  } catch (e) {
-    handleDestroyError(e, contextName)
+    canvas = app.canvas ?? null
+  } catch (error) {
+    handleDestroyError(error, contextName)
   }
   try {
     if (canvas?.parentNode) {
       canvas.parentNode.removeChild(canvas)
     }
-  } catch (e) {
-    handleDestroyError(e, contextName)
+  } catch (error) {
+    handleDestroyError(error, contextName)
   }
 }
 
-function fallbackDestroy(app, contextName) {
+function fallbackDestroy(app: DestroyableApp, contextName: string): void {
   fallbackDestroyStage(app, contextName)
   fallbackDestroyRenderer(app, contextName)
   fallbackRemoveCanvas(app, contextName)
 }
 
-function removeAppTicker(app, tickerHandler) {
-  if (tickerHandler) {
+function removeAppTicker(
+  app: DestroyableApp,
+  tickerHandler?: unknown
+): void {
+  if (typeof tickerHandler === 'function') {
     app.ticker?.remove?.(tickerHandler)
   }
 }
 
-function handleDestroyError(error, contextName) {
+function handleDestroyError(error: unknown, contextName: string): void {
   if (!isBenignDestroyError(error)) {
     logger.warn(contextName, 'Destroy failed', error)
   }
 }
 
-/**
- * Robustly tears down and destroys a Pixi Application.
- * Handles race conditions, plugin errors, and partial initialization states.
- *
- * @param {import('pixi.js').Application} app - The Pixi Application to destroy.
- * @param {Function} tickerHandler - Optional reference to a ticker function to remove before destroy.
- * @param {string} contextName - The name of the class or context destroying the app, used for logging.
- */
 export function destroyPixiApp(
-  app,
-  tickerHandler,
+  app: unknown,
+  tickerHandler?: unknown,
   contextName = 'PixiAppTeardown'
-) {
-  if (!app) return
+): void {
+  if (!app || typeof app !== 'object') return
+  const typedApp = app as DestroyableApp
 
   try {
-    removeAppTicker(app, tickerHandler)
-  } catch (e) {
-    handleDestroyError(e, contextName)
+    removeAppTicker(typedApp, tickerHandler)
+  } catch (error) {
+    handleDestroyError(error, contextName)
   }
 
   try {
-    // Stop ResizePlugin loops before app teardown to prevent resize-on-destroy races.
-    teardownResizePlugin(app)
-  } catch (e) {
-    handleDestroyError(e, contextName)
+    teardownResizePlugin(typedApp)
+  } catch (error) {
+    handleDestroyError(error, contextName)
   }
 
-  // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
-  if (!destroyApp(app, contextName)) {
-    // Fallback for partially initialized apps.
-    fallbackDestroy(app, contextName)
+  if (!destroyApp(typedApp, contextName)) {
+    fallbackDestroy(typedApp, contextName)
   }
 }

@@ -1,8 +1,29 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '../../utils/numberUtils'
+import type { TFunction } from 'i18next'
 
-export const SideEffectsSummary = ({ result, i18n, t }) => {
+type SideEffectsResult = {
+  moneyChange?: number
+  harmonyChange?: number
+  controversyChange?: number
+  loyaltyChange?: number
+  staminaChange?: number
+  moodChange?: number
+  targetMember?: string
+}
+
+type SideEffectsSummaryProps = {
+  result: SideEffectsResult
+  i18n?: { language?: string }
+  t: TFunction
+}
+
+export const SideEffectsSummary = ({
+  result,
+  i18n,
+  t
+}: SideEffectsSummaryProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}

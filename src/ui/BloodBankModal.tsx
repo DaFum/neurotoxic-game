@@ -3,11 +3,28 @@ import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type KeyboardEvent } from 'react'
 
-export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
+type BloodBankConfig = {
+  moneyGain: number
+  harmonyCost: number
+  staminaCost: number
+  controversyGain: number
+}
+
+export const BloodBankModal = ({
+  onClose,
+  onDonate,
+  canDonate,
+  config
+}: {
+  onClose: () => void
+  onDonate: () => void
+  canDonate: boolean
+  config: BloodBankConfig
+}) => {
   const { t } = useTranslation(['ui'])
-  const modalRef = useRef(null)
+  const modalRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (modalRef.current) {
@@ -15,7 +32,7 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
     }
   }, [])
 
-  const handleKeyDown = e => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') {
       e.stopPropagation()
       onClose()

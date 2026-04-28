@@ -16,7 +16,7 @@ import {
   GameIcon
 } from '../../ui/shared'
 
-export const MainMenuSocials = ({ onClose }) => {
+export const MainMenuSocials = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()
 
   return (

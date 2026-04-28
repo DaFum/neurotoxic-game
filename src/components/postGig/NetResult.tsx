@@ -4,7 +4,9 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { formatNumber } from '../../utils/numberUtils'
 
-export const NetResult = React.memo(({ net }) => {
+type NetResultProps = { net: number }
+
+export const NetResult = React.memo(({ net }: NetResultProps) => {
   const { t, i18n } = useTranslation(['economy', 'ui'])
 
   const getNetString = () => {

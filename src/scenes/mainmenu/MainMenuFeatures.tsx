@@ -7,8 +7,20 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { Modal } from '../../ui/shared'
 
-export const MainMenuFeatures = ({ onClose }) => {
+type FeatureSection = {
+  title: string
+  description: string
+  type?: 'bullets' | 'table'
+  items?: string[]
+  headers?: string[]
+  rows?: string[][]
+}
+
+export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()
+  const featureList = t('ui:featureList', {
+    returnObjects: true
+  }) as FeatureSection[]
 
   return (
     <Modal
@@ -18,7 +30,7 @@ export const MainMenuFeatures = ({ onClose }) => {
       contentClassName=''
     >
       <div className='flex flex-col gap-6 w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
-        {t('ui:featureList', { returnObjects: true }).map(section => (
+        {featureList.map(section => (
           <div key={section.title} className='flex flex-col gap-2'>
             <h3 className='text-toxic-green font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-toxic-green/30 pb-1'>
               {t(section.title)}
@@ -29,7 +41,7 @@ export const MainMenuFeatures = ({ onClose }) => {
 
             {section.type === 'bullets' && section.items && (
               <ul className='list-none flex flex-col gap-2 pl-2 border-l border-toxic-green/20'>
-                {section.items.map(item => {
+                {section.items.map((item: string) => {
                   const translatedItem = t(item)
                   const splitIdx = translatedItem.indexOf(':')
                   return (
@@ -58,7 +70,7 @@ export const MainMenuFeatures = ({ onClose }) => {
                 <table className='w-full text-left font-mono text-sm'>
                   <thead className='bg-toxic-green/10 border-b border-toxic-green/30'>
                     <tr>
-                      {section.headers.map(header => (
+                      {section.headers.map((header: string) => (
                         <th
                           key={header}
                           className='p-2 text-toxic-green uppercase font-normal'
@@ -69,12 +81,12 @@ export const MainMenuFeatures = ({ onClose }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {section.rows.map(row => (
+                    {section.rows.map((row: string[]) => (
                       <tr
                         key={row[0]}
                         className='border-b border-toxic-green/10 last:border-0'
                       >
-                        {row.map(cell => (
+                        {row.map((cell: string) => (
                           <td
                             key={cell}
                             className={`p-2 ${cell === row[0] ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}

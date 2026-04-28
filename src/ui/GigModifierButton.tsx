@@ -1,8 +1,22 @@
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 
+type GigModifierItem = {
+  key: string
+  label: string
+  desc?: string
+  cost: number
+}
+
+type GigModifierButtonProps = {
+  item: GigModifierItem
+  isActive: boolean
+  onClick: (key: string) => void
+  disabled?: boolean
+}
+
 const GigModifierButton = memo(
-  ({ item, isActive, onClick, disabled = false }) => {
+  ({ item, isActive, onClick, disabled = false }: GigModifierButtonProps) => {
     return (
       <button
         type='button'

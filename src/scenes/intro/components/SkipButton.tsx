@@ -1,7 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../../ui/GlitchButton'
 
-export const SkipButton = ({ onSkip }) => {
+type SkipButtonProps = {
+  onSkip: () => void
+}
+
+export const SkipButton = ({ onSkip }: SkipButtonProps) => {
   const { t } = useTranslation()
 
   return (

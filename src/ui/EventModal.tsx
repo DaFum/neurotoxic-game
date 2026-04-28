@@ -9,6 +9,45 @@ import { generateEffectText } from '../utils/effectFormatter'
 import { resolveEventChoice } from '../utils/eventEngine'
 import { useGameState } from '../context/GameState'
 
+type EventModalOption = {
+  id?: string
+  label: string
+  effect?: Record<string, unknown>
+  flags?: string[]
+  disabled?: boolean
+  nextEventId?: string
+  skillCheck?: {
+    stat: string
+    threshold: number
+    success: Record<string, unknown>
+    failure: Record<string, unknown>
+  }
+  outcomeText?: string
+  [key: string]: unknown
+}
+
+type EventModalEvent = {
+  id?: string
+  category?: string
+  title: string
+  description: string
+  context?: Record<string, unknown>
+  options: EventModalOption[]
+}
+
+type PrecomputedResult = {
+  result?: unknown
+  delta?: unknown
+  appliedDelta?: unknown
+  outcomeText?: string
+  description?: string
+}
+
+type EventOutcome = {
+  option: EventModalOption
+  _precomputedResult?: PrecomputedResult
+}
+
 /**
  * A modal dialog for displaying game events and capturing player choices.
  * Traps focus, supports keyboard selection (1-4 number keys), and
@@ -18,14 +57,22 @@ import { useGameState } from '../context/GameState'
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
  */
 
-export const EventModal = ({ event, onOptionSelect, className = '' }) => {
+export const EventModal = ({
+  event,
+  onOptionSelect,
+  className = ''
+}: {
+  event: EventModalEvent | null
+  onOptionSelect: (option: EventModalOption & { _precomputedResult?: PrecomputedResult }) => void
+  className?: string
+}) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
-  const containerRef = useRef(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   const gameState = useGameState()
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
-  const [outcome, setOutcome] = useState(null)
+  const [outcome, setOutcome] = useState<EventOutcome | null>(null)
   const [previewError, setPreviewError] = useState(false)
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
@@ -35,7 +82,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   }, [gameState])
 
   // Reset outcome on new events
-  const [prevEventId, setPrevEventId] = useState(null)
+  const [prevEventId, setPrevEventId] = useState<string | undefined>(undefined)
   const eventId = event?.id
   useEffect(() => {
     if (eventId !== prevEventId) {
@@ -48,7 +95,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
     }
   }, [eventId, prevEventId])
 
-  const handleOptionSelect = useCallback(option => {
+  const handleOptionSelect = useCallback((option: EventModalOption) => {
     try {
       // Pre-calculate the result so we can show the actual outcome text and applied effects dynamically.
       // Snapshot vs Latest State Decision:
@@ -56,7 +103,10 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
       // preventing any background state mutations from altering the event outcome between preview and confirmation.
       const { result, appliedDelta, delta, outcomeText, description } =
-        resolveEventChoice(option, gameStateRef.current)
+        resolveEventChoice(
+          option,
+          gameStateRef.current as unknown as Record<string, unknown>
+        )
 
       setOutcome({
         option,
@@ -88,11 +138,11 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   useEffect(() => {
     if (!event || outcome) return
 
-    const handleKey = e => {
+    const handleKey = (e: KeyboardEvent) => {
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= event.options.length) {
         const option = event.options[num - 1]
-        if (!option.disabled) {
+        if (option && !option.disabled) {
           handleOptionSelect(option)
         }
       }
@@ -108,7 +158,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   }, [event])
 
   const precomputedDelta =
-    outcome?._precomputedResult?.appliedDelta ||
+    outcome?._precomputedResult?.appliedDelta ??
     outcome?._precomputedResult?.delta
   const memoizedEffectText = useMemo(() => {
     return precomputedDelta ? generateEffectText(precomputedDelta, t) : ''
@@ -247,7 +297,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                     >
                       <span>
                         <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                        {t(option.label, event.context)}
+                        {String(t(option.label, event.context))}
                       </span>
 
                       <div className='flex flex-col items-end text-right'>
