@@ -189,7 +189,7 @@ export class MapGenerator {
     depth: number,
     pools: VenuePools & { usedVenueIds: Set<string> }
   ): void {
-    let { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
+    const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
     const countAvailableVenues = (pool: Venue[]) => {
       let available = 0
@@ -288,7 +288,7 @@ export class MapGenerator {
         } else {
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
-          let fallbackArray =
+          const fallbackArray =
             i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
           let fallbackLength = 0
           for (let k = 0; k < fallbackArray.length; k++) {

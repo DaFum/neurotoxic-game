@@ -5,7 +5,7 @@ import { getSafeRandom } from '../../utils/crypto'
 export { CHATTER_DB, ALLOWED_DEFAULT_SCENES }
 
 export const getRandomChatter = state => {
-  let pool = []
+  const pool = []
 
   // 1) Venue Specific Chatter (Scene-aware)
   const currentNode = state.gameMap?.nodes[state.player.currentNodeId]

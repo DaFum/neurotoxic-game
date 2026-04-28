@@ -341,7 +341,7 @@ export const calculateTravelExpenses = (
   const fameLevel = playerState?.fameLevel || 0
 
   // Base food cost
-  let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
+  const foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
 
   // Keep travel scaling predictable: mild distance pressure, mild fame pressure,
   // and at most a small reserve fee for travelling with a large cash buffer.

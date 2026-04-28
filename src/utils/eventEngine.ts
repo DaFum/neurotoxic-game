@@ -266,7 +266,7 @@ const selectEvent = (
   }
 
   // 2. Filter by Trigger & Condition
-  let eligibleEvents: Array<{
+  const eligibleEvents: Array<{
     event: EngineEvent
     contextvars: Record<string, string>
   }> = []

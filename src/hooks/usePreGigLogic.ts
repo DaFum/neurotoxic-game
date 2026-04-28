@@ -265,7 +265,9 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
       lastMinigameFallback = chosenGame
       try {
         sessionStorage.setItem('neurotoxic_last_minigame', chosenGame)
-      } catch (_storageErr) {}
+      } catch (_storageErr) {
+        // ignore storage errors
+      }
 
       if (chosenGame === 'roadie') {
         startRoadieMinigame(gigId)

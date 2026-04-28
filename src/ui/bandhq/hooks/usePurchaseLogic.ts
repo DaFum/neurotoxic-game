@@ -390,7 +390,7 @@ export const usePurchaseLogic = ({
         let playerPatch: PlayerPatch = {
           ...(effectResult.playerPatch ?? initialPlayerPatch)
         }
-        let bandPatch = effectResult.bandPatch || null
+        const bandPatch = effectResult.bandPatch || null
 
         if (effectResult.messages) {
           processEffectMessages(effectResult.messages, addToast, t)

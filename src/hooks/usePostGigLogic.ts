@@ -76,9 +76,11 @@ export const usePostGigLogic = () => {
     if (!currentGig) return
 
     if (!activeEvent) {
-      triggerEvent('financial', 'post_gig') ||
-        triggerEvent('special', 'post_gig') ||
-        triggerEvent('band', 'post_gig')
+      if (!triggerEvent('financial', 'post_gig')) {
+        if (!triggerEvent('special', 'post_gig')) {
+          triggerEvent('band', 'post_gig')
+        }
+      }
     }
   }, [currentGig, activeEvent, triggerEvent])
 

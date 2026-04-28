@@ -50,8 +50,8 @@ export const normalizeVenueId = (venue: any): string | null => {
   let id = typeof venue === 'object' ? venue.id || venue.name : venue
 
   if (typeof id === 'string') {
-    let isVenues = id.startsWith('venues:')
-    let hasName = id.endsWith('.name')
+    const isVenues = id.startsWith('venues:')
+    const hasName = id.endsWith('.name')
     if (isVenues && hasName) {
       id = id.slice(7, -5)
     } else if (isVenues) {
