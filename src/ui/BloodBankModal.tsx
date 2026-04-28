@@ -67,7 +67,7 @@ export const BloodBankModal = ({ onClose, onDonate, canDonate, config }) => {
             <button
               type='button'
               onClick={onClose}
-              className='px-4 py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors uppercase font-mono'
+              className='px-4 py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
             </button>

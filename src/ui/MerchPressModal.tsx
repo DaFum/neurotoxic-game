@@ -72,7 +72,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                 <button
                   type='button'
                   onClick={onClose}
-                  className='text-toxic-green hover:text-star-white transition-colors p-2'
+                  className='text-toxic-green hover:text-star-white transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
                   aria-label={t('ui:menu.close')}
                 >
                   [X]
