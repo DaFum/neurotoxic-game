@@ -14,6 +14,7 @@ Applies to `tests/**`.
 - Full gate before PR: `pnpm run test:all`.
 - Legacy logic suites: `pnpm run test`.
 - UI/migrated suites: `pnpm run test:ui`.
+- Optional local split for node runtime triage: `pnpm run test:node:quick` and `pnpm run test:node:heavy`.
 
 ## Mocking Gotchas
 
@@ -21,6 +22,12 @@ Applies to `tests/**`.
 - For `react-i18next` mocks, include:
   `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Populate lookup maps (e.g., `SONGS_BY_ID`) explicitly in mocked fixture data when tests depend on ID resolution.
+
+## Domain Gotchas
+
+- Keep `tests/security/**` adversarial-only (prototype pollution, hostile payloads, boundary validation), not happy-path duplicate unit assertions.
+- Keep `tests/events/**` on event-data contracts and condition gating; reducer math belongs in node/reducer suites.
+- Keep `tests/logic/**` pure and fast; prefer deterministic fixtures and table-style assertions over repeated boilerplate.
 
 ## Nested TypeScript Notes
 
@@ -31,3 +38,6 @@ Applies to `tests/**`.
 ## Recent Findings (2026-04)
 
 - When UI controls are reorganized (category menus, tabs, accordions), add/adjust reachability assertions so hidden-but-mounted features do not silently become dead paths.
+- Consolidating overlapping hook-performance checks into existing core suites reduces node:test file startup overhead without losing behavior coverage.
+- Keep heavy node suites (Pixi/render-style hooks) explicitly split-capable so local iteration can stay fast while CI/full gates still execute the full set.
+- Keep fixture-transform tests and real-dataset contract tests separated (e.g., songs fixture vs real DB) to avoid duplicated assertions across suites.
