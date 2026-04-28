@@ -114,6 +114,16 @@ jobs:
           name: test-output-vitest-logic
           path: test-output-vitest-logic.txt
 
+      - name: Comment failed tests on PR (vitest-logic) — update existing sticky comment
+        if: ${{ always() && steps.run-vitest-logic.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: ./.github/actions/post-test-failure-comment
+        with:
+          marker: '<!-- test-results-vitest-logic: do-not-edit -->'
+          file: 'test-output-vitest-logic.txt'
+          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError|Error:'
+          max: ${{ env.MAX_FAILURE_LINES }}
+          header: '## ❌ Vitest Logic tests failed'
+
       - name: Fail if tests failed
         if: ${{ always() && steps.run-vitest-logic.outputs.exit_code != '0' }}
         run: exit 1
@@ -155,6 +165,16 @@ jobs:
         with:
           name: test-output-vitest-ui
           path: test-output-vitest-ui.txt
+
+      - name: Comment failed tests on PR (vitest-ui) — update existing sticky comment
+        if: ${{ always() && steps.run-vitest-ui.outputs.exit_code != '0' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: ./.github/actions/post-test-failure-comment
+        with:
+          marker: '<!-- test-results-vitest-ui: do-not-edit -->'
+          file: 'test-output-vitest-ui.txt'
+          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError|Error:'
+          max: ${{ env.MAX_FAILURE_LINES }}
+          header: '## ❌ Vitest UI tests failed'
 
       - name: Fail if tests failed
         if: ${{ always() && steps.run-vitest-ui.outputs.exit_code != '0' }}

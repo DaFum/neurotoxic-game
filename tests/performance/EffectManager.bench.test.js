@@ -67,7 +67,7 @@ describe('EffectManager Performance', () => {
     teardownJSDOM()
   })
 
-  test('removal performance', () => {
+  test('removal performance', async () => {
     const app = { renderer: { generateTexture: () => ({ destroy: () => {} }) } }
     const parent = new PIXI.Container()
     const manager = new EffectManager(app, parent)
@@ -93,6 +93,7 @@ describe('EffectManager Performance', () => {
     }
     const end = performance.now()
     console.log(`[Perf] 100k frames took: ${(end - start).toFixed(2)}ms`)
-    import('vitest').then(({ expect }) => expect(end - start).toBeLessThan(1000))
+    const { expect } = await import('vitest')
+    expect(end - start).toBeLessThan(1000)
   })
 })

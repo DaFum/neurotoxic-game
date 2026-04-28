@@ -221,10 +221,7 @@ describe('useTravelLogic', () => {
 
     assert.equal(props.updatePlayer.mock.calls.length, 0)
   })
-})
-
   test('prevents playing a gig at the same location consecutively', async () => {
-    setupJSDOM()
     const defaults = createTravelLogicProps()
     const { result, props } = setupTravelScenario(useTravelLogic, {
       player: {
@@ -256,3 +253,5 @@ describe('useTravelLogic', () => {
       'You just played a gig here! Hit the road and find a new crowd.'
     )
   })
+
+})

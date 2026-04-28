@@ -1,8 +1,8 @@
-import { describe, test } from 'vitest'
+import { describe, bench } from 'vitest'
 import { generateBrandOffers } from '../../src/utils/socialEngine'
 
 describe('Social Engine Performance', () => {
-  test('generateBrandOffers performance loop', () => {
+  bench('generateBrandOffers performance loop', () => {
     const gameState = {
       social: {
         instagram: 10000,
@@ -16,9 +16,7 @@ describe('Social Engine Performance', () => {
         traits: {}
       }
     }
-    const iterations = 10000
-    for (let i = 0; i < iterations; i++) {
-      generateBrandOffers(gameState)
-    }
+    generateBrandOffers(gameState)
+  }, { iterations: 10000 })
   })
 })

@@ -1,7 +1,8 @@
-import { describe, expect, test, vi, beforeAll } from 'vitest'
+import { describe, expect, test, vi, beforeAll, afterEach } from 'vitest'
 
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 vi.mock('../../src/context/GameState.tsx', () => ({
   useGameSelector: selector => selector({
@@ -57,6 +58,9 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
 }))
 
 describe('BandHQ UI tests', () => {
+  afterEach(() => {
+    cleanup()
+  })
   let BandHQ
 
   beforeAll(async () => {
@@ -67,6 +71,15 @@ describe('BandHQ UI tests', () => {
   test('basic tab reachability check', async () => {
     const props = { onClose: () => {} }
     const { container } = render(React.createElement(BandHQ, props))
-    expect(container).toBeTruthy()
+
+    // Check render
+    expect(container.querySelector('h2')).toBeTruthy()
+    expect(container.textContent).toContain('BAND HQ')
+
+    // Check reachability
+    const user = userEvent.setup()
+    const shopTab = screen.getByRole('tab', { name: /shop/i })
+    await user.click(shopTab)
+    expect(screen.getByRole('tabpanel', { name: /shop/i })).toBeVisible()
   })
 })
