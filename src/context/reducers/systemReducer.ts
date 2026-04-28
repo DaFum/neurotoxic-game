@@ -16,7 +16,8 @@ import {
   clampPlayerFame,
   clampMemberStamina,
   clampMemberMood,
-  calculateFameLevel
+  calculateFameLevel,
+  isForbiddenKey
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import { generateDailyTrend } from '../../utils/socialEngine'
@@ -61,13 +62,17 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     return null
   }
   const nodesRecord = mapRecord.nodes as Record<string, unknown>
-  const sanitizedNodes: Record<string, GameMap['nodes'][string]> = {}
+  const sanitizedNodes = Object.create(null) as Record<
+    string,
+    GameMap['nodes'][string]
+  >
 
   const normalizeCoordinate = (value: unknown): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : 0
 
   for (const nodeKey in nodesRecord) {
     if (!Object.hasOwn(nodesRecord, nodeKey)) continue
+    if (isForbiddenKey(nodeKey)) continue
     const rawNode = nodesRecord[nodeKey]
     if (!rawNode || typeof rawNode !== 'object' || Array.isArray(rawNode)) {
       continue
@@ -80,6 +85,7 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       typeof nodeRecord.id === 'string' && nodeRecord.id.length > 0
         ? nodeRecord.id
         : nodeKey
+    if (isForbiddenKey(id)) continue
     const sanitizedNode: GameMap['nodes'][string] = { id, x, y }
 
     if (
