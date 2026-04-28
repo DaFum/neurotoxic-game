@@ -222,3 +222,37 @@ describe('useTravelLogic', () => {
     assert.equal(props.updatePlayer.mock.calls.length, 0)
   })
 })
+
+  test('prevents playing a gig at the same location consecutively', async () => {
+    setupJSDOM()
+    const defaults = createTravelLogicProps()
+    const { result, props } = setupTravelScenario(useTravelLogic, {
+      player: {
+        ...defaults.player,
+        currentNodeId: 'node_gig',
+        lastGigNodeId: 'node_gig'
+      },
+      gameMap: {
+        connections: [],
+        nodes: {
+          node_gig: {
+            id: 'node_gig',
+            type: 'GIG',
+            venue: { id: 'venue_1', capacity: 100, name: 'Venue 1' }
+          }
+        }
+      }
+    })
+
+    act(() => {
+      // Simulate clicking on the current node which is a GIG
+      result.current.handleTravel(props.gameMap.nodes.node_gig)
+    })
+
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(props.addToast.mock.calls.length, 1)
+    assert.equal(
+      props.addToast.mock.calls[0].arguments[0],
+      'You just played a gig here! Hit the road and find a new crowd.'
+    )
+  })

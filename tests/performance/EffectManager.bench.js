@@ -93,5 +93,6 @@ describe('EffectManager Performance', () => {
     }
     const end = performance.now()
     console.log(`[Perf] 100k frames took: ${(end - start).toFixed(2)}ms`)
+    import('vitest').then(({ expect }) => expect(end - start).toBeLessThan(1000))
   })
 })

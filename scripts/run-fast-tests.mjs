@@ -30,7 +30,7 @@ const runScript = script =>
 
 const [nodeResult, vitestResult] = await Promise.all([
   runScript('test:node'),
-  runScript('test:vitest')
+  runScript('test:vitest:logic')
 ])
 
 if (nodeResult.error) {

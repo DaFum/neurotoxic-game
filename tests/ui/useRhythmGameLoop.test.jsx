@@ -127,4 +127,16 @@ describe('useRhythmGameLoop', () => {
 
     expect(handleMiss).toHaveBeenCalledWith(1, false)
   })
+
+  it('initializes and calculates progress on update', () => {
+    mocks.getTransportState.mockReturnValue('started')
+    mocks.getGigTimeMs.mockReturnValue(100)
+    gameStateRef.current.totalDuration = 1000
+    const { result } = setup(null)
+
+    result.current.update(16)
+
+    expect(gameStateRef.current.progress).toBe(10) // 100 / 1000 * 100
+  })
+
 })
