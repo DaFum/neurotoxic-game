@@ -24,3 +24,4 @@ Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 ## Recent Findings (2026-04)
 
 - Re-adding a removed modal requires both trigger wiring and visible affordance updates; mounted-only modals are considered incomplete integrations.
+- Event modal copy may arrive either as translation keys or raw display text. Use event-provided title/description as translation fallback defaults to preserve runtime content.

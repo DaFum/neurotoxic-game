@@ -24,3 +24,4 @@ Applies to `src/data/chatter/**`.
 ## Recent Findings (2026-04)
 
 - Chatter additions tied to new scene actions should be keyed to reachable states only; avoid introducing lines for actions that no longer have UI affordances.
+- `entry.weight` nullish fallback semantics (`?? 1`) mean `weight: 0` fully disables an entry; do not use zero unless intentional suppression is desired.

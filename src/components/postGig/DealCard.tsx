@@ -96,13 +96,22 @@ const isDeal = (value: unknown): value is DealCardProps['deal'] => {
   const deal = value as {
     id?: unknown
     name?: unknown
+    description?: unknown
     offer?: unknown
   }
+
+  const offer =
+    typeof deal.offer === 'object' && deal.offer !== null
+      ? (deal.offer as { upfront?: unknown; duration?: unknown })
+      : null
+
   return (
     typeof deal.id === 'string' &&
     typeof deal.name === 'string' &&
-    typeof deal.offer === 'object' &&
-    deal.offer !== null
+    typeof deal.description === 'string' &&
+    offer !== null &&
+    Number.isFinite(offer.upfront) &&
+    Number.isFinite(offer.duration)
   )
 }
 

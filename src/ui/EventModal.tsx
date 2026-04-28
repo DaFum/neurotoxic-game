@@ -34,7 +34,11 @@ export const EventModal = ({
   className = ''
 }: {
   event: EventModalEvent | null
-  onOptionSelect: (option: EventModalOption & { _precomputedResult?: EventModalPrecomputedResult }) => void
+  onOptionSelect: (
+    option: EventModalOption & {
+      _precomputedResult?: EventModalPrecomputedResult
+    }
+  ) => void
   className?: string
 }) => {
   const { t } = useTranslation(['ui', 'events', 'items'])
@@ -217,13 +221,13 @@ export const EventModal = ({
                 className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
               >
                 {t(titleKey, {
-                  defaultValue: 'EVENT',
+                  defaultValue: event.title || 'EVENT',
                   ...eventContext
                 })}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
                 {t(descriptionKey, {
-                  defaultValue: 'An event unfolds.',
+                  defaultValue: event.description || 'An event unfolds.',
                   ...eventContext
                 })}
               </p>

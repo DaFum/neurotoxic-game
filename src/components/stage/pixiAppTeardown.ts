@@ -14,7 +14,9 @@ type DestroyableApp = {
     }) => void
   } | null
   renderer?: { destroy?: (options?: unknown) => void } | null
-  canvas?: { parentNode?: { removeChild: (node: unknown) => void } | null } | null
+  canvas?: {
+    parentNode?: { removeChild: (node: unknown) => void } | null
+  } | null
   ticker?: { remove?: (...args: unknown[]) => void } | null
 }
 
@@ -50,7 +52,7 @@ function teardownCancelResize(app: DestroyableApp): void {
 
 function teardownResizeTo(app: DestroyableApp): void {
   try {
-    if (Object.hasOwn(app, 'resizeTo')) {
+    if ('resizeTo' in app) {
       app.resizeTo = null
     }
   } catch {
@@ -108,7 +110,10 @@ function fallbackDestroyStage(app: DestroyableApp, contextName: string): void {
   }
 }
 
-function fallbackDestroyRenderer(app: DestroyableApp, contextName: string): void {
+function fallbackDestroyRenderer(
+  app: DestroyableApp,
+  contextName: string
+): void {
   try {
     app.renderer?.destroy?.({ removeView: true })
   } catch (error) {
@@ -138,10 +143,7 @@ function fallbackDestroy(app: DestroyableApp, contextName: string): void {
   fallbackRemoveCanvas(app, contextName)
 }
 
-function removeAppTicker(
-  app: DestroyableApp,
-  tickerHandler?: unknown
-): void {
+function removeAppTicker(app: DestroyableApp, tickerHandler?: unknown): void {
   if (typeof tickerHandler === 'function') {
     app.ticker?.remove?.(tickerHandler)
   }
