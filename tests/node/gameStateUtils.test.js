@@ -269,7 +269,10 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
   assert.equal(Object.hasOwn(applied.flags, '__proto__'), false)
   assert.equal(Object.hasOwn(applied.player.stats, '__proto__'), false)
   assert.equal(Object.hasOwn(applied.band.inventory, 'constructor'), false)
-  assert.equal(Object.hasOwn(applied.band.membersDelta, 'prototype'), false)
+  assert.equal(
+    Object.hasOwn(applied.band.membersDelta[0] ?? {}, 'prototype'),
+    false
+  )
 })
 
 test('clampVanFuel edge cases', () => {

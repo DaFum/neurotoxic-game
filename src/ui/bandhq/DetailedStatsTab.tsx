@@ -4,6 +4,13 @@ import { ProgressBar, Panel, Tooltip } from '../shared'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
+import type {
+  PlayerState,
+  BandState,
+  SocialState,
+  BandMember as GameBandMember,
+  QuestState
+} from '../../types/game'
 
 // --- Helpers ---
 
@@ -20,85 +27,11 @@ interface CharacterDefinition {
   traits?: CharacterTrait[]
 }
 
-interface BandMember {
-  name: string
-  role?: string
-  stamina?: number
-  mood?: number
-  skill?: number
-  charisma?: number
-  technical?: number
-  improv?: number
-  composition?: number
-  baseStats?: Partial<
-    Record<
-      'skill' | 'charisma' | 'technical' | 'improv' | 'composition',
-      number
-    >
-  >
-  traits?: Record<string, CharacterTrait>
-  equipment?: Record<string, unknown>
-}
-
-interface PlayerData {
-  money: number
-  fame: number
-  fameLevel?: number
-  day: number
-  time?: string | number
-  location?: string
-  totalTravels?: number
-  passiveFollowers?: number
-  hqUpgrades?: string[]
-  stats?: {
-    proveYourselfMode?: boolean
-  }
-  van?: {
-    fuel?: number
-    condition?: number
-    breakdownChance?: number
-    upgrades?: string[]
-  }
-}
-
-interface SocialDeal {
-  id: string
-}
-
-interface SocialData {
-  instagram?: number
-  tiktok?: number
-  youtube?: number
-  newsletter?: number
-  viral?: number
-  trend?: string
-  reputationCooldown?: number
-  activeDeals?: SocialDeal[]
-  loyalty?: number
-  controversyLevel?: number
-  egoFocus?: string
-}
-
-interface BandData {
-  harmony?: number
-  luck?: number
-  inventorySlots?: number
-  inventory?: Record<string, unknown>
-  performance?: {
-    guitarDifficulty?: number
-    drumMultiplier?: number
-    crowdDecay?: number
-  }
-  members?: BandMember[]
-}
-
-interface ActiveQuest {
-  id: string
-  label: string
-  deadline?: number
-  progress?: number
-  required?: number
-}
+type BandMember = GameBandMember
+type PlayerData = PlayerState
+type SocialData = SocialState
+type BandData = BandState
+type ActiveQuest = QuestState
 
 interface DetailRowProps {
   label: ReactNode
@@ -159,7 +92,11 @@ const CareerOverviewSection = ({
   player,
   t
 }: { player: PlayerData } & BasicTProps) => {
-  const locationName = translateLocation(t, player.location ?? '', player.location ?? '')
+  const locationName = translateLocation(
+    t,
+    player.location ?? '',
+    player.location ?? ''
+  )
   return (
     <Panel
       title={t('ui:stats.career_overview', {
@@ -460,7 +397,9 @@ const ActiveQuestsSection = ({
                 className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
               >
                 <div className='flex justify-between items-center text-xs'>
-                  <span className='font-bold text-star-white'>{q.label}</span>
+                  <span className='font-bold text-star-white'>
+                    {q.label ?? q.id}
+                  </span>
                   <span className='text-blood-red'>
                     {t('ui:detailedStats.invalidQuestRequirement', {
                       defaultValue: 'Invalid quest requirement'
@@ -477,10 +416,14 @@ const ActiveQuestsSection = ({
               className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
             >
               <div className='flex justify-between items-center text-xs'>
-                <span className='font-bold text-star-white'>{q.label}</span>
-                <span className='text-ash-gray'>
-                  {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
+                <span className='font-bold text-star-white'>
+                  {q.label ?? q.id}
                 </span>
+                {q.deadline != null ? (
+                  <span className='text-ash-gray'>
+                    {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
+                  </span>
+                ) : null}
               </div>
               <ProgressBar
                 value={q.progress ?? 0}

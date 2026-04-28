@@ -13,6 +13,32 @@ type ShopTabProps = Omit<CatalogConsumerProps, 'items'> & {
   player: Pick<PlayerState, 'money'>
 }
 
+const isEffect = (obj: unknown): obj is Effect => {
+  if (typeof obj !== 'object' || obj === null) return false
+  const effect = obj as Record<string, unknown>
+  if (typeof effect.type !== 'string') return false
+
+  switch (effect.type) {
+    case 'inventory_add':
+      return typeof effect.item === 'string' && typeof effect.value === 'number'
+    case 'inventory_set':
+      return typeof effect.item === 'string'
+    case 'stat_modifier':
+      return (
+        (effect.target === 'player' ||
+          effect.target === 'band' ||
+          effect.target === 'van') &&
+        typeof effect.stat === 'string' &&
+        typeof effect.value === 'number'
+      )
+    case 'unlock_upgrade':
+    case 'unlock_hq':
+      return typeof effect.id === 'string'
+    default:
+      return false
+  }
+}
+
 export const ShopTab = ({
   player,
   handleBuy,
@@ -21,34 +47,6 @@ export const ShopTab = ({
   getAdjustedCost,
   processingItemId
 }: ShopTabProps) => {
-  const isEffect = (obj: unknown): obj is Effect => {
-    if (typeof obj !== 'object' || obj === null) return false
-    const effect = obj as Record<string, unknown>
-    if (typeof effect.type !== 'string') return false
-
-    switch (effect.type) {
-      case 'inventory_add':
-        return (
-          typeof effect.item === 'string' && typeof effect.value === 'number'
-        )
-      case 'inventory_set':
-        return typeof effect.item === 'string'
-      case 'stat_modifier':
-        return (
-          (effect.target === 'player' ||
-            effect.target === 'band' ||
-            effect.target === 'van') &&
-          typeof effect.stat === 'string' &&
-          typeof effect.value === 'number'
-        )
-      case 'unlock_upgrade':
-      case 'unlock_hq':
-        return typeof effect.id === 'string'
-      default:
-        return false
-    }
-  }
-
   const rawItems: PurchaseItem[] = [
     ...((HQ_ITEMS.gear as unknown as PurchaseItem[]) || []),
     ...((HQ_ITEMS.instruments as unknown as PurchaseItem[]) || [])

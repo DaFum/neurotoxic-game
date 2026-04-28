@@ -76,7 +76,7 @@ export function setupGuitar(): void {
     attack: 0.01,
     decay: 0.2,
     sustain: 0.1,
-    release: 0.2,
+    release: 0.3,
     attackCurve: 'linear',
     releaseCurve: 'linear',
     decayCurve: 'linear'

@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import PropTypes from 'prop-types'
 
 type GlitchButtonVariant = 'primary' | 'danger' | 'owned' | 'warning'
 type GlitchButtonSize = 'sm' | 'lg'
@@ -91,9 +92,7 @@ export const GlitchButton = ({
     >
       <span
         className={`relative z-10 flex items-center justify-center gap-2 ${
-          isIntervention || (variant as string) === 'owned'
-            ? ''
-            : 'group-hover:animate-pulse'
+          isIntervention ? '' : 'group-hover:animate-pulse'
         } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}
@@ -124,4 +123,14 @@ export const GlitchButton = ({
       )}
     </button>
   )
+}
+
+GlitchButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+  disabled: PropTypes.bool,
+  variant: PropTypes.oneOf(['primary', 'danger', 'owned', 'warning']),
+  size: PropTypes.oneOf(['sm', 'lg']),
+  isLoading: PropTypes.bool
 }

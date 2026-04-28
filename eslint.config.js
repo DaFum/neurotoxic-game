@@ -1,8 +1,7 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import eslintReact from '@eslint-react/eslint-plugin'
-import tseslint from '@typescript-eslint/eslint-plugin'
-import tsParser from '@typescript-eslint/parser'
+import tseslint from 'typescript-eslint'
 import prettier from 'eslint-config-prettier'
 
 // Shared to keep JS/TS rulesets consistent.
@@ -46,6 +45,11 @@ const BASE_RULES = {
   'no-unused-vars': ['warn', UNUSED_VARS_IGNORE_PATTERNS]
 }
 
+const TYPESCRIPT_RECOMMENDED_RULES = Object.assign(
+  {},
+  ...tseslint.configs.recommended.map(config => config.rules ?? {})
+)
+
 export default [
   {
     ignores: [
@@ -70,21 +74,21 @@ export default [
     }
   },
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx,mts,cts}'],
     ...eslintReact.configs.recommended,
     languageOptions: {
       ...BASE_LANGUAGE_OPTIONS,
-      parser: tsParser
+      parser: tseslint.parser
     },
     plugins: {
       ...BASE_PLUGINS,
-      '@typescript-eslint': tseslint
+      '@typescript-eslint': tseslint.plugin
     },
     rules: {
-      ...BASE_RULES,
       ...js.configs.recommended.rules,
       ...eslintReact.configs.recommended.rules,
-      ...tseslint.configs.recommended.rules,
+      ...TYPESCRIPT_RECOMMENDED_RULES,
+      ...BASE_RULES,
       // PropTypes are intentionally used in this codebase for runtime checks in TSX too.
       '@eslint-react/no-prop-types': 'off',
       'no-unused-vars': 'off',

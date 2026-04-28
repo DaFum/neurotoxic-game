@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
-import type { CatalogItem, CatalogTabProps } from '../../types/components'
+import type { CatalogTabProps } from '../../types/components'
 import { ShopItem } from './ShopItem'
 
 const BALANCE_DISPLAY_META = {
@@ -61,7 +61,7 @@ export const CatalogTab = ({
                 ? getAdjustedCostCallback(item)
                 : undefined
             }
-            onBuy={handleBuyCallback as (item: import('../../types/components').PurchaseItem) => void}
+            onBuy={handleBuyCallback}
             processingItemId={processingItemId}
           />
         ))}
@@ -81,7 +81,8 @@ const balancesShape = PropTypes.shape({
 const balancesValidator = (
   props: Record<string, unknown>,
   propName: string,
-  componentName: string
+  componentName: string,
+  ..._rest: unknown[]
 ) => {
   const value = props[propName]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -125,20 +126,15 @@ CatalogTab.propTypes = {
     componentName: string,
     ...rest: unknown[]
   ) => {
-    const shapeError = balancesShape(
-      props,
-      propName,
-      componentName,
-      rest[0] as string,
-      rest[1] as string
-    )
+    const shapeError = balancesShape(props, propName, componentName, ...rest)
     if (shapeError) {
       return shapeError
     }
     return balancesValidator(
       props as Record<string, unknown>,
       propName,
-      componentName
+      componentName,
+      ...rest
     )
   },
   handleBuyCallback: PropTypes.func.isRequired,

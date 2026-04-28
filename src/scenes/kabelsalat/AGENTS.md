@@ -14,3 +14,5 @@ Applies to `src/scenes/kabelsalat/**`.
 
 - Sparse cable lookup assumptions should fail loudly during map construction/selection instead of silently skipping entries.
 - Kabelsalat overlays need a manual advance button as a fallback path so users can always reach `GAME_PHASES.GIG` if delayed auto-transition timing ever regresses.
+- Keep `forceAdvance` typed as `(isPowered: boolean) => void` across state/hook/component boundaries; narrowing it to `() => void` can silently turn manual win advances into loss payloads.
+- Keep `INITIAL_SOCKET_ORDER` literal-typed (`as const`) and spread into mutable state arrays (`[...INITIAL_SOCKET_ORDER]`) to avoid `string[]` widening regressions.

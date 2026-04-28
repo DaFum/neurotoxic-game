@@ -96,8 +96,8 @@ export interface PauseOverlayProps {
   onQuit: () => void
 }
 
-export interface MinigameLogicBase {
-  gameStateRef: { current: GameState }
+export interface MinigameLogicBase<TState = unknown> {
+  gameStateRef: RefObject<TState>
   update: (state: unknown) => void
   finishMinigame?: () => void
   dispatch?: (action: import('../types/game').GameAction) => void
@@ -131,8 +131,8 @@ export interface StageControllerOptions<TState = unknown> {
   updateRef: MutableRefObject<((dt: number) => void) | null>
 }
 
-export interface PixiStageProps {
-  gameStateRef: RefObject<RhythmGameRefState>
+export interface PixiStageProps<TState = RhythmGameRefState> {
+  gameStateRef: RefObject<TState>
   update: (state: unknown) => void
   controllerFactory?: (options: any) => PixiController
 }
@@ -420,6 +420,11 @@ export interface PurchaseItem {
 export interface CatalogItem extends PurchaseItem {
   id: string | number
   cost: number
+}
+
+export interface VoidTraderItem extends PurchaseItem {
+  id: string
+  rarity?: 'rare' | 'epic'
 }
 
 export type Balances = Record<string, number>

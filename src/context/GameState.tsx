@@ -83,14 +83,12 @@ import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
   GameAction,
-  GameEvent,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
   QuestState,
   SocialState,
-  ToastPayload,
   TradeVoidItemPayload,
   UpdateBandPayload,
   UpdatePlayerPayload
@@ -429,6 +427,19 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [mapRetryCount, setMapRetryCount] = useState(0)
 
+  const clearMapRetryTimeout = () => {
+    if (mapRetryTimeoutRef.current) {
+      clearTimeout(mapRetryTimeoutRef.current)
+      mapRetryTimeoutRef.current = null
+    }
+  }
+
+  const resetMapGenerationRetries = useCallback(() => {
+    clearMapRetryTimeout()
+    mapGenerationAttemptsRef.current = 0
+    setMapRetryCount(0)
+  }, [])
+
   // Initialize Map if needed
   useEffect(() => {
     if (!state.gameMap) {
@@ -460,8 +471,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           // always returned from this effect, ensuring the pending timeout is
           // cancelled if the component unmounts during the retry window.
         } else {
-          mapGenerationAttemptsRef.current = 0
-          setMapRetryCount(0)
           dispatch(createSetMapAction(null))
           dispatch(
             createAddToastAction({
@@ -714,6 +723,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    */
   const advanceDay = useCallback(() => {
     // Access state via ref to keep callback stable
+    const currentState = stateRef.current
+    const nextDay = currentState.player.day + 1
     try {
       dispatch(createAdvanceDayAction())
     } catch (error) {
@@ -732,7 +743,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       return
     }
 
-    const nextDay = stateRef.current.player.day
     addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
   }, [addToast])
 
@@ -740,10 +750,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => {
+    resetMapGenerationRetries()
     const unlocks: string[] =
       safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
     dispatch(createResetStateAction({ unlocks }))
-  }, [])
+  }, [resetMapGenerationRetries])
 
   // Minigame Actions
   const startTravelMinigame = useCallback(

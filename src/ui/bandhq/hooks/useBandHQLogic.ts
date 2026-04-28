@@ -13,14 +13,7 @@ import type {
   ToastPayload,
   TradeVoidItemPayload
 } from '../../../types/game'
-import type { PurchaseItem } from '../../../types/components'
-
-type VoidTraderItem = PurchaseItem & {
-  id: string
-  rarity?: keyof typeof VOID_TRADER_COSTS
-  stackable?: boolean
-  maxStacks?: number
-}
+import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
 
 type StashEntry = {
   stacks?: number

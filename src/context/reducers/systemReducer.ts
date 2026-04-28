@@ -53,13 +53,94 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     return null
   }
   const mapRecord = gameMap as Record<string, unknown>
-  const normalizedConnections = Array.isArray(mapRecord.connections)
-    ? mapRecord.connections
-    : []
-  return {
-    ...mapRecord,
-    connections: normalizedConnections
-  } as GameMap
+  if (
+    typeof mapRecord.nodes !== 'object' ||
+    mapRecord.nodes === null ||
+    Array.isArray(mapRecord.nodes)
+  ) {
+    return null
+  }
+  const nodesRecord = mapRecord.nodes as Record<string, unknown>
+  const sanitizedNodes: Record<string, GameMap['nodes'][string]> = {}
+
+  const normalizeCoordinate = (value: unknown): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : 0
+
+  for (const nodeKey in nodesRecord) {
+    if (!Object.hasOwn(nodesRecord, nodeKey)) continue
+    const rawNode = nodesRecord[nodeKey]
+    if (!rawNode || typeof rawNode !== 'object' || Array.isArray(rawNode)) {
+      continue
+    }
+    const nodeRecord = rawNode as Record<string, unknown>
+    const x = normalizeCoordinate(nodeRecord.x)
+    const y = normalizeCoordinate(nodeRecord.y)
+
+    const id =
+      typeof nodeRecord.id === 'string' && nodeRecord.id.length > 0
+        ? nodeRecord.id
+        : nodeKey
+    const sanitizedNode: GameMap['nodes'][string] = { id, x, y }
+
+    if (
+      typeof nodeRecord.layer === 'number' &&
+      Number.isFinite(nodeRecord.layer)
+    ) {
+      sanitizedNode.layer = nodeRecord.layer
+    }
+    if (typeof nodeRecord.venueId === 'string') {
+      sanitizedNode.venueId = nodeRecord.venueId
+    }
+    if (Array.isArray(nodeRecord.neighbors)) {
+      const neighbors: string[] = []
+      for (let i = 0; i < nodeRecord.neighbors.length; i++) {
+        const neighbor = nodeRecord.neighbors[i]
+        if (typeof neighbor === 'string') {
+          neighbors.push(neighbor)
+        }
+      }
+      sanitizedNode.neighbors = neighbors
+    }
+
+    sanitizedNodes[id] = sanitizedNode
+  }
+
+  const sanitizedConnections: Array<{ from: string; to: string }> = []
+  if (Array.isArray(mapRecord.connections)) {
+    for (let i = 0; i < mapRecord.connections.length; i++) {
+      const entry = mapRecord.connections[i]
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
+      const entryRecord = entry as Record<string, unknown>
+      if (
+        (typeof entryRecord.from === 'string' ||
+          typeof entryRecord.from === 'number') &&
+        (typeof entryRecord.to === 'string' ||
+          typeof entryRecord.to === 'number')
+      ) {
+        sanitizedConnections.push({
+          from: String(entryRecord.from),
+          to: String(entryRecord.to)
+        })
+      }
+    }
+  }
+
+  const sanitizedMap: GameMap = {
+    nodes: sanitizedNodes,
+    connections: sanitizedConnections
+  }
+
+  if (typeof mapRecord.name === 'string') {
+    sanitizedMap.name = mapRecord.name
+  }
+  if (
+    typeof mapRecord.version === 'string' ||
+    typeof mapRecord.version === 'number'
+  ) {
+    sanitizedMap.version = mapRecord.version
+  }
+
+  return sanitizedMap
 }
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {

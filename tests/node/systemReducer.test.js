@@ -258,6 +258,64 @@ test('systemReducer - LOAD_GAME', async t => {
       { id: '3', message: 'Valid', type: 'error' }
     ])
   })
+
+  await t.test(
+    'falls back to current gameMap when loaded gameMap lacks nodes',
+    () => {
+      const initialState = {
+        ...createInitialState(),
+        gameMap: {
+          nodes: { start: { id: 'start' } },
+          connections: []
+        }
+      }
+      const loadedState = {
+        gameMap: {
+          connections: [{ from: 'start', to: 'next' }]
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.gameMap, initialState.gameMap)
+    }
+  )
+
+  await t.test('preserves partially valid loaded gameMap nodes', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      gameMap: {
+        name: 'legacy map',
+        version: 1,
+        nodes: {
+          start: { id: 'start', x: 12, y: 34, neighbors: ['next', 7] },
+          next: { venueId: 'venue-1' },
+          bad: null
+        },
+        connections: [
+          { from: 'start', to: 'next' },
+          { from: 2, to: 'start' },
+          { from: 'start' },
+          null
+        ]
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.deepEqual(nextState.gameMap, {
+      name: 'legacy map',
+      version: 1,
+      nodes: {
+        start: { id: 'start', x: 12, y: 34, neighbors: ['next'] },
+        next: { id: 'next', x: 0, y: 0, venueId: 'venue-1' }
+      },
+      connections: [
+        { from: 'start', to: 'next' },
+        { from: '2', to: 'start' }
+      ]
+    })
+  })
 })
 
 test('systemReducer - RESET_STATE', async t => {

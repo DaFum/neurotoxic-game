@@ -123,7 +123,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
     this.noteManager = new NoteManager(
       this.app!,
       rhythmContainer,
-      this.gameStateRef,
+      this.gameStateRef as unknown as Record<string, unknown>,
       (x: any, y: any, color: any) =>
         this.effectManager.spawnHitEffect(x, y, color)
     )
@@ -151,7 +151,8 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
    */
   manualUpdate(deltaMS: number) {
     if (!this.app || this.isDisposed) return
-    this.handleTicker({ deltaMS } as any)
+    // @ts-expect-error PIXI ticker payload includes deltaMS; shape matches runtime use in handleTicker.
+    this.handleTicker({ deltaMS })
   }
 
   /**
@@ -166,18 +167,22 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
 
     const state = this.gameStateRef?.current
 
-    if (!state || ('isGameOver' in state ? (state as any).isGameOver : false)) {
+    if (!state || state.isGameOver) {
+      return
+    }
+    const stageContainer = this.stageContainer
+    if (!stageContainer) {
       return
     }
 
     const elapsed = getGigTimeMs()
 
-    this.toxicFilterManager.update(state, elapsed, this.stageContainer)
+    this.toxicFilterManager.update(state, elapsed, stageContainer)
 
     this.laneManager.update(state)
     this.crowdManager.update(
-      ('combo' in state ? (state as any).combo : 0) ?? 0,
-      ('isToxicMode' in state ? (state as any).isToxicMode : false) ?? false,
+      state.combo ?? 0,
+      state.isToxicMode ?? false,
       elapsed
     )
     this.noteManager.update(state, elapsed, this.laneManager.layout)

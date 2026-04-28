@@ -41,10 +41,21 @@ export const AnimatedSubtitle = ({
   className?: string
   children: ReactNode
 }) => {
-  // Access motion[...] dynamically; framer-motion provides typed helpers
-  const motionRecord = motion as unknown as Record<string, ElementType>
+  const motionTagAllowlist = {
+    h1: motion.h1,
+    h2: motion.h2,
+    h3: motion.h3,
+    h4: motion.h4,
+    p: motion.p,
+    span: motion.span,
+    div: motion.div
+  } as const satisfies Record<string, ElementType>
   const MotionComponent =
-    typeof as === 'string' ? motionRecord[as] || motion.h2 : motion(as)
+    typeof as === 'string'
+      ? Object.hasOwn(motionTagAllowlist, as)
+        ? motionTagAllowlist[as]
+        : motion.h2
+      : motion(as)
 
   return (
     <MotionComponent
