@@ -69,6 +69,10 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
 
   const normalizeCoordinate = (value: unknown): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : 0
+  // Note: copySafeArray always returns an array (which is truthy), even if all items are filtered out.
+  // copySafeFlatObject returns null if all items are filtered out.
+  // This asymmetry preserves array identity for map data node properties while dropping empty objects.
+  // Also note that copySafeArray silently drops nested arrays and non-primitive/non-object entries.
   const copySafeArray = (
     value: unknown
   ): Array<

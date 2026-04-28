@@ -146,7 +146,7 @@ export class NoteManager {
       const sprite = entity.sprite
 
       if (note.hit) {
-        const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
+        const laneColor = state.lanes?.[note.laneIndex]?.color ?? 0xffffff
         if (this.onHit) {
           this.onHit(sprite.x, sprite.y, laneColor)
         }
