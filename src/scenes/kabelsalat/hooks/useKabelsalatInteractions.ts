@@ -97,7 +97,11 @@ export const useKabelsalatInteractions = (
         !selectedCable
       )
         return
-      if (!isSocketId(socketId)) return
+      if (!isSocketId(socketId)) {
+        throw new Error(
+          `Invalid socketId "${socketId}" in useKabelsalatInteractions.handleSocketClick (CABLE_MAP/Cable lookup context)`
+        )
+      }
       if (connections[socketId]) return
 
       if (!isCableId(selectedCable)) {

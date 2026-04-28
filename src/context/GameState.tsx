@@ -461,6 +461,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           // cancelled if the component unmounts during the retry window.
         } else {
           mapGenerationAttemptsRef.current = 0
+          setMapRetryCount(0)
+          dispatch(createSetMapAction(null))
           dispatch(
             createAddToastAction({
               id: getSafeUUID(),

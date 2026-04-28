@@ -340,7 +340,7 @@ export class MapGenerator {
           id: `node_${i}_${j}`,
           layer: i,
           venue, // Note: Venue references might be duplicated across layers, which is okay for "touring"
-          status: 'locked' as 'locked',
+          status: 'locked',
           type: nodeType,
           x: getVenueCoord(venue, 'x', 50),
           y: getVenueCoord(venue, 'y', i * 10 + 10)
@@ -383,7 +383,7 @@ export class MapGenerator {
 
       // Backward pass check: ensure everyone has a parent
       // (Simplified: Just ensure nextLayer nodes are reachable. If not, force connect from random parent)
-      for (const node of (nextLayer || [])) {
+      for (const node of nextLayer || []) {
         const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
           const randomParent =
@@ -614,7 +614,7 @@ export class MapGenerator {
     if (k === 1) {
       const value = arr[Math.floor(this.random() * n)]
       if (value === undefined) {
-        throw new Error(
+        throw new StateError(
           'Sparse array invariant violated in pickRandomSubset(k=1)'
         )
       }
@@ -628,7 +628,7 @@ export class MapGenerator {
       const first = arr[idx1]
       const second = arr[idx2]
       if (first === undefined || second === undefined) {
-        throw new Error(
+        throw new StateError(
           'Sparse array invariant violated in pickRandomSubset(k=2)'
         )
       }
@@ -646,7 +646,7 @@ export class MapGenerator {
         const valI = swaps.has(i) ? swaps.get(i) : arr[i]
         const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
         if (valI === undefined || valJ === undefined) {
-          throw new Error(
+          throw new StateError(
             `Sparse array invariant violated in pickRandomSubset(fisher-yates) at i=${i}, j=${j}`
           )
         }
