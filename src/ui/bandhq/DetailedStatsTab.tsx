@@ -9,17 +9,11 @@ import type {
   BandState,
   SocialState,
   BandMember as GameBandMember,
-  QuestState
+  QuestState,
+  CharacterTrait
 } from '../../types/game'
 
 // --- Helpers ---
-
-interface CharacterTrait {
-  id: string
-  name: string
-  desc: string
-  unlockHint: string
-}
 
 interface CharacterDefinition {
   name: string
@@ -538,7 +532,7 @@ const InventoryEquipmentSection = ({
 )
 
 const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
-  const def = CHAR_MAP[member.name]
+  const def = member.name ? CHAR_MAP[member.name] : undefined
 
   const potentialTraits = useMemo(() => {
     // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
@@ -547,7 +541,7 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
     if (baseTraits.length === 0 && runtimeTraits.length === 0) return []
 
     const merged = [...baseTraits]
-    const seen = new Set(baseTraits.map(bt => bt.id))
+    const seen = new Set(baseTraits.map((bt: CharacterTrait) => bt.id))
 
     for (const rt of runtimeTraits as CharacterTrait[]) {
       if (rt?.id && !seen.has(rt.id)) {

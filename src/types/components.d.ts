@@ -84,10 +84,18 @@ export interface ChatterMessageProps {
   t: TranslationCallback
 }
 
+export interface SocialOption extends EventOption {
+  id: string | number
+  name?: string
+  platform?: string
+  category?: string
+  badges?: string[]
+}
+
 export interface SocialOptionButtonProps {
-  opt: EventOption
+  opt: SocialOption
   index: number
-  onSelect: (index: number) => void
+  onSelect: (option: SocialOption) => void
 }
 
 export interface PauseOverlayProps {
@@ -263,31 +271,27 @@ export interface CompletePhaseProps {
   isProcessingAction?: boolean
 }
 
+export interface DealContract {
+  id: string
+  name: string
+  description: string
+  alignment?: string
+  offer: {
+    upfront: number
+    duration: number
+    perGig?: number
+    item?: string
+  }
+  penalty?: Record<string, unknown>
+  [key: string]: unknown
+}
+
 export interface DealCardProps {
-  deal: {
-    id: string
-    name: string
-    description: string
-    alignment?: string
-    offer: {
-      upfront: number
-      duration: number
-      perGig?: number
-      item?: string
-    }
-    penalty?: Record<string, unknown>
-    [key: string]: unknown
-  }
-  negotiationState?: {
-    deal?: unknown
-    status?: string
-    feedback?: string
-    success?: boolean
-    [key: string]: unknown
-  }
+  deal: DealContract
+  negotiationState?: DealNegotiationState
   brandReputation?: Record<string, number>
-  handleAcceptDeal: (deal: unknown) => void
-  handleNegotiationStart: (deal: unknown) => void
+  handleAcceptDeal: (deal: DealContract) => void | Promise<void>
+  handleNegotiationStart: (deal: DealContract) => void
 }
 
 export interface DealImageProps {
@@ -314,31 +318,46 @@ export interface DealInfoProps {
 }
 
 export interface DealActionsProps {
-  deal: unknown
-  displayDeal: unknown
+  deal: DealContract
+  displayDeal: DealContract
   isRevoked?: boolean
   hasNegotiated?: boolean
-  negotiationState?: unknown
-  handleAcceptDeal: (deal: unknown) => void
-  handleNegotiationStart: (deal: unknown) => void
+  negotiationState?: DealCardProps['negotiationState']
+  handleAcceptDeal: (deal: DealContract) => void | Promise<void>
+  handleNegotiationStart: (deal: DealContract) => void
+}
+
+export interface DealNegotiationState {
+  deal?: DealContract | null
+  status?: 'REVOKED' | 'FAILED' | 'SUCCESS' | 'WORSENED'
+  feedback?: string
+  success?: boolean
+  [key: string]: unknown
+}
+
+export interface NegotiationResult {
+  success: boolean
+  deal: DealContract | null
+  feedback: string
+  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
+}
+
+export interface DealNegotiationHook {
+  negotiatedDeals: Record<string, DealNegotiationState>
+  negotiationModalOpen: boolean
+  setNegotiationModalOpen: (open: boolean) => void
+  selectedDeal: DealContract | null
+  negotiationResult: NegotiationResult | null
+  handleNegotiationStart: (deal: DealContract) => void
+  handleAcceptDeal: (deal: DealContract) => Promise<void>
+  handleNegotiationSubmit: (
+    submission: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
+  ) => void
 }
 
 export interface DealsPhaseProps {
-  offers: Array<{
-    id: string
-    name: string
-    description: string
-    alignment?: string
-    offer: {
-      upfront: number
-      duration: number
-      perGig?: number
-      item?: string
-    }
-    penalty?: Record<string, unknown>
-    [key: string]: unknown
-  }>
-  onAccept: (dealId: string) => void
+  offers: DealContract[]
+  onAccept: (deal: DealContract) => void | Promise<void>
   onSkip: () => void
 }
 
@@ -350,8 +369,36 @@ export interface FinancialListProps {
 export interface NegotiationModalProps {
   isOpen: boolean
   onClose: () => void
-  negotiationResult: unknown
-  handleNegotiationSubmit: (submission: unknown) => void
+  negotiationResult: NegotiationResult | null
+  handleNegotiationSubmit: (
+    submission: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
+  ) => void
+}
+
+export interface EventModalOption extends EventOption {
+  label: string
+  flags?: string[]
+  disabled?: boolean
+  nextEventId?: string
+  skillCheck?: {
+    stat: string
+    threshold: number
+    success: Record<string, unknown>
+    failure: Record<string, unknown>
+  }
+  outcomeText?: string
+}
+
+export interface EventModalEvent extends GameEvent {
+  options?: EventModalOption[]
+}
+
+export interface EventModalPrecomputedResult {
+  result?: unknown
+  delta?: unknown
+  appliedDelta?: unknown
+  outcomeText?: string
+  description?: string
 }
 
 export interface FinancialItem {

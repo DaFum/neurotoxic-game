@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import type { ChangeEvent, KeyboardEvent, RefObject } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
@@ -10,16 +11,22 @@ export const MainMenuNameInputPrompt = ({
   handleNameSubmit,
   onClose,
   inputRef
+}: {
+  playerNameInput: string
+  setPlayerNameInput: (value: string) => void
+  handleNameSubmit: () => void
+  onClose: () => void
+  inputRef?: RefObject<HTMLInputElement | null>
 }) => {
   const { t } = useTranslation()
 
   const handleNameChange = useCallback(
-    e => setPlayerNameInput(e.target.value),
+    (e: ChangeEvent<HTMLInputElement>) => setPlayerNameInput(e.target.value),
     [setPlayerNameInput]
   )
 
   const handleKeyDown = useCallback(
-    e => {
+    (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         handleNameSubmit()
       }

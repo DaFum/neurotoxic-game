@@ -166,6 +166,44 @@ const validateBand = (band: unknown): void => {
           m[stat] = Math.min(100, clampNonNegative(val as number))
         }
       }
+      for (const stat of [
+        'skill',
+        'charisma',
+        'technical',
+        'improv',
+        'composition'
+      ] as const) {
+        const val = m[stat]
+        if (val != null && (typeof val !== 'number' || !Number.isFinite(val))) {
+          throw new StateError(
+            `band.members[${index}].${stat} must be a finite number`
+          )
+        }
+      }
+      if (m.role != null && typeof m.role !== 'string') {
+        throw new StateError(`band.members[${index}].role must be a string`)
+      }
+      if (m.baseStats !== undefined && !isPlainObject(m.baseStats)) {
+        throw new StateError(`band.members[${index}].baseStats must be an object`)
+      }
+      if (isPlainObject(m.baseStats)) {
+        const baseStats = m.baseStats as Record<string, unknown>
+        for (const baseStatKey in baseStats) {
+          if (!Object.hasOwn(baseStats, baseStatKey)) continue
+          const baseStatVal = baseStats[baseStatKey]
+          if (
+            typeof baseStatVal !== 'number' ||
+            !Number.isFinite(baseStatVal)
+          ) {
+            throw new StateError(
+              `band.members[${index}].baseStats.${baseStatKey} must be a finite number`
+            )
+          }
+        }
+      }
+      if (m.equipment !== undefined && !isPlainObject(m.equipment)) {
+        throw new StateError(`band.members[${index}].equipment must be an object`)
+      }
       if (m.relationships !== undefined) {
         if (!isPlainObject(m.relationships)) {
           throw new StateError(

@@ -2,7 +2,9 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-export const SideEffectsPreview = memo(({ badges }) => {
+type SideEffectsPreviewProps = { badges?: string[] }
+
+export const SideEffectsPreview = memo(({ badges }: SideEffectsPreviewProps) => {
   const { t } = useTranslation()
 
   if (!badges || badges.length === 0) return null

@@ -3,13 +3,21 @@ import PropTypes from 'prop-types'
 import { Panel } from '../../ui/shared'
 import { ZealotryGauge } from './ZealotryGauge'
 import { SocialOptionButton } from './SocialOptionButton'
+import type { SocialOption } from '../../types/components'
+
+type SocialPhaseProps = {
+  options: SocialOption[]
+  onSelect: (option: SocialOption) => void
+  trend?: string
+  zealotryLevel?: number
+}
 
 export const SocialPhase = ({
   options,
   onSelect,
   trend,
   zealotryLevel = 0
-}) => {
+}: SocialPhaseProps) => {
   const { t } = useTranslation()
   return (
     <Panel contentClassName='space-y-6'>
@@ -37,7 +45,7 @@ export const SocialPhase = ({
         </div>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-        {options.map((opt, i) => (
+        {options.map((opt, i: number) => (
           <SocialOptionButton
             key={opt.id}
             opt={opt}
@@ -54,8 +62,8 @@ SocialPhase.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string.isRequired,
-      platform: PropTypes.string.isRequired
+      name: PropTypes.string,
+      platform: PropTypes.string
     })
   ).isRequired,
   onSelect: PropTypes.func.isRequired,

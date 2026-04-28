@@ -5,6 +5,15 @@ import {
   handleKeyDownLogic,
   handleKeyUpLogic
 } from '../utils/gigInputUtils'
+import type { RhythmGameLogicReturn } from './useRhythmGameLogic'
+import type { RhythmLane } from '../types/rhythmGame'
+
+type GigInputParams = {
+  actions: RhythmGameLogicReturn['actions']
+  gameStateRef: RhythmGameLogicReturn['gameStateRef']
+  triggerBandAnimation: (laneIndex: number) => void
+  onTogglePause?: () => void
+}
 
 /**
  * Manages user input for the Gig scene, including keyboard and touch events.
@@ -21,7 +30,7 @@ export const useGigInput = ({
   gameStateRef,
   triggerBandAnimation,
   onTogglePause
-}) => {
+}: GigInputParams): { handleLaneInput: (index: number, active: boolean) => void } => {
   const hasUnlockedAudioRef = useRef(false)
 
   const ensureAudioFromGesture = useCallback(() => {
@@ -34,20 +43,25 @@ export const useGigInput = ({
   useEffect(() => {
     // ⚡ Optimization: Pre-compute key-to-lane mapping to change O(N) array lookups
     // into O(1) Map lookups during the high-frequency keydown/keyup events.
-    let cachedLanesArray = null
-    let keyToLaneMap = new Map()
+    let cachedLanesArray: RhythmLane[] | null = null
+    let keyToLaneMap = new Map<string, number>()
 
-    const getLaneIndex = key => {
+    const getLaneIndex = (key: string): number | undefined => {
       const currentLanes = gameStateRef.current?.lanes
+      if (!currentLanes) {
+        cachedLanesArray = null
+        keyToLaneMap.clear()
+        return undefined
+      }
       // Invalidate cache if the array reference changes or doesn't match
-      if (currentLanes && currentLanes !== cachedLanesArray) {
+      if (currentLanes !== cachedLanesArray) {
         cachedLanesArray = currentLanes
         keyToLaneMap = createKeyToLaneMap(currentLanes)
       }
       return keyToLaneMap.get(key)
     }
 
-    const handleKeyDown = e =>
+    const handleKeyDown = (e: KeyboardEvent): void =>
       handleKeyDownLogic({
         e,
         getLaneIndex,
@@ -57,7 +71,7 @@ export const useGigInput = ({
         ensureAudioFromGesture
       })
 
-    const handleKeyUp = e =>
+    const handleKeyUp = (e: KeyboardEvent): void =>
       handleKeyUpLogic({
         e,
         getLaneIndex,
@@ -85,7 +99,7 @@ export const useGigInput = ({
    * @param {number} laneIndex
    */
   const handleTouchStart = useCallback(
-    laneIndex => {
+    (laneIndex: number) => {
       ensureAudioFromGesture()
       actions.registerInput(laneIndex, true)
       triggerBandAnimation(laneIndex)
@@ -98,14 +112,14 @@ export const useGigInput = ({
    * @param {number} laneIndex
    */
   const handleTouchEnd = useCallback(
-    laneIndex => {
+    (laneIndex: number) => {
       actions.registerInput(laneIndex, false)
     },
     [actions]
   )
 
   const handleLaneInput = useCallback(
-    (index, active) =>
+    (index: number, active: boolean) =>
       active ? handleTouchStart(index) : handleTouchEnd(index),
     [handleTouchStart, handleTouchEnd]
   )

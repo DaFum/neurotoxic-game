@@ -1,8 +1,29 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { formatCurrency } from '../../utils/numberUtils'
+import type { TFunction } from 'i18next'
 
-export const SideEffectsSummary = ({ result, i18n, t }) => {
+type SideEffectsResult = {
+  moneyChange?: number
+  harmonyChange?: number
+  controversyChange?: number
+  loyaltyChange?: number
+  staminaChange?: number
+  moodChange?: number
+  targetMember?: string
+}
+
+type SideEffectsSummaryProps = {
+  result: SideEffectsResult
+  i18n?: { language?: string }
+  t: TFunction
+}
+
+export const SideEffectsSummary = ({
+  result,
+  i18n,
+  t
+}: SideEffectsSummaryProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -10,7 +31,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
       transition={{ delay: 0.8 }}
       className='mb-8 flex flex-col items-center gap-2 font-mono text-sm'
     >
-      {result.moneyChange ? (
+      {result.moneyChange != null ? (
         <div
           className={
             result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
@@ -20,7 +41,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
         </div>
       ) : null}
 
-      {result.harmonyChange ? (
+      {result.harmonyChange != null ? (
         <div
           className={
             result.harmonyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
@@ -32,7 +53,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
         </div>
       ) : null}
 
-      {result.controversyChange ? (
+      {result.controversyChange != null ? (
         <div
           className={
             result.controversyChange > 0 ? 'text-blood-red' : 'text-toxic-green'
@@ -45,7 +66,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
         </div>
       ) : null}
 
-      {result.loyaltyChange ? (
+      {result.loyaltyChange != null ? (
         <div
           className={
             result.loyaltyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
@@ -57,7 +78,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
         </div>
       ) : null}
 
-      {result.staminaChange || result.moodChange ? (
+      {result.staminaChange != null || result.moodChange != null ? (
         <div className='text-ash-gray'>
           👥{' '}
           {result.targetMember
@@ -68,7 +89,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
             : t('ui:postGig.bandAffected', {
                 defaultValue: 'Band Affected'
               })}
-          {result.staminaChange ? (
+          {result.staminaChange != null ? (
             <span
               className={
                 result.staminaChange > 0
@@ -81,7 +102,7 @@ export const SideEffectsSummary = ({ result, i18n, t }) => {
               {t('ui:postGig.stamina', { defaultValue: 'Stamina' })}
             </span>
           ) : null}
-          {result.moodChange ? (
+          {result.moodChange != null ? (
             <span
               className={
                 result.moodChange > 0

@@ -1,12 +1,30 @@
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 
+type GigModifierItem = {
+  key: string
+  label: string
+  desc?: string
+  cost: number
+}
+
+type GigModifierButtonProps = {
+  item: GigModifierItem
+  isActive: boolean
+  onClick: (key: GigModifierItem['key']) => void
+  disabled?: boolean
+}
+
 const GigModifierButton = memo(
-  ({ item, isActive, onClick, disabled = false }) => {
+  ({ item, isActive, onClick, disabled = false }: GigModifierButtonProps) => {
+    const handleClick = () => {
+      if (disabled) return
+      onClick(item.key)
+    }
     return (
       <button
         type='button'
-        onClick={() => !disabled && onClick(item.key)}
+        onClick={handleClick}
         aria-pressed={isActive}
         disabled={disabled}
         className={`flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:shadow-[0_0_12px_var(--color-toxic-green-20)] disabled:opacity-40 disabled:cursor-not-allowed

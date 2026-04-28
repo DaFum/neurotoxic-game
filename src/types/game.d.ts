@@ -57,6 +57,13 @@ export interface CharacterProfile {
   [key: string]: unknown
 }
 
+export interface CharacterTrait {
+  id: string
+  name: string
+  desc: string
+  unlockHint: string
+}
+
 export interface MapNode {
   id: string
   x: number
@@ -132,6 +139,14 @@ export interface BandMember extends UnknownRecord {
   staminaMax?: number
   traits: Record<string, unknown>
   relationships: Record<string, number>
+  baseStats?: Record<string, number>
+  skill?: number
+  charisma?: number
+  technical?: number
+  improv?: number
+  composition?: number
+  role?: string
+  equipment?: Record<string, unknown>
 }
 
 export interface BandState {

@@ -9,16 +9,31 @@ import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { negotiateDeal } from '../utils/socialEngine'
 import { handleError } from '../utils/errorHandler'
+import type {
+  DealCardProps,
+  DealNegotiationHook,
+  DealNegotiationState,
+  NegotiationResult
+} from '../types/components'
 
-export const useDealNegotiation = ({ onAccept }) => {
+type Deal = DealCardProps['deal']
+
+export const useDealNegotiation = ({
+  onAccept
+}: {
+  onAccept: (deal: Deal) => Promise<void> | void
+}): DealNegotiationHook => {
   const { t } = useTranslation()
   const { player, band, social, addToast } = useGameState()
-  const [negotiatedDeals, setNegotiatedDeals] = useState({}) // id: { status, deal }
+  const [negotiatedDeals, setNegotiatedDeals] = useState<
+    Record<string, DealNegotiationState>
+  >({}) // id: { status, deal }
 
   const [negotiationModalOpen, setNegotiationModalOpen] = useState(false)
-  const [selectedDeal, setSelectedDeal] = useState(null)
-  const [negotiationResult, setNegotiationResult] = useState(null) // To show result in modal before closing
-  const negotiationTimerRef = useRef(null)
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
+  const [negotiationResult, setNegotiationResult] =
+    useState<NegotiationResult | null>(null) // To show result in modal before closing
+  const negotiationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -29,14 +44,14 @@ export const useDealNegotiation = ({ onAccept }) => {
     }
   }, [])
 
-  const handleNegotiationStart = useCallback(deal => {
+  const handleNegotiationStart = useCallback((deal: Deal) => {
     setSelectedDeal(deal)
     setNegotiationResult(null)
     setNegotiationModalOpen(true)
   }, [])
 
   const handleAcceptDeal = useCallback(
-    async deal => {
+    async (deal: Deal) => {
       try {
         await onAccept(deal)
       } catch (error) {
@@ -49,12 +64,18 @@ export const useDealNegotiation = ({ onAccept }) => {
     [onAccept, addToast, t]
   )
 
-  const handleNegotiationSubmit = strategy => {
+  const handleNegotiationSubmit = (
+    strategy: 'SAFE' | 'PERSUASIVE' | 'AGGRESSIVE'
+  ) => {
     if (!selectedDeal) return
 
     try {
       const gameState = { player, band, social }
-      const result = negotiateDeal(selectedDeal, strategy, gameState)
+      const result = negotiateDeal(
+        selectedDeal,
+        strategy,
+        gameState
+      )
 
       setNegotiationResult(result)
 
