@@ -48,8 +48,13 @@ export const useGigInput = ({
 
     const getLaneIndex = (key: string): number | undefined => {
       const currentLanes = gameStateRef.current?.lanes
+      if (!currentLanes) {
+        cachedLanesArray = null
+        keyToLaneMap.clear()
+        return undefined
+      }
       // Invalidate cache if the array reference changes or doesn't match
-      if (currentLanes && currentLanes !== cachedLanesArray) {
+      if (currentLanes !== cachedLanesArray) {
         cachedLanesArray = currentLanes
         keyToLaneMap = createKeyToLaneMap(currentLanes)
       }

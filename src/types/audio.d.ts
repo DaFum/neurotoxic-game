@@ -67,6 +67,34 @@ export interface AudioSnapshot extends AudioState {
   currentSongId?: string | null
 }
 
+export interface AudioManagerLike {
+  [key: string]: unknown
+  musicVolume?: number
+  sfxVolume?: number
+  muted?: boolean
+  isPlaying?: boolean
+  currentSongId?: string | null
+  getState?: () => AudioSnapshot
+  getStateSnapshot?: () => AudioSnapshot
+  hasNativeSubscribe?: () => boolean
+  subscribe?: (listener: () => void) => () => void
+  setMusicVolume?: (value: number) => unknown
+  setSfxVolume?: (value: number) => unknown
+  toggleMute?: () => unknown
+  stopMusic?: () => unknown
+  resumeMusic?: () => Promise<boolean>
+}
+
+export interface UseAudioControlOptions {
+  pollEvenWithSubscribe?: boolean
+  pollMs?: number
+}
+
+export interface UseAudioControlResult<TState> {
+  audioState: TState
+  handleAudioChange: AudioControlHandlers
+}
+
 export interface AudioControls {
   setMusic: (value: number) => void
   setSfx: (value: number) => void

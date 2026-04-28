@@ -52,6 +52,25 @@ const getAlignmentImagePrompt = (alignment?: string) => {
 const getAlignmentBadge = (alignment?: string) => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
+      return 'ui:deals.alignment.evil'
+    case BRAND_ALIGNMENTS.CORPORATE:
+      return 'ui:deals.alignment.corporate'
+    case BRAND_ALIGNMENTS.INDIE:
+      return 'ui:deals.alignment.indie'
+    case BRAND_ALIGNMENTS.SUSTAINABLE:
+      return 'ui:deals.alignment.sustainable'
+    case BRAND_ALIGNMENTS.GOOD:
+      return 'ui:deals.alignment.good'
+    case BRAND_ALIGNMENTS.NEUTRAL:
+      return 'ui:deals.alignment.neutral'
+    default:
+      return 'ui:deals.alignment.unknown'
+  }
+}
+
+const getAlignmentBadgeDefault = (alignment?: string) => {
+  switch (alignment) {
+    case BRAND_ALIGNMENTS.EVIL:
       return '😈 EVIL'
     case BRAND_ALIGNMENTS.CORPORATE:
       return '🏢 CORP'
@@ -66,6 +85,25 @@ const getAlignmentBadge = (alignment?: string) => {
     default:
       return '❓ UNKNOWN'
   }
+}
+
+const isDeal = (value: unknown): value is DealCardProps['deal'] => {
+  if (!value || typeof value !== 'object') return false
+  if (!Object.hasOwn(value, 'id') || !Object.hasOwn(value, 'name')) return false
+  if (!Object.hasOwn(value, 'offer')) {
+    return false
+  }
+  const deal = value as {
+    id?: unknown
+    name?: unknown
+    offer?: unknown
+  }
+  return (
+    typeof deal.id === 'string' &&
+    typeof deal.name === 'string' &&
+    typeof deal.offer === 'object' &&
+    deal.offer !== null
+  )
 }
 
 const getAlignmentColor = (alignment?: string) => {
@@ -122,7 +160,9 @@ const DealInfo = memo(
             <span
               className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
             >
-              {getAlignmentBadge(displayDeal.alignment)}
+              {t(getAlignmentBadge(displayDeal.alignment), {
+                defaultValue: getAlignmentBadgeDefault(displayDeal.alignment)
+              })}
             </span>
           )}
         </div>
@@ -264,9 +304,9 @@ export const DealCard = memo(
     handleAcceptDeal,
     handleNegotiationStart
   }: DealCardProps) => {
-    const isRevoked = negotiationState?.status === 'REVOKED'
-    const negotiatedDeal = negotiationState?.deal as DealCardProps['deal'] | undefined
-    const displayDeal = negotiatedDeal ?? deal
+    const isRevoked = getNegotiationStatus(negotiationState) === 'REVOKED'
+    const negotiatedDeal = negotiationState?.deal
+    const displayDeal = isDeal(negotiatedDeal) ? negotiatedDeal : deal
     const hasNegotiated = !!negotiationState
 
     return (

@@ -5,20 +5,7 @@ import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
-
-type SocialOption = {
-  id: string | number
-  name: string
-  platform: string
-  category?: string
-  badges?: string[]
-}
-
-type SocialOptionButtonProps = {
-  opt: SocialOption
-  index: number
-  onSelect: (option: SocialOption) => void
-}
+import type { SocialOptionButtonProps } from '../../types/components'
 
 const CATEGORY_PROMPTS = {
   Drama: IMG_PROMPTS.SOCIAL_POST_DRAMA,
@@ -29,11 +16,13 @@ const CATEGORY_PROMPTS = {
 
 const getImagePromptForCategory = (category?: string, badges?: string[]) => {
   if (badges?.includes('🔥')) return IMG_PROMPTS.SOCIAL_POST_VIRAL
-  return (
-    (category
-      ? (CATEGORY_PROMPTS as Record<string, string>)[category]
-      : undefined) || IMG_PROMPTS.SOCIAL_POST_TECH
-  )
+  if (
+    category &&
+    Object.hasOwn(CATEGORY_PROMPTS, category)
+  ) {
+    return CATEGORY_PROMPTS[category as keyof typeof CATEGORY_PROMPTS]
+  }
+  return IMG_PROMPTS.SOCIAL_POST_TECH
 }
 
 export const SocialOptionButton = memo(function SocialOptionButton({
@@ -79,7 +68,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
               {t('economy:social.platform', { defaultValue: 'Platform' })}
             </span>
             <span className='text-star-white drop-shadow-md'>
-              {opt.platform}
+              {opt.platform || ''}
             </span>
           </div>
           <div className='flex justify-between pt-1'>
@@ -107,8 +96,8 @@ SocialOptionButton.displayName = 'SocialOptionButton'
 SocialOptionButton.propTypes = {
   opt: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string.isRequired,
-    platform: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    platform: PropTypes.string,
     category: PropTypes.string,
     badges: PropTypes.arrayOf(PropTypes.string)
   }).isRequired,

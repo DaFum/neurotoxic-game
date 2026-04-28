@@ -421,6 +421,36 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           typeof m.stamina === 'number' ? m.stamina : 100,
           (m as Record<string, unknown>).staminaMax as number | undefined
         ),
+        ...(typeof m.baseStats === 'object' &&
+        m.baseStats !== null
+          ? {
+              baseStats: Object.fromEntries(
+                Object.entries(m.baseStats as Record<string, unknown>).filter(
+                  ([, value]) =>
+                    typeof value === 'number' && Number.isFinite(value)
+                )
+              )
+            }
+          : {}),
+        ...(typeof m.skill === 'number' && Number.isFinite(m.skill)
+          ? { skill: m.skill }
+          : {}),
+        ...(typeof m.charisma === 'number' && Number.isFinite(m.charisma)
+          ? { charisma: m.charisma }
+          : {}),
+        ...(typeof m.technical === 'number' && Number.isFinite(m.technical)
+          ? { technical: m.technical }
+          : {}),
+        ...(typeof m.improv === 'number' && Number.isFinite(m.improv)
+          ? { improv: m.improv }
+          : {}),
+        ...(typeof m.composition === 'number' && Number.isFinite(m.composition)
+          ? { composition: m.composition }
+          : {}),
+        ...(typeof m.role === 'string' ? { role: m.role } : {}),
+        ...(typeof m.equipment === 'object' && m.equipment !== null
+          ? { equipment: m.equipment as Record<string, unknown> }
+          : {}),
         relationships:
           m.relationships && typeof m.relationships === 'object'
             ? (m.relationships as unknown as Record<string, number>)

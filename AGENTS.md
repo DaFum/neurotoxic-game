@@ -11,7 +11,7 @@
 - Legacy logic suites (`node:test`): `pnpm run test`.
 - UI + migrated suites (Vitest): `pnpm run test:ui`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
-- Single Vitest file: `pnpm exec vitest run tests/<file>.test.js(x)`.
+- Single Vitest file (via canonical `test:ui:file` script): `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
 
 ## Architecture Constraints
 

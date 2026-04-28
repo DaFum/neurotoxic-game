@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
-import type { NegotiationModalProps } from '../../types/components'
+import type {
+  NegotiationModalProps,
+  NegotiationResult
+} from '../../types/components'
 
 const TACTICS = [
   {
@@ -37,6 +40,31 @@ const TACTICS = [
   }
 ] as const
 
+const isNegotiationResult = (
+  value: unknown
+): value is NegotiationResult => {
+  if (!value || typeof value !== 'object') return false
+  if (
+    !Object.hasOwn(value, 'success') ||
+    !Object.hasOwn(value, 'feedback') ||
+    !Object.hasOwn(value, 'status')
+  ) {
+    return false
+  }
+  const record = value as {
+    success?: unknown
+    feedback?: unknown
+    status?: unknown
+  }
+  return (
+    typeof record.success === 'boolean' &&
+    typeof record.feedback === 'string' &&
+    (record.status === 'ACCEPTED' ||
+      record.status === 'REVOKED' ||
+      record.status === 'FAILED')
+  )
+}
+
 export const NegotiationModal = ({
   isOpen,
   onClose,
@@ -44,17 +72,9 @@ export const NegotiationModal = ({
   handleNegotiationSubmit
 }: NegotiationModalProps) => {
   const { t } = useTranslation()
-  const typedResult =
-    negotiationResult &&
-    typeof negotiationResult === 'object' &&
-    Object.hasOwn(negotiationResult, 'success') &&
-    Object.hasOwn(negotiationResult, 'feedback')
-      ? (negotiationResult as {
-          success?: boolean
-          feedback?: string
-          status?: string
-        })
-      : null
+  const typedResult = isNegotiationResult(negotiationResult)
+    ? negotiationResult
+    : null
 
   return (
     <Modal

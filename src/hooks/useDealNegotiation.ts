@@ -9,30 +9,24 @@ import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { negotiateDeal } from '../utils/socialEngine'
 import { handleError } from '../utils/errorHandler'
-import type { DealCardProps } from '../types/components'
+import type {
+  DealCardProps,
+  DealNegotiationHook,
+  DealNegotiationState,
+  NegotiationResult
+} from '../types/components'
 
 type Deal = DealCardProps['deal']
-type NegotiatedDealStatus = 'REVOKED' | 'FAILED' | 'SUCCESS' | 'WORSENED'
-type NegotiatedDealState = {
-  status: NegotiatedDealStatus
-  deal: Deal | null
-}
-type NegotiationResult = {
-  success: boolean
-  deal: Deal | null
-  feedback: string
-  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
-}
 
 export const useDealNegotiation = ({
   onAccept
 }: {
   onAccept: (deal: Deal) => Promise<void> | void
-}) => {
+}): DealNegotiationHook => {
   const { t } = useTranslation()
   const { player, band, social, addToast } = useGameState()
   const [negotiatedDeals, setNegotiatedDeals] = useState<
-    Record<string, NegotiatedDealState>
+    Record<string, DealNegotiationState>
   >({}) // id: { status, deal }
 
   const [negotiationModalOpen, setNegotiationModalOpen] = useState(false)
@@ -81,7 +75,7 @@ export const useDealNegotiation = ({
         selectedDeal,
         strategy,
         gameState
-      ) as NegotiationResult
+      )
 
       setNegotiationResult(result)
 

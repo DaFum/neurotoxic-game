@@ -56,3 +56,12 @@ test('SocialPhase renders correctly and calls onSelect', async () => {
 
   expect(handleSelect).toHaveBeenCalledWith(mockOptions[0])
 })
+
+test('SocialPhase supports options without explicit name/platform fields', () => {
+  const handleSelect = vi.fn()
+  const minimalOptions = [{ id: 'insta', category: 'Social', badges: ['📱'] }]
+
+  render(<SocialPhase onSelect={handleSelect} options={minimalOptions} />)
+
+  expect(screen.getByText('ui:postOptions.insta.name')).toBeInTheDocument()
+})

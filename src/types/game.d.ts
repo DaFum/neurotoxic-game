@@ -57,6 +57,13 @@ export interface CharacterProfile {
   [key: string]: unknown
 }
 
+export interface CharacterTrait {
+  id: string
+  name: string
+  desc: string
+  unlockHint: string
+}
+
 export interface MapNode {
   id: string
   x: number

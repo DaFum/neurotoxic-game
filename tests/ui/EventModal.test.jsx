@@ -199,3 +199,21 @@ test('EventModal uses fallback text when both outcomeText and description are em
     expect(screen.getByText('ui:event.resolved')).toBeInTheDocument()
   })
 })
+
+test('EventModal renders with fallback title/description when canonical GameEvent keys are missing', () => {
+  const handleSelect = vi.fn()
+  const eventWithoutTitleAndDescription = {
+    id: 'missing_copy',
+    options: []
+  }
+
+  render(
+    <EventModal
+      event={eventWithoutTitleAndDescription}
+      onOptionSelect={handleSelect}
+    />
+  )
+
+  expect(screen.getByText('ui:event.untitled')).toBeInTheDocument()
+  expect(screen.getByText('ui:event.noDescription')).toBeInTheDocument()
+})

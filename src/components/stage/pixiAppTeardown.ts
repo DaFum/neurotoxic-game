@@ -50,7 +50,7 @@ function teardownCancelResize(app: DestroyableApp): void {
 
 function teardownResizeTo(app: DestroyableApp): void {
   try {
-    if ('resizeTo' in app) {
+    if (Object.hasOwn(app, 'resizeTo')) {
       app.resizeTo = null
     }
   } catch {

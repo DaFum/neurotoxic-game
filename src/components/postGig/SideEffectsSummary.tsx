@@ -31,7 +31,7 @@ export const SideEffectsSummary = ({
       transition={{ delay: 0.8 }}
       className='mb-8 flex flex-col items-center gap-2 font-mono text-sm'
     >
-      {result.moneyChange ? (
+      {result.moneyChange != null ? (
         <div
           className={
             result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
@@ -41,7 +41,7 @@ export const SideEffectsSummary = ({
         </div>
       ) : null}
 
-      {result.harmonyChange ? (
+      {result.harmonyChange != null ? (
         <div
           className={
             result.harmonyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
@@ -53,7 +53,7 @@ export const SideEffectsSummary = ({
         </div>
       ) : null}
 
-      {result.controversyChange ? (
+      {result.controversyChange != null ? (
         <div
           className={
             result.controversyChange > 0 ? 'text-blood-red' : 'text-toxic-green'
@@ -66,7 +66,7 @@ export const SideEffectsSummary = ({
         </div>
       ) : null}
 
-      {result.loyaltyChange ? (
+      {result.loyaltyChange != null ? (
         <div
           className={
             result.loyaltyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
@@ -78,7 +78,7 @@ export const SideEffectsSummary = ({
         </div>
       ) : null}
 
-      {result.staminaChange || result.moodChange ? (
+      {result.staminaChange != null || result.moodChange != null ? (
         <div className='text-ash-gray'>
           👥{' '}
           {result.targetMember

@@ -20,7 +20,7 @@ vi.mock('../../src/context/GameState', () => ({
 vi.mock('../../src/utils/socialEngine', () => ({
   negotiateDeal: vi.fn().mockReturnValue({
     success: true,
-    status: 'SUCCESS',
+    status: 'ACCEPTED',
     feedback: 'Deal accepted!',
     deal: {
       id: 'test-deal',
