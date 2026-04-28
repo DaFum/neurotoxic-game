@@ -175,7 +175,7 @@ export const ShopItem = React.memo(
 )
 
 ShopItem.displayName = 'ShopItem'
-;(ShopItem as typeof ShopItem & { propTypes: unknown }).propTypes = {
+const shopItemPropTypes = {
   item: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
@@ -193,3 +193,8 @@ ShopItem.displayName = 'ShopItem'
   onBuy: PropTypes.func.isRequired,
   processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
+
+const shopItemWithPropTypes = ShopItem as typeof ShopItem & {
+  propTypes: typeof shopItemPropTypes
+}
+shopItemWithPropTypes.propTypes = shopItemPropTypes

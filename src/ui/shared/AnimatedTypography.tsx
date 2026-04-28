@@ -54,7 +54,10 @@ export const AnimatedSubtitle = ({
   children: ReactNode
 }) => {
   const MotionComponent =
-    typeof as === 'string' ? motionTagAllowlist[as] : motion(as)
+    typeof as === 'string'
+      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
+        motion.h2)
+      : motion(as)
 
   return (
     <MotionComponent
