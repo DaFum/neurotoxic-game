@@ -4,6 +4,10 @@ import { createPixiStageController } from './PixiStageController'
 import { logger } from '../utils/logger'
 import type { PixiController, PixiStageProps } from '../types/components'
 
+type PixiStageComponentType = <TState = unknown>(
+  props: PixiStageProps<TState>
+) => ReturnType<typeof PixiStageComponent>
+
 /**
  * Renders the Pixi.js stage for the rhythm game.
  * [STATE SAFETY BOUNDARY]: The Pixi.js renderer is initialized once per unmount cycle.
@@ -12,11 +16,11 @@ import type { PixiController, PixiStageProps } from '../types/components'
  * @param {{ gameStateRef: object, update: Function, controllerFactory: Function }} props - Component props.
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
-const PixiStageComponent = ({
+const PixiStageComponent = <TState = unknown,>({
   gameStateRef,
   update,
   controllerFactory = createPixiStageController
-}: PixiStageProps) => {
+}: PixiStageProps<TState>) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const updateRef = useRef(update)
   const controllerRef = useRef<PixiController | null>(null)
@@ -71,4 +75,6 @@ PixiStageComponent.propTypes = {
   controllerFactory: PropTypes.func
 }
 
-export const PixiStage = memo(PixiStageComponent)
+export const PixiStage = memo(
+  PixiStageComponent
+) as unknown as PixiStageComponentType

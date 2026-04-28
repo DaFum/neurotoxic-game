@@ -521,11 +521,16 @@ export const applyUnlockHQ = (
   if (itemId == null) {
     return { playerPatch, bandPatch: null, messages: [] }
   }
+  const currentHqUpgrades: string[] = Array.isArray(playerPatch.hqUpgrades)
+    ? playerPatch.hqUpgrades.map(String)
+    : Array.isArray(player.hqUpgrades)
+      ? player.hqUpgrades.map(String)
+      : []
   const nextPlayerPatch: PlayerPatch = {
     ...playerPatch,
-    hqUpgrades: (player.hqUpgrades ?? []).includes(itemId)
-      ? [...(player.hqUpgrades ?? [])]
-      : [...(player.hqUpgrades ?? []), itemId]
+    hqUpgrades: currentHqUpgrades.includes(itemId)
+      ? [...currentHqUpgrades]
+      : [...currentHqUpgrades, itemId]
   }
   let nextBandPatch: BandPatch = null
   const messages: UnlockMessage[] = []

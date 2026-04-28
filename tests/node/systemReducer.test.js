@@ -294,6 +294,12 @@ test('systemReducer - LOAD_GAME', async t => {
             y: 34,
             neighbors: ['next', 7],
             type: 'GIG',
+            metadata: {
+              legacyType: 'boss',
+              difficulty: 2,
+              visited: false,
+              nested: { drop: true }
+            },
             edges: [{ from: 'start', to: 'next', weight: 1 }]
           },
           next: { venueId: 'venue-1', label: 'Next', flags: ['legacy', 2] },
@@ -322,6 +328,11 @@ test('systemReducer - LOAD_GAME', async t => {
             y: 34,
             neighbors: ['next'],
             type: 'GIG',
+            metadata: {
+              legacyType: 'boss',
+              difficulty: 2,
+              visited: false
+            },
             edges: [{ from: 'start', to: 'next', weight: 1 }]
           },
           next: {

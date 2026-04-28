@@ -460,7 +460,7 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
             ? copyFilteredProperties(rawMemberDelta)
             : Object.create(null)
         if (!member) {
-          computedMembersDelta.push(mDelta)
+          computedMembersDelta.push(Object.create(null))
           continue
         }
 

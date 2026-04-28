@@ -283,6 +283,19 @@ describe('purchaseLogicUtils', () => {
       const result = applyUnlockHQ(item, playerPatch, player, band)
       assert.equal(result.bandPatch.harmony, 100)
     })
+
+    test('preserves hq upgrades already staged in playerPatch', () => {
+      const item = { id: 'hq_room_poster_wall' }
+      const playerPatch = { hqUpgrades: ['existing_patch_upgrade'] }
+      const player = { hqUpgrades: ['existing_player_upgrade'] }
+      const band = {}
+      const result = applyUnlockHQ(item, playerPatch, player, band)
+
+      assert.deepStrictEqual(result.playerPatch.hqUpgrades, [
+        'existing_patch_upgrade',
+        'hq_room_poster_wall'
+      ])
+    })
   })
 
   describe('applyPassive', () => {

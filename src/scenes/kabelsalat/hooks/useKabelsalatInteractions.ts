@@ -12,6 +12,8 @@ import type { SocketId } from '../../../types/kabelsalat'
 
 const isCableId = (value: string): value is CableId =>
   Object.hasOwn(CABLE_MAP, value)
+const isSocketId = (value: string): value is SocketId =>
+  Object.hasOwn(SOCKET_DEFS, value)
 
 export const useKabelsalatInteractions = (
   t: (key: string) => string,
@@ -94,6 +96,18 @@ export const useKabelsalatInteractions = (
         !selectedCable
       )
         return
+      if (!isSocketId(socketId)) {
+        if (import.meta.env.DEV) {
+          throw new Error(
+            `Invalid socketId in useKabelsalatInteractions: ${socketId}`
+          )
+        } else {
+          console.error(
+            `Invalid socketId in useKabelsalatInteractions: ${socketId}`
+          )
+          return
+        }
+      }
       if (connections[socketId]) return
 
       if (!isCableId(selectedCable)) {

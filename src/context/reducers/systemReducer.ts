@@ -118,6 +118,29 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     }
     return copied
   }
+  const copySafeFlatObject = (
+    value: unknown
+  ): Record<string, string | number | boolean | null> | null => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return null
+    }
+    const source = value as Record<string, unknown>
+    const copied: Record<string, string | number | boolean | null> = {}
+    for (const key in source) {
+      if (!Object.hasOwn(source, key)) continue
+      if (isForbiddenKey(key)) continue
+      const entry = source[key]
+      if (
+        typeof entry === 'string' ||
+        typeof entry === 'number' ||
+        typeof entry === 'boolean' ||
+        entry === null
+      ) {
+        copied[key] = entry
+      }
+    }
+    return Object.keys(copied).length > 0 ? copied : null
+  }
 
   for (const nodeKey in nodesRecord) {
     if (!Object.hasOwn(nodesRecord, nodeKey)) continue
@@ -182,6 +205,11 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
       const copiedArray = copySafeArray(value)
       if (copiedArray) {
         sanitizedNode[key] = copiedArray
+        continue
+      }
+      const copiedObject = copySafeFlatObject(value)
+      if (copiedObject) {
+        sanitizedNode[key] = copiedObject
       }
     }
 
