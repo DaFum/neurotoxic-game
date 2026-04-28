@@ -131,7 +131,7 @@ export interface StageControllerOptions<TState = unknown> {
   updateRef: MutableRefObject<((dt: number) => void) | null>
 }
 
-export interface PixiStageProps<TState = RhythmGameRefState> {
+export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
   update: (state: unknown) => void
   controllerFactory?: (options: any) => PixiController
