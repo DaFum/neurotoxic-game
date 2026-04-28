@@ -12,11 +12,11 @@ export const hasUpgrade = (
   upgradeId: string
 ): boolean => Array.isArray(upgrades) && upgrades.includes(upgradeId)
 
-const BREAKDOWN_REDUCTIONS: Record<string, number> = {
+const BREAKDOWN_REDUCTIONS = {
   van_suspension: 0.01,
   hq_van_suspension: 0.01,
   hq_van_tyre_spare: 0.05
-}
+} as const satisfies Record<string, number>
 
 /**
  * Calculates the base breakdown chance after applying all upgrade reductions.

@@ -5,6 +5,7 @@ import type { GAME_PHASES } from '../context/gameConstants'
 export type ActionType = ActionTypes[keyof ActionTypes]
 
 export type GamePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic'
 
 export interface GameSettings {
   crtEnabled: boolean
@@ -69,6 +70,7 @@ export interface MapNode {
 export interface GameMap {
   nodes: Record<string, MapNode>
   edges?: Array<{ from: string; to: string }>
+  connections: Array<{ from: string; to: string }>
   [key: string]: unknown
 }
 
@@ -351,7 +353,7 @@ export type GameAction =
       Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
     >
   | Action<ActionTypes['UPDATE_SETTINGS'], UnknownRecord>
-  | Action<ActionTypes['SET_MAP'], GameMap>
+  | Action<ActionTypes['SET_MAP'], GameMap | null>
   | Action<ActionTypes['SET_GIG'], Venue | null>
   | Action<ActionTypes['START_GIG'], Venue>
   | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>

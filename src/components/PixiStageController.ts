@@ -17,7 +17,7 @@ import type { RhythmGameRefState } from '../types/rhythmGame'
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
-class PixiStageController extends BaseStageController {
+class PixiStageController extends BaseStageController<RhythmGameRefState> {
   // Getters and Setters for backward compatibility with existing tests
   get colorMatrix() {
     return this.toxicFilterManager?.colorMatrix ?? null
@@ -97,14 +97,14 @@ class PixiStageController extends BaseStageController {
    */
   _initManagersAndStartLoading() {
     // Initialize Managers and start loading assets in parallel
-    this.crowdManager = new CrowdManager(this.app, this.stageContainer)
+    this.crowdManager = new CrowdManager(this.app!, this.stageContainer)
     const crowdLoad = withTimeout(
       this.crowdManager.loadAssets(),
       'Crowd Assets'
     )
 
     this.laneManager = new LaneManager(
-      this.app,
+      this.app!,
       this.stageContainer,
       this.gameStateRef
     )
@@ -114,14 +114,14 @@ class PixiStageController extends BaseStageController {
     // LaneManager owns the rhythm container.
     const rhythmContainer = this.laneManager.container
 
-    this.effectManager = new EffectManager(this.app, rhythmContainer)
+    this.effectManager = new EffectManager(this.app!, rhythmContainer)
     const effectLoad = withTimeout(
       this.effectManager.loadAssets(),
       'Effect Assets'
     )
 
     this.noteManager = new NoteManager(
-      this.app,
+      this.app!,
       rhythmContainer,
       this.gameStateRef,
       (x: any, y: any, color: any) =>
@@ -151,6 +151,7 @@ class PixiStageController extends BaseStageController {
    */
   manualUpdate(deltaMS: number) {
     if (!this.app || this.isDisposed) return
+    // @ts-expect-error PIXI ticker payload includes deltaMS; shape matches runtime use in handleTicker.
     this.handleTicker({ deltaMS })
   }
 
@@ -169,10 +170,18 @@ class PixiStageController extends BaseStageController {
     if (!state || state.isGameOver) {
       return
     }
+    const stageContainer = this.stageContainer
+    if (!stageContainer) {
+      return
+    }
+    const toxic = this.toxicFilterManager
+    if (!toxic) {
+      return
+    }
 
     const elapsed = getGigTimeMs()
 
-    this.toxicFilterManager.update(state, elapsed, this.stageContainer)
+    toxic.update(state, elapsed, stageContainer)
 
     this.laneManager.update(state)
     this.crowdManager.update(

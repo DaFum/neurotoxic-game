@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 /// <reference types="vite/client" />
+import { useEffect } from 'react'
 import { safeStorageOperation } from '../utils/errorHandler'
 import { logger } from '../utils/logger'
 import type { GameState } from '../types/game'
@@ -19,22 +19,26 @@ type LeaderboardStatsPayload = {
 let leaderboardStatsEndpointUnavailable = false
 let hasLoggedUnavailableEndpoint = false
 
-if ((import.meta as any).hot) {
-  ;(import.meta as any).hot.dispose(() => {
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
     leaderboardStatsEndpointUnavailable = false
     hasLoggedUnavailableEndpoint = false
   })
 }
 
 const getLeaderboardSyncEnabledFlag = () => {
-  const viteFlag = (import.meta as any).env?.VITE_ENABLE_LEADERBOARD_SYNC
+  const viteFlag = import.meta.env?.VITE_ENABLE_LEADERBOARD_SYNC
   if (typeof viteFlag === 'string') {
     return viteFlag.toLowerCase() !== 'false'
   }
 
+  const processEnvSource = globalThis as {
+    process?: { env?: Record<string, string | undefined> }
+  }
   const processFlag =
-    typeof process !== 'undefined'
-      ? process?.env?.VITE_ENABLE_LEADERBOARD_SYNC
+    processEnvSource.process != null &&
+    typeof processEnvSource.process === 'object'
+      ? processEnvSource.process.env?.VITE_ENABLE_LEADERBOARD_SYNC
       : undefined
   if (typeof processFlag === 'string') {
     return processFlag.toLowerCase() !== 'false'
@@ -161,10 +165,10 @@ export const syncLeaderboardStats = async (
  * Hook to sync player stats to the global leaderboards.
  * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = (state: GameState) => {
-  const { player, social } = state || {}
-  const { playerId, playerName, money, day, fame, stats } = player || {}
-  const { totalDistance, conflictsResolved, stageDives } = stats || {}
+export const useLeaderboardSync = (state: GameState): void => {
+  const { playerId, playerName, money, day, fame, stats } = state.player
+  const { totalDistance, conflictsResolved, stageDives } = stats
+  const social = state.social
 
   const totalFollowers = calculateTotalFollowers(social)
 
@@ -189,7 +193,7 @@ export const useLeaderboardSync = (state: GameState) => {
       // 3. Sync Logic
       try {
         const payload = createSyncPayload(
-          playerId,
+          playerId ?? '',
           playerName,
           money,
           day,

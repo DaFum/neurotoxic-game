@@ -241,9 +241,15 @@ export const useRhythmGameScoring = ({
       // Use Tone.js AudioContext clock for hit detection
       const elapsed = getGigTimeMs()
       const toxicModeActive = state.isToxicMode
+      const lane = state.lanes[laneIndex]
+      if (!lane) {
+        throw new Error(
+          `Missing lane at index ${laneIndex} during hit handling`
+        )
+      }
 
       const hitWindow = calculateDynamicHitWindow(
-        (state.lanes[laneIndex]?.hitWindow ?? 120),
+        lane.hitWindow,
         state.modifiers.hitWindowBonus ?? 0,
         laneIndex,
         guitarDifficulty
@@ -259,9 +265,9 @@ export const useRhythmGameScoring = ({
         const originalNote = note.originalNote
         if (
           originalNote &&
-          Number.isInteger(originalNote?.p) &&
-          (originalNote?.p || 0) >= 0 &&
-          (originalNote?.p || 0) <= 127
+          Number.isInteger(originalNote.p) &&
+          (originalNote.p as number) >= 0 &&
+          (originalNote.p as number) <= 127
         ) {
           const velocity =
             typeof originalNote.velocity === 'number' &&
@@ -275,12 +281,7 @@ export const useRhythmGameScoring = ({
             audioTimeMs: toneNowMs,
             maxLeadMs: 30
           })
-          playNoteAtTime(
-            (originalNote?.p || 0),
-            (state.lanes[laneIndex]?.id ?? 'unknown'),
-            scheduledMs / 1000,
-            velocity
-          )
+          playNoteAtTime(originalNote.p as number, lane.id, scheduledMs / 1000, velocity)
         } else {
           audioManager.playSFX('hit') // Fallback
         }

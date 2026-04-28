@@ -31,7 +31,7 @@ export const fetchGenImage = (description: string) => {
   )
 }
 
-const objectUrlCache = new Map()
+const objectUrlCache = new Map<string, Promise<string>>()
 
 /**
  * Fetches a generated image and returns an object URL for use in CSS/styles.
@@ -41,10 +41,11 @@ const objectUrlCache = new Map()
  * @param {string} description - The detailed prompt for the image.
  * @returns {Promise<string>} A blob object URL.
  */
-export const fetchGenImageAsObjectUrl = (description: string) => {
-  if (objectUrlCache.has(description)) {
-    return objectUrlCache.get(description)
-  }
+export const fetchGenImageAsObjectUrl = (
+  description: string
+): Promise<string> => {
+  const cached = objectUrlCache.get(description)
+  if (cached) return cached
 
   const promise = (async () => {
     try {

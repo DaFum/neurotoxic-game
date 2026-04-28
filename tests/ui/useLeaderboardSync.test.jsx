@@ -63,7 +63,18 @@ describe('useLeaderboardSync', () => {
         playerName: '',
         money: 100,
         fame: 0,
-        day: 5
+        day: 5,
+        stats: {
+          totalDistance: 0,
+          conflictsResolved: 0,
+          stageDives: 0
+        }
+      },
+      social: {
+        instagram: 0,
+        tiktok: 0,
+        youtube: 0,
+        newsletter: 0
       }
     }
 
@@ -80,7 +91,18 @@ describe('useLeaderboardSync', () => {
         playerName: 'Player1',
         money: 100,
         fame: 0,
-        day: 5
+        day: 5,
+        stats: {
+          totalDistance: 0,
+          conflictsResolved: 0,
+          stageDives: 0
+        }
+      },
+      social: {
+        instagram: 0,
+        tiktok: 0,
+        youtube: 0,
+        newsletter: 0
       }
     }
 

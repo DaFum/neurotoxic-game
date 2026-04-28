@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGameState } from '../../context/GameState'
+import { GAME_PHASES } from '../../context/gameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 
 const MINIGAME_DURATION = 15
+const FALLBACK_ADVANCE_DELAY_MS = 10_000
 
 export function useAmpLogic() {
-  const { completeAmpCalibration } = useGameState()
+  const { completeAmpCalibration, changeScene } = useGameState()
 
   const [dialValue, setDialValue] = useState(500)
   const [targetValue, setTargetValue] = useState(
@@ -20,6 +22,7 @@ export function useAmpLogic() {
   const accumulatedMsRef = useRef(0)
   const dialValueRef = useRef(dialValue)
   const targetValueRef = useRef(targetValue)
+  const timeLeftRef = useRef(timeLeft)
   const gameStateRef = useRef(null)
 
   useEffect(() => {
@@ -30,12 +33,45 @@ export function useAmpLogic() {
     targetValueRef.current = targetValue
   }, [targetValue])
 
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
+  const finishCalledRef = useRef(false)
+  const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const finishMinigame = useCallback(() => {
+    if (finishCalledRef.current) return
+    finishCalledRef.current = true
+    isCompleteRef.current = true
+    setIsGameOver(true)
+
+    const finalScore =
+      accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
+    completeAmpCalibration(finalScore)
+  }, [completeAmpCalibration])
+
   const handleComplete = useCallback(() => {
     if (isCompleteRef.current) return
-    isCompleteRef.current = true
 
-    setIsGameOver(true)
-  }, [])
+    finishMinigame()
+  }, [finishMinigame])
+
+  useEffect(() => {
+    if (!isGameOver || fallbackTimeoutRef.current) return
+
+    fallbackTimeoutRef.current = setTimeout(() => {
+      fallbackTimeoutRef.current = null
+      changeScene(GAME_PHASES.GIG)
+    }, FALLBACK_ADVANCE_DELAY_MS)
+
+    return () => {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current)
+        fallbackTimeoutRef.current = null
+      }
+    }
+  }, [isGameOver, changeScene])
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
@@ -44,14 +80,15 @@ export function useAmpLogic() {
         return
 
       const deltaSec = deltaMS / 1000
-
-      setTimeLeft(prev => {
-        if (prev <= deltaSec) {
-          handleComplete()
-          return 0
-        }
-        return prev - deltaSec
-      })
+      const nextTimeLeft = timeLeftRef.current - deltaSec
+      if (nextTimeLeft <= 0) {
+        timeLeftRef.current = 0
+        setTimeLeft(0)
+        handleComplete()
+        return
+      }
+      timeLeftRef.current = nextTimeLeft
+      setTimeLeft(nextTimeLeft)
 
       // Approximately 5% chance per 100ms
       if (getSafeRandom() < 0.05 * (deltaMS / 100)) {
@@ -72,17 +109,6 @@ export function useAmpLogic() {
     },
     [handleComplete]
   )
-
-  const finishCalledRef = useRef(false)
-
-  const finishMinigame = useCallback(() => {
-    if (finishCalledRef.current) return
-    finishCalledRef.current = true
-
-    const finalScore =
-      accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
-    completeAmpCalibration(finalScore)
-  }, [completeAmpCalibration])
 
   // Keep gameStateRef up to date for Stage Controller
   useEffect(() => {

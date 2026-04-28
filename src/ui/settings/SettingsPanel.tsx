@@ -6,6 +6,21 @@ import { VisualSettings } from './VisualSettings'
 import { LogSettings } from './LogSettings'
 import { DataManagement } from './DataManagement'
 import { LOG_LEVELS } from '../../utils/logger'
+import type { GameSettings } from '../../types/game'
+
+export interface SettingsPanelProps {
+  settings?: Pick<GameSettings, 'crtEnabled' | 'logLevel'>
+  musicVol?: number
+  sfxVol?: number
+  isMuted?: boolean
+  onMusicChange?: (value: number) => void
+  onSfxChange?: (value: number) => void
+  onToggleMute?: () => void
+  onToggleCRT?: () => void
+  onLogLevelChange?: (level: number) => void
+  onDeleteSave: () => void
+  className?: string
+}
 
 export const SettingsPanel = memo(function SettingsPanel({
   settings,
@@ -19,7 +34,7 @@ export const SettingsPanel = memo(function SettingsPanel({
   onLogLevelChange = () => {},
   onDeleteSave,
   className = ''
-}) {
+}: SettingsPanelProps) {
   return (
     <div className={`space-y-8 ${className}`}>
       {/* Language Settings */}

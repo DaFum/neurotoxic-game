@@ -23,3 +23,7 @@ Applies to `src/ui/bandhq/hooks/**`.
 ## Recent Findings (2026-04)
 
 - Hook outputs consumed by tabs/modals should expose stable open/close semantics so scene-level menu refactors don’t require hook rewrites.
+- In hooks that maintain `processingItemId` locks, validate `item.id` before setting lock refs/state, and keep cleanup in `finally` so pre-try throws cannot leave stale lock state.
+- Fame-currency ownership patches must use the resolved effect (`resolvedEffect`) rather than raw validation effect payloads to avoid mismatched upgrade tracking.
+- Processing-lock state should avoid falsy coercion (`|| null`) for IDs; use nullish-safe assignment so ref/state mirrors stay consistent even on invalid-but-falsy values.
+- Public hooks in this folder should export an explicit named return interface (`useX(...): XResult`) so tab consumers cannot silently drift when fields/functions are reordered or renamed.

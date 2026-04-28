@@ -3,6 +3,22 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
+import type { PlayerState } from '../../types/game'
+import type { VoidTraderItem } from '../../types/components'
+
+interface VoidTraderTabProps {
+  player: PlayerState
+  handleTrade: (item: VoidTraderItem) => void
+  isItemOwned: (item: VoidTraderItem) => boolean
+  isItemDisabled: (item: VoidTraderItem) => boolean
+  processingItemId?: string | number | null
+}
+
+type VoidTraderCatalogItem = VoidTraderItem & {
+  name: string
+  description: string
+  fameCost: number
+}
 
 export const VoidTraderTab = ({
   player,
@@ -10,18 +26,30 @@ export const VoidTraderTab = ({
   isItemOwned,
   isItemDisabled,
   processingItemId
-}: Record<string, unknown>) => {
+}: VoidTraderTabProps) => {
   const { t } = useTranslation()
 
   // Filter for epic/rare contraband that are tradeable in the black market
-  const voidItems = useMemo(() => {
+  const voidItems = useMemo<VoidTraderCatalogItem[]>(() => {
     return [
-      ...(CONTRABAND_BY_RARITY.epic || []),
-      ...(CONTRABAND_BY_RARITY.rare || [])
+      ...(CONTRABAND_BY_RARITY.epic ?? []),
+      ...(CONTRABAND_BY_RARITY.rare ?? [])
     ].map(item => {
       // Determine cost in Fame based on rarity
-      const fameCost = VOID_TRADER_COSTS[item.rarity] ?? 1000
-      return { ...item, fameCost }
+      const rarityKey = item.rarity
+      const isKnownRarity = (
+        val: string | undefined
+      ): val is keyof typeof VOID_TRADER_COSTS => {
+        return typeof val === 'string' && Object.hasOwn(VOID_TRADER_COSTS, val)
+      }
+      const fameCost = isKnownRarity(rarityKey)
+        ? VOID_TRADER_COSTS[rarityKey]
+        : 1000
+      return {
+        ...item,
+        rarity: item.rarity as VoidTraderItem['rarity'],
+        fameCost
+      } as VoidTraderCatalogItem
     })
   }, [])
 
@@ -43,16 +71,18 @@ export const VoidTraderTab = ({
             {t('ui:stats.fame', { defaultValue: 'FAME' })}
           </p>
           <p className='text-xl font-bold text-toxic-green tracking-widest'>
-            {(player as any).fame}
+            {player.fame}
           </p>
         </div>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black'>
         {voidItems.map(item => {
-          const isProcessingThis = processingItemId === item.id
-          const isAnyProcessing = !!processingItemId
-          const disabled = (isItemDisabled as any)(item) || isAnyProcessing
+          const isProcessingThis =
+            processingItemId != null &&
+            String(processingItemId) === String(item.id)
+          const isAnyProcessing = processingItemId != null
+          const disabled = isItemDisabled(item) || isAnyProcessing
 
           return (
             <div
@@ -97,13 +127,13 @@ export const VoidTraderTab = ({
                 </div>
                 <ActionButton
                   variant='primary'
-                  onClick={() => (handleTrade as any)(item)}
+                  onClick={() => handleTrade(item)}
                   disabled={disabled}
                   className='text-xs py-1 px-4 min-w-[120px]'
                 >
                   {isProcessingThis
                     ? t('ui:loading', { defaultValue: 'PROCESSING...' })
-                    : (isItemOwned as any)(item) && !item.stackable
+                    : isItemOwned(item) && !item.stackable
                       ? t('ui:hq.owned', { defaultValue: 'OWNED' })
                       : t('ui:hq.voidTrader.trade', { defaultValue: 'BARTER' })}
                 </ActionButton>
@@ -121,5 +151,5 @@ VoidTraderTab.propTypes = {
   handleTrade: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
   isItemDisabled: PropTypes.func.isRequired,
-  processingItemId: PropTypes.string
+  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }

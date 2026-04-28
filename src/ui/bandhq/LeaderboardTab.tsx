@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { SONGS_DB } from '../../data/songs'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
-import { Panel } from '../shared'
 
 type LeaderboardView =
   | 'BALANCE'
@@ -22,14 +21,14 @@ type LeaderboardEntry = {
   score: number
 }
 
-const VIEW_TO_STAT: Record<Exclude<LeaderboardView, 'SONG'>, string> = {
+const VIEW_TO_STAT = {
   BALANCE: 'balance',
   FAME: 'fame',
   FOLLOWERS: 'followers',
   DISTANCE: 'distance',
   CONFLICTS: 'conflicts',
   STAGE_DIVES: 'stage_dives'
-}
+} as const satisfies Record<Exclude<LeaderboardView, 'SONG'>, string>
 
 const isAbortError = (error: unknown): boolean => {
   return error instanceof DOMException && error.name === 'AbortError'
@@ -92,32 +91,28 @@ export const LeaderboardTab = () => {
             ): entry is Partial<LeaderboardEntry> & Record<string, unknown> =>
               typeof entry === 'object' && entry !== null
           )
-          .map(entry => ({
+          .map((entry, index) => ({
             rank: typeof entry.rank === 'number' ? entry.rank : 0,
             playerId:
               typeof entry.playerId === 'string'
                 ? entry.playerId
-                : 'unknown-player',
+                : `unknown-player-${index}`,
             playerName:
               typeof entry.playerName === 'string'
                 ? entry.playerName
                 : t('ui:leaderboard.unknownPlayer', {
                     defaultValue: 'Unknown'
                   }),
-            score: typeof entry.score === 'number' ? entry.score : 0
+            score:
+              typeof entry.score === 'number' && Number.isFinite(entry.score)
+                ? entry.score
+                : 0
           }))
 
         setRankings(sanitizedEntries)
-      } catch (fetchError) {
-        if (isAbortError(fetchError)) {
-          return
-        }
-
-        const data = await res.json()
-        setRankings(data)
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === 'AbortError') return
-        logger.error('Leaderboard', 'Fetch failed', err)
+      } catch (fetchError: unknown) {
+        if (isAbortError(fetchError)) return
+        logger.error('Leaderboard', 'Fetch failed', fetchError)
         setError(t('ui:leaderboard.load_error'))
       } finally {
         if (!controller.signal.aborted) {
@@ -132,27 +127,6 @@ export const LeaderboardTab = () => {
       controller.abort()
     }
   }, [activeSongId, t, view])
-
-  const viewTitles: Record<LeaderboardView, string> = useMemo(
-    () => ({
-      BALANCE: t('ui:leaderboard.top_100_wealth'),
-      SONG: t('ui:leaderboard.top_100_scores'),
-      FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
-      FOLLOWERS: t('ui:leaderboard.top_100_followers', {
-        defaultValue: 'Top 100 Followers'
-      }),
-      DISTANCE: t('ui:leaderboard.top_100_distance', {
-        defaultValue: 'Top 100 Distance'
-      }),
-      CONFLICTS: t('ui:leaderboard.top_100_conflicts', {
-        defaultValue: 'Top 100 Conflicts'
-      }),
-      STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', {
-        defaultValue: 'Top 100 Stage Dives'
-      })
-    }),
-    [t]
-  )
 
   const views: Array<{ id: LeaderboardView; label: string }> = useMemo(
     () => [
@@ -192,9 +166,11 @@ export const LeaderboardTab = () => {
             aria-selected={view === id}
             aria-controls={`panel-${id}`}
             id={`tab-${id}`}
-            onClick={() => setView(id)}
+            onClick={() => {
+              if (view !== id) setView(id)
+            }}
             disabled={view === id}
-            className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
+            className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : 'cursor-pointer'}`}
           >
             {label}
           </GlitchButton>
@@ -274,13 +250,10 @@ export const LeaderboardTab = () => {
                 </tr>
               </thead>
               <tbody>
-                {rankings.map((entry: any) => {
-                  const safeScore = Number.isFinite(entry?.score)
-                    ? entry?.score
-                    : 0
+                {rankings.map(entry => {
                   return (
                     <tr
-                      key={entry?.playerId}
+                      key={entry.playerId}
                       className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
                     >
                       <td className='py-2 px-2 text-toxic-green'>
@@ -291,14 +264,14 @@ export const LeaderboardTab = () => {
                       </td>
                       <td className='py-2 px-2 text-right text-toxic-green'>
                         {view === 'BALANCE'
-                          ? `€${safeScore.toLocaleString()}`
+                          ? `€${entry.score.toLocaleString()}`
                           : view === 'DISTANCE'
                             ? t('ui:leaderboard.col_value_km', {
-                                value: safeScore.toLocaleString(),
+                                value: entry.score.toLocaleString(),
                                 unit: t('ui:unit.km', { defaultValue: 'km' }),
-                                defaultValue: `${safeScore.toLocaleString()} km`
+                                defaultValue: `${entry.score.toLocaleString()} km`
                               })
-                            : safeScore.toLocaleString()}
+                            : entry.score.toLocaleString()}
                       </td>
                     </tr>
                   )
@@ -307,7 +280,7 @@ export const LeaderboardTab = () => {
             </table>
           </div>
         )}
-      </Panel>
+      </div>
     </div>
   )
 }

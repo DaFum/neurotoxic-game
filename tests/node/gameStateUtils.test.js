@@ -269,7 +269,41 @@ test('calculateAppliedDelta calculates correctly with limits and forbidden keys'
   assert.equal(Object.hasOwn(applied.flags, '__proto__'), false)
   assert.equal(Object.hasOwn(applied.player.stats, '__proto__'), false)
   assert.equal(Object.hasOwn(applied.band.inventory, 'constructor'), false)
-  assert.equal(Object.hasOwn(applied.band.membersDelta, 'prototype'), false)
+  assert.equal(
+    Object.hasOwn(applied.band.membersDelta[0] ?? {}, 'prototype'),
+    false
+  )
+})
+
+test('calculateAppliedDelta emits empty applied delta for missing members', () => {
+  const state = {
+    band: {
+      members: [
+        null,
+        {
+          mood: 50,
+          stamina: 50,
+          staminaMax: 100
+        }
+      ]
+    }
+  }
+  const delta = {
+    band: {
+      membersDelta: [
+        { moodChange: -10, staminaChange: -10 },
+        { moodChange: -10, staminaChange: -10 }
+      ]
+    }
+  }
+
+  const applied = calculateAppliedDelta(state, delta)
+
+  assert.deepEqual(applied.band.membersDelta[0], Object.create(null))
+  assert.deepEqual(applied.band.membersDelta[1], {
+    moodChange: -10,
+    staminaChange: -10
+  })
 })
 
 test('clampVanFuel edge cases', () => {

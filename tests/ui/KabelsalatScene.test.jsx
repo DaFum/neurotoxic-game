@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { render, screen, act, fireEvent } from '@testing-library/react'
 import { KabelsalatScene } from '../../src/scenes/KabelsalatScene'
 import { useGameState } from '../../src/context/GameState'
 
@@ -12,6 +12,7 @@ vi.mock('react-i18next', () => ({
       'ui:minigames.kabelsalat.statusFailed': 'GIG CANCELLED',
       'ui:minigames.kabelsalat.statusPending': 'CABLE MESS DETECTED',
       'ui:minigames.kabelsalat.tMinus': 'T-MINUS',
+      'ui:minigames.kabelsalat.continueButton': 'CONTINUE TO GIG',
       'ui:minigames.kabelsalat.timeValue': '{{count}}s',
       'ui:minigames.kabelsalat.rulesTitle': 'RIGGING PROTOCOL',
       'ui:minigames.kabelsalat.pwrLabel': 'PWR',
@@ -296,6 +297,41 @@ describe('KabelsalatScene - timer and game over', () => {
     })
 
     expect(screen.getByText('9s')).toBeInTheDocument()
+  })
+
+  it('routes to GIG on timeout loss path', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(25000)
+    })
+
+    expect(screen.getByText(/GIG CANCELLED/)).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(3500)
+    })
+
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
+  })
+
+  it('shows manual continue button on game over overlay and advances immediately', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(25000)
+    })
+
+    const continueButton = screen.getByRole('button', {
+      name: 'CONTINUE TO GIG'
+    })
+    fireEvent.click(continueButton)
+
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 })
 

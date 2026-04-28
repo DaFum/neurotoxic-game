@@ -11,6 +11,7 @@ import {
   useCallback,
   useMemo,
   useRef,
+  useState,
   startTransition
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -82,14 +83,12 @@ import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
   GameAction,
-  GameEvent,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
   QuestState,
   SocialState,
-  ToastPayload,
   TradeVoidItemPayload,
   UpdateBandPayload,
   UpdatePlayerPayload
@@ -202,6 +201,9 @@ type GameDispatchActions = {
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
 }
+
+const MAP_GENERATION_MAX_RETRIES = 2
+const MAP_GENERATION_RETRY_DELAY_MS = 250
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
     hasUpgrade: (upgradeId: string) => boolean
@@ -421,15 +423,81 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // This allows actions to be stable (memoized once) while still accessing current state.
   const stateRef = useRef(state)
   stateRef.current = state
+  const mapGenerationAttemptsRef = useRef(0)
+  const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [mapRetryCount, setMapRetryCount] = useState(0)
+
+  const clearMapRetryTimeout = useCallback(() => {
+    if (mapRetryTimeoutRef.current) {
+      clearTimeout(mapRetryTimeoutRef.current)
+      mapRetryTimeoutRef.current = null
+    }
+  }, [])
+
+  const resetMapGenerationRetries = useCallback(() => {
+    clearMapRetryTimeout()
+    mapGenerationAttemptsRef.current = 0
+    setMapRetryCount(0)
+  }, [clearMapRetryTimeout])
 
   // Initialize Map if needed
   useEffect(() => {
     if (!state.gameMap) {
       const generator = new MapGenerator(Date.now())
-      const newMap = generator.generateMap()
-      dispatch(createSetMapAction(newMap))
+      try {
+        const newMap = generator.generateMap()
+        mapGenerationAttemptsRef.current = 0
+        dispatch(createSetMapAction(newMap))
+      } catch (error) {
+        mapGenerationAttemptsRef.current += 1
+        handleError(
+          new StateError('Failed to generate map', {
+            originalError:
+              error instanceof Error ? error.message : String(error),
+            attempt: mapGenerationAttemptsRef.current
+          }),
+          { source: 'GameState.generateMap' }
+        )
+
+        if (mapGenerationAttemptsRef.current <= MAP_GENERATION_MAX_RETRIES) {
+          if (mapRetryTimeoutRef.current) {
+            clearTimeout(mapRetryTimeoutRef.current)
+          }
+          mapRetryTimeoutRef.current = setTimeout(() => {
+            mapRetryTimeoutRef.current = null
+            setMapRetryCount((prev: number) => prev + 1)
+          }, MAP_GENERATION_RETRY_DELAY_MS)
+          // Do not return early — fall through so the cleanup function below is
+          // always returned from this effect, ensuring the pending timeout is
+          // cancelled if the component unmounts during the retry window.
+        } else {
+          dispatch(createSetMapAction(null))
+          mapGenerationAttemptsRef.current = 0
+          dispatch(
+            createAddToastAction({
+              id: getSafeUUID(),
+              message: tRef.current(
+                'ui:error.mapGenerationFailedReturnToMenu',
+                {
+                  defaultValue:
+                    'Map generation failed. Returning to menu for recovery.'
+                }
+              ),
+              type: 'error'
+            })
+          )
+          dispatch(createChangeSceneAction(GAME_PHASES.MENU))
+        }
+      }
     }
-  }, [state.gameMap, dispatch])
+
+    return () => {
+      if (mapRetryTimeoutRef.current) {
+        clearTimeout(mapRetryTimeoutRef.current)
+        mapRetryTimeoutRef.current = null
+      }
+    }
+  }, [state.gameMap, mapRetryCount, dispatch])
 
   // Sync Logger with settings on load/change
   useEffect(() => {
@@ -658,7 +726,24 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     // Access state via ref to keep callback stable
     const currentState = stateRef.current
     const nextDay = currentState.player.day + 1
-    dispatch(createAdvanceDayAction())
+    try {
+      dispatch(createAdvanceDayAction())
+    } catch (error) {
+      handleError(
+        new StateError('Failed to advance day', {
+          originalError: error instanceof Error ? error.message : String(error)
+        }),
+        { source: 'GameState.advanceDay', silent: true }
+      )
+      addToast(
+        tRef.current('ui:error.advanceDayFailed', {
+          defaultValue: 'Could not advance day. Please try again.'
+        }),
+        'error'
+      )
+      return
+    }
+
     addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
   }, [addToast])
 
@@ -666,10 +751,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => {
+    resetMapGenerationRetries()
     const unlocks: string[] =
       safeStorage('loadUnlocks', () => getUnlocks(), [] as string[]) ?? []
     dispatch(createResetStateAction({ unlocks }))
-  }, [])
+  }, [resetMapGenerationRetries])
 
   // Minigame Actions
   const startTravelMinigame = useCallback(
@@ -693,7 +779,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
           damageTaken,
           itemsCollected,
           rngValue,
-          contrabandId,
+          contrabandId ?? undefined,
           instanceId
         )
       )

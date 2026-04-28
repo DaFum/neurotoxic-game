@@ -6,15 +6,17 @@ import {
   useMemo
 } from 'react'
 import { INITIAL_SOCKET_ORDER } from '../constants'
+import type { CableId } from '../constants'
+import type { SocketId } from '../../../types/kabelsalat'
 import { getSafeRandom } from '../../../utils/crypto'
 
 export const useKabelsalatShuffle = (
   isPoweredOn: boolean,
   isGameOver: boolean,
   isShocked: boolean,
-  connections: Record<string, string>,
+  connections: Partial<Record<SocketId, CableId>>,
   isWinningRef: MutableRefObject<boolean>,
-  setSocketOrder: Dispatch<SetStateAction<string[]>>
+  setSocketOrder: Dispatch<SetStateAction<SocketId[]>>
 ) => {
   const unconnectedIds = useMemo(() => {
     return INITIAL_SOCKET_ORDER.filter(id => !connections[id])

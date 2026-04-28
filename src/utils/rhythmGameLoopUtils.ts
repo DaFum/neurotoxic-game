@@ -1,8 +1,9 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
-import type { RhythmGameRefState } from '../types/rhythmGame'
+import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
 import type {
+  AsyncBooleanCallback,
   AsyncVoidCallback,
   CollisionHandler,
   MissHandler,
@@ -31,7 +32,7 @@ interface RhythmTickArgs {
 
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
-  setLastGigStats: (stats: import('../../types/game').GigStats) => void,
+  setLastGigStats: SetLastGigStats,
   endGig: VoidCallback,
   stopAudio: VoidCallback
 ): void => {
@@ -96,8 +97,8 @@ export const processRhythmGameTick = ({
       try {
         stateRef.transportPausedByOverlay = false
         const res = resumeAudio()
-        if (res && typeof res.catch === 'function') {
-          res.catch(err => {
+        if (res && typeof res === 'object' && typeof res.catch === 'function') {
+          res.catch((err: unknown) => {
             logger.debug(
               'RhythmGameLoop',
               'Failed to resume audio via overlay',
@@ -174,7 +175,17 @@ export const processRhythmGameTick = ({
 
   while (i < notes.length) {
     const note = notes[i]
-    if (!note) { i++; continue; }
+    if (!note) {
+      logger.error(
+        'RhythmGameLoop',
+        `Sparse notes invariant violated at index ${i}`
+      )
+      if (i === stateRef.nextMissCheckIndex) {
+        stateRef.nextMissCheckIndex++
+      }
+      i++
+      continue
+    }
 
     if (note.time > now + NOTE_MISS_WINDOW_MS) {
       break

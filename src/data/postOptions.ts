@@ -92,6 +92,31 @@ function hasMemberWithTrait(
   return false
 }
 
+const requireBandMembers = (
+  band: GameState['band'],
+  postId: string
+): BandMember[] => {
+  if (Array.isArray(band?.members) && band.members.length > 0) {
+    for (let i = 0; i < band.members.length; i++) {
+      if (band.members[i] == null) {
+        throw new Error(
+          i18n.t('ui:postOptions.errors.missingBandMembers', {
+            postId,
+            defaultValue: `Post option ${postId} requires at least one band member.`
+          })
+        )
+      }
+    }
+    return band.members
+  }
+  throw new Error(
+    i18n.t('ui:postOptions.errors.missingBandMembers', {
+      postId,
+      defaultValue: `Post option ${postId} requires at least one band member.`
+    })
+  )
+}
+
 /**
  * Registry of all available social media post options.
  * Each option defines its conditions for appearing, base effects, and RNG logic.
@@ -231,19 +256,28 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      // Condition guarantees band.members is a non-empty array.
-      const rawIndex = Math.floor(diceRoll * band.members.length)
-      const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const target = band.members[safeIndex]?.name || 'Unknown'
+      const members = requireBandMembers(band, 'perf_smashed_gear')
+      const rawIndex = Math.floor(diceRoll * members.length)
+      const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
+      const target = members[safeIndex]?.name
+      const targetName =
+        target ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
         platform: SOCIAL_PLATFORMS.TIKTOK.id,
         followers: 2500,
         moneyChange: -300,
-        targetMember: target,
+        targetMember: targetName,
         moodChange: -10,
-        message: `${target}'s gear was destroyed! Viral AF but expensive.`
+        message: i18n.t('ui:postOptions.perf_smashed_gear.message', {
+          defaultValue:
+            "{{member}}'s gear was destroyed! Viral AF but expensive.",
+          member: targetName
+        })
       }
     }
   },
@@ -278,18 +312,15 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      const members = requireBandMembers(band, 'perf_ego_flex')
       // Dynamically select the lead singer or fallback to index 0
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0
-        }
-      }
       const vocalistObj =
-        getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
-      const vocalist = vocalistObj?.name || 'Unknown'
+        getMemberWithTrait(members, 'lead_singer') ?? members[0]
+      const vocalist =
+        vocalistObj?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
@@ -299,7 +330,11 @@ export const POST_OPTIONS = [
         moodChange: 15,
         harmonyChange: -5,
         egoDrop: vocalist, // Triggers ego tracking
-        message: `${vocalist} is feeling like a rock god. The rest of the band? Not so much.`
+        message: i18n.t('ui:postOptions.perf_ego_flex.message', {
+          defaultValue:
+            '{{member}} is feeling like a rock god. The rest of the band? Not so much.',
+          member: vocalist
+        })
       }
     }
   },
@@ -518,18 +553,15 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0
-        }
-      }
-      const rawIndex = Math.floor(diceRoll * band.members.length)
-      const safeIndex = Math.min(Math.max(0, rawIndex), band.members.length - 1)
-      const targetObj = band.members[safeIndex]
-      const target = targetObj?.name || 'Unknown'
+      const members = requireBandMembers(band, 'drama_crowdsurf_fail')
+      const rawIndex = Math.floor(diceRoll * members.length)
+      const safeIndex = Math.min(Math.max(0, rawIndex), members.length - 1)
+      const targetObj = members[safeIndex]
+      const target =
+        targetObj?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       let successChance = 0.5
       if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
@@ -543,7 +575,14 @@ export const POST_OPTIONS = [
           followers: 1000,
           targetMember: target,
           staminaChange: -5,
-          message: `${target} ate pavement, but the fans thought it was hilarious.`
+          message: i18n.t(
+            'ui:postOptions.drama_crowdsurf_fail.successMessage',
+            {
+              defaultValue:
+                '{{member}} ate pavement, but the fans thought it was hilarious.',
+              member: target
+            }
+          )
         }
       } else {
         return {
@@ -553,7 +592,10 @@ export const POST_OPTIONS = [
           followers: -500,
           targetMember: target,
           staminaChange: -5,
-          message: `${target} got dropped. It was just sad to watch.`
+          message: i18n.t('ui:postOptions.drama_crowdsurf_fail.failMessage', {
+            defaultValue: '{{member}} got dropped. It was just sad to watch.',
+            member: target
+          })
         }
       }
     }
@@ -567,17 +609,13 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }: GameState) => {
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          followers: 0
-        }
-      }
+      const members = requireBandMembers(band, 'drama_gear_flex')
       const gearNerd =
-        getMemberWithTrait(band.members, 'gear_nerd')?.name ||
-        band.members[0]?.name || 'Unknown'
+        getMemberWithTrait(members, 'gear_nerd')?.name ??
+        members[0]?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
@@ -585,7 +623,10 @@ export const POST_OPTIONS = [
         followers: 100, // Safe but low
         targetMember: gearNerd,
         moodChange: 5,
-        message: `Guitar geeks unite! ${gearNerd} is happy.`
+        message: i18n.t('ui:postOptions.drama_gear_flex.message', {
+          defaultValue: 'Guitar geeks unite! {{member}} is happy.',
+          member: gearNerd
+        })
       }
     }
   },
@@ -614,10 +655,14 @@ export const POST_OPTIONS = [
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      const members = requireBandMembers(band, 'drama_tour_bus_prank')
       const prankster =
-        getMemberWithTrait(band.members, 'party_animal')?.name ||
-        band.members[1]?.name ||
-        band.members[0]?.name || 'Unknown'
+        getMemberWithTrait(members, 'party_animal')?.name ??
+        members[1]?.name ??
+        members[0]?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
       return {
         type: 'FIXED',
         success: true,
@@ -626,7 +671,10 @@ export const POST_OPTIONS = [
         targetMember: prankster,
         moodChange: 10,
         harmonyChange: -5,
-        message: `${prankster} loved it. The rest of the band is annoyed.`
+        message: i18n.t('ui:postOptions.drama_tour_bus_prank.message', {
+          defaultValue: '{{member}} loved it. The rest of the band is annoyed.',
+          member: prankster
+        })
       }
     }
   },
@@ -725,19 +773,23 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) &&
       band.members.length > 0,
     resolve: ({ band }: GameState) => {
+      const members = requireBandMembers(band, 'comm_gear_review')
       // Find potential gear nerd or fallback to first member
-      if (!band.members || band.members.length === 0) {
-        return {
-          type: 'FIXED',
-          success: false,
-          platform: SOCIAL_PLATFORMS.YOUTUBE.id,
-          followers: 0
-        }
+      const member = getMemberWithTrait(members, 'gear_nerd') ?? members[0]
+      if (!member) {
+        throw new Error('Member is undefined in comm_gear_review resolve')
       }
-      const member =
-        getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
-      const target = member?.name || 'Unknown'
-      const memberId = member?.id || member?.name || 'Unknown' // Use name as fallback ID
+      if (member.id == null && member.name == null) {
+        throw new Error(
+          'Member is missing both id and name in comm_gear_review resolve'
+        )
+      }
+      const target =
+        member?.name ??
+        i18n.t('ui:postOptions.errors.unknownMemberFallback', {
+          defaultValue: 'Unknown'
+        })
+      const memberId = member.id ?? member.name
 
       return {
         type: 'FIXED',
@@ -747,7 +799,11 @@ export const POST_OPTIONS = [
         moneyChange: 100,
         targetMember: target,
         moodChange: 20,
-        message: `${target} finally revealed the secret of the tone. Guitar nerds are losing it.`,
+        message: i18n.t('ui:postOptions.comm_gear_review.message', {
+          defaultValue:
+            '{{member}} finally revealed the secret of the tone. Guitar nerds are losing it.',
+          member: target
+        }),
         unlockTrait: { memberId, traitId: 'gear_nerd' }
       }
     }
@@ -778,12 +834,13 @@ export const POST_OPTIONS = [
       diceRoll
     }: GameState & { diceRoll: number }) => {
       const influencers = social?.influencers || {}
+      const playerMoney = player?.money ?? 0
 
       // Filter by affordability
       const affordableIds = []
       for (const id in influencers) {
         if (!Object.hasOwn(influencers, id)) continue
-        if (isValidAndAffordableInfluencer(influencers[id], player.money)) {
+        if (isValidAndAffordableInfluencer(influencers[id], playerMoney)) {
           affordableIds.push(id)
         }
       }
@@ -811,21 +868,21 @@ export const POST_OPTIONS = [
         affordableIds[
           Math.floor(roll * affordableIds.length) % affordableIds.length
         ]
-      if (!selectedId) return {
-        type: 'FIXED',
+      const instagramPostFailure = {
+        type: 'FIXED' as const,
         success: false,
         platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 0,
-        message: 'Failed to post.'
+        message: i18n.t('ui:postOptions.failedToPost', {
+          defaultValue: 'Failed to post.'
+        }),
+        moneyChange: 0
       }
+
+      if (!selectedId) return instagramPostFailure
+
       const influencer = influencers[selectedId]
-      if (!influencer) return {
-        type: 'FIXED',
-        success: false,
-        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-        followers: 0,
-        message: 'Failed to post.'
-      }
+      if (!influencer) return instagramPostFailure
 
       const cost = getCost(influencer)
       let followersGain = 1000

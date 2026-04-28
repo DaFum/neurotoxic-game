@@ -1,21 +1,21 @@
 # Repository Inventory (Machine-Readable Companion: `docs/repo-inventory.json`)
 
-Generated baseline: 2026-04-16.
+Generated baseline: 2026-04-28.
 
 ## Aggregated tree snapshot
 
-- `src/` (327 files)
+- `src/` (393 files)
   - `src/context/` state container, action creators, reducer slices
   - `src/hooks/` orchestration hooks (travel, arrival, rhythm, minigames)
   - `src/scenes/` scene-level route components
   - `src/utils/` pure logic + side-effect services (audio, save, map, events)
   - `src/components/` Pixi/scene-level rendering helpers
   - `src/ui/` reusable UI components
-- `tests/` (351 files)
+- `tests/` (357 files)
   - node:test suites under `tests/node`, reducers/context/event and golden-path checks
   - Vitest suites under `tests/ui` and mixed logic suites under `tests/utils`
-- `.agents/` (125 files) and `.claude/` (123 files)
-  - mirrored skill trees with substantial overlap (76 matching relative file paths)
+- `.agents/` (191 files) and `.claude/` (131 files)
+  - mirrored skill trees with substantial overlap (81 matching relative file paths)
 - `.github/workflows/`
   - `test.yml`, `deploy.yml`, `lint-fix-preview.yml`
 - `scripts/`
@@ -25,45 +25,45 @@ Generated baseline: 2026-04-16.
 
 Data source: `docs/repo-inventory.json`.
 
-- Total files indexed: **1035** (repo-wide count; not limited to the top-level snapshot bullets above).
-- Modules with explicit exports: **349**
-- Hook modules (`src/hooks/**`): **29**
-- Context/reducer modules (`src/context/**`): **17**
-- Utility modules (`src/utils/**`): **62**
-- Scene modules (`src/scenes/**`): **58**
-- UI/component modules (`src/ui/**`, `src/components/**`): **110**
+- Total files indexed: **823** (repo-wide count; not limited to the top-level snapshot bullets above).
+- Files with explicit exports: **367**
+- Hook modules (`src/hooks/**`): **37**
+- Context/reducer modules (`src/context/**`): **20**
+- Utility modules (`src/utils/**`): **69**
+- Scene modules (`src/scenes/**`): **69**
+- UI/component modules (`src/ui/**`, `src/components/**`): **131**
 
 ## Domain map and canonical paths
 
 ### App bootstrap / routing
 
-- Canonical boot: `src/main.jsx` -> `src/App.jsx`.
-- Scene transitions are centralized through context actions (`src/context/actionCreators.js`, `src/context/gameReducer.js`).
+- Canonical boot: `src/main.tsx` -> `src/App.tsx`.
+- Scene transitions are centralized through context actions (`src/context/actionCreators.ts`, `src/context/gameReducer.ts`).
 
 ### Context / reducer / state
 
-- Public state API: `useGameState`, `useGameSelector`, `useGameActions`, `useGameDispatch`, `GameStateProvider` in `src/context/GameState.jsx`. `src/ui/BandHQ.jsx` and `src/ui/ToastOverlay.jsx` consume `useGameSelector`/`useGameActions`.
-- Reducer entry: `gameReducer` in `src/context/gameReducer.js`.
+- Public state API: `useGameState`, `useGameSelector`, `useGameActions`, `useGameDispatch`, `GameStateProvider` in `src/context/GameState.tsx`. `src/ui/BandHQ.tsx` and `src/ui/ToastOverlay.tsx` consume `useGameSelector`/`useGameActions`.
+- Reducer entry: `gameReducer` in `src/context/gameReducer.ts`.
 
 ### Hooks
 
-- Travel orchestration: `src/hooks/useTravelLogic.js`.
-- Arrival orchestration after travel minigame: `src/hooks/useArrivalLogic.js`.
-- Rhythm orchestration facade + subhooks: `src/hooks/useRhythmGameLogic.js`, `src/hooks/rhythmGame/*`.
+- Travel orchestration: `src/hooks/useTravelLogic.ts`.
+- Arrival orchestration after travel minigame: `src/hooks/useArrivalLogic.ts`.
+- Rhythm orchestration facade + subhooks: `src/hooks/useRhythmGameLogic.ts`, `src/hooks/rhythmGame/*`.
 
 ### Travel / arrival (focus)
 
-- Canonical node-type behavior and event trigger helper: `src/utils/arrivalUtils.js`.
-- Travel state updates at arrival: `src/utils/travelLogicUtils.js`.
-- Access/resource checks: `src/utils/travelUtils.js`.
+- Canonical node-type behavior and event trigger helper: `src/utils/arrivalUtils.ts`.
+- Travel state updates at arrival: `src/utils/travelLogicUtils.ts`.
+- Access/resource checks: `src/utils/travelUtils.ts`.
 - **Current canonical orchestration split:**
   - Overworld click-to-travel path: `useTravelLogic`
   - Minigame-completion arrival path: `useArrivalLogic`
 
 ### Audio
 
-- Single orchestrator service: `src/utils/AudioManager.js` + `src/utils/audio/*`.
-- Hook integration boundary: `src/hooks/rhythmGame/useRhythmGameAudio.js`.
+- Single orchestrator service: `src/utils/AudioManager.ts` + `src/utils/audio/*`.
+- Hook integration boundary: `src/hooks/rhythmGame/useRhythmGameAudio.ts`.
 
 ### API/backend-near helpers
 

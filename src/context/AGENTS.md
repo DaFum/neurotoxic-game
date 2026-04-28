@@ -38,3 +38,6 @@ Applies to `src/context/**`.
 ## Recent Findings (2026-04)
 
 - UI refactors that add/remove actionable entries should audit action creators for orphaned dispatch paths and keep contracts explicit.
+- Context boundary effects should catch and recover from strict utility failures (map/event generation) so invariant throws never blank the provider tree.
+- Map generation recovery should prefer bounded retry before committing an empty-map fallback; empty fallback prevents provider crashes but should only happen after retry budget is exhausted.
+- In action wrappers that toast derived values after dispatch (e.g., `advanceDay`), compute derived values from the pre-dispatch snapshot; `stateRef.current` updates on the next render, not immediately after `dispatch`.

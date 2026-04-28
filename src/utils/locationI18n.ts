@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 const VENUE_NAMESPACE = 'venues:'
 const VENUE_NAME_SUFFIX = '.name'
 
@@ -7,7 +9,11 @@ const toVenueKey = (location: string) => {
   return `${VENUE_NAMESPACE}${location}${VENUE_NAME_SUFFIX}`
 }
 
-export const translateLocation = (t: any, location: string, fallback = 'Unknown') => {
+export const translateLocation = (
+  t: TFunction,
+  location: string,
+  fallback = 'Unknown'
+) => {
   if (typeof t !== 'function') return fallback
 
   const key = toVenueKey(location)

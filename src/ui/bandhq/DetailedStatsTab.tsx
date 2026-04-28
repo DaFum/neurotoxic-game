@@ -4,6 +4,13 @@ import { ProgressBar, Panel, Tooltip } from '../shared'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
+import type {
+  PlayerState,
+  BandState,
+  SocialState,
+  BandMember as GameBandMember,
+  QuestState
+} from '../../types/game'
 
 // --- Helpers ---
 
@@ -20,85 +27,11 @@ interface CharacterDefinition {
   traits?: CharacterTrait[]
 }
 
-interface BandMember {
-  name: string
-  role?: string
-  stamina?: number
-  mood?: number
-  skill?: number
-  charisma?: number
-  technical?: number
-  improv?: number
-  composition?: number
-  baseStats?: Partial<
-    Record<
-      'skill' | 'charisma' | 'technical' | 'improv' | 'composition',
-      number
-    >
-  >
-  traits?: Record<string, CharacterTrait>
-  equipment?: Record<string, unknown>
-}
-
-interface PlayerData {
-  money: number
-  fame: number
-  fameLevel?: number
-  day: number
-  time?: string | number
-  location?: string
-  totalTravels?: number
-  passiveFollowers?: number
-  hqUpgrades?: string[]
-  stats?: {
-    proveYourselfMode?: boolean
-  }
-  van?: {
-    fuel?: number
-    condition?: number
-    breakdownChance?: number
-    upgrades?: string[]
-  }
-}
-
-interface SocialDeal {
-  id: string
-}
-
-interface SocialData {
-  instagram?: number
-  tiktok?: number
-  youtube?: number
-  newsletter?: number
-  viral?: number
-  trend?: string
-  reputationCooldown?: number
-  activeDeals?: SocialDeal[]
-  loyalty?: number
-  controversyLevel?: number
-  egoFocus?: string
-}
-
-interface BandData {
-  harmony?: number
-  luck?: number
-  inventorySlots?: number
-  inventory?: Record<string, unknown>
-  performance?: {
-    guitarDifficulty?: number
-    drumMultiplier?: number
-    crowdDecay?: number
-  }
-  members?: BandMember[]
-}
-
-interface ActiveQuest {
-  id: string
-  label: string
-  deadline?: number
-  progress?: number
-  required?: number
-}
+type BandMember = GameBandMember
+type PlayerData = PlayerState
+type SocialData = SocialState
+type BandData = BandState
+type ActiveQuest = QuestState
 
 interface DetailRowProps {
   label: ReactNode
@@ -159,7 +92,11 @@ const CareerOverviewSection = ({
   player,
   t
 }: { player: PlayerData } & BasicTProps) => {
-  const locationName = translateLocation(t, player.location, player.location)
+  const locationName = translateLocation(
+    t,
+    player.location ?? '',
+    player.location ?? ''
+  )
   return (
     <Panel
       title={t('ui:stats.career_overview', {
@@ -325,9 +262,9 @@ const SocialReachSection = ({
         />
         <DetailRow
           label={t('ui:stats.controversy', { defaultValue: 'Controversy' })}
-          value={`${Math.min(100, social?.controversyLevel ?? 0)}/100`}
+          value={`${Math.min(100, social.controversyLevel ?? 0)}/100`}
           subtext={
-            (social?.controversyLevel ?? 0) >= 100
+            (social.controversyLevel ?? 0) >= 100
               ? t('ui:stats.shadowbanned', {
                   defaultValue: 'SHADOWBANNED (-75% Growth)'
                 })
@@ -335,7 +272,7 @@ const SocialReachSection = ({
                   defaultValue: 'Risk of Shadowban'
                 })
           }
-          locked={!isUnlocked(social?.controversyLevel ?? 0)}
+          locked={!isUnlocked(social.controversyLevel ?? 0)}
         />
       </div>
     </Panel>
@@ -450,26 +387,54 @@ const ActiveQuestsSection = ({
       </div>
     ) : (
       <div className='space-y-4'>
-        {activeQuests.map(q => (
-          <div
-            key={q.id}
-            className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
-          >
-            <div className='flex justify-between items-center text-xs'>
-              <span className='font-bold text-star-white'>{q.label}</span>
-              <span className='text-ash-gray'>
-                {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
-              </span>
+        {activeQuests.map(q => {
+          const hasValidRequired =
+            typeof q.required === 'number' && q.required >= 1
+          if (!hasValidRequired) {
+            return (
+              <div
+                key={q.id}
+                className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
+              >
+                <div className='flex justify-between items-center text-xs'>
+                  <span className='font-bold text-star-white'>
+                    {q.label ?? q.id}
+                  </span>
+                  <span className='text-blood-red'>
+                    {t('ui:detailedStats.invalidQuestRequirement', {
+                      defaultValue: 'Invalid quest requirement'
+                    })}
+                  </span>
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div
+              key={q.id}
+              className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
+            >
+              <div className='flex justify-between items-center text-xs'>
+                <span className='font-bold text-star-white'>
+                  {q.label ?? q.id}
+                </span>
+                {q.deadline != null ? (
+                  <span className='text-ash-gray'>
+                    {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
+                  </span>
+                ) : null}
+              </div>
+              <ProgressBar
+                value={q.progress ?? 0}
+                max={q.required ?? 1}
+                color='bg-toxic-green'
+                size='mini'
+                showValue
+              />
             </div>
-            <ProgressBar
-              value={q.progress || 0}
-              max={q.required || 1}
-              color='bg-toxic-green'
-              size='mini'
-              showValue
-            />
-          </div>
-        ))}
+          )
+        })}
       </div>
     )}
   </Panel>
@@ -491,7 +456,7 @@ const BandMetricsSection = ({
     </div>
     <DetailRow
       label={t('ui:detailedStats.luck', { defaultValue: 'Luck' })}
-      value={band.luck || 0}
+      value={band.luck ?? 0}
       subtext={t('ui:detailedStats.luckDesc', {
         defaultValue: 'Affects random events'
       })}
@@ -563,7 +528,7 @@ const InventoryEquipmentSection = ({
               ? t('ui:ui.owned', { defaultValue: 'OWNED' })
               : val === false
                 ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
-                : val
+                : String(val)
           }
           locked={!isUnlocked(val)}
         />
@@ -608,16 +573,14 @@ const MemberTraits = ({ member, t }: { member: BandMember } & BasicTProps) => {
         className='w-full'
         content={
           <div className='text-left'>
-            <div className='font-bold mb-1'>
-              {t(trait.name) as React.ReactNode}
-            </div>
-            <div className='mb-2'>{t(trait.desc) as React.ReactNode}</div>
+            <div className='font-bold mb-1'>{t(trait.name)}</div>
+            <div className='mb-2'>{t(trait.desc)}</div>
             {!isTraitActive && (
               <div className='text-ash-gray italic border-t border-ash-gray/30 pt-1'>
                 {t('ui:detailedStats.toUnlock', {
                   defaultValue: 'To Unlock'
                 })}
-                : {t(trait.unlockHint) as React.ReactNode}
+                : {t(trait.unlockHint)}
               </div>
             )}
           </div>
@@ -780,7 +743,14 @@ export const DetailedStatsTab = ({
   activeQuests = [],
   venueBlacklist = [],
   reputationByRegion = {}
-}: any) => {
+}: {
+  player: PlayerData
+  band: BandData
+  social: SocialData
+  activeQuests?: ActiveQuest[]
+  venueBlacklist?: string[]
+  reputationByRegion?: Record<string, number>
+}) => {
   const { t } = useTranslation(['ui', 'items', 'venues', 'traits'])
 
   return (

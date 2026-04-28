@@ -1,5 +1,6 @@
 import { HQ_ITEMS } from '../data/hqItems'
 import { bandHasTrait } from './traitLogic'
+import { StateError } from './errorHandler'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -9,29 +10,9 @@ import {
   calculateFameLevel
 } from './gameStateUtils'
 import type { PlayerState, BandState, BandMember } from '../types/game'
+import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 
 type Inventory = Record<string, unknown>
-
-type Effect = {
-  type?: string
-  item?: string
-  value?: any
-  target?: string
-  stat?: string
-  key?: string
-  id?: string
-}
-
-type PurchaseItem = {
-  id?: string
-  cost?: number
-  currency?: string
-  category?: string
-  effect?: Effect
-  effects?: Effect[]
-  oneTime?: boolean
-  [k: string]: any
-}
 
 type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
   van?: Partial<PlayerState['van']>
@@ -45,7 +26,11 @@ type EffectHandler = (
   player: PlayerState,
   band: BandState | null
 ) =>
-  | { playerPatch?: PlayerPatch; bandPatch?: BandPatch; messages?: any[] }
+  | {
+      playerPatch?: PlayerPatch
+      bandPatch?: BandPatch
+      messages?: UnlockMessage[] | undefined
+    }
   | undefined
 
 // Safely read a numeric property from an unknown object.
@@ -96,7 +81,7 @@ const allGearItems = [
 
 allGearItems.forEach((item: PurchaseItem) => {
   if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
-    if (item.id) GEAR_LOOKUP.set(item.id, item)
+    if (item.id) GEAR_LOOKUP.set(String(item.id), item)
     const e = getPrimaryEffect(item)
     if (e?.item) {
       GEAR_LOOKUP.set(e.item, item)
@@ -203,10 +188,11 @@ export const isItemOwned = (
     effect.type === 'inventory_set' || effect.type === 'inventory_add'
       ? effect.item
       : null
+  const itemId = item.id != null ? String(item.id) : null
 
   return (
-    (player.van?.upgrades ?? []).includes(item.id as string) ||
-    (player.hqUpgrades ?? []).includes(item.id as string) ||
+    (itemId != null && (player.van?.upgrades ?? []).includes(itemId)) ||
+    (itemId != null && (player.hqUpgrades ?? []).includes(itemId)) ||
     (effect.type === 'inventory_set'
       ? band.inventory?.[inventoryKey as string] === true
       : false)
@@ -254,13 +240,32 @@ export const applyInventorySet = (
 export const applyInventoryAdd = (
   effect: Effect,
   bandInventory?: Inventory
-) => ({
-  inventory: {
-    ...(bandInventory ?? {}),
-    [effect.item as string]:
-      ((bandInventory ?? {})[effect.item as string] || 0) + effect.value
+) => {
+  if (typeof effect.item !== 'string') {
+    throw new StateError(
+      `Invalid effect item for inventory_add: ${String(effect.item)}`
+    )
   }
-})
+  return {
+    inventory: {
+      ...(bandInventory ?? {}),
+      [effect.item]: (() => {
+        const previousValue = (bandInventory ?? {})[effect.item]
+        const safePrevious =
+          typeof previousValue === 'number' && Number.isFinite(previousValue)
+            ? previousValue
+            : 0
+        const parsedAddend = Number(effect.value ?? 0)
+        if (!Number.isFinite(parsedAddend)) {
+          throw new StateError(
+            `Invalid inventory_add value for "${effect.item}": ${String(effect.value)}`
+          )
+        }
+        return safePrevious + parsedAddend
+      })()
+    }
+  }
+}
 
 /**
  * Applies stat modifier effect
@@ -277,7 +282,7 @@ export const applyStatModifier = (
   band: BandState
 ): { playerPatch: PlayerPatch; bandPatch: BandPatch } => {
   const val = Number(effect.value ?? 0)
-  let nextPlayerPatch: PlayerPatch = { ...playerPatch }
+  const nextPlayerPatch: PlayerPatch = { ...playerPatch }
   let nextBandPatch: BandPatch = null
 
   switch (effect.target) {
@@ -387,7 +392,7 @@ export const validatePurchase = (
 /**
  * Registry of effect handlers to process different purchase effect types
  */
-export const EFFECT_HANDLERS: Record<string, EffectHandler> = {
+export const EFFECT_HANDLERS: Record<Effect['type'], EffectHandler> = {
   inventory_set: (effect, _item, _playerPatch, _player, band) => {
     return { bandPatch: applyInventorySet(effect, band?.inventory) }
   },
@@ -403,7 +408,7 @@ export const EFFECT_HANDLERS: Record<string, EffectHandler> = {
       player,
       band as BandState
     )
-    let nextPlayerPatch = result.playerPatch
+    const nextPlayerPatch = result.playerPatch
 
     if (item.oneTime !== false) {
       const vanState = nextPlayerPatch.van ?? player.van
@@ -429,7 +434,7 @@ export const EFFECT_HANDLERS: Record<string, EffectHandler> = {
 
   passive: (effect, item, playerPatch, player, _band) => {
     const result = applyPassive(effect, playerPatch, player)
-    let nextPlayerPatch = result.playerPatch
+    const nextPlayerPatch = result.playerPatch
 
     // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
     const vanState = nextPlayerPatch.van ?? player.van
@@ -455,10 +460,6 @@ export const processPurchaseEffect = (
   player: PlayerState,
   band: BandState
 ) => {
-  if (!effect.type) {
-    return { errorType: 'unknown_effect', effectType: effect.type }
-  }
-
   const handler = EFFECT_HANDLERS[effect.type]
 
   if (!handler) {
@@ -483,9 +484,13 @@ export const applyUnlockUpgrade = (
   playerVan: Partial<PlayerState['van']> | undefined
 ): PlayerPatch => {
   const upgradeId = effect.id ? effect.id : item.id
+  if (upgradeId == null) {
+    return playerPatch
+  }
+  const upgradeIdStr = String(upgradeId)
   const currentUpgrades = playerVan?.upgrades ?? []
 
-  if (currentUpgrades.includes(upgradeId as string)) {
+  if (currentUpgrades.includes(upgradeIdStr)) {
     return playerPatch
   }
 
@@ -493,7 +498,7 @@ export const applyUnlockUpgrade = (
     ...playerPatch,
     van: {
       ...(playerVan ?? {}),
-      upgrades: [...currentUpgrades, upgradeId as string]
+      upgrades: [...currentUpgrades, upgradeIdStr]
     }
   }
 }
@@ -512,12 +517,23 @@ export const applyUnlockHQ = (
   player: PlayerState,
   band: BandState
 ) => {
-  let nextPlayerPatch: PlayerPatch = {
+  const itemId = item.id != null ? String(item.id) : null
+  if (itemId == null) {
+    return { playerPatch, bandPatch: null, messages: [] }
+  }
+  const currentHqUpgrades: string[] = Array.isArray(playerPatch.hqUpgrades)
+    ? playerPatch.hqUpgrades.map(String)
+    : Array.isArray(player.hqUpgrades)
+      ? player.hqUpgrades.map(String)
+      : []
+  const nextPlayerPatch: PlayerPatch = {
     ...playerPatch,
-    hqUpgrades: [...(player.hqUpgrades ?? []), item.id as string]
+    hqUpgrades: currentHqUpgrades.includes(itemId)
+      ? [...currentHqUpgrades]
+      : [...currentHqUpgrades, itemId]
   }
   let nextBandPatch: BandPatch = null
-  let messages: any[] = []
+  const messages: UnlockMessage[] = []
 
   // Special item effects
   switch (item.id) {
@@ -612,7 +628,7 @@ export const applyPassive = (
   playerPatch: PlayerPatch,
   player: PlayerState
 ) => {
-  let nextPlayerPatch: PlayerPatch = { ...playerPatch }
+  const nextPlayerPatch: PlayerPatch = { ...playerPatch }
   let nextBandPatch: BandPatch = null
 
   if (effect.key === 'harmony_regen_travel') {

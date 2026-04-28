@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types'
 import { Loader2 } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import PropTypes from 'prop-types'
 
 type GlitchButtonVariant = 'primary' | 'danger' | 'owned' | 'warning'
 type GlitchButtonSize = 'sm' | 'lg'
@@ -81,7 +81,7 @@ export const GlitchButton = ({
       aria-disabled={isIntervention}
       aria-busy={isLoading}
       className={`
-        relative ${(sizeClasses as any)[size] || sizeClasses.lg} bg-void-black
+        relative ${sizeClasses[size]} bg-void-black
         font-[Metal_Mania] font-bold uppercase tracking-widest
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
@@ -92,9 +92,7 @@ export const GlitchButton = ({
     >
       <span
         className={`relative z-10 flex items-center justify-center gap-2 ${
-          isIntervention || variant === 'owned'
-            ? ''
-            : 'group-hover:animate-pulse'
+          isIntervention ? '' : 'group-hover:animate-pulse'
         } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}

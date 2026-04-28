@@ -1,6 +1,9 @@
 export type VoidCallback = () => void
 
-export type AsyncCallback<TResult = void> = () => void | Promise<TResult | void>
+export type AsyncCallback<TResult = void> = () =>
+  | TResult
+  | void
+  | Promise<TResult | void>
 export type AsyncVoidCallback = AsyncCallback<void>
 export type AsyncBooleanCallback = AsyncCallback<boolean>
 

@@ -2,24 +2,50 @@ import { useState, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { generateLightningSeeds } from './utils'
 import { INITIAL_SOCKET_ORDER, TIME_LIMIT } from './constants'
+import type { CableId } from './constants'
+import type { SocketId } from '../../types/kabelsalat'
 import { useKabelsalatBackground } from './hooks/useKabelsalatBackground'
 import { useKabelsalatTimer } from './hooks/useKabelsalatTimer'
 import { useKabelsalatShuffle } from './hooks/useKabelsalatShuffle'
 import { useKabelsalatInteractions } from './hooks/useKabelsalatInteractions'
 import { useKabelsalatGameEnd } from './hooks/useKabelsalatGameEnd'
 
-export const useKabelsalatState = () => {
+import type { TFunction } from 'i18next'
+
+export interface KabelsalatState {
+  t: TFunction<['ui'], undefined>
+  selectedCable: CableId | null
+  connections: Partial<Record<SocketId, CableId>>
+  isShocked: boolean
+  faultReason: string
+  isPoweredOn: boolean
+  timeLeft: number
+  isGameOver: boolean
+  socketOrder: SocketId[]
+  lightningSeeds: ReturnType<typeof generateLightningSeeds>
+  bgTextureUrl: string | null
+  handleCableClick: (cableId: CableId) => void
+  handleSocketClick: (socketId: SocketId) => void
+  isPowerConnected: boolean
+  forceAdvance: (isPowered: boolean) => void
+}
+
+export const useKabelsalatState = (): KabelsalatState => {
   const { t } = useTranslation(['ui'])
 
   // Core State
-  const [selectedCable, setSelectedCable] = useState<string | null>(null)
-  const [connections, setConnections] = useState<Record<string, string>>({})
+  const [selectedCable, setSelectedCable] = useState<CableId | null>(null)
+  const [connections, setConnections] = useState<
+    Partial<Record<SocketId, CableId>>
+  >({})
   const [isShocked, setIsShocked] = useState(false)
   const [faultReason, setFaultReason] = useState('')
   const [isPoweredOn, setIsPoweredOn] = useState(false)
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
   const [isGameOver, setIsGameOver] = useState(false)
-  const [socketOrder, setSocketOrder] = useState<string[]>(INITIAL_SOCKET_ORDER)
+  const [socketOrder, setSocketOrder] = useState<SocketId[]>([
+    ...INITIAL_SOCKET_ORDER
+  ])
 
   const isWinningRef = useRef(false)
 
@@ -38,7 +64,11 @@ export const useKabelsalatState = () => {
   )
 
   // 3. Game End
-  useKabelsalatGameEnd(isPoweredOn, isGameOver, timeLeft)
+  const { forceAdvance } = useKabelsalatGameEnd(
+    isPoweredOn,
+    isGameOver,
+    timeLeft
+  )
 
   // 4. Shuffle
   useKabelsalatShuffle(
@@ -85,6 +115,7 @@ export const useKabelsalatState = () => {
     bgTextureUrl,
     handleCableClick,
     handleSocketClick,
-    isPowerConnected: !!connections['power']
+    isPowerConnected: !!connections['power'],
+    forceAdvance
   }
 }

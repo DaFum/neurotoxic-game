@@ -18,10 +18,38 @@
 
 import { ALL_VENUES } from '../data/venues'
 import { StateError } from './errorHandler'
+import type { Venue } from '../types/game'
 
-let cachedHomeVenue: any = null
-let cachedFinaleVenue: any = null
+type MapConnection = { from: string; to: string }
+type GeneratedMapNode = {
+  id: string
+  layer: number
+  venue: Venue
+  status: 'unlocked' | 'completed' | 'locked'
+  type: 'START' | 'GIG' | 'SPECIAL' | 'REST_STOP' | 'FESTIVAL' | 'FINALE'
+  x: number
+  y: number
+}
+type MapGeneratorState = {
+  layers: GeneratedMapNode[][]
+  nodes: Record<string, GeneratedMapNode>
+  nodeList: GeneratedMapNode[]
+  connections: MapConnection[]
+}
+type VenuePools = {
+  easyVenues: Venue[]
+  mediumVenues: Venue[]
+  hardVenues: Venue[]
+}
+
+let cachedHomeVenue: Venue | null = null
+let cachedFinaleVenue: Venue | null = null
 let cachedVenuesLength: number = -1
+
+const getVenueCoord = (venue: Venue, axis: 'x' | 'y', fallback: number) => {
+  const raw = venue[axis]
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
+}
 
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
@@ -52,13 +80,13 @@ export class MapGenerator {
    * @param {number} [depth=10] - The number of layers in the map.
    * @returns {object} The generated map object containing layers, nodes, and connections.
    */
-  generateMap(depth: number = 10): any {
+  generateMap(depth: number = 10): MapGeneratorState {
     const validDepth = Math.floor(depth)
     if (!Number.isFinite(validDepth) || validDepth < 1) {
       return { layers: [], nodes: {}, nodeList: [], connections: [] }
     }
 
-    const map: any = {
+    const map: MapGeneratorState = {
       layers: [],
       nodes: {},
       nodeList: [],
@@ -67,8 +95,8 @@ export class MapGenerator {
 
     // Layer 0: Stendal (Home)
     if (cachedVenuesLength !== ALL_VENUES.length) {
-      cachedHomeVenue = undefined
-      cachedFinaleVenue = undefined
+      cachedHomeVenue = null
+      cachedFinaleVenue = null
       for (const v of ALL_VENUES) {
         if (v.id === 'stendal_proberaum') {
           cachedHomeVenue = v
@@ -89,63 +117,48 @@ export class MapGenerator {
         'Home venue "stendal_proberaum" not found in ALL_VENUES'
       )
     }
-    const startNode = {
+    const startNode: GeneratedMapNode = {
       id: 'node_0_0',
       layer: 0,
       venue: homeVenue,
-      status: 'unlocked', // unlocked, completed, locked
-      type: 'START'
+      status: 'unlocked' as const, // unlocked, completed, locked
+      type: 'START' as const,
+      x: getVenueCoord(homeVenue, 'x', 50),
+      y: getVenueCoord(homeVenue, 'y', 10)
     }
     map.layers.push([startNode])
     map.nodes[startNode.id] = startNode
     map.nodeList.push(startNode)
 
     // Filter venues by difficulty for progression
-    const easyVenues: any[] = []
-    const mediumVenues: any[] = []
-    const hardVenues: any[] = []
+    const easyVenues: Venue[] = []
+    const mediumVenues: Venue[] = []
+    const hardVenues: Venue[] = []
     for (let i = 0; i < ALL_VENUES.length; i++) {
       const v = ALL_VENUES[i]
       if (!v) continue
-      if (v.diff !== undefined && v.diff <= 2) {
+      const diff = v.diff
+      if (typeof diff === 'number' && diff <= 2) {
         if (v.type !== 'HOME') easyVenues.push(v)
-      } else if (v.diff !== undefined && v.diff === 3) {
-        mediumVenues.push(v)
-      } else if (v.diff !== undefined && v.diff >= 4) {
-        hardVenues.push(v)
+      } else if (diff === 3) {
+        if (v.type !== 'HOME') mediumVenues.push(v)
+      } else if (typeof diff === 'number' && diff >= 4) {
+        if (v.type !== 'HOME') hardVenues.push(v)
       }
     }
 
     // Track used venues to avoid duplicates
-    const usedVenueIds = new Set()
+    const usedVenueIds = new Set<string>()
     if (homeVenue) usedVenueIds.add(homeVenue.id)
 
     // Pre-reserve Finale Venue (Leipzig Arena) so it is not picked randomly
     if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
-    // Optimization: Maintain dynamic available lengths to avoid .filter() in loops
-    let availableEasyLength = 0
-    let availableMediumLength = 0
-    let availableHardLength = 0
-
-    for (let i = 0; i < easyVenues.length; i++) {
-      if (!usedVenueIds.has(easyVenues[i].id)) availableEasyLength++
-    }
-    for (let i = 0; i < mediumVenues.length; i++) {
-      if (!usedVenueIds.has(mediumVenues[i].id)) availableMediumLength++
-    }
-    for (let i = 0; i < hardVenues.length; i++) {
-      if (!usedVenueIds.has(hardVenues[i].id)) availableHardLength++
-    }
-
     const pools = {
       easyVenues,
       mediumVenues,
       hardVenues,
-      usedVenueIds,
-      availableEasyLength,
-      availableMediumLength,
-      availableHardLength
+      usedVenueIds
     }
 
     this._generateIntermediateLayers(map, validDepth, pools)
@@ -171,56 +184,81 @@ export class MapGenerator {
    * @param {number} depth - The total depth of the map.
    * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
    */
-  _generateIntermediateLayers(map: any, depth: number, pools: any): void {
-    let {
-      easyVenues,
-      mediumVenues,
-      hardVenues,
-      usedVenueIds,
-      availableEasyLength,
-      availableMediumLength,
-      availableHardLength
-    } = pools
+  _generateIntermediateLayers(
+    map: MapGeneratorState,
+    depth: number,
+    pools: VenuePools & { usedVenueIds: Set<string> }
+  ): void {
+    let { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
+
+    const countAvailableVenues = (pool: Venue[]) => {
+      let available = 0
+      for (let k = 0; k < pool.length; k++) {
+        const venue = pool[k]
+        if (!venue) continue
+        if (!usedVenueIds.has(venue.id)) {
+          available++
+        }
+      }
+      return available
+    }
 
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
       // Determine node count for this layer (2-4 branching)
       const nodeCount = Math.floor(this.random() * 3) + 2
 
+      // Compute available counts once per layer, then decrement as venues are reserved
+      let easyAvailable = countAvailableVenues(easyVenues)
+      let mediumAvailable = countAvailableVenues(mediumVenues)
+      let hardAvailable = countAvailableVenues(hardVenues)
+
       for (let j = 0; j < nodeCount; j++) {
-        let poolArray
-        let poolLength
+        let poolArray: Venue[]
+        let poolLength: number
 
         if (i < 3) {
           poolArray = easyVenues
-          poolLength = availableEasyLength
+          poolLength = easyAvailable
         } else if (i < 7) {
           poolArray = mediumVenues
-          poolLength = availableMediumLength
+          poolLength = mediumAvailable
         } else {
           poolArray = hardVenues
-          poolLength = availableHardLength
+          poolLength = hardAvailable
         }
 
-        // Fallback to harder pools if the current pool is exhausted
+        // Fallback when primary pool is exhausted
         if (poolLength === 0) {
           if (i < 3) {
             poolArray = mediumVenues
-            poolLength = availableMediumLength
-          }
-          if (poolLength === 0 && i < 7) {
+            poolLength = mediumAvailable
+            if (poolLength === 0) {
+              poolArray = hardVenues
+              poolLength = hardAvailable
+            }
+          } else if (i < 7) {
             poolArray = hardVenues
-            poolLength = availableHardLength
+            poolLength = hardAvailable
+          } else {
+            // Hard pool exhausted: cascade down through medium then easy
+            poolArray = mediumVenues
+            poolLength = mediumAvailable
+            if (poolLength === 0) {
+              poolArray = easyVenues
+              poolLength = easyAvailable
+            }
           }
         }
 
-        let venue = null
+        let venue: Venue | null = null
 
         if (poolLength > 0) {
           // Dynamic subset selection with single pass filtering
           let targetIndex = Math.floor(this.random() * poolLength)
           for (let k = 0; k < poolArray.length; k++) {
             const v = poolArray[k]
+            if (!v) continue
             if (!usedVenueIds.has(v.id)) {
               if (targetIndex === 0) {
                 venue = v
@@ -230,10 +268,23 @@ export class MapGenerator {
             }
           }
 
+          if (!venue) {
+            throw new StateError(
+              `Failed to select venue from pool at layer=${i} index=${j}`,
+              {
+                layer: i,
+                index: j,
+                targetIndex,
+                poolLength: poolArray.length,
+                usedVenueIds: usedVenueIds.size
+              }
+            )
+          }
+
           usedVenueIds.add(venue.id)
-          if (poolArray === easyVenues) availableEasyLength--
-          else if (poolArray === mediumVenues) availableMediumLength--
-          else if (poolArray === hardVenues) availableHardLength--
+          if (poolArray === easyVenues) easyAvailable--
+          else if (poolArray === mediumVenues) mediumAvailable--
+          else hardAvailable--
         } else {
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
@@ -242,6 +293,7 @@ export class MapGenerator {
           let fallbackLength = 0
           for (let k = 0; k < fallbackArray.length; k++) {
             const v = fallbackArray[k]
+            if (!v) continue
             if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
               fallbackLength++
             }
@@ -253,6 +305,7 @@ export class MapGenerator {
           let targetIndex = Math.floor(this.random() * fallbackLength)
           for (let k = 0; k < fallbackArray.length; k++) {
             const v = fallbackArray[k]
+            if (!v) continue
             if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
               if (targetIndex === 0) {
                 venue = v
@@ -261,22 +314,36 @@ export class MapGenerator {
               targetIndex--
             }
           }
+
+          if (!venue) {
+            throw new StateError(
+              `Failed to select venue from fallback pool at layer=${i} index=${j}`,
+              {
+                layer: i,
+                index: j,
+                targetIndex,
+                poolLength: fallbackArray.length
+              }
+            )
+          }
         }
 
         // Determine Node Type based on probability and venue
         // ~70% GIG/FESTIVAL, ~20% REST_STOP, ~10% SPECIAL
         const typeRoll = this.random()
-        let nodeType = 'GIG'
+        let nodeType: GeneratedMapNode['type'] = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
-        else if (venue.capacity >= 1000) nodeType = 'FESTIVAL'
+        else if ((venue.capacity ?? 0) >= 1000) nodeType = 'FESTIVAL'
 
-        const node = {
+        const node: GeneratedMapNode = {
           id: `node_${i}_${j}`,
           layer: i,
           venue, // Note: Venue references might be duplicated across layers, which is okay for "touring"
           status: 'locked',
-          type: nodeType
+          type: nodeType,
+          x: getVenueCoord(venue, 'x', 50),
+          y: getVenueCoord(venue, 'y', i * 10 + 10)
         }
         layerNodes.push(node)
         map.nodes[node.id] = node
@@ -291,7 +358,7 @@ export class MapGenerator {
    * @param {object} map - The map object.
    * @param {number} depth - The total depth of the map.
    */
-  _generateConnections(map: any, depth: number): void {
+  _generateConnections(map: MapGeneratorState, depth: number): void {
     // Generate Connections
     // Ensure every node in layer I connects to at least one in I+1
     // Ensure every node in layer I+1 has at least one parent in I
@@ -300,6 +367,17 @@ export class MapGenerator {
     for (let i = 0; i < depth - 1; i++) {
       const currentLayer = map.layers[i]
       const nextLayer = map.layers[i + 1]
+
+      if (!currentLayer) {
+        throw new StateError(
+          `Missing map layer ${i} during connection generation`
+        )
+      }
+      if (!nextLayer) {
+        throw new StateError(
+          `Missing map layer ${i + 1} during connection generation`
+        )
+      }
 
       // Forward pass: ensure everyone connects forward
       for (const node of currentLayer) {
@@ -314,11 +392,16 @@ export class MapGenerator {
 
       // Backward pass check: ensure everyone has a parent
       // (Simplified: Just ensure nextLayer nodes are reachable. If not, force connect from random parent)
-      for (const node of nextLayer) {
+      for (const node of nextLayer || []) {
         const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
           const randomParent =
             currentLayer[Math.floor(this.random() * currentLayer.length)]
+          if (!randomParent) {
+            throw new StateError(
+              `Failed to select parent in layer ${i} for node ${node.id}`
+            )
+          }
           map.connections.push({ from: randomParent.id, to: node.id })
           connectedToIds.add(node.id)
         }
@@ -334,10 +417,10 @@ export class MapGenerator {
    * @param {object} pools - The pools object.
    */
   _generateFinaleLayer(
-    map: any,
+    map: MapGeneratorState,
     depth: number,
-    hardVenues: any[],
-    pools: any
+    hardVenues: Venue[],
+    pools: { usedVenueIds: Set<string> }
   ): void {
     // Finale Layer
     const finaleVenue = cachedFinaleVenue || hardVenues[0]
@@ -349,12 +432,14 @@ export class MapGenerator {
     const { usedVenueIds } = pools
     usedVenueIds.add(finaleVenue.id)
 
-    const endNode = {
+    const endNode: GeneratedMapNode = {
       id: `node_${depth}_0`,
       layer: depth,
       venue: finaleVenue,
       status: 'locked',
-      type: 'FINALE'
+      type: 'FINALE',
+      x: getVenueCoord(finaleVenue, 'x', 50),
+      y: getVenueCoord(finaleVenue, 'y', 90)
     }
     map.layers.push([endNode])
     map.nodes[endNode.id] = endNode
@@ -362,8 +447,10 @@ export class MapGenerator {
 
     // Connect last layer to finale
     const lastLayer = map.layers[depth - 1]
-    for (const node of lastLayer) {
-      map.connections.push({ from: node.id, to: endNode.id })
+    if (lastLayer) {
+      for (const node of lastLayer) {
+        map.connections.push({ from: node.id, to: endNode.id })
+      }
     }
   }
 
@@ -371,13 +458,13 @@ export class MapGenerator {
    * Assigns initial coordinates to map nodes.
    * @param {object} map - The map object.
    */
-  _assignInitialCoordinates(map: any): void {
+  _assignInitialCoordinates(map: MapGeneratorState): void {
     // Assign initial coordinates with jitter and resolve overlaps
     // Increased jitter to +/- 5 to help initial separation
     const nodeList = map.nodeList
     for (const node of nodeList) {
-      const baseX = node.venue?.x ?? 50
-      const baseY = node.venue?.y ?? 50
+      const baseX = node.x
+      const baseY = node.y
       node.x = baseX + (this.random() * 10 - 5)
       node.y = baseY + (this.random() * 10 - 5)
     }
@@ -393,12 +480,12 @@ export class MapGenerator {
    * @private
    */
   _getNeighborCandidates(
-    grid: Map<number, any>,
+    grid: Map<number, number[]>,
     cellX: number,
     cellY: number,
     j: number
   ): number[] {
-    const candidates = []
+    const candidates: number[] = []
 
     for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
       for (let cy = cellY - 1; cy <= cellY + 1; cy++) {
@@ -408,6 +495,7 @@ export class MapGenerator {
 
         for (let c = 0; c < cell.length; c++) {
           const k = cell[c]
+          if (k === undefined) continue
           // Check only pairs once and preserve j < k direction
           if (k > j) {
             candidates.push(k)
@@ -424,7 +512,7 @@ export class MapGenerator {
    * Note: This method mutates the node objects in the provided list.
    * @param {object[]} nodeList - The list of nodes.
    */
-  resolveOverlaps(nodeList: any[]): void {
+  resolveOverlaps(nodeList: GeneratedMapNode[]): void {
     const iterations = 150 // Increased iterations
     const minDistance = 6 // % of map width/height (approx 2x pin size)
     const minDistanceSq = minDistance * minDistance
@@ -438,9 +526,10 @@ export class MapGenerator {
     for (let i = 0; i < iterations; i++) {
       let moved = false
 
-      const grid = new Map()
+      const grid = new Map<number, number[]>()
       for (let j = 0; j < nodeList.length; j++) {
         const n = nodeList[j]
+        if (!n) continue
         const cellX = Math.floor(n.x / cellSize)
         const cellY = Math.floor(n.y / cellSize)
         const key = cellX * 1000 + cellY
@@ -455,6 +544,7 @@ export class MapGenerator {
 
       for (let j = 0; j < nodeList.length; j++) {
         const n1 = nodeList[j]
+        if (!n1) continue
         const cellX = Math.floor(n1.x / cellSize)
         const cellY = Math.floor(n1.y / cellSize)
 
@@ -526,7 +616,7 @@ export class MapGenerator {
    * @param {number} count - The number of items to pick.
    * @returns {Array} A new array with the selected items.
    */
-  pickRandomSubset(arr: any[], count: number): any[] {
+  pickRandomSubset<T>(arr: readonly T[], count: number): T[] {
     const n = arr.length
     const countInt = Math.floor(count)
     if (!Number.isFinite(countInt)) return []
@@ -534,26 +624,44 @@ export class MapGenerator {
     if (k <= 0) return []
 
     if (k === 1) {
-      return [arr[Math.floor(this.random() * n)]]
+      const value = arr[Math.floor(this.random() * n)]
+      if (value === undefined) {
+        throw new StateError(
+          'Sparse array invariant violated in pickRandomSubset(k=1)'
+        )
+      }
+      return [value]
     }
 
     if (k === 2) {
       const idx1 = Math.floor(this.random() * n)
       let idx2 = Math.floor(this.random() * (n - 1))
       if (idx2 >= idx1) idx2++
-      return [arr[idx1], arr[idx2]]
+      const first = arr[idx1]
+      const second = arr[idx2]
+      if (first === undefined || second === undefined) {
+        throw new StateError(
+          'Sparse array invariant violated in pickRandomSubset(k=2)'
+        )
+      }
+      return [first, second]
     }
 
     // Sparse Fisher-Yates shuffle using Map to avoid O(n) copy for small k relative to n
     if (k < n / 4) {
-      const result = []
-      const swaps = new Map()
+      const result: T[] = []
+      const swaps = new Map<number, T>()
       for (let i = 0; i < k; i++) {
         const j = i + Math.floor(this.random() * (n - i))
 
         // Retrieve values, falling back to original array if not swapped
         const valI = swaps.has(i) ? swaps.get(i) : arr[i]
         const valJ = swaps.has(j) ? swaps.get(j) : arr[j]
+        if (valI === undefined || valJ === undefined) {
+          throw new StateError(
+            `Sparse array invariant violated in pickRandomSubset(fisher-yates) at i=${i}, j=${j}`
+          )
+        }
 
         result.push(valJ)
         // Since j = i + Math.floor(this.random() * (n - i)), it is guaranteed that j >= i.
@@ -569,10 +677,27 @@ export class MapGenerator {
     const shuffled = [...arr]
     for (let i = 0; i < k; i++) {
       const j = i + Math.floor(this.random() * (n - i))
-      const temp = shuffled[i]
-      shuffled[i] = shuffled[j]
-      shuffled[j] = temp
+      const valueI = shuffled[i]
+      const valueJ = shuffled[j]
+      if (valueI === undefined || valueJ === undefined) {
+        throw new StateError(
+          `Sparse array invariant violated in pickRandomSubset(shallow-copy) at i=${i}, j=${j}`
+        )
+      }
+      shuffled[i] = valueJ
+      shuffled[j] = valueI
     }
-    return shuffled.slice(0, k)
+    const rawResult = shuffled.slice(0, k)
+    const result: T[] = []
+    for (let i = 0; i < rawResult.length; i++) {
+      const value = rawResult[i]
+      if (value === undefined) {
+        throw new StateError(
+          `Sparse array invariant violated in pickRandomSubset(result-slice) at i=${i}`
+        )
+      }
+      result.push(value)
+    }
+    return result
   }
 }

@@ -14,6 +14,7 @@ Applies to `src/scenes/**`.
 
 - `START_GIG` resets gig modifiers.
 - `COMPLETE_TRAVEL_MINIGAME` does not perform routing reset; arrival flow is handled by `useArrivalLogic`.
+- For minigames that auto-finalize on timer expiry, scene-level completion handlers should trigger scene transitions only; completion payload submission must remain in the hook finalize path.
 
 ## Migration Rules
 
@@ -28,3 +29,4 @@ Applies to `src/scenes/**`.
 ## Recent Findings (2026-04)
 
 - Scene modules should not keep dormant modal branches: either wire a reachable trigger or remove the render path and related hook usage together.
+- Kabelsalat routing guardrails now live in `src/scenes/kabelsalat/AGENTS.md`; preserve both timeout-loss and fully-wired win transitions to `GAME_PHASES.GIG` when refactoring scene/hook boundaries.

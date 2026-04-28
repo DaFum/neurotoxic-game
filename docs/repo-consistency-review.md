@@ -1,4 +1,4 @@
-# Repository Consistency Review (2026-04-16)
+# Repository Consistency Review (2026-04-28)
 
 ## Scope
 
@@ -18,7 +18,7 @@ Review and remediation focused on:
 
 - `README.md` listed outdated React/Vite versions.
 - `.devin/wiki.json` described stale architecture/tooling details.
-- `docs/TEST_FAST_FEEDBACK_CHANGES.md` did not reflect current workflow/tooling precisely.
+- The former fast-feedback workflow note did not reflect current workflow/tooling precisely.
 
 #### Action
 
@@ -115,7 +115,7 @@ Review and remediation focused on:
 
 - Added default exports across lazy-loaded scene modules.
 - Simplified `SceneRouter` lazy imports to direct `lazy(() => import(...))`.
-- Removed `src/utils/lazySceneLoader.js` and its dedicated node test.
+- Removed the former `lazySceneLoader` utility and its dedicated node test.
 
 #### Decision
 
@@ -149,7 +149,7 @@ Review and remediation focused on:
 
 #### Action
 
-- Added `src/utils/audioService.js` with explicit surface (`getState`, `subscribe`, command methods).
+- Added `src/utils/audioService.ts` with explicit surface (`getState`, `subscribe`, command methods).
 - Updated `useAudioControl` to use the new service as its backing contract.
 
 #### Decision

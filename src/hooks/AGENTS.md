@@ -26,3 +26,6 @@ Applies to `src/hooks/**`.
 ## Recent Findings (2026-04)
 
 - If a hook returns modal controls (`show/open/close/trigger`), verify at least one active caller consumes `open*`; otherwise remove the hook wiring or restore the entry point.
+- Rhythm gameplay hooks now have nested guardrails in `src/hooks/rhythmGame/AGENTS.md`; keep scoring/timing edge-case handling there to avoid duplicated sparse-array fixes across hook files.
+- Minigame completion lifecycles now have nested guardrails in `src/hooks/minigames/AGENTS.md`; keep timeout-driven and user-action completion paths unified through the same finalize callback.
+- Hooks that consume root context snapshots (for example leaderboard sync hooks) should accept concrete `GameState` contracts and rely on canonical required fields instead of defensive partial-object casts.

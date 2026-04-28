@@ -1,10 +1,20 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
+import type { CatalogItem } from '../../types/components'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
+
+export interface ShopItemProps {
+  item: CatalogItem
+  isOwned: boolean
+  isDisabled: boolean
+  adjustedCost?: number
+  onBuy: (item: CatalogItem) => void
+  processingItemId?: string | number
+}
 
 // ⚡ Bolt Optimization: Wrapped ShopItem in React.memo
 // Prevents re-rendering all shop/upgrade items when parent `BandHQ` state changes
@@ -17,14 +27,29 @@ export const ShopItem = React.memo(
     adjustedCost,
     onBuy,
     processingItemId
-  }: any) => {
+  }: ShopItemProps) => {
     const { t } = useTranslation(['items', 'ui'])
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
+    const imagePromptKey = String(item.img ?? '')
+    const localizedUnknownItem = t('ui:shop.messages.unknownItem', {
+      defaultValue: 'Unknown Item'
+    })
+    const sanitizedPrompt =
+      Object.hasOwn(IMG_PROMPTS, imagePromptKey) &&
+      typeof IMG_PROMPTS[imagePromptKey as keyof typeof IMG_PROMPTS] ===
+        'string'
+        ? IMG_PROMPTS[imagePromptKey as keyof typeof IMG_PROMPTS]
+        : typeof item.name === 'string'
+          ? item.name
+          : localizedUnknownItem
 
-    const isProcessingThis = processingItemId === item.id
-    const isAnyProcessing = !!processingItemId
+    const isProcessingThis =
+      processingItemId != null &&
+      item.id != null &&
+      String(processingItemId) === String(item.id)
+    const isAnyProcessing = processingItemId != null
 
     const handlePurchase = useCallback(() => {
       if (isDisabled || isPurchased || isAnyProcessing) return
@@ -43,13 +68,15 @@ export const ShopItem = React.memo(
         <div>
           <div className='flex items-center gap-2 mb-2'>
             <img
-              src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
+              src={getGenImageUrl(sanitizedPrompt)}
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
-              {t(item.name)}
+              {typeof item.name === 'string'
+                ? t(item.name)
+                : localizedUnknownItem}
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>
@@ -64,7 +91,9 @@ export const ShopItem = React.memo(
                 : 'text-star-white'
             }`}
           >
-            {adjustedCost !== undefined && adjustedCost < item.cost ? (
+            {adjustedCost !== undefined &&
+            item.cost !== undefined &&
+            adjustedCost < item.cost ? (
               <>
                 <span className='line-through opacity-50 mr-2'>
                   {item.cost}
@@ -73,8 +102,10 @@ export const ShopItem = React.memo(
               </>
             ) : adjustedCost !== undefined ? (
               adjustedCost
-            ) : (
+            ) : item.cost !== undefined ? (
               item.cost
+            ) : (
+              0
             )}{' '}
             {item.currency === 'fame' ? '★' : '€'}
           </span>
@@ -83,7 +114,12 @@ export const ShopItem = React.memo(
               content={
                 isPurchased
                   ? t('ui:shop.messages.alreadyOwned', {
-                      itemName: t(item.name),
+                      itemName:
+                        typeof item.name === 'string'
+                          ? t(item.name)
+                          : t('ui:shop.messages.unknownItem', {
+                              defaultValue: 'Unknown Item'
+                            }),
                       defaultValue: 'Already owned!'
                     })
                   : t('ui:shop.messages.notEnough', {
@@ -93,7 +129,12 @@ export const ShopItem = React.memo(
                           : t('ui:shop.messages.money', {
                               defaultValue: 'Money'
                             }),
-                      itemName: t(item.name),
+                      itemName:
+                        typeof item.name === 'string'
+                          ? t(item.name)
+                          : t('ui:shop.messages.unknownItem', {
+                              defaultValue: 'Unknown Item'
+                            }),
                       defaultValue: 'Not enough currency.'
                     })
               }
@@ -134,10 +175,9 @@ export const ShopItem = React.memo(
 )
 
 ShopItem.displayName = 'ShopItem'
-
-ShopItem.propTypes = {
+const shopItemPropTypes = {
   item: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
     description: PropTypes.string,
     cost: PropTypes.number.isRequired,
@@ -151,5 +191,10 @@ ShopItem.propTypes = {
   adjustedCost: PropTypes.number,
   /** Callback executed on purchase attempt. Parent handles lock. */
   onBuy: PropTypes.func.isRequired,
-  processingItemId: PropTypes.string
+  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
+
+const shopItemWithPropTypes = ShopItem as typeof ShopItem & {
+  propTypes: typeof shopItemPropTypes
+}
+shopItemWithPropTypes.propTypes = shopItemPropTypes

@@ -15,6 +15,7 @@ Applies to `src/data/**`.
 - `events/special` entries require unique IDs, `category: 'special'`, `events:` i18n keys, and a valid `options` array.
 - `hqItems` entries use singular `effect` object shape.
 - Consumables should use `inventory_add` effects and remain multi-purchase capable.
+- `postOptions` `resolve()` handlers should enforce member-list invariants with explicit guards when conditions assume non-empty `band.members`.
 
 ## Migration Rules
 
@@ -29,3 +30,6 @@ Applies to `src/data/**`.
 ## Recent Findings (2026-04)
 
 - New menu-driven systems should reuse existing data keys where possible; introducing parallel IDs for the same feature increases save/test drift risk.
+- Event-pool modules with growing condition complexity should live under `src/data/events/**` and follow the nested `src/data/events/AGENTS.md` guardrails for typed conditions and composite-effect validity.
+- In `postOptions`, once a `resolve()` path is touched for invariant/type fixes (for example `requireBandMembers` guards), migrate neighboring user-facing `message` strings in that same resolver to `ui:postOptions.*` keys in both EN/DE locale files to avoid mixed i18n/raw-copy behavior.
+- `postOptions.resolve()` paths that rely on `requireBandMembers` may throw on invariant violations; downstream social/post orchestration must catch and recover instead of assuming soft-failure return objects.

@@ -92,3 +92,11 @@
 ## Recent Findings (2026-04)
 
 - Overworld regressions often come from action reachability; when refactoring grouped menus, explicitly preserve every legacy entry point or remove the backing hook in the same patch.
+- ESLint flat-config file globs must include both JS and TS domains used in CI (`src/**/*.ts(x)`); missing TS matching can silently bypass lint checks and surface as "File ignored because no matching configuration was supplied."
+- When wrapping PropTypes validators, forward the full validator argument list (`location`, qualified name, secret) to preserve actionable dev warnings.
+- Shared audio UI contracts belong in `src/types/audio.d.ts`; avoid duplicating `AudioState`/audio callback shapes in component-local or unrelated type modules.
+- Error handling is layered by boundary: strict throws in pure utilities, tolerant log-and-continue in frame/tick loops, and catch/recover at scene/context boundaries.
+- Keep JS/TS lint parity: TS/TSX blocks must include the same baseline JS/React rules as JSX blocks, and Node globals should be scoped to test/config tooling overrides only.
+- `useReducer` dispatch is not synchronous for `stateRef` consumers; derive UI toast values (e.g., next day) from pre-dispatch state, not by reading refs immediately after dispatch.
+- Locale JSON can silently shadow duplicate keys; when touching locale files, run duplicate-key detection (not just JSON parsing) to avoid hidden translation loss.
+- For kabelsalat state contracts, keep `forceAdvance(isPowered: boolean)` typed end-to-end and keep socket-order literals typed (`as const`) to prevent accidental widening to `string[]`.

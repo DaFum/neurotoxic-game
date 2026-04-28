@@ -7,7 +7,9 @@ import type {
 } from './game'
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
+import type * as React from 'react'
 import type { RhythmGameRefState } from './rhythmGame'
+export type { AudioState, AudioControls } from './audio'
 
 export interface PixiController {
   init(): Promise<void>
@@ -94,8 +96,8 @@ export interface PauseOverlayProps {
   onQuit: () => void
 }
 
-export interface MinigameLogicBase {
-  gameStateRef: { current: GameState }
+export interface MinigameLogicBase<TState = unknown> {
+  gameStateRef: RefObject<TState>
   update: (state: unknown) => void
   finishMinigame?: () => void
   dispatch?: (action: import('../types/game').GameAction) => void
@@ -129,8 +131,8 @@ export interface StageControllerOptions<TState = unknown> {
   updateRef: MutableRefObject<((dt: number) => void) | null>
 }
 
-export interface PixiStageProps {
-  gameStateRef: RefObject<RhythmGameRefState>
+export interface PixiStageProps<TState = RhythmGameRefState> {
+  gameStateRef: RefObject<TState>
   update: (state: unknown) => void
   controllerFactory?: (options: any) => PixiController
 }
@@ -373,4 +375,87 @@ export interface ReportPhaseProps {
     net: number
   }
   onNext: () => void
+}
+
+type EffectBase = {
+  item?: string
+  value?: unknown
+  target?: 'player' | 'band' | 'van'
+  stat?: string
+  id?: string
+  key?: string
+}
+
+export type Effect =
+  | (EffectBase & { type: 'inventory_add'; item: string; value: number })
+  | (EffectBase & { type: 'inventory_set'; item: string; value: unknown })
+  | (EffectBase & {
+      type: 'stat_modifier'
+      target: 'player' | 'band' | 'van'
+      stat: string
+      value: number
+    })
+  | (EffectBase & { type: 'unlock_upgrade'; id: string })
+  | (EffectBase & { type: 'passive'; key: string; value?: unknown })
+  | (EffectBase & { type: 'unlock_hq'; id: string })
+
+export interface PurchaseItem {
+  id?: string | number
+  name?: string
+  cost?: number
+  currency?: string
+  category?: string
+  description?: string
+  img?: string
+  effect?: Effect
+  effects?: Effect[]
+  oneTime?: boolean
+  imgPrompt?: string
+  requiresReputation?: boolean
+  rarity?: string
+  stackable?: boolean
+  maxStacks?: number
+}
+
+export interface CatalogItem extends PurchaseItem {
+  id: string | number
+  cost: number
+}
+
+export interface VoidTraderItem extends PurchaseItem {
+  id: string
+  rarity?: 'rare' | 'epic'
+}
+
+export type Balances = Record<string, number>
+
+export interface CatalogConsumerProps {
+  items: CatalogItem[]
+  processingItemId?: string | number
+  handleBuy: (item: CatalogItem) => void
+  isItemOwned: (item: CatalogItem) => boolean
+  isItemDisabled: (item: CatalogItem) => boolean
+  getAdjustedCost?: (item: CatalogItem) => number | undefined
+}
+
+export interface CatalogTabProps {
+  items: CatalogItem[]
+  balances: Balances
+  /**
+   * These must be one-argument callbacks already bound by usePurchaseLogic.
+   * Do not pass raw utility functions that require player/band arguments.
+   */
+  handleBuyCallback: (item: CatalogItem) => void
+  isItemOwnedCallback: (item: CatalogItem) => boolean
+  isItemDisabledCallback: (item: CatalogItem) => boolean
+  getAdjustedCostCallback?: (item: CatalogItem) => number | undefined
+  processingItemId?: string | number
+}
+
+export type UnlockMessageKind = 'success' | 'error' | 'info'
+
+export type UnlockMessage = {
+  messageKey: string
+  fallback?: string
+  type: UnlockMessageKind
 }

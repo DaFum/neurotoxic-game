@@ -31,3 +31,4 @@ Applies to `src/components/**`.
 ## Recent Findings (2026-04)
 
 - For categorized action menus, keep a one-to-one mapping between action unions and rendered items to prevent unreachable handlers hiding in lookup maps.
+- In this codebase, TSX components still use runtime `propTypes`; do not drop `propTypes` just because TypeScript props exist, especially for components consumed from JS boundaries.

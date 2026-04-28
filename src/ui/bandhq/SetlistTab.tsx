@@ -82,6 +82,14 @@ SongRow.propTypes = {
   t: PropTypes.func.isRequired
 }
 
+const getSetlistSongId = (entry: unknown): unknown => {
+  if (typeof entry === 'string') return entry
+  if (entry && typeof entry === 'object' && Object.hasOwn(entry, 'id')) {
+    return (entry as { id?: unknown }).id
+  }
+  return undefined
+}
+
 export const SetlistTab = (props: any) => {
   const { setlist, setSetlist, addToast } = props
   // { setlist, setSetlist, addToast }) => {
@@ -95,22 +103,20 @@ export const SetlistTab = (props: any) => {
 
   const isSongSelected = useCallback(
     (songId: unknown) => {
-      return setlist.some(
-        (s: unknown) => (typeof s === 'string' ? s : (s as any).id) === songId
-      )
+      return setlist.some((s: unknown) => getSetlistSongId(s) === songId)
     },
     [setlist]
   )
 
   const toggleSongInSetlist = useCallback(
     (songId: unknown) => {
-      const songObj = SONGS_BY_ID.get(songId)
+      const songObj = SONGS_BY_ID.get(songId as string)
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
       const currentList = latestSetlistRef.current
       const currentIndex = currentList.findIndex(
-        (s: unknown) => (typeof s === 'string' ? s : (s as any).id) === songId
+        (s: unknown) => getSetlistSongId(s) === songId
       )
       const isSelected = currentIndex >= 0
 
@@ -164,6 +170,7 @@ export const SetlistTab = (props: any) => {
               return
             }
             setCurrentGig({
+              id: 'practice_venue',
               name: t('venues:stendal_proberaum.name'),
               diff: 1,
               venue: t('ui:bandhq.venue', { defaultValue: 'Band HQ' }),

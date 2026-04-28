@@ -3,15 +3,16 @@ import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.tsx'
 import type { TFunction } from 'i18next'
 
+import type { CableId } from '../constants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 type CableListProps = {
   t: TFunction
-  connections: Partial<Record<SocketId, string>>
-  selectedCable?: string | null
+  connections: Partial<Record<SocketId, CableId>>
+  selectedCable?: CableId | null
   isShocked: boolean
   isGameOver: boolean
-  handleCableClick: (id: string) => void
+  handleCableClick: (id: CableId) => void
 }
 
 export const CableList = ({
@@ -22,8 +23,10 @@ export const CableList = ({
   isGameOver,
   handleCableClick
 }: CableListProps) => {
-  const connectedCableIds = new Set(
-    Object.values(connections).filter(Boolean) as string[]
+  const connectedCableIds = new Set<CableId>(
+    Object.values(connections).filter(
+      (connection): connection is CableId => connection != null
+    )
   )
 
   return (

@@ -22,3 +22,6 @@ Applies to `tests/ui/**` unless a deeper `AGENTS.md` overrides it.
 ## Recent Findings (2026-04)
 
 - Add assertions that each legacy action remains reachable after menu redesigns (not just that modal components can render when force-opened).
+- Kabelsalat regressions should assert both timeout-loss and fully-wired win paths eventually call `changeScene('GIG')`; validating only overlays/text is insufficient to guarantee scene routing.
+- Kabelsalat game-end hooks should include a StrictMode replay case plus a manual-overlay-continue click case to guard both automatic and fallback transition paths.
+- Minigame end flows with completion overlays should include a fallback-timer test plus an unmount cleanup test so auto-advance timers cannot leak or strand scenes.

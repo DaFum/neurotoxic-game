@@ -275,8 +275,10 @@ const calculateClampedControversyDelta = (
  * @param {object} source - Source object to copy from.
  * @returns {object} New object with filtered properties.
  */
-const copyFilteredProperties = (source: any) => {
-  if (!source) return Object.create(null)
+type FilteredRecord = Record<string, unknown>
+
+const copyFilteredProperties = (source: unknown): FilteredRecord => {
+  if (typeof source !== 'object' || source === null) return Object.create(null)
 
   // Explicit check for prototype pollution before copying properties
   if (
@@ -291,12 +293,13 @@ const copyFilteredProperties = (source: any) => {
   }
 
   // Create an object with no prototype to safely copy properties into
-  const destination = Object.create(null)
+  const destination: FilteredRecord = Object.create(null)
+  const sourceRecord = source as Record<string, unknown>
 
-  for (const key in source) {
-    if (!Object.hasOwn(source, key)) continue
+  for (const key in sourceRecord) {
+    if (!Object.hasOwn(sourceRecord, key)) continue
     if (!isForbiddenKey(key)) {
-      destination[key] = source[key]
+      destination[key] = sourceRecord[key]
     }
   }
   return destination
@@ -411,19 +414,24 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
         if (isForbiddenKey(itemId)) continue
 
         const qty = delta.band.inventory[itemId]
+        const currentCount =
+          typeof state.band?.inventory?.[itemId] === 'number'
+            ? state.band.inventory[itemId]
+            : 0
+
         if (typeof qty === 'number') {
           if (qty !== 0) {
-            applied.band.inventory[itemId] = qty
+            const nextCount = Math.max(0, currentCount + qty)
+            const actualChange = nextCount - currentCount
+            if (actualChange !== 0) {
+              applied.band.inventory[itemId] = actualChange
+            }
           }
         } else if (qty === true) {
           applied.band.inventory[itemId] = true
         } else if (qty === false) {
-          const current =
-            typeof state.band?.inventory?.[itemId] === 'number'
-              ? state.band.inventory[itemId]
-              : 0
-          if (current > 0) {
-            applied.band.inventory[itemId] = -1
+          if (currentCount > 0) {
+            applied.band.inventory[itemId] = -currentCount
           } else {
             applied.band.inventory[itemId] = false
           }
@@ -436,10 +444,58 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
         ? delta.band.membersDelta
         : delta.band.members
 
-    if (membersDelta && !Array.isArray(membersDelta)) {
-      applied.band.membersDelta = copyFilteredProperties(membersDelta)
-    } else if (membersDelta && Array.isArray(membersDelta)) {
-      applied.band.membersDelta = membersDelta
+    if (membersDelta) {
+      const isArrayDelta = Array.isArray(membersDelta)
+      const members = Array.isArray(state.band?.members)
+        ? state.band.members
+        : []
+
+      const computedMembersDelta: FilteredRecord[] = []
+
+      for (let i = 0; i < members.length; i++) {
+        const member = members[i]
+        const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
+        const mDelta =
+          rawMemberDelta && typeof rawMemberDelta === 'object'
+            ? copyFilteredProperties(rawMemberDelta)
+            : Object.create(null)
+        if (!member) {
+          computedMembersDelta.push(Object.create(null))
+          continue
+        }
+
+        const moodChange =
+          typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
+        const staminaChange =
+          typeof mDelta.staminaChange === 'number' ? mDelta.staminaChange : 0
+
+        const currentMood = typeof member.mood === 'number' ? member.mood : 0
+        const currentStamina =
+          typeof member.stamina === 'number' ? member.stamina : 0
+        const staminaMax =
+          typeof member.staminaMax === 'number' ? member.staminaMax : 100
+
+        const newMood = clampMemberMood(currentMood + moodChange)
+        const newStamina = clampMemberStamina(
+          currentStamina + staminaChange,
+          staminaMax
+        )
+
+        const actualMoodChange = newMood - currentMood
+        const actualStaminaChange = newStamina - currentStamina
+
+        // Keep all other properties of the original delta, override only mood and stamina if they exist
+        const newDelta = copyFilteredProperties(mDelta)
+        if (typeof mDelta.moodChange === 'number')
+          newDelta.moodChange = actualMoodChange
+        if (typeof mDelta.staminaChange === 'number')
+          newDelta.staminaChange = actualStaminaChange
+
+        computedMembersDelta.push(newDelta)
+      }
+
+      // We always resolve to an array delta because global deltas apply differently to each member based on clamps
+      applied.band.membersDelta = computedMembersDelta
     }
 
     if (typeof delta.band.luck === 'number') {

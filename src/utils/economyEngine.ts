@@ -413,7 +413,7 @@ export const calculateVenueSplit = (ticketsRevenue = 0, gigData: any = {}) => {
     gigData.diff >= 5
       ? 0.7
       : Object.hasOwn(VENUE_SPLIT_RATES, gigData.diff)
-        ? VENUE_SPLIT_RATES[gigData.diff as number]
+        ? (VENUE_SPLIT_RATES[gigData.diff as number] ?? 0)
         : 0
 
   if (splitRate > 0) {

@@ -258,6 +258,133 @@ test('systemReducer - LOAD_GAME', async t => {
       { id: '3', message: 'Valid', type: 'error' }
     ])
   })
+
+  await t.test(
+    'falls back to current gameMap when loaded gameMap lacks nodes',
+    () => {
+      const initialState = {
+        ...createInitialState(),
+        gameMap: {
+          nodes: { start: { id: 'start' } },
+          connections: []
+        }
+      }
+      const loadedState = {
+        gameMap: {
+          connections: [{ from: 'start', to: 'next' }]
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.gameMap, initialState.gameMap)
+    }
+  )
+
+  await t.test('preserves partially valid loaded gameMap nodes', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      gameMap: {
+        name: 'legacy map',
+        version: 1,
+        nodes: {
+          start: {
+            id: 'start',
+            x: 12,
+            y: 34,
+            neighbors: ['next', 7],
+            type: 'GIG',
+            metadata: {
+              legacyType: 'boss',
+              difficulty: 2,
+              visited: false,
+              nested: { drop: true }
+            },
+            edges: [{ from: 'start', to: 'next', weight: 1 }]
+          },
+          next: { venueId: 'venue-1', label: 'Next', flags: ['legacy', 2] },
+          bad: null
+        },
+        connections: [
+          { from: 'start', to: 'next' },
+          { from: 2, to: 'start' },
+          { from: 'start' },
+          null
+        ]
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.deepEqual(
+      { ...nextState.gameMap, nodes: { ...nextState.gameMap.nodes } },
+      {
+        name: 'legacy map',
+        version: 1,
+        nodes: {
+          start: {
+            id: 'start',
+            x: 12,
+            y: 34,
+            neighbors: ['next'],
+            type: 'GIG',
+            metadata: {
+              legacyType: 'boss',
+              difficulty: 2,
+              visited: false
+            },
+            edges: [{ from: 'start', to: 'next', weight: 1 }]
+          },
+          next: {
+            id: 'next',
+            x: 0,
+            y: 0,
+            venueId: 'venue-1',
+            label: 'Next',
+            flags: ['legacy', 2]
+          }
+        },
+        connections: [
+          { from: 'start', to: 'next' },
+          { from: '2', to: 'start' }
+        ]
+      }
+    )
+  })
+
+  await t.test(
+    'strips prototype-pollution keys from loaded gameMap nodes',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(
+        `{
+        "gameMap": {
+          "nodes": {
+            "__proto__": { "id": "__proto__", "x": 1, "y": 2 },
+            "constructor": { "id": "constructor", "x": 3, "y": 4 },
+            "prototype": { "id": "prototype", "x": 5, "y": 6 },
+            "safe": { "id": "__proto__", "x": 7, "y": 8 },
+            "start": { "id": "start", "x": 9, "y": 10 }
+          },
+          "connections": []
+        }
+      }`
+      )
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(
+        { ...nextState.gameMap.nodes },
+        {
+          start: { id: 'start', x: 9, y: 10 }
+        }
+      )
+      assert.equal(Object.hasOwn(nextState.gameMap.nodes, '__proto__'), false)
+      assert.equal(Object.hasOwn(nextState.gameMap.nodes, 'constructor'), false)
+      assert.equal(Object.hasOwn(nextState.gameMap.nodes, 'prototype'), false)
+      assert.equal(Object.getPrototypeOf(nextState.gameMap.nodes), null)
+    }
+  )
 })
 
 test('systemReducer - RESET_STATE', async t => {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
-import type { MouseEvent, ComponentType, KeyboardEvent, ReactNode } from 'react'
+import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { getSafeUUID } from '../../utils/crypto'
 import { secureRandom } from '../../utils/crypto'
 
@@ -1279,7 +1279,15 @@ export const TerminalReadout = memo(() => {
     if (currentIndex < FULL_LOG_KEYS.length) {
       const timer = setTimeout(
         () => {
-          setLines(prev => [...prev, FULL_LOG_KEYS[currentIndex]])
+          const nextLine = FULL_LOG_KEYS[currentIndex]
+          if (nextLine === undefined) {
+            console.warn(
+              `Invariant: missing FULL_LOG_KEYS at currentIndex ${currentIndex}`
+            )
+            setCurrentIndex(currentIndex + 1)
+            return
+          }
+          setLines(prev => [...prev, nextLine])
           setCurrentIndex(currentIndex + 1)
         },
         secureRandom() * 400 + 200
@@ -1747,17 +1755,24 @@ export const ToxicChatter = memo(() => {
       const uuid = getSafeUUID()
       const randomHate = newHate[Math.floor(secureRandom() * newHate.length)]
       setMessages(prev => {
+        const uuidPrefix =
+          typeof uuid === 'string' ? uuid.split('-')[0]?.toUpperCase() : null
         const newMsg: Message = {
           id: uuid,
-          user: `USER_${uuid.split('-')[0].toUpperCase()}`,
-          text: randomHate,
+          user: `USER_${uuidPrefix ?? t('ui:chatter.unknownUser', { defaultValue: 'UNK' })}`,
+          text:
+            typeof randomHate === 'string'
+              ? randomHate
+              : t('ui:chatter.emptyMessage', {
+                  defaultValue: '...'
+                }),
           type: 'hate'
         }
         return [...prev, newMsg].slice(-5) // Keep only last 5
       })
     }, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [t])
 
   return (
     <div className='w-full h-64 border border-toxic-green/30 bg-void-black p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--color-toxic-green-5)]'>

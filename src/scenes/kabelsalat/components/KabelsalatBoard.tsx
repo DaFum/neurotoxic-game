@@ -15,6 +15,7 @@ import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 
 import type { SocketId, LightningSeed } from '../../../types/kabelsalat'
+import type { CableId } from '../constants'
 
 interface KabelsalatBoardProps {
   t: TFunction
@@ -24,11 +25,12 @@ interface KabelsalatBoardProps {
   faultReason: string | null
   isPowerConnected: boolean
   lightningSeeds: LightningSeed[]
-  connections: Partial<Record<SocketId, string>>
+  connections: Partial<Record<SocketId, CableId>>
   socketOrder: SocketId[]
-  selectedCable?: string | null
+  selectedCable?: CableId | null
   handleSocketClick: (id: SocketId) => void
-  handleCableClick: (id: string) => void
+  handleCableClick: (id: CableId) => void
+  onAdvance: (isPowered: boolean) => void
 }
 
 export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
@@ -43,7 +45,8 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
   socketOrder,
   selectedCable,
   handleSocketClick,
-  handleCableClick
+  handleCableClick,
+  onAdvance
 }) => {
   return (
     <div
@@ -64,6 +67,7 @@ export const KabelsalatBoard: FC<KabelsalatBoardProps> = ({
         isGameOver={isGameOver}
         isPoweredOn={isPoweredOn}
         faultReason={faultReason}
+        onAdvance={onAdvance}
       />
 
       <svg
@@ -127,5 +131,6 @@ KabelsalatBoard.propTypes = {
   socketOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   selectedCable: PropTypes.string,
   handleSocketClick: PropTypes.func.isRequired,
-  handleCableClick: PropTypes.func.isRequired
+  handleCableClick: PropTypes.func.isRequired,
+  onAdvance: PropTypes.func.isRequired
 }

@@ -16,7 +16,8 @@ import {
   clampPlayerFame,
   clampMemberStamina,
   clampMemberMood,
-  calculateFameLevel
+  calculateFameLevel,
+  isForbiddenKey
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
 import { generateDailyTrend } from '../../utils/socialEngine'
@@ -47,6 +48,211 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.CLINIC
 ])
+
+const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
+  if (typeof gameMap !== 'object' || gameMap === null) {
+    return null
+  }
+  const mapRecord = gameMap as Record<string, unknown>
+  if (
+    typeof mapRecord.nodes !== 'object' ||
+    mapRecord.nodes === null ||
+    Array.isArray(mapRecord.nodes)
+  ) {
+    return null
+  }
+  const nodesRecord = mapRecord.nodes as Record<string, unknown>
+  const sanitizedNodes = Object.create(null) as Record<
+    string,
+    GameMap['nodes'][string]
+  >
+
+  const normalizeCoordinate = (value: unknown): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : 0
+  const copySafeArray = (
+    value: unknown
+  ): Array<
+    | string
+    | number
+    | boolean
+    | null
+    | Record<string, string | number | boolean | null>
+  > | null => {
+    if (!Array.isArray(value)) return null
+    const copied: Array<
+      | string
+      | number
+      | boolean
+      | null
+      | Record<string, string | number | boolean | null>
+    > = []
+    for (let i = 0; i < value.length; i++) {
+      const entry = value[i]
+      if (
+        typeof entry === 'string' ||
+        typeof entry === 'number' ||
+        typeof entry === 'boolean' ||
+        entry === null
+      ) {
+        copied.push(entry)
+      } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        const entryRecord = entry as Record<string, unknown>
+        const copiedEntry: Record<string, string | number | boolean | null> = {}
+        for (const entryKey in entryRecord) {
+          if (!Object.hasOwn(entryRecord, entryKey)) continue
+          if (isForbiddenKey(entryKey)) continue
+          const entryValue = entryRecord[entryKey]
+          if (
+            typeof entryValue === 'string' ||
+            typeof entryValue === 'number' ||
+            typeof entryValue === 'boolean' ||
+            entryValue === null
+          ) {
+            copiedEntry[entryKey] = entryValue
+          }
+        }
+        if (Object.keys(copiedEntry).length > 0) {
+          copied.push(copiedEntry)
+        }
+      }
+    }
+    return copied
+  }
+  const copySafeFlatObject = (
+    value: unknown
+  ): Record<string, string | number | boolean | null> | null => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return null
+    }
+    const source = value as Record<string, unknown>
+    const copied: Record<string, string | number | boolean | null> = {}
+    for (const key in source) {
+      if (!Object.hasOwn(source, key)) continue
+      if (isForbiddenKey(key)) continue
+      const entry = source[key]
+      if (
+        typeof entry === 'string' ||
+        typeof entry === 'number' ||
+        typeof entry === 'boolean' ||
+        entry === null
+      ) {
+        copied[key] = entry
+      }
+    }
+    return Object.keys(copied).length > 0 ? copied : null
+  }
+
+  for (const nodeKey in nodesRecord) {
+    if (!Object.hasOwn(nodesRecord, nodeKey)) continue
+    if (isForbiddenKey(nodeKey)) continue
+    const rawNode = nodesRecord[nodeKey]
+    if (!rawNode || typeof rawNode !== 'object' || Array.isArray(rawNode)) {
+      continue
+    }
+    const nodeRecord = rawNode as Record<string, unknown>
+    const x = normalizeCoordinate(nodeRecord.x)
+    const y = normalizeCoordinate(nodeRecord.y)
+
+    const id =
+      typeof nodeRecord.id === 'string' && nodeRecord.id.length > 0
+        ? nodeRecord.id
+        : nodeKey
+    if (isForbiddenKey(id)) continue
+    const sanitizedNode: GameMap['nodes'][string] = { id, x, y }
+
+    if (
+      typeof nodeRecord.layer === 'number' &&
+      Number.isFinite(nodeRecord.layer)
+    ) {
+      sanitizedNode.layer = nodeRecord.layer
+    }
+    if (typeof nodeRecord.venueId === 'string') {
+      sanitizedNode.venueId = nodeRecord.venueId
+    }
+    if (Array.isArray(nodeRecord.neighbors)) {
+      const neighbors: string[] = []
+      for (let i = 0; i < nodeRecord.neighbors.length; i++) {
+        const neighbor = nodeRecord.neighbors[i]
+        if (typeof neighbor === 'string') {
+          neighbors.push(neighbor)
+        }
+      }
+      sanitizedNode.neighbors = neighbors
+    }
+    for (const key in nodeRecord) {
+      if (!Object.hasOwn(nodeRecord, key)) continue
+      if (
+        isForbiddenKey(key) ||
+        key === 'id' ||
+        key === 'x' ||
+        key === 'y' ||
+        key === 'layer' ||
+        key === 'venueId' ||
+        key === 'neighbors'
+      ) {
+        continue
+      }
+      const value = nodeRecord[key]
+      if (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean' ||
+        value === null
+      ) {
+        sanitizedNode[key] = value
+        continue
+      }
+      const copiedArray = copySafeArray(value)
+      if (copiedArray) {
+        sanitizedNode[key] = copiedArray
+        continue
+      }
+      const copiedObject = copySafeFlatObject(value)
+      if (copiedObject) {
+        sanitizedNode[key] = copiedObject
+      }
+    }
+
+    sanitizedNodes[id] = sanitizedNode
+  }
+
+  const sanitizedConnections: Array<{ from: string; to: string }> = []
+  if (Array.isArray(mapRecord.connections)) {
+    for (let i = 0; i < mapRecord.connections.length; i++) {
+      const entry = mapRecord.connections[i]
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue
+      const entryRecord = entry as Record<string, unknown>
+      if (
+        (typeof entryRecord.from === 'string' ||
+          typeof entryRecord.from === 'number') &&
+        (typeof entryRecord.to === 'string' ||
+          typeof entryRecord.to === 'number')
+      ) {
+        sanitizedConnections.push({
+          from: String(entryRecord.from),
+          to: String(entryRecord.to)
+        })
+      }
+    }
+  }
+
+  const sanitizedMap: GameMap = {
+    nodes: sanitizedNodes,
+    connections: sanitizedConnections
+  }
+
+  if (typeof mapRecord.name === 'string') {
+    sanitizedMap.name = mapRecord.name
+  }
+  if (
+    typeof mapRecord.version === 'string' ||
+    typeof mapRecord.version === 'number'
+  ) {
+    sanitizedMap.version = mapRecord.version
+  }
+
+  return sanitizedMap
+}
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const playerData =
@@ -391,7 +597,7 @@ export const handleLoadGame = (
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
-    gameMap: (loadedState.gameMap as GameMap | null) || state.gameMap,
+    gameMap: normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
@@ -514,10 +720,14 @@ export const handleUpdateSettings = (
 
 export const handleSetMap = (
   state: GameState,
-  payload: Record<string, unknown>
+  payload: GameMap | null
 ): GameState => {
-  logger.info('GameState', 'Map Generated')
-  return { ...state, gameMap: payload as GameMap }
+  if (payload) {
+    logger.info('GameState', 'Map Generated')
+  } else {
+    logger.warn('GameState', 'Map generation failed, null fallback applied')
+  }
+  return { ...state, gameMap: payload }
 }
 
 export const handleAddToast = (
@@ -710,11 +920,16 @@ export const handleAdvanceDay = (
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
   }
 
+  const socialUnlockState: Pick<GameState, 'player' | 'band' | 'social'> = {
+    player: nextPlayer,
+    band: nextBand,
+    social
+  }
+
   // Check Social Unlocks
-  const socialUnlocks = checkTraitUnlocks(
-    { player: nextPlayer, band: nextBand, social } as unknown as GameState,
-    { type: 'SOCIAL_UPDATE' }
-  )
+  const socialUnlocks = checkTraitUnlocks(socialUnlockState, {
+    type: 'SOCIAL_UPDATE'
+  })
 
   const traitResult = applyTraitUnlocks(
     { band: nextBand, toasts: state.toasts },

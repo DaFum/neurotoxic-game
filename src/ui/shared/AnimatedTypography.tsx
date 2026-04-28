@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import type { Transition } from 'framer-motion'
+import type { HTMLMotionProps, Transition } from 'framer-motion'
 import PropTypes from 'prop-types'
+import type { ComponentType, ElementType, ReactNode } from 'react'
 
 export const AnimatedDivider = ({
   width = '100%',
@@ -25,6 +26,18 @@ AnimatedDivider.propTypes = {
   className: PropTypes.string
 }
 
+type MotionTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'
+
+const motionTagAllowlist = {
+  h1: motion.h1,
+  h2: motion.h2,
+  h3: motion.h3,
+  h4: motion.h4,
+  p: motion.p,
+  span: motion.span,
+  div: motion.div
+} as const satisfies Record<MotionTag, ElementType>
+
 export const AnimatedSubtitle = ({
   as = 'h2',
   initial,
@@ -33,15 +46,18 @@ export const AnimatedSubtitle = ({
   className = '',
   children
 }: {
-  as?: string | React.ElementType
-  initial?: unknown
-  animate?: unknown
+  as?: MotionTag | ComponentType
+  initial?: HTMLMotionProps<'div'>['initial']
+  animate?: HTMLMotionProps<'div'>['animate']
   transition?: Transition
   className?: string
-  children: React.ReactNode
+  children: ReactNode
 }) => {
-  // Access motion[...] dynamically; framer-motion provides typed helpers
-  const MotionComponent = (motion as any)[as] || motion.h2
+  const MotionComponent =
+    typeof as === 'string'
+      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
+        motion.h2)
+      : motion(as)
 
   return (
     <MotionComponent

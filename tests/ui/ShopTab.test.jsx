@@ -11,7 +11,16 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../src/data/hqItems', () => ({
   HQ_ITEMS: {
-    gear: [{ id: 'gear1', name: 'Gear 1', cost: 100, currency: 'money' }],
+    gear: [
+      { id: 'gear1', name: 'Gear 1', cost: 100, currency: 'money' },
+      {
+        id: 'passive1',
+        name: 'Passive 1',
+        cost: 150,
+        currency: 'money',
+        effect: { type: 'passive', key: 'harmonyRegenTravel', value: true }
+      }
+    ],
     instruments: [
       { id: 'inst1', name: 'Instrument 1', cost: 500, currency: 'money' }
     ]
@@ -82,6 +91,7 @@ describe('ShopTab', () => {
       />
     )
     expect(screen.getByTestId('shop-item-gear1')).toBeInTheDocument()
+    expect(screen.getByTestId('shop-item-passive1')).toBeInTheDocument()
     expect(screen.getByTestId('shop-item-inst1')).toBeInTheDocument()
   })
 

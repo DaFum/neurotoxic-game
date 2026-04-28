@@ -11,8 +11,13 @@ import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
 import PropTypes from 'prop-types'
 import type { MinigameSceneFrameProps } from '../types/components'
-import { ActionTypes } from '../context/actionTypes'
 import { MINIGAME_TYPES } from '../context/gameConstants'
+
+type BackdoorMinigameState = {
+  minigame?: {
+    type?: string | null
+  }
+}
 
 export const MinigameSceneFrame = ({
   controllerFactory,
@@ -72,8 +77,15 @@ export const MinigameSceneFrame = ({
           if (currentLogic?.finishMinigame) {
             currentLogic.finishMinigame()
           } else {
+            const gameStateSnapshot = currentLogic?.gameStateRef?.current
+            const minigameTypeSource =
+              gameStateSnapshot && typeof gameStateSnapshot === 'object'
+                ? (gameStateSnapshot as BackdoorMinigameState).minigame
+                : undefined
             const currentType =
-              currentLogic?.gameStateRef?.current?.minigame?.type
+              minigameTypeSource && typeof minigameTypeSource === 'object'
+                ? minigameTypeSource.type
+                : undefined
 
             if (currentType === MINIGAME_TYPES.TOURBUS) {
               completeTravelMinigame(0, [])
