@@ -76,3 +76,12 @@ Load extra references only when relevant:
 - `references/core-patterns.md`: examples for `type` vs `interface`, `as const`, discriminated unions, `Extract`, guards, `satisfies`, `import type`, maps, React 19, and utility types.
 - `references/review-checklist.md`: complete review checklist and response shape.
 - `references/migration-playbook.md`: JS-to-TS workflow, checked JS tactics, suppressions, declaration files, and typecheck triage.
+
+For deeper dives, load from `references/`:
+
+| Topic                                                        | File                                |
+| ------------------------------------------------------------ | ----------------------------------- |
+| Conditional types, `infer`, template literals, branded types | `references/advanced-types.md`      |
+| Module augmentation, declaration merging, `.d.ts` authoring  | `references/module-augmentation.md` |
+| tsconfig options deep-dive, `isolatedModules` edge cases     | `references/tsconfig.md`            |
+
