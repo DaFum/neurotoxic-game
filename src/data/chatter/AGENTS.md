@@ -14,7 +14,7 @@ Applies to `src/data/chatter/**`.
 - Condition callbacks should use explicit state typing (`(state: GameState) => ...`) to avoid implicit `any` under CheckJS.
 - Prefer helper functions for repeated guards (location, mood, stamina, inventory) to keep condition typing consistent.
 
-## Gotchas
+## Domain Gotchas
 
 - City/location checks must support canonical venue IDs and legacy formats used by migrations.
 - Avoid assumptions about display names vs IDs in condition matching.

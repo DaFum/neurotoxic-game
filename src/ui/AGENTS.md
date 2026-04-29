@@ -16,7 +16,7 @@ Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 - Include `t` and all reactive dependencies in callbacks/effects to prevent stale closures in translated UI.
 - Preserve nullish/falsy semantics in UI formatting (`??` over `||` when `0`/`''` are valid values).
 
-## Gotchas
+## Domain Gotchas
 
 - Location labels should go through translation helpers (for example `translateLocation`) instead of raw string assumptions.
 - Keep style tokens aligned with Tailwind v4 and project CSS variables.

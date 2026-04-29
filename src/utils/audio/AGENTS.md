@@ -28,6 +28,12 @@ Applies to `src/utils/audio/**`.
 
 - Keep time/unit fields explicit (`ms`, beats, ticks) in type names or comments to prevent subtle conversion bugs.
 
+
+## Domain Gotchas
+
+- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
+- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+
 ## Recent Findings (2026-04)
 
 - Global keyboard listeners in UI overlays should consume Escape consistently to prevent accidental audio toggle/race behavior from competing handlers.

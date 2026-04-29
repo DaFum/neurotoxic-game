@@ -15,7 +15,7 @@ Applies to `src/context/reducers/**`.
 - Sanitize untrusted load/reset payloads via explicit whitelist construction, not generic object spread.
 - Preserve serialized state compatibility unless a migration path is included in the same PR.
 
-## Gotchas
+## Domain Gotchas
 
 - Travel/location fields are consumed by chatter, translation, and save migrations; update all readers/writers together.
 - Settings and unlock persistence behavior is regression-sensitive; keep tests aligned with intended semantics.

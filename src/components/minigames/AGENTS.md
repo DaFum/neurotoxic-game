@@ -15,7 +15,7 @@ Applies to `src/components/minigames/**`.
 - Use narrow prop contracts for controller/logic dependencies; avoid `any` passthrough props.
 - Preserve optionality semantics for controller factories and completion render callbacks.
 
-## Gotchas
+## Domain Gotchas
 
 - Do not import PIXI into logic-only hooks; scene/frame components should consume prepared logic objects.
 - Completion overlays should use provided completion state instead of recomputing reducer data.

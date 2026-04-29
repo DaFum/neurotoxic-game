@@ -30,6 +30,12 @@ Applies to `src/types/**`.
 - If optionality changes in a shared type, update corresponding runtime validators/PropTypes and affected tests in the same PR.
 - Prefer additive, backward-compatible contract evolution; breaking field changes require coordinated reducer/action updates.
 
+
+## Domain Gotchas
+
+- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
+- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+
 ## Recent Findings (2026-04)
 
 - Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.

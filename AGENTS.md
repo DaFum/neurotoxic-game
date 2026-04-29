@@ -98,7 +98,7 @@
 - **Tailwind v4**: use `@import "tailwindcss"` (not `@tailwind base`). For non-color tokens (e.g., z-index `--z-*`), use `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
 - **Colors**: never hardcode. Use CSS vars (`var(--color-toxic-green)`). In PixiJS: `getPixiColorFromToken('--toxic-green')` (omit `--color-` prefix).
 
-## Gotchas
+## Domain Gotchas
 
 - **`currentGig` IS the venue object** — access capacity and id directly as `state.currentGig?.capacity` and `state.currentGig?.id`. The old nested form `state.currentGig?.venue?.capacity` no longer exists. Getting this wrong silently returns `undefined`, which defaults to `0` and incorrectly activates small-venue quest paths.
 - **Band member self-relationships corrupt gameplay systems** — never add a member to their own `relationships` map (e.g., `Matze: 0` in Matze's entry). The `grudge_holder` trait unlocks immediately because it iterates all relationships and checks if any score `< 30`; self-references also trigger infighting events between a member and themselves.

@@ -15,7 +15,7 @@ Applies to `src/ui/bandhq/hooks/**`.
 - Type hook arguments/returns explicitly to prevent drift in public hook contracts.
 - Use `unknown` + narrowing for untrusted payload fragments before constructing patches.
 
-## Gotchas
+## Domain Gotchas
 
 - Ownership and affordability checks must match runtime effect handling paths.
 - Success/failure toast content must align with sanitized, actually-applied changes.

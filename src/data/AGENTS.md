@@ -27,6 +27,12 @@ Applies to `src/data/**`.
 - Annotate condition callbacks explicitly (`(state: GameState) => ...`) in data event pools to avoid implicit-`any` failures in CheckJS.
 - Use narrow literal unions/const assertions for category/type fields to preserve downstream type narrowing.
 
+
+## Domain Gotchas
+
+- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
+- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+
 ## Recent Findings (2026-04)
 
 - New menu-driven systems should reuse existing data keys where possible; introducing parallel IDs for the same feature increases save/test drift risk.
