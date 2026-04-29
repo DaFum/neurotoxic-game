@@ -1,4 +1,3 @@
-import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import {
   checkViralEvent,
   calculateSocialGrowth,

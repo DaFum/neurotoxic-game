@@ -26,18 +26,20 @@ export const AudioSettings = memo(function AudioSettings({
 
   const handleMusicChange = useCallback(
     (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) => {
-      const raw = (e as any).target?.value
-      const num = typeof raw === 'number' ? raw : parseFloat(String(raw))
-      onMusicChange(num)
+      const raw = e.target.value
+      const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
+      if (!Number.isFinite(parsed)) return
+      onMusicChange(parsed)
     },
     [onMusicChange]
   )
 
   const handleSfxChange = useCallback(
     (e: ChangeEvent<HTMLInputElement> | { target: { value: number } }) => {
-      const raw = (e as any).target?.value
-      const num = typeof raw === 'number' ? raw : parseFloat(String(raw))
-      onSfxChange(num)
+      const raw = e.target.value
+      const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw))
+      if (!Number.isFinite(parsed)) return
+      onSfxChange(parsed)
     },
     [onSfxChange]
   )

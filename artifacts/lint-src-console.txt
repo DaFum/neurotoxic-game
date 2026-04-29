@@ -1,0 +1,269 @@
+
+/workspace/neurotoxic-game/src/components/PixiStageController.ts
+   51:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/overworld/OverworldModals.tsx
+  17:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/stage/EffectManager.ts
+  1:34  warning  'Sprite' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  1:42  warning  'Texture' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/components/stage/NoteManager.ts
+   1:34  warning  'Texture' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   3:10  warning  'handleError' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  10:35  warning  'NoteTextures' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/components/stage/RoadiePlayerManager.ts
+   77:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/stage/RoadieStageController.ts
+    1:10  warning  'Container' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+    1:31  warning  'Sprite' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+    1:39  warning  'Texture' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   11:10  warning  'logger' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   14:10  warning  'hashString' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   35:23  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  168:14  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  216:53  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/stage/RoadieTrafficManager.ts
+   1:39  warning  'Texture' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  28:30  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  55:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  55:36  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  55:48  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/stage/TourbusObstacleManager.ts
+  46:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/stage/TourbusStageController.ts
+   15:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  232:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/components/stage/ToxicFilterManager.ts
+  21:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/data/chatter/standardChatter.ts
+  1:26  warning  'BandMember' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/hooks/rhythmGame/useRhythmGameState.ts
+  12:3  warning  'RhythmLane' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/hooks/usePostGigHandlers.ts
+  424:6  warning  React Hook useCallback has an unnecessary dependency: 'saveGame'. Either exclude it or remove the dependency array  @eslint-react/exhaustive-deps
+
+/workspace/neurotoxic-game/src/scenes/Overworld.tsx
+  1:20  warning  'useMemo' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/scenes/kabelsalat/hooks/useKabelsalatShuffle.ts
+  63:6  warning  React Hook useEffect has a missing dependency: 'randomFn'. Either include it or remove the dependency array  @eslint-react/exhaustive-deps
+
+/workspace/neurotoxic-game/src/scenes/mainmenu/MainMenuFeatures.tsx
+  140:49  warning  Do not use item index in the array as its key  @eslint-react/no-array-index-key
+
+/workspace/neurotoxic-game/src/scenes/mainmenu/useMainMenu.ts
+  6:3  warning  'MutableRefObject' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/types/components.d.ts
+   12:15  warning  'RhythmGameRefState' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  134:33  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+  158:33  warning  Unexpected any. Specify a different type                                              @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/types/react-compat.d.ts
+  4:33  warning  'T' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  8:34  warning  'P' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/ui/bandhq/SetlistTab.tsx
+  10:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/ui/overworld/EventLog.tsx
+  63:9  warning  Do not call the 'set' function 'setEntries' of 'useState' synchronously in an effect. This can lead to unnecessary re-renders and performance issues  @eslint-react/set-state-in-effect
+
+/workspace/neurotoxic-game/src/ui/overworld/OverworldHUD.tsx
+   15:9   warning  A ref identifier must be named 'ref' or ending in 'Ref'                                                                                                 @eslint-react/naming-convention-ref-name
+   20:7   warning  Do not call the 'set' function 'setCur' of 'useState' synchronously in an effect. This can lead to unnecessary re-renders and performance issues        @eslint-react/set-state-in-effect
+   57:11  warning  A ref identifier must be named 'ref' or ending in 'Ref'                                                                                                 @eslint-react/naming-convention-ref-name
+  102:9   warning  Do not call the 'set' function 'setMoneyAnim' of 'useState' synchronously in an effect. This can lead to unnecessary re-renders and performance issues  @eslint-react/set-state-in-effect
+
+/workspace/neurotoxic-game/src/ui/settings/AudioSettings.tsx
+  29:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/ui/shared/ToggleSwitch.tsx
+  2:15  warning  'MouseEvent' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/ui/shared/Tooltip.tsx
+   86:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/arrivalUtils.ts
+  38:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  80:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  82:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/audio/cleanupUtils.ts
+  29:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/audio/context.ts
+  16:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/audio/midiPlayback.ts
+  430:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  449:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  450:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  457:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  457:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  463:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  465:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  466:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  533:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  533:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  619:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  701:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/audio/playback.ts
+  148:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:5   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  272:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/audio/state.ts
+  3:15  warning  'buildDrumKit' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/utils/economyEngine.ts
+   82:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  268:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  268:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  294:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  295:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  296:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  333:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  334:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  335:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  368:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  381:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  393:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  394:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  410:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  437:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  456:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  482:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  514:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  591:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  758:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  758:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  786:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  787:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  811:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  812:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  832:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  832:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  864:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  865:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/gameStateUtils.ts
+  308:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  308:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  308:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  309:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  557:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  592:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  592:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  592:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  593:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  921:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  921:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  922:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  936:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  938:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/hecklerLogic.ts
+   11:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/logger.ts
+   19:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   57:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   70:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/mapUtils.ts
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/pirateRadioUtils.ts
+   4:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/workspace/neurotoxic-game/src/utils/postGigUtils.ts
+  1:15  warning  'RhythmSetlistEntry' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/workspace/neurotoxic-game/src/utils/translationUtils.ts
+  29:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 188 problems (0 errors, 188 warnings)
+

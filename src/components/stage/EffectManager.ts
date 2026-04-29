@@ -1,4 +1,4 @@
-import { Application, Container, Sprite, Texture } from 'pixi.js'
+import { Application, Container } from 'pixi.js'
 import { EffectTextureManager } from './EffectTextureManager'
 import { EffectSprite, EffectSpritePool } from './EffectSpritePool'
 

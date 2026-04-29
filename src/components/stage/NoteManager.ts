@@ -1,13 +1,12 @@
-import { Application, Container, Texture } from 'pixi.js'
+import { Application, Container } from 'pixi.js'
 import type { RefObject } from 'react'
-import { handleError } from '../../utils/errorHandler'
 import { calculateNoteY } from './utils'
 import {
   NoteSpritePool,
   NOTE_CENTER_OFFSET,
   type NoteSprite
 } from './NoteSpritePool'
-import { NoteTextureManager, type NoteTextures } from './NoteTextureManager'
+import { NoteTextureManager } from './NoteTextureManager'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 
