@@ -111,7 +111,7 @@ Use checkboxes `[ ]` for each rule. Organize into **sections** (Linting, Styling
 
 ## Styling
 
-- [ ] **Colors**: Use `@theme` tokens only. Never hardcode colors or use `bg-[var(--name)]`.
+- [ ] **Colors**: Use `@theme` tokens only. Never hardcode colors or use `bg-[var(--color-name)]`.
 
 ## Testing
 
