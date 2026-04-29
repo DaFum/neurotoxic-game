@@ -1,4 +1,4 @@
-import { test, beforeEach, describe } from 'vitest'
+import { test, beforeEach, afterAll, describe } from 'vitest'
 import assert from 'node:assert/strict'
 
 const mockStorage = {
@@ -17,6 +17,7 @@ const mockStorage = {
   }
 }
 
+const originalLocalStorage = global.localStorage
 global.localStorage = mockStorage
 
 describe('Unlock Manager Security', async () => {
@@ -24,6 +25,10 @@ describe('Unlock Manager Security', async () => {
 
   beforeEach(() => {
     mockStorage.clear()
+  })
+
+  afterAll(() => {
+    global.localStorage = originalLocalStorage
   })
 
   const readStorage = () => {
@@ -43,7 +48,14 @@ describe('Unlock Manager Security', async () => {
 
     const added = addUnlock('fresh_unlock')
     assert.equal(added, true)
-    assert.deepEqual(readStorage(), ['valid_unlock', 'fresh_unlock'])
+    const persisted = readStorage()
+    assert.deepEqual(persisted, ['valid_unlock', 'fresh_unlock'])
+    for (const item of persisted) {
+      if (typeof item !== 'object' || !item) continue
+      assert.equal(Object.hasOwn(item, '__proto__'), false)
+      assert.equal(Object.hasOwn(item, 'constructor'), false)
+      assert.equal(Object.hasOwn(item, 'prototype'), false)
+    }
   })
 
   test('addUnlock sanitizes constructor/prototype nested payload keys', () => {
@@ -53,7 +65,14 @@ describe('Unlock Manager Security', async () => {
 
     const added = addUnlock('fresh_unlock')
     assert.equal(added, true)
-    assert.deepEqual(readStorage(), ['valid_unlock', 'fresh_unlock'])
+    const persisted = readStorage()
+    assert.deepEqual(persisted, ['valid_unlock', 'fresh_unlock'])
+    for (const item of persisted) {
+      if (typeof item !== 'object' || !item) continue
+      assert.equal(Object.hasOwn(item, '__proto__'), false)
+      assert.equal(Object.hasOwn(item, 'constructor'), false)
+      assert.equal(Object.hasOwn(item, 'prototype'), false)
+    }
     assert.equal({}.polluted, undefined)
   })
 
@@ -65,7 +84,14 @@ describe('Unlock Manager Security', async () => {
 
     const added = addUnlock('safe_unlock')
     assert.equal(added, true)
-    assert.deepEqual(readStorage(), ['safe_unlock'])
+    const persisted = readStorage()
+    assert.deepEqual(persisted, ['safe_unlock'])
+    for (const item of persisted) {
+      if (typeof item !== 'object' || !item) continue
+      assert.equal(Object.hasOwn(item, '__proto__'), false)
+      assert.equal(Object.hasOwn(item, 'constructor'), false)
+      assert.equal(Object.hasOwn(item, 'prototype'), false)
+    }
     assert.equal({}.polluted, undefined)
   })
 

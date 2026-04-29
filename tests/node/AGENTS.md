@@ -15,7 +15,7 @@ Applies to `tests/node/**`.
 - Explicitly model typed fixtures when testing strict CheckJS paths (especially optional nested fields).
 - Add regression tests when state persistence semantics change (settings/unlocks/location).
 
-## Gotchas
+## Domain Gotchas
 
 - When asserting travel/location behavior, include legacy and canonical venue ID cases.
 - When asserting load/reset behavior, verify whitelist sanitization instead of raw spread assumptions.

@@ -106,7 +106,7 @@ export const GigModifiersBlock = ({
               >
                 <span className='w-1 h-1 bg-toxic-green inline-block' />
                 {typeof eff === 'string'
-                  ? eff
+                  ? t(eff, { defaultValue: eff })
                   : t(eff.key, {
                       ...sanitizeEffectOptions(eff.options),
                       defaultValue: eff.fallback

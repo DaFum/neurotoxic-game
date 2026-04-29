@@ -30,6 +30,11 @@ Applies to `src/types/**`.
 - If optionality changes in a shared type, update corresponding runtime validators/PropTypes and affected tests in the same PR.
 - Prefer additive, backward-compatible contract evolution; breaking field changes require coordinated reducer/action updates.
 
+## Domain Gotchas
+
+- Removing broad index signatures (for example on manager-like interfaces) intentionally tightens `keyof`; update helper call sites and tests in the same change.
+- Shared contract optionality changes must be mirrored by runtime guards/type predicates to avoid “type predicate lies” in consumer modules.
+
 ## Recent Findings (2026-04)
 
 - Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.

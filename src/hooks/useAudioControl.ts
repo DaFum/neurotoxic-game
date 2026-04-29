@@ -65,24 +65,42 @@ export const getAudioSnapshot = (
     )
   }
 
+  const getDefaultSnapshot = (): AudioSnapshot => ({
+    musicVol: manager.musicVolume ?? 1,
+    sfxVol: manager.sfxVolume ?? 1,
+    isMuted: manager.muted ?? false,
+    isPlaying: manager.isPlaying ?? false,
+    currentSongId: manager.currentSongId ?? null
+  })
+
+  const normalizeAudioSnapshot = (value: unknown): AudioSnapshot => {
+    const defaults = getDefaultSnapshot()
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return defaults
+    }
+    const raw = value as Record<string, unknown>
+    return {
+      musicVol:
+        typeof raw.musicVol === 'number' ? raw.musicVol : defaults.musicVol,
+      sfxVol: typeof raw.sfxVol === 'number' ? raw.sfxVol : defaults.sfxVol,
+      isMuted:
+        typeof raw.isMuted === 'boolean' ? raw.isMuted : defaults.isMuted,
+      isPlaying:
+        typeof raw.isPlaying === 'boolean' ? raw.isPlaying : defaults.isPlaying,
+      currentSongId:
+        typeof raw.currentSongId === 'string' || raw.currentSongId === null
+          ? raw.currentSongId
+          : defaults.currentSongId
+    }
+  }
+
   const maybeManagedSnapshot =
-    typeof manager.getState === 'function'
-      ? manager.getState()
-      : typeof manager.getStateSnapshot === 'function'
-        ? manager.getStateSnapshot()
+    typeof manager.getStateSnapshot === 'function'
+      ? manager.getStateSnapshot()
+      : typeof manager.getState === 'function'
+        ? manager.getState()
         : null
-  const nextSnapshot =
-    maybeManagedSnapshot &&
-    typeof maybeManagedSnapshot === 'object' &&
-    !Array.isArray(maybeManagedSnapshot)
-      ? maybeManagedSnapshot
-      : {
-          musicVol: manager.musicVolume ?? 1,
-          sfxVol: manager.sfxVolume ?? 1,
-          isMuted: manager.muted ?? false,
-          isPlaying: manager.isPlaying ?? false,
-          currentSongId: manager.currentSongId ?? null
-        }
+  const nextSnapshot = normalizeAudioSnapshot(maybeManagedSnapshot)
 
   const previousSnapshot = fallbackSnapshotRef.current
   if (

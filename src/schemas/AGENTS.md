@@ -20,6 +20,11 @@ Applies to `src/schemas/**`.
 - Preserve nullish semantics in optional schema fields (`??` patterns) so valid falsy values are not lost.
 - Keep schema helpers declarative and strongly typed; avoid embedding app-level side effects in schema modules.
 
+## Domain Gotchas
+
+- Schema optional fields must preserve nullish semantics (`??`) so persisted `0`/`''` values are not coerced away during normalization.
+- If a schema field represents a record map, array payloads should be normalized to safe defaults rather than cast-through objects.
+
 ## Recent Findings (2026-04)
 
 - Treat UI reachability changes as potential schema-impacting events when persisted flags exist; stale flags should be either migrated or removed intentionally.

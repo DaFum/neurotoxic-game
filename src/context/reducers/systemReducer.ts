@@ -425,18 +425,17 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           typeof m.stamina === 'number' ? m.stamina : 100,
           (m as Record<string, unknown>).staminaMax as number | undefined
         ),
-        ...(typeof m.baseStats === 'object' &&
-        m.baseStats !== null &&
-        !Array.isArray(m.baseStats)
-          ? {
-              baseStats: Object.fromEntries(
+        baseStats:
+          typeof m.baseStats === 'object' &&
+          m.baseStats !== null &&
+          !Array.isArray(m.baseStats)
+            ? Object.fromEntries(
                 Object.entries(m.baseStats as Record<string, unknown>).filter(
                   ([, value]) =>
                     typeof value === 'number' && Number.isFinite(value)
                 )
               )
-            }
-          : {}),
+            : {},
         ...(typeof m.skill === 'number' && Number.isFinite(m.skill)
           ? { skill: m.skill }
           : {}),
@@ -453,13 +452,16 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           ? { composition: m.composition }
           : {}),
         ...(typeof m.role === 'string' ? { role: m.role } : {}),
-        ...(typeof m.equipment === 'object' &&
-        m.equipment !== null &&
-        !Array.isArray(m.equipment)
-          ? { equipment: m.equipment as Record<string, unknown> }
-          : {}),
+        equipment:
+          typeof m.equipment === 'object' &&
+          m.equipment !== null &&
+          !Array.isArray(m.equipment)
+            ? (m.equipment as Record<string, unknown>)
+            : {},
         relationships:
-          m.relationships && typeof m.relationships === 'object'
+          m.relationships &&
+          typeof m.relationships === 'object' &&
+          !Array.isArray(m.relationships)
             ? (m.relationships as unknown as Record<string, number>)
             : ({} as Record<string, number>)
       })) as BandMember[])

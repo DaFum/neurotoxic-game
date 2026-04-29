@@ -42,7 +42,11 @@ const TACTICS = [
 
 const isNegotiationResult = (value: unknown): value is NegotiationResult => {
   if (!value || typeof value !== 'object') return false
-  if (!Object.hasOwn(value, 'status')) {
+  if (
+    !Object.hasOwn(value, 'status') ||
+    !Object.hasOwn(value, 'success') ||
+    !Object.hasOwn(value, 'feedback')
+  ) {
     return false
   }
   const record = value as {
@@ -51,8 +55,8 @@ const isNegotiationResult = (value: unknown): value is NegotiationResult => {
     status?: unknown
   }
   return (
-    (record.success === undefined || typeof record.success === 'boolean') &&
-    (record.feedback === undefined || typeof record.feedback === 'string') &&
+    typeof record.success === 'boolean' &&
+    typeof record.feedback === 'string' &&
     (record.status === 'ACCEPTED' ||
       record.status === 'REVOKED' ||
       record.status === 'FAILED')

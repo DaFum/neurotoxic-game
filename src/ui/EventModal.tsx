@@ -169,8 +169,9 @@ export const EventModal = ({
     typeof event.context === 'object' && event.context !== null
       ? (event.context as Record<string, unknown>)
       : undefined
-  const titleKey = event.titleKey ?? 'ui:event.untitled'
-  const descriptionKey = event.descriptionKey ?? 'ui:event.noDescription'
+  const titleKey = event.title ?? event.titleKey ?? 'ui:event.untitled'
+  const descriptionKey =
+    event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
     <div
@@ -217,14 +218,14 @@ export const EventModal = ({
                 className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
               >
                 {t(titleKey, {
-                  defaultValue: event.title || t('ui:event.untitled'),
+                  defaultValue: event.title ?? t('ui:event.untitled'),
                   ...eventContext
                 })}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
                 {t(descriptionKey, {
                   defaultValue:
-                    event.description || t('ui:event.noDescription'),
+                    event.description ?? t('ui:event.noDescription'),
                   ...eventContext
                 })}
               </p>
