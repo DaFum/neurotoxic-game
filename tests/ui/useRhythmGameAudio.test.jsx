@@ -152,7 +152,7 @@ describe('useRhythmGameAudio', () => {
       })
     )
 
-    await waitFor(() => expect(mocks.resetGigStateTracking).toHaveBeenCalledWith(gameStateRef))
-    expect(mocks.playSongSequence).toHaveBeenCalled()
+    await waitFor(() => expect(mocks.playSongSequence).toHaveBeenCalled())
+    expect(mocks.resetGigStateTracking).toHaveBeenCalledWith(gameStateRef)
   })
 })
