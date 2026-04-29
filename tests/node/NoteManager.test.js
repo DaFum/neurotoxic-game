@@ -196,7 +196,10 @@ describe('NoteManager', () => {
 
     await uninitializedNoteManager.loadAssets()
 
-    assert.equal(uninitializedNoteManager.textureManager.noteTextures.skull, mockTextureSkull)
+    assert.equal(
+      uninitializedNoteManager.textureManager.noteTextures.skull,
+      mockTextureSkull
+    )
     assert.equal(
       uninitializedNoteManager.textureManager.noteTextures.lightning,
       mockTextureLightning

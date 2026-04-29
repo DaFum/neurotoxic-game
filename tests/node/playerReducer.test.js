@@ -95,8 +95,6 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.fame, 50) // Unchanged
     })
 
-
-
     it('should preserve properties not updated', () => {
       const initialState = {
         otherProp: 'test',
@@ -124,16 +122,14 @@ describe('playerReducer', () => {
         42,
         { constructor: { hacked: true } },
         { prototype: {} },
-        ...([
-          { money: 200 }
-        ].map(p => {
+        ...[{ money: 200 }].map(p => {
           const obj = { ...p }
           Object.defineProperty(obj, '__proto__', {
             value: { hacked: true },
             enumerable: true
           })
           return obj
-        }))
+        })
       ]
 
       hostilePayloads.forEach((payload, index) => {

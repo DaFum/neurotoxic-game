@@ -876,9 +876,11 @@ export const BrutalTabs = memo(() => {
           return (
             <button
               type='button'
+              id={`tab-${tab.id}`}
               key={tab.id}
               role='tab'
               aria-selected={isActive}
+              aria-controls={`panel-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2 px-4 text-xs font-bold tracking-[0.1em] uppercase transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
                 ${isActive ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)]' : 'bg-void-black text-toxic-green hover:bg-toxic-green/10'}`}
@@ -901,6 +903,9 @@ export const BrutalTabs = memo(() => {
         {tabs.map(tab => (
           <div
             key={`panel-${tab.id}`}
+            id={`panel-${tab.id}`}
+            role='tabpanel'
+            aria-labelledby={`tab-${tab.id}`}
             className={activeTab === tab.id ? 'block relative z-10' : 'hidden'}
           >
             <p className='text-sm opacity-80 typewriter-effect'>

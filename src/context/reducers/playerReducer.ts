@@ -19,12 +19,10 @@ export const handleUpdatePlayer = (
   payload: UpdatePlayerPayload
 ): PlayerSlice => {
   logger.debug('GameState', 'Update Player', payload)
-  const updates = typeof payload === 'function' ? payload(state.player) : payload
+  const updates =
+    typeof payload === 'function' ? payload(state.player) : payload
 
-  if (
-    !isPlainObject(updates) ||
-    Object.keys(updates).some(isForbiddenKey)
-  ) {
+  if (!isPlainObject(updates) || Object.keys(updates).some(isForbiddenKey)) {
     return state
   }
 

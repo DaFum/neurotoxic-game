@@ -33,7 +33,9 @@ export const Overlays: FC<OverlaysProps> = ({
       {isGameOver && !isShocked && (
         <GameOverOverlay t={t} onAdvance={() => onAdvance(false)} />
       )}
-      {isPoweredOn && <PoweredOnOverlay t={t} onAdvance={() => onAdvance(true)} />}
+      {isPoweredOn && (
+        <PoweredOnOverlay t={t} onAdvance={() => onAdvance(true)} />
+      )}
     </>
   )
 }

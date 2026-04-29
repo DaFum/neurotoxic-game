@@ -29,7 +29,9 @@ const sanitizeContextValue = (value: unknown): unknown => {
   }
   if (value !== null && typeof value === 'object') {
     const out: Record<string, unknown> = Object.create(null)
-    for (const [prop, val] of Object.entries(value as Record<string, unknown>)) {
+    for (const [prop, val] of Object.entries(
+      value as Record<string, unknown>
+    )) {
       if (isForbiddenKey(prop)) continue
       out[prop] = sanitizeContextValue(val)
     }

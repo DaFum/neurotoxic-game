@@ -184,7 +184,9 @@ const validateBand = (band: unknown): void => {
         throw new StateError(`band.members[${index}].role must be a string`)
       }
       if (m.baseStats !== undefined && !isPlainObject(m.baseStats)) {
-        throw new StateError(`band.members[${index}].baseStats must be an object`)
+        throw new StateError(
+          `band.members[${index}].baseStats must be an object`
+        )
       }
       if (isPlainObject(m.baseStats)) {
         const baseStats = m.baseStats as Record<string, unknown>
@@ -202,7 +204,9 @@ const validateBand = (band: unknown): void => {
         }
       }
       if (m.equipment !== undefined && !isPlainObject(m.equipment)) {
-        throw new StateError(`band.members[${index}].equipment must be an object`)
+        throw new StateError(
+          `band.members[${index}].equipment must be an object`
+        )
       }
       if (m.relationships !== undefined) {
         if (!isPlainObject(m.relationships)) {

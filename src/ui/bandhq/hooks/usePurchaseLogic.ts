@@ -351,7 +351,8 @@ export const usePurchaseLogic = ({
           (finalCost as number) || 0
         )
 
-        const resolvedEffect: Effect | undefined = effect ?? getPrimaryEffect(item)
+        const resolvedEffect: Effect | undefined =
+          effect ?? getPrimaryEffect(item)
         if (!resolvedEffect) {
           handlePurchaseValidationError(
             { isValid: false, errorType: 'missing_effect' },

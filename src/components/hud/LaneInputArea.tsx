@@ -76,7 +76,10 @@ export const LaneInputArea = memo(function LaneInputArea({
         <LaneInputZone
           key={lane.id}
           laneIndex={lane.index}
-          ariaLabel={t('ui:rhythm.hit_lane', { lane: t(`ui:rhythm.lane_${lane.id}`), defaultValue: 'Hit {{lane}} lane' })}
+          ariaLabel={t('ui:rhythm.hit_lane', {
+            lane: t(`ui:rhythm.lane_${lane.id}`),
+            defaultValue: 'Hit {{lane}} lane'
+          })}
           onLaneInput={onLaneInput}
         />
       ))}

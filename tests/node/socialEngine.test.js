@@ -533,7 +533,13 @@ test('generateBrandOffers does not generate more than 3 offers', () => {
 
   // Add lots of traits to match many deals
   gameState.band.members = [
-    { traits: { party_animal: { id: 'party_animal' }, tech_savvy: { id: 'tech_savvy' }, fashionista: { id: 'fashionista' } } }
+    {
+      traits: {
+        party_animal: { id: 'party_animal' },
+        tech_savvy: { id: 'tech_savvy' },
+        fashionista: { id: 'fashionista' }
+      }
+    }
   ]
 
   const offers = generateBrandOffers(gameState)

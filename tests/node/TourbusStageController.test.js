@@ -82,7 +82,6 @@ mock.module('pixi.js', {
   }
 })
 
-
 // Mock EffectManager
 mock.module('../../src/components/stage/EffectManager', {
   namedExports: {
@@ -104,25 +103,25 @@ mock.module('../../src/components/stage/TourbusObstacleManager', {
   namedExports: {
     TourbusObstacleManager: class {
       constructor() {
-        this.obstacleMap = new Map();
-        this.currentIds = new Set();
+        this.obstacleMap = new Map()
+        this.currentIds = new Set()
       }
       updateObstacles(state, height, _laneWidth) {
-        this.currentIds.clear();
+        this.currentIds.clear()
         for (const obs of state.obstacles) {
-          this.currentIds.add(obs.id);
-          let sprite = this.obstacleMap.get(obs.id);
+          this.currentIds.add(obs.id)
+          let sprite = this.obstacleMap.get(obs.id)
           if (!sprite) {
-            sprite = { y: (obs.y / 100) * height };
-            this.obstacleMap.set(obs.id, sprite);
+            sprite = { y: (obs.y / 100) * height }
+            this.obstacleMap.set(obs.id, sprite)
           }
-          sprite.y = (obs.y / 100) * height;
+          sprite.y = (obs.y / 100) * height
         }
       }
       cleanupObstacles() {
         for (const id of this.obstacleMap.keys()) {
           if (!this.currentIds.has(id)) {
-             this.obstacleMap.delete(id);
+            this.obstacleMap.delete(id)
           }
         }
       }
@@ -136,7 +135,6 @@ mock.module('../../src/components/stage/TourbusObstacleManager', {
     }
   }
 })
-
 
 // Mock Utils
 mock.module('../../src/utils/logger', {
@@ -236,9 +234,9 @@ describe('TourbusStageController', () => {
     })()
 
     // Setup internal obstacleManager naturally via the mock.module
-    const { TourbusObstacleManager } = await import('../../src/components/stage/TourbusObstacleManager')
+    const { TourbusObstacleManager } =
+      await import('../../src/components/stage/TourbusObstacleManager')
     controller.obstacleManager = new TourbusObstacleManager()
-
 
     controller.container = new (class Container {
       constructor() {
@@ -256,10 +254,10 @@ describe('TourbusStageController', () => {
 
   afterEach(() => {
     // Only clear call counts to keep mock.module alive
-    currentTickerAdd.mock.resetCalls();
-    currentTickerRemove.mock.resetCalls();
-    currentAppDestroy.mock.resetCalls();
-    currentLoad.mock.resetCalls();
+    currentTickerAdd.mock.resetCalls()
+    currentTickerRemove.mock.resetCalls()
+    currentAppDestroy.mock.resetCalls()
+    currentLoad.mock.resetCalls()
   })
 
   it('should initialize correctly', async () => {

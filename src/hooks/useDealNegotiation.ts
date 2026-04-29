@@ -71,11 +71,7 @@ export const useDealNegotiation = ({
 
     try {
       const gameState = { player, band, social }
-      const result = negotiateDeal(
-        selectedDeal,
-        strategy,
-        gameState
-      )
+      const result = negotiateDeal(selectedDeal, strategy, gameState)
 
       setNegotiationResult(result)
 

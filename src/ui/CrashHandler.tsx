@@ -18,8 +18,9 @@ type CrashHandlerState = {
 }
 
 const isDevMode = (): boolean => {
-  const envOverride = (globalThis as { __IMPORT_META_ENV__?: { DEV?: boolean } })
-    .__IMPORT_META_ENV__
+  const envOverride = (
+    globalThis as { __IMPORT_META_ENV__?: { DEV?: boolean } }
+  ).__IMPORT_META_ENV__
   if (typeof envOverride?.DEV === 'boolean') return envOverride.DEV
   const importMeta = import.meta as ImportMeta & {
     env?: { DEV?: boolean }
