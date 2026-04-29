@@ -48,7 +48,7 @@ export const PirateRadioModal = ({
           <button
             type='button'
             onClick={onClose}
-            className='text-toxic-green hover:text-star-white hover:bg-toxic-green px-2 border border-transparent hover:border-toxic-green transition-colors font-mono'
+            className='text-toxic-green hover:text-star-white hover:bg-toxic-green px-2 border border-transparent hover:border-toxic-green transition-colors font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             title={t('ui:button.close', { defaultValue: 'Close' })}
             aria-label={t('ui:button.close', { defaultValue: 'Close' })}
           >
