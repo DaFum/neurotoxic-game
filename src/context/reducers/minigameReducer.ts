@@ -274,7 +274,7 @@ export const handleCompleteAmpCalibration = (
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    currentScene: GAME_PHASES.GIG,
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
@@ -334,7 +334,7 @@ export const handleCompleteKabelsalatMinigame = (
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    currentScene: GAME_PHASES.GIG,
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
