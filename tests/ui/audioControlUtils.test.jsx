@@ -99,7 +99,7 @@ describe('audioControlUtils', () => {
   describe('getAudioSnapshot', () => {
     it('returns state snapshot if native subscribe exists and supported', () => {
       mockManager.getStateSnapshot.mockReturnValue({ isPlaying: true })
-      const snapshot = getAudioSnapshot(mockManager, true, { current: null })
+      const snapshot = getAudioSnapshot(mockManager, { current: null })
       expect(snapshot).toEqual({
         musicVol: 0.5,
         sfxVol: 0.5,
@@ -111,7 +111,7 @@ describe('audioControlUtils', () => {
 
     it('builds snapshot manually and caches it if unchanged', () => {
       const fallbackRef = { current: null }
-      const snapshot1 = getAudioSnapshot(mockManager, false, fallbackRef)
+      const snapshot1 = getAudioSnapshot(mockManager, fallbackRef)
       expect(snapshot1).toEqual({
         musicVol: 0.5,
         sfxVol: 0.5,
@@ -120,7 +120,7 @@ describe('audioControlUtils', () => {
         currentSongId: null
       })
 
-      const snapshot2 = getAudioSnapshot(mockManager, false, fallbackRef)
+      const snapshot2 = getAudioSnapshot(mockManager, fallbackRef)
       expect(snapshot2).toBe(snapshot1) // cached ref
     })
   })

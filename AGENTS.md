@@ -10,7 +10,12 @@
   - `src/AGENTS.md`
   - `src/assets/AGENTS.md`
   - `src/components/AGENTS.md`
+  - `src/components/clinic/AGENTS.md`
+  - `src/components/hud/AGENTS.md`
   - `src/components/minigames/AGENTS.md`
+  - `src/components/minigames/roadie/AGENTS.md`
+  - `src/components/minigames/tourbus/AGENTS.md`
+  - `src/components/overworld/AGENTS.md`
   - `src/components/postGig/AGENTS.md`
   - `src/components/pregig/AGENTS.md`
   - `src/components/stage/AGENTS.md`
@@ -24,7 +29,10 @@
   - `src/hooks/rhythmGame/AGENTS.md`
   - `src/scenes/AGENTS.md`
   - `src/scenes/kabelsalat/AGENTS.md`
+  - `src/scenes/kabelsalat/components/AGENTS.md`
   - `src/scenes/kabelsalat/components/overlays/AGENTS.md`
+  - `src/scenes/kabelsalat/components/plugs/AGENTS.md`
+  - `src/scenes/kabelsalat/components/sockets/AGENTS.md`
   - `src/scenes/kabelsalat/hooks/AGENTS.md`
   - `src/scenes/mainmenu/AGENTS.md`
   - `src/schemas/AGENTS.md`
@@ -36,8 +44,13 @@
   - `src/utils/audio/AGENTS.md`
   - `tests/AGENTS.md`
   - `tests/context/reducers/AGENTS.md`
+  - `tests/events/AGENTS.md`
+  - `tests/logic/AGENTS.md`
   - `tests/node/AGENTS.md`
+  - `tests/security/AGENTS.md`
   - `tests/ui/AGENTS.md`
+  - `tests/ui/bandhq/AGENTS.md`
+  - `tests/ui/bandhq/hooks/AGENTS.md`
 
 ## Superpower skill
 

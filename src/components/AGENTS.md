@@ -33,6 +33,12 @@ Applies to `src/components/**`.
 - Component props that cross JS/TS boundaries must keep runtime `propTypes` aligned with TypeScript optionality to prevent silent misuse.
 - UI components should treat numeric `0` values as first-class outputs in labels/toasts/status rows; avoid truthy guards that hide valid zero states.
 
+## What / Limitations / When to use
+
+- **What:** Use this agent when working on `src/components/**` presentation behavior, prop boundaries, and UI rendering contracts.
+- **Limitations:** It does not replace runtime safeguards across JS consumers — keep `propTypes` aligned with TS shapes, use nullish checks for optional numeric values (`staminaChange`, `moodChange`, offers), and validate translation-driven list payload shapes before mapping.
+- **When to use:** Prefer this agent for JS-consumed component surfaces, optional numeric rendering paths, and categorized action-menu changes where reachability can drift.
+
 ## Recent Findings (2026-04)
 
 - For categorized action menus, keep a one-to-one mapping between action unions and rendered items to prevent unreachable handlers hiding in lookup maps.
