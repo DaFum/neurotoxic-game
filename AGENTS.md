@@ -39,6 +39,18 @@
   - `tests/node/AGENTS.md`
   - `tests/ui/AGENTS.md`
 
+## Superpower skill
+
+- **What it does:** The Superpower skill is the workflow bootstrap for this repo. It forces explicit skill-routing before implementation so tasks use the right local playbook (for example `.agents/skills/typescript-senior-developer/AGENTS.md` for strict TS changes or debugging/test skills for failing suites).
+- **When to use:** Use it at the start of **every** task that changes code, tests, tooling, config, docs, or agent instructions. This includes “small” edits and clarification-driven follow-up commits.
+- **Exceptions:** Skip only when no repository action is requested (for example: pure status check with no edits/commands), or when acting as a constrained subagent that is explicitly instructed to bypass bootstrap skills.
+- **Limitations:** It does not grant extra permissions, does not run commands by itself, and does not replace scope-specific AGENTS rules. It only chooses/activates the correct process skills. Final behavior still depends on directory-scoped AGENTS, CI/tooling, and runtime constraints.
+- **Failure modes:** Wrong/missing skill routing leads to avoidable regressions (wrong test runner, missed type constraints, stale contracts). If uncertain, choose the stricter relevant skill first, then domain skill(s).
+- **Approvals / side effects:** No direct side effects; it is guidance-only. It should run before commands that mutate files or git history.
+- **Usage examples:**
+  - “Fix a reducer typing regression” → Superpower skill → TypeScript skill (`.agents/skills/typescript-senior-developer/AGENTS.md`) → reducer tests/typecheck.
+  - “Update AGENTS guidance” → Superpower skill → AGENTS writer skill → scope file updates with non-duplicative Domain Gotchas.
+
 ## Critical Commands
 
 - Full quality gate: `pnpm run test:all` (required before PR).

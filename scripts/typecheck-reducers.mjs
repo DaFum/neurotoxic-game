@@ -48,8 +48,10 @@ if (reducerErrors.length > 0) {
 }
 
 if (tsc.status !== 0) {
+  const strictEnv = (process.env.TYPECHECK_STRICT ?? '').trim().toLowerCase()
+  const ciEnv = (process.env.CI ?? '').trim().toLowerCase()
   const shouldFailOnNonReducerErrors =
-    process.env.TYPECHECK_STRICT === '1'
+    strictEnv === '1' || strictEnv === 'true' || (ciEnv !== '' && ciEnv !== '0')
   if (shouldFailOnNonReducerErrors) {
     console.error(
       'Non-reducer TypeScript errors detected while strict mode is enabled.'

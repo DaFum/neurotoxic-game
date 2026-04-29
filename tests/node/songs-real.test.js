@@ -162,7 +162,7 @@ describe('songs real dataset contracts', () => {
       )
       const lastNoteTimeSeconds = (lastNote.t / song.tpb) * (60 / song.bpm)
       assert.ok(
-        song.duration >= Math.floor(lastNoteTimeSeconds),
+        song.duration >= Math.ceil(lastNoteTimeSeconds),
         `Duration ${song.duration}s too short for last note at ${lastNoteTimeSeconds}s in ${song.id}`
       )
     })

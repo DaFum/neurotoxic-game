@@ -100,6 +100,13 @@ const shouldOnlyHeavy =
 const shouldSkipHeavy =
   process.env.NODE_TEST_SKIP_HEAVY === '1' || flagSkipHeavy
 
+if (shouldOnlyHeavy && shouldSkipHeavy) {
+  console.error(
+    'Invalid node-test heavy mode: --only-heavy and --skip-heavy cannot be used together.'
+  )
+  process.exit(1)
+}
+
 const filterByHeavyMode = testFiles => {
   if (shouldOnlyHeavy) {
     return testFiles.filter(testFile => heavyTestSet.has(normalizeTestPath(testFile)))
@@ -140,6 +147,16 @@ if (hasNonNodeSpecificFile) {
 }
 
 const isSpecificFile = specificTestFileArgs.length > 0
+
+if (!isSpecificFile && shouldOnlyHeavy) {
+  const heavyOnlyFiles = filterByHeavyMode(getRemainingTestFiles())
+  if (heavyOnlyFiles.length === 0) {
+    console.error(
+      'Invalid node-test heavy mode: --only-heavy selected but no heavy tests matched.'
+    )
+    process.exit(1)
+  }
+}
 
 const finalArgs = isSpecificFile
   ? [...commandArgs, ...nodeTestArgs]

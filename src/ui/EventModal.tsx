@@ -218,14 +218,14 @@ export const EventModal = ({
                 className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
               >
                 {t(titleKey, {
-                  defaultValue: event.title || t('ui:event.untitled'),
+                  defaultValue: event.title ?? t('ui:event.untitled'),
                   ...eventContext
                 })}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
                 {t(descriptionKey, {
                   defaultValue:
-                    event.description || t('ui:event.noDescription'),
+                    event.description ?? t('ui:event.noDescription'),
                   ...eventContext
                 })}
               </p>
