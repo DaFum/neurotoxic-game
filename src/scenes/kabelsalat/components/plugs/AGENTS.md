@@ -1,14 +1,14 @@
-# src/scenes/kabelsalat/components/plugs — Agent Instructions
+# src/scenes/kabelsalat/components/plugs - Agent Instructions
 
 ## Scope
 
 Applies to `src/scenes/kabelsalat/components/plugs/**`.
 
-## Domain Gotchas
+## Rules
 
-- Plug interaction props should keep `CableId`/`SocketId` literal safety; avoid widening IDs to generic `string` before hook handlers.
-- Visual plug state must reflect hook-provided powered/connected state and should not recompute source-of-truth game logic locally.
+- Preserve literal plug ID types and shared drag/drop contracts.
+- Keep pointer/keyboard handlers composed with caller-provided handlers.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Most plug regressions come from prop-contract drift after hook refactors; keep prop names and callback parameter order stable.
+- Do not convert plug IDs to arbitrary strings; socket matching depends on narrowed literals.

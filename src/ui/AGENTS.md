@@ -1,28 +1,18 @@
-# src/ui — Agent Instructions
+# src/ui - Agent Instructions
 
 ## Scope
 
 Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 
-## UI Layer Responsibilities
+## Rules
 
-- Keep UI modules presentational and orchestration-focused; route state mutations through context action creators/hooks.
-- All player-facing text must stay i18n-driven (`t('ns:key')` / `<Trans>`).
-- Prefer shared UI primitives from `src/ui/shared` before adding one-off wrappers.
+- Use i18n keys for visible UI text and update EN/DE together.
+- Use CSS variables for colors and Tailwind v4 token syntax for non-color tokens.
+- Keep shared UI contracts imported from `src/types/**`; do not create component-local type clones.
+- Include `t` in dependencies for callbacks/effects that use it.
+- Compose consumer event handlers when wrapping controls.
 
-## TypeScript & CheckJS Notes
+## Gotchas
 
-- Avoid `any` in UI props/helpers; use `unknown` at boundaries and narrow before use.
-- Include `t` and all reactive dependencies in callbacks/effects to prevent stale closures in translated UI.
-- Preserve nullish/falsy semantics in UI formatting (`??` over `||` when `0`/`''` are valid values).
-
-## Domain Gotchas
-
-- Location labels should go through translation helpers (for example `translateLocation`) instead of raw string assumptions.
-- Keep style tokens aligned with Tailwind v4 and project CSS variables.
-
-## Recent Findings (2026-04)
-
-- Re-adding a removed modal requires both trigger wiring and visible affordance updates; mounted-only modals are considered incomplete integrations.
-- Event modal copy may arrive either as translation keys or raw display text. Use event-provided title/description as translation fallback defaults to preserve runtime content.
-- If fallback translation keys are introduced for modal/event copy, add EN+DE locale entries in the same patch (`public/locales/en/ui.json` + `public/locales/de/ui.json`).
+- PropTypes wrappers must forward the full validator argument list, including the secret, to preserve actionable dev warnings.
+- Do not pass non-string values into `t(...)`; fallback to explicit unknown-item keys for malformed labels.

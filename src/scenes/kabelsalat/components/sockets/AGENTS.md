@@ -1,14 +1,14 @@
-# src/scenes/kabelsalat/components/sockets — Agent Instructions
+# src/scenes/kabelsalat/components/sockets - Agent Instructions
 
 ## Scope
 
 Applies to `src/scenes/kabelsalat/components/sockets/**`.
 
-## Domain Gotchas
+## Rules
 
-- Socket components must validate interaction IDs before dereferencing maps in handlers; impossible IDs should fail loudly in development paths.
-- Keep socket ordering deterministic and typed (`as const`) so gameplay win checks remain stable across renders.
+- Preserve literal socket ID/order types with `as const`.
+- Keep socket state transitions aligned with the parent kabelsalat hook contract.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Subtle socket-order widening to plain arrays causes nondeterministic completion checks; preserve literal tuple/const typing end-to-end.
+- Socket order widening to `string[]` breaks downstream type narrowing.

@@ -1,14 +1,15 @@
-# src/scenes/mainmenu — Agent Instructions
+# src/scenes/mainmenu - Agent Instructions
 
 ## Scope
 
 Applies to `src/scenes/mainmenu/**`.
 
-## Domain Gotchas
+## Rules
 
-- Runtime guards for translated feature sections must validate nested string arrays (`items`, `headers`, and table row cells) before render.
-- Treat translation-object payloads as untrusted input from locale files; reject malformed structures early.
+- Keep menu actions reachable through keyboard and pointer flows.
+- Use i18n keys for all visible menu copy.
+- Preserve audio/settings callback contracts shared with UI settings.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Failing loudly on malformed feature-table rows prevents silent rendering glitches and surfaces locale/schema regressions during development.
+- Main menu chatter uses `MENU`; do not accidentally classify it as generic overworld chatter.

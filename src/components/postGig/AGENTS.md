@@ -1,16 +1,15 @@
-# src/components/postGig — Agent Instructions
+# src/components/postGig - Agent Instructions
 
 ## Scope
 
 Applies to `src/components/postGig/**`.
 
-## Domain Gotchas
+## Rules
 
-- Side-effect deltas (`moneyChange`, `staminaChange`, `moodChange`, etc.) are optional numeric values where `0` is valid. Render guards must use `value != null`, not truthy checks.
-- Negotiated deals are untrusted at render time. Guard `offer.upfront` and `offer.duration` as required numbers before using negotiated payloads, otherwise fall back to the original deal object.
-- Negotiated deal guards should also require a string `description` plus finite `upfront`/`duration` values (`Number.isFinite`) to block `NaN`/`Infinity` UI leaks.
+- Post-gig summaries must derive displayed score, accuracy, combo, health, and overload from shared gig stats contracts.
+- Toasts and rewards must show actually applied deltas after clamps.
+- Keep scene exit routing explicit through provided callbacks.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- When a summary row renders on nullish checks, nested value spans must use the same nullish pattern; mixed guards produce labels with missing values.
-- Once zero deltas are rendered (`value != null`), color mapping must treat `0` as neutral (not negative) to avoid red "no change" indicators.
+- `GameState.lastGigStats` and `SET_LAST_GIG_STATS` payload fields must stay aligned; do not patch consumers with `any`.

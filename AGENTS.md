@@ -1,165 +1,70 @@
-# Neurotoxic — Agent Instructions
+# Neurotoxic - Agent Instructions
 
 ## Workflow
 
-- Use the Superpower skill before starting any task.
-- Read the needed AGENTS.md files first before changing any code. This is the source of truth for architecture, style, and conventions. Current AGENTS.md inventory:
-  - `.agents/skills/typescript-senior-developer/AGENTS.md`
-  - `api/AGENTS.md`
-  - `api/leaderboard/AGENTS.md`
-  - `src/AGENTS.md`
-  - `src/assets/AGENTS.md`
-  - `src/components/AGENTS.md`
-  - `src/components/clinic/AGENTS.md`
-  - `src/components/hud/AGENTS.md`
-  - `src/components/minigames/AGENTS.md`
-  - `src/components/minigames/roadie/AGENTS.md`
-  - `src/components/minigames/tourbus/AGENTS.md`
-  - `src/components/overworld/AGENTS.md`
-  - `src/components/postGig/AGENTS.md`
-  - `src/components/pregig/AGENTS.md`
-  - `src/components/stage/AGENTS.md`
-  - `src/context/AGENTS.md`
-  - `src/context/reducers/AGENTS.md`
-  - `src/data/AGENTS.md`
-  - `src/data/chatter/AGENTS.md`
-  - `src/data/events/AGENTS.md`
-  - `src/hooks/AGENTS.md`
-  - `src/hooks/minigames/AGENTS.md`
-  - `src/hooks/rhythmGame/AGENTS.md`
-  - `src/scenes/AGENTS.md`
-  - `src/scenes/kabelsalat/AGENTS.md`
-  - `src/scenes/kabelsalat/components/AGENTS.md`
-  - `src/scenes/kabelsalat/components/overlays/AGENTS.md`
-  - `src/scenes/kabelsalat/components/plugs/AGENTS.md`
-  - `src/scenes/kabelsalat/components/sockets/AGENTS.md`
-  - `src/scenes/kabelsalat/hooks/AGENTS.md`
-  - `src/scenes/mainmenu/AGENTS.md`
-  - `src/schemas/AGENTS.md`
-  - `src/types/AGENTS.md`
-  - `src/ui/AGENTS.md`
-  - `src/ui/bandhq/AGENTS.md`
-  - `src/ui/bandhq/hooks/AGENTS.md`
-  - `src/utils/AGENTS.md`
-  - `src/utils/audio/AGENTS.md`
-  - `tests/AGENTS.md`
-  - `tests/context/reducers/AGENTS.md`
-  - `tests/events/AGENTS.md`
-  - `tests/logic/AGENTS.md`
-  - `tests/node/AGENTS.md`
-  - `tests/security/AGENTS.md`
-  - `tests/ui/AGENTS.md`
-  - `tests/ui/bandhq/AGENTS.md`
-  - `tests/ui/bandhq/hooks/AGENTS.md`
-
-## Superpower skill
-
-- **What it does:** The Superpower skill is the workflow bootstrap for this repo. It forces explicit skill-routing before implementation so tasks use the right local playbook (for example `.agents/skills/typescript-senior-developer/AGENTS.md` for strict TS changes or debugging/test skills for failing suites).
-- **When to use:** Use it at the start of **every** task that changes code, tests, tooling, config, docs, or agent instructions. This includes “small” edits and clarification-driven follow-up commits.
-- **Exceptions:** Skip only when no repository action is requested (for example: pure status check with no edits/commands), or when acting as a constrained subagent that is explicitly instructed to bypass bootstrap skills.
-- **Limitations:** It does not grant extra permissions, does not run commands by itself, and does not replace scope-specific AGENTS rules. It only chooses/activates the correct process skills. Final behavior still depends on directory-scoped AGENTS, CI/tooling, and runtime constraints.
-- **Failure modes:** Wrong/missing skill routing leads to avoidable regressions (wrong test runner, missed type constraints, stale contracts). If uncertain, choose the stricter relevant skill first, then domain skill(s).
-- **Approvals / side effects:** No direct side effects; it is guidance-only. It should run before commands that mutate files or git history.
-- **Usage examples:**
-  - “Fix a reducer typing regression” → Superpower skill → TypeScript skill (`.agents/skills/typescript-senior-developer/AGENTS.md`) → reducer tests/typecheck.
-  - “Update AGENTS guidance” → Superpower skill → AGENTS writer skill → scope file updates with non-duplicative Domain Gotchas.
+- Use the Superpower skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions.
+- Read only the relevant nested `AGENTS.md` files before editing; nested files add scope rules and override root guidance when more specific.
 
 ## Critical Commands
 
-- Full quality gate: `pnpm run test:all` (required before PR).
-- Extended suite (perf + locale): `pnpm run test:additional` (perf runs in CI via Performance Tests job; locale via Locale Smoke/Full Tests jobs).
-- Fast local split (quick node + Vitest logic): `pnpm run test`.
-- Full legacy node suites (quick + heavy): `pnpm run test:node`.
-- UI + migrated suites (Vitest): `pnpm run test:ui`.
+- Use `pnpm` only. Do not use `npm` or `yarn`.
+- Full PR gate: `pnpm run test:all`.
+- Fast local gate: `pnpm run test`.
+- UI and migrated suites: `pnpm run test:ui`.
+- Full legacy node suites: `pnpm run test:node`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
-- Single Vitest file (via canonical `test:ui:file` script): `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
+- Single Vitest file: `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
+- Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
 
 ## Architecture Constraints
 
-- Do not upgrade pinned deps without discussion; do not add Howler.js.
-- State updates must go through action creators. If adding a new action: update `actionTypes`, reducer handling, and `actionCreators` in the same change.
-- Use canonical clamps for bounded state: `player.money >= 0` and `band.harmony` in `1..100` via `src/utils/gameStateUtils.ts`.
-- Audio clock source is `audioEngine.getGigTimeMs()` only; do not read Tone.js time directly.
-- PreGig modifier costs come from `MODIFIER_COSTS` in `src/utils/economyEngine.ts` (single source of truth).
-- **I18n**: All user-facing text via `t('key')` or `<Trans>`, namespaced (e.g., `ui:button.save`). Update both `public/locales/en/*.json` and `public/locales/de/*.json` in the same change.
+- Do not upgrade pinned dependencies without discussion; do not add Howler.js.
+- All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
+- Clamp bounded state once in action creators via `src/utils/gameStateUtils.ts`: `player.money >= 0`, `band.harmony` in `1..100`. Reducers must not re-clamp.
+- Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
+- PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
+- User-facing text must use namespaced i18n keys. Update matching EN and DE locale JSON together.
 
 ## TypeScript
 
-- Strict TS (`checkJs: true`) is enforced on `.js`/`.jsx` too. Migration is complete: `@ts-nocheck` budget is 0 (`.ci/ts-nocheck-budget.json`) — `pnpm run guard:nocheck` fails on any new occurrence in `src/`. Use `@ts-expect-error <reason>` only with a tracked follow-up; never `@ts-ignore`.
-- Never `any`. Use `unknown` and narrow at boundaries (API responses, `JSON.parse`, `localStorage`, `postMessage`). For untrusted property checks use `Object.hasOwn()` — not `in` / `hasOwnProperty` (tests assert forbidden keys like `__proto__` are stripped).
-- `isolatedModules: true` — type-only imports must use `import type` (mixed form: `import { Foo, type Bar }`). Symptom of getting it wrong: `tsc` complains but Vite still builds.
-- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>` (see `src/context/actionCreators.ts`). Do not hand-write `{ type, payload }` shapes — it breaks the discriminated union.
-- Reducer `default` branch must call `assertNever(action)` so adding a new action variant fails compile at every missing handler.
-- Apply bounded-state clamps once, in the action creator, via helpers in `src/utils/gameStateUtils.ts`. Reducers must not re-clamp.
-- Lookup constants use `as const satisfies Record<Union, T>` — `as Record<Union, T>` discards literal inference and breaks downstream narrowing.
-- Shared domain contracts live in `src/types/*.d.ts` (`game`, `audio`, `components`, `callbacks`, `rhythmGame`). Do not inline duplicate structural shapes in consumer modules.
-- `jsconfig.checkjs.json` scopes stricter CheckJS (adds `noUncheckedIndexedAccess`) to migrated domains. When moving a new domain into that scope, add it to the `include` list in the same PR.
-- Typecheck entry points: `pnpm run typecheck:core` (full `tsc --noEmit` via `jsconfig.checkjs.json`) and `pnpm run typecheck` (scoped reducer gate used in CI).
-
-### TypeScript Best-Practice Patterns (repo canonical)
-
-- Prefer `as const satisfies` for keyed configs/lookups so keys are checked but literals stay narrow; avoid `as Record<...>` unless you intentionally want widening.
-- Reducers/sanitizers must **whitelist** untrusted payload fields when constructing objects (e.g., save toasts), not spread unknown records into state.
-- Avoid truthy checks when `0`/`''` are valid values (e.g., use `value != null` for optional numeric/string payload fields).
-- When invariants must hold (dense arrays, required map hits), fail loudly with explicit errors instead of silently skipping iterations.
-- **`noUncheckedIndexedAccess` is active**: `array[i]` in for-loops returns `T | undefined`. Add `if (!item) continue` guards or use `item!` with a comment explaining the invariant holds (e.g., index is clamped). Never assume a valid index is safe without narrowing.
-- **`|| null` / `|| 0` coerces valid falsy values**: `duration || null` turns `duration=0` into `null`, breaking "expire immediately" semantics. Use `?? null` for nullish coalescing, or `value != null ? value : fallback` when 0/false are meaningful.
-- **Event condition arrow functions need explicit `GameState` annotation**: All `condition: state =>` in event pools (band, transport, crisis, consequences, relationship, quests) require `condition: (state: GameState) =>` — `checkJs` treats the implicit type as `any` and fails strict mode.
-- **Categorize/split functions need explicit named return types**: Return `{ band: T[]; financial: T[]; special: T[] }` instead of `Record<string, T[]>` so destructuring yields `T[]`, not `T[] | undefined` under `noUncheckedIndexedAccess`.
-- **Error-handler and boundary functions must use `unknown` not `any`**: `handleError(error: unknown)`, `isPlainObject(value: unknown)`, `sanitizeContextValue(value: unknown, visited: WeakSet<object>)`. Narrow with `instanceof Error` or `isPlainObject()` type predicates inside. `any` at boundaries defeats the entire type system.
-- **Align state field types with action payload types**: `GameState.lastGigStats` (`LastGigStats`) and the `SET_LAST_GIG_STATS` action payload (`GigStats`) must expose the same optional fields (`score`, `accuracy`, `combo`, `health`, `overload`). Misalignment forces `any` workarounds in consumers like `postOptions.ts`.
-- **Toast `options` values must be primitive-only**: When sanitizing `ToastPayload.options` from untrusted sources (save files, action payloads), iterate `Object.entries()` and allow only `string | number | boolean | null`. Spreading `Record<string, unknown>` directly risks prototype-pollution and breaks the whitelist pattern from AGENTS.md.
+- CheckJS is strict for `.js/.jsx`. `@ts-nocheck` budget is zero; never add `@ts-ignore`.
+- Avoid `any`. Use `unknown` at boundaries (`JSON.parse`, storage, API payloads, caught errors, postMessage) and narrow before use.
+- Use `Object.hasOwn()` for untrusted property checks; prototype-pollution tests assert hostile keys are stripped.
+- `isolatedModules` requires type-only imports (`import type` or mixed `import { Foo, type Bar }`).
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write action object shapes.
+- Reducer default branches must call `assertNever(action)`.
+- Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
+- Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones.
+- Under `noUncheckedIndexedAccess`, narrow indexed values before use.
 
 ## Testing
 
-- Test runner choice is directory-based; match neighboring tests (don't mix `node:test` and Vitest in one file).
-- For Vitest localStorage assertions, mock/restore `window.localStorage.setItem` in `try/finally`.
-- For `react-i18next` mocks, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
-- Explicitly populate lookup Maps (e.g., `SONGS_BY_ID`) in mocked data.
+- Choose the runner by neighboring tests; do not mix `node:test` and Vitest patterns in one file.
+- Vitest localStorage assertions must mock and restore `window.localStorage.setItem` in `try/finally`.
+- `react-i18next` mocks must include `initReactI18next: { type: '3rdParty', init: () => {} }`.
+- Explicitly populate lookup maps such as `SONGS_BY_ID` in mocked fixture data.
 
-## Style & Conventions
+## Style
 
-- Commits must use Conventional Commits (`feat:`, `fix:`, etc.).
-- Use `pnpm` exclusively — never `npm` or `yarn`.
-- **Tailwind v4**: use `@import "tailwindcss"` (not `@tailwind base`). For non-color tokens (e.g., z-index `--z-*`), use `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
-- **Colors**: never hardcode. Use CSS vars (`var(--color-toxic-green)`). In PixiJS: `getPixiColorFromToken('--toxic-green')` (omit `--color-` prefix).
+- Commits use Conventional Commits (`feat:`, `fix:`, etc.).
+- Tailwind v4 uses `@import "tailwindcss"`; non-color tokens use syntax such as `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
+- Do not hardcode colors. Use CSS vars (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`).
 
-## Domain Gotchas
+## Gotchas
 
-- **`currentGig` IS the venue object** — access capacity and id directly as `state.currentGig?.capacity` and `state.currentGig?.id`. The old nested form `state.currentGig?.venue?.capacity` no longer exists. Getting this wrong silently returns `undefined`, which defaults to `0` and incorrectly activates small-venue quest paths.
-- **Band member self-relationships corrupt gameplay systems** — never add a member to their own `relationships` map (e.g., `Matze: 0` in Matze's entry). The `grudge_holder` trait unlocks immediately because it iterates all relationships and checks if any score `< 30`; self-references also trigger infighting events between a member and themselves.
-- **`createInitialState` settings sanitization strips unknown keys** — only `crtEnabled`, `tutorialSeen`, and `logLevel` survive `sanitizeSettings()`. Test fixtures that use arbitrary settings keys (e.g., `volume`) will silently lose them after reset. Update test payloads to use the three canonical keys.
-- `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
-- framer-motion, lucide-react, pixi.js, tone, and @tonejs/midi — these packages all include bundled TypeScript declarations and don't require stub files.
-- `lint-staged` now covers `*.{js,jsx,ts,tsx}` — all source files are auto-linted and formatted at commit time.
-- Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They return reactive state only.
-- `useArrivalLogic` owns ALL arrival routing (including PREGIG direct entry); `COMPLETE_TRAVEL_MINIGAME` does not change scene.
-- `START_GIG` resets `gigModifiers` to defaults; previous gig selections do not carry over.
-- Pixi.js v8 cleanup: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })` — two distinct args: `RendererDestroyOptions` then `DestroyOptions`.
-- Audio end: Do NOT use `audioPlaybackEnded`. Use `setlistCompleted` + `isNearTrackEnd`.
-- Songs with JSON notes: OGG/MIDI capped to `maxNoteTime + NOTE_TAIL_MS`. Procedural songs use full excerpt duration.
-- Default chatter scenes: `MENU`, `OVERWORLD`, `PREGIG`, `POSTGIG` only — `GIG` requires explicit conditional entries.
-- Dynamic images: Use `loadTexture` utility (especially `gen.pollinations.ai` URLs) — prevents PixiJS parsing errors.
-- Leaderboards: Resolve song IDs via `SONGS_BY_ID.get().leaderboardId` before submitting to `/api/leaderboard/song`. Never use raw `currentGig.songId`.
-- React 19: Pass `ref` as a standard prop — do not use `React.forwardRef()`.
-- `hqItems.js` uses a singular `effect` object. `events/special.js` events require unique IDs, `category: 'special'`, `events:` i18n keys, and an `options` array.
-- Consumables use `inventory_add` effect and must NOT display as 'OWNED' (multi-purchase allowed).
-- Success toasts for bounded state changes must show the actual applied delta, not the requested amount.
-- Include `t` in React callback/hook deps when used inside that scope.
-- `.cjs` extension is required for ad-hoc Node scripts that use `require()`.
-- Use `process.env.VITE_VAR` for env vars needing Vite/node:test dual compatibility.
-- Pollinations API key is safe to publish.
-
-## Recent Findings (2026-04)
-
-- Overworld regressions often come from action reachability; when refactoring grouped menus, explicitly preserve every legacy entry point or remove the backing hook in the same patch.
-- ESLint flat-config file globs must include both JS and TS domains used in CI (`src/**/*.ts(x)`); missing TS matching can silently bypass lint checks and surface as "File ignored because no matching configuration was supplied."
-- When wrapping PropTypes validators, forward the full validator argument list (`location`, qualified name, secret) to preserve actionable dev warnings.
-- Shared audio UI contracts belong in `src/types/audio.d.ts`; avoid duplicating `AudioState`/audio callback shapes in component-local or unrelated type modules.
-- Error handling is layered by boundary: strict throws in pure utilities, tolerant log-and-continue in frame/tick loops, and catch/recover at scene/context boundaries.
-- Keep JS/TS lint parity: TS/TSX blocks must include the same baseline JS/React rules as JSX blocks, and Node globals should be scoped to test/config tooling overrides only.
-- `useReducer` dispatch is not synchronous for `stateRef` consumers; derive UI toast values (e.g., next day) from pre-dispatch state, not by reading refs immediately after dispatch.
-- Locale JSON can silently shadow duplicate keys; when touching locale files, run duplicate-key detection (not just JSON parsing) to avoid hidden translation loss.
-- For kabelsalat state contracts, keep `forceAdvance(isPowered: boolean)` typed end-to-end and keep socket-order literals typed (`as const`) to prevent accidental widening to `string[]`.
-- `pnpm run typecheck` is intentionally a scoped reducer gate; it must fail only on reducer typing regressions. Use `pnpm run typecheck:core` to enforce whole-project TS health.
-- Node test runtime can drift from duplicated hook-stability suites; prefer consolidating overlap into the primary hook test file to reduce startup/setup overhead.
+- `currentGig` is the venue object. Use `state.currentGig?.capacity` and `.id`, not `state.currentGig?.venue`.
+- Never add band members to their own `relationships` map; self-relationships corrupt trait and infighting logic.
+- `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
+- `START_GIG` resets `gigModifiers` to defaults.
+- `useArrivalLogic` owns all arrival routing; `COMPLETE_TRAVEL_MINIGAME` must not change scene.
+- Audio end detection uses `setlistCompleted` plus `isNearTrackEnd`; do not use `audioPlaybackEnded`.
+- JSON-note OGG/MIDI caps at `maxNoteTime + NOTE_TAIL_MS`; procedural songs use full excerpt duration.
+- Default chatter scenes are `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` needs explicit conditional entries.
+- Dynamic Pixi images, especially `gen.pollinations.ai`, must load through `loadTexture`.
+- Leaderboards submit `SONGS_BY_ID.get(songId).leaderboardId`, never raw `currentGig.songId`.
+- React 19 passes `ref` as a normal prop; do not introduce `React.forwardRef()`.
+- Consumables use `inventory_add` and must not display as `OWNED`.
+- Success toasts for bounded state changes must show the applied delta, not the requested amount.
+- Include `t` in hook/callback dependency arrays when used in that scope.
+- Use `.cjs` for ad-hoc Node scripts using `require()`.
+- Use `process.env.VITE_VAR` for env vars shared by Vite and `node:test`.

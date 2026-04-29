@@ -1,47 +1,22 @@
-# src/components — Agent Instructions
+# src/components - Agent Instructions
 
 ## Scope
 
-Applies to `src/components/**`.
+Applies to `src/components/**` unless a deeper `AGENTS.md` overrides it.
 
 ## UI Rules
 
-- Use design tokens/CSS variables for styling; do not hardcode theme colors.
-- Keep Tailwind usage v4-compatible.
-- Keep text translatable via i18n keys/components.
+- User-facing text must use namespaced i18n keys and keep EN/DE locale JSON in sync.
+- Use CSS variables for colors; do not introduce literal color values.
+- React 19 refs are normal props. Do not add `React.forwardRef()`.
+- Include `t` in callback/effect dependency arrays when used inside that scope.
 
-## React + TypeScript Rules
+## State Rules
 
-- React 19: pass `ref` as a standard prop (`ref?: React.Ref<HTMLInputElement>`). Do not introduce `React.forwardRef()` — it is deprecated in this codebase.
-- Keep components presentational where possible; push game-state mutations into hooks/context action creators.
-- Type props explicitly at the component boundary. For DOM-wrapping components, extend the underlying element's props: `interface InputProps extends React.ComponentProps<'input'> { … }`.
-- Event handlers use the discriminated React event types (`React.ChangeEvent<HTMLInputElement>`, `React.MouseEvent<HTMLButtonElement>`) — never `any`.
-- Never typecast with `as any`; prefer `unknown` + a type guard if the prop source is genuinely untyped.
+- Trigger state changes through action creators or provided callbacks; do not reconstruct reducer payloads in components.
+- Success toasts for bounded values must display the applied delta after clamping.
 
-## Change Rules
+## Gotchas
 
-- Separate behavior refactors from typing refactors; keep type-only PRs behavior-preserving.
-
-## Nested TypeScript Notes
-
-- Keep component prop interfaces and runtime `propTypes` optional/required flags synchronized.
-- For reusable components, export explicit prop types and avoid `any` passthrough props.
-- When a prop accepts external/untrusted objects, type as `unknown` at the boundary and narrow before access.
-
-## Domain Gotchas
-
-- Component props that cross JS/TS boundaries must keep runtime `propTypes` aligned with TypeScript optionality to prevent silent misuse.
-- UI components should treat numeric `0` values as first-class outputs in labels/toasts/status rows; avoid truthy guards that hide valid zero states.
-
-## What / Limitations / When to use
-
-- **What:** Use this agent when working on `src/components/**` presentation behavior, prop boundaries, and UI rendering contracts.
-- **Limitations:** It does not replace runtime safeguards across JS consumers — keep `propTypes` aligned with TS shapes, use nullish checks for optional numeric values (`staminaChange`, `moodChange`, offers), and validate translation-driven list payload shapes before mapping.
-- **When to use:** Prefer this agent for JS-consumed component surfaces, optional numeric rendering paths, and categorized action-menu changes where reachability can drift.
-
-## Recent Findings (2026-04)
-
-- For categorized action menus, keep a one-to-one mapping between action unions and rendered items to prevent unreachable handlers hiding in lookup maps.
-- In this codebase, TSX components still use runtime `propTypes`; do not drop `propTypes` just because TypeScript props exist, especially for components consumed from JS boundaries.
-- In optional numeric UI fields (`staminaChange`, `moodChange`, offer values), avoid truthy checks when rendering. Use explicit nullish checks so `0` displays as a meaningful value.
-- For translation-driven lists rendered from object unions, validate nested element types (e.g., string arrays) in runtime guards before mapping.
+- Minigame components must not import Pixi-only logic into hook layers.
+- Overworld, PreGig, PostGig, and Stage routes each have deeper ownership rules; read the nested file before editing those folders.

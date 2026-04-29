@@ -1,15 +1,15 @@
-# src/scenes/kabelsalat/components/overlays — Agent Instructions
+# src/scenes/kabelsalat/components/overlays - Agent Instructions
 
 ## Scope
 
 Applies to `src/scenes/kabelsalat/components/overlays/**`.
 
-## Domain Gotchas
+## Rules
 
-- Win/loss overlays must expose a manual continue action wired to the same finalize pathway as auto-timers.
-- Overlay copy must remain i18n-driven and include both EN/DE locale updates in the same change.
-- Keep overlay content responsive inside the board container (`aspect-[4/3]`) with wrapping/scroll safety for small viewports.
+- Overlay actions must preserve both automatic and manual continuation paths.
+- Consume Escape/click handlers consistently so overlay controls do not race scene-level handlers.
+- Keep overlay copy in i18n keys.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- StrictMode timer regressions can strand players on overlays; always preserve an immediate manual escape path to `GAME_PHASES.GIG`.
+- Manual continue tests should assert the final scene transition, not just overlay text.

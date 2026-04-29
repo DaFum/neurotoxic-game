@@ -1,14 +1,15 @@
-# src/components/stage — Agent Instructions
+# src/components/stage - Agent Instructions
 
 ## Scope
 
 Applies to `src/components/stage/**`.
 
-## Domain Gotchas
+## Rules
 
-- Pixi application teardown must clear resize plugin references even when `resizeTo` comes from the prototype chain; check teardown targets with an inherited-property-safe guard.
-- Keep teardown resilient to partial destruction: cancel resize listeners first, then destroy app, then fallback destroy paths.
+- Stage gameplay timing must use `audioEngine.getGigTimeMs()`.
+- End-of-song logic uses `setlistCompleted` and `isNearTrackEnd`; do not reintroduce `audioPlaybackEnded`.
+- Keep shared audio and rhythm contracts imported from `src/types/**`.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Prototype-provided Pixi fields can survive teardown if cleanup only checks own-properties; this causes latent resize hooks across scene transitions.
+- Preserve fallback behavior for procedural/MIDI playback when OGG assets are unavailable.

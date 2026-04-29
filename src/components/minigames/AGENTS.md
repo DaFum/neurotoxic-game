@@ -1,26 +1,16 @@
-# src/components/minigames — Agent Instructions
+# src/components/minigames - Agent Instructions
 
 ## Scope
 
-Applies to `src/components/minigames/**`.
+Applies to `src/components/minigames/**` unless a deeper `AGENTS.md` overrides it.
 
-## Minigame Component Responsibilities
+## Rules
 
-- Keep rendering and input wiring in components; gameplay state transitions belong to hooks/context reducers.
-- Maintain accessibility and keyboard interactions for completion/continue flows.
+- Hooks return reactive game state only; do not import Pixi into minigame hooks.
+- Completion flow must preserve fallback timers, unmount cleanup, and explicit scene continuation paths.
+- Keep minigame state transitions routed through existing action creators and scene callbacks.
 
-## TypeScript Notes
+## Gotchas
 
-- Keep component prop interfaces synchronized with runtime validators (`propTypes`) when both exist.
-- Use narrow prop contracts for controller/logic dependencies; avoid `any` passthrough props.
-- Preserve optionality semantics for controller factories and completion render callbacks.
-
-## Domain Gotchas
-
-- Do not import PIXI into logic-only hooks; scene/frame components should consume prepared logic objects.
-- Completion overlays should use provided completion state instead of recomputing reducer data.
-- Arrival routing is owned by `useArrivalLogic`: components/controllers must dispatch completion results (completion action/event) and let shared arrival routing + scene transition logic run there.
-
-## Recent Findings (2026-04)
-
-- Overworld menu refactors must not alter minigame launch contracts; launch actions should remain routed through scene/hooks, not direct component side effects.
+- `COMPLETE_TRAVEL_MINIGAME` does not change scene; arrival routing belongs to `useArrivalLogic`.
+- Completion overlays need both automatic and manual continue paths covered by tests when changed.

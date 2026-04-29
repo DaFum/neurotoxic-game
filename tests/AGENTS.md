@@ -1,43 +1,28 @@
-# tests — Agent Instructions
+# tests - Agent Instructions
 
 ## Scope
 
-Applies to `tests/**`.
+Applies to `tests/**` unless a deeper `AGENTS.md` overrides it.
 
-## Runner Selection
+## Runner Rules
 
-- Choose runner by directory conventions of neighboring tests (not by extension alone).
-- Do not mix `node:test` and Vitest patterns inside one file.
-
-## Required Commands
-
-- Full gate before PR: `pnpm run test:all`.
+- Choose runner by neighboring tests, not extension alone.
+- Do not mix `node:test` and Vitest idioms in one file.
+- Full PR gate: `pnpm run test:all`.
 - Legacy logic suites: `pnpm run test`.
 - UI/migrated suites: `pnpm run test:ui`.
-- Optional local split for node runtime triage: `pnpm run test:node:quick` and `pnpm run test:node:heavy`.
+- Node split for triage: `pnpm run test:node:quick` and `pnpm run test:node:heavy`.
 
-## Mocking Gotchas
+## Mocking
 
-- For Vitest localStorage assertions, mock and restore `window.localStorage.setItem` inside `try/finally`.
-- For `react-i18next` mocks, include:
-  `initReactI18next: { type: '3rdParty', init: () => {} }`.
-- Populate lookup maps (e.g., `SONGS_BY_ID`) explicitly in mocked fixture data when tests depend on ID resolution.
+- Vitest localStorage assertions must mock/restore `window.localStorage.setItem` in `try/finally`.
+- `react-i18next` mocks require `initReactI18next: { type: '3rdParty', init: () => {} }`.
+- Populate lookup maps such as `SONGS_BY_ID` explicitly in mocked data.
 
-## Domain Gotchas
+## Gotchas
 
-- Keep `tests/security/**` adversarial-only (prototype pollution, hostile payloads, boundary validation), not happy-path duplicate unit assertions.
+- Keep `tests/security/**` adversarial-only.
 - Keep `tests/events/**` on event-data contracts and condition gating; reducer math belongs in node/reducer suites.
-- Keep `tests/logic/**` pure and fast; prefer deterministic fixtures and table-style assertions over repeated boilerplate.
-
-## Nested TypeScript Notes
-
-- Build fixtures using canonical state keys (for example, settings whitelist keys) so tests mirror runtime sanitizers.
-- Add regression assertions when optionality changes in shared types (for example, optional props and fallback behavior).
-- Prefer explicit helper return types in reusable test utilities to prevent silent `any` leakage into assertions.
-
-## Recent Findings (2026-04)
-
-- When UI controls are reorganized (category menus, tabs, accordions), add/adjust reachability assertions so hidden-but-mounted features do not silently become dead paths.
-- Consolidating overlapping hook-performance checks into existing core suites reduces node:test file startup overhead without losing behavior coverage.
-- Keep heavy node suites (Pixi/render-style hooks) explicitly split-capable so local iteration can stay fast while CI/full gates still execute the full set.
-- Keep fixture-transform tests and real-dataset contract tests separated (e.g., songs fixture vs real DB) to avoid duplicated assertions across suites.
+- Build fixtures with canonical state keys so tests mirror runtime sanitizers.
+- Add reachability assertions when UI controls are reorganized.
+- Keep fixture-transform tests separate from real-dataset contract tests.

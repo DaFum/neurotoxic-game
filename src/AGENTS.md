@@ -1,38 +1,26 @@
-# src — Agent Instructions
+# src - Agent Instructions
 
 ## Scope
 
-Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
+Applies to `src/**` unless a deeper `AGENTS.md` overrides it.
 
-## Critical Rules
+## Rules
 
-- Do not hardcode UI colors. Use project CSS variables (`var(--color-...)`).
-- Tailwind v4 syntax only (`@import "tailwindcss"`; no legacy `@tailwind base/components/utilities`).
-- All user-facing strings must come from i18n (`t('ns:key')` / `<Trans>`). If adding keys, update both `public/locales/en/*` and `public/locales/de/*` in the same change.
-- React 19 convention: pass `ref` as a normal prop; do not add `React.forwardRef()` wrappers.
+- Preserve action-creator-driven state transitions; components/hooks must not mutate state directly.
+- Use existing shared contracts from `src/types/**` before adding new domain shapes.
+- Keep user-facing copy in namespaced i18n keys and update EN/DE locale files together.
+- Import React refs as normal props in React 19 code; do not add `forwardRef`.
+- Use CSS variables for colors and Pixi token helpers for rendered colors.
 
-## TypeScript Constraints
+## TypeScript
 
-- Migration is complete: `@ts-nocheck` is banned in `src/**` (budget 0 via `.ci/ts-nocheck-budget.json`; enforced by `pnpm run guard:nocheck`). Do not reintroduce it; use `@ts-expect-error <reason>` only with a tracked follow-up, never `@ts-ignore`.
-- Keep behavior unchanged in type-only PRs; separate refactors from type-shape changes.
-- `jsconfig.checkjs.json` scopes the stricter CheckJS (adds `noUncheckedIndexedAccess`) to `src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, and `src/ui/bandhq`. When moving a new domain into that scope, expand the `include` list in the same PR.
-- Shared domain contracts belong in `src/types/*.d.ts` — do not duplicate structural shapes inline across modules.
-- When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
-- In domains covered by `jsconfig.checkjs.json`, explicitly guard indexed/optional access (`noUncheckedIndexedAccess`).
+- CheckJS is strict in migrated domains. Narrow indexed lookups and optional values before use.
+- Use `unknown` and explicit narrowing for storage, API, event, or external payloads.
+- Prefer `as const satisfies` for literal maps and configs.
 
+## Gotchas
 
-## AGENTS Coverage
-
-- AGENTS coverage under `src/**` is intentionally deep and scoped; before editing, prefer the nearest nested `AGENTS.md` over this root `src/` guide.
-- If you add a new gameplay/UI subdomain with unique rules, add a nested `AGENTS.md` in that folder instead of expanding this file with subdomain-specific details.
-
-## Domain Gotchas
-
-- `useArrivalLogic` owns arrival routing and scene transitions after travel completion.
-- Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must stay reactive-only (no direct PIXI imports).
-- Keep domain gotchas non-duplicative across nested files: parent files should capture cross-cutting rules only, and child files should carry local gotchas.
-
-## Recent Findings (2026-04)
-
-- Theme-token migrations should be completed per file: if one module switches to RGB token variables, finish all remaining literal color usages in that module before merging.
-- UI fallback copy that may receive raw text (for example event payloads) should use that raw field as `t(..., { defaultValue })` instead of generic placeholders to avoid masking real content.
+- `currentGig` is the venue object, not `{ venue }`.
+- `useArrivalLogic` owns all arrival routing.
+- `START_GIG` resets `gigModifiers`.
+- Dynamic Pixi images must load through `loadTexture`.

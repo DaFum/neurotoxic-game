@@ -1,14 +1,14 @@
-# src/components/minigames/roadie — Agent Instructions
+# src/components/minigames/roadie - Agent Instructions
 
 ## Scope
 
 Applies to `src/components/minigames/roadie/**`.
 
-## Domain Gotchas
+## Rules
 
-- Completion overlays must preserve both manual continue and fallback timer paths to avoid stranding users after game end.
-- Roadie component props should preserve strict callback signatures from minigame hooks; do not widen completion handlers to untyped payloads.
+- Keep Roadie hook logic free of Pixi imports and imperative renderer state.
+- Preserve travel completion handoff through the shared minigame/arrival flow.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- StrictMode replay can double-run timers; keep one-shot guards and cleanup behavior aligned with shared minigame hook contracts.
+- Timer cleanup must run on unmount and early completion so scenes cannot auto-advance after teardown.

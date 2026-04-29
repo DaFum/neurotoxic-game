@@ -1,14 +1,14 @@
-# tests/ui/bandhq — Agent Instructions
+# tests/ui/bandhq - Agent Instructions
 
 ## Scope
 
-Applies to `tests/ui/bandhq/**` except deeper nested scopes.
+Applies to `tests/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
 
-## Domain Gotchas
+## Rules
 
-- Band HQ UI tests should assert reachable user flows (open tab, perform action, see feedback), not only isolated component render snapshots.
-- Mock affordability/ownership/effect payloads with finite numeric values and explicit IDs to mirror runtime sanitization expectations.
+- Assert reachable user flows: open tab, perform action, see feedback.
+- Mock affordability, ownership, and effect payloads with finite numeric values and explicit IDs.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Regressions frequently hide in category menu wiring; include assertions that legacy HQ actions remain reachable after navigation refactors.
+- Category menu regressions often hide reachability loss; include legacy HQ action assertions after navigation refactors.
