@@ -8,13 +8,13 @@ import {
   handleCompleteRoadieMinigame,
   handleStartKabelsalatMinigame,
   handleCompleteKabelsalatMinigame
-} from '../../src/context/reducers/minigameReducer'
+} from '../../src/context/reducers/minigameReducer.ts'
 
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE
-} from '../../src/context/gameConstants'
+} from '../../src/context/gameConstants.ts'
 
 describe('minigameReducer', () => {
   let baseState
@@ -161,6 +161,7 @@ describe('minigameReducer', () => {
       // 1000 - 120
       assert.strictEqual(nextState.player.money, 880)
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
 
