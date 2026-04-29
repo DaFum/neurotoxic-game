@@ -24,6 +24,19 @@ export const SideEffectsSummary = ({
   i18n,
   t
 }: SideEffectsSummaryProps) => {
+  const getDeltaColorClass = (
+    value: number,
+    {
+      positive = 'text-toxic-green',
+      negative = 'text-blood-red',
+      neutral = 'text-ash-gray'
+    }: { positive?: string; negative?: string; neutral?: string } = {}
+  ) => {
+    if (value > 0) return positive
+    if (value < 0) return negative
+    return neutral
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -32,21 +45,13 @@ export const SideEffectsSummary = ({
       className='mb-8 flex flex-col items-center gap-2 font-mono text-sm'
     >
       {result.moneyChange != null ? (
-        <div
-          className={
-            result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
-          }
-        >
+        <div className={getDeltaColorClass(result.moneyChange)}>
           💰 {formatCurrency(result.moneyChange, i18n?.language, 'always')}
         </div>
       ) : null}
 
       {result.harmonyChange != null ? (
-        <div
-          className={
-            result.harmonyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
-          }
-        >
+        <div className={getDeltaColorClass(result.harmonyChange)}>
           🎸 {t('ui:postGig.harmony', { defaultValue: 'Harmony' })}{' '}
           {result.harmonyChange > 0 ? '+' : ''}
           {result.harmonyChange}
@@ -55,9 +60,10 @@ export const SideEffectsSummary = ({
 
       {result.controversyChange != null ? (
         <div
-          className={
-            result.controversyChange > 0 ? 'text-blood-red' : 'text-toxic-green'
-          }
+          className={getDeltaColorClass(result.controversyChange, {
+            positive: 'text-blood-red',
+            negative: 'text-toxic-green'
+          })}
         >
           {result.controversyChange > 0 ? '⚠️' : '🛡️'}{' '}
           {t('ui:postGig.controversy', { defaultValue: 'Controversy' })}{' '}
@@ -67,11 +73,7 @@ export const SideEffectsSummary = ({
       ) : null}
 
       {result.loyaltyChange != null ? (
-        <div
-          className={
-            result.loyaltyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
-          }
-        >
+        <div className={getDeltaColorClass(result.loyaltyChange)}>
           🛡️ {t('ui:postGig.loyalty', { defaultValue: 'Loyalty' })}{' '}
           {result.loyaltyChange > 0 ? '+' : ''}
           {result.loyaltyChange}
@@ -91,11 +93,7 @@ export const SideEffectsSummary = ({
               })}
           {result.staminaChange != null ? (
             <span
-              className={
-                result.staminaChange > 0
-                  ? 'text-toxic-green ml-2'
-                  : 'text-blood-red ml-2'
-              }
+              className={`${getDeltaColorClass(result.staminaChange)} ml-2`}
             >
               {result.staminaChange > 0 ? '+' : ''}
               {result.staminaChange}{' '}
@@ -103,13 +101,7 @@ export const SideEffectsSummary = ({
             </span>
           ) : null}
           {result.moodChange != null ? (
-            <span
-              className={
-                result.moodChange > 0
-                  ? 'text-toxic-green ml-2'
-                  : 'text-blood-red ml-2'
-              }
-            >
+            <span className={`${getDeltaColorClass(result.moodChange)} ml-2`}>
               {result.moodChange > 0 ? '+' : ''}
               {result.moodChange}{' '}
               {t('ui:postGig.mood', { defaultValue: 'Mood' })}

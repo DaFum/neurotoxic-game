@@ -12,6 +12,8 @@
     "test": "pnpm run test:fast",
     "test:fast": "node ./scripts/run-fast-tests.mjs",
     "test:node": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs",
+    "test:node:quick": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs --skip-heavy",
+    "test:node:heavy": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs --only-heavy",
     "test:vitest": "pnpm run test:vitest:node && pnpm run test:vitest:ui",
     "test:vitest:node": "pnpm run test:vitest:logic",
     "test:vitest:ui": "node ./scripts/run-vitest-ui.mjs",

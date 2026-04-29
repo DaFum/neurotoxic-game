@@ -254,4 +254,50 @@ describe('useTravelLogic', () => {
     )
   })
 
+  test('keeps handleTravel stable when player money changes', () => {
+    const initialProps = createTravelLogicProps({
+      player: { money: 1000, currentNodeId: 'node_start', van: { fuel: 100 } }
+    })
+
+    const { result, rerender } = renderHook(props => useTravelLogic(props), {
+      initialProps
+    })
+
+    const initialHandleTravel = result.current.handleTravel
+
+    rerender({
+      ...initialProps,
+      player: { ...initialProps.player, money: 900 }
+    })
+
+    assert.strictEqual(
+      result.current.handleTravel,
+      initialHandleTravel,
+      'handleTravel should be referentially stable when unrelated player stats change'
+    )
+  })
+
+  test('keeps handleTravel stable when pendingTravelNode changes', async () => {
+    const initialProps = createTravelLogicProps({
+      player: { money: 1000, currentNodeId: 'node_start', van: { fuel: 100 } }
+    })
+
+    const { result, unmount } = renderHook(() => useTravelLogic(initialProps))
+
+    const initialHandleTravel = result.current.handleTravel
+    const targetNode = initialProps.gameMap.nodes.node_target
+
+    await act(async () => {
+      initialHandleTravel(targetNode)
+    })
+
+    assert.strictEqual(result.current.pendingTravelNode?.id, targetNode.id)
+    assert.strictEqual(
+      result.current.handleTravel,
+      initialHandleTravel,
+      'handleTravel should remain stable when pendingTravelNode updates'
+    )
+
+    unmount()
+  })
 })
