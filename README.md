@@ -75,3 +75,5 @@ _Documentation sync: dependency/tooling baseline reviewed on 2026-04-16._
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
 - Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.
+
+  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/DaFum/neurotoxic-game)
