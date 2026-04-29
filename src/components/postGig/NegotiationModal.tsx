@@ -40,15 +40,9 @@ const TACTICS = [
   }
 ] as const
 
-const isNegotiationResult = (
-  value: unknown
-): value is NegotiationResult => {
+const isNegotiationResult = (value: unknown): value is NegotiationResult => {
   if (!value || typeof value !== 'object') return false
-  if (
-    !Object.hasOwn(value, 'success') ||
-    !Object.hasOwn(value, 'feedback') ||
-    !Object.hasOwn(value, 'status')
-  ) {
+  if (!Object.hasOwn(value, 'status')) {
     return false
   }
   const record = value as {
@@ -57,8 +51,8 @@ const isNegotiationResult = (
     status?: unknown
   }
   return (
-    typeof record.success === 'boolean' &&
-    typeof record.feedback === 'string' &&
+    (record.success === undefined || typeof record.success === 'boolean') &&
+    (record.feedback === undefined || typeof record.feedback === 'string') &&
     (record.status === 'ACCEPTED' ||
       record.status === 'REVOKED' ||
       record.status === 'FAILED')
@@ -112,14 +106,17 @@ export const NegotiationModal = ({
       ) : (
         <div className='text-center py-6'>
           <div
-            className={`text-4xl mb-4 ${typedResult?.success ? 'text-toxic-green' : 'text-blood-red'}`}
+            className={`text-4xl mb-4 ${typedResult?.success === true ? 'text-toxic-green' : 'text-blood-red'}`}
           >
-            {typedResult?.success
+            {typedResult?.success === true
               ? t('ui:deals.success', { defaultValue: 'SUCCESS!' })
               : t('ui:deals.failure', { defaultValue: 'FAILURE' })}
           </div>
           <div className='text-lg font-bold text-star-white mb-2'>
-            {typedResult?.feedback}
+            {typedResult?.feedback ??
+              t('ui:deals.negotiationOutcomePending', {
+                defaultValue: 'Outcome pending.'
+              })}
           </div>
           {typedResult?.status === 'REVOKED' && (
             <div className='text-blood-red font-mono uppercase tracking-widest mt-4'>

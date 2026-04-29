@@ -78,10 +78,7 @@ export const EventModal = ({
       // This guarantees the UI preview precisely matches what the player ultimately receives when continuing,
       // preventing any background state mutations from altering the event outcome between preview and confirmation.
       const { result, appliedDelta, delta, outcomeText, description } =
-        resolveEventChoice(
-          option,
-          gameStateRef.current as unknown as Record<string, unknown>
-        )
+        resolveEventChoice(option, gameStateRef.current)
 
       setOutcome({
         option,
@@ -172,9 +169,8 @@ export const EventModal = ({
     typeof event.context === 'object' && event.context !== null
       ? (event.context as Record<string, unknown>)
       : undefined
-  const titleKey = event.title ?? event.titleKey ?? 'ui:event.untitled'
-  const descriptionKey =
-    event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
+  const titleKey = event.titleKey ?? 'ui:event.untitled'
+  const descriptionKey = event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
     <div
@@ -221,13 +217,14 @@ export const EventModal = ({
                 className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
               >
                 {t(titleKey, {
-                  defaultValue: event.title || 'EVENT',
+                  defaultValue: event.title || t('ui:event.untitled'),
                   ...eventContext
                 })}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
                 {t(descriptionKey, {
-                  defaultValue: event.description || 'An event unfolds.',
+                  defaultValue:
+                    event.description || t('ui:event.noDescription'),
                   ...eventContext
                 })}
               </p>

@@ -82,11 +82,18 @@ const balancesValidator = (
   props: Record<string, unknown>,
   propName: string,
   componentName: string,
-  ..._rest: unknown[]
+  location?: string,
+  propFullName?: string,
+  ...rest: unknown[]
 ) => {
+  const target = propFullName ?? `${componentName}.${propName}`
+  const atLocation =
+    location || rest.length > 0 ? ` (${location ?? 'prop'})` : ''
   const value = props[propName]
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return new Error(`${componentName}: balances must be an object`)
+    return new Error(
+      `${componentName}: ${target} must be an object${atLocation}`
+    )
   }
 
   const record = value as Record<string, unknown>
@@ -96,14 +103,16 @@ const balancesValidator = (
       hasKeys = true
       if (!Number.isFinite(record[key])) {
         return new Error(
-          `${componentName}: balances values must be finite numbers`
+          `${componentName}: ${target} values must be finite numbers${atLocation}`
         )
       }
     }
   }
 
   if (!hasKeys) {
-    return new Error(`${componentName}: balances must include at least one key`)
+    return new Error(
+      `${componentName}: ${target} must include at least one key${atLocation}`
+    )
   }
 
   return null
@@ -124,11 +133,26 @@ CatalogTab.propTypes = {
     props: Record<string, unknown>,
     propName: string,
     componentName: string,
+    location?: string,
+    propFullName?: string,
     ...rest: unknown[]
   ) => {
-    // @ts-expect-error React PropTypes type definition is too restrictive for spread args.
-    // TODO(TRACK-TS-PROP-TYPES-SPREAD): remove once upstream PropTypes type defs accept forwarded validator args.
-    const shapeError = balancesShape(props, propName, componentName, ...rest)
+    const shapeValidator = balancesShape as unknown as (
+      props: Record<string, unknown>,
+      propName: string,
+      componentName: string,
+      location?: string,
+      propFullName?: string,
+      ...rest: unknown[]
+    ) => Error | null
+    const shapeError = shapeValidator(
+      props,
+      propName,
+      componentName,
+      location,
+      propFullName,
+      ...rest
+    )
     if (shapeError) {
       return shapeError
     }
@@ -136,6 +160,8 @@ CatalogTab.propTypes = {
       props as Record<string, unknown>,
       propName,
       componentName,
+      location,
+      propFullName,
       ...rest
     )
   },
