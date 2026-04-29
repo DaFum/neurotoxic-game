@@ -20,7 +20,7 @@ export function createAndConnectBufferSource(
   if (audioState.musicGain?.input) {
     source.connect(audioState.musicGain.input)
   } else if (audioState.musicGain) {
-    source.connect(audioState.musicGain)
+    source.connect(audioState.musicGain as unknown as AudioNode)
   } else {
     logger.error('AudioEngine', 'Music bus not initialized for buffer playback')
     return null

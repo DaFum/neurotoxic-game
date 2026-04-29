@@ -14,11 +14,11 @@ export interface OverworldModalsProps {
 
   // Quests
   showQuests: boolean
-  questsProps: any // Ideally this should be properly typed, but avoiding structural changes
+  questsProps: React.ComponentProps<typeof QuestsModal>
 
   // Stash
   showStash: boolean
-  stashProps: any // Same as questsProps
+  stashProps: React.ComponentProps<typeof ContrabandStash>
 
   // Pirate Radio
   showPirateRadio: boolean
@@ -26,21 +26,21 @@ export interface OverworldModalsProps {
   triggerBroadcast: () => void
   canBroadcast: boolean
   hasBroadcastedToday: boolean
-  PIRATE_RADIO_CONFIG: any
+  PIRATE_RADIO_CONFIG: React.ComponentProps<typeof PirateRadioModal>['config']
 
   // Merch Press
   showMerchPress: boolean
   closeMerchPress: () => void
   triggerPress: () => void
   canPress: boolean
-  merchPressConfig: any
+  merchPressConfig: React.ComponentProps<typeof MerchPressModal>['config']
 
   // Blood Bank
   showBloodBank: boolean
   closeBloodBank: () => void
   triggerDonate: () => void
   canDonate: boolean
-  bloodBankConfig: any
+  bloodBankConfig: React.ComponentProps<typeof BloodBankModal>['config']
 
   // Dark Web Leak
   showDarkWebLeak: boolean
@@ -48,7 +48,7 @@ export interface OverworldModalsProps {
   triggerLeak: () => void
   canDarkWebLeak: boolean
   hasLeakedToday: boolean
-  DARK_WEB_LEAK_CONFIG: any
+  DARK_WEB_LEAK_CONFIG: React.ComponentProps<typeof DarkWebLeakModal>['config']
 }
 
 export const OverworldModals = React.memo(

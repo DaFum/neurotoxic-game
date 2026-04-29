@@ -26,16 +26,17 @@ export function stopAndDisconnectSource(
   name: string
 ): void {
   if (!source) return
-  if (typeof (source as any).stop === 'function') {
+  const stoppableSource = source as AudioNode & { stop?: () => void }
+  if (typeof stoppableSource.stop === 'function') {
     try {
-      ;(source as any).stop()
+      stoppableSource.stop()
     } catch (err) {
       logger.debug('AudioEngine', `${name} source stop failed`, err)
     }
   }
-  if (typeof (source as any).disconnect === 'function') {
+  if (typeof source.disconnect === 'function') {
     try {
-      ;(source as any).disconnect()
+      source.disconnect()
     } catch (err) {
       logger.debug('AudioEngine', `${name} source disconnect failed`, err)
     }

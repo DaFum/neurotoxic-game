@@ -67,6 +67,7 @@ export const useKabelsalatShuffle = (
     unconnectedIds,
     connections,
     isWinningRef,
+    randomFn,
     setSocketOrder
   ])
 }

@@ -43,6 +43,55 @@ type ProcessedSongEvent = {
   lane: string
 }
 
+type ParsedMidiNote = {
+  time: number
+  duration?: number | string | null
+  velocity?: number | null
+  midi?: number
+  name?: string
+}
+
+type ParsedMidiTrack = {
+  notes?: ParsedMidiNote[]
+  channel?: number
+  instrument?: { family?: string; name?: string; percussion?: boolean }
+  [key: string]: unknown
+}
+
+type ParsedMidi = {
+  duration: number
+  header: {
+    tempos: Array<{ bpm: number }>
+  }
+  tracks: ParsedMidiTrack[]
+}
+
+type MidiPlaybackEndInfo = {
+  filename: string
+  duration: number
+  offsetSeconds: number
+}
+
+type MidiPlaybackParams = {
+  filename: string
+  offset?: number
+  loop?: boolean
+  delay?: number
+  options?: unknown
+  ownedRequestId?: number | null
+}
+
+type MidiTransportParams = {
+  reqId: number
+  filename: string
+  offset: number
+  loop: boolean
+  delay: number
+  onEnded: ((info: MidiPlaybackEndInfo) => void) | null
+  stopAfterSeconds: number | null
+  startTimeSec: number | null
+}
+
 /**
  * Internal helper to trigger instrument notes.
  */
@@ -427,7 +476,7 @@ function parseMidiData(arrayBuffer: ArrayBuffer): unknown | null {
  * @returns {Array} An array of created Tone.Part objects.
  */
 function createMidiParts(
-  midi: any,
+  midi: ParsedMidi,
   useCleanPlayback: boolean
 ): Tone.Part<unknown>[] {
   const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
@@ -445,25 +494,22 @@ function createMidiParts(
 
   const nextMidiParts: Tone.Part<unknown>[] = []
   const tracks = Array.isArray(midi?.tracks) ? midi.tracks : []
-  for (const track of tracks as unknown[]) {
-    const notes = Array.isArray((track as any)?.notes)
-      ? (track as any).notes
-      : []
+  for (const track of tracks) {
+    const notes = Array.isArray(track.notes) ? track.notes : []
     const percussionTrack = isPercussionTrack(track)
 
     const eventsWithFrequencies: MidiEvent[] = []
 
     for (const note of notes) {
-      if (!Number.isFinite((note as any)?.time) || (note as any).time < 0)
-        continue
+      if (!Number.isFinite(note.time) || note.time < 0) continue
       const midiPitch = normalizeMidiPitch(note)
       if (midiPitch == null) continue
 
       const evt: MidiEvent = {
-        time: (note as any).time,
+        time: note.time,
         midiPitch,
-        duration: (note as any).duration,
-        velocity: (note as any).velocity,
+        duration: note.duration,
+        velocity: note.velocity,
         percussionTrack
       }
 
@@ -530,7 +576,10 @@ function createMidiParts(
  * @param {object} midi - The parsed MIDI object.
  * @param {object} params - Parameters for scheduling.
  */
-function scheduleMidiTransport(midi: any, params: any): void {
+function scheduleMidiTransport(
+  midi: ParsedMidi,
+  params: MidiTransportParams
+): void {
   const {
     reqId,
     filename,
@@ -542,8 +591,9 @@ function scheduleMidiTransport(midi: any, params: any): void {
     startTimeSec
   } = params
 
-  if (midi.header.tempos.length > 0) {
-    Tone.getTransport().bpm.value = midi.header.tempos[0].bpm
+  const firstTempo = midi.header.tempos[0]
+  if (firstTempo) {
+    Tone.getTransport().bpm.value = firstTempo.bpm
   }
 
   const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
@@ -584,8 +634,12 @@ function scheduleMidiTransport(midi: any, params: any): void {
     }, duration)
   }
 
-  if (!loop && Number.isFinite(stopAfterSeconds) && stopAfterSeconds > 0) {
-    const stopTime = requestedOffset + stopAfterSeconds
+  const finiteStopAfterSeconds =
+    typeof stopAfterSeconds === 'number' && Number.isFinite(stopAfterSeconds)
+      ? stopAfterSeconds
+      : null
+  if (!loop && finiteStopAfterSeconds != null && finiteStopAfterSeconds > 0) {
+    const stopTime = requestedOffset + finiteStopAfterSeconds
     audioState.transportStopEventId = Tone.getTransport().scheduleOnce(() => {
       if (reqId !== audioState.playRequestId) return
       stopAudio()
@@ -595,9 +649,10 @@ function scheduleMidiTransport(midi: any, params: any): void {
   // Schedule Transport.start in advance to prevent pops/crackles
   // Add minimum 100ms lookahead for reliable scheduling
   const minLookahead = 0.1
-  const transportStartTime = Number.isFinite(startTimeSec)
-    ? startTimeSec
-    : Tone.now() + Math.max(minLookahead, validDelay)
+  const transportStartTime =
+    typeof startTimeSec === 'number' && Number.isFinite(startTimeSec)
+      ? startTimeSec
+      : Tone.now() + Math.max(minLookahead, validDelay)
 
   Tone.getTransport().start(transportStartTime, requestedOffset)
 }
@@ -616,7 +671,9 @@ function scheduleMidiTransport(midi: any, params: any): void {
  * @param {number} [params.options.startTimeSec] - Absolute Tone.js time to start playback.
  * @param {number|null} [params.ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFileInternal(params: any = {}): Promise<boolean> {
+export async function playMidiFileInternal(
+  params: MidiPlaybackParams
+): Promise<boolean> {
   const {
     filename,
     offset = 0,
@@ -660,7 +717,7 @@ export async function playMidiFileInternal(params: any = {}): Promise<boolean> {
   if (!arrayBuffer) return false
   if (reqId !== audioState.playRequestId) return false
 
-  const midi = parseMidiData(arrayBuffer)
+  const midi = parseMidiData(arrayBuffer) as ParsedMidi | null
   if (!midi) return false
   if (reqId !== audioState.playRequestId) return false
 
@@ -698,7 +755,7 @@ export async function playMidiFile(
   offset = 0,
   loop = false,
   delay = 0,
-  options: any = {}
+  options: unknown = {}
 ): Promise<boolean> {
   return playMidiFileInternal({ filename, offset, loop, delay, options })
 }

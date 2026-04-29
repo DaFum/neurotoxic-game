@@ -1,7 +1,10 @@
-import { Container, Graphics, Sprite, TilingSprite } from 'pixi.js'
+import { Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
-import { TourbusObstacleManager } from './TourbusObstacleManager'
+import {
+  TourbusObstacleManager,
+  type TourbusRenderState
+} from './TourbusObstacleManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
@@ -10,10 +13,40 @@ import {
   TOURBUS_BUS_Y_PERCENT,
   TOURBUS_BUS_HEIGHT_PERCENT
 } from '../../hooks/minigames/constants'
+import type { StageControllerOptions } from '../../types/components'
 
-class TourbusStageController extends BaseStageController {
-  [key: string]: any
-  constructor(params: any) {
+type TourbusControllerState = TourbusRenderState & {
+  busLane: number
+  speed: number
+}
+
+type TourbusTextures = {
+  bus: Texture | null
+  road: Texture | null
+  rock: Texture | null
+  barrier: Texture | null
+  fuel: Texture | null
+}
+
+type TourbusColors = {
+  warningYellow: number
+  bloodRed: number
+  toxicGreen: number
+}
+
+class TourbusStageController extends BaseStageController<TourbusControllerState> {
+  busSprite: Sprite | Graphics | null
+  laneWidth: number
+  roadContainer: Container | null
+  obstacleContainer: Container | null
+  effectManager: EffectManager | null
+  roadStripes: TilingSprite | null
+  obstacleManager: TourbusObstacleManager | null
+  wobbleTime: number
+  textures: TourbusTextures
+  colors: TourbusColors
+
+  constructor(params: StageControllerOptions<TourbusControllerState>) {
     super(params)
     this.busSprite = null
     this.laneWidth = 0
@@ -47,6 +80,7 @@ class TourbusStageController extends BaseStageController {
     // Setup Layers
     this.roadContainer = new Container()
     this.obstacleContainer = new Container()
+    if (!this.container || !this.app) return
     this.container.addChild(this.roadContainer)
     this.container.addChild(this.obstacleContainer)
 
@@ -83,12 +117,13 @@ class TourbusStageController extends BaseStageController {
 
       const loaded = (await loadTextures(urls, undefined)) as Record<
         keyof typeof urls,
-        import('pixi.js').Texture | null
+        Texture | null
       >
 
       const keys = Object.keys(loaded)
       for (let i = 0, len = keys.length; i < len; i++) {
-        const key = keys[i]
+        const key = keys[i] as keyof TourbusTextures | undefined
+        if (!key) continue
         if (loaded[key]) this.textures[key] = loaded[key]
       }
     } catch (e) {
@@ -101,6 +136,7 @@ class TourbusStageController extends BaseStageController {
   }
 
   drawRoad() {
+    if (!this.app || !this.roadContainer) return
     const width = this.app.screen.width
     const height = this.app.screen.height
     this.laneWidth = width / TOURBUS_LANE_COUNT
@@ -108,7 +144,7 @@ class TourbusStageController extends BaseStageController {
     // Clear previous
     const children = this.roadContainer.removeChildren()
     for (let i = 0, len = children.length; i < len; i++) {
-      children[i].destroy()
+      children[i]?.destroy()
     }
 
     // Use TilingSprite if texture loaded AND source is valid, else Graphics fallback.
@@ -141,6 +177,7 @@ class TourbusStageController extends BaseStageController {
   }
 
   createBus() {
+    if (!this.app) return
     const height = this.app.screen.height
 
     if (this.textures.bus) {
@@ -157,15 +194,21 @@ class TourbusStageController extends BaseStageController {
     const targetW = this.laneWidth * 0.6
     // Visual height slightly larger than collision box for aesthetics
     const targetH = height * ((TOURBUS_BUS_HEIGHT_PERCENT + 5) / 100)
-    const texW = this.busSprite.texture?.width || this.busSprite.width || 60
-    const texH = this.busSprite.texture?.height || this.busSprite.height || 80
+    const spriteTexture =
+      this.busSprite instanceof Sprite ? this.busSprite.texture : null
+    const texW = spriteTexture?.width || this.busSprite.width || 60
+    const texH = spriteTexture?.height || this.busSprite.height || 80
     const busScale = Math.min(targetW / texW, targetH / texH)
     this.busSprite.scale.set(busScale)
 
     this.container.addChild(this.busSprite)
   }
 
-  _updateBusPosition(state: any, dt: any, height: any) {
+  _updateBusPosition(
+    state: Pick<TourbusControllerState, 'busLane'>,
+    dt: number,
+    height: number
+  ) {
     if (this.busSprite) {
       const targetX = state.busLane * this.laneWidth + this.laneWidth / 2
 
@@ -187,7 +230,11 @@ class TourbusStageController extends BaseStageController {
     }
   }
 
-  _updateRoadScroll(state: any, dt: any, height: any) {
+  _updateRoadScroll(
+    state: Pick<TourbusControllerState, 'speed'>,
+    dt: number,
+    height: number
+  ) {
     if (this.roadStripes) {
       // Speed is relative units per ms.
       // Let's say speed 0.05 => 50 units per sec.
@@ -198,12 +245,13 @@ class TourbusStageController extends BaseStageController {
     }
   }
 
-  update(dt: any) {
+  update(dt: number) {
     if (this.effectManager) this.effectManager.update(dt)
 
     const state = this.gameStateRef.current
     if (!state) return
 
+    if (!this.app) return
     const height = this.app.screen.height
 
     this._updateRoadScroll(state, dt, height)
@@ -229,5 +277,6 @@ class TourbusStageController extends BaseStageController {
   }
 }
 
-export const createTourbusStageController = (params: any) =>
-  new TourbusStageController(params)
+export const createTourbusStageController = (
+  params: StageControllerOptions<TourbusControllerState>
+) => new TourbusStageController(params)

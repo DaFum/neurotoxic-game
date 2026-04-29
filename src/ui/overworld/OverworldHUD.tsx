@@ -12,13 +12,12 @@ export interface OverworldHUDProps {
 
 function useAnimatedNum(value: number, ms = 450) {
   const [cur, setCur] = useState(value)
-  const prev = useRef(value)
+  const prevRef = useRef(value)
   useEffect(() => {
-    const from = prev.current,
+    const from = prevRef.current,
       to = value
     if (from === to) {
-      setCur(to)
-      prev.current = to
+      prevRef.current = to
       return
     }
     const t0 = performance.now()
@@ -30,10 +29,10 @@ function useAnimatedNum(value: number, ms = 450) {
       const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2
       const next = Math.round(from + (to - from) * e)
       setCur(next)
-      prev.current = next
+      prevRef.current = next
       if (p < 1) raf = requestAnimationFrame(tick)
       else {
-        prev.current = to
+        prevRef.current = to
         setCur(to)
       }
     }
@@ -51,10 +50,18 @@ export const OverworldHUD = React.memo(
     const { t } = useTranslation(['ui'])
     const [showSC, setShowSC] = useState(false)
     const { audioState, handleAudioChange } = useAudioControl()
-    const isPlaying = typeof audioState === 'object' && audioState !== null && (audioState as Record<string, unknown>).isPlaying === true
+    const isPlaying =
+      typeof audioState === 'object' &&
+      audioState !== null &&
+      (audioState as Record<string, unknown>).isPlaying === true
     const displayMoney = useAnimatedNum(player.money ?? 0)
-    const [moneyAnim, setMoneyAnim] = useState('')
-    const prevMoney = useRef(player.money ?? 0)
+    const prevMoneyRef = useRef(player.money ?? 0)
+    const moneyAnim =
+      (player.money ?? 0) === prevMoneyRef.current
+        ? ''
+        : (player.money ?? 0) > prevMoneyRef.current
+          ? 'money-anim-up'
+          : 'money-anim-down'
     const vanFuel = player.van?.fuel
     const vanCondition = player.van?.condition
     const fuelLow = vanFuel !== undefined && vanFuel < 20
@@ -98,16 +105,7 @@ export const OverworldHUD = React.memo(
     )
 
     useEffect(() => {
-      if ((player.money ?? 0) !== prevMoney.current) {
-        setMoneyAnim(
-          (player.money ?? 0) > prevMoney.current
-            ? 'money-anim-up'
-            : 'money-anim-down'
-        )
-        const timer = setTimeout(() => setMoneyAnim(''), 450)
-        prevMoney.current = player.money ?? 0
-        return () => clearTimeout(timer)
-      }
+      prevMoneyRef.current = player.money ?? 0
     }, [player.money])
 
     useEffect(() => {
@@ -229,7 +227,8 @@ export const OverworldHUD = React.memo(
                   <div
                     className='mini-fill'
                     style={{
-                      width: vanCondition !== undefined ? `${vanCondition}%` : '0%',
+                      width:
+                        vanCondition !== undefined ? `${vanCondition}%` : '0%',
                       background: condLow
                         ? 'var(--color-blood-red)'
                         : 'var(--color-condition-blue)'

@@ -1,4 +1,5 @@
 import { ColorMatrixFilter, Container } from 'pixi.js'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
 
 /**
  * Manages toxic mode filter effects for the stage.
@@ -18,7 +19,11 @@ export class ToxicFilterManager {
    * @param {object} state - The game state.
    * @param {number} elapsed - The elapsed gig time.
    */
-  update(state: any, elapsed: number, stageContainer: Container): void {
+  update(
+    state: Pick<RhythmGameRefState, 'isToxicMode'>,
+    elapsed: number,
+    stageContainer: Container
+  ): void {
     if (state.isToxicMode) {
       if (this.colorMatrix) {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)

@@ -16,10 +16,10 @@ export const LOG_LEVELS = {
  * A configurable logger system for debugging game flow.
  */
 export class Logger {
-  logs: any[]
+  logs: LogEntry[]
   maxLogs: number
   minLevel: number
-  listeners: Array<(event: any) => void>
+  listeners: Array<(event: LogEvent) => void>
   constructor() {
     this.logs = []
     this.maxLogs = 1000
@@ -53,9 +53,7 @@ export class Logger {
    * @param {Function} callback - Callback receiving {type, entry}.
    * @returns {Function} Unsubscribe function
    */
-  subscribe(
-    callback: (event: { type: string; entry: any }) => void
-  ): () => void {
+  subscribe(callback: (event: LogEvent) => void): () => void {
     this.listeners.push(callback)
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback)
@@ -67,7 +65,7 @@ export class Logger {
    * @param {object} event - Event object { type, entry }.
    * @private
    */
-  _emit(event: any): void {
+  _emit(event: LogEvent): void {
     this.listeners.forEach(cb => {
       cb(event)
     })
@@ -78,7 +76,7 @@ export class Logger {
    * @param {object} entry - Log entry.
    * @private
    */
-  _push(entry: any): void {
+  _push(entry: LogEntry): void {
     this.logs.unshift(entry) // Newest first
     if (this.logs.length > this.maxLogs) {
       this.logs.pop()
@@ -91,7 +89,7 @@ export class Logger {
    * @param {string} level - Log level.
    * @param {string} channel - Source channel.
    * @param {string} message - Message text.
-   * @param {any} data - Associated data.
+   * @param {unknown} data - Associated data.
    * @returns {object} Formatted log object.
    * @private
    */
@@ -99,15 +97,8 @@ export class Logger {
     level: string,
     channel: string,
     message: string,
-    data: any
-  ): {
-    id: string
-    timestamp: string
-    level: string
-    channel: string
-    message: string
-    data: any
-  } {
+    data: unknown
+  ): LogEntry {
     return {
       id: getSafeUUID(),
       timestamp: new Date().toISOString(),
@@ -122,12 +113,12 @@ export class Logger {
    * Logs a debug message.
    * @param {string} channel - The source channel (e.g. 'Audio', 'GameLoop').
    * @param {string} message - The log message.
-   * @param {any} [data] - Optional data to attach.
+   * @param {unknown} [data] - Optional data to attach.
    */
-  debug(channel: string, message: string, data?: any): void {
+  debug(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
     if (!import.meta.env?.PROD) {
-      console.debug(`[${channel}] ${message}`, data || '')
+      console.debug(`[${channel}] ${message}`, data ?? '')
     }
     this._push(this._format('DEBUG', channel, message, data))
   }
@@ -136,12 +127,12 @@ export class Logger {
    * Logs an informational message.
    * @param {string} channel - The source channel.
    * @param {string} message - The log message.
-   * @param {any} [data] - Optional data.
+   * @param {unknown} [data] - Optional data.
    */
-  info(channel: string, message: string, data?: any): void {
+  info(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.INFO) return
     if (!import.meta.env?.PROD) {
-      console.info(`[${channel}] ${message}`, data || '')
+      console.info(`[${channel}] ${message}`, data ?? '')
     }
     this._push(this._format('INFO', channel, message, data))
   }
@@ -150,11 +141,11 @@ export class Logger {
    * Logs a warning message.
    * @param {string} channel - The source channel.
    * @param {string} message - The log message.
-   * @param {any} [data] - Optional data.
+   * @param {unknown} [data] - Optional data.
    */
-  warn(channel: string, message: string, data?: any): void {
+  warn(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.WARN) return
-    console.warn(`[${channel}] ${message}`, data || '')
+    console.warn(`[${channel}] ${message}`, data ?? '')
     this._push(this._format('WARN', channel, message, data))
   }
 
@@ -162,11 +153,11 @@ export class Logger {
    * Logs an error message.
    * @param {string} channel - The source channel.
    * @param {string} message - The log message.
-   * @param {any} [data] - Optional data (usually the error object).
+   * @param {unknown} [data] - Optional data (usually the error object).
    */
-  error(channel: string, message: string, data?: any): void {
+  error(channel: string, message: string, data?: unknown): void {
     if (this.minLevel > LOG_LEVELS.ERROR) return
-    console.error(`[${channel}] ${message}`, data || '')
+    console.error(`[${channel}] ${message}`, data ?? '')
     this._push(this._format('ERROR', channel, message, data))
   }
 
@@ -188,3 +179,16 @@ export class Logger {
 }
 
 export const logger = new Logger()
+
+export type LogEntry = {
+  id: string
+  timestamp: string
+  level: string
+  channel: string
+  message: string
+  data: unknown
+}
+
+export type LogEvent =
+  | { type: 'add'; entry: LogEntry }
+  | { type: 'clear'; entry?: undefined }

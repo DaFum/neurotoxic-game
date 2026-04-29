@@ -1,6 +1,18 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { EffectManager } from './EffectManager'
 
+type TourbusObstacle = {
+  id: string | number
+  lane: number
+  y: number
+  type: 'FUEL' | 'OBSTACLE'
+  collided?: boolean
+}
+
+export type TourbusRenderState = {
+  obstacles: TourbusObstacle[]
+}
+
 export class TourbusObstacleManager {
   container: Container
   effectManager: EffectManager
@@ -43,7 +55,11 @@ export class TourbusObstacleManager {
     this.currentIds = new Set()
   }
 
-  updateObstacles(state: any, height: number, laneWidth: number) {
+  updateObstacles(
+    state: TourbusRenderState,
+    height: number,
+    laneWidth: number
+  ) {
     this.currentIds.clear()
 
     for (let i = 0, len = state.obstacles.length; i < len; i++) {

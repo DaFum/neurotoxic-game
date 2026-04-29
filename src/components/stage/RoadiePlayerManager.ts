@@ -1,6 +1,16 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { EffectManager } from './EffectManager'
 
+type RoadieCarriedItem = {
+  type: string
+}
+
+type RoadieRenderState = {
+  playerPos: { x: number; y: number }
+  carrying: RoadieCarriedItem | null
+  equipmentDamage: number
+}
+
 export class RoadiePlayerManager {
   playerContainer: Container | null
   playerSprite: Sprite | Graphics | null
@@ -74,14 +84,18 @@ export class RoadiePlayerManager {
     this.effectManager = effectManager
   }
 
-  updatePlayerPosition(state: any, cellW: number, cellH: number) {
+  updatePlayerPosition(state: RoadieRenderState, cellW: number, cellH: number) {
     if (this.playerContainer) {
       this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
       this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
     }
   }
 
-  updateCarryingVisuals(state: any, cellW: number, cellH: number) {
+  updateCarryingVisuals(
+    state: RoadieRenderState,
+    cellW: number,
+    cellH: number
+  ) {
     if (this.itemSprite && this.textures.items) {
       if (state.carrying) {
         this.itemSprite.visible = true
@@ -103,7 +117,7 @@ export class RoadiePlayerManager {
     }
   }
 
-  checkDamageTriggers(state: any) {
+  checkDamageTriggers(state: RoadieRenderState) {
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
       const redColor = this.colors.bloodRed
