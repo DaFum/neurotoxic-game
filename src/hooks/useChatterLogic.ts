@@ -80,7 +80,15 @@ export const useChatterLogic = (
         if (!active) return
 
         const currentState = stateRef.current
-        const result = getRandomChatter(currentState) as ChatterTemplate | null
+        let result: ChatterTemplate | null = null
+        try {
+          result = getRandomChatter(currentState) as ChatterTemplate | null
+        } catch (error) {
+          console.error(
+            '[useChatterLogic] getRandomChatter failed; continuing scheduler loop.',
+            error
+          )
+        }
 
         if (result) {
           const { text, speaker: fixedSpeaker, type } = result

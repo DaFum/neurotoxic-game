@@ -55,7 +55,8 @@
 
 - Full quality gate: `pnpm run test:all` (required before PR).
 - Extended suite (perf + locale): `pnpm run test:additional` (perf runs in CI via Performance Tests job; locale via Locale Smoke/Full Tests jobs).
-- Legacy logic suites (`node:test`): `pnpm run test`.
+- Fast local split (quick node + Vitest logic): `pnpm run test`.
+- Full legacy node suites (quick + heavy): `pnpm run test:node`.
 - UI + migrated suites (Vitest): `pnpm run test:ui`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
 - Single Vitest file (via canonical `test:ui:file` script): `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
