@@ -20,6 +20,8 @@ vi.mock('../../../src/data/songs', () => ({
 }))
 
 describe('LeaderboardTab', () => {
+  const originalFetch = global.fetch
+
   beforeEach(() => {
     vi.clearAllMocks()
     global.fetch = vi.fn().mockResolvedValue({
@@ -29,7 +31,7 @@ describe('LeaderboardTab', () => {
   })
 
   afterEach(() => {
-    delete global.fetch
+    global.fetch = originalFetch
   })
 
   it('treats missing local leaderboard endpoints as unavailable instead of a crash-level load error', async () => {

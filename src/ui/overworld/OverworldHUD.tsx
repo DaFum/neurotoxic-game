@@ -278,6 +278,7 @@ export const OverworldHUD = React.memo(
             </div>
             <div
               className='career-stats'
+              role='group'
               aria-label={t('ui:overworld.career_status', {
                 defaultValue: 'Career status'
               })}
