@@ -1,7 +1,4 @@
-import { getSafeUUID } from '../utils/crypto'
-import { isPlainObject, normalizeSetlistForSave } from '../utils/gameStateUtils'
 import {
-  type Dispatch,
   type Context,
   type ReactNode,
   createContext,
@@ -11,23 +8,14 @@ import {
   useCallback,
   useMemo,
   useRef,
-  useState,
   startTransition
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
-import { MapGenerator } from '../utils/mapGenerator'
 import { logger, LOG_LEVELS } from '../utils/logger'
-import { secureRandom } from '../utils/crypto'
+import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { pickRandomContraband } from '../utils/contrabandUtils'
-import {
-  handleError,
-  StorageError,
-  StateError,
-  safeStorageOperation
-} from '../utils/errorHandler'
-import { validateSaveData } from '../utils/saveValidator'
-import { addUnlock, getUnlocks } from '../utils/unlockManager'
+import { handleError, StateError } from '../utils/errorHandler'
+import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
@@ -50,13 +38,9 @@ import {
   createAddToastAction,
   createRemoveToastAction,
   createSetGigModifiersAction,
-  createLoadGameAction,
   createResetStateAction,
-  createApplyEventDeltaAction,
-  createPopPendingEventAction,
   createConsumeItemAction,
   createAdvanceDayAction,
-  createAddCooldownAction,
   createStartTravelMinigameAction,
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
@@ -68,7 +52,6 @@ import {
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
-  createAddUnlockAction,
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
@@ -82,17 +65,23 @@ import {
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
-  GameAction,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
-  QuestState,
   SocialState,
   TradeVoidItemPayload,
   UpdateBandPayload,
   UpdatePlayerPayload
 } from '../types/game'
+import { useEventSystem } from './useEventSystem'
+import { useMapGeneration } from './useMapGeneration'
+import {
+  SAVE_KEY,
+  safeStorage,
+  safeStorageNoFallback,
+  usePersistence
+} from './usePersistence'
 
 declare global {
   interface Window {
@@ -202,122 +191,18 @@ type GameDispatchActions = {
   ) => void
 }
 
-const MAP_GENERATION_MAX_RETRIES = 2
-const MAP_GENERATION_RETRY_DELAY_MS = 250
+/**
+ * @deprecated Prefer `useGameSelector` for state reads and `useGameActions`
+ * for dispatch-only access. This combined shape subscribes consumers to the
+ * full game state and should remain only for legacy call sites.
+ */
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
     hasUpgrade: (upgradeId: string) => boolean
   }
-type EventResolution = {
-  result?: unknown
-  delta?: {
-    flags?: {
-      addQuest?: unknown
-      unlock?: unknown
-      gameOver?: unknown
-    }
-    [key: string]: unknown
-  }
-  outcomeText?: string
-  description?: string
-}
 
 const GameStateContext = createContext<GameState | null>(null)
 const GameDispatchContext = createContext<GameDispatchActions | null>(null)
-const SAVE_KEY = 'neurotoxic_v3_save'
-
-const createPersistedState = (currentState: GameState) => {
-  const {
-    version,
-    currentScene,
-    player,
-    band,
-    social,
-    gameMap,
-    currentGig,
-    lastGigStats,
-    activeEvent,
-    activeStoryFlags,
-    eventCooldowns,
-    pendingEvents,
-    venueBlacklist,
-    activeQuests,
-    reputationByRegion,
-    settings,
-    npcs,
-    gigModifiers,
-    setlist
-  } = currentState
-
-  return {
-    version,
-    timestamp: Date.now(),
-    currentScene,
-    player,
-    band,
-    social,
-    gameMap,
-    currentGig,
-    lastGigStats,
-    activeEvent,
-    activeStoryFlags,
-    eventCooldowns,
-    pendingEvents,
-    venueBlacklist,
-    activeQuests,
-    reputationByRegion,
-    settings,
-    npcs,
-    gigModifiers,
-    setlist: normalizeSetlistForSave(setlist)
-  }
-}
-
-const isQuestStateLike = (value: unknown): value is QuestState =>
-  isPlainObject(value) && typeof value.id === 'string'
-
-const processAddQuests = (
-  quests: unknown,
-  currentDay: number,
-  dispatch: Dispatch<GameAction>
-) => {
-  if (!Array.isArray(quests)) return
-
-  quests.forEach(q => {
-    // Parse relative deadlines
-    const questToAdd = { ...(q as Record<string, unknown>) }
-    if (questToAdd.deadlineOffset) {
-      questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset || 0)
-      delete questToAdd.deadlineOffset
-    }
-    if (!isQuestStateLike(questToAdd)) {
-      logger.warn(
-        'GameState',
-        'Skipping malformed quest payload in processAddQuests',
-        questToAdd
-      )
-      return
-    }
-    dispatch(createAddQuestAction(questToAdd))
-  })
-}
-
-function safeStorage<T>(operation: string, fn: () => T, fallbackValue: T): T {
-  return (
-    safeStorageOperation as unknown as (
-      op: string,
-      exec: () => T,
-      fallback: T
-    ) => T
-  )(operation, fn, fallbackValue)
-}
-
-function safeStorageNoFallback<T>(operation: string, fn: () => T): T {
-  return (safeStorageOperation as unknown as (op: string, exec: () => T) => T)(
-    operation,
-    fn
-  )
-}
 
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   const value = use(context)
@@ -423,81 +308,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // This allows actions to be stable (memoized once) while still accessing current state.
   const stateRef = useRef(state)
   stateRef.current = state
-  const mapGenerationAttemptsRef = useRef(0)
-  const mapRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [mapRetryCount, setMapRetryCount] = useState(0)
-
-  const clearMapRetryTimeout = useCallback(() => {
-    if (mapRetryTimeoutRef.current) {
-      clearTimeout(mapRetryTimeoutRef.current)
-      mapRetryTimeoutRef.current = null
-    }
-  }, [])
-
-  const resetMapGenerationRetries = useCallback(() => {
-    clearMapRetryTimeout()
-    mapGenerationAttemptsRef.current = 0
-    setMapRetryCount(0)
-  }, [clearMapRetryTimeout])
-
-  // Initialize Map if needed
-  useEffect(() => {
-    if (!state.gameMap) {
-      const generator = new MapGenerator(Date.now())
-      try {
-        const newMap = generator.generateMap()
-        mapGenerationAttemptsRef.current = 0
-        dispatch(createSetMapAction(newMap))
-      } catch (error) {
-        mapGenerationAttemptsRef.current += 1
-        handleError(
-          new StateError('Failed to generate map', {
-            originalError:
-              error instanceof Error ? error.message : String(error),
-            attempt: mapGenerationAttemptsRef.current
-          }),
-          { source: 'GameState.generateMap' }
-        )
-
-        if (mapGenerationAttemptsRef.current <= MAP_GENERATION_MAX_RETRIES) {
-          if (mapRetryTimeoutRef.current) {
-            clearTimeout(mapRetryTimeoutRef.current)
-          }
-          mapRetryTimeoutRef.current = setTimeout(() => {
-            mapRetryTimeoutRef.current = null
-            setMapRetryCount((prev: number) => prev + 1)
-          }, MAP_GENERATION_RETRY_DELAY_MS)
-          // Do not return early — fall through so the cleanup function below is
-          // always returned from this effect, ensuring the pending timeout is
-          // cancelled if the component unmounts during the retry window.
-        } else {
-          dispatch(createSetMapAction(null))
-          mapGenerationAttemptsRef.current = 0
-          dispatch(
-            createAddToastAction({
-              id: getSafeUUID(),
-              message: tRef.current(
-                'ui:error.mapGenerationFailedReturnToMenu',
-                {
-                  defaultValue:
-                    'Map generation failed. Returning to menu for recovery.'
-                }
-              ),
-              type: 'error'
-            })
-          )
-          dispatch(createChangeSceneAction(GAME_PHASES.MENU))
-        }
-      }
-    }
-
-    return () => {
-      if (mapRetryTimeoutRef.current) {
-        clearTimeout(mapRetryTimeoutRef.current)
-        mapRetryTimeoutRef.current = null
-      }
-    }
-  }, [state.gameMap, mapRetryCount, dispatch])
+  const { resetMapGenerationRetries } = useMapGeneration({
+    gameMap: state.gameMap,
+    dispatch,
+    tRef
+  })
 
   // Sync Logger with settings on load/change
   useEffect(() => {
@@ -651,16 +466,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   )
 
   /**
-   * Sets the currently active event (blocking modal).
-   * @param {object} event - The event object or null.
-   */
-  const setActiveEvent = useCallback(
-    (event: Parameters<typeof createSetActiveEventAction>[0]) =>
-      dispatch(createSetActiveEventAction(event)),
-    []
-  )
-
-  /**
    * Updates gig modifiers (toggles like catering, promo).
    * @param {object|Function} payload - The new modifiers or an updater function.
    */
@@ -692,6 +497,23 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     },
     []
   )
+
+  const { deleteSave, saveGame, loadGame } = usePersistence({
+    currentScene: state.currentScene,
+    stateRef,
+    dispatch,
+    addToast,
+    tRef
+  })
+
+  const { setActiveEvent, triggerEvent, resolveEvent } = useEventSystem({
+    stateRef,
+    dispatch,
+    addToast,
+    changeScene,
+    saveGame,
+    tRef
+  })
 
   /**
    * Consumes a consumable item from band inventory.
@@ -917,46 +739,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     []
   )
 
-  // Persistence
-  /**
-   * Deletes the save file and reloads the application.
-   */
-  const deleteSave = useCallback(() => {
-    safeStorageNoFallback('deleteSave', () => {
-      localStorage.removeItem(SAVE_KEY)
-    })
-    // No need to changeScene as location.reload will wipe state anyway
-    window.location.reload()
-  }, [])
-
-  /**
-   * Persists the current state to localStorage.
-   */
-  const saveGame = useCallback(
-    (showToast = true) => {
-      const saveData = createPersistedState(stateRef.current)
-
-      const success = safeStorage(
-        'saveGame',
-        () => {
-          localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
-          return true
-        },
-        false
-      )
-
-      if (success) {
-        if (showToast) {
-          addToast(tRef.current('ui:toast.gameSaved'), 'success')
-        }
-        logger.info('System', 'Game Saved Successfully', null)
-      } else {
-        handleError(new StorageError('Failed to save game'), { addToast })
-      }
-    },
-    [addToast]
-  )
-
   /**
    * Completes the current gig and transitions to the appropriate post-gig scene.
    * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
@@ -970,323 +752,6 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       changeScene(GAME_PHASES.POST_GIG)
     }
   }, [addToast, changeScene])
-
-  const previousSceneRef = useRef(state.currentScene)
-
-  useEffect(() => {
-    const previousScene = previousSceneRef.current
-    previousSceneRef.current = state.currentScene
-
-    const shouldAutosaveOnTransition =
-      (previousScene === GAME_PHASES.GIG &&
-        state.currentScene === GAME_PHASES.POST_GIG) ||
-      (previousScene === GAME_PHASES.POST_GIG &&
-        (state.currentScene === GAME_PHASES.GAMEOVER ||
-          state.currentScene === GAME_PHASES.OVERWORLD))
-
-    if (shouldAutosaveOnTransition) {
-      saveGame(false)
-    }
-  }, [state.currentScene, saveGame])
-
-  /**
-   * Loads the game state from localStorage.
-   * @returns {boolean} True if load was successful.
-   */
-  const loadGame = useCallback(() => {
-    return safeStorage(
-      'loadGame',
-      () => {
-        let parsed: unknown
-        try {
-          const saved = localStorage.getItem(SAVE_KEY)
-          if (!saved) return false
-          parsed = JSON.parse(saved)
-        } catch (_error) {
-          handleError(
-            new StateError(
-              tRef.current('ui:save.parseFailed', {
-                defaultValue:
-                  'Save file parsing failed. Falling back to initial state.'
-              })
-            ),
-            { addToast }
-          )
-          return false
-        }
-
-        if (!isPlainObject(parsed)) {
-          handleError(
-            new StateError(
-              tRef.current('ui:save.corruptFailed', {
-                defaultValue: 'Save file is corrupt or invalid.'
-              })
-            ),
-            {
-              addToast
-            }
-          )
-          return false
-        }
-
-        // Validate Schema
-        try {
-          validateSaveData(parsed)
-        } catch (error) {
-          const reason = error instanceof Error ? error.message : String(error)
-          handleError(
-            new StateError(
-              tRef.current('ui:save.corruptFailed', {
-                defaultValue: 'Save file is corrupt or invalid.'
-              }),
-              {
-                reason
-              }
-            ),
-            { addToast }
-          )
-          return false
-        }
-
-        // Ensure saved 'unlocks' cannot be null; do not allow save files to
-        // silently overwrite separately persisted unlocks. Prefer the
-        // authoritative persisted unlock list (`getUnlocks()`) and merge any
-        // additional validated string IDs from the save file.
-        const parsedObj = parsed as Record<string, unknown>
-        const savedRaw = Array.isArray(parsedObj.unlocks)
-          ? (parsedObj.unlocks as unknown[])
-          : []
-        const savedUnlocks = savedRaw.filter(
-          (u): u is string => typeof u === 'string'
-        )
-        const persistentUnlocks = getUnlocks()
-        const mergedUnlocks = Array.from(
-          new Set([...persistentUnlocks, ...savedUnlocks])
-        )
-
-        dispatch(
-          createLoadGameAction({
-            ...(parsedObj as Partial<GameState>),
-            unlocks: mergedUnlocks
-          })
-        )
-        return true
-      },
-      false
-    )
-  }, [addToast])
-
-  // Event System Integration
-  /**
-   * Triggers a random event from a category if conditions are met.
-   * @param {string} category - The event category (e.g., 'travel').
-   * @param {string|null} [triggerPoint=null] - Specific trigger point.
-   * @returns {boolean} True if an event was triggered.
-   */
-  const triggerEvent = useCallback(
-    (category: string, triggerPoint: string | null = null) => {
-      const currentState = stateRef.current
-      // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
-      // "GIG" scene should not be interrupted unless critical logic allows it.
-      if (currentState.currentScene === GAME_PHASES.GIG) {
-        // Queue event instead? Or just return false.
-        // For now, return false to prevent interruption.
-        return false
-      }
-
-      // Max two events per day limit
-      if ((currentState.player?.eventsTriggeredToday || 0) >= 2) {
-        return false
-      }
-
-      // Pass full state context for flags/cooldowns
-      const context = currentState
-
-      const event = eventEngine.checkEvent(category, context, triggerPoint)
-
-      if (event) {
-        // Process dynamic options (Inventory checks)
-        const processedEvent = eventEngine.processOptions(event, context)
-        if (!processedEvent) {
-          return false
-        }
-        const processedEventId =
-          typeof processedEvent.id === 'string' ? processedEvent.id : undefined
-
-        setActiveEvent(processedEvent)
-        // Increment daily event count
-        dispatch(
-          createUpdatePlayerAction({
-            eventsTriggeredToday:
-              (currentState.player?.eventsTriggeredToday || 0) + 1
-          })
-        )
-
-        // If it was a pending event, remove it from queue
-        if (
-          typeof processedEventId === 'string' &&
-          currentState.pendingEvents[0] === processedEventId
-        ) {
-          dispatch(createPopPendingEventAction())
-        }
-        return true
-      }
-      return false
-    },
-    [setActiveEvent]
-  )
-
-  /**
-   * Resolves an event choice and applies its effects.
-   * @param {object} choice - The selected choice object.
-   * @returns {object} Object containing { outcomeText, description, result }.
-   */
-  const resolveEvent = useCallback(
-    (
-      choice: Record<string, unknown> | null
-    ): { outcomeText: string; description: string; result: unknown } => {
-      // 1. Validation
-      if (!choice) {
-        setActiveEvent(null)
-        return { outcomeText: '', description: '', result: null }
-      }
-
-      const currentState = stateRef.current
-      const selectedChoice = (choice || {}) as {
-        _precomputedResult?: EventResolution
-        outcomeText?: string
-        description?: string
-      }
-
-      try {
-        const activeEventContext = isPlainObject(
-          currentState.activeEvent?.context
-        )
-          ? currentState.activeEvent.context
-          : {}
-
-        // 2. Logic Execution
-        const resolution: EventResolution =
-          selectedChoice._precomputedResult ||
-          (resolveEventChoice(
-            choice as unknown as Record<string, unknown>,
-            currentState as unknown as Record<string, unknown>
-          ) as EventResolution)
-        const { result, delta, outcomeText, description } = resolution
-        const flags = (delta?.flags || {}) as {
-          addQuest?: unknown
-          unlock?: unknown
-          gameOver?: unknown
-        }
-
-        // 3. State Application
-        if (delta) {
-          dispatch(createApplyEventDeltaAction(delta))
-
-          // Add Quests
-          if (flags.addQuest) {
-            processAddQuests(flags.addQuest, currentState.player.day, dispatch)
-          }
-
-          // Unlocks
-          if (flags.unlock) {
-            const rawUnlock = String(flags.unlock)
-            const safeUnlockId = rawUnlock
-              .trim()
-              .replace(/[^a-zA-Z0-9_]/g, '')
-              .toLowerCase()
-
-            if (safeUnlockId) {
-              // Sync in-memory state unconditionally
-              dispatch(createAddUnlockAction(safeUnlockId))
-
-              const added = addUnlock(safeUnlockId)
-              if (added) {
-                const unlockKey = `unlocks:${safeUnlockId}`
-                const unlockLabel = tRef.current(unlockKey, {
-                  defaultValue: safeUnlockId.toUpperCase()
-                })
-                addToast(
-                  tRef.current('ui:unlocked', {
-                    unlock:
-                      typeof unlockLabel === 'string'
-                        ? unlockLabel
-                        : String(unlockLabel)
-                  }),
-                  'success'
-                )
-              }
-            }
-          }
-
-          // Game Over - Early Exit
-          if (flags.gameOver) {
-            const translatedDesc = description
-              ? tRef.current(description, activeEventContext)
-              : ''
-            addToast(
-              tRef.current('ui:game_over', { description: translatedDesc }),
-              'error'
-            )
-            saveGame(false)
-            changeScene(GAME_PHASES.GAMEOVER)
-            setActiveEvent(null)
-            return {
-              outcomeText: outcomeText ?? '',
-              description: description ?? '',
-              result
-            }
-          }
-        }
-
-        // 4. Cooldown — prevent the same event from firing again immediately
-        if (currentState.activeEvent?.id) {
-          dispatch(createAddCooldownAction(currentState.activeEvent.id))
-        }
-
-        // 5. Feedback (Success Path)
-        if (outcomeText || description) {
-          const msgOutcome = outcomeText
-            ? tRef.current(outcomeText, activeEventContext)
-            : ''
-          const msgDesc = description
-            ? tRef.current(description, activeEventContext)
-            : ''
-
-          const message =
-            msgOutcome && msgDesc
-              ? `${msgOutcome} ${msgDesc}`
-              : msgOutcome || msgDesc
-          addToast(
-            typeof message === 'string' ? message : String(message),
-            'info'
-          )
-        }
-
-        // 6. Cleanup
-        setActiveEvent(null)
-        return {
-          outcomeText: outcomeText ?? '',
-          description: description ?? '',
-          result
-        }
-      } catch (error) {
-        // 7. Error Handling
-        logger.error('Event', 'Failed to resolve event choice:', error)
-        addToast(tRef.current('ui:event_error'), 'error')
-        setActiveEvent(null)
-        return {
-          outcomeText: selectedChoice.outcomeText ?? '',
-          description:
-            typeof selectedChoice.description === 'string'
-              ? tRef.current(selectedChoice.description)
-              : '',
-          result: null
-        }
-      }
-    },
-    [setActiveEvent, addToast, changeScene, saveGame]
-  )
 
   const dispatchValue = useMemo(
     () => ({
@@ -1450,7 +915,13 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
 }
 
 /**
- * Hook to access the global game state context.
+ * Legacy hook to access the full game state plus action dispatchers.
+ *
+ * @deprecated Use `useGameSelector(selector)` for state reads and
+ * `useGameActions()` for stable action dispatchers. Calling this hook
+ * subscribes the consumer to the entire GameState context, so action-only
+ * consumers re-render on every state change.
+ *
  * @returns {object} The game state and action dispatchers.
  */
 export const useGameState = (): GameStateWithActions => {
