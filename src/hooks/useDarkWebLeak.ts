@@ -1,7 +1,7 @@
 import type { DarkWebLeakConfig } from '../types/game'
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { audioManager } from '../utils/AudioManager'
+import { audioManager } from '../utils/audio/AudioManager'
 import {
   checkHasLeakedToday,
   validateDarkWebLeak

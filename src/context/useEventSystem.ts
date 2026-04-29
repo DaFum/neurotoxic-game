@@ -5,6 +5,7 @@ import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
+import { handleApplyEventDelta } from './reducers/eventReducer'
 import {
   createAddCooldownAction,
   createAddQuestAction,
@@ -15,10 +16,10 @@ import {
   createUpdatePlayerAction
 } from './actionCreators'
 import type { GameAction, GameState, QuestState } from '../types/game'
+import type { OptionalToastCallback } from '../types/callbacks'
 
-type AddToast = (message: string, type?: string) => void
 type ChangeScene = (scene: string) => void
-type SaveGame = (showToast?: boolean) => void
+type SaveGame = (showToast?: boolean, stateSnapshot?: GameState) => void
 
 type EventResolution = {
   result?: unknown
@@ -34,10 +35,16 @@ type EventResolution = {
   description?: string
 }
 
+type EventChoiceWithPrecomputedResult = Record<string, unknown> & {
+  _precomputedResult?: EventResolution
+  outcomeText?: string
+  description?: string
+}
+
 type UseEventSystemParams = {
   stateRef: MutableRefObject<GameState>
   dispatch: Dispatch<GameAction>
-  addToast: AddToast
+  addToast: OptionalToastCallback
   changeScene: ChangeScene
   saveGame: SaveGame
   tRef: MutableRefObject<TFunction>
@@ -55,8 +62,8 @@ const processAddQuests = (
 
   quests.forEach(q => {
     const questToAdd = { ...(q as Record<string, unknown>) }
-    if (questToAdd.deadlineOffset) {
-      questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset || 0)
+    if (questToAdd.deadlineOffset != null) {
+      questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset)
       delete questToAdd.deadlineOffset
     }
     if (!isQuestStateLike(questToAdd)) {
@@ -93,7 +100,7 @@ export function useEventSystem({
         return false
       }
 
-      if ((currentState.player?.eventsTriggeredToday || 0) >= 2) {
+      if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) {
         return false
       }
 
@@ -112,7 +119,7 @@ export function useEventSystem({
         dispatch(
           createUpdatePlayerAction({
             eventsTriggeredToday:
-              (currentState.player?.eventsTriggeredToday || 0) + 1
+              (currentState.player?.eventsTriggeredToday ?? 0) + 1
           })
         )
 
@@ -139,11 +146,7 @@ export function useEventSystem({
       }
 
       const currentState = stateRef.current
-      const selectedChoice = choice as {
-        _precomputedResult?: EventResolution
-        outcomeText?: string
-        description?: string
-      }
+      const selectedChoice: EventChoiceWithPrecomputedResult = choice
 
       try {
         const activeEventContext = isPlainObject(
@@ -166,6 +169,7 @@ export function useEventSystem({
         }
 
         if (delta) {
+          const stateAfterDelta = handleApplyEventDelta(currentState, delta)
           dispatch(createApplyEventDeltaAction(delta))
 
           if (flags.addQuest) {
@@ -209,7 +213,7 @@ export function useEventSystem({
               tRef.current('ui:game_over', { description: translatedDesc }),
               'error'
             )
-            saveGame(false)
+            saveGame(false, stateAfterDelta)
             changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
             return {

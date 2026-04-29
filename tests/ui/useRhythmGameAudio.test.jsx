@@ -18,14 +18,14 @@ const mocks = vi.hoisted(() => ({
   resetGigStateTracking: vi.fn()
 }))
 
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     stopMusic: mocks.stopMusic,
     ensureAudioContext: mocks.ensureAudioContext
   }
 }))
 
-vi.mock('../../src/utils/audioEngine', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   stopAudio: mocks.stopAudio
 }))
 
@@ -39,7 +39,7 @@ vi.mock('../../src/utils/logger', () => ({
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 }
 }))
 
-vi.mock('../../src/utils/rhythmGameAudioUtils', () => ({
+vi.mock('../../src/utils/audio/rhythmGameAudioUtils', () => ({
   setupGigPhysics: mocks.setupGigPhysics,
   resolveActiveSetlist: mocks.resolveActiveSetlist,
   playSongSequence: mocks.playSongSequence,

@@ -113,7 +113,7 @@ const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
 }
 
-mock.module('../../src/utils/audioEngine', {
+mock.module('../../src/utils/audio/audioEngine', {
   namedExports: mockAudioEngine
 })
 

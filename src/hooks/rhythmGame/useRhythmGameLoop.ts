@@ -6,7 +6,7 @@ import {
   pauseAudio,
   resumeAudio,
   stopAudio
-} from '../../utils/audioEngine'
+} from '../../utils/audio/audioEngine'
 import {
   processRhythmGameTick,
   finalizeGig

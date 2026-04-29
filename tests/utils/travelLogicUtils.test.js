@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { test, describe } from 'vitest'
-import { getTravelArrivalUpdates } from '../../src/utils/travelLogicUtils'
+import { getTravelArrivalUpdates } from '../../src/utils/travelUtils'
 
-describe('travelLogicUtils', () => {
+describe('travelUtils', () => {
   describe('getTravelArrivalUpdates', () => {
     test('calculates basic travel updates correctly', () => {
       const player = {

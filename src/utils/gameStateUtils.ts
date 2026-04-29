@@ -1,4 +1,4 @@
-import { hasTrait } from './traitLogic'
+import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
 import type { GameState, SocialState } from '../types/game'

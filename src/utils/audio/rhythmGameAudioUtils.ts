@@ -9,22 +9,22 @@ import {
   getToneStartTimeSec,
   getGigTimeMs
 } from './audioEngine'
-import { handleError, AudioError } from './errorHandler'
-import { logger } from './logger'
-import { SONGS_DB, SONGS_BY_ID } from '../data/songs'
-import { calculateGigPhysics, getGigModifiers } from './simulationUtils'
-import { generateNotesForSong, parseSongNotes } from './rhythmUtils'
-import { resolveSongPlaybackWindow } from './audio/songUtils'
-import { getSafeRandom } from './crypto'
-import type { Song, Note } from '../types/audio'
-import type { BandState, GameMap, GigModifiers } from '../types/game'
+import { handleError, AudioError } from '../errorHandler'
+import { logger } from '../logger'
+import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
+import { calculateGigPhysics, getGigModifiers } from '../simulationUtils'
+import { generateNotesForSong, parseSongNotes } from '../rhythmUtils'
+import { resolveSongPlaybackWindow } from './songUtils'
+import { getSafeRandom } from '../crypto'
+import type { Song, Note } from '../../types/audio'
+import type { BandState, GameMap, GigModifiers } from '../../types/game'
 import type {
   RhythmGameRefState,
   RhythmNote,
   RhythmSetlistEntry,
   RhythmModifiers
-} from '../types/rhythmGame'
-import type { ToastCallback, TranslationCallback } from '../types/callbacks'
+} from '../../types/rhythmGame'
+import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100

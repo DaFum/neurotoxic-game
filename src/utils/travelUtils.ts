@@ -1,6 +1,6 @@
 import { normalizeVenueId } from './mapUtils'
-import { clampPlayerMoney } from './gameStateUtils'
-import type { MapNode, PlayerState, Venue } from '../types/game'
+import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils'
+import type { BandState, MapNode, PlayerState, Venue } from '../types/game'
 import type { TranslationCallback } from '../types/callbacks'
 
 interface VenueLike extends Partial<Venue> {
@@ -15,6 +15,19 @@ interface VenueAccessResult {
   errorKey?: string
   defaultMessage?: string
   errorContext?: Record<string, unknown>
+}
+
+interface TravelArrivalUpdateInput {
+  player: PlayerState
+  band: BandState
+  node: MapNode & { venue?: unknown }
+  fuelLiters: number
+  totalCost: number
+}
+
+interface TravelArrivalUpdates {
+  nextPlayer: Partial<PlayerState>
+  nextBand: Partial<BandState> | null
 }
 
 /**
@@ -204,4 +217,30 @@ export const checkTravelResources = (
   }
 
   return { allowed: true }
+}
+
+export const getTravelArrivalUpdates = ({
+  player,
+  band,
+  node,
+  fuelLiters,
+  totalCost
+}: TravelArrivalUpdateInput): TravelArrivalUpdates => {
+  const nextPlayer = {
+    money: clampPlayerMoney((player.money ?? 0) - totalCost),
+    van: {
+      ...player.van,
+      fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
+    },
+    location: normalizeVenueId(node.venue)?.split('_')?.[0] || 'Unknown',
+    currentNodeId: node.id,
+    totalTravels: (player.totalTravels ?? 0) + 1
+  }
+
+  let nextBand = null
+  if (band?.harmonyRegenTravel) {
+    nextBand = { harmony: clampBandHarmony((band.harmony ?? 0) + 5) }
+  }
+
+  return { nextPlayer, nextBand }
 }

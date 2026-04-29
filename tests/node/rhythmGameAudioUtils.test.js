@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test, describe, beforeEach, afterEach } from 'node:test'
-import { resolveActiveSetlist } from '../../src/utils/rhythmGameAudioUtils'
+import { resolveActiveSetlist } from '../../src/utils/audio/rhythmGameAudioUtils'
 import { SONGS_BY_ID } from '../../src/data/songs'
 
 describe('rhythmGameAudioUtils', () => {

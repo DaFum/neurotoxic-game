@@ -25,7 +25,7 @@ mock.mock('../../src/context/GameState', () => ({
 }))
 
 const mockPlaySFX = mock.fn()
-mock.mock('../../src/utils/AudioManager', () => ({
+mock.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: { playSFX: mockPlaySFX }
 }))
 

@@ -18,6 +18,53 @@ type TraitDef = {
 }
 
 /**
+ * Checks if a specific member has a trait.
+ * @param {object} member - The band member object.
+ * @param {string} traitId - The ID of the trait to check.
+ * @returns {boolean} True if the member has the trait.
+ */
+export const hasTrait = (member: unknown, traitId: string): boolean => {
+  if (
+    !member ||
+    typeof member !== 'object' ||
+    !Object.hasOwn(member, 'traits') ||
+    !(member as Record<string, unknown>).traits ||
+    typeof (member as Record<string, unknown>).traits !== 'object' ||
+    Array.isArray((member as Record<string, unknown>).traits)
+  ) {
+    return false
+  }
+  return Object.hasOwn(
+    (member as Record<string, unknown>).traits as Record<string, unknown>,
+    traitId
+  )
+}
+
+/**
+ * Checks if any member in the band has a specific trait.
+ * @param {object} bandState - The band state object (containing members array).
+ * @param {string} traitId - The ID of the trait to check.
+ * @returns {boolean} True if any member has the trait.
+ */
+export const bandHasTrait = (bandState: unknown, traitId: string): boolean => {
+  if (
+    !bandState ||
+    typeof bandState !== 'object' ||
+    !Object.hasOwn(bandState, 'members') ||
+    !Array.isArray((bandState as Record<string, unknown>).members)
+  ) {
+    return false
+  }
+  const members = (bandState as Record<string, unknown>).members as unknown[]
+  for (let i = 0; i < members.length; i++) {
+    if (hasTrait(members[i], traitId)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Pre-calculated lookup for character trait definitions.
  * Maps: charKey -> { traitId -> traitDef }
  * Provides O(1) lookup for trait definitions instead of O(N) searching.

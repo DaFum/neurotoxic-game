@@ -5,7 +5,11 @@
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { normalizeTraitMap } from '../../src/utils/traitUtils'
+import {
+  bandHasTrait,
+  hasTrait,
+  normalizeTraitMap
+} from '../../src/utils/traitUtils'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
@@ -49,7 +53,9 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 mock.module('../../src/utils/traitUtils', {
   namedExports: {
     applyTraitUnlocks: mockApplyTraitUnlocks,
+    bandHasTrait,
     getTraitById: mock.fn(traitId => ({ id: traitId })),
+    hasTrait,
     normalizeTraitMap
   }
 })

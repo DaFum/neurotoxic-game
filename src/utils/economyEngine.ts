@@ -1,5 +1,5 @@
 import { logger } from './logger'
-import { bandHasTrait } from './traitLogic'
+import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import type { BandState, PlayerState, Venue } from '../types/game'
 

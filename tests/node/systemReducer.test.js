@@ -337,6 +337,121 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test(
+    'merges partial loaded inventory with default band inventory',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        band: {
+          inventory: {
+            shirts: 30
+          }
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.band.inventory, {
+        ...initialState.band.inventory,
+        shirts: 30
+      })
+    }
+  )
+
+  await t.test(
+    'whitelists loaded social fields and strips hostile keys',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+      "social": {
+        "instagram": 1000,
+        "controversyLevel": 20,
+        "lastGigDay": null,
+        "lastPirateBroadcastDay": 7,
+        "egoFocus": "Matze",
+        "trend": "DRAMA",
+        "activeDeals": [
+          { "id": "deal1", "remainingGigs": 2, "alignment": "EVIL", "nested": { "drop": true } },
+          { "id": 5, "remainingGigs": 1 }
+        ],
+        "brandReputation": {
+          "EVIL": 30,
+          "bad": "high",
+          "__proto__": { "polluted": true }
+        },
+        "influencers": {
+          "local": { "tier": "Micro", "trait": "tastemaker", "score": 12, "nested": { "drop": true } },
+          "__proto__": { "tier": "Mega", "trait": "bad", "score": 99 }
+        },
+        "injected": "drop me",
+        "__proto__": { "polluted": true }
+      }
+    }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.equal(nextState.social.instagram, 1000)
+      assert.equal(nextState.social.controversyLevel, 20)
+      assert.equal(nextState.social.lastGigDay, null)
+      assert.equal(nextState.social.lastPirateBroadcastDay, 7)
+      assert.equal(nextState.social.egoFocus, 'Matze')
+      assert.equal(nextState.social.trend, 'DRAMA')
+      assert.deepEqual(nextState.social.activeDeals, [
+        { id: 'deal1', remainingGigs: 2, alignment: 'EVIL' }
+      ])
+      assert.deepEqual(nextState.social.brandReputation, { EVIL: 30 })
+      assert.deepEqual(nextState.social.influencers, {
+        local: { tier: 'Micro', trait: 'tastemaker', score: 12 }
+      })
+      assert.equal(Object.hasOwn(nextState.social, 'injected'), false)
+      assert.equal(Object.hasOwn(nextState.social, '__proto__'), false)
+    }
+  )
+
+  await t.test(
+    'sanitizes loaded activeEvent instead of trusting raw casts',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+      "activeEvent": {
+        "id": "event1",
+        "category": "band",
+        "title": "Event",
+        "descriptionKey": "events:event1.description",
+        "context": { "member": "Matze", "nested": { "drop": true } },
+        "options": [
+          {
+            "text": "Take it",
+            "outcomeText": "events:event1.outcome",
+            "effects": { "money": -10, "nested": { "drop": true } },
+            "injected": "drop me"
+          },
+          "invalid"
+        ],
+        "injected": "drop me",
+        "__proto__": { "polluted": true }
+      }
+    }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeEvent, {
+        id: 'event1',
+        category: 'band',
+        title: 'Event',
+        descriptionKey: 'events:event1.description',
+        context: { member: 'Matze' },
+        options: [
+          {
+            text: 'Take it',
+            outcomeText: 'events:event1.outcome',
+            effects: { money: -10 }
+          }
+        ]
+      })
+    }
+  )
+
   await t.test('sanitizes loaded top-level collections entry by entry', () => {
     const initialState = createInitialState()
     const loadedState = {

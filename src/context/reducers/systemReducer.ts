@@ -3,6 +3,9 @@ import type {
   PlayerState,
   BandState,
   BandMember,
+  GameEvent,
+  EventOption,
+  SocialState,
   ToastPayload,
   GameMap,
   GameSettings,
@@ -82,6 +85,49 @@ const copySafePrimitiveObject = (
     }
   }
   return Object.keys(copied).length > 0 ? copied : undefined
+}
+
+const copySafeJsonValue = (value: unknown): unknown => {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    value === null ||
+    (typeof value === 'number' && Number.isFinite(value))
+  ) {
+    return value
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(item => {
+      const copied = copySafeJsonValue(item)
+      return copied === undefined ? [] : [copied]
+    })
+  }
+  if (!isPlainRecord(value)) return undefined
+
+  const copied: Record<string, unknown> = {}
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue
+    if (isForbiddenKey(key)) continue
+    const entry = copySafeJsonValue(value[key])
+    if (entry !== undefined) copied[key] = entry
+  }
+  return Object.keys(copied).length > 0 ? copied : undefined
+}
+
+const copySafeEffectPayload = (
+  value: unknown
+):
+  | Record<string, string | number | boolean | null>
+  | Array<Record<string, string | number | boolean | null>>
+  | undefined => {
+  if (Array.isArray(value)) {
+    const effects = value.flatMap(effect => {
+      const copied = copySafePrimitiveObject(effect)
+      return copied ? [copied] : []
+    })
+    return effects.length > 0 ? effects : undefined
+  }
+  return copySafePrimitiveObject(value)
 }
 
 const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
@@ -448,7 +494,10 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
         : {})
     },
     inventory: isPlainRecord(bandData.inventory)
-      ? (copySafePrimitiveObject(bandData.inventory) ?? {})
+      ? {
+          ...DEFAULT_BAND_STATE.inventory,
+          ...(copySafePrimitiveObject(bandData.inventory) ?? {})
+        }
       : { ...DEFAULT_BAND_STATE.inventory },
     stash: (() => {
       const defaultStash = Object.assign(
@@ -772,6 +821,164 @@ const sanitizeReputationByRegion = (
   return sanitized
 }
 
+const sanitizeSocial = (value: unknown): SocialState => {
+  const sanitized: SocialState = {
+    ...DEFAULT_SOCIAL_STATE,
+    activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
+    brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation },
+    influencers: { ...DEFAULT_SOCIAL_STATE.influencers }
+  }
+  if (!isPlainRecord(value)) return sanitized
+
+  for (const key of [
+    'instagram',
+    'tiktok',
+    'youtube',
+    'newsletter',
+    'viral',
+    'controversyLevel',
+    'loyalty',
+    'zealotry',
+    'reputationCooldown'
+  ] as const) {
+    const parsed = finiteOptionalNumber(value[key])
+    if (parsed !== undefined) sanitized[key] = parsed
+  }
+
+  for (const key of [
+    'lastGigDay',
+    'lastGigDifficulty',
+    'lastPirateBroadcastDay',
+    'lastDarkWebLeakDay'
+  ] as const) {
+    const raw = value[key]
+    if (raw === null) {
+      sanitized[key] = null
+      continue
+    }
+    const parsed = finiteOptionalNumber(raw)
+    if (parsed !== undefined) sanitized[key] = parsed
+  }
+
+  if (typeof value.egoFocus === 'string' || value.egoFocus === null) {
+    sanitized.egoFocus = value.egoFocus
+  }
+  if (typeof value.trend === 'string') {
+    sanitized.trend = value.trend
+  }
+
+  if (Array.isArray(value.activeDeals)) {
+    sanitized.activeDeals = value.activeDeals.flatMap(deal => {
+      const copied = copySafePrimitiveObject(deal)
+      if (
+        !copied ||
+        typeof copied.id !== 'string' ||
+        typeof copied.remainingGigs !== 'number'
+      ) {
+        return []
+      }
+      return [copied]
+    })
+  }
+
+  if (isPlainRecord(value.brandReputation)) {
+    sanitized.brandReputation = {}
+    for (const key in value.brandReputation) {
+      if (!Object.hasOwn(value.brandReputation, key)) continue
+      if (isForbiddenKey(key)) continue
+      const reputation = value.brandReputation[key]
+      if (typeof reputation === 'number' && Number.isFinite(reputation)) {
+        sanitized.brandReputation[key] = reputation
+      }
+    }
+  }
+
+  if (isPlainRecord(value.influencers)) {
+    sanitized.influencers = {}
+    for (const key in value.influencers) {
+      if (!Object.hasOwn(value.influencers, key)) continue
+      if (isForbiddenKey(key)) continue
+      const influencer = value.influencers[key]
+      if (!isPlainRecord(influencer)) continue
+      const { tier, trait, score } = influencer
+      if (
+        typeof tier !== 'string' ||
+        typeof trait !== 'string' ||
+        typeof score !== 'number' ||
+        !Number.isFinite(score)
+      ) {
+        continue
+      }
+      sanitized.influencers[key] = { tier, trait, score }
+    }
+  }
+
+  return sanitized
+}
+
+const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
+  if (!isPlainRecord(value)) return null
+
+  const option: EventOption = {}
+  for (const key of [
+    'id',
+    'text',
+    'textKey',
+    'label',
+    'outcomeText',
+    'description',
+    'nextEventId'
+  ]) {
+    if (typeof value[key] === 'string') option[key] = value[key]
+  }
+  for (const key of ['effects', 'effect']) {
+    const copied = copySafeEffectPayload(value[key])
+    if (copied !== undefined) option[key] = copied
+  }
+  const skillCheck = copySafeJsonValue(value.skillCheck)
+  if (skillCheck !== undefined) option.skillCheck = skillCheck
+  if (Array.isArray(value.flags)) {
+    option.flags = sanitizeStringArray(value.flags)
+  }
+  if (typeof value.disabled === 'boolean') {
+    option.disabled = value.disabled
+  }
+
+  return Object.keys(option).length > 0 ? option : null
+}
+
+const sanitizeActiveEvent = (value: unknown): GameState['activeEvent'] => {
+  if (!isPlainRecord(value) || typeof value.id !== 'string') return null
+
+  const event: GameEvent = { id: value.id }
+  for (const key of [
+    'category',
+    'title',
+    'titleKey',
+    'description',
+    'descriptionKey',
+    'trigger'
+  ]) {
+    if (typeof value[key] === 'string') event[key] = value[key]
+  }
+
+  const context = copySafePrimitiveObject(value.context)
+  if (context) event.context = context
+
+  const effects = copySafeEffectPayload(value.effects)
+  if (effects !== undefined) event.effects = effects as GameEvent['effects']
+
+  if (Array.isArray(value.options)) {
+    const options = value.options.flatMap(option => {
+      const sanitized = sanitizeActiveEventOption(option)
+      return sanitized ? [sanitized] : []
+    })
+    if (options.length > 0) event.options = options
+  }
+
+  return event
+}
+
 const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
   if (!isPlainRecord(value)) return {}
   const sanitized: GameState['npcs'] = {}
@@ -894,12 +1101,7 @@ export const handleLoadGame = (
   // 2. Sanitize Band
   const validatedBand = sanitizeBand(loadedState.band)
   // 3. Sanitize Social
-  const mergedSocial = {
-    ...DEFAULT_SOCIAL_STATE,
-    ...(typeof loadedState.social === 'object' && loadedState.social !== null
-      ? (loadedState.social as Record<string, unknown>)
-      : {})
-  }
+  const mergedSocial = sanitizeSocial(loadedState.social)
 
   // 4. Construct Safe State (Whitelist)
   const rawVersion = Object.hasOwn(loadedState, 'version')
@@ -919,7 +1121,7 @@ export const handleLoadGame = (
     activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
     eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
-    activeEvent: (loadedState.activeEvent as GameState['activeEvent']) || null,
+    activeEvent: sanitizeActiveEvent(loadedState.activeEvent),
     toasts: sanitizeToasts(loadedState.toasts),
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion

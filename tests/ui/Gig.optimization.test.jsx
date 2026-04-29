@@ -37,13 +37,13 @@ vi.mock('../../src/ui/GlitchButton', () => ({
     React.createElement('button', { type: 'button', onClick }, children)
 }))
 // Mock audioManager
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     ensureAudioContext: vi.fn().mockResolvedValue(true)
   }
 }))
 // Mock audioEngine to prevent Tone.js initialization crash
-vi.mock('../../src/utils/audioEngine', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   pauseAudio: vi.fn(),
   resumeAudio: vi.fn(),
   stopAudio: vi.fn(),

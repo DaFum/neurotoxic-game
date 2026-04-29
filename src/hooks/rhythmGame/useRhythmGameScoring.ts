@@ -5,14 +5,14 @@ import {
   buildGigStatsSnapshot,
   calculateAccuracy
 } from '../../utils/gigStats'
-import { audioManager } from '../../utils/AudioManager'
+import { audioManager } from '../../utils/audio/AudioManager'
 import {
   getGigTimeMs,
   getAudioTimeMs,
   playNoteAtTime,
   stopAudio,
   getPlayRequestId
-} from '../../utils/audioEngine'
+} from '../../utils/audio/audioEngine'
 import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
 import {
@@ -281,7 +281,12 @@ export const useRhythmGameScoring = ({
             audioTimeMs: toneNowMs,
             maxLeadMs: 30
           })
-          playNoteAtTime(originalNote.p as number, lane.id, scheduledMs / 1000, velocity)
+          playNoteAtTime(
+            originalNote.p as number,
+            lane.id,
+            scheduledMs / 1000,
+            velocity
+          )
         } else {
           audioManager.playSFX('hit') // Fallback
         }

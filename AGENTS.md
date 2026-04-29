@@ -12,6 +12,7 @@
 - Fast local gate: `pnpm run test`.
 - UI and migrated suites: `pnpm run test:ui`.
 - Full legacy node suites: `pnpm run test:node`.
+- Extended perf and locale suites: `pnpm run test:additional`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
 - Single Vitest file: `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
 - Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
@@ -36,6 +37,10 @@
 - Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
 - Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones.
 - Under `noUncheckedIndexedAccess`, narrow indexed values before use.
+- Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`).
+- Give categorize/split helpers explicit named return types instead of broad `Record<string, T[]>`.
+- Boundary and error-handler functions must accept `unknown` and narrow before use.
+- Under `noUncheckedIndexedAccess`, guard indexed reads (`const item = array[i]; if (!item) continue`).
 
 ## Testing
 

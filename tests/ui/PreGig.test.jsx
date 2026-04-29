@@ -20,7 +20,7 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }) => children
 }))
 // Mock audioManager
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     ensureAudioContext: vi.fn(() => Promise.resolve(true)),
     play: vi.fn()
@@ -327,7 +327,7 @@ describe('PreGig', () => {
     })
   })
   test('aborts startup and shows toast when audio context fails', async () => {
-    const { audioManager } = await import('../../src/utils/AudioManager')
+    const { audioManager } = await import('../../src/utils/audio/AudioManager')
     const originalEnsure = audioManager.ensureAudioContext
     audioManager.ensureAudioContext = vi.fn().mockResolvedValueOnce(false)
     mockUseGameState.addToast.mockClear()
@@ -339,7 +339,10 @@ describe('PreGig', () => {
     fireEvent.click(startBtn)
     await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(mockUseGameState.addToast).toHaveBeenCalledWith('ui:pregig.toasts.audioFail', 'error')
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.audioFail',
+      'error'
+    )
     expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
@@ -348,9 +351,11 @@ describe('PreGig', () => {
   })
 
   test('aborts startup and shows toast when audio context rejects', async () => {
-    const { audioManager } = await import('../../src/utils/AudioManager')
+    const { audioManager } = await import('../../src/utils/audio/AudioManager')
     const originalEnsure = audioManager.ensureAudioContext
-    audioManager.ensureAudioContext = vi.fn().mockRejectedValueOnce(new Error('Audio failed'))
+    audioManager.ensureAudioContext = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Audio failed'))
     mockUseGameState.addToast.mockClear()
 
     mockUseGameState.setlist = [{ id: 'song1' }]
@@ -361,22 +366,16 @@ describe('PreGig', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
 
     // Assert the toast was shown by mockUseGameState via handleError
-    expect(mockUseGameState.addToast).toHaveBeenCalledWith(expect.any(String), 'warning')
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'warning'
+    )
     expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
     expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
 
     audioManager.ensureAudioContext = originalEnsure
   })
-
-
-
-
-
-
-
-
-
 
   test('handles sessionStorage errors gracefully', async () => {
     mockUseGameState.setlist = [{ id: 'song1' }]
