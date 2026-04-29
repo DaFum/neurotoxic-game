@@ -87,7 +87,10 @@ export const normalizeVenueId = (venue: unknown): string | null => {
 export const checkSoftlock = (
   gameMap: GameMapLike,
   player:
-    | { currentNodeId?: unknown; van?: unknown; money?: unknown }
+    | ({ currentNodeId?: unknown; van?: unknown; money?: unknown } & Record<
+        string,
+        unknown
+      >)
     | null
     | undefined,
   band: unknown = null
@@ -113,12 +116,14 @@ export const checkSoftlock = (
     if (c.from === player.currentNodeId && typeof c.to === 'string') {
       const n = nodes[c.to]
       if (n) {
+        const playerStateForTravel: Record<string, unknown> = {
+          ...player,
+          van
+        }
         const { fuelLiters } = calculateTravelExpenses(
           n,
           currentNode,
-          {
-            van
-          },
+          playerStateForTravel,
           band
         )
         if (currentFuel >= fuelLiters) {
