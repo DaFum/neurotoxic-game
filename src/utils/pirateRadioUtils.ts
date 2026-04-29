@@ -16,8 +16,9 @@ export const validatePirateBroadcast = (
 ): boolean => {
   if (!social || !player || !band || !config) return false
 
-  const day = typeof player.day === 'number' ? player.day : 0
-  const hasBroadcastedToday = checkHasBroadcastedToday(social, day)
+  const day = player.day
+  const hasBroadcastedToday =
+    typeof day === 'number' ? checkHasBroadcastedToday(social, day) : false
 
   const currentMoney = clampPlayerMoney(
     typeof player.money === 'number' ? player.money : 0
