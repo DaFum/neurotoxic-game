@@ -81,25 +81,32 @@ export class RoadieTrafficManager {
         typeof carRecord.speed !== 'number'
       )
         continue
+      const carId = carRecord.id
+      const carX = carRecord.x
+      const carWidth = carRecord.width
+      const carRow = carRecord.row
+      const carSpeed = carRecord.speed
+      const carTextureHash =
+        typeof carRecord.textureHash === 'number'
+          ? carRecord.textureHash
+          : undefined
+
       const car: RoadieCar = {
-        id: carRecord.id,
-        x: carRecord.x,
-        width: carRecord.width,
-        row: carRecord.row,
-        speed: carRecord.speed,
-        textureHash:
-          typeof carRecord.textureHash === 'number'
-            ? carRecord.textureHash
-            : undefined
+        id: carId,
+        x: carX,
+        width: carWidth,
+        row: carRow,
+        speed: carSpeed,
+        textureHash: carTextureHash
       }
-      this.currentIds.add(car.id)
+      this.currentIds.add(carId)
       const sprite = this._getOrCreateCarSprite(car)
 
-      sprite.x = (car.x + car.width / 2) * cellW
-      sprite.y = (car.row + 0.5) * cellH
+      sprite.x = (carX + carWidth / 2) * cellW
+      sprite.y = (carRow + 0.5) * cellH
 
       // Flip if moving left
-      if (car.speed < 0) {
+      if (carSpeed < 0) {
         sprite.scale.x = -Math.abs(sprite.scale.x)
       } else {
         sprite.scale.x = Math.abs(sprite.scale.x)
@@ -108,7 +115,7 @@ export class RoadieTrafficManager {
       // Adjust Scale if texture — constrain both width AND height
       if (sprite instanceof Sprite && (sprite as Sprite).texture?.width > 0) {
         const texSprite = sprite as Sprite
-        const targetW = car.width * cellW
+        const targetW = carWidth * cellW
         const targetH = cellH * 0.7
         const scale = Math.min(
           targetW / texSprite.texture.width,
@@ -120,7 +127,7 @@ export class RoadieTrafficManager {
         )
       } else {
         // Fallback or Graphics
-        sprite.width = car.width * cellW
+        sprite.width = carWidth * cellW
         sprite.height = cellH * 0.7
       }
     }

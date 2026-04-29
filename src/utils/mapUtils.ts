@@ -57,7 +57,15 @@ export const normalizeVenueId = (venue: unknown): string | null => {
   let id: unknown = venue
   if (typeof venue === 'object' && venue !== null) {
     const venueRecord = venue as Record<string, unknown>
-    id = venueRecord.id ?? venueRecord.name
+    const rawId = venueRecord.id
+    id =
+      rawId === null ||
+      rawId === undefined ||
+      rawId === '' ||
+      rawId === false ||
+      rawId === 0
+        ? venueRecord.name
+        : rawId
   }
 
   if (typeof id === 'string') {
@@ -74,7 +82,7 @@ export const normalizeVenueId = (venue: unknown): string | null => {
     }
   }
 
-  return typeof id === 'string' ? id : null
+  return typeof id === 'string' && id.length > 0 ? id : null
 }
 
 /**

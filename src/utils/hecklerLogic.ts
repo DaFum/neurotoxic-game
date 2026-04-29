@@ -136,7 +136,9 @@ export const trySpawnProjectile = (
   if (random() < spawnChance) {
     let p
     if (session.pool.length > 0) {
-      p = session.pool.pop()
+      const pooled = session.pool.pop()
+      if (!pooled) return null
+      p = pooled
       p.id = session.nextId++
       p.x = random() * screenWidth
       p.y = -100
