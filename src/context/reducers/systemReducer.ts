@@ -87,7 +87,11 @@ const copySafePrimitiveObject = (
   return Object.keys(copied).length > 0 ? copied : undefined
 }
 
-const copySafeJsonValue = (value: unknown): unknown => {
+const MAX_SAFE_JSON_COPY_DEPTH = 12
+
+const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
+  if (depth > MAX_SAFE_JSON_COPY_DEPTH) return undefined
+
   if (
     typeof value === 'string' ||
     typeof value === 'boolean' ||
@@ -98,7 +102,7 @@ const copySafeJsonValue = (value: unknown): unknown => {
   }
   if (Array.isArray(value)) {
     return value.flatMap(item => {
-      const copied = copySafeJsonValue(item)
+      const copied = copySafeJsonValue(item, depth + 1)
       return copied === undefined ? [] : [copied]
     })
   }
@@ -108,7 +112,7 @@ const copySafeJsonValue = (value: unknown): unknown => {
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
-    const entry = copySafeJsonValue(value[key])
+    const entry = copySafeJsonValue(value[key], depth + 1)
     if (entry !== undefined) copied[key] = entry
   }
   return Object.keys(copied).length > 0 ? copied : undefined
@@ -128,6 +132,37 @@ const copySafeEffectPayload = (
     return effects.length > 0 ? effects : undefined
   }
   return copySafePrimitiveObject(value)
+}
+
+const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
+  const sanitized: BandState['inventory'] = { ...DEFAULT_BAND_STATE.inventory }
+  if (!isPlainRecord(value)) return sanitized
+
+  const defaultInventory = DEFAULT_BAND_STATE.inventory
+  for (const key of Object.keys(defaultInventory)) {
+    const fallback = defaultInventory[key]
+    const raw = value[key]
+
+    if (typeof fallback === 'number') {
+      const numeric =
+        typeof raw === 'number'
+          ? raw
+          : typeof raw === 'string' && raw.trim().length > 0
+            ? Number(raw)
+            : Number.NaN
+      sanitized[key] = Number.isFinite(numeric) ? numeric : fallback
+      continue
+    }
+
+    if (typeof fallback === 'boolean') {
+      sanitized[key] = typeof raw === 'boolean' ? raw : fallback
+      continue
+    }
+
+    sanitized[key] = fallback
+  }
+
+  return sanitized
 }
 
 const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
@@ -493,12 +528,7 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           }
         : {})
     },
-    inventory: isPlainRecord(bandData.inventory)
-      ? {
-          ...DEFAULT_BAND_STATE.inventory,
-          ...(copySafePrimitiveObject(bandData.inventory) ?? {})
-        }
-      : { ...DEFAULT_BAND_STATE.inventory },
+    inventory: sanitizeBandInventory(bandData.inventory),
     stash: (() => {
       const defaultStash = Object.assign(
         Object.create(null),
@@ -877,7 +907,7 @@ const sanitizeSocial = (value: unknown): SocialState => {
       ) {
         return []
       }
-      return [copied]
+      return [{ id: copied.id, remainingGigs: copied.remainingGigs }]
     })
   }
 

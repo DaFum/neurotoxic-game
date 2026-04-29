@@ -51,7 +51,8 @@ export const createPersistedState = (currentState: GameState) => {
     settings,
     npcs,
     gigModifiers,
-    setlist
+    setlist,
+    unlocks
   } = currentState
 
   return {
@@ -74,6 +75,7 @@ export const createPersistedState = (currentState: GameState) => {
     settings,
     npcs,
     gigModifiers,
+    unlocks,
     setlist: normalizeSetlistForSave(setlist)
   }
 }

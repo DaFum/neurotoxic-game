@@ -45,7 +45,7 @@ export const resolveVenue = (
   if (typeof venue === 'string') {
     return venuesMap.get(id ?? '') || null
   }
-  if (!venue || !('capacity' in venue)) {
+  if (!venue || !Object.hasOwn(venue, 'capacity')) {
     return venuesMap.get(id ?? '') || venue || null
   }
   return venue

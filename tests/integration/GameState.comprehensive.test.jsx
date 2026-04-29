@@ -408,6 +408,89 @@ describe('GameState Context - Event System', () => {
     )
   })
 
+  test('resolveEvent skips invalid quest deadline offsets', async () => {
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='quest-deadline'>
+            {String(gameState.activeQuests[0]?.deadline ?? 'none')}
+          </div>
+          <button
+            type='button'
+            onClick={() => gameState.setActiveEvent({ id: 'quest-event' })}
+          >
+            Set Quest Event
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.resolveEvent({
+                _precomputedResult: {
+                  delta: {
+                    flags: {
+                      addQuest: [
+                        { id: 'invalid-deadline', deadlineOffset: 'not-a-day' }
+                      ]
+                    }
+                  }
+                }
+              })
+            }
+          >
+            Resolve Invalid Quest
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Set Quest Event').click())
+    act(() => screen.getByText('Resolve Invalid Quest').click())
+
+    expect(screen.getByTestId('quest-deadline')).toHaveTextContent('none')
+  })
+
+  test('addToast supports omitting the optional toast type', () => {
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='toast-type'>
+            {gameState.toasts[0]?.type ?? 'none'}
+          </div>
+          <div data-testid='toast-message'>
+            {gameState.toasts[0]?.message ?? 'none'}
+          </div>
+          <button
+            type='button'
+            onClick={() => gameState.addToast('message-only')}
+          >
+            Add Message Only Toast
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Add Message Only Toast').click())
+
+    expect(screen.getByTestId('toast-type')).toHaveTextContent('info')
+    expect(screen.getByTestId('toast-message')).toHaveTextContent(
+      'message-only'
+    )
+  })
+
   test('resolveEvent saves game-over events with the applied delta snapshot', () => {
     TestComponent = () => {
       const gameState = useGameState()
@@ -433,7 +516,11 @@ describe('GameState Context - Event System', () => {
                 _precomputedResult: {
                   delta: {
                     player: { money: -100 },
-                    flags: { gameOver: true }
+                    flags: {
+                      gameOver: true,
+                      addQuest: [{ id: 'fatal-quest', deadlineOffset: 0 }],
+                      unlock: 'Fatal Unlock'
+                    }
                   }
                 }
               })
@@ -459,6 +546,10 @@ describe('GameState Context - Event System', () => {
 
     const saved = JSON.parse(localStorage.getItem('neurotoxic_v3_save'))
     expect(saved.player.money).toBe(900)
+    expect(saved.activeQuests).toEqual([
+      expect.objectContaining({ id: 'fatal-quest', deadline: 1 })
+    ])
+    expect(saved.unlocks).toContain('fatalunlock')
   })
 })
 

@@ -5,7 +5,7 @@ import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
-import { handleApplyEventDelta } from './reducers/eventReducer'
+import { gameReducer } from './gameReducer'
 import {
   createAddCooldownAction,
   createAddQuestAction,
@@ -57,13 +57,30 @@ const processAddQuests = (
   quests: unknown,
   currentDay: number,
   dispatch: Dispatch<GameAction>
-) => {
-  if (!Array.isArray(quests)) return
+): QuestState[] => {
+  if (!Array.isArray(quests)) return []
+
+  const addedQuests: QuestState[] = []
 
   quests.forEach(q => {
     const questToAdd = { ...(q as Record<string, unknown>) }
     if (questToAdd.deadlineOffset != null) {
-      questToAdd.deadline = currentDay + Number(questToAdd.deadlineOffset)
+      const rawOffset = questToAdd.deadlineOffset
+      const deadlineOffset =
+        typeof rawOffset === 'number'
+          ? rawOffset
+          : typeof rawOffset === 'string' && rawOffset.trim().length > 0
+            ? Number(rawOffset)
+            : Number.NaN
+      if (Number.isFinite(deadlineOffset)) {
+        questToAdd.deadline = currentDay + deadlineOffset
+      } else {
+        logger.warn(
+          'GameState',
+          'Skipping invalid quest deadlineOffset in processAddQuests',
+          { questId: questToAdd.id, deadlineOffset: rawOffset }
+        )
+      }
       delete questToAdd.deadlineOffset
     }
     if (!isQuestStateLike(questToAdd)) {
@@ -74,8 +91,11 @@ const processAddQuests = (
       )
       return
     }
-    dispatch(createAddQuestAction(questToAdd))
+    const action = createAddQuestAction(questToAdd)
+    dispatch(action)
+    addedQuests.push(questToAdd)
   })
+  return addedQuests
 }
 
 export function useEventSystem({
@@ -169,11 +189,23 @@ export function useEventSystem({
         }
 
         if (delta) {
-          const stateAfterDelta = handleApplyEventDelta(currentState, delta)
-          dispatch(createApplyEventDeltaAction(delta))
+          let previewState = currentState
+          const deltaAction = createApplyEventDeltaAction(delta)
+          previewState = gameReducer(previewState, deltaAction)
+          dispatch(deltaAction)
 
           if (flags.addQuest) {
-            processAddQuests(flags.addQuest, currentState.player.day, dispatch)
+            const addedQuests = processAddQuests(
+              flags.addQuest,
+              currentState.player.day,
+              dispatch
+            )
+            for (const quest of addedQuests) {
+              previewState = gameReducer(
+                previewState,
+                createAddQuestAction(quest)
+              )
+            }
           }
 
           if (flags.unlock) {
@@ -184,7 +216,9 @@ export function useEventSystem({
               .toLowerCase()
 
             if (safeUnlockId) {
-              dispatch(createAddUnlockAction(safeUnlockId))
+              const unlockAction = createAddUnlockAction(safeUnlockId)
+              previewState = gameReducer(previewState, unlockAction)
+              dispatch(unlockAction)
 
               const added = addUnlock(safeUnlockId)
               if (added) {
@@ -213,7 +247,7 @@ export function useEventSystem({
               tRef.current('ui:game_over', { description: translatedDesc }),
               'error'
             )
-            saveGame(false, stateAfterDelta)
+            saveGame(false, previewState)
             changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
             return {

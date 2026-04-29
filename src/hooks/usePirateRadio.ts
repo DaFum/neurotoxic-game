@@ -5,6 +5,7 @@ import {
   checkHasBroadcastedToday,
   validatePirateBroadcast
 } from '../utils/pirateRadioUtils'
+import { logger } from '../utils/logger'
 
 export const PIRATE_RADIO_CONFIG = {
   COST: 200,
@@ -30,7 +31,17 @@ export const usePirateRadio = () => {
       band,
       PIRATE_RADIO_CONFIG
     )
-  } catch {
+  } catch (error) {
+    logger.error(
+      'PirateRadio',
+      'validatePirateBroadcast failed while deriving canBroadcast',
+      {
+        error,
+        social,
+        playerDay: player.day,
+        config: PIRATE_RADIO_CONFIG
+      }
+    )
     canBroadcast = false
   }
 

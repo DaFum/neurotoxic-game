@@ -359,6 +359,37 @@ test('systemReducer - LOAD_GAME', async t => {
   )
 
   await t.test(
+    'sanitizes loaded inventory per default key and drops invalid values',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        band: {
+          inventory: {
+            shirts: '35',
+            hoodies: true,
+            patches: null,
+            strings: 'yes',
+            cables: false,
+            injected: 999
+          }
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.band.inventory, {
+        ...initialState.band.inventory,
+        shirts: 35,
+        hoodies: initialState.band.inventory.hoodies,
+        patches: initialState.band.inventory.patches,
+        strings: initialState.band.inventory.strings,
+        cables: false
+      })
+      assert.equal(Object.hasOwn(nextState.band.inventory, 'injected'), false)
+    }
+  )
+
+  await t.test(
     'whitelists loaded social fields and strips hostile keys',
     () => {
       const initialState = createInitialState()
@@ -397,7 +428,7 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.equal(nextState.social.egoFocus, 'Matze')
       assert.equal(nextState.social.trend, 'DRAMA')
       assert.deepEqual(nextState.social.activeDeals, [
-        { id: 'deal1', remainingGigs: 2, alignment: 'EVIL' }
+        { id: 'deal1', remainingGigs: 2 }
       ])
       assert.deepEqual(nextState.social.brandReputation, { EVIL: 30 })
       assert.deepEqual(nextState.social.influencers, {
@@ -451,6 +482,33 @@ test('systemReducer - LOAD_GAME', async t => {
       })
     }
   )
+
+  await t.test('drops excessively deep activeEvent skillCheck payloads', () => {
+    const initialState = createInitialState()
+    let deepSkillCheck = { leaf: true }
+    for (let i = 0; i < 20000; i++) {
+      deepSkillCheck = { nested: deepSkillCheck }
+    }
+    const loadedState = {
+      activeEvent: {
+        id: 'event1',
+        options: [
+          {
+            text: 'Take it',
+            skillCheck: deepSkillCheck
+          }
+        ]
+      }
+    }
+
+    assert.doesNotThrow(() => handleLoadGame(initialState, loadedState))
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(
+      Object.hasOwn(nextState.activeEvent.options[0], 'skillCheck'),
+      false
+    )
+  })
 
   await t.test('sanitizes loaded top-level collections entry by entry', () => {
     const initialState = createInitialState()

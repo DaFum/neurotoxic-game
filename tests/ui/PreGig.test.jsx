@@ -332,22 +332,24 @@ describe('PreGig', () => {
     audioManager.ensureAudioContext = vi.fn().mockResolvedValueOnce(false)
     mockUseGameState.addToast.mockClear()
 
-    mockUseGameState.setlist = [{ id: 'song1' }]
-    const { findByText } = render(React.createElement(PreGig))
-    const startBtn = await findByText(/ui:pregig.startShow/i)
+    try {
+      mockUseGameState.setlist = [{ id: 'song1' }]
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
 
-    fireEvent.click(startBtn)
-    await new Promise(resolve => setTimeout(resolve, 0))
+      fireEvent.click(startBtn)
+      await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
-      'ui:pregig.toasts.audioFail',
-      'error'
-    )
-    expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
-    expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
-    expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
-
-    audioManager.ensureAudioContext = originalEnsure
+      expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+        'ui:pregig.toasts.audioFail',
+        'error'
+      )
+      expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
+      expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
+      expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
+    } finally {
+      audioManager.ensureAudioContext = originalEnsure
+    }
   })
 
   test('aborts startup and shows toast when audio context rejects', async () => {
@@ -358,23 +360,25 @@ describe('PreGig', () => {
       .mockRejectedValueOnce(new Error('Audio failed'))
     mockUseGameState.addToast.mockClear()
 
-    mockUseGameState.setlist = [{ id: 'song1' }]
-    const { findByText } = render(React.createElement(PreGig))
-    const startBtn = await findByText(/ui:pregig.startShow/i)
+    try {
+      mockUseGameState.setlist = [{ id: 'song1' }]
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
 
-    fireEvent.click(startBtn)
-    await new Promise(resolve => setTimeout(resolve, 0))
+      fireEvent.click(startBtn)
+      await new Promise(resolve => setTimeout(resolve, 0))
 
-    // Assert the toast was shown by mockUseGameState via handleError
-    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
-      expect.any(String),
-      'warning'
-    )
-    expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
-    expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
-    expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
-
-    audioManager.ensureAudioContext = originalEnsure
+      // Assert the toast was shown by mockUseGameState via handleError
+      expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+        expect.any(String),
+        'warning'
+      )
+      expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
+      expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
+      expect(mockUseGameState.startAmpCalibration).not.toHaveBeenCalled()
+    } finally {
+      audioManager.ensureAudioContext = originalEnsure
+    }
   })
 
   test('handles sessionStorage errors gracefully', async () => {
