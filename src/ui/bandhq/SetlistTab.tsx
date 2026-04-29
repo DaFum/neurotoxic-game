@@ -1,7 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { useGameState } from '../../context/GameState'
+import { useGameState, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
 import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
@@ -111,6 +111,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
   // { setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameState()
+  const currentScene = useGameSelector(state => state.currentScene)
 
   const latestSetlistRef = useRef(setlist)
   useLayoutEffect(() => {
@@ -193,7 +194,8 @@ export const SetlistTab = (props: SetlistTabProps) => {
               description: t('ui:hq.practice_desc', {
                 defaultValue: 'Practice makes perfect.'
               }),
-              isPractice: true
+              isPractice: true,
+              sourceScene: currentScene
             })
             changeScene(GAME_PHASES.PRACTICE)
           }}

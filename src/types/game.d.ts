@@ -45,6 +45,7 @@ export interface Venue {
   difficulty?: number
   diff?: number
   reputation?: number
+  sourceScene?: string
   [key: string]: unknown
 }
 

@@ -18,6 +18,7 @@ import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
+import { setPendingBandHQOpen } from '../hooks/useBandHQModal'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -747,7 +748,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
       addToast(tRef.current('ui:gig.practiceComplete'), 'success')
-      changeScene(GAME_PHASES.OVERWORLD)
+      const targetScene = currentState.currentGig.sourceScene || GAME_PHASES.OVERWORLD
+      setPendingBandHQOpen(true)
+      changeScene(targetScene)
     } else {
       changeScene(GAME_PHASES.POST_GIG)
     }
