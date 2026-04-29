@@ -1,34 +1,160 @@
 {
   "repo_notes": [
     {
-      "author": "Maintainers",
-      "content": "NEUROTOXIC: GRIND THE VOID v3.0 is a frontend-only SPA built with React 19.2.5 + Vite 8.0.8. Runtime state is managed in src/context and persisted in localStorage; no backend API is required for core gameplay."
+      "author": "Devin",
+      "content": "Neurotoxic is a frontend-first single-page application built with React 19 + Vite. Use pnpm for installs and scripts (see package.json). Node >=22 is required. Core gameplay and UI live under src/; server/serverless endpoints (leaderboard) are under api/; server helpers live in lib/. Treat large binary assets in src/assets as referenced data, not primary docs."
     },
     {
-      "author": "Maintainers",
-      "content": "Testing/tooling baseline is pnpm-first. Canonical CI workflows are .github/workflows/test.yml, deploy.yml, and lint-fix-preview.yml. Local quality gate before PRs: `pnpm run test:all`."
+      "author": "Devin",
+      "content": "Priority areas to document: 1) Application architecture and entry points (src/main.tsx, src/App.tsx), 2) State management and reducer/action conventions (src/context), 3) Gameplay orchestration hooks in src/hooks (useTravelLogic, useArrivalLogic, rhythm/minigame hooks), 4) Audio engine & song metadata (src/utils/audio, src/assets), 5) Data/event pools (src/data), and 6) Tests & CI (tests/, e2e/, scripts/, .github/workflows)."
     },
     {
-      "author": "Architecture",
-      "content": "Travel flow is split into two explicit paths: useTravelLogic orchestrates overworld travel selection and minigame start; useArrivalLogic orchestrates post-minigame arrival sequencing. Shared node-type behavior and travel-event triggering live in src/utils/arrivalUtils.js."
+      "author": "Devin",
+      "content": "src/ structure notes: - src/context: reducers, action creators, GameState and state contracts. - src/hooks: orchestration and minigame logic (useTravelLogic, useArrivalLogic, rhythm game hooks). - src/components: UI primitives and minigame UI. - src/scenes: scene components and SceneRouter lazy-loading. - src/utils: pure utilities (gameStateUtils, audio helpers) — document these domain contracts."
     },
     {
-      "author": "Architecture",
-      "content": "Scene lazy loading now follows default-export convention directly in SceneRouter. GameState also exposes phased split hooks (`useGameSelector`, `useGameActions`) while legacy `useGameState` remains for compatibility."
+      "author": "Devin",
+      "content": "Testing & quality: Local quality gate is `pnpm run test:all`. Fast developer loop uses `pnpm run test:fast`. Vitest (logic + UI) and node test suites split is handled by scripts in package.json and the scripts/ helpers. E2E tests live under e2e/ and use Playwright. Document test harness entrypoints and custom test utilities under tests/."
+    },
+    {
+      "author": "Devin",
+      "content": "I18n guidance: Locales live in public/locales/en/ and public/locales/de/. All user-facing text is localized via `t('...')` or `<Trans>`. When adding or changing keys, update both locale files and run `pnpm run i18n:extract`. Document namespace conventions (ui:, scenes:, events:) rather than dumping raw translation files."
+    },
+    {
+      "author": "Devin",
+      "content": "Audio & songs: Audio uses Tone.js and a dedicated audio engine; the canonical clock is `audioEngine.getGigTimeMs()`. Song metadata is in src/data/songs.ts; large binary assets (MIDI/OGG) live in src/assets. Track-end detection uses setlistCompleted + isNearTrackEnd semantics — document these patterns, not binary contents."
+    },
+    {
+      "author": "Devin",
+      "content": "APIs and server code: Serverless endpoints live under api/ (example: api/leaderboard). Server helper utilities live in lib/ (e.g., lib/redis.js). If you want explicit API pages, document request/response shapes and error cases for these endpoints."
+    },
+    {
+      "author": "Devin",
+      "content": "Conventions and TypeScript: The project enforces strict TS/CheckJS rules. Avoid `any`; prefer `unknown` and narrow at boundaries. Reducers must be covered by action creators and clamp state in the action creator layer. Consult AGENTS.md files in the repo for many repository-specific conventions and restrictions before generating detailed pages."
+    },
+    {
+      "author": "Devin",
+      "content": "What to ignore or deprioritize: - node_modules/, dist/, output/, and generated screenshots. - Large binary blobs in src/assets (MIDI/OGG) — reference them, do not include their contents. - Test snapshots and ephemeral developer tooling files."
+    },
+    {
+      "author": "Devin",
+      "content": "Pages vs repo_notes recommendation: Start with `repo_notes` only (this file) so DeepWiki can auto-plan structured pages. If you require precise titles/hierarchy, switch to an explicit `pages` array and include the COMPLETE set of desired pages (pages is all-or-nothing). After regenerating, iterate with page_notes for surgical guidance."
     }
   ],
   "pages": [
     {
-      "title": "Overview",
-      "purpose": "Entry points: src/main.jsx bootstraps, src/App.jsx routes scenes, src/context/GameState.jsx provides state/actions, src/hooks/ contains orchestration hooks, src/utils/ contains pure/domain utilities and side-effect services (audio)."
+      "title": "Application Overview",
+      "purpose": "High-level architecture of the React + Vite single-page application. Describe bootstrap flow (src/main.tsx), App routing (src/App.tsx), SceneRouter responsibilities, and how major subsystems (state, audio, hooks) connect."
     },
     {
-      "title": "Tooling & CI",
-      "purpose": "Use pnpm for install and scripts. CI runs node:test suites, vitest suites, locale checks, and deployment through pnpm commands. See docs/TEST_FAST_FEEDBACK_CHANGES.md for current fast-feedback split."
+      "title": "Entry Points",
+      "purpose": "Bootstrap and environment: src/main.tsx, index.html, Vite config, environment variables, and dev vs production differences. Explain how the app is mounted and how to start the dev server.",
+      "parent": "Application Overview"
     },
     {
-      "title": "Travel & Arrival Canonical Paths",
-      "purpose": "Canonical orchestration: Overworld uses useTravelLogic (two-click travel confirm, resource checks, minigame dispatch/fallback). TourbusScene completion uses useArrivalLogic, which advances day/saves and delegates node-specific routing to arrivalUtils.handleNodeArrival()."
+      "title": "Routing & Scenes",
+      "purpose": "SceneRouter and lazy-loading conventions for scenes under src/scenes. Document default-export expectations, scene lifecycle hooks, and how to add or replace a scene module.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Components & UI",
+      "purpose": "Organization of UI code: src/components and src/ui. Component composition patterns, layout primitives, and styling conventions (Tailwind v4 + CSS variables).",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Component Library",
+      "purpose": "Reusable UI components, prop contracts, Storybook patterns (if any), and where to place shared primitives vs feature components. Reference src/components and src/ui for examples.",
+      "parent": "Components & UI"
+    },
+    {
+      "title": "State Management",
+      "purpose": "State shape, GameState creation, reducer patterns, persistence, and where selectors/actions live (src/context). Include how GameState is hydrated and saved to localStorage.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Reducers & Action Creators",
+      "purpose": "Reducer implementation patterns, adding new actions, actionTypes, and actionCreators. Explain clamping of bounded state and the requirement to call assertNever in reducer default branches.",
+      "parent": "State Management",
+      "page_notes": [
+        {
+          "content": "When adding an action: update actionTypes, create an action creator that clamps inputs using helpers in src/utils/gameStateUtils.ts, and add a reducer case. Do not use 'any' — prefer 'unknown' and narrow at boundaries. Reducers must call assertNever(action) in the default branch so missing handlers fail typecheck."
+        }
+      ]
+    },
+    {
+      "title": "Hooks & Orchestration",
+      "purpose": "Orchestration hooks in src/hooks (useTravelLogic, useArrivalLogic, rhythm/minigame hooks). Describe responsibilities, typical patterns for sequencing gameplay, and how hooks dispatch actions into GameState.",
+      "parent": "State Management"
+    },
+    {
+      "title": "Gameplay Data & Event Pools",
+      "purpose": "Data-driven game configuration in src/data — event pools, special events, and how to author new event entries. Explain how event conditions and rewards map to game state changes.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Minigames & Rhythm Engine",
+      "purpose": "Minigame implementations and rhythm engine hooks (src/components/minigames, src/hooks/minigames). Document scoring, timing, and how to add a new minigame and integrate it with scenes and state.",
+      "parent": "Gameplay Data & Event Pools"
+    },
+    {
+      "title": "Audio Engine",
+      "purpose": "Audio architecture and integration with Tone.js: audioEngine responsibilities, scheduling patterns, and the canonical clock used for game timing. Describe how to play tracks, schedule callbacks, and handle track-end semantics.",
+      "parent": "Gameplay Data & Event Pools",
+      "page_notes": [
+        {
+          "content": "Audio rules: always use audioEngine.getGigTimeMs() as the canonical clock; do not read Tone.js time directly. Use setlistCompleted + isNearTrackEnd for track-end detection. Song tails are capped to maxNoteTime + NOTE_TAIL_MS; document where NOTE_TAIL_MS is exported. Avoid direct Tone.js scheduling in components — encapsulate in the audio engine."
+        }
+      ]
+    },
+    {
+      "title": "Songs & Assets",
+      "purpose": "Song metadata in src/data/songs.ts, placement of MIDI/OGG files in src/assets, and rules for adding new tracks (naming, max note times, and asset sizing).",
+      "parent": "Audio Engine"
+    },
+    {
+      "title": "Testing & CI",
+      "purpose": "Test structure, helper scripts, and CI workflows. Document test entry points (scripts/run-*.mjs), vitest splits (logic vs UI), and the repo's quality gate commands.",
+      "parent": "Application Overview",
+      "page_notes": [
+        {
+          "content": "Local quality gate: `pnpm run test:all`. Fast loop: `pnpm run test:fast`. Vitest UI and node logic suites are run via scripts in package.json. E2E tests use Playwright under e2e/. For i18n extraction run `pnpm run i18n:extract`. Document test utilities inside tests/ and how to run single test files."
+        }
+      ]
+    },
+    {
+      "title": "E2E & Playwright",
+      "purpose": "End-to-end test patterns and Playwright setup under e2e/. Describe visual snapshot approach, common helpers in e2e/helpers.js, and CI sharding configuration.",
+      "parent": "Testing & CI"
+    },
+    {
+      "title": "Build, Tooling & Scripts",
+      "purpose": "Build and developer tooling: pnpm scripts, Vite config, TypeScript tasks, and useful scripts/ helpers (simulate, bench, typecheck). Explain developer workflows for common tasks.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Localization & i18n",
+      "purpose": "Locales storage and extraction: public/locales/en and de, usage of `t()` and `<Trans>`, and the extraction process with i18next-parser. Document namespace conventions and where to add translation keys.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "APIs & Server Code",
+      "purpose": "Serverless endpoints under api/ (leaderboard), server helpers in lib/, request/response shapes, and usage notes for server-side utilities such as lib/redis.js.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "TypeScript & Conventions",
+      "purpose": "Repository TypeScript and CheckJS rules, AGENTS.md conventions, patterns to avoid (no any, prefer unknown), and reducer/action guardrails. Reference jsconfig.checkjs.json and CI typecheck scripts.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Performance & Profiling",
+      "purpose": "Performance hotspots, profiling tips, render/perf checks, and where to run benchmarking tasks (tests/performance, scripts/benchmarks). Note common pitfalls with Pixi.js and audio scheduling.",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Contributing & PR Workflow",
+      "purpose": "Developer workflow: conventional commits requirement, lint-staged, husky hooks, PR checks, and how to run the one-command quality gate before opening a PR. Include guidance on AGENTS.md usage and testing expectations.",
+      "parent": "Application Overview"
     }
   ]
 }
