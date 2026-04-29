@@ -20,10 +20,17 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 - When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
 - In domains covered by `jsconfig.checkjs.json`, explicitly guard indexed/optional access (`noUncheckedIndexedAccess`).
 
+
+## AGENTS Coverage
+
+- AGENTS coverage under `src/**` is intentionally deep and scoped; before editing, prefer the nearest nested `AGENTS.md` over this root `src/` guide.
+- If you add a new gameplay/UI subdomain with unique rules, add a nested `AGENTS.md` in that folder instead of expanding this file with subdomain-specific details.
+
 ## Domain Gotchas
 
 - `useArrivalLogic` owns arrival routing and scene transitions after travel completion.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must stay reactive-only (no direct PIXI imports).
+- Keep domain gotchas non-duplicative across nested files: parent files should capture cross-cutting rules only, and child files should carry local gotchas.
 
 ## Recent Findings (2026-04)
 

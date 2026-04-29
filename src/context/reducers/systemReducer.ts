@@ -462,8 +462,15 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
           m.relationships &&
           typeof m.relationships === 'object' &&
           !Array.isArray(m.relationships)
-            ? (m.relationships as unknown as Record<string, number>)
-            : ({} as Record<string, number>)
+            ? Object.fromEntries(
+                Object.entries(m.relationships as Record<string, unknown>)
+                  .map(([key, value]) => [key, Number(value)] as const)
+                  .filter(([key, value]) => {
+                    if (typeof key !== 'string' || key === m.id) return false
+                    return Number.isFinite(value)
+                  })
+              )
+            : {}
       })) as BandMember[])
     : []
 

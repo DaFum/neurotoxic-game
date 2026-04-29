@@ -3,6 +3,7 @@
  * (#2) Next Steps: Continue monitoring class size.
  * (#3) Found Errors + Solutions: None.
  */
+import type { Container } from 'pixi.js'
 import { ToxicFilterManager } from './stage/ToxicFilterManager'
 import { BaseStageController } from './stage/BaseStageController'
 import { CrowdManager } from './stage/CrowdManager'
@@ -48,17 +49,17 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
       this.toxicFilterManager.isToxicActive = value
     }
   }
-  stageContainer: any
-  crowdManager: any
-  laneManager: any
-  effectManager: any
-  noteManager: any
+  stageContainer: Container | null
+  crowdManager: CrowdManager | null
+  laneManager: LaneManager | null
+  effectManager: EffectManager | null
+  noteManager: NoteManager | null
   toxicFilterManager: ToxicFilterManager | null
 
   /**
    * @param {object} params - Controller dependencies.
    */
-  constructor(params: any) {
+  constructor(params: StageControllerOptions<RhythmGameRefState>) {
     super(params)
     this.stageContainer = null
 
@@ -124,7 +125,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
       this.app!,
       rhythmContainer,
       this.gameStateRef,
-      (x: any, y: any, color: any) =>
+      (x: number, y: number, color: number) =>
         this.effectManager.spawnHitEffect(x, y, color)
     )
     const noteLoad = withTimeout(this.noteManager.loadAssets(), 'Note Assets')

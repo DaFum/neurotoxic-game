@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { SONGS_DB, SONGS_BY_ID } from '../../src/data/songs'
+import { NOTE_TAIL_MS } from '../../src/utils/rhythmGameAudioUtils'
+
+const SONG_TAIL_SECONDS = NOTE_TAIL_MS / 1000
 
 describe('songs real dataset contracts', () => {
   it('exports SONGS_DB and SONGS_BY_ID with consistent cardinality', () => {
@@ -162,8 +165,8 @@ describe('songs real dataset contracts', () => {
       )
       const lastNoteTimeSeconds = (lastNote.t / song.tpb) * (60 / song.bpm)
       assert.ok(
-        song.duration >= Math.ceil(lastNoteTimeSeconds),
-        `Duration ${song.duration}s too short for last note at ${lastNoteTimeSeconds}s in ${song.id}`
+        song.duration >= Math.ceil(lastNoteTimeSeconds + SONG_TAIL_SECONDS),
+        `Duration ${song.duration}s too short for last note+tail at ${lastNoteTimeSeconds + SONG_TAIL_SECONDS}s in ${song.id}`
       )
     })
   })

@@ -9,7 +9,6 @@ import { getPixiColorFromToken } from '../../components/stage/utils'
 import { getSafeRandom } from '../../utils/crypto'
 import type {
   RhythmGameRefState,
-  RhythmLane,
   RhythmLiveStats,
   RhythmModifiers,
   RhythmNote
@@ -40,7 +39,6 @@ type RhythmStateAction =
 
 export type {
   RhythmGameRefState,
-  RhythmLane,
   RhythmLiveStats,
   RhythmModifiers,
   RhythmNote

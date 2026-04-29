@@ -1,6 +1,7 @@
 import { hasTrait } from './traitLogic'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
+import type { GameState, SocialState } from '../types/game'
 
 /**
  * Clamps a value to be at least 0.
@@ -277,6 +278,83 @@ const calculateClampedControversyDelta = (
  */
 type FilteredRecord = Record<string, unknown>
 
+type RelationshipChange = {
+  member1: string
+  member2: string
+  change: number
+}
+
+type MemberDelta = FilteredRecord & {
+  moodChange?: number
+  staminaChange?: number
+}
+
+type EventDelta = {
+  score?: number
+  player?: FilteredRecord & {
+    money?: number
+    time?: number
+    fame?: number
+    score?: number
+    day?: number
+    location?: unknown
+    currentNodeId?: unknown
+    stats?: Record<string, string | number | boolean | unknown>
+    van?: {
+      fuel?: number
+      condition?: number
+      [key: string]: unknown
+    }
+  }
+  band?: FilteredRecord & {
+    harmony?: number
+    inventory?: Record<string, boolean | number | unknown>
+    members?: MemberDelta | MemberDelta[]
+    membersDelta?: MemberDelta | MemberDelta[]
+    relationshipChange?: RelationshipChange[]
+    luck?: number
+    skill?: number
+    stashRemove?: unknown[]
+  }
+  social?: Record<string, unknown> & {
+    controversyLevel?: number
+    viral?: number
+    loyalty?: number
+  }
+  flags?: FilteredRecord & {
+    addStoryFlag?: string
+    queueEvent?: unknown
+    addCooldown?: string
+  }
+}
+
+type MutableGameState = GameState & {
+  player: GameState['player'] & {
+    stats: Record<string, string | number | boolean | unknown>
+  }
+  band: GameState['band'] & {
+    inventory: Record<string, boolean | number | unknown>
+    stash: Record<string, unknown>
+  }
+  social: GameState['social'] & Record<string, unknown>
+  activeStoryFlags: string[]
+  pendingEvents: unknown[]
+  eventCooldowns: string[]
+}
+
+type AppliedDelta = {
+  player: FilteredRecord & { van?: FilteredRecord; stats?: FilteredRecord }
+  band: FilteredRecord & {
+    inventory?: FilteredRecord
+    members?: FilteredRecord[]
+    membersDelta?: FilteredRecord[]
+    relationshipChange?: RelationshipChange[] | FilteredRecord
+  }
+  social: FilteredRecord
+  flags?: FilteredRecord
+  score?: number
+}
+
 const copyFilteredProperties = (source: unknown): FilteredRecord => {
   if (typeof source !== 'object' || source === null) return Object.create(null)
 
@@ -305,8 +383,11 @@ const copyFilteredProperties = (source: unknown): FilteredRecord => {
   return destination
 }
 
-export const calculateAppliedDelta = (state: any, delta: any): any => {
-  const applied: any = { player: {}, band: {}, social: {} }
+export const calculateAppliedDelta = (
+  state: GameState,
+  delta: EventDelta
+): AppliedDelta => {
+  const applied: AppliedDelta = { player: {}, band: {}, social: {} }
 
   if (delta.flags) {
     applied.flags = copyFilteredProperties(delta.flags)
@@ -554,7 +635,7 @@ export const calculateAppliedDelta = (state: any, delta: any): any => {
  * @returns {object|null} The calculated change or null if none.
  */
 export const calculateMemberRelationshipChange = (
-  change: any,
+  change: RelationshipChange,
   memberName: string,
   hasGrudgeHolder: boolean,
   hasPeacemaker: boolean,
@@ -589,8 +670,11 @@ export const calculateMemberRelationshipChange = (
   return { other, newScore }
 }
 
-export const applyEventDelta = (state: any, delta: any): any => {
-  const nextState: any = { ...state }
+export const applyEventDelta = (
+  state: MutableGameState,
+  delta: EventDelta
+): MutableGameState => {
+  const nextState: MutableGameState = { ...state }
 
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
@@ -918,8 +1002,8 @@ export const applyEventDelta = (state: any, delta: any): any => {
  * @returns {boolean} True if the collection contains the item.
  */
 export const hasStateItem = (
-  collection: Set<any> | any[] | null | undefined,
-  item: any
+  collection: Set<unknown> | unknown[] | null | undefined,
+  item: unknown
 ): boolean => {
   return collection instanceof Set
     ? collection.has(item)
@@ -933,9 +1017,18 @@ export const hasStateItem = (
  * @param {object} socialState
  * @returns {boolean}
  */
-export const hasActiveSponsorship = (socialState: any): boolean => {
+type SponsorshipDealLike = {
+  type?: unknown
+  remainingGigs?: unknown
+}
+
+export const hasActiveSponsorship = (
+  socialState: Pick<SocialState, 'activeDeals'> | null | undefined
+): boolean => {
   return (socialState?.activeDeals || []).some(
-    (d: any) => d.type === 'SPONSORSHIP' && (d.remainingGigs ?? 1) > 0
+    (d: SponsorshipDealLike) =>
+      d.type === 'SPONSORSHIP' &&
+      (typeof d.remainingGigs === 'number' ? d.remainingGigs : 1) > 0
   )
 }
 

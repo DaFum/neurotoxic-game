@@ -1,6 +1,7 @@
 import { logger } from './logger'
 import { bandHasTrait } from './traitLogic'
 import { calculateZealotryEffects } from './socialEngine'
+import type { BandState, PlayerState, Venue } from '../types/game'
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
@@ -25,6 +26,78 @@ export type FinancialBreakdownItem = {
   value: number
   detailKey?: string
   detailParams?: Record<string, unknown>
+}
+
+type EconomyRecord = Record<string, unknown>
+
+type GigEconomyData = Partial<
+  Pick<Venue, 'capacity' | 'diff' | 'difficulty' | 'name'>
+> & {
+  price?: number
+  pay?: number
+  [key: string]: unknown
+}
+
+type GigModifiers = Partial<Record<keyof typeof MODIFIER_COSTS, boolean>> &
+  EconomyRecord
+
+type EconomyContext = {
+  daysSinceLastGig?: number
+  lastGigDifficulty?: number
+  controversyLevel?: number
+  loyalty?: number
+  zealotry?: number
+  regionRep?: number
+  discountedTickets?: boolean
+  social?: {
+    zealotry?: number
+    activeDeals?: Array<{
+      type?: unknown
+      offer?: { perGig?: number }
+    }>
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+type GigStatsLike = {
+  misses?: number
+  peakHype?: number
+  [key: string]: unknown
+}
+
+type BandInventoryLike = {
+  shirts?: number
+  hoodies?: number
+  cds?: number
+  patches?: number
+  vinyl?: number
+  [key: string]: unknown
+}
+
+type MapPoint = {
+  x?: number
+  y?: number
+  venue?: {
+    x?: number
+    y?: number
+  }
+  [key: string]: unknown
+}
+
+type GigFinancialParams = {
+  gigData: GigEconomyData
+  performanceScore: number
+  modifiers: GigModifiers
+  bandInventory: BandInventoryLike
+  playerState?: Pick<PlayerState, 'fame'> | null
+  gigStats: GigStatsLike
+  context?: EconomyContext
+}
+
+type KabelsalatResults = {
+  isPoweredOn?: boolean
+  timeLeft?: number
 }
 
 export const EXPENSE_CONSTANTS = {
@@ -79,10 +152,10 @@ const TRAVEL_LOGISTICS_CASH_CAP = 45
  * Calculates ticket sales revenue and attendance.
  */
 export const calculateTicketIncome = (
-  gigData: any = {},
+  gigData: GigEconomyData = {},
   playerFame = 0,
-  modifiers: any = {},
-  context: any = {}
+  modifiers: GigModifiers = {},
+  context: EconomyContext = {}
 ) => {
   gigData = gigData || {}
   modifiers = modifiers || {}
@@ -112,7 +185,9 @@ export const calculateTicketIncome = (
   const gigDifficulty = gigData.diff ?? gigData.difficulty
   const daysSinceLastGig = context.daysSinceLastGig
   const hasValidDaysSinceLastGig =
-    Number.isFinite(daysSinceLastGig) && daysSinceLastGig > 0
+    typeof daysSinceLastGig === 'number' &&
+    Number.isFinite(daysSinceLastGig) &&
+    daysSinceLastGig > 0
 
   // Gig frequency vs quality gap penalty
   if (
@@ -143,8 +218,9 @@ export const calculateTicketIncome = (
   }
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
-  if (!context.discountedTickets && gigData.price > 15) {
-    const pricePenalty = (gigData.price - 15) * 0.02 // -2% per Euro over 15
+  const ticketPrice = typeof gigData.price === 'number' ? gigData.price : 0
+  if (!context.discountedTickets && ticketPrice > 15) {
+    const pricePenalty = (ticketPrice - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
     fillRate -= Math.max(0, pricePenalty - mitigation)
   }
@@ -152,7 +228,7 @@ export const calculateTicketIncome = (
   fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
 
   const ticketsSold = Math.floor(baseCapacity * fillRate)
-  const revenue = Math.max(0, ticketsSold * (Math.max(0, gigData.price) || 0))
+  const revenue = Math.max(0, ticketsSold * (Math.max(0, ticketPrice) || 0))
 
   return {
     revenue,
@@ -172,10 +248,10 @@ export const calculateTicketIncome = (
 export const calculateMerchIncome = (
   ticketsSold = 0,
   performanceScore = 0,
-  gigStats: any = {},
-  modifiers: any = {},
-  bandInventory: any = {},
-  context: any = {}
+  gigStats: GigStatsLike = {},
+  modifiers: GigModifiers = {},
+  bandInventory: BandInventoryLike = {},
+  context: EconomyContext = {}
 ) => {
   gigStats = gigStats || {}
   modifiers = modifiers || {}
@@ -206,7 +282,8 @@ export const calculateMerchIncome = (
 
   // Loyalty converts to merch sales during controversy
   if ((context?.controversyLevel || 0) >= 40 && (context?.loyalty || 0) >= 20) {
-    const loyaltyBuyBonus = Math.min(0.15, (context.loyalty / 100) * 0.2)
+    const loyalty = typeof context.loyalty === 'number' ? context.loyalty : 0
+    const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
     breakdownItems.push({
       labelKey: 'economy:gigIncome.loyalFans.label',
@@ -216,8 +293,9 @@ export const calculateMerchIncome = (
   }
 
   // Penalty: Misses drive people away (scaled penalty)
-  if (gigStats && gigStats.misses > 0) {
-    const missPenalty = Math.min(buyRate * 0.5, gigStats.misses * 0.015)
+  const misses = typeof gigStats.misses === 'number' ? gigStats.misses : 0
+  if (misses > 0) {
+    const missPenalty = Math.min(buyRate * 0.5, misses * 0.015)
     buyRate -= missPenalty
   }
 
@@ -265,16 +343,14 @@ export const calculateMerchIncome = (
  * @param {object} [nodeB=null] - The source node.
  * @returns {number} The calculated distance.
  */
-export const calculateDistance = (nodeA: any, nodeB: any = null) => {
-  nodeA = nodeA || {}
-  nodeB = nodeB || {}
-  const x1 = typeof nodeA?.x === 'number' ? nodeA.x : (nodeA?.venue?.x ?? 50)
-  const y1 = typeof nodeA?.y === 'number' ? nodeA.y : (nodeA?.venue?.y ?? 50)
+export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
+  const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
+  const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
+  const x1 = typeof pointA.x === 'number' ? pointA.x : (pointA.venue?.x ?? 50)
+  const y1 = typeof pointA.y === 'number' ? pointA.y : (pointA.venue?.y ?? 50)
 
-  const x2 =
-    nodeB && typeof nodeB.x === 'number' ? nodeB.x : (nodeB?.venue?.x ?? 50)
-  const y2 =
-    nodeB && typeof nodeB.y === 'number' ? nodeB.y : (nodeB?.venue?.y ?? 50)
+  const x2 = typeof pointB.x === 'number' ? pointB.x : (pointB.venue?.x ?? 50)
+  const y2 = typeof pointB.y === 'number' ? pointB.y : (pointB.venue?.y ?? 50)
 
   const dx = x1 - x2
   const dy = y1 - y2
@@ -291,9 +367,9 @@ export const calculateDistance = (nodeA: any, nodeB: any = null) => {
  * @returns {object} { fuelLiters, fuelCost }
  */
 export const calculateFuelCost = (
-  dist: any,
-  playerState: any = null,
-  bandState: any = null
+  dist: number,
+  playerState: Pick<PlayerState, 'van'> | null = null,
+  bandState: Pick<BandState, 'members'> | null = null
 ) => {
   if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
 
@@ -329,10 +405,10 @@ export const calculateFuelCost = (
  * @param {object} [bandState=null] - Optional band state for trait checks.
  */
 export const calculateTravelExpenses = (
-  node: any,
-  fromNode: any = null,
-  playerState: any = null,
-  bandState: any = null
+  node: unknown,
+  fromNode: unknown = null,
+  playerState: Pick<PlayerState, 'fameLevel' | 'money' | 'van'> | null = null,
+  bandState: Pick<BandState, 'members'> | null = null
 ) => {
   const dist = calculateDistance(node, fromNode)
   const { fuelLiters } = calculateFuelCost(dist, playerState, bandState)
@@ -365,7 +441,7 @@ export const calculateTravelExpenses = (
  * @param {number} currentFuel - Current fuel level.
  * @returns {number} Cost in euros.
  */
-export const calculateRefuelCost = (currentFuel: any) => {
+export const calculateRefuelCost = (currentFuel: number) => {
   const missing = Math.max(
     0,
     EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
@@ -378,7 +454,7 @@ export const calculateRefuelCost = (currentFuel: any) => {
  * @param {number} currentCondition - Current condition (0-100).
  * @returns {number} Cost in euros.
  */
-export const calculateRepairCost = (currentCondition: any) => {
+export const calculateRepairCost = (currentCondition: number) => {
   const missing = Math.max(0, 100 - currentCondition)
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
 }
@@ -390,8 +466,8 @@ export const calculateRepairCost = (currentCondition: any) => {
  * @returns {number} The effective ticket price.
  */
 export const calculateEffectiveTicketPrice = (
-  gigData: any = {},
-  context: any = {}
+  gigData: GigEconomyData = {},
+  context: EconomyContext = {}
 ) => {
   if (!gigData) return 0
   gigData = gigData || {}
@@ -407,12 +483,15 @@ export const calculateEffectiveTicketPrice = (
  * Calculates venue split / promoter cut.
  */
 const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.35, 4: 0.55 }
-export const calculateVenueSplit = (ticketsRevenue = 0, gigData: any = {}) => {
+export const calculateVenueSplit = (
+  ticketsRevenue = 0,
+  gigData: GigEconomyData = {}
+) => {
   gigData = gigData || {}
   const splitRate =
-    gigData.diff >= 5
+    (gigData.diff ?? 0) >= 5
       ? 0.7
-      : Object.hasOwn(VENUE_SPLIT_RATES, gigData.diff)
+      : Object.hasOwn(VENUE_SPLIT_RATES, gigData.diff ?? 0)
         ? (VENUE_SPLIT_RATES[gigData.diff as number] ?? 0)
         : 0
 
@@ -434,7 +513,7 @@ export const calculateVenueSplit = (ticketsRevenue = 0, gigData: any = {}) => {
 /**
  * Calculates guarantee / base pay.
  */
-export const calculateGuarantee = (gigData: any = {}) => {
+export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
   gigData = gigData || {}
   const pay = Math.max(0, gigData.pay || 0)
   if (pay > 0) {
@@ -453,7 +532,10 @@ export const calculateGuarantee = (gigData: any = {}) => {
 /**
  * Calculates bar cut revenue.
  */
-export const calculateBarCut = (ticketsSold = 0, modifiers: any = {}) => {
+export const calculateBarCut = (
+  ticketsSold = 0,
+  modifiers: GigModifiers = {}
+) => {
   modifiers = modifiers || {}
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
   const barPercent = Math.round(barRate * 100)
@@ -479,7 +561,7 @@ export const calculateBarCut = (ticketsSold = 0, modifiers: any = {}) => {
 /**
  * Calculates sponsorship bonuses.
  */
-export const calculateSponsorshipBonuses = (gigStats: any = {}) => {
+export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
   gigStats = gigStats || {}
   const bonuses = []
   let totalBonus = 0
@@ -494,7 +576,7 @@ export const calculateSponsorshipBonuses = (gigStats: any = {}) => {
       })
       totalBonus += bonus
     }
-    if (gigStats.peakHype >= 100) {
+    if ((gigStats.peakHype ?? 0) >= 100) {
       const bonus = 150
       bonuses.push({
         labelKey: 'economy:gigIncome.beerSponsor.label',
@@ -511,7 +593,7 @@ export const calculateSponsorshipBonuses = (gigStats: any = {}) => {
 /**
  * Calculates expenses for the gig.
  */
-export const calculateGigExpenses = (modifiers: any = {}) => {
+export const calculateGigExpenses = (modifiers: GigModifiers = {}) => {
   modifiers = modifiers || {}
   const expenses: { total: number; breakdown: FinancialBreakdownItem[] } = {
     total: 0,
@@ -588,7 +670,7 @@ export const calculateGigFinancials = ({
   playerState,
   gigStats,
   context = {}
-}: any) => {
+}: GigFinancialParams) => {
   const playerFame = playerState?.fame || 0
 
   logger.debug('Economy', 'Calculating Gig Financials', {
@@ -755,7 +837,10 @@ export const calculateGigFinancials = ({
  * @returns {boolean} True when player is bankrupt.
  * @throws {TypeError} If newMoney is not a finite number.
  */
-export const shouldTriggerBankruptcy = (newMoney: any, netIncome: any) => {
+export const shouldTriggerBankruptcy = (
+  newMoney: unknown,
+  netIncome: number | null | undefined
+) => {
   const val = Number(newMoney)
   if (!Number.isFinite(val)) {
     throw new TypeError('newMoney must be a finite number')
@@ -783,8 +868,8 @@ export const shouldTriggerBankruptcy = (newMoney: any, netIncome: any) => {
  * @returns {object} { conditionLoss, fuelBonus }
  */
 export const calculateTravelMinigameResult = (
-  damageTaken: any,
-  itemsCollected: any
+  damageTaken: number,
+  itemsCollected: unknown
 ) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
   const conditionLoss = Math.floor(Math.max(0, damageTaken) / 2)
@@ -808,8 +893,8 @@ export const calculateTravelMinigameResult = (
  * @returns {object} { stress, repairCost }
  */
 export const calculateRoadieMinigameResult = (
-  equipmentDamage: any,
-  bandState: any
+  equipmentDamage: number,
+  bandState: Pick<BandState, 'members'> | null | undefined
 ) => {
   const safeDamage = Math.max(0, equipmentDamage)
   const stress = Math.floor(safeDamage / 5)
@@ -829,7 +914,10 @@ export const calculateRoadieMinigameResult = (
  * @param {Object} bandState
  * @returns {Object} { stress, reward }
  */
-export const calculateAmpCalibrationResult = (score: any, bandState: any) => {
+export const calculateAmpCalibrationResult = (
+  score: unknown,
+  bandState: Pick<BandState, 'members'> | null | undefined
+) => {
   let numScore = Number(score)
   if (!Number.isFinite(numScore)) {
     numScore = 0
@@ -861,20 +949,24 @@ export const calculateAmpCalibrationResult = (score: any, bandState: any) => {
  * @returns {Object} { stress, reward }
  */
 export const calculateKabelsalatMinigameResult = (
-  results: any,
-  bandState: any
+  results: unknown,
+  bandState: Pick<BandState, 'members'> | null | undefined
 ) => {
+  const safeResults =
+    results && typeof results === 'object' ? (results as KabelsalatResults) : {}
   let stress = 0
   let reward = 0
 
-  if (!results.isPoweredOn) {
+  if (!safeResults.isPoweredOn) {
     // Failure! Stress for everyone.
     stress = 15
   } else {
     // Success! Reward based on time remaining
-    const validTimeLeft = Number.isFinite(results.timeLeft)
-      ? results.timeLeft
-      : 0
+    const validTimeLeft =
+      typeof safeResults.timeLeft === 'number' &&
+      Number.isFinite(safeResults.timeLeft)
+        ? safeResults.timeLeft
+        : 0
     const timeBonus = Math.max(0, Math.floor(validTimeLeft / 5))
     reward = Math.max(0, 60 + timeBonus * 15) // Base 60, scaling better for quick completion
 

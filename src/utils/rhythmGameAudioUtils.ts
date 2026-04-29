@@ -28,7 +28,7 @@ import type { ToastCallback, TranslationCallback } from '../types/callbacks'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
-const NOTE_TAIL_MS = 1000
+export const NOTE_TAIL_MS = 1000
 
 type RandomFn = () => number
 

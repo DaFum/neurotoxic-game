@@ -1,6 +1,19 @@
-import { Container, Graphics, Sprite, Texture } from 'pixi.js'
+import { Container, Graphics, Sprite } from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { hashString } from '../../utils/stringUtils'
+
+type RoadieCar = {
+  id: string | number
+  x: number
+  width: number
+  row: number
+  speed: number
+  textureHash?: number
+}
+
+type RoadieTrafficState = {
+  traffic?: unknown
+}
 
 export class RoadieTrafficManager {
   container: Container
@@ -25,7 +38,7 @@ export class RoadieTrafficManager {
     this.currentIds = new Set() // Reuse Set to avoid GC
   }
 
-  _getOrCreateCarSprite(car: any) {
+  _getOrCreateCarSprite(car: RoadieCar) {
     let sprite = this.carSprites.get(car.id)
     if (sprite) return sprite
 
@@ -52,19 +65,48 @@ export class RoadieTrafficManager {
     return sprite
   }
 
-  renderTraffic(state: any, cellW: any, cellH: any) {
+  renderTraffic(state: RoadieTrafficState, cellW: number, cellH: number) {
     if (!Array.isArray(state.traffic)) return
 
     this.currentIds.clear()
-    for (const car of state.traffic) {
-      this.currentIds.add(car.id)
+    for (const rawCar of state.traffic) {
+      if (!rawCar || typeof rawCar !== 'object') continue
+      const carRecord = rawCar as Record<string, unknown>
+      if (
+        (typeof carRecord.id !== 'string' &&
+          typeof carRecord.id !== 'number') ||
+        typeof carRecord.x !== 'number' ||
+        typeof carRecord.width !== 'number' ||
+        typeof carRecord.row !== 'number' ||
+        typeof carRecord.speed !== 'number'
+      )
+        continue
+      const carId = carRecord.id
+      const carX = carRecord.x
+      const carWidth = carRecord.width
+      const carRow = carRecord.row
+      const carSpeed = carRecord.speed
+      const carTextureHash =
+        typeof carRecord.textureHash === 'number'
+          ? carRecord.textureHash
+          : undefined
+
+      const car: RoadieCar = {
+        id: carId,
+        x: carX,
+        width: carWidth,
+        row: carRow,
+        speed: carSpeed,
+        textureHash: carTextureHash
+      }
+      this.currentIds.add(carId)
       const sprite = this._getOrCreateCarSprite(car)
 
-      sprite.x = (car.x + car.width / 2) * cellW
-      sprite.y = (car.row + 0.5) * cellH
+      sprite.x = (carX + carWidth / 2) * cellW
+      sprite.y = (carRow + 0.5) * cellH
 
       // Flip if moving left
-      if (car.speed < 0) {
+      if (carSpeed < 0) {
         sprite.scale.x = -Math.abs(sprite.scale.x)
       } else {
         sprite.scale.x = Math.abs(sprite.scale.x)
@@ -73,7 +115,7 @@ export class RoadieTrafficManager {
       // Adjust Scale if texture — constrain both width AND height
       if (sprite instanceof Sprite && (sprite as Sprite).texture?.width > 0) {
         const texSprite = sprite as Sprite
-        const targetW = car.width * cellW
+        const targetW = carWidth * cellW
         const targetH = cellH * 0.7
         const scale = Math.min(
           targetW / texSprite.texture.width,
@@ -85,7 +127,7 @@ export class RoadieTrafficManager {
         )
       } else {
         // Fallback or Graphics
-        sprite.width = car.width * cellW
+        sprite.width = carWidth * cellW
         sprite.height = cellH * 0.7
       }
     }

@@ -145,7 +145,13 @@ export function getGigTimeMs() {
  * @param {AudioBufferSourceNode} source - The ended source node.
  * @returns {void}
  */
-const handleGigSourceEnded = (source: any): void => {
+type GigEndedInfo = {
+  filename: string | null
+  durationMs: number | null
+  offsetMs: number
+}
+
+const handleGigSourceEnded = (source: AudioBufferSourceNode): void => {
   if (audioState.gigSource !== source || audioState.gigIsPaused) return
   if (audioState.gigOnEnded) {
     audioState.gigOnEnded({
@@ -163,9 +169,9 @@ const createGigBufferSource = ({
   buffer,
   onEnded
 }: {
-  buffer: any
-  onEnded?: any
-}): any => {
+  buffer: AudioBuffer
+  onEnded?: ((source: AudioBufferSourceNode) => void) | null
+}): AudioBufferSourceNode | null => {
   return createAndConnectBufferSource(buffer, onEnded)
 }
 
@@ -269,7 +275,7 @@ export async function startGigPlayback({
   bufferOffsetMs?: number
   delayMs?: number
   durationMs?: number | null
-  onEnded?: ((args: any) => void) | null
+  onEnded?: ((args: GigEndedInfo) => void) | null
 }): Promise<boolean> {
   const unlocked = await ensureAudioContext()
   if (!unlocked) return false

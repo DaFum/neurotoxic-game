@@ -5,9 +5,19 @@ import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
 import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
+import type { TFunction } from 'i18next'
+import type { Song } from '../../types/audio'
+import type { RhythmSetlistEntry } from '../../types/rhythmGame'
+
+type SongRowProps = {
+  song: Song
+  selected: boolean
+  toggleSongInSetlist: (songId: string) => void
+  t: TFunction
+}
 
 const SongRow = React.memo(
-  ({ song, selected, toggleSongInSetlist, t }: any) => {
+  ({ song, selected, toggleSongInSetlist, t }: SongRowProps) => {
     const handleToggle = useCallback(() => {
       toggleSongInSetlist(song.id)
     }, [song.id, toggleSongInSetlist])
@@ -90,7 +100,13 @@ const getSetlistSongId = (entry: unknown): unknown => {
   return undefined
 }
 
-export const SetlistTab = (props: any) => {
+export interface SetlistTabProps {
+  setlist: RhythmSetlistEntry[]
+  setSetlist: (list: RhythmSetlistEntry[]) => void
+  addToast: (message: string, level?: string) => void
+}
+
+export const SetlistTab = (props: SetlistTabProps) => {
   const { setlist, setSetlist, addToast } = props
   // { setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
@@ -109,8 +125,8 @@ export const SetlistTab = (props: any) => {
   )
 
   const toggleSongInSetlist = useCallback(
-    (songId: unknown) => {
-      const songObj = SONGS_BY_ID.get(songId as string)
+    (songId: string) => {
+      const songObj = SONGS_BY_ID.get(songId)
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 

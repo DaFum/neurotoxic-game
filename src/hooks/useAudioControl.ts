@@ -52,19 +52,8 @@ export const createAudioHandlers = (
 
 export const getAudioSnapshot = (
   manager: AudioManagerLike,
-  hasNativeSubscribeOrFallbackRef: boolean | { current: AudioSnapshot | null },
-  fallbackSnapshotRefArg?: { current: AudioSnapshot | null }
+  fallbackSnapshotRef: { current: AudioSnapshot | null }
 ): AudioSnapshot => {
-  const fallbackSnapshotRef =
-    typeof hasNativeSubscribeOrFallbackRef === 'boolean'
-      ? fallbackSnapshotRefArg
-      : hasNativeSubscribeOrFallbackRef
-  if (!fallbackSnapshotRef) {
-    throw new Error(
-      'getAudioSnapshot requires a fallback snapshot ref when called with hasNativeSubscribe'
-    )
-  }
-
   const getDefaultSnapshot = (): AudioSnapshot => ({
     musicVol: manager.musicVolume ?? 1,
     sfxVol: manager.sfxVolume ?? 1,
@@ -81,14 +70,28 @@ export const getAudioSnapshot = (
     const raw = value as Record<string, unknown>
     return {
       musicVol:
-        typeof raw.musicVol === 'number' ? raw.musicVol : defaults.musicVol,
-      sfxVol: typeof raw.sfxVol === 'number' ? raw.sfxVol : defaults.sfxVol,
+        Object.hasOwn(raw, 'musicVol') &&
+        typeof raw.musicVol === 'number' &&
+        Number.isFinite(raw.musicVol)
+          ? raw.musicVol
+          : defaults.musicVol,
+      sfxVol:
+        Object.hasOwn(raw, 'sfxVol') &&
+        typeof raw.sfxVol === 'number' &&
+        Number.isFinite(raw.sfxVol)
+          ? raw.sfxVol
+          : defaults.sfxVol,
       isMuted:
-        typeof raw.isMuted === 'boolean' ? raw.isMuted : defaults.isMuted,
+        Object.hasOwn(raw, 'isMuted') && typeof raw.isMuted === 'boolean'
+          ? raw.isMuted
+          : defaults.isMuted,
       isPlaying:
-        typeof raw.isPlaying === 'boolean' ? raw.isPlaying : defaults.isPlaying,
+        Object.hasOwn(raw, 'isPlaying') && typeof raw.isPlaying === 'boolean'
+          ? raw.isPlaying
+          : defaults.isPlaying,
       currentSongId:
-        typeof raw.currentSongId === 'string' || raw.currentSongId === null
+        Object.hasOwn(raw, 'currentSongId') &&
+        (typeof raw.currentSongId === 'string' || raw.currentSongId === null)
           ? raw.currentSongId
           : defaults.currentSongId
     }

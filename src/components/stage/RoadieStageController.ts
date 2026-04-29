@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Texture } from 'pixi.js'
+import { Graphics } from 'pixi.js'
 import { BaseStageController } from './BaseStageController'
 import { RoadieTrafficManager } from './RoadieTrafficManager'
 import { RoadiePlayerManager } from './RoadiePlayerManager'
@@ -8,10 +8,8 @@ import {
 } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
-import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
-import { hashString } from '../../utils/stringUtils'
 
 class RoadieStageController extends BaseStageController {
   effectManager: EffectManager | null
@@ -32,7 +30,7 @@ class RoadieStageController extends BaseStageController {
   trafficManager: RoadieTrafficManager | null
   playerManager: RoadiePlayerManager | null
 
-  constructor(params: any) {
+  constructor(params: unknown) {
     super(params)
     this.effectManager = null
     this.trafficManager = null
@@ -165,7 +163,7 @@ class RoadieStageController extends BaseStageController {
     this.container.addChildAt(g, 0)
   }
 
-  update(dt: any) {
+  update(dt: number) {
     if (this.isDisposed || !this.app || !this.playerManager?.playerContainer)
       return
 
@@ -213,5 +211,5 @@ class RoadieStageController extends BaseStageController {
   }
 }
 
-export const createRoadieStageController = (params: any) =>
+export const createRoadieStageController = (params: unknown) =>
   new RoadieStageController(params)

@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  MutableRefObject
-} from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { safeStorageOperation, handleError } from '../../utils/errorHandler'
 import { getSafeUUID } from '../../utils/crypto'
 import { useTranslation } from 'react-i18next'

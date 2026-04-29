@@ -9,13 +9,18 @@ import { audioState } from './state'
 import { setupAudio } from './setup'
 import { disposeAudio } from './dispose'
 
+type RawAudioContextLike = AudioContext & {
+  state?: AudioContextState | 'interrupted'
+  resume?: () => Promise<void>
+}
+
 /**
  * Returns the raw Web Audio context used by Tone.js.
  * @returns {AudioContext} The raw AudioContext.
  */
-export const getRawAudioContext = (): AudioContext | any => {
+export const getRawAudioContext = (): RawAudioContextLike => {
   const toneContext = Tone.getContext()
-  return toneContext?.rawContext ?? toneContext
+  return (toneContext?.rawContext ?? toneContext) as RawAudioContextLike
 }
 
 /**

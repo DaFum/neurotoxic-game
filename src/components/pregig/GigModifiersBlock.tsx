@@ -32,7 +32,7 @@ const sanitizeEffectOptions = (
     const [key, value] = entry
     if (
       typeof value === 'string' ||
-      typeof value === 'number' ||
+      (typeof value === 'number' && Number.isFinite(value)) ||
       typeof value === 'boolean' ||
       value === null
     ) {

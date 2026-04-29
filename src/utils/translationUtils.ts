@@ -19,16 +19,10 @@ const isTranslatableKey = (key: unknown): boolean => {
   return false
 }
 
-/**
- * Recursively translates translation keys within a context object and filters forbidden keys.
- * @param {any} context - The context object to translate and sanitize.
- * @param {Function} t - The translation function.
- * @returns {any} The sanitized and translated context.
- */
 export const translateContextKeys = (
-  context: any,
+  context: unknown,
   t: (key: string) => string
-): any => {
+): unknown => {
   // Handle null or non-object types (e.g., from JSON.parse("null") or literals)
   if (context === null || typeof context !== 'object') {
     return context
@@ -43,13 +37,14 @@ export const translateContextKeys = (
     })
   }
 
-  const translatedContext: Record<string, any> = {}
-  for (const prop in context) {
-    if (!Object.hasOwn(context, prop)) continue
+  const translatedContext: Record<string, unknown> = {}
+  const contextRecord = context as Record<string, unknown>
+  for (const prop in contextRecord) {
+    if (!Object.hasOwn(contextRecord, prop)) continue
     // SECURITY: Skip forbidden keys to prevent prototype pollution or other injection
     if (isForbiddenKey(prop)) continue
 
-    const value = context[prop]
+    const value = contextRecord[prop]
     if (typeof value === 'string') {
       translatedContext[prop] = isTranslatableKey(value) ? t(value) : value
     } else if (typeof value === 'object' && value !== null) {
