@@ -1104,7 +1104,7 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     }
     const rewardData = copySafePrimitiveObject(quest.rewardData)
     if (rewardData) sanitized.rewardData = rewardData
-    const failurePenalty = copySafePrimitiveObject(quest.failurePenalty)
+    const failurePenalty = copySafeJsonValue(quest.failurePenalty)
     if (failurePenalty) sanitized.failurePenalty = failurePenalty
     return [sanitized]
   })

@@ -34,7 +34,7 @@ describe('minigameReducer - Amp Calibration', () => {
     const result = handleCompleteAmpCalibration(state, { score: 10 })
 
     expect(result.minigame.active).toBe(false)
-    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.currentScene).toBe(GAME_PHASES.GIG)
 
     // Low score: stress goes up (harmony goes down)
     // economyEngine says: < 50 score -> stress = Math.floor((50 - 10) / 2) = 20
@@ -55,7 +55,7 @@ describe('minigameReducer - Amp Calibration', () => {
     const result = handleCompleteAmpCalibration(state, { score: 100 })
 
     expect(result.minigame.active).toBe(false)
-    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.currentScene).toBe(GAME_PHASES.GIG)
 
     // Perfect score (100) -> stress = 0
     expect(result.band.harmony).toBe(50)
@@ -75,7 +75,7 @@ describe('minigameReducer - Amp Calibration', () => {
     const result = handleCompleteAmpCalibration(state, { score: 80 })
 
     expect(result.minigame.active).toBe(false)
-    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.currentScene).toBe(GAME_PHASES.GIG)
 
     // harmony remains at 95 (no stress, no healing)
     expect(result.band.harmony).toBe(95)
@@ -94,7 +94,7 @@ describe('minigameReducer - Amp Calibration', () => {
     const result = handleCompleteAmpCalibration(state, { score: 50 })
 
     expect(result.minigame.active).toBe(false)
-    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.currentScene).toBe(GAME_PHASES.GIG)
 
     // 50 score -> stress = 0
     expect(result.band.harmony).toBe(50)
@@ -114,7 +114,7 @@ describe('minigameReducer - Amp Calibration', () => {
     const result = handleCompleteAmpCalibration(state, { score: 10 })
 
     expect(result.minigame.active).toBe(false)
-    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.currentScene).toBe(GAME_PHASES.GIG)
 
     expect(result.band.harmony).toBe(1)
   })
@@ -134,7 +134,7 @@ describe('minigameReducer - Amp Calibration', () => {
     const result = handleCompleteAmpCalibration(state, { score: 100 })
 
     expect(result.minigame.active).toBe(false)
-    expect(result.currentScene).toBe(GAME_PHASES.PRE_GIG_MINIGAME)
+    expect(result.currentScene).toBe(GAME_PHASES.GIG)
 
     expect(result.player.money).toBe(250)
   })

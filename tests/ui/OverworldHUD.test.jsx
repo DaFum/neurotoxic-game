@@ -77,4 +77,28 @@ describe('OverworldHUD', () => {
 
     expect(moneyValue).not.toHaveClass('money-anim-up')
   })
+
+  it('shows career status beside money and van status', () => {
+    const player = {
+      money: 100,
+      day: 3,
+      location: 'Berlin',
+      fame: 12,
+      fameLevel: 2,
+      totalTravels: 7,
+      passiveFollowers: 34,
+      van: { fuel: 80, condition: 80 },
+      stats: { totalDistance: 456 }
+    }
+    const band = { harmony: 80, members: [] }
+
+    const { getByText } = render(<OverworldHUD player={player} band={band} />)
+
+    expect(getByText('FAME')).toBeInTheDocument()
+    expect(getByText('12')).toBeInTheDocument()
+    expect(getByText('LVL')).toBeInTheDocument()
+    expect(getByText('2')).toBeInTheDocument()
+    expect(getByText('KM')).toBeInTheDocument()
+    expect(getByText('456')).toBeInTheDocument()
+  })
 })

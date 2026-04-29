@@ -111,6 +111,7 @@
   align-items: flex-start;
   pointer-events: none;
   z-index: 40;
+  gap: 12px;
 }
 .ow-panel {
   background: rgb(var(--color-void-black-rgb) / 92%);
@@ -119,6 +120,7 @@
   padding: 10px;
   color: var(--color-toxic-green);
   box-shadow: 0 0 8px rgb(var(--color-toxic-green-rgb) / 12%);
+  max-width: calc(100vw - 24px);
 }
 .hud-left {
   display: flex;
@@ -153,6 +155,36 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+.career-stats {
+  border-top: 1px solid rgb(var(--color-toxic-green-rgb) / 20%);
+  margin-top: 8px;
+  padding-top: 7px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.career-cell {
+  min-width: 0;
+  border: 1px solid rgb(var(--color-ash-gray-rgb) / 20%);
+  padding: 4px 5px;
+  background: rgb(var(--color-toxic-green-rgb) / 5%);
+}
+.career-label {
+  display: block;
+  color: var(--color-ash-gray);
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.career-value {
+  display: block;
+  color: var(--color-toxic-green);
+  font-size: 11px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .van-row {
   display: flex;
@@ -1244,6 +1276,23 @@
 }
 .ow-panel.fuel-warn {
   animation: fuel-warn-flash 0.6s ease-in-out infinite;
+}
+@media (max-width: 640px) {
+  .hud {
+    padding: 8px;
+  }
+
+  .hud-right {
+    display: none;
+  }
+
+  .ow-panel {
+    padding: 8px;
+  }
+
+  .loc-row {
+    max-width: 220px;
+  }
 }
 .mbr-crit {
   color: var(--color-blood-red) !important;

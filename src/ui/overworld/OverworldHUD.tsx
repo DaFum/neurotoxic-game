@@ -62,6 +62,10 @@ export const OverworldHUD = React.memo(
     const vanCondition = player.van?.condition
     const fuelLow = vanFuel !== undefined && vanFuel < 20
     const condLow = vanCondition !== undefined && vanCondition < 25
+    const totalDistance =
+      typeof player.stats?.totalDistance === 'number'
+        ? Math.round(player.stats.totalDistance)
+        : 0
     const locationName = translateLocation(t, player.location, player.location)
     const shortcutsPanelId = 'overworld-shortcuts-panel'
     const shortcuts = useMemo<[string, string][]>(
@@ -271,6 +275,31 @@ export const OverworldHUD = React.memo(
                   {t('ui:overworld.low_fuel', { defaultValue: 'LOW FUEL' })}
                 </div>
               )}
+            </div>
+            <div
+              className='career-stats'
+              aria-label={t('ui:overworld.career_status', {
+                defaultValue: 'Career status'
+              })}
+            >
+              <div className='career-cell'>
+                <span className='career-label'>
+                  {t('ui:overworld.career_fame', { defaultValue: 'FAME' })}
+                </span>
+                <span className='career-value'>{player.fame ?? 0}</span>
+              </div>
+              <div className='career-cell'>
+                <span className='career-label'>
+                  {t('ui:overworld.career_level', { defaultValue: 'LVL' })}
+                </span>
+                <span className='career-value'>{player.fameLevel ?? 0}</span>
+              </div>
+              <div className='career-cell'>
+                <span className='career-label'>
+                  {t('ui:overworld.career_distance', { defaultValue: 'KM' })}
+                </span>
+                <span className='career-value'>{totalDistance}</span>
+              </div>
             </div>
           </div>
           <div className='hud-btns pointer-events-auto'>

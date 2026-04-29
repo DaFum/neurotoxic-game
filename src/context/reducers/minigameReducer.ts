@@ -274,6 +274,7 @@ export const handleCompleteAmpCalibration = (
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
+    currentScene: GAME_PHASES.GIG,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
@@ -333,6 +334,7 @@ export const handleCompleteKabelsalatMinigame = (
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
+    currentScene: GAME_PHASES.GIG,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
@@ -379,7 +381,7 @@ export const handleCompleteRoadieMinigame = (
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
+    currentScene: GAME_PHASES.GIG,
     minigame: { ...DEFAULT_MINIGAME_STATE }
-    // Scene transition handled by UI overlay
   }
 }

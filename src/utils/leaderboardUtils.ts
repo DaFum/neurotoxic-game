@@ -73,6 +73,13 @@ export const submitLeaderboardScores = async ({
       })
         .then(async res => {
           clearTimeout(timeoutId)
+          if (res.status === 404) {
+            logger.info(
+              'PostGig',
+              `Leaderboard endpoint unavailable for ${leaderboardSongId}`
+            )
+            return
+          }
           if (!res.ok) {
             const err = await res.text()
             throw new Error(`HTTP ${res.status}: ${err}`)

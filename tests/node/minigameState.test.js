@@ -194,6 +194,7 @@ test('Minigame State Transitions', async t => {
       const newState = gameReducer(activeState, action)
 
       assert.deepStrictEqual(newState.minigame, initialState.minigame)
+      assert.strictEqual(newState.currentScene, GAME_PHASES.GIG)
 
       // Verify Economy Result applied correctly
       assert.strictEqual(newState.player.money, 1105)
@@ -231,8 +232,7 @@ test('Minigame State Transitions', async t => {
       const newState = gameReducer(activeState, action)
 
       assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
-      // Scene transition is now handled by UI overlay, so scene remains PRE_GIG_MINIGAME
-      assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+      assert.strictEqual(newState.currentScene, GAME_PHASES.GIG)
 
       // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10.
       // Matze has 'gear_nerd' -> -20% repair cost -> repairCost = 8 -> money-=8

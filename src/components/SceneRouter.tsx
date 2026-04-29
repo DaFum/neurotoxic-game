@@ -72,7 +72,10 @@ export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
       if (minigameType === MINIGAME_TYPES.AMP_CALIBRATION) {
         return <AmpCalibrationScene />
       }
-      return <RoadieRunScene />
+      if (minigameType === MINIGAME_TYPES.ROADIE) {
+        return <RoadieRunScene />
+      }
+      return <Gig />
     case GAME_PHASES.GIG:
     case GAME_PHASES.PRACTICE:
       return <Gig />

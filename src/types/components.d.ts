@@ -443,7 +443,7 @@ export interface ReportPhaseProps {
 type EffectBase = {
   item?: string
   value?: unknown
-  target?: 'player' | 'band' | 'van'
+  target?: 'player' | 'band' | 'van' | 'performance'
   stat?: string
   id?: string
   key?: string
@@ -454,7 +454,7 @@ export type Effect =
   | (EffectBase & { type: 'inventory_set'; item: string; value: unknown })
   | (EffectBase & {
       type: 'stat_modifier'
-      target: 'player' | 'band' | 'van'
+      target: 'player' | 'band' | 'van' | 'performance'
       stat: string
       value: number
     })

@@ -22,7 +22,19 @@ vi.mock('../../src/data/hqItems', () => ({
       }
     ],
     instruments: [
-      { id: 'inst1', name: 'Instrument 1', cost: 500, currency: 'money' }
+      { id: 'inst1', name: 'Instrument 1', cost: 500, currency: 'money' },
+      {
+        id: 'instPerformance',
+        name: 'Performance Instrument',
+        cost: 650,
+        currency: 'money',
+        effect: {
+          type: 'stat_modifier',
+          target: 'performance',
+          stat: 'guitarDifficulty',
+          value: -0.1
+        }
+      }
     ]
   }
 }))
@@ -93,6 +105,7 @@ describe('ShopTab', () => {
     expect(screen.getByTestId('shop-item-gear1')).toBeInTheDocument()
     expect(screen.getByTestId('shop-item-passive1')).toBeInTheDocument()
     expect(screen.getByTestId('shop-item-inst1')).toBeInTheDocument()
+    expect(screen.getByTestId('shop-item-instPerformance')).toBeInTheDocument()
   })
 
   test('passes correct props to ShopItem', () => {

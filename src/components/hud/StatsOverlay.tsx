@@ -18,7 +18,7 @@ export const StatsOverlay = memo(function StatsOverlay({
   overload
 }: StatsOverlayProps) {
   return (
-    <div className='absolute top-32 left-4 z-10 text-star-white font-mono pointer-events-none p-4 relative group'>
+    <div className='absolute top-32 left-4 max-sm:top-20 max-sm:left-2 max-sm:scale-75 max-sm:origin-top-left z-10 text-star-white font-mono pointer-events-none p-4 relative group'>
       <UIFrameCorner className='absolute top-0 left-0 w-4 h-4 text-ash-gray opacity-50' />
       <UIFrameCorner className='absolute top-0 right-0 w-4 h-4 text-ash-gray rotate-90 opacity-50' />
       <UIFrameCorner className='absolute bottom-0 right-0 w-4 h-4 text-ash-gray rotate-180 opacity-50' />

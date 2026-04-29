@@ -27,7 +27,8 @@ const isEffect = (obj: unknown): obj is Effect => {
       return (
         (effect.target === 'player' ||
           effect.target === 'band' ||
-          effect.target === 'van') &&
+          effect.target === 'van' ||
+          effect.target === 'performance') &&
         typeof effect.stat === 'string' &&
         typeof effect.value === 'number'
       )

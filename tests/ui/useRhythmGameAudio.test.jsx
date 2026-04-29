@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
   stopMusic: vi.fn(),
@@ -130,5 +130,29 @@ describe('useRhythmGameAudio', () => {
 
     unmount()
     expect(mocks.stopAudio).toHaveBeenCalled()
+  })
+
+  it('starts gig audio after requesting a fresh gig state reset', async () => {
+    const setIsAudioReady = vi.fn()
+    const gameStateRef = {
+      current: {
+        lanes: [{}, {}, {}],
+        hasSubmittedResults: true,
+        isGameOver: true,
+        notesVersion: 0
+      }
+    }
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef,
+        setters: { setIsAudioReady },
+        contextState: baseState,
+        contextActions: { addToast: vi.fn(), t: vi.fn() }
+      })
+    )
+
+    await waitFor(() => expect(mocks.playSongSequence).toHaveBeenCalled())
+    expect(mocks.resetGigStateTracking).toHaveBeenCalledWith(gameStateRef)
   })
 })

@@ -139,7 +139,13 @@ export const SetlistBlock = ({
     >
       <h3 className='text-sm text-toxic-green mb-3 tracking-widest font-mono border-b border-toxic-green/30 pb-2 flex justify-between'>
         <span>{t('ui:pregig.setlist')}</span>
-        <span className='tabular-nums'>{setlist.length}/3</span>
+        <span className='tabular-nums'>
+          {t('ui:pregig.setlistCountMax', {
+            count: setlist.length,
+            max: 3,
+            defaultValue: '{{count}}/{{max}} max'
+          })}
+        </span>
       </h3>
       <div className='flex-1 overflow-y-auto pr-0 sm:pr-2 space-y-2'>
         {songsDb.map(song => {

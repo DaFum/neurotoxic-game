@@ -579,6 +579,58 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.unlocks, ['u1'])
   })
 
+  await t.test(
+    'preserves nested active quest failure penalties while sanitizing loaded quests',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+        "activeQuests": [
+          {
+            "id": "QUEST_APOLOGY_TOUR",
+            "label": "Apology Tour",
+            "deadline": 7,
+            "failurePenalty": {
+              "social": {
+                "controversyLevel": 25,
+                "bad": null,
+                "infinite": 1e999
+              },
+              "band": {
+                "harmony": -20
+              },
+              "__proto__": {
+                "polluted": true
+              }
+            }
+          }
+        ]
+      }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeQuests, [
+        {
+          id: 'QUEST_APOLOGY_TOUR',
+          label: 'Apology Tour',
+          deadline: 7,
+          failurePenalty: {
+            social: {
+              controversyLevel: 25,
+              bad: null
+            },
+            band: {
+              harmony: -20
+            }
+          }
+        }
+      ])
+      assert.equal(
+        Object.hasOwn(nextState.activeQuests[0].failurePenalty, '__proto__'),
+        false
+      )
+    }
+  )
+
   await t.test('handles missing or malformed toasts array', () => {
     const initialState = createInitialState()
     const loadedState = {

@@ -1,9 +1,36 @@
 import assert from 'node:assert'
 import { test, describe, beforeEach, afterEach } from 'node:test'
-import { resolveActiveSetlist } from '../../src/utils/audio/rhythmGameAudioUtils'
+import {
+  resetGigStateTracking,
+  resolveActiveSetlist
+} from '../../src/utils/audio/rhythmGameAudioUtils'
 import { SONGS_BY_ID } from '../../src/data/songs'
 
 describe('rhythmGameAudioUtils', () => {
+  test('resetGigStateTracking clears stale terminal flags before a new gig starts', () => {
+    const gameStateRef = {
+      current: {
+        lastEndedSongIndex: 2,
+        songStats: [{ songId: 'old-song' }],
+        currentSongStartScore: 123,
+        currentSongStartPerfectHits: 4,
+        currentSongStartMisses: 5,
+        songTransitioning: true,
+        setlistCompleted: true,
+        isGameOver: true,
+        hasSubmittedResults: true
+      }
+    }
+
+    resetGigStateTracking(gameStateRef)
+
+    assert.strictEqual(gameStateRef.current.isGameOver, false)
+    assert.strictEqual(gameStateRef.current.hasSubmittedResults, false)
+    assert.strictEqual(gameStateRef.current.setlistCompleted, false)
+    assert.strictEqual(gameStateRef.current.songTransitioning, false)
+    assert.deepStrictEqual(gameStateRef.current.songStats, [])
+  })
+
   describe('resolveActiveSetlist', () => {
     let originalSongs
 
