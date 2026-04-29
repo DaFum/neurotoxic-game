@@ -1,5 +1,9 @@
 # api - Agent Instructions
 
+## Agents
+
+Agents in `api/**` help maintain automated request/response orchestration, validators, and endpoint contracts. They must preserve backward-compatible response shapes, treat inputs as `unknown` until validated, and cannot cover UI-only flows. Use these instructions when changing route handlers, payload validation, or API test expectations; regular handlers remain the place for simple business logic.
+
 ## Scope
 
 Applies to `api/**`.

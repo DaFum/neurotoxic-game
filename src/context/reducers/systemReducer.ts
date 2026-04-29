@@ -49,6 +49,41 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.CLINIC
 ])
 
+const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const finiteNumberOr = (value: unknown, fallback: number): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
+const finiteOptionalNumber = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const sanitizeStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is string => typeof entry === 'string')
+}
+
+const copySafePrimitiveObject = (
+  value: unknown
+): Record<string, string | number | boolean | null> | undefined => {
+  if (!isPlainRecord(value)) return undefined
+  const copied: Record<string, string | number | boolean | null> = {}
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue
+    if (isForbiddenKey(key)) continue
+    const entry = value[key]
+    if (
+      typeof entry === 'string' ||
+      typeof entry === 'boolean' ||
+      entry === null ||
+      (typeof entry === 'number' && Number.isFinite(entry))
+    ) {
+      copied[key] = entry
+    }
+  }
+  return Object.keys(copied).length > 0 ? copied : undefined
+}
+
 const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   if (typeof gameMap !== 'object' || gameMap === null) {
     return null
@@ -259,24 +294,98 @@ const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
 }
 
 const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
-  const playerData =
-    typeof loadedPlayer === 'object' && loadedPlayer !== null
-      ? (loadedPlayer as Record<string, unknown>)
-      : {}
-  const rawPlayer = {
+  const playerData = isPlainRecord(loadedPlayer)
+    ? (loadedPlayer as Record<string, unknown>)
+    : {}
+  const vanData = isPlainRecord(playerData.van) ? playerData.van : {}
+  const statsData = isPlainRecord(playerData.stats) ? playerData.stats : {}
+
+  const rawPlayer: PlayerState = {
     ...DEFAULT_PLAYER_STATE,
-    ...playerData,
+    playerId:
+      typeof playerData.playerId === 'string' || playerData.playerId === null
+        ? playerData.playerId
+        : DEFAULT_PLAYER_STATE.playerId,
+    playerName:
+      typeof playerData.playerName === 'string'
+        ? playerData.playerName
+        : DEFAULT_PLAYER_STATE.playerName,
+    money: finiteNumberOr(playerData.money, DEFAULT_PLAYER_STATE.money),
+    day: finiteNumberOr(playerData.day, DEFAULT_PLAYER_STATE.day),
+    time: finiteNumberOr(playerData.time, DEFAULT_PLAYER_STATE.time),
+    location: Object.hasOwn(playerData, 'location')
+      ? typeof playerData.location === 'string' ||
+        playerData.location === null ||
+        playerData.location === undefined
+        ? (playerData.location as PlayerState['location'])
+        : DEFAULT_PLAYER_STATE.location
+      : DEFAULT_PLAYER_STATE.location,
+    currentNodeId:
+      typeof playerData.currentNodeId === 'string'
+        ? playerData.currentNodeId
+        : DEFAULT_PLAYER_STATE.currentNodeId,
+    lastGigNodeId:
+      typeof playerData.lastGigNodeId === 'string' ||
+      playerData.lastGigNodeId === null
+        ? playerData.lastGigNodeId
+        : DEFAULT_PLAYER_STATE.lastGigNodeId,
+    tutorialStep: finiteNumberOr(
+      playerData.tutorialStep,
+      DEFAULT_PLAYER_STATE.tutorialStep
+    ),
+    score: finiteNumberOr(playerData.score, DEFAULT_PLAYER_STATE.score),
+    fame: finiteNumberOr(playerData.fame, DEFAULT_PLAYER_STATE.fame),
+    fameLevel: DEFAULT_PLAYER_STATE.fameLevel,
+    eventsTriggeredToday: finiteNumberOr(
+      playerData.eventsTriggeredToday,
+      DEFAULT_PLAYER_STATE.eventsTriggeredToday
+    ),
+    totalTravels: finiteNumberOr(
+      playerData.totalTravels,
+      DEFAULT_PLAYER_STATE.totalTravels
+    ),
+    hqUpgrades: sanitizeStringArray(playerData.hqUpgrades),
+    clinicVisits: finiteNumberOr(
+      playerData.clinicVisits,
+      DEFAULT_PLAYER_STATE.clinicVisits
+    ),
     van: {
-      ...DEFAULT_PLAYER_STATE.van,
-      ...(typeof playerData.van === 'object' && playerData.van !== null
-        ? (playerData.van as Record<string, unknown>)
-        : {})
+      fuel: finiteNumberOr(vanData.fuel, DEFAULT_PLAYER_STATE.van.fuel),
+      condition: finiteNumberOr(
+        vanData.condition,
+        DEFAULT_PLAYER_STATE.van.condition
+      ),
+      upgrades: sanitizeStringArray(vanData.upgrades),
+      breakdownChance: finiteNumberOr(
+        vanData.breakdownChance,
+        DEFAULT_PLAYER_STATE.van.breakdownChance
+      )
     },
+    passiveFollowers: finiteNumberOr(
+      playerData.passiveFollowers,
+      DEFAULT_PLAYER_STATE.passiveFollowers
+    ),
     stats: {
-      ...DEFAULT_PLAYER_STATE.stats,
-      ...(typeof playerData.stats === 'object' && playerData.stats !== null
-        ? (playerData.stats as Record<string, unknown>)
-        : {})
+      totalDistance: finiteNumberOr(
+        statsData.totalDistance,
+        DEFAULT_PLAYER_STATE.stats.totalDistance
+      ),
+      conflictsResolved: finiteNumberOr(
+        statsData.conflictsResolved,
+        DEFAULT_PLAYER_STATE.stats.conflictsResolved
+      ),
+      stageDives: finiteNumberOr(
+        statsData.stageDives,
+        DEFAULT_PLAYER_STATE.stats.stageDives
+      ),
+      consecutiveBadShows: finiteNumberOr(
+        statsData.consecutiveBadShows,
+        DEFAULT_PLAYER_STATE.stats.consecutiveBadShows
+      ),
+      proveYourselfMode:
+        typeof statsData.proveYourselfMode === 'boolean'
+          ? statsData.proveYourselfMode
+          : DEFAULT_PLAYER_STATE.stats.proveYourselfMode
     }
   }
 
@@ -304,26 +413,43 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
 }
 
 const sanitizeBand = (loadedBand: unknown): BandState => {
-  const bandData =
-    typeof loadedBand === 'object' && loadedBand !== null
-      ? (loadedBand as Record<string, unknown>)
-      : {}
-  const rawBand = {
+  const bandData = isPlainRecord(loadedBand)
+    ? (loadedBand as Record<string, unknown>)
+    : {}
+  const rawBand: BandState = {
     ...DEFAULT_BAND_STATE,
-    ...bandData,
+    harmony: finiteNumberOr(bandData.harmony, DEFAULT_BAND_STATE.harmony),
+    harmonyRegenTravel:
+      typeof bandData.harmonyRegenTravel === 'boolean'
+        ? bandData.harmonyRegenTravel
+        : DEFAULT_BAND_STATE.harmonyRegenTravel,
+    inventorySlots: finiteNumberOr(
+      bandData.inventorySlots,
+      DEFAULT_BAND_STATE.inventorySlots
+    ),
+    luck: finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck),
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(typeof bandData.performance === 'object' &&
-      bandData.performance !== null
-        ? (bandData.performance as Record<string, unknown>)
+      ...(isPlainRecord(bandData.performance)
+        ? {
+            guitarDifficulty: finiteNumberOr(
+              bandData.performance.guitarDifficulty,
+              DEFAULT_BAND_STATE.performance.guitarDifficulty
+            ),
+            drumMultiplier: finiteNumberOr(
+              bandData.performance.drumMultiplier,
+              DEFAULT_BAND_STATE.performance.drumMultiplier
+            ),
+            crowdDecay: finiteNumberOr(
+              bandData.performance.crowdDecay,
+              DEFAULT_BAND_STATE.performance.crowdDecay
+            )
+          }
         : {})
     },
-    inventory: {
-      ...DEFAULT_BAND_STATE.inventory,
-      ...(typeof bandData.inventory === 'object' && bandData.inventory !== null
-        ? (bandData.inventory as Record<string, unknown>)
-        : {})
-    },
+    inventory: isPlainRecord(bandData.inventory)
+      ? (copySafePrimitiveObject(bandData.inventory) ?? {})
+      : { ...DEFAULT_BAND_STATE.inventory },
     stash: (() => {
       const defaultStash = Object.assign(
         Object.create(null),
@@ -386,12 +512,11 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
     activeContrabandEffects: Array.isArray(bandData.activeContrabandEffects)
       ? (bandData.activeContrabandEffects as unknown[]).map(
           (effect: unknown) => {
-            const effectObj =
-              typeof effect === 'object' && effect !== null
-                ? (effect as Record<string, unknown>)
-                : {}
+            const effectObj = isPlainRecord(effect)
+              ? (effect as Record<string, unknown>)
+              : {}
             return {
-              ...effectObj,
+              ...(copySafePrimitiveObject(effectObj) ?? {}),
               remainingDuration:
                 Number.isFinite(effectObj.remainingDuration as number) &&
                 (effectObj.remainingDuration as number) >= 0
@@ -403,76 +528,91 @@ const sanitizeBand = (loadedBand: unknown): BandState => {
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
 
+  for (const key of [
+    'style',
+    'tourSuccess',
+    'gigModifier',
+    'tempo',
+    'practiceGain',
+    'crit',
+    'affinity',
+    'crowdControl'
+  ]) {
+    const value = finiteOptionalNumber(bandData[key])
+    if (value !== undefined) rawBand[key] = value
+  }
+
   // Validate Band Members
-  const validatedMembers: BandMember[] = Array.isArray(rawBand.members)
-    ? (rawBand.members.map((m, i) => ({
-        ...m,
-        // Backfill id from name for saves created before id fields were added
-        id:
-          typeof m.id === 'string'
-            ? m.id
-            : typeof m.name === 'string'
-              ? m.name.toLowerCase()
-              : typeof m.id === 'number' ||
-                  typeof m.id === 'boolean' ||
-                  typeof m.id === 'bigint' ||
-                  typeof m.id === 'symbol'
-                ? String(m.id)
-                : `member-${i}`,
+  const memberSource = Array.isArray(bandData.members)
+    ? bandData.members
+    : DEFAULT_BAND_STATE.members
+  const validatedMembers: BandMember[] = memberSource.flatMap(
+    (rawMember, i) => {
+      if (!isPlainRecord(rawMember)) return []
+      const m = rawMember
+      const id =
+        typeof m.id === 'string'
+          ? m.id
+          : typeof m.name === 'string'
+            ? m.name.toLowerCase()
+            : typeof m.id === 'number' ||
+                typeof m.id === 'boolean' ||
+                typeof m.id === 'bigint' ||
+                typeof m.id === 'symbol'
+              ? String(m.id)
+              : `member-${i}`
+      const name = typeof m.name === 'string' ? m.name : undefined
+      const selfRelationshipKeys = new Set([id, id.toLowerCase()])
+      if (name !== undefined) {
+        selfRelationshipKeys.add(name)
+        selfRelationshipKeys.add(name.toLowerCase())
+      }
+      const staminaMax = finiteOptionalNumber(m.staminaMax)
+      const member: BandMember = {
+        id,
         traits: normalizeTraitMap(m.traits),
-        mood: clampMemberMood(typeof m.mood === 'number' ? m.mood : 50),
-        stamina: clampMemberStamina(
-          typeof m.stamina === 'number' ? m.stamina : 100,
-          (m as Record<string, unknown>).staminaMax as number | undefined
-        ),
-        baseStats:
-          typeof m.baseStats === 'object' &&
-          m.baseStats !== null &&
-          !Array.isArray(m.baseStats)
-            ? Object.fromEntries(
-                Object.entries(m.baseStats as Record<string, unknown>).filter(
-                  ([, value]) =>
-                    typeof value === 'number' && Number.isFinite(value)
-                )
+        mood: clampMemberMood(finiteNumberOr(m.mood, 50)),
+        stamina: clampMemberStamina(finiteNumberOr(m.stamina, 100), staminaMax),
+        baseStats: isPlainRecord(m.baseStats)
+          ? (Object.fromEntries(
+              Object.entries(m.baseStats).filter(
+                ([, value]) =>
+                  typeof value === 'number' && Number.isFinite(value)
               )
-            : {},
-        ...(typeof m.skill === 'number' && Number.isFinite(m.skill)
-          ? { skill: m.skill }
-          : {}),
-        ...(typeof m.charisma === 'number' && Number.isFinite(m.charisma)
-          ? { charisma: m.charisma }
-          : {}),
-        ...(typeof m.technical === 'number' && Number.isFinite(m.technical)
-          ? { technical: m.technical }
-          : {}),
-        ...(typeof m.improv === 'number' && Number.isFinite(m.improv)
-          ? { improv: m.improv }
-          : {}),
-        ...(typeof m.composition === 'number' && Number.isFinite(m.composition)
-          ? { composition: m.composition }
-          : {}),
-        ...(typeof m.role === 'string' ? { role: m.role } : {}),
-        equipment:
-          typeof m.equipment === 'object' &&
-          m.equipment !== null &&
-          !Array.isArray(m.equipment)
-            ? (m.equipment as Record<string, unknown>)
-            : {},
-        relationships:
-          m.relationships &&
-          typeof m.relationships === 'object' &&
-          !Array.isArray(m.relationships)
-            ? Object.fromEntries(
-                Object.entries(m.relationships as Record<string, unknown>)
-                  .map(([key, value]) => [key, Number(value)] as const)
-                  .filter(([key, value]) => {
-                    if (typeof key !== 'string' || key === m.id) return false
-                    return Number.isFinite(value)
-                  })
-              )
-            : {}
-      })) as BandMember[])
-    : []
+            ) as Record<string, number>)
+          : {},
+        equipment: copySafePrimitiveObject(m.equipment) ?? {},
+        relationships: isPlainRecord(m.relationships)
+          ? Object.fromEntries(
+              Object.entries(m.relationships).filter(([key, value]) => {
+                const normalizedKey = key.toLowerCase()
+                if (
+                  selfRelationshipKeys.has(key) ||
+                  selfRelationshipKeys.has(normalizedKey)
+                ) {
+                  return false
+                }
+                return typeof value === 'number' && Number.isFinite(value)
+              }) as Array<[string, number]>
+            )
+          : {}
+      }
+      if (name !== undefined) member.name = name
+      if (typeof m.role === 'string') member.role = m.role
+      if (staminaMax !== undefined) member.staminaMax = staminaMax
+      for (const key of [
+        'skill',
+        'charisma',
+        'technical',
+        'improv',
+        'composition'
+      ]) {
+        const value = finiteOptionalNumber(m[key])
+        if (value !== undefined) member[key] = value
+      }
+      return [member]
+    }
+  )
 
   return {
     ...rawBand,
@@ -602,6 +742,137 @@ const sanitizeMinigameState = (rawMinigame: unknown): GameState['minigame'] => {
   return nextMinigame
 }
 
+const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
+  if (!Array.isArray(rawSetlist)) return []
+  const sanitized: GameState['setlist'] = []
+  for (const entry of rawSetlist) {
+    if (typeof entry === 'string') {
+      sanitized.push(entry as GameState['setlist'][number])
+      continue
+    }
+    const copied = copySafePrimitiveObject(entry)
+    if (copied) sanitized.push(copied as GameState['setlist'][number])
+  }
+  return sanitized
+}
+
+const sanitizeReputationByRegion = (
+  value: unknown
+): GameState['reputationByRegion'] => {
+  if (!isPlainRecord(value)) return {}
+  const sanitized: GameState['reputationByRegion'] = {}
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue
+    if (isForbiddenKey(key)) continue
+    const reputation = value[key]
+    if (typeof reputation === 'number' && Number.isFinite(reputation)) {
+      sanitized[key] = reputation
+    }
+  }
+  return sanitized
+}
+
+const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
+  if (!isPlainRecord(value)) return {}
+  const sanitized: GameState['npcs'] = {}
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue
+    if (isForbiddenKey(key)) continue
+    const npc = value[key]
+    if (!isPlainRecord(npc) || typeof npc.id !== 'string') continue
+    if (isForbiddenKey(npc.id)) continue
+    sanitized[key] = {
+      id: npc.id,
+      ...(typeof npc.name === 'string' ? { name: npc.name } : {}),
+      ...(typeof npc.role === 'string' ? { role: npc.role } : {}),
+      ...(Array.isArray(npc.traits)
+        ? { traits: sanitizeStringArray(npc.traits) }
+        : {}),
+      ...(typeof npc.relationship === 'number' &&
+      Number.isFinite(npc.relationship)
+        ? { relationship: npc.relationship }
+        : {})
+    }
+  }
+  return sanitized
+}
+
+const sanitizeGigModifiers = (value: unknown): GameState['gigModifiers'] => {
+  const sanitized = { ...DEFAULT_GIG_MODIFIERS }
+  if (!isPlainRecord(value)) return sanitized
+  for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
+    if (typeof value[key] === 'boolean') {
+      sanitized[key as keyof typeof DEFAULT_GIG_MODIFIERS] = value[
+        key
+      ] as boolean
+    }
+  }
+  if (typeof value.energy === 'boolean') {
+    sanitized.catering = value.energy
+  }
+  return sanitized
+}
+
+const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
+  if (!isPlainRecord(value)) return null
+  if (typeof value.id !== 'string' || typeof value.name !== 'string') {
+    return null
+  }
+  const venue: NonNullable<GameState['currentGig']> = {
+    id: value.id,
+    name: value.name
+  }
+  for (const key of ['city', 'region']) {
+    if (typeof value[key] === 'string') venue[key] = value[key]
+  }
+  for (const key of ['capacity', 'difficulty', 'diff', 'reputation']) {
+    const parsed = finiteOptionalNumber(value[key])
+    if (parsed !== undefined) venue[key] = parsed
+  }
+  return venue
+}
+
+const sanitizeLastGigStats = (value: unknown): GameState['lastGigStats'] => {
+  if (!isPlainRecord(value)) return null
+  const sanitized: NonNullable<GameState['lastGigStats']> = {}
+  for (const key of [
+    'score',
+    'misses',
+    'accuracy',
+    'combo',
+    'health',
+    'overload'
+  ]) {
+    const parsed = finiteOptionalNumber(value[key])
+    if (parsed !== undefined) sanitized[key] = parsed
+  }
+  return Object.keys(sanitized).length > 0 ? sanitized : null
+}
+
+const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
+  if (!Array.isArray(value)) return []
+  return value.flatMap(quest => {
+    if (!isPlainRecord(quest) || typeof quest.id !== 'string') return []
+    const sanitized: GameState['activeQuests'][number] = { id: quest.id }
+    for (const key of ['label', 'rewardType', 'rewardFlag']) {
+      if (typeof quest[key] === 'string') sanitized[key] = quest[key]
+    }
+    for (const key of ['deadline', 'progress', 'required']) {
+      if (quest[key] === null && key === 'deadline') {
+        sanitized.deadline = null
+        continue
+      }
+      const parsed = finiteOptionalNumber(quest[key])
+      if (parsed !== undefined) sanitized[key] = parsed
+    }
+    const rewardData = copySafePrimitiveObject(quest.rewardData)
+    if (rewardData) sanitized.rewardData = rewardData
+    const failurePenalty = copySafePrimitiveObject(quest.failurePenalty)
+    if (failurePenalty) sanitized.failurePenalty = failurePenalty
+    return [sanitized]
+  })
+}
+
 /**
  * Handles game load with migration and validation
  * @param {Object} state - Current state
@@ -644,35 +915,22 @@ export const handleLoadGame = (
     band: validatedBand,
     social: mergedSocial,
     gameMap: normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap,
-    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
-      ? loadedState.activeStoryFlags
-      : [],
-    pendingEvents: Array.isArray(loadedState.pendingEvents)
-      ? loadedState.pendingEvents
-      : [],
-    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
-      ? loadedState.eventCooldowns
-      : [],
+    setlist: sanitizeSetlist(loadedState.setlist),
+    activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags),
+    pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
+    eventCooldowns: sanitizeStringArray(loadedState.eventCooldowns),
     activeEvent: (loadedState.activeEvent as GameState['activeEvent']) || null,
     toasts: sanitizeToasts(loadedState.toasts),
-    reputationByRegion:
-      (loadedState.reputationByRegion as Record<string, number>) || {},
-    venueBlacklist: Array.isArray(loadedState.venueBlacklist)
-      ? (loadedState.venueBlacklist as string[])
-      : [],
-    activeQuests: Array.isArray(loadedState.activeQuests)
-      ? loadedState.activeQuests
-      : [],
-    npcs: (loadedState.npcs as GameState['npcs']) || {},
-    gigModifiers: {
-      ...DEFAULT_GIG_MODIFIERS,
-      ...((loadedState.gigModifiers as Record<string, boolean>) || {})
-    },
+    reputationByRegion: sanitizeReputationByRegion(
+      loadedState.reputationByRegion
+    ),
+    venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
+    activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
+    npcs: sanitizeNpcs(loadedState.npcs),
+    gigModifiers: sanitizeGigModifiers(loadedState.gigModifiers),
     currentScene: GAME_PHASES.OVERWORLD,
-    currentGig: (loadedState.currentGig as GameState['currentGig']) || null,
-    lastGigStats:
-      (loadedState.lastGigStats as GameState['lastGigStats']) || null,
+    currentGig: sanitizeVenue(loadedState.currentGig),
+    lastGigStats: sanitizeLastGigStats(loadedState.lastGigStats),
     settings: {
       ...state.settings,
       ...(typeof loadedState.settings === 'object' &&
@@ -685,7 +943,7 @@ export const handleLoadGame = (
     },
     minigame: sanitizeMinigameState(loadedState.minigame),
     unlocks: Array.isArray(loadedState.unlocks)
-      ? (loadedState.unlocks as string[])
+      ? sanitizeStringArray(loadedState.unlocks)
       : state.unlocks || []
   }
 
@@ -702,20 +960,6 @@ export const handleLoadGame = (
     venueBlacklist: safeState.venueBlacklist
       .map(migrateLegacyVenueId)
       .filter((id): id is string => id.length > 0)
-  }
-
-  // Migration: energy -> catering
-  const gigModifiersLegacy = migratedState.gigModifiers as Record<
-    string,
-    boolean
-  >
-  if (gigModifiersLegacy.energy !== undefined) {
-    const { energy, ...restModifiers } = gigModifiersLegacy
-    migratedState.gigModifiers = {
-      ...DEFAULT_GIG_MODIFIERS,
-      ...restModifiers,
-      catering: energy
-    }
   }
 
   // Version Migration Map

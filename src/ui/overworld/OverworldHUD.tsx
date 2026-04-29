@@ -54,14 +54,10 @@ export const OverworldHUD = React.memo(
       typeof audioState === 'object' &&
       audioState !== null &&
       (audioState as Record<string, unknown>).isPlaying === true
-    const displayMoney = useAnimatedNum(player.money ?? 0)
-    const prevMoneyRef = useRef(player.money ?? 0)
-    const moneyAnim =
-      (player.money ?? 0) === prevMoneyRef.current
-        ? ''
-        : (player.money ?? 0) > prevMoneyRef.current
-          ? 'money-anim-up'
-          : 'money-anim-down'
+    const moneyValue = player.money ?? 0
+    const displayMoney = useAnimatedNum(moneyValue)
+    const prevMoneyRef = useRef(moneyValue)
+    const [moneyAnim, setMoneyAnim] = useState('')
     const vanFuel = player.van?.fuel
     const vanCondition = player.van?.condition
     const fuelLow = vanFuel !== undefined && vanFuel < 20
@@ -105,8 +101,22 @@ export const OverworldHUD = React.memo(
     )
 
     useEffect(() => {
-      prevMoneyRef.current = player.money ?? 0
-    }, [player.money])
+      const previousMoney = prevMoneyRef.current
+      if (moneyValue === previousMoney) return undefined
+
+      setMoneyAnim(
+        moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
+      )
+      prevMoneyRef.current = moneyValue
+
+      const timer = window.setTimeout(() => {
+        setMoneyAnim('')
+      }, 450)
+
+      return () => {
+        window.clearTimeout(timer)
+      }
+    }, [moneyValue])
 
     useEffect(() => {
       const isInputTarget = (target: EventTarget | null) => {

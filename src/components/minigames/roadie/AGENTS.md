@@ -1,5 +1,7 @@
 # src/components/minigames/roadie - Agent Instructions
 
+Agents for `src/components/minigames/roadie/**` guide Roadie minigame scenarios, hook behavior, and travel-completion handoff. Call them when working on gameplay or test logic in this folder; they are not for production-sensitive operations, privileged actions, or broad renderer rewrites. Consult this file before changing Roadie scenario flow, timers, or arrival integration.
+
 ## Scope
 
 Applies to `src/components/minigames/roadie/**`.

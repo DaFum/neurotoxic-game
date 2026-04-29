@@ -66,7 +66,11 @@ export class RoadieTrafficManager {
   }
 
   renderTraffic(state: RoadieTrafficState, cellW: number, cellH: number) {
-    if (!Array.isArray(state.traffic)) return
+    if (!Array.isArray(state.traffic)) {
+      this.currentIds.clear()
+      this.cleanupTraffic()
+      return
+    }
 
     this.currentIds.clear()
     for (const rawCar of state.traffic) {

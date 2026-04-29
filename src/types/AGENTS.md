@@ -13,6 +13,6 @@ Applies to `src/types/**`.
 
 ## Gotchas
 
-- `GameState.lastGigStats` and `SET_LAST_GIG_STATS` payload fields must expose matching optional fields: `score`, `accuracy`, `combo`, `health`, `overload`.
+- `GameState.lastGigStats` and `SET_LAST_GIG_STATS` payload fields must expose matching optional fields: `score`, `misses`, `accuracy`, `combo`, `health`, `overload`.
 - Shared audio UI contracts belong in `src/types/audio.d.ts`; component-local copies drift quickly.
 - Callback prop names ending in `Callback` are shared UI contracts; rename only with all consumers and tests updated together.

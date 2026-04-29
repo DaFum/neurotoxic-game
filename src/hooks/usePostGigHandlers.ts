@@ -71,7 +71,6 @@ export interface UsePostGigHandlersProps {
   ) => void
   unlockTrait: (memberId: string, traitId: string) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
-  saveGame: (force: boolean) => void
   changeScene: (scene: string) => void
   addQuest: (
     quest: Parameters<

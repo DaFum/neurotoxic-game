@@ -4,8 +4,15 @@ export const checkHasBroadcastedToday = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
   playerDay: number
 ): boolean => {
-  if (!social || typeof playerDay !== 'number') return false
+  if (!social || !Number.isFinite(playerDay)) return false
   return social.lastPirateBroadcastDay === playerDay
+}
+
+const requireFiniteNumber = (value: unknown, label: string): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`${label} must be a finite number`)
+  }
+  return value
 }
 
 export const validatePirateBroadcast = (
@@ -16,22 +23,22 @@ export const validatePirateBroadcast = (
 ): boolean => {
   if (!social || !player || !band || !config) return false
 
-  const day = player.day
-  const hasBroadcastedToday =
-    typeof day === 'number' ? checkHasBroadcastedToday(social, day) : false
+  const day = requireFiniteNumber(player.day, 'player.day')
+  const money = requireFiniteNumber(player.money, 'player.money')
+  const harmony = requireFiniteNumber(band.harmony, 'band.harmony')
+  const cost = requireFiniteNumber(config.COST, 'config.COST')
+  const harmonyCost = requireFiniteNumber(
+    config.HARMONY_COST,
+    'config.HARMONY_COST'
+  )
+  const hasBroadcastedToday = checkHasBroadcastedToday(social, day)
 
-  const currentMoney = clampPlayerMoney(
-    typeof player.money === 'number' ? player.money : 0
-  )
-  const currentHarmony = clampBandHarmony(
-    typeof band.harmony === 'number' ? band.harmony : 1
-  )
+  const currentMoney = clampPlayerMoney(money)
+  const currentHarmony = clampBandHarmony(harmony)
 
   return (
     !hasBroadcastedToday &&
-    typeof config.COST === 'number' &&
-    typeof config.HARMONY_COST === 'number' &&
-    currentMoney >= config.COST &&
-    currentHarmony >= config.HARMONY_COST
+    currentMoney >= cost &&
+    currentHarmony >= harmonyCost
   )
 }

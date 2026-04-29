@@ -1,8 +1,10 @@
 # src/context - Agent Instructions
 
+Agents in this codebase are AI assistants or automated tools that help maintain scoped contracts; in `src/context/**`, they are responsible for state shape, action, reducer, and persistence rules. Their boundaries are strict: no direct state mutation outside reducers/action creators, no privileged side effects, no unvalidated persistence payloads, and no security bypasses. Consult this file when adding actions, changing context/reducer rules, debugging context behavior, or updating agent instructions; use deeper AGENTS files when they are closer to the edited code.
+
 ## Scope
 
-Applies to `src/context/**` unless a deeper `AGENTS.md` overrides it.
+Applies to `src/context/**` unless a deeper `AGENTS.md` overrides it, with the behavioral boundaries above. Example: use this guide when adding a new persisted state field and matching action creator/reducer handling.
 
 ## State Rules
 

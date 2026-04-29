@@ -56,8 +56,19 @@ describe('mapUtils', () => {
       assert.equal(isConnected(gameMap, null, null), false)
     })
 
-    test('throws TypeError if gameMap.connections is missing', () => {
-      assert.throws(() => isConnected({}, 'A', 'B'), TypeError)
+    test('returns false if gameMap.connections is missing', () => {
+      assert.equal(isConnected({}, 'A', 'B'), false)
+    })
+
+    test('skips malformed connections', () => {
+      assert.equal(
+        isConnected(
+          { connections: [null, 7, { from: 'A' }, { from: 'A', to: 'B' }] },
+          'A',
+          'B'
+        ),
+        true
+      )
     })
   })
 
@@ -153,6 +164,23 @@ describe('mapUtils', () => {
       // Should not crash, fuel defaults to 0
       const result = checkSoftlock(gameMap, player)
       assert.ok(typeof result === 'boolean')
+    })
+
+    test('treats missing or malformed connections as unreachable without throwing', () => {
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      const player = { currentNodeId: 'A', van: { fuel: 20 }, money: 40 }
+
+      assert.equal(checkSoftlock({ nodes: gameMap.nodes }, player), true)
+      assert.equal(
+        checkSoftlock(
+          {
+            nodes: gameMap.nodes,
+            connections: [null, 7, { from: 'A' }, { from: 'A', to: 123 }]
+          },
+          player
+        ),
+        true
+      )
     })
 
     test('passes band state to calculateTravelExpenses', () => {

@@ -44,8 +44,8 @@ test('systemReducer - LOAD_GAME', async t => {
         eventCooldowns: ['cooldown1'],
         toasts: [{ id: '1', message: 'Hello', type: 'info' }],
         venueBlacklist: [],
-        activeQuests: ['quest1'],
-        gigModifiers: { catering: 1 },
+        activeQuests: [{ id: 'quest1' }],
+        gigModifiers: { catering: true },
         minigame: { score: 100 },
         unlocks: ['unlock1']
       }
@@ -77,8 +77,8 @@ test('systemReducer - LOAD_GAME', async t => {
         { id: '1', message: 'Hello', type: 'info' }
       ])
       assert.deepEqual(nextState.venueBlacklist, [])
-      assert.deepEqual(nextState.activeQuests, ['quest1'])
-      assert.equal(nextState.gigModifiers.catering, 1)
+      assert.deepEqual(nextState.activeQuests, [{ id: 'quest1' }])
+      assert.equal(nextState.gigModifiers.catering, true)
       assert.equal(nextState.minigame.score, 100)
       assert.deepEqual(nextState.unlocks, ['unlock1'])
     }
@@ -219,7 +219,7 @@ test('systemReducer - LOAD_GAME', async t => {
       eventCooldowns: 'invalid',
       activeQuests: 'invalid',
       unlocks: 'invalid',
-      gigModifiers: { energy: 5 } // Test migration from energy to catering
+      gigModifiers: { energy: true } // Test migration from energy to catering
     }
 
     const nextState = handleLoadGame(initialState, loadedState)
@@ -239,8 +239,171 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.eventCooldowns, [])
     assert.deepEqual(nextState.activeQuests, [])
     assert.deepEqual(nextState.unlocks, initialState.unlocks || [])
-    assert.equal(nextState.gigModifiers.catering, 5)
+    assert.equal(nextState.gigModifiers.catering, true)
     assert.equal(nextState.gigModifiers.energy, undefined)
+  })
+
+  await t.test(
+    'whitelists loaded player and member fields and drops non-finite values',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        player: {
+          money: Number.POSITIVE_INFINITY,
+          fame: Number.NaN,
+          day: Number.NEGATIVE_INFINITY,
+          injected: 'drop me',
+          van: {
+            fuel: Number.POSITIVE_INFINITY,
+            condition: 88,
+            upgrades: ['turbo', 99],
+            injected: true
+          },
+          stats: {
+            totalDistance: Number.NaN,
+            conflictsResolved: 3,
+            stageDives: Number.POSITIVE_INFINITY,
+            consecutiveBadShows: 2,
+            proveYourselfMode: true,
+            injected: 'drop me'
+          }
+        },
+        band: {
+          members: [
+            {
+              id: 'm1',
+              name: 'Matze',
+              role: 'guitar',
+              mood: Number.NaN,
+              stamina: Number.POSITIVE_INFINITY,
+              staminaMax: Number.NEGATIVE_INFINITY,
+              injected: 'drop me',
+              relationships: { m1: 99, m2: 30 }
+            }
+          ]
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const member = nextState.band.members[0]
+
+      assert.equal(Object.hasOwn(nextState.player, 'injected'), false)
+      assert.equal(Object.hasOwn(nextState.player.van, 'injected'), false)
+      assert.equal(Object.hasOwn(nextState.player.stats, 'injected'), false)
+      assert.equal(nextState.player.money, 500)
+      assert.equal(nextState.player.fame, 0)
+      assert.equal(nextState.player.day, 1)
+      assert.equal(nextState.player.van.fuel, 100)
+      assert.deepEqual(nextState.player.van.upgrades, ['turbo'])
+      assert.equal(nextState.player.stats.totalDistance, 0)
+      assert.equal(nextState.player.stats.conflictsResolved, 3)
+      assert.equal(nextState.player.stats.stageDives, 0)
+      assert.equal(member.mood, 50)
+      assert.equal(member.stamina, 100)
+      assert.equal(Object.hasOwn(member, 'staminaMax'), false)
+      assert.equal(Object.hasOwn(member, 'injected'), false)
+      assert.deepEqual(member.relationships, { m2: 30 })
+    }
+  )
+
+  await t.test(
+    'drops self-relationships and non-number relationship scores from loaded members',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        band: {
+          members: [
+            {
+              name: 'Matze',
+              relationships: {
+                Matze: 99,
+                matze: 88,
+                Marius: 30,
+                NullScore: null,
+                StringScore: '50',
+                BooleanScore: true,
+                InfiniteScore: Number.POSITIVE_INFINITY
+              }
+            }
+          ]
+        }
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const member = nextState.band.members[0]
+
+      assert.equal(member.id, 'matze')
+      assert.deepEqual(member.relationships, { Marius: 30 })
+    }
+  )
+
+  await t.test('sanitizes loaded top-level collections entry by entry', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      setlist: ['song-a', 7, { songId: 'song-b' }, null],
+      activeStoryFlags: ['flag-a', 4],
+      pendingEvents: ['event-a', {}],
+      eventCooldowns: ['cooldown-a', false],
+      reputationByRegion: {
+        berlin: 10,
+        void: Number.NaN,
+        bad: 'high'
+      },
+      npcs: {
+        n1: { id: 'n1', name: 'Nina', role: 'booker', traits: ['calm', 4] },
+        bad: { name: 'No Id' },
+        primitive: 5
+      },
+      gigModifiers: {
+        promo: true,
+        merch: 'yes',
+        energy: true,
+        unknown: true
+      },
+      currentGig: {
+        id: 'venue-1',
+        name: 'Venue',
+        capacity: Number.POSITIVE_INFINITY,
+        difficulty: 3,
+        injected: 'drop me'
+      },
+      lastGigStats: {
+        score: 100,
+        accuracy: Number.NaN,
+        combo: 7,
+        injected: 'drop me'
+      },
+      venueBlacklist: ['venues:venue-1.name', 7],
+      activeQuests: [
+        { id: 'q1', progress: 2, required: Number.POSITIVE_INFINITY },
+        { label: 'missing id' }
+      ],
+      unlocks: ['u1', 2]
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.deepEqual(nextState.setlist, ['song-a', { songId: 'song-b' }])
+    assert.deepEqual(nextState.activeStoryFlags, ['flag-a'])
+    assert.deepEqual(nextState.pendingEvents, ['event-a'])
+    assert.deepEqual(nextState.eventCooldowns, ['cooldown-a'])
+    assert.deepEqual(nextState.reputationByRegion, { berlin: 10 })
+    assert.deepEqual(nextState.npcs, {
+      n1: { id: 'n1', name: 'Nina', role: 'booker', traits: ['calm'] }
+    })
+    assert.equal(nextState.gigModifiers.promo, true)
+    assert.equal(nextState.gigModifiers.merch, false)
+    assert.equal(nextState.gigModifiers.catering, true)
+    assert.equal(Object.hasOwn(nextState.gigModifiers, 'unknown'), false)
+    assert.deepEqual(nextState.currentGig, {
+      id: 'venue-1',
+      name: 'Venue',
+      difficulty: 3
+    })
+    assert.deepEqual(nextState.lastGigStats, { score: 100, combo: 7 })
+    assert.deepEqual(nextState.venueBlacklist, ['venue-1'])
+    assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
+    assert.deepEqual(nextState.unlocks, ['u1'])
   })
 
   await t.test('handles missing or malformed toasts array', () => {

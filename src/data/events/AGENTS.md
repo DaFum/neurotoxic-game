@@ -1,5 +1,9 @@
 # src/data/events - Agent Instructions
 
+## Purpose and Limitations
+
+Event-data agents author declarative event definitions: stable IDs, trigger/category pairing, namespaced i18n keys, typed conditions, and reducer-aligned options. They must not perform side effects, mutate runtime state, do IO, dispatch reducers, or rely on randomness. Use them for static event metadata only, and test both truthy/falsy condition branches while respecting special rules such as `category: 'special'` and `events:` i18n keys.
+
 ## Scope
 
 Applies to `src/data/events/**`.

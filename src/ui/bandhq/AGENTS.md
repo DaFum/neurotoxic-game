@@ -1,5 +1,7 @@
 # src/ui/bandhq - Agent Instructions
 
+Agent Instructions here apply to AI assistants, automated tools, and human operators changing Band HQ UI surfaces. Their purpose is to keep catalog, purchase, and effect flows aligned with shared reducers and engines; they are limited to `src/ui/bandhq/**`, expected to produce UI-safe inputs/outputs, and must respect i18n, shared types, and safety constraints. Use these agents for Band HQ UI and hook changes, not for unrelated economy engine rewrites.
+
 ## Scope
 
 Applies to `src/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.

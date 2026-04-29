@@ -1,5 +1,11 @@
 # tests/logic - Agent Instructions
 
+## Agent Role and Limitations
+
+- Agents for `tests/logic/**` help keep pure logic tests deterministic, focused, and fixture-driven.
+- They are not a source of truth for product behavior, must not use network access, and must treat nondeterministic outputs as invalid unless explicitly controlled.
+- Rely on this guide for contract-level logic assertions; write custom test logic when behavior spans DOM, integration, or reducer orchestration.
+
 ## Scope
 
 Applies to `tests/logic/**`.

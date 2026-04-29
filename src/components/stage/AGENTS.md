@@ -1,5 +1,13 @@
 # src/components/stage - Agent Instructions
 
+## Purpose
+
+Stage agents manage stage playback timing and end-of-song decisions by using `audioEngine.getGigTimeMs()` plus the `setlistCompleted` and `isNearTrackEnd` signals. They coordinate with shared audio and rhythm contracts instead of inventing scene-local timing rules.
+
+## Limitations
+
+Agents must not use `audioPlaybackEnded`, perform low-level audio decoding, or alter setlist flow. Preserve fallback behavior for procedural/MIDI playback when OGG assets are missing.
+
 ## Scope
 
 Applies to `src/components/stage/**`.

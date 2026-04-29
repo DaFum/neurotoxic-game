@@ -4,6 +4,10 @@
 
 Applies to `src/scenes/kabelsalat/components/overlays/**`.
 
+## Agent role and limitations
+
+Overlay agents coordinate overlay state, i18n key usage, and continuation controls while following the rules below for "Overlay actions..." and "Consume Escape/...". They must not access external services, mutate global game state outside provided callbacks, or replace manual controls with hidden automation. Use them for overlay lifecycle, error recovery, and keyed copy placeholders; use manual scene handlers for non-overlay gameplay flow.
+
 ## Rules
 
 - Overlay actions must preserve both automatic and manual continuation paths.

@@ -1,5 +1,13 @@
 # src/assets - Agent Instructions
 
+## Agent Purpose
+
+Agents in `src/assets/**` manage asset exports, asset-adjacent rendering contracts, tokenized color usage, and external image routing through `loadTexture`.
+
+## Agent Limitations
+
+Agents must not hardcode colors, bypass `loadTexture`, alter Pollinations key handling, or change audio note cap semantics. Defer to humans before replacing bundled media, changing licensing assumptions, or reworking generated asset pipelines.
+
 ## Scope
 
 Applies to `src/assets/**`.

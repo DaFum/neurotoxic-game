@@ -36,8 +36,13 @@ export const Tooltip = ({
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
 
-  const child = children as ReactElement & { props: Record<string, unknown> }
-  const childProps = child.props as Record<string, unknown>
+  const isValid = isValidElement(children)
+  const isFragment = isValid && children.type === React.Fragment
+  const child = isValid && !isFragment ? children : null
+  const childProps =
+    child && typeof child.props === 'object' && child.props !== null
+      ? (child.props as Record<string, unknown>)
+      : {}
 
   const classNameValue = getOwn<string>(childProps, 'className')
   const ariaDisabled = getOwn<unknown>(childProps, 'aria-disabled')
@@ -94,9 +99,6 @@ export const Tooltip = ({
     [childProps, isDisabled]
   )
 
-  const isValid = isValidElement(children)
-  const isFragment = isValid && children.type === React.Fragment
-
   React.useEffect(() => {
     if (!isValid) {
       logger.warn(
@@ -116,7 +118,9 @@ export const Tooltip = ({
   }
 
   const computedAriaDescribedBy = (() => {
-    const existing = getOwn<string>(childProps, 'aria-describedby')
+    const existingValue = getOwn<unknown>(childProps, 'aria-describedby')
+    const existing =
+      typeof existingValue === 'string' ? existingValue : undefined
     if (!isVisible) return existing
     if (!existing) return tooltipId
     const ids = existing.split(' ').filter(Boolean)
