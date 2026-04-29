@@ -19,6 +19,7 @@ describe('HealthBar', () => {
     expect(wrapper.className).toContain('z-10')
     expect(wrapper.className).toContain('absolute')
     expect(wrapper.className).toContain('sm:bottom-20')
+    expect(wrapper.className).toContain('bottom-14')
     expect(wrapper.className).toContain('w-[calc(100vw-2rem)]')
     expect(wrapper.className).toContain('max-w-[28rem]')
     expect(wrapper.className).toContain('pointer-events-none')
