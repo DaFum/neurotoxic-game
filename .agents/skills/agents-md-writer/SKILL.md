@@ -13,7 +13,7 @@ license: 'Proprietary. See LICENSE.txt for terms'
 
 # AGENTS.md Writer
 
-Write effective repository-level context files (AGENTS.md, AGENTS.md, CODEX.md) that actually improve coding agent performance.
+Write effective repository-level context files (AGENTS.md, CLAUDE.md, CODEX.md, etc.) that actually improve coding agent performance — across the entire multi-tool ecosystem.
 
 ## Why This Skill Exists
 
@@ -23,22 +23,38 @@ Research (Gloaguen et al., 2026 — "Evaluating AGENTS.md") evaluated context fi
 - **Developer-written context files provide marginal gains (~4%)** — but only when minimal and precise
 - Context files that include codebase overviews do NOT help agents find relevant files faster
 - Agents reliably follow instructions in context files — the problem is that unnecessary instructions make tasks harder
-- Context files are largely redundant with existing documentation (README, docs/, etc.)
 
 The key insight: **less is more**. Only include information that an agent cannot discover on its own from the codebase. Every unnecessary instruction is cognitive load that hurts performance.
 
+## The Multi-Tool Landscape (2026)
+
+AGENTS.md is now an open standard stewarded by the Agentic AI Foundation under the Linux Foundation. Every major AI coding tool reads context files, but each has its own native format:
+
+| Tool           | Native file                       | Reads AGENTS.md?         |
+| -------------- | --------------------------------- | ------------------------ |
+| Claude Code    | `CLAUDE.md`                       | Via import or workaround |
+| OpenAI Codex   | `AGENTS.md`                       | Native                   |
+| GitHub Copilot | `.github/copilot-instructions.md` | Yes                      |
+| Cursor         | `.cursor/rules/*.mdc`             | Yes                      |
+| Google Jules   | `JULES.md`                        | Yes                      |
+| Gemini CLI     | `GEMINI.md`                       | Via config               |
+| Windsurf       | `.windsurfrules`                  | Yes                      |
+| Amp            | `AGENTS.md`                       | Native                   |
+
+**The practical strategy**: Write core instructions in **AGENTS.md** (broadest compatibility), then use tool-specific files only for features that AGENTS.md can't provide. See "Choosing Your File Strategy" below.
+
 ## Before Writing: Gather Information
 
-Before writing the context file, you need to understand the repository. Do the following:
+Before writing the context file, understand the repository:
 
 1. **Read the repository structure** — `view` the root directory to understand layout
 2. **Read existing documentation** — check README.md, CONTRIBUTING.md, docs/ folder
 3. **Identify the tech stack** — language, framework, package manager, test runner
 4. **Check for non-obvious tooling** — custom build scripts, monorepo tools, unusual dependency managers
-5. **Look for existing context files** — check for AGENTS.md, AGENTS.md, CODEX.md, .github/copilot-instructions.md
+5. **Look for existing context files** — check for AGENTS.md, CLAUDE.md, CODEX.md, .cursorrules, .github/copilot-instructions.md, GEMINI.md
 6. **Identify pain points** — things that would trip up an agent that aren't documented elsewhere
 
-If the user provides a repo path (local or GitHub URL), explore it. If they describe their repo verbally, ask targeted questions about the items above — but keep it efficient, don't interrogate them.
+If the user provides a repo path (local or GitHub URL), explore it. If they describe their repo verbally, ask targeted questions — but keep it efficient, don't interrogate them.
 
 ## The Golden Rule
 
@@ -145,7 +161,7 @@ Include hard architectural rules that aren't discoverable from code structure al
 
 **DO NOT INCLUDE:**
 
-- "Run tests to make sure your changes work" — agents do this by default (and research shows context files increase testing even without being asked)
+- "Run tests to make sure your changes work" — agents do this by default
 - Standard test runner usage
 - Obvious things like "tests are in the tests/ directory"
 
@@ -181,7 +197,7 @@ This is often the most valuable section. Include non-obvious things that would w
 
 These are backed by research findings that show they actively hurt performance:
 
-1. **Codebase overviews / directory listings** — Research shows 100% of LLM-generated context files include these, and they do NOT help agents find relevant files faster. Agents can `ls` and `find` on their own.
+1. **Codebase overviews / directory listings** — 100% of LLM-generated context files include these, and they do NOT help agents find relevant files faster. Agents can `ls` and `find` on their own.
 
 2. **Paraphrased README content** — Context files that duplicate existing docs are the primary reason LLM-generated files hurt performance. If it's already in the README, don't repeat it.
 
@@ -189,25 +205,126 @@ These are backed by research findings that show they actively hurt performance:
 
 4. **Technology descriptions** — "This project uses React for the frontend and Express for the backend." Agents can read package.json.
 
-5. **Lengthy explanations** — Keep everything terse. Research shows more tokens = more cost + more confusion. Average effective context files are ~640 words. Aim for 200-400 words for most repos.
+5. **Lengthy explanations** — Keep everything terse. More tokens = more cost + more confusion. Average effective context files are ~640 words. Aim for 200-400 words for most repos.
 
-6. **Vague instructions** — "Make sure to handle errors properly" tells the agent nothing actionable. Either specify the error handling pattern or leave it out.
+6. **Vague instructions** — "Make sure to handle errors properly" tells the agent nothing actionable.
 
-## Choosing the Filename
+## Choosing Your File Strategy
 
-- **AGENTS.md** — Universal, works with Codex, Qwen Code, and most agents. Use this as the default.
-- **AGENTS.md** — Specifically for Codex. Use this if the user only uses Codex. Codex reads AGENTS.md automatically.
-- **CODEX.md** — Specifically for OpenAI Codex. Use if the user only uses Codex.
-- If unsure, write **AGENTS.md** (broadest compatibility). If the user wants maximum reach, you can create both AGENTS.md and AGENTS.md with the same content.
+Ask the user which tools they use, then apply this decision tree:
+
+**Single-tool teams:**
+
+- Claude Code only → `CLAUDE.md`
+- Codex only → `AGENTS.md`
+- Cursor only → `.cursor/rules/*.mdc` (but consider AGENTS.md for future-proofing)
+
+**Multi-tool teams (recommended approach):**
+
+1. Write core instructions in **AGENTS.md** (universal standard, broadest compatibility)
+2. Symlink for tools that don't natively read AGENTS.md:
+   ```bash
+   # Copilot
+   mkdir -p .github && ln -sfn ../AGENTS.md .github/copilot-instructions.md
+   # Cursor (basic — for advanced scoping, use .cursor/rules/ natively)
+   mkdir -p .cursor/rules && ln -sfn ../../AGENTS.md .cursor/rules/main.mdc
+   ```
+3. Add a **CLAUDE.md** only if you need Claude Code-specific features (nested files, imports, hooks). In the simplest case, CLAUDE.md can just import the shared file:
+
+   ```markdown
+   @AGENTS.md
+
+   ## Claude-Specific
+
+   [Any Claude Code-only instructions here]
+   ```
+
+**Always add `.gitignore` entries** for personal/local files:
+
+```
+CLAUDE.local.md
+```
+
+## CLAUDE.md — Advanced Features
+
+Claude Code has capabilities beyond what AGENTS.md supports. Use these when the user specifically works with Claude Code. For a deep dive, read `references/claude-md-advanced.md`.
+
+### File Hierarchy
+
+Claude Code walks up the directory tree from the working directory, loading every CLAUDE.md it finds. It also discovers CLAUDE.md files in subdirectories when it reads files there. This enables layered instructions:
+
+```
+project-root/
+├── CLAUDE.md              # Project-wide rules
+├── frontend/
+│   └── CLAUDE.md          # Frontend-specific conventions
+├── backend/
+│   └── CLAUDE.md          # Backend-specific conventions
+└── scripts/
+    └── CLAUDE.md          # Scripting conventions
+```
+
+Each subdirectory file should contain ONLY rules specific to that part of the codebase.
+
+### Import Syntax
+
+CLAUDE.md files can pull in other files using `@path/to/file` syntax:
+
+```markdown
+@docs/architecture.md
+@package.json
+@AGENTS.md
+```
+
+Imports are recursive (up to 5 levels deep). Relative paths resolve from the file containing the import.
+
+### Rules Directory
+
+For granular, conditional rules, use `.claude/rules/*.md` with optional `paths:` frontmatter for scoping.
+
+### Monorepo Configuration
+
+In large monorepos, use `claudeMdExcludes` in `.claude/settings.local.json` to skip irrelevant CLAUDE.md files from other teams. See `references/claude-md-advanced.md` for details.
+
+### Context Budget Warning
+
+Claude Code injects a system reminder telling the model to ignore CLAUDE.md content that isn't relevant to the current task. The more irrelevant content you add, the more likely Claude deprioritizes ALL your instructions. Keep the root file under 300 lines. Use imports and subdirectory files for the rest.
+
+## Migrating from Other Tools
+
+If the user has existing config files, read `references/migration-guide.md` for detailed per-tool conversion instructions. The high-level process:
+
+1. **Audit existing files** — Read all current config files (.cursorrules, copilot-instructions.md, etc.)
+2. **Deduplicate** — Most content will be identical across files. Extract the shared core.
+3. **Apply the Golden Rule** — Filter every line through the three criteria. Remove what fails.
+4. **Write AGENTS.md** — This becomes the single source of truth
+5. **Add tool-specific files** — Only for features that require them
+6. **Symlink the rest** — Point other tool config files at AGENTS.md
+7. **Clean up** — Remove deprecated files, update .gitignore
+
+## Validation
+
+After writing a context file, run the bundled validation script to catch common problems:
+
+```bash
+python scripts/validate_context_file.py <path-to-context-file> [--readme <path-to-readme>]
+```
+
+The validator checks for: codebase overviews, directory listings, README duplication, generic advice, technology descriptions, excessive word count, vague instructions, and discoverable commands.
+
+If the user provides a repo path, run validation automatically after generating the file and fix any issues before presenting the final result.
 
 ## Writing Process
 
 1. **Gather info** about the repo (see "Before Writing" above)
-2. **Identify non-obvious requirements** — things that meet the Golden Rule
-3. **Draft the file** — aim for 200-400 words, use the structure template above
-4. **Review against the "What to NEVER Include" list** — remove anything that fails
-5. **Check each line**: "Would an agent fail without this specific instruction?" If no, cut it.
-6. **Save the file** to the repo root
+2. **Check for existing config files** — if migrating, read `references/migration-guide.md`
+3. **Identify non-obvious requirements** — things that meet the Golden Rule
+4. **Draft the file** — aim for 200-400 words, use the structure template
+5. **Review against "What to NEVER Include"** — remove anything that fails
+6. **Run the validator** — `python scripts/validate_context_file.py <file>`
+7. **Check each line**: "Would an agent fail without this specific instruction?" If no, cut it.
+8. **Set up multi-tool strategy** — symlinks, imports, tool-specific files as needed
+9. **Save the file(s)** to the repo root
 
 ## Quality Checklist
 
@@ -220,7 +337,9 @@ Before finalizing, verify:
 - [ ] Every instruction is specific and actionable
 - [ ] Total length is under 500 words (ideally 200-400)
 - [ ] Commands are copy-pasteable (no placeholders unless clearly marked)
-- [ ] File uses the appropriate name (AGENTS.md / AGENTS.md / CODEX.md)
+- [ ] File uses the appropriate name for the target tool(s)
+- [ ] Multi-tool strategy is set up (symlinks, imports) if user uses multiple tools
+- [ ] Validator passes with no errors
 
 ## Example: Minimal but Effective Context File
 
@@ -245,7 +364,31 @@ Before finalizing, verify:
 - Python 3.12+ required — `match` statements are used throughout
 ```
 
-That's ~100 words and contains only actionable, non-discoverable information. This is what good looks like.
+~100 words. Only actionable, non-discoverable information. This is what good looks like.
+
+## Example: Multi-Tool Setup
+
+```
+project-root/
+├── AGENTS.md                                    # Shared core (single source of truth)
+├── CLAUDE.md                                    # Imports AGENTS.md + Claude-specific
+├── .github/
+│   └── copilot-instructions.md → ../AGENTS.md   # Symlink
+├── .cursor/
+│   └── rules/
+│       └── main.mdc → ../../AGENTS.md            # Symlink
+└── .gitignore                                    # Contains: CLAUDE.local.md
+```
+
+CLAUDE.md contents:
+
+```markdown
+@AGENTS.md
+
+## Claude-Specific
+
+- Run `uv run pre-commit run --all-files` before committing
+```
 
 ## Example: Bloated and Harmful Context File (DO NOT write like this)
 
@@ -254,45 +397,32 @@ That's ~100 words and contains only actionable, non-discoverable information. Th
 
 ## Overview
 
-MyProject is a web application built with FastAPI and PostgreSQL. It provides RESTful APIs for managing user data.
+MyProject is a web application built with FastAPI and PostgreSQL...
 
 ## Project Structure
 
 - `src/` — Source code
   - `src/api/` — API endpoints
   - `src/models/` — Database models
-  - `src/utils/` — Utility functions
-- `tests/` — Test files
-- `docs/` — Documentation
-- `scripts/` — Helper scripts
-
-## Getting Started
-
-1. Clone the repository
-2. Install Python 3.11+
-3. Run `pip install -r requirements.txt`
-4. Set up the database
-5. Run `pytest` to verify
+    ...
 
 ## Development Guidelines
 
 - Write clean, readable code
 - Follow PEP 8 style guidelines
 - Add type hints to all functions
-- Write tests for new features
-- Use meaningful variable names
 ```
 
-This file is entirely useless — every piece of information is either discoverable or too vague to act on. Research shows files like this actively reduce agent performance by ~3% while adding 20%+ to inference costs.
+Every piece of information is either discoverable or too vague to act on. Research shows files like this reduce agent performance by ~3% while adding 20%+ to inference costs.
 
 ## Improving an Existing Context File
 
-If the user has an existing AGENTS.md / AGENTS.md:
+If the user has an existing AGENTS.md / CLAUDE.md:
 
 1. Read the current file
-2. For each line, ask: "Does this meet the Golden Rule?" (non-discoverable, failure-causing if missed, specific/actionable)
+2. For each line, ask: "Does this meet the Golden Rule?"
 3. Remove everything that fails
 4. Check for missing gotchas or non-standard commands
 5. Rewrite to be minimal
-
-Show the user a before/after comparison with clear explanations of what was removed and why.
+6. Run the validator on the result
+7. Show the user a before/after comparison with clear explanations of what was removed and why
