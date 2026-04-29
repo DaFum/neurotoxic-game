@@ -4,7 +4,7 @@ import { getSafeUUID } from '../../utils/crypto'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioManager } from '../../utils/AudioManager'
+import { audioManager } from '../../utils/audio/AudioManager'
 
 export const useMainMenu = () => {
   const { t } = useTranslation()

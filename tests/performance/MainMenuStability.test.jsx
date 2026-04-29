@@ -48,7 +48,7 @@ vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: () => '',
   IMG_PROMPTS: {}
 }))
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     startAmbient: async () => {},
     ensureAudioContext: async () => {}

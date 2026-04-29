@@ -1,7 +1,7 @@
 import * as audioEngine from './audioEngine'
-import { secureRandom } from './crypto'
-import { handleError } from './errorHandler'
-import { logger } from './logger'
+import { secureRandom } from '../crypto'
+import { handleError } from '../errorHandler'
+import { logger } from '../logger'
 
 type AudioListener = () => void
 type AudioSfxType =
@@ -27,9 +27,9 @@ type AudioStateSnapshot = {
  * High-level audio facade that wraps audioEngine with user preference persistence.
  *
  * Architecture (three layers):
- *   AudioManager  — this file: localStorage prefs, mute toggle, ambient lifecycle
- *   audioEngine   — barrel re-export aggregating src/utils/audio/* modules
- *   audio/*       — low-level Tone.js / WebAudio implementation
+ *   AudioManager — localStorage prefs, mute toggle, ambient lifecycle
+ *   audioEngine  — barrel re-export aggregating low-level audio modules
+ *   audio/*      — Tone.js / WebAudio implementation
  *
  * Volume methods here intentionally duplicate the audioEngine calls because they
  * add localStorage persistence and deferred-apply logic (audio graph may not

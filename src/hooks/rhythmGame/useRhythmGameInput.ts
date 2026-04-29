@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { getTransportState, getGigTimeMs } from '../../utils/audioEngine'
+import { getTransportState, getGigTimeMs } from '../../utils/audio/audioEngine'
 import type { RhythmGameRefState } from './useRhythmGameState'
 
 import {

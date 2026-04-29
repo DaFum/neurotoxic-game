@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { TFunction } from 'i18next'
-import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
+import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
 import type { RhythmGameRefState, RhythmLiveStats } from '../types/rhythmGame'
@@ -83,8 +83,7 @@ export const useGigSession = ({
       const score = gameStateRef.current?.score ?? 0
       // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
       const rawStats =
-        gameStateRef.current?.stats ??
-        ({} as Partial<RhythmLiveStats>)
+        gameStateRef.current?.stats ?? ({} as Partial<RhythmLiveStats>)
       const statsSnapshot = {
         perfectHits: rawStats.perfectHits ?? 0,
         perfects: rawStats.perfects ?? 0, // Alias if used

@@ -5,8 +5,24 @@ import {
   PIRATE_RADIO_CONFIG
 } from '../../src/hooks/usePirateRadio'
 
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: { playSFX: vi.fn() }
+}))
+
+vi.mock('../../src/utils/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn()
+  },
+  LOG_LEVELS: {
+    DEBUG: 0,
+    INFO: 1,
+    WARN: 2,
+    ERROR: 3,
+    NONE: 4
+  }
 }))
 
 // Mock useGameState
@@ -74,11 +90,38 @@ describe('usePirateRadio', () => {
     expect(result.current.canBroadcast).toBe(false)
   })
 
+  it('disables broadcast instead of throwing when state invariants are corrupt', () => {
+    mockGameState.player.money = Number.POSITIVE_INFINITY
+
+    const { result } = renderHook(() => usePirateRadio())
+
+    expect(result.current.canBroadcast).toBe(false)
+  })
+
+  it('logs validation failures when state invariants are corrupt', async () => {
+    const { logger } = await import('../../src/utils/logger')
+    mockGameState.player.money = Number.POSITIVE_INFINITY
+
+    const { result } = renderHook(() => usePirateRadio())
+
+    expect(result.current.canBroadcast).toBe(false)
+    expect(logger.error).toHaveBeenCalledWith(
+      'PirateRadio',
+      expect.stringContaining('validatePirateBroadcast'),
+      expect.objectContaining({
+        error: expect.any(Error),
+        playerDay: 5,
+        social: mockGameState.social,
+        config: PIRATE_RADIO_CONFIG
+      })
+    )
+  })
+
   it('triggerBroadcast does nothing if canBroadcast is false', async () => {
     mockGameState.player.money = 0
     const { result } = renderHook(() => usePirateRadio())
 
-    const { audioManager } = await import('../../src/utils/AudioManager')
+    const { audioManager } = await import('../../src/utils/audio/AudioManager')
 
     act(() => {
       result.current.triggerBroadcast()
@@ -91,7 +134,7 @@ describe('usePirateRadio', () => {
   it('triggerBroadcast succeeds when conditions are met', async () => {
     const { result } = renderHook(() => usePirateRadio())
 
-    const { audioManager } = await import('../../src/utils/AudioManager')
+    const { audioManager } = await import('../../src/utils/audio/AudioManager')
 
     // Open radio first to test if it closes
     act(() => {

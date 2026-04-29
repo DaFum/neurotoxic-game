@@ -34,7 +34,7 @@ import {
   processTravelEvents,
   isGigNode
 } from '../utils/arrivalUtils'
-import { audioManager } from '../utils/AudioManager'
+import { audioManager } from '../utils/audio/AudioManager'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
@@ -43,7 +43,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { ALL_VENUES } from '../data/venues'
-import { getTravelArrivalUpdates } from '../utils/travelLogicUtils'
+import { getTravelArrivalUpdates } from '../utils/travelUtils'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic

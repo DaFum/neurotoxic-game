@@ -35,7 +35,7 @@ mock.module('tone', { namedExports: mockTone })
 
 // We need to import the module under test AFTER mocking dependencies
 const { loadAudioBuffer, disposeAudio } =
-  await import('../../src/utils/audioEngine')
+  await import('../../src/utils/audio/audioEngine')
 
 // --- Test Suite ---
 

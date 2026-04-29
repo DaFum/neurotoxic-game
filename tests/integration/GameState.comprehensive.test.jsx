@@ -358,6 +358,199 @@ describe('GameState Context - Event System', () => {
       '["event_head","event_second"]'
     )
   })
+
+  test('resolveEvent handles zero quest deadline offsets', async () => {
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='quest-deadline'>
+            {gameState.activeQuests[0]?.deadline ?? 'none'}
+          </div>
+          <div data-testid='day'>{gameState.player.day}</div>
+          <button
+            type='button'
+            onClick={() => gameState.setActiveEvent({ id: 'quest-event' })}
+          >
+            Set Quest Event
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.resolveEvent({
+                _precomputedResult: {
+                  delta: {
+                    flags: {
+                      addQuest: [{ id: 'zero-deadline', deadlineOffset: 0 }]
+                    }
+                  }
+                }
+              })
+            }
+          >
+            Resolve Quest
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Set Quest Event').click())
+    act(() => screen.getByText('Resolve Quest').click())
+
+    expect(screen.getByTestId('quest-deadline')).toHaveTextContent(
+      screen.getByTestId('day').textContent
+    )
+  })
+
+  test('resolveEvent skips invalid quest deadline offsets', async () => {
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='quest-deadline'>
+            {String(gameState.activeQuests[0]?.deadline ?? 'none')}
+          </div>
+          <button
+            type='button'
+            onClick={() => gameState.setActiveEvent({ id: 'quest-event' })}
+          >
+            Set Quest Event
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.resolveEvent({
+                _precomputedResult: {
+                  delta: {
+                    flags: {
+                      addQuest: [
+                        { id: 'invalid-deadline', deadlineOffset: 'not-a-day' }
+                      ]
+                    }
+                  }
+                }
+              })
+            }
+          >
+            Resolve Invalid Quest
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Set Quest Event').click())
+    act(() => screen.getByText('Resolve Invalid Quest').click())
+
+    expect(screen.getByTestId('quest-deadline')).toHaveTextContent('none')
+  })
+
+  test('addToast supports omitting the optional toast type', () => {
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='toast-type'>
+            {gameState.toasts[0]?.type ?? 'none'}
+          </div>
+          <div data-testid='toast-message'>
+            {gameState.toasts[0]?.message ?? 'none'}
+          </div>
+          <button
+            type='button'
+            onClick={() => gameState.addToast('message-only')}
+          >
+            Add Message Only Toast
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Add Message Only Toast').click())
+
+    expect(screen.getByTestId('toast-type')).toHaveTextContent('info')
+    expect(screen.getByTestId('toast-message')).toHaveTextContent(
+      'message-only'
+    )
+  })
+
+  test('resolveEvent saves game-over events with the applied delta snapshot', () => {
+    TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='player-money'>{gameState.player.money}</div>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 1000 })}
+          >
+            Set Money
+          </button>
+          <button
+            type='button'
+            onClick={() => gameState.setActiveEvent({ id: 'game-over-event' })}
+          >
+            Set Game Over Event
+          </button>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.resolveEvent({
+                _precomputedResult: {
+                  delta: {
+                    player: { money: -100 },
+                    flags: {
+                      gameOver: true,
+                      addQuest: [{ id: 'fatal-quest', deadlineOffset: 0 }],
+                      unlock: 'Fatal Unlock'
+                    }
+                  }
+                }
+              })
+            }
+          >
+            Resolve Game Over
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Set Money').click())
+    expect(screen.getByTestId('player-money')).toHaveTextContent('1000')
+
+    act(() => screen.getByText('Set Game Over Event').click())
+    act(() => screen.getByText('Resolve Game Over').click())
+
+    const saved = JSON.parse(localStorage.getItem('neurotoxic_v3_save'))
+    expect(saved.player.money).toBe(900)
+    expect(saved.activeQuests).toEqual([
+      expect.objectContaining({ id: 'fatal-quest', deadline: 1 })
+    ])
+    expect(saved.unlocks).toContain('fatalunlock')
+  })
 })
 
 describe('GameState Context - Save/Load', () => {
@@ -435,6 +628,81 @@ describe('GameState Context - Save/Load', () => {
     act(() => screen.getByText('Reset').click())
     const resetMoney = parseInt(screen.getByTestId('player-money').textContent)
     expect(resetMoney).toBeLessThan(5000)
+  })
+
+  test('loadGame only dispatches whitelisted validated save fields', async () => {
+    const TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='toast-count'>{gameState.toasts.length}</div>
+          <div data-testid='player-money'>{gameState.player.money}</div>
+          <button type='button' onClick={() => gameState.loadGame()}>
+            Load
+          </button>
+        </div>
+      )
+    }
+
+    localStorage.setItem(
+      'neurotoxic_v3_save',
+      JSON.stringify({
+        player: { money: 777, day: 3 },
+        band: { harmony: 80 },
+        social: {},
+        gameMap: { nodes: {}, connections: [] },
+        toasts: [{ id: 'injected-toast', type: 'info', message: 'Injected' }]
+      })
+    )
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Load').click())
+
+    await waitFor(() => {
+      expect(screen.getByTestId('player-money')).toHaveTextContent('777')
+    })
+    expect(screen.getByTestId('toast-count')).toHaveTextContent('0')
+  })
+
+  test('loadGame persists merged legacy unlocks back to unlock storage', async () => {
+    const { addUnlock, getUnlocks } =
+      await import('../../src/utils/unlockManager')
+    getUnlocks.mockReturnValue(['stored_unlock'])
+
+    const TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <button type='button' onClick={() => gameState.loadGame()}>
+          Load
+        </button>
+      )
+    }
+
+    localStorage.setItem(
+      'neurotoxic_v3_save',
+      JSON.stringify({
+        player: { money: 777, day: 3 },
+        band: { harmony: 80 },
+        social: {},
+        gameMap: { nodes: {}, connections: [] },
+        unlocks: ['legacy_unlock']
+      })
+    )
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => screen.getByText('Load').click())
+
+    expect(addUnlock).toHaveBeenCalledWith('legacy_unlock')
   })
 })
 

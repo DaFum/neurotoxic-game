@@ -20,7 +20,7 @@ vi.mock('../../src/utils/hecklerLogic', () => ({
   checkCollisions: mocks.checkCollisions
 }))
 
-vi.mock('../../src/utils/audioEngine', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   getGigTimeMs: mocks.getGigTimeMs,
   getTransportState: mocks.getTransportState,
   pauseAudio: mocks.pauseAudio,
@@ -138,5 +138,4 @@ describe('useRhythmGameLoop', () => {
 
     expect(gameStateRef.current.progress).toBe(10) // 100 / 1000 * 100
   })
-
 })

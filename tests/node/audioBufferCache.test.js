@@ -38,7 +38,7 @@ global.fetch = mock.fn(async _url => {
 })
 
 const { loadAudioBuffer, disposeAudio } =
-  await import('../../src/utils/audioEngine')
+  await import('../../src/utils/audio/audioEngine')
 
 test('audioBufferCache optimization', async t => {
   t.after(() => {

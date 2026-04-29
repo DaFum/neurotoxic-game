@@ -21,3 +21,4 @@ Applies to `src/components/stage/**`.
 ## Gotchas
 
 - Preserve fallback behavior for procedural/MIDI playback when OGG assets are unavailable.
+- Pixi.js v8 cleanup uses two distinct destroy args: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.

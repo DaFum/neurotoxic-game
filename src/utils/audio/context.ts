@@ -4,7 +4,7 @@ import {
   canResumeAudioContextState,
   getPreferredAudioContextState,
   isClosedAudioContextState
-} from '../audioContextState'
+} from './audioContextState'
 import { audioState } from './state'
 import { setupAudio } from './setup'
 import { disposeAudio } from './dispose'

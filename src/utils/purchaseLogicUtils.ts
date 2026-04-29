@@ -1,5 +1,5 @@
 import { HQ_ITEMS } from '../data/hqItems'
-import { bandHasTrait } from './traitLogic'
+import { bandHasTrait } from './traitUtils'
 import { StateError } from './errorHandler'
 import {
   clampPlayerMoney,

@@ -53,7 +53,7 @@ mock.module('../src/utils/economyEngine', {
   }
 })
 
-mock.module('../src/utils/AudioManager', {
+mock.module('../src/utils/audio/AudioManager', {
   namedExports: {
     audioManager: mockAudioManager
   }

@@ -4,17 +4,21 @@ import { Gig } from '../../src/scenes/Gig.tsx'
 import { useRhythmGameLogic } from '../../src/hooks/useRhythmGameLogic'
 import { useGameState } from '../../src/context/GameState.tsx'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { audioManager } from '../../src/utils/AudioManager'
-import { pauseAudio, resumeAudio, stopAudio } from '../../src/utils/audioEngine'
+import { audioManager } from '../../src/utils/audio/AudioManager'
+import {
+  pauseAudio,
+  resumeAudio,
+  stopAudio
+} from '../../src/utils/audio/audioEngine'
 
 // Mock dependencies
 vi.mock('../../src/context/GameState')
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     ensureAudioContext: vi.fn().mockResolvedValue(true)
   }
 }))
-vi.mock('../../src/utils/audioEngine', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   pauseAudio: vi.fn(),
   resumeAudio: vi.fn(),
   stopAudio: vi.fn()
@@ -541,8 +545,6 @@ describe('Gig Scene Component', () => {
     })
   })
 
-
-
   describe('Accessibility', () => {
     test('pause modal has proper ARIA attributes', () => {
       render(<Gig />)
@@ -559,10 +561,19 @@ describe('Gig Scene Component', () => {
   describe('Edge Cases', () => {
     test.each([
       { desc: 'missing currentGig name', currentGig: { id: 'gig', diff: 3 } },
-      { desc: 'missing currentGig diff', currentGig: { id: 'gig', name: 'Test' } },
+      {
+        desc: 'missing currentGig diff',
+        currentGig: { id: 'gig', name: 'Test' }
+      },
       { desc: 'minimum required props', currentGig: { id: 'gig' } },
-      { desc: 'festival venue names', currentGig: { id: 'gig', name: 'Summer Festival', diff: 5 } },
-      { desc: 'open air venue names', currentGig: { id: 'gig', name: 'Open Air Stage', diff: 4 } }
+      {
+        desc: 'festival venue names',
+        currentGig: { id: 'gig', name: 'Summer Festival', diff: 5 }
+      },
+      {
+        desc: 'open air venue names',
+        currentGig: { id: 'gig', name: 'Open Air Stage', diff: 4 }
+      }
     ])('handles $desc gracefully', ({ currentGig }) => {
       useGameState.mockReturnValue({
         currentGig,
@@ -579,5 +590,4 @@ describe('Gig Scene Component', () => {
       expect(screen.getByTestId('gig-hud')).toBeInTheDocument()
     })
   })
-
 })

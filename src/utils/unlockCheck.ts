@@ -3,7 +3,7 @@
 
 
  */
-import { hasTrait } from './traitLogic'
+import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import type { GameState } from '../types/game'
 

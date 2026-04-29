@@ -12,7 +12,7 @@ import { GigHUD } from '../components/GigHUD'
 const PixiStage = lazy(() =>
   import('../components/PixiStage').then(m => ({ default: m.PixiStage }))
 )
-import { audioManager } from '../utils/AudioManager'
+import { audioManager } from '../utils/audio/AudioManager'
 
 import { AudioLockedOverlay } from '../components/minigames/gig/AudioLockedOverlay'
 import { BandMembersLayer } from '../components/minigames/gig/BandMembersLayer'

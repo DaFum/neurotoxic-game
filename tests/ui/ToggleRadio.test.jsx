@@ -37,7 +37,7 @@ const { listeners, audioManagerMock } = vi.hoisted(() => {
   return { listeners, audioManagerMock: mock }
 })
 
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: audioManagerMock
 }))
 

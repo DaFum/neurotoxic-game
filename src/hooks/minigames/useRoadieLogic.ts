@@ -6,7 +6,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
-import { audioManager } from '../../utils/AudioManager'
+import { audioManager } from '../../utils/audio/AudioManager'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT,
