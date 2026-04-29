@@ -720,8 +720,13 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   );
 }
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-toxic-green) var(--color-void-black);
+}
 .custom-scrollbar::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: var(--color-void-black);
