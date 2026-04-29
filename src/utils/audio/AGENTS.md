@@ -28,11 +28,10 @@ Applies to `src/utils/audio/**`.
 
 - Keep time/unit fields explicit (`ms`, beats, ticks) in type names or comments to prevent subtle conversion bugs.
 
-
 ## Domain Gotchas
 
-- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
-- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+- Snapshot consumers should prefer `getStateSnapshot()` when available and normalize partial snapshots to complete `AudioSnapshot` shapes before comparing state.
+- Native subscription is valid only when `subscribe` is an actual function; otherwise polling must remain active to avoid silent stale-state failures.
 
 ## Recent Findings (2026-04)
 

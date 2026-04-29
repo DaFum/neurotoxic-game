@@ -35,11 +35,10 @@ Applies to `src/context/**`.
 - For load/reset/update reducers, whitelist fields from untrusted payloads instead of spreading generic objects into state.
 - Keep runtime clamps and action payload types aligned so reducers remain predictable and testable.
 
-
 ## Domain Gotchas
 
-- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
-- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+- Sanitizers for persisted payloads must explicitly replace invalid record-like fields (arrays for `baseStats`/`equipment`/`relationships`) instead of leaving spread-through values.
+- Context scheduler/timer callbacks that call strict utilities should catch/log/recover at the hook boundary so provider loops remain alive.
 
 ## Recent Findings (2026-04)
 

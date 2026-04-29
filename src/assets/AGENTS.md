@@ -20,11 +20,10 @@ Applies to `src/assets/**`.
 - If asset key/path conventions change, update typed import maps and all consuming loaders/tests together.
 - Prefer additive metadata fields over repurposing existing keys to preserve backward compatibility with save fixtures and tests.
 
-
 ## Domain Gotchas
 
-- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
-- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+- Asset filenames are part of implicit runtime contracts (loader maps, snapshot tests, generated URLs); renames require same-PR consumer updates.
+- Generated/remote image sources should continue to route through existing loader helpers so Pixi parsing behavior remains stable across environments.
 
 ## Recent Findings (2026-04)
 

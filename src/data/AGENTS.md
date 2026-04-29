@@ -27,11 +27,10 @@ Applies to `src/data/**`.
 - Annotate condition callbacks explicitly (`(state: GameState) => ...`) in data event pools to avoid implicit-`any` failures in CheckJS.
 - Use narrow literal unions/const assertions for category/type fields to preserve downstream type narrowing.
 
-
 ## Domain Gotchas
 
-- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
-- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+- Chatter/event data validators may throw on malformed entries; scheduling loops that consume these pools must catch and continue instead of halting.
+- Event/message copy fields are treated as i18n keys in rendering paths; introducing raw text here requires explicit `defaultValue` fallback handling in consumers.
 
 ## Recent Findings (2026-04)
 

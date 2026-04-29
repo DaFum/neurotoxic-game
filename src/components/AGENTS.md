@@ -28,11 +28,10 @@ Applies to `src/components/**`.
 - For reusable components, export explicit prop types and avoid `any` passthrough props.
 - When a prop accepts external/untrusted objects, type as `unknown` at the boundary and narrow before access.
 
-
 ## Domain Gotchas
 
-- Keep changes in this scope aligned with upstream root and parent AGENTS constraints; avoid duplicating guidance already covered by adjacent scopes.
-- When behavior contracts change here, update the closest tests/consumers in the same PR to keep scope boundaries trustworthy.
+- Component props that cross JS/TS boundaries must keep runtime `propTypes` aligned with TypeScript optionality to prevent silent misuse.
+- UI components should treat numeric `0` values as first-class outputs in labels/toasts/status rows; avoid truthy guards that hide valid zero states.
 
 ## Recent Findings (2026-04)
 
