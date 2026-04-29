@@ -29,3 +29,5 @@ Applies to `tests/node/**`.
 - Large node runtime spikes frequently come from Pixi-heavy or repeated hook setup suites; prefer consolidated tests and isolate heavy suites when possible.
 - Heavy split runs should remain optional acceleration only; `test:all` must continue to exercise both quick and heavy node coverage.
 - Node test setup now seeds logger level to WARN when unset; avoid tests that depend on DEBUG-by-default console noise.
+- Keep split-runner commands shell-portable (avoid POSIX-only inline env assignment in package scripts) so Windows `cmd` can run quick/heavy test scripts.
+- Real dataset contract assertions should include `song.id` in failure messages for debuggable CI logs.

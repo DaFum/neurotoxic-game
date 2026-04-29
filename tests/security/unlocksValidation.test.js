@@ -37,14 +37,24 @@ describe('Unlock Manager Security', async () => {
   }
 
   test('addUnlock sanitizes previously polluted storage payloads', () => {
-    mockStorage.setItem(
-      'neurotoxic_unlocks',
-      JSON.stringify(['valid_unlock', { __proto__: { polluted: true } }, 42])
-    )
+    const pollutedPayload =
+      '["valid_unlock", {"__proto__": {"polluted": true}}, 42]'
+    mockStorage.setItem('neurotoxic_unlocks', pollutedPayload)
 
     const added = addUnlock('fresh_unlock')
     assert.equal(added, true)
     assert.deepEqual(readStorage(), ['valid_unlock', 'fresh_unlock'])
+  })
+
+  test('addUnlock sanitizes constructor/prototype nested payload keys', () => {
+    const hostilePayload =
+      '["valid_unlock", {"constructor":{"prototype":{"polluted":true}}}]'
+    mockStorage.setItem('neurotoxic_unlocks', hostilePayload)
+
+    const added = addUnlock('fresh_unlock')
+    assert.equal(added, true)
+    assert.deepEqual(readStorage(), ['valid_unlock', 'fresh_unlock'])
+    assert.equal({}.polluted, undefined)
   })
 
   test('addUnlock tolerates malformed JSON payload without mutating prototype', () => {

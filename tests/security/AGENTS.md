@@ -20,3 +20,4 @@ Applies to `tests/security/**`.
 
 - Security overlap with unit suites tends to creep in around unlock/storage helpers; keep this domain adversarial-only.
 - `unlocksValidation` should assert hostile payload hardening (polluted storage, malformed JSON, non-string attacks) and leave duplicate/happy-path checks to `tests/node/unlockManager.test.js`.
+- For `__proto__` probes, use raw JSON strings (not object literals) so the hostile key is actually serialized and tested.

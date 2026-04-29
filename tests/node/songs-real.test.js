@@ -20,32 +20,75 @@ describe('songs real dataset contracts', () => {
 
   it('maintains leaderboardId contract for API submissions', () => {
     SONGS_DB.forEach(song => {
-      assert.ok(song.leaderboardId)
-      assert.ok(/^[a-z0-9_-]+$/.test(song.leaderboardId))
-      assert.equal(song.leaderboardId, song.leaderboardId.toLowerCase())
-      assert.ok(song.leaderboardId.length <= 64)
-      assert.ok(!song.leaderboardId.includes('__'))
-      assert.ok(!song.leaderboardId.startsWith('_'))
-      assert.ok(!song.leaderboardId.endsWith('_'))
+      assert.ok(song.leaderboardId, `Missing leaderboardId for ${song.id}`)
+      assert.ok(
+        /^[a-z0-9_-]+$/.test(song.leaderboardId),
+        `Invalid leaderboardId format for ${song.id}: ${song.leaderboardId}`
+      )
+      assert.equal(
+        song.leaderboardId,
+        song.leaderboardId.toLowerCase(),
+        `leaderboardId must be lowercase for ${song.id}`
+      )
+      assert.ok(
+        song.leaderboardId.length <= 64,
+        `leaderboardId too long for ${song.id}`
+      )
+      assert.ok(
+        !song.leaderboardId.includes('__'),
+        `leaderboardId has consecutive underscores for ${song.id}`
+      )
+      assert.ok(
+        !song.leaderboardId.startsWith('_'),
+        `leaderboardId starts with underscore for ${song.id}`
+      )
+      assert.ok(
+        !song.leaderboardId.endsWith('_'),
+        `leaderboardId ends with underscore for ${song.id}`
+      )
     })
   })
 
   it('keeps core scalar bounds and required fields valid', () => {
     SONGS_DB.forEach(song => {
-      assert.ok(song.id)
-      assert.ok(song.name)
-      assert.equal(song.title, song.name)
+      assert.ok(song.id, 'Song must have an id')
+      assert.ok(song.name, `Missing name for ${song.id}`)
+      assert.equal(song.title, song.name, `Title mismatch for ${song.id}`)
 
-      assert.ok(Number.isInteger(song.duration) && song.duration > 0)
-      assert.ok(Number.isFinite(song.bpm) && song.bpm >= 1)
-      assert.ok(Number.isFinite(song.tpb) && song.tpb >= 1)
-      assert.ok(Number.isFinite(song.difficulty))
-      assert.ok(song.difficulty >= 1 && song.difficulty <= 7)
-      assert.ok(Number.isFinite(song.crowdAppeal))
-      assert.ok(song.crowdAppeal >= 1 && song.crowdAppeal <= 10)
-      assert.ok(Number.isFinite(song.staminaDrain) && song.staminaDrain > 0)
-      assert.ok(song.notePattern)
-      assert.ok(song.sourceMid)
+      assert.ok(
+        Number.isInteger(song.duration) && song.duration > 0,
+        `Invalid duration for ${song.id}`
+      )
+      assert.ok(
+        Number.isFinite(song.bpm) && song.bpm >= 1,
+        `Invalid bpm for ${song.id}`
+      )
+      assert.ok(
+        Number.isFinite(song.tpb) && song.tpb >= 1,
+        `Invalid tpb for ${song.id}`
+      )
+      assert.ok(
+        Number.isFinite(song.difficulty),
+        `Invalid difficulty for ${song.id}`
+      )
+      assert.ok(
+        song.difficulty >= 1 && song.difficulty <= 7,
+        `Difficulty out of bounds for ${song.id}`
+      )
+      assert.ok(
+        Number.isFinite(song.crowdAppeal),
+        `Invalid crowdAppeal for ${song.id}`
+      )
+      assert.ok(
+        song.crowdAppeal >= 1 && song.crowdAppeal <= 10,
+        `crowdAppeal out of bounds for ${song.id}`
+      )
+      assert.ok(
+        Number.isFinite(song.staminaDrain) && song.staminaDrain > 0,
+        `Invalid staminaDrain for ${song.id}`
+      )
+      assert.ok(song.notePattern, `Missing notePattern for ${song.id}`)
+      assert.ok(song.sourceMid, `Missing sourceMid for ${song.id}`)
     })
   })
 
@@ -53,18 +96,60 @@ describe('songs real dataset contracts', () => {
     const validIntensities = ['LOW', 'MEDIUM', 'HIGH', 'EXTREME']
 
     SONGS_DB.forEach(song => {
-      assert.ok(validIntensities.includes(song.intensity))
-      assert.ok(Array.isArray(song.tags) && song.tags.length > 0)
-      assert.ok(Array.isArray(song.notes))
-      assert.ok(Array.isArray(song.tempoMap))
+      assert.ok(
+        validIntensities.includes(song.intensity),
+        `Invalid intensity for ${song.id}: ${song.intensity}`
+      )
+      assert.ok(
+        Array.isArray(song.tags) && song.tags.length > 0,
+        `Invalid tags for ${song.id}`
+      )
+      assert.ok(Array.isArray(song.notes), `Invalid notes array for ${song.id}`)
+      assert.ok(Array.isArray(song.tempoMap), `Invalid tempoMap for ${song.id}`)
 
-      assert.ok(song.energy)
-      assert.ok(Number.isFinite(song.energy.peak))
-      assert.ok(song.energy.peak > 0 && song.energy.peak <= 100)
+      assert.ok(song.energy, `Missing energy object for ${song.id}`)
+      assert.ok(
+        Number.isFinite(song.energy.peak),
+        `Invalid energy peak for ${song.id}`
+      )
+      assert.ok(
+        song.energy.peak > 0 && song.energy.peak <= 100,
+        `Energy peak out of bounds for ${song.id}`
+      )
 
       song.notes.forEach(note => {
-        assert.ok(Number.isFinite(note.t))
+        assert.ok(Number.isFinite(note.t), `Invalid note tick for ${song.id}`)
       })
+    })
+  })
+
+  it('maps intensity consistently from difficulty in production data', () => {
+    SONGS_DB.forEach(song => {
+      if (song.difficulty <= 2) {
+        assert.equal(
+          song.intensity,
+          'LOW',
+          `Expected LOW intensity for ${song.id}`
+        )
+      } else if (song.difficulty === 3) {
+        assert.equal(
+          song.intensity,
+          'MEDIUM',
+          `Expected MEDIUM intensity for ${song.id}`
+        )
+      } else if (song.difficulty <= 5) {
+        assert.equal(
+          song.intensity,
+          'HIGH',
+          `Expected HIGH intensity for ${song.id}`
+        )
+      } else {
+        assert.equal(
+          song.intensity,
+          'EXTREME',
+          `Expected EXTREME intensity for ${song.id}`
+        )
+      }
     })
   })
 
@@ -76,7 +161,10 @@ describe('songs real dataset contracts', () => {
         note.t > maxNote.t ? note : maxNote
       )
       const lastNoteTimeSeconds = (lastNote.t / song.tpb) * (60 / song.bpm)
-      assert.ok(song.duration >= Math.floor(lastNoteTimeSeconds))
+      assert.ok(
+        song.duration >= Math.floor(lastNoteTimeSeconds),
+        `Duration ${song.duration}s too short for last note at ${lastNoteTimeSeconds}s in ${song.id}`
+      )
     })
   })
 })

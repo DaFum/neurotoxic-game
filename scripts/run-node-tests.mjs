@@ -6,12 +6,11 @@ const rawArgs = process.argv.slice(2)
 const normalizedArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
 
 const hasFlag = flag => normalizedArgs.includes(flag)
-const stripFlag = flag => normalizedArgs.filter(arg => arg !== flag)
 
 const flagSkipHeavy = hasFlag('--skip-heavy')
 const flagOnlyHeavy = hasFlag('--only-heavy')
-const nodeTestArgs = stripFlag('--skip-heavy').filter(
-  arg => arg !== '--only-heavy'
+const nodeTestArgs = normalizedArgs.filter(
+  arg => arg !== '--skip-heavy' && arg !== '--only-heavy'
 )
 
 const hasExplicitConcurrency = nodeTestArgs.some(arg =>
