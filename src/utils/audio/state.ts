@@ -1,6 +1,5 @@
 import type * as Tone from 'tone'
 import type { DrumKitSynth } from '../../types/audio'
-import type { buildDrumKit } from './instruments'
 
 /**
  * Shared mutable state for the audio engine.

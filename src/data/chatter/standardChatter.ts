@@ -1,4 +1,4 @@
-import type { GameState, BandMember } from '../../types/game'
+import type { GameState } from '../../types/game'
 import { GAME_PHASES } from '../../context/gameConstants'
 
 const getBandStat = (

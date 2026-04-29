@@ -1,0 +1,3210 @@
+{
+  "summary": {
+    "files": 350,
+    "totalWarnings": 182,
+    "totalErrors": 0,
+    "totalFixableWarnings": 0,
+    "totalFixableErrors": 0
+  },
+  "byRule": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 153,
+      "files": {
+        "src/components/PixiStageController.ts": 9,
+        "src/components/overworld/OverworldModals.tsx": 6,
+        "src/components/stage/RoadiePlayerManager.ts": 3,
+        "src/components/stage/RoadieStageController.ts": 3,
+        "src/components/stage/RoadieTrafficManager.ts": 4,
+        "src/components/stage/TourbusObstacleManager.ts": 1,
+        "src/components/stage/TourbusStageController.ts": 10,
+        "src/components/stage/ToxicFilterManager.ts": 1,
+        "src/types/components.d.ts": 2,
+        "src/ui/bandhq/SetlistTab.tsx": 2,
+        "src/utils/arrivalUtils.ts": 9,
+        "src/utils/audio/cleanupUtils.ts": 4,
+        "src/utils/audio/context.ts": 1,
+        "src/utils/audio/midiPlayback.ts": 12,
+        "src/utils/audio/playback.ts": 5,
+        "src/utils/economyEngine.ts": 36,
+        "src/utils/gameStateUtils.ts": 14,
+        "src/utils/hecklerLogic.ts": 7,
+        "src/utils/logger.ts": 11,
+        "src/utils/mapUtils.ts": 5,
+        "src/utils/pirateRadioUtils.ts": 5,
+        "src/utils/translationUtils.ts": 3
+      },
+      "fixable": 0
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 21,
+      "files": {
+        "src/components/stage/EffectManager.ts": 2,
+        "src/components/stage/NoteManager.ts": 3,
+        "src/components/stage/RoadieStageController.ts": 5,
+        "src/components/stage/RoadieTrafficManager.ts": 1,
+        "src/data/chatter/standardChatter.ts": 1,
+        "src/hooks/rhythmGame/useRhythmGameState.ts": 1,
+        "src/scenes/Overworld.tsx": 1,
+        "src/scenes/mainmenu/useMainMenu.ts": 1,
+        "src/types/components.d.ts": 1,
+        "src/types/react-compat.d.ts": 2,
+        "src/ui/shared/ToggleSwitch.tsx": 1,
+        "src/utils/audio/state.ts": 1,
+        "src/utils/postGigUtils.ts": 1
+      },
+      "fixable": 0
+    },
+    "@eslint-react/exhaustive-deps": {
+      "count": 2,
+      "files": {
+        "src/hooks/usePostGigHandlers.ts": 1,
+        "src/scenes/kabelsalat/hooks/useKabelsalatShuffle.ts": 1
+      },
+      "fixable": 0
+    },
+    "@eslint-react/no-array-index-key": {
+      "count": 1,
+      "files": {
+        "src/scenes/mainmenu/MainMenuFeatures.tsx": 1
+      },
+      "fixable": 0
+    },
+    "@eslint-react/set-state-in-effect": {
+      "count": 3,
+      "files": {
+        "src/ui/overworld/EventLog.tsx": 1,
+        "src/ui/overworld/OverworldHUD.tsx": 2
+      },
+      "fixable": 0
+    },
+    "@eslint-react/naming-convention-ref-name": {
+      "count": 2,
+      "files": {
+        "src/ui/overworld/OverworldHUD.tsx": 2
+      },
+      "fixable": 0
+    }
+  },
+  "byFile": {
+    "src/App.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/ChatterOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/GigHUD.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/HecklerOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/MapConnection.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/MapNode.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/MinigameSceneFrame.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/PixiStage.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/PixiStageController.ts": {
+      "count": 9,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 9
+      }
+    },
+    "src/components/SceneRouter.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/ToggleRadio.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/TutorialManager.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/clinic/ClinicHeader.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/clinic/ClinicMemberCard.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/ComboDisplay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/ControlsHint.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/GameOverOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/HealthBar.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/LaneInputArea.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/OverloadMeter.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/OverloadWarning.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/PauseButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/ScoreDisplay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/StatsOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/ToxicHazardTicker.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/hud/ToxicModeFlash.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/amp/AmpControls.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/amp/AmpHUD.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/gig/AudioLockedOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/gig/BandMembersLayer.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/gig/PauseOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/roadie/RoadieControls.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/roadie/RoadieHUD.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/tourbus/TourbusControls.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/minigames/tourbus/TourbusHUD.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/overworld/OverworldMap.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/overworld/OverworldModals.tsx": {
+      "count": 6,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 6
+      }
+    },
+    "src/components/overworld/TravelingVan.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/overworld/index.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/CompletePhase.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/DealCard.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/DealsPhase.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/FinancialColumn.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/FinancialList.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/NegotiationModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/NetResult.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/ReportPhase.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/SideEffectsPreview.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/SideEffectsSummary.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/SocialOptionButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/SocialPhase.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/postGig/ZealotryGauge.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/pregig/GigModifiersBlock.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/pregig/PreGigHeader.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/pregig/PreGigStartButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/pregig/SetlistBlock.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/AmpStageController.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/AmpWaveManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/BaseStageController.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/CrowdManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/CrowdTextureManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/EffectManager.ts": {
+      "count": 2,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 2
+      }
+    },
+    "src/components/stage/EffectSpritePool.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/EffectTextureManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/LaneManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/LaneRenderer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/NoteManager.ts": {
+      "count": 3,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 3
+      }
+    },
+    "src/components/stage/NoteSpritePool.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/NoteTextureManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/RoadiePlayerManager.ts": {
+      "count": 3,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 3
+      }
+    },
+    "src/components/stage/RoadieStageController.ts": {
+      "count": 8,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 5,
+        "@typescript-eslint/no-explicit-any": 3
+      }
+    },
+    "src/components/stage/RoadieTrafficManager.ts": {
+      "count": 5,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1,
+        "@typescript-eslint/no-explicit-any": 4
+      }
+    },
+    "src/components/stage/StageLifecycleUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/StageResizeHandler.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/TourbusObstacleManager.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 1
+      }
+    },
+    "src/components/stage/TourbusStageController.ts": {
+      "count": 10,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 10
+      }
+    },
+    "src/components/stage/ToxicFilterManager.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 1
+      }
+    },
+    "src/components/stage/pixiAppTeardown.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/components/stage/utils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/GameState.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/actionCreators.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/actionTypes.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/gameConstants.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/gameReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/initialState.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/bandReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/clinicReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/eventReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/gigReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/minigameReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/playerReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/questReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/sceneReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/socialReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/systemReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/toastSanitizers.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/context/reducers/tradeReducer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/brandDeals.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/characters.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/chatter.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/chatter/index.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/chatter/standardChatter.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/data/chatter/venueChatter.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/contraband.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/band.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/consequences.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/constants.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/crisis.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/financial.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/gig.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/index.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/quests.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/relationshipEvents.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/special.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/events/transport.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/hqItems.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/platforms.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/postOptions.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/questsConstants.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/socialTrends.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/songs.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/upgradeCatalog.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/data/venues.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/buildQuestsProps.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/minigames/constants.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/minigames/useAmpLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/minigames/useRoadieLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/minigames/useTourbusLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/rhythmGame/useRhythmGameAudio.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/rhythmGame/useRhythmGameInput.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/rhythmGame/useRhythmGameLoop.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/rhythmGame/useRhythmGameScoring.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/rhythmGame/useRhythmGameState.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/hooks/useArrivalLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useAudioControl.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useBandHQModal.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useBloodBank.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useChatterLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useClinicLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useContrabandStash.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useDarkWebLeak.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useDealNegotiation.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useGigEffects.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useGigInput.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useGigSession.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useGigVisuals.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useLeaderboardSync.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useMerchPress.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/usePirateRadio.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/usePostGigHandlers.ts": {
+      "count": 1,
+      "byRule": {
+        "@eslint-react/exhaustive-deps": 1
+      }
+    },
+    "src/hooks/usePostGigLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/usePreGigLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useQuestsModal.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useRhythmGameLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useSettingsActions.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useTravelLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/hooks/useTutorial.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/i18n.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/main.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/AmpCalibrationScene.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/ClinicScene.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/Credits.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/GameOver.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/Gig.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/IntroVideo.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/KabelsalatScene.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/MainMenu.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/Overworld.tsx": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/scenes/PostGig.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/PreGig.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/RoadieRunScene.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/Settings.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/TourbusScene.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/credits/CreditEntry.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/credits/CreditFooter.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/credits/CreditHeader.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/gameover/GameOverBackground.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/gameover/GameOverButtons.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/gameover/GameOverHeader.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/gameover/GameOverStats.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/intro/components/AutoplayOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/intro/components/SkipButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/CableItem.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/CableList.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/ConnectionPath.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/ConnectionPaths.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/HardwareProps.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/Header.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/HeaderTimer.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/HeaderTitle.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/KabelsalatBoard.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/LightningEffects.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/Overlays.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/PlugGraphics.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/Rules.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/SocketGraphics.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/SocketItem.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/SocketList.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/overlays/GameOverOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/overlays/PoweredOnOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/overlays/ShockOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/plugs/DcPlug.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/plugs/IecPlug.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/plugs/JackPlug.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/plugs/MidiPlug.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/plugs/XlrPlug.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/sockets/DcSocket.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/sockets/IecSocket.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/sockets/JackSocket.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/sockets/MidiSocket.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/components/sockets/XlrSocket.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/constants.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/hooks/useKabelsalatBackground.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/hooks/useKabelsalatGameEnd.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/hooks/useKabelsalatInteractions.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/hooks/useKabelsalatShuffle.ts": {
+      "count": 1,
+      "byRule": {
+        "@eslint-react/exhaustive-deps": 1
+      }
+    },
+    "src/scenes/kabelsalat/hooks/useKabelsalatTimer.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/useKabelsalatState.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/kabelsalat/utils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/mainmenu/MainMenuExistingSavePrompt.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/mainmenu/MainMenuFeatures.tsx": {
+      "count": 1,
+      "byRule": {
+        "@eslint-react/no-array-index-key": 1
+      }
+    },
+    "src/scenes/mainmenu/MainMenuNameInputPrompt.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/mainmenu/MainMenuSocials.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/scenes/mainmenu/useMainMenu.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/types/audio.d.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/callbacks.d.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/components.d.ts": {
+      "count": 3,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1,
+        "@typescript-eslint/no-explicit-any": 2
+      }
+    },
+    "src/types/game.d.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/index.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/kabelsalat.d.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/migration-stubs.d.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/react-compat.d.ts": {
+      "count": 2,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 2
+      }
+    },
+    "src/types/rhythm.d.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/types/rhythmGame.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/BandHQ.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/BloodBankModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/ContrabandStash.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/CrashHandler.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/DarkWebLeakModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/DebugLogViewer.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/EventModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/GigModifierButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/GlitchButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/HUD.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/MerchPressModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/PirateRadioModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/QuestsModal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/ToastOverlay.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/CatalogTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/DetailedStatsTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/LeaderboardTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/SetlistTab.tsx": {
+      "count": 2,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 2
+      }
+    },
+    "src/ui/bandhq/SettingsTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/ShopItem.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/ShopTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/StatsTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/UpgradesTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/VoidTraderTab.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/hooks/useBandHQLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/bandhq/hooks/usePurchaseLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/overworld/EventLog.tsx": {
+      "count": 1,
+      "byRule": {
+        "@eslint-react/set-state-in-effect": 1
+      }
+    },
+    "src/ui/overworld/OverworldHUD.tsx": {
+      "count": 4,
+      "byRule": {
+        "@eslint-react/naming-convention-ref-name": 2,
+        "@eslint-react/set-state-in-effect": 2
+      }
+    },
+    "src/ui/overworld/OverworldHeader.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/overworld/OverworldMenu.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/AudioSettings.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/DataManagement.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/LanguageSettings.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/LogSettings.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/SettingsPanel.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/SettingsReturnButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/SettingsTitle.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/settings/VisualSettings.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/ActionButton.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/AnimatedTypography.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/BrutalistUI.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/Icons.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/Modal.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/ToggleSwitch.tsx": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/ui/shared/Tooltip.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/VolumeSlider.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/index.tsx": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/ui/shared/propTypes.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/AudioManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/arrivalUtils.ts": {
+      "count": 9,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 9
+      }
+    },
+    "src/utils/audio/ambient.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/assets.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/cleanupUtils.ts": {
+      "count": 4,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 4
+      }
+    },
+    "src/utils/audio/constants.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/context.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 1
+      }
+    },
+    "src/utils/audio/dispose.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/drumMappings.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/instruments.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/midiPlayback.ts": {
+      "count": 12,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 12
+      }
+    },
+    "src/utils/audio/midiUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/playback.ts": {
+      "count": 5,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 5
+      }
+    },
+    "src/utils/audio/playbackUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/proceduralMetal.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/selectionUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/setup.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/sharedBufferUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/songUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audio/state.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/utils/audio/timingUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audioContextState.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audioEngine.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/audioService.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/clinicLogicUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/contrabandStashUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/contrabandUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/crypto.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/darkWebLeakUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/economyEngine.ts": {
+      "count": 36,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 36
+      }
+    },
+    "src/utils/effectFormatter.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/errorHandler.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/eventEngine.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/eventValidator.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/gameStateUtils.ts": {
+      "count": 14,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 14
+      }
+    },
+    "src/utils/gigInputUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/gigStats.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/hecklerLogic.ts": {
+      "count": 7,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 7
+      }
+    },
+    "src/utils/imageGen.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/leaderboardUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/locationI18n.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/logger.ts": {
+      "count": 11,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 11
+      }
+    },
+    "src/utils/mapGenerator.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/mapUtils.ts": {
+      "count": 5,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 5
+      }
+    },
+    "src/utils/numberUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/pirateRadioUtils.ts": {
+      "count": 5,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 5
+      }
+    },
+    "src/utils/postGigUtils.ts": {
+      "count": 1,
+      "byRule": {
+        "@typescript-eslint/no-unused-vars": 1
+      }
+    },
+    "src/utils/purchaseLogicUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/questUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/randomUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/rhythmGameAudioUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/rhythmGameInputUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/rhythmGameLoopUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/rhythmGameScoringUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/rhythmUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/saveValidator.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/simulationUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/socialEngine.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/stringUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/traitLogic.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/traitUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/translationUtils.ts": {
+      "count": 3,
+      "byRule": {
+        "@typescript-eslint/no-explicit-any": 3
+      }
+    },
+    "src/utils/travelLogicUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/travelUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/unlockCheck.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/unlockManager.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/utils/upgradeUtils.ts": {
+      "count": 0,
+      "byRule": {}
+    },
+    "src/vite-env.d.ts": {
+      "count": 0,
+      "byRule": {}
+    }
+  },
+  "fixable": [],
+  "manualSemantic": [
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 51,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 52,
+      "column": 17,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 53,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 54,
+      "column": 18,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 55,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 61,
+      "column": 23,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 127,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 127,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/PixiStageController.ts",
+      "line": 127,
+      "column": 31,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/overworld/OverworldModals.tsx",
+      "line": 17,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/overworld/OverworldModals.tsx",
+      "line": 21,
+      "column": 15,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/overworld/OverworldModals.tsx",
+      "line": 29,
+      "column": 24,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/overworld/OverworldModals.tsx",
+      "line": 36,
+      "column": 21,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/overworld/OverworldModals.tsx",
+      "line": 43,
+      "column": 20,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/overworld/OverworldModals.tsx",
+      "line": 51,
+      "column": 25,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/EffectManager.ts",
+      "line": 1,
+      "column": 34,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Sprite' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/EffectManager.ts",
+      "line": 1,
+      "column": 42,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Texture' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/NoteManager.ts",
+      "line": 1,
+      "column": 34,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Texture' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/NoteManager.ts",
+      "line": 3,
+      "column": 10,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'handleError' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/NoteManager.ts",
+      "line": 10,
+      "column": 35,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'NoteTextures' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadiePlayerManager.ts",
+      "line": 77,
+      "column": 31,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadiePlayerManager.ts",
+      "line": 84,
+      "column": 32,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadiePlayerManager.ts",
+      "line": 106,
+      "column": 30,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 1,
+      "column": 10,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Container' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 1,
+      "column": 31,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Sprite' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 1,
+      "column": 39,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Texture' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 11,
+      "column": 10,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'logger' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 14,
+      "column": 10,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'hashString' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 35,
+      "column": 23,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 168,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieStageController.ts",
+      "line": 216,
+      "column": 53,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieTrafficManager.ts",
+      "line": 1,
+      "column": 39,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'Texture' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieTrafficManager.ts",
+      "line": 28,
+      "column": 30,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieTrafficManager.ts",
+      "line": 55,
+      "column": 24,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieTrafficManager.ts",
+      "line": 55,
+      "column": 36,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/RoadieTrafficManager.ts",
+      "line": 55,
+      "column": 48,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusObstacleManager.ts",
+      "line": 46,
+      "column": 26,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 15,
+      "column": 18,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 16,
+      "column": 23,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 168,
+      "column": 29,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 168,
+      "column": 38,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 168,
+      "column": 51,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 190,
+      "column": 28,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 190,
+      "column": 37,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 190,
+      "column": 50,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 201,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/TourbusStageController.ts",
+      "line": 232,
+      "column": 54,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/components/stage/ToxicFilterManager.ts",
+      "line": 21,
+      "column": 17,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/data/chatter/standardChatter.ts",
+      "line": 1,
+      "column": 26,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'BandMember' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/hooks/rhythmGame/useRhythmGameState.ts",
+      "line": 12,
+      "column": 3,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'RhythmLane' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/hooks/usePostGigHandlers.ts",
+      "line": 424,
+      "column": 6,
+      "ruleId": "@eslint-react/exhaustive-deps",
+      "message": "React Hook useCallback has an unnecessary dependency: 'saveGame'. Either exclude it or remove the dependency array.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/scenes/Overworld.tsx",
+      "line": 1,
+      "column": 20,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'useMemo' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/scenes/kabelsalat/hooks/useKabelsalatShuffle.ts",
+      "line": 63,
+      "column": 6,
+      "ruleId": "@eslint-react/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'randomFn'. Either include it or remove the dependency array.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/scenes/mainmenu/MainMenuFeatures.tsx",
+      "line": 140,
+      "column": 49,
+      "ruleId": "@eslint-react/no-array-index-key",
+      "message": "Do not use item index in the array as its key.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/scenes/mainmenu/useMainMenu.ts",
+      "line": 6,
+      "column": 3,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'MutableRefObject' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/types/components.d.ts",
+      "line": 12,
+      "column": 15,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'RhythmGameRefState' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/types/components.d.ts",
+      "line": 134,
+      "column": 33,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/types/components.d.ts",
+      "line": 158,
+      "column": 33,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/types/react-compat.d.ts",
+      "line": 4,
+      "column": 33,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'T' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/types/react-compat.d.ts",
+      "line": 8,
+      "column": 34,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'P' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/bandhq/SetlistTab.tsx",
+      "line": 10,
+      "column": 48,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/bandhq/SetlistTab.tsx",
+      "line": 93,
+      "column": 35,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/overworld/EventLog.tsx",
+      "line": 63,
+      "column": 9,
+      "ruleId": "@eslint-react/set-state-in-effect",
+      "message": "Do not call the 'set' function 'setEntries' of 'useState' synchronously in an effect. This can lead to unnecessary re-renders and performance issues.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/overworld/OverworldHUD.tsx",
+      "line": 15,
+      "column": 9,
+      "ruleId": "@eslint-react/naming-convention-ref-name",
+      "message": "A ref identifier must be named 'ref' or ending in 'Ref'.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/overworld/OverworldHUD.tsx",
+      "line": 20,
+      "column": 7,
+      "ruleId": "@eslint-react/set-state-in-effect",
+      "message": "Do not call the 'set' function 'setCur' of 'useState' synchronously in an effect. This can lead to unnecessary re-renders and performance issues.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/overworld/OverworldHUD.tsx",
+      "line": 57,
+      "column": 11,
+      "ruleId": "@eslint-react/naming-convention-ref-name",
+      "message": "A ref identifier must be named 'ref' or ending in 'Ref'.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/overworld/OverworldHUD.tsx",
+      "line": 102,
+      "column": 9,
+      "ruleId": "@eslint-react/set-state-in-effect",
+      "message": "Do not call the 'set' function 'setMoneyAnim' of 'useState' synchronously in an effect. This can lead to unnecessary re-renders and performance issues.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/ui/shared/ToggleSwitch.tsx",
+      "line": 2,
+      "column": 15,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'MouseEvent' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 38,
+      "column": 43,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 50,
+      "column": 33,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 63,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 78,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 79,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 80,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 81,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 82,
+      "column": 21,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/arrivalUtils.ts",
+      "line": 84,
+      "column": 21,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/cleanupUtils.ts",
+      "line": 29,
+      "column": 25,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/cleanupUtils.ts",
+      "line": 31,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/cleanupUtils.ts",
+      "line": 36,
+      "column": 25,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/cleanupUtils.ts",
+      "line": 38,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/context.ts",
+      "line": 16,
+      "column": 54,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 430,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 449,
+      "column": 43,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 450,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 457,
+      "column": 37,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 457,
+      "column": 61,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 463,
+      "column": 24,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 465,
+      "column": 28,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 466,
+      "column": 28,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 533,
+      "column": 38,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 533,
+      "column": 51,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 619,
+      "column": 52,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/midiPlayback.ts",
+      "line": 701,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/playback.ts",
+      "line": 148,
+      "column": 39,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/playback.ts",
+      "line": 166,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/playback.ts",
+      "line": 167,
+      "column": 13,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/playback.ts",
+      "line": 168,
+      "column": 5,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/playback.ts",
+      "line": 272,
+      "column": 21,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/audio/state.ts",
+      "line": 3,
+      "column": 15,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'buildDrumKit' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 82,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 84,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 85,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 175,
+      "column": 13,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 176,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 177,
+      "column": 18,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 178,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 268,
+      "column": 42,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 268,
+      "column": 54,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 294,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 295,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 296,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 332,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 333,
+      "column": 13,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 334,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 335,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 368,
+      "column": 50,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 381,
+      "column": 55,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 393,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 394,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 410,
+      "column": 66,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 437,
+      "column": 45,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 456,
+      "column": 61,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 482,
+      "column": 55,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 514,
+      "column": 49,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 591,
+      "column": 4,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 758,
+      "column": 51,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 758,
+      "column": 67,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 786,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 787,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 811,
+      "column": 20,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 812,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 832,
+      "column": 54,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 832,
+      "column": 70,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 864,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/economyEngine.ts",
+      "line": 865,
+      "column": 14,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 308,
+      "column": 46,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 308,
+      "column": 58,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 308,
+      "column": 64,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 309,
+      "column": 18,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 557,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 592,
+      "column": 40,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 592,
+      "column": 52,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 592,
+      "column": 58,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 593,
+      "column": 20,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 921,
+      "column": 19,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 921,
+      "column": 26,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 922,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 936,
+      "column": 51,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/gameStateUtils.ts",
+      "line": 938,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 11,
+      "column": 49,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 29,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 30,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 33,
+      "column": 15,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 34,
+      "column": 4,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 99,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/hecklerLogic.ts",
+      "line": 103,
+      "column": 4,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 19,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 22,
+      "column": 28,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 57,
+      "column": 46,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 70,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 81,
+      "column": 16,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 102,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 109,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 127,
+      "column": 50,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 141,
+      "column": 49,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 155,
+      "column": 49,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "line": 167,
+      "column": 50,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/mapUtils.ts",
+      "line": 11,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/mapUtils.ts",
+      "line": 48,
+      "column": 41,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/mapUtils.ts",
+      "line": 77,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/mapUtils.ts",
+      "line": 78,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/mapUtils.ts",
+      "line": 79,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/pirateRadioUtils.ts",
+      "line": 4,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/pirateRadioUtils.ts",
+      "line": 12,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/pirateRadioUtils.ts",
+      "line": 13,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/pirateRadioUtils.ts",
+      "line": 14,
+      "column": 9,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/pirateRadioUtils.ts",
+      "line": 15,
+      "column": 11,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/postGigUtils.ts",
+      "line": 1,
+      "column": 15,
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "message": "'RhythmSetlistEntry' is defined but never used. Allowed unused vars must match /^_/u.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/translationUtils.ts",
+      "line": 29,
+      "column": 12,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/translationUtils.ts",
+      "line": 31,
+      "column": 4,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    },
+    {
+      "file": "src/utils/translationUtils.ts",
+      "line": 46,
+      "column": 43,
+      "ruleId": "@typescript-eslint/no-explicit-any",
+      "message": "Unexpected any. Specify a different type.",
+      "severity": 1,
+      "fixable": false
+    }
+  ],
+  "policyGuardrail": []
+}

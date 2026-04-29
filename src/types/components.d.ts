@@ -9,7 +9,6 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
-import type { RhythmGameRefState } from './rhythmGame'
 export type { AudioState, AudioControls } from './audio'
 
 export interface PixiController {
@@ -131,7 +130,7 @@ export interface TourbusMinigameLogic extends MinigameLogicBase {
 }
 
 export interface MinigameSceneFrameProps {
-  controllerFactory?: (options: any) => PixiController
+  controllerFactory?: (options: unknown) => PixiController
   logic: MinigameLogicBase
   uiState?: { isGameOver?: boolean }
   onComplete: () => void
@@ -155,7 +154,7 @@ export interface StageControllerOptions<TState = unknown> {
 export interface PixiStageProps<TState = unknown> {
   gameStateRef: RefObject<TState>
   update: (state: unknown) => void
-  controllerFactory?: (options: any) => PixiController
+  controllerFactory?: (options: unknown) => PixiController
 }
 
 export interface ToggleRadioProps {

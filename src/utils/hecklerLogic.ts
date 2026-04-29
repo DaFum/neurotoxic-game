@@ -8,7 +8,19 @@ import { getSafeRandom } from './crypto'
  * @returns {Array} Updated list of projectiles.
  */
 // Adaptive difficulty AI tuning based on stats
-export const createHecklerSession = (): { pool: any[]; nextId: number } => ({
+type Projectile = {
+  id: number
+  x: number
+  y: number
+  vx: number
+  vy: number
+  rotation: number
+  vr: number
+  type: 'bottle' | 'tomato'
+} & Record<string, unknown>
+type HecklerSession = { pool: Projectile[]; nextId: number }
+
+export const createHecklerSession = (): HecklerSession => ({
   pool: [],
   nextId: 0
 })
@@ -26,12 +38,12 @@ const SPAWN_CHANCE_CONFIG = {
 }
 
 export const processProjectiles = (
-  session: any,
-  projectiles: any[],
+  session: HecklerSession,
+  projectiles: Projectile[],
   deltaMS: number,
   screenHeight = 1080,
-  onHit?: (p: any) => void
-): any[] => {
+  onHit?: (p: Projectile) => void
+): Projectile[] => {
   const despawnY = screenHeight + 100
   const hitY = screenHeight - 150
   let writeIdx = 0
@@ -96,11 +108,11 @@ export const processProjectiles = (
 const MAX_PROJECTILE_POOL_SIZE = 64
 
 export const trySpawnProjectile = (
-  session: any,
+  session: HecklerSession,
   stats: { combo?: number; health?: number },
   random: () => number = getSafeRandom,
   screenWidth = 1920
-): any | null => {
+): Projectile | null => {
   // Adaptive difficulty AI tuning based on stats
   let spawnChance = SPAWN_CHANCE_CONFIG.BASE
   // Normalize optional stats
