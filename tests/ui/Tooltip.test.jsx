@@ -80,4 +80,27 @@ describe('Tooltip Component', () => {
     expect(onFocus).not.toHaveBeenCalled()
     expect(onBlur).not.toHaveBeenCalled()
   })
+
+  test('returns invalid children without reading props', () => {
+    const { getByText } = render(
+      <Tooltip content='Tooltip Content'>plain child</Tooltip>
+    )
+
+    expect(getByText('plain child')).toBeInTheDocument()
+  })
+
+  test('ignores non-string aria-describedby values', () => {
+    const { getByText } = render(
+      <Tooltip content='Tooltip Content'>
+        <button type='button' aria-describedby={42}>
+          Hover Me
+        </button>
+      </Tooltip>
+    )
+
+    const trigger = getByText('Hover Me')
+    fireEvent.mouseEnter(trigger)
+
+    expect(getByText('Tooltip Content')).toBeInTheDocument()
+  })
 })

@@ -1,14 +1,14 @@
-# src/components/minigames/tourbus — Agent Instructions
+# src/components/minigames/tourbus - Agent Instructions
 
 ## Scope
 
 Applies to `src/components/minigames/tourbus/**`.
 
-## Domain Gotchas
+## Rules
 
-- Tourbus end-state UI must route through shared finalize callbacks; scene transitions should not be hardcoded in presentational components.
-- Keep translated overlay copy key-based and preserve EN/DE parity when adding or changing user-facing strings.
+- Keep Tourbus hook logic free of Pixi imports and renderer-only state.
+- Preserve travel completion handoff through `useArrivalLogic` and shared minigame callbacks.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Timeout and button-complete paths must converge to the same completion callback to keep travel-to-gig routing deterministic.
+- Treat route/location IDs as canonical venue IDs; include legacy venue cases in tests when travel semantics change.

@@ -105,7 +105,7 @@ vi.mock('../../src/components/stage/NoteManager', () => ({
   }
 }))
 
-vi.mock('../../src/utils/audioEngine', () => mockAudioEngine)
+vi.mock('../../src/utils/audio/audioEngine', () => mockAudioEngine)
 
 describe('PixiStageController Filter Performance', () => {
   let controller

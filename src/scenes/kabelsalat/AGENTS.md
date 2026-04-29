@@ -1,18 +1,15 @@
-# src/scenes/kabelsalat — Agent Instructions
+# src/scenes/kabelsalat - Agent Instructions
 
 ## Scope
 
-Applies to `src/scenes/kabelsalat/**`.
+Applies to `src/scenes/kabelsalat/**` unless a deeper `AGENTS.md` overrides it.
 
-## Domain Gotchas
+## Rules
 
-- Keep cable/socket IDs typed end-to-end (`CableId`, `SocketId`) to avoid widening to generic strings and reintroducing `as` casts.
-- Win/loss transitions must both finalize through the shared game-end path and route to `GAME_PHASES.GIG`.
-- Auto-transition timers must be StrictMode-safe; do not rely on per-effect cleanup patterns that cancel the only scheduled timeout during development effect replay.
+- Keep `forceAdvance(isPowered: boolean)` typed end-to-end.
+- Preserve socket-order literals with `as const` so they do not widen to `string[]`.
+- Game-end paths must eventually call `changeScene('GIG')` for win/continue flows.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Sparse cable lookup assumptions should fail loudly during map construction/selection instead of silently skipping entries.
-- Kabelsalat overlays need a manual advance button as a fallback path so users can always reach `GAME_PHASES.GIG` if delayed auto-transition timing ever regresses.
-- Keep `forceAdvance` typed as `(isPowered: boolean) => void` across state/hook/component boundaries; narrowing it to `() => void` can silently turn manual win advances into loss payloads.
-- Keep `INITIAL_SOCKET_ORDER` literal-typed (`as const`) and spread into mutable state arrays (`[...INITIAL_SOCKET_ORDER]`) to avoid `string[]` widening regressions.
+- Tests should cover timeout-loss, fully wired win, StrictMode replay, and manual overlay continue paths when end-flow logic changes.

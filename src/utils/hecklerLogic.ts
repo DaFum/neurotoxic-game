@@ -8,7 +8,7 @@ import { getSafeRandom } from './crypto'
  * @returns {Array} Updated list of projectiles.
  */
 // Adaptive difficulty AI tuning based on stats
-type Projectile = {
+export type Projectile = {
   id: number
   x: number
   y: number
@@ -18,7 +18,7 @@ type Projectile = {
   vr: number
   type: 'bottle' | 'tomato'
 } & Record<string, unknown>
-type HecklerSession = { pool: Projectile[]; nextId: number }
+export type HecklerSession = { pool: Projectile[]; nextId: number }
 
 export const createHecklerSession = (): HecklerSession => ({
   pool: [],
@@ -50,6 +50,7 @@ export const processProjectiles = (
 
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i]
+    if (!p) continue
 
     if (p.x === undefined) p.x = 0
     if (p.rotation === undefined) p.rotation = 0
@@ -134,7 +135,7 @@ export const trySpawnProjectile = (
   }
 
   if (random() < spawnChance) {
-    let p
+    let p: Projectile
     if (session.pool.length > 0) {
       const pooled = session.pool.pop()
       if (!pooled) return null

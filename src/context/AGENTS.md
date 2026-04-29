@@ -1,48 +1,26 @@
-# src/context — Agent Instructions
+# src/context - Agent Instructions
+
+Agents in this codebase are AI assistants or automated tools that help maintain scoped contracts; in `src/context/**`, they are responsible for state shape, action, reducer, and persistence rules. Their boundaries are strict: no direct state mutation outside reducers/action creators, no privileged side effects, no unvalidated persistence payloads, and no security bypasses. Consult this file when adding actions, changing context/reducer rules, debugging context behavior, or updating agent instructions; use deeper AGENTS files when they are closer to the edited code.
 
 ## Scope
 
-Applies to `src/context/**`.
+Applies to `src/context/**` unless a deeper `AGENTS.md` overrides it, with the behavioral boundaries above. Example: use this guide when adding a new persisted state field and matching action creator/reducer handling.
 
-## State Update Contract
+## State Rules
 
-- If adding/changing an action, update all three together in one PR:
-  1. `actionTypes`
-  2. reducer handling (`gameReducer` and/or slice reducer)
-  3. `actionCreators`
-- Prefer dispatching action creators; do not wire direct reducer calls from UI/hooks.
+- All mutations go through action creators and reducers; consumers must not hand-write action payload shapes.
+- New actions require updates to `actionTypes`, action creator return types, reducer handling, and tests in the same change.
+- Action creators own bounded-state clamps via `src/utils/gameStateUtils.ts`; reducers must not re-clamp.
+- Reducer default branches call `assertNever(action)`.
 
-## TypeScript Patterns (project idioms)
+## TypeScript
 
-- `ActionTypes` is a frozen `as const` object; the `ActionType` union is derived via `(typeof ActionTypes)[keyof typeof ActionTypes]`. The `as const` is load-bearing — without it the discriminated union collapses to `string`.
-- Action creators must return `Extract<GameAction, { type: typeof ActionTypes.X }>` so the creator is automatically forced to match the reducer's payload shape. Do not hand-write `{ type, payload }` types in creator signatures.
-- The reducer switch must be exhaustive. Put `assertNever(action)` in `default` so a new action variant fails compile at every missing case.
-- For untrusted update inputs, use `Object.hasOwn(updates, 'key')` before touching a property — `in` and `hasOwnProperty` walk the prototype chain and tests assert forbidden keys (e.g. `__proto__`) are stripped.
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>` to preserve discriminated unions.
+- Sanitize untrusted payloads by whitelisting fields; never spread unknown records into state.
+- Preserve `0`, `''`, and `false` where valid; use nullish checks instead of truthy fallbacks.
 
-## Bounded State Rules
+## Gotchas
 
-- Keep `player.money` clamped to `>= 0`.
-- Keep `band.harmony` clamped to `1..100`.
-- Apply clamps **once**, in the action creator, via helpers in `src/utils/gameStateUtils.ts`. Reducers must not re-clamp — double-clamping hides bugs in creators.
-
-## Change Rules
-
-- For type-only PRs, preserve serialized state keys and payload shapes (saves and tests depend on them).
-
-## Nested TypeScript Notes
-
-- New actions must preserve discriminated union safety: update `ActionTypes`, action creators (`Extract<...>`), reducer handling, and `assertNever` coverage together.
-- For load/reset/update reducers, whitelist fields from untrusted payloads instead of spreading generic objects into state.
-- Keep runtime clamps and action payload types aligned so reducers remain predictable and testable.
-
-## Domain Gotchas
-
-- Sanitizers for persisted payloads must explicitly replace invalid record-like fields (arrays for `baseStats`/`equipment`/`relationships`) instead of leaving spread-through values.
-- Context scheduler/timer callbacks that call strict utilities should catch/log/recover at the hook boundary so provider loops remain alive.
-
-## Recent Findings (2026-04)
-
-- UI refactors that add/remove actionable entries should audit action creators for orphaned dispatch paths and keep contracts explicit.
-- Context boundary effects should catch and recover from strict utility failures (map/event generation) so invariant throws never blank the provider tree.
-- Map generation recovery should prefer bounded retry before committing an empty-map fallback; empty fallback prevents provider crashes but should only happen after retry budget is exhausted.
-- In action wrappers that toast derived values after dispatch (e.g., `advanceDay`), compute derived values from the pre-dispatch snapshot; `stateRef.current` updates on the next render, not immediately after `dispatch`.
+- `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
+- `useReducer` dispatch is not synchronous for `stateRef`; derive toast values from pre-dispatch state.
+- Toast `options` values must be primitive-only: `string | number | boolean | null`.

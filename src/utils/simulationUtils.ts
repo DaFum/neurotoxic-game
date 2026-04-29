@@ -8,7 +8,7 @@ import { CHARACTERS } from '../data/characters'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
-import { hasTrait } from './traitLogic'
+import { hasTrait } from './traitUtils'
 import { getSafeRandom } from './crypto'
 import {
   clampPlayerMoney,

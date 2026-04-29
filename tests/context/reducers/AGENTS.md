@@ -1,24 +1,16 @@
-# tests/context/reducers — Agent Instructions
+# tests/context/reducers - Agent Instructions
 
 ## Scope
 
 Applies to `tests/context/reducers/**`.
 
-## Test Responsibilities
+## Rules
 
-- Exercise reducer behavior through realistic action payloads and persisted-state edge cases.
-- Prefer explicit assertions for clamping, sanitization, and migration behavior.
+- Exercise reducers through realistic action payloads and persisted-state edge cases.
+- Keep action payload fixtures aligned with action creator discriminated unions.
+- Include malformed/hostile payloads for whitelist behavior.
 
-## TypeScript Notes
+## Gotchas
 
-- Keep action payload fixtures aligned with discriminated union shapes from action creators.
-- For untrusted payload tests, include malformed/hostile shapes and assert whitelist behavior.
-
-## Domain Gotchas
-
-- Cover backward-compatibility paths for loaded saves (legacy venue/settings/unlocks formats).
-- When adding reducer branches, ensure exhaustive-case coverage in tests mirrors reducer expectations.
-
-## Recent Findings (2026-04)
-
-- When restoring previously removed UI actions, confirm reducer tests still cover the corresponding action payload path to guard against partial reintroduction.
+- Cover loaded-save compatibility for legacy venue, settings, and unlock formats.
+- When adding reducer branches, add exhaustive-case coverage that mirrors reducer expectations.

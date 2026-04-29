@@ -1,14 +1,21 @@
-# tests/ui/bandhq/hooks — Agent Instructions
+# tests/ui/bandhq/hooks - Agent Instructions
+
+## Agent role and limitations
+
+Agents for `tests/ui/bandhq/hooks/**` verify hook behavior by parsing inputs, invoking the targeted hooks, and asserting resolved UI/effect outputs. They may use local mocks and fake timers, but must not access external networks, modify persistent state outside test-controlled storage, or run long-blocking tasks. Use an agent for purchase/effect hook regressions; use human/manual handling for exploratory UX review.
+
+- Do handle input parsing, hook invocation, toast/effect assertions, and cleanup checks.
+- Do not perform network calls, mutate real storage, or replace explicit assertions with snapshots.
 
 ## Scope
 
 Applies to `tests/ui/bandhq/hooks/**`.
 
-## Domain Gotchas
+## Rules
 
-- Hook tests must verify lock/unlock cleanup (`processingItemId`-style state) on success and failure paths.
-- Assert toast content against actually applied deltas from resolved effects, not requested payload values.
+- Verify processing-lock cleanup on success and failure paths.
+- Assert toast content against resolved, actually applied effect deltas.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- The most valuable regressions here cover early-throw paths before `try/finally`; ensure lock cleanup still executes when validation fails pre-effect.
+- Include early-throw cases before `try/finally` effect execution so validation failures cannot leave stale locks.

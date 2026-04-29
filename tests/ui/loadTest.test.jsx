@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useRhythmGameInput } from '../../src/hooks/rhythmGame/useRhythmGameInput'
 
-vi.mock('../../src/utils/audioEngine', () => ({
+vi.mock('../../src/utils/audio/audioEngine', () => ({
   getTransportState: vi.fn(() => 'started'),
   getGigTimeMs: vi.fn(() => 1000)
 }))

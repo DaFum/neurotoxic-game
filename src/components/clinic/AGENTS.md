@@ -1,14 +1,19 @@
-# src/components/clinic — Agent Instructions
+# src/components/clinic - Agent Instructions
+
+## Purpose and Limitations
+
+Clinic agents route interactions through existing economy/health action creators and callbacks, read resolved state for costs, deltas, and failure reasons, and use i18n keys for visible text. They must not directly mutate store state, perform side effects beyond dispatching provided actions, or duplicate Band HQ/shop business logic; consult the Scope, Rules, and Gotchas below when changing clinic UI flows. Use clinic agents for treatment purchase/validation flows, and use direct UI handlers only for local presentation state.
 
 ## Scope
 
 Applies to `src/components/clinic/**`.
 
-## Domain Gotchas
+## Rules
 
-- Clinic outcomes must communicate actual applied deltas after clamps (not requested values), especially when money/harmony/stamina are bounded.
-- Validation for treatment payloads should reject non-finite numeric values before rendering or dispatching purchase/effect actions.
+- Keep clinic actions routed through existing economy/health action creators and callbacks.
+- Display costs, deltas, and failure reasons from resolved state changes, not optimistic requested values.
+- Use i18n keys for treatment names, button labels, and toast text.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Clinic UI regressions often come from mismatched affordability checks between UI and action creators; keep checks aligned with economy helpers.
+- Clinic affordability checks must match the same money clamp and applied-delta behavior used by Band HQ/shop flows.

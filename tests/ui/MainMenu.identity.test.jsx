@@ -20,7 +20,7 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: { MAIN_MENU_BG: 'mock-bg' }
 }))
 
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     startAmbient: vi.fn().mockResolvedValue(),
     ensureAudioContext: vi.fn().mockResolvedValue()

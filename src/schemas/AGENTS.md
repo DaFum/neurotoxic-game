@@ -1,30 +1,21 @@
-# src/schemas — Agent Instructions
+# src/schemas - Agent Instructions
 
 ## Scope
 
 Applies to `src/schemas/**`.
 
-## Schema Rules
+## What agents do / Limitations
 
-- Keep schemas as the source of truth for validation/shape guarantees.
-- Changes to schema constraints must preserve compatibility with existing saves/tests unless explicitly migrated.
-- Avoid embedding app logic in schema modules; keep them declarative.
+Schema agents maintain boundary validators and typed schema contracts using whitelist-only fields, prototype-pollution stripping, and preservation of valid `0`/`''` values. They must not perform privileged operations, use network access unless explicitly allowed, or log sensitive inputs while narrowing unknown data. Use an agent when hardening a persisted/API payload schema; use a simple function or library helper for local, trusted transformations.
 
-## Migration Rules
+## Rules
 
-- When updating schema typing, ensure consuming validators and tests remain in sync.
+- Schemas are boundary contracts. Keep runtime validation and TypeScript types aligned.
+- Reject unknown or hostile fields by whitelist, not by spreading parsed records.
+- Use `unknown` inputs and narrow before constructing typed objects.
+- Add or update security tests when schema hardening changes accepted input.
 
-## Nested TypeScript Notes
+## Gotchas
 
-- Treat schema files as contract sources: when a schema changes, update inferred/declared TypeScript types and validator tests in the same PR.
-- Preserve nullish semantics in optional schema fields (`??` patterns) so valid falsy values are not lost.
-- Keep schema helpers declarative and strongly typed; avoid embedding app-level side effects in schema modules.
-
-## Domain Gotchas
-
-- Schema optional fields must preserve nullish semantics (`??`) so persisted `0`/`''` values are not coerced away during normalization.
-- If a schema field represents a record map, array payloads should be normalized to safe defaults rather than cast-through objects.
-
-## Recent Findings (2026-04)
-
-- Treat UI reachability changes as potential schema-impacting events when persisted flags exist; stale flags should be either migrated or removed intentionally.
+- Prototype-pollution keys (`__proto__`, `constructor`, `prototype`) must stay stripped at nested object/array levels.
+- Optional numeric/string fields must preserve valid `0` and `''` values.

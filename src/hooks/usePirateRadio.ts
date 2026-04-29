@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
-import { audioManager } from '../utils/AudioManager'
+import { audioManager } from '../utils/audio/AudioManager'
 import {
   checkHasBroadcastedToday,
   validatePirateBroadcast
 } from '../utils/pirateRadioUtils'
+import { logger } from '../utils/logger'
 
 export const PIRATE_RADIO_CONFIG = {
   COST: 200,
@@ -22,12 +23,27 @@ export const usePirateRadio = () => {
   const closePirateRadio = useCallback(() => setShowPirateRadio(false), [])
 
   const hasBroadcastedToday = checkHasBroadcastedToday(social, player.day)
-  const canBroadcast = validatePirateBroadcast(
-    social,
-    player,
-    band,
-    PIRATE_RADIO_CONFIG
-  )
+  let canBroadcast = false
+  try {
+    canBroadcast = validatePirateBroadcast(
+      social,
+      player,
+      band,
+      PIRATE_RADIO_CONFIG
+    )
+  } catch (error) {
+    logger.error(
+      'PirateRadio',
+      'validatePirateBroadcast failed while deriving canBroadcast',
+      {
+        error,
+        social,
+        playerDay: player.day,
+        config: PIRATE_RADIO_CONFIG
+      }
+    )
+    canBroadcast = false
+  }
 
   const triggerBroadcast = useCallback(() => {
     if (!canBroadcast) return

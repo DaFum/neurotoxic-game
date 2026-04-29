@@ -1,5 +1,7 @@
 import { audioManager } from './AudioManager'
 
+type AudioServiceListener = () => void
+
 const getState = () => {
   const snapshot = audioManager.getStateSnapshot()
   return {
@@ -12,7 +14,7 @@ const getState = () => {
   }
 }
 
-const subscribe = listener => {
+const subscribe = (listener: AudioServiceListener): (() => void) => {
   if (typeof audioManager.subscribe === 'function') {
     return audioManager.subscribe(listener)
   }
@@ -23,10 +25,10 @@ export const audioService = {
   getState,
   hasNativeSubscribe: () => typeof audioManager.subscribe === 'function',
   subscribe,
-  setMusicVolume: value => audioManager.setMusicVolume(value),
-  setSfxVolume: value => audioManager.setSFXVolume(value),
+  setMusicVolume: (value: number) => audioManager.setMusicVolume(value),
+  setSfxVolume: (value: number) => audioManager.setSFXVolume(value),
   toggleMute: () => audioManager.toggleMute(),
-  startAmbient: (...args) => audioManager.startAmbient(...args),
+  startAmbient: () => audioManager.startAmbient(),
   stopMusic: () => audioManager.stopMusic(),
   resumeMusic: () => audioManager.resumeMusic()
 }

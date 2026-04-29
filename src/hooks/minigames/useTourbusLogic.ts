@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
-import { audioManager } from '../../utils/AudioManager'
+import { audioManager } from '../../utils/audio/AudioManager'
 import { hasUpgrade } from '../../utils/upgradeUtils'
 import {
   TOURBUS_LANE_COUNT,

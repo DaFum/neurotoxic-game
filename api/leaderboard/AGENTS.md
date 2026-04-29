@@ -1,24 +1,18 @@
-# api/leaderboard — Agent Instructions
+# api/leaderboard - Agent Instructions
 
 ## Scope
 
 Applies to `api/leaderboard/**`.
 
-## API Responsibilities
+## Rules
 
-- Keep leaderboard endpoint payload contracts stable and backward compatible.
-- Validate and normalize incoming IDs before persistence/lookup.
+- Keep leaderboard payload contracts stable and backward compatible.
+- Validate and normalize incoming IDs before persistence or lookup.
+- Resolve submitted song IDs through the canonical song/leaderboard mapping; do not persist raw UI song IDs.
+- Type request payloads as `unknown` at the boundary and narrow through explicit parsing or guards.
+- Prefer explicit success/error response body types used by UI and tests.
 
-## TypeScript Notes
+## Gotchas
 
-- Treat request payloads as `unknown` at the boundary and narrow through explicit parsing/guards.
-- Prefer explicit response body types for success/error shapes used by UI/tests.
-
-## Domain Gotchas
-
-- Song IDs may require canonical mapping before submission; avoid trusting raw client IDs.
-- Maintain deterministic error payloads so tests and clients can branch predictably.
-
-## Recent Findings (2026-04)
-
-- Leaderboard submissions should stay decoupled from Overworld menu organization; UI nav changes must not affect song ID resolution or submit payload shape.
+- Do not expose internal storage keys through public response shapes.
+- Keep failure responses deterministic for security and node tests.

@@ -32,10 +32,10 @@ const mockRhythmUtils = {
   generateLanes: vi.fn()
 }
 
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: mockAudioEngine
 }))
-vi.mock('../../src/utils/audioEngine', () => mockAudioEngine)
+vi.mock('../../src/utils/audio/audioEngine', () => mockAudioEngine)
 vi.mock('../../src/utils/audio/timingUtils', () => mockAudioEngine)
 
 vi.mock('../../src/utils/gigStats', () => mockGigStats)

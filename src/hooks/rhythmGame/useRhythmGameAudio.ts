@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
-import { audioManager } from '../../utils/AudioManager'
-import { stopAudio } from '../../utils/audioEngine'
+import { audioManager } from '../../utils/audio/AudioManager'
+import { stopAudio } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameStateUtils'
@@ -10,7 +10,7 @@ import {
   resolveActiveSetlist,
   playSongSequence,
   resetGigStateTracking
-} from '../../utils/rhythmGameAudioUtils'
+} from '../../utils/audio/rhythmGameAudioUtils'
 import type {
   GameMap,
   GameState,

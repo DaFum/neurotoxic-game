@@ -10,7 +10,7 @@ vi.mock('../../src/context/GameState', () => ({
     changeScene: vi.fn()
   })
 }))
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     playSFX: vi.fn(),
     init: vi.fn()

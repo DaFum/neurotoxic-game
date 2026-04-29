@@ -10,6 +10,7 @@ import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
+import type { StageControllerOptions } from '../../types/components'
 
 class RoadieStageController extends BaseStageController {
   effectManager: EffectManager | null
@@ -30,7 +31,7 @@ class RoadieStageController extends BaseStageController {
   trafficManager: RoadieTrafficManager | null
   playerManager: RoadiePlayerManager | null
 
-  constructor(params: unknown) {
+  constructor(params: StageControllerOptions) {
     super(params)
     this.effectManager = null
     this.trafficManager = null
@@ -211,5 +212,5 @@ class RoadieStageController extends BaseStageController {
   }
 }
 
-export const createRoadieStageController = (params: unknown) =>
+export const createRoadieStageController = (params: StageControllerOptions) =>
   new RoadieStageController(params)

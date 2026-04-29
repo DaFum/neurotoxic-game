@@ -1,30 +1,21 @@
-# src/ui/bandhq — Agent Instructions
+# src/ui/bandhq - Agent Instructions
+
+Agent Instructions here apply to AI assistants, automated tools, and human operators changing Band HQ UI surfaces. Their purpose is to keep catalog, purchase, and effect flows aligned with shared reducers and engines; they are limited to `src/ui/bandhq/**`, expected to produce UI-safe inputs/outputs, and must respect i18n, shared types, and safety constraints. Use these agents for Band HQ UI and hook changes, not for unrelated economy engine rewrites.
 
 ## Scope
 
 Applies to `src/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
 
-## Domain Responsibilities
+## Rules
 
-- Band HQ modules coordinate shop/clinic/stats UX and should remain reducer-action driven.
-- Keep economy/social-facing UI messages synchronized with actual applied deltas and clamped values.
+- Band HQ UI remains reducer-action driven; do not bypass centralized cost/effect engines.
+- Display economy/social messages from resolved effects and clamped state.
+- Use shared game/component/audio contracts from `src/types/**`.
+- Keep purchasable/effect payloads as explicit discriminated unions, not generic records.
 
-## TypeScript Notes
+## Gotchas
 
-- This domain is in stricter CheckJS scope; guard indexed access and optional object branches explicitly.
-- Reuse shared domain contracts (`src/types/game.d.ts`, `src/types/components.d.ts`) instead of ad-hoc local shapes.
-- For purchasable/effect payloads, prefer explicit discriminated unions and avoid widening to generic records.
-
-## Domain Gotchas
-
-- Bounded-state guidance should follow canonical helpers in `src/utils/gameStateUtils.ts`: `player.money >= 0` and `band.harmony` clamped to `1..100`.
-- Do not bypass centralized cost/effect engines when deriving UI decisions.
-- `CatalogTab` callback prop names (`*Callback`) are part of the shared contract; renaming requires same-PR updates for all tab consumers and PropTypes.
-
-## Recent Findings (2026-04)
-
-- Band HQ navigation should remain independent from Overworld action regrouping; HQ open behavior must not depend on category ordering side effects.
-- Settings-related tab props should consume shared audio contracts from `src/types/audio.d.ts` to avoid drift between `useAudioControl` output and tab signatures.
-- `CatalogTab` PropTypes wrappers must forward the full validator arg list (`...rest`) to wrapped validators; partial forwarding degrades dev warnings and breaks diagnostics.
-- `ShopItem`/catalog labels must never pass non-string values into `t(...)`; fallback to `ui:shop.messages.unknownItem` for malformed names and keep EN/DE locale keys unique (no duplicates).
-- Keep `CatalogTab` custom PropTypes validators readable by retaining explicit `location`/`propFullName` parameters while still forwarding the full arg list.
+- `CatalogTab` callback prop names (`*Callback`) are shared contracts; rename only with all tab consumers and PropTypes updated.
+- `CatalogTab` custom PropTypes wrappers must keep readable `location`/`propFullName` parameters and forward `...rest`.
+- Shop/catalog labels must pass strings to `t(...)`; use `ui:shop.messages.unknownItem` for malformed names.
+- Band HQ open behavior must not depend on Overworld category ordering.

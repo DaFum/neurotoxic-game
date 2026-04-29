@@ -1,24 +1,18 @@
-# src/utils — Agent Instructions
+# src/utils - Agent Instructions
 
 ## Scope
 
-Applies to `src/utils/**` except subtrees with deeper `AGENTS.md` overrides.
+Applies to `src/utils/**` unless a deeper `AGENTS.md` overrides it.
 
-## Utility Rules
+## Rules
 
-- Keep utilities pure and side-effect-free unless the filename explicitly indicates IO/network/storage behavior.
+- Utilities stay pure and side-effect-free unless the filename explicitly indicates IO, network, or storage.
 - Treat external payloads and caught errors as `unknown` and narrow before access.
+- Fail loudly on invalid invariants in strict domains instead of silently continuing with corrupted state.
 
-## Domain Gotchas
+## Gotchas
 
-- Retry/error helpers must preserve the original failure cause; swallowing last-error context breaks debug telemetry and tests.
-- Map/event/randomization helpers should fail loudly on invalid invariants in strict domains instead of silently continuing with corrupted state.
-- Map layer fallback selection should mirror primary-path invariant checks (explicit non-null venue assertions before capacity/type access).
-- Event-engine member/stat resolution should throw typed state errors on sparse invariant violations; do not silently coerce broken arrays into benign failures.
-
-## Recent Findings (2026-04)
-
-- Lint coverage drift can hide utility regressions: ensure `.ts` utility files stay inside active ESLint file globs when lint config changes.
-- Avoid storing mutable counters in shared config objects and then destructuring to primitives; mutations won’t propagate back and the object contract becomes misleading.
-- `pickRandomSubset` large-`k` branches must enforce sparse-array invariants explicitly (throw on holes) instead of using unchecked assertions; downstream map connection code assumes dense selections.
-- Purchase effect helpers should fail loudly for invalid numeric payloads (`inventory_add`) and normalize stored upgrade IDs to strings so `hasUpgrade`/breakdown reducers remain consistent.
+- Retry/error helpers must preserve the original failure cause.
+- Map layer fallback selection must explicitly assert non-null venues before capacity/type access.
+- `pickRandomSubset` large-`k` branches must reject sparse arrays instead of unchecked assertions.
+- Purchase effect helpers should fail on invalid numeric payloads and normalize stored upgrade IDs to strings.

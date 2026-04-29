@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { audioManager } from '../utils/AudioManager'
+import { audioManager } from '../utils/audio/AudioManager'
 import {
   createKeyToLaneMap,
   handleKeyDownLogic,
@@ -30,7 +30,9 @@ export const useGigInput = ({
   gameStateRef,
   triggerBandAnimation,
   onTogglePause
-}: GigInputParams): { handleLaneInput: (index: number, active: boolean) => void } => {
+}: GigInputParams): {
+  handleLaneInput: (index: number, active: boolean) => void
+} => {
   const hasUnlockedAudioRef = useRef(false)
 
   const ensureAudioFromGesture = useCallback(() => {

@@ -1,26 +1,17 @@
-# src/context/reducers — Agent Instructions
+# src/context/reducers - Agent Instructions
 
 ## Scope
 
 Applies to `src/context/reducers/**`.
 
-## Reducer Responsibilities
+## Rules
 
-- Reducers are deterministic state transformers; no hidden side effects or UI-only logic.
-- For new actions, maintain full contract coherence across action types, creators, reducers, and tests.
+- Reducers apply already-sanitized action payloads and must not duplicate action-creator clamps.
+- Keep exhaustive handling with `assertNever(action)` in default branches.
+- Whitelist persisted or loaded payload fields before constructing state.
+- Preserve immutability of untouched branches in reducer tests.
 
-## TypeScript Notes
+## Gotchas
 
-- Keep discriminated union exhaustiveness (`assertNever`) intact when extending reducer action handling.
-- Sanitize untrusted load/reset payloads via explicit whitelist construction, not generic object spread.
-- Preserve serialized state compatibility unless a migration path is included in the same PR.
-
-## Domain Gotchas
-
-- Travel/location fields are consumed by chatter, translation, and save migrations; update all readers/writers together.
-- Settings and unlock persistence behavior is regression-sensitive; keep tests aligned with intended semantics.
-
-## Recent Findings (2026-04)
-
-- Reintroduced actions should be validated for no-op safety when feature flags/state preconditions are missing; reducers must remain deterministic.
-- Member payload sanitization must reject array values for record-like fields (`baseStats`, `equipment`) before casting to object maps.
+- Loaded save compatibility must cover legacy venue, settings, and unlock formats.
+- Reducer typing regressions should fail `pnpm run typecheck`; whole-project issues belong to `pnpm run typecheck:core`.

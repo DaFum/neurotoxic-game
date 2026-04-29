@@ -115,10 +115,10 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/utils/simulationUtils', {
     namedExports: mockSimulationUtils
   })
-  mock.module('../src/utils/AudioManager', {
+  mock.module('../src/utils/audio/AudioManager', {
     namedExports: { audioManager: mockAudioManager }
   })
-  mock.module('../src/utils/audioEngine', {
+  mock.module('../src/utils/audio/audioEngine', {
     namedExports: mockAudioEngine
   })
   mock.module('../src/utils/audio/timingUtils', {

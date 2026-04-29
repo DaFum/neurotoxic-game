@@ -21,7 +21,7 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: { MAIN_MENU_BG: 'mock-bg' }
 }))
 
-vi.mock('../../src/utils/AudioManager', () => ({
+vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     startAmbient: vi.fn().mockResolvedValue(),
     ensureAudioContext: vi.fn().mockResolvedValue()
@@ -531,7 +531,8 @@ describe('MainMenu Component', () => {
     })
 
     it('continues scene transition even if audio fails', async () => {
-      const { audioManager } = await import('../../src/utils/AudioManager')
+      const { audioManager } =
+        await import('../../src/utils/audio/AudioManager')
       audioManager.ensureAudioContext.mockRejectedValue(
         new Error('Audio failed')
       )
@@ -623,7 +624,8 @@ describe('MainMenu Component', () => {
     })
 
     it('handles audio initialization failure on load game', async () => {
-      const { audioManager } = await import('../../src/utils/AudioManager')
+      const { audioManager } =
+        await import('../../src/utils/audio/AudioManager')
       audioManager.ensureAudioContext.mockRejectedValue(
         new Error('Audio failed')
       )

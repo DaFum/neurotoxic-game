@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { SONGS_DB, SONGS_BY_ID } from '../../src/data/songs'
-import { NOTE_TAIL_MS } from '../../src/utils/rhythmGameAudioUtils'
+import { NOTE_TAIL_MS } from '../../src/utils/audio/rhythmGameAudioUtils'
 
 const SONG_TAIL_SECONDS = NOTE_TAIL_MS / 1000
 

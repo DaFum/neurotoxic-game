@@ -1,4 +1,5 @@
 import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine'
+import type { BandState } from '../types/game'
 
 type MapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }
@@ -6,6 +7,9 @@ type GameMapLike =
   | { connections?: unknown; nodes?: Record<string, GameNode | undefined> }
   | null
   | undefined
+
+const isMapConnection = (value: unknown): value is MapConnection =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**
  * Checks if a target node is connected to the source node.
@@ -20,11 +24,12 @@ export const isConnected = (
   targetNodeId: string
 ): boolean => {
   if (!gameMap) return false
-  if (!Array.isArray(gameMap.connections)) {
-    throw new TypeError('gameMap.connections is missing')
-  }
-  for (let i = 0; i < gameMap.connections.length; i++) {
-    const c = gameMap.connections[i] as MapConnection
+  const connections = Array.isArray(gameMap.connections)
+    ? gameMap.connections
+    : []
+  for (let i = 0; i < connections.length; i++) {
+    const c = connections[i]
+    if (!isMapConnection(c)) continue
     if (c.from === fromNodeId && c.to === targetNodeId) {
       return true
     }
@@ -108,31 +113,56 @@ export const checkSoftlock = (
 
   const van =
     typeof player.van === 'object' && player.van !== null
-      ? (player.van as { fuel?: unknown })
+      ? (player.van as {
+          fuel?: unknown
+          condition?: unknown
+          upgrades?: unknown
+          breakdownChance?: unknown
+        })
       : undefined
   const currentFuel = typeof van?.fuel === 'number' ? van.fuel : 0
   const nodes = gameMap.nodes ?? {}
   const currentNode = nodes[player.currentNodeId]
+  const bandStateForTravel = (
+    typeof band === 'object' &&
+    band !== null &&
+    Array.isArray((band as { members?: unknown }).members)
+      ? (band as { members: unknown[] })
+      : null
+  ) as Pick<BandState, 'members'> | null
 
-  if (!Array.isArray(gameMap.connections)) {
-    throw new TypeError('gameMap.connections is missing')
-  }
+  const connections = Array.isArray(gameMap.connections)
+    ? gameMap.connections
+    : []
 
   let canReachAny = false
-  for (let i = 0; i < gameMap.connections.length; i++) {
-    const c = gameMap.connections[i] as MapConnection
+  for (let i = 0; i < connections.length; i++) {
+    const c = connections[i]
+    if (!isMapConnection(c)) continue
     if (c.from === player.currentNodeId && typeof c.to === 'string') {
       const n = nodes[c.to]
       if (n) {
-        const playerStateForTravel: Record<string, unknown> = {
-          ...player,
-          van
+        const playerStateForTravel = {
+          money: typeof player.money === 'number' ? player.money : 0,
+          fameLevel:
+            typeof player.fameLevel === 'number' ? player.fameLevel : 0,
+          van: {
+            fuel: currentFuel,
+            condition: typeof van?.condition === 'number' ? van.condition : 100,
+            upgrades: Array.isArray(van?.upgrades)
+              ? van.upgrades.filter(
+                  (upgrade): upgrade is string => typeof upgrade === 'string'
+                )
+              : [],
+            breakdownChance:
+              typeof van?.breakdownChance === 'number' ? van.breakdownChance : 0
+          }
         }
         const { fuelLiters } = calculateTravelExpenses(
           n,
           currentNode,
           playerStateForTravel,
-          band
+          bandStateForTravel
         )
         if (currentFuel >= fuelLiters) {
           canReachAny = true

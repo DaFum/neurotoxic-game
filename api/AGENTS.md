@@ -1,4 +1,8 @@
-# api — Agent Instructions
+# api - Agent Instructions
+
+## Agents
+
+Agents in `api/**` help maintain automated request/response orchestration, validators, and endpoint contracts. They must preserve backward-compatible response shapes, treat inputs as `unknown` until validated, and cannot cover UI-only flows. Use these instructions when changing route handlers, payload validation, or API test expectations; regular handlers remain the place for simple business logic.
 
 ## Scope
 
@@ -6,25 +10,12 @@ Applies to `api/**`.
 
 ## API Rules
 
-- Keep endpoints backward compatible with current client contracts unless versioned changes are introduced.
-- Validate request payload assumptions explicitly and keep response shapes stable for tests.
-- Avoid introducing hidden side effects in route handlers.
+- Keep endpoint response shapes backward compatible with current client and test contracts unless the change is explicitly versioned.
+- Treat request bodies and query params as `unknown` at route boundaries; narrow with explicit validators before use.
+- Use concrete response interfaces or `Record<string, unknown>` with narrowing. Do not widen handler data to `Record<string, any>`.
+- Keep API error bodies stable in the `{ error: string }` style so node/UI suites can assert deterministic failure paths.
 
-## Migration Rules
+## Gotchas
 
-- TS migration changes in API files should be behavior-preserving and accompanied by updated API tests.
-
-## Nested TypeScript Notes
-
-- Treat request bodies and query params as `unknown` at the route boundary, then narrow with explicit validators before use.
-- Keep API response shapes stable during type migrations; when a payload contract changes, update client consumers and API tests in the same PR.
-- Avoid widening handler-local data to `Record<string, any>`; prefer concrete interfaces or `Record<string, unknown>` with narrowing.
-
-## Domain Gotchas
-
-- Leaderboard and song-adjacent endpoints must keep canonical ID handling consistent with `/api/leaderboard/**`; do not accept raw UI IDs without normalization.
-- Keep API error bodies stable (`{ error: string }` style contracts) so node/UI suites can assert deterministic failure paths.
-
-## Recent Findings (2026-04)
-
-- Avoid backend endpoint additions for features that are not reachable in current UI flows; dead client paths create misleading API surface expectations.
+- Leaderboard and song-adjacent endpoints must normalize IDs consistently with `/api/leaderboard/**`; do not accept raw UI IDs without normalization.
+- Avoid backend endpoints for features that are not reachable in current UI flows; dead client paths create misleading API expectations.

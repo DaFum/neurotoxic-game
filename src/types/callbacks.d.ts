@@ -16,6 +16,8 @@ export type TranslationCallback = (
 
 export type ToastCallback = (message: string, type: string) => void
 
+export type OptionalToastCallback = (message: string, type?: string) => void
+
 export type CollisionHandler = (projectile: unknown) => void
 
 export type MissHandler = (missCount: number, fromInput: boolean) => void

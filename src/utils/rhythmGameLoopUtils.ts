@@ -2,6 +2,7 @@ import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
 import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
+import type { HecklerSession } from './hecklerLogic'
 import type {
   AsyncBooleanCallback,
   AsyncVoidCallback,
@@ -19,7 +20,7 @@ interface RhythmTickArgs {
   transportState: string
   activeEvent: unknown
   dimensionsRef: { current: { width: number; height: number } }
-  hecklerSessionRef: { current: unknown }
+  hecklerSessionRef: { current: HecklerSession }
   deltaMS: number
   handleCollision: CollisionHandler
   setIsToxicMode: ToggleBooleanCallback

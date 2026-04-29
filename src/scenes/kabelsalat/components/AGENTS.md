@@ -1,15 +1,15 @@
-# src/scenes/kabelsalat/components — Agent Instructions
+# src/scenes/kabelsalat/components - Agent Instructions
 
 ## Scope
 
-Applies to `src/scenes/kabelsalat/components/**` except deeper nested scopes.
+Applies to `src/scenes/kabelsalat/components/**` unless a deeper `AGENTS.md` overrides it.
 
-## Domain Gotchas
+## Rules
 
-- Keep component responsibilities visual and interaction-focused; shared game-end routing and phase transitions must stay in hooks/state orchestration.
-- Socket/plug component contracts should preserve `SocketId`/`CableId` literal safety from upstream hooks; avoid widening to plain `string` in props.
-- Overlay and board components must surface both win-path and timeout-loss continuations so users can always progress to `GAME_PHASES.GIG`.
+- Keep plug/socket props aligned with kabelsalat state contracts.
+- Visible labels and overlay text require i18n keys.
+- Avoid widening socket or plug IDs to generic strings.
 
-## Recent Findings (2026-04)
+## Gotchas
 
-- Regressions frequently come from UI-only refactors that bypass shared finalize callbacks; keep all completion paths wired through the same hook-level completion API.
+- Component-only tests are insufficient for end flow; preserve scene-routing coverage when changing controls.

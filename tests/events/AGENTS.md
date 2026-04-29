@@ -1,20 +1,19 @@
-# tests/events — Agent Instructions
+# tests/events - Agent Instructions
+
+## Agent purpose
+
+Agents operating on `tests/events/**` simulate event-driven behavior, validate event payloads, and run lightweight deterministic flows. They must not call external networks, depend on broad production data beyond targeted fixtures, or rely on nondeterministic timing without explicit tolerances. Use these instructions for event contract tests, such as validating a new event's trigger/category/options; do not use them for reducer math or full integration flows.
 
 ## Scope
 
 Applies to `tests/events/**`.
 
-## Test Responsibilities
+## Rules
 
-- Validate event pool contracts (required fields, trigger/category consistency, option structure).
-- Keep event-condition tests deterministic and data-focused.
+- Validate event pool contracts: required fields, trigger/category consistency, option structure, and i18n keys.
+- Keep condition tests deterministic and data-focused.
+- Verify both truthy and falsy condition branches.
 
-## Domain Gotchas
+## Gotchas
 
-- Event `condition` coverage should verify both truthy and falsy branches without relying on random selection flow.
-- Contract assertions must protect namespaced i18n keys and option/effect schema validity.
-- Avoid re-testing reducer math here; reducer/application semantics belong in node reducer or engine suites.
-
-## Recent Findings (2026-04)
-
-- Data-contract regressions are easiest to catch with small, explicit fixture assertions instead of large integration-style event tests.
+- Do not re-test reducer math here; reducer/application semantics belong in node reducer or engine suites.

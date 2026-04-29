@@ -1,20 +1,22 @@
-# tests/logic — Agent Instructions
+# tests/logic - Agent Instructions
+
+## Agent Role and Limitations
+
+- Agents for `tests/logic/**` help keep pure logic tests deterministic, focused, and fixture-driven.
+- They are not a source of truth for product behavior, must not use network access, and must treat nondeterministic outputs as invalid unless explicitly controlled.
+- Rely on this guide for contract-level logic assertions; write custom test logic when behavior spans DOM, integration, or reducer orchestration.
 
 ## Scope
 
 Applies to `tests/logic/**`.
 
-## Test Responsibilities
+## Rules
 
-- Keep logic tests pure and deterministic (no DOM wiring unless strictly required).
-- Use narrowly-scoped fixtures per reducer/logic unit and assert state transitions explicitly.
+- Keep logic tests pure, deterministic, and free of DOM wiring unless strictly required.
+- Use narrowly scoped fixtures and explicit state-transition assertions.
+- Prefer table-driven assertions for clamp and bounds behavior.
 
-## Domain Gotchas
+## Gotchas
 
-- Prefer table-driven assertions for clamp/bounds behavior to reduce repetitive test bodies.
-- For reducer tests, assert both result values and immutability of untouched branches.
-- If behavior is already covered by integration suites, only keep contract-level logic assertions here.
-
-## Recent Findings (2026-04)
-
-- Fast feedback improves when logic suites avoid shared heavyweight setup and keep fixtures minimal.
+- Reducer tests should assert result values and immutability of untouched branches.
+- If integration suites already cover behavior, keep only contract-level logic assertions here.

@@ -1,4 +1,5 @@
 import type { Note } from './audio'
+import type { Projectile } from '../utils/hecklerLogic'
 
 export type RhythmLane = {
   id: 'guitar' | 'drums' | 'bass'
@@ -87,7 +88,7 @@ export type RhythmGameRefState = {
   speed: number
   modifiers: RhythmModifiers
   stats: RhythmLiveStats
-  projectiles: unknown[]
+  projectiles: Projectile[]
   combo: number
   health: number
   score: number
