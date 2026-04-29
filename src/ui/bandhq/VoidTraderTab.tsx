@@ -76,7 +76,7 @@ export const VoidTraderTab = ({
         </div>
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-y-auto pr-2 scrollbar-auto scrollbar-thumb-toxic-green scrollbar-track-void-black'>
         {voidItems.map(item => {
           const isProcessingThis =
             processingItemId != null &&

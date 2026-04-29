@@ -165,7 +165,7 @@ export const LeaderboardTab = () => {
     <div className='h-full flex flex-col gap-4'>
       <div
         role='tablist'
-        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-x'
+        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-auto scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-x'
       >
         {views.map(({ id, label }) => (
           <GlitchButton
@@ -244,7 +244,7 @@ export const LeaderboardTab = () => {
         )}
 
         {!isLoading && !error && !isUnavailable && rankings.length > 0 && (
-          <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-y touch-pinch-zoom'>
+          <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-auto scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-y touch-pinch-zoom'>
             <table className='w-full text-left font-mono'>
               <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
                 <tr>

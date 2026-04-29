@@ -721,7 +721,7 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: var(--color-void-black);
