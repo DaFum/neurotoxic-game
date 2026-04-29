@@ -104,4 +104,4 @@
 ## 2026-06-07 - Focus Rings on Custom Tabs
 
 **Learning:** When creating custom tab buttons (e.g., in `BrutalTabs` component), users navigating by keyboard often have no visual indicator of which tab is currently focused. Since focus relies heavily on standard states (`focus-visible:` classes), missing these classes leads to a degraded accessibility experience.
-**Action:** Ensure all interactive elements, particularly those serving as `role="tab"`, implement explicit `focus-visible:` styles (e.g., `focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2`) to provide a clear focus ring for keyboard navigation.
+**Action:** Ensure all interactive elements, particularly those serving as `role="tab"`, implement explicit `focus-visible:` styles (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to provide a clear focus ring for keyboard navigation.
