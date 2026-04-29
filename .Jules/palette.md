@@ -100,3 +100,8 @@
 
 **Learning:** Found that the main volume toggle (Mute/Unmute) button in the HUD was missing the `aria-pressed` attribute, which provides a stable name for the control. Without `aria-pressed`, screen reader users might not know the toggle status of the button immediately.
 **Action:** Always ensure that toggle buttons reflect their state using the `aria-pressed` attribute, with a stable accessible `aria-label`.
+
+## 2026-06-07 - Focus Rings on Custom Tabs
+
+**Learning:** When creating custom tab buttons (e.g., in `BrutalTabs` component), users navigating by keyboard often have no visual indicator of which tab is currently focused. Since focus relies heavily on standard states (`focus-visible:` classes), missing these classes leads to a degraded accessibility experience.
+**Action:** Ensure all interactive elements, particularly those serving as `role="tab"`, implement explicit `focus-visible:` styles (e.g., `focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2`) to provide a clear focus ring for keyboard navigation.

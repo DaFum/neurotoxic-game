@@ -880,7 +880,7 @@ export const BrutalTabs = memo(() => {
               role='tab'
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 px-4 text-xs font-bold tracking-[0.1em] uppercase transition-all
+              className={`flex-1 py-2 px-4 text-xs font-bold tracking-[0.1em] uppercase transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
                 ${isActive ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)]' : 'bg-void-black text-toxic-green hover:bg-toxic-green/10'}`}
             >
               {isActive && <span className='mr-2'>▶</span>}
