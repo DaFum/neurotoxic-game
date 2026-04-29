@@ -16,7 +16,7 @@ Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 - Include `t` and all reactive dependencies in callbacks/effects to prevent stale closures in translated UI.
 - Preserve nullish/falsy semantics in UI formatting (`??` over `||` when `0`/`''` are valid values).
 
-## Gotchas
+## Domain Gotchas
 
 - Location labels should go through translation helpers (for example `translateLocation`) instead of raw string assumptions.
 - Keep style tokens aligned with Tailwind v4 and project CSS variables.
@@ -25,3 +25,4 @@ Applies to `src/ui/**` unless a deeper `AGENTS.md` overrides it.
 
 - Re-adding a removed modal requires both trigger wiring and visible affordance updates; mounted-only modals are considered incomplete integrations.
 - Event modal copy may arrive either as translation keys or raw display text. Use event-provided title/description as translation fallback defaults to preserve runtime content.
+- If fallback translation keys are introduced for modal/event copy, add EN+DE locale entries in the same patch (`public/locales/en/ui.json` + `public/locales/de/ui.json`).

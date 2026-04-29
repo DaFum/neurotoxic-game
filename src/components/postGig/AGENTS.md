@@ -13,3 +13,4 @@ Applies to `src/components/postGig/**`.
 ## Recent Findings (2026-04)
 
 - When a summary row renders on nullish checks, nested value spans must use the same nullish pattern; mixed guards produce labels with missing values.
+- Once zero deltas are rendered (`value != null`), color mapping must treat `0` as neutral (not negative) to avoid red "no change" indicators.

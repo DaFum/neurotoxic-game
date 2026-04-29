@@ -30,8 +30,15 @@ Applies to `src/types/**`.
 - If optionality changes in a shared type, update corresponding runtime validators/PropTypes and affected tests in the same PR.
 - Prefer additive, backward-compatible contract evolution; breaking field changes require coordinated reducer/action updates.
 
+## Domain Gotchas
+
+- Removing broad index signatures (for example on manager-like interfaces) intentionally tightens `keyof`; update helper call sites and tests in the same change.
+- Shared contract optionality changes must be mirrored by runtime guards/type predicates to avoid “type predicate lies” in consumer modules.
+
 ## Recent Findings (2026-04)
 
 - Prefer extending shared UI prop contracts when adding menu actions; avoid local ad-hoc prop shapes that can desync scene/component boundaries.
 - `AsyncCallback<TResult>` should stay backward-compatible with sync `void` returns for non-void specializations unless a coordinated contract migration is documented.
 - Audio UI contracts (`AudioState`, `AudioControls`) should live in `src/types/audio.d.ts`; consumers in UI tabs should import from `types/audio` rather than redefining or sourcing from unrelated domains.
+- `AudioManagerLike` should not use broad string index signatures; explicit method/property names preserve `keyof` safety and catch misspellings in shared audio helpers.
+- Shared gig modifier effect contracts belong in `src/types/components.d.ts`; keep utilities, hooks, and components on the same `ActiveEffect`/`ActiveEffectEntry` definitions.

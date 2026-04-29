@@ -20,6 +20,11 @@ Applies to `api/**`.
 - Keep API response shapes stable during type migrations; when a payload contract changes, update client consumers and API tests in the same PR.
 - Avoid widening handler-local data to `Record<string, any>`; prefer concrete interfaces or `Record<string, unknown>` with narrowing.
 
+## Domain Gotchas
+
+- Leaderboard and song-adjacent endpoints must keep canonical ID handling consistent with `/api/leaderboard/**`; do not accept raw UI IDs without normalization.
+- Keep API error bodies stable (`{ error: string }` style contracts) so node/UI suites can assert deterministic failure paths.
+
 ## Recent Findings (2026-04)
 
 - Avoid backend endpoint additions for features that are not reachable in current UI flows; dead client paths create misleading API surface expectations.

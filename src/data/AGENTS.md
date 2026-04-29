@@ -27,6 +27,11 @@ Applies to `src/data/**`.
 - Annotate condition callbacks explicitly (`(state: GameState) => ...`) in data event pools to avoid implicit-`any` failures in CheckJS.
 - Use narrow literal unions/const assertions for category/type fields to preserve downstream type narrowing.
 
+## Domain Gotchas
+
+- Chatter/event data validators may throw on malformed entries; scheduling loops that consume these pools must catch and continue instead of halting.
+- Event/message copy fields are treated as i18n keys in rendering paths; introducing raw text here requires explicit `defaultValue` fallback handling in consumers.
+
 ## Recent Findings (2026-04)
 
 - New menu-driven systems should reuse existing data keys where possible; introducing parallel IDs for the same feature increases save/test drift risk.

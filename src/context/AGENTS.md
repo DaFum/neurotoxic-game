@@ -35,6 +35,11 @@ Applies to `src/context/**`.
 - For load/reset/update reducers, whitelist fields from untrusted payloads instead of spreading generic objects into state.
 - Keep runtime clamps and action payload types aligned so reducers remain predictable and testable.
 
+## Domain Gotchas
+
+- Sanitizers for persisted payloads must explicitly replace invalid record-like fields (arrays for `baseStats`/`equipment`/`relationships`) instead of leaving spread-through values.
+- Context scheduler/timer callbacks that call strict utilities should catch/log/recover at the hook boundary so provider loops remain alive.
+
 ## Recent Findings (2026-04)
 
 - UI refactors that add/remove actionable entries should audit action creators for orphaned dispatch paths and keep contracts explicit.

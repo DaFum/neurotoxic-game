@@ -20,7 +20,7 @@ Applies to everything under `src/` unless a deeper `AGENTS.md` overrides it.
 - When changing shared contracts in `src/types/*.d.ts`, update corresponding runtime guards/PropTypes in the same change.
 - In domains covered by `jsconfig.checkjs.json`, explicitly guard indexed/optional access (`noUncheckedIndexedAccess`).
 
-## Gotchas
+## Domain Gotchas
 
 - `useArrivalLogic` owns arrival routing and scene transitions after travel completion.
 - Minigame hooks (`useTourbusLogic`, `useRoadieLogic`) must stay reactive-only (no direct PIXI imports).

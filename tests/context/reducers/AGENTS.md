@@ -14,7 +14,7 @@ Applies to `tests/context/reducers/**`.
 - Keep action payload fixtures aligned with discriminated union shapes from action creators.
 - For untrusted payload tests, include malformed/hostile shapes and assert whitelist behavior.
 
-## Gotchas
+## Domain Gotchas
 
 - Cover backward-compatibility paths for loaded saves (legacy venue/settings/unlocks formats).
 - When adding reducer branches, ensure exhaustive-case coverage in tests mirrors reducer expectations.

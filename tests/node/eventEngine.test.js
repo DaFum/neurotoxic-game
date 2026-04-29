@@ -804,98 +804,107 @@ test('eventEngine.processEvent reports invalid non-function condition type', () 
   assert.ok(errArg instanceof TypeError, 'Should report a TypeError')
 })
 
-test('eventEngine.applyResult percentage_resource skips if no gameState', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: 10
+const percentageResourceCases = [
+  {
+    label: 'skips if no gameState',
+    result: { type: 'percentage_resource', resource: 'money', percentage: 10 },
+    gameState: undefined,
+    validate: delta =>
+      assert.equal(
+        delta.player.money,
+        undefined,
+        'Should skip without gameState'
+      )
+  },
+  {
+    label: 'handles positive gain with max cap',
+    result: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: 50,
+      max: 100
+    },
+    gameState: { player: { money: 1000 } },
+    validate: delta =>
+      assert.equal(delta.player.money, 100, 'Should cap positive gain at max')
+  },
+  {
+    label: 'handles positive gain with min cap',
+    result: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: 5,
+      min: 200
+    },
+    gameState: { player: { money: 1000 } },
+    validate: delta =>
+      assert.equal(
+        delta.player.money,
+        200,
+        'Should elevate positive gain to min'
+      )
+  },
+  {
+    label: 'handles negative loss with min cap (lower bound)',
+    result: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: -50,
+      min: -100
+    },
+    gameState: { player: { money: 1000 } },
+    validate: delta =>
+      assert.equal(
+        delta.player.money,
+        -100,
+        'The negative loss should be floor-capped at -100 (maximaler Verlust) using Math.max.'
+      )
+  },
+  {
+    label: 'handles negative loss with max cap (upper bound)',
+    result: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: -5,
+      max: -200
+    },
+    gameState: { player: { money: 1000 } },
+    validate: delta =>
+      assert.equal(
+        delta.player.money,
+        -200,
+        'The negative loss should be ceiling-capped at -200 (minimaler Verlust) using Math.min.'
+      )
+  },
+  {
+    label: 'handles zero money correctly',
+    result: { type: 'percentage_resource', resource: 'money', percentage: 50 },
+    gameState: { player: { money: 0 } },
+    validate: delta =>
+      assert.equal(delta.player.money, 0, 'Zero money should yield zero gain')
+  },
+  {
+    label: 'gracefully handles min > max',
+    result: {
+      type: 'percentage_resource',
+      resource: 'money',
+      percentage: 50,
+      min: 200,
+      max: 100
+    },
+    gameState: { player: { money: 1000 } },
+    validate: delta =>
+      assert.equal(
+        delta.player.money,
+        200,
+        'Should swap inverted min/max properties safely'
+      )
   }
-  const delta = eventEngine.applyResult(result)
-  assert.equal(delta.player.money, undefined, 'Should skip without gameState')
-})
+]
 
-test('eventEngine.applyResult percentage_resource handles positive gain with max cap', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: 50,
-    max: 100
-  }
-  const gameState = { player: { money: 1000 } }
-  const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, 100, 'Should cap positive gain at max')
-})
-
-test('eventEngine.applyResult percentage_resource handles positive gain with min cap', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: 5,
-    min: 200
-  }
-  const gameState = { player: { money: 1000 } }
-  const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, 200, 'Should elevate positive gain to min')
-})
-
-test('eventEngine.applyResult percentage_resource handles negative loss with min cap (lower bound)', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: -50,
-    min: -100
-  }
-  const gameState = { player: { money: 1000 } }
-  const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(
-    delta.player.money,
-    -100,
-    'The negative loss should be floor-capped at -100 (maximaler Verlust) using Math.max.'
-  )
-})
-
-test('eventEngine.applyResult percentage_resource handles negative loss with max cap (upper bound)', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: -5,
-    max: -200
-  }
-  const gameState = { player: { money: 1000 } }
-  const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(
-    delta.player.money,
-    -200,
-    'The negative loss should be ceiling-capped at -200 (minimaler Verlust) using Math.min.'
-  )
-})
-
-test('eventEngine.applyResult percentage_resource handles zero money correctly', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: 50
-  }
-  const gameState = { player: { money: 0 } }
-  const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(delta.player.money, 0, 'Zero money should yield zero gain')
-})
-
-test('eventEngine.applyResult percentage_resource gracefully handles min > max', () => {
-  const result = {
-    type: 'percentage_resource',
-    resource: 'money',
-    percentage: 50,
-    min: 200,
-    max: 100
-  }
-  const gameState = { player: { money: 1000 } }
-  // Gain is 500. Correct max should cap it to 200 (if min=100 max=200).
-  // With inverted inputs, it should swap them, treating 100 as min and 200 as max.
-  const delta = eventEngine.applyResult(result, {}, gameState)
-  assert.equal(
-    delta.player.money,
-    200,
-    'Should swap inverted min/max properties safely'
-  )
+percentageResourceCases.forEach(({ label, result, gameState, validate }) => {
+  test(`eventEngine.applyResult percentage_resource ${label}`, () => {
+    const delta = eventEngine.applyResult(result, {}, gameState)
+    validate(delta)
+  })
 })

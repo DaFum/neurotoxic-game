@@ -1,7 +1,6 @@
-import { test, beforeEach, describe } from 'vitest'
+import { test, beforeEach, afterAll, describe } from 'vitest'
 import assert from 'node:assert/strict'
 
-// Mock localStorage globally for the test file
 const mockStorage = {
   store: {},
   getItem(key) {
@@ -17,17 +16,21 @@ const mockStorage = {
     this.store = {}
   }
 }
+
+const originalLocalStorage = global.localStorage
 global.localStorage = mockStorage
 
 describe('Unlock Manager Security', async () => {
-  // Dynamic import to ensure global.localStorage is ready
   const { addUnlock } = await import('../../src/utils/unlockManager')
 
   beforeEach(() => {
     mockStorage.clear()
   })
 
-  // Helper to read current storage state directly
+  afterAll(() => {
+    global.localStorage = originalLocalStorage
+  })
+
   const readStorage = () => {
     const raw = mockStorage.getItem('neurotoxic_unlocks')
     if (!raw) return []
@@ -38,31 +41,66 @@ describe('Unlock Manager Security', async () => {
     }
   }
 
-  test('addUnlock sanitizes before adding', async () => {
-    mockStorage.setItem('neurotoxic_unlocks', JSON.stringify(['valid', 123]))
-    const result = addUnlock('new_item')
-    assert.equal(result, true)
+  test('addUnlock sanitizes previously polluted storage payloads', () => {
+    const pollutedPayload =
+      '["valid_unlock", {"__proto__": {"polluted": true}}, 42]'
+    mockStorage.setItem('neurotoxic_unlocks', pollutedPayload)
 
-    const stored = readStorage()
-    assert.deepEqual(stored, ['valid', 'new_item'])
+    const added = addUnlock('fresh_unlock')
+    assert.equal(added, true)
+    const persisted = readStorage()
+    assert.deepEqual(persisted, ['valid_unlock', 'fresh_unlock'])
+    for (const item of persisted) {
+      if (typeof item !== 'object' || !item) continue
+      assert.equal(Object.hasOwn(item, '__proto__'), false)
+      assert.equal(Object.hasOwn(item, 'constructor'), false)
+      assert.equal(Object.hasOwn(item, 'prototype'), false)
+    }
   })
 
-  test('addUnlock prevents duplicates', async () => {
-    addUnlock('item1')
-    const result = addUnlock('item1')
-    assert.equal(result, false) // Should return false as it wasn't added
-    assert.deepEqual(readStorage(), ['item1'])
+  test('addUnlock sanitizes constructor/prototype nested payload keys', () => {
+    const hostilePayload =
+      '["valid_unlock", {"constructor":{"prototype":{"polluted":true}}}]'
+    mockStorage.setItem('neurotoxic_unlocks', hostilePayload)
+
+    const added = addUnlock('fresh_unlock')
+    assert.equal(added, true)
+    const persisted = readStorage()
+    assert.deepEqual(persisted, ['valid_unlock', 'fresh_unlock'])
+    for (const item of persisted) {
+      if (typeof item !== 'object' || !item) continue
+      assert.equal(Object.hasOwn(item, '__proto__'), false)
+      assert.equal(Object.hasOwn(item, 'constructor'), false)
+      assert.equal(Object.hasOwn(item, 'prototype'), false)
+    }
+    assert.equal({}.polluted, undefined)
   })
 
-  test('addUnlock adds multiple unique items', async () => {
-    addUnlock('item1')
-    addUnlock('item2')
-    assert.deepEqual(readStorage(), ['item1', 'item2'])
+  test('addUnlock tolerates malformed JSON payload without mutating prototype', () => {
+    mockStorage.setItem(
+      'neurotoxic_unlocks',
+      '{"__proto__":{"polluted":"yes"},"broken":'
+    )
+
+    const added = addUnlock('safe_unlock')
+    assert.equal(added, true)
+    const persisted = readStorage()
+    assert.deepEqual(persisted, ['safe_unlock'])
+    for (const item of persisted) {
+      if (typeof item !== 'object' || !item) continue
+      assert.equal(Object.hasOwn(item, '__proto__'), false)
+      assert.equal(Object.hasOwn(item, 'constructor'), false)
+      assert.equal(Object.hasOwn(item, 'prototype'), false)
+    }
+    assert.equal({}.polluted, undefined)
   })
 
-  test('addUnlock rejects non-string inputs', async () => {
-    const result = addUnlock(123)
-    assert.equal(result, false)
+  test('addUnlock rejects hostile non-string inputs', () => {
+    const objectResult = addUnlock({ id: 'evil' })
+    const arrayResult = addUnlock(['evil'])
+
+    assert.equal(objectResult, false)
+    assert.equal(arrayResult, false)
     assert.deepEqual(readStorage(), [])
   })
 })

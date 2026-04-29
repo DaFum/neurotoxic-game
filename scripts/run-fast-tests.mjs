@@ -29,7 +29,7 @@ const runScript = script =>
   })
 
 const [nodeResult, vitestResult] = await Promise.all([
-  runScript('test:node'),
+  runScript('test:node:quick'),
   runScript('test:vitest:logic')
 ])
 

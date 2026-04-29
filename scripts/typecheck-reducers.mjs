@@ -48,6 +48,18 @@ if (reducerErrors.length > 0) {
 }
 
 if (tsc.status !== 0) {
+  const strictEnv = (process.env.TYPECHECK_STRICT ?? '').trim().toLowerCase()
+  const shouldFailOnNonReducerErrors =
+    strictEnv === '1' || strictEnv === 'true'
+  if (shouldFailOnNonReducerErrors) {
+    console.error(
+      'Non-reducer TypeScript errors detected while strict mode is enabled.'
+    )
+    if (output.trim()) {
+      console.error(output.trim())
+    }
+    process.exit(tsc.status)
+  }
   console.log(
     'Reducer typecheck passed (no reducer TS errors). Non-reducer TS errors were ignored by this scoped gate; run `pnpm run typecheck:core` for full project checks.'
   )

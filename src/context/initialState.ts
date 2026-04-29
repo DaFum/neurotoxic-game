@@ -21,7 +21,10 @@ export const BRAND_ALIGNMENTS = {
   SUSTAINABLE: 'SUSTAINABLE',
   GOOD: 'GOOD',
   NEUTRAL: 'NEUTRAL'
-}
+} as const satisfies Record<
+  'EVIL' | 'CORPORATE' | 'INDIE' | 'SUSTAINABLE' | 'GOOD' | 'NEUTRAL',
+  string
+>
 
 /**
  * Default player state configuration

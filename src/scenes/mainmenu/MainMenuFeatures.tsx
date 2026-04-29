@@ -21,16 +21,32 @@ const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
   return value.every(section => {
     if (!section || typeof section !== 'object') return false
     const item = section as Record<string, unknown>
-    if (typeof item.title !== 'string' || typeof item.description !== 'string') {
+    if (
+      typeof item.title !== 'string' ||
+      typeof item.description !== 'string'
+    ) {
       return false
     }
-    if (item.items !== undefined && !Array.isArray(item.items)) return false
-    if (item.headers !== undefined && !Array.isArray(item.headers)) return false
+    if (
+      item.items !== undefined &&
+      (!Array.isArray(item.items) ||
+        item.items.some(elem => typeof elem !== 'string'))
+    ) {
+      return false
+    }
+    if (
+      item.headers !== undefined &&
+      (!Array.isArray(item.headers) ||
+        item.headers.some(elem => typeof elem !== 'string'))
+    ) {
+      return false
+    }
     if (
       item.rows !== undefined &&
       (!Array.isArray(item.rows) ||
         item.rows.some(
-          row => !Array.isArray(row) || row.some(cell => typeof cell !== 'string')
+          row =>
+            !Array.isArray(row) || row.some(cell => typeof cell !== 'string')
         ))
     ) {
       return false
@@ -119,14 +135,14 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                           key={rowKey}
                           className='border-b border-toxic-green/10 last:border-0'
                         >
-                        {row.map((cell: string) => (
-                          <td
-                            key={cell}
-                            className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
-                          >
-                            {t(cell)}
-                          </td>
-                        ))}
+                          {row.map((cell: string, colIndex: number) => (
+                            <td
+                              key={`${rowKey}-${colIndex}`}
+                              className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
+                            >
+                              {t(cell)}
+                            </td>
+                          ))}
                         </tr>
                       )
                     })}

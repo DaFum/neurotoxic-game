@@ -14,7 +14,7 @@ Applies to `tests/ui/**` unless a deeper `AGENTS.md` overrides it.
 - Keep component mock props aligned with shared type contracts and prop optionality.
 - Prefer typed helper builders for repeated render setups to avoid ad-hoc fixture drift.
 
-## Gotchas
+## Domain Gotchas
 
 - If runtime `propTypes` optionality changes, add/update UI coverage for missing-prop fallback behavior.
 - Keep i18n mocks consistent with repo conventions (`initReactI18next` stub).

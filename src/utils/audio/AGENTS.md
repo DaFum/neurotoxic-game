@@ -28,6 +28,11 @@ Applies to `src/utils/audio/**`.
 
 - Keep time/unit fields explicit (`ms`, beats, ticks) in type names or comments to prevent subtle conversion bugs.
 
+## Domain Gotchas
+
+- Snapshot consumers should prefer `getStateSnapshot()` when available and normalize partial snapshots to complete `AudioSnapshot` shapes before comparing state.
+- Native subscription is valid only when `subscribe` is an actual function; otherwise polling must remain active to avoid silent stale-state failures.
+
 ## Recent Findings (2026-04)
 
 - Global keyboard listeners in UI overlays should consume Escape consistently to prevent accidental audio toggle/race behavior from competing handlers.

@@ -61,6 +61,8 @@ test('systemReducer - LOAD_GAME', async t => {
         id: 'm1',
         mood: 80,
         stamina: 70,
+        baseStats: {},
+        equipment: {},
         relationships: {},
         traits: Object.assign(Object.create(null), {
           trait1: { id: 'trait1', name: 'Trait 1' }

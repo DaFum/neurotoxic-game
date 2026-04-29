@@ -3,7 +3,15 @@ import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
 
 const rawArgs = process.argv.slice(2)
-const nodeTestArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
+const normalizedArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
+
+const hasFlag = flag => normalizedArgs.includes(flag)
+
+const flagSkipHeavy = hasFlag('--skip-heavy')
+const flagOnlyHeavy = hasFlag('--only-heavy')
+const nodeTestArgs = normalizedArgs.filter(
+  arg => arg !== '--skip-heavy' && arg !== '--only-heavy'
+)
 
 const hasExplicitConcurrency = nodeTestArgs.some(arg =>
   arg.startsWith('--test-concurrency')
@@ -35,6 +43,21 @@ const NODE_TEST_DIRS = [
   'tests/golden-path',
   'tests/reducers'
 ]
+
+const HEAVY_NODE_TESTS = [
+  'tests/node/CrowdManager.test.js',
+  'tests/node/LaneManager.test.js',
+  'tests/node/NoteManager.test.js',
+  'tests/node/useGigEffects.test.js',
+  'tests/node/useGigInput.test.js',
+  'tests/node/usePurchaseLogic.test.js'
+]
+
+const heavyTestSet = new Set(
+  HEAVY_NODE_TESTS.map(testFile =>
+    path.resolve(REPO_ROOT, testFile).replace(/\\/g, '/')
+  )
+)
 
 const isPathInNodeDirs = testPath => {
   const resolved = path.resolve(testPath)
@@ -69,6 +92,31 @@ const getRemainingTestFiles = () => {
   return allFiles
 }
 
+const normalizeTestPath = testFile =>
+  path.resolve(testFile).replace(/\\/g, '/')
+
+const shouldOnlyHeavy =
+  process.env.NODE_TEST_ONLY_HEAVY === '1' || flagOnlyHeavy
+const shouldSkipHeavy =
+  process.env.NODE_TEST_SKIP_HEAVY === '1' || flagSkipHeavy
+
+if (shouldOnlyHeavy && shouldSkipHeavy) {
+  console.error(
+    'Invalid node-test heavy mode: --only-heavy and --skip-heavy cannot be used together.'
+  )
+  process.exit(1)
+}
+
+const filterByHeavyMode = testFiles => {
+  if (shouldOnlyHeavy) {
+    return testFiles.filter(testFile => heavyTestSet.has(normalizeTestPath(testFile)))
+  }
+  if (shouldSkipHeavy) {
+    return testFiles.filter(testFile => !heavyTestSet.has(normalizeTestPath(testFile)))
+  }
+  return testFiles
+}
+
 // Detect specific test file arguments by filtering out options and their values
 const filteredArgs = []
 for (let i = 0; i < nodeTestArgs.length; i++) {
@@ -100,9 +148,19 @@ if (hasNonNodeSpecificFile) {
 
 const isSpecificFile = specificTestFileArgs.length > 0
 
+if (!isSpecificFile && shouldOnlyHeavy) {
+  const heavyOnlyFiles = filterByHeavyMode(getRemainingTestFiles())
+  if (heavyOnlyFiles.length === 0) {
+    console.error(
+      'Invalid node-test heavy mode: --only-heavy selected but no heavy tests matched.'
+    )
+    process.exit(1)
+  }
+}
+
 const finalArgs = isSpecificFile
   ? [...commandArgs, ...nodeTestArgs]
-  : [...commandArgs, ...getRemainingTestFiles(), ...nodeTestArgs]
+  : [...commandArgs, ...filterByHeavyMode(getRemainingTestFiles()), ...nodeTestArgs]
 
 const result = spawnSync('node', finalArgs, {
   stdio: 'inherit',

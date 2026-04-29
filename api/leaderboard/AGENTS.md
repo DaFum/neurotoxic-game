@@ -14,7 +14,7 @@ Applies to `api/leaderboard/**`.
 - Treat request payloads as `unknown` at the boundary and narrow through explicit parsing/guards.
 - Prefer explicit response body types for success/error shapes used by UI/tests.
 
-## Gotchas
+## Domain Gotchas
 
 - Song IDs may require canonical mapping before submission; avoid trusting raw client IDs.
 - Maintain deterministic error payloads so tests and clients can branch predictably.

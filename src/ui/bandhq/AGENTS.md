@@ -15,7 +15,7 @@ Applies to `src/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
 - Reuse shared domain contracts (`src/types/game.d.ts`, `src/types/components.d.ts`) instead of ad-hoc local shapes.
 - For purchasable/effect payloads, prefer explicit discriminated unions and avoid widening to generic records.
 
-## Gotchas
+## Domain Gotchas
 
 - Bounded-state guidance should follow canonical helpers in `src/utils/gameStateUtils.ts`: `player.money >= 0` and `band.harmony` clamped to `1..100`.
 - Do not bypass centralized cost/effect engines when deriving UI decisions.
@@ -27,3 +27,4 @@ Applies to `src/ui/bandhq/**` unless a deeper `AGENTS.md` overrides it.
 - Settings-related tab props should consume shared audio contracts from `src/types/audio.d.ts` to avoid drift between `useAudioControl` output and tab signatures.
 - `CatalogTab` PropTypes wrappers must forward the full validator arg list (`...rest`) to wrapped validators; partial forwarding degrades dev warnings and breaks diagnostics.
 - `ShopItem`/catalog labels must never pass non-string values into `t(...)`; fallback to `ui:shop.messages.unknownItem` for malformed names and keep EN/DE locale keys unique (no duplicates).
+- Keep `CatalogTab` custom PropTypes validators readable by retaining explicit `location`/`propFullName` parameters while still forwarding the full arg list.
