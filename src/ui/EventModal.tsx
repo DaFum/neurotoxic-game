@@ -169,8 +169,9 @@ export const EventModal = ({
     typeof event.context === 'object' && event.context !== null
       ? (event.context as Record<string, unknown>)
       : undefined
-  const titleKey = event.titleKey ?? 'ui:event.untitled'
-  const descriptionKey = event.descriptionKey ?? 'ui:event.noDescription'
+  const titleKey = event.title ?? event.titleKey ?? 'ui:event.untitled'
+  const descriptionKey =
+    event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
     <div

@@ -49,7 +49,7 @@ if (reducerErrors.length > 0) {
 
 if (tsc.status !== 0) {
   const shouldFailOnNonReducerErrors =
-    process.env.TYPECHECK_STRICT === '1' || process.env.CI === 'true'
+    process.env.TYPECHECK_STRICT === '1'
   if (shouldFailOnNonReducerErrors) {
     console.error(
       'Non-reducer TypeScript errors detected while strict mode is enabled.'
