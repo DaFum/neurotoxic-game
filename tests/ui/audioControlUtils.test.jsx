@@ -100,7 +100,13 @@ describe('audioControlUtils', () => {
     it('returns state snapshot if native subscribe exists and supported', () => {
       mockManager.getStateSnapshot.mockReturnValue({ isPlaying: true })
       const snapshot = getAudioSnapshot(mockManager, true, { current: null })
-      expect(snapshot).toEqual({ isPlaying: true })
+      expect(snapshot).toEqual({
+        musicVol: 0.5,
+        sfxVol: 0.5,
+        isMuted: false,
+        isPlaying: true,
+        currentSongId: null
+      })
     })
 
     it('builds snapshot manually and caches it if unchanged', () => {
