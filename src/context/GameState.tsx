@@ -748,7 +748,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
       addToast(tRef.current('ui:gig.practiceComplete'), 'success')
-      const targetScene = currentState.currentGig.sourceScene || GAME_PHASES.OVERWORLD
+      const rawTarget = currentState.currentGig.sourceScene
+      const isValidTarget = rawTarget && Object.values(GAME_PHASES).includes(rawTarget)
+      const targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD
       setPendingBandHQOpen(true)
       changeScene(targetScene)
     } else {
