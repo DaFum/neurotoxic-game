@@ -37,6 +37,13 @@ const setup = (props = {}) => {
 }
 
 describe('RoadieControls touch input', () => {
+  test('exposes the touch surface as an aria-labelled region', () => {
+    const { surface } = setup()
+
+    expect(surface).toHaveAttribute('role', 'region')
+    expect(surface).toHaveAccessibleName('ui:roadieRun.controls.touchAria')
+  })
+
   test('moves by swipe direction on the touch surface', () => {
     const { handlers, surface } = setup()
 

@@ -450,7 +450,7 @@ export const calculateContinueStats = ({
 }: {
   player: GameState['player']
   perfScore: number
-  financials: Record<string, number>
+  financials: PostGigFinancials
   misses?: number
   calculateFameGain: (a: number, b: number, c: number) => number
   calculateFameLevel: (fame: number) => number

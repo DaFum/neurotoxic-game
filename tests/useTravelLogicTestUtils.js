@@ -27,11 +27,16 @@ const mockCalculateRepairCost = mock.fn(currentCondition => {
   )
 })
 
-const mockCalculateGuaranteedDailyCost = mock.fn((player, band) => {
+const guaranteedDailyCostDefault = (player, band, social = 0) => {
+  const socialLevel = typeof social === 'number' ? social : 0
   const bandSize = Array.isArray(band?.members) ? band.members.length : 3
   const fameLevel = player?.fameLevel || 0
-  return 62 + bandSize * 8 + Math.floor(Math.pow(fameLevel, 1.4) * 15)
-})
+  return (
+    62 + bandSize * 8 + Math.floor(Math.pow(fameLevel, 1.4) * 15) + socialLevel
+  )
+}
+
+const mockCalculateGuaranteedDailyCost = mock.fn(guaranteedDailyCostDefault)
 
 let ensureAudioContextResult = true
 
@@ -92,6 +97,10 @@ mock.module('../src/utils/errorHandler', {
 
 export const resetTravelLogicMockState = () => {
   ensureAudioContextResult = true
+  mockCalculateGuaranteedDailyCost.mock.mockImplementation(
+    guaranteedDailyCostDefault
+  )
+  mockCalculateGuaranteedDailyCost.mock.resetCalls()
   mockAudioManager.ensureAudioContext.mock.mockImplementation(
     ensureAudioContextDefault
   )

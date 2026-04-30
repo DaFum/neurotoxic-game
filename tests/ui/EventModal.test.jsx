@@ -205,7 +205,37 @@ test('EventModal uses fallback text when both outcomeText and description are em
   })
 })
 
-test('EventModal shows per-member mood delta instead of summing all members', async () => {
+test('EventModal shows applied bounded delta instead of raw requested delta', async () => {
+  const { resolveEventChoice } = await import('../../src/utils/eventEngine')
+  resolveEventChoice.mockReturnValueOnce({
+    result: {},
+    delta: { player: { money: -200 } },
+    appliedDelta: { player: { money: -50 } },
+    outcomeText: '',
+    description: ''
+  })
+
+  render(
+    <EventModal
+      event={{
+        id: 'bounded_money',
+        title: 'Bounded Money',
+        description: 'This is a test event.',
+        options: [{ label: 'Spend cash' }]
+      }}
+      onOptionSelect={vi.fn()}
+    />
+  )
+
+  fireEvent.click(screen.getByText('Spend cash'))
+
+  await waitFor(() => {
+    expect(screen.getByText(/ui:stats.money: -50€/)).toBeInTheDocument()
+  })
+  expect(screen.queryByText(/ui:stats.money: -200€/)).not.toBeInTheDocument()
+})
+
+test('EventModal shows applied member mood delta instead of raw requested member delta', async () => {
   const { resolveEventChoice } = await import('../../src/utils/eventEngine')
   resolveEventChoice.mockReturnValueOnce({
     result: {},
@@ -238,9 +268,9 @@ test('EventModal shows per-member mood delta instead of summing all members', as
   fireEvent.click(screen.getByText('Apply mood'))
 
   await waitFor(() => {
-    expect(screen.getByText(/ui:stats.mood: -5/)).toBeInTheDocument()
+    expect(screen.getByText(/ui:stats.mood: -12/)).toBeInTheDocument()
   })
-  expect(screen.queryByText(/ui:stats.mood: -15/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/ui:stats.mood: -5/)).not.toBeInTheDocument()
 })
 
 test('EventModal renders with fallback title/description when canonical GameEvent keys are missing', () => {

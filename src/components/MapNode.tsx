@@ -1,5 +1,8 @@
 import { memo, useCallback, useMemo, useState } from 'react'
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
@@ -163,7 +166,7 @@ export const MapNode = memo(
     const handleMouseLeave = useCallback(() => {
       setHoveredNode(null)
       setIsHoveredLocal(false)
-    }, [setHoveredNode])
+    }, [setHoveredNode, setIsHoveredLocal])
 
     const handlePointerDown = useCallback(() => {
       if (isReachable) {
@@ -175,7 +178,17 @@ export const MapNode = memo(
     const handlePointerCancel = useCallback(() => {
       setHoveredNode(null)
       setIsHoveredLocal(false)
-    }, [setHoveredNode])
+    }, [setHoveredNode, setIsHoveredLocal])
+
+    const handlePointerEnd = useCallback(
+      (e: ReactPointerEvent<HTMLDivElement>) => {
+        if (e.pointerType !== 'mouse') {
+          setHoveredNode(null)
+          setIsHoveredLocal(false)
+        }
+      },
+      [setHoveredNode, setIsHoveredLocal]
+    )
 
     const handleFocus = useCallback(() => {
       if (isReachable) {
@@ -227,6 +240,8 @@ export const MapNode = memo(
         onMouseLeave={handleMouseLeave}
         onPointerDown={handlePointerDown}
         onPointerCancel={handlePointerCancel}
+        onPointerUp={handlePointerEnd}
+        onPointerLeave={handlePointerEnd}
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-label={

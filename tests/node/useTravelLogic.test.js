@@ -8,7 +8,8 @@ import {
   setupTravelLogicTest,
   assertActionSuccess,
   assertTravelPrevented,
-  setupTravelScenario
+  setupTravelScenario,
+  resetTravelLogicMockState
 } from '../useTravelLogicTestUtils'
 
 const {
@@ -159,6 +160,23 @@ describe('useTravelLogic', () => {
       mockCalculateGuaranteedDailyCost.mock.calls[0].arguments[2],
       social
     )
+  })
+
+  test('resetTravelLogicMockState restores guaranteed daily cost default implementation', () => {
+    mockCalculateGuaranteedDailyCost.mock.mockImplementation(() => 999)
+    resetTravelLogicMockState()
+
+    const defaultCost = mockCalculateGuaranteedDailyCost(
+      { fameLevel: 2 },
+      { members: [{}, {}] },
+      7
+    )
+
+    assert.equal(
+      defaultCost,
+      62 + 2 * 8 + Math.floor(Math.pow(2, 1.4) * 15) + 7
+    )
+    assert.equal(mockCalculateGuaranteedDailyCost.mock.calls.length, 1)
   })
 
   test('handleTravel skips travel SFX and logs when audio context is unavailable', async () => {
