@@ -182,7 +182,8 @@ export const BASE_STATE = {
   activeQuests: [],
   reputationByRegion: {},
   npcs: {},
-  unlocks: []
+  unlocks: [],
+  pendingBandHQOpen: false
 }
 
 // ── Per-fixture overrides ──────────────────────────────────────────────────

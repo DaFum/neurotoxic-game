@@ -73,7 +73,8 @@ export const setupMainMenuAudioTest = async () => {
       updateSettings: state.updateSettings,
       deleteSave: state.deleteSave,
       setSetlist: state.setSetlist,
-      resetState: state.resetState
+      resetState: state.resetState,
+      setPendingBandHQOpen: () => {}
     }
   })
 
