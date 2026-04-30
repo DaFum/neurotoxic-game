@@ -811,9 +811,20 @@ export const applyEventDelta = (
     }
 
     const membersDelta = delta.band.membersDelta ?? delta.band.members
+
+    const isNotSelfRelationship = (rc: RelationshipChange) =>
+      rc.member1 !== rc.member2
+
     const relationshipChange = Array.isArray(delta.band.relationshipChange)
-      ? delta.band.relationshipChange.filter(isRelationshipChange)
-      : isRelationshipChange(delta.band.relationshipChange)
+      ? delta.band.relationshipChange.filter(
+          rc =>
+            isRelationshipChange(rc) &&
+            isNotSelfRelationship(rc as RelationshipChange)
+        )
+      : isRelationshipChange(delta.band.relationshipChange) &&
+          isNotSelfRelationship(
+            delta.band.relationshipChange as RelationshipChange
+          )
         ? [delta.band.relationshipChange]
         : []
     const skillDelta = delta.band.skill
