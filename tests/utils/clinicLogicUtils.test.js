@@ -29,7 +29,7 @@ describe('clinicLogicUtils', () => {
       const result = validateHealMember(member, 40, 50)
       assert.strictEqual(result.isValid, false)
       assert.strictEqual(result.errorKey, 'ui:clinic.not_enough_money')
-      assert.strictEqual(typeof result.defaultMessage, 'string')
+      assert.strictEqual(result.defaultMessage, 'Not enough money.')
     })
   })
 
@@ -56,7 +56,7 @@ describe('clinicLogicUtils', () => {
       const result = validateEnhanceMember(member, 'cool_trait', 40, 50)
       assert.strictEqual(result.isValid, false)
       assert.strictEqual(result.errorKey, 'ui:clinic.not_enough_fame')
-      assert.strictEqual(typeof result.defaultMessage, 'string')
+      assert.strictEqual(result.defaultMessage, 'Not enough fame. The void demands sacrifice.')
     })
   })
 
@@ -110,6 +110,12 @@ describe('clinicLogicUtils', () => {
         healAmountApplied: 0,
         moodAmountApplied: 0
       })
+    })
+
+    it('returns 0 applied if current stamina is above staminaMax', () => {
+      const member = { stamina: 120, staminaMax: 100, mood: 50, traits: {}, relationships: {} }
+      const result = calculateHealAmounts(member, 20, 0)
+      assert.strictEqual(result.healAmountApplied, 0)
     })
   })
 })
