@@ -31,11 +31,11 @@ export const AmpControls = memo(function AmpControls({
   )
 
   const handleFineTuneDown = useCallback(() => {
-    setDialValue(prev => Math.max(0, prev - 10))
+    setDialValue(prev => Math.max(0, prev - 1))
   }, [setDialValue])
 
   const handleFineTuneUp = useCallback(() => {
-    setDialValue(prev => Math.min(1000, prev + 10))
+    setDialValue(prev => Math.min(1000, prev + 1))
   }, [setDialValue])
 
   // Optional distance color mapping for better UX
