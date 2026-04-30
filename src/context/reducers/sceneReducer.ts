@@ -28,6 +28,10 @@ export const handleChangeScene = (
     return state
   }
 
+  if (state.currentScene === payload) {
+    return state
+  }
+
   logger.info('GameState', `Scene Change: ${state.currentScene} -> ${payload}`)
   return {
     ...state,

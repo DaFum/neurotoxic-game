@@ -66,6 +66,9 @@ export const generateEffectText = (delta, t) => {
         if (typeof delta.band.membersDelta.staminaChange === 'number') {
           totalStaminaChange = delta.band.membersDelta.staminaChange
         }
+        if (typeof delta.band.membersDelta.mood === 'number') {
+          totalMoodChange = delta.band.membersDelta.mood
+        }
       }
 
       addStatLine(totalMoodChange, 'ui:stats.mood', 'Mood')
