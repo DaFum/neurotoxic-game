@@ -66,7 +66,7 @@ class AudioSystem {
     }
   }
 
-  static VALID_SFX_TYPES = new Set<AudioSfxType>([
+  private static readonly VALID_SFX_TYPES = new Set<AudioSfxType>([
     'hit',
     'miss',
     'menu',
