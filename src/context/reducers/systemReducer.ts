@@ -36,11 +36,14 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from '../initialState'
-import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
+import {
+  DEFAULT_MINIGAME_STATE,
+  GAME_PHASES,
+  PRACTICE_RETURN_SCENES
+} from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
-import { PRACTICE_RETURN_SCENES } from '../GameState'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,

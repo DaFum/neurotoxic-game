@@ -379,7 +379,11 @@ export const useTravelLogic = ({
           onStartTravelMinigame(node.id)
           success = true
         } catch (error) {
-          logger.error('useTravelLogic', 'Error starting travel minigame', error)
+          logger.error(
+            'useTravelLogic',
+            'Error starting travel minigame',
+            error
+          )
         } finally {
           if (!success) {
             isTravelingRef.current = false

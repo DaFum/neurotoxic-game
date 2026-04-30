@@ -84,11 +84,7 @@ import {
   safeStorageNoFallback,
   usePersistence
 } from './usePersistence'
-
-export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
-  GAME_PHASES.OVERWORLD,
-  GAME_PHASES.MENU
-])
+import { PRACTICE_RETURN_SCENES } from './gameConstants'
 
 declare global {
   interface Window {

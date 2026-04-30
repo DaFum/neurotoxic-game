@@ -114,7 +114,10 @@ describe('minigameReducer', () => {
       const nextState = handleCompleteAmpCalibration(baseState, payload)
 
       assert.strictEqual(nextState.minigame.active, false)
-      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
+      assert.strictEqual(
+        nextState.minigame.type,
+        MINIGAME_TYPES.AMP_CALIBRATION
+      )
       // Scene transition is driven by the UI overlay's CONTINUE button, so the
       // reducer must not touch currentScene here.
       assert.strictEqual(nextState.currentScene, baseState.currentScene)
@@ -128,7 +131,10 @@ describe('minigameReducer', () => {
       const nextState = handleCompleteAmpCalibration(baseState, payload)
 
       assert.strictEqual(nextState.minigame.active, false)
-      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
+      assert.strictEqual(
+        nextState.minigame.type,
+        MINIGAME_TYPES.AMP_CALIBRATION
+      )
       assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
     })
   })
@@ -147,6 +153,7 @@ describe('minigameReducer', () => {
 
   describe('handleCompleteKabelsalatMinigame', () => {
     it('should apply penalty on failure', () => {
+      baseState.minigame.type = MINIGAME_TYPES.KABELSALAT
       const payload = { results: { isPoweredOn: false } }
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
