@@ -1,4 +1,4 @@
-import { GAME_PHASES } from '../gameConstants'
+import { GAME_PHASES, DEFAULT_MINIGAME_STATE } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import type { GameState, GamePhase } from '../../types/game'
 
@@ -29,5 +29,9 @@ export const handleChangeScene = (
   }
 
   logger.info('GameState', `Scene Change: ${state.currentScene} -> ${payload}`)
-  return { ...state, currentScene: payload }
+  return {
+    ...state,
+    currentScene: payload,
+    minigame: { ...DEFAULT_MINIGAME_STATE }
+  }
 }
