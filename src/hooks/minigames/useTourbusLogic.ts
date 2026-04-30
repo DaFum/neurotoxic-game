@@ -160,10 +160,18 @@ export const useTourbusLogic = () => {
             const hitDamage = getHitDamage(upgradesRef.current)
 
             game.damage = Math.max(0, Math.min(100, game.damage + hitDamage))
-            audioManager.playSFX('crash') // Play SFX immediately on collision
+            try {
+              audioManager.playSFX('crash')
+            } catch (err) {
+              console.warn('SFX crash error:', err)
+            } // Play SFX immediately on collision
           } else if (obs.type === 'FUEL') {
             game.itemsCollected.push('FUEL')
-            audioManager.playSFX('pickup')
+            try {
+              audioManager.playSFX('pickup')
+            } catch (err) {
+              console.warn('SFX pickup error:', err)
+            }
           }
         }
 
@@ -234,6 +242,19 @@ export const useTourbusLogic = () => {
     stats: statsRef.current, // Passed to Pixi (initial/ref)
     update, // Passed to Pixi
     uiState,
-    actions: { moveLeft, moveRight }
+    actions: { moveLeft, moveRight },
+    finishMinigame: () => {
+      gameStateRef.current.isGameOver = true
+      completeTravelMinigame(
+        gameStateRef.current.damage,
+        gameStateRef.current.itemsCollected
+      )
+      statsRef.current.health = Math.max(0, 100 - gameStateRef.current.damage)
+      statsRef.current.isGameOver = true
+      setUiState(prev => ({
+        ...prev,
+        isGameOver: true
+      }))
+    }
   }
 }

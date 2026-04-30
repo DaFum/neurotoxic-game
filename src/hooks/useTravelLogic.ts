@@ -337,11 +337,16 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }
 
-      try {
-        audioManager.playSFX('travel')
-      } catch (_e) {
-        // Ignore audio errors
-      }
+      audioManager
+        .ensureAudioContext()
+        .catch(e => console.warn('ensureAudioContext failed', e))
+        .then(() => {
+          try {
+            audioManager.playSFX('travel')
+          } catch (_e) {
+            // Ignore audio errors
+          }
+        })
 
       // Dispatch Minigame Start
       if (onStartTravelMinigame) {

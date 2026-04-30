@@ -85,7 +85,7 @@ export const MinigameSceneFrame = ({
             const currentType =
               minigameTypeSource && typeof minigameTypeSource === 'object'
                 ? minigameTypeSource.type
-                : undefined
+                : window.gameState?.minigame?.type
 
             if (currentType === MINIGAME_TYPES.TOURBUS) {
               completeTravelMinigame(0, [])

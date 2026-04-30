@@ -9,7 +9,8 @@ import { TourbusControls } from '../components/minigames/tourbus/TourbusControls
 
 export const TourbusScene = () => {
   const { t } = useTranslation('minigame')
-  const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
+  const { uiState, gameStateRef, stats, update, actions, finishMinigame } =
+    useTourbusLogic()
   const { handleArrivalSequence } = useArrivalLogic()
 
   // Controller factory for Tourbus
@@ -20,9 +21,10 @@ export const TourbusScene = () => {
     () => ({
       gameStateRef,
       stats,
-      update
+      update,
+      finishMinigame
     }),
-    [gameStateRef, stats, update]
+    [gameStateRef, stats, update, finishMinigame]
   )
 
   return (
