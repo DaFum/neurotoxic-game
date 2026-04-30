@@ -20,7 +20,8 @@ memory_config:
   disabled: false
 
 code_review:
-  # Deaktiviert die Codeüberprüfung durch Gemini für Pull-Requests vollständig.
+  # Legt fest, ob die Codeüberprüfung durch Gemini für Pull-Requests vollständig deaktiviert werden soll.
+  # "false" bedeutet, dass die Codeüberprüfung aktiv ist.
   disable: false
 
   # Die minimale Schwere von Überprüfungskommentaren, die berücksichtigt werden sollen.
