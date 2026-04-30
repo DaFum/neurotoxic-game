@@ -1,0 +1,44 @@
+# Gemini Code Assist Configuration
+# Diese Konfiguration passt das Verhalten von Gemini Code Assist für dieses Projekt an.
+
+# Aktiviert "lustige Funktionen" (z.B. ein Gedicht in der PR-Zusammenfassung).
+have_fun: false
+
+# Liste von Glob-Mustern für Dateien und Verzeichnisse, die Gemini Code Assist ignorieren soll.
+ignore_patterns:
+  - "node_modules/**"
+  - ".git/**"
+  - ".venv/**"
+  - "venv/**"
+  - "__pycache__/**"
+  - "*.pyc"
+  - "build/**"
+  - "dist/**"
+
+memory_config:
+  # Legt fest, ob der persistente Speicher für dieses Repository deaktiviert werden soll.
+  disabled: false
+
+code_review:
+  # Deaktiviert die Codeüberprüfung durch Gemini für Pull-Requests vollständig.
+  disable: false
+
+  # Die minimale Schwere von Überprüfungskommentaren, die berücksichtigt werden sollen.
+  # Gültige Werte: LOW, MEDIUM, HIGH, CRITICAL
+  comment_severity_threshold: "MEDIUM"
+
+  # Die maximale Anzahl von Überprüfungskommentaren. -1 bedeutet unbegrenzt.
+  max_review_comments: -1
+
+  pull_request_opened:
+    # Postet eine Hilfemeldung beim Öffnen eines Pull-Requests.
+    help: false
+
+    # Postet eine Pull-Request-Zusammenfassung beim Öffnen eines Pull-Requests.
+    summary: true
+
+    # Startet und postet eine Codeüberprüfung beim Öffnen eines Pull-Requests.
+    code_review: true
+
+    # Aktiviert die Agentenfunktionalität auch für Entwurfs-Pull-Requests (Draft PRs).
+    include_drafts: true
