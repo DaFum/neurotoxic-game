@@ -54,23 +54,26 @@ export const generateEffectText = (delta, t) => {
         for (let i = 0; i < delta.band.membersDelta.length; i++) {
           if (typeof delta.band.membersDelta[i]?.moodChange === 'number') {
             totalMoodChange += delta.band.membersDelta[i].moodChange
-          }
-          else if (typeof delta.band.membersDelta[i]?.mood === 'number') {
+          } else if (typeof delta.band.membersDelta[i]?.mood === 'number') {
             totalMoodChange += delta.band.membersDelta[i].mood
           }
           if (typeof delta.band.membersDelta[i]?.staminaChange === 'number') {
             totalStaminaChange += delta.band.membersDelta[i].staminaChange
+          } else if (typeof delta.band.membersDelta[i]?.stamina === 'number') {
+            totalStaminaChange += delta.band.membersDelta[i].stamina
           }
         }
       } else {
         if (typeof delta.band.membersDelta.moodChange === 'number') {
           totalMoodChange = delta.band.membersDelta.moodChange
+        } else if (typeof delta.band.membersDelta.mood === 'number') {
+          totalMoodChange = delta.band.membersDelta.mood
         }
+
         if (typeof delta.band.membersDelta.staminaChange === 'number') {
           totalStaminaChange = delta.band.membersDelta.staminaChange
-        }
-        else if (typeof delta.band.membersDelta.mood === 'number') {
-          totalMoodChange = delta.band.membersDelta.mood
+        } else if (typeof delta.band.membersDelta.stamina === 'number') {
+          totalStaminaChange = delta.band.membersDelta.stamina
         }
       }
 
