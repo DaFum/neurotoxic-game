@@ -65,7 +65,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       gigModifiers,
       currentGig
     },
-    contextActions: { addToast, t }
+    contextActions: { addToast, setLastGigStats, endGig, t }
   })
 
   // 4. Game Loop (Update)
