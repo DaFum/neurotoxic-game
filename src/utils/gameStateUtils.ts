@@ -653,13 +653,22 @@ export const calculateAppliedDelta = (
     }
 
     if (delta.band.relationshipChange) {
+      const isNotSelfRelationship = (rc: RelationshipChange) =>
+        rc.member1 !== rc.member2
       if (Array.isArray(delta.band.relationshipChange)) {
-        applied.band.relationshipChange =
-          delta.band.relationshipChange.filter(isRelationshipChange)
-      } else {
-        applied.band.relationshipChange = copyFilteredProperties(
-          delta.band.relationshipChange
+        applied.band.relationshipChange = delta.band.relationshipChange.filter(
+          rc =>
+            isRelationshipChange(rc) &&
+            isNotSelfRelationship(rc as RelationshipChange)
         )
+      } else {
+        applied.band.relationshipChange =
+          isRelationshipChange(delta.band.relationshipChange) &&
+          isNotSelfRelationship(
+            delta.band.relationshipChange as RelationshipChange
+          )
+            ? [delta.band.relationshipChange]
+            : []
       }
     }
   }
