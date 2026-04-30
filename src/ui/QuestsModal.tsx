@@ -240,9 +240,6 @@ export const QuestsModal = ({
               <p className='text-ash-gray font-mono italic mb-6'>
                 {t('ui:quests.empty')}
               </p>
-              <GlitchButton variant='primary' size='sm' onClick={onClose}>
-                {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
-              </GlitchButton>
             </div>
           ) : (
             <div className='space-y-6'>
