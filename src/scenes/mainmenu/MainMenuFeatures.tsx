@@ -137,6 +137,7 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                         >
                           {row.map((cell: string, colIndex: number) => (
                             <td
+                              // eslint-disable-next-line @eslint-react/no-array-index-key
                               key={`${rowKey}-${colIndex}`}
                               className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
                             >

@@ -108,17 +108,21 @@ export const OverworldHUD = React.memo(
       const previousMoney = prevMoneyRef.current
       if (moneyValue === previousMoney) return undefined
 
-      setMoneyAnim(
-        moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
-      )
+      const initialTimer = window.setTimeout(() => {
+        setMoneyAnim(
+          moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
+        )
+      }, 0)
+
       prevMoneyRef.current = moneyValue
 
-      const timer = window.setTimeout(() => {
+      const clearTimer = window.setTimeout(() => {
         setMoneyAnim('')
       }, 450)
 
       return () => {
-        window.clearTimeout(timer)
+        window.clearTimeout(initialTimer)
+        window.clearTimeout(clearTimer)
       }
     }, [moneyValue])
 

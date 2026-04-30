@@ -3,7 +3,8 @@ import React, {
   useId,
   cloneElement,
   isValidElement,
-  useCallback
+  useCallback,
+  useMemo
 } from 'react'
 import { logger } from '../../utils/logger'
 import PropTypes from 'prop-types'
@@ -39,10 +40,11 @@ export const Tooltip = ({
   const isValid = isValidElement(children)
   const isFragment = isValid && children.type === React.Fragment
   const child = isValid && !isFragment ? children : null
-  const childProps =
-    child && typeof child.props === 'object' && child.props !== null
+  const childProps = useMemo(() => {
+    return child && typeof child.props === 'object' && child.props !== null
       ? (child.props as Record<string, unknown>)
       : {}
+  }, [child])
 
   const classNameValue = getOwn<string>(childProps, 'className')
   const ariaDisabled = getOwn<unknown>(childProps, 'aria-disabled')

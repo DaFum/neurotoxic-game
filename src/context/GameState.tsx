@@ -66,7 +66,6 @@ import {
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
-  GamePhase,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
@@ -213,6 +212,7 @@ type HotGameStateContextStore = typeof globalThis & {
 const getStableGameStateContext = (): Context<GameState | null> => {
   const store = globalThis as HotGameStateContextStore
   if (!store.__NEUROTOXIC_GAME_STATE_CONTEXT__) {
+    // eslint-disable-next-line @eslint-react/naming-convention-context-name
     store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = createContext<GameState | null>(
       null
     )
@@ -224,6 +224,7 @@ const getStableGameDispatchContext =
   (): Context<GameDispatchActions | null> => {
     const store = globalThis as HotGameStateContextStore
     if (!store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__) {
+      // eslint-disable-next-line @eslint-react/naming-convention-context-name
       store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__ =
         createContext<GameDispatchActions | null>(null)
     }
