@@ -55,6 +55,9 @@ export const generateEffectText = (delta, t) => {
           if (typeof delta.band.membersDelta[i]?.moodChange === 'number') {
             totalMoodChange += delta.band.membersDelta[i].moodChange
           }
+          else if (typeof delta.band.membersDelta[i]?.mood === 'number') {
+            totalMoodChange += delta.band.membersDelta[i].mood
+          }
           if (typeof delta.band.membersDelta[i]?.staminaChange === 'number') {
             totalStaminaChange += delta.band.membersDelta[i].staminaChange
           }
@@ -66,7 +69,7 @@ export const generateEffectText = (delta, t) => {
         if (typeof delta.band.membersDelta.staminaChange === 'number') {
           totalStaminaChange = delta.band.membersDelta.staminaChange
         }
-        if (typeof delta.band.membersDelta.mood === 'number') {
+        else if (typeof delta.band.membersDelta.mood === 'number') {
           totalMoodChange = delta.band.membersDelta.mood
         }
       }
