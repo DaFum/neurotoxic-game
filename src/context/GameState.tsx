@@ -209,8 +209,33 @@ export type GameStateWithActions = GameState &
     hasUpgrade: (upgradeId: string) => boolean
   }
 
-const GameStateContext = createContext<GameState | null>(null)
-const GameDispatchContext = createContext<GameDispatchActions | null>(null)
+type HotGameStateContextStore = typeof globalThis & {
+  __NEUROTOXIC_GAME_STATE_CONTEXT__?: Context<GameState | null>
+  __NEUROTOXIC_GAME_DISPATCH_CONTEXT__?: Context<GameDispatchActions | null>
+}
+
+const getStableGameStateContext = (): Context<GameState | null> => {
+  const store = globalThis as HotGameStateContextStore
+  if (!store.__NEUROTOXIC_GAME_STATE_CONTEXT__) {
+    store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = createContext<GameState | null>(
+      null
+    )
+  }
+  return store.__NEUROTOXIC_GAME_STATE_CONTEXT__
+}
+
+const getStableGameDispatchContext =
+  (): Context<GameDispatchActions | null> => {
+    const store = globalThis as HotGameStateContextStore
+    if (!store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__) {
+      store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__ =
+        createContext<GameDispatchActions | null>(null)
+    }
+    return store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__
+  }
+
+const GameStateContext = getStableGameStateContext()
+const GameDispatchContext = getStableGameDispatchContext()
 
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   const value = use(context)
