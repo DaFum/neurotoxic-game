@@ -4,7 +4,8 @@ import React, {
   cloneElement,
   isValidElement,
   useCallback,
-  useMemo
+  useRef,
+  useEffect
 } from 'react'
 import { logger } from '../../utils/logger'
 import PropTypes from 'prop-types'
@@ -40,11 +41,16 @@ export const Tooltip = ({
   const isValid = isValidElement(children)
   const isFragment = isValid && children.type === React.Fragment
   const child = isValid && !isFragment ? children : null
-  const childProps = useMemo(() => {
-    return child && typeof child.props === 'object' && child.props !== null
+
+  const childProps =
+    child && typeof child.props === 'object' && child.props !== null
       ? (child.props as Record<string, unknown>)
       : {}
-  }, [child])
+
+  const childPropsRef = useRef(childProps)
+  useEffect(() => {
+    childPropsRef.current = childProps
+  })
 
   const classNameValue = getOwn<string>(childProps, 'className')
   const ariaDisabled = getOwn<unknown>(childProps, 'aria-disabled')
@@ -64,41 +70,41 @@ export const Tooltip = ({
   const handleMouseEnter = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(true)
-      const fn = getOwn<unknown>(childProps, 'onMouseEnter')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onMouseEnter')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleMouseLeave = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(false)
-      const fn = getOwn<unknown>(childProps, 'onMouseLeave')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onMouseLeave')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleFocus = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(true)
-      const fn = getOwn<unknown>(childProps, 'onFocus')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onFocus')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleBlur = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(false)
-      const fn = getOwn<unknown>(childProps, 'onBlur')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onBlur')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   React.useEffect(() => {
