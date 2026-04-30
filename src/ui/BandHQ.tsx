@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
 import { useBandHQLogic } from './bandhq/hooks/useBandHQLogic'
 
@@ -99,7 +104,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
       <div
         className='fixed inset-0 z-40 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
-          backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)}")`
+          backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG) : getGeneratedImageFallbackUrl()}")`
         }}
       />
 

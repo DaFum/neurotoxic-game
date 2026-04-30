@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { useGameState } from '../context/GameState'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 
 export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const { t } = useTranslation(['ui'])
@@ -40,7 +45,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
           <div
             className='absolute inset-0 z-0 opacity-20 pointer-events-none'
             style={{
-              backgroundImage: `url('${getGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG)}')`,
+              backgroundImage: `url('${isImageGenerationAvailable() ? getGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG) : getGeneratedImageFallbackUrl()}')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               mixBlendMode: 'screen'

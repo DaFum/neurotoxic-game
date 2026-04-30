@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#000000"/>
+  <rect x="25" y="25" width="462" height="462" fill="none" stroke="#39FF14" stroke-width="10"/>
+  <text x="256" y="256" fill="#39FF14" font-family="monospace" font-size="24" text-anchor="middle" dominant-baseline="middle">
+    OFFLINE
+  </text>
+  <text x="256" y="296" fill="#39FF14" font-family="monospace" font-size="16" text-anchor="middle" dominant-baseline="middle">
+    Image Generation Unavailable
+  </text>
+</svg>

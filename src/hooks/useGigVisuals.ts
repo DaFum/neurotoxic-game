@@ -1,5 +1,10 @@
 import { useMemo } from 'react'
-import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 import type { Venue } from '../types/game'
 
 type UseGigVisualsProps = {
@@ -43,7 +48,9 @@ export const useGigVisuals = ({
     )
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
-    return getGenImageUrl(bgPrompt)
+    return isImageGenerationAvailable()
+      ? getGenImageUrl(bgPrompt)
+      : getGeneratedImageFallbackUrl()
   }, [currentGig?.name, currentGig?.difficulty, currentGig?.diff])
 
   // Character Images based on Harmony
@@ -63,9 +70,15 @@ export const useGigVisuals = ({
     }
 
     return {
-      matzeUrl: getGenImageUrl(matzePrompt),
-      mariusUrl: getGenImageUrl(mariusPrompt),
-      larsUrl: getGenImageUrl(larsPrompt)
+      matzeUrl: isImageGenerationAvailable()
+        ? getGenImageUrl(matzePrompt)
+        : getGeneratedImageFallbackUrl(),
+      mariusUrl: isImageGenerationAvailable()
+        ? getGenImageUrl(mariusPrompt)
+        : getGeneratedImageFallbackUrl(),
+      larsUrl: isImageGenerationAvailable()
+        ? getGenImageUrl(larsPrompt)
+        : getGeneratedImageFallbackUrl()
     }
   }, [bandHarmony])
 

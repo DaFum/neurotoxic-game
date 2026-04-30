@@ -7,7 +7,12 @@ import {
 } from './TourbusObstacleManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
 import { logger } from '../../utils/logger'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import {
   TOURBUS_LANE_COUNT,
   TOURBUS_BUS_Y_PERCENT,
@@ -108,11 +113,21 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     try {
       // Generate URLs
       const urls = {
-        bus: getGenImageUrl(IMG_PROMPTS.ICON_VAN),
-        road: getGenImageUrl(IMG_PROMPTS.MINIGAME_ROAD),
-        rock: getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_ROCK),
-        barrier: getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER),
-        fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
+        bus: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
+          : getGeneratedImageFallbackUrl(),
+        road: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ROAD)
+          : getGeneratedImageFallbackUrl(),
+        rock: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_ROCK)
+          : getGeneratedImageFallbackUrl(),
+        barrier: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER)
+          : getGeneratedImageFallbackUrl(),
+        fuel: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
+          : getGeneratedImageFallbackUrl()
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<

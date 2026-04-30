@@ -4,7 +4,12 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import type { SocialOptionButtonProps } from '../../types/components'
 
 const CATEGORY_PROMPTS = {
@@ -16,10 +21,7 @@ const CATEGORY_PROMPTS = {
 
 const getImagePromptForCategory = (category?: string, badges?: string[]) => {
   if (badges?.includes('🔥')) return IMG_PROMPTS.SOCIAL_POST_VIRAL
-  if (
-    category &&
-    Object.hasOwn(CATEGORY_PROMPTS, category)
-  ) {
+  if (category && Object.hasOwn(CATEGORY_PROMPTS, category)) {
     return CATEGORY_PROMPTS[category as keyof typeof CATEGORY_PROMPTS]
   }
   return IMG_PROMPTS.SOCIAL_POST_TECH
@@ -48,7 +50,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
         <div
           className='absolute inset-0 opacity-80 group-hover:opacity-20 transition-opacity bg-cover bg-center pointer-events-none'
           style={{
-            backgroundImage: `url("${getGenImageUrl(getImagePromptForCategory(opt.category, opt.badges))}")`
+            backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(getImagePromptForCategory(opt.category, opt.badges)) : getGeneratedImageFallbackUrl()}")`
           }}
         />
 

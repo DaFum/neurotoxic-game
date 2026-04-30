@@ -8,7 +8,12 @@ import {
 } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
 
@@ -86,13 +91,27 @@ class RoadieStageController extends BaseStageController {
     try {
       // URLs
       const urls = {
-        roadie: getGenImageUrl(IMG_PROMPTS.MINIGAME_ROADIE_IDLE),
-        carA: getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_A),
-        carB: getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_B),
-        carC: getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_C),
-        amp: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_AMP),
-        drums: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_DRUMS),
-        guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
+        roadie: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ROADIE_IDLE)
+          : getGeneratedImageFallbackUrl(),
+        carA: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_A)
+          : getGeneratedImageFallbackUrl(),
+        carB: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_B)
+          : getGeneratedImageFallbackUrl(),
+        carC: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_C)
+          : getGeneratedImageFallbackUrl(),
+        amp: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_AMP)
+          : getGeneratedImageFallbackUrl(),
+        drums: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_DRUMS)
+          : getGeneratedImageFallbackUrl(),
+        guitar: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
+          : getGeneratedImageFallbackUrl()
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<

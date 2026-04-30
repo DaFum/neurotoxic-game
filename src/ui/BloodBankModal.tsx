@@ -1,7 +1,12 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 
 import { useEffect, useRef, type KeyboardEvent } from 'react'
 
@@ -61,7 +66,7 @@ export const BloodBankModal = ({
         <div
           className='absolute inset-0 z-0 opacity-20 bg-cover bg-center mix-blend-screen pointer-events-none'
           style={{
-            backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BLOOD_BANK_BG)}")`
+            backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(IMG_PROMPTS.BLOOD_BANK_BG) : getGeneratedImageFallbackUrl()}")`
           }}
         />
 

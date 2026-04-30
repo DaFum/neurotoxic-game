@@ -1,5 +1,10 @@
 import type { Texture } from 'pixi.js'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
 import { loadTextures } from './utils'
 
@@ -18,8 +23,12 @@ export class CrowdTextureManager {
   async loadAssets(): Promise<void> {
     try {
       const urls = {
-        idle: getGenImageUrl(IMG_PROMPTS.CROWD_IDLE),
-        mosh: getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
+        idle: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)
+          : getGeneratedImageFallbackUrl(),
+        mosh: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
+          : getGeneratedImageFallbackUrl()
       }
 
       const loadedTextures = await loadTextures(

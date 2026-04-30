@@ -12,7 +12,12 @@
  */
 import { Graphics, Texture } from 'pixi.js'
 import type { Application } from 'pixi.js'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import { logger } from '../../utils/logger'
 import {
   loadTextures,
@@ -101,8 +106,12 @@ export class EffectTextureManager {
   async loadAssets(): Promise<void> {
     try {
       const urls = {
-        blood: getGenImageUrl(IMG_PROMPTS.HIT_BLOOD),
-        toxic: getGenImageUrl(IMG_PROMPTS.HIT_TOXIC)
+        blood: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.HIT_BLOOD)
+          : getGeneratedImageFallbackUrl(),
+        toxic: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.HIT_TOXIC)
+          : getGeneratedImageFallbackUrl()
       }
 
       const loadedTextures = await loadTextures(

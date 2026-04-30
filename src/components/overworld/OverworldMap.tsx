@@ -3,7 +3,12 @@ import { MapConnection } from '../MapConnection'
 import { MapNode } from '../MapNode'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import type {
   MapNode as GameMapNode,
   GameMap,
@@ -51,32 +56,59 @@ export const OverworldMap = React.memo(
   }: OverworldMapProps) => {
     // Memoized URL generators
     const mapBgUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)
+          : getGeneratedImageFallbackUrl(),
       []
     )
-    const vanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
+    const vanUrl = useMemo(
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
+          : getGeneratedImageFallbackUrl(),
+      []
+    )
     const pinFestivalUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL)
+          : getGeneratedImageFallbackUrl(),
       []
     )
     const pinHomeUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME)
+          : getGeneratedImageFallbackUrl(),
       []
     )
     const pinClubUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB)
+          : getGeneratedImageFallbackUrl(),
       []
     )
     const pinRestUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_REST),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_REST)
+          : getGeneratedImageFallbackUrl(),
       []
     )
     const pinSpecialUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_SPECIAL),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_SPECIAL)
+          : getGeneratedImageFallbackUrl(),
       []
     )
     const pinFinaleUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE),
+      () =>
+        isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE)
+          : getGeneratedImageFallbackUrl(),
       []
     )
 

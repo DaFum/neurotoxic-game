@@ -16,7 +16,12 @@ import {
 } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 
 /**
  * Contraband Stash Modal Component
@@ -208,7 +213,11 @@ export const ContrabandStash = ({
                       {item.imagePrompt && (
                         <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
                           <img
-                            src={getGenImageUrl(IMG_PROMPTS[item.imagePrompt])}
+                            src={
+                              isImageGenerationAvailable()
+                                ? getGenImageUrl(IMG_PROMPTS[item.imagePrompt])
+                                : getGeneratedImageFallbackUrl()
+                            }
                             alt={t(`items:contraband.${item.id}.name`)}
                             className='w-full h-full object-contain'
                             loading='lazy'

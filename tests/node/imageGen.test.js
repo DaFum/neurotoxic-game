@@ -55,6 +55,20 @@ test('IMG_PROMPTS contains expected keys and string values', async () => {
 })
 
 test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
+  const originalNavigator = globalThis.navigator
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: true },
+    configurable: true
+  })
+
+  t.after(() => {
+    if (originalNavigator) {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true
+      })
+    }
+  })
   const { fetchGenImage, fetchGenImageAsObjectUrl, clearImageCache } =
     await import('../../src/utils/imageGen')
 
@@ -155,4 +169,75 @@ test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
       )
     }
   )
+})
+
+test('isImageGenerationAvailable returns true online or without navigator', async () => {
+  const { isImageGenerationAvailable } =
+    await import('../../src/utils/imageGen')
+
+  const originalNavigator = globalThis.navigator
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: false },
+    configurable: true
+  })
+  assert.strictEqual(isImageGenerationAvailable(), false)
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: true },
+    configurable: true
+  })
+  assert.strictEqual(isImageGenerationAvailable(), true)
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: undefined,
+    configurable: true
+  })
+  assert.strictEqual(isImageGenerationAvailable(), true)
+
+  if (originalNavigator) {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true
+    })
+  }
+})
+
+test('fetchGenImageAsObjectUrl returns offline fallback without fetching when offline', async () => {
+  const {
+    fetchGenImageAsObjectUrl,
+    GENERATED_IMAGE_OFFLINE_FALLBACK,
+    clearImageCache
+  } = await import('../../src/utils/imageGen')
+
+  if (typeof clearImageCache === 'function') {
+    await clearImageCache()
+  }
+  const originalNavigator = globalThis.navigator
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: false },
+    configurable: true
+  })
+
+  let fetchCalled = false
+  globalThis.fetch = async () => {
+    fetchCalled = true
+    return { ok: true }
+  }
+
+  const result = await fetchGenImageAsObjectUrl('offline test')
+
+  assert.strictEqual(fetchCalled, false, 'Fetch should not be called offline')
+  assert.strictEqual(
+    result,
+    GENERATED_IMAGE_OFFLINE_FALLBACK,
+    'Should return offline fallback'
+  )
+
+  if (originalNavigator) {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true
+    })
+  }
 })
