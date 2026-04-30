@@ -43,6 +43,7 @@ export const LeaderboardTab = () => {
   const [rankings, setRankings] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isUnavailable, setIsUnavailable] = useState(false)
 
   const activeSongId = useMemo(() => {
     if (view !== 'SONG') return ''
@@ -60,6 +61,7 @@ export const LeaderboardTab = () => {
     const fetchLeaderboard = async () => {
       setIsLoading(true)
       setError(null)
+      setIsUnavailable(false)
 
       try {
         const stat = view === 'SONG' ? 'balance' : VIEW_TO_STAT[view]
@@ -75,6 +77,12 @@ export const LeaderboardTab = () => {
         }
 
         const response = await fetch(url, { signal: controller.signal })
+        if (response.status === 404) {
+          logger.info('Leaderboard', `Local endpoint unavailable: ${url}`)
+          setRankings([])
+          setIsUnavailable(true)
+          return
+        }
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`)
         }
@@ -157,7 +165,7 @@ export const LeaderboardTab = () => {
     <div className='h-full flex flex-col gap-4'>
       <div
         role='tablist'
-        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-x'
+        className='flex gap-4 mb-2 overflow-x-auto pb-2 custom-scrollbar touch-pan-x'
       >
         {views.map(({ id, label }) => (
           <GlitchButton
@@ -223,14 +231,20 @@ export const LeaderboardTab = () => {
           </div>
         )}
 
-        {!isLoading && !error && rankings.length === 0 && (
+        {!isLoading && !error && isUnavailable && (
+          <div className='flex-1 flex items-center justify-center text-ash-gray font-mono text-center px-4'>
+            {t('ui:leaderboard.unavailable')}
+          </div>
+        )}
+
+        {!isLoading && !error && !isUnavailable && rankings.length === 0 && (
           <div className='flex-1 flex items-center justify-center text-ash-gray font-mono'>
             {t('ui:leaderboard.no_data')}
           </div>
         )}
 
-        {!isLoading && !error && rankings.length > 0 && (
-          <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-y touch-pinch-zoom'>
+        {!isLoading && !error && !isUnavailable && rankings.length > 0 && (
+          <div className='flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar touch-pan-y touch-pinch-zoom'>
             <table className='w-full text-left font-mono'>
               <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
                 <tr>

@@ -14,4 +14,5 @@ Applies to `src/hooks/**` unless a deeper `AGENTS.md` overrides it.
 ## Gotchas
 
 - Derive UI toast values from pre-dispatch state; `useReducer` dispatch does not synchronously update refs.
+- Travel confirmation/resource checks must include guaranteed daily upkeep when the route also advances the day.
 - Lock state such as `processingItemId` must clean up in `finally`, including pre-effect validation failures.

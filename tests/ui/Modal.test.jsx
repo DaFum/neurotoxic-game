@@ -22,6 +22,30 @@ describe('Modal Component', () => {
     expect(getByText('Modal Content')).toBeInTheDocument()
   })
 
+  test('constrains the dialog to the mobile viewport', () => {
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={() => {}}>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    expect(getByRole('dialog')).toHaveClass('max-h-[calc(100svh-1rem)]')
+    expect(getByRole('dialog')).not.toHaveClass('overflow-hidden')
+  })
+
+  test('keeps clipping and scrolling on the inner content layer', () => {
+    const { getByText } = render(
+      <Modal isOpen={true} onClose={() => {}}>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    const contentLayer = getByText('Modal Content').parentElement
+    expect(contentLayer).toHaveClass('overflow-y-auto')
+    expect(contentLayer).toHaveClass('overflow-x-hidden')
+    expect(contentLayer).toHaveClass('max-h-[calc(100svh-3rem)]')
+  })
+
   test('calls onClose when clicking outside', () => {
     const onCloseMock = vi.fn()
     const { getByRole } = render(

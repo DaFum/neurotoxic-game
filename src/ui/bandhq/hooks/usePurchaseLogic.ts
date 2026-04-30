@@ -84,6 +84,16 @@ type TranslateFn = (
 ) => ReturnType<TranslationCallback>
 type UpdateBandFn = (patch: Partial<BandState>) => void
 
+const asToastOptions = (value: unknown): Record<string, unknown> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  const options: Record<string, unknown> = {}
+  const source = value as Record<string, unknown>
+  for (const key of Object.keys(source)) {
+    options[key] = source[key]
+  }
+  return options
+}
+
 /**
  * Custom hook for managing shop purchase logic
  * @param {Object} params - Hook parameters
@@ -107,7 +117,7 @@ const processTraitToasts = (
 ) => {
   toasts.forEach(toastItem => {
     const safeOptions = toastItem.options
-      ? translateContextKeys(toastItem.options, t)
+      ? asToastOptions(translateContextKeys(toastItem.options, t))
       : {}
     const toastMsg = toastItem.messageKey
       ? t(toastItem.messageKey, {
@@ -351,7 +361,8 @@ export const usePurchaseLogic = ({
           (finalCost as number) || 0
         )
 
-        const resolvedEffect: Effect | undefined = effect ?? getPrimaryEffect(item)
+        const resolvedEffect: Effect | undefined =
+          effect ?? getPrimaryEffect(item)
         if (!resolvedEffect) {
           handlePurchaseValidationError(
             { isValid: false, errorType: 'missing_effect' },

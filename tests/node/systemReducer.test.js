@@ -11,6 +11,7 @@ import {
   handleAddUnlock
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
@@ -116,6 +117,40 @@ test('systemReducer - LOAD_GAME', async t => {
       )
     }
   )
+
+  await t.test('preserves practice metadata on loaded currentGig', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      currentGig: {
+        id: 'practice_room',
+        name: 'Practice Room',
+        isPractice: true,
+        sourceScene: GAME_PHASES.MENU
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.currentGig?.isPractice, true)
+    assert.equal(nextState.currentGig?.sourceScene, GAME_PHASES.MENU)
+  })
+
+  await t.test('drops practice sourceScene outside return allowlist', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      currentGig: {
+        id: 'practice_room',
+        name: 'Practice Room',
+        isPractice: true,
+        sourceScene: GAME_PHASES.PRE_GIG
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.currentGig?.isPractice, true)
+    assert.equal(nextState.currentGig?.sourceScene, undefined)
+  })
 
   await t.test('hydrates contraband stash with static properties', () => {
     const initialState = createInitialState()
@@ -578,6 +613,58 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
     assert.deepEqual(nextState.unlocks, ['u1'])
   })
+
+  await t.test(
+    'preserves nested active quest failure penalties while sanitizing loaded quests',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = JSON.parse(`{
+        "activeQuests": [
+          {
+            "id": "QUEST_APOLOGY_TOUR",
+            "label": "Apology Tour",
+            "deadline": 7,
+            "failurePenalty": {
+              "social": {
+                "controversyLevel": 25,
+                "bad": null,
+                "infinite": 1e999
+              },
+              "band": {
+                "harmony": -20
+              },
+              "__proto__": {
+                "polluted": true
+              }
+            }
+          }
+        ]
+      }`)
+
+      const nextState = handleLoadGame(initialState, loadedState)
+
+      assert.deepEqual(nextState.activeQuests, [
+        {
+          id: 'QUEST_APOLOGY_TOUR',
+          label: 'Apology Tour',
+          deadline: 7,
+          failurePenalty: {
+            social: {
+              controversyLevel: 25,
+              bad: null
+            },
+            band: {
+              harmony: -20
+            }
+          }
+        }
+      ])
+      assert.equal(
+        Object.hasOwn(nextState.activeQuests[0].failurePenalty, '__proto__'),
+        false
+      )
+    }
+  )
 
   await t.test('handles missing or malformed toasts array', () => {
     const initialState = createInitialState()

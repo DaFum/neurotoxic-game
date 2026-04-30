@@ -37,7 +37,7 @@ export const PreGig = () => {
   } = usePreGigLogic()
 
   return (
-    <div className='w-full h-full overflow-y-auto flex flex-col items-center justify-start lg:justify-center px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pt-28 sm:pt-32 lg:pt-8 pb-24 lg:pb-8 bg-void-black text-star-white relative'>
+    <div className='w-full h-full overflow-y-auto flex flex-col items-center justify-start lg:justify-center px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pt-28 sm:pt-32 lg:pt-8 pb-10 lg:pb-8 bg-void-black text-star-white relative'>
       <PreGigHeader
         t={t}
         i18n={i18n}

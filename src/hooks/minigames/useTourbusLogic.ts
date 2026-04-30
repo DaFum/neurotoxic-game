@@ -69,6 +69,7 @@ export const useTourbusLogic = () => {
     isGameOver: false,
     isAudioReady: true
   })
+  const finishCalledRef = useRef(false)
 
   const moveLeft = useCallback(() => {
     if (gameStateRef.current.isGameOver) return
@@ -175,7 +176,12 @@ export const useTourbusLogic = () => {
       gameStateRef.current.obstacles = survivingObstacles
 
       // Check Win/Loss
-      if (game.distance >= TOURBUS_TARGET_DISTANCE && !game.isGameOver) {
+      if (
+        game.distance >= TOURBUS_TARGET_DISTANCE &&
+        !game.isGameOver &&
+        !finishCalledRef.current
+      ) {
+        finishCalledRef.current = true
         game.isGameOver = true
         completeTravelMinigame(game.damage, game.itemsCollected)
       }
@@ -234,6 +240,22 @@ export const useTourbusLogic = () => {
     stats: statsRef.current, // Passed to Pixi (initial/ref)
     update, // Passed to Pixi
     uiState,
-    actions: { moveLeft, moveRight }
+    actions: { moveLeft, moveRight },
+    finishMinigame: useCallback(() => {
+      if (finishCalledRef.current || gameStateRef.current.isGameOver) return
+      finishCalledRef.current = true
+
+      gameStateRef.current.isGameOver = true
+      completeTravelMinigame(
+        gameStateRef.current.damage,
+        gameStateRef.current.itemsCollected
+      )
+      statsRef.current.health = Math.max(0, 100 - gameStateRef.current.damage)
+      statsRef.current.isGameOver = true
+      setUiState(prev => ({
+        ...prev,
+        isGameOver: true
+      }))
+    }, [completeTravelMinigame])
   }
 }

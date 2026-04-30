@@ -46,7 +46,7 @@ describe('TourbusScene', () => {
     expect(screen.getByText('TOURBUS TERROR')).toBeInTheDocument()
     expect(screen.getByText(/DISTANCE:/)).toBeInTheDocument()
     expect(screen.getByText(/DAMAGE:/)).toBeInTheDocument()
-    expect(screen.getByText('Van Condition: 60%')).toBeInTheDocument()
+    expect(screen.getByText('Condition Loss: 20%')).toBeInTheDocument()
 
     fireEvent.click(screen.getByLabelText('Move Left'))
     fireEvent.click(screen.getByLabelText('Move Right'))

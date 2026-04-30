@@ -193,7 +193,12 @@ test('Minigame State Transitions', async t => {
       }
       const newState = gameReducer(activeState, action)
 
-      assert.deepStrictEqual(newState.minigame, initialState.minigame)
+      // Scene transition is handled by the UI overlay's CONTINUE button, so the
+      // reducer keeps PRE_GIG_MINIGAME and preserves minigame.type so the
+      // KabelsalatScene stays mounted while the completion overlay is visible.
+      assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+      assert.strictEqual(newState.minigame.active, false)
+      assert.strictEqual(newState.minigame.type, MINIGAME_TYPES.KABELSALAT)
 
       // Verify Economy Result applied correctly
       assert.strictEqual(newState.player.money, 1105)
@@ -230,9 +235,12 @@ test('Minigame State Transitions', async t => {
       }
       const newState = gameReducer(activeState, action)
 
-      assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
-      // Scene transition is now handled by UI overlay, so scene remains PRE_GIG_MINIGAME
+      // Scene transition is handled by the UI overlay's CONTINUE button, so the
+      // reducer keeps PRE_GIG_MINIGAME and preserves minigame.type so the
+      // RoadieRunScene stays mounted while the completion overlay is visible.
       assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+      assert.strictEqual(newState.minigame.active, false)
+      assert.strictEqual(newState.minigame.type, MINIGAME_TYPES.ROADIE)
 
       // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10.
       // Matze has 'gear_nerd' -> -20% repair cost -> repairCost = 8 -> money-=8

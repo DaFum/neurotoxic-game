@@ -205,6 +205,74 @@ test('EventModal uses fallback text when both outcomeText and description are em
   })
 })
 
+test('EventModal shows applied bounded delta instead of raw requested delta', async () => {
+  const { resolveEventChoice } = await import('../../src/utils/eventEngine')
+  resolveEventChoice.mockReturnValueOnce({
+    result: {},
+    delta: { player: { money: -200 } },
+    appliedDelta: { player: { money: -50 } },
+    outcomeText: '',
+    description: ''
+  })
+
+  render(
+    <EventModal
+      event={{
+        id: 'bounded_money',
+        title: 'Bounded Money',
+        description: 'This is a test event.',
+        options: [{ label: 'Spend cash' }]
+      }}
+      onOptionSelect={vi.fn()}
+    />
+  )
+
+  fireEvent.click(screen.getByText('Spend cash'))
+
+  await waitFor(() => {
+    expect(screen.getByText(/ui:stats.money: -50€/)).toBeInTheDocument()
+  })
+  expect(screen.queryByText(/ui:stats.money: -200€/)).not.toBeInTheDocument()
+})
+
+test('EventModal shows applied member mood delta instead of raw requested member delta', async () => {
+  const { resolveEventChoice } = await import('../../src/utils/eventEngine')
+  resolveEventChoice.mockReturnValueOnce({
+    result: {},
+    delta: { band: { membersDelta: { moodChange: -5 } } },
+    appliedDelta: {
+      band: {
+        membersDelta: [
+          { moodChange: -3 },
+          { moodChange: -4 },
+          { moodChange: -5 }
+        ]
+      }
+    },
+    outcomeText: '',
+    description: ''
+  })
+
+  render(
+    <EventModal
+      event={{
+        id: 'all_member_mood',
+        title: 'All Member Mood',
+        description: 'This is a test event.',
+        options: [{ label: 'Apply mood' }]
+      }}
+      onOptionSelect={vi.fn()}
+    />
+  )
+
+  fireEvent.click(screen.getByText('Apply mood'))
+
+  await waitFor(() => {
+    expect(screen.getByText(/ui:stats.mood: -12/)).toBeInTheDocument()
+  })
+  expect(screen.queryByText(/ui:stats.mood: -5/)).not.toBeInTheDocument()
+})
+
 test('EventModal renders with fallback title/description when canonical GameEvent keys are missing', () => {
   const handleSelect = vi.fn()
   const eventWithoutTitleAndDescription = {

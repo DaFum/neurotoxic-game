@@ -7,14 +7,15 @@ import {
   handleStartRoadieMinigame,
   handleCompleteRoadieMinigame,
   handleStartKabelsalatMinigame,
-  handleCompleteKabelsalatMinigame
-} from '../../src/context/reducers/minigameReducer'
+  handleCompleteKabelsalatMinigame,
+  handleCompleteAmpCalibration
+} from '../../src/context/reducers/minigameReducer.ts'
 
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
   DEFAULT_MINIGAME_STATE
-} from '../../src/context/gameConstants'
+} from '../../src/context/gameConstants.ts'
 
 describe('minigameReducer', () => {
   let baseState
@@ -105,6 +106,21 @@ describe('minigameReducer', () => {
     })
   })
 
+  describe('handleCompleteAmpCalibration', () => {
+    it('should set minigame to inactive and type to amp calibration', () => {
+      baseState.minigame.type = MINIGAME_TYPES.AMP_CALIBRATION
+      baseState.minigame.active = true
+      const payload = { score: 100 }
+      const nextState = handleCompleteAmpCalibration(baseState, payload)
+
+      assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
+      // Scene transition is driven by the UI overlay's CONTINUE button, so the
+      // reducer must not touch currentScene here.
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
+    })
+  })
+
   describe('handleStartKabelsalatMinigame', () => {
     it('should set currentScene and minigame state', () => {
       const payload = { gigId: 'gig1' }
@@ -125,7 +141,10 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.band.harmony, 35) // 50 - 15 stress (updated to 15)
       assert.strictEqual(nextState.player.money, 1000) // No reward on failure
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+      // minigame.type is preserved so SceneRouter keeps the scene mounted while
+      // the completion overlay is visible; only `active` is cleared.
+      assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
     })
 
     it('should apply reward on success', () => {
@@ -161,7 +180,10 @@ describe('minigameReducer', () => {
       // 1000 - 120
       assert.strictEqual(nextState.player.money, 880)
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+      // Scene transition is driven by the UI overlay's CONTINUE button, so the
+      // reducer must not touch currentScene here.
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
+      assert.strictEqual(nextState.minigame.active, false)
     })
 
     it('should not set damaged_gear if equipmentDamage is low', () => {

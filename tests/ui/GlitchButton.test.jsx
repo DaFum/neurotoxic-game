@@ -74,6 +74,17 @@ describe('GlitchButton', () => {
     expect(button.className).toContain('text-sm')
   })
 
+  it('keeps small buttons large enough for touch targets', () => {
+    const { container } = render(
+      <GlitchButton onClick={() => {}} size='sm'>
+        Touch
+      </GlitchButton>
+    )
+    const button = container.querySelector('button')
+    expect(button.className).toContain('min-h-11')
+    expect(button.className).toContain('touch-manipulation')
+  })
+
   it('applies owned variant style correctly', () => {
     const { container } = render(
       <GlitchButton onClick={() => {}} variant='owned' disabled>

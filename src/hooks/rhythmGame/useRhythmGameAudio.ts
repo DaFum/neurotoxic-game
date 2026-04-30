@@ -5,6 +5,7 @@ import { stopAudio } from '../../utils/audio/audioEngine'
 import { handleError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameStateUtils'
+import { buildGigStatsSnapshot } from '../../utils/gigStats'
 import {
   setupGigPhysics,
   resolveActiveSetlist,
@@ -19,13 +20,14 @@ import type {
 } from '../../types/game'
 import type {
   RhythmGameRefState,
-  RhythmSetlistEntry
+  RhythmSetlistEntry,
+  SetLastGigStats
 } from '../../types/rhythmGame'
 import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
-  setters: Pick<RhythmStateSetters, 'setIsAudioReady'>
+  setters: Pick<RhythmStateSetters, 'setIsAudioReady' | 'setIsGameOver'>
   contextState: {
     band: GameState['band']
     gameMap: GameMap | null
@@ -36,6 +38,8 @@ type RhythmGameAudioParams = {
   }
   contextActions: {
     addToast: (message: string, type?: string) => void
+    setLastGigStats: SetLastGigStats
+    endGig: () => void
     t: TFunction
   }
 }
@@ -59,13 +63,14 @@ export const useRhythmGameAudio = ({
   contextState,
   contextActions
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
-  const { setIsAudioReady } = setters
+  const { setIsAudioReady, setIsGameOver } = setters
   const { band, gameMap, player, setlist, gigModifiers, currentGig } =
     contextState
-  const { addToast, t } = contextActions
+  const { addToast, setLastGigStats, endGig, t } = contextActions
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
+  const hasResolvedLowHarmonyRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const latestContextRef = useRef({
     band,
@@ -75,8 +80,11 @@ export const useRhythmGameAudio = ({
     gigModifiers,
     currentGig,
     addToast,
+    setLastGigStats,
+    endGig,
     t,
-    setIsAudioReady
+    setIsAudioReady,
+    setIsGameOver
   })
 
   useEffect(() => {
@@ -88,8 +96,11 @@ export const useRhythmGameAudio = ({
       gigModifiers,
       currentGig,
       addToast,
+      setLastGigStats,
+      endGig,
       t,
-      setIsAudioReady
+      setIsAudioReady,
+      setIsGameOver
     }
   }, [
     band,
@@ -99,8 +110,11 @@ export const useRhythmGameAudio = ({
     gigModifiers,
     currentGig,
     addToast,
+    setLastGigStats,
+    endGig,
     t,
-    setIsAudioReady
+    setIsAudioReady,
+    setIsGameOver
   ])
 
   /**
@@ -120,8 +134,11 @@ export const useRhythmGameAudio = ({
       gigModifiers: currentGigModifiers,
       currentGig: activeGig,
       addToast: currentAddToast,
+      setLastGigStats: currentSetLastGigStats,
+      endGig: currentEndGig,
       t: currentT,
-      setIsAudioReady: setAudioReady
+      setIsAudioReady: setAudioReady,
+      setIsGameOver: setGameOver
     } = ctx
 
     isInitializingRef.current = true
@@ -140,7 +157,37 @@ export const useRhythmGameAudio = ({
       // Harmony Guard
       if (currentHarmony <= 1) {
         logger.warn('RhythmGame', 'Band harmony too low to start gig.')
-        setAudioReady(false)
+        if (!hasResolvedLowHarmonyRef.current) {
+          hasResolvedLowHarmonyRef.current = true
+          const currentRhythmState = gameStateRef.current
+          currentRhythmState.isGameOver = true
+          setGameOver(true)
+          setAudioReady(true)
+
+          const message = currentT('ui:gig.toasts.bandCollapsed', {
+            defaultValue: 'BAND COLLAPSED'
+          })
+          currentAddToast(
+            typeof message === 'string' ? message : 'BAND COLLAPSED',
+            'error'
+          )
+
+          const rawStats = currentRhythmState.stats
+          currentSetLastGigStats(
+            buildGigStatsSnapshot(
+              currentRhythmState.score ?? 0,
+              {
+                perfectHits: rawStats?.perfectHits ?? 0,
+                misses: rawStats?.misses ?? 0,
+                maxCombo: rawStats?.maxCombo ?? 0,
+                peakHype: rawStats?.peakHype ?? 0
+              },
+              currentRhythmState.toxicTimeTotal ?? 0,
+              currentRhythmState.songStats ?? []
+            )
+          )
+          currentEndGig()
+        }
         return
       }
 

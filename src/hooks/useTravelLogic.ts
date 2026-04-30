@@ -44,6 +44,7 @@ import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { ALL_VENUES } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
+import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -68,6 +69,7 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
  * @param {Object} params - Hook parameters
  * @param {Object} params.player - Player state
  * @param {Object} params.band - Band state
+ * @param {Object} params.social - Social state
  * @param {Object} params.gameMap - Game map data
  * @param {Function} params.updatePlayer - Player update function
  * @param {Function} params.updateBand - Band update function
@@ -83,6 +85,7 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 export const useTravelLogic = ({
   player,
   band,
+  social,
   gameMap,
   updatePlayer,
   updateBand,
@@ -108,6 +111,7 @@ export const useTravelLogic = ({
   // Optimization: Use refs for frequently changing state to prevent handler recreation
   const playerRef = useRef(player)
   const bandRef = useRef(band)
+  const socialRef = useRef(social)
   const gameMapRef = useRef(gameMap)
   const reputationByRegionRef = useRef(reputationByRegion)
   const venueBlacklistRef = useRef(venueBlacklist)
@@ -121,10 +125,11 @@ export const useTravelLogic = ({
   useEffect(() => {
     playerRef.current = player
     bandRef.current = band
+    socialRef.current = social
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
-  }, [player, band, gameMap, reputationByRegion, venueBlacklist])
+  }, [player, band, social, gameMap, reputationByRegion, venueBlacklist])
 
   const getLocationName = useCallback((location, venueId) => {
     return getLocationNameUtil(
@@ -196,6 +201,7 @@ export const useTravelLogic = ({
     (explicitNode = null) => {
       const player = playerRef.current
       const band = bandRef.current
+      const social = socialRef.current
       const gameMap = gameMapRef.current
 
       const target =
@@ -225,6 +231,7 @@ export const useTravelLogic = ({
           }
         )
         setIsTraveling(false)
+        isTravelingRef.current = false
         return
       }
 
@@ -238,9 +245,15 @@ export const useTravelLogic = ({
         player,
         band
       )
+      const dailyCost = calculateGuaranteedDailyCost(player, band, social)
+      const totalCashImpact = totalCost + dailyCost
 
       // Affordability check
-      const resourceCheck = checkTravelResources(totalCost, fuelLiters, player)
+      const resourceCheck = checkTravelResources(
+        totalCashImpact,
+        fuelLiters,
+        player
+      )
       if (!resourceCheck.allowed) {
         addToast(
           i18n.t(resourceCheck.errorKey, {
@@ -249,6 +262,7 @@ export const useTravelLogic = ({
           'error'
         )
         setIsTraveling(false)
+        isTravelingRef.current = false
         setTravelTarget(null)
         return
       }
@@ -276,6 +290,7 @@ export const useTravelLogic = ({
       }
 
       setIsTraveling(false)
+      isTravelingRef.current = false
       setTravelTarget(null)
 
       // Trigger travel events (shown as global modal overlay).
@@ -326,9 +341,12 @@ export const useTravelLogic = ({
    */
   const startTravelSequence = useCallback(
     node => {
+      if (isTravelingRef.current) return
+      isTravelingRef.current = true
+      setIsTraveling(true)
+
       travelCompletedRef.current = false
       setTravelTarget(node)
-      // setIsTraveling(true) // Disable local animation state
       setPendingTravelNode(null)
       pendingTravelNodeRef.current = null
 
@@ -337,11 +355,22 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }
 
-      try {
-        audioManager.playSFX('travel')
-      } catch (_e) {
-        // Ignore audio errors
-      }
+      audioManager
+        .ensureAudioContext()
+        .then(isReady => {
+          if (!isReady) {
+            logger.warn('useTravelLogic', 'Travel audio context unavailable')
+            return
+          }
+          try {
+            audioManager.playSFX('travel')
+          } catch (error) {
+            logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
+          }
+        })
+        .catch(error => {
+          logger.warn('useTravelLogic', 'ensureAudioContext failed', error)
+        })
 
       // Dispatch Minigame Start
       if (onStartTravelMinigame) {
@@ -380,6 +409,7 @@ export const useTravelLogic = ({
 
       const player = playerRef.current
       const band = bandRef.current
+      const social = socialRef.current
       const gameMap = gameMapRef.current
 
       if (!node?.venue) {
@@ -500,8 +530,14 @@ export const useTravelLogic = ({
         player,
         band
       )
+      const dailyCost = calculateGuaranteedDailyCost(player, band, social)
+      const totalCashImpact = totalCost + dailyCost
 
-      const resourceCheck = checkTravelResources(totalCost, fuelLiters, player)
+      const resourceCheck = checkTravelResources(
+        totalCashImpact,
+        fuelLiters,
+        player
+      )
       if (!resourceCheck.allowed) {
         addToast(
           i18n.t(resourceCheck.errorKey, {
@@ -526,13 +562,15 @@ export const useTravelLogic = ({
       addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
-            '{{location}} ({{distance}}km) | Food: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
+            '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}}€ | Daily Upkeep: {{dailyCost}}€ | Total Cash Impact: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
           location: getLocationName(
             node.venue.name,
             normalizeVenueId(node.venue)
           ),
           distance: dist,
-          totalCost,
+          travelCost: totalCost,
+          dailyCost,
+          totalCost: totalCashImpact,
           fuelLiters: fuelLiters.toFixed(1)
         }),
         'warning'

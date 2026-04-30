@@ -8,6 +8,7 @@ import type {
   SocialState,
   ToastPayload,
   GameMap,
+  GamePhase,
   GameSettings,
   RawGameSettings,
   ResetStatePayload
@@ -50,6 +51,11 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.PRE_GIG_MINIGAME,
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.CLINIC
+])
+
+const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
 ])
 
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
@@ -1066,6 +1072,15 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
     const parsed = finiteOptionalNumber(value[key])
     if (parsed !== undefined) venue[key] = parsed
   }
+  if (typeof value.isPractice === 'boolean') {
+    venue.isPractice = value.isPractice
+  }
+  if (
+    typeof value.sourceScene === 'string' &&
+    PRACTICE_RETURN_SCENES.has(value.sourceScene as GamePhase)
+  ) {
+    venue.sourceScene = value.sourceScene as GamePhase
+  }
   return venue
 }
 
@@ -1103,9 +1118,9 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
       if (parsed !== undefined) sanitized[key] = parsed
     }
     const rewardData = copySafePrimitiveObject(quest.rewardData)
-    if (rewardData) sanitized.rewardData = rewardData
-    const failurePenalty = copySafePrimitiveObject(quest.failurePenalty)
-    if (failurePenalty) sanitized.failurePenalty = failurePenalty
+    if (rewardData !== undefined) sanitized.rewardData = rewardData
+    const failurePenalty = copySafeJsonValue(quest.failurePenalty)
+    if (isPlainRecord(failurePenalty)) sanitized.failurePenalty = failurePenalty
     return [sanitized]
   })
 }
@@ -1503,4 +1518,17 @@ export const handleAddUnlock = (
   if (!unlockId || typeof unlockId !== 'string') return state
   if (state.unlocks?.includes(unlockId)) return state
   return { ...state, unlocks: [...(state.unlocks ?? []), unlockId] }
+}
+
+/**
+ * Handles setting the pendingBandHQOpen flag
+ * @param {Object} state - Current state
+ * @param {boolean} isOpen - new flag value
+ * @returns {Object} Updated state
+ */
+export const handleSetPendingBandHQOpen = (
+  state: GameState,
+  isOpen: boolean
+): GameState => {
+  return { ...state, pendingBandHQOpen: isOpen }
 }

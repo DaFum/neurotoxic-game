@@ -161,6 +161,9 @@ The simulator is expected to stay aligned with runtime calculations from:
 - PreGig costs must use `MODIFIER_COSTS` from `economyEngine.ts`.
 - Venue progression should honor venue `diff`, `capacity`, `pay`, `price` fields.
 - Failure-state checks should include both daily drift and post-gig net loss pressure.
+- Gig financial reports must reconcile displayed totals: `net` is `income.total - expenses.total`. Global payout dampening and excess-miss money penalties are explicit expense rows.
+- Tourbus damage is intentionally softened in `calculateTravelMinigameResult()`: raw minigame damage converts to van condition loss at 50% scaling, so 100 damage costs 50 condition.
+- Travel confirmations include guaranteed daily upkeep because successful travel also advances the day.
 
 ## How to rerun
 

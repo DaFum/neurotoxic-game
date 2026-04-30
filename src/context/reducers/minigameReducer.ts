@@ -269,12 +269,15 @@ export const handleCompleteAmpCalibration = (
     nextModifiers.damaged_gear = true
   }
 
+  // Keep minigame.type set so SceneRouter continues rendering AmpCalibrationScene
+  // while its completion overlay is visible. Scene transition (and final reset)
+  // is driven by the UI overlay's CONTINUE button via changeScene(GIG).
   return {
     ...state,
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    minigame: { ...DEFAULT_MINIGAME_STATE }
+    minigame: { ...state.minigame, active: false }
   }
 }
 
@@ -328,12 +331,15 @@ export const handleCompleteKabelsalatMinigame = (
     nextModifiers.damaged_gear = true
   }
 
+  // Keep minigame.type set so SceneRouter continues rendering KabelsalatScene
+  // while its completion overlay is visible. Scene transition is driven by
+  // useKabelsalatGameEnd's changeScene(GIG) call after the delay.
   return {
     ...state,
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    minigame: { ...DEFAULT_MINIGAME_STATE }
+    minigame: { ...state.minigame, active: false }
   }
 }
 
@@ -374,12 +380,14 @@ export const handleCompleteRoadieMinigame = (
     nextModifiers.damaged_gear = true
   }
 
+  // Keep minigame.type set so SceneRouter continues rendering RoadieRunScene
+  // while its completion overlay is visible. The CONTINUE button drives
+  // changeScene(GIG) via the scene's onComplete callback.
   return {
     ...state,
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    minigame: { ...DEFAULT_MINIGAME_STATE }
-    // Scene transition handled by UI overlay
+    minigame: { ...state.minigame, active: false }
   }
 }

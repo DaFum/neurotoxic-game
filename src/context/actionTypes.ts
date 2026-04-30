@@ -47,7 +47,8 @@ export const ActionTypes = {
   MERCH_PRESS: 'MERCH_PRESS',
   TRADE_VOID_ITEM: 'TRADE_VOID_ITEM',
   BLOOD_BANK_DONATE: 'BLOOD_BANK_DONATE',
-  DARK_WEB_LEAK: 'DARK_WEB_LEAK'
+  DARK_WEB_LEAK: 'DARK_WEB_LEAK',
+  SET_PENDING_BANDHQ_OPEN: 'SET_PENDING_BANDHQ_OPEN'
 } as const
 
 export type ActionType = (typeof ActionTypes)[keyof typeof ActionTypes]

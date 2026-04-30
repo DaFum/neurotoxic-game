@@ -200,6 +200,29 @@ test('getGigModifiers can apply multiple effects', () => {
   )
 })
 
+test('getGigModifiers exposes active pre-gig modifier effects for the UI', () => {
+  const band = buildBandState()
+  const modifiers = getGigModifiers(band, {
+    promo: true,
+    merch: true,
+    soundcheck: true
+  })
+
+  const effectKeys = modifiers.activeEffects.map(effect => effect.key)
+  assert.ok(
+    effectKeys.includes('ui:pregig.effects.promo'),
+    'Social promo should appear as an active effect'
+  )
+  assert.ok(
+    effectKeys.includes('ui:pregig.effects.merch'),
+    'Merch stand should appear as an active effect'
+  )
+  assert.ok(
+    effectKeys.includes('ui:pregig.effects.soundcheck'),
+    'Soundcheck should appear as an active effect'
+  )
+})
+
 test('calculateGigPhysics returns physics object', () => {
   const band = buildBandState()
   const song = { bpm: 120 }

@@ -242,7 +242,8 @@ export const initialState: GameState = {
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: []
+  unlocks: [],
+  pendingBandHQOpen: false
 }
 
 /**
@@ -283,5 +284,6 @@ export const createInitialState = (
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: Array.isArray(persistedData.unlocks)
     ? [...persistedData.unlocks]
-    : []
+    : [],
+  pendingBandHQOpen: false
 })

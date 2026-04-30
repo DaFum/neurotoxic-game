@@ -71,8 +71,14 @@ test('calculateGigFinancials handles base case with ticket sales and guarantee',
   )
   assert.equal(
     result.net,
-    Math.floor((result.income.total - result.expenses.total) * 0.5),
-    'Net should equal income minus expenses divided by 2'
+    result.income.total - result.expenses.total,
+    'Net should equal displayed income minus displayed expenses'
+  )
+  assert.ok(
+    result.expenses.breakdown.some(
+      item => item.labelKey === 'economy:gigExpenses.payoutDampener.label'
+    ),
+    'Payout dampener must be visible in the expense breakdown'
   )
 })
 
@@ -526,13 +532,10 @@ test('calculateGigFinancials net profit matches income minus expenses', () => {
     gigStats: buildGigStats()
   })
 
-  const calculatedNet = Math.floor(
-    (result.income.total - result.expenses.total) * 0.5
-  )
   assert.equal(
     result.net,
-    calculatedNet,
-    'Net should be exactly income minus expenses divided by 2'
+    result.income.total - result.expenses.total,
+    'Net should be exactly income minus expenses'
   )
 })
 

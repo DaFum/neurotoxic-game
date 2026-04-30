@@ -111,7 +111,7 @@ Use checkboxes `[ ]` for each rule. Organize into **sections** (Linting, Styling
 
 ## Styling
 
-- [ ] **Colors**: Use `@theme` tokens only. Never hardcode colors or use `bg-[var(...)]`.
+- [ ] **Colors**: Use `@theme` tokens only. Never hardcode colors or use `bg-[var(--color-name)]`.
 
 ## Testing
 
@@ -145,7 +145,7 @@ This avoids duplication and keeps guardrails as the **operational checklist**, n
 
 ## Styling & Tailwind v4
 
-- [ ] **Color Tokens**: MUST use `@theme` CSS variables (e.g., `bg-void-black`, `text-toxic-green`) from Tailwind config. NEVER hardcode `#fff` or use `bg-[var(--color-...)]` — the @theme syntax is shorter and faster.
+- [ ] **Color Tokens**: MUST use `@theme` CSS variables (e.g., `bg-void-black`, `text-toxic-green`) from Tailwind config. NEVER hardcode `#fff` or use `bg-[var(--color-name)]` — the @theme syntax is shorter and faster.
 - [ ] **Utility Classes**: SHOULD prefer native Tailwind utilities. Use arbitrary values `w-[calc(...)]` only for one-offs; if you need it twice, add it to @theme.
 - [ ] **Z-Index**: Use CSS variables for z-index (`z-(--z-crt)`). See CLAUDE.md for the token list.
 

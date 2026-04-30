@@ -5,6 +5,7 @@
     "matze": "Matze"
   },
   "tourbus.damage": "SCHADEN:",
+  "tourbus.condition_loss": "Zustandsverlust:",
   "tourbus.destination_reached": "ZIEL ERREICHT",
   "tourbus.distance": "ENTFERNUNG:",
   "tourbus.moveLeft": "Nach links",

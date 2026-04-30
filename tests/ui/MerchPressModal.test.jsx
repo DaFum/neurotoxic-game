@@ -80,4 +80,24 @@ describe('MerchPressModal', () => {
     fireEvent.click(confirmBtn)
     expect(onPress).not.toHaveBeenCalled()
   })
+
+  it('stacks footer actions on mobile to avoid crushed button text', () => {
+    useGameState.mockReturnValue(defaultState)
+
+    render(
+      <MerchPressModal
+        onClose={() => {}}
+        onPress={() => {}}
+        canPress={true}
+        config={mockConfig}
+      />
+    )
+
+    const confirmBtn = screen.getByRole('button', {
+      name: '[ ui:merch_press.confirm ]'
+    })
+    expect(confirmBtn.parentElement).toHaveClass('flex-col')
+    expect(confirmBtn.parentElement).toHaveClass('sm:flex-row')
+    expect(confirmBtn).toHaveClass('w-full')
+  })
 })

@@ -27,6 +27,14 @@ test('Minigame Economy Calculations', async t => {
     assert.strictEqual(resultUndef.fuelBonus, 0)
   })
 
+  await t.test(
+    'Travel Minigame caps full damage at half van condition loss',
+    () => {
+      const result = calculateTravelMinigameResult(100, [])
+      assert.strictEqual(result.conditionLoss, 50)
+    }
+  )
+
   await t.test('Roadie Minigame Results', () => {
     // 50 damage -> 10 stress, 100 cost
     const result = calculateRoadieMinigameResult(50)

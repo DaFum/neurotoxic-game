@@ -12,19 +12,19 @@ export const ControlsHint = memo(function ControlsHint() {
 
   return (
     <div
-      className='absolute bottom-3 w-full flex justify-center gap-8 z-10 pointer-events-none'
+      className='absolute bottom-2 sm:bottom-3 w-full flex justify-center gap-3 sm:gap-8 z-10 pointer-events-none'
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >
       {LANES.map(({ id, key }) => (
         <div
           key={id}
-          className='flex items-center gap-1.5 text-ash-gray/60 font-mono text-xs'
+          className='flex items-center gap-1 sm:gap-1.5 text-ash-gray/60 font-mono text-[10px] sm:text-xs'
         >
           <kbd className='border border-ash-gray/30 px-1.5 py-0.5 text-[10px] font-sans'>
             {key}
           </kbd>
-          <span className='uppercase tracking-wider'>
+          <span className='uppercase tracking-wider max-sm:hidden'>
             {t(`ui:rhythm.lane_${id}`)}
           </span>
         </div>

@@ -4,6 +4,8 @@ import { logger } from '../../utils/logger'
 type DestroyableApp = {
   _cancelResize?: (() => void) | null
   resizeTo?: unknown
+  resize?: (() => void) | null
+  render?: (() => void) | null
   queueResize?: (() => void) | null
   destroy?: (rendererOptions?: unknown, destroyOptions?: unknown) => void
   stage?: {
@@ -13,7 +15,10 @@ type DestroyableApp = {
       textureSource?: boolean
     }) => void
   } | null
-  renderer?: { destroy?: (options?: unknown) => void } | null
+  renderer?: {
+    destroy?: (options?: unknown) => void
+    render?: (() => void) | null
+  } | null
   canvas?: {
     parentNode?: { removeChild: (node: unknown) => void } | null
   } | null
@@ -80,6 +85,18 @@ function teardownResizePlugin(app: DestroyableApp): void {
 
   if (typeof app._cancelResize !== 'function') {
     app._cancelResize = () => {}
+  }
+}
+
+function teardownQueuedRenderCallbacks(app: DestroyableApp): void {
+  if (typeof app.resize === 'function') {
+    app.resize = () => {}
+  }
+  if (typeof app.render === 'function') {
+    app.render = () => {}
+  }
+  if (typeof app.renderer?.render === 'function') {
+    app.renderer.render = () => {}
   }
 }
 
@@ -171,6 +188,7 @@ export function destroyPixiApp(
 
   try {
     teardownResizePlugin(typedApp)
+    teardownQueuedRenderCallbacks(typedApp)
   } catch (error) {
     handleDestroyError(error, contextName)
   }

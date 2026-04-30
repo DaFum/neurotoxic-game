@@ -15,8 +15,8 @@ export const HealthBar = memo(function HealthBar({
   const { t } = useTranslation()
 
   return (
-    <div className='absolute bottom-20 left-1/2 -translate-x-1/2 w-[28rem] z-10 pointer-events-none'>
-      <div className='bg-void-black/80 p-4 border border-toxic-green/30 backdrop-blur-sm'>
+    <div className='absolute bottom-14 sm:bottom-20 left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-[28rem] z-10 pointer-events-none'>
+      <div className='bg-void-black/80 p-3 sm:p-4 border border-toxic-green/30 backdrop-blur-sm'>
         <BlockMeter
           label={String(t('ui:gig.crowdEnergy', 'CROWD ENERGY'))}
           value={Math.min(20, Math.max(0, Math.round((health / 100) * 20)))}

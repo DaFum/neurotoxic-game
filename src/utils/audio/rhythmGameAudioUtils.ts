@@ -602,5 +602,7 @@ export const resetGigStateTracking = (
     gameStateRef.current.currentSongStartMisses = 0
     gameStateRef.current.songTransitioning = false
     gameStateRef.current.setlistCompleted = false
+    gameStateRef.current.isGameOver = false
+    gameStateRef.current.hasSubmittedResults = false
   }
 }

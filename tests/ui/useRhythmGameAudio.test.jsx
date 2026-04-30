@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
   stopMusic: vi.fn(),
@@ -64,6 +64,7 @@ describe('useRhythmGameAudio', () => {
 
   it('handles non-finite harmony gracefully', () => {
     const setIsAudioReady = vi.fn()
+    const setIsGameOver = vi.fn()
 
     renderHook(() =>
       useRhythmGameAudio({
@@ -74,9 +75,14 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setIsAudioReady },
+        setters: { setIsAudioReady, setIsGameOver },
         contextState: { ...baseState, band: { harmony: NaN } },
-        contextActions: { addToast: vi.fn(), t: vi.fn() }
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
       })
     )
 
@@ -85,11 +91,16 @@ describe('useRhythmGameAudio', () => {
       'RhythmGame',
       'Band harmony too low to start gig.'
     )
-    expect(setIsAudioReady).toHaveBeenCalledWith(false)
+    expect(setIsAudioReady).toHaveBeenCalledWith(true)
+    expect(setIsGameOver).toHaveBeenCalledWith(true)
   })
 
-  it('fails fast on low harmony and sets audio not ready', () => {
+  it('finalizes the gig instead of showing the audio lock on low harmony', () => {
     const setIsAudioReady = vi.fn()
+    const setIsGameOver = vi.fn()
+    const setLastGigStats = vi.fn()
+    const endGig = vi.fn()
+    const addToast = vi.fn()
 
     renderHook(() =>
       useRhythmGameAudio({
@@ -100,14 +111,28 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setIsAudioReady },
+        setters: { setIsAudioReady, setIsGameOver },
         contextState: { ...baseState, band: { harmony: 0 } },
-        contextActions: { addToast: vi.fn() }
+        contextActions: {
+          addToast,
+          t: vi.fn(key => key),
+          setLastGigStats,
+          endGig
+        }
       })
     )
 
     expect(mocks.stopMusic).toHaveBeenCalled()
-    expect(setIsAudioReady).toHaveBeenCalledWith(false)
+    expect(setIsAudioReady).toHaveBeenCalledWith(true)
+    expect(setIsGameOver).toHaveBeenCalledWith(true)
+    expect(addToast).toHaveBeenCalledWith(
+      'ui:gig.toasts.bandCollapsed',
+      'error'
+    )
+    expect(setLastGigStats).toHaveBeenCalledWith(
+      expect.objectContaining({ score: 0 })
+    )
+    expect(endGig).toHaveBeenCalled()
   })
 
   it('stops audio on unmount cleanup', () => {
@@ -124,11 +149,50 @@ describe('useRhythmGameAudio', () => {
         },
         setters: { setIsAudioReady },
         contextState: baseState,
-        contextActions: { addToast: vi.fn() }
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
       })
     )
 
     unmount()
     expect(mocks.stopAudio).toHaveBeenCalled()
+  })
+
+  it('starts gig audio after requesting a fresh gig state reset', async () => {
+    const setIsAudioReady = vi.fn()
+    const gameStateRef = {
+      current: {
+        lanes: [{}, {}, {}],
+        hasSubmittedResults: true,
+        isGameOver: true,
+        notesVersion: 0
+      }
+    }
+
+    renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef,
+        setters: { setIsAudioReady },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    await waitFor(() => {
+      expect(mocks.resetGigStateTracking).toHaveBeenCalledWith(gameStateRef)
+    })
+
+    await waitFor(() => {
+      expect(mocks.playSongSequence).toHaveBeenCalled()
+    })
   })
 })
