@@ -374,7 +374,26 @@ export const useTravelLogic = ({
 
       // Dispatch Minigame Start
       if (onStartTravelMinigame) {
-        onStartTravelMinigame(node.id)
+        let success = false
+        try {
+          onStartTravelMinigame(node.id)
+          success = true
+        } catch (error) {
+          logger.error('useTravelLogic', 'Error starting travel minigame', error)
+        } finally {
+          if (!success) {
+            isTravelingRef.current = false
+            setIsTraveling(false)
+            travelCompletedRef.current = false
+            setTravelTarget(null)
+            setPendingTravelNode(null)
+            pendingTravelNodeRef.current = null
+            if (pendingTimeoutRef.current) {
+              clearTimeout(pendingTimeoutRef.current)
+              pendingTimeoutRef.current = null
+            }
+          }
+        }
       } else {
         // Fallback for tests or missing dispatch
         logger.warn(

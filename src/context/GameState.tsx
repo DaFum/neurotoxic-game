@@ -85,7 +85,7 @@ import {
   usePersistence
 } from './usePersistence'
 
-const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
   GAME_PHASES.OVERWORLD,
   GAME_PHASES.MENU
 ])

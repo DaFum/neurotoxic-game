@@ -40,6 +40,7 @@ import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
+import { PRACTICE_RETURN_SCENES } from '../GameState'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
@@ -51,11 +52,6 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.PRE_GIG_MINIGAME,
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.CLINIC
-])
-
-const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
-  GAME_PHASES.OVERWORLD,
-  GAME_PHASES.MENU
 ])
 
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>

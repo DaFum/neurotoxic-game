@@ -646,8 +646,9 @@ export const calculateAppliedDelta = (
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
       }
-      if (members.length > 0) {
-        applied.band.skill = Math.round(totalSkillDelta / members.length)
+      const validCount = applied.band.members.length
+      if (validCount > 0) {
+        applied.band.skill = Math.round(totalSkillDelta / validCount)
       }
     }
 
@@ -803,7 +804,9 @@ export const applyEventDelta = (
     const membersDelta = delta.band.membersDelta ?? delta.band.members
     const relationshipChange = Array.isArray(delta.band.relationshipChange)
       ? delta.band.relationshipChange.filter(isRelationshipChange)
-      : []
+      : isRelationshipChange(delta.band.relationshipChange)
+        ? [delta.band.relationshipChange]
+        : []
     const skillDelta = delta.band.skill
 
     if (
@@ -1101,7 +1104,10 @@ type SponsorshipDealLike = {
 export const hasActiveSponsorship = (
   socialState: { activeDeals?: unknown[] } | null | undefined
 ): boolean => {
-  return (socialState?.activeDeals || []).some(deal => {
+  if (!Array.isArray(socialState?.activeDeals)) {
+    return false
+  }
+  return socialState.activeDeals.some(deal => {
     if (!isPlainObject(deal)) return false
     const d: SponsorshipDealLike = deal
     return (

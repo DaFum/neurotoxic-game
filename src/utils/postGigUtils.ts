@@ -419,10 +419,12 @@ export const applyPostGigPerformancePenalty = ({
 
   if (penalty <= 0) return financials
 
+  const newExpensesTotal = financials.expenses.total + penalty
+
   return {
     ...financials,
     expenses: {
-      total: financials.expenses.total + penalty,
+      total: newExpensesTotal,
       breakdown: [
         ...financials.expenses.breakdown,
         {
@@ -433,7 +435,7 @@ export const applyPostGigPerformancePenalty = ({
         }
       ]
     },
-    net: financials.net - penalty
+    net: financials.income.total - newExpensesTotal
   }
 }
 
