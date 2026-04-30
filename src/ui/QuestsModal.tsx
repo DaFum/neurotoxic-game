@@ -344,6 +344,16 @@ export const QuestsModal = ({
               })}
             </div>
           )}
+
+          {/* Footer */}
+          <div className='mt-8 flex justify-center'>
+            <button
+              onClick={onClose}
+              className='bg-void-black text-toxic-green border-2 border-toxic-green px-6 py-2 font-mono uppercase tracking-widest hover:bg-toxic-green hover:text-void-black hover:shadow-[0_0_15px_var(--color-toxic-green)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+            >
+              {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
