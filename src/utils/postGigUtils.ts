@@ -18,6 +18,7 @@ import { SOCIAL_PLATFORMS } from '../data/platforms'
 import type { GameState, GigStats, Venue } from '../types/game'
 import type { SocialPostOption } from './socialEngine'
 import type { BrandDeal } from './socialEngine'
+import type { FinancialBreakdownItem } from './economyEngine'
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -365,6 +366,65 @@ export const getSpinStorySocialUpdateFactory = () => {
   })
 }
 
+type PostGigFinancials = {
+  income: { total: number; breakdown: FinancialBreakdownItem[] }
+  expenses: { total: number; breakdown: FinancialBreakdownItem[] }
+  net: number
+}
+
+export const calculateExcessMissMoneyPenalty = ({
+  misses = 0,
+  missTolerance,
+  missMoneyPenalty
+}: {
+  misses?: number
+  missTolerance: number
+  missMoneyPenalty?: number
+}) => {
+  const excessMisses = Math.max(0, misses - missTolerance)
+  return {
+    excessMisses,
+    penalty: excessMisses * (missMoneyPenalty ?? 0)
+  }
+}
+
+export const applyPostGigPerformancePenalty = ({
+  financials,
+  misses = 0,
+  missTolerance,
+  missMoneyPenalty
+}: {
+  financials: PostGigFinancials
+  misses?: number
+  missTolerance: number
+  missMoneyPenalty?: number
+}) => {
+  const { excessMisses, penalty } = calculateExcessMissMoneyPenalty({
+    misses,
+    missTolerance,
+    missMoneyPenalty
+  })
+
+  if (penalty <= 0) return financials
+
+  return {
+    ...financials,
+    expenses: {
+      total: financials.expenses.total + penalty,
+      breakdown: [
+        ...financials.expenses.breakdown,
+        {
+          labelKey: 'economy:gigExpenses.performancePenalty.label',
+          value: penalty,
+          detailKey: 'economy:gigExpenses.performancePenalty.detail',
+          detailParams: { misses: excessMisses }
+        }
+      ]
+    },
+    net: financials.net - penalty
+  }
+}
+
 export const calculateContinueStats = ({
   player,
   perfScore,
@@ -409,14 +469,7 @@ export const calculateContinueStats = ({
   }
 
   const prevMoney = player.money ?? 0
-  // Direct money deduction for excess misses (scaled to new economy at €1,700 avg gig net)
-  const missCount = misses ?? 0
-  const excessMisses = Math.max(0, missCount - BALANCE_CONSTANTS.MISS_TOLERANCE)
-  const missMoneyPenalty =
-    excessMisses * (BALANCE_CONSTANTS.MISS_MONEY_PENALTY ?? 0)
-  const newMoney = clampPlayerMoney(
-    prevMoney + financials.net - missMoneyPenalty
-  )
+  const newMoney = clampPlayerMoney(prevMoney + financials.net)
   const newFame = clampPlayerFame(prevFame + finalFameGain)
 
   return {

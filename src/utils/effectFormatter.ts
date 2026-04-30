@@ -51,13 +51,29 @@ export const generateEffectText = (delta, t) => {
       let totalStaminaChange = 0
 
       if (Array.isArray(delta.band.membersDelta)) {
+        const moodChanges = []
+        const staminaChanges = []
         for (let i = 0; i < delta.band.membersDelta.length; i++) {
           if (typeof delta.band.membersDelta[i]?.moodChange === 'number') {
-            totalMoodChange += delta.band.membersDelta[i].moodChange
+            moodChanges.push(delta.band.membersDelta[i].moodChange)
           }
           if (typeof delta.band.membersDelta[i]?.staminaChange === 'number') {
-            totalStaminaChange += delta.band.membersDelta[i].staminaChange
+            staminaChanges.push(delta.band.membersDelta[i].staminaChange)
           }
+        }
+        if (moodChanges.length > 0) {
+          const firstMoodChange = moodChanges[0]
+          totalMoodChange = moodChanges.every(v => v === firstMoodChange)
+            ? firstMoodChange
+            : moodChanges.reduce((sum, value) => sum + value, 0)
+        }
+        if (staminaChanges.length > 0) {
+          const firstStaminaChange = staminaChanges[0]
+          totalStaminaChange = staminaChanges.every(
+            v => v === firstStaminaChange
+          )
+            ? firstStaminaChange
+            : staminaChanges.reduce((sum, value) => sum + value, 0)
         }
       } else {
         if (typeof delta.band.membersDelta.moodChange === 'number') {

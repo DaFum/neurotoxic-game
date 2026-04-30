@@ -14,6 +14,7 @@ import {
 const {
   mockCalculateTravelExpenses,
   mockAudioManager,
+  mockCalculateGuaranteedDailyCost,
   mockLogger,
   mockHandleError,
   setEnsureAudioContextResult
@@ -32,6 +33,7 @@ describe('useTravelLogic', () => {
 
   beforeEach(() => {
     mockCalculateTravelExpenses.mock.resetCalls()
+    mockCalculateGuaranteedDailyCost.mock.resetCalls()
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
       dist: 100,
       totalCost: 50,
@@ -78,6 +80,28 @@ describe('useTravelLogic', () => {
     assert.deepEqual(result.current.travelTarget, targetNode)
     assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
     assert.equal(mockAudioManager.playSFX.mock.calls[0].arguments[0], 'travel')
+  })
+
+  test('handleTravel confirmation includes travel, upkeep, and total cash impact', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      player: {
+        money: 1000,
+        fameLevel: 3,
+        currentNodeId: 'node_start',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      },
+      band: { members: [{}, {}, {}], harmony: 50 }
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    const toastMessage = props.addToast.mock.calls[0].arguments[0]
+    assert.match(toastMessage, /Travel Costs: 50€/)
+    assert.match(toastMessage, /Daily Upkeep: 155€/)
+    assert.match(toastMessage, /Total Cash Impact: 205€/)
   })
 
   test('handleTravel skips travel SFX and logs when audio context is unavailable', async () => {

@@ -771,6 +771,7 @@ export const calculateGigFinancials = ({
   const activeDeals = ctxSocial.activeDeals ?? []
   for (let i = 0; i < activeDeals.length; i++) {
     const activeDeal = activeDeals[i]
+    if (!activeDeal) continue
     if (
       activeDeal.type === 'SPONSORSHIP' &&
       activeDeal.offer &&
@@ -806,9 +807,22 @@ export const calculateGigFinancials = ({
     report.expenses.total += managementCut
   }
 
-  report.net = Math.floor(
-    (report.income.total - report.expenses.total) * GLOBAL_PAYOUT_NERF
-  )
+  const grossNet = report.income.total - report.expenses.total
+  if (grossNet > 0 && GLOBAL_PAYOUT_NERF < 1) {
+    const adjustedNet = Math.floor(grossNet * GLOBAL_PAYOUT_NERF)
+    const payoutDampener = grossNet - adjustedNet
+    if (payoutDampener > 0) {
+      report.expenses.breakdown.push({
+        labelKey: 'economy:gigExpenses.payoutDampener.label',
+        value: payoutDampener,
+        detailKey: 'economy:gigExpenses.payoutDampener.detail',
+        detailParams: { rate: Math.round((1 - GLOBAL_PAYOUT_NERF) * 100) }
+      })
+      report.expenses.total += payoutDampener
+    }
+  }
+
+  report.net = report.income.total - report.expenses.total
 
   // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
   if (report.net > MAX_GIG_NET) {
@@ -819,7 +833,7 @@ export const calculateGigFinancials = ({
       detailKey: 'economy:gigExpenses.overageFee.detail'
     })
     report.expenses.total += overageFee
-    report.net = MAX_GIG_NET
+    report.net = report.income.total - report.expenses.total
   }
 
   logger.info('Economy', 'Gig Report Generated', {

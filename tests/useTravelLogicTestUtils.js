@@ -27,6 +27,12 @@ const mockCalculateRepairCost = mock.fn(currentCondition => {
   )
 })
 
+const mockCalculateGuaranteedDailyCost = mock.fn((player, band) => {
+  const bandSize = Array.isArray(band?.members) ? band.members.length : 3
+  const fameLevel = player?.fameLevel || 0
+  return 62 + bandSize * 8 + Math.floor(Math.pow(fameLevel, 1.4) * 15)
+})
+
 let ensureAudioContextResult = true
 
 const mockAudioManager = {
@@ -62,6 +68,12 @@ mock.module('../src/utils/audio/AudioManager', {
   }
 })
 
+mock.module('../src/utils/simulationUtils', {
+  namedExports: {
+    calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
+  }
+})
+
 mock.module('../src/utils/logger', {
   namedExports: {
     logger: mockLogger,
@@ -79,6 +91,7 @@ mock.module('../src/utils/errorHandler', {
 export const mockTravelLogicDependencies = {
   mockCalculateTravelExpenses,
   mockAudioManager,
+  mockCalculateGuaranteedDailyCost,
   mockLogger,
   mockHandleError,
   setEnsureAudioContextResult: value => {

@@ -44,6 +44,7 @@ import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
 import { ALL_VENUES } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
+import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -239,9 +240,15 @@ export const useTravelLogic = ({
         player,
         band
       )
+      const dailyCost = calculateGuaranteedDailyCost(player, band)
+      const totalCashImpact = totalCost + dailyCost
 
       // Affordability check
-      const resourceCheck = checkTravelResources(totalCost, fuelLiters, player)
+      const resourceCheck = checkTravelResources(
+        totalCashImpact,
+        fuelLiters,
+        player
+      )
       if (!resourceCheck.allowed) {
         addToast(
           i18n.t(resourceCheck.errorKey, {
@@ -517,8 +524,14 @@ export const useTravelLogic = ({
         player,
         band
       )
+      const dailyCost = calculateGuaranteedDailyCost(player, band)
+      const totalCashImpact = totalCost + dailyCost
 
-      const resourceCheck = checkTravelResources(totalCost, fuelLiters, player)
+      const resourceCheck = checkTravelResources(
+        totalCashImpact,
+        fuelLiters,
+        player
+      )
       if (!resourceCheck.allowed) {
         addToast(
           i18n.t(resourceCheck.errorKey, {
@@ -543,13 +556,15 @@ export const useTravelLogic = ({
       addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
           defaultValue:
-            '{{location}} ({{distance}}km) | Food: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
+            '{{location}} ({{distance}}km) | Travel Costs: {{travelCost}}€ | Daily Upkeep: {{dailyCost}}€ | Total Cash Impact: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
           location: getLocationName(
             node.venue.name,
             normalizeVenueId(node.venue)
           ),
           distance: dist,
-          totalCost,
+          travelCost: totalCost,
+          dailyCost,
+          totalCost: totalCashImpact,
           fuelLiters: fuelLiters.toFixed(1)
         }),
         'warning'

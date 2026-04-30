@@ -6,6 +6,7 @@ import { createTourbusStageController } from '../components/stage/TourbusStageCo
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { TourbusHUD } from '../components/minigames/tourbus/TourbusHUD'
 import { TourbusControls } from '../components/minigames/tourbus/TourbusControls'
+import { calculateTravelMinigameResult } from '../utils/economyEngine'
 
 export const TourbusScene = () => {
   const { t } = useTranslation('minigame')
@@ -36,9 +37,13 @@ export const TourbusScene = () => {
       completionTitle={t('minigame:tourbus.destination_reached', {
         defaultValue: 'DESTINATION REACHED'
       })}
-      renderCompletionStats={state =>
-        `${t('minigame:tourbus.van_condition', { defaultValue: 'Van Condition:' })} ${Math.max(0, 100 - state.damage)}%`
-      }
+      renderCompletionStats={state => {
+        const { conditionLoss } = calculateTravelMinigameResult(
+          state.damage,
+          []
+        )
+        return `${t('minigame:tourbus.condition_loss', { defaultValue: 'Condition Loss:' })} ${conditionLoss}%`
+      }}
     >
       {/* UI Overlay */}
       <TourbusHUD distance={uiState.distance} damage={uiState.damage} />

@@ -62,6 +62,9 @@
 - `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
 - `START_GIG` resets `gigModifiers` to defaults.
 - `useArrivalLogic` owns all arrival routing; `COMPLETE_TRAVEL_MINIGAME` must not change scene.
+- Tourbus minigame damage is intentionally converted to van condition loss via `calculateTravelMinigameResult()` at 50% scaling; 100 damage means max 50 condition loss.
+- Travel confirmation must disclose travel cost plus guaranteed daily upkeep because arrival also calls `advanceDay()`.
+- Gig report `net` must equal displayed income minus displayed expenses; economy dampeners and performance miss money penalties belong in the expense breakdown, not hidden continue deductions.
 - Audio end detection uses `setlistCompleted` plus `isNearTrackEnd`; do not use `audioPlaybackEnded`.
 - JSON-note OGG/MIDI caps at `maxNoteTime + NOTE_TAIL_MS`; procedural songs use full excerpt duration.
 - Default chatter scenes are `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` needs explicit conditional entries.

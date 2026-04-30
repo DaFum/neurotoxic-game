@@ -22,6 +22,29 @@ import type { BandState, GameState, BandMember } from '../types/game'
 import type { Song } from '../types/audio'
 import type { ActiveEffect } from '../types/components'
 
+const PRE_GIG_ACTIVE_EFFECTS = {
+  soundcheck: {
+    key: 'ui:pregig.effects.soundcheck',
+    fallback: 'SOUNDCHECK: Easier Hits'
+  },
+  promo: {
+    key: 'ui:pregig.effects.promo',
+    fallback: 'PROMO: Bigger Crowd'
+  },
+  merch: {
+    key: 'ui:pregig.effects.merch',
+    fallback: 'MERCH STAND: Better Merch Sales'
+  },
+  catering: {
+    key: 'ui:pregig.effects.catering',
+    fallback: 'CATERING: Counters Tired Band Penalty'
+  },
+  guestlist: {
+    key: 'ui:pregig.effects.guestlist',
+    fallback: 'GUEST LIST: VIP Bar Revenue'
+  }
+} as const satisfies Record<string, ActiveEffect>
+
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
  * @param {object} bandState - The current band state (members, harmony, etc.).
@@ -51,6 +74,15 @@ export const getGigModifiers = (
   const members: BandMember[] = Array.isArray(bandState.members)
     ? (bandState.members as BandMember[])
     : []
+
+  const preGigEffectKeys = Object.keys(PRE_GIG_ACTIVE_EFFECTS) as Array<
+    keyof typeof PRE_GIG_ACTIVE_EFFECTS
+  >
+  for (const modifierKey of preGigEffectKeys) {
+    if (gigModifiers[modifierKey] === true) {
+      modifiers.activeEffects.push(PRE_GIG_ACTIVE_EFFECTS[modifierKey])
+    }
+  }
 
   // 1. Harmony Logic
   if (bandState.harmony > 80) {
@@ -241,6 +273,25 @@ export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
 export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
 export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
+export const calculateGuaranteedDailyCost = (
+  player: Pick<GameState['player'], 'fameLevel'>,
+  band: Pick<GameState['band'], 'members'>,
+  social: Partial<Pick<GameState['social'], 'youtube'>> = {}
+) => {
+  const bandSize = Array.isArray(band.members) ? band.members.length : 3
+  const fameLevel = player.fameLevel || 0
+  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
+  let dailyCost =
+    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
+
+  if ((social.youtube || 0) >= 10000) {
+    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
+    dailyCost -= adRevenue
+  }
+
+  return dailyCost
+}
+
 export const calculateDailyUpdates = (
   currentState: GameState,
   rng: () => number = getSafeRandom
@@ -256,20 +307,7 @@ export const calculateDailyUpdates = (
   const controversySnapshot = nextSocial.controversyLevel || 0
 
   // 1. Costs
-  // Rent/Food scaled by band size
-  const bandSize = Array.isArray(nextBand.members) ? nextBand.members.length : 3
-
-  // Base daily cost plus a scaling "Burn Rate" based on fame level (lifestyle inflation)
-  const fameLevel = nextPlayer.fameLevel || 0
-  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
-  let dailyCost =
-    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
-
-  // YouTube Passive Ad Revenue Perk (per 10k subscribers)
-  if ((nextSocial.youtube || 0) >= 10000) {
-    const adRevenue = Math.floor((nextSocial.youtube || 0) / 10000) * 10
-    dailyCost -= adRevenue // Can result in net positive daily income if huge
-  }
+  let dailyCost = calculateGuaranteedDailyCost(nextPlayer, nextBand, nextSocial)
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if ((nextSocial.newsletter || 0) >= 1000 && rng() < 0.3) {

@@ -16,3 +16,5 @@ Applies to `src/utils/**` unless a deeper `AGENTS.md` overrides it.
 - Map layer fallback selection must explicitly assert non-null venues before capacity/type access.
 - `pickRandomSubset` large-`k` branches must reject sparse arrays instead of unchecked assertions.
 - Purchase effect helpers should fail on invalid numeric payloads and normalize stored upgrade IDs to strings.
+- `calculateTravelMinigameResult()` is the source of truth for Tourbus condition loss; keep its 50% damage-to-condition scaling aligned with reducer and completion UI.
+- `calculateGigFinancials()` reports must reconcile: `net === income.total - expenses.total`; add balancing items to expenses for payout dampeners or penalties.

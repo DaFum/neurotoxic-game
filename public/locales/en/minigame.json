@@ -5,6 +5,7 @@
     "matze": "Matze"
   },
   "tourbus.damage": "DAMAGE:",
+  "tourbus.condition_loss": "Condition Loss:",
   "tourbus.destination_reached": "DESTINATION REACHED",
   "tourbus.distance": "DISTANCE:",
   "tourbus.moveLeft": "Move Left",

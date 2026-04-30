@@ -205,6 +205,44 @@ test('EventModal uses fallback text when both outcomeText and description are em
   })
 })
 
+test('EventModal shows per-member mood delta instead of summing all members', async () => {
+  const { resolveEventChoice } = await import('../../src/utils/eventEngine')
+  resolveEventChoice.mockReturnValueOnce({
+    result: {},
+    delta: { band: { membersDelta: { moodChange: -5 } } },
+    appliedDelta: {
+      band: {
+        membersDelta: [
+          { moodChange: -5 },
+          { moodChange: -5 },
+          { moodChange: -5 }
+        ]
+      }
+    },
+    outcomeText: '',
+    description: ''
+  })
+
+  render(
+    <EventModal
+      event={{
+        id: 'all_member_mood',
+        title: 'All Member Mood',
+        description: 'This is a test event.',
+        options: [{ label: 'Apply mood' }]
+      }}
+      onOptionSelect={vi.fn()}
+    />
+  )
+
+  fireEvent.click(screen.getByText('Apply mood'))
+
+  await waitFor(() => {
+    expect(screen.getByText(/ui:stats.mood: -5/)).toBeInTheDocument()
+  })
+  expect(screen.queryByText(/ui:stats.mood: -15/)).not.toBeInTheDocument()
+})
+
 test('EventModal renders with fallback title/description when canonical GameEvent keys are missing', () => {
   const handleSelect = vi.fn()
   const eventWithoutTitleAndDescription = {

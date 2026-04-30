@@ -29,6 +29,7 @@ The repository keeps **two orchestration entry points** (Overworld click-travel 
 - `arrivalUtils.processTravelEvents(node, triggerEvent)` is the canonical travel-event trigger helper for non-performance node arrivals.
 - `useArrivalLogic` relies on this helper directly.
 - `useTravelLogic` uses this helper for non-performance nodes and retains legacy transport/band travel event rolls for `GIG`/`FESTIVAL`/`FINALE` destinations.
+- Travel confirmation/resource checks account for guaranteed daily upkeep because both orchestration paths call `advanceDay()` during arrival sequencing.
 
 ## Why this is canonical
 
@@ -47,6 +48,7 @@ The repository keeps **two orchestration entry points** (Overworld click-travel 
 
 - Agents may call `arrivalUtils.processTravelEvents(node, triggerEvent)` as the canonical travel-event primitive.
 - This primitive is an event trigger helper only; it does **not** replace human-reviewed orchestration in `useTravelLogic` or `useArrivalLogic`.
+- Tourbus arrival math must keep raw minigame damage separate from van condition loss; `calculateTravelMinigameResult()` applies the intentional 50% scaling.
 
 ### Allowed actions for agents
 
