@@ -240,9 +240,6 @@ export const QuestsModal = ({
               <p className='text-ash-gray font-mono italic mb-6'>
                 {t('ui:quests.empty')}
               </p>
-              <GlitchButton variant='primary' size='sm' onClick={onClose}>
-                {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
-              </GlitchButton>
             </div>
           ) : (
             <div className='space-y-6'>
@@ -347,13 +344,6 @@ export const QuestsModal = ({
               })}
             </div>
           )}
-
-          {/* Footer */}
-          <div className='mt-8 flex justify-center'>
-            <GlitchButton variant='primary' size='md' onClick={onClose}>
-              {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
-            </GlitchButton>
-          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
