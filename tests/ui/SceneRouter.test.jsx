@@ -32,14 +32,19 @@ const renderRouter = props =>
   )
 
 describe('SceneRouter', () => {
-  test('does not fall back to Roadie when a pre-gig minigame type has already been cleared', async () => {
+  test('keeps the Roadie scene mounted when minigameType is cleared so its completion overlay can be dismissed', async () => {
+    // After a minigame completes, reducers leave currentScene at PRE_GIG_MINIGAME
+    // so the completion overlay can be shown. The SceneRouter must keep the
+    // minigame scene mounted (Roadie is the default) instead of swapping to Gig
+    // mid-overlay; the actual transition to GIG is driven by the overlay's
+    // CONTINUE button via changeScene(GIG).
     renderRouter({
       currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
       minigameType: null
     })
 
-    expect(await screen.findByTestId('gig-scene')).toBeInTheDocument()
-    expect(screen.queryByTestId('roadie-scene')).not.toBeInTheDocument()
+    expect(await screen.findByTestId('roadie-scene')).toBeInTheDocument()
+    expect(screen.queryByTestId('gig-scene')).not.toBeInTheDocument()
   })
 
   test('routes explicit pre-gig minigames to their matching scene', async () => {

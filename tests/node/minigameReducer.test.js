@@ -125,7 +125,9 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.band.harmony, 35) // 50 - 15 stress (updated to 15)
       assert.strictEqual(nextState.player.money, 1000) // No reward on failure
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+      // minigame.type is preserved so SceneRouter keeps the scene mounted while
+      // the completion overlay is visible; only `active` is cleared.
+      assert.strictEqual(nextState.minigame.active, false)
     })
 
     it('should apply reward on success', () => {
@@ -161,8 +163,10 @@ describe('minigameReducer', () => {
       // 1000 - 120
       assert.strictEqual(nextState.player.money, 880)
       assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
-      assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+      // Scene transition is driven by the UI overlay's CONTINUE button, so the
+      // reducer must not touch currentScene here.
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
+      assert.strictEqual(nextState.minigame.active, false)
     })
 
     it('should not set damaged_gear if equipmentDamage is low', () => {
