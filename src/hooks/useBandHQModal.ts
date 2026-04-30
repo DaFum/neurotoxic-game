@@ -12,9 +12,15 @@ export const useBandHQModal = () => {
   const [showHQ, setShowHQ] = useState(pendingBandHQOpen)
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
     if (pendingBandHQOpen) {
-      setShowHQ(true)
-      setPendingBandHQOpen(false)
+      timeoutId = setTimeout(() => {
+        setShowHQ(true)
+        setPendingBandHQOpen(false)
+      }, 0)
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
     }
   }, [pendingBandHQOpen, setPendingBandHQOpen])
 
