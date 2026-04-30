@@ -45,9 +45,19 @@ const oggUrlMap = buildAssetUrlMap(
 
 // Log bundled OGG inventory at module load for diagnostics.
 // oggUrlMap stores both full relative paths and basenames; prefer full paths for accurate count.
-const oggAssetKeys = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
-// Cache candidate list for ambient playback to avoid repeated filtering
-const fullPathCandidates = oggAssetKeys.filter(k => k.includes('/'))
+// Cache candidate list for ambient playback in a single pass to avoid repeated filtering.
+const oggAssetKeys: string[] = []
+const fullPathCandidates: string[] = []
+
+for (const k of Object.keys(oggUrlMap)) {
+  if (k.endsWith('.ogg')) {
+    oggAssetKeys.push(k)
+    if (k.includes('/')) {
+      fullPathCandidates.push(k)
+    }
+  }
+}
+
 export const oggCandidates =
   fullPathCandidates.length > 0 ? fullPathCandidates : oggAssetKeys
 
