@@ -13,6 +13,7 @@ export const useBandHQModal = () => {
 
   useEffect(() => {
     if (pendingBandHQOpen) {
+      setShowHQ(true)
       setPendingBandHQOpen(false)
     }
   }, [pendingBandHQOpen, setPendingBandHQOpen])

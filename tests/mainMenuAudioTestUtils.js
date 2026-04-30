@@ -78,11 +78,15 @@ export const setupMainMenuAudioTest = async () => {
     }
   })
 
+  const mockUseGameSelector = mock.fn((selector) => {
+    return selector(createMockGameState({ canLoad: true }))
+  })
+
   mock.module('../src/context/GameState.tsx', {
     namedExports: {
       useGameState: mockUseGameState,
       useGameDispatch: mockUseGameDispatch,
-      useGameSelector: mockUseGameState,
+      useGameSelector: mockUseGameSelector,
       useGameActions: mockUseGameDispatch
     }
   })
