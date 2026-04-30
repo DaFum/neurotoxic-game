@@ -22,6 +22,17 @@ describe('Modal Component', () => {
     expect(getByText('Modal Content')).toBeInTheDocument()
   })
 
+  test('constrains the dialog to the mobile viewport', () => {
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={() => {}}>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    expect(getByRole('dialog')).toHaveClass('max-h-[calc(100svh-1rem)]')
+    expect(getByRole('dialog')).toHaveClass('overflow-hidden')
+  })
+
   test('calls onClose when clicking outside', () => {
     const onCloseMock = vi.fn()
     const { getByRole } = render(

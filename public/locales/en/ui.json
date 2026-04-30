@@ -853,6 +853,8 @@
   "roadieRun.controls.hide": "HIDE CONTROLS",
   "roadieRun.controls.movementHint": "WASD / ARROWS to Move",
   "roadieRun.controls.show": "SHOW CONTROLS",
+  "roadieRun.controls.touchAria": "Roadie touch movement area",
+  "roadieRun.controls.touchHint": "SWIPE OR TAP TO MOVE",
   "roadieRun.controls.toggleAria": "Toggle controls",
   "roadieRun.hud.carrying": "CARRYING:",
   "roadieRun.hud.damage": "DAMAGE:",

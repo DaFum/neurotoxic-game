@@ -103,8 +103,6 @@ const SCENE_STYLES: Record<string, SceneStyle> = {
 
 const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
 
-const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
-
 interface ChatterMessageHeaderProps {
   sceneStyle: SceneStyle
   sceneLabel: string
@@ -257,8 +255,8 @@ ChatterMessage.displayName = 'ChatterMessage'
  * - OVERWORLD: bottom-left near the bus / event log area
  * - All other scenes: bottom-center of the window
  *
- * z-index: 200 (--z-chatter) — above CRT (80), modal (100), and tutorial (150)
- * so chatter text is ALWAYS readable and never overlapped.
+ * Desktop uses --z-chatter so chatter stays above scene chrome.
+ * Mobile lowers chatter below touch menus and dialogs so it cannot cover controls.
  *
  * Visual style adapts per scene — different border colors, accent bars, and icons.
  *
@@ -282,8 +280,7 @@ export const ChatterOverlay = memo(({ gameState }: ChatterOverlayProps) => {
 
   return (
     <div
-      className={positionClassName}
-      style={CHATTER_CONTAINER_STYLE}
+      className={`${positionClassName} z-(--z-chatter) max-sm:z-(--z-chatter-mobile)`}
       role='status'
       aria-live='polite'
     >

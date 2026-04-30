@@ -213,8 +213,8 @@ test('EventModal shows per-member mood delta instead of summing all members', as
     appliedDelta: {
       band: {
         membersDelta: [
-          { moodChange: -5 },
-          { moodChange: -5 },
+          { moodChange: -3 },
+          { moodChange: -4 },
           { moodChange: -5 }
         ]
       }

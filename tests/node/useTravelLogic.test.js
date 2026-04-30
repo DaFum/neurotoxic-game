@@ -104,6 +104,63 @@ describe('useTravelLogic', () => {
     assert.match(toastMessage, /Total Cash Impact: 205€/)
   })
 
+  test('handleTravel confirmation passes social state into guaranteed daily cost', () => {
+    mockCalculateGuaranteedDailyCost.mock.mockImplementation(
+      (_player, _band, social = {}) => (social.youtube >= 10000 ? 42 : 155)
+    )
+    const social = { youtube: 20000 }
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
+      player: {
+        money: 1000,
+        fameLevel: 3,
+        currentNodeId: 'node_start',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      },
+      band: { members: [{}, {}, {}], harmony: 50 },
+      social
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assert.equal(
+      mockCalculateGuaranteedDailyCost.mock.calls[0].arguments[2],
+      social
+    )
+    const toastMessage = props.addToast.mock.calls[0].arguments[0]
+    assert.match(toastMessage, /Daily Upkeep: 42€/)
+    assert.match(toastMessage, /Total Cash Impact: 92€/)
+  })
+
+  test('onTravelComplete passes social state into guaranteed daily cost', () => {
+    mockCalculateGuaranteedDailyCost.mock.mockImplementation(
+      (_player, _band, social = {}) => (social.youtube >= 10000 ? 42 : 155)
+    )
+    const social = { youtube: 20000 }
+    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
+      player: {
+        money: 1000,
+        fameLevel: 3,
+        currentNodeId: 'node_start',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      },
+      band: { members: [{}, {}, {}], harmony: 50 },
+      social
+    })
+
+    act(() => {
+      result.current.onTravelComplete(targetNode)
+    })
+
+    assert.equal(
+      mockCalculateGuaranteedDailyCost.mock.calls[0].arguments[2],
+      social
+    )
+  })
+
   test('handleTravel skips travel SFX and logs when audio context is unavailable', async () => {
     setEnsureAudioContextResult(false)
     const { result, targetNode } = setupTravelScenario(useTravelLogic, {

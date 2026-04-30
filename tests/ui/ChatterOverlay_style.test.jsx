@@ -9,7 +9,14 @@ vi.mock('../../src/data/chatter', () => ({
   ALLOWED_DEFAULT_SCENES: ['GIG']
 }))
 
-test('ChatterOverlay renders with correct z-index style', async () => {
+vi.mock('../../src/hooks/useChatterLogic', () => ({
+  useChatterLogic: () => ({
+    messages: [],
+    removeMessage: vi.fn()
+  })
+}))
+
+test('ChatterOverlay stays above chrome on desktop and below touch overlays on mobile', async () => {
   // Use a dynamic import to ensure mocks are applied if needed (though here we mock before import anyway)
   // But for consistency with existing tests:
   const { ChatterOverlay } =
@@ -26,6 +33,6 @@ test('ChatterOverlay renders with correct z-index style', async () => {
 
   const container = getByRole('status')
 
-  // Verify the style is applied correctly
-  expect(container.style.zIndex).toBe('var(--z-chatter)')
+  expect(container.className).toContain('z-(--z-chatter)')
+  expect(container.className).toContain('max-sm:z-(--z-chatter-mobile)')
 })

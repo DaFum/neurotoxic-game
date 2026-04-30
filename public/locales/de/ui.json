@@ -853,6 +853,8 @@
   "roadieRun.controls.hide": "STEUERUNG AUSBLENDEN",
   "roadieRun.controls.movementHint": "WASD / PFEILTASTEN zum Bewegen",
   "roadieRun.controls.show": "STEUERUNG ANZEIGEN",
+  "roadieRun.controls.touchAria": "Roadie-Touch-Bewegungsfläche",
+  "roadieRun.controls.touchHint": "WISCHEN ODER TIPPEN ZUM BEWEGEN",
   "roadieRun.controls.toggleAria": "Steuerung umschalten",
   "roadieRun.hud.carrying": "TRÄGT:",
   "roadieRun.hud.damage": "SCHADEN:",

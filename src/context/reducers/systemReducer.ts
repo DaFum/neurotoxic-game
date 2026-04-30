@@ -53,6 +53,11 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.CLINIC
 ])
 
+const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
+])
+
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -1072,7 +1077,7 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   }
   if (
     typeof value.sourceScene === 'string' &&
-    Object.values(GAME_PHASES).includes(value.sourceScene as GamePhase)
+    PRACTICE_RETURN_SCENES.has(value.sourceScene as GamePhase)
   ) {
     venue.sourceScene = value.sourceScene as GamePhase
   }

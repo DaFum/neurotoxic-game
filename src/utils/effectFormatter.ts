@@ -62,18 +62,13 @@ export const generateEffectText = (delta, t) => {
           }
         }
         if (moodChanges.length > 0) {
-          const firstMoodChange = moodChanges[0]
-          totalMoodChange = moodChanges.every(v => v === firstMoodChange)
-            ? firstMoodChange
-            : moodChanges.reduce((sum, value) => sum + value, 0)
+          totalMoodChange = moodChanges.reduce((sum, value) => sum + value, 0)
         }
         if (staminaChanges.length > 0) {
-          const firstStaminaChange = staminaChanges[0]
-          totalStaminaChange = staminaChanges.every(
-            v => v === firstStaminaChange
+          totalStaminaChange = staminaChanges.reduce(
+            (sum, value) => sum + value,
+            0
           )
-            ? firstStaminaChange
-            : staminaChanges.reduce((sum, value) => sum + value, 0)
         }
       } else {
         if (typeof delta.band.membersDelta.moodChange === 'number') {

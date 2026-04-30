@@ -16,9 +16,9 @@ import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 
 import type { GameState, GigStats, Venue } from '../types/game'
+import type { PostGigFinancials } from '../types/economy'
 import type { SocialPostOption } from './socialEngine'
 import type { BrandDeal } from './socialEngine'
-import type { FinancialBreakdownItem } from './economyEngine'
 export type CalculatePostGigStateParams = {
   option: SocialPostOption
   player: GameState['player']
@@ -366,10 +366,16 @@ export const getSpinStorySocialUpdateFactory = () => {
   })
 }
 
-type PostGigFinancials = {
-  income: { total: number; breakdown: FinancialBreakdownItem[] }
-  expenses: { total: number; breakdown: FinancialBreakdownItem[] }
-  net: number
+const assertFiniteIntegerAtLeastZero = (value: unknown, label: string) => {
+  if (!Number.isInteger(value) || (value as number) < 0) {
+    throw new Error(`${label} must be a finite integer >= 0`)
+  }
+}
+
+const assertFiniteNumberAtLeastZero = (value: unknown, label: string) => {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    throw new Error(`${label} must be a finite number >= 0`)
+  }
 }
 
 export const calculateExcessMissMoneyPenalty = ({
@@ -381,6 +387,12 @@ export const calculateExcessMissMoneyPenalty = ({
   missTolerance: number
   missMoneyPenalty?: number
 }) => {
+  assertFiniteIntegerAtLeastZero(misses, 'misses')
+  assertFiniteIntegerAtLeastZero(missTolerance, 'missTolerance')
+  if (missMoneyPenalty !== undefined) {
+    assertFiniteNumberAtLeastZero(missMoneyPenalty, 'missMoneyPenalty')
+  }
+
   const excessMisses = Math.max(0, misses - missTolerance)
   return {
     excessMisses,

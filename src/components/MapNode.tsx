@@ -165,6 +165,18 @@ export const MapNode = memo(
       setIsHoveredLocal(false)
     }, [setHoveredNode])
 
+    const handlePointerDown = useCallback(() => {
+      if (isReachable) {
+        setHoveredNode(node)
+        setIsHoveredLocal(true)
+      }
+    }, [isReachable, setHoveredNode, node])
+
+    const handlePointerCancel = useCallback(() => {
+      setHoveredNode(null)
+      setIsHoveredLocal(false)
+    }, [setHoveredNode])
+
     const handleFocus = useCallback(() => {
       if (isReachable) {
         setHoveredNode(node)
@@ -204,7 +216,7 @@ export const MapNode = memo(
 
     return (
       <div
-        className={`absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
+        className={`map-node ${isReachable ? 'clickable' : ''} absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
           ${isCurrent ? 'z-50' : 'z-10'}
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black' : ''}
@@ -213,6 +225,8 @@ export const MapNode = memo(
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onPointerDown={handlePointerDown}
+        onPointerCancel={handlePointerCancel}
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-label={

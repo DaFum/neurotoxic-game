@@ -79,7 +79,7 @@ export const Modal = ({
     >
       <div
         ref={dialogRef}
-        className={`relative w-full border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group ${className}`}
+        className={`relative w-full max-h-[calc(100svh-1rem)] overflow-hidden border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group ${className}`}
         role='dialog'
         aria-modal='true'
         tabIndex={-1}

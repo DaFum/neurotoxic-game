@@ -1,4 +1,4 @@
-import { mock } from 'node:test'
+import { beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
 
@@ -35,9 +35,11 @@ const mockCalculateGuaranteedDailyCost = mock.fn((player, band) => {
 
 let ensureAudioContextResult = true
 
+const ensureAudioContextDefault = async () => ensureAudioContextResult
+
 const mockAudioManager = {
   playSFX: mock.fn(),
-  ensureAudioContext: mock.fn(async () => ensureAudioContextResult)
+  ensureAudioContext: mock.fn(ensureAudioContextDefault)
 }
 
 const mockLogger = {
@@ -87,6 +89,16 @@ mock.module('../src/utils/errorHandler', {
     StateError: MockStateError
   }
 })
+
+export const resetTravelLogicMockState = () => {
+  ensureAudioContextResult = true
+  mockAudioManager.ensureAudioContext.mock.mockImplementation(
+    ensureAudioContextDefault
+  )
+  mockAudioManager.ensureAudioContext.mock.resetCalls()
+}
+
+beforeEach(resetTravelLogicMockState)
 
 export const mockTravelLogicDependencies = {
   mockCalculateTravelExpenses,

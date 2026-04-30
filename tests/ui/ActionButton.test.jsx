@@ -37,3 +37,11 @@ test('ActionButton passes through additional props and uses ref', () => {
   expect(button).toBeInTheDocument()
   expect(mockRef).toHaveBeenCalled()
 })
+
+test('ActionButton keeps a mobile-friendly touch target', () => {
+  render(<ActionButton>Touch Action</ActionButton>)
+
+  const button = screen.getByRole('button', { name: 'Touch Action' })
+  expect(button).toHaveClass('min-h-11')
+  expect(button).toHaveClass('touch-manipulation')
+})

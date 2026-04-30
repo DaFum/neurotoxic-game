@@ -2,6 +2,10 @@ import { logger } from './logger'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import type { BandState, PlayerState, Venue } from '../types/game'
+import type {
+  FinancialBreakdownItem,
+  PostGigFinancials
+} from '../types/economy'
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
@@ -19,14 +23,6 @@ export const BAR_RATE_VIP = 0.3
 export const BAR_RATE_NORMAL = 0.15
 export const AVG_SPEND_PER_PERSON_AT_BAR = 5
 export const ZEALOTRY_PROMO_THRESHOLD = 80
-
-// Standardized breakdown item used across economy reports
-export type FinancialBreakdownItem = {
-  labelKey: string
-  value: number
-  detailKey?: string
-  detailParams?: Record<string, unknown>
-}
 
 type EconomyRecord = Record<string, unknown>
 
@@ -682,11 +678,7 @@ export const calculateGigFinancials = ({
   const effectivePrice = calculateEffectiveTicketPrice(gigData, context)
   const effectiveGigData = { ...gigData, price: effectivePrice }
 
-  const report: {
-    income: { total: number; breakdown: FinancialBreakdownItem[] }
-    expenses: { total: number; breakdown: FinancialBreakdownItem[] }
-    net: number
-  } = {
+  const report: PostGigFinancials = {
     income: { total: 0, breakdown: [] },
     expenses: { total: 0, breakdown: [] },
     net: 0

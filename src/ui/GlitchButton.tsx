@@ -81,8 +81,9 @@ export const GlitchButton = ({
       aria-disabled={isIntervention}
       aria-busy={isLoading}
       className={`
-        relative ${sizeClasses[size]} bg-void-black
+        relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
         font-[Metal_Mania] font-bold uppercase tracking-widest
+        touch-manipulation text-center leading-tight
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
         ${getVariantClasses()}

@@ -135,6 +135,23 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.equal(nextState.currentGig?.sourceScene, GAME_PHASES.MENU)
   })
 
+  await t.test('drops practice sourceScene outside return allowlist', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      currentGig: {
+        id: 'practice_room',
+        name: 'Practice Room',
+        isPractice: true,
+        sourceScene: GAME_PHASES.PRE_GIG
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.currentGig?.isPractice, true)
+    assert.equal(nextState.currentGig?.sourceScene, undefined)
+  })
+
   await t.test('hydrates contraband stash with static properties', () => {
     const initialState = createInitialState()
     const loadedState = {

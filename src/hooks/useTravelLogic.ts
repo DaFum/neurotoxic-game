@@ -69,6 +69,7 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
  * @param {Object} params - Hook parameters
  * @param {Object} params.player - Player state
  * @param {Object} params.band - Band state
+ * @param {Object} params.social - Social state
  * @param {Object} params.gameMap - Game map data
  * @param {Function} params.updatePlayer - Player update function
  * @param {Function} params.updateBand - Band update function
@@ -84,6 +85,7 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 export const useTravelLogic = ({
   player,
   band,
+  social,
   gameMap,
   updatePlayer,
   updateBand,
@@ -109,6 +111,7 @@ export const useTravelLogic = ({
   // Optimization: Use refs for frequently changing state to prevent handler recreation
   const playerRef = useRef(player)
   const bandRef = useRef(band)
+  const socialRef = useRef(social)
   const gameMapRef = useRef(gameMap)
   const reputationByRegionRef = useRef(reputationByRegion)
   const venueBlacklistRef = useRef(venueBlacklist)
@@ -122,10 +125,11 @@ export const useTravelLogic = ({
   useEffect(() => {
     playerRef.current = player
     bandRef.current = band
+    socialRef.current = social
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
-  }, [player, band, gameMap, reputationByRegion, venueBlacklist])
+  }, [player, band, social, gameMap, reputationByRegion, venueBlacklist])
 
   const getLocationName = useCallback((location, venueId) => {
     return getLocationNameUtil(
@@ -197,6 +201,7 @@ export const useTravelLogic = ({
     (explicitNode = null) => {
       const player = playerRef.current
       const band = bandRef.current
+      const social = socialRef.current
       const gameMap = gameMapRef.current
 
       const target =
@@ -240,7 +245,7 @@ export const useTravelLogic = ({
         player,
         band
       )
-      const dailyCost = calculateGuaranteedDailyCost(player, band)
+      const dailyCost = calculateGuaranteedDailyCost(player, band, social)
       const totalCashImpact = totalCost + dailyCost
 
       // Affordability check
@@ -404,6 +409,7 @@ export const useTravelLogic = ({
 
       const player = playerRef.current
       const band = bandRef.current
+      const social = socialRef.current
       const gameMap = gameMapRef.current
 
       if (!node?.venue) {
@@ -524,7 +530,7 @@ export const useTravelLogic = ({
         player,
         band
       )
-      const dailyCost = calculateGuaranteedDailyCost(player, band)
+      const dailyCost = calculateGuaranteedDailyCost(player, band, social)
       const totalCashImpact = totalCost + dailyCost
 
       const resourceCheck = checkTravelResources(

@@ -133,8 +133,8 @@ export const EventModal = ({
   }, [event])
 
   const precomputedDelta =
-    outcome?._precomputedResult?.appliedDelta ??
-    outcome?._precomputedResult?.delta
+    outcome?._precomputedResult?.delta ??
+    outcome?._precomputedResult?.appliedDelta
   const memoizedEffectText = useMemo(() => {
     return precomputedDelta ? generateEffectText(precomputedDelta, t) : ''
   }, [precomputedDelta, t])
