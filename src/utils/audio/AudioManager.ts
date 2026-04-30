@@ -66,6 +66,18 @@ class AudioSystem {
     }
   }
 
+  static VALID_SFX_TYPES = new Set<AudioSfxType>([
+    'hit',
+    'miss',
+    'menu',
+    'travel',
+    'cash',
+    'crash',
+    'honk',
+    'pickup',
+    'deliver'
+  ])
+
   /**
    * Returns true when audio is actively playing through ambient OGG or Tone transport.
    * Keeps playback-state logic encapsulated for UI consumers.
@@ -332,18 +344,7 @@ class AudioSystem {
    */
   playSFX(key: AudioSfxType): void {
     if (!this.prefsLoaded) return
-    const validTypes: AudioSfxType[] = [
-      'hit',
-      'miss',
-      'menu',
-      'travel',
-      'cash',
-      'crash',
-      'honk',
-      'pickup',
-      'deliver'
-    ]
-    if (!validTypes.includes(key)) {
+    if (!AudioSystem.VALID_SFX_TYPES.has(key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }
