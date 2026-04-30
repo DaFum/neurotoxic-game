@@ -18,12 +18,7 @@ const Overworld = lazy(() => import('../scenes/Overworld.tsx'))
 const Gig = lazy(() => import('../scenes/Gig.tsx'))
 const PreGig = lazy(() => import('../scenes/PreGig.tsx'))
 const PostGig = lazy(() => import('../scenes/PostGig.tsx'))
-const TourbusScene = lazy(() =>
-  import('../scenes/TourbusScene.tsx').catch(error => {
-    console.error('[TourbusScene lazy import failed]', error)
-    throw error
-  })
-)
+const TourbusScene = lazy(() => import('../scenes/TourbusScene.tsx'))
 const RoadieRunScene = lazy(() => import('../scenes/RoadieRunScene.tsx'))
 const KabelsalatScene = lazy(() => import('../scenes/KabelsalatScene.tsx'))
 const AmpCalibrationScene = lazy(
