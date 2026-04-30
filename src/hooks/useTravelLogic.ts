@@ -100,7 +100,6 @@ export const useTravelLogic = ({
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
   const [pendingTravelNode, setPendingTravelNode] = useState(null)
-  const travelLockRef = useRef(false)
   const travelCompletedRef = useRef(false)
   const timeoutRef = useRef(null)
   const failsafeTimeoutRef = useRef(null)
@@ -346,14 +345,20 @@ export const useTravelLogic = ({
 
       audioManager
         .ensureAudioContext()
-        .then(() => {
+        .then(isReady => {
+          if (!isReady) {
+            logger.warn('useTravelLogic', 'Travel audio context unavailable')
+            return
+          }
           try {
             audioManager.playSFX('travel')
-          } catch (_e) {
-            // Ignore audio errors
+          } catch (error) {
+            logger.warn('useTravelLogic', 'Travel SFX playback failed', error)
           }
         })
-        .catch(e => console.warn('ensureAudioContext failed', e))
+        .catch(error => {
+          logger.warn('useTravelLogic', 'ensureAudioContext failed', error)
+        })
 
       // Dispatch Minigame Start
       if (onStartTravelMinigame) {

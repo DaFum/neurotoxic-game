@@ -8,6 +8,7 @@ import type {
   SocialState,
   ToastPayload,
   GameMap,
+  GamePhase,
   GameSettings,
   RawGameSettings,
   ResetStatePayload
@@ -1065,6 +1066,15 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   for (const key of ['capacity', 'difficulty', 'diff', 'reputation']) {
     const parsed = finiteOptionalNumber(value[key])
     if (parsed !== undefined) venue[key] = parsed
+  }
+  if (typeof value.isPractice === 'boolean') {
+    venue.isPractice = value.isPractice
+  }
+  if (
+    typeof value.sourceScene === 'string' &&
+    Object.values(GAME_PHASES).includes(value.sourceScene as GamePhase)
+  ) {
+    venue.sourceScene = value.sourceScene as GamePhase
   }
   return venue
 }

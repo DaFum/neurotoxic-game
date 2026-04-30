@@ -15,7 +15,8 @@ const {
   mockCalculateTravelExpenses,
   mockAudioManager,
   mockLogger,
-  mockHandleError
+  mockHandleError,
+  setEnsureAudioContextResult
 } = mockTravelLogicDependencies
 
 const { useTravelLogic } = await setupTravelLogicTest()
@@ -36,6 +37,8 @@ describe('useTravelLogic', () => {
       totalCost: 50,
       fuelLiters: 10
     }))
+    setEnsureAudioContextResult(true)
+    mockAudioManager.ensureAudioContext.mock.resetCalls()
     mockAudioManager.playSFX.mock.resetCalls()
     mockLogger.info.mock.resetCalls()
     mockLogger.warn.mock.resetCalls()
@@ -75,6 +78,30 @@ describe('useTravelLogic', () => {
     assert.deepEqual(result.current.travelTarget, targetNode)
     assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
     assert.equal(mockAudioManager.playSFX.mock.calls[0].arguments[0], 'travel')
+  })
+
+  test('handleTravel skips travel SFX and logs when audio context is unavailable', async () => {
+    setEnsureAudioContextResult(false)
+    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
+      onStartTravelMinigame: () => {}
+    })
+
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    await act(async () => {
+      result.current.handleTravel(targetNode)
+      await new Promise(resolve => setTimeout(resolve, 0))
+    })
+
+    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
+    assert.equal(mockAudioManager.playSFX.mock.calls.length, 0)
+    assert.equal(mockLogger.warn.mock.calls.length, 1)
+    assert.deepEqual(mockLogger.warn.mock.calls[0].arguments, [
+      'useTravelLogic',
+      'Travel audio context unavailable'
+    ])
   })
 
   test('handleTravel prevents travel if insufficient funds', () => {

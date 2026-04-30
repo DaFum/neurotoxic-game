@@ -66,6 +66,7 @@ import {
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
+  GamePhase,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
@@ -83,6 +84,11 @@ import {
   safeStorageNoFallback,
   usePersistence
 } from './usePersistence'
+
+const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
+])
 
 declare global {
   interface Window {
@@ -746,8 +752,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
    */
   const setPendingBandHQOpen = useCallback(
-    (isOpen: boolean) =>
-      dispatch(createSetPendingBandHQOpenAction(isOpen)),
+    (isOpen: boolean) => dispatch(createSetPendingBandHQOpenAction(isOpen)),
     []
   )
 
@@ -756,7 +761,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     if (currentState.currentGig?.isPractice) {
       addToast(tRef.current('ui:gig.practiceComplete'), 'success')
       const rawTarget = currentState.currentGig.sourceScene
-      const isValidTarget = rawTarget && Object.values(GAME_PHASES).includes(rawTarget)
+      const isValidTarget =
+        rawTarget !== undefined && PRACTICE_RETURN_SCENES.has(rawTarget)
       const targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD
       setPendingBandHQOpen(true)
       changeScene(targetScene)

@@ -27,9 +27,11 @@ const mockCalculateRepairCost = mock.fn(currentCondition => {
   )
 })
 
+let ensureAudioContextResult = true
+
 const mockAudioManager = {
   playSFX: mock.fn(),
-  ensureAudioContext: mock.fn(async () => true)
+  ensureAudioContext: mock.fn(async () => ensureAudioContextResult)
 }
 
 const mockLogger = {
@@ -78,7 +80,10 @@ export const mockTravelLogicDependencies = {
   mockCalculateTravelExpenses,
   mockAudioManager,
   mockLogger,
-  mockHandleError
+  mockHandleError,
+  setEnsureAudioContextResult: value => {
+    ensureAudioContextResult = value
+  }
 }
 
 export const setupTravelLogicTest = async () => {

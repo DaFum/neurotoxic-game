@@ -5,7 +5,10 @@ export const mockAudioManager = {
   startAmbient: mock.fn(async () => true)
 }
 
-export const createMockGameState = ({ canLoad } = {}) => ({
+export const createMockGameState = ({
+  canLoad,
+  pendingBandHQOpen = false
+} = {}) => ({
   changeScene: () => {},
   loadGame: () => Boolean(canLoad),
   addToast: () => {},
@@ -19,6 +22,7 @@ export const createMockGameState = ({ canLoad } = {}) => ({
   deleteSave: () => {},
   setlist: [],
   setSetlist: () => {},
+  pendingBandHQOpen,
   resetState: () => {}
 })
 
@@ -78,7 +82,7 @@ export const setupMainMenuAudioTest = async () => {
     }
   })
 
-  const mockUseGameSelector = mock.fn((selector) => {
+  const mockUseGameSelector = mock.fn(selector => {
     return selector(createMockGameState({ canLoad: true }))
   })
 

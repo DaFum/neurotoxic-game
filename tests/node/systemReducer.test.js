@@ -11,6 +11,7 @@ import {
   handleAddUnlock
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 test('systemReducer - LOAD_GAME', async t => {
   await t.test(
@@ -116,6 +117,23 @@ test('systemReducer - LOAD_GAME', async t => {
       )
     }
   )
+
+  await t.test('preserves practice metadata on loaded currentGig', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      currentGig: {
+        id: 'practice_room',
+        name: 'Practice Room',
+        isPractice: true,
+        sourceScene: GAME_PHASES.MENU
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.equal(nextState.currentGig?.isPractice, true)
+    assert.equal(nextState.currentGig?.sourceScene, GAME_PHASES.MENU)
+  })
 
   await t.test('hydrates contraband stash with static properties', () => {
     const initialState = createInitialState()

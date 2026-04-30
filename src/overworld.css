@@ -1282,10 +1282,25 @@
 @media (max-width: 640px) {
   .hud {
     padding: 8px;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .ow-panel {
     padding: 8px;
+    max-width: none;
+  }
+
+  .hud-left,
+  .hud-right {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .shortcuts-panel,
+  .band-panel {
+    width: 100%;
+    min-width: unset;
   }
 
   .loc-row {

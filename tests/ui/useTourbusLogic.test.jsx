@@ -245,4 +245,30 @@ describe('useTourbusLogic', () => {
 
     unmount()
   })
+
+  test('finishMinigame completes travel only once when update also reaches the target distance', () => {
+    const completeMock = mock.fn()
+    mockUseGameState.mockImplementation(() => ({
+      player: { van: { upgrades: [] } },
+      completeTravelMinigame: completeMock
+    }))
+
+    const { result, unmount } = renderHook(() => useTourbusLogic())
+    const game = result.current.gameStateRef.current
+    game.distance = TARGET_DISTANCE
+    game.damage = 12
+    game.itemsCollected = ['FUEL']
+
+    act(() => {
+      result.current.finishMinigame()
+      result.current.update(16)
+      result.current.finishMinigame()
+    })
+
+    expect(game.isGameOver).toBe(true)
+    expect(completeMock).toHaveBeenCalledTimes(1)
+    expect(completeMock).toHaveBeenCalledWith(12, ['FUEL'])
+
+    unmount()
+  })
 })
