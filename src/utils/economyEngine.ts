@@ -769,13 +769,15 @@ export const calculateGigFinancials = ({
       activeDeal.offer &&
       activeDeal.offer.perGig
     ) {
-      const perGigPayout = activeDeal.offer.perGig
-      report.income.breakdown.push({
-        labelKey: 'economy:gigIncome.brandSponsor.label',
-        value: perGigPayout,
-        detailKey: 'economy:gigIncome.brandSponsor.detail'
-      })
-      report.income.total += perGigPayout
+      const perGig = activeDeal.offer.perGig as unknown
+      if (typeof perGig === 'number' && Number.isFinite(perGig)) {
+        report.income.breakdown.push({
+          labelKey: 'economy:gigIncome.brandSponsor.label',
+          value: perGig,
+          detailKey: 'economy:gigIncome.brandSponsor.detail'
+        })
+        report.income.total += perGig
+      }
     }
   }
 

@@ -646,19 +646,29 @@ export const calculateAppliedDelta = (
         applied.band.members.push({ skill: memberDelta })
         totalSkillDelta += memberDelta
       }
-      if (members.length > 0) {
-        applied.band.skill = Math.round(totalSkillDelta / members.length)
+      const validCount = applied.band.members.length
+      if (validCount > 0) {
+        applied.band.skill = Math.round(totalSkillDelta / validCount)
       }
     }
 
     if (delta.band.relationshipChange) {
+      const isNotSelfRelationship = (rc: RelationshipChange) =>
+        rc.member1 !== rc.member2
       if (Array.isArray(delta.band.relationshipChange)) {
-        applied.band.relationshipChange =
-          delta.band.relationshipChange.filter(isRelationshipChange)
-      } else {
-        applied.band.relationshipChange = copyFilteredProperties(
-          delta.band.relationshipChange
+        applied.band.relationshipChange = delta.band.relationshipChange.filter(
+          rc =>
+            isRelationshipChange(rc) &&
+            isNotSelfRelationship(rc as RelationshipChange)
         )
+      } else {
+        applied.band.relationshipChange =
+          isRelationshipChange(delta.band.relationshipChange) &&
+          isNotSelfRelationship(
+            delta.band.relationshipChange as RelationshipChange
+          )
+            ? [delta.band.relationshipChange]
+            : []
       }
     }
   }
@@ -801,9 +811,22 @@ export const applyEventDelta = (
     }
 
     const membersDelta = delta.band.membersDelta ?? delta.band.members
+
+    const isNotSelfRelationship = (rc: RelationshipChange) =>
+      rc.member1 !== rc.member2
+
     const relationshipChange = Array.isArray(delta.band.relationshipChange)
-      ? delta.band.relationshipChange.filter(isRelationshipChange)
-      : []
+      ? delta.band.relationshipChange.filter(
+          rc =>
+            isRelationshipChange(rc) &&
+            isNotSelfRelationship(rc as RelationshipChange)
+        )
+      : isRelationshipChange(delta.band.relationshipChange) &&
+          isNotSelfRelationship(
+            delta.band.relationshipChange as RelationshipChange
+          )
+        ? [delta.band.relationshipChange]
+        : []
     const skillDelta = delta.band.skill
 
     if (
@@ -1101,7 +1124,10 @@ type SponsorshipDealLike = {
 export const hasActiveSponsorship = (
   socialState: { activeDeals?: unknown[] } | null | undefined
 ): boolean => {
-  return (socialState?.activeDeals || []).some(deal => {
+  if (!Array.isArray(socialState?.activeDeals)) {
+    return false
+  }
+  return socialState.activeDeals.some(deal => {
     if (!isPlainObject(deal)) return false
     const d: SponsorshipDealLike = deal
     return (

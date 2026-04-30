@@ -137,6 +137,7 @@ describe('useRhythmGameAudio', () => {
 
   it('stops audio on unmount cleanup', () => {
     const setIsAudioReady = vi.fn()
+    const setIsGameOver = vi.fn()
     const { unmount } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef: {
@@ -147,7 +148,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady },
+        setters: { setIsAudioReady, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -164,6 +165,7 @@ describe('useRhythmGameAudio', () => {
 
   it('starts gig audio after requesting a fresh gig state reset', async () => {
     const setIsAudioReady = vi.fn()
+    const setIsGameOver = vi.fn()
     const gameStateRef = {
       current: {
         lanes: [{}, {}, {}],
@@ -176,7 +178,7 @@ describe('useRhythmGameAudio', () => {
     renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setIsAudioReady },
+        setters: { setIsAudioReady, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),

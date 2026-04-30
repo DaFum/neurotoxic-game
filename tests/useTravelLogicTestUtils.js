@@ -41,10 +41,13 @@ const mockCalculateGuaranteedDailyCost = mock.fn(guaranteedDailyCostDefault)
 let ensureAudioContextResult = true
 
 const ensureAudioContextDefault = async () => ensureAudioContextResult
+const playSFXDefault = () => {}
+const warnAudioNotAvailableDefault = () => {}
 
 const mockAudioManager = {
-  playSFX: mock.fn(),
-  ensureAudioContext: mock.fn(ensureAudioContextDefault)
+  playSFX: mock.fn(playSFXDefault),
+  ensureAudioContext: mock.fn(ensureAudioContextDefault),
+  warnAudioNotAvailable: mock.fn(warnAudioNotAvailableDefault)
 }
 
 const mockLogger = {
@@ -105,6 +108,12 @@ export const resetTravelLogicMockState = () => {
     ensureAudioContextDefault
   )
   mockAudioManager.ensureAudioContext.mock.resetCalls()
+  mockAudioManager.playSFX.mock.mockImplementation(playSFXDefault)
+  mockAudioManager.playSFX.mock.resetCalls()
+  mockAudioManager.warnAudioNotAvailable.mock.mockImplementation(
+    warnAudioNotAvailableDefault
+  )
+  mockAudioManager.warnAudioNotAvailable.mock.resetCalls()
 }
 
 beforeEach(resetTravelLogicMockState)

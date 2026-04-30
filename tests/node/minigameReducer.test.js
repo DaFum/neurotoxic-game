@@ -114,10 +114,28 @@ describe('minigameReducer', () => {
       const nextState = handleCompleteAmpCalibration(baseState, payload)
 
       assert.strictEqual(nextState.minigame.active, false)
-      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
+      assert.strictEqual(
+        nextState.minigame.type,
+        MINIGAME_TYPES.AMP_CALIBRATION
+      )
       // Scene transition is driven by the UI overlay's CONTINUE button, so the
       // reducer must not touch currentScene here.
       assert.strictEqual(nextState.currentScene, baseState.currentScene)
+    })
+
+    it('should correctly handle the PRE_GIG_MINIGAME path without mutating scene', () => {
+      baseState.currentScene = GAME_PHASES.PRE_GIG_MINIGAME
+      baseState.minigame.type = MINIGAME_TYPES.AMP_CALIBRATION
+      baseState.minigame.active = true
+      const payload = { score: 100 }
+      const nextState = handleCompleteAmpCalibration(baseState, payload)
+
+      assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(
+        nextState.minigame.type,
+        MINIGAME_TYPES.AMP_CALIBRATION
+      )
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
     })
   })
 
@@ -135,6 +153,7 @@ describe('minigameReducer', () => {
 
   describe('handleCompleteKabelsalatMinigame', () => {
     it('should apply penalty on failure', () => {
+      baseState.minigame.type = MINIGAME_TYPES.KABELSALAT
       const payload = { results: { isPoweredOn: false } }
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
@@ -184,6 +203,7 @@ describe('minigameReducer', () => {
       // reducer must not touch currentScene here.
       assert.strictEqual(nextState.currentScene, baseState.currentScene)
       assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, baseState.minigame.type)
     })
 
     it('should not set damaged_gear if equipmentDamage is low', () => {

@@ -40,7 +40,7 @@ describe('RoadieControls touch input', () => {
   test('exposes the touch surface as an aria-labelled region', () => {
     const { surface } = setup()
 
-    expect(surface).toHaveAttribute('role', 'region')
+    expect(surface.tagName).toBe('SECTION')
     expect(surface).toHaveAccessibleName('ui:roadieRun.controls.touchAria')
   })
 
@@ -125,7 +125,7 @@ describe('RoadieControls touch input', () => {
 
     const dpad = screen.getByRole('button', { name: 'Move Up' }).parentElement
     expect(dpad).toHaveClass('hidden')
-    expect(dpad.className).not.toContain('md:hidden')
+    expect(dpad).not.toHaveClass('md:hidden')
 
     rerender(
       <RoadieControls

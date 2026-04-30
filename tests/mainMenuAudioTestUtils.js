@@ -64,26 +64,27 @@ export const setupMainMenuAudioTest = async () => {
   // We need to return a mutable object for useGameState so we can update it in tests if needed,
   // but for these tests a static return is fine, or we can use a mock function.
   // Using a mock function allows for flexibility.
-  const mockUseGameState = mock.fn(() => createMockGameState({ canLoad: true }))
+  const sharedState = createMockGameState({ canLoad: true })
+
+  const mockUseGameState = mock.fn(() => sharedState)
   const mockUseGameDispatch = mock.fn(() => {
-    const state = createMockGameState({ canLoad: true })
     // Return only the dispatch functions, filtering out actual state values
     return {
-      changeScene: state.changeScene,
-      loadGame: state.loadGame,
-      addToast: state.addToast,
-      updatePlayer: state.updatePlayer,
-      updateBand: state.updateBand,
-      updateSettings: state.updateSettings,
-      deleteSave: state.deleteSave,
-      setSetlist: state.setSetlist,
-      resetState: state.resetState,
+      changeScene: sharedState.changeScene,
+      loadGame: sharedState.loadGame,
+      addToast: sharedState.addToast,
+      updatePlayer: sharedState.updatePlayer,
+      updateBand: sharedState.updateBand,
+      updateSettings: sharedState.updateSettings,
+      deleteSave: sharedState.deleteSave,
+      setSetlist: sharedState.setSetlist,
+      resetState: sharedState.resetState,
       setPendingBandHQOpen: () => {}
     }
   })
 
   const mockUseGameSelector = mock.fn(selector => {
-    return selector(createMockGameState({ canLoad: true }))
+    return selector(sharedState)
   })
 
   mock.module('../src/context/GameState.tsx', {

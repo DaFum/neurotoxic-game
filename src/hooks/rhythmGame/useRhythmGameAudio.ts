@@ -172,18 +172,17 @@ export const useRhythmGameAudio = ({
             'error'
           )
 
-          const rawStats = currentRhythmState.stats
           currentSetLastGigStats(
             buildGigStatsSnapshot(
-              currentRhythmState.score ?? 0,
+              0,
               {
-                perfectHits: rawStats?.perfectHits ?? 0,
-                misses: rawStats?.misses ?? 0,
-                maxCombo: rawStats?.maxCombo ?? 0,
-                peakHype: rawStats?.peakHype ?? 0
+                perfectHits: 0,
+                misses: 0,
+                maxCombo: 0,
+                peakHype: 0
               },
-              currentRhythmState.toxicTimeTotal ?? 0,
-              currentRhythmState.songStats ?? []
+              0,
+              []
             )
           )
           currentEndGig()

@@ -3,6 +3,8 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 afterEach(() => {
   cleanup()
+  delete globalThis.__NEUROTOXIC_GAME_STATE_CONTEXT__
+  delete globalThis.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__
 })
 
 describe('GameStateProvider hot reload context identity', () => {

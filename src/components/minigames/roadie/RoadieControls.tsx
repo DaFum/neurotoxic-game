@@ -96,9 +96,8 @@ export const RoadieControls = memo(function RoadieControls({
 
   return (
     <>
-      <div
+      <section
         data-testid='roadie-touch-surface'
-        role='region'
         aria-label={t('ui:roadieRun.controls.touchAria')}
         className='absolute inset-0 z-20 md:hidden pointer-events-auto touch-none select-none'
         onPointerDown={handleTouchPointerDown}
