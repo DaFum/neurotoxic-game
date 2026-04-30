@@ -668,6 +668,18 @@ export const createPirateBroadcastAction = (
 })
 
 /**
+ * Creates an action to set pendingBandHQOpen
+ * @param {boolean} isOpen
+ * @returns {Object} Action object
+ */
+export const createSetPendingBandHQOpenAction = (
+  isOpen: boolean
+): Extract<GameAction, { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }> => ({
+  type: ActionTypes.SET_PENDING_BANDHQ_OPEN,
+  payload: isOpen
+})
+
+/**
  * Creates an action to donate blood to the void clinic.
  * @param {Object} payload
  * @param {number} payload.moneyGain - The money gained.

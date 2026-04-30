@@ -5,23 +5,23 @@ import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 import { SceneRouter } from '../../src/components/SceneRouter.tsx'
 
 vi.mock('../../src/scenes/MainMenu.tsx', () => ({
-  MainMenu: () => <div data-testid='main-menu-scene'>Main Menu</div>
+  MainMenu: (props) => <div data-testid='main-menu-scene' {...props}>Main Menu</div>
 }))
 
 vi.mock('../../src/scenes/Gig.tsx', () => ({
-  default: () => <div data-testid='gig-scene'>Gig</div>
+  default: (props) => <div data-testid='gig-scene' {...props}>Gig</div>
 }))
 
 vi.mock('../../src/scenes/RoadieRunScene.tsx', () => ({
-  default: () => <div data-testid='roadie-scene'>Roadie</div>
+  default: (props) => <div data-testid='roadie-scene' {...props}>Roadie</div>
 }))
 
 vi.mock('../../src/scenes/KabelsalatScene.tsx', () => ({
-  default: () => <div data-testid='kabelsalat-scene'>Kabelsalat</div>
+  default: (props) => <div data-testid='kabelsalat-scene' {...props}>Kabelsalat</div>
 }))
 
 vi.mock('../../src/scenes/AmpCalibrationScene.tsx', () => ({
-  default: () => <div data-testid='amp-scene'>Amp</div>
+  default: (props) => <div data-testid='amp-scene' {...props}>Amp</div>
 }))
 
 const renderRouter = props =>

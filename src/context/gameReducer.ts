@@ -58,7 +58,8 @@ import {
   handleAddToast,
   handleRemoveToast,
   handleAdvanceDay,
-  handleAddUnlock
+  handleAddUnlock,
+  handleSetPendingBandHQOpen
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
 
@@ -110,7 +111,8 @@ const reducerMap = {
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
   [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
-  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate
+  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
+  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
 }
 
 /**

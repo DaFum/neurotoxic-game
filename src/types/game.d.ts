@@ -351,6 +351,7 @@ export interface GameState {
   gigModifiers: GigModifiers
   minigame: MinigameState
   unlocks: string[]
+  pendingBandHQOpen: boolean
 }
 
 export type Action<
@@ -430,6 +431,7 @@ export type GameAction =
   | Action<ActionTypes['TRADE_VOID_ITEM'], TradeVoidItemPayload>
   | Action<ActionTypes['BLOOD_BANK_DONATE'], BloodBankDonatePayload>
   | Action<ActionTypes['DARK_WEB_LEAK'], DarkWebLeakPayload>
+  | Action<ActionTypes['SET_PENDING_BANDHQ_OPEN'], boolean>
 
 export interface PostResult {
   platform: string

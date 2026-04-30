@@ -18,7 +18,6 @@ import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
-import { setPendingBandHQOpen } from '../hooks/useBandHQModal'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -61,7 +60,8 @@ import {
   createMerchPressAction,
   createTradeVoidItemAction,
   createBloodBankDonateAction,
-  createAddVenueBlacklistAction
+  createAddVenueBlacklistAction,
+  createSetPendingBandHQOpenAction
 } from './actionCreators'
 import type {
   BloodBankDonatePayload,
@@ -190,6 +190,7 @@ type GameDispatchActions = {
   bloodBankDonate: (
     payload: Parameters<typeof createBloodBankDonateAction>[0]
   ) => void
+  setPendingBandHQOpen: (isOpen: boolean) => void
 }
 
 /**
@@ -744,6 +745,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Completes the current gig and transitions to the appropriate post-gig scene.
    * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
    */
+  const setPendingBandHQOpen = useCallback(
+    (isOpen: boolean) =>
+      dispatch(createSetPendingBandHQOpenAction(isOpen)),
+    []
+  )
+
   const endGig = useCallback(() => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
@@ -756,7 +763,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     } else {
       changeScene(GAME_PHASES.POST_GIG)
     }
-  }, [addToast, changeScene])
+  }, [addToast, changeScene, setPendingBandHQOpen])
 
   const dispatchValue = useMemo(
     () => ({
@@ -803,7 +810,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       pirateBroadcast,
       merchPress,
       tradeVoidItem,
-      bloodBankDonate
+      bloodBankDonate,
+      setPendingBandHQOpen
     }),
     [
       changeScene,
@@ -848,7 +856,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       pirateBroadcast,
       merchPress,
       tradeVoidItem,
-      bloodBankDonate
+      bloodBankDonate,
+      setPendingBandHQOpen
     ]
   )
 
