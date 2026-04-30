@@ -234,6 +234,22 @@ export const useTourbusLogic = () => {
     stats: statsRef.current, // Passed to Pixi (initial/ref)
     update, // Passed to Pixi
     uiState,
-    actions: { moveLeft, moveRight }
+    actions: { moveLeft, moveRight },
+    finishMinigame: useCallback(() => {
+      if (finishCalledRef.current) return
+      finishCalledRef.current = true
+
+      gameStateRef.current.isGameOver = true
+      completeTravelMinigame(
+        gameStateRef.current.damage,
+        gameStateRef.current.itemsCollected
+      )
+      statsRef.current.health = Math.max(0, 100 - gameStateRef.current.damage)
+      statsRef.current.isGameOver = true
+      setUiState(prev => ({
+        ...prev,
+        isGameOver: true
+      }))
+    }, [completeTravelMinigame])
   }
 }

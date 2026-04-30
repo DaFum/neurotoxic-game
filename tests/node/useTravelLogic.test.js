@@ -56,7 +56,7 @@ describe('useTravelLogic', () => {
     assert.equal(result.current.travelTarget, null)
   })
 
-  test('handleTravel initiates travel when valid', () => {
+  test('handleTravel initiates travel when valid', async () => {
     const { result, targetNode } = setupTravelScenario(useTravelLogic)
 
     // First click: sets pending state
@@ -65,8 +65,10 @@ describe('useTravelLogic', () => {
     })
 
     // Second click: confirms travel
-    act(() => {
+    await act(async () => {
       result.current.handleTravel(targetNode)
+      // wait for audio promise
+      await new Promise(resolve => setTimeout(resolve, 0))
     })
 
     assert.equal(result.current.isTraveling, true)

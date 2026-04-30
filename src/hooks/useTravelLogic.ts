@@ -100,6 +100,7 @@ export const useTravelLogic = ({
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
   const [pendingTravelNode, setPendingTravelNode] = useState(null)
+  const travelLockRef = useRef(false)
   const travelCompletedRef = useRef(false)
   const timeoutRef = useRef(null)
   const failsafeTimeoutRef = useRef(null)
@@ -225,6 +226,7 @@ export const useTravelLogic = ({
           }
         )
         setIsTraveling(false)
+        isTravelingRef.current = false
         return
       }
 
@@ -249,6 +251,7 @@ export const useTravelLogic = ({
           'error'
         )
         setIsTraveling(false)
+        isTravelingRef.current = false
         setTravelTarget(null)
         return
       }
@@ -276,6 +279,7 @@ export const useTravelLogic = ({
       }
 
       setIsTraveling(false)
+      isTravelingRef.current = false
       setTravelTarget(null)
 
       // Trigger travel events (shown as global modal overlay).
@@ -326,9 +330,12 @@ export const useTravelLogic = ({
    */
   const startTravelSequence = useCallback(
     node => {
+      if (isTravelingRef.current) return
+      isTravelingRef.current = true
+      setIsTraveling(true)
+
       travelCompletedRef.current = false
       setTravelTarget(node)
-      // setIsTraveling(true) // Disable local animation state
       setPendingTravelNode(null)
       pendingTravelNodeRef.current = null
 
@@ -337,11 +344,16 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }
 
-      try {
-        audioManager.playSFX('travel')
-      } catch (_e) {
-        // Ignore audio errors
-      }
+      audioManager
+        .ensureAudioContext()
+        .then(() => {
+          try {
+            audioManager.playSFX('travel')
+          } catch (_e) {
+            // Ignore audio errors
+          }
+        })
+        .catch(e => console.warn('ensureAudioContext failed', e))
 
       // Dispatch Minigame Start
       if (onStartTravelMinigame) {
