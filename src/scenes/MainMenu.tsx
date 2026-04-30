@@ -152,7 +152,7 @@ export const MainMenu = () => {
             <GlitchButton onClick={handleCredits}>
               {t('ui:credits')}
             </GlitchButton>
-            <GlitchButton onClick={handleSettings}>
+            <GlitchButton onClick={handleSettings} disabled={isStarting || isLoadingGame}>
               {t('ui:mainMenu.settings')}
             </GlitchButton>
           </div>
