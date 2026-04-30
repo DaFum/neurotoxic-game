@@ -115,6 +115,9 @@ describe('minigameReducer', () => {
 
       assert.strictEqual(nextState.minigame.active, false)
       assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
+      // Scene transition is driven by the UI overlay's CONTINUE button, so the
+      // reducer must not touch currentScene here.
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
     })
   })
 
@@ -141,6 +144,7 @@ describe('minigameReducer', () => {
       // minigame.type is preserved so SceneRouter keeps the scene mounted while
       // the completion overlay is visible; only `active` is cleared.
       assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
     })
 
     it('should apply reward on success', () => {
