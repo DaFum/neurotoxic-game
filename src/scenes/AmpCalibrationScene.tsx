@@ -13,6 +13,7 @@ export const AmpCalibrationScene = () => {
   const {
     dialValue,
     setDialValue,
+    targetValue,
     timeLeft,
     score,
     isGameOver,
@@ -60,7 +61,7 @@ export const AmpCalibrationScene = () => {
       renderCompletionStats={renderCompletionStats}
     >
       <AmpHUD timeLeft={timeLeft} score={score} />
-      <AmpControls dialValue={dialValue} setDialValue={setDialValue} />
+      <AmpControls dialValue={dialValue} targetValue={targetValue} setDialValue={setDialValue} />
     </MinigameSceneFrame>
   )
 }
