@@ -8,6 +8,7 @@ import type {
 } from '../types/game'
 import type { SocialPostOption } from '../utils/socialEngine'
 import type { BrandDeal } from '../data/brandDeals'
+import type { PostGigFinancials } from '../types/economy'
 import { useCallback, useRef, useState } from 'react'
 import { GAME_PHASES } from '../context/gameConstants'
 import { secureRandom } from '../utils/crypto'
@@ -55,7 +56,7 @@ export interface UsePostGigHandlersProps {
   lastGigStats: GigStats | null
   currentGig: Venue | null
   perfScore: number
-  financials: Record<string, number>
+  financials: PostGigFinancials | null
   activeStoryFlags: string[]
   setlist: RhythmSetlistEntry[]
   updatePlayer: (updates: UpdatePlayerPayload) => void

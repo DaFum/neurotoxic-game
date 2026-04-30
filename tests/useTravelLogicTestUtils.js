@@ -1,4 +1,4 @@
-import { mock } from 'node:test'
+import { beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
 
@@ -27,9 +27,24 @@ const mockCalculateRepairCost = mock.fn(currentCondition => {
   )
 })
 
+const guaranteedDailyCostDefault = (player, band, social = 0) => {
+  const socialLevel = typeof social === 'number' ? social : 0
+  const bandSize = Array.isArray(band?.members) ? band.members.length : 3
+  const fameLevel = player?.fameLevel || 0
+  return (
+    62 + bandSize * 8 + Math.floor(Math.pow(fameLevel, 1.4) * 15) + socialLevel
+  )
+}
+
+const mockCalculateGuaranteedDailyCost = mock.fn(guaranteedDailyCostDefault)
+
+let ensureAudioContextResult = true
+
+const ensureAudioContextDefault = async () => ensureAudioContextResult
+
 const mockAudioManager = {
   playSFX: mock.fn(),
-  ensureAudioContext: mock.fn(async () => true)
+  ensureAudioContext: mock.fn(ensureAudioContextDefault)
 }
 
 const mockLogger = {
@@ -60,6 +75,12 @@ mock.module('../src/utils/audio/AudioManager', {
   }
 })
 
+mock.module('../src/utils/simulationUtils', {
+  namedExports: {
+    calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
+  }
+})
+
 mock.module('../src/utils/logger', {
   namedExports: {
     logger: mockLogger,
@@ -74,11 +95,29 @@ mock.module('../src/utils/errorHandler', {
   }
 })
 
+export const resetTravelLogicMockState = () => {
+  ensureAudioContextResult = true
+  mockCalculateGuaranteedDailyCost.mock.mockImplementation(
+    guaranteedDailyCostDefault
+  )
+  mockCalculateGuaranteedDailyCost.mock.resetCalls()
+  mockAudioManager.ensureAudioContext.mock.mockImplementation(
+    ensureAudioContextDefault
+  )
+  mockAudioManager.ensureAudioContext.mock.resetCalls()
+}
+
+beforeEach(resetTravelLogicMockState)
+
 export const mockTravelLogicDependencies = {
   mockCalculateTravelExpenses,
   mockAudioManager,
+  mockCalculateGuaranteedDailyCost,
   mockLogger,
-  mockHandleError
+  mockHandleError,
+  setEnsureAudioContextResult: value => {
+    ensureAudioContextResult = value
+  }
 }
 
 export const setupTravelLogicTest = async () => {

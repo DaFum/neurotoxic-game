@@ -17,7 +17,7 @@ import { Tooltip } from './Tooltip'
  * @param {Function} props.onClose - Callback to close the modal.
  * @param {string} [props.title] - Optional title.
  * @param {React.ReactNode} props.children - Content.
- * @param {string} [props.contentClassName] - Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto).
+ * @param {string} [props.contentClassName] - Additional CSS classes for the inner content wrapper (defaults to flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden).
  * @param {string} [props.className] - Additional CSS classes for the dialog wrapper (defaults to max-w-md).
  */
 type ModalProps = {
@@ -34,7 +34,7 @@ export const Modal = ({
   onClose,
   title,
   children,
-  contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[90vh] overflow-y-auto',
+  contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden',
   className = 'max-w-md'
 }: ModalProps) => {
   const dialogRef = useRef<HTMLDivElement | null>(null)
@@ -79,7 +79,7 @@ export const Modal = ({
     >
       <div
         ref={dialogRef}
-        className={`relative w-full border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group ${className}`}
+        className={`relative w-full max-h-[calc(100svh-1rem)] border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group ${className}`}
         role='dialog'
         aria-modal='true'
         tabIndex={-1}

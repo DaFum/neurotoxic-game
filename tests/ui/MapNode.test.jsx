@@ -1,6 +1,6 @@
 import { act } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi, beforeEach } from 'vitest'
-import { render, cleanup, screen } from '@testing-library/react'
+import { render, cleanup, screen, fireEvent } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 afterEach(cleanup)
@@ -302,5 +302,55 @@ describe('MapNode', () => {
       await user.keyboard(' ')
     })
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
+  })
+
+  test('clears touch hover state on pointer release', () => {
+    render(
+      <MapNode
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
+
+    const button = screen.getByRole('button')
+    fireEvent.pointerDown(button, { pointerType: 'touch' })
+    expect(mockSetHoveredNode).toHaveBeenCalledWith(mockNode)
+
+    fireEvent.pointerUp(button, { pointerType: 'touch' })
+    expect(mockSetHoveredNode).toHaveBeenLastCalledWith(null)
+  })
+
+  test('clears touch hover state when pointer leaves the node', () => {
+    render(
+      <MapNode
+        node={mockNode}
+        isCurrent={false}
+        isTraveling={false}
+        visibility='visible'
+        isReachable={true}
+        isPendingConfirm={false}
+        handleTravel={mockHandleTravel}
+        setHoveredNode={mockSetHoveredNode}
+        iconUrl={iconUrl}
+        vanUrl={vanUrl}
+        ticketPrice={10}
+      />
+    )
+
+    const button = screen.getByRole('button')
+    fireEvent.pointerDown(button, { pointerType: 'touch' })
+    expect(mockSetHoveredNode).toHaveBeenCalledWith(mockNode)
+
+    fireEvent.pointerLeave(button, { pointerType: 'touch' })
+    expect(mockSetHoveredNode).toHaveBeenLastCalledWith(null)
   })
 })

@@ -8,6 +8,7 @@ import type {
   SocialState,
   ToastPayload,
   GameMap,
+  GamePhase,
   GameSettings,
   RawGameSettings,
   ResetStatePayload
@@ -50,6 +51,11 @@ export const ALLOWED_SCENES = new Set([
   GAME_PHASES.PRE_GIG_MINIGAME,
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.CLINIC
+])
+
+const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
 ])
 
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
@@ -1065,6 +1071,15 @@ const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   for (const key of ['capacity', 'difficulty', 'diff', 'reputation']) {
     const parsed = finiteOptionalNumber(value[key])
     if (parsed !== undefined) venue[key] = parsed
+  }
+  if (typeof value.isPractice === 'boolean') {
+    venue.isPractice = value.isPractice
+  }
+  if (
+    typeof value.sourceScene === 'string' &&
+    PRACTICE_RETURN_SCENES.has(value.sourceScene as GamePhase)
+  ) {
+    venue.sourceScene = value.sourceScene as GamePhase
   }
   return venue
 }

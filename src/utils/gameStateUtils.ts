@@ -1,7 +1,7 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
-import type { GameState, SocialState } from '../types/game'
+import type { BandMember, GameState } from '../types/game'
 
 /**
  * Clamps a value to be at least 0.
@@ -297,9 +297,9 @@ type EventDelta = {
     fame?: number
     score?: number
     day?: number
-    location?: unknown
-    currentNodeId?: unknown
-    stats?: Record<string, string | number | boolean | unknown>
+    location?: string
+    currentNodeId?: string
+    stats?: Record<string, string | number | boolean>
     van?: {
       fuel?: number
       condition?: number
@@ -308,10 +308,10 @@ type EventDelta = {
   }
   band?: FilteredRecord & {
     harmony?: number
-    inventory?: Record<string, boolean | number | unknown>
-    members?: MemberDelta | MemberDelta[]
-    membersDelta?: MemberDelta | MemberDelta[]
-    relationshipChange?: RelationshipChange[]
+    inventory?: Record<string, unknown>
+    members?: unknown
+    membersDelta?: unknown
+    relationshipChange?: unknown
     luck?: number
     skill?: number
     stashRemove?: unknown[]
@@ -322,9 +322,9 @@ type EventDelta = {
     loyalty?: number
   }
   flags?: FilteredRecord & {
-    addStoryFlag?: string
+    addStoryFlag?: unknown
     queueEvent?: unknown
-    addCooldown?: string
+    addCooldown?: unknown
   }
 }
 
@@ -340,6 +340,30 @@ type MutableGameState = GameState & {
   activeStoryFlags: string[]
   pendingEvents: unknown[]
   eventCooldowns: string[]
+}
+
+type DeltaPreviewState = {
+  player?: Record<string, unknown> & {
+    money?: number
+    time?: number
+    fame?: number
+    score?: number
+    day?: number
+    stats?: Record<string, string | number | boolean | unknown>
+    van?: Record<string, unknown>
+  }
+  band?: Record<string, unknown> & {
+    harmony?: number
+    members?: Array<Partial<BandMember> | null | undefined>
+    inventory?: Record<string, unknown>
+    luck?: number
+    skill?: number
+  }
+  social?: Record<string, unknown> & {
+    controversyLevel?: number
+    viral?: number
+    loyalty?: number
+  }
 }
 
 type AppliedDelta = {
@@ -383,8 +407,20 @@ const copyFilteredProperties = (source: unknown): FilteredRecord => {
   return destination
 }
 
+const asMemberDelta = (value: unknown): MemberDelta | null =>
+  isPlainObject(value) ? value : null
+
+const isRelationshipChange = (value: unknown): value is RelationshipChange => {
+  if (!isPlainObject(value)) return false
+  return (
+    typeof value.member1 === 'string' &&
+    typeof value.member2 === 'string' &&
+    typeof value.change === 'number'
+  )
+}
+
 export const calculateAppliedDelta = (
-  state: GameState,
+  state: DeltaPreviewState,
   delta: EventDelta
 ): AppliedDelta => {
   const applied: AppliedDelta = { player: {}, band: {}, social: {} }
@@ -525,7 +561,10 @@ export const calculateAppliedDelta = (
         ? delta.band.membersDelta
         : delta.band.members
 
-    if (membersDelta) {
+    if (
+      membersDelta &&
+      (Array.isArray(membersDelta) || isPlainObject(membersDelta))
+    ) {
       const isArrayDelta = Array.isArray(membersDelta)
       const members = Array.isArray(state.band?.members)
         ? state.band.members
@@ -535,15 +574,15 @@ export const calculateAppliedDelta = (
 
       for (let i = 0; i < members.length; i++) {
         const member = members[i]
-        const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
-        const mDelta =
-          rawMemberDelta && typeof rawMemberDelta === 'object'
-            ? copyFilteredProperties(rawMemberDelta)
-            : Object.create(null)
         if (!member) {
           computedMembersDelta.push(Object.create(null))
           continue
         }
+        const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
+        const memberDelta = asMemberDelta(rawMemberDelta)
+        const mDelta = memberDelta
+          ? copyFilteredProperties(memberDelta)
+          : Object.create(null)
 
         const moodChange =
           typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
@@ -593,9 +632,11 @@ export const calculateAppliedDelta = (
       let totalSkillDelta = 0
       applied.band.members = []
       for (let i = 0; i < members.length; i++) {
+        const member = members[i]
+        if (!member) continue
         const currentSkill =
-          members[i].baseStats && typeof members[i].baseStats.skill === 'number'
-            ? members[i].baseStats.skill
+          member.baseStats && typeof member.baseStats.skill === 'number'
+            ? member.baseStats.skill
             : 5
         const nextSkill = Math.max(
           1,
@@ -612,7 +653,8 @@ export const calculateAppliedDelta = (
 
     if (delta.band.relationshipChange) {
       if (Array.isArray(delta.band.relationshipChange)) {
-        applied.band.relationshipChange = [...delta.band.relationshipChange]
+        applied.band.relationshipChange =
+          delta.band.relationshipChange.filter(isRelationshipChange)
       } else {
         applied.band.relationshipChange = copyFilteredProperties(
           delta.band.relationshipChange
@@ -710,14 +752,19 @@ export const applyEventDelta = (
         if (!key) continue
         if (isForbiddenKey(key)) continue
 
-        if (typeof delta.player.stats[key] === 'number') {
-          const boundedStat = clampNonNegative(nextPlayer.stats[key])
-          nextPlayer.stats[key] = boundedStat + delta.player.stats[key]
+        const statDelta = delta.player.stats[key]
+        if (typeof statDelta === 'number') {
+          const currentStat =
+            typeof nextPlayer.stats[key] === 'number'
+              ? nextPlayer.stats[key]
+              : 0
+          const boundedStat = clampNonNegative(currentStat)
+          nextPlayer.stats[key] = boundedStat + statDelta
         } else if (
-          typeof delta.player.stats[key] === 'string' ||
-          typeof delta.player.stats[key] === 'boolean'
+          typeof statDelta === 'string' ||
+          typeof statDelta === 'boolean'
         ) {
-          nextPlayer.stats[key] = delta.player.stats[key]
+          nextPlayer.stats[key] = statDelta
         }
       }
     }
@@ -754,23 +801,34 @@ export const applyEventDelta = (
     }
 
     const membersDelta = delta.band.membersDelta ?? delta.band.members
-    const relationshipChange = delta.band.relationshipChange
+    const relationshipChange = Array.isArray(delta.band.relationshipChange)
+      ? delta.band.relationshipChange.filter(isRelationshipChange)
+      : []
     const skillDelta = delta.band.skill
 
-    if (membersDelta || relationshipChange || typeof skillDelta === 'number') {
+    if (
+      membersDelta ||
+      relationshipChange.length > 0 ||
+      typeof skillDelta === 'number'
+    ) {
       const isArrayDelta = Array.isArray(membersDelta)
       const memberCount = nextBand.members.length
-      let updatedMembers = null
+      let updatedMembers: BandMember[] | null = null
       let bandChanged = false
 
       for (let i = 0; i < memberCount; i++) {
         const member = nextBand.members[i]
+        if (!member) continue
         let nextMember = member
         let memberHasChanges = false
 
         // 1. Mood & Stamina
-        if (membersDelta) {
-          const mDelta = isArrayDelta ? membersDelta[i] || {} : membersDelta
+        if (
+          membersDelta &&
+          (Array.isArray(membersDelta) || isPlainObject(membersDelta))
+        ) {
+          const rawMemberDelta = isArrayDelta ? membersDelta[i] : membersDelta
+          const mDelta = asMemberDelta(rawMemberDelta) ?? Object.create(null)
           const moodChange =
             typeof mDelta.moodChange === 'number' ? mDelta.moodChange : 0
           const staminaChange =
@@ -791,18 +849,25 @@ export const applyEventDelta = (
         }
 
         // 2. Relationships
-        if (relationshipChange) {
-          let newRelationships = null
+        if (relationshipChange.length > 0) {
+          let newRelationships: Record<string, number> | null = null
           const hasGrudgeHolder = hasTrait(member, 'grudge_holder')
           const hasPeacemaker = hasTrait(member, 'peacemaker')
+          const memberName =
+            typeof member.name === 'string'
+              ? member.name
+              : typeof member.id === 'string'
+                ? member.id
+                : ''
 
           for (let j = 0; j < relationshipChange.length; j++) {
             const change = relationshipChange[j]
+            if (!change || !memberName) continue
             const relSource = newRelationships || nextMember.relationships || {}
 
             const result = calculateMemberRelationshipChange(
               change,
-              member.name,
+              memberName,
               hasGrudgeHolder,
               hasPeacemaker,
               relSource
@@ -852,7 +917,7 @@ export const applyEventDelta = (
           if (newSkill !== currentSkill) {
             if (nextMember === member) nextMember = { ...member }
             nextMember.baseStats = {
-              ...nextMember.baseStats,
+              ...(nextMember.baseStats ?? {}),
               skill: newSkill
             }
             memberHasChanges = true
@@ -888,10 +953,14 @@ export const applyEventDelta = (
         if (!item) continue
         if (isForbiddenKey(item)) continue
         const val = delta.band.inventory[item]
-        nextBand.inventory[item] = applyInventoryItemDelta(
-          nextBand.inventory[item],
-          val
-        )
+        if (typeof val !== 'number' && typeof val !== 'boolean') continue
+        const currentInventoryValue = nextBand.inventory[item]
+        const currentValue =
+          typeof currentInventoryValue === 'number' ||
+          typeof currentInventoryValue === 'boolean'
+            ? currentInventoryValue
+            : undefined
+        nextBand.inventory[item] = applyInventoryItemDelta(currentValue, val)
       }
     }
 
@@ -930,14 +999,21 @@ export const applyEventDelta = (
           nextSocial[key] = newValue
         }
       } else if (key === 'influencers') {
-        if (
-          typeof value === 'object' &&
-          value !== null &&
-          !Array.isArray(value)
-        ) {
-          const safeInfluencersUpdate = copyFilteredProperties(value)
-          nextSocial[key] = {
-            ...(nextSocial[key] || {}),
+        if (isPlainObject(value)) {
+          const safeInfluencersUpdate: Record<
+            string,
+            Record<string, unknown>
+          > = Object.create(null)
+          for (const influencerId of Object.keys(value)) {
+            if (isForbiddenKey(influencerId)) continue
+            const influencerValue = value[influencerId]
+            if (isPlainObject(influencerValue)) {
+              safeInfluencersUpdate[influencerId] =
+                copyFilteredProperties(influencerValue)
+            }
+          }
+          nextSocial.influencers = {
+            ...nextSocial.influencers,
             ...safeInfluencersUpdate
           }
         }
@@ -966,7 +1042,7 @@ export const applyEventDelta = (
   }
 
   if (delta.flags) {
-    if (delta.flags.addStoryFlag) {
+    if (typeof delta.flags.addStoryFlag === 'string') {
       if (!nextState.activeStoryFlags.includes(delta.flags.addStoryFlag)) {
         nextState.activeStoryFlags = [
           ...nextState.activeStoryFlags,
@@ -974,13 +1050,13 @@ export const applyEventDelta = (
         ]
       }
     }
-    if (delta.flags.queueEvent) {
+    if (typeof delta.flags.queueEvent === 'string') {
       nextState.pendingEvents = [
         ...nextState.pendingEvents,
         delta.flags.queueEvent
       ]
     }
-    if (delta.flags.addCooldown) {
+    if (typeof delta.flags.addCooldown === 'string') {
       if (!nextState.eventCooldowns.includes(delta.flags.addCooldown)) {
         nextState.eventCooldowns = [
           ...nextState.eventCooldowns,
@@ -1023,13 +1099,16 @@ type SponsorshipDealLike = {
 }
 
 export const hasActiveSponsorship = (
-  socialState: Pick<SocialState, 'activeDeals'> | null | undefined
+  socialState: { activeDeals?: unknown[] } | null | undefined
 ): boolean => {
-  return (socialState?.activeDeals || []).some(
-    (d: SponsorshipDealLike) =>
+  return (socialState?.activeDeals || []).some(deal => {
+    if (!isPlainObject(deal)) return false
+    const d: SponsorshipDealLike = deal
+    return (
       d.type === 'SPONSORSHIP' &&
       (typeof d.remainingGigs === 'number' ? d.remainingGigs : 1) > 0
-  )
+    )
+  })
 }
 
 /**

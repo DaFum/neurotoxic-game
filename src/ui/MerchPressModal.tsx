@@ -184,11 +184,11 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
             </div>
 
             {/* Actions */}
-            <div className='mt-8 flex justify-end gap-4'>
+            <div className='mt-8 flex flex-col sm:flex-row justify-end gap-4'>
               <GlitchButton
                 variant='primary'
                 onClick={onClose}
-                className='uppercase'
+                className='w-full sm:w-auto uppercase'
               >
                 [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
               </GlitchButton>
@@ -200,7 +200,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                     disabled={true}
                     aria-disabled='true'
                     tabIndex={-1}
-                    className='uppercase'
+                    className='w-full sm:w-auto uppercase'
                   >
                     [{' '}
                     {t('ui:merch_press.confirm', {
@@ -214,7 +214,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                   variant='warning'
                   onClick={onPress}
                   disabled={false}
-                  className='uppercase'
+                  className='w-full sm:w-auto uppercase'
                 >
                   [{' '}
                   {t('ui:merch_press.confirm', { defaultValue: 'START PRESS' })}{' '}

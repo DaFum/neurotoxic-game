@@ -305,7 +305,7 @@ export const OverworldHUD = React.memo(
           </div>
           <div className='hud-btns pointer-events-auto'>
             <GlitchButton
-              className='!w-[30px] !h-[30px] !p-0'
+              className='!w-11 !h-11 sm:!w-[30px] sm:!h-[30px] !p-0'
               variant={showSC ? 'warning' : 'primary'}
               size='sm'
               onClick={() => setShowSC(s => !s)}

@@ -14,4 +14,5 @@ Applies to `src/hooks/minigames/**`.
 ## Gotchas
 
 - `COMPLETE_TRAVEL_MINIGAME` must not change scene directly.
+- Tourbus completion payload damage is raw minigame damage; van condition loss is derived later at 50% scaling by `calculateTravelMinigameResult()`.
 - StrictMode replay can rerun effects; guard one-shot completion handlers.

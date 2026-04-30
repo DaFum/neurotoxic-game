@@ -2,6 +2,10 @@ import { logger } from './logger'
 import { bandHasTrait } from './traitUtils'
 import { calculateZealotryEffects } from './socialEngine'
 import type { BandState, PlayerState, Venue } from '../types/game'
+import type {
+  FinancialBreakdownItem,
+  PostGigFinancials
+} from '../types/economy'
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
@@ -19,14 +23,6 @@ export const BAR_RATE_VIP = 0.3
 export const BAR_RATE_NORMAL = 0.15
 export const AVG_SPEND_PER_PERSON_AT_BAR = 5
 export const ZEALOTRY_PROMO_THRESHOLD = 80
-
-// Standardized breakdown item used across economy reports
-export type FinancialBreakdownItem = {
-  labelKey: string
-  value: number
-  detailKey?: string
-  detailParams?: Record<string, unknown>
-}
 
 type EconomyRecord = Record<string, unknown>
 
@@ -682,11 +678,7 @@ export const calculateGigFinancials = ({
   const effectivePrice = calculateEffectiveTicketPrice(gigData, context)
   const effectiveGigData = { ...gigData, price: effectivePrice }
 
-  const report: {
-    income: { total: number; breakdown: FinancialBreakdownItem[] }
-    expenses: { total: number; breakdown: FinancialBreakdownItem[] }
-    net: number
-  } = {
+  const report: PostGigFinancials = {
     income: { total: 0, breakdown: [] },
     expenses: { total: 0, breakdown: [] },
     net: 0
@@ -771,6 +763,7 @@ export const calculateGigFinancials = ({
   const activeDeals = ctxSocial.activeDeals ?? []
   for (let i = 0; i < activeDeals.length; i++) {
     const activeDeal = activeDeals[i]
+    if (!activeDeal) continue
     if (
       activeDeal.type === 'SPONSORSHIP' &&
       activeDeal.offer &&
@@ -806,9 +799,22 @@ export const calculateGigFinancials = ({
     report.expenses.total += managementCut
   }
 
-  report.net = Math.floor(
-    (report.income.total - report.expenses.total) * GLOBAL_PAYOUT_NERF
-  )
+  const grossNet = report.income.total - report.expenses.total
+  if (grossNet > 0 && GLOBAL_PAYOUT_NERF < 1) {
+    const adjustedNet = Math.floor(grossNet * GLOBAL_PAYOUT_NERF)
+    const payoutDampener = grossNet - adjustedNet
+    if (payoutDampener > 0) {
+      report.expenses.breakdown.push({
+        labelKey: 'economy:gigExpenses.payoutDampener.label',
+        value: payoutDampener,
+        detailKey: 'economy:gigExpenses.payoutDampener.detail',
+        detailParams: { rate: Math.round((1 - GLOBAL_PAYOUT_NERF) * 100) }
+      })
+      report.expenses.total += payoutDampener
+    }
+  }
+
+  report.net = report.income.total - report.expenses.total
 
   // 8. Hard gig net cap — prevents single large-venue outlier from breaking economy
   if (report.net > MAX_GIG_NET) {
@@ -819,7 +825,7 @@ export const calculateGigFinancials = ({
       detailKey: 'economy:gigExpenses.overageFee.detail'
     })
     report.expenses.total += overageFee
-    report.net = MAX_GIG_NET
+    report.net = report.income.total - report.expenses.total
   }
 
   logger.info('Economy', 'Gig Report Generated', {

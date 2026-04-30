@@ -5,23 +5,43 @@ import { GAME_PHASES, MINIGAME_TYPES } from '../../src/context/gameConstants'
 import { SceneRouter } from '../../src/components/SceneRouter.tsx'
 
 vi.mock('../../src/scenes/MainMenu.tsx', () => ({
-  MainMenu: (props) => <div data-testid='main-menu-scene' {...props}>Main Menu</div>
+  MainMenu: props => (
+    <div data-testid='main-menu-scene' {...props}>
+      Main Menu
+    </div>
+  )
 }))
 
 vi.mock('../../src/scenes/Gig.tsx', () => ({
-  default: (props) => <div data-testid='gig-scene' {...props}>Gig</div>
+  default: props => (
+    <div data-testid='gig-scene' {...props}>
+      Gig
+    </div>
+  )
 }))
 
 vi.mock('../../src/scenes/RoadieRunScene.tsx', () => ({
-  default: (props) => <div data-testid='roadie-scene' {...props}>Roadie</div>
+  default: props => (
+    <div data-testid='roadie-scene' {...props}>
+      Roadie
+    </div>
+  )
 }))
 
 vi.mock('../../src/scenes/KabelsalatScene.tsx', () => ({
-  default: (props) => <div data-testid='kabelsalat-scene' {...props}>Kabelsalat</div>
+  default: props => (
+    <div data-testid='kabelsalat-scene' {...props}>
+      Kabelsalat
+    </div>
+  )
 }))
 
 vi.mock('../../src/scenes/AmpCalibrationScene.tsx', () => ({
-  default: (props) => <div data-testid='amp-scene' {...props}>Amp</div>
+  default: props => (
+    <div data-testid='amp-scene' {...props}>
+      Amp
+    </div>
+  )
 }))
 
 const renderRouter = props =>
@@ -38,10 +58,21 @@ describe('SceneRouter', () => {
     // minigame scene mounted (Roadie is the default) instead of swapping to Gig
     // mid-overlay; the actual transition to GIG is driven by the overlay's
     // CONTINUE button via changeScene(GIG).
-    renderRouter({
+    const { rerender } = renderRouter({
       currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
-      minigameType: null
+      minigameType: MINIGAME_TYPES.ROADIE
     })
+
+    expect(await screen.findByTestId('roadie-scene')).toBeInTheDocument()
+
+    rerender(
+      <Suspense fallback={<div data-testid='loading-scene'>Loading</div>}>
+        <SceneRouter
+          currentScene={GAME_PHASES.PRE_GIG_MINIGAME}
+          minigameType={null}
+        />
+      </Suspense>
+    )
 
     expect(await screen.findByTestId('roadie-scene')).toBeInTheDocument()
     expect(screen.queryByTestId('gig-scene')).not.toBeInTheDocument()

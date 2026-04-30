@@ -5,6 +5,8 @@ import { calculateGigFinancials } from '../utils/economyEngine'
 import { generatePostOptions } from '../utils/socialEngine'
 import { logger } from '../utils/logger'
 import { usePostGigHandlers } from './usePostGigHandlers'
+import { BALANCE_CONSTANTS } from '../utils/gameStateUtils'
+import { applyPostGigPerformancePenalty } from '../utils/postGigUtils'
 
 export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
 
@@ -118,7 +120,12 @@ export const usePostGigLogic = () => {
         social
       }
     })
-    return result
+    return applyPostGigPerformancePenalty({
+      financials: result,
+      misses: lastGigStats.misses ?? 0,
+      missTolerance: BALANCE_CONSTANTS.MISS_TOLERANCE,
+      missMoneyPenalty: BALANCE_CONSTANTS.MISS_MONEY_PENALTY
+    })
   }, [
     currentGig,
     lastGigStats,

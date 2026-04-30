@@ -66,6 +66,7 @@ import {
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
+  GamePhase,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
@@ -83,6 +84,11 @@ import {
   safeStorageNoFallback,
   usePersistence
 } from './usePersistence'
+
+const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
+])
 
 declare global {
   interface Window {
@@ -203,8 +209,33 @@ export type GameStateWithActions = GameState &
     hasUpgrade: (upgradeId: string) => boolean
   }
 
-const GameStateContext = createContext<GameState | null>(null)
-const GameDispatchContext = createContext<GameDispatchActions | null>(null)
+type HotGameStateContextStore = typeof globalThis & {
+  __NEUROTOXIC_GAME_STATE_CONTEXT__?: Context<GameState | null>
+  __NEUROTOXIC_GAME_DISPATCH_CONTEXT__?: Context<GameDispatchActions | null>
+}
+
+const getStableGameStateContext = (): Context<GameState | null> => {
+  const store = globalThis as HotGameStateContextStore
+  if (!store.__NEUROTOXIC_GAME_STATE_CONTEXT__) {
+    store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = createContext<GameState | null>(
+      null
+    )
+  }
+  return store.__NEUROTOXIC_GAME_STATE_CONTEXT__
+}
+
+const getStableGameDispatchContext =
+  (): Context<GameDispatchActions | null> => {
+    const store = globalThis as HotGameStateContextStore
+    if (!store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__) {
+      store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__ =
+        createContext<GameDispatchActions | null>(null)
+    }
+    return store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__
+  }
+
+const GameStateContext = getStableGameStateContext()
+const GameDispatchContext = getStableGameDispatchContext()
 
 function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   const value = use(context)
@@ -746,8 +777,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
    */
   const setPendingBandHQOpen = useCallback(
-    (isOpen: boolean) =>
-      dispatch(createSetPendingBandHQOpenAction(isOpen)),
+    (isOpen: boolean) => dispatch(createSetPendingBandHQOpenAction(isOpen)),
     []
   )
 
@@ -756,7 +786,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     if (currentState.currentGig?.isPractice) {
       addToast(tRef.current('ui:gig.practiceComplete'), 'success')
       const rawTarget = currentState.currentGig.sourceScene
-      const isValidTarget = rawTarget && Object.values(GAME_PHASES).includes(rawTarget)
+      const isValidTarget =
+        rawTarget !== undefined && PRACTICE_RETURN_SCENES.has(rawTarget)
       const targetScene = isValidTarget ? rawTarget : GAME_PHASES.OVERWORLD
       setPendingBandHQOpen(true)
       changeScene(targetScene)

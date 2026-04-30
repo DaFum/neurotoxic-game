@@ -481,6 +481,48 @@ describe('usePostGigLogic', () => {
       )
     })
 
+    it('includes excess miss money penalty in displayed financials before continue', async () => {
+      GameState.useGameState.mockReturnValue(
+        getBaseState({
+          lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
+        })
+      )
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(result.current.financials.net).toBe(140)
+      })
+      expect(result.current.financials.expenses.total).toBe(360)
+      expect(result.current.financials.expenses.breakdown).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            labelKey: 'economy:gigExpenses.performancePenalty.label',
+            value: 60
+          })
+        ])
+      )
+    })
+
+    it('does not subtract a hidden miss money penalty during continue', async () => {
+      GameState.useGameState.mockReturnValue(
+        getBaseState({
+          lastGigStats: { score: 25000, accuracy: 60, events: [], misses: 13 }
+        })
+      )
+
+      const { result } = renderHook(() => usePostGigLogic())
+      await waitFor(() => expect(result.current.financials).toBeTruthy())
+
+      act(() => {
+        result.current.handleContinue()
+      })
+
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({ money: 640 })
+      )
+    })
+
     it('handles more specific edge cases (target member, missing data, ego management, stamina clamps)', async () => {
       let { result } = renderHook(() => usePostGigLogic())
       await waitFor(() => expect(result.current.postOptions).toHaveLength(1))
