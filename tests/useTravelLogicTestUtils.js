@@ -28,7 +28,8 @@ const mockCalculateRepairCost = mock.fn(currentCondition => {
 })
 
 const mockAudioManager = {
-  playSFX: mock.fn()
+  playSFX: mock.fn(),
+  ensureAudioContext: mock.fn(async () => true)
 }
 
 const mockLogger = {
