@@ -396,6 +396,10 @@ export const useTravelLogic = ({
               clearTimeout(pendingTimeoutRef.current)
               pendingTimeoutRef.current = null
             }
+            if (failsafeTimeoutRef.current) {
+              clearTimeout(failsafeTimeoutRef.current)
+              failsafeTimeoutRef.current = null
+            }
           }
         }
       } else {
