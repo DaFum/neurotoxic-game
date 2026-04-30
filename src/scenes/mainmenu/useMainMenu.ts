@@ -211,6 +211,10 @@ export const useMainMenu = () => {
     () => changeScene(GAME_PHASES.CREDITS),
     [changeScene]
   )
+  const handleSettings = useCallback(
+    () => changeScene(GAME_PHASES.SETTINGS),
+    [changeScene]
+  )
   const closeNameInput = useCallback(() => setShowNameInput(false), [])
 
   const handleStartNewAnyway = useCallback(() => {
@@ -242,6 +246,7 @@ export const useMainMenu = () => {
     handleNameSubmit,
     handleLoad,
     handleCredits,
+    handleSettings,
     closeNameInput,
     handleStartNewAnyway,
     handleLoadExistingFromPrompt

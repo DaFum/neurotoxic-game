@@ -44,6 +44,7 @@
   "button.transmit": "SENDEN",
   "button.unmute": "Ton an (M)",
   "cancel": "ABBRECHEN",
+  "chatter.emptyMessage": "...",
   "chatter.header": "LIVE_CHATTER_FEED",
   "chatter.msg1": "diese band ist tot lol",
   "chatter.msg2": "SPIELT DEN ALTEN SCHEISS!!!",
@@ -54,7 +55,6 @@
   "chatter.random4": "meine ohren bluten (im negativen sinn)",
   "chatter.random5": "sofortige rückerstattung",
   "chatter.unknownUser": "UNK",
-  "chatter.emptyMessage": "...",
   "chatter_labels.CLINIC": "Klinik-Feed",
   "chatter_labels.CREDITS": "Crew-Feed",
   "chatter_labels.GAMEOVER": "Letzte Übertragung",
@@ -159,6 +159,8 @@
   "data_purge": "DATENLÖSCHUNG",
   "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
   "deals.accept": "ANNEHMEN",
+  "deals.aggressive": "AGGRESSIV (Hohes Risiko)",
+  "deals.aggressiveDesc": "Verlange +50% Vorschuss. Misserfolg verliert den Deal komplett.",
   "deals.alignment.corporate": "🏢 KONZERN",
   "deals.alignment.evil": "😈 BÖSE",
   "deals.alignment.good": "🕊️ GUT",
@@ -166,8 +168,6 @@
   "deals.alignment.neutral": "⚖️ NEUTRAL",
   "deals.alignment.sustainable": "🌱 ÖKO",
   "deals.alignment.unknown": "❓ UNBEKANNT",
-  "deals.aggressive": "AGGRESSIV (Hohes Risiko)",
-  "deals.aggressiveDesc": "Verlange +50% Vorschuss. Misserfolg verliert den Deal komplett.",
   "deals.chooseApproach": "Wähle deinen Ansatz. Dein Ruhm und deine Eigenschaften beeinflussen das Ergebnis.",
   "deals.dealLost": "DEAL VERLOREN",
   "deals.duration": "Laufzeit",
@@ -301,10 +301,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -327,10 +339,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -483,7 +507,6 @@
   "leaderboard.select_song": "SONG WÄHLEN:",
   "leaderboard.song_scores": "SONG SCORES",
   "leaderboard.stage_dives": "STAGE DIVES",
-  "leaderboard.unavailable": "Ranglisten-Dienst im lokalen Modus nicht verfügbar.",
   "leaderboard.top_100_conflicts": "TOP 100 KONFLIKTE",
   "leaderboard.top_100_distance": "TOP 100 DISTANZ",
   "leaderboard.top_100_fame": "TOP 100 RUHM",
@@ -491,6 +514,7 @@
   "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
   "leaderboard.top_100_stage_dives": "TOP 100 STAGE DIVES",
   "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
+  "leaderboard.unavailable": "Ranglisten-Dienst im lokalen Modus nicht verfügbar.",
   "leaderboard.unknownError": "Unbekannter Fehler",
   "leaderboard.unknownPlayer": "Unbekannt",
   "load_game": "Spiel Laden",
@@ -501,6 +525,7 @@
   "mainMenu.existingSave.load": "BESTEHENDEN LADEN",
   "mainMenu.existingSave.startNew": "NEUE TOUR STARTEN",
   "mainMenu.existingSave.title": "SPIELSTAND GEFUNDEN",
+  "mainMenu.settings": "EINSTELLUNGEN",
   "mainMenu.subtitle.grindTheVoid": "Grind The Void",
   "map.cap": "Kap",
   "map.click_to_confirm": " - Klicken zum Bestätigen",
@@ -853,9 +878,9 @@
   "roadieRun.controls.hide": "STEUERUNG AUSBLENDEN",
   "roadieRun.controls.movementHint": "WASD / PFEILTASTEN zum Bewegen",
   "roadieRun.controls.show": "STEUERUNG ANZEIGEN",
+  "roadieRun.controls.toggleAria": "Steuerung umschalten",
   "roadieRun.controls.touchAria": "Roadie-Touch-Bewegungsfläche",
   "roadieRun.controls.touchHint": "WISCHEN ODER TIPPEN ZUM BEWEGEN",
-  "roadieRun.controls.toggleAria": "Steuerung umschalten",
   "roadieRun.hud.carrying": "TRÄGT:",
   "roadieRun.hud.damage": "SCHADEN:",
   "roadieRun.hud.delivered": "GELIEFERT:",
@@ -897,8 +922,8 @@
   "shop.messages.purchaseSuccess": "{{itemName}} gekauft!",
   "shop.messages.soundproofing": "Weniger Lärm, mehr Frieden. Harmonie +5",
   "shop.messages.traitUnlocked": "Eigenschaft freigeschaltet: {{traitName}} ({{memberId}})",
-  "shop.messages.unknownItem": "Unbekannter Gegenstand",
   "shop.messages.unknownEffect": "Kauf fehlgeschlagen: Unbekannter Effekttyp.",
+  "shop.messages.unknownItem": "Unbekannter Gegenstand",
   "shortcuts.closeOverlays": "Overlays schließen",
   "shortcuts.hitNotes": "Noten treffen (Gig)",
   "shortcuts.mute": "Stumm / Ton an",

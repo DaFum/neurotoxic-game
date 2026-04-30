@@ -35,6 +35,7 @@ export const MainMenu = () => {
     handleNameSubmit,
     handleLoad,
     handleCredits,
+    handleSettings,
     closeNameInput,
     handleStartNewAnyway,
     handleLoadExistingFromPrompt
@@ -150,6 +151,9 @@ export const MainMenu = () => {
             </GlitchButton>
             <GlitchButton onClick={handleCredits}>
               {t('ui:credits')}
+            </GlitchButton>
+            <GlitchButton onClick={handleSettings}>
+              {t('ui:mainMenu.settings')}
             </GlitchButton>
           </div>
           <GlitchButton onClick={() => setShowFeatures(true)}>
