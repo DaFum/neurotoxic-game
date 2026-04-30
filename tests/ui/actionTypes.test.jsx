@@ -48,7 +48,8 @@ describe('ActionTypes', () => {
       'MERCH_PRESS',
       'TRADE_VOID_ITEM',
       'BLOOD_BANK_DONATE',
-      'DARK_WEB_LEAK'
+      'DARK_WEB_LEAK',
+      'SET_PENDING_BANDHQ_OPEN'
     ]
 
     expectedTypes.forEach(type => {

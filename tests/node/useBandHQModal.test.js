@@ -20,7 +20,9 @@ const mockUseGameState = mock.fn(() => ({
 
 mock.module('../../src/context/GameState.tsx', {
   namedExports: {
-    useGameState: mockUseGameState
+    useGameState: mockUseGameState,
+    useGameSelector: mock.fn(() => false),
+    useGameActions: mock.fn(() => ({ setPendingBandHQOpen: mock.fn() }))
   }
 })
 

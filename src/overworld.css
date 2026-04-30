@@ -185,6 +185,7 @@
   font-variant-numeric: tabular-nums;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .van-row {
   display: flex;

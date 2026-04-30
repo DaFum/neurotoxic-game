@@ -1504,3 +1504,16 @@ export const handleAddUnlock = (
   if (state.unlocks?.includes(unlockId)) return state
   return { ...state, unlocks: [...(state.unlocks ?? []), unlockId] }
 }
+
+/**
+ * Handles setting the pendingBandHQOpen flag
+ * @param {Object} state - Current state
+ * @param {boolean} isOpen - new flag value
+ * @returns {Object} Updated state
+ */
+export const handleSetPendingBandHQOpen = (
+  state: GameState,
+  isOpen: boolean
+): GameState => {
+  return { ...state, pendingBandHQOpen: isOpen }
+}

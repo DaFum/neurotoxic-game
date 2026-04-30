@@ -16,7 +16,10 @@ vi.mock('../../../src/utils/logger', () => ({
 }))
 
 vi.mock('../../../src/data/songs', () => ({
-  SONGS_DB: [{ id: 'song-1', title: 'Song One', leaderboardId: 'song-one' }]
+  SONGS_DB: [{ id: 'song-1', title: 'Song One', leaderboardId: 'song-one' }],
+  SONGS_BY_ID: new Map([
+    ['song-1', { id: 'song-1', title: 'Song One', leaderboardId: 'song-one' }]
+  ])
 }))
 
 describe('LeaderboardTab', () => {

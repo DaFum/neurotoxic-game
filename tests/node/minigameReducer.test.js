@@ -7,7 +7,8 @@ import {
   handleStartRoadieMinigame,
   handleCompleteRoadieMinigame,
   handleStartKabelsalatMinigame,
-  handleCompleteKabelsalatMinigame
+  handleCompleteKabelsalatMinigame,
+  handleCompleteAmpCalibration
 } from '../../src/context/reducers/minigameReducer.ts'
 
 import {
@@ -102,6 +103,18 @@ describe('minigameReducer', () => {
       const nextState = handleCompleteTravelMinigame(baseState, payload)
       assert.strictEqual(nextState.currentScene, GAME_PHASES.TRAVEL_MINIGAME) // should preserve the initial scene without overriding it
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+  })
+
+  describe('handleCompleteAmpCalibration', () => {
+    it('should set minigame to inactive and type to amp calibration', () => {
+      baseState.minigame.type = MINIGAME_TYPES.AMP_CALIBRATION
+      baseState.minigame.active = true
+      const payload = { score: 100 }
+      const nextState = handleCompleteAmpCalibration(baseState, payload)
+
+      assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.AMP_CALIBRATION)
     })
   })
 

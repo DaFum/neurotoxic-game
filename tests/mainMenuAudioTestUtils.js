@@ -73,15 +73,20 @@ export const setupMainMenuAudioTest = async () => {
       updateSettings: state.updateSettings,
       deleteSave: state.deleteSave,
       setSetlist: state.setSetlist,
-      resetState: state.resetState
+      resetState: state.resetState,
+      setPendingBandHQOpen: () => {}
     }
+  })
+
+  const mockUseGameSelector = mock.fn((selector) => {
+    return selector(createMockGameState({ canLoad: true }))
   })
 
   mock.module('../src/context/GameState.tsx', {
     namedExports: {
       useGameState: mockUseGameState,
       useGameDispatch: mockUseGameDispatch,
-      useGameSelector: mockUseGameState,
+      useGameSelector: mockUseGameSelector,
       useGameActions: mockUseGameDispatch
     }
   })

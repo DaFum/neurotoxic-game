@@ -7,7 +7,6 @@ import { SONGS_DB } from '../../src/data/songs'
 // Mock useGameState before importing component
 const mockSetCurrentGig = vi.fn()
 const mockChangeScene = vi.fn()
-const mockUseGameSelector = vi.fn()
 
 vi.mock('../../src/context/GameState', () => ({
   useGameState: () => ({
