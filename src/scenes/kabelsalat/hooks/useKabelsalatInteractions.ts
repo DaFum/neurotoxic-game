@@ -6,8 +6,8 @@ import {
   type Dispatch,
   type SetStateAction
 } from 'react'
-import { SOCKET_DEFS, CABLE_MAP } from '../constants'
-import type { CableId } from '../constants'
+import { SOCKET_DEFS, CABLE_MAP } from '../kabelsalatConstants'
+import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 const isCableId = (value: string): value is CableId =>

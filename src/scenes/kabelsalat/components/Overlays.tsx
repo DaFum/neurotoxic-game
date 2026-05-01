@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import type { TFunction } from 'i18next'
 import { ShockOverlay } from './overlays/ShockOverlay.tsx'
-import { GameOverOverlay } from './overlays/GameOverOverlay.tsx'
+import { KabelsalatGameOverOverlay } from './overlays/KabelsalatGameOverOverlay.tsx'
 import { PoweredOnOverlay } from './overlays/PoweredOnOverlay.tsx'
 
 interface OverlaysProps {
@@ -31,9 +31,11 @@ export const Overlays: FC<OverlaysProps> = ({
     <>
       {isShocked && <ShockOverlay t={t} faultReason={faultReason ?? ''} />}
       {isGameOver && !isShocked && (
-        <GameOverOverlay t={t} onAdvance={() => onAdvance(false)} />
+        <KabelsalatGameOverOverlay t={t} onAdvance={() => onAdvance(false)} />
       )}
-      {isPoweredOn && <PoweredOnOverlay t={t} onAdvance={() => onAdvance(true)} />}
+      {isPoweredOn && (
+        <PoweredOnOverlay t={t} onAdvance={() => onAdvance(true)} />
+      )}
     </>
   )
 }

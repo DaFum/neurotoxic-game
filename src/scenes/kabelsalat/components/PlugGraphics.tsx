@@ -4,7 +4,7 @@
 
  */
 import PropTypes from 'prop-types'
-import { CONNECTOR_TYPES } from '../constants'
+import { CONNECTOR_TYPES } from '../kabelsalatConstants'
 import { XlrPlug } from './plugs/XlrPlug.tsx'
 import { JackPlug } from './plugs/JackPlug.tsx'
 import { DcPlug } from './plugs/DcPlug.tsx'

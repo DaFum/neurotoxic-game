@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import { PlugGraphics } from './PlugGraphics.tsx'
 import { SocketGraphics } from './SocketGraphics.tsx'
-import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../constants'
-import type { CableId } from '../constants'
+import { SOCKET_DEFS, SLOT_XS, CABLE_MAP } from '../kabelsalatConstants'
+import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketItemProps {

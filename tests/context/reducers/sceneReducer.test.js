@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { handleChangeScene } from '../../../src/context/reducers/sceneReducer'
+import {
+  ALLOWED_SCENES,
+  handleChangeScene
+} from '../../../src/context/reducers/sceneReducer'
 import { GAME_PHASES } from '../../../src/context/gameConstants'
 
 describe('sceneReducer', () => {
@@ -11,6 +14,12 @@ describe('sceneReducer', () => {
       const newState = handleChangeScene(initialState, targetScene)
 
       assert.strictEqual(newState.currentScene, targetScene)
+    })
+
+    it('should keep ALLOWED_SCENES aligned with GAME_PHASES values', () => {
+      for (const scene of Object.values(GAME_PHASES)) {
+        assert.strictEqual(ALLOWED_SCENES.has(scene), true)
+      }
     })
 
     it('should ignore scene change when an invalid scene is provided', () => {
