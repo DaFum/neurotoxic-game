@@ -100,3 +100,6 @@
 
 **Learning:** Found that the main volume toggle (Mute/Unmute) button in the HUD was missing the `aria-pressed` attribute, which provides a stable name for the control. Without `aria-pressed`, screen reader users might not know the toggle status of the button immediately.
 **Action:** Always ensure that toggle buttons reflect their state using the `aria-pressed` attribute, with a stable accessible `aria-label`.
+## 2024-05-15 - Replace Native Title with Tooltip Component
+**Learning:** The native HTML `title` attribute is often used for quick tooltips (e.g., on Mood and Stamina indicators), but it provides poor accessibility, is slow to appear, and cannot be styled.
+**Action:** Always replace native `title` attributes with the application's robust `<Tooltip>` component (found in `src/ui/shared/Tooltip.tsx`) to ensure consistent styling, immediate visual feedback, and proper ARIA descriptions for screen readers.
