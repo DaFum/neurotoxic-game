@@ -354,7 +354,7 @@ export interface GameState {
   pendingBandHQOpen: boolean
 }
 
-export type RawLoadedGame = Record<string, unknown>
+export type RawLoadedGame = UnknownRecord
 
 export type Action<
   TType extends ActionType,

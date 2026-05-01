@@ -62,7 +62,8 @@ import {
   createTradeVoidItemAction,
   createBloodBankDonateAction,
   createAddVenueBlacklistAction,
-  createSetPendingBandHQOpenAction
+  createSetPendingBandHQOpenAction,
+  createLoadGameAction
 } from './actionCreators'
 import type {
   BloodBankDonatePayload,
@@ -279,15 +280,20 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       const savedGame = safeStorage(
         'loadInjectedState',
         () => {
-          const saved = localStorage.getItem(SAVE_KEY)
-          if (!saved) return null
-          const parsed: unknown = JSON.parse(saved)
-          return isPlainObject(parsed) ? parsed : null
+          try {
+            const saved = localStorage.getItem(SAVE_KEY)
+            if (!saved) return null
+            const parsed: unknown = JSON.parse(saved)
+            return isPlainObject(parsed) ? parsed : null
+          } catch (err) {
+            logger.error('GameState', 'Failed to parse injected state', err)
+            return null
+          }
         },
         null as Record<string, unknown> | null
       )
 
-      if (savedGame && savedGame.version !== undefined) {
+      if (savedGame && Object.hasOwn(savedGame, 'version')) {
         try {
           return gameReducer(
             freshState,
