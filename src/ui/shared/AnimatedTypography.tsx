@@ -46,18 +46,28 @@ export const AnimatedSubtitle = ({
   className = '',
   children
 }: {
-  as?: MotionTag | ComponentType
+  as?: MotionTag | ComponentType<{ children?: ReactNode }>
   initial?: HTMLMotionProps<'div'>['initial']
   animate?: HTMLMotionProps<'div'>['animate']
   transition?: Transition
   className?: string
   children: ReactNode
 }) => {
-  const MotionComponent =
-    typeof as === 'string'
-      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
-        motion.h2)
-      : motion(as)
+  if (typeof as !== 'string') {
+    const CustomComponent = as
+    return (
+      <motion.div
+        initial={initial}
+        animate={animate}
+        transition={transition}
+        className={`uppercase ${className}`}
+      >
+        <CustomComponent>{children}</CustomComponent>
+      </motion.div>
+    )
+  }
+
+  const MotionComponent = (motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ?? motion.h2
 
   return (
     <MotionComponent

@@ -886,7 +886,7 @@ export const applyEventDelta = (
           for (let j = 0; j < relationshipChange.length; j++) {
             const change = relationshipChange[j]
             if (!change || !memberName) continue
-            const relSource = newRelationships || nextMember.relationships || {}
+            const relSource: Record<string, number> = newRelationships || nextMember.relationships || {}
 
             const result = calculateMemberRelationshipChange(
               change,
@@ -908,7 +908,7 @@ export const applyEventDelta = (
             if (!newRelationships) {
               newRelationships = { ...relSource }
             }
-            newRelationships[other] = newScore
+            (newRelationships as Record<string, number>)[other] = newScore
           }
 
           if (newRelationships) {

@@ -176,7 +176,7 @@ export const usePostGigLogic = () => {
         errorHandledRef.current.error
       )
       errorHandledRef.current = { kind: 'handled' } // mark handled
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
+
       setPostOptionsError(true)
     }
   }, [postOptions])
