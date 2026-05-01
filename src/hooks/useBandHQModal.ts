@@ -11,16 +11,15 @@ export const useBandHQModal = () => {
 
   const [showHQ, setShowHQ] = useState(pendingBandHQOpen)
 
-  // Sync state if pendingBandHQOpen changes to true
-  // This is a render-phase update which is valid for syncing state from props/selectors
-  // and avoids the useEffect set-state warning.
-  if (pendingBandHQOpen && !showHQ) {
-    setShowHQ(true)
-  }
-
   useEffect(() => {
     if (pendingBandHQOpen) {
-      setPendingBandHQOpen(false)
+      // Use setTimeout to defer the state update and avoid synchronous re-render warnings
+      // as suggested by CI Copilot reviewer to resolve @eslint-react/set-state-in-effect
+      const timer = setTimeout(() => {
+        setShowHQ(true)
+        setPendingBandHQOpen(false)
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [pendingBandHQOpen, setPendingBandHQOpen])
 

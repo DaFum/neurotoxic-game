@@ -1,7 +1,7 @@
 import { test, describe, before, after, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 let mockPendingBandHQOpen = false
 const mockSetPendingBandHQOpen = mock.fn()
@@ -21,24 +21,15 @@ const mockUseGameState = mock.fn(() => ({
   setSetlist: mock.fn()
 }))
 
-mock.module('../../src/context/GameState.js', {
+mock.module('../../src/context/GameState', {
   namedExports: {
     useGameState: mockUseGameState,
-    useGameSelector: mock.fn(() => mockPendingBandHQOpen),
+    useGameSelector: mock.fn((selector) => selector({ pendingBandHQOpen: mockPendingBandHQOpen })),
     useGameActions: mock.fn(() => ({ setPendingBandHQOpen: mockSetPendingBandHQOpen }))
   }
 })
 
-mock.module('../../src/hooks/useAudioControl.js', {
-  namedExports: {
-    useAudioControl: mock.fn(() => ({
-      audioState: {},
-      handleAudioChange: () => {}
-    }))
-  }
-})
-
-const { useBandHQModal } = await import('../../src/hooks/useBandHQModal.js')
+const { useBandHQModal } = await import('../../src/hooks/useBandHQModal')
 
 describe('useBandHQModal', () => {
   before(() => {
@@ -71,11 +62,18 @@ describe('useBandHQModal', () => {
     assert.equal(result.current.showHQ, false)
   })
 
-  test('initializes with pendingBandHQOpen and clears it', () => {
+  test('initializes with pendingBandHQOpen and clears it', async () => {
     mockPendingBandHQOpen = true
     const { result } = renderHook(() => useBandHQModal())
 
+    // It starts with true because of initial state sync in useState(pendingBandHQOpen)
     assert.equal(result.current.showHQ, true)
+
+    // The effect will run and call setPendingBandHQOpen(false) in a timeout
+    await act(async () => {
+       await new Promise(resolve => setTimeout(resolve, 0))
+    })
+
     assert.equal(mockSetPendingBandHQOpen.mock.calls.length, 1)
     assert.deepEqual(mockSetPendingBandHQOpen.mock.calls[0].arguments, [false])
   })
