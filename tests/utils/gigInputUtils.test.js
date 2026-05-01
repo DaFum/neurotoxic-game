@@ -43,13 +43,11 @@ describe('gigInputUtils', () => {
       assert.equal(map.get('invalid'), undefined)
     })
 
-    test('handles lanes with null or undefined key values', () => {
+    test('skips lanes with null or undefined key values', () => {
       const lanes = [{ key: undefined }, { key: null }]
       const map = createKeyToLaneMap(lanes)
 
-      assert.equal(map.size, 1)
-      // undefined/null are coalesced to empty string
-      assert.equal(map.get(''), 1)
+      assert.equal(map.size, 0)
     })
 
     test('ignores properties on the prototype chain', () => {
