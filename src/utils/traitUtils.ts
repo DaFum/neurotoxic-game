@@ -29,15 +29,23 @@ export const hasTrait = (member: unknown, traitId: string): boolean => {
     typeof member !== 'object' ||
     !Object.hasOwn(member, 'traits') ||
     !(member as Record<string, unknown>).traits ||
-    typeof (member as Record<string, unknown>).traits !== 'object' ||
-    Array.isArray((member as Record<string, unknown>).traits)
+    typeof (member as Record<string, unknown>).traits !== 'object'
   ) {
     return false
   }
-  return Object.hasOwn(
-    (member as Record<string, unknown>).traits as Record<string, unknown>,
-    traitId
-  )
+
+  const traits = (member as Record<string, unknown>).traits
+  if (Array.isArray(traits)) {
+    for (let i = 0; i < traits.length; i++) {
+      const t = traits[i]
+      if (t && typeof t === 'object' && (t as Record<string, unknown>).id === traitId) {
+        return true
+      }
+    }
+    return false
+  }
+
+  return Object.hasOwn(traits as Record<string, unknown>, traitId)
 }
 
 /**
