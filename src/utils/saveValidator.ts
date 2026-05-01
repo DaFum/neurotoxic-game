@@ -17,7 +17,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 
 /**
  * Validates the structure and types of the save data.
- * @param {any} data - The parsed JSON data from localStorage.
+ * @param {unknown} data - The parsed JSON data from localStorage.
  * @returns {boolean} True if valid, throws error if invalid.
  */
 export const validateSaveData = (data: unknown): boolean => {
