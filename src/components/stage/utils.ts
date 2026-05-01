@@ -95,7 +95,7 @@ export const getPixiColorFromToken = (
  * @param {Promise} promise - The promise to wrap.
  * @param {string} label - Label for logging.
  * @param {number} [timeoutMs=10000] - Timeout in milliseconds.
- * @returns {Promise<any|null>} The resolved value or null if an error/timeout occurred.
+ * @returns {Promise<T|null>} The resolved value or null if an error/timeout occurred.
  */
 export const withTimeout = async <T>(
   promise: Promise<T>,

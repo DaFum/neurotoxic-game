@@ -1099,7 +1099,7 @@ export const applyEventDelta = (
  * Used primarily for optimizedState which passes Sets instead of Arrays for performance.
  *
  * @param {Set|Array} collection - The collection to check.
- * @param {any} item - The item to look for.
+ * @param {unknown} item - The item to look for.
  * @returns {boolean} True if the collection contains the item.
  */
 export const hasStateItem = (
