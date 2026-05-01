@@ -28,6 +28,18 @@ export const useBandHQModal = () => {
     }
   }, [pendingBandHQOpen, setPendingBandHQOpen])
 
+  useEffect(() => {
+    const handleOpen = (event: CustomEvent<{ target: string }>) => {
+      if (event.detail?.target === 'bandhq') {
+        setShowHQ(true)
+      }
+    }
+    window.addEventListener('open-modal', handleOpen as EventListener)
+    return () => {
+      window.removeEventListener('open-modal', handleOpen as EventListener)
+    }
+  }, [])
+
   const openHQ = useCallback(() => setShowHQ(true), [])
   const closeHQ = useCallback(() => setShowHQ(false), [])
 
