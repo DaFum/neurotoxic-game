@@ -48,7 +48,7 @@ vi.mock('../../src/utils/imageGen', () => ({
 vi.mock('../../src/utils/logger', () => ({
   logger: { warn: () => {} }
 }))
-vi.mock('../../src/components/stage/utils', () => ({
+vi.mock('../../src/components/stage/stageRenderUtils', () => ({
   loadTexture: async () => ({}),
   loadTextures: async () => ({}),
   getPixiColorFromToken: () => 0

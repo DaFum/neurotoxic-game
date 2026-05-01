@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { getPixiColorFromToken } from './utils'
+import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
 import type {
   StageControllerOptions,

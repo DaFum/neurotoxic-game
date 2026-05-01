@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { getPixiColorFromToken } from './utils'
+import { getPixiColorFromToken } from './stageRenderUtils'
 import { AMP_CALIBRATION_TOLERANCE } from '../../context/gameConstants'
 
 export class AmpWaveManager {

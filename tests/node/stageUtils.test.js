@@ -10,7 +10,7 @@ import {
   loadTexture,
   loadTextures,
   getOptimalResolution
-} from '../../src/components/stage/utils'
+} from '../../src/components/stage/stageRenderUtils'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 test('stage utils', async t => {

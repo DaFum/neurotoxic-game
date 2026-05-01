@@ -1,7 +1,7 @@
 import type { Texture } from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
-import { loadTextures } from './utils'
+import { loadTextures } from './stageRenderUtils'
 
 export type CrowdTextures = {
   idle: Texture | null

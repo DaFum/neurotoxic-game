@@ -1,7 +1,7 @@
 import { Texture } from 'pixi.js'
 import { handleError } from '../../utils/errorHandler'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
-import { loadTextures } from './utils'
+import { loadTextures } from './stageRenderUtils'
 
 export type NoteTextures = { skull: Texture | null; lightning: Texture | null }
 

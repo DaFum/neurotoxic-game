@@ -36,7 +36,7 @@ vi.mock('../../src/utils/logger', () => ({
   logger: { error: mocks.error, warn: mocks.warn }
 }))
 
-vi.mock('../../src/components/stage/utils', async importOriginal => {
+vi.mock('../../src/components/stage/stageRenderUtils', async importOriginal => {
   const actual = await importOriginal()
   return {
     ...actual,

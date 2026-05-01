@@ -18,7 +18,7 @@ import {
   loadTextures,
   getPixiColorFromToken,
   getOptimalResolution
-} from './utils'
+} from './stageRenderUtils'
 
 /**
  * Safely destroys a texture if it exists and has a destroy method.
