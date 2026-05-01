@@ -5,7 +5,7 @@ import {
   useState,
   type MutableRefObject
 } from 'react'
-import { getPixiColorFromToken } from '../../components/stage/utils'
+import { getPixiColorFromToken } from '../../components/stage/stageRenderUtils'
 import { getSafeRandom } from '../../utils/crypto'
 import type {
   RhythmGameRefState,

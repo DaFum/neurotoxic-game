@@ -38,7 +38,7 @@ vi.mock('pixi.js', () => {
   }
 })
 
-vi.mock('../../src/components/stage/utils', () => ({
+vi.mock('../../src/components/stage/stageRenderUtils', () => ({
   getPixiColorFromToken: vi.fn(() => 0x000000),
   getOptimalResolution: vi.fn(() => 1)
 }))
@@ -84,7 +84,7 @@ describe('AmpStageController', () => {
     await controller.init()
 
     expect(controller.bg).toBeInstanceOf(PIXI.Graphics)
-    expect(controller.waveManager).toBeDefined();
+    expect(controller.waveManager).toBeDefined()
     expect(controller.waveManager.waveGraphics).toBeInstanceOf(PIXI.Graphics)
   })
 
@@ -115,7 +115,10 @@ describe('AmpStageController', () => {
     await controller.init()
 
     const bgDestroySpy = vi.spyOn(controller.bg, 'destroy')
-    const waveDestroySpy = vi.spyOn(controller.waveManager.waveGraphics, 'destroy')
+    const waveDestroySpy = vi.spyOn(
+      controller.waveManager.waveGraphics,
+      'destroy'
+    )
 
     controller.dispose()
 

@@ -5,7 +5,7 @@ import {
   type ApplicationOptions
 } from 'pixi.js'
 import { logger } from '../../utils/logger'
-import { getOptimalResolution } from './utils'
+import { getOptimalResolution } from './stageRenderUtils'
 import { destroyPixiApp } from './pixiAppTeardown'
 import { StageResizeHandler } from './StageResizeHandler'
 import { checkLifecycleRace, isLifecycleRaceError } from './StageLifecycleUtils'

@@ -32,7 +32,7 @@ mock.mock('../../src/utils/audio/AudioManager', () => ({
 const { useRoadieLogic } =
   await import('../../src/hooks/minigames/useRoadieLogic')
 const { ROADIE_GRID_WIDTH: GRID_WIDTH, ROADIE_GRID_HEIGHT: GRID_HEIGHT } =
-  await import('../../src/hooks/minigames/constants')
+  await import('../../src/hooks/minigames/minigameConstants')
 
 describe('useRoadieLogic', () => {
   beforeEach(() => {

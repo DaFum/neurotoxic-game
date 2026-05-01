@@ -1,6 +1,6 @@
 import { test, mock, describe, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { withTimeout } from '../../../src/components/stage/utils'
+import { withTimeout } from '../../../src/components/stage/stageRenderUtils'
 
 describe('withTimeout', () => {
   afterEach(() => {

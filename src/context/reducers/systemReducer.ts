@@ -45,18 +45,6 @@ import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
-export const ALLOWED_SCENES = new Set([
-  GAME_PHASES.OVERWORLD,
-  GAME_PHASES.PRE_GIG,
-  GAME_PHASES.GIG,
-  GAME_PHASES.PRACTICE,
-  GAME_PHASES.POST_GIG,
-  GAME_PHASES.TRAVEL_MINIGAME,
-  GAME_PHASES.PRE_GIG_MINIGAME,
-  GAME_PHASES.GAMEOVER,
-  GAME_PHASES.CLINIC
-])
-
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 

@@ -1,6 +1,6 @@
 import { Application, Container } from 'pixi.js'
 import type { RefObject } from 'react'
-import { calculateNoteY } from './utils'
+import { calculateNoteY } from './stageRenderUtils'
 import {
   NoteSpritePool,
   NOTE_CENTER_OFFSET,

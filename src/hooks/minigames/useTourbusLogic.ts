@@ -10,7 +10,7 @@ import {
   TOURBUS_MAX_SPEED,
   TOURBUS_SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE
-} from './constants'
+} from './minigameConstants'
 import { getSafeRandom } from '../../utils/crypto'
 
 // Re-export constants for backward compatibility and tests
@@ -19,7 +19,7 @@ export {
   TOURBUS_MAX_SPEED as MAX_SPEED,
   TOURBUS_SPAWN_RATE_MS as SPAWN_RATE_MS,
   TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE
-} from './constants'
+} from './minigameConstants'
 
 export const HIT_DAMAGE_BASE = 10
 export const HIT_DAMAGE_ARMOR = 2

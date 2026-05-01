@@ -127,7 +127,7 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/utils', {
+mock.module('../../src/components/stage/stageRenderUtils', {
   namedExports: mockPixiStageUtils
 })
 
@@ -196,7 +196,10 @@ describe('NoteManager', () => {
 
     await uninitializedNoteManager.loadAssets()
 
-    assert.equal(uninitializedNoteManager.textureManager.noteTextures.skull, mockTextureSkull)
+    assert.equal(
+      uninitializedNoteManager.textureManager.noteTextures.skull,
+      mockTextureSkull
+    )
     assert.equal(
       uninitializedNoteManager.textureManager.noteTextures.lightning,
       mockTextureLightning

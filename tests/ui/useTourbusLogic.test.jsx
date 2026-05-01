@@ -39,7 +39,7 @@ const {
   getHitDamage
 } = await import('../../src/hooks/minigames/useTourbusLogic')
 const { TOURBUS_LANE_COUNT, TOURBUS_BUS_Y_PERCENT } =
-  await import('../../src/hooks/minigames/constants')
+  await import('../../src/hooks/minigames/minigameConstants')
 
 describe('getHitDamage', () => {
   beforeEach(() => {

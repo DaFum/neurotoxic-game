@@ -106,7 +106,7 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/utils', {
+mock.module('../../src/components/stage/stageRenderUtils', {
   namedExports: {
     ...mockPixiStageUtils,
     calculateCrowdOffset: mock.fn(() => 10),

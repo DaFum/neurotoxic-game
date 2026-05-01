@@ -12,7 +12,7 @@ const mockBuildRhythmLayout = mock.fn(() => ({
   rhythmOffsetY: 360
 }))
 
-mock.module('../../src/components/stage/utils', {
+mock.module('../../src/components/stage/stageRenderUtils', {
   namedExports: {
     buildRhythmLayout: mockBuildRhythmLayout,
     getPixiColorFromToken: mock.fn(tokenName => {
