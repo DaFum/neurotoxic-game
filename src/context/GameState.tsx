@@ -81,6 +81,7 @@ import { useEventSystem } from './useEventSystem'
 import { useMapGeneration } from './useMapGeneration'
 import {
   SAVE_KEY,
+  createRawLoadPayload,
   safeStorage,
   safeStorageNoFallback,
   usePersistence
@@ -297,7 +298,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         try {
           return gameReducer(
             freshState,
-            createLoadGameAction({ ...savedGame, unlocks })
+            createLoadGameAction(createRawLoadPayload(savedGame, unlocks))
           )
         } catch (err) {
           logger.error('GameState', 'Failed to hydrate injected state', err)

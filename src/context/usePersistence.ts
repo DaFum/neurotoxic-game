@@ -22,6 +22,28 @@ import type { GameAction, GameState } from '../types/game'
 import type { OptionalToastCallback } from '../types/callbacks'
 
 export const SAVE_KEY = 'neurotoxic_v3_save'
+const LOADABLE_SAVE_KEYS = [
+  'version',
+  'currentScene',
+  'player',
+  'band',
+  'social',
+  'gameMap',
+  'currentGig',
+  'lastGigStats',
+  'activeEvent',
+  'activeStoryFlags',
+  'eventCooldowns',
+  'pendingEvents',
+  'venueBlacklist',
+  'activeQuests',
+  'reputationByRegion',
+  'settings',
+  'npcs',
+  'gigModifiers',
+  'setlist',
+  'minigame'
+] as const
 
 type UsePersistenceParams = {
   currentScene: GameState['currentScene']
@@ -29,6 +51,19 @@ type UsePersistenceParams = {
   dispatch: Dispatch<GameAction>
   addToast: OptionalToastCallback
   tRef: MutableRefObject<TFunction>
+}
+
+export const createRawLoadPayload = (
+  parsedObj: Record<string, unknown>,
+  unlocks: string[]
+): Record<string, unknown> => {
+  const payload: Record<string, unknown> = { unlocks }
+  for (const key of LOADABLE_SAVE_KEYS) {
+    if (Object.hasOwn(parsedObj, key)) {
+      payload[key] = parsedObj[key]
+    }
+  }
+  return payload
 }
 
 export const createPersistedState = (currentState: GameState) => {
@@ -223,7 +258,9 @@ export function usePersistence({
           addUnlock(unlockId)
         })
 
-        dispatch(createLoadGameAction({ ...parsedObj, unlocks: mergedUnlocks }))
+        dispatch(
+          createLoadGameAction(createRawLoadPayload(parsedObj, mergedUnlocks))
+        )
         return true
       },
       false
