@@ -19,7 +19,8 @@ mock.module('../../src/scenes/kabelsalat/kabelsalatConstants', {
   namedExports: {
     CABLES: MOCK_CABLES,
     CABLE_MAP: MOCK_CABLE_MAP,
-    SLOT_XS: MOCK_SLOT_XS
+    SLOT_XS: MOCK_SLOT_XS,
+    SOCKET_Y: 120
   }
 })
 

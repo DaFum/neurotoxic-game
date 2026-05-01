@@ -1,14 +1,13 @@
 import {
   CABLE_MAP,
   SLOT_XS,
-  type Cable,
+  SOCKET_Y,
   type CableId
 } from './kabelsalatConstants'
-import type { SocketId } from '../../types/kabelsalat'
-import { getSafeUUID } from '../../utils/crypto'
-import { secureRandom } from '../../utils/crypto'
+import { getSafeUUID, secureRandom } from '../../utils/crypto'
+import type { LightningSeed, SocketId } from '../../types/kabelsalat'
 
-export const generateLightningSeeds = () => {
+export const generateLightningSeeds = (): LightningSeed[] => {
   return Array.from({ length: 15 }).map(() => ({
     id: getSafeUUID(),
     startX: secureRandom() * 800,
@@ -24,16 +23,15 @@ export const getMessyPath = (
   socketId: SocketId,
   socketOrder: readonly SocketId[]
 ): string => {
-  const cable: Cable | undefined = CABLE_MAP[cableId]
+  const cable = CABLE_MAP[cableId]
   const socketIndex = socketOrder.indexOf(socketId)
   if (!cable || socketIndex === -1) return ''
 
   const socketX = SLOT_XS[socketIndex]
   if (socketX === undefined) return ''
-  const socketY = 120
 
-  const midY = (cable.y + socketY) / 2
+  const midY = (cable.y + SOCKET_Y) / 2
   const offset = (socketX - cable.x) * 1.5
 
-  return `M ${cable.x} ${cable.y} C ${cable.x - offset} ${midY}, ${socketX + offset} ${midY}, ${socketX} ${socketY + 20}`
+  return `M ${cable.x} ${cable.y} C ${cable.x - offset} ${midY}, ${socketX + offset} ${midY}, ${socketX} ${SOCKET_Y + 20}`
 }
