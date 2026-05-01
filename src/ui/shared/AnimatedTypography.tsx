@@ -46,28 +46,19 @@ export const AnimatedSubtitle = ({
   className = '',
   children
 }: {
-  as?: MotionTag | ComponentType<{ children?: ReactNode }>
+  as?: MotionTag | ComponentType<HTMLMotionProps<'div'> & { children?: ReactNode }>
   initial?: HTMLMotionProps<'div'>['initial']
   animate?: HTMLMotionProps<'div'>['animate']
   transition?: Transition
   className?: string
   children: ReactNode
 }) => {
-  if (typeof as !== 'string') {
-    const CustomComponent = as
-    return (
-      <motion.div
-        initial={initial}
-        animate={animate}
-        transition={transition}
-        className={`uppercase ${className}`}
-      >
-        <CustomComponent>{children}</CustomComponent>
-      </motion.div>
-    )
-  }
-
-  const MotionComponent = (motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ?? motion.h2
+  /* eslint-disable @eslint-react/static-components */
+  const MotionComponent =
+    typeof as === 'string'
+      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
+        motion.h2)
+      : motion(as)
 
   return (
     <MotionComponent
@@ -79,6 +70,7 @@ export const AnimatedSubtitle = ({
       {children}
     </MotionComponent>
   )
+  /* eslint-enable @eslint-react/static-components */
 }
 
 AnimatedSubtitle.propTypes = {
