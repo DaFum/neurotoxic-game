@@ -156,25 +156,32 @@ const getRewardIcon = (type: string) => {
   }
 }
 
+const questItemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3 } }
+}
+
 const QuestItem = memo(
   ({
     quest,
     index,
-    player,
+    currentDay,
     variants
   }: {
     quest: QuestDisplayState
     index: number
-    player: PlayerState
+    currentDay: number
     variants: Variants
   }) => {
     const { t, i18n } = useTranslation(['ui', 'events'])
-    const isOverdue = quest.deadline != null && player.day > quest.deadline
+    const isOverdue = quest.deadline != null && currentDay > quest.deadline
 
     // Safe progress calculation
     let progressPercent = 0
     if (typeof quest.required === 'number' && quest.required > 0) {
-      progressPercent = Math.round(((quest.progress || 0) / quest.required) * 100)
+      progressPercent = Math.round(
+        ((quest.progress || 0) / quest.required) * 100
+      )
     }
     progressPercent = Math.max(
       0,
@@ -182,7 +189,7 @@ const QuestItem = memo(
     )
 
     const timeRemaining =
-      quest.deadline != null ? Math.max(0, quest.deadline - player.day) : null
+      quest.deadline != null ? Math.max(0, quest.deadline - currentDay) : null
 
     return (
       <motion.div
@@ -285,11 +292,6 @@ export const QuestsModal = ({
     exit: { opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }
   }
 
-  const questItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } }
-  }
-
   return (
     <AnimatePresence>
       <motion.div
@@ -349,7 +351,7 @@ export const QuestsModal = ({
                   key={quest.id}
                   quest={quest}
                   index={index}
-                  player={player}
+                  currentDay={player.day}
                   variants={questItemVariants}
                 />
               ))}
