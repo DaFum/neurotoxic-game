@@ -20,6 +20,8 @@ import { Tooltip } from './shared/Tooltip.tsx'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { useAudioControl } from '../hooks/useAudioControl'
 
+const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
+
 /**
  * BandHQ Component
  * Displays statistics and a shop for purchasing upgrades.
@@ -69,7 +71,10 @@ export const BandHQ = ({ onClose, className = '' }) => {
     usePurchaseLogic(purchaseLogicParams)
 
   const currentTab =
-    activeTab === 'VOID' && social.controversyLevel < 30 ? 'STATS' : activeTab
+    activeTab === 'VOID' &&
+    social.controversyLevel < VOID_TRADER_CONTROVERSY_THRESHOLD
+      ? 'STATS'
+      : activeTab
 
   const {
     processingItemId,
@@ -145,10 +150,11 @@ export const BandHQ = ({ onClose, className = '' }) => {
             {
               id: 'VOID',
               key:
-                social.controversyLevel >= 30
+                social.controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD
                   ? 'tabs.voidTrader'
                   : 'tabs.voidTraderLocked',
-              isLocked: social.controversyLevel < 30
+              isLocked:
+                social.controversyLevel < VOID_TRADER_CONTROVERSY_THRESHOLD
             }
           ].map(tab => {
             const isActive = currentTab === tab.id
@@ -161,8 +167,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
                 id={`tab-${tab.id}`}
                 onClick={() => !tab.isLocked && setActiveTab(tab.id)}
                 disabled={tab.isLocked}
-                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
-                  ${tab.isLocked ? 'pointer-events-none opacity-50 grayscale' : ''}
+                className={`flex-1 w-full min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
+                  ${tab.isLocked ? 'opacity-50 grayscale' : ''}
                   ${
                     isActive
                       ? 'bg-toxic-green text-void-black focus-visible:ring-void-black'
@@ -178,8 +184,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
               <React.Fragment key={tab.id}>
                 {tab.isLocked ? (
                   <Tooltip
-                    content={t('ui:hq.voidTraderLockedTooltip')}
-                    className='flex-1 flex pointer-events-auto'
+                    content={t('hq.voidTraderLockedTooltip')}
+                    className='flex-1 flex'
                   >
                     {buttonContent}
                   </Tooltip>
@@ -254,15 +260,16 @@ export const BandHQ = ({ onClose, className = '' }) => {
 
             {currentTab === 'LEADERBOARD' && <LeaderboardTab />}
 
-            {currentTab === 'VOID' && social.controversyLevel >= 30 && (
-              <VoidTraderTab
-                player={player}
-                handleTrade={handleVoidTrade}
-                isItemOwned={isVoidItemOwned}
-                isItemDisabled={isVoidItemDisabled}
-                processingItemId={processingItemId}
-              />
-            )}
+            {currentTab === 'VOID' &&
+              social.controversyLevel >= VOID_TRADER_CONTROVERSY_THRESHOLD && (
+                <VoidTraderTab
+                  player={player}
+                  handleTrade={handleVoidTrade}
+                  isItemOwned={isVoidItemOwned}
+                  isItemDisabled={isVoidItemDisabled}
+                  processingItemId={processingItemId}
+                />
+              )}
 
             {currentTab === 'SETTINGS' && (
               <SettingsTab
