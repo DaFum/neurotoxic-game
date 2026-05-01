@@ -1,4 +1,4 @@
-import { useMemo, useState, Suspense } from 'react'
+import React, { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
@@ -15,6 +15,7 @@ import { SetlistTab } from './bandhq/SetlistTab.tsx'
 import { SettingsTab } from './bandhq/SettingsTab.tsx'
 import { LeaderboardTab } from './bandhq/LeaderboardTab.tsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.tsx'
+import { Tooltip } from './shared/Tooltip.tsx'
 
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { useAudioControl } from '../hooks/useAudioControl'
@@ -141,21 +142,27 @@ export const BandHQ = ({ onClose, className = '' }) => {
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
             { id: 'SETTINGS', key: 'tabs.settings' },
-            ...(social.controversyLevel >= 30
-              ? [{ id: 'VOID', key: 'tabs.voidTrader' }]
-              : [])
+            {
+              id: 'VOID',
+              key:
+                social.controversyLevel >= 30
+                  ? 'tabs.voidTrader'
+                  : 'tabs.voidTraderLocked',
+              isLocked: social.controversyLevel < 30
+            }
           ].map(tab => {
             const isActive = currentTab === tab.id
-            return (
+            const buttonContent = (
               <button
                 type='button'
                 role='tab'
                 aria-selected={isActive}
                 aria-controls={`panel-${tab.id}`}
                 id={`tab-${tab.id}`}
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => !tab.isLocked && setActiveTab(tab.id)}
+                disabled={tab.isLocked}
                 className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
+                  ${tab.isLocked ? 'pointer-events-none opacity-50 grayscale' : ''}
                   ${
                     isActive
                       ? 'bg-toxic-green text-void-black focus-visible:ring-void-black'
@@ -165,6 +172,21 @@ export const BandHQ = ({ onClose, className = '' }) => {
                 {isActive && <span className='text-xs'>▶</span>}
                 {t(tab.key)}
               </button>
+            )
+
+            return (
+              <React.Fragment key={tab.id}>
+                {tab.isLocked ? (
+                  <Tooltip
+                    content={t('ui:hq.voidTraderLockedTooltip')}
+                    className='flex-1 flex pointer-events-auto'
+                  >
+                    {buttonContent}
+                  </Tooltip>
+                ) : (
+                  buttonContent
+                )}
+              </React.Fragment>
             )
           })}
         </div>
