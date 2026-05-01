@@ -61,9 +61,16 @@ export const useKabelsalatInteractions = (
     (cableId: CableId) => {
       if (isShocked || isPoweredOn || isGameOver || isWinningRef.current) return
 
-      const connectionSocketId = (Object.keys(connections) as SocketId[]).find(
-        k => Object.hasOwn(connections, k) && connections[k] === cableId
-      )
+      let connectionSocketId: SocketId | undefined
+      for (const k in connections) {
+        if (Object.hasOwn(connections, k)) {
+          const socketId = k as SocketId
+          if (connections[socketId] === cableId) {
+            connectionSocketId = socketId
+            break
+          }
+        }
+      }
 
       if (connectionSocketId) {
         setConnections(prev => {
