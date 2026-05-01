@@ -1,6 +1,5 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { useGameState, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
@@ -84,13 +83,6 @@ const SongRow = React.memo(
 )
 
 SongRow.displayName = 'SongRow'
-
-SongRow.propTypes = {
-  song: PropTypes.object.isRequired,
-  selected: PropTypes.bool.isRequired,
-  toggleSongInSetlist: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired
-}
 
 const getSetlistSongId = (entry: unknown): unknown => {
   if (typeof entry === 'string') return entry
@@ -221,10 +213,4 @@ export const SetlistTab = (props: SetlistTabProps) => {
       </div>
     </div>
   )
-}
-
-SetlistTab.propTypes = {
-  setlist: PropTypes.array.isRequired,
-  setSetlist: PropTypes.func.isRequired,
-  addToast: PropTypes.func.isRequired
 }
