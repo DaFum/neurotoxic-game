@@ -173,7 +173,7 @@ export const ProgressBar = memo(function ProgressBar({
       )}
       <div
         className={`w-full bg-charcoal-gray border ${
-          isMini ? 'border-steel-gray/50 overflow-hidden' : 'border-2 border-toxic-green/50'
+          isMini ? 'border-steel-gray overflow-hidden' : 'border-2 border-toxic-green'
         } ${SIZE_CLASSES[size] || SIZE_CLASSES.mini}`}
       >
         <div
@@ -208,7 +208,7 @@ export const Panel = memo(function Panel({
 }: PanelProps) {
   return (
     <div
-      className={`relative bg-abyss-black/40 border-4 border-steel-gray p-4 group overflow-hidden shadow-[4px_4px_0px_var(--color-steel-gray)] ${className}`}
+      className={`relative bg-abyss-black border-4 border-steel-gray p-4 group overflow-hidden shadow-[4px_4px_0px_var(--color-steel-gray)] ${className}`}
     >
       {/* Brutalist Frame Corners */}
       <UIFrameCorner className='absolute top-0 left-0 w-6 h-6 text-steel-gray opacity-30 transition-opacity group-hover:opacity-60' />

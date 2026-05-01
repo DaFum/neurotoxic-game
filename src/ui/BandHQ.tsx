@@ -105,7 +105,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
 
       <div className='relative z-50 w-full max-w-5xl h-[90vh] border-4 border-toxic-green bg-void-black flex flex-col shadow-[8px_8px_0px_var(--color-toxic-green)]'>
         {/* Header */}
-        <div className='flex justify-between items-center p-6 border-b-4 border-toxic-green bg-void-black/50'>
+        <div className='flex justify-between items-center p-6 border-b-4 border-toxic-green bg-void-black'>
           <div>
             <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-toxic-green)]">
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
