@@ -1,4 +1,4 @@
-import { eventEngine } from '../../src/utils/eventEngine'
+import { eventEngine } from '../../src/utils/eventEngine.ts'
 
 const iterations = 1000000
 

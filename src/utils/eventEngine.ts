@@ -864,8 +864,7 @@ const buildTemplateContext = (
 ): TemplateContext => {
   if (!input) return {}
   const output: TemplateContext = {}
-  for (const key of Object.keys(input)) {
-    const value = input[key]
+  for (const [key, value] of Object.entries(input)) {
     if (typeof value === 'string') output[key] = value
   }
   return output
