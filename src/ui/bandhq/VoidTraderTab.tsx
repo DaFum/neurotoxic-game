@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../shared/ActionButton'
 import { CONTRABAND_BY_RARITY, VOID_TRADER_COSTS } from '../../data/contraband'
@@ -144,12 +143,4 @@ export const VoidTraderTab = ({
       </div>
     </div>
   )
-}
-
-VoidTraderTab.propTypes = {
-  player: PropTypes.object.isRequired,
-  handleTrade: PropTypes.func.isRequired,
-  isItemOwned: PropTypes.func.isRequired,
-  isItemDisabled: PropTypes.func.isRequired,
-  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
