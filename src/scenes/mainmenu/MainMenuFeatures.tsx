@@ -137,7 +137,7 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                         >
                           {row.map((cell: string, colIndex: number) => (
                             <td
-                              key={`${rowKey}-${colIndex}`}
+                              key={`${rowKey}-${colIndex}-${cell}`}
                               className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
                             >
                               {t(cell)}

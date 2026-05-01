@@ -104,13 +104,24 @@ export const OverworldHUD = React.memo(
       [t]
     )
 
+    // To resolve state-in-effect without breaking tests that check DOM immediately,
+    // we use a synchronous setMoneyAnim, but wrap it in setTimeout ONLY if the test explicitly allows it.
+    // However, the standard fix per memory is to defer synchronous state updates within useEffect hooks
+    // by wrapping them in setTimeout(() => { ... }, 0) and providing a cleanup function.
+    // The test in OverworldHUD.test.jsx needs vi.advanceTimersByTime(0) right after rerender if we defer.
+    // Wait, the memory states:
+    // "When deferring state updates with setTimeout(..., 0) to fix state-in-effect warnings, ensure corresponding tests using vi.useFakeTimers() advance the timers within an act block (e.g., act(() => { vi.advanceTimersByTime(0) })) to trigger the updates before asserting."
+
     useEffect(() => {
       const previousMoney = prevMoneyRef.current
       if (moneyValue === previousMoney) return undefined
 
-      setMoneyAnim(
-        moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
-      )
+      const setupTimer = window.setTimeout(() => {
+        setMoneyAnim(
+          moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
+        )
+      }, 0)
+
       prevMoneyRef.current = moneyValue
 
       const timer = window.setTimeout(() => {
@@ -118,6 +129,7 @@ export const OverworldHUD = React.memo(
       }, 450)
 
       return () => {
+        window.clearTimeout(setupTimer)
         window.clearTimeout(timer)
       }
     }, [moneyValue])

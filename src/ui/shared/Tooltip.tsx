@@ -3,7 +3,8 @@ import React, {
   useId,
   cloneElement,
   isValidElement,
-  useCallback
+  useCallback,
+  useRef
 } from 'react'
 import { logger } from '../../utils/logger'
 import PropTypes from 'prop-types'
@@ -59,44 +60,49 @@ export const Tooltip = ({
       Object.hasOwn(styleValue as Record<string, unknown>, 'pointerEvents') &&
       (styleValue as Record<string, unknown>).pointerEvents === 'none')
 
+  const childPropsRef = useRef(childProps)
+  React.useEffect(() => {
+    childPropsRef.current = childProps
+  })
+
   const handleMouseEnter = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(true)
-      const fn = getOwn<unknown>(childProps, 'onMouseEnter')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onMouseEnter')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleMouseLeave = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(false)
-      const fn = getOwn<unknown>(childProps, 'onMouseLeave')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onMouseLeave')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleFocus = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(true)
-      const fn = getOwn<unknown>(childProps, 'onFocus')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onFocus')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleBlur = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(false)
-      const fn = getOwn<unknown>(childProps, 'onBlur')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onBlur')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   React.useEffect(() => {
