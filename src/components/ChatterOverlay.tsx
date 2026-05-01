@@ -221,7 +221,7 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
       <div
         className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
         style={{
-          boxShadow: `0 0 24px rgb(var(--color-void-black-rgb) / 90%), 0 0 10px ${sceneStyle.accentGlow}`
+          boxShadow: `4px 4px 0px ${sceneStyle.accent}`
         }}
       >
         {/* Left accent bar */}

@@ -152,6 +152,7 @@ function GameContent() {
 export default function App() {
   return (
     <ErrorBoundary>
+      <div className="noise-overlay pointer-events-none mix-blend-overlay"></div>
       <GameStateProvider>
         <GameContent />
       </GameStateProvider>
