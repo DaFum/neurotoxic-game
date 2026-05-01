@@ -153,7 +153,9 @@ export const usePostGigLogic = () => {
       gigEvents: lastGigStats?.events || []
     }
     try {
-      return generatePostOptions(currentGig, gameStateForPosts)
+      const options = generatePostOptions(currentGig, gameStateForPosts)
+      errorHandledRef.current = false
+      return options
     } catch (e) {
       // Store the error fact silently inside ref,
       // which we will read in the useEffect below.
