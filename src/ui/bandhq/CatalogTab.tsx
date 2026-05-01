@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { CatalogTabProps } from '../../types/components'
+import { logger } from '../../utils/logger'
 import { ShopItem } from './ShopItem'
 
 const BALANCE_DISPLAY_META = {
@@ -25,6 +26,21 @@ export const CatalogTab = ({
   processingItemId
 }: CatalogTabProps) => {
   const { t } = useTranslation()
+
+  if (import.meta.env.DEV) {
+    const keys = Object.keys(balances)
+    if (keys.length === 0) {
+      logger.warn('UI', 'CatalogTab: balances must include at least one key')
+    }
+    for (const key of keys) {
+      if (!Number.isFinite(balances[key])) {
+        logger.warn(
+          'UI',
+          `CatalogTab: balances.${key} must be a finite number, got ${balances[key]}`
+        )
+      }
+    }
+  }
 
   return (
     <div>
