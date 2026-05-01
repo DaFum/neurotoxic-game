@@ -159,7 +159,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
                   ${
                     isActive
                       ? 'bg-toxic-green text-void-black focus-visible:ring-void-black'
-                      : 'bg-void-black text-toxic-green border-r-2 border-l-2 border-transparent hover:border-toxic-green hover:bg-toxic-green/10 focus-visible:ring-toxic-green'
+                      : 'bg-void-black text-toxic-green border-r-2 border-l-2 border-transparent hover:border-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
                   }`}
               >
                 {isActive && <span className='text-xs'>▶</span>}
