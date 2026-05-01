@@ -236,9 +236,8 @@ export const applyTraitUnlocks = (
 
   if (!hasChanges) {
     // Return early to save allocation, maintaining original fallback semantics for band
-    const baseBand = currentState.band ?? ({} as BandState)
     return {
-      band: { ...baseBand, members: baseBand.members ?? members },
+      band: currentState.band ?? ({} as BandState),
       toasts: (currentState.toasts ?? []) as ToastPayload[]
     }
   }
