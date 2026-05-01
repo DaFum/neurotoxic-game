@@ -136,11 +136,9 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                           className='border-b border-toxic-green/10 last:border-0'
                         >
                           {row.map((cell: string, colIndex: number) => {
-                            // Using a combination of rowKey, cell value, and colIndex to ensure uniqueness.
-                            // While using indices as keys is discouraged for dynamic lists (add/remove/reorder),
-                            // table columns are structurally static within a row. A composite key satisfies React
-                            // and guarantees uniqueness even if `cell` values are repeated across columns.
-                            const dataStableKey = `${rowKey}-${colIndex}-${cell}`
+                            // Using a combination of rowKey, cell value, and the header name to ensure uniqueness.
+                            const headerName = section.headers?.[colIndex] || `col-${colIndex}`
+                            const dataStableKey = `${rowKey}-${headerName}-${cell}`
                             return (
                               <td
                                 key={dataStableKey}
