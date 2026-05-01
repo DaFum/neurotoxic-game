@@ -4,6 +4,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   test: {
+    alias: {
+      'virtual:pwa-register/react': '/app/tests/mocks/virtual-pwa.js'
+    },
     silent: 'passed-only',
     coverage: {
       provider: 'v8',

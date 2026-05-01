@@ -25,6 +25,8 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
 }))
 vi.mock('../../src/utils/imageGen', () => ({
   getGenImageUrl: vi.fn(prompt => `mock-${prompt}.jpg`),
+  isImageGenerationAvailable: () => true,
+  getGeneratedImageFallbackUrl: () => 'mock-fallback',
   IMG_PROMPTS: {
     VENUE_CLUB: 'club',
     VENUE_KAMINSTUBE: 'kaminstube',

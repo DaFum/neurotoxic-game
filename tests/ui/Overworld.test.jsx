@@ -41,6 +41,8 @@ vi.mock('../../src/components/ToggleRadio', () => ({
 }))
 
 vi.mock('../../src/utils/imageGen', () => ({
+  isImageGenerationAvailable: () => true,
+  getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock://image.png',
   IMG_PROMPTS: {}
 }))

@@ -88,6 +88,8 @@ mock.module('../../src/utils/errorHandler', {
 
 mock.module('../../src/utils/imageGen', {
   namedExports: {
+    isImageGenerationAvailable: () => true,
+    getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { NOTE_SKULL: 'skull', NOTE_LIGHTNING: 'lightning' }
   }
@@ -196,7 +198,10 @@ describe('NoteManager', () => {
 
     await uninitializedNoteManager.loadAssets()
 
-    assert.equal(uninitializedNoteManager.textureManager.noteTextures.skull, mockTextureSkull)
+    assert.equal(
+      uninitializedNoteManager.textureManager.noteTextures.skull,
+      mockTextureSkull
+    )
     assert.equal(
       uninitializedNoteManager.textureManager.noteTextures.lightning,
       mockTextureLightning

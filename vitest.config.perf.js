@@ -4,6 +4,9 @@ import baseConfig from './vitest.config.js'
 export default defineConfig({
   plugins: baseConfig.plugins,
   test: {
+    alias: {
+      'virtual:pwa-register/react': '/app/tests/mocks/virtual-pwa.js'
+    },
     ...baseConfig.test,
     include: [
       'tests/performance/**/*.test.js',

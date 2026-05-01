@@ -4,6 +4,8 @@ import { ShopItem } from '../../src/ui/bandhq/ShopItem.tsx'
 import * as purchaseLogicUtils from '../../src/utils/purchaseLogicUtils'
 
 vi.mock('../../src/utils/imageGen', () => ({
+  isImageGenerationAvailable: () => true,
+  getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: vi.fn(desc => `mock-url-${desc}`),
   IMG_PROMPTS: { 'item-img': 'prompt-for-item-img' }
 }))

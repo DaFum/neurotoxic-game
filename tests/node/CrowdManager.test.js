@@ -54,6 +54,8 @@ mock.module('pixi.js', {
 // Mock dependencies
 mock.module('../../src/utils/imageGen', {
   namedExports: {
+    isImageGenerationAvailable: () => true,
+    getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { CROWD_IDLE: 'idle', CROWD_MOSH: 'mosh' }
   }

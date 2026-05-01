@@ -2,6 +2,9 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    alias: {
+      'virtual:pwa-register/react': '/app/tests/mocks/virtual-pwa.js'
+    },
     silent: 'passed-only',
     coverage: {
       provider: 'v8',
