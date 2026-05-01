@@ -4,9 +4,19 @@
 
 Applies to `src/scenes/intro/**`.
 
-## Rules
+## Purpose
 
-- Follow parent `src/scenes/AGENTS.md` for scene transitions and localized text.
+Intro agents manage intro-scene presentation controls (skip/autoplay overlays), localized copy, and deterministic interaction behavior that must stay testable.
+
+## Limitations
+
+- Preserve deterministic timing and testability; avoid hidden timers without controllable hooks.
+- Keep skip/autoplay paths accessible via keyboard and pointer.
+- Follow parent `src/scenes/AGENTS.md` for scene transitions and localized text requirements.
+
+## When to use
+
+Use this scope when editing intro overlays, skip/autoplay interaction behavior, or intro-only accessibility flows. Use parent scene guidance for routing ownership and shared scene-level transition policy.
 
 ## Gotchas
 

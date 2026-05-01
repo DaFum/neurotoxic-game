@@ -17,8 +17,14 @@ describe('sceneReducer', () => {
     })
 
     it('should keep ALLOWED_SCENES aligned with GAME_PHASES values', () => {
-      for (const scene of Object.values(GAME_PHASES)) {
+      const phaseValues = Object.values(GAME_PHASES)
+      for (const scene of phaseValues) {
         assert.strictEqual(ALLOWED_SCENES.has(scene), true)
+      }
+
+      assert.strictEqual(ALLOWED_SCENES.size, phaseValues.length)
+      for (const allowedScene of ALLOWED_SCENES) {
+        assert.strictEqual(phaseValues.includes(allowedScene), true)
       }
     })
 

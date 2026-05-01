@@ -6,22 +6,22 @@ Static review for inconsistencies, doubled components/functions, and exported-bu
 
 ## Findings
 
-### 1) Exported constant appears unintegrated
+### 1) Scene guard constant is now integrated
 
-- `ALLOWED_SCENES` is exported from `src/context/reducers/systemReducer.ts` and has no in-repo references beyond its declaration.
-- Integration recommendation:
-  - Use `ALLOWED_SCENES` in scene-transition guardrails (e.g., central transition action creator or routing hook) so scene validation relies on one source of truth.
-  - Add a reducer/action-creator test that rejects unknown scene IDs using this constant.
+- `ALLOWED_SCENES` currently lives in `src/context/reducers/sceneReducer.ts` and is used by `handleChangeScene` validation.
+- Follow-up recommendation:
+  - Keep `ALLOWED_SCENES` as the reducer-level source of truth for phase validity checks.
+  - Keep bidirectional set-alignment coverage in `tests/context/reducers/sceneReducer.test.js` so `GAME_PHASES` and `ALLOWED_SCENES` stay equivalent during future additions.
 
 ### 2) Potentially doubled overlay concept
 
-- `GameOverOverlay.tsx` exists in both:
-  - `src/components/hud/GameOverOverlay.tsx`
-  - `src/scenes/kabelsalat/components/overlays/GameOverOverlay.tsx`
-- Risk: parallel implementations may diverge in copy, behavior, or visual contract.
+- Distinct game-over overlays now exist by design:
+  - `src/components/hud/GameOverOverlay.tsx` (global gig HUD overlay)
+  - `src/scenes/kabelsalat/components/overlays/KabelsalatGameOverOverlay.tsx` (Kabelsalat minigame overlay)
+- Risk remains: parallel implementations can still diverge in copy or accessibility behavior.
 - Integration recommendation:
-  - Decide ownership: either shared HUD primitive consumed by Kabelsalat, or explicit split with naming that clarifies mode-specific behavior.
-  - If behavior is shared, extract a single presentational core and keep mode-specific wrappers minimal.
+  - Keep naming explicit (`GameOverOverlay` vs `KabelsalatGameOverOverlay`) to preserve ownership boundaries.
+  - If future behavior converges, extract shared presentational primitives while keeping mode-specific wrappers minimal.
 
 ### 3) Naming inconsistency hotspots (`constants.ts`, `utils.ts`)
 

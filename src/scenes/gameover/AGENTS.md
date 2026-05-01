@@ -4,9 +4,19 @@
 
 Applies to `src/scenes/gameover/**`.
 
-## Rules
+## What agents do
 
-- Follow parent `src/scenes/AGENTS.md` for scene callback/routing constraints.
+Gameover agents present loss-state UI, keep retry/menu actions reachable, feed/format stats for gameover presentation, and orchestrate recovery-oriented callbacks already exposed by the scene layer.
+
+## Limitations
+
+- UI-layer only: do not introduce heavy reducer mutations from this scope.
+- Preserve button-group reachability for retry/menu fallbacks.
+- Follow parent `src/scenes/AGENTS.md` callback/routing constraints for all scene transitions.
+
+## When to use
+
+Use this scope for retry/menu interaction flows, gameover stats presentation updates, and recovery UX adjustments. Use parent scene docs for broader transition architecture or cross-scene flow changes.
 
 ## Gotchas
 
