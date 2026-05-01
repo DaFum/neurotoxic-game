@@ -25,6 +25,7 @@ import type {
   MerchPressPayload,
   PirateBroadcastPayload,
   QuestState,
+  RawLoadedGame,
   ResetStatePayload,
   EventDeltaPayload,
   Venue,
@@ -42,7 +43,7 @@ import type {
  * @returns {Object} Action object
  */
 export const createChangeSceneAction = (
-  scene: string
+  scene: GameState['currentScene']
 ): Extract<GameAction, { type: typeof ActionTypes.CHANGE_SCENE }> => ({
   type: ActionTypes.CHANGE_SCENE,
   payload: scene
@@ -289,7 +290,7 @@ export const createSetGigModifiersAction = (
  * @returns {Object} Action object
  */
 export const createLoadGameAction = (
-  data: Partial<GameState>
+  data: RawLoadedGame
 ): Extract<GameAction, { type: typeof ActionTypes.LOAD_GAME }> => ({
   type: ActionTypes.LOAD_GAME,
   payload: data
@@ -674,7 +675,10 @@ export const createPirateBroadcastAction = (
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean
-): Extract<GameAction, { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }
+> => ({
   type: ActionTypes.SET_PENDING_BANDHQ_OPEN,
   payload: isOpen
 })

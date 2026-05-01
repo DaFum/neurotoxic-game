@@ -223,35 +223,7 @@ export function usePersistence({
           addUnlock(unlockId)
         })
 
-        const loadPayload: Partial<GameState> = {
-          version: parsedObj.version as GameState['version'],
-          currentScene: parsedObj.currentScene as GameState['currentScene'],
-          player: parsedObj.player as GameState['player'],
-          band: parsedObj.band as GameState['band'],
-          social: parsedObj.social as GameState['social'],
-          gameMap: parsedObj.gameMap as GameState['gameMap'],
-          currentGig: parsedObj.currentGig as GameState['currentGig'],
-          lastGigStats: parsedObj.lastGigStats as GameState['lastGigStats'],
-          activeEvent: parsedObj.activeEvent as GameState['activeEvent'],
-          activeStoryFlags:
-            parsedObj.activeStoryFlags as GameState['activeStoryFlags'],
-          eventCooldowns:
-            parsedObj.eventCooldowns as GameState['eventCooldowns'],
-          pendingEvents: parsedObj.pendingEvents as GameState['pendingEvents'],
-          venueBlacklist:
-            parsedObj.venueBlacklist as GameState['venueBlacklist'],
-          activeQuests: parsedObj.activeQuests as GameState['activeQuests'],
-          reputationByRegion:
-            parsedObj.reputationByRegion as GameState['reputationByRegion'],
-          settings: parsedObj.settings as GameState['settings'],
-          npcs: parsedObj.npcs as GameState['npcs'],
-          gigModifiers: parsedObj.gigModifiers as GameState['gigModifiers'],
-          setlist: parsedObj.setlist as GameState['setlist'],
-          minigame: parsedObj.minigame as GameState['minigame'],
-          unlocks: mergedUnlocks
-        }
-
-        dispatch(createLoadGameAction(loadPayload))
+        dispatch(createLoadGameAction({ ...parsedObj, unlocks: mergedUnlocks }))
         return true
       },
       false

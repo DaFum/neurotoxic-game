@@ -17,6 +17,7 @@ import { pickRandomContraband } from '../utils/contrabandUtils'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
+import { isPlainObject } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
 // Import modular state management
@@ -279,29 +280,19 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
         'loadInjectedState',
         () => {
           const saved = localStorage.getItem(SAVE_KEY)
-          return saved ? (JSON.parse(saved) as Partial<GameState>) : null
+          if (!saved) return null
+          const parsed: unknown = JSON.parse(saved)
+          return isPlainObject(parsed) ? parsed : null
         },
-        null as Partial<GameState> | null
+        null as Record<string, unknown> | null
       )
 
       if (savedGame && savedGame.version !== undefined) {
         try {
-          // Merge strategy: freshState spreads first (all defaults), then savedGame
-          // overrides its fields. Incomplete fixtures (e.g. screenshot test stubs)
-          // safely fall back to fresh defaults for any field they omit.
-          // toasts/minigame/isScreenshotMode are re-asserted explicitly because
-          // createPersistedState omits them — savedGame may lack these keys entirely.
-          return {
-            ...freshState,
-            ...savedGame,
-            // Always ensure these critical fields are valid (never undefined)
-            toasts: savedGame.toasts ?? freshState.toasts,
-            minigame: savedGame.minigame ?? freshState.minigame,
-            unlocks,
-            // isScreenshotMode flag is used by scenes to suppress random events
-            isScreenshotMode:
-              savedGame.isScreenshotMode ?? freshState.isScreenshotMode
-          } as GameState
+          return gameReducer(
+            freshState,
+            createLoadGameAction({ ...savedGame, unlocks })
+          )
         } catch (err) {
           logger.error('GameState', 'Failed to hydrate injected state', err)
         }
