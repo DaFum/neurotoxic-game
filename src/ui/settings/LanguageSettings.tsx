@@ -13,13 +13,13 @@ export const LanguageSettings = memo(function LanguageSettings() {
       <div className='flex gap-4'>
         <ActionButton
           onClick={() => i18n.changeLanguage('en')}
-          className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-toxic-green text-void-black' : 'bg-void-black text-ash-gray'}`}
+          className={`flex-1 ${i18n.language?.startsWith('en') ? 'bg-toxic-green text-void-black' : 'bg-abyss-black text-ash-gray border border-ash-gray/30 opacity-70'}`}
         >
           {t('ui:language_option_en')}
         </ActionButton>
         <ActionButton
           onClick={() => i18n.changeLanguage('de')}
-          className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-toxic-green text-void-black' : 'bg-void-black text-ash-gray'}`}
+          className={`flex-1 ${i18n.language?.startsWith('de') ? 'bg-toxic-green text-void-black' : 'bg-abyss-black text-ash-gray border border-ash-gray/30 opacity-70'}`}
         >
           {t('ui:language_option_de')}
         </ActionButton>

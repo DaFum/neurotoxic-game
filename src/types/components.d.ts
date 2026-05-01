@@ -203,6 +203,7 @@ export interface ActionButtonWrapperProps {
 
 export interface AmpControlsProps {
   dialValue: number
+  targetValue: number
   setDialValue: React.Dispatch<React.SetStateAction<number>>
 }
 
