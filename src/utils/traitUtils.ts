@@ -29,15 +29,23 @@ export const hasTrait = (member: unknown, traitId: string): boolean => {
     typeof member !== 'object' ||
     !Object.hasOwn(member, 'traits') ||
     !(member as Record<string, unknown>).traits ||
-    typeof (member as Record<string, unknown>).traits !== 'object' ||
-    Array.isArray((member as Record<string, unknown>).traits)
+    typeof (member as Record<string, unknown>).traits !== 'object'
   ) {
     return false
   }
-  return Object.hasOwn(
-    (member as Record<string, unknown>).traits as Record<string, unknown>,
-    traitId
-  )
+
+  const traits = (member as Record<string, unknown>).traits
+  if (Array.isArray(traits)) {
+    for (let i = 0; i < traits.length; i++) {
+      const t = traits[i]
+      if (t && typeof t === 'object' && (t as Record<string, unknown>).id === traitId) {
+        return true
+      }
+    }
+    return false
+  }
+
+  return Object.hasOwn(traits as Record<string, unknown>, traitId)
 }
 
 /**
@@ -165,22 +173,11 @@ export const applyTraitUnlocks = (
     }
   }
 
-  // Create shallow copy of band and members for immutable update
   const members: BandMember[] = currentState.band?.members ?? []
-  type MemberWithTraits = BandMember & { traits: Record<string, TraitDef> }
-  const nextMembers: MemberWithTraits[] = members.map(m => ({
-    ...m,
-    traits: normalizeTraitMap(m.traits)
-  }))
-  const nextBand: BandState & { members: MemberWithTraits[] } = {
-    ...(currentState.band ?? ({} as BandState)),
-    members: nextMembers
-  }
-  const nextToasts: ToastPayload[] = [...(currentState.toasts ?? [])]
 
   // Create a map for O(1) member lookup by ID and lowercase name
   const memberLookup = new Map<string, number>()
-  nextBand.members.forEach((m, idx) => {
+  members.forEach((m, idx) => {
     if (m.id && !memberLookup.has(m.id)) {
       memberLookup.set(m.id, idx)
     }
@@ -191,6 +188,17 @@ export const applyTraitUnlocks = (
       }
     }
   })
+
+  let hasChanges = false
+  const validUnlocks: Array<{
+    memberId: string
+    traitId: string
+    memberIndex: number
+    traitDef: TraitDef
+  }> = []
+
+  // Track traits we've decided to unlock in this batch to prevent duplicates
+  const pendingUnlocks = new Set<string>()
 
   for (const u of unlocks) {
     if (!u || typeof u.memberId !== 'string' || typeof u.traitId !== 'string')
@@ -204,11 +212,14 @@ export const applyTraitUnlocks = (
 
     if (memberIndex === undefined) continue
 
-    const member = nextBand.members[memberIndex]
+    const member = members[memberIndex]
     if (!member) continue
 
+    const pendingKey = `${memberIndex}-${u.traitId}`
+    if (pendingUnlocks.has(pendingKey)) continue
+
     // Check if trait is already unlocked
-    if (Object.hasOwn(member.traits, u.traitId)) continue
+    if (hasTrait(member, u.traitId)) continue
 
     // Find trait definition using the member's name to resolve static character data
     const charKey =
@@ -221,15 +232,49 @@ export const applyTraitUnlocks = (
 
     if (!traitDef) continue
 
+    pendingUnlocks.add(pendingKey)
+    validUnlocks.push({
+      memberId: u.memberId,
+      traitId: u.traitId,
+      memberIndex,
+      traitDef
+    })
+    hasChanges = true
+  }
+
+  if (!hasChanges) {
+    // Return early to save allocation, maintaining original fallback semantics for band
+    return {
+      band: currentState.band ?? ({} as BandState),
+      toasts: (currentState.toasts ?? []) as ToastPayload[]
+    }
+  }
+
+  // Create shallow copy of band and members for immutable update
+  type MemberWithTraits = BandMember & { traits: Record<string, TraitDef> }
+  const nextMembers: MemberWithTraits[] = members.map(m => ({
+    ...m,
+    traits: normalizeTraitMap(m.traits)
+  }))
+  const nextBand: BandState & { members: MemberWithTraits[] } = {
+    ...(currentState.band ?? ({} as BandState)),
+    members: nextMembers
+  }
+  const nextToasts: ToastPayload[] = [...(currentState.toasts ?? [])]
+
+  for (const { memberId, traitId, memberIndex, traitDef } of validUnlocks) {
+    const member = nextBand.members[memberIndex]
+    if (!member) continue
+
     // Apply trait
-    member.traits[u.traitId] = traitDef
+    member.traits[traitId] = traitDef
 
     // Add toast with a unique ID
     nextToasts.push({
       id: `trait-${getSafeUUID()}`,
       messageKey: 'ui:shop.messages.traitUnlocked',
-      options: { traitName: traitDef.name, memberId: u.memberId },
-      message: `Unlocked Trait: ${traitDef.name} (${u.memberId})`,
+      options: { traitName: traitDef.name, memberId },
+      message: `Unlocked Trait: ${traitDef.name} (${memberId})`,
       type: 'success'
     })
   }
