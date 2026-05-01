@@ -153,7 +153,9 @@ export const usePostGigLogic = () => {
       gigEvents: lastGigStats?.events || []
     }
     try {
-      return generatePostOptions(currentGig, gameStateForPosts)
+      const options = generatePostOptions(currentGig, gameStateForPosts)
+      errorHandledRef.current = false
+      return options
     } catch (e) {
       // Store the error fact silently inside ref,
       // which we will read in the useEffect below.
@@ -175,7 +177,7 @@ export const usePostGigLogic = () => {
         'Failed to generate post options',
         errorHandledRef.current.error
       )
-      errorHandledRef.current = false // mark handled
+      errorHandledRef.current = { kind: 'handled' } // mark handled
 
       setPostOptionsError(true)
     }
