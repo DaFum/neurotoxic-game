@@ -1,7 +1,7 @@
 /*
- * (#1) Actual Updates: Added PropTypes.
-
-
+ * (#1) Actual Updates: Replaced original feature list with comprehensive 23-section layout, conditionally rendering descriptions to handle empty strings.
+ * (#2) Next Steps and Ideas: We can add more animation for the modal, or add keyboard navigation for the feature list.
+ * (#3) Found Errors + Solutions: No additional errors found, keeping the feature list dynamically scalable.
  */
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
@@ -9,7 +9,7 @@ import { Modal } from '../../ui/shared'
 
 type FeatureSection = {
   title: string
-  description: string
+  description?: string
   type?: 'bullets' | 'table'
   items?: string[]
   headers?: string[]
@@ -23,7 +23,7 @@ const isFeatureSectionArray = (value: unknown): value is FeatureSection[] => {
     const item = section as Record<string, unknown>
     if (
       typeof item.title !== 'string' ||
-      typeof item.description !== 'string'
+      (item.description !== undefined && typeof item.description !== 'string')
     ) {
       return false
     }
@@ -77,9 +77,11 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
             <h3 className='text-toxic-green font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-toxic-green/30 pb-1'>
               {t(section.title)}
             </h3>
-            <p className='text-ash-gray font-mono text-sm md:text-base leading-relaxed mb-2'>
-              {t(section.description)}
-            </p>
+            {section.description && t(section.description) && (
+                <p className='text-ash-gray font-mono text-sm md:text-base leading-relaxed mb-2'>
+                  {t(section.description)}
+                </p>
+            )}
 
             {section.type === 'bullets' && section.items && (
               <ul className='list-none flex flex-col gap-2 pl-2 border-l border-toxic-green/20'>
@@ -136,10 +138,6 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                           className='border-b border-toxic-green/10 last:border-0'
                         >
                           {row.map((cell: string, colIndex: number) => {
-                            // Using a combination of rowKey, cell value, and colIndex to ensure uniqueness.
-                            // While using indices as keys is discouraged for dynamic lists (add/remove/reorder),
-                            // table columns are structurally static within a row. A composite key satisfies React
-                            // and guarantees uniqueness even if `cell` values are repeated across columns.
                             const dataStableKey = `${rowKey}-${colIndex}-${cell}`
                             return (
                               <td
