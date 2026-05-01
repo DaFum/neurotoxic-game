@@ -97,6 +97,7 @@ test('stage utils', async t => {
 
       assert.equal(getPixiColorFromToken('--my-red'), 0xff0000)
       assert.equal(getPixiColorFromToken('--my-blue'), 0x0000ff)
+      assert.equal(getPixiColorFromToken('my-red'), 0xff0000)
 
       globalThis.window.getComputedStyle = originalGetComputedStyle
 

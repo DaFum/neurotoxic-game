@@ -69,11 +69,11 @@ export const getPixiColorFromToken = (
   const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? defaultHexFallback
   // @theme tokens use --color- prefix (e.g. --toxic-green → --color-toxic-green).
   // Guard against double-prefix if caller already passes --color-* directly.
-  const cssPropertyName = tokenName.startsWith('--color-')
-    ? tokenName
-    : tokenName.startsWith('--')
-      ? `--color-${tokenName.slice(2)}`
-      : tokenName
+  const cssPropertyName = tokenName.startsWith('--')
+    ? tokenName.startsWith('--color-')
+      ? tokenName
+      : `--color-${tokenName.slice(2)}`
+    : `--color-${tokenName}`
   const resolvedCssValue = window
     .getComputedStyle(document.documentElement)
     .getPropertyValue(cssPropertyName)
