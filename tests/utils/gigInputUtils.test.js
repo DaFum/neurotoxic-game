@@ -23,6 +23,45 @@ describe('gigInputUtils', () => {
       assert.equal(map.get('d'), 3)
       assert.equal(map.get('no-key'), undefined)
     })
+
+    test('skips null lanes and lanes without keys', () => {
+      const lanes = [{ key: 'a' }, null, { id: 'no-key' }, { key: 'd' }]
+      const map = createKeyToLaneMap(lanes)
+
+      assert.equal(map.size, 2)
+      assert.equal(map.get('a'), 0)
+      assert.equal(map.get('d'), 3)
+    })
+
+    test('skips non-integer indices assigned to the array', () => {
+      const lanes = [{ key: 'a' }]
+      lanes.customProp = { key: 'invalid' }
+      const map = createKeyToLaneMap(lanes)
+
+      assert.equal(map.size, 1)
+      assert.equal(map.get('a'), 0)
+      assert.equal(map.get('invalid'), undefined)
+    })
+
+    test('handles lanes with null or undefined key values', () => {
+      const lanes = [{ key: undefined }, { key: null }]
+      const map = createKeyToLaneMap(lanes)
+
+      assert.equal(map.size, 1)
+      // undefined/null are coalesced to empty string
+      assert.equal(map.get(''), 1)
+    })
+
+    test('ignores properties on the prototype chain', () => {
+      const lanes = Object.create({ 0: { key: 'inherited' } })
+      lanes[1] = { key: 'own' }
+
+      const map = createKeyToLaneMap(lanes)
+
+      assert.equal(map.size, 1)
+      assert.equal(map.get('own'), 1)
+      assert.equal(map.get('inherited'), undefined)
+    })
   })
 
   describe('handleKeyDownLogic', () => {
