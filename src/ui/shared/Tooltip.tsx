@@ -61,9 +61,9 @@ export const Tooltip = ({
       (styleValue as Record<string, unknown>).pointerEvents === 'none')
 
   const childPropsRef = useRef(childProps)
-  React.useEffect(() => {
-    childPropsRef.current = childProps
-  })
+  // Ensure ref is updated synchronously during render so stale handlers are never called
+  // before the effect runs.
+  childPropsRef.current = childProps
 
   const handleMouseEnter = useCallback(
     (e: SyntheticEvent) => {

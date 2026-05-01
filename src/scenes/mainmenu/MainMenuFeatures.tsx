@@ -135,14 +135,21 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                           key={rowKey}
                           className='border-b border-toxic-green/10 last:border-0'
                         >
-                          {row.map((cell: string, colIndex: number) => (
-                            <td
-                              key={`${rowKey}-${colIndex}-${cell}`}
-                              className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
-                            >
-                              {t(cell)}
-                            </td>
-                          ))}
+                          {row.map((cell: string, colIndex: number) => {
+                            // Using a combination of rowKey, cell value, and colIndex to ensure uniqueness.
+                            // While using indices as keys is discouraged for dynamic lists (add/remove/reorder),
+                            // table columns are structurally static within a row. A composite key satisfies React
+                            // and guarantees uniqueness even if `cell` values are repeated across columns.
+                            const dataStableKey = `${rowKey}-${colIndex}-${cell}`
+                            return (
+                              <td
+                                key={dataStableKey}
+                                className={`p-2 ${cell === rowKey ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
+                              >
+                                {t(cell)}
+                              </td>
+                            )
+                          })}
                         </tr>
                       )
                     })}

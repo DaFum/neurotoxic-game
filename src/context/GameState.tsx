@@ -222,7 +222,9 @@ const getStableGameDispatchContext =
   (): Context<GameDispatchActions | null> => {
     const store = globalThis as HotGameStateContextStore
     if (!store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__) {
-      const GameDispatchContext = createContext<GameDispatchActions | null>(null)
+      const GameDispatchContext = createContext<GameDispatchActions | null>(
+        null
+      )
       store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__ = GameDispatchContext
     }
     return store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__
