@@ -12,14 +12,19 @@ export const useBandHQModal = () => {
   const [showHQ, setShowHQ] = useState(pendingBandHQOpen)
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof window.setTimeout> | undefined = undefined
+
     if (pendingBandHQOpen) {
-      // Use setTimeout to defer the state update and avoid synchronous re-render warnings
-      // as suggested by CI Copilot reviewer to resolve @eslint-react/set-state-in-effect
-      const timer = setTimeout(() => {
+      timeoutId = window.setTimeout(() => {
         setShowHQ(true)
         setPendingBandHQOpen(false)
       }, 0)
-      return () => clearTimeout(timer)
+    }
+
+    return () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId)
+      }
     }
   }, [pendingBandHQOpen, setPendingBandHQOpen])
 

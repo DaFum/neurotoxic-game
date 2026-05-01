@@ -104,13 +104,18 @@ export const OverworldHUD = React.memo(
       [t]
     )
 
+    // Defer applying the money animation class so it runs as a separate state
+    // transition after render, then clear it once the animation window ends.
     useEffect(() => {
       const previousMoney = prevMoneyRef.current
       if (moneyValue === previousMoney) return undefined
 
-      setMoneyAnim(
-        moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
-      )
+      const setupTimer = window.setTimeout(() => {
+        setMoneyAnim(
+          moneyValue > previousMoney ? 'money-anim-up' : 'money-anim-down'
+        )
+      }, 0)
+
       prevMoneyRef.current = moneyValue
 
       const timer = window.setTimeout(() => {
@@ -118,6 +123,7 @@ export const OverworldHUD = React.memo(
       }, 450)
 
       return () => {
+        window.clearTimeout(setupTimer)
         window.clearTimeout(timer)
       }
     }, [moneyValue])
