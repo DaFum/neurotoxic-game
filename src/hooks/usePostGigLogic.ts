@@ -175,7 +175,7 @@ export const usePostGigLogic = () => {
         'Failed to generate post options',
         errorHandledRef.current.error
       )
-      errorHandledRef.current = { kind: 'handled' } // mark handled
+      errorHandledRef.current = false // mark handled
 
       setPostOptionsError(true)
     }

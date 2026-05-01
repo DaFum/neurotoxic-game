@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import type { HTMLMotionProps, Transition } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { useMemo } from 'react'
 import type { ComponentType, ElementType, ReactNode } from 'react'
 
 export const AnimatedDivider = ({
@@ -53,12 +54,12 @@ export const AnimatedSubtitle = ({
   className?: string
   children: ReactNode
 }) => {
-  /* eslint-disable @eslint-react/static-components */
-  const MotionComponent =
-    typeof as === 'string'
+  const MotionComponent = useMemo(() => {
+    return typeof as === 'string'
       ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
         motion.h2)
       : motion(as)
+  }, [as])
 
   return (
     <MotionComponent
@@ -70,7 +71,6 @@ export const AnimatedSubtitle = ({
       {children}
     </MotionComponent>
   )
-  /* eslint-enable @eslint-react/static-components */
 }
 
 AnimatedSubtitle.propTypes = {
