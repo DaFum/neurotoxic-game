@@ -8,10 +8,10 @@ Static review for inconsistencies, doubled components/functions, and exported-bu
 
 ### 1) Scene guard constant is now integrated
 
-- `ALLOWED_SCENES` currently lives in `src/context/reducers/sceneReducer.ts` and is used by `handleChangeScene` validation.
+- `ALLOWED_SCENE_VALUES` currently lives in `src/context/reducers/sceneReducer.ts`, with `isValidGamePhase` and a private set used by `handleChangeScene` validation.
 - Follow-up recommendation:
-  - Keep `ALLOWED_SCENES` as the reducer-level source of truth for phase validity checks.
-  - Keep bidirectional set-alignment coverage in `tests/context/reducers/sceneReducer.test.js` so `GAME_PHASES` and `ALLOWED_SCENES` stay equivalent during future additions.
+  - Keep `ALLOWED_SCENE_VALUES` as the exported source of truth for phase lists and keep set ownership private to the reducer module.
+  - Keep bidirectional set-alignment coverage in `tests/context/reducers/sceneReducer.test.js` so `GAME_PHASES` and `ALLOWED_SCENE_VALUES` stay equivalent during future additions.
 
 ### 2) Potentially doubled overlay concept
 
@@ -43,3 +43,8 @@ To satisfy local convention coverage in active domain folders, nested `AGENTS.md
 - `src/ui/overworld/`
 
 These files only include domain-specific gotchas and defer shared policy to parent AGENTS files.
+
+## Shim migration note
+
+- Compatibility shims (`src/components/stage/utils.ts`, `src/hooks/minigames/constants.ts`, `src/scenes/kabelsalat/constants.ts`, `src/scenes/kabelsalat/utils.ts`) are intentionally deprecated forwarding layers.
+- New imports should use canonical modules directly (`stageRenderUtils`, `minigameConstants`, `kabelsalatConstants`, `kabelsalatUtils`) and lint rules enforce this for new code.

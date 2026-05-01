@@ -246,7 +246,7 @@ describe('kabelsalat utils', () => {
     })
   })
 
-  test('getMessyPath socket Y coordinate is hardcoded to 120', async () => {
+  test('getMessyPath uses SOCKET_Y baseline', async () => {
     const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
     getMessyPath = mod.getMessyPath
 
