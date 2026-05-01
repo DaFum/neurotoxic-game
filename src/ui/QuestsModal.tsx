@@ -176,12 +176,13 @@ const QuestItem = memo(
     const { t, i18n } = useTranslation(['ui', 'events'])
     const isOverdue = quest.deadline != null && currentDay > quest.deadline
 
+    const safeProgress = quest.progress ?? 0
+    const safeRequired = quest.required ?? 0
+
     // Safe progress calculation
     let progressPercent = 0
-    if (typeof quest.required === 'number' && quest.required > 0) {
-      progressPercent = Math.round(
-        ((quest.progress || 0) / quest.required) * 100
-      )
+    if (safeRequired > 0) {
+      progressPercent = Math.round((safeProgress / safeRequired) * 100)
     }
     progressPercent = Math.max(
       0,
@@ -202,7 +203,7 @@ const QuestItem = memo(
       >
         <div className='flex justify-between items-start mb-2'>
           <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
-            {t(quest.label ?? '')}
+            {quest.label ? t(quest.label) : ''}
           </h3>
           {timeRemaining !== null && (
             <div
@@ -227,7 +228,7 @@ const QuestItem = memo(
           <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
             <span>{t('ui:quests.progress')}</span>
             <span>
-              {quest.progress} / {quest.required}
+              {safeProgress} / {safeRequired}
             </span>
           </div>
           <ProgressBar
