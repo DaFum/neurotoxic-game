@@ -255,7 +255,14 @@ export const createInitialState = (
   persistedData: { settings?: Partial<GameSettings>; unlocks?: string[] } = {}
 ): GameState => ({
   ...initialState,
-  player: structuredClone(DEFAULT_PLAYER_STATE),
+  player: {
+    ...DEFAULT_PLAYER_STATE,
+    hqUpgrades: [...DEFAULT_PLAYER_STATE.hqUpgrades],
+    van: {
+      ...DEFAULT_PLAYER_STATE.van,
+      upgrades: [...DEFAULT_PLAYER_STATE.van.upgrades]
+    }
+  },
   venueBlacklist: [],
   activeQuests: [],
   band: {

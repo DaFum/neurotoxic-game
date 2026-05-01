@@ -117,3 +117,7 @@
 
 **Learning:** Replaced the `new Map(array.map(...))` pattern with a manual `for...of` loop using `.set()`. This avoids the allocation of an intermediate tuple array, reducing memory usage and GC overhead during initialization. Applied across `brandDeals.ts`, `contraband.ts`, `songs.ts`, and `useTravelLogic.ts`.
 **Action:** Always use `for...of` with `.set()` for Map initialization from large arrays to prevent intermediate tuple array allocations.
+
+## 2024-05-25 - Avoid structuredClone in initialState
+**Learning:** Using `structuredClone` for deep copying `DEFAULT_PLAYER_STATE` during `createInitialState` introduces unnecessary allocation overhead for relatively simple, flat structures with few nested keys (e.g. `van`).
+**Action:** Use manual object spreading with targeted nested spread copies for default state initialization to improve startup and reset performance.
