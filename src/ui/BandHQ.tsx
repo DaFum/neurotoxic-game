@@ -103,9 +103,9 @@ export const BandHQ = ({ onClose, className = '' }) => {
         }}
       />
 
-      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-2 border-toxic-green bg-void-black flex flex-col shadow-[0_0_50px_var(--color-toxic-green)]'>
+      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-4 border-toxic-green bg-void-black flex flex-col shadow-[8px_8px_0px_var(--color-toxic-green)]'>
         {/* Header */}
-        <div className='flex justify-between items-center p-6 border-b-2 border-toxic-green bg-void-black/50'>
+        <div className='flex justify-between items-center p-6 border-b-4 border-toxic-green bg-void-black/50'>
           <div>
             <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-toxic-green)]">
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
@@ -130,7 +130,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
           aria-label={t('ui:hq.sectionsLabel', {
             defaultValue: 'Band HQ Sections'
           })}
-          className='flex border-b-2 border-toxic-green overflow-x-auto touch-pan-x'
+          className='flex border-b-4 border-toxic-green overflow-x-auto touch-pan-x'
         >
           {/* Tabs */}
           {[
@@ -158,8 +158,8 @@ export const BandHQ = ({ onClose, className = '' }) => {
                 className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
                   ${
                     isActive
-                      ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)] focus-visible:ring-void-black'
-                      : 'bg-void-black text-toxic-green hover:bg-toxic-green/10 focus-visible:ring-toxic-green'
+                      ? 'bg-toxic-green text-void-black focus-visible:ring-void-black'
+                      : 'bg-void-black text-toxic-green border-r-2 border-l-2 border-transparent hover:border-toxic-green hover:bg-toxic-green/10 focus-visible:ring-toxic-green'
                   }`}
               >
                 {isActive && <span className='text-xs'>▶</span>}

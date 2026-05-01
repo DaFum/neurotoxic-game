@@ -79,7 +79,7 @@ export const Modal = ({
     >
       <div
         ref={dialogRef}
-        className={`relative w-full max-h-[calc(100svh-1rem)] border-2 border-toxic-green/50 p-4 sm:p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group ${className}`}
+        className={`relative w-full max-h-[calc(100svh-1rem)] border-4 border-toxic-green p-4 sm:p-6 bg-void-black shadow-[8px_8px_0px_var(--color-toxic-green)] cursor-auto focus:outline-none group ${className}`}
         role='dialog'
         aria-modal='true'
         tabIndex={-1}
@@ -98,7 +98,7 @@ export const Modal = ({
             type='button'
             onClick={onClose}
             aria-label={t('ui:closeModal')}
-            className='w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green group-hover:shadow-[0_0_10px_var(--color-toxic-green-glow)]'
+            className='w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           >
             <span
               aria-hidden='true'
