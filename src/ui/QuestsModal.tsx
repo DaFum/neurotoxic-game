@@ -156,6 +156,107 @@ const getRewardIcon = (type: string) => {
   }
 }
 
+const QuestItem = memo(
+  ({
+    quest,
+    index,
+    player,
+    variants
+  }: {
+    quest: QuestDisplayState
+    index: number
+    player: PlayerState
+    variants: Variants
+  }) => {
+    const { t, i18n } = useTranslation(['ui', 'events'])
+    const isOverdue = quest.deadline != null && player.day > quest.deadline
+
+    // Safe progress calculation
+    let progressPercent = 0
+    if (typeof quest.required === 'number' && quest.required > 0) {
+      progressPercent = Math.round(((quest.progress || 0) / quest.required) * 100)
+    }
+    progressPercent = Math.max(
+      0,
+      Math.min(100, Number.isFinite(progressPercent) ? progressPercent : 0)
+    )
+
+    const timeRemaining =
+      quest.deadline != null ? Math.max(0, quest.deadline - player.day) : null
+
+    return (
+      <motion.div
+        key={quest.id}
+        variants={variants}
+        initial='hidden'
+        animate='visible'
+        transition={{ delay: index * 0.1 }}
+        className={`p-4 border-l-4 ${isOverdue ? 'border-blood-red' : 'border-toxic-green'} bg-ash-gray/5`}
+      >
+        <div className='flex justify-between items-start mb-2'>
+          <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
+            {t(quest.label ?? '')}
+          </h3>
+          {timeRemaining !== null && (
+            <div
+              className={`flex items-center gap-1 text-xs font-mono px-2 py-1 rounded ${timeRemaining <= 2 ? 'bg-blood-red/20 text-blood-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
+            >
+              <IconClock className='w-3 h-3' />
+              <span>
+                {timeRemaining}{' '}
+                {timeRemaining === 1
+                  ? t('ui:quests.days.singular')
+                  : t('ui:quests.days.plural')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <p className='text-sm text-ash-gray mb-4 font-mono'>
+          {quest.description ? t(quest.description) : ''}
+        </p>
+
+        <div className='mb-3'>
+          <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
+            <span>{t('ui:quests.progress')}</span>
+            <span>
+              {quest.progress} / {quest.required}
+            </span>
+          </div>
+          <ProgressBar
+            value={progressPercent}
+            max={100}
+            color='bg-toxic-green'
+            size='md'
+          />
+        </div>
+
+        <div className='flex flex-wrap gap-2 mt-4 pt-3 border-t border-ash-gray/10'>
+          <span className='text-xs text-ash-gray uppercase font-bold mr-2 self-center'>
+            {t('ui:quests.rewards')}
+          </span>
+
+          {typeof quest.moneyReward === 'number' && quest.moneyReward > 0 && (
+            <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
+              <IconCoin className='w-3 h-3' />{' '}
+              {t('ui:quests.moneyReward', {
+                amount: formatNumber(quest.moneyReward, i18n?.language)
+              })}
+            </span>
+          )}
+
+          {quest.rewardType && (
+            <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono rounded'>
+              {getRewardIcon(quest.rewardType)}
+              {getRewardText(quest, t)}
+            </span>
+          )}
+        </div>
+      </motion.div>
+    )
+  }
+)
+
 export const QuestsModal = ({
   onClose,
   activeQuests,
@@ -165,7 +266,7 @@ export const QuestsModal = ({
   activeQuests: QuestDisplayState[]
   player: PlayerState
 }) => {
-  const { t, i18n } = useTranslation(['ui', 'events'])
+  const { t } = useTranslation(['ui', 'events'])
 
   // Animation variants
   const overlayVariants = {
@@ -243,111 +344,21 @@ export const QuestsModal = ({
             </div>
           ) : (
             <div className='space-y-6'>
-              {activeQuests.map((quest: QuestDisplayState, index: number) => {
-                const isOverdue =
-                  quest.deadline != null && player.day > quest.deadline
-
-                // Safe progress calculation
-                let progressPercent = 0
-                if (typeof quest.required === 'number' && quest.required > 0) {
-                  progressPercent = Math.round(
-                    (quest.progress / quest.required) * 100
-                  )
-                }
-                progressPercent = Math.max(
-                  0,
-                  Math.min(
-                    100,
-                    Number.isFinite(progressPercent) ? progressPercent : 0
-                  )
-                )
-
-                const timeRemaining =
-                  quest.deadline != null
-                    ? Math.max(0, quest.deadline - player.day)
-                    : null
-
-                return (
-                  <motion.div
-                    key={quest.id}
-                    variants={questItemVariants}
-                    initial='hidden'
-                    animate='visible'
-                    transition={{ delay: index * 0.1 }}
-                    className={`p-4 border-l-4 ${isOverdue ? 'border-blood-red' : 'border-toxic-green'} bg-ash-gray/5`}
-                  >
-                    <div className='flex justify-between items-start mb-2'>
-                      <h3 className='text-xl font-bold text-star-white uppercase tracking-wide'>
-                        {t(quest.label)}
-                      </h3>
-                      {timeRemaining !== null && (
-                        <div
-                          className={`flex items-center gap-1 text-xs font-mono px-2 py-1 rounded ${timeRemaining <= 2 ? 'bg-blood-red/20 text-blood-red' : 'bg-fuel-yellow/10 text-fuel-yellow'}`}
-                        >
-                          <IconClock className='w-3 h-3' />
-                          <span>
-                            {timeRemaining}{' '}
-                            {timeRemaining === 1
-                              ? t('ui:quests.days.singular')
-                              : t('ui:quests.days.plural')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <p className='text-sm text-ash-gray mb-4 font-mono'>
-                      {quest.description ? t(quest.description) : ''}
-                    </p>
-
-                    <div className='mb-3'>
-                      <div className='flex justify-between text-xs text-ash-gray mb-1 font-mono'>
-                        <span>{t('ui:quests.progress')}</span>
-                        <span>
-                          {quest.progress} / {quest.required}
-                        </span>
-                      </div>
-                      <ProgressBar
-                        value={progressPercent}
-                        max={100}
-                        color='bg-toxic-green'
-                        size='md'
-                      />
-                    </div>
-
-                    <div className='flex flex-wrap gap-2 mt-4 pt-3 border-t border-ash-gray/10'>
-                      <span className='text-xs text-ash-gray uppercase font-bold mr-2 self-center'>
-                        {t('ui:quests.rewards')}
-                      </span>
-
-                      {typeof quest.moneyReward === 'number' &&
-                        quest.moneyReward > 0 && (
-                          <span className='inline-flex items-center gap-1 bg-fuel-yellow/10 text-fuel-yellow px-2 py-1 text-xs font-mono rounded'>
-                            <IconCoin className='w-3 h-3' />{' '}
-                            {t('ui:quests.moneyReward', {
-                              amount: formatNumber(
-                                quest.moneyReward,
-                                i18n?.language
-                              )
-                            })}
-                          </span>
-                        )}
-
-                      {quest.rewardType && (
-                        <span className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono rounded'>
-                          {getRewardIcon(quest.rewardType)}
-                          {getRewardText(quest, t)}
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                )
-              })}
+              {activeQuests.map((quest: QuestDisplayState, index: number) => (
+                <QuestItem
+                  key={quest.id}
+                  quest={quest}
+                  index={index}
+                  player={player}
+                  variants={questItemVariants}
+                />
+              ))}
             </div>
           )}
 
           {/* Footer */}
           <div className='mt-8 flex justify-center'>
-            <GlitchButton variant='primary' size='md' onClick={onClose}>
+            <GlitchButton variant='primary' onClick={onClose}>
               {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
             </GlitchButton>
           </div>
