@@ -22,6 +22,28 @@ import type { GameAction, GameState } from '../types/game'
 import type { OptionalToastCallback } from '../types/callbacks'
 
 export const SAVE_KEY = 'neurotoxic_v3_save'
+const LOADABLE_SAVE_KEYS = [
+  'version',
+  'currentScene',
+  'player',
+  'band',
+  'social',
+  'gameMap',
+  'currentGig',
+  'lastGigStats',
+  'activeEvent',
+  'activeStoryFlags',
+  'eventCooldowns',
+  'pendingEvents',
+  'venueBlacklist',
+  'activeQuests',
+  'reputationByRegion',
+  'settings',
+  'npcs',
+  'gigModifiers',
+  'setlist',
+  'minigame'
+] as const
 
 type UsePersistenceParams = {
   currentScene: GameState['currentScene']
@@ -29,6 +51,19 @@ type UsePersistenceParams = {
   dispatch: Dispatch<GameAction>
   addToast: OptionalToastCallback
   tRef: MutableRefObject<TFunction>
+}
+
+export const createRawLoadPayload = (
+  parsedObj: Record<string, unknown>,
+  unlocks: string[]
+): Record<string, unknown> => {
+  const payload: Record<string, unknown> = { unlocks }
+  for (const key of LOADABLE_SAVE_KEYS) {
+    if (Object.hasOwn(parsedObj, key)) {
+      payload[key] = parsedObj[key]
+    }
+  }
+  return payload
 }
 
 export const createPersistedState = (currentState: GameState) => {
@@ -223,35 +258,9 @@ export function usePersistence({
           addUnlock(unlockId)
         })
 
-        const loadPayload: Partial<GameState> = {
-          version: parsedObj.version as GameState['version'],
-          currentScene: parsedObj.currentScene as GameState['currentScene'],
-          player: parsedObj.player as GameState['player'],
-          band: parsedObj.band as GameState['band'],
-          social: parsedObj.social as GameState['social'],
-          gameMap: parsedObj.gameMap as GameState['gameMap'],
-          currentGig: parsedObj.currentGig as GameState['currentGig'],
-          lastGigStats: parsedObj.lastGigStats as GameState['lastGigStats'],
-          activeEvent: parsedObj.activeEvent as GameState['activeEvent'],
-          activeStoryFlags:
-            parsedObj.activeStoryFlags as GameState['activeStoryFlags'],
-          eventCooldowns:
-            parsedObj.eventCooldowns as GameState['eventCooldowns'],
-          pendingEvents: parsedObj.pendingEvents as GameState['pendingEvents'],
-          venueBlacklist:
-            parsedObj.venueBlacklist as GameState['venueBlacklist'],
-          activeQuests: parsedObj.activeQuests as GameState['activeQuests'],
-          reputationByRegion:
-            parsedObj.reputationByRegion as GameState['reputationByRegion'],
-          settings: parsedObj.settings as GameState['settings'],
-          npcs: parsedObj.npcs as GameState['npcs'],
-          gigModifiers: parsedObj.gigModifiers as GameState['gigModifiers'],
-          setlist: parsedObj.setlist as GameState['setlist'],
-          minigame: parsedObj.minigame as GameState['minigame'],
-          unlocks: mergedUnlocks
-        }
-
-        dispatch(createLoadGameAction(loadPayload))
+        dispatch(
+          createLoadGameAction(createRawLoadPayload(parsedObj, mergedUnlocks))
+        )
         return true
       },
       false
