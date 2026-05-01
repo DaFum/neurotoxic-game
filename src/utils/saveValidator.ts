@@ -147,7 +147,8 @@ const validateBand = (band: unknown): void => {
 
   if (Array.isArray(typedBand.members)) {
     const members = typedBand.members as unknown[]
-    members.forEach((member: unknown, index: number) => {
+    for (let index = 0; index < members.length; index++) {
+      const member = members[index];
       if (!isPlainObject(member)) {
         throw new StateError(`band.members[${index}] must be an object`)
       }
@@ -230,7 +231,7 @@ const validateBand = (band: unknown): void => {
           }
         }
       }
-    })
+    }
   }
 
   if (typedBand.harmony !== undefined) {
