@@ -898,12 +898,15 @@ export const applyEventDelta = (
 
             if (!result) continue
             const { other, newScore } = result
-            const oldExists = Object.hasOwn(relSource, other)
 
-            if (!oldExists && newScore === RELATIONSHIP_DEFAULT_SCORE) continue
+            if (
+              newScore === RELATIONSHIP_DEFAULT_SCORE &&
+              !Object.hasOwn(relSource, other)
+            )
+              continue
 
             if (!newRelationships) {
-              newRelationships = { ...(nextMember.relationships || {}) }
+              newRelationships = { ...relSource }
             }
             newRelationships[other] = newScore
           }
