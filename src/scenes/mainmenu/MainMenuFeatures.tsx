@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Replaced original feature list with comprehensive 23-section layout, conditionally rendering descriptions to handle empty strings.
- * (#2) Next Steps and Ideas: We can add more animation for the modal, or add keyboard navigation for the feature list.
- * (#3) Found Errors + Solutions: No additional errors found, keeping the feature list dynamically scalable.
- */
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { Modal } from '../../ui/shared'
@@ -138,6 +133,10 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
                           className='border-b border-toxic-green/10 last:border-0'
                         >
                           {row.map((cell: string, colIndex: number) => {
+                            // Using a combination of rowKey, cell value, and colIndex to ensure uniqueness.
+                            // While using indices as keys is discouraged for dynamic lists (add/remove/reorder),
+                            // table columns are structurally static within a row. A composite key satisfies React
+                            // and guarantees uniqueness even if `cell` values are repeated across columns.
                             const dataStableKey = `${rowKey}-${colIndex}-${cell}`
                             return (
                               <td

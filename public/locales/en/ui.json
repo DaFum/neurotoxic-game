@@ -960,7 +960,6 @@
   "visual_interface": "VISUAL INTERFACE",
   "volume.set": "Set volume to {{pct}}%",
   "featureList.sec0.title": "1. Core Structure and Game Phases",
-  "featureList.sec0.description": "",
   "featureList.sec0.items.0": "Intro Video on Startup",
   "featureList.sec0.items.1": "Main Menu",
   "featureList.sec0.items.2": "Tutorial / Onboarding",
@@ -975,7 +974,6 @@
   "featureList.sec0.items.11": "Credits",
   "featureList.sec0.items.12": "Game Over",
   "featureList.sec1.title": "2. Core Gameplay during Gig",
-  "featureList.sec1.description": "",
   "featureList.sec1.items.0": "3-Lane Rhythm Gameplay: Guitar, Drums, Bass",
   "featureList.sec1.items.1": "Pixi.js Stage for falling notes",
   "featureList.sec1.items.2": "Song-based shows with real note and timing logic",
@@ -988,14 +986,12 @@
   "featureList.sec1.items.9": "Dynamic performance modifiers from band status and equipment",
   "featureList.sec1.items.10": "Multi-song setlists within the core gig system",
   "featureList.sec2.title": "3. Songs and Performance Content",
-  "featureList.sec2.description": "",
   "featureList.sec2.items.0": "Fixed Song Database (SONGS_DB)",
   "featureList.sec2.items.1": "Songs feature: Name, BPM, Duration, Difficulty, Note Pattern, Crowd Appeal, Stamina Drain",
   "featureList.sec2.items.2": "Leaderboard-compatible Song IDs",
   "featureList.sec2.items.3": "Practice mode for specific songs",
   "featureList.sec2.items.4": "Pre-Gig Setlist compilation",
   "featureList.sec3.title": "4. Pre-Gig Features",
-  "featureList.sec3.description": "",
   "featureList.sec3.items.0": "Setlist Selection",
   "featureList.sec3.items.1": "Budget/Cost Display",
   "featureList.sec3.items.2": "Gig Modifiers: Soundcheck, Promo, Merch Table, Catering / Energy, Guest List",
@@ -1004,12 +1000,10 @@
   "featureList.sec3.items.5": "Event triggers occurring in the Pre-Gig phase",
   "featureList.sec3.items.6": "Random selection of one of several Pre-Gig minigames before the actual Gig",
   "featureList.sec4.title": "5. Pre-Gig Minigames",
-  "featureList.sec4.description": "",
   "featureList.sec4.items.0": "Roadie Run: Top-down transport/pickup minigame. Equipment damage as a potential outcome.",
-  "featureList.sec4.items.1": "Kabelsalat / Hardware Rigging: Cable and socket connection minigame. Time limit. Shock/error states. Power connection logic.",
+  "featureList.sec4.items.1": "Cable Mess / Hardware Rigging: Cable and socket connection minigame. Time limit. Shock/error states. Power connection logic.",
   "featureList.sec4.items.2": "Amp Calibration: Keep sliders on target values. Score based on stability. Completion leads directly into the Gig.",
   "featureList.sec5.title": "6. Travel and Map Features",
-  "featureList.sec5.description": "",
   "featureList.sec5.items.0": "Graph-based Tour Map with nodes and connections",
   "featureList.sec5.items.1": "Visibility and accessibility logic for destinations",
   "featureList.sec5.items.2": "Traveling between locations",
@@ -1021,10 +1015,8 @@
   "featureList.sec5.items.8": "Travel-specific events",
   "featureList.sec5.items.9": "Venue access dependent on: Map connections, Resources, Blacklist, Regional Reputation, Story Flags, Prove-Yourself restrictions",
   "featureList.sec6.title": "7. Travel Minigame",
-  "featureList.sec6.description": "",
   "featureList.sec6.items.0": "Tourbus / Highway / Travel Minigame: Driving/dodging minigame. Van damage. Distance progression. HUD + Touch/Mobile controls. Results affect subsequent travel/economy outcomes.",
   "featureList.sec7.title": "8. Overworld Management",
-  "featureList.sec7.description": "",
   "featureList.sec7.items.0": "Overworld HUD displaying career and band status",
   "featureList.sec7.items.1": "Event Log",
   "featureList.sec7.items.2": "Ambient Radio / Pirate Radio Widget",
@@ -1032,7 +1024,6 @@
   "featureList.sec7.items.4": "Van Logistics: Refuel, Repair",
   "featureList.sec7.items.5": "Menu Categories: Management, Side Hustles, Logistics, System",
   "featureList.sec8.title": "9. Band HQ",
-  "featureList.sec8.description": "",
   "featureList.sec8.items.0": "Tabs for: Stats, Details, Shop, Upgrades, Setlist, Leaderboard, Settings, Void Trader",
   "featureList.sec8.items.1": "Band and Career Overview",
   "featureList.sec8.items.2": "Detailed Band Member Stats",
@@ -1044,7 +1035,6 @@
   "featureList.sec8.items.8": "Audio and Game Settings",
   "featureList.sec8.items.9": "Delete Save",
   "featureList.sec9.title": "10. Shop, Upgrade, and Inventory Systems",
-  "featureList.sec9.description": "",
   "featureList.sec9.items.0": "Purchasable Shop Items",
   "featureList.sec9.items.1": "HQ Upgrades",
   "featureList.sec9.items.2": "Van Upgrades",
@@ -1056,7 +1046,6 @@
   "featureList.sec9.items.8": "Contraband System",
   "featureList.sec9.items.9": "Active Contraband Effects",
   "featureList.sec10.title": "11. Contraband and Void Trader",
-  "featureList.sec10.description": "",
   "featureList.sec10.items.0": "Contraband Stash with usable items",
   "featureList.sec10.items.1": "Targeting individual band members when using items",
   "featureList.sec10.items.2": "Passive and active Contraband effects",
@@ -1065,7 +1054,6 @@
   "featureList.sec10.items.5": "Purchase Contraband with Fame instead of Money",
   "featureList.sec10.items.6": "Ownership protection for non-stackable items",
   "featureList.sec11.title": "12. Band and Character System",
-  "featureList.sec11.description": "",
   "featureList.sec11.items.0": "Multiple Band Members",
   "featureList.sec11.items.1": "Individual stats and states: Mood, Stamina, Skills, Charisma, Technical, Improv, Composition, Relationships, Traits, Equipment",
   "featureList.sec11.items.2": "Band-wide stats: Harmony, Luck, Inventory Slots, Performance Modifiers",
@@ -1074,7 +1062,6 @@
   "featureList.sec11.items.5": "Harmony regeneration during travel as a system flag",
   "featureList.sec11.items.6": "Band can effectively block its own progress through poor states",
   "featureList.sec12.title": "13. Clinic / Void Clinic",
-  "featureList.sec12.description": "",
   "featureList.sec12.items.0": "Heal per band member",
   "featureList.sec12.items.1": "Enhance / Cyber Upgrade per band member",
   "featureList.sec12.items.2": "Costs increase based on the number of Clinic visits",
@@ -1084,7 +1071,6 @@
   "featureList.sec12.items.6": "Stamina and Mood Recovery",
   "featureList.sec12.items.7": "Leaving the Clinic initiates a distinct scene flow",
   "featureList.sec13.title": "14. Quests",
-  "featureList.sec13.description": "",
   "featureList.sec13.items.0": "Active Quests",
   "featureList.sec13.items.1": "Quest Progress",
   "featureList.sec13.items.2": "Deadlines",
@@ -1095,7 +1081,6 @@
   "featureList.sec13.items.7": "Quest View Modal",
   "featureList.sec13.items.8": "Progress bar and days countdown",
   "featureList.sec14.title": "15. Events and Story Systems",
-  "featureList.sec14.description": "",
   "featureList.sec14.items.0": "Event Database",
   "featureList.sec14.items.1": "Event Categories",
   "featureList.sec14.items.2": "Triggerable Events",
@@ -1108,7 +1093,6 @@
   "featureList.sec14.items.9": "Travel Events",
   "featureList.sec14.items.10": "Story Update Toast / New Quest Toast",
   "featureList.sec15.title": "16. Social, Fame, and Community Systems",
-  "featureList.sec15.description": "",
   "featureList.sec15.items.0": "Social Metrics: Instagram, TikTok, YouTube, Newsletter, Viral",
   "featureList.sec15.items.1": "Fame and Fame Levels",
   "featureList.sec15.items.2": "Loyalty",
@@ -1125,7 +1109,6 @@
   "featureList.sec15.items.13": "Influencer/Industry update slots in post results",
   "featureList.sec15.items.14": "Reputation Cooldown / Shadowban-like mechanic",
   "featureList.sec16.title": "17. Post-Gig System",
-  "featureList.sec16.description": "",
   "featureList.sec16.items.0": "Multi-phase Post-Gig evaluation: Report, Social, Deals, Complete",
   "featureList.sec16.items.1": "Gig evaluation with Financials",
   "featureList.sec16.items.2": "Social Media decision making after the show",
@@ -1135,7 +1118,6 @@
   "featureList.sec16.items.6": "Follower, Loyalty, and Controversy consequences",
   "featureList.sec16.items.7": "Game Over check following financial ruin",
   "featureList.sec17.title": "18. Brand Deals / Sponsoring / Record Deals",
-  "featureList.sec17.description": "",
   "featureList.sec17.items.0": "Dynamic offer generation",
   "featureList.sec17.items.1": "Deal Types: Sponsorship, Endorsement, Record Deal",
   "featureList.sec17.items.2": "Deal requirements based on: Followers, Trend, Traits, Zealotry, Controversy",
@@ -1148,13 +1130,11 @@
   "featureList.sec17.items.9": "Dynamic brand names",
   "featureList.sec17.items.10": "Sponsorship can influence Post-Gig options",
   "featureList.sec18.title": "19. Side Hustles / Risky Side Actions",
-  "featureList.sec18.description": "",
   "featureList.sec18.items.0": "Pirate Radio: Costs, Fame Gain, Zealotry Gain, Controversy Gain, Harmony Cost, limited to once per day",
   "featureList.sec18.items.1": "Merch Press: Costs, Fame/Loyalty/Controversy Effects, Failure Chance, Harmony Loss on failure",
   "featureList.sec18.items.2": "Blood Bank / Void Clinic Cash Run: Sell blood for money, Harmony Loss, Stamina Loss for all members, Controversy Increase, payout scales with Fame Level",
   "featureList.sec18.items.3": "Dark Web Leak: Money Cost, Fame and Zealotry Gain, High Controversy Increase, Harmony Cost, requires specific Controversy level, limited to once per day",
   "featureList.sec19.title": "20. Economy and Resources",
-  "featureList.sec19.description": "",
   "featureList.sec19.items.0": "Money, Fame, Followers, Harmony, Mood, Stamina, Fuel, Van Condition",
   "featureList.sec19.items.1": "Daily Upkeep / Living Costs",
   "featureList.sec19.items.2": "Travel Costs",
@@ -1169,14 +1149,12 @@
   "featureList.sec19.items.11": "Venue Blacklist System",
   "featureList.sec19.items.12": "Prove-Yourself Mode after multiple disasters",
   "featureList.sec20.title": "21. Leaderboards",
-  "featureList.sec20.description": "",
   "featureList.sec20.items.0": "Global Leaderboard Tab in HQ",
   "featureList.sec20.items.1": "Views for: Balance, Song, Fame, Followers, Distance, Conflicts, Stage Dives",
   "featureList.sec20.items.2": "Song-specific rankings",
   "featureList.sec20.items.3": "Top 100 Fetch",
   "featureList.sec20.items.4": "Fallback behavior when API is locally unavailable",
   "featureList.sec21.title": "22. Persistence and Meta-Progression",
-  "featureList.sec21.description": "",
   "featureList.sec21.items.0": "Save/Load",
   "featureList.sec21.items.1": "Save Validation",
   "featureList.sec21.items.2": "Reset State",
@@ -1188,7 +1166,6 @@
   "featureList.sec21.items.8": "Toast System",
   "featureList.sec21.items.9": "Global State with comprehensive Reducer logic",
   "featureList.sec22.title": "23. Additional UX/System Features",
-  "featureList.sec22.description": "",
   "featureList.sec22.items.0": "Localization",
   "featureList.sec22.items.1": "Keyboard Shortcuts",
   "featureList.sec22.items.2": "Touch/Mobile controls in minigames",
@@ -1200,7 +1177,6 @@
   "featureList": [
     {
       "title": "ui:featureList.sec0.title",
-      "description": "ui:featureList.sec0.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec0.items.0",
@@ -1216,11 +1192,11 @@
         "ui:featureList.sec0.items.10",
         "ui:featureList.sec0.items.11",
         "ui:featureList.sec0.items.12"
-      ]
+      ],
+      "description": "ui:featureList.sec0.description"
     },
     {
       "title": "ui:featureList.sec1.title",
-      "description": "ui:featureList.sec1.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec1.items.0",
@@ -1234,11 +1210,11 @@
         "ui:featureList.sec1.items.8",
         "ui:featureList.sec1.items.9",
         "ui:featureList.sec1.items.10"
-      ]
+      ],
+      "description": "ui:featureList.sec1.description"
     },
     {
       "title": "ui:featureList.sec2.title",
-      "description": "ui:featureList.sec2.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec2.items.0",
@@ -1246,11 +1222,11 @@
         "ui:featureList.sec2.items.2",
         "ui:featureList.sec2.items.3",
         "ui:featureList.sec2.items.4"
-      ]
+      ],
+      "description": "ui:featureList.sec2.description"
     },
     {
       "title": "ui:featureList.sec3.title",
-      "description": "ui:featureList.sec3.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec3.items.0",
@@ -1260,21 +1236,21 @@
         "ui:featureList.sec3.items.4",
         "ui:featureList.sec3.items.5",
         "ui:featureList.sec3.items.6"
-      ]
+      ],
+      "description": "ui:featureList.sec3.description"
     },
     {
       "title": "ui:featureList.sec4.title",
-      "description": "ui:featureList.sec4.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec4.items.0",
         "ui:featureList.sec4.items.1",
         "ui:featureList.sec4.items.2"
-      ]
+      ],
+      "description": "ui:featureList.sec4.description"
     },
     {
       "title": "ui:featureList.sec5.title",
-      "description": "ui:featureList.sec5.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec5.items.0",
@@ -1287,19 +1263,19 @@
         "ui:featureList.sec5.items.7",
         "ui:featureList.sec5.items.8",
         "ui:featureList.sec5.items.9"
-      ]
+      ],
+      "description": "ui:featureList.sec5.description"
     },
     {
       "title": "ui:featureList.sec6.title",
-      "description": "ui:featureList.sec6.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec6.items.0"
-      ]
+      ],
+      "description": "ui:featureList.sec6.description"
     },
     {
       "title": "ui:featureList.sec7.title",
-      "description": "ui:featureList.sec7.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec7.items.0",
@@ -1308,11 +1284,11 @@
         "ui:featureList.sec7.items.3",
         "ui:featureList.sec7.items.4",
         "ui:featureList.sec7.items.5"
-      ]
+      ],
+      "description": "ui:featureList.sec7.description"
     },
     {
       "title": "ui:featureList.sec8.title",
-      "description": "ui:featureList.sec8.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec8.items.0",
@@ -1325,11 +1301,11 @@
         "ui:featureList.sec8.items.7",
         "ui:featureList.sec8.items.8",
         "ui:featureList.sec8.items.9"
-      ]
+      ],
+      "description": "ui:featureList.sec8.description"
     },
     {
       "title": "ui:featureList.sec9.title",
-      "description": "ui:featureList.sec9.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec9.items.0",
@@ -1342,11 +1318,11 @@
         "ui:featureList.sec9.items.7",
         "ui:featureList.sec9.items.8",
         "ui:featureList.sec9.items.9"
-      ]
+      ],
+      "description": "ui:featureList.sec9.description"
     },
     {
       "title": "ui:featureList.sec10.title",
-      "description": "ui:featureList.sec10.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec10.items.0",
@@ -1356,11 +1332,11 @@
         "ui:featureList.sec10.items.4",
         "ui:featureList.sec10.items.5",
         "ui:featureList.sec10.items.6"
-      ]
+      ],
+      "description": "ui:featureList.sec10.description"
     },
     {
       "title": "ui:featureList.sec11.title",
-      "description": "ui:featureList.sec11.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec11.items.0",
@@ -1370,11 +1346,11 @@
         "ui:featureList.sec11.items.4",
         "ui:featureList.sec11.items.5",
         "ui:featureList.sec11.items.6"
-      ]
+      ],
+      "description": "ui:featureList.sec11.description"
     },
     {
       "title": "ui:featureList.sec12.title",
-      "description": "ui:featureList.sec12.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec12.items.0",
@@ -1385,11 +1361,11 @@
         "ui:featureList.sec12.items.5",
         "ui:featureList.sec12.items.6",
         "ui:featureList.sec12.items.7"
-      ]
+      ],
+      "description": "ui:featureList.sec12.description"
     },
     {
       "title": "ui:featureList.sec13.title",
-      "description": "ui:featureList.sec13.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec13.items.0",
@@ -1401,11 +1377,11 @@
         "ui:featureList.sec13.items.6",
         "ui:featureList.sec13.items.7",
         "ui:featureList.sec13.items.8"
-      ]
+      ],
+      "description": "ui:featureList.sec13.description"
     },
     {
       "title": "ui:featureList.sec14.title",
-      "description": "ui:featureList.sec14.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec14.items.0",
@@ -1419,11 +1395,11 @@
         "ui:featureList.sec14.items.8",
         "ui:featureList.sec14.items.9",
         "ui:featureList.sec14.items.10"
-      ]
+      ],
+      "description": "ui:featureList.sec14.description"
     },
     {
       "title": "ui:featureList.sec15.title",
-      "description": "ui:featureList.sec15.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec15.items.0",
@@ -1441,11 +1417,11 @@
         "ui:featureList.sec15.items.12",
         "ui:featureList.sec15.items.13",
         "ui:featureList.sec15.items.14"
-      ]
+      ],
+      "description": "ui:featureList.sec15.description"
     },
     {
       "title": "ui:featureList.sec16.title",
-      "description": "ui:featureList.sec16.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec16.items.0",
@@ -1456,11 +1432,11 @@
         "ui:featureList.sec16.items.5",
         "ui:featureList.sec16.items.6",
         "ui:featureList.sec16.items.7"
-      ]
+      ],
+      "description": "ui:featureList.sec16.description"
     },
     {
       "title": "ui:featureList.sec17.title",
-      "description": "ui:featureList.sec17.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec17.items.0",
@@ -1474,22 +1450,22 @@
         "ui:featureList.sec17.items.8",
         "ui:featureList.sec17.items.9",
         "ui:featureList.sec17.items.10"
-      ]
+      ],
+      "description": "ui:featureList.sec17.description"
     },
     {
       "title": "ui:featureList.sec18.title",
-      "description": "ui:featureList.sec18.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec18.items.0",
         "ui:featureList.sec18.items.1",
         "ui:featureList.sec18.items.2",
         "ui:featureList.sec18.items.3"
-      ]
+      ],
+      "description": "ui:featureList.sec18.description"
     },
     {
       "title": "ui:featureList.sec19.title",
-      "description": "ui:featureList.sec19.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec19.items.0",
@@ -1505,11 +1481,11 @@
         "ui:featureList.sec19.items.10",
         "ui:featureList.sec19.items.11",
         "ui:featureList.sec19.items.12"
-      ]
+      ],
+      "description": "ui:featureList.sec19.description"
     },
     {
       "title": "ui:featureList.sec20.title",
-      "description": "ui:featureList.sec20.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec20.items.0",
@@ -1517,11 +1493,11 @@
         "ui:featureList.sec20.items.2",
         "ui:featureList.sec20.items.3",
         "ui:featureList.sec20.items.4"
-      ]
+      ],
+      "description": "ui:featureList.sec20.description"
     },
     {
       "title": "ui:featureList.sec21.title",
-      "description": "ui:featureList.sec21.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec21.items.0",
@@ -1534,11 +1510,11 @@
         "ui:featureList.sec21.items.7",
         "ui:featureList.sec21.items.8",
         "ui:featureList.sec21.items.9"
-      ]
+      ],
+      "description": "ui:featureList.sec21.description"
     },
     {
       "title": "ui:featureList.sec22.title",
-      "description": "ui:featureList.sec22.description",
       "type": "bullets",
       "items": [
         "ui:featureList.sec22.items.0",
@@ -1549,7 +1525,31 @@
         "ui:featureList.sec22.items.5",
         "ui:featureList.sec22.items.6",
         "ui:featureList.sec22.items.7"
-      ]
+      ],
+      "description": "ui:featureList.sec22.description"
     }
-  ]
+  ],
+  "featureList.sec0.description": "1. Core Structure and Game Phases",
+  "featureList.sec1.description": "2. Core Gameplay during Gig",
+  "featureList.sec2.description": "3. Songs and Performance Content",
+  "featureList.sec3.description": "4. Pre-Gig Features",
+  "featureList.sec4.description": "5. Pre-Gig Minigames",
+  "featureList.sec5.description": "6. Travel and Map Features",
+  "featureList.sec6.description": "7. Travel Minigame",
+  "featureList.sec7.description": "8. Overworld Management",
+  "featureList.sec8.description": "9. Band HQ",
+  "featureList.sec9.description": "10. Shop, Upgrade, and Inventory Systems",
+  "featureList.sec10.description": "11. Contraband and Void Trader",
+  "featureList.sec11.description": "12. Band and Character System",
+  "featureList.sec12.description": "13. Clinic / Void Clinic",
+  "featureList.sec13.description": "14. Quests",
+  "featureList.sec14.description": "15. Events and Story Systems",
+  "featureList.sec15.description": "16. Social, Fame, and Community Systems",
+  "featureList.sec16.description": "17. Post-Gig System",
+  "featureList.sec17.description": "18. Brand Deals / Sponsoring / Record Deals",
+  "featureList.sec18.description": "19. Side Hustles / Risky Side Actions",
+  "featureList.sec19.description": "20. Economy and Resources",
+  "featureList.sec20.description": "21. Leaderboards",
+  "featureList.sec21.description": "22. Persistence and Meta-Progression",
+  "featureList.sec22.description": "23. Additional UX/System Features"
 }
