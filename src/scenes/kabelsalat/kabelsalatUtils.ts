@@ -7,6 +7,9 @@ import {
 import { getSafeUUID, secureRandom } from '../../utils/crypto'
 import type { LightningSeed, SocketId } from '../../types/kabelsalat'
 
+const PATH_OFFSET_MULTIPLIER = 1.5
+const PLUG_DEPTH = 20
+
 export const generateLightningSeeds = (): LightningSeed[] => {
   return Array.from({ length: 15 }).map(() => ({
     id: getSafeUUID(),
@@ -31,7 +34,7 @@ export const getMessyPath = (
   if (socketX === undefined) return ''
 
   const midY = (cable.y + SOCKET_Y) / 2
-  const offset = (socketX - cable.x) * 1.5
+  const offset = (socketX - cable.x) * PATH_OFFSET_MULTIPLIER
 
-  return `M ${cable.x} ${cable.y} C ${cable.x - offset} ${midY}, ${socketX + offset} ${midY}, ${socketX} ${SOCKET_Y + 20}`
+  return `M ${cable.x} ${cable.y} C ${cable.x - offset} ${midY}, ${socketX + offset} ${midY}, ${socketX} ${SOCKET_Y + PLUG_DEPTH}`
 }
