@@ -87,8 +87,10 @@ test('stage utils', async t => {
 
       const originalGetComputedStyle = globalThis.window.getComputedStyle
 
+      const requestedProps = []
       globalThis.window.getComputedStyle = () => ({
         getPropertyValue: prop => {
+          requestedProps.push(prop)
           if (prop === '--color-my-red') return '#ff0000'
           if (prop === '--color-my-blue') return '#0000ff'
           return ''
@@ -97,7 +99,9 @@ test('stage utils', async t => {
 
       assert.equal(getPixiColorFromToken('--my-red'), 0xff0000)
       assert.equal(getPixiColorFromToken('--my-blue'), 0x0000ff)
+      assert.equal(getPixiColorFromToken('--color-my-red'), 0xff0000)
       assert.equal(getPixiColorFromToken('my-red'), 0xff0000)
+      assert.ok(requestedProps.includes('--color-my-red'))
 
       globalThis.window.getComputedStyle = originalGetComputedStyle
 
