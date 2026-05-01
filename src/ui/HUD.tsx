@@ -233,46 +233,44 @@ export const HUD = () => {
             >
               <span className='text-star-white/80 text-[11px]'>{m.name}</span>
               <div className='flex items-center gap-1.5'>
-                <div
-                  className='flex items-center gap-1'
-                  title={t('ui:hud.mood', { defaultValue: 'Mood' })}
-                >
-                  <div className='w-12'>
-                    <ProgressBar
-                      value={m.mood}
-                      max={100}
-                      color='bg-mood-pink'
-                      size='mini'
-                      aria-label={t('ui:hud.memberMood', {
-                        name: m.name,
-                        defaultValue: `${m.name} Mood`
-                      })}
-                    />
+                <Tooltip content={t('ui:hud.mood', { defaultValue: 'Mood' })}>
+                  <div className='flex items-center gap-1'>
+                    <div className='w-12'>
+                      <ProgressBar
+                        value={m.mood}
+                        max={100}
+                        color='bg-mood-pink'
+                        size='mini'
+                        aria-label={t('ui:hud.memberMood', {
+                          name: m.name,
+                          defaultValue: `${m.name} Mood`
+                        })}
+                      />
+                    </div>
+                    <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
+                      {m.mood}%
+                    </span>
                   </div>
-                  <span className='text-[9px] text-mood-pink w-7 text-right tabular-nums'>
-                    {m.mood}%
-                  </span>
-                </div>
-                <div
-                  className='flex items-center gap-1'
-                  title={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
-                >
-                  <div className='w-12'>
-                    <ProgressBar
-                      value={m.stamina}
-                      max={100}
-                      color='bg-stamina-green'
-                      size='mini'
-                      aria-label={t('ui:hud.memberStamina', {
-                        name: m.name,
-                        defaultValue: `${m.name} Stamina`
-                      })}
-                    />
+                </Tooltip>
+                <Tooltip content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}>
+                  <div className='flex items-center gap-1'>
+                    <div className='w-12'>
+                      <ProgressBar
+                        value={m.stamina}
+                        max={100}
+                        color='bg-stamina-green'
+                        size='mini'
+                        aria-label={t('ui:hud.memberStamina', {
+                          name: m.name,
+                          defaultValue: `${m.name} Stamina`
+                        })}
+                      />
+                    </div>
+                    <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
+                      {m.stamina}%
+                    </span>
                   </div>
-                  <span className='text-[9px] text-stamina-green w-7 text-right tabular-nums'>
-                    {m.stamina}%
-                  </span>
-                </div>
+                </Tooltip>
               </div>
             </div>
           ))}
