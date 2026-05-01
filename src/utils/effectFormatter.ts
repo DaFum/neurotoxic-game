@@ -113,7 +113,7 @@ export const generateEffectText = (delta, t) => {
       quests.forEach(q => {
         const questLabel =
           typeof q === 'object' && q !== null
-            ? (q.title ?? t(q.label, { defaultValue: q.id }))
+            ? (q.title ?? t(q.id, { defaultValue: q.label }))
             : t(q, { defaultValue: q })
         lines.push(
           `${t('ui:event.new_quest', { defaultValue: 'New Quest' })}: ${questLabel}`

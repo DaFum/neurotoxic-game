@@ -119,7 +119,7 @@ describe('generateEffectText', () => {
       }
     }
     const result = generateEffectText(delta, t)
-    assert.equal(result, 'Effects: New Quest: q1, New Quest: Quest 2, New Quest: Quest 3')
+    assert.equal(result, 'Effects: New Quest: Quest 1, New Quest: Quest 2, New Quest: Quest 3')
   })
 
   it('formats flags (queueEvent and addStoryFlag)', () => {
