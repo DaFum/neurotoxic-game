@@ -97,8 +97,7 @@ export default [
         'warn',
         UNUSED_VARS_IGNORE_PATTERNS
       ],
-      // TODO: Create a tracked issue to move the rule to 'error' after cleaning up existing offenders in economyEngine, gameStateUtils, midiPlayback, logger
-      '@typescript-eslint/no-explicit-any': 'warn'
+      '@typescript-eslint/no-explicit-any': 'error'
     }
   },
   {
