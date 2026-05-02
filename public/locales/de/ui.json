@@ -1099,5 +1099,8 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen"
+  "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "travel": {
+    "rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!"
+  }
 }

@@ -1099,5 +1099,8 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%"
+  "volume.set": "Set volume to {{pct}}%",
+  "travel": {
+    "rivalEncounter": "Your rival band, {{rivalName}}, is in town!"
+  }
 }

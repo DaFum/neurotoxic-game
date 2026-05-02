@@ -50,7 +50,8 @@ export const Overworld = () => {
     changeScene,
     startTravelMinigame,
     activeStoryFlags,
-    rivalBand
+    rivalBand,
+    dispatch
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -149,7 +150,8 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
-    onStartTravelMinigame: startTravelMinigame
+    onStartTravelMinigame: startTravelMinigame,
+    dispatch
   })
 
   const [isSaving, setIsSaving] = useState(false)
