@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ProgressBar, Panel, Tooltip } from '../shared'
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, memo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'
 import type {
@@ -743,7 +743,8 @@ const BandMembersSection = ({
 
 // --- Main Component ---
 
-export const DetailedStatsTab = ({
+// ⚡ Bolt Optimization: Wrapped DetailedStatsTab in memo to prevent unnecessary deep re-renders.
+export const DetailedStatsTab = memo(({
   player,
   band,
   social,
@@ -789,4 +790,4 @@ export const DetailedStatsTab = ({
       <BandMembersSection members={band.members || []} t={t} />
     </div>
   )
-}
+})
