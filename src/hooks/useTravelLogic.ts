@@ -103,8 +103,7 @@ export const useTravelLogic = ({
   venueBlacklist = [],
   onShowHQ,
   onStartTravelMinigame,
-  dispatch,
-  rivalBand
+  dispatch
 }) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
@@ -123,7 +122,6 @@ export const useTravelLogic = ({
   const venueBlacklistRef = useRef(venueBlacklist)
   const isTravelingRef = useRef(isTraveling)
   const dispatchRef = useRef(dispatch)
-  const rivalBandRef = useRef(rivalBand)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
   // Synchronously update control flow refs to ensure handlers see latest state immediately
@@ -138,7 +136,6 @@ export const useTravelLogic = ({
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
     dispatchRef.current = dispatch
-    rivalBandRef.current = rivalBand
   }, [
     player,
     band,
@@ -146,8 +143,7 @@ export const useTravelLogic = ({
     gameMap,
     reputationByRegion,
     venueBlacklist,
-    dispatch,
-    rivalBand
+    dispatch
   ])
 
   const getLocationName = useCallback((location, venueId) => {

@@ -7,7 +7,7 @@ export const handleSpawnRivalBand = (state: GameState): GameState => {
 
   return {
     ...state,
-    rivalBand: generateRivalBand(state.player.day || 1, secureRandom)
+    rivalBand: generateRivalBand(state.player.day ?? 1, secureRandom)
   }
 }
 
