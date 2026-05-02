@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/audio/AudioManager'
+import { enterFullscreen } from '../../utils/fullscreen'
 
 export const useMainMenu = () => {
   const { t } = useTranslation()
@@ -140,6 +141,7 @@ export const useMainMenu = () => {
   }, [proceedToTour, updatePlayer])
 
   const handleStartTour = useCallback(() => {
+    enterFullscreen().catch(() => {})
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
       localStorage.getItem('neurotoxic_v3_save')
     )
@@ -185,6 +187,7 @@ export const useMainMenu = () => {
    * Handles loading a saved game.
    */
   const handleLoad = useCallback(() => {
+    enterFullscreen().catch(() => {})
     setIsLoadingGame(true)
 
     if (!isMountedRef.current) return
@@ -214,11 +217,13 @@ export const useMainMenu = () => {
   const closeNameInput = useCallback(() => setShowNameInput(false), [])
 
   const handleStartNewAnyway = useCallback(() => {
+    enterFullscreen().catch(() => {})
     setShowExistingSavePrompt(false)
     startNewTourFlow()
   }, [startNewTourFlow])
 
   const handleLoadExistingFromPrompt = useCallback(() => {
+    enterFullscreen().catch(() => {})
     setShowExistingSavePrompt(false)
     void handleLoad()
   }, [handleLoad])
