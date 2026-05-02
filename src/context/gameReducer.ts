@@ -65,7 +65,8 @@ import { handleTradeVoidItem } from './reducers/tradeReducer'
 import {
   handleSpawnRivalBand,
   handleMoveRivalBand,
-  handleUpdateRivalBand
+  handleUpdateRivalBand,
+  handleCheckRivalEncounter
 } from './reducers/rivalReducer'
 
 export { ActionTypes }
@@ -107,6 +108,7 @@ const reducerMap = {
   [ActionTypes.SPAWN_RIVAL_BAND]: handleSpawnRivalBand,
   [ActionTypes.MOVE_RIVAL_BAND]: handleMoveRivalBand,
   [ActionTypes.UPDATE_RIVAL_BAND]: handleUpdateRivalBand,
+  [ActionTypes.CHECK_RIVAL_ENCOUNTER]: handleCheckRivalEncounter,
   [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,

@@ -188,7 +188,8 @@ export const OverworldMap = React.memo(
       activeStoryFlags,
       setHoveredNode,
       rivalBand?.currentLocationId,
-      rivalVanUrl
+      rivalVanUrl,
+      t
     ])
 
     // Hover connection memo

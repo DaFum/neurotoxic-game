@@ -765,7 +765,7 @@ export const generateBrandOffers = (
       gameState.player &&
       gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
     ) {
-      const rivalPower = gameState.rivalBand.powerLevel || 1
+      const rivalPower = gameState.rivalBand.powerLevel ?? 0
       const powerPenalty = Math.min(
         MAX_RIVAL_DEAL_CHANCE_PENALTY,
         rivalPower * RIVAL_POWER_TO_DEAL_CHANCE_FACTOR

@@ -35,7 +35,7 @@ export const moveRivalBand = (
   }
 
   // 30% chance to stay in the same location if they already have one
-  if (rivalBand.currentLocationId && rng() < 0.3) {
+  if (rivalBand.currentLocationId && rng() < RIVAL_STAY_CHANCE) {
     return rivalBand
   }
 
@@ -93,7 +93,7 @@ export const calculateRivalImpact = (
   // Just a simple ratio for now
   const playerExpectedPower = Math.max(
     1,
-    Math.floor((playerState.day || 1) / 5) + 1
+    Math.floor((playerState.day ?? 1) / 5) + 1
   )
   const impactLevel = Math.max(
     0.5,

@@ -36,6 +36,7 @@ describe('ActionTypes', () => {
       'SPAWN_RIVAL_BAND',
       'MOVE_RIVAL_BAND',
       'UPDATE_RIVAL_BAND',
+      'CHECK_RIVAL_ENCOUNTER',
       'UNLOCK_TRAIT',
       'ADD_VENUE_BLACKLIST',
       'ADD_QUEST',

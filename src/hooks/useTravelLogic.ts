@@ -45,7 +45,10 @@ import { translateLocation } from '../utils/locationI18n'
 import { ALL_VENUES } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
 import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
-import { createMoveRivalBandAction } from '../context/actionCreators'
+import {
+  createMoveRivalBandAction,
+  createCheckRivalEncounterAction
+} from '../context/actionCreators'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -325,26 +328,13 @@ export const useTravelLogic = ({
       // Tell context to move the rival band whenever the player moves
       if (dispatchRef.current) {
         dispatchRef.current(createMoveRivalBandAction())
+        dispatchRef.current(createCheckRivalEncounterAction())
       }
 
       // Always handle node arrival regardless of events —
       // gigs must start even when a travel event pops up.
       // Pass flag so SPECIAL nodes don't overwrite an active travel event.
       handleNodeArrivalCallback(node, travelEventActive)
-
-      // Rival Band check after arrival
-      setTimeout(() => {
-        const currentRival = rivalBandRef.current
-        if (currentRival && currentRival.currentLocationId === target.id) {
-          addToast(
-            i18n.t('ui:travel.rivalEncounter', {
-              defaultValue: 'Your rival band, {{rivalName}}, is in town!',
-              rivalName: currentRival.name
-            }),
-            'warning'
-          )
-        }
-      }, 500)
     },
     [
       travelTarget,

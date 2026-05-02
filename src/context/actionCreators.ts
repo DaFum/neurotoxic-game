@@ -499,12 +499,30 @@ export const createMoveRivalBandAction = (): Extract<
   type: ActionTypes.MOVE_RIVAL_BAND
 })
 
+export const createCheckRivalEncounterAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CHECK_RIVAL_ENCOUNTER }
+> => ({
+  type: ActionTypes.CHECK_RIVAL_ENCOUNTER
+})
+
 export const createUpdateRivalBandAction = (
   payload: Partial<RivalBandState>
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => ({
-  type: ActionTypes.UPDATE_RIVAL_BAND,
-  payload
-})
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => {
+  const safeUpdates: Partial<RivalBandState> = {}
+  if (payload.id !== undefined) safeUpdates.id = payload.id
+  if (payload.name !== undefined) safeUpdates.name = payload.name
+  if (payload.alignment !== undefined) safeUpdates.alignment = payload.alignment
+  if (payload.powerLevel !== undefined)
+    safeUpdates.powerLevel = payload.powerLevel
+  if (payload.currentLocationId !== undefined)
+    safeUpdates.currentLocationId = payload.currentLocationId
+
+  return {
+    type: ActionTypes.UPDATE_RIVAL_BAND,
+    payload: safeUpdates
+  }
+}
 
 /**
  * Creates unlock trait action

@@ -1,6 +1,6 @@
-import type { GameState, RivalBandState } from '../../types/game'
+import type { GameState, RivalBandState, ToastPayload } from '../../types/game'
 import { generateRivalBand, moveRivalBand } from '../../utils/rivalEngine'
-import { secureRandom } from '../../utils/crypto'
+import { secureRandom, getSafeUUID } from '../../utils/crypto'
 
 export const handleSpawnRivalBand = (state: GameState): GameState => {
   if (state.rivalBand) return state
@@ -18,6 +18,29 @@ export const handleMoveRivalBand = (state: GameState): GameState => {
     ...state,
     rivalBand: moveRivalBand(state.rivalBand, state.gameMap, secureRandom)
   }
+}
+
+export const handleCheckRivalEncounter = (state: GameState): GameState => {
+  if (
+    state.rivalBand &&
+    state.player &&
+    state.rivalBand.currentLocationId === state.player.currentNodeId
+  ) {
+    const rivalName = state.rivalBand.name
+    const toast: ToastPayload = {
+      id: getSafeUUID(),
+      type: 'warning',
+      messageKey: 'ui:travel.rivalEncounter',
+      message: `Your rival band, ${rivalName}, is in town!`,
+      options: { rivalName }
+    }
+    return {
+      ...state,
+      toasts: [...(state.toasts || []), toast]
+    }
+  }
+
+  return state
 }
 
 export const handleUpdateRivalBand = (

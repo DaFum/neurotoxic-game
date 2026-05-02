@@ -413,6 +413,7 @@ export type GameAction =
   | Action<ActionTypes['SPAWN_RIVAL_BAND']>
   | Action<ActionTypes['MOVE_RIVAL_BAND']>
   | Action<ActionTypes['UPDATE_RIVAL_BAND'], Partial<RivalBandState>>
+  | Action<ActionTypes['CHECK_RIVAL_ENCOUNTER']>
   | Action<ActionTypes['UNLOCK_TRAIT'], { memberId: string; traitId: string }>
   | Action<
       ActionTypes['ADD_VENUE_BLACKLIST'],
