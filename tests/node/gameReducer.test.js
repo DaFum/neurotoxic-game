@@ -63,7 +63,7 @@ mock.module('../../src/utils/traitUtils', {
 // Import SUT after mocking
 const { gameReducer, ActionTypes } =
   await import('../../src/context/gameReducer')
-const { logger } = await import('../../src/utils/logger')
+
 const { createInitialState, initialState } =
   await import('../../src/context/initialState')
 
@@ -446,21 +446,9 @@ describe('gameReducer', () => {
   })
 
   describe('unknown action', () => {
-    it('should log a warning for unknown action', () => {
-      const mockWarn = mock.method(logger, 'warn', () => {})
+    it('should throw an error via assertNever for unknown action', () => {
       const action = { type: 'UNKNOWN_ACTION', payload: {} }
-      gameReducer(testState, action)
-      assert.strictEqual(mockWarn.mock.calls.length, 1)
-      assert.strictEqual(mockWarn.mock.calls[0].arguments[0], 'gameReducer')
-      assert.ok(mockWarn.mock.calls[0].arguments[1].includes('UNKNOWN_ACTION'))
-      mockWarn.mock.restore()
-    })
-
-    it('should return current state for unknown action', () => {
-      const action = { type: 'UNKNOWN_ACTION', payload: {} }
-      const newState = gameReducer(testState, action)
-
-      assert.deepStrictEqual(newState, testState)
+      assert.throws(() => gameReducer(testState, action), /Unexpected object/)
     })
   })
 

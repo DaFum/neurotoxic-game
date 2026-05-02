@@ -5,7 +5,7 @@
  */
 
 import { ActionTypes } from './actionTypes'
-import { logger } from '../utils/logger'
+import { assertNever } from '../utils/assertNever'
 import type { GameAction, GameState } from '../types/game'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
@@ -81,17 +81,21 @@ type ActionTypeUnion = (typeof ActionTypes)[keyof typeof ActionTypes]
  * Union of action types handled by the main gameReducer's reducerMap.
  * Excludes actions handled by sub-reducers (e.g., bandReducer).
  */
+export const BAND_ACTIONS = [
+  ActionTypes.UPDATE_BAND,
+  ActionTypes.ADD_CONTRABAND,
+  ActionTypes.USE_CONTRABAND,
+  ActionTypes.CONSUME_ITEM,
+  ActionTypes.UNLOCK_TRAIT
+] as const
+
 type HandledActionTypes = Exclude<
   ActionTypeUnion,
-  | typeof ActionTypes.UPDATE_BAND
-  | typeof ActionTypes.ADD_CONTRABAND
-  | typeof ActionTypes.USE_CONTRABAND
-  | typeof ActionTypes.CONSUME_ITEM
-  | typeof ActionTypes.UNLOCK_TRAIT
+  (typeof BAND_ACTIONS)[number]
 >
 
 type ReducerMap = {
-  [K in HandledActionTypes]?: (
+  [K in HandledActionTypes]: (
     state: GameState,
     payload: ExtractActionPayload<GameAction, K>
   ) => GameState
@@ -102,49 +106,52 @@ type ReducerMap = {
  * Using a map provides O(1) lookup instead of a long switch statement.
  */
 const reducerMap = {
-  [ActionTypes.CHANGE_SCENE]: handleChangeScene,
-  [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
-  [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
-  [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
-  [ActionTypes.SET_MAP]: handleSetMap,
-  [ActionTypes.SET_GIG]: handleSetGig,
-  [ActionTypes.START_GIG]: handleStartGig,
-  [ActionTypes.SET_SETLIST]: handleSetSetlist,
-  [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats,
-  [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent,
-  [ActionTypes.ADD_TOAST]: handleAddToast,
-  [ActionTypes.REMOVE_TOAST]: handleRemoveToast,
-  [ActionTypes.SET_GIG_MODIFIERS]: handleSetGigModifiers,
-  [ActionTypes.LOAD_GAME]: handleLoadGame,
-  [ActionTypes.RESET_STATE]: handleResetState,
-  [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta,
-  [ActionTypes.POP_PENDING_EVENT]: (state: GameState) =>
-    handlePopPendingEvent(state),
-  [ActionTypes.ADVANCE_DAY]: handleAdvanceDay,
-  [ActionTypes.ADD_COOLDOWN]: handleAddCooldown,
-  [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame,
-  [ActionTypes.COMPLETE_TRAVEL_MINIGAME]: handleCompleteTravelMinigame,
-  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame,
-  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame,
-  [ActionTypes.START_KABELSALAT_MINIGAME]: handleStartKabelsalatMinigame,
-  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
-  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration,
-  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
-  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
-  [ActionTypes.MERCH_PRESS]: handleMerchPress,
-  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
-  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
-  [ActionTypes.ADD_QUEST]: handleAddQuest,
-  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
-  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest,
-  [ActionTypes.FAIL_QUESTS]: (state: GameState) => handleFailQuests(state),
-  [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
-  [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
-  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
-  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
-  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
-  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
-} as unknown as ReducerMap
+  [ActionTypes.CHANGE_SCENE]: handleChangeScene as never,
+  [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer as never,
+  [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial as never,
+  [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings as never,
+  [ActionTypes.SET_MAP]: handleSetMap as never,
+  [ActionTypes.SET_GIG]: handleSetGig as never,
+  [ActionTypes.START_GIG]: handleStartGig as never,
+  [ActionTypes.SET_SETLIST]: handleSetSetlist as never,
+  [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats as never,
+  [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent as never,
+  [ActionTypes.ADD_TOAST]: handleAddToast as never,
+  [ActionTypes.REMOVE_TOAST]: handleRemoveToast as never,
+  [ActionTypes.SET_GIG_MODIFIERS]: handleSetGigModifiers as never,
+  [ActionTypes.LOAD_GAME]: handleLoadGame as never,
+  [ActionTypes.RESET_STATE]: handleResetState as never,
+  [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta as never,
+  [ActionTypes.POP_PENDING_EVENT]: ((state: GameState) =>
+    handlePopPendingEvent(state)) as never,
+  [ActionTypes.ADVANCE_DAY]: handleAdvanceDay as never,
+  [ActionTypes.ADD_COOLDOWN]: handleAddCooldown as never,
+  [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame as never,
+  [ActionTypes.COMPLETE_TRAVEL_MINIGAME]: handleCompleteTravelMinigame as never,
+  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame as never,
+  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame as never,
+  [ActionTypes.START_KABELSALAT_MINIGAME]:
+    handleStartKabelsalatMinigame as never,
+  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]:
+    handleCompleteKabelsalatMinigame as never,
+  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration as never,
+  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration as never,
+  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast as never,
+  [ActionTypes.MERCH_PRESS]: handleMerchPress as never,
+  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak as never,
+  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist as never,
+  [ActionTypes.ADD_QUEST]: handleAddQuest as never,
+  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest as never,
+  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest as never,
+  [ActionTypes.FAIL_QUESTS]: ((state: GameState) =>
+    handleFailQuests(state)) as never,
+  [ActionTypes.ADD_UNLOCK]: handleAddUnlock as never,
+  [ActionTypes.CLINIC_HEAL]: handleClinicHeal as never,
+  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance as never,
+  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem as never,
+  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate as never,
+  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen as never
+} satisfies ReducerMap
 
 /**
  * Main state reducer for the game.
@@ -158,13 +165,7 @@ export const gameReducer = (
   action: GameAction
 ): GameState => {
   // Delegate band actions to the bandReducer
-  if (
-    action.type === ActionTypes.UPDATE_BAND ||
-    action.type === ActionTypes.ADD_CONTRABAND ||
-    action.type === ActionTypes.USE_CONTRABAND ||
-    action.type === ActionTypes.CONSUME_ITEM ||
-    action.type === ActionTypes.UNLOCK_TRAIT
-  ) {
+  if ((BAND_ACTIONS as readonly string[]).includes(action.type)) {
     return bandReducer(state, action)
   }
 
@@ -179,6 +180,6 @@ export const gameReducer = (
   }
 
   // Fallback: unhandled action type
-  logger.warn('gameReducer', `Unhandled action type: ${action.type}`, action)
+  assertNever(action as never)
   return state
 }
