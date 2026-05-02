@@ -62,6 +62,11 @@ import {
   handleSetPendingBandHQOpen
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
+import {
+  handleSpawnRivalBand,
+  handleMoveRivalBand,
+  handleUpdateRivalBand
+} from './reducers/rivalReducer'
 
 export { ActionTypes }
 
@@ -99,6 +104,9 @@ const reducerMap = {
   [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
   [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration,
   [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
+  [ActionTypes.SPAWN_RIVAL_BAND]: handleSpawnRivalBand,
+  [ActionTypes.MOVE_RIVAL_BAND]: handleMoveRivalBand,
+  [ActionTypes.UPDATE_RIVAL_BAND]: handleUpdateRivalBand,
   [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,

@@ -89,7 +89,11 @@ export const useRhythmGameScoring = ({
   const { addToast, setLastGigStats, endGig } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
-  const crowdDecay = performance?.crowdDecay ?? 1.0
+  // Apply a 50% penalty to crowd decay (i.e. faster drain) when a rival is at the venue
+  const baseCrowdDecay = performance?.crowdDecay ?? 1.0
+  const crowdDecay = gameStateRef.current.rivalPenaltyActive
+    ? baseCrowdDecay * 1.5
+    : baseCrowdDecay
   const guitarDifficulty = performance?.guitarDifficulty ?? 1.0
   const drumMultiplier = performance?.drumMultiplier ?? 1.0
 

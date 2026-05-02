@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import type { HTMLMotionProps, Transition } from 'framer-motion'
 import PropTypes from 'prop-types'
-import { useMemo } from 'react'
 import type { ComponentType, ElementType, ReactNode } from 'react'
 
 export const AnimatedDivider = ({
@@ -47,29 +46,47 @@ export const AnimatedSubtitle = ({
   className = '',
   children
 }: {
-  as?: MotionTag | ComponentType<HTMLMotionProps<'div'> & { children?: ReactNode }>
+  as?:
+    | MotionTag
+    | ComponentType<HTMLMotionProps<'div'> & { children?: ReactNode }>
   initial?: HTMLMotionProps<'div'>['initial']
   animate?: HTMLMotionProps<'div'>['animate']
   transition?: Transition
   className?: string
   children: ReactNode
 }) => {
-  const MotionComponent = useMemo(() => {
-    return typeof as === 'string'
-      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
-        motion.h2)
-      : motion(as)
-  }, [as])
+  const stringTag = typeof as === 'string' ? as : undefined
+  const Element = stringTag
+    ? (motionTagAllowlist[stringTag as MotionTag] ?? motion.h2)
+    : undefined
+
+  if (Element) {
+    return (
+      <Element
+        initial={initial}
+        animate={animate}
+        transition={transition}
+        className={`uppercase ${className}`}
+      >
+        {children}
+      </Element>
+    )
+  }
+
+  // If `as` is a component, wrap it statically
+  const Component = as as ComponentType<
+    HTMLMotionProps<'div'> & { children?: ReactNode }
+  >
 
   return (
-    <MotionComponent
+    <motion.div
       initial={initial}
       animate={animate}
       transition={transition}
       className={`uppercase ${className}`}
     >
-      {children}
-    </MotionComponent>
+      <Component>{children}</Component>
+    </motion.div>
   )
 }
 

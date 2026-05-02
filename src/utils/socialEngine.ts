@@ -29,9 +29,16 @@ interface SocialEngineGameState {
     day?: number
     money?: number
     fame?: number
+    currentNodeId?: string | null
     [key: string]: unknown
   }
   band?: Record<string, unknown>
+  rivalBand?: {
+    id: string
+    currentLocationId: string | null
+    powerLevel: number
+    [key: string]: unknown
+  } | null
   social?: {
     reputationCooldown?: number
     trend?: string
@@ -747,6 +754,17 @@ export const generateBrandOffers = (
     // Penalty for negative rep if we allow it, or just 0
     if (rep < 0) chance += rep * 0.005 // Higher penalty for bad rep
 
+    // Rival Penalty: If rival is in the same location, reduce deal chance
+    if (
+      gameState.rivalBand &&
+      gameState.player &&
+      gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
+    ) {
+      const rivalPower = gameState.rivalBand.powerLevel || 1
+      const powerPenalty = Math.min(0.2, rivalPower * 0.02)
+      chance -= powerPenalty
+    }
+
     if (rng() < chance) {
       // Generate dynamic name
       const dynamicName = generateBrandName(deal.name, align, rng)
@@ -789,6 +807,15 @@ export const negotiateDeal = (
   let successChance
   let feedback
   let status: 'ACCEPTED' | 'REVOKED' | 'FAILED' = 'ACCEPTED'
+
+  // Rival Penalty for Negotiations
+  const rivalPenalty =
+    gameState.rivalBand &&
+    gameState.player &&
+    gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
+      ? 0.15
+      : 0
+
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy
   // with nested offer copy is ~98% faster.
   let newDeal:
@@ -808,7 +835,7 @@ export const negotiateDeal = (
 
   switch (strategy) {
     case 'SAFE':
-      successChance = 0.8
+      successChance = 0.8 - rivalPenalty / 2
       if (hasManager) successChance += 0.1
 
       if (roll < successChance) {
@@ -824,7 +851,7 @@ export const negotiateDeal = (
       break
 
     case 'PERSUASIVE':
-      successChance = 0.5
+      successChance = 0.5 - rivalPenalty
       if (hasManager) successChance += 0.2
       if (isFamous) successChance += 0.1
 
@@ -844,7 +871,7 @@ export const negotiateDeal = (
       break
 
     case 'AGGRESSIVE':
-      successChance = 0.3
+      successChance = 0.3 - rivalPenalty
       if (isFamous) successChance += 0.2 // Fame helps aggression
 
       if (roll < successChance) {

@@ -98,7 +98,9 @@ export const useTravelLogic = ({
   reputationByRegion,
   venueBlacklist = [],
   onShowHQ,
-  onStartTravelMinigame
+  onStartTravelMinigame,
+  dispatch,
+  rivalBand
 }) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
@@ -116,6 +118,8 @@ export const useTravelLogic = ({
   const reputationByRegionRef = useRef(reputationByRegion)
   const venueBlacklistRef = useRef(venueBlacklist)
   const isTravelingRef = useRef(isTraveling)
+  const dispatchRef = useRef(dispatch)
+  const rivalBandRef = useRef(rivalBand)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
   // Synchronously update control flow refs to ensure handlers see latest state immediately
@@ -129,7 +133,18 @@ export const useTravelLogic = ({
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
-  }, [player, band, social, gameMap, reputationByRegion, venueBlacklist])
+    dispatchRef.current = dispatch
+    rivalBandRef.current = rivalBand
+  }, [
+    player,
+    band,
+    social,
+    gameMap,
+    reputationByRegion,
+    venueBlacklist,
+    dispatch,
+    rivalBand
+  ])
 
   const getLocationName = useCallback((location, venueId) => {
     return getLocationNameUtil(
@@ -306,10 +321,29 @@ export const useTravelLogic = ({
         travelEventActive = processTravelEvents(node, triggerEvent)
       }
 
+      // Tell context to move the rival band whenever the player moves
+      if (dispatchRef.current) {
+        dispatchRef.current({ type: 'MOVE_RIVAL_BAND' })
+      }
+
       // Always handle node arrival regardless of events —
       // gigs must start even when a travel event pops up.
       // Pass flag so SPECIAL nodes don't overwrite an active travel event.
       handleNodeArrivalCallback(node, travelEventActive)
+
+      // Rival Band check after arrival
+      setTimeout(() => {
+        const currentRival = rivalBandRef.current
+        if (currentRival && currentRival.currentLocationId === target.id) {
+          addToast(
+            i18n.t('ui:travel.rivalEncounter', {
+              defaultValue: 'Your rival band, {{rivalName}}, is in town!',
+              rivalName: currentRival.name
+            }),
+            'warning'
+          )
+        }
+      }, 500)
     },
     [
       travelTarget,

@@ -167,6 +167,15 @@ export interface BandState {
   [key: string]: unknown
 }
 
+export interface RivalBandState {
+  id: string
+  name: string
+  alignment: string
+  powerLevel: number
+  currentLocationId: string | null
+  [key: string]: unknown
+}
+
 export interface SocialState {
   instagram: number
   tiktok: number
@@ -332,6 +341,7 @@ export interface GameState {
   currentScene: GamePhase
   player: PlayerState
   band: BandState
+  rivalBand: RivalBandState | null
   social: SocialState
   gameMap: GameMap | null
   currentGig: Venue | null
@@ -400,6 +410,9 @@ export type GameAction =
   | Action<ActionTypes['COMPLETE_KABELSALAT_MINIGAME'], { results: unknown }>
   | Action<ActionTypes['START_AMP_CALIBRATION'], { gigId: string }>
   | Action<ActionTypes['COMPLETE_AMP_CALIBRATION'], { score: number }>
+  | Action<ActionTypes['SPAWN_RIVAL_BAND']>
+  | Action<ActionTypes['MOVE_RIVAL_BAND']>
+  | Action<ActionTypes['UPDATE_RIVAL_BAND'], Partial<RivalBandState>>
   | Action<ActionTypes['UNLOCK_TRAIT'], { memberId: string; traitId: string }>
   | Action<
       ActionTypes['ADD_VENUE_BLACKLIST'],

@@ -484,6 +484,29 @@ export const createCompleteAmpCalibrationAction = (
   payload: { score }
 })
 
+export const createSpawnRivalBandAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SPAWN_RIVAL_BAND }
+> => ({
+  type: ActionTypes.SPAWN_RIVAL_BAND
+})
+
+export const createMoveRivalBandAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.MOVE_RIVAL_BAND }
+> => ({
+  type: ActionTypes.MOVE_RIVAL_BAND
+})
+
+import type { RivalBandState } from '../types/game'
+
+export const createUpdateRivalBandAction = (
+  payload: Partial<RivalBandState>
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => ({
+  type: ActionTypes.UPDATE_RIVAL_BAND,
+  payload
+})
+
 /**
  * Creates unlock trait action
  * @param {Object} payload - { memberId, traitId }
@@ -674,7 +697,10 @@ export const createPirateBroadcastAction = (
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean
-): Extract<GameAction, { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }
+> => ({
   type: ActionTypes.SET_PENDING_BANDHQ_OPEN,
   payload: isOpen
 })

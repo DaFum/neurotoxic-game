@@ -67,6 +67,12 @@ export const DEFAULT_PLAYER_STATE = {
  * Default band state configuration
  * @type {Object}
  */
+export const DEFAULT_RIVAL_BAND_STATE = null
+
+/**
+ * Default band state configuration
+ * @type {Object}
+ */
 export const DEFAULT_BAND_STATE: BandState = {
   members: [
     {
@@ -224,6 +230,7 @@ export const initialState: GameState = {
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
   band: { ...DEFAULT_BAND_STATE },
+  rivalBand: DEFAULT_RIVAL_BAND_STATE,
   social: { ...DEFAULT_SOCIAL_STATE },
   gameMap: null,
   currentGig: null,
@@ -270,6 +277,7 @@ export const createInitialState = (
     stash: Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash),
     activeContrabandEffects: [...DEFAULT_BAND_STATE.activeContrabandEffects]
   },
+  rivalBand: initialState.rivalBand ? { ...initialState.rivalBand } : null,
   social: {
     ...DEFAULT_SOCIAL_STATE,
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
