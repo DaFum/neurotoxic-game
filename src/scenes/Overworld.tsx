@@ -49,7 +49,8 @@ export const Overworld = () => {
     advanceDay,
     changeScene,
     startTravelMinigame,
-    activeStoryFlags
+    activeStoryFlags,
+    rivalBand
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -258,6 +259,7 @@ export const Overworld = () => {
         t={t}
         gameMap={gameMap}
         player={player}
+        rivalBand={rivalBand}
         currentLayer={currentLayer}
         isTraveling={isTraveling}
         pendingTravelNode={pendingTravelNode}
