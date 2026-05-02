@@ -47,11 +47,19 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
 
   // Set rival penalty directly in the ref for the scoring hook to access
   useEffect(() => {
-    if (gameStateRef.current && currentGig) {
-      gameStateRef.current.rivalPenaltyActive =
-        rivalBand?.currentLocationId === currentGig.id
+    if (gameStateRef.current) {
+      if (currentGig) {
+        // Find the node corresponding to the venue to compare correctly against the rival map node
+        const venueNode = Object.values(gameMap?.nodes || {}).find(
+          n => n.venue?.id === currentGig.id
+        )
+        gameStateRef.current.rivalPenaltyActive =
+          rivalBand?.currentLocationId === venueNode?.id
+      } else {
+        gameStateRef.current.rivalPenaltyActive = false
+      }
     }
-  }, [rivalBand, currentGig, gameStateRef])
+  }, [rivalBand, currentGig, gameMap, gameStateRef])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
