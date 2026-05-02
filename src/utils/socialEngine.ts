@@ -5,6 +5,11 @@
  */
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto'
+import {
+  MAX_RIVAL_DEAL_CHANCE_PENALTY,
+  RIVAL_POWER_TO_DEAL_CHANCE_FACTOR,
+  RIVAL_NEGOTIATION_PENALTY
+} from '../context/gameConstants'
 import { POST_OPTIONS } from '../data/postOptions'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
@@ -761,7 +766,10 @@ export const generateBrandOffers = (
       gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
     ) {
       const rivalPower = gameState.rivalBand.powerLevel || 1
-      const powerPenalty = Math.min(0.2, rivalPower * 0.02)
+      const powerPenalty = Math.min(
+        MAX_RIVAL_DEAL_CHANCE_PENALTY,
+        rivalPower * RIVAL_POWER_TO_DEAL_CHANCE_FACTOR
+      )
       chance -= powerPenalty
     }
 
@@ -813,7 +821,7 @@ export const negotiateDeal = (
     gameState.rivalBand &&
     gameState.player &&
     gameState.rivalBand.currentLocationId === gameState.player.currentNodeId
-      ? 0.15
+      ? RIVAL_NEGOTIATION_PENALTY
       : 0
 
   // Optimization: structuredClone is slow for hot paths. Manual shallow copy

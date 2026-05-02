@@ -16,7 +16,7 @@ interface OverworldMapProps {
   t: TranslationCallback
   gameMap: GameMap | null
   player: PlayerState
-  rivalBand?: RivalBandState | null
+  rivalBand: RivalBandState | null
   currentLayer: number
   isTraveling: boolean
   pendingTravelNode: GameMapNode | null
@@ -159,7 +159,9 @@ export const OverworldMap = React.memo(
               >
                 <img
                   src={rivalVanUrl}
-                  alt='Rival Band'
+                  alt={t('ui:overworld.rival_band', {
+                    defaultValue: 'Rival Band'
+                  })}
                   className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-toxic-red)] opacity-90'
                 />
               </div>

@@ -45,6 +45,7 @@ import { translateLocation } from '../utils/locationI18n'
 import { ALL_VENUES } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
 import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
+import { createMoveRivalBandAction } from '../context/actionCreators'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -323,7 +324,7 @@ export const useTravelLogic = ({
 
       // Tell context to move the rival band whenever the player moves
       if (dispatchRef.current) {
-        dispatchRef.current({ type: 'MOVE_RIVAL_BAND' })
+        dispatchRef.current(createMoveRivalBandAction())
       }
 
       // Always handle node arrival regardless of events —

@@ -21,6 +21,7 @@ import {
   calculateFinalScore,
   calculateMissImpact
 } from '../../utils/rhythmGameScoringUtils'
+import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../context/gameConstants'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -89,11 +90,7 @@ export const useRhythmGameScoring = ({
   const { addToast, setLastGigStats, endGig } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
-  // Apply a 50% penalty to crowd decay (i.e. faster drain) when a rival is at the venue
   const baseCrowdDecay = performance?.crowdDecay ?? 1.0
-  const crowdDecay = gameStateRef.current.rivalPenaltyActive
-    ? baseCrowdDecay * 1.5
-    : baseCrowdDecay
   const guitarDifficulty = performance?.guitarDifficulty ?? 1.0
   const drumMultiplier = performance?.drumMultiplier ?? 1.0
 
@@ -140,6 +137,10 @@ export const useRhythmGameScoring = ({
 
       const currentHealth = gameStateRef.current.health
       const currentOverload = gameStateRef.current.overload
+
+      const crowdDecay = gameStateRef.current.rivalPenaltyActive
+        ? baseCrowdDecay * RIVAL_GIG_CROWD_DECAY_PENALTY
+        : baseCrowdDecay
 
       // Calculate new overload and stats outside the setState callback
       const { nextOverload, nextHealth } = calculateMissImpact(
@@ -222,7 +223,7 @@ export const useRhythmGameScoring = ({
       setIsToxicMode,
       setOverload,
       setAccuracy,
-      crowdDecay,
+      baseCrowdDecay,
       t
     ]
   )

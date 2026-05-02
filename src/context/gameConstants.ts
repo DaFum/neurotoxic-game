@@ -73,3 +73,9 @@ export const calculateClinicCost = (
     baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)
   )
 }
+
+export const RIVAL_STAY_CHANCE = 0.3
+export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5
+export const MAX_RIVAL_DEAL_CHANCE_PENALTY = 0.2
+export const RIVAL_POWER_TO_DEAL_CHANCE_FACTOR = 0.02
+export const RIVAL_NEGOTIATION_PENALTY = 0.15

@@ -6,6 +6,7 @@
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
+import type { RivalBandState } from '../types/game'
 import {
   clampPlayerMoney,
   clampPlayerFame,
@@ -497,8 +498,6 @@ export const createMoveRivalBandAction = (): Extract<
 > => ({
   type: ActionTypes.MOVE_RIVAL_BAND
 })
-
-import type { RivalBandState } from '../types/game'
 
 export const createUpdateRivalBandAction = (
   payload: Partial<RivalBandState>

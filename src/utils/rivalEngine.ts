@@ -1,7 +1,9 @@
+import type { GameMap, PlayerState, RivalBandState } from '../types/game'
+
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { generateBrandName } from './socialEngine'
 import { secureRandom } from './crypto'
-import type { GameMap, PlayerState, RivalBandState } from '../types/game'
+import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
 
 export const generateRivalBand = (
   day: number,
