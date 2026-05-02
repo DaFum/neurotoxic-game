@@ -184,7 +184,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
               <React.Fragment key={tab.id}>
                 {tab.isLocked ? (
                   <Tooltip
-                    content={t('hq.voidTraderLockedTooltip')}
+                    content={t('ui:hq.voidTraderLockedTooltip')}
                     className='flex-1 flex'
                   >
                     {buttonContent}

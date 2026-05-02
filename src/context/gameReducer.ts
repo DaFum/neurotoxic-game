@@ -5,6 +5,7 @@
  */
 
 import { ActionTypes } from './actionTypes'
+import { logger } from '../utils/logger'
 import type { GameAction, GameState } from '../types/game'
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
@@ -66,9 +67,39 @@ import { handleTradeVoidItem } from './reducers/tradeReducer'
 export { ActionTypes }
 
 /**
+ * Utility type to extract the payload type from a GameAction union.
+ */
+type ExtractActionPayload<A, T> = A extends { type: T; payload: infer P }
+  ? P
+  : A extends { type: T }
+    ? undefined
+    : never
+
+type ActionTypeUnion = (typeof ActionTypes)[keyof typeof ActionTypes]
+
+/**
+ * Union of action types handled by the main gameReducer's reducerMap.
+ * Excludes actions handled by sub-reducers (e.g., bandReducer).
+ */
+type HandledActionTypes = Exclude<
+  ActionTypeUnion,
+  | typeof ActionTypes.UPDATE_BAND
+  | typeof ActionTypes.ADD_CONTRABAND
+  | typeof ActionTypes.USE_CONTRABAND
+  | typeof ActionTypes.CONSUME_ITEM
+  | typeof ActionTypes.UNLOCK_TRAIT
+>
+
+type ReducerMap = {
+  [K in HandledActionTypes]?: (
+    state: GameState,
+    payload: ExtractActionPayload<GameAction, K>
+  ) => GameState
+}
+
+/**
  * Maps action types to their respective handler functions.
  * Using a map provides O(1) lookup instead of a long switch statement.
- * @type {Object.<string, Function>}
  */
 const reducerMap = {
   [ActionTypes.CHANGE_SCENE]: handleChangeScene,
@@ -113,7 +144,7 @@ const reducerMap = {
   [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
   [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
-}
+} as unknown as ReducerMap
 
 /**
  * Main state reducer for the game.
@@ -139,7 +170,7 @@ export const gameReducer = (
 
   // Dispatch using the O(1) reducer map
   if (Object.hasOwn(reducerMap, action.type)) {
-    const handler = reducerMap[action.type as keyof typeof reducerMap] as (
+    const handler = reducerMap[action.type as keyof ReducerMap] as (
       nextState: GameState,
       payload?: unknown
     ) => GameState
@@ -147,6 +178,7 @@ export const gameReducer = (
     return handler(state, payload)
   }
 
-  // Fallback
+  // Fallback: unhandled action type
+  logger.warn('gameReducer', `Unhandled action type: ${action.type}`, action)
   return state
 }
