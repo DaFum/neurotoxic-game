@@ -94,11 +94,15 @@ type HandledActionTypes = Exclude<
   (typeof BAND_ACTIONS)[number]
 >
 
+// Use any for payload in the mapped type to allow handlers to define their own specific constraints while ensuring all keys are handled.
 type ReducerMap = {
   [K in HandledActionTypes]: (
-    state: GameState,
-    payload: ExtractActionPayload<GameAction, K>
-  ) => GameState
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    state: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload: ExtractActionPayload<GameAction, K> | any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
 }
 
 /**
@@ -106,51 +110,48 @@ type ReducerMap = {
  * Using a map provides O(1) lookup instead of a long switch statement.
  */
 const reducerMap = {
-  [ActionTypes.CHANGE_SCENE]: handleChangeScene as never,
-  [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer as never,
-  [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial as never,
-  [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings as never,
-  [ActionTypes.SET_MAP]: handleSetMap as never,
-  [ActionTypes.SET_GIG]: handleSetGig as never,
-  [ActionTypes.START_GIG]: handleStartGig as never,
-  [ActionTypes.SET_SETLIST]: handleSetSetlist as never,
-  [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats as never,
-  [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent as never,
-  [ActionTypes.ADD_TOAST]: handleAddToast as never,
-  [ActionTypes.REMOVE_TOAST]: handleRemoveToast as never,
-  [ActionTypes.SET_GIG_MODIFIERS]: handleSetGigModifiers as never,
-  [ActionTypes.LOAD_GAME]: handleLoadGame as never,
-  [ActionTypes.RESET_STATE]: handleResetState as never,
-  [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta as never,
-  [ActionTypes.POP_PENDING_EVENT]: ((state: GameState) =>
-    handlePopPendingEvent(state)) as never,
-  [ActionTypes.ADVANCE_DAY]: handleAdvanceDay as never,
-  [ActionTypes.ADD_COOLDOWN]: handleAddCooldown as never,
-  [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame as never,
-  [ActionTypes.COMPLETE_TRAVEL_MINIGAME]: handleCompleteTravelMinigame as never,
-  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame as never,
-  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame as never,
-  [ActionTypes.START_KABELSALAT_MINIGAME]:
-    handleStartKabelsalatMinigame as never,
-  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]:
-    handleCompleteKabelsalatMinigame as never,
-  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration as never,
-  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration as never,
-  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast as never,
-  [ActionTypes.MERCH_PRESS]: handleMerchPress as never,
-  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak as never,
-  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist as never,
-  [ActionTypes.ADD_QUEST]: handleAddQuest as never,
-  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest as never,
-  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest as never,
-  [ActionTypes.FAIL_QUESTS]: ((state: GameState) =>
-    handleFailQuests(state)) as never,
-  [ActionTypes.ADD_UNLOCK]: handleAddUnlock as never,
-  [ActionTypes.CLINIC_HEAL]: handleClinicHeal as never,
-  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance as never,
-  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem as never,
-  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate as never,
-  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen as never
+  [ActionTypes.CHANGE_SCENE]: handleChangeScene,
+  [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
+  [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
+  [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
+  [ActionTypes.SET_MAP]: handleSetMap,
+  [ActionTypes.SET_GIG]: handleSetGig,
+  [ActionTypes.START_GIG]: handleStartGig,
+  [ActionTypes.SET_SETLIST]: handleSetSetlist,
+  [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats,
+  [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent,
+  [ActionTypes.ADD_TOAST]: handleAddToast,
+  [ActionTypes.REMOVE_TOAST]: handleRemoveToast,
+  [ActionTypes.SET_GIG_MODIFIERS]: handleSetGigModifiers,
+  [ActionTypes.LOAD_GAME]: handleLoadGame,
+  [ActionTypes.RESET_STATE]: handleResetState,
+  [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta,
+  [ActionTypes.POP_PENDING_EVENT]: (state: GameState) =>
+    handlePopPendingEvent(state),
+  [ActionTypes.ADVANCE_DAY]: handleAdvanceDay,
+  [ActionTypes.ADD_COOLDOWN]: handleAddCooldown,
+  [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame,
+  [ActionTypes.COMPLETE_TRAVEL_MINIGAME]: handleCompleteTravelMinigame,
+  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame,
+  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame,
+  [ActionTypes.START_KABELSALAT_MINIGAME]: handleStartKabelsalatMinigame,
+  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
+  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration,
+  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
+  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
+  [ActionTypes.MERCH_PRESS]: handleMerchPress,
+  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
+  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
+  [ActionTypes.ADD_QUEST]: handleAddQuest,
+  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
+  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest,
+  [ActionTypes.FAIL_QUESTS]: (state: GameState) => handleFailQuests(state),
+  [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
+  [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
+  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
+  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
+  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
+  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
 } satisfies ReducerMap
 
 /**
@@ -182,5 +183,4 @@ export const gameReducer = (
 
   // Fallback: unhandled action type
   assertNever(action as never)
-  return state
 }

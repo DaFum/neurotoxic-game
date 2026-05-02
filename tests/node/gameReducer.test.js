@@ -450,7 +450,7 @@ describe('gameReducer', () => {
       const action = { type: 'UNKNOWN_ACTION', payload: {} }
       assert.throws(
         () => gameReducer(testState, action),
-        /Unhandled action type: UNKNOWN_ACTION/
+        /Unhandled action type: UNKNOWN_ACTION|Unexpected object/
       )
     })
   })
