@@ -448,7 +448,10 @@ describe('gameReducer', () => {
   describe('unknown action', () => {
     it('should throw an error via assertNever for unknown action', () => {
       const action = { type: 'UNKNOWN_ACTION', payload: {} }
-      assert.throws(() => gameReducer(testState, action), /Unexpected object/)
+      assert.throws(
+        () => gameReducer(testState, action),
+        /Unhandled action type: UNKNOWN_ACTION/
+      )
     })
   })
 

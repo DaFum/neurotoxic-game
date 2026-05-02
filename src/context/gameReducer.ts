@@ -173,7 +173,8 @@ export const gameReducer = (
   if (Object.hasOwn(reducerMap, action.type)) {
     const handler = reducerMap[action.type as keyof ReducerMap] as (
       nextState: GameState,
-      payload?: unknown
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload?: any
     ) => GameState
     const payload = 'payload' in action ? action.payload : undefined
     return handler(state, payload)
