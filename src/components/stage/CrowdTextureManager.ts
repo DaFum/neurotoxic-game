@@ -1,5 +1,10 @@
 import type { Texture } from 'pixi.js'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
 import { loadTextures } from './stageRenderUtils'
 
@@ -18,8 +23,12 @@ export class CrowdTextureManager {
   async loadAssets(): Promise<void> {
     try {
       const urls = {
-        idle: getGenImageUrl(IMG_PROMPTS.CROWD_IDLE),
-        mosh: getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
+        idle: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)
+          : getGeneratedImageFallbackUrl(),
+        mosh: isImageGenerationAvailable()
+          ? getGenImageUrl(IMG_PROMPTS.CROWD_MOSH)
+          : getGeneratedImageFallbackUrl()
       }
 
       const loadedTextures = await loadTextures(
@@ -46,18 +55,21 @@ export class CrowdTextureManager {
   }
 
   dispose(): void {
-    if (
-      this.textures.idle &&
-      typeof this.textures.idle.destroy === 'function'
-    ) {
-      this.textures.idle.destroy(true)
+    const uniqueTextures = new Set<Texture>()
+
+    if (this.textures.idle) {
+      uniqueTextures.add(this.textures.idle)
     }
-    if (
-      this.textures.mosh &&
-      typeof this.textures.mosh.destroy === 'function'
-    ) {
-      this.textures.mosh.destroy(true)
+    if (this.textures.mosh) {
+      uniqueTextures.add(this.textures.mosh)
     }
+
+    uniqueTextures.forEach(texture => {
+      if (typeof texture.destroy === 'function') {
+        texture.destroy(true)
+      }
+    })
+
     this.textures = { idle: null, mosh: null }
   }
 }

@@ -72,50 +72,65 @@ const mockNoteManager = {
   dispose: mock.fn()
 }
 
-mock.module('../../src/components/stage/CrowdManager', {
-  namedExports: {
-    CrowdManager: class {
-      constructor() {
-        Object.assign(this, mockCrowdManager)
+mock.module(
+  new URL('../../src/components/stage/CrowdManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      CrowdManager: class {
+        constructor() {
+          Object.assign(this, mockCrowdManager)
+        }
       }
     }
   }
-})
-mock.module('../../src/components/stage/LaneManager', {
-  namedExports: {
-    LaneManager: class {
-      constructor() {
-        Object.assign(this, mockLaneManager)
+)
+mock.module(
+  new URL('../../src/components/stage/LaneManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      LaneManager: class {
+        constructor() {
+          Object.assign(this, mockLaneManager)
+        }
       }
     }
   }
-})
-mock.module('../../src/components/stage/EffectManager', {
-  namedExports: {
-    EffectManager: class {
-      constructor() {
-        Object.assign(this, mockEffectManager)
+)
+mock.module(
+  new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      EffectManager: class {
+        constructor() {
+          Object.assign(this, mockEffectManager)
+        }
       }
     }
   }
-})
-mock.module('../../src/components/stage/NoteManager', {
-  namedExports: {
-    NoteManager: class {
-      constructor() {
-        Object.assign(this, mockNoteManager)
+)
+mock.module(
+  new URL('../../src/components/stage/NoteManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      NoteManager: class {
+        constructor() {
+          Object.assign(this, mockNoteManager)
+        }
       }
     }
   }
-})
+)
 
 const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
 }
 
-mock.module('../../src/utils/audio/audioEngine', {
-  namedExports: mockAudioEngine
-})
+mock.module(
+  new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
+  {
+    namedExports: mockAudioEngine
+  }
+)
 
 describe('PixiStageController', () => {
   let controller
@@ -141,6 +156,7 @@ describe('PixiStageController', () => {
     // Reset mocks
     mockCrowdManager.init.mock.resetCalls()
     mockCrowdManager.loadAssets.mock.resetCalls()
+    mockCrowdManager.loadAssets.mock.mockImplementation(() => Promise.resolve())
     mockLaneManager.init.mock.resetCalls()
     mockEffectManager.init.mock.resetCalls()
     mockEffectManager.loadAssets.mock.resetCalls()
@@ -186,6 +202,14 @@ describe('PixiStageController', () => {
     } else {
       delete globalThis.ResizeObserver
     }
+
+    // Reset loadAssets mocks to prevent stale behavior leaking across tests
+    mockEffectManager.loadAssets.mock.resetCalls()
+    mockEffectManager.loadAssets.mock.mockImplementation(() =>
+      Promise.resolve()
+    )
+    mockNoteManager.loadAssets.mock.resetCalls()
+    mockNoteManager.loadAssets.mock.mockImplementation(() => Promise.resolve())
   })
 
   test('init initializes managers', async () => {
@@ -697,11 +721,16 @@ describe('PixiStageController', () => {
     })
 
     test('does not initialize managers if disposed during setup', async () => {
-      const slowLoad = new Promise(resolve => setTimeout(resolve, 100))
+      let resolveSlowLoad
+      const slowLoad = new Promise(resolve => {
+        resolveSlowLoad = resolve
+      })
       mockCrowdManager.loadAssets.mock.mockImplementation(() => slowLoad)
 
       const initPromise = controller.init()
       controller.isDisposed = true
+
+      resolveSlowLoad()
       await initPromise
 
       // Should not call init on managers if disposed

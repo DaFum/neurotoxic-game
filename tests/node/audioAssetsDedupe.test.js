@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -20,7 +20,7 @@ const mockAudioState = {
   audioBufferCache: new Map(),
   currentCacheByteSize: 0
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState }
 })
 
@@ -30,7 +30,7 @@ const mockOggUrlMap = {
   'other.ogg': '/assets/other.ogg',
   'fail.ogg': '/assets/fail.ogg'
 }
-mock.module('../../src/utils/audio/playbackUtils', {
+mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
   namedExports: {
     buildAssetUrlMap: () => mockOggUrlMap,
     resolveAssetUrl: filename => ({
@@ -55,7 +55,7 @@ const mockContext = {
     }
   })
 }
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     getRawAudioContext: () => mockContext
   }

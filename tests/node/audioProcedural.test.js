@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -41,7 +41,7 @@ const mockAudioState = {
   transportEndEventId: null,
   transportStopEventId: null
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -123,7 +123,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -133,7 +133,7 @@ mock.module('../../src/utils/audio/context', {
 // Mock Playback
 const mockStopAudioInternal = mock.fn()
 const mockStopAudio = mock.fn()
-mock.module('../../src/utils/audio/playback', {
+mock.module(new URL('../../src/utils/audio/playback.ts', import.meta.url).href, {
   namedExports: {
     stopAudioInternal: mockStopAudioInternal,
     stopAudio: mockStopAudio
@@ -148,7 +148,7 @@ const mockMidiUrlMap = {
   'empty.mid': '/assets/empty.mid'
 }
 const mockLoadAudioBuffer = mock.fn()
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: mockMidiUrlMap,
     loadAudioBuffer: mockLoadAudioBuffer,
@@ -157,7 +157,7 @@ mock.module('../../src/utils/audio/assets', {
 })
 
 // Mock Shared Buffer Utils
-mock.module('../../src/utils/audio/sharedBufferUtils', {
+mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }

@@ -57,13 +57,13 @@ mock.module('pixi.js', {
 
 // Mock other dependencies
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/crypto', {
+mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
   namedExports: {
     secureRandom: mock.fn(() => 0.5)
   }

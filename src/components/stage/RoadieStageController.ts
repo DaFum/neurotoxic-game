@@ -8,7 +8,12 @@ import {
 } from '../../hooks/minigames/minigameConstants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
 
@@ -84,15 +89,19 @@ class RoadieStageController extends BaseStageController {
 
   async loadAssets() {
     try {
-      // URLs
-      const urls = {
-        roadie: getGenImageUrl(IMG_PROMPTS.MINIGAME_ROADIE_IDLE),
-        carA: getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_A),
-        carB: getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_B),
-        carC: getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_C),
-        amp: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_AMP),
-        drums: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_DRUMS),
-        guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
+      // All Roadie sprites need visual distinction (player vs hazards vs pickups),
+      // so offline mode leaves all null — managers fall back to colored Graphics shapes.
+      const online = isImageGenerationAvailable()
+      const urls: Record<string, string | null> = {
+        roadie: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ROADIE_IDLE)
+          : null,
+        carA: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_A) : null,
+        carB: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_B) : null,
+        carC: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_CAR_C) : null,
+        amp: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_AMP) : null,
+        drums: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_DRUMS) : null,
+        guitar: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR) : null
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<

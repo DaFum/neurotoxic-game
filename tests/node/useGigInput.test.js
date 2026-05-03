@@ -27,17 +27,17 @@ const mockErrorHandler = {
 const mockStopAudio = mock.fn()
 
 // Mock imports
-mock.module('../../src/utils/audio/AudioManager', {
+mock.module(import.meta.resolve('../../src/utils/audio/AudioManager.ts'), {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/gigStats', {
+mock.module(import.meta.resolve('../../src/utils/gigStats.ts'), {
   namedExports: { buildGigStatsSnapshot: mockGigStats.buildGigStatsSnapshot }
 })
-mock.module('../../src/utils/errorHandler', {
+mock.module(import.meta.resolve('../../src/utils/errorHandler.ts'), {
   namedExports: { handleError: mockErrorHandler.handleError }
 })
 // Mock dynamic import
-mock.module('../../src/utils/audio/audioEngine', {
+mock.module(import.meta.resolve('../../src/utils/audio/audioEngine.ts'), {
   namedExports: { stopAudio: mockStopAudio }
 })
 
@@ -73,6 +73,8 @@ describe('useGigInput', () => {
 
     mockAudioManager.ensureAudioContext.mock.resetCalls()
     mockStopAudio.mock.resetCalls()
+    mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
+    mockErrorHandler.handleError.mock.resetCalls()
   })
 
   afterEach(() => {
@@ -125,5 +127,45 @@ describe('useGigInput', () => {
     assert.equal(actions.registerInput.mock.calls.length, 1)
     assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [0, true])
     assert.equal(triggerBandAnimation.mock.calls.length, 1)
+  })
+
+  test('calls ensureAudioContext when handleLaneInput is triggered', () => {
+    const { result } = renderUseGigInput()
+
+    act(() => {
+      result.current.handleLaneInput(0, true)
+    })
+
+    // Verify ensureAudioContext was called
+    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
+    // Verify the standard input flow still works
+    assert.equal(actions.registerInput.mock.calls.length, 1)
+    assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [0, true])
+  })
+
+  test('handles error gracefully when ensureAudioContext throws', () => {
+    // Mock ensureAudioContext to throw an error on first call
+    let callCount = 0
+    mockAudioManager.ensureAudioContext.mock.mockImplementationOnce(() => {
+      callCount++
+      throw new Error('Audio context initialization failed')
+    })
+
+    const { result } = renderUseGigInput()
+
+    // Calling handleLaneInput when ensureAudioContext throws should propagate the error
+    assert.throws(
+      () => {
+        act(() => {
+          result.current.handleLaneInput(0, true)
+        })
+      },
+      {
+        message: /Audio context initialization failed/
+      }
+    )
+
+    // Verify ensureAudioContext was called
+    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
   })
 })

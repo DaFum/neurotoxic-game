@@ -25,7 +25,7 @@ test('AudioManager Tests', async t => {
     disposeAudio: mock.fn()
   }
 
-  mock.module('../../src/utils/audio/audioEngine', {
+  mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
     namedExports: mockAudioEngine
   })
 

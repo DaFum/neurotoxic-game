@@ -964,6 +964,12 @@
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "offline": {
+    "offlineReady": "App bereit, offline zu arbeiten",
+    "needRefresh": "Neuer Inhalt verfügbar, klicke auf Neuladen zum Aktualisieren.",
+    "reload": "Neuladen",
+    "close": "Schließen"
+  },
   "travel": {
     "rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!"
   },

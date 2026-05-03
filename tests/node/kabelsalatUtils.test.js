@@ -1,4 +1,4 @@
-import { test, describe, mock } from 'node:test'
+import { test, describe, mock, before } from 'node:test'
 import assert from 'node:assert/strict'
 
 // Mock constants module
@@ -15,23 +15,30 @@ const MOCK_CABLE_MAP = MOCK_CABLES.reduce((acc, cable) => {
 
 const MOCK_SLOT_XS = [100, 200, 300, 400, 500]
 
-mock.module('../../src/scenes/kabelsalat/kabelsalatConstants', {
-  namedExports: {
-    CABLES: MOCK_CABLES,
-    CABLE_MAP: MOCK_CABLE_MAP,
-    SLOT_XS: MOCK_SLOT_XS,
-    SOCKET_Y: 120
+mock.module(
+  new URL('../../src/scenes/kabelsalat/kabelsalatConstants.ts', import.meta.url)
+    .href,
+  {
+    namedExports: {
+      CABLES: MOCK_CABLES,
+      CABLE_MAP: MOCK_CABLE_MAP,
+      SLOT_XS: MOCK_SLOT_XS,
+      SOCKET_Y: 120
+    }
   }
-})
+)
 
 describe('kabelsalat utils', () => {
   let generateLightningSeeds
   let getMessyPath
 
-  test('generateLightningSeeds returns array of lightning objects', async () => {
+  before(async () => {
     const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
     generateLightningSeeds = mod.generateLightningSeeds
+    getMessyPath = mod.getMessyPath
+  })
 
+  test('generateLightningSeeds returns array of lightning objects', async () => {
     const seeds = generateLightningSeeds()
 
     assert.ok(Array.isArray(seeds))
@@ -39,9 +46,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('each lightning seed has required properties', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
@@ -55,9 +59,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('lightning seeds have valid ranges', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
@@ -73,9 +74,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('lightning seeds have unique IDs', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
     const ids = seeds.map(s => s.id)
     const uniqueIds = new Set(ids)
@@ -85,9 +83,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath returns valid SVG path string', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp', 'synth', 'pedal']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -100,9 +95,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath returns empty string for invalid cable', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic']
     const path = getMessyPath('invalid_cable', 'power', socketOrder)
 
@@ -110,9 +102,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath returns empty string for socket not in order', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic']
     const path = getMessyPath('iec', 'nonexistent_socket', socketOrder)
 
@@ -120,20 +109,15 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath uses correct socket position from order', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp']
     const path = getMessyPath('iec', 'mic', socketOrder)
 
     // mic is at index 1, so socketX should be SLOT_XS[1] = 200
-    assert.ok(path.includes('200'))
+    // SOCKET_Y = 120 and PLUG_DEPTH = 20 -> terminal Y should be 140
+    assert.ok(path.endsWith(` ${MOCK_SLOT_XS[1]} 140`))
   })
 
   test('getMessyPath calculates midpoint correctly', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -143,9 +127,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath creates different paths for different sockets', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp']
     const path1 = getMessyPath('iec', 'power', socketOrder)
     const path2 = getMessyPath('iec', 'mic', socketOrder)
@@ -154,9 +135,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath handles first socket position', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -165,9 +143,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath handles last socket position', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp', 'synth', 'pedal']
     const path = getMessyPath('iec', 'pedal', socketOrder)
 
@@ -176,9 +151,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath creates cubic bezier curve', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -189,9 +161,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('generateLightningSeeds creates different seeds each call', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds1 = generateLightningSeeds()
     const seeds2 = generateLightningSeeds()
 
@@ -205,9 +174,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath offset calculation varies with position', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp']
 
     // Different socket positions should create different offsets
@@ -219,9 +185,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath handles edge case with single socket', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -231,9 +194,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('lightning seed IDs are valid UUIDs', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
@@ -247,9 +207,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath uses SOCKET_Y baseline', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power']
     const path = getMessyPath('iec', 'power', socketOrder)
 

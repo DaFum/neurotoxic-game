@@ -78,66 +78,84 @@ mock.module('pixi.js', {
     },
     Assets: {
       load: (...args) => currentLoad(...args)
+    },
+    Texture: {
+      WHITE: { id: 'white' },
+      from: mock.fn(() => ({ id: 'mock-texture' }))
+    },
+    ImageSource: class {
+      constructor(options) {
+        this.resource = options?.resource ?? null
+      }
     }
   }
 })
 
 // Mock EffectManager
-mock.module('../../src/components/stage/EffectManager', {
-  namedExports: {
-    EffectManager: class {
-      constructor() {}
-      init() {}
-      loadAssets() {
-        return Promise.resolve()
+mock.module(
+  new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      EffectManager: class {
+        constructor() {}
+        init() {}
+        loadAssets() {
+          return Promise.resolve()
+        }
+        update() {}
+        spawnHitEffect() {}
+        dispose() {}
       }
-      update() {}
-      spawnHitEffect() {}
-      dispose() {}
     }
   }
-})
+)
 
 // Mock TourbusObstacleManager
-mock.module('../../src/components/stage/TourbusObstacleManager', {
-  namedExports: {
-    TourbusObstacleManager: class {
-      constructor() {
-        this.obstacleMap = new Map()
-        this.currentIds = new Set()
-      }
-      updateObstacles(state, height, _laneWidth) {
-        this.currentIds.clear()
-        for (const obs of state.obstacles) {
-          this.currentIds.add(obs.id)
-          let sprite = this.obstacleMap.get(obs.id)
-          if (!sprite) {
-            sprite = { y: (obs.y / 100) * height }
-            this.obstacleMap.set(obs.id, sprite)
+mock.module(
+  new URL(
+    '../../src/components/stage/TourbusObstacleManager.ts',
+    import.meta.url
+  ).href,
+  {
+    namedExports: {
+      TourbusObstacleManager: class {
+        constructor() {
+          this.obstacleMap = new Map()
+          this.currentIds = new Set()
+        }
+        updateObstacles(state, height, _laneWidth) {
+          this.currentIds.clear()
+          for (const obs of state.obstacles) {
+            this.currentIds.add(obs.id)
+            let sprite = this.obstacleMap.get(obs.id)
+            if (!sprite) {
+              sprite = { y: (obs.y / 100) * height }
+              this.obstacleMap.set(obs.id, sprite)
+            }
+            sprite.y = (obs.y / 100) * height
           }
-          sprite.y = (obs.y / 100) * height
         }
-      }
-      cleanupObstacles() {
-        for (const id of this.obstacleMap.keys()) {
-          if (!this.currentIds.has(id)) {
-            this.obstacleMap.delete(id)
+        cleanupObstacles() {
+          for (const id of this.obstacleMap.keys()) {
+            if (!this.currentIds.has(id)) {
+              this.obstacleMap.delete(id)
+            }
           }
         }
-      }
-      dispose() {
-        for (const sprite of this.obstacleMap.values()) {
-          if (sprite.destroy) sprite.destroy()
+        dispose() {
+          for (const sprite of this.obstacleMap.values()) {
+            if (sprite.destroy) sprite.destroy()
+          }
+          this.obstacleMap.clear()
+          this.currentIds.clear()
         }
-        this.obstacleMap.clear()
-        this.currentIds.clear()
       }
     }
   }
-})
+)
 
 // Mock Utils
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: {
       info: mock.fn(),
@@ -147,24 +165,37 @@ mock.module('../../src/utils/logger', {
   }
 })
 
-mock.module('../../src/components/stage/stageRenderUtils', {
-  namedExports: {
-    getPixiColorFromToken: mock.fn(() => 0xffffff),
-    loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
-    loadTextures: mock.fn(async urlMap => {
-      const results = {}
-      for (const key in urlMap) {
-        if (Object.hasOwn(urlMap, key)) {
-          results[key] = { width: 100, height: 100 }
-        }
+const stageRenderUtilsMocks = {
+  getPixiColorFromToken: mock.fn(() => 0xffffff),
+  loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
+  loadTextures: mock.fn(async urlMap => {
+    const results = {}
+    for (const key in urlMap) {
+      if (Object.hasOwn(urlMap, key)) {
+        results[key] = { width: 100, height: 100 }
       }
-      return results
-    }),
-    getOptimalResolution: mock.fn(() => 1)
-  }
-})
+    }
+    return results
+  }),
+  getOptimalResolution: mock.fn(() => 1)
+}
 
-mock.module('../../src/utils/imageGen', {
+mock.module(
+  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
+  {
+    namedExports: stageRenderUtilsMocks
+  }
+)
+
+mock.module(
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
+  {
+    namedExports: stageRenderUtilsMocks
+  }
+)
+
+mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
     IMG_PROMPTS: {
       ICON_VAN: 'ICON_VAN',
@@ -173,9 +204,13 @@ mock.module('../../src/utils/imageGen', {
       MINIGAME_OBSTACLE_BARRIER: 'MINIGAME_OBSTACLE_BARRIER',
       MINIGAME_FUEL: 'MINIGAME_FUEL'
     },
+    isImageGenerationAvailable: mock.fn(() => true),
+    getGeneratedImageFallbackUrl: mock.fn(() => 'mock-fallback'),
     getGenImageUrl: mock.fn(() => 'mock-url')
   }
 })
+
+const imageGen = await import('../../src/utils/imageGen.ts')
 
 describe('TourbusStageController', () => {
   let createTourbusStageController
@@ -258,6 +293,22 @@ describe('TourbusStageController', () => {
     currentTickerRemove.mock.resetCalls()
     currentAppDestroy.mock.resetCalls()
     currentLoad.mock.resetCalls()
+
+    stageRenderUtilsMocks.loadTextures.mock.resetCalls()
+    stageRenderUtilsMocks.loadTexture.mock.resetCalls()
+    stageRenderUtilsMocks.getPixiColorFromToken.mock.resetCalls()
+
+    // Reset mock implementations to restore default behavior for test isolation
+    imageGen.getGenImageUrl.mock.mockImplementation(() => 'mock-url')
+    imageGen.isImageGenerationAvailable.mock.mockImplementation(() => true)
+    imageGen.getGeneratedImageFallbackUrl.mock.mockImplementation(
+      () => 'mock-fallback'
+    )
+
+    // Reset call counts
+    imageGen.getGenImageUrl.mock.resetCalls()
+    imageGen.isImageGenerationAvailable.mock.resetCalls()
+    imageGen.getGeneratedImageFallbackUrl.mock.resetCalls()
   })
 
   it('should initialize correctly', async () => {
@@ -268,8 +319,16 @@ describe('TourbusStageController', () => {
   })
 
   it('should handle asset loading', async () => {
+    imageGen.isImageGenerationAvailable.mock.mockImplementation(() => true)
     await controller.loadAssets()
     assert.ok(controller.textures.bus)
+  })
+
+  it('should handle asset loading fallback when offline', async () => {
+    imageGen.isImageGenerationAvailable.mock.mockImplementation(() => false)
+    await controller.loadAssets()
+    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length, 5)
+    assert.equal(imageGen.getGenImageUrl.mock.calls.length, 0)
   })
 
   it('should run update loop via ticker', async () => {

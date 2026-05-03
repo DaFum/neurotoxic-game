@@ -42,6 +42,11 @@ const MockPIXI = {
   },
   Assets: {
     load: mock.fn()
+  },
+  ImageSource: class {
+    constructor(options) {
+      this.resource = options?.resource ?? null
+    }
   }
 }
 
@@ -52,21 +57,24 @@ mock.module('pixi.js', {
 })
 
 // Mock dependencies
-mock.module('../../src/utils/imageGen', {
+let mockIsImageGenerationAvailable = true
+mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
+    isImageGenerationAvailable: () => mockIsImageGenerationAvailable,
+    getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { CROWD_IDLE: 'idle', CROWD_MOSH: 'mosh' }
   }
 })
 
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: {
       warn: mock.fn()
@@ -88,7 +96,7 @@ const mockPixiStageUtils = {
     for (const key in urlMap) {
       if (Object.hasOwn(urlMap, key)) {
         const url = urlMap[key]
-        if (url.includes('idle')) {
+        if (url.includes('idle') || url.includes('fallback')) {
           results[key] = mockTextureIdle
         } else if (url.includes('mosh')) {
           results[key] = mockTextureMosh
@@ -106,21 +114,25 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/stageRenderUtils', {
-  namedExports: {
-    ...mockPixiStageUtils,
-    calculateCrowdOffset: mock.fn(() => 10),
-    calculateCrowdY: mock.fn(() => 100),
-    getPixiColorFromToken: mock.fn(() => 0xffffff),
-    CROWD_LAYOUT: {
-      containerYRatio: 0.5,
-      memberCount: 2, // Small count for testing
-      minRadius: 10,
-      radiusVariance: 5,
-      yRangeRatio: 0.1
+mock.module(
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
+  {
+    namedExports: {
+      ...mockPixiStageUtils,
+      calculateCrowdOffset: mock.fn(() => 10),
+      calculateCrowdY: mock.fn(() => 100),
+      getPixiColorFromToken: mock.fn(() => 0xffffff),
+      CROWD_LAYOUT: {
+        containerYRatio: 0.5,
+        memberCount: 2, // Small count for testing
+        minRadius: 10,
+        radiusVariance: 5,
+        yRangeRatio: 0.1
+      }
     }
   }
-})
+)
 
 describe('CrowdManager', () => {
   let crowdManager
@@ -142,6 +154,9 @@ describe('CrowdManager', () => {
   })
 
   afterEach(() => {
+    mockIsImageGenerationAvailable = true
+    mockHandleError.mock.resetCalls()
+    mockPixiStageUtils.loadTextures.mock.resetCalls()
     if (PIXI && PIXI.Assets && PIXI.Assets.load.mock) {
       PIXI.Assets.load.mock.resetCalls()
       // Restore default implementation if necessary, or just reset calls
@@ -151,6 +166,23 @@ describe('CrowdManager', () => {
       // Here just resetting calls is good, but preventing leak is better:
       PIXI.Assets.load.mock.mockImplementation(async () => null)
     }
+  })
+
+  test('loadAssets loads offline fallback textures correctly', async () => {
+    mockIsImageGenerationAvailable = false
+
+    // In actual implementation, when offline, we pass the fallback URL to loadTextures.
+    // Our mockPixiStageUtils just returns what we mock it to return, but let's test our object state.
+    // We override PIXI.Assets.load to return fallbacks
+    PIXI.Assets.load.mock.mockImplementation(async url => {
+      if (url.includes('fallback')) return mockTextureIdle
+      return null
+    })
+
+    await crowdManager.loadAssets()
+
+    assert.equal(crowdManager.textures.idle, mockTextureIdle)
+    assert.equal(crowdManager.textures.mosh, mockTextureIdle)
   })
 
   test('loadAssets loads textures correctly', async () => {

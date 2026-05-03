@@ -2,11 +2,12 @@ import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
 
 // We will mock checkTraitUnlocks using `mock.module` which works natively in newer Node versions
-mock.module('../../src/utils/unlockCheck', {
+let checkTraitUnlocksMock = mock.fn(() => [
+  { memberId: 'm1', traitId: 'tech_wizard' }
+])
+mock.module(new URL('../../src/utils/unlockCheck.ts', import.meta.url).href, {
   namedExports: {
-    checkTraitUnlocks: mock.fn(() => [
-      { memberId: 'm1', traitId: 'tech_wizard' }
-    ])
+    checkTraitUnlocks: checkTraitUnlocksMock
   }
 })
 
@@ -18,6 +19,7 @@ describe('eventReducer', () => {
   let baseState
 
   beforeEach(() => {
+    checkTraitUnlocksMock.mock.resetCalls()
     baseState = {
       activeEvent: null,
       band: {
@@ -71,6 +73,10 @@ describe('eventReducer', () => {
       // checkTraitUnlocks is mocked to return a tech_wizard trait for member m1,
       // and the real trait application logic should add that trait to Matze and emit at least one toast.
       const matze = nextState.band.members.find(m => m.name === 'Matze')
+      assert.ok(
+        matze,
+        'Expected member "Matze" to exist in band after applying delta'
+      )
       assert.ok(matze.traits['tech_wizard'])
       assert.ok(nextState.toasts.length > 0)
     })

@@ -14,7 +14,12 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import type {
   DealImageProps,
   DealInfoProps,
@@ -137,7 +142,11 @@ const getAlignmentColor = (alignment?: string) => {
 const DealImage = memo(({ alignment, name }: DealImageProps) => (
   <div className='shrink-0 w-24 h-24 border border-current opacity-80 overflow-hidden'>
     <img
-      src={getGenImageUrl(getAlignmentImagePrompt(alignment))}
+      src={
+        isImageGenerationAvailable()
+          ? getGenImageUrl(getAlignmentImagePrompt(alignment))
+          : getGeneratedImageFallbackUrl()
+      }
       alt={name}
       className='w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-300'
       loading='lazy'

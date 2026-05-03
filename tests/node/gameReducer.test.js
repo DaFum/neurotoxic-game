@@ -50,7 +50,7 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
   }
 })
 
-mock.module('../../src/utils/traitUtils', {
+mock.module(new URL('../../src/utils/traitUtils.ts', import.meta.url).href, {
   namedExports: {
     applyTraitUnlocks: mockApplyTraitUnlocks,
     bandHasTrait,

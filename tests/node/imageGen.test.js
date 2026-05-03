@@ -2,7 +2,7 @@ import assert from 'node:assert'
 import { test } from 'node:test'
 
 test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
-  const { getGenImageUrl } = await import('../../src/utils/imageGen')
+  const { getGenImageUrl } = await import('../../src/utils/imageGen.ts')
 
   const prompt = 'dark void aesthetic'
   const urlString = getGenImageUrl(prompt)
@@ -35,7 +35,7 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
 })
 
 test('IMG_PROMPTS contains expected keys and string values', async () => {
-  const { IMG_PROMPTS } = await import('../../src/utils/imageGen')
+  const { IMG_PROMPTS } = await import('../../src/utils/imageGen.ts')
 
   const expectedKeys = [
     'MAIN_MENU_BG',
@@ -55,11 +55,32 @@ test('IMG_PROMPTS contains expected keys and string values', async () => {
 })
 
 test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
-  const { fetchGenImage, fetchGenImageAsObjectUrl, clearImageCache } =
-    await import('../../src/utils/imageGen')
-
+  const originalNavigator = globalThis.navigator
   const originalFetch = globalThis.fetch
   const originalCreateObjectURL = globalThis.URL?.createObjectURL
+
+  t.after(() => {
+    if (originalNavigator !== undefined) {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true
+      })
+    } else {
+      delete globalThis.navigator
+    }
+    globalThis.fetch = originalFetch
+    if (globalThis.URL) {
+      globalThis.URL.createObjectURL = originalCreateObjectURL
+    }
+  })
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: true },
+    configurable: true
+  })
+
+  const { fetchGenImage, fetchGenImageAsObjectUrl, clearImageCache } =
+    await import('../../src/utils/imageGen.ts')
 
   t.afterEach(async () => {
     await clearImageCache()
@@ -154,5 +175,88 @@ test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
         'Different descriptions should have different URLs'
       )
     }
+  )
+})
+
+test('isImageGenerationAvailable returns true online or without navigator', async t => {
+  const { isImageGenerationAvailable } =
+    await import('../../src/utils/imageGen.ts')
+
+  const originalNavigator = globalThis.navigator
+
+  t.after(() => {
+    if (originalNavigator !== undefined) {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true
+      })
+    } else {
+      delete globalThis.navigator
+    }
+  })
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: false },
+    configurable: true
+  })
+  assert.strictEqual(isImageGenerationAvailable(), false)
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: true },
+    configurable: true
+  })
+  assert.strictEqual(isImageGenerationAvailable(), true)
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: undefined,
+    configurable: true
+  })
+  assert.strictEqual(isImageGenerationAvailable(), true)
+})
+
+test('fetchGenImageAsObjectUrl returns offline fallback without fetching when offline', async t => {
+  const {
+    fetchGenImageAsObjectUrl,
+    GENERATED_IMAGE_OFFLINE_FALLBACK,
+    clearImageCache
+  } = await import('../../src/utils/imageGen.ts')
+
+  if (typeof clearImageCache === 'function') {
+    await clearImageCache()
+  }
+
+  const originalFetch = globalThis.fetch
+  const originalNavigator = globalThis.navigator
+
+  t.after(() => {
+    globalThis.fetch = originalFetch
+    if (originalNavigator !== undefined) {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true
+      })
+    } else {
+      delete globalThis.navigator
+    }
+  })
+
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { onLine: false },
+    configurable: true
+  })
+
+  let fetchCalled = false
+  globalThis.fetch = async () => {
+    fetchCalled = true
+    return { ok: true }
+  }
+
+  const result = await fetchGenImageAsObjectUrl('offline test')
+
+  assert.strictEqual(fetchCalled, false, 'Fetch should not be called offline')
+  assert.strictEqual(
+    result,
+    GENERATED_IMAGE_OFFLINE_FALLBACK,
+    'Should return offline fallback'
   )
 })

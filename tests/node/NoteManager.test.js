@@ -46,6 +46,11 @@ const MockPIXI = {
   },
   Assets: {
     load: mock.fn()
+  },
+  ImageSource: class {
+    constructor(options) {
+      this.resource = options?.resource ?? null
+    }
   }
 }
 
@@ -71,23 +76,28 @@ class MockNoteSpritePool {
   dispose = mockPoolDispose
 }
 
-mock.module('../../src/components/stage/NoteSpritePool', {
-  namedExports: {
-    NoteSpritePool: MockNoteSpritePool,
-    NOTE_CENTER_OFFSET: 50
+mock.module(
+  new URL('../../src/components/stage/NoteSpritePool.ts', import.meta.url).href,
+  {
+    namedExports: {
+      NoteSpritePool: MockNoteSpritePool,
+      NOTE_CENTER_OFFSET: 50
+    }
   }
-})
+)
 
 // Mock other dependencies
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/imageGen', {
+mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
+    isImageGenerationAvailable: () => true,
+    getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { NOTE_SKULL: 'skull', NOTE_LIGHTNING: 'lightning' }
   }
@@ -127,9 +137,20 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/stageRenderUtils', {
-  namedExports: mockPixiStageUtils
-})
+mock.module(
+  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
+  {
+    namedExports: mockPixiStageUtils
+  }
+)
+
+mock.module(
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
+  {
+    namedExports: mockPixiStageUtils
+  }
+)
 
 describe('NoteManager', () => {
   let noteManager

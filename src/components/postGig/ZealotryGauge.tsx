@@ -2,7 +2,12 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 
 type ZealotryGaugeProps = { zealotryLevel?: number }
 
@@ -16,7 +21,11 @@ export const ZealotryGauge = memo(
       <div className='flex flex-row items-center gap-4 mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded relative overflow-hidden'>
         <div className='w-12 h-12 shrink-0 border border-blood-red/50 rounded overflow-hidden'>
           <img
-            src={getGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)}
+            src={
+              isImageGenerationAvailable()
+                ? getGenImageUrl(IMG_PROMPTS.ZEALOTRY_CULT)
+                : getGeneratedImageFallbackUrl()
+            }
             alt={t('ui:postGig.socialPhase.altZealotryCult', {
               defaultValue: 'Zealotry Cult'
             })}

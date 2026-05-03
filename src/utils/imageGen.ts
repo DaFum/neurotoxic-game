@@ -3,6 +3,17 @@ const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
 const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 
+export const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.BASE_URL ?? '') : ''}images/generated-offline-fallback.svg`
+
+// navigator.onLine is true for any network connection (LAN, captive portals),
+// not necessarily internet access to gen.pollinations.ai. This is a best-effort
+// check; the error-path fallback in fetchGenImageAsObjectUrl handles the rest.
+export const isImageGenerationAvailable = (isOnline?: boolean) =>
+  isOnline ?? (typeof navigator === 'undefined' || navigator.onLine)
+
+export const getGeneratedImageFallbackUrl = () =>
+  GENERATED_IMAGE_OFFLINE_FALLBACK
+
 /**
  * Generates a URL string for a procedurally generated image.
  * Use this for direct URL assignment (img src, CSS backgroundImage, PIXI loaders).
@@ -44,6 +55,10 @@ const objectUrlCache = new Map<string, Promise<string>>()
 export const fetchGenImageAsObjectUrl = (
   description: string
 ): Promise<string> => {
+  if (!isImageGenerationAvailable()) {
+    return Promise.resolve(GENERATED_IMAGE_OFFLINE_FALLBACK)
+  }
+
   const cached = objectUrlCache.get(description)
   if (cached) return cached
 
@@ -55,6 +70,9 @@ export const fetchGenImageAsObjectUrl = (
       return URL.createObjectURL(blob)
     } catch (error) {
       objectUrlCache.delete(description)
+      if (!isImageGenerationAvailable()) {
+        return GENERATED_IMAGE_OFFLINE_FALLBACK
+      }
       throw error
     }
   })()

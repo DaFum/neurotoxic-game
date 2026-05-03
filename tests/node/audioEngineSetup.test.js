@@ -14,7 +14,7 @@ const mockCleanup = {
   cleanupAmbientPlayback: mock.fn(),
   cleanupTransportEvents: mock.fn()
 }
-mock.module('../../src/utils/audio/cleanupUtils', {
+mock.module(new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href, {
   namedExports: mockCleanup
 })
 

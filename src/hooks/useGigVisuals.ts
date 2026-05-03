@@ -1,5 +1,10 @@
 import { useMemo } from 'react'
-import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 import type { Venue } from '../types/game'
 
 type UseGigVisualsProps = {
@@ -14,10 +19,14 @@ type UseGigVisualsReturn = {
   larsUrl: string
 }
 
+import { useNetworkStatus } from './useNetworkStatus'
+
 export const useGigVisuals = ({
   currentGig,
   bandHarmony
 }: UseGigVisualsProps): UseGigVisualsReturn => {
+  const isOnline = useNetworkStatus()
+
   // Determine Background URL
   const bgUrl = useMemo(() => {
     let bgPrompt = IMG_PROMPTS.VENUE_CLUB
@@ -43,8 +52,10 @@ export const useGigVisuals = ({
     )
       bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
-    return getGenImageUrl(bgPrompt)
-  }, [currentGig?.name, currentGig?.difficulty, currentGig?.diff])
+    return isImageGenerationAvailable(isOnline)
+      ? getGenImageUrl(bgPrompt)
+      : getGeneratedImageFallbackUrl()
+  }, [currentGig?.name, currentGig?.difficulty, currentGig?.diff, isOnline])
 
   // Character Images based on Harmony
   const { matzeUrl, mariusUrl, larsUrl } = useMemo(() => {
@@ -63,11 +74,17 @@ export const useGigVisuals = ({
     }
 
     return {
-      matzeUrl: getGenImageUrl(matzePrompt),
-      mariusUrl: getGenImageUrl(mariusPrompt),
-      larsUrl: getGenImageUrl(larsPrompt)
+      matzeUrl: isImageGenerationAvailable(isOnline)
+        ? getGenImageUrl(matzePrompt)
+        : getGeneratedImageFallbackUrl(),
+      mariusUrl: isImageGenerationAvailable(isOnline)
+        ? getGenImageUrl(mariusPrompt)
+        : getGeneratedImageFallbackUrl(),
+      larsUrl: isImageGenerationAvailable(isOnline)
+        ? getGenImageUrl(larsPrompt)
+        : getGeneratedImageFallbackUrl()
     }
-  }, [bandHarmony])
+  }, [bandHarmony, isOnline])
 
   return { bgUrl, matzeUrl, mariusUrl, larsUrl }
 }

@@ -154,6 +154,7 @@ describe('minigameReducer', () => {
   describe('handleCompleteKabelsalatMinigame', () => {
     it('should apply penalty on failure', () => {
       baseState.minigame.type = MINIGAME_TYPES.KABELSALAT
+      baseState.minigame.active = true
       const payload = { results: { isPoweredOn: false } }
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
@@ -164,15 +165,21 @@ describe('minigameReducer', () => {
       // the completion overlay is visible; only `active` is cleared.
       assert.strictEqual(nextState.minigame.active, false)
       assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
     })
 
     it('should apply reward on success', () => {
+      baseState.minigame.type = MINIGAME_TYPES.KABELSALAT
+      baseState.minigame.active = true
       const payload = { results: { isPoweredOn: true, timeLeft: 30 } }
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
       assert.strictEqual(nextState.band.harmony, 50) // No stress on success
       assert.strictEqual(nextState.player.money, 1150) // 60 base + (30/5)*15 = 150 reward
       assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
+      assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
     })
   })
 

@@ -7,7 +7,12 @@ import {
 } from './TourbusObstacleManager'
 import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
 import { logger } from '../../utils/logger'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import {
+  IMG_PROMPTS,
+  getGenImageUrl,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import {
   TOURBUS_LANE_COUNT,
   TOURBUS_BUS_Y_PERCENT,
@@ -108,13 +113,24 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
 
   async loadAssets() {
     try {
-      // Generate URLs
-      const urls = {
-        bus: getGenImageUrl(IMG_PROMPTS.ICON_VAN),
-        road: getGenImageUrl(IMG_PROMPTS.MINIGAME_ROAD),
-        rock: getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_ROCK),
-        barrier: getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER),
-        fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
+      // Generate URLs. Game-critical obstacle/pickup sprites (rock, barrier, fuel)
+      // must stay null when offline so TourbusObstacleManager falls back to its
+      // distinct colored Graphics shapes rather than rendering identical SVGs.
+      const online = isImageGenerationAvailable()
+      const urls: Record<string, string | null> = {
+        bus: online
+          ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
+          : getGeneratedImageFallbackUrl(),
+        road: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ROAD)
+          : getGeneratedImageFallbackUrl(),
+        rock: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_ROCK)
+          : null,
+        barrier: online
+          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER)
+          : null,
+        fuel: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL) : null
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<

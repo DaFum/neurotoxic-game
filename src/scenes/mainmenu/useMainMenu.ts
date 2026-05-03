@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/audio/AudioManager'
+import { enterFullscreen } from '../../utils/fullscreen'
 
 export const useMainMenu = () => {
   const { t } = useTranslation()
@@ -149,6 +150,7 @@ export const useMainMenu = () => {
     }
 
     startNewTourFlow()
+    void enterFullscreen()
   }, [startNewTourFlow])
 
   const handleNameSubmit = useCallback(() => {
@@ -200,6 +202,7 @@ export const useMainMenu = () => {
       return
     }
 
+    void enterFullscreen()
     // State transitions (batched automatically by React 18+)
     changeScene(GAME_PHASES.OVERWORLD)
 
@@ -214,6 +217,7 @@ export const useMainMenu = () => {
   const closeNameInput = useCallback(() => setShowNameInput(false), [])
 
   const handleStartNewAnyway = useCallback(() => {
+    void enterFullscreen()
     setShowExistingSavePrompt(false)
     startNewTourFlow()
   }, [startNewTourFlow])

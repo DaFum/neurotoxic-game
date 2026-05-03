@@ -1,9 +1,15 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
   test: {
+    alias: {
+      'virtual:pwa-register/react': fileURLToPath(
+        new URL('./tests/mocks/virtual-pwa.js', import.meta.url)
+      )
+    },
     silent: 'passed-only',
     coverage: {
       provider: 'v8',

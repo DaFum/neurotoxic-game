@@ -8,7 +8,7 @@ const mockLogger = {
   warn: (...args) => loggerHistory.push(['warn', ...args]),
   error: (...args) => loggerHistory.push(['error', ...args])
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -17,7 +17,7 @@ const mockAudioState = {
   playRequestId: 1,
   ambientSource: null
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState }
 })
 
@@ -27,9 +27,12 @@ const mockStopAudio = mock.fn(() => {
   mockAudioState.playRequestId++
   capturedReqIds.push(mockAudioState.playRequestId)
 })
-mock.module('../../src/utils/audio/playback', {
-  namedExports: { stopAudio: mockStopAudio }
-})
+mock.module(
+  new URL('../../src/utils/audio/playback.ts', import.meta.url).href,
+  {
+    namedExports: { stopAudio: mockStopAudio }
+  }
+)
 
 // Mock assets
 let loadAudioDeferred = null
@@ -43,7 +46,7 @@ const mockLoadAudioBuffer = mock.fn(defaultLoadAudioBufferImpl)
 const mockMidiUrlMap = { 'test1.mid': 'url1', 'test2.mid': 'url2' }
 const mockOggCandidates = ['test1.ogg', 'test2.ogg']
 
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: mockMidiUrlMap,
     oggCandidates: mockOggCandidates,
@@ -54,44 +57,53 @@ mock.module('../../src/utils/audio/assets', {
 // Mock audio routing
 const mockSource = { start: mock.fn(), onended: null }
 const mockCreateAndConnect = mock.fn(() => mockSource)
-mock.module('../../src/utils/audio/sharedBufferUtils', {
-  namedExports: { createAndConnectBufferSource: mockCreateAndConnect }
-})
+mock.module(
+  new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
+  {
+    namedExports: { createAndConnectBufferSource: mockCreateAndConnect }
+  }
+)
 
 // Mock generic utils
 let currentMockSelectRandomItem = (arr, _rng) =>
   arr && arr.length > 0 ? arr[0] : null
-mock.module('../../src/utils/audio/selectionUtils', {
-  namedExports: {
-    selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args)
+mock.module(
+  new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args)
+    }
   }
-})
+)
 
 let ensureAudioDeferred = null
 const mockEnsureAudioContext = mock.fn(async () => {
   if (ensureAudioDeferred) return ensureAudioDeferred.promise
   return true
 })
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: { ensureAudioContext: mockEnsureAudioContext }
 })
 
 // Mock midi playback
 const mockPlayMidiFileInternal = mock.fn(async () => true)
-mock.module('../../src/utils/audio/midiPlayback', {
-  namedExports: { playMidiFileInternal: mockPlayMidiFileInternal }
-})
+mock.module(
+  new URL('../../src/utils/audio/midiPlayback.ts', import.meta.url).href,
+  {
+    namedExports: { playMidiFileInternal: mockPlayMidiFileInternal }
+  }
+)
 
 // Mock songs db
-mock.module('../../src/data/songs', {
+mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
-    SONGS_BY_ID: new Map([].map(s => [s.id, s])),
+    SONGS_BY_ID: new Map(),
     SONGS_DB: [],
     SONGS_BY_MID: new Map()
   }
 })
 
-describe('ambient.js', () => {
+describe('ambient.ts', () => {
   let playRandomAmbientMidi
   let playRandomAmbientOgg
   let assetsModule
@@ -132,10 +144,10 @@ describe('ambient.js', () => {
     }
 
     // Load module fresh
-    const mod = await import('../../src/utils/audio/ambient')
+    const mod = await import('../../src/utils/audio/ambient.ts')
     playRandomAmbientMidi = mod.playRandomAmbientMidi
     playRandomAmbientOgg = mod.playRandomAmbientOgg
-    assetsModule = await import('../../src/utils/audio/assets')
+    assetsModule = await import('../../src/utils/audio/assets.ts')
   })
 
   describe('playRandomAmbientMidi', () => {
@@ -234,7 +246,7 @@ describe('ambient.js', () => {
       await playRandomAmbientOgg()
       assert.equal(mockStopAudio.mock.calls.length, 1)
       assert.equal(capturedReqIds[0], 2)
-      assert.equal(mockAudioState.playRequestId, 3) // `ambient.js` internally increments reqId again in `playRandomAmbientOgg` so it's 3
+      assert.equal(mockAudioState.playRequestId, 3) // `ambient.ts` internally increments reqId again in `playRandomAmbientOgg` so it's 3
 
       mockStopAudio.mock.resetCalls()
       capturedReqIds.length = 0

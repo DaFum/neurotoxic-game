@@ -22,7 +22,7 @@ import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
 // Import modular state management
 import { createInitialState } from './initialState'
-import { GAME_PHASES } from './gameConstants'
+import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
 import { gameReducer } from './gameReducer'
 import {
   createChangeSceneAction,
@@ -86,7 +86,8 @@ import {
   safeStorageNoFallback,
   usePersistence
 } from './usePersistence'
-import { PRACTICE_RETURN_SCENES } from './gameConstants'
+
+export { PRACTICE_RETURN_SCENES } from './gameConstants'
 
 declare global {
   interface Window {

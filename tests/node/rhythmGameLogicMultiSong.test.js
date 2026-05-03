@@ -8,13 +8,13 @@ import {
   mock
 } from 'node:test'
 import assert from 'node:assert/strict'
-import { GAME_PHASES } from '../../src/context/gameConstants'
+import { GAME_PHASES } from '../../src/context/gameConstants.ts'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
+import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 import {
   createMockChangeScene,
   createMockSetLastGigStats
-} from '../useRhythmGameLogicTestUtils'
+} from '../useRhythmGameLogicTestUtils.js'
 
 // Local mocks to ensure correct intercept
 const mockUseGameState = mock.fn()
@@ -53,23 +53,23 @@ const mockGigStats = {
 }
 
 // Register mocks BEFORE import
-mock.module('../../src/context/GameState.tsx', {
+mock.module(new URL('../../src/context/GameState.tsx', import.meta.url).href, {
   namedExports: { useGameState: mockUseGameState }
 })
-mock.module('../../src/utils/audio/AudioManager', {
+mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/audio/audioEngine', {
+mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
   namedExports: mockAudioEngine
 })
-mock.module('../../src/utils/rhythmUtils', {
+mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
   namedExports: mockRhythmUtils
 })
-mock.module('../../src/utils/gigStats', {
+mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, {
   namedExports: mockGigStats
 })
 // Mock other deps to avoid side effects
-mock.module('../../src/utils/simulationUtils', {
+mock.module(new URL('../../src/utils/simulationUtils.ts', import.meta.url).href, {
   namedExports: {
     calculateGigPhysics: mock.fn(() => ({
       speedModifier: 1,
@@ -79,7 +79,7 @@ mock.module('../../src/utils/simulationUtils', {
     getGigModifiers: mock.fn(() => ({}))
   }
 })
-mock.module('../../src/utils/hecklerLogic', {
+mock.module(new URL('../../src/utils/hecklerLogic.ts', import.meta.url).href, {
   namedExports: {
     createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),
     processProjectiles: mock.fn(
@@ -107,7 +107,7 @@ mock.module('../../src/utils/hecklerLogic', {
   }
 })
 const _GameError = class GameError extends Error {}
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mock.fn(),
     GameError: _GameError,
@@ -115,7 +115,7 @@ mock.module('../../src/utils/errorHandler', {
     StateError: class StateError extends _GameError {}
   }
 })
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
     logger: {
@@ -126,8 +126,8 @@ mock.module('../../src/utils/logger', {
     }
   }
 })
-mock.module('../../src/data/songs', {
-  namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
+mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
+  namedExports: { SONGS_BY_ID: new Map(), SONGS_DB: [] }
 })
 // Stable i18n object prevents initializeGigState from being recreated on each render.
 // Supports defaultValue and basic string interpolation with {{key}} syntax.

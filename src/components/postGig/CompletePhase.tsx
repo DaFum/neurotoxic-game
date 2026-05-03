@@ -2,7 +2,12 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../../utils/imageGen'
 import { SideEffectsSummary } from './SideEffectsSummary'
 import type { CompletePhaseProps } from '../../types/components'
 
@@ -34,7 +39,7 @@ export const CompletePhase = ({
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center mix-blend-screen pointer-events-none z-0'
         style={{
-          backgroundImage: `url("${getGenImageUrl(getOutcomeImagePrompt())}")`
+          backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(getOutcomeImagePrompt()) : getGeneratedImageFallbackUrl()}")`
         }}
       />
       <motion.div

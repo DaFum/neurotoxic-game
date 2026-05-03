@@ -964,6 +964,12 @@
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
   "volume.set": "Set volume to {{pct}}%",
+  "offline": {
+    "offlineReady": "App ready to work offline",
+    "needRefresh": "New content available, click on reload button to update.",
+    "reload": "Reload",
+    "close": "Close"
+  },
   "travel": {
     "rivalEncounter": "Your rival band, {{rivalName}}, is in town!"
   },

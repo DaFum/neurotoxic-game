@@ -7,7 +7,7 @@ import { buildAssetUrlMap } from '../../src/utils/audio/playbackUtils'
 const mockLogger = {
   warn: mock.fn()
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -23,7 +23,7 @@ const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
   return {}
 })
 
-mock.module('../../src/utils/audio/playbackUtils', {
+mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
   namedExports: {
     buildAssetUrlMap: mockBuildAssetUrlMap,
     resolveAssetUrl: mock.fn(),
@@ -33,13 +33,13 @@ mock.module('../../src/utils/audio/playbackUtils', {
 })
 
 // Mock other dependencies to avoid side effects
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: { getRawAudioContext: () => ({}) }
 })
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: { audioBufferCache: new Map() } }
 })
-mock.module('../../src/utils/audio/constants', {
+mock.module(new URL('../../src/utils/audio/constants.ts', import.meta.url).href, {
   namedExports: {
     AUDIO_BUFFER_LOAD_TIMEOUT_MS: 1000,
     AUDIO_BUFFER_DECODE_TIMEOUT_MS: 1000,

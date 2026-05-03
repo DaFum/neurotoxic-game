@@ -15,8 +15,14 @@ import {
   HexBorder
 } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
+import { useNetworkStatus } from '../hooks/useNetworkStatus'
 import { GlitchButton } from './GlitchButton'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 
 /**
  * Contraband Stash Modal Component
@@ -205,16 +211,30 @@ export const ContrabandStash = ({
                       </div>
                     </div>
                     <div className='flex flex-row gap-4 items-start mb-4'>
-                      {item.imagePrompt && (
-                        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
-                          <img
-                            src={getGenImageUrl(IMG_PROMPTS[item.imagePrompt])}
-                            alt={t(`items:contraband.${item.id}.name`)}
-                            className='w-full h-full object-contain'
-                            loading='lazy'
-                          />
-                        </div>
-                      )}
+                      {item.imagePrompt &&
+                        Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
+                          <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
+                            <img
+                              src={
+                                isImageGenerationAvailable()
+                                  ? getGenImageUrl(
+                                      IMG_PROMPTS[
+                                        item.imagePrompt as keyof typeof IMG_PROMPTS
+                                      ]
+                                    )
+                                  : getGeneratedImageFallbackUrl()
+                              }
+                              alt={t(`items:contraband.${item.id}.name`)}
+                              className='w-full h-full object-contain'
+                              loading='lazy'
+                              onError={e => {
+                                e.currentTarget.onerror = null
+                                e.currentTarget.src =
+                                  getGeneratedImageFallbackUrl()
+                              }}
+                            />
+                          </div>
+                        )}
                       <p className='text-ash-gray text-xs min-h-[40px] leading-relaxed flex-1'>
                         {item.description
                           ? t(item.description, {

@@ -120,6 +120,8 @@ vi.mock('../../src/components/PixiStage', () => ({
 }))
 
 vi.mock('../../src/utils/imageGen', () => ({
+  isImageGenerationAvailable: () => true,
+  getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
 }))

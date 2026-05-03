@@ -3,12 +3,18 @@ import { useBandHQModal } from '../hooks/useBandHQModal'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
 import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import {
+  getGenImageUrl,
+  IMG_PROMPTS,
+  isImageGenerationAvailable,
+  getGeneratedImageFallbackUrl
+} from '../utils/imageGen'
 import { MainMenuSocials } from './mainmenu/MainMenuSocials.tsx'
 import { MainMenuFeatures } from './mainmenu/MainMenuFeatures.tsx'
 import { MainMenuExistingSavePrompt } from './mainmenu/MainMenuExistingSavePrompt.tsx'
 import { MainMenuNameInputPrompt } from './mainmenu/MainMenuNameInputPrompt.tsx'
 import { useMainMenu } from './mainmenu/useMainMenu'
+import { useNetworkStatus } from '../hooks/useNetworkStatus'
 
 /**
  * The main menu scene component.
@@ -16,6 +22,7 @@ import { useMainMenu } from './mainmenu/useMainMenu'
  */
 export const MainMenu = () => {
   const { showHQ, openHQ, closeHQ } = useBandHQModal()
+  const isOnline = useNetworkStatus()
 
   const {
     t,
@@ -64,7 +71,7 @@ export const MainMenu = () => {
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
         style={{
-          backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.MAIN_MENU_BG)}")`
+          backgroundImage: `url("${isImageGenerationAvailable(isOnline) ? getGenImageUrl(IMG_PROMPTS.MAIN_MENU_BG) : getGeneratedImageFallbackUrl()}")`
         }}
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />

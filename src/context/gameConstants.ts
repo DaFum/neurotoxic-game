@@ -1,4 +1,4 @@
-import type { MinigameState } from '../types/game'
+import type { MinigameState, GamePhase } from '../types/game'
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',
@@ -14,13 +14,6 @@ export const GAME_PHASES = Object.freeze({
   INTRO: 'INTRO',
   CLINIC: 'CLINIC'
 } as const satisfies Record<string, string>)
-
-import type { GamePhase } from '../types/game'
-
-export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
-  GAME_PHASES.OVERWORLD,
-  GAME_PHASES.MENU
-])
 
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
@@ -74,6 +67,10 @@ export const calculateClinicCost = (
   )
 }
 
+export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
+])
 export const RIVAL_STAY_CHANCE = 0.3
 export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5
 export const MAX_RIVAL_DEAL_CHANCE_PENALTY = 0.2

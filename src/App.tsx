@@ -7,6 +7,7 @@ import { ToastOverlay } from './ui/ToastOverlay'
 import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { ChatterOverlay } from './components/ChatterOverlay'
+import ReloadPrompt from './components/ReloadPrompt'
 import { GameStateProvider, useGameState } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
@@ -104,6 +105,7 @@ function GameContent() {
       {!SCENES_WITHOUT_HUD.has(currentScene) && <HUD />}
 
       <ToastOverlay />
+      <ReloadPrompt />
 
       {/* ChatterOverlay receives read-only state slice */}
       <ChatterOverlay gameState={chatterState} />

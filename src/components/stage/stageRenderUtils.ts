@@ -381,7 +381,7 @@ export const getOptimalResolution = () => {
  * @returns {Promise<Object.<string, Texture|null>>} A record mapping the same keys to loaded Textures (or null if failed).
  */
 export const loadTextures = async (
-  urlMap: Record<string, string>,
+  urlMap: Record<string, string | null>,
   onError?: (error: Error, message: string) => void
 ): Promise<Record<string, Texture | null>> => {
   const keys = Object.keys(urlMap)

@@ -1,6 +1,5 @@
-import test, { mock } from 'node:test'
+import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { StateError } from '../../src/utils/errorHandler'
 
 // Mock database
 const MOCK_EVENTS = {
@@ -19,7 +18,7 @@ const mockLogger = {
   warn: mock.fn()
 }
 
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: mockLogger,
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
@@ -27,12 +26,12 @@ mock.module('../../src/utils/logger', {
   }
 })
 
-mock.module('../../src/data/events/index', {
+mock.module(new URL('../../src/data/events/index.ts', import.meta.url).href, {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
 
 const mockSecureRandom = mock.fn(() => 0.5)
-mock.module('../../src/utils/crypto', {
+mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
   namedExports: {
     secureRandom: mockSecureRandom,
     getSafeRandom: mockSecureRandom,
@@ -41,8 +40,9 @@ mock.module('../../src/utils/crypto', {
 })
 
 // Import module under test after mocking
+const { StateError } = await import('../../src/utils/errorHandler.ts')
 const { eventEngine, resolveEventChoice } =
-  await import('../../src/utils/eventEngine')
+  await import('../../src/utils/eventEngine.ts')
 
 const TEST_EVENT_VAN_BREAKDOWN = {
   id: 'van_breakdown',
@@ -543,7 +543,11 @@ test('eventEngine.applyResult handles unlock effects', () => {
 test('eventEngine.applyResult ignores prototype-colliding effect types', () => {
   const result = {
     type: 'composite',
-    effects: [{ type: 'hasOwnProperty' }, { type: 'toString' }]
+    effects: [
+      { type: 'hasOwnProperty' },
+      { type: 'toString' },
+      { type: '__proto__' }
+    ]
   }
 
   assert.doesNotThrow(() => eventEngine.applyResult(result))
@@ -553,6 +557,15 @@ test('eventEngine.applyResult ignores prototype-colliding effect types', () => {
     delta.flags,
     {},
     'Should not set any flags for unknown effects'
+  )
+  assert.ok(
+    !Object.hasOwn(delta, '__proto__'),
+    'Should not set __proto__ as an own property on the delta'
+  )
+  assert.strictEqual(
+    Object.getPrototypeOf(delta),
+    Object.prototype,
+    'Should not pollute prototype'
   )
 })
 

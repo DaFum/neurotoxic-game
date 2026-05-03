@@ -4,7 +4,7 @@ import { test, mock } from 'node:test'
 // In order to properly mock the audio context for createAndConnectBufferSource,
 // we just mock context.js using module mocking
 
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     getRawAudioContext: () => {
       return (

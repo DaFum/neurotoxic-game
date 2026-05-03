@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -38,7 +38,7 @@ const mockAudioState = {
     ride: { triggerAttackRelease: mock.fn() }
   }
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -72,7 +72,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -80,15 +80,18 @@ mock.module('../../src/utils/audio/context', {
 })
 
 // Mock Playback
-mock.module('../../src/utils/audio/playback', {
-  namedExports: {
-    stopAudioInternal: mock.fn(),
-    stopAudio: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/playback.ts', import.meta.url).href,
+  {
+    namedExports: {
+      stopAudioInternal: mock.fn(),
+      stopAudio: mock.fn()
+    }
   }
-})
+)
 
 // Mock Assets
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: {},
     loadAudioBuffer: mock.fn(),
@@ -97,11 +100,14 @@ mock.module('../../src/utils/audio/assets', {
 })
 
 // Mock Shared Buffer Utils
-mock.module('../../src/utils/audio/sharedBufferUtils', {
-  namedExports: {
-    createAndConnectBufferSource: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      createAndConnectBufferSource: mock.fn()
+    }
   }
-})
+)
 
 // Mock MidiUtils - We want to use the REAL getNoteName if possible, but for isolation we can mock it
 // However, the optimization relies on getNoteName being efficient.
@@ -115,14 +121,17 @@ const mockGetNoteName = mock.fn(midi => {
 
 // We need to allow other exports to pass through if needed, or mock them all.
 // procedural.js uses: isPercussionTrack, isValidMidiNote, normalizeMidiPitch, getNoteName
-mock.module('../../src/utils/audio/midiUtils', {
-  namedExports: {
-    isPercussionTrack: mock.fn(),
-    isValidMidiNote: mock.fn(),
-    normalizeMidiPitch: mock.fn(n => n.midi),
-    getNoteName: mockGetNoteName
+mock.module(
+  new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      isPercussionTrack: mock.fn(() => false),
+      isValidMidiNote: mock.fn(() => true),
+      normalizeMidiPitch: mock.fn(n => (typeof n === 'number' ? n : n.midi)),
+      getNoteName: mockGetNoteName
+    }
   }
-})
+)
 
 // Mock env
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }
@@ -136,10 +145,18 @@ test('playNoteAtTime Tests', async t => {
   t.beforeEach(() => {
     mockAudioState.guitar.triggerAttackRelease.mock.resetCalls()
     mockAudioState.bass.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.drumKit.ride.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiLead.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiBass.triggerAttackRelease.mock.resetCalls()
     mockAudioState.drumKit.kick.triggerAttackRelease.mock.resetCalls()
     mockAudioState.drumKit.snare.triggerAttackRelease.mock.resetCalls()
     mockAudioState.drumKit.hihat.triggerAttackRelease.mock.resetCalls()
     mockAudioState.drumKit.crash.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiDrumKit.kick.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiDrumKit.snare.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiDrumKit.hihat.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiDrumKit.crash.triggerAttackRelease.mock.resetCalls()
+    mockAudioState.midiDrumKit.ride.triggerAttackRelease.mock.resetCalls()
     mockTone.Frequency.mock.resetCalls()
     mockGetNoteName.mock.resetCalls()
   })
@@ -270,4 +287,99 @@ test('playNoteAtTime Tests', async t => {
     assert.strictEqual(args[0], 8000)
     assert.strictEqual(args[1], '32n')
   })
+
+  await t.test(
+    'plays correct note for midiLead lane with triggerAttackRelease',
+    async () => {
+      const midiPitch = 60
+      const lane = 'midiLead'
+      const time = 1000
+      const velocity = 100
+
+      playNoteAtTime(midiPitch, lane, time, velocity)
+
+      // MIDI lanes should use getNoteName instead of Tone.Frequency
+      assert.strictEqual(
+        mockTone.Frequency.mock.calls.length,
+        0,
+        'Tone.Frequency should NOT be called for MIDI lanes'
+      )
+
+      // Verify triggerAttackRelease was called on midiLead
+      assert.strictEqual(
+        mockAudioState.midiLead.triggerAttackRelease.mock.calls.length,
+        1,
+        'midiLead triggerAttackRelease should be called once'
+      )
+      const args =
+        mockAudioState.midiLead.triggerAttackRelease.mock.calls[0].arguments
+      assert.strictEqual(
+        args[0],
+        `Note${midiPitch}`,
+        'Should use note name from getNoteName'
+      )
+      assert.strictEqual(args[2], time, 'Time should match')
+    }
+  )
+
+  await t.test(
+    'plays correct note for midiBass lane with triggerAttackRelease',
+    async () => {
+      const midiPitch = 40
+      const lane = 'midiBass'
+      const time = 1000
+      const velocity = 100
+
+      playNoteAtTime(midiPitch, lane, time, velocity)
+
+      // MIDI lanes should not invoke Tone.Frequency
+      assert.strictEqual(
+        mockTone.Frequency.mock.calls.length,
+        0,
+        'Tone.Frequency should NOT be called for MIDI lanes'
+      )
+
+      // Verify triggerAttackRelease was called on midiBass
+      assert.strictEqual(
+        mockAudioState.midiBass.triggerAttackRelease.mock.calls.length,
+        1,
+        'midiBass triggerAttackRelease should be called once'
+      )
+      const args =
+        mockAudioState.midiBass.triggerAttackRelease.mock.calls[0].arguments
+      assert.strictEqual(
+        args[0],
+        `Note${midiPitch}`,
+        'Should use note name from getNoteName'
+      )
+      assert.strictEqual(args[2], time, 'Time should match')
+    }
+  )
+
+  await t.test(
+    'plays correct note for midiDrumKit lane with triggerAttackRelease',
+    async () => {
+      const midiPitch = 36
+      const lane = 'midiDrumKit'
+      const time = 1000
+      const velocity = 100
+
+      playNoteAtTime(midiPitch, lane, time, velocity)
+
+      // midiDrumKit should route to appropriate drum piece based on MIDI pitch
+      // For kick (MIDI 36), should call midiDrumKit.kick
+      assert.strictEqual(
+        mockAudioState.midiDrumKit.kick.triggerAttackRelease.mock.calls.length,
+        1,
+        'midiDrumKit.kick triggerAttackRelease should be called once'
+      )
+
+      // Tone.Frequency should not be called for MIDI drum lanes
+      assert.strictEqual(
+        mockTone.Frequency.mock.calls.length,
+        0,
+        'Tone.Frequency should NOT be called for MIDI drum lanes'
+      )
+    }
+  )
 })
