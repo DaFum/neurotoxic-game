@@ -51,12 +51,12 @@ export const Overworld = () => {
     startTravelMinigame,
     activeStoryFlags,
     rivalBand,
-    dispatch
+    spawnRivalBand
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
 
-  useSpawnRivalBand(rivalBand, gameMap, dispatch)
+  useSpawnRivalBand(rivalBand, gameMap, spawnRivalBand)
   const glitch = useGlitchEffect()
 
   const {
@@ -128,8 +128,8 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
-    onStartTravelMinigame: startTravelMinigame,
-    dispatch
+    onStartTravelMinigame: startTravelMinigame
+    // dispatch removed as we no longer pass it
   })
 
   const { isSaving, handleSaveWithDelay } = useOverworldSave(saveGame)
