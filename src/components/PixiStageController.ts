@@ -3,7 +3,7 @@
  * (#2) Next Steps: Continue monitoring class size.
  * (#3) Found Errors + Solutions: None.
  */
-import type { Container } from 'pixi.js'
+import type { Container, Ticker } from 'pixi.js'
 import { ToxicFilterManager } from './stage/ToxicFilterManager'
 import { BaseStageController } from './stage/BaseStageController'
 import { CrowdManager } from './stage/CrowdManager'
@@ -152,8 +152,7 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
    */
   manualUpdate(deltaMS: number) {
     if (!this.app || this.isDisposed) return
-    // @ts-expect-error PIXI ticker payload includes deltaMS; shape matches runtime use in handleTicker.
-    this.handleTicker({ deltaMS })
+    this.handleTicker({ deltaMS } as Ticker)
   }
 
   /**
