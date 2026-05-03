@@ -4,15 +4,15 @@ This note collects concrete improvement opportunities found during a focused rea
 
 ## 1) State + Reducer Reliability
 
-- [ ] **Add exhaustive action safety in `gameReducer`**: replace the silent fallback (`return state`) with telemetry (dev warn/counter) for unknown actions so integration mistakes are visible early.
-  - *Best practice*: gate the warning behind `process.env.NODE_ENV !== 'production'` and a `logLevel >= 'warn'` check so it is a zero-cost no-op in production builds; the check itself must be tree-shakeable (use a constant expression, not a runtime flag read).
-  - *Pattern*: `default: { if (__DEV__) reportUnknownAction(action.type, action); return state; }` — `reportUnknownAction` writes to a dev-only ring buffer that the debug overlay can surface, avoiding console noise in prod.
-  - *Pitfall*: logging the full action object can leak sensitive payload data (money amounts, player names) to the console in dev builds accessible to end users; log only `action.type` and the reducer name, never the payload.
+- [ ] **Harden exhaustive action safety in `gameReducer`**: the default branch already calls `logger.warn` and `assertNever`; extend it with a structured telemetry counter (not just a log line) so unknown-action frequency is observable in monitoring, not only in the dev console.
+  - *Best practice*: gate the metric increment behind `process.env.NODE_ENV !== 'production'` and a `logLevel >= 'warn'` check; the counter itself should write to a dev-only ring buffer that the debug overlay can surface and reset between sessions.
+  - *Pattern*: `default: { logger.warn(…); devMetrics.increment('unknownAction', action.type); return assertNever(action as never); }` — `devMetrics` is a `NullMetrics` no-op in production and a real counter in dev/test; the counter shape is `Record<string, number>`.
+  - *Pitfall*: logging the full action object leaks sensitive payload data (money amounts, player names) to the console in dev builds accessible to end users; `logger.warn` must log only `action.type` and the reducer name, never the payload.
 
-- [ ] **Strengthen `reducerMap` typing**: enforce a typed mapping from `ActionTypes` to exact handler signatures so payload drift is caught at compile time.
-  - *Best practice*: define `type ReducerMap = { [K in keyof ActionPayloadMap]: (state: GameState, action: Extract<GameAction, { type: K }>) => GameState }` and assert `satisfies ReducerMap` on the map object — TypeScript catches any handler with the wrong payload shape at declaration time, not at call site.
-  - *Pattern*: keep each handler as a named function in its own file (`handlers/setMoney.ts`) and import them into the `reducerMap` object; this enables per-handler unit tests without importing the whole reducer.
-  - *Pitfall*: using a plain `Record<string, Function>` for `reducerMap` bypasses all payload narrowing — the map type must be the exact discriminated union, not a widened string index.
+- [ ] **Replace `as ReducerMap` cast with `satisfies ReducerMap` on the handler map**: `gameReducer.ts` already uses a typed `ReducerMap` mapped type, but seals it with an `as` cast that suppresses assignment errors; switching to `satisfies` retains narrowing while surfacing any handler whose payload type has drifted.
+  - *Best practice*: `satisfies` checks the object literal's shape without widening the inferred type, meaning handler bodies continue to receive the narrowest possible action type; `as` suppresses both the error and the narrowing benefit.
+  - *Pattern*: keep each handler as a named function in its own file (`handlers/setMoney.ts`) and import them into the handler map; per-handler unit tests then require no reducer import.
+  - *Pitfall*: the existing `as ReducerMap` cast means a handler added with the wrong payload type compiles silently; the cast must be removed or replaced before the typed map provides any compile-time safety.
 
 - [ ] **Add reducer-level invariants test suite**: validate post-action guarantees (money non-negative, harmony bounds, no invalid scene transitions).
   - *Best practice*: model invariants as a `checkInvariants(state: GameState): InvariantViolation[]` pure function and call it in two places: as an assertion in the invariants test suite, and optionally in the reducer's `default` branch in dev mode as a post-action audit.
@@ -156,7 +156,7 @@ This note collects concrete improvement opportunities found during a focused rea
 
 - [ ] **Soundcheck tradeoff events**: spend extra time/money for stability buffs vs less crowd pre-hype.
   - *Best practice*: treat soundcheck as an optional `PREGIG` sub-event using the existing event system (see §2) — it is just a structured choice with a cost action and a buff action; no new system is needed.
-  - *Pattern*: apply the stability buff as a timed modifier (`expiresAfterGig: true`) stored in `activeModifiers: Modifier[]` in game state; the gig engine reads `activeModifiers` at scoring time and clears expired ones in the postgig reducer.
+  - *Pattern*: apply the stability buff by extending the existing `gigModifiers: GigModifiers` object (the modifier shape already used by the gig engine) rather than introducing a separate list; add a `soundcheckBonus` field to `GigModifiers` and clear it in the postgig reducer.
 
 - [ ] **Local scene intel cards**: city-specific traits (genre bias, attention span, bar spend profile) before confirming.
   - *Best practice*: store city traits as part of the `CityState` slice generated at map creation time (using the run PRNG for procedural traits) — the intel card is a read-only view of existing state, not a new data fetch.
@@ -225,12 +225,12 @@ This note collects concrete improvement opportunities found during a focused rea
   - *Pitfall*: storing merch revenue as a separate parallel number outside `EconomyBreakdown` causes the postgig summary to show inconsistent totals; always route all money deltas through the breakdown DTO.
 
 - [ ] **Staff hiring system**: manager/driver/tech roles granting passive bonuses with weekly salary burden.
-  - *Best practice*: model hired staff as `activeStaff: StaffMember[]` in `GameState`; their passive bonuses are `Modifier` entries added to `activeModifiers` on hire and removed on fire — the same modifier system used by consumables and setlist presets handles staff bonuses without new infrastructure.
+  - *Best practice*: model hired staff as `activeStaff: StaffMember[]` in `GameState`; their passive bonuses extend `gigModifiers: GigModifiers` (the existing modifier object) by adding staff-specific fields on hire — no parallel modifier list needed; the gig engine already reads `gigModifiers` at scoring time.
   - *Pattern*: salary deduction is a weekly recurring action scheduled the same way as narrative consequence chains (§7.5) — a `DEDUCT_SALARY` action dispatched on the correct day advance, not a separate timer.
 
 - [ ] **Insurance and warranty choices**: reduce catastrophic losses at recurring cost.
-  - *Best practice*: implement insurance as a `Modifier` with a `type: 'cap'` that limits negative deltas on specific breakdown line items (gear damage, cancellation penalty) — the economy engine applies caps from `activeModifiers` at calculation time; insurance is just a data entry, not a code branch.
-  - *Pitfall*: hard-coding insurance effects inside the cancellation resolver couples two separate concerns; insurance should be a generic cap modifier that the resolver reads, not special-case logic in the resolver.
+  - *Best practice*: implement insurance as a field on `gigModifiers: GigModifiers` (e.g., `insurancePenaltyCap: number | null`) that limits negative deltas on specific breakdown line items; the economy engine reads the cap from `gigModifiers` at calculation time — insurance is a data value, not a special-case code branch.
+  - *Pitfall*: hard-coding insurance effects inside the cancellation resolver couples two separate concerns; insurance should be a cap value that the resolver reads, not special-case logic in the resolver.
 
 - [ ] **Sponsorship contract negotiation**: choose values-aligned or high-paying sponsors with social tradeoffs.
   - *Best practice*: model active sponsorships as `activeContracts: SponsorContract[]` with `{ sponsorId, moneyPerGig, factionReputationDelta: Record<FactionId, number>, expiresAfterGig: number }` — revenue and reputation effects are applied in the postgig economy and faction update actions respectively.
@@ -273,7 +273,7 @@ This note collects concrete improvement opportunities found during a focused rea
 ### 7.9 Live-Ops and Long-Term Replayability
 
 - [ ] **Weekly challenge seeds**: fixed map/event seeds with leaderboard categories.
-  - *Best practice*: deliver challenge seeds as a static JSON file fetched once on session start (with a stale-while-revalidate strategy) and cached in `localStorage` via `StorageAdapter`; the game never blocks on network availability to start the challenge.
+  - *Best practice*: deliver challenge seeds as a static JSON file fetched once on session start (with a stale-while-revalidate strategy) and cached in `localStorage` directly (or via the `StorageAdapter` abstraction once §8.10 is implemented); the game never blocks on network availability to start the challenge.
   - *Pitfall*: generating weekly challenges client-side from the current date produces different seeds across timezones; always derive the challenge seed server-side (or from a UTC-normalised week number) and distribute it explicitly.
 
 - [ ] **Mutator runs**: opt-in rulesets (fragile gear, chaotic crowds, strict budgets) for variety.
@@ -281,7 +281,7 @@ This note collects concrete improvement opportunities found during a focused rea
   - *Pitfall*: mutators that directly modify the base `BalanceConfig` object (mutating a shared reference) bleed effects across tests and across runs; always create a new config object via `applyMutators(baseConfig, activeMutators)` rather than mutating in place.
 
 - [ ] **Legacy unlock track**: meta progression across runs unlocking cosmetic + strategic options.
-  - *Best practice*: store legacy progress outside `GameState` in a separate `LegacyProfile` persisted to a different `StorageAdapter` key — legacy data survives run resets and must not be wiped by `createInitialState`.
+  - *Best practice*: store legacy progress outside `GameState` in a separate `LegacyProfile` persisted to a different `localStorage` key (or `StorageAdapter` key once §8.10 is implemented) — legacy data survives run resets and must not be wiped by `createInitialState`.
   - *Pattern*: define unlocks as `{ id, condition: (runSummary: RunSummary) => boolean; rewardType: 'cosmetic' | 'modifier' }` evaluated at run-end against an immutable `RunSummary` snapshot — legacy logic never reads live `GameState`, only finished-run summaries.
 
 - [ ] **Community event packs**: rotating event bundles to refresh narrative variety.
@@ -505,7 +505,7 @@ This note collects concrete improvement opportunities found during a focused rea
   - *Best practice*: use `SubtleCrypto.digest('SHA-256', encoded)` for a deterministic, dependency-free checksum; store it alongside the payload as `{ data: '…', checksum: '…' }` so tools can inspect the raw data without needing to know the signing key.
   - *Pitfall*: HMAC-based signing requires a secret key, which in a browser context is trivially extractable — prefer a tamper-evidence approach (checksum mismatch → warn and reset) over a security claim.
 - [ ] **Define and enforce a maximum save file size**: add a byte-length assertion in the serialiser that warns (dev) or silently trims old run history (prod) when the payload exceeds a threshold — prevents `localStorage` quota errors mid-session.
-  - *Best practice*: separate mutable game state from append-only run history; write history to IndexedDB via the `StorageAdapter` and keep `localStorage` for just the active session snapshot.
+  - *Best practice*: separate mutable game state from append-only run history; write history to IndexedDB (via the `StorageAdapter` abstraction planned in §8.10) and keep `localStorage` for just the active session snapshot — `usePersistence.ts` currently writes both to `localStorage` directly, which is the gap to close.
 - [ ] **Test migration failures explicitly**: if a migration throws, the loader must catch it, log the version mismatch and error, and return `createInitialState()` — a corrupt migration must never crash the app or render a blank screen.
 
 ### 8.6 Map Generation ↔ Game Engine Integration
