@@ -1553,5 +1553,8 @@
   "featureList.sec19.description": "20. Economy and Resources",
   "featureList.sec20.description": "21. Leaderboards",
   "featureList.sec21.description": "22. Persistence and Meta-Progression",
-  "featureList.sec22.description": "23. Additional UX/System Features"
+  "featureList.sec22.description": "23. Additional UX/System Features",
+  "minigames.amp.controls.overdrive": "OVERDRIVE",
+  "minigames.amp.hud.overheat": "OVERHEAT!",
+  "minigames.amp.hud.heat": "HEAT"
 }
