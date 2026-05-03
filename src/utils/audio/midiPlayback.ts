@@ -105,7 +105,7 @@ function triggerInstrumentNote(
   if (lane === 'drums') {
     playDrumNote(midiPitch, time, velocity)
   } else if (lane === 'midiDrumKit') {
-    playDrumNote(midiPitch, time, velocity, audioState.midiDrumKit)
+    playDrumNote(midiPitch, time, velocity, audioState.midiDrumKit ?? undefined)
   } else if (lane === 'bass') {
     if (audioState.bass) {
       const freq = noteName ?? getNoteName(midiPitch) ?? 'C3'
