@@ -77,7 +77,11 @@ mock.module('pixi.js', {
       }
     },
     Assets: {
-      load: (...args) => currentLoad(...args)
+      load: (...args) => currentLoad(...args),
+      cache: {
+        has: mock.fn(() => false),
+        get: mock.fn(() => null)
+      }
     },
     Texture: {
       WHITE: { id: 'white' },
@@ -327,7 +331,8 @@ describe('TourbusStageController', () => {
   it('should handle asset loading fallback when offline', async () => {
     imageGen.isImageGenerationAvailable.mock.mockImplementation(() => false)
     await controller.loadAssets()
-    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length, 5)
+    // Only bus and road use fallback; rock, barrier, fuel are intentionally null when offline
+    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length, 2)
     assert.equal(imageGen.getGenImageUrl.mock.calls.length, 0)
   })
 

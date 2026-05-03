@@ -266,7 +266,7 @@ const _imageTextureCache = new Map<string, Texture>()
  * @returns {Texture|null} The cached texture or null.
  */
 const _getCachedTexture = (url: string): Texture | null => {
-  if (Assets.cache.has(url)) {
+  if (Assets.cache?.has(url)) {
     const cached = Assets.cache.get(url)
     if (
       cached instanceof Texture &&
