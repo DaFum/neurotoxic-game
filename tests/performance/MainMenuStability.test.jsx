@@ -45,6 +45,8 @@ vi.mock('framer-motion', () => ({
   }
 }))
 vi.mock('../../src/utils/imageGen', () => ({
+  isImageGenerationAvailable: () => true,
+  getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => '',
   IMG_PROMPTS: {}
 }))
