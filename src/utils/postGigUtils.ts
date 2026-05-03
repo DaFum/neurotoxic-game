@@ -1,3 +1,7 @@
+import { BALANCE_CONSTANTS } from './gameStateUtils'
+import { calculateGigFinancials } from './economyEngine'
+import { generatePostOptions } from './socialEngine'
+
 import {
   checkViralEvent,
   calculateSocialGrowth,
@@ -490,5 +494,117 @@ export const calculateContinueStats = ({
     newMoney,
     newFame,
     fameLevel: calculateFameLevel(newFame)
+  }
+}
+
+const PERF_SCORE_MIN = 30
+const PERF_SCORE_MAX = 100
+const PERF_SCORE_SCALER = 500
+
+export const calculatePerformanceScore = (rawScore: number): number => {
+  return Math.min(
+    PERF_SCORE_MAX,
+    Math.max(PERF_SCORE_MIN, rawScore / PERF_SCORE_SCALER)
+  )
+}
+
+export const deriveGigContext = (
+  currentGig: GameState['currentGig'],
+  social: GameState['social'],
+  player: GameState['player']
+) => {
+  if (!currentGig || !social || !player) return null
+
+  return {
+    daysSinceLastGig: player.day - (social.lastGigDay ?? player.day),
+    lastGigDifficulty: social.lastGigDifficulty ?? null
+  }
+}
+
+export const deriveFinancials = ({
+  currentGig,
+  lastGigStats,
+  perfScore,
+  gigModifiers,
+  bandInventory,
+  player,
+  social,
+  reputationByRegion,
+  activeStoryFlags,
+  gigContext
+}: {
+  currentGig: GameState['currentGig']
+  lastGigStats: GameState['lastGigStats']
+  perfScore: number
+  gigModifiers: GameState['gigModifiers']
+  bandInventory: GameState['band']['inventory']
+  player: GameState['player']
+  social: GameState['social']
+  reputationByRegion: GameState['reputationByRegion']
+  activeStoryFlags: GameState['activeStoryFlags']
+  gigContext: { daysSinceLastGig: number; lastGigDifficulty: number | null } | null
+}) => {
+  if (!currentGig || !lastGigStats) return null
+
+  const result = calculateGigFinancials({
+    gigData: currentGig,
+    performanceScore: perfScore,
+    modifiers: gigModifiers,
+    bandInventory: bandInventory,
+    playerState: player,
+    gigStats: lastGigStats,
+    context: {
+      controversyLevel: social?.controversyLevel || 0,
+      regionRep: reputationByRegion?.[player?.location] || 0,
+      loyalty: social?.loyalty || 0,
+      zealotry: social?.zealotry || 0,
+      discountedTickets: activeStoryFlags?.includes('discounted_tickets_active'),
+      daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
+      lastGigDifficulty: gigContext?.lastGigDifficulty ?? null,
+      social
+    }
+  })
+
+  return applyPostGigPerformancePenalty({
+    financials: result,
+    misses: lastGigStats.misses ?? 0,
+    missTolerance: BALANCE_CONSTANTS.MISS_TOLERANCE,
+    missMoneyPenalty: BALANCE_CONSTANTS.MISS_MONEY_PENALTY
+  })
+}
+
+export const derivePostOptions = ({
+  currentGig,
+  lastGigStats,
+  player,
+  band,
+  social,
+  activeEvent
+}: {
+  currentGig: GameState['currentGig']
+  lastGigStats: GameState['lastGigStats']
+  player: GameState['player']
+  band: GameState['band']
+  social: GameState['social']
+  activeEvent: GameState['activeEvent']
+}) => {
+  if (!currentGig || !lastGigStats) return { options: [], error: null }
+
+  // Pass the necessary game state to evaluate post conditions
+  const gameStateForPosts = {
+    player,
+    band,
+    social,
+    lastGigStats,
+    activeEvent,
+    currentGig,
+    gigEvents: lastGigStats?.events || []
+  }
+
+  try {
+    const options = generatePostOptions(currentGig, gameStateForPosts)
+    return { options, error: null }
+  } catch (e) {
+    return { options: [], error: e }
   }
 }
