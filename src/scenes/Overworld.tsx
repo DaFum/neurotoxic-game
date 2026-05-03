@@ -1,23 +1,22 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useCallback } from 'react'
+import { MapNode } from '../types/game'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
-import { useBandHQModal } from '../hooks/useBandHQModal'
-import { useQuestsModal } from '../hooks/useQuestsModal'
-import { useContrabandStash } from '../hooks/useContrabandStash'
-import { usePirateRadio } from '../hooks/usePirateRadio'
-import { useMerchPress } from '../hooks/useMerchPress'
-import { useBloodBank } from '../hooks/useBloodBank'
-import { useDarkWebLeak } from '../hooks/useDarkWebLeak'
 import { GAME_PHASES } from '../context/gameConstants'
-import { createSpawnRivalBandAction } from '../context/actionCreators'
+import {
+  useGlitchEffect,
+  useAmbientResume,
+  useOverworldSave,
+  useSpawnRivalBand,
+  useOverworldModals
+} from '../hooks/overworld'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
 import { OverworldHUD } from '../ui/overworld/OverworldHUD'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { EventLog } from '../ui/overworld/EventLog'
-import { audioManager } from '../utils/audio/AudioManager'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { BandHQ } from '../ui/BandHQ'
@@ -55,79 +54,51 @@ export const Overworld = () => {
     dispatch
   } = useGameState()
 
-  const [hoveredNode, setHoveredNode] = useState(null)
+  const [hoveredNode, setHoveredNode] = useState<MapNode | null>(null)
 
-  useEffect(() => {
-    if (!rivalBand && gameMap && dispatch) {
-      dispatch(createSpawnRivalBandAction())
+  useSpawnRivalBand(rivalBand, gameMap, dispatch)
+  const glitch = useGlitchEffect()
+
+  const {
+    hq: { showHQ, openHQ, closeHQ },
+    quests: { showQuests, openQuests, questsProps },
+    stash: { showStash, openStash, stashProps },
+    pirateRadio: {
+      showPirateRadio,
+      openPirateRadio,
+      closePirateRadio,
+      triggerBroadcast,
+      canBroadcast,
+      hasBroadcastedToday,
+      PIRATE_RADIO_CONFIG
+    },
+    merchPress: {
+      showMerchPress,
+      openMerchPress,
+      closeMerchPress,
+      triggerPress,
+      canPress,
+      config: merchPressConfig
+    },
+    bloodBank: {
+      showBloodBank,
+      openBloodBank,
+      closeBloodBank,
+      triggerDonate,
+      canDonate,
+      config: bloodBankConfig
+    },
+    darkWebLeak: {
+      showDarkWebLeak,
+      hasLeakedToday,
+      openDarkWebLeak,
+      closeDarkWebLeak,
+      triggerLeak,
+      canLeak: canDarkWebLeak,
+      DARK_WEB_LEAK_CONFIG
     }
-  }, [rivalBand, gameMap, dispatch])
+  } = useOverworldModals()
 
-  const [glitch, setGlitch] = useState('')
-  useEffect(() => {
-    const TYPES = ['glitch-on', 'g-hue', 'g-pixel'] as const
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
-    const id = setInterval(() => {
-      if (Math.random() < 0.22) {
-        const glitchType = TYPES[Math.floor(Math.random() * TYPES.length)]
-        if (!glitchType) {
-          return
-        }
-        if (timeoutId) {
-          clearTimeout(timeoutId)
-        }
-        setGlitch(glitchType)
-        timeoutId = setTimeout(() => setGlitch(''), 160 + Math.random() * 120)
-      }
-    }, 4000)
-    return () => {
-      clearInterval(id)
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-    }
-  }, [])
-
-  const { showHQ, openHQ, closeHQ } = useBandHQModal()
-  const { showQuests, openQuests, questsProps } = useQuestsModal()
-  const { showStash, openStash, stashProps } = useContrabandStash()
-  const {
-    showPirateRadio,
-    openPirateRadio,
-    closePirateRadio,
-    triggerBroadcast,
-    canBroadcast,
-    hasBroadcastedToday,
-    PIRATE_RADIO_CONFIG
-  } = usePirateRadio()
-
-  const {
-    showMerchPress,
-    openMerchPress,
-    closeMerchPress,
-    triggerPress,
-    canPress,
-    config: merchPressConfig
-  } = useMerchPress()
-
-  const {
-    showBloodBank,
-    openBloodBank,
-    closeBloodBank,
-    triggerDonate,
-    canDonate,
-    config: bloodBankConfig
-  } = useBloodBank()
-
-  const {
-    showDarkWebLeak,
-    hasLeakedToday,
-    openDarkWebLeak,
-    closeDarkWebLeak,
-    triggerLeak,
-    canLeak: canDarkWebLeak,
-    DARK_WEB_LEAK_CONFIG
-  } = useDarkWebLeak()
 
   const {
     isTraveling,
@@ -161,68 +132,17 @@ export const Overworld = () => {
     dispatch
   })
 
-  const [isSaving, setIsSaving] = useState(false)
+  const { isSaving, handleSaveWithDelay } = useOverworldSave(saveGame)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const locationName = translateLocation(t, player.location, player.location)
   const openClinic = useCallback(() => {
     changeScene(GAME_PHASES.CLINIC)
   }, [changeScene])
-  const isMountedRef = useRef(true)
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [])
-
-  const handleSaveWithDelay = useCallback(() => {
-    if (isSaving) return
-    setIsSaving(true)
-    saveTimeoutRef.current = setTimeout(() => {
-      void (async () => {
-        try {
-          await saveGame()
-        } catch (err) {
-          console.error('Save failed', err)
-        } finally {
-          if (isMountedRef.current) {
-            setIsSaving(false)
-          }
-        }
-      })()
-    }, 500)
-  }, [isSaving, saveGame])
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
-  // Resume ambient on mount and retry once on startup failure.
-  useEffect(() => {
-    let cancelled = false
-    let retryTimeoutId: ReturnType<typeof setTimeout> | null = null
-
-    const attemptResume = async (attempt = 0) => {
-      const started = await audioManager.resumeMusic().catch(() => false)
-      if (!started && !cancelled && attempt < 1) {
-        retryTimeoutId = setTimeout(() => {
-          void attemptResume(attempt + 1)
-        }, 1200)
-      }
-    }
-
-    void attemptResume()
-
-    return () => {
-      cancelled = true
-      if (retryTimeoutId) {
-        clearTimeout(retryTimeoutId)
-      }
-    }
-  }, [])
+  useAmbientResume()
 
   return (
     <div
