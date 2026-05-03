@@ -268,7 +268,6 @@
   "event.untitled": "EREIGNIS",
   "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
-<<<<<<< jules-rival-band-system-15293024041090793137
   "featureList": [
     {
       "description": "ui:featureList.sec0.description",
@@ -409,8 +408,6 @@
   "featureList.sec4.rows.3.0": "Robust State Safety & Telemetry",
   "featureList.sec4.rows.3.1": "Zentraler React-Kontext mit tiefer Schema-Validierung, um die Speicherdaten der Spieler vor Prototype-Pollution zu schützen. Beinhaltet eine produktsichere Crash-Handler-Grenze (die Stack-Traces verbirgt) und Vercel Speed Insights für Live-Metriken.",
   "featureList.sec4.title": "Fortgeschrittene UI/UX-Techniken",
-=======
->>>>>>> main
   "features.button": "FUNKTIONEN",
   "features.title": "FUNKTIONSLISTE",
   "game-over.booed-off-stage": "AUSGEBUHT",
@@ -1105,11 +1102,9 @@
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
-<<<<<<< jules-rival-band-system-15293024041090793137
   "travel": {
     "rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!"
   }
-=======
   "featureList.sec0.title": "1. Grundstruktur und Spielphasen",
   "featureList.sec0.items.0": "Intro-Video beim Start",
   "featureList.sec0.items.1": "Main Menu",
@@ -1702,6 +1697,9 @@
   "featureList.sec19.description": "20. Wirtschaft und Ressourcen",
   "featureList.sec20.description": "21. Leaderboards",
   "featureList.sec21.description": "22. Persistenz und Meta-Fortschritt",
+  "featureList.sec22.description": "23. Zusätzliche UX-/Systemfeatures",
+  "minigames.amp.controls.overdrive": "ÜBERSTEUERN",
+  "minigames.amp.hud.overheat": "ÜBERHITZT!",
+  "minigames.amp.hud.heat": "HITZE"
   "featureList.sec22.description": "23. Zusätzliche UX-/Systemfeatures"
->>>>>>> main
 }

@@ -6,9 +6,15 @@ import type { AmpControlsProps } from '../../../types/components'
 export const AmpControls = memo(function AmpControls({
   dialValue,
   targetValue,
-  setDialValue
+  setDialValue,
+  isOverdriveActive,
+  setIsOverdriveActive
 }: AmpControlsProps) {
   const { t } = useTranslation(['ui'])
+
+  const handleToggleOverdrive = useCallback(() => {
+    setIsOverdriveActive(prev => !prev)
+  }, [setIsOverdriveActive])
 
   const handleDialChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -100,6 +106,20 @@ export const AmpControls = memo(function AmpControls({
         {t('ui:minigames.amp.controls.instruction', {
           defaultValue: 'TUNE THE FREQUENCY'
         })}
+      </div>
+
+      <div className='mt-2'>
+        <button
+          onClick={handleToggleOverdrive}
+          className={`px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 ${
+            isOverdriveActive
+              ? 'bg-toxic-green text-void-black border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)] animate-pulse'
+              : 'bg-void-black text-toxic-green border-toxic-green hover:bg-toxic-green/20'
+          }`}
+          aria-label={t('ui:minigames.amp.controls.overdrive', { defaultValue: 'Toggle Overdrive' })}
+        >
+          {t('ui:minigames.amp.controls.overdrive', { defaultValue: 'OVERDRIVE' })}
+        </button>
       </div>
     </div>
   )

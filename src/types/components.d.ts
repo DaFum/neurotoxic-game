@@ -145,6 +145,9 @@ export interface MinigameSceneFrameProps<TState = unknown> {
 export interface AmpStageOptions {
   targetValue: number
   dialValue: number
+  isOverdriveActive?: boolean
+  isOverheat?: boolean
+  heat?: number
 }
 
 export interface StageControllerOptions<TState = unknown> {
@@ -205,11 +208,15 @@ export interface AmpControlsProps {
   dialValue: number
   targetValue: number
   setDialValue: React.Dispatch<React.SetStateAction<number>>
+  isOverdriveActive: boolean
+  setIsOverdriveActive: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export interface AmpHUDProps {
   timeLeft: number
   score: number
+  heat: number
+  isOverheat: boolean
 }
 
 export interface AudioLockedOverlayProps {
