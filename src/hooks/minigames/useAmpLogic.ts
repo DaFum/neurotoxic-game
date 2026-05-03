@@ -17,12 +17,20 @@ export function useAmpLogic() {
   const [score, setScore] = useState(100)
   const [isGameOver, setIsGameOver] = useState(false)
 
+  // Overdrive & Heat
+  const [isOverdriveActive, setIsOverdriveActive] = useState(false)
+  const [heat, setHeat] = useState(0) // 0 to 100
+  const [isOverheat, setIsOverheat] = useState(false)
+
   const isCompleteRef = useRef(false)
   const accumulatedScoreRef = useRef(0)
   const accumulatedMsRef = useRef(0)
   const dialValueRef = useRef(dialValue)
   const targetValueRef = useRef(targetValue)
   const timeLeftRef = useRef(timeLeft)
+  const heatRef = useRef(heat)
+  const isOverdriveActiveRef = useRef(isOverdriveActive)
+  const isOverheatRef = useRef(isOverheat)
   const gameStateRef = useRef(null)
 
   useEffect(() => {
@@ -36,6 +44,18 @@ export function useAmpLogic() {
   useEffect(() => {
     timeLeftRef.current = timeLeft
   }, [timeLeft])
+
+  useEffect(() => {
+    heatRef.current = heat
+  }, [heat])
+
+  useEffect(() => {
+    isOverdriveActiveRef.current = isOverdriveActive
+  }, [isOverdriveActive])
+
+  useEffect(() => {
+    isOverheatRef.current = isOverheat
+  }, [isOverheat])
 
   const finishCalledRef = useRef(false)
   const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -90,15 +110,60 @@ export function useAmpLogic() {
       timeLeftRef.current = nextTimeLeft
       setTimeLeft(nextTimeLeft)
 
+      // Overdrive & Heat Logic
+      let currentHeat = heatRef.current
+      let currentIsOverheat = isOverheatRef.current
+      const currentOverdriveActive = isOverdriveActiveRef.current
+
+      if (currentIsOverheat) {
+        // Cooldown mode: disable overdrive automatically
+        if (currentOverdriveActive) {
+          setIsOverdriveActive(false)
+        }
+        currentHeat -= 25 * deltaSec // Cool down quickly when overheated
+        if (currentHeat <= 0) {
+          currentHeat = 0
+          currentIsOverheat = false
+          setIsOverheat(false)
+        }
+        setHeat(currentHeat)
+      } else {
+        if (currentOverdriveActive) {
+          currentHeat += 35 * deltaSec // Heats up in ~3 seconds
+          if (currentHeat >= 100) {
+            currentHeat = 100
+            currentIsOverheat = true
+            setIsOverheat(true)
+            setIsOverdriveActive(false) // Force off
+          }
+        } else {
+          currentHeat = Math.max(0, currentHeat - 15 * deltaSec) // Normal cooldown
+        }
+        setHeat(currentHeat)
+      }
+
       // Approximately 5% chance per 100ms
-      if (getSafeRandom() < 0.05 * (deltaMS / 100)) {
-        const shift = (getSafeRandom() - 0.5) * 200
+      let chance = 0.05
+      let shiftSize = 200
+      if (currentIsOverheat) {
+        chance = 0.2 // Higher chance when overheated
+        shiftSize = 400
+      }
+
+      if (getSafeRandom() < chance * (deltaMS / 100)) {
+        const shift = (getSafeRandom() - 0.5) * shiftSize
         setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
 
       // Time-driven tick for score accumulation
       const diff = Math.abs(dialValueRef.current - targetValueRef.current)
-      const currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
+      let currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
+
+      if (currentOverdriveActive && !currentIsOverheat) {
+          currentScore *= 1.5 // 50% bonus score for overdrive
+      } else if (currentIsOverheat) {
+          currentScore *= 0.5 // Penalty while overheated
+      }
 
       accumulatedScoreRef.current += currentScore * deltaMS
       accumulatedMsRef.current += deltaMS
@@ -114,9 +179,12 @@ export function useAmpLogic() {
   useEffect(() => {
     gameStateRef.current = {
       dialValue,
-      targetValue
+      targetValue,
+      isOverdriveActive,
+      isOverheat,
+      heat
     }
-  }, [dialValue, targetValue])
+  }, [dialValue, targetValue, isOverdriveActive, isOverheat, heat])
 
   return {
     dialValue,
@@ -127,6 +195,10 @@ export function useAmpLogic() {
     isGameOver,
     update,
     finishMinigame,
-    gameStateRef
+    gameStateRef,
+    isOverdriveActive,
+    setIsOverdriveActive,
+    heat,
+    isOverheat
   }
 }
