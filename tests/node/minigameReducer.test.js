@@ -168,12 +168,16 @@ describe('minigameReducer', () => {
     })
 
     it('should apply reward on success', () => {
+      baseState.minigame.type = MINIGAME_TYPES.KABELSALAT
+      baseState.minigame.active = true
       const payload = { results: { isPoweredOn: true, timeLeft: 30 } }
       const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
       assert.strictEqual(nextState.band.harmony, 50) // No stress on success
       assert.strictEqual(nextState.player.money, 1150) // 60 base + (30/5)*15 = 150 reward
       assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
+      assert.strictEqual(nextState.minigame.active, false)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
     })
   })
 

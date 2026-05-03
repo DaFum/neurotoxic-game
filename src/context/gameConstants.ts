@@ -68,8 +68,8 @@ export const calculateClinicCost = (
 }
 
 export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
-  GAME_PHASES.OVERWORLD as GamePhase,
-  GAME_PHASES.MENU as GamePhase
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
 ])
 export const RIVAL_STAY_CHANCE = 0.3
 export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5

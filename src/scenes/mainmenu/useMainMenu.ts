@@ -187,7 +187,6 @@ export const useMainMenu = () => {
    * Handles loading a saved game.
    */
   const handleLoad = useCallback(() => {
-    void enterFullscreen()
     setIsLoadingGame(true)
 
     if (!isMountedRef.current) return
@@ -203,6 +202,7 @@ export const useMainMenu = () => {
       return
     }
 
+    void enterFullscreen()
     // State transitions (batched automatically by React 18+)
     changeScene(GAME_PHASES.OVERWORLD)
 
