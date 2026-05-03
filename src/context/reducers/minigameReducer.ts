@@ -88,19 +88,14 @@ export const handleCompleteTravelMinigame = (
     state.player.van.condition - conditionLoss
   )
 
-  const nextMembers = [...state.band.members]
+  let nextMembers = state.band.members
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
-    // Pick a random member for each hit, or apply to one member
-    // Applying to a random member using the rngValue if possible
-    // Alternatively, to ensure predictable behavior, we can use rngValue to pick a member.
-    // Or just pick the first member if rng isn't strictly available to loop.
-    // For simplicity, apply a 10 stamina loss per hit to a random member.
-    // Since we don't have multiple rng values, we can just use rngValue combined with an index.
     const baseRng = typeof rngValue === 'number' ? rngValue : 0
     const memberIndex = Math.floor(baseRng * nextMembers.length)
     const hitMember = nextMembers[memberIndex]
     if (hitMember) {
       const staminaPenalty = voidHazardHits * 10
+      nextMembers = [...nextMembers]
       nextMembers[memberIndex] = {
         ...hitMember,
         stamina: clampMemberStamina(

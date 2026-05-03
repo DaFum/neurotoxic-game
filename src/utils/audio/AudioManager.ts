@@ -14,6 +14,7 @@ type AudioSfxType =
   | 'honk'
   | 'pickup'
   | 'deliver'
+  | 'void_hit'
 
 type AudioStateSnapshot = {
   musicVol: number
@@ -75,7 +76,8 @@ class AudioSystem {
     'crash',
     'honk',
     'pickup',
-    'deliver'
+    'deliver',
+    'void_hit'
   ])
 
   /**
