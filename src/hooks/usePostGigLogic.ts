@@ -6,7 +6,7 @@ import { generatePostOptions } from '../utils/socialEngine'
 import { logger } from '../utils/logger'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import { BALANCE_CONSTANTS } from '../utils/gameStateUtils'
-import { applyPostGigPerformancePenalty } from '../utils/postGigUtils'
+import { calculatePerformanceScore, deriveGigContext, deriveFinancials, derivePostOptions } from '../utils/postGigUtils'
 
 export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
 
@@ -16,10 +16,6 @@ export type PostOptionsErrorState =
   | { kind: 'handled' }
 export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
   'Social options are unavailable right now.'
-
-const PERF_SCORE_MIN = 30
-const PERF_SCORE_MAX = 100
-const PERF_SCORE_SCALER = 500
 
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
@@ -65,13 +61,7 @@ export const usePostGigLogic = () => {
       COMPLETE: 'TOUR UPDATE'
     }[phase] ?? 'TOUR UPDATE'
 
-  const perfScore = useMemo(() => {
-    const rawScore = lastGigStats?.score || 0
-    return Math.min(
-      PERF_SCORE_MAX,
-      Math.max(PERF_SCORE_MIN, rawScore / PERF_SCORE_SCALER)
-    )
-  }, [lastGigStats])
+  const perfScore = useMemo(() => calculatePerformanceScore(lastGigStats?.score || 0), [lastGigStats])
 
   useEffect(() => {
     if (!currentGig) return
@@ -89,44 +79,25 @@ export const usePostGigLogic = () => {
     daysSinceLastGig: number
     lastGigDifficulty: number | null
   } | null>(null)
-  if (!gigContextRef.current && currentGig && social && player) {
-    gigContextRef.current = {
-      daysSinceLastGig: player.day - (social.lastGigDay ?? player.day),
-      lastGigDifficulty: social.lastGigDifficulty ?? null
-    }
+  if (!gigContextRef.current) {
+    gigContextRef.current = deriveGigContext(currentGig, social, player)
   }
 
   // Derive financials purely without triggering a re-render loop
-  const financials = useMemo(() => {
-    if (!currentGig || !lastGigStats) return null
-
-    const result = calculateGigFinancials({
-      gigData: currentGig,
-      performanceScore: perfScore,
-      modifiers: gigModifiers,
-      bandInventory: band.inventory,
-      playerState: player,
-      gigStats: lastGigStats,
-      context: {
-        controversyLevel: social?.controversyLevel || 0,
-        regionRep: reputationByRegion?.[player?.location] || 0,
-        loyalty: social?.loyalty || 0,
-        zealotry: social?.zealotry || 0,
-        discountedTickets: activeStoryFlags?.includes(
-          'discounted_tickets_active'
-        ),
-        daysSinceLastGig: gigContextRef.current?.daysSinceLastGig ?? 0,
-        lastGigDifficulty: gigContextRef.current?.lastGigDifficulty ?? null,
-        social
-      }
-    })
-    return applyPostGigPerformancePenalty({
-      financials: result,
-      misses: lastGigStats.misses ?? 0,
-      missTolerance: BALANCE_CONSTANTS.MISS_TOLERANCE,
-      missMoneyPenalty: BALANCE_CONSTANTS.MISS_MONEY_PENALTY
-    })
-  }, [
+  const financials = useMemo(() => deriveFinancials({
+    currentGig,
+    lastGigStats,
+    perfScore,
+    gigModifiers,
+    bandInventory: band.inventory,
+    player,
+    social,
+    reputationByRegion,
+    activeStoryFlags,
+    gigContext: gigContextRef.current,
+    calculateGigFinancials,
+    BALANCE_CONSTANTS
+  }), [
     currentGig,
     lastGigStats,
     perfScore,
@@ -140,30 +111,27 @@ export const usePostGigLogic = () => {
 
   // Derive post options purely without triggering a re-render loop
   const postOptions = useMemo(() => {
-    if (!currentGig || !lastGigStats) return []
-
-    // Pass the necessary game state to evaluate post conditions
-    const gameStateForPosts = {
+    const { options, error } = derivePostOptions({
+      currentGig,
+      lastGigStats,
       player,
       band,
       social,
-      lastGigStats,
       activeEvent,
-      currentGig,
-      gigEvents: lastGigStats?.events || []
-    }
-    try {
-      const options = generatePostOptions(currentGig, gameStateForPosts)
-      errorHandledRef.current = false
-      return options
-    } catch (e) {
+      generatePostOptions
+    })
+
+    if (error) {
       // Store the error fact silently inside ref,
       // which we will read in the useEffect below.
       if (errorHandledRef.current === false) {
-        errorHandledRef.current = { kind: 'pending', error: e }
+        errorHandledRef.current = { kind: 'pending', error }
       }
       return []
     }
+
+    errorHandledRef.current = false
+    return options
   }, [currentGig, lastGigStats, player, band, social, activeEvent])
 
   // Process any error that happened during post option generation
