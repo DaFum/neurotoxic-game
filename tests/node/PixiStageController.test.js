@@ -34,8 +34,8 @@ mock.module('pixi.js', {
       load: () => Promise.resolve(),
       unload: () => Promise.resolve(),
       cache: {
-        has: () => false,
-        get: () => null
+        has: mock.fn(() => false),
+        get: mock.fn(() => null)
       }
     },
     ImageSource: class {
