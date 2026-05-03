@@ -152,7 +152,6 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
    */
   manualUpdate(deltaMS: number) {
     if (!this.app || this.isDisposed) return
-    // @ts-expect-error PIXI ticker payload includes deltaMS; shape matches runtime use in handleTicker.
     this.handleTicker({ deltaMS })
   }
 

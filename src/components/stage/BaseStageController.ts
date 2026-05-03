@@ -159,7 +159,7 @@ export class BaseStageController<TState = unknown> {
     this.draw()
   }
 
-  handleTicker(ticker: Ticker) {
+  handleTicker(ticker: Pick<Ticker, 'deltaMS'>) {
     if (this.isDisposed) return
     if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
 
