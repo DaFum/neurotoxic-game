@@ -19,6 +19,7 @@ import {
 import {
   clampPlayerMoney,
   clampPlayerFame,
+  clampBandHarmony,
   calculateFameLevel,
   calculateFameGain,
   BALANCE_CONSTANTS
@@ -367,6 +368,17 @@ export const usePostGigHandlers = ({
       lastGigNodeId: player.currentNodeId
     })
 
+    if (band.inventory?.neurotoxicPedal) {
+      updateBand(prevBand => {
+        const currentHarmony = prevBand.harmony ?? 100
+        const newHarmony = clampBandHarmony(currentHarmony - 5)
+        return {
+          ...prevBand,
+          harmony: newHarmony
+        }
+      })
+    }
+
     if (activeStoryFlags?.includes('cancel_quest_active')) {
       addQuest({
         id: QUEST_APOLOGY_TOUR,
@@ -427,11 +439,13 @@ export const usePostGigHandlers = ({
     currentGig,
     lastGigStats,
     updatePlayer,
+    updateBand,
     addToast,
     changeScene,
     activeStoryFlags,
     addQuest,
     setlist,
+    band.inventory?.neurotoxicPedal,
     t
   ])
 

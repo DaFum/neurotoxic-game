@@ -72,6 +72,7 @@ export type RhythmModifiers = {
   bassScoreMult?: number
   hitWindowBonus?: number
   drumSpeedMult?: number
+  crowdDecay?: number
   hasPerfektionist?: boolean
   guestlist?: boolean
   noteJitter?: boolean

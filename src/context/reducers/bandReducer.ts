@@ -400,6 +400,10 @@ export const handleUpdateNeurotoxicPedal = (
   state: GameState,
   payload: { isActive: boolean }
 ): GameState => {
+  if (!payload || typeof payload !== 'object') {
+    return state
+  }
+
   return {
     ...state,
     band: {

@@ -135,6 +135,14 @@ export const getGigModifiers = (
     })
   }
 
+  if (bandState.inventory?.neurotoxicPedal) {
+    modifiers.crowdDecay = 0.5
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.neurotoxic',
+      fallback: 'NEUROTOXIC: Crowd energy drains 50% slower'
+    })
+  }
+
   return modifiers
 }
 

@@ -138,9 +138,11 @@ export const useRhythmGameScoring = ({
       const currentHealth = gameStateRef.current.health
       const currentOverload = gameStateRef.current.overload
 
+      const activeCrowdDecay =
+        gameStateRef.current.modifiers?.crowdDecay ?? baseCrowdDecay
       const crowdDecay = gameStateRef.current.rivalPenaltyActive
-        ? baseCrowdDecay * RIVAL_GIG_CROWD_DECAY_PENALTY
-        : baseCrowdDecay
+        ? activeCrowdDecay * RIVAL_GIG_CROWD_DECAY_PENALTY
+        : activeCrowdDecay
 
       // Calculate new overload and stats outside the setState callback
       const { nextOverload, nextHealth } = calculateMissImpact(
