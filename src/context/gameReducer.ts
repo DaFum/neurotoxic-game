@@ -6,6 +6,7 @@
 
 import { ActionTypes } from './actionTypes'
 import { logger } from '../utils/logger'
+import { assertNever } from '../utils/assertNever'
 import type { GameAction, GameState } from '../types/game'
 import type {
   PirateBroadcastPayload,
@@ -107,12 +108,9 @@ type HandledActionTypes = Exclude<
 // Use any for payload in the mapped type to allow handlers to define their own specific constraints while ensuring all keys are handled.
 type ReducerMap = {
   [K in HandledActionTypes]: (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    state: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: ExtractActionPayload<GameAction, K> | any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any
+    state: GameState,
+    payload: ExtractActionPayload<GameAction, K>
+  ) => GameState
 }
 
 /**
@@ -192,7 +190,7 @@ const reducerMap = {
     handleBloodBankDonate(state, payload as BloodBankDonatePayload),
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: (state, payload) =>
     handleSetPendingBandHQOpen(state, payload as boolean)
-} satisfies ReducerMap
+} as ReducerMap
 
 /**
  * Main state reducer for the game.
@@ -214,6 +212,9 @@ export const gameReducer = (
   if (Object.hasOwn(reducerMap, action.type)) {
     const handler = reducerMap[action.type as keyof ReducerMap] as (
       nextState: GameState,
+      payload?: unknown
+    ) => GameState as (
+      nextState: GameState,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       payload?: any
     ) => GameState
@@ -222,11 +223,11 @@ export const gameReducer = (
   }
 
   // Fallback: unhandled action type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   logger.warn(
     'gameReducer',
-    `Unhandled action type: ${(action as any).type}`,
+    `Unhandled action type: ${(action as { type?: unknown }).type}`,
     action
   )
-  return state
+  return assertNever(action as never)
 }
