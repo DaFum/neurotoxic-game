@@ -20,7 +20,7 @@ const mockLogger = {
 }
 
 mock.module('../../src/utils/logger.ts', {
-  namedExports: {
+  exports: {
     logger: mockLogger,
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
     Logger: class Logger {}
@@ -28,12 +28,12 @@ mock.module('../../src/utils/logger.ts', {
 })
 
 mock.module('../../src/data/events/index.ts', {
-  namedExports: { EVENTS_DB: MOCK_EVENTS }
+  exports: { EVENTS_DB: MOCK_EVENTS }
 })
 
 const mockSecureRandom = mock.fn(() => 0.5)
 mock.module('../../src/utils/crypto.ts', {
-  namedExports: {
+  exports: {
     secureRandom: mockSecureRandom,
     getSafeRandom: mockSecureRandom,
     getSafeUUID: () => 'mock-uuid-test'
@@ -543,7 +543,11 @@ test('eventEngine.applyResult handles unlock effects', () => {
 test('eventEngine.applyResult ignores prototype-colliding effect types', () => {
   const result = {
     type: 'composite',
-    effects: [{ type: 'hasOwnProperty' }, { type: 'toString' }]
+    effects: [
+      { type: 'hasOwnProperty' },
+      { type: 'toString' },
+      { type: '__proto__' }
+    ]
   }
 
   assert.doesNotThrow(() => eventEngine.applyResult(result))
@@ -553,6 +557,10 @@ test('eventEngine.applyResult ignores prototype-colliding effect types', () => {
     delta.flags,
     {},
     'Should not set any flags for unknown effects'
+  )
+  assert.ok(
+    !Object.hasOwn(delta, '__proto__'),
+    'Should not set __proto__ as an own property on the delta'
   )
 })
 

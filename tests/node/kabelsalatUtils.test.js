@@ -82,9 +82,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath returns valid SVG path string', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp', 'synth', 'pedal']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -97,9 +94,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath returns empty string for invalid cable', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic']
     const path = getMessyPath('invalid_cable', 'power', socketOrder)
 
@@ -107,9 +101,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath returns empty string for socket not in order', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic']
     const path = getMessyPath('iec', 'nonexistent_socket', socketOrder)
 
@@ -117,9 +108,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath uses correct socket position from order', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp']
     const path = getMessyPath('iec', 'mic', socketOrder)
 
