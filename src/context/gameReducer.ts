@@ -5,8 +5,18 @@
  */
 
 import { ActionTypes } from './actionTypes'
-import { assertNever } from '../utils/assertNever'
+import { logger } from '../utils/logger'
 import type { GameAction, GameState } from '../types/game'
+import type {
+  PirateBroadcastPayload,
+  MerchPressPayload,
+  DarkWebLeakPayload,
+  ClinicActionPayload,
+  BloodBankDonatePayload,
+  QuestState,
+  UpdatePlayerPayload
+} from '../types/game'
+
 import { handleChangeScene } from './reducers/sceneReducer'
 import { handleUpdatePlayer } from './reducers/playerReducer'
 import { bandReducer } from './reducers/bandReducer'
@@ -111,7 +121,10 @@ type ReducerMap = {
  */
 const reducerMap = {
   [ActionTypes.CHANGE_SCENE]: handleChangeScene,
-  [ActionTypes.UPDATE_PLAYER]: handleUpdatePlayer,
+  [ActionTypes.UPDATE_PLAYER]: (state, payload) => ({
+    ...state,
+    ...handleUpdatePlayer(state, payload as UpdatePlayerPayload)
+  }),
   [ActionTypes.UPDATE_SOCIAL]: handleUpdateSocial,
   [ActionTypes.UPDATE_SETTINGS]: handleUpdateSettings,
   [ActionTypes.SET_MAP]: handleSetMap,
@@ -126,32 +139,59 @@ const reducerMap = {
   [ActionTypes.LOAD_GAME]: handleLoadGame,
   [ActionTypes.RESET_STATE]: handleResetState,
   [ActionTypes.APPLY_EVENT_DELTA]: handleApplyEventDelta,
-  [ActionTypes.POP_PENDING_EVENT]: (state: GameState) =>
-    handlePopPendingEvent(state),
+  [ActionTypes.POP_PENDING_EVENT]: state => handlePopPendingEvent(state),
   [ActionTypes.ADVANCE_DAY]: handleAdvanceDay,
   [ActionTypes.ADD_COOLDOWN]: handleAddCooldown,
   [ActionTypes.START_TRAVEL_MINIGAME]: handleStartTravelMinigame,
   [ActionTypes.COMPLETE_TRAVEL_MINIGAME]: handleCompleteTravelMinigame,
-  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame,
-  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame,
-  [ActionTypes.START_KABELSALAT_MINIGAME]: handleStartKabelsalatMinigame,
-  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
-  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration,
-  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
-  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
-  [ActionTypes.MERCH_PRESS]: handleMerchPress,
-  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
-  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
-  [ActionTypes.ADD_QUEST]: handleAddQuest,
-  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
-  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest,
-  [ActionTypes.FAIL_QUESTS]: (state: GameState) => handleFailQuests(state),
-  [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
-  [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
-  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
-  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
-  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
-  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
+  [ActionTypes.START_ROADIE_MINIGAME]: (state, payload) =>
+    handleStartRoadieMinigame(state, payload as { gigId: string }),
+  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: (state, payload) =>
+    handleCompleteRoadieMinigame(state, payload as { equipmentDamage: number }),
+  [ActionTypes.START_KABELSALAT_MINIGAME]: (state, payload) =>
+    handleStartKabelsalatMinigame(state, payload as { gigId: string }),
+  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: (state, payload) =>
+    handleCompleteKabelsalatMinigame(state, payload as Record<string, unknown>),
+  [ActionTypes.START_AMP_CALIBRATION]: (state, payload) =>
+    handleStartAmpCalibration(state, payload as { gigId: string }),
+  [ActionTypes.COMPLETE_AMP_CALIBRATION]: (state, payload) =>
+    handleCompleteAmpCalibration(state, payload as Record<string, unknown>),
+  [ActionTypes.PIRATE_BROADCAST]: (state, payload) =>
+    handlePirateBroadcast(state, payload as PirateBroadcastPayload),
+  [ActionTypes.MERCH_PRESS]: (state, payload) =>
+    handleMerchPress(state, payload as MerchPressPayload),
+  [ActionTypes.DARK_WEB_LEAK]: (state, payload) =>
+    handleDarkWebLeak(state, payload as DarkWebLeakPayload),
+  [ActionTypes.ADD_VENUE_BLACKLIST]: (state, payload) =>
+    handleAddVenueBlacklist(
+      state,
+      payload as { venueId: string; toastId: string }
+    ),
+  [ActionTypes.ADD_QUEST]: (state, payload) =>
+    handleAddQuest(state, payload as QuestState),
+  [ActionTypes.ADVANCE_QUEST]: (state, payload) =>
+    handleAdvanceQuest(
+      state,
+      payload as { questId: string; amount?: number; randomIdx?: number }
+    ),
+  [ActionTypes.COMPLETE_QUEST]: (state, payload) =>
+    handleCompleteQuest(
+      state,
+      payload as { questId: string; randomIdx?: number }
+    ),
+  [ActionTypes.FAIL_QUESTS]: state => handleFailQuests(state),
+  [ActionTypes.ADD_UNLOCK]: (state, payload) =>
+    handleAddUnlock(state, payload as string),
+  [ActionTypes.CLINIC_HEAL]: (state, payload) =>
+    handleClinicHeal(state, payload as ClinicActionPayload),
+  [ActionTypes.CLINIC_ENHANCE]: (state, payload) =>
+    handleClinicEnhance(state, payload as ClinicActionPayload),
+  [ActionTypes.TRADE_VOID_ITEM]: (state, payload) =>
+    handleTradeVoidItem(state, payload as Record<string, unknown>),
+  [ActionTypes.BLOOD_BANK_DONATE]: (state, payload) =>
+    handleBloodBankDonate(state, payload as BloodBankDonatePayload),
+  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: (state, payload) =>
+    handleSetPendingBandHQOpen(state, payload as boolean)
 } satisfies ReducerMap
 
 /**
@@ -182,5 +222,11 @@ export const gameReducer = (
   }
 
   // Fallback: unhandled action type
-  assertNever(action as never)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logger.warn(
+    'gameReducer',
+    `Unhandled action type: ${(action as any).type}`,
+    action
+  )
+  return state
 }
