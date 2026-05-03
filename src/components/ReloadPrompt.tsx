@@ -25,10 +25,10 @@ export default function ReloadPrompt() {
   }
 
   return (
-    <div className='ReloadPrompt-container pointer-events-auto'>
+    <div className='ReloadPrompt-container'>
       <div
         role='status'
-        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono z-(--z-toast)'
+        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono'
       >
         <div className='ReloadPrompt-message mb-2'>
           {offlineReady ? (
@@ -50,7 +50,7 @@ export default function ReloadPrompt() {
           <button
             type='button'
             className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
-            onClick={() => close()}
+            onClick={close}
           >
             {t('offline.close')}
           </button>
