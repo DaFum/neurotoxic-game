@@ -366,6 +366,8 @@ export interface GameState {
   pendingBandHQOpen: boolean
 }
 
+export type RawLoadedGame = UnknownRecord
+
 export type Action<
   TType extends ActionType,
   TPayload = undefined
@@ -374,7 +376,7 @@ export type Action<
   : { type: TType; payload: TPayload }
 
 export type GameAction =
-  | Action<ActionTypes['CHANGE_SCENE'], string>
+  | Action<ActionTypes['CHANGE_SCENE'], GamePhase>
   | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
   | Action<
@@ -394,7 +396,7 @@ export type GameAction =
       ActionTypes['SET_GIG_MODIFIERS'],
       Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
     >
-  | Action<ActionTypes['LOAD_GAME'], Partial<GameState>>
+  | Action<ActionTypes['LOAD_GAME'], RawLoadedGame>
   | Action<ActionTypes['RESET_STATE'], ResetStatePayload>
   | Action<ActionTypes['APPLY_EVENT_DELTA'], EventDeltaPayload>
   | Action<ActionTypes['POP_PENDING_EVENT']>

@@ -24,15 +24,18 @@ const getOwn = <T,>(
  * @param {React.ReactElement} props.children - The trigger element. Must be a valid React element.
  * @param {React.ReactNode} props.content - The tooltip content.
  * @param {string} [props.className] - Additional CSS classes for the container.
+ * @param {'top' | 'bottom'} [props.position] - Optional position for the tooltip to appear relative to the trigger.
  */
 export const Tooltip = ({
   children,
   content,
-  className = ''
+  className = '',
+  position = 'top'
 }: {
   children: ReactElement
   content: ReactNode
   className?: string
+  position?: 'top' | 'bottom'
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
@@ -170,7 +173,7 @@ export const Tooltip = ({
         <div
           id={tooltipId}
           role='tooltip'
-          className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-50 text-xs text-star-white'
+          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-50 text-xs text-star-white ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
         >
           {content}
         </div>
@@ -182,5 +185,6 @@ export const Tooltip = ({
 Tooltip.propTypes = {
   children: PropTypes.node.isRequired,
   content: PropTypes.node.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
+  position: PropTypes.oneOf(['top', 'bottom'])
 }

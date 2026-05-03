@@ -903,3 +903,29 @@ test('calculateGigExpenses gracefully handles missing/undefined params', () => {
   const result = calculateGigExpenses(undefined)
   assert.ok(result.total >= 0)
 })
+
+test('calculateFuelCost handles edge cases for distance', async (t) => {
+  await t.test('returns zero for distance = 0', () => {
+    const result = calculateFuelCost(0)
+    assert.strictEqual(result.fuelLiters, 0)
+    assert.strictEqual(result.fuelCost, 0)
+  })
+
+  await t.test('returns zero for negative distance', () => {
+    const result = calculateFuelCost(-100)
+    assert.strictEqual(result.fuelLiters, 0)
+    assert.strictEqual(result.fuelCost, 0)
+  })
+
+  await t.test('handles NaN distance gracefully', () => {
+    const result = calculateFuelCost(NaN)
+    assert.ok(Number.isNaN(result.fuelLiters))
+    assert.ok(Number.isNaN(result.fuelCost))
+  })
+
+  await t.test('handles Infinity distance gracefully', () => {
+    const result = calculateFuelCost(Infinity)
+    assert.strictEqual(result.fuelLiters, Infinity)
+    assert.strictEqual(result.fuelCost, Infinity)
+  })
+})

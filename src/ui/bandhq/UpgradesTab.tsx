@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { CatalogTab } from './CatalogTab'
 import type { CatalogConsumerProps, CatalogItem } from '../../types/components'
 import type { PlayerState } from '../../types/game'
@@ -28,17 +27,4 @@ export const UpgradesTab = ({
       processingItemId={processingItemId}
     />
   )
-}
-
-UpgradesTab.propTypes = {
-  player: PropTypes.shape({
-    money: PropTypes.number,
-    fame: PropTypes.number
-  }).isRequired,
-  upgrades: PropTypes.arrayOf(PropTypes.object).isRequired,
-  handleBuy: PropTypes.func.isRequired,
-  isItemOwned: PropTypes.func.isRequired,
-  isItemDisabled: PropTypes.func.isRequired,
-  getAdjustedCost: PropTypes.func,
-  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
