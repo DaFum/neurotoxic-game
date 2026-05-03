@@ -233,7 +233,10 @@ export const HUD = () => {
             >
               <span className='text-star-white/80 text-[11px]'>{m.name}</span>
               <div className='flex items-center gap-1.5'>
-                <Tooltip content={t('ui:hud.mood', { defaultValue: 'Mood' })} position='bottom'>
+                <Tooltip
+                  content={t('ui:hud.mood', { defaultValue: 'Mood' })}
+                  position='bottom'
+                >
                   <div className='flex items-center gap-1 pointer-events-auto'>
                     <div className='w-12'>
                       <ProgressBar
@@ -252,7 +255,10 @@ export const HUD = () => {
                     </span>
                   </div>
                 </Tooltip>
-                <Tooltip content={t('ui:hud.stamina', { defaultValue: 'Stamina' })} position='bottom'>
+                <Tooltip
+                  content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
+                  position='bottom'
+                >
                   <div className='flex items-center gap-1 pointer-events-auto'>
                     <div className='w-12'>
                       <ProgressBar

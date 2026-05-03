@@ -173,7 +173,9 @@ export const ProgressBar = memo(function ProgressBar({
       )}
       <div
         className={`w-full bg-charcoal-gray border ${
-          isMini ? 'border-steel-gray overflow-hidden' : 'border-2 border-toxic-green'
+          isMini
+            ? 'border-steel-gray overflow-hidden'
+            : 'border-2 border-toxic-green'
         } ${SIZE_CLASSES[size] || SIZE_CLASSES.mini}`}
       >
         <div

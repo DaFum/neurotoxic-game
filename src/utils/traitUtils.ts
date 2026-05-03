@@ -38,7 +38,11 @@ export const hasTrait = (member: unknown, traitId: string): boolean => {
   if (Array.isArray(traits)) {
     for (let i = 0; i < traits.length; i++) {
       const t = traits[i]
-      if (t && typeof t === 'object' && (t as Record<string, unknown>).id === traitId) {
+      if (
+        t &&
+        typeof t === 'object' &&
+        (t as Record<string, unknown>).id === traitId
+      ) {
         return true
       }
     }

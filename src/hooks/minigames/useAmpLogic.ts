@@ -160,9 +160,9 @@ export function useAmpLogic() {
       let currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
 
       if (currentOverdriveActive && !currentIsOverheat) {
-          currentScore *= 1.5 // 50% bonus score for overdrive
+        currentScore *= 1.5 // 50% bonus score for overdrive
       } else if (currentIsOverheat) {
-          currentScore *= 0.5 // Penalty while overheated
+        currentScore *= 0.5 // Penalty while overheated
       }
 
       accumulatedScoreRef.current += currentScore * deltaMS

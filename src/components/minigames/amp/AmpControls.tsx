@@ -55,8 +55,19 @@ export const AmpControls = memo(function AmpControls({
         <span>
           {t('ui:minigames.amp.controls.min', { defaultValue: '0Hz' })}
         </span>
-        <span className={isPerfect ? 'text-toxic-green font-bold' : isClose ? 'text-toxic-green/80' : 'text-ash-gray'}>
-          {t('ui:minigames.amp.controls.current', { defaultValue: '{{value}}Hz', value: Math.round(dialValue) })}
+        <span
+          className={
+            isPerfect
+              ? 'text-toxic-green font-bold'
+              : isClose
+                ? 'text-toxic-green/80'
+                : 'text-ash-gray'
+          }
+        >
+          {t('ui:minigames.amp.controls.current', {
+            defaultValue: '{{value}}Hz',
+            value: Math.round(dialValue)
+          })}
         </span>
         <span>
           {t('ui:minigames.amp.controls.max', { defaultValue: '1000Hz' })}
@@ -67,7 +78,9 @@ export const AmpControls = memo(function AmpControls({
         <button
           onClick={handleFineTuneDown}
           className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
-          aria-label={t('ui:minigames.amp.controls.fineTuneDown', { defaultValue: 'Fine tune down' })}
+          aria-label={t('ui:minigames.amp.controls.fineTuneDown', {
+            defaultValue: 'Fine tune down'
+          })}
         >
           -
         </button>
@@ -96,7 +109,9 @@ export const AmpControls = memo(function AmpControls({
         <button
           onClick={handleFineTuneUp}
           className='w-12 h-12 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black active:scale-95 transition-colors font-bold text-xl rounded focus:outline-none focus:ring-2 focus:ring-toxic-green focus:ring-offset-2 focus:ring-offset-void-black'
-          aria-label={t('ui:minigames.amp.controls.fineTuneUp', { defaultValue: 'Fine tune up' })}
+          aria-label={t('ui:minigames.amp.controls.fineTuneUp', {
+            defaultValue: 'Fine tune up'
+          })}
         >
           +
         </button>
@@ -116,9 +131,13 @@ export const AmpControls = memo(function AmpControls({
               ? 'bg-toxic-green text-void-black border-toxic-green shadow-[0_0_15px_var(--color-toxic-green)] animate-pulse'
               : 'bg-void-black text-toxic-green border-toxic-green hover:bg-toxic-green/20'
           }`}
-          aria-label={t('ui:minigames.amp.controls.overdrive', { defaultValue: 'Toggle Overdrive' })}
+          aria-label={t('ui:minigames.amp.controls.overdrive', {
+            defaultValue: 'Toggle Overdrive'
+          })}
         >
-          {t('ui:minigames.amp.controls.overdrive', { defaultValue: 'OVERDRIVE' })}
+          {t('ui:minigames.amp.controls.overdrive', {
+            defaultValue: 'OVERDRIVE'
+          })}
         </button>
       </div>
     </div>

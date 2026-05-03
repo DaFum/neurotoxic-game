@@ -48,8 +48,8 @@ export const secureRandom = (): number => {
 
   // 0xFFFFFFFF + 1 is 2^32 (4294967296)
   // This provides a float in the range [0, 1)
-  const val = batchArray![batchIndex++];
-  if (val === undefined) throw new Error('batchArray exhausted or undefined');
+  const val = batchArray![batchIndex++]
+  if (val === undefined) throw new Error('batchArray exhausted or undefined')
   return val / 4294967296
 }
 
