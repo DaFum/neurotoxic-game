@@ -10,6 +10,7 @@ import { useMerchPress } from '../hooks/useMerchPress'
 import { useBloodBank } from '../hooks/useBloodBank'
 import { useDarkWebLeak } from '../hooks/useDarkWebLeak'
 import { GAME_PHASES } from '../context/gameConstants'
+import { createSpawnRivalBandAction } from '../context/actionCreators'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
@@ -55,6 +56,12 @@ export const Overworld = () => {
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
+
+  useEffect(() => {
+    if (!rivalBand && gameMap && dispatch) {
+      dispatch(createSpawnRivalBandAction())
+    }
+  }, [rivalBand, gameMap, dispatch])
 
   const [glitch, setGlitch] = useState('')
   useEffect(() => {

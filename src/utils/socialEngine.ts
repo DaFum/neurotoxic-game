@@ -882,7 +882,7 @@ export const negotiateDeal = (
       break
 
     case 'AGGRESSIVE':
-      successChance = 0.3 - rivalPenalty
+      successChance = DEAL_NEGOTIATION_AGGRESSIVE_CHANCE - rivalPenalty
       if (isFamous) successChance += 0.2 // Fame helps aggression
 
       if (roll < successChance) {
