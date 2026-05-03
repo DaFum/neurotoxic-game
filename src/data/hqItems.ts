@@ -5,7 +5,7 @@ export const HQ_ITEMS = {
       id: 'hq_gear_neurotoxic_pedal',
       name: 'items:hq_gear_neurotoxic_pedal.name',
       category: 'GEAR',
-      cost: 666,
+      cost: 660,
       currency: 'money',
       img: 'ITEM_NEUROTOXIC_PEDAL',
       description: 'items:hq_gear_neurotoxic_pedal.description',
