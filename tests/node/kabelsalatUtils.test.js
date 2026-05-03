@@ -19,7 +19,7 @@ mock.module(
   new URL('../../src/scenes/kabelsalat/kabelsalatConstants.ts', import.meta.url)
     .href,
   {
-    exports: {
+    namedExports: {
       CABLES: MOCK_CABLES,
       CABLE_MAP: MOCK_CABLE_MAP,
       SLOT_XS: MOCK_SLOT_XS,
