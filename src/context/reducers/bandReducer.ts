@@ -395,6 +395,33 @@ export const handleUseContraband = (
  * @param {Object} action - Action with type and payload
  * @returns {Object} New state
  */
+export const handleUpdateNeurotoxicPedal = (
+  state: GameState,
+  payload: { isActive: boolean | number }
+): GameState => {
+  const boundedIsActive =
+    typeof payload.isActive === 'number'
+      ? Math.max(0, Math.min(1, payload.isActive)) > 0
+      : Boolean(payload.isActive)
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      inventory: {
+        ...(state.band.inventory || {}),
+        neurotoxicPedal: boundedIsActive
+      }
+    }
+  }
+}
+
+/**
+ * Main band reducer
+ * @param {Object} state - Current state
+ * @param {Object} action - Action with type and payload
+ * @returns {Object} New state
+ */
 export const bandReducer = (
   state: GameState,
   action: GameAction
@@ -402,6 +429,11 @@ export const bandReducer = (
   if (!('payload' in action)) return state
 
   switch (action.type) {
+    case ActionTypes.UPDATE_NEUROTOXIC_PEDAL:
+      return handleUpdateNeurotoxicPedal(
+        state,
+        action.payload as { isActive: boolean | number }
+      )
     case ActionTypes.UPDATE_BAND:
       return handleUpdateBand(state, action.payload as UpdateBandPayload)
     case ActionTypes.UNLOCK_TRAIT:
