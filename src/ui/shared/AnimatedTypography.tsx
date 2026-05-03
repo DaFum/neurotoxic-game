@@ -47,19 +47,35 @@ export const AnimatedSubtitle = ({
   className = '',
   children
 }: {
-  as?: MotionTag | ComponentType<HTMLMotionProps<'div'> & { children?: ReactNode }>
+  as?:
+    | MotionTag
+    | ComponentType<HTMLMotionProps<'div'> & { children?: ReactNode }>
   initial?: HTMLMotionProps<'div'>['initial']
   animate?: HTMLMotionProps<'div'>['animate']
   transition?: Transition
   className?: string
   children: ReactNode
 }) => {
-  const MotionComponent = useMemo(() => {
-    return typeof as === 'string'
-      ? ((motionTagAllowlist as Partial<Record<string, ElementType>>)[as] ??
-        motion.h2)
-      : motion(as)
-  }, [as])
+  const stringTag = typeof as === 'string' ? as : undefined
+  const Element = stringTag
+    ? (motionTagAllowlist[stringTag as MotionTag] ?? motion.h2)
+    : undefined
+
+  if (Element) {
+    return (
+      <Element
+        initial={initial}
+        animate={animate}
+        transition={transition}
+        className={`uppercase ${className}`}
+      >
+        {children}
+      </Element>
+    )
+  }
+
+  // If `as` is a component, memoize the animated version
+  const MotionComponent = useMemo(() => motion(as as ComponentType<any>), [as])
 
   return (
     <MotionComponent

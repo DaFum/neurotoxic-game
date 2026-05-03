@@ -45,6 +45,10 @@ import { translateLocation } from '../utils/locationI18n'
 import { ALL_VENUES } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
 import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
+import {
+  createMoveRivalBandAction,
+  createCheckRivalEncounterAction
+} from '../context/actionCreators'
 
 /**
  * Pre-computed map of venues for O(1) lookups during travel logic
@@ -98,7 +102,8 @@ export const useTravelLogic = ({
   reputationByRegion,
   venueBlacklist = [],
   onShowHQ,
-  onStartTravelMinigame
+  onStartTravelMinigame,
+  dispatch
 }) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
@@ -116,6 +121,7 @@ export const useTravelLogic = ({
   const reputationByRegionRef = useRef(reputationByRegion)
   const venueBlacklistRef = useRef(venueBlacklist)
   const isTravelingRef = useRef(isTraveling)
+  const dispatchRef = useRef(dispatch)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
   // Synchronously update control flow refs to ensure handlers see latest state immediately
@@ -129,7 +135,16 @@ export const useTravelLogic = ({
     gameMapRef.current = gameMap
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
-  }, [player, band, social, gameMap, reputationByRegion, venueBlacklist])
+    dispatchRef.current = dispatch
+  }, [
+    player,
+    band,
+    social,
+    gameMap,
+    reputationByRegion,
+    venueBlacklist,
+    dispatch
+  ])
 
   const getLocationName = useCallback((location, venueId) => {
     return getLocationNameUtil(
@@ -304,6 +319,12 @@ export const useTravelLogic = ({
         }
       } else {
         travelEventActive = processTravelEvents(node, triggerEvent)
+      }
+
+      // Tell context to move the rival band whenever the player moves
+      if (dispatchRef.current) {
+        dispatchRef.current(createMoveRivalBandAction())
+        dispatchRef.current(createCheckRivalEncounterAction())
       }
 
       // Always handle node arrival regardless of events —
