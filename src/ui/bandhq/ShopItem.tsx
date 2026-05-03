@@ -10,7 +10,6 @@ import {
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 import { Tooltip } from '../shared'
-import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 
 export interface ShopItemProps {
   item: CatalogItem
@@ -34,7 +33,6 @@ export const ShopItem = React.memo(
     processingItemId
   }: ShopItemProps) => {
     const { t } = useTranslation(['items', 'ui'])
-    const isOnline = useNetworkStatus()
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
@@ -75,14 +73,17 @@ export const ShopItem = React.memo(
           <div className='flex items-center gap-2 mb-2'>
             <img
               src={
-                isImageGenerationAvailable(isOnline)
+                isImageGenerationAvailable()
                   ? getGenImageUrl(sanitizedPrompt)
                   : getGeneratedImageFallbackUrl()
               }
               alt=''
               aria-hidden='true'
               className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
-              onError={(e) => { e.currentTarget.src = getGeneratedImageFallbackUrl() }}
+              onError={e => {
+                e.currentTarget.onerror = null
+                e.currentTarget.src = getGeneratedImageFallbackUrl()
+              }}
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
               {typeof item.name === 'string'
