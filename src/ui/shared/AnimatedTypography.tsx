@@ -61,7 +61,7 @@ export const AnimatedSubtitle = ({
 }
 
 AnimatedSubtitle.propTypes = {
-  as: PropTypes.oneOfType([PropTypes.string, PropTypes.elementType]),
+  as: PropTypes.oneOf(['h1', 'h2', 'h3', 'h4', 'p', 'span', 'div']),
   initial: PropTypes.object,
   animate: PropTypes.object,
   transition: PropTypes.object,
