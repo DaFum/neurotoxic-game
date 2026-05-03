@@ -5,9 +5,9 @@ This note collects concrete improvement opportunities found during a focused rea
 ## 1) State + Reducer Reliability
 
 - [ ] **Harden exhaustive action safety in `gameReducer`**: the default branch already calls `logger.warn` and `assertNever`; extend it with a structured telemetry counter (not just a log line) so unknown-action frequency is observable in monitoring, not only in the dev console.
-  - *Best practice*: gate the metric increment behind `process.env.NODE_ENV !== 'production'` and a `logLevel >= 'warn'` check; the counter itself should write to a dev-only ring buffer that the debug overlay can surface and reset between sessions.
+  - *Best practice*: gate the metric increment behind `import.meta.env.DEV` (the convention used throughout this codebase; use `process.env.VITE_*` only where node/test parity is needed) and a `logLevel >= 'warn'` check; the counter itself should write to a dev-only ring buffer that the debug overlay can surface and reset between sessions.
   - *Pattern*: `default: { logger.warn(…); devMetrics.increment('unknownAction', action.type); return assertNever(action as never); }` — `devMetrics` is a `NullMetrics` no-op in production and a real counter in dev/test; the counter shape is `Record<string, number>`.
-  - *Pitfall*: logging the full action object leaks sensitive payload data (money amounts, player names) to the console in dev builds accessible to end users; `logger.warn` must log only `action.type` and the reducer name, never the payload.
+  - *Pitfall*: the current `gameReducer.ts` default branch passes the full `action` object to `logger.warn`, which leaks sensitive payload data (money amounts, player names) to the console; the call should be narrowed to log only `action.type` and the reducer name, never the payload.
 
 - [ ] **Replace `as ReducerMap` cast with `satisfies ReducerMap` on the handler map**: `gameReducer.ts` already uses a typed `ReducerMap` mapped type, but seals it with an `as` cast that suppresses assignment errors; switching to `satisfies` retains narrowing while surfacing any handler whose payload type has drifted.
   - *Best practice*: `satisfies` checks the object literal's shape without widening the inferred type, meaning handler bodies continue to receive the narrowest possible action type; `as` suppresses both the error and the narrowing benefit.
@@ -45,7 +45,7 @@ This note collects concrete improvement opportunities found during a focused rea
 ## 3) Travel + Arrival Gameflow
 
 - [ ] **Make arrival idempotency explicit**: `useArrivalLogic` uses one-shot `isHandlingRef`; add a documented reset trigger (e.g., on node change or scene change) to avoid edge lockouts in long sessions.
-  - *Best practice*: make the reset condition a named constant and test it explicitly — `ARRIVAL_REF_RESET_TRIGGER = ‘nodeId’` documented in the hook’s JSDoc; a test verifies that navigating to a second node after a failed arrival attempt processes the new arrival correctly without requiring a full page reload.
+  - *Best practice*: make the reset condition a named constant and test it explicitly — `ARRIVAL_REF_RESET_TRIGGER = 'nodeId'` documented in the hook’s JSDoc; a test verifies that navigating to a second node after a failed arrival attempt processes the new arrival correctly without requiring a full page reload.
   - *Pattern*: reset `isHandlingRef.current = false` in a `useEffect` cleanup keyed on `[nodeId]` so the ref resets automatically when the node changes — no manual reset call needed, no edge case where a stale `true` value blocks the next arrival.
   - *Pitfall*: using a boolean `useRef` for idempotency guards works for single-node arrivals but breaks if two rapid node changes arrive before the first `useEffect` runs (React batches renders); use the `nodeId` as the idempotency key rather than a boolean, and store it in the ref: `isHandlingRef.current === nodeId` means “already handling this node.”
 
@@ -425,7 +425,7 @@ This note collects concrete improvement opportunities found during a focused rea
   - *Best practice*: keep contracts in a dependency-free sub-package so any consumer (tests, mocks, alternative implementations) can import the type without pulling in the full module graph.
   - *Pattern*: `interface IEventEngine { resolve(event: GameEvent, state: GameState): EventResolution }` — the module implements the interface; callers depend only on the interface.
 - [ ] **Enforce barrel-only imports via ESLint `no-restricted-imports`**: prevent cross-module deep imports (`../eventEngine/internalHelper`) that bypass the declared boundary.
-  - *Best practice*: add the rule with a `patterns` block per domain folder (`src/eventEngine/**` forbidden except `src/eventEngine/index.ts`); run it as a CI-blocking step separate from the regular lint pass so the signal is unambiguous.
+  - *Best practice*: add the rule with a `patterns` block per domain folder (`src/eventEngine/**` forbidden except `src/eventEngine/index.ts`); include it in the main ESLint config so it runs as part of the existing lint step — no separate CI job needed; the `--max-warnings 0` flag already causes the standard lint step to block PRs on any violation.
   - *Pitfall*: IDE auto-import silently adds deep paths; the lint rule must run on save (via `eslint --fix` watch mode) to catch them before commit.
 - [ ] **Add contract violation tests**: lightweight tests that `import` only the public barrel and assert missing exports are `undefined`, protecting against accidental removals.
   - *Best practice*: use a `describe('public surface')` block per module listing every intended export by name; the test fails immediately when a rename or deletion breaks a caller's assumptions.
@@ -436,17 +436,17 @@ This note collects concrete improvement opportunities found during a focused rea
 
 ### 8.2 Action Creator ↔ Reducer Integration
 
-- [ ] **Generate action-type ↔ payload mapping at build time**: derive `ActionPayloadMap` from `actionCreators` return types so the reducer's `Extract<GameAction, …>` unions always stay in sync without manual maintenance.
-  - *Best practice*: use `ReturnType<typeof actionCreators[keyof typeof actionCreators]>` as the `GameAction` union source of truth; never hand-write the union separately.
-  - *Pitfall*: if `actionCreators` is split across files and composed with `Object.assign`, TypeScript may widen the union; keep all creators in a single `const actionCreators = { … }` object to preserve the narrowed `ReturnType` inference.
+- [ ] **Generate action-type ↔ payload mapping at build time**: derive `ActionPayloadMap` from action creator return types so the reducer's `Extract<GameAction, …>` unions always stay in sync without manual maintenance.
+  - *Best practice*: the codebase exports action creators as individual functions from `src/context/actionCreators.ts`; derive the union as `ReturnType<typeof import('./actionCreators')[keyof typeof import('./actionCreators')]>` — no `const actionCreators = { … }` object is needed; if such an object is introduced as a prerequisite, keep all creators in it to preserve narrowed `ReturnType` inference and avoid `Object.assign` widening.
+  - *Pitfall*: hand-writing the `GameAction` union separately from the creator return types means every new action requires two edits (creator + union) that can diverge silently; derive the union automatically.
 - [ ] **Add snapshot tests for every action creator output**: one fixture per action type asserting exact shape; any payload drift fails CI immediately.
   - *Best practice*: snapshot the serialised JSON, not the object reference, so tests catch accidental `undefined` field omissions that `toEqual` with optional fields would miss.
-  - *Pattern*: `expect(JSON.stringify(createSetMoney(500))).toMatchSnapshot()` — trivial to write, catches regressions in seconds.
+  - *Pattern*: `expect(JSON.stringify(createUpdatePlayerAction({ money: 500 }))).toMatchSnapshot()` — use real creator names from `src/context/actionCreators.ts`; trivial to write, catches regressions in seconds.
 - [ ] **Enforce `assertNever` coverage automatically**: a type-level test file that imports the reducer and verifies the default branch receives `never` when all cases are handled.
   - *Best practice*: write a compile-time-only test file (`reducerExhaustive.typetest.ts`) that calls the reducer with a value typed as the full `GameAction` union and asserts the return is `GameState` — TypeScript will error if any case is unhandled before the `assertNever`.
   - *Pitfall*: adding a new `ActionTypes` constant without adding a reducer case only causes a compile error if `assertNever` is present; without it the new action silently falls through and returns stale state.
 - [ ] **Reject unknown action types in production via telemetry stub**: replace the silent fallback with a lightweight `reportUnknownAction(type)` stub (no-op in prod, warn in dev) so integration mistakes surface in monitoring.
-  - *Best practice*: gate the warning behind `process.env.NODE_ENV !== 'production'` and also behind a feature flag so it can be toggled on in a canary release without shipping console noise to all users.
+  - *Best practice*: gate the warning behind `import.meta.env.DEV` (consistent with the rest of the codebase; use `process.env.VITE_*` only for values that must be shared with node/test runners) and also behind a feature flag so it can be toggled on in a canary release without shipping console noise to all users.
 - [ ] **Keep action payloads serialisable at all times**: enforce a `noFunctions` JSON-schema check on every action payload in tests — non-serialisable values break time-travel debugging, persist/restore, and replay tests.
   - *Pitfall*: passing a `Date` object, a `Set`, or a callback inside an action payload is a common source of hydration bugs; always convert to primitives before dispatching.
 - [ ] **Separate command actions from event actions**: commands (`SET_MONEY`, `ADD_ITEM`) represent intent and are dispatched by UI; events (`MONEY_CHANGED`, `ITEM_ADDED`) represent facts and are dispatched by reducers/middleware — mixing the two makes the action log ambiguous and complicates replays.
@@ -505,7 +505,7 @@ This note collects concrete improvement opportunities found during a focused rea
   - *Best practice*: use `SubtleCrypto.digest('SHA-256', encoded)` for a deterministic, dependency-free checksum; store it alongside the payload as `{ data: '…', checksum: '…' }` so tools can inspect the raw data without needing to know the signing key.
   - *Pitfall*: HMAC-based signing requires a secret key, which in a browser context is trivially extractable — prefer a tamper-evidence approach (checksum mismatch → warn and reset) over a security claim.
 - [ ] **Define and enforce a maximum save file size**: add a byte-length assertion in the serialiser that warns (dev) or silently trims old run history (prod) when the payload exceeds a threshold — prevents `localStorage` quota errors mid-session.
-  - *Best practice*: separate mutable game state from append-only run history; write history to IndexedDB (via the `StorageAdapter` abstraction planned in §8.10) and keep `localStorage` for just the active session snapshot — `usePersistence.ts` currently writes both to `localStorage` directly, which is the gap to close.
+  - *Best practice*: `usePersistence.ts` currently serialises only the active session snapshot under a single save key; if append-only run history is added in future, write it to IndexedDB (via the `StorageAdapter` abstraction planned in §8.10) rather than growing the same `localStorage` entry, to avoid hitting quota limits.
 - [ ] **Test migration failures explicitly**: if a migration throws, the loader must catch it, log the version mismatch and error, and return `createInitialState()` — a corrupt migration must never crash the app or render a blank screen.
 
 ### 8.6 Map Generation ↔ Game Engine Integration
@@ -569,9 +569,9 @@ This note collects concrete improvement opportunities found during a focused rea
 - [ ] **Separate unit, integration, and e2e test jobs**: unit tests should be fast (<30 s); integration tests run against a real store + mocked I/O; e2e (Playwright/golden path) run last gating merge.
   - *Best practice*: label test files with a naming convention (`*.unit.test.ts`, `*.integration.test.ts`, `*.e2e.test.ts`) and configure `vitest.config` workspaces to pick them up with separate `include` globs — one config file, three profiles, zero duplication.
   - *Pitfall*: mixing unit and integration tests in the same job means a single slow integration test can block all unit-test feedback; keep jobs independent so a failing e2e test doesn't prevent a fast unit-test green signal.
-- [ ] **Add a module-boundary check step in CI**: run the `no-restricted-imports` ESLint rule in a dedicated CI step so boundary violations block PRs explicitly.
-  - *Best practice*: run this step before type-checking and tests so boundary violations are the first thing reported — a developer sees the highest-signal error first without waiting for the full test suite.
-  - *Pattern*: `eslint --rule '{"no-restricted-imports": ["error", …]}' --max-warnings 0 src/` as a named CI step with a clear label like `Check module boundaries`.
+- [ ] **Add a module-boundary check to the existing lint step**: include the `no-restricted-imports` rule in the main ESLint config so boundary violations surface in the standard lint pass that already runs in CI — no separate step or job needed.
+  - *Best practice*: placing the rule in the shared ESLint config means it also runs in IDE integrations and pre-commit hooks automatically; a standalone CI command would be redundant and add build time.
+  - *Pattern*: add the `no-restricted-imports` `patterns` block to `.eslintrc` (or `eslint.config.js`) once; the existing `pnpm run lint` invocation with `--max-warnings 0` will then block PRs on any violation without extra CI configuration.
 - [ ] **Pin external test fixture files in version control**: avoid network fetches in tests; any fixture that calls `fetch` must be replaced with a committed JSON stub.
   - *Best practice*: use `msw` (Mock Service Worker) for integration tests that exercise fetch-dependent hooks; `msw` intercepts at the network layer without patching globals, making tests portable across Node and browser environments.
   - *Pitfall*: `vi.spyOn(global, 'fetch')` patches the global and can bleed into other tests if not restored; prefer `msw` server setup/teardown in `beforeAll`/`afterAll`.
