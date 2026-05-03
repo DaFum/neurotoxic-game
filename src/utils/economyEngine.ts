@@ -884,14 +884,16 @@ export const calculateTravelMinigameResult = (
 
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
   let fuelItems = 0
+  let voidHazardHits = 0
   if (Array.isArray(itemsCollected)) {
     for (const item of itemsCollected) {
       if (item === 'FUEL') fuelItems++
+      if (item === 'VOID_HAZARD') voidHazardHits++
     }
   }
   const fuelBonus = fuelItems * 0.5
 
-  return { conditionLoss, fuelBonus }
+  return { conditionLoss, fuelBonus, voidHazardHits }
 }
 
 /**
