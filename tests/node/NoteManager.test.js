@@ -46,6 +46,11 @@ const MockPIXI = {
   },
   Assets: {
     load: mock.fn()
+  },
+  ImageSource: class {
+    constructor(options) {
+      this.resource = options?.resource ?? null
+    }
   }
 }
 
@@ -71,12 +76,15 @@ class MockNoteSpritePool {
   dispose = mockPoolDispose
 }
 
-mock.module(new URL('../../src/components/stage/NoteSpritePool.ts', import.meta.url).href, {
-  namedExports: {
-    NoteSpritePool: MockNoteSpritePool,
-    NOTE_CENTER_OFFSET: 50
+mock.module(
+  new URL('../../src/components/stage/NoteSpritePool.ts', import.meta.url).href,
+  {
+    namedExports: {
+      NoteSpritePool: MockNoteSpritePool,
+      NOTE_CENTER_OFFSET: 50
+    }
   }
-})
+)
 
 // Mock other dependencies
 const mockHandleError = mock.fn()
@@ -129,9 +137,20 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
-  namedExports: mockPixiStageUtils
-})
+mock.module(
+  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
+  {
+    namedExports: mockPixiStageUtils
+  }
+)
+
+mock.module(
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
+  {
+    namedExports: mockPixiStageUtils
+  }
+)
 
 describe('NoteManager', () => {
   let noteManager

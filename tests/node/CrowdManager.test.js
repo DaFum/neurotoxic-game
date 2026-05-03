@@ -42,6 +42,11 @@ const MockPIXI = {
   },
   Assets: {
     load: mock.fn()
+  },
+  ImageSource: class {
+    constructor(options) {
+      this.resource = options?.resource ?? null
+    }
   }
 }
 
@@ -91,7 +96,7 @@ const mockPixiStageUtils = {
     for (const key in urlMap) {
       if (Object.hasOwn(urlMap, key)) {
         const url = urlMap[key]
-        if (url.includes('idle')) {
+        if (url.includes('idle') || url.includes('fallback')) {
           results[key] = mockTextureIdle
         } else if (url.includes('mosh')) {
           results[key] = mockTextureMosh
@@ -110,7 +115,8 @@ const mockPixiStageUtils = {
 }
 
 mock.module(
-  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
   {
     namedExports: {
       ...mockPixiStageUtils,
@@ -149,6 +155,8 @@ describe('CrowdManager', () => {
 
   afterEach(() => {
     mockIsImageGenerationAvailable = true
+    mockHandleError.mock.resetCalls()
+    mockPixiStageUtils.loadTextures.mock.resetCalls()
     if (PIXI && PIXI.Assets && PIXI.Assets.load.mock) {
       PIXI.Assets.load.mock.resetCalls()
       // Restore default implementation if necessary, or just reset calls

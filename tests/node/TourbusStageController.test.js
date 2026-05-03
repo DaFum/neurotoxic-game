@@ -78,63 +78,81 @@ mock.module('pixi.js', {
     },
     Assets: {
       load: (...args) => currentLoad(...args)
+    },
+    Texture: {
+      WHITE: { id: 'white' },
+      from: mock.fn(() => ({ id: 'mock-texture' }))
+    },
+    ImageSource: class {
+      constructor(options) {
+        this.resource = options?.resource ?? null
+      }
     }
   }
 })
 
 // Mock EffectManager
-mock.module(new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href, {
-  namedExports: {
-    EffectManager: class {
-      constructor() {}
-      init() {}
-      loadAssets() {
-        return Promise.resolve()
+mock.module(
+  new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      EffectManager: class {
+        constructor() {}
+        init() {}
+        loadAssets() {
+          return Promise.resolve()
+        }
+        update() {}
+        spawnHitEffect() {}
+        dispose() {}
       }
-      update() {}
-      spawnHitEffect() {}
-      dispose() {}
     }
   }
-})
+)
 
 // Mock TourbusObstacleManager
-mock.module(new URL('../../src/components/stage/TourbusObstacleManager.ts', import.meta.url).href, {
-  namedExports: {
-    TourbusObstacleManager: class {
-      constructor() {
-        this.obstacleMap = new Map()
-        this.currentIds = new Set()
-      }
-      updateObstacles(state, height, _laneWidth) {
-        this.currentIds.clear()
-        for (const obs of state.obstacles) {
-          this.currentIds.add(obs.id)
-          let sprite = this.obstacleMap.get(obs.id)
-          if (!sprite) {
-            sprite = { y: (obs.y / 100) * height }
-            this.obstacleMap.set(obs.id, sprite)
+mock.module(
+  new URL(
+    '../../src/components/stage/TourbusObstacleManager.ts',
+    import.meta.url
+  ).href,
+  {
+    namedExports: {
+      TourbusObstacleManager: class {
+        constructor() {
+          this.obstacleMap = new Map()
+          this.currentIds = new Set()
+        }
+        updateObstacles(state, height, _laneWidth) {
+          this.currentIds.clear()
+          for (const obs of state.obstacles) {
+            this.currentIds.add(obs.id)
+            let sprite = this.obstacleMap.get(obs.id)
+            if (!sprite) {
+              sprite = { y: (obs.y / 100) * height }
+              this.obstacleMap.set(obs.id, sprite)
+            }
+            sprite.y = (obs.y / 100) * height
           }
-          sprite.y = (obs.y / 100) * height
         }
-      }
-      cleanupObstacles() {
-        for (const id of this.obstacleMap.keys()) {
-          if (!this.currentIds.has(id)) {
-            this.obstacleMap.delete(id)
+        cleanupObstacles() {
+          for (const id of this.obstacleMap.keys()) {
+            if (!this.currentIds.has(id)) {
+              this.obstacleMap.delete(id)
+            }
           }
         }
-      }
-      dispose() {
-        for (const sprite of this.obstacleMap.values()) {
-          if (sprite.destroy) sprite.destroy()
+        dispose() {
+          for (const sprite of this.obstacleMap.values()) {
+            if (sprite.destroy) sprite.destroy()
+          }
+          this.obstacleMap.clear()
+          this.currentIds.clear()
         }
-        this.obstacleMap.clear()
-        this.currentIds.clear()
       }
     }
   }
-})
+)
 
 // Mock Utils
 mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
@@ -147,22 +165,35 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
-  namedExports: {
-    getPixiColorFromToken: mock.fn(() => 0xffffff),
-    loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
-    loadTextures: mock.fn(async urlMap => {
-      const results = {}
-      for (const key in urlMap) {
-        if (Object.hasOwn(urlMap, key)) {
-          results[key] = { width: 100, height: 100 }
-        }
+const stageRenderUtilsMocks = {
+  getPixiColorFromToken: mock.fn(() => 0xffffff),
+  loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
+  loadTextures: mock.fn(async urlMap => {
+    const results = {}
+    for (const key in urlMap) {
+      if (Object.hasOwn(urlMap, key)) {
+        results[key] = { width: 100, height: 100 }
       }
-      return results
-    }),
-    getOptimalResolution: mock.fn(() => 1)
+    }
+    return results
+  }),
+  getOptimalResolution: mock.fn(() => 1)
+}
+
+mock.module(
+  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
+  {
+    namedExports: stageRenderUtilsMocks
   }
-})
+)
+
+mock.module(
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
+  {
+    namedExports: stageRenderUtilsMocks
+  }
+)
 
 mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {

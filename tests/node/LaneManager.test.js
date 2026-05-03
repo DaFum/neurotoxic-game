@@ -12,17 +12,21 @@ const mockBuildRhythmLayout = mock.fn(() => ({
   rhythmOffsetY: 360
 }))
 
-mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
-  namedExports: {
-    buildRhythmLayout: mockBuildRhythmLayout,
-    getPixiColorFromToken: mock.fn(tokenName => {
-      if (tokenName === '--void-black') return 0x0a0a0a
-      if (tokenName === '--toxic-green') return 0x00ff41
-      if (tokenName === '--star-white') return 0xffffff
-      return 0xffffff
-    })
+mock.module(
+  new URL('../../src/components/stage/stageRenderUtils.ts', import.meta.url)
+    .href,
+  {
+    namedExports: {
+      buildRhythmLayout: mockBuildRhythmLayout,
+      getPixiColorFromToken: mock.fn(tokenName => {
+        if (tokenName === '--void-black') return 0x0a0a0a
+        if (tokenName === '--toxic-green') return 0x00ff41
+        if (tokenName === '--star-white') return 0xffffff
+        return 0xffffff
+      })
+    }
   }
-})
+)
 
 const graphicsInstances = []
 

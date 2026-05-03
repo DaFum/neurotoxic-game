@@ -111,8 +111,8 @@ describe('kabelsalat utils', () => {
     const socketOrder = ['power', 'mic', 'amp']
     const path = getMessyPath('iec', 'mic', socketOrder)
 
-    // mic is at index 1, so socketX should be SLOT_XS[1] = 200
-    assert.ok(path.includes('200'))
+    // mic is at index 1, so socketX should be SLOT_XS[1] = 260
+    assert.ok(path.includes('260'))
   })
 
   test('getMessyPath calculates midpoint correctly', async () => {
