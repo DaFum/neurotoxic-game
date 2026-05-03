@@ -165,6 +165,7 @@ describe('minigameReducer', () => {
       // the completion overlay is visible; only `active` is cleared.
       assert.strictEqual(nextState.minigame.active, false)
       assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
     })
 
     it('should apply reward on success', () => {
@@ -178,6 +179,7 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
       assert.strictEqual(nextState.minigame.active, false)
       assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
+      assert.strictEqual(nextState.currentScene, baseState.currentScene)
     })
   })
 

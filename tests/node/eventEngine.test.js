@@ -1,6 +1,5 @@
-import test, { mock } from 'node:test'
+import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { StateError } from '../../src/utils/errorHandler'
 
 // Mock database
 const MOCK_EVENTS = {
@@ -41,8 +40,9 @@ mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
 })
 
 // Import module under test after mocking
+const { StateError } = await import('../../src/utils/errorHandler.ts')
 const { eventEngine, resolveEventChoice } =
-  await import('../../src/utils/eventEngine')
+  await import('../../src/utils/eventEngine.ts')
 
 const TEST_EVENT_VAN_BREAKDOWN = {
   id: 'van_breakdown',
@@ -561,6 +561,11 @@ test('eventEngine.applyResult ignores prototype-colliding effect types', () => {
   assert.ok(
     !Object.hasOwn(delta, '__proto__'),
     'Should not set __proto__ as an own property on the delta'
+  )
+  assert.strictEqual(
+    Object.getPrototypeOf(delta),
+    Object.prototype,
+    'Should not pollute prototype'
   )
 })
 

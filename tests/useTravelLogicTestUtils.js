@@ -111,9 +111,9 @@ export const resetTravelLogicMockState = () => {
     ensureAudioContextDefault
   )
   mockAudioManager.ensureAudioContext.mock.resetCalls()
-  mockAudioManager.playSFX.mock.mockImplementation(() => {})
+  mockAudioManager.playSFX.mock.mockImplementation(playSFXDefault)
   mockAudioManager.playSFX.mock.resetCalls()
-  mockAudioManager.warnAudioNotAvailable.mock.mockImplementation(() => {})
+  mockAudioManager.warnAudioNotAvailable.mock.mockImplementation(warnAudioNotAvailableDefault)
   mockAudioManager.warnAudioNotAvailable.mock.resetCalls()
 }
 

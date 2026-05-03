@@ -79,6 +79,7 @@ export const ContrabandStash = ({
   onClose
 }: ContrabandStashProps) => {
   const { t } = useTranslation(['ui', 'items'])
+  const isOnline = useNetworkStatus()
 
   const makeSelectMember = useCallback(
     (id: unknown) => () => setSelectedMember?.(id),
@@ -215,7 +216,7 @@ export const ContrabandStash = ({
                           <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
                             <img
                               src={
-                                isImageGenerationAvailable()
+                                isImageGenerationAvailable(isOnline)
                                   ? getGenImageUrl(
                                       IMG_PROMPTS[
                                         item.imagePrompt as keyof typeof IMG_PROMPTS
@@ -226,6 +227,7 @@ export const ContrabandStash = ({
                               alt={t(`items:contraband.${item.id}.name`)}
                               className='w-full h-full object-contain'
                               loading='lazy'
+                              onError={(e) => { e.currentTarget.src = getGeneratedImageFallbackUrl() }}
                             />
                           </div>
                         )}

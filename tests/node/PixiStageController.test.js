@@ -713,11 +713,16 @@ describe('PixiStageController', () => {
     })
 
     test('does not initialize managers if disposed during setup', async () => {
-      const slowLoad = new Promise(resolve => setTimeout(resolve, 100))
+      let resolveSlowLoad
+      const slowLoad = new Promise(resolve => {
+        resolveSlowLoad = resolve
+      })
       mockCrowdManager.loadAssets.mock.mockImplementation(() => slowLoad)
 
       const initPromise = controller.init()
       controller.isDisposed = true
+
+      resolveSlowLoad()
       await initPromise
 
       // Should not call init on managers if disposed

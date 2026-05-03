@@ -141,7 +141,6 @@ export const useMainMenu = () => {
   }, [proceedToTour, updatePlayer])
 
   const handleStartTour = useCallback(() => {
-    void enterFullscreen()
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
       localStorage.getItem('neurotoxic_v3_save')
     )
@@ -150,6 +149,7 @@ export const useMainMenu = () => {
       return
     }
 
+    void enterFullscreen()
     startNewTourFlow()
   }, [startNewTourFlow])
 

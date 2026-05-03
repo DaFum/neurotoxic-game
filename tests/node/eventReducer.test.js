@@ -2,12 +2,12 @@ import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
 
 // We will mock checkTraitUnlocks using `mock.module` which works natively in newer Node versions
-let checkTraitUnlocksMock
+let checkTraitUnlocksMock = mock.fn(() => [
+  { memberId: 'm1', traitId: 'tech_wizard' }
+])
 mock.module(new URL('../../src/utils/unlockCheck.ts', import.meta.url).href, {
   namedExports: {
-    checkTraitUnlocks: (checkTraitUnlocksMock = mock.fn(() => [
-      { memberId: 'm1', traitId: 'tech_wizard' }
-    ]))
+    checkTraitUnlocks: checkTraitUnlocksMock
   }
 })
 
