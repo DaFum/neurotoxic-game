@@ -66,6 +66,12 @@ export function playSFX(type: string): void {
       audioState.sfxSynth.triggerAttackRelease('C2', '4n', now, 0.8)
       audioState.sfxSynth.triggerAttackRelease('G2', '4n', now, 0.6)
       break
+    case 'void_hit':
+      // Dissonant void impact — tritone cluster at low register
+      audioState.sfxSynth.triggerAttackRelease('B1', '8n', now, 0.9)
+      audioState.sfxSynth.triggerAttackRelease('F2', '8n', now + 0.03, 0.7)
+      audioState.sfxSynth.triggerAttackRelease('C#2', '16n', now + 0.06, 0.5)
+      break
     default:
       logger.warn('AudioEngine', `Unknown SFX type: ${type}`)
       break
