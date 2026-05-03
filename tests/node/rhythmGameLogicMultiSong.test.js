@@ -56,20 +56,20 @@ const mockGigStats = {
 mock.module('../../src/context/GameState.tsx', {
   namedExports: { useGameState: mockUseGameState }
 })
-mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
+mock.module('../../src/utils/audio/AudioManager.ts', {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
+mock.module('../../src/utils/audio/audioEngine.ts', {
   namedExports: mockAudioEngine
 })
-mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
+mock.module('../../src/utils/rhythmUtils.ts', {
   namedExports: mockRhythmUtils
 })
-mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, {
+mock.module('../../src/utils/gigStats.ts', {
   namedExports: mockGigStats
 })
 // Mock other deps to avoid side effects
-mock.module(new URL('../../src/utils/simulationUtils.ts', import.meta.url).href, {
+mock.module('../../src/utils/simulationUtils.ts', {
   namedExports: {
     calculateGigPhysics: mock.fn(() => ({
       speedModifier: 1,
@@ -79,7 +79,7 @@ mock.module(new URL('../../src/utils/simulationUtils.ts', import.meta.url).href,
     getGigModifiers: mock.fn(() => ({}))
   }
 })
-mock.module(new URL('../../src/utils/hecklerLogic.ts', import.meta.url).href, {
+mock.module('../../src/utils/hecklerLogic.ts', {
   namedExports: {
     createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),
     processProjectiles: mock.fn(
@@ -107,7 +107,7 @@ mock.module(new URL('../../src/utils/hecklerLogic.ts', import.meta.url).href, {
   }
 })
 const _GameError = class GameError extends Error {}
-mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
+mock.module('../../src/utils/errorHandler.ts', {
   namedExports: {
     handleError: mock.fn(),
     GameError: _GameError,
@@ -115,7 +115,7 @@ mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
     StateError: class StateError extends _GameError {}
   }
 })
-mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
+mock.module('../../src/utils/logger.ts', {
   namedExports: {
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
     logger: {
@@ -126,8 +126,8 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
     }
   }
 })
-mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
-  namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
+mock.module('../../src/data/songs.ts', {
+  namedExports: { SONGS_BY_ID: new Map(), SONGS_DB: [] }
 })
 // Stable i18n object prevents initializeGigState from being recreated on each render.
 // Supports defaultValue and basic string interpolation with {{key}} syntax.

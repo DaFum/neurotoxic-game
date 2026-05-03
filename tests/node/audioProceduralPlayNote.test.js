@@ -118,8 +118,8 @@ const mockGetNoteName = mock.fn(midi => {
 mock.module(new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href, {
   namedExports: {
     isPercussionTrack: mock.fn(),
-    isValidMidiNote: mock.fn(),
-    normalizeMidiPitch: mock.fn(n => n.midi),
+    isValidMidiNote: mock.fn(() => true),
+    normalizeMidiPitch: mock.fn(n => (typeof n === 'number' ? n : n.midi)),
     getNoteName: mockGetNoteName
   }
 })

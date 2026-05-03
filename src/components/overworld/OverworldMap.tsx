@@ -58,67 +58,23 @@ export const OverworldMap = React.memo(
     rivalBand
   }: OverworldMapProps) => {
     // Memoized URL generators
-    const mapBgUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const vanUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const vanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
-    const rivalVanUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_RIVAL_VAN),
-      []
-    )
-    const pinFestivalUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinHomeUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinClubUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinRestUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_REST)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinSpecialUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_SPECIAL)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinFinaleUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
+    const urls = useMemo(() => {
+      const isOnline = isImageGenerationAvailable()
+      const fallback = getGeneratedImageFallbackUrl()
+      return {
+        mapBgUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP) : fallback,
+        vanUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_VAN) : fallback,
+        rivalVanUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_RIVAL_VAN) : fallback,
+        pinFestivalUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL) : fallback,
+        pinHomeUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME) : fallback,
+        pinClubUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB) : fallback,
+        pinRestUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_REST) : fallback,
+        pinSpecialUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_SPECIAL) : fallback,
+        pinFinaleUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE) : fallback
+      }
+    }, [])
+
+    const { mapBgUrl, vanUrl, rivalVanUrl, pinFestivalUrl, pinHomeUrl, pinClubUrl, pinRestUrl, pinSpecialUrl, pinFinaleUrl } = urls
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {

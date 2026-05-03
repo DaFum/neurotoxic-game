@@ -1,6 +1,5 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 // Mocks
@@ -50,7 +49,6 @@ describe('useRhythmGameScoring Game Over', () => {
   })
 
   afterEach(() => {
-    cleanup()
     teardownJSDOM()
   })
 
@@ -93,19 +91,15 @@ describe('useRhythmGameScoring Game Over', () => {
       setLastGigStats: mock.fn()
     }
 
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        contextActions
-      })
-    )
-
-    act(() => {
-      // Trigger miss to reduce health below 0
-      // Default penalty is 2 per miss. Health is 10. Need 5 misses.
-      result.current.handleMiss(5, false) // 5 misses * 2 dmg = 10 dmg -> 0 health
+    const scoringFns = useRhythmGameScoring({
+      gameStateRef,
+      setters,
+      contextActions
     })
+
+    // Trigger miss to reduce health below 0
+    // Default penalty is 2 per miss. Health is 10. Need 5 misses.
+    scoringFns.handleMiss(5, false) // 5 misses * 2 dmg = 10 dmg -> 0 health
 
     // Check if stopAudio was called
     assert.equal(

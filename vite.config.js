@@ -43,11 +43,18 @@ export default defineConfig({
         clientsClaim: false,
         skipWaiting: false,
         globPatterns: [
-          '**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,json,mp3,ogg,wav,mid,midi}'
+          '**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,json}'
         ],
         globIgnores: ['**/*.{woff,woff2,ttf,otf,eot}'],
         maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
         runtimeCaching: [
+          {
+            urlPattern: /\.(?:mp3|ogg|wav|mid|midi)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'audio-assets-runtime'
+            }
+          },
           {
             urlPattern: /^https:\/\/gen\.pollinations\.ai\/.*$/i,
             handler: 'NetworkOnly',

@@ -134,7 +134,7 @@ mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.ur
 // Mock Data
 mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
-    SONGS_BY_ID: new Map([].map(s => [s.id, s])),
+    SONGS_BY_ID: new Map(),
     SONGS_DB: []
   }
 })

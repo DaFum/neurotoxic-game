@@ -26,7 +26,9 @@ export default function ReloadPrompt() {
 
   return (
     <div className='ReloadPrompt-container pointer-events-auto'>
-      <div className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono z-50'>
+      <div
+        role="status"
+        className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono z-(--z-toast)'>
         <div className='ReloadPrompt-message mb-2'>
           {offlineReady ? (
             <span>{t('offline.offlineReady')}</span>
@@ -37,6 +39,7 @@ export default function ReloadPrompt() {
         <div className='flex gap-4'>
           {needRefresh && (
             <button
+              type="button"
               className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
               onClick={() => updateServiceWorker(true)}
             >
@@ -44,6 +47,7 @@ export default function ReloadPrompt() {
             </button>
           )}
           <button
+            type="button"
             className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
             onClick={() => close()}
           >

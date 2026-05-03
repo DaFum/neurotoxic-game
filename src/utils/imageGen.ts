@@ -3,7 +3,7 @@ const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
 const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 
-export const GENERATED_IMAGE_OFFLINE_FALLBACK = `${import.meta.env.BASE_URL ?? ''}images/generated-offline-fallback.svg`
+export const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.BASE_URL ?? '' : ''}images/generated-offline-fallback.svg`
 
 // navigator.onLine is true for any network connection (LAN, captive portals),
 // not necessarily internet access to gen.pollinations.ai. This is a best-effort
