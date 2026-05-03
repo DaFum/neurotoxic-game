@@ -321,7 +321,9 @@
   "hq.voidTrader.subtitle": "RARE CONTRABAND FOR THE FAMOUS",
   "hq.voidTrader.title": "THE VOID TRADER",
   "hq.voidTrader.trade": "BARTER",
-  "hq.voidTraderLockedTooltip": "Requires 30 Controversy to unlock",
+  "hq": {
+    "voidTraderLockedTooltip": "Requires 30 Controversy to unlock"
+  },
   "hqNavigation": "HQ Navigation",
   "hud.bandHarmony": "Band Harmony",
   "hud.day": "Day",

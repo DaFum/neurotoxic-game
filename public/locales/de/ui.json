@@ -461,7 +461,9 @@
   "hq.voidTrader.subtitle": "SELTENE SCHMUGGELWARE FÜR DIE BERÜHMTEN",
   "hq.voidTrader.title": "DER LEEREN-HÄNDLER",
   "hq.voidTrader.trade": "TAUSCHEN",
-  "hq.voidTraderLockedTooltip": "Benötigt 30 Kontroverse zum Entsperren",
+  "hq": {
+    "voidTraderLockedTooltip": "Benötigt 30 Kontroverse zum Entsperren"
+  },
   "hqNavigation": "HQ-Navigation",
   "hud.bandHarmony": "Band Harmonie",
   "hud.day": "Tag",
