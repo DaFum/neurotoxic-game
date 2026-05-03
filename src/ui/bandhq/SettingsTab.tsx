@@ -1,9 +1,7 @@
-import PropTypes from 'prop-types'
 import type { GameSettings } from '../../types/game'
 import type { GameStateWithActions } from '../../context/GameState'
 import type { AudioState, AudioControls } from '../../types/audio'
 import { SettingsPanel } from '../shared'
-import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 import { useSettingsActions } from '../../hooks/useSettingsActions'
 
 type SettingsTabProps = {
@@ -42,12 +40,4 @@ export const SettingsTab = ({
       />
     </div>
   )
-}
-
-SettingsTab.propTypes = {
-  settings: PropTypes.object.isRequired,
-  audioState: AudioStatePropType.isRequired,
-  onAudioChange: OnAudioChangePropType.isRequired,
-  updateSettings: PropTypes.func.isRequired,
-  deleteSave: PropTypes.func.isRequired
 }

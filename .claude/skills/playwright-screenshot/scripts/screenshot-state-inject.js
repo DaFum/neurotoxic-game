@@ -75,6 +75,7 @@ export const BASE_STATE = {
       proveYourselfMode: false
     }
   },
+  rivalBand: null,
   band: {
     members: [
       {

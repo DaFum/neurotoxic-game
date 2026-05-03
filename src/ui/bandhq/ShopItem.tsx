@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
 import {
@@ -184,26 +183,3 @@ export const ShopItem = React.memo(
 )
 
 ShopItem.displayName = 'ShopItem'
-const shopItemPropTypes = {
-  item: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string.isRequired,
-    description: PropTypes.string,
-    cost: PropTypes.number.isRequired,
-    currency: PropTypes.string,
-    img: PropTypes.string,
-    effects: PropTypes.array,
-    effect: PropTypes.object
-  }).isRequired,
-  isOwned: PropTypes.bool.isRequired,
-  isDisabled: PropTypes.bool.isRequired,
-  adjustedCost: PropTypes.number,
-  /** Callback executed on purchase attempt. Parent handles lock. */
-  onBuy: PropTypes.func.isRequired,
-  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-}
-
-const shopItemWithPropTypes = ShopItem as typeof ShopItem & {
-  propTypes: typeof shopItemPropTypes
-}
-shopItemWithPropTypes.propTypes = shopItemPropTypes

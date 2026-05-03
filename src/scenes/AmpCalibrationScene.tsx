@@ -13,11 +13,16 @@ export const AmpCalibrationScene = () => {
   const {
     dialValue,
     setDialValue,
+    targetValue,
     timeLeft,
     score,
     isGameOver,
     update,
-    gameStateRef
+    gameStateRef,
+    isOverdriveActive,
+    setIsOverdriveActive,
+    heat,
+    isOverheat
   } = useAmpLogic()
 
   const { changeScene } = useGameState()
@@ -59,8 +64,19 @@ export const AmpCalibrationScene = () => {
       })}
       renderCompletionStats={renderCompletionStats}
     >
-      <AmpHUD timeLeft={timeLeft} score={score} />
-      <AmpControls dialValue={dialValue} setDialValue={setDialValue} />
+      <AmpHUD
+        timeLeft={timeLeft}
+        score={score}
+        heat={heat}
+        isOverheat={isOverheat}
+      />
+      <AmpControls
+        dialValue={dialValue}
+        targetValue={targetValue}
+        setDialValue={setDialValue}
+        isOverdriveActive={isOverdriveActive}
+        setIsOverdriveActive={setIsOverdriveActive}
+      />
     </MinigameSceneFrame>
   )
 }

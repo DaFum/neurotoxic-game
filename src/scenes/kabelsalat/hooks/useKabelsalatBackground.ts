@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { loadTexture } from '../../../components/stage/utils'
+import { loadTexture } from '../../../components/stage/stageRenderUtils'
 import { logger } from '../../../utils/logger'
 import {
   getGenImageUrl,

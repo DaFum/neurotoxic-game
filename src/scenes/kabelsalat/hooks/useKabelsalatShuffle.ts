@@ -5,8 +5,8 @@ import {
   type SetStateAction,
   useMemo
 } from 'react'
-import { INITIAL_SOCKET_ORDER } from '../constants'
-import type { CableId } from '../constants'
+import { INITIAL_SOCKET_ORDER } from '../kabelsalatConstants'
+import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 import { getSafeRandom } from '../../../utils/crypto'
 

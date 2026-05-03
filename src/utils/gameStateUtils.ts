@@ -653,13 +653,22 @@ export const calculateAppliedDelta = (
     }
 
     if (delta.band.relationshipChange) {
+      const isNotSelfRelationship = (rc: RelationshipChange) =>
+        rc.member1 !== rc.member2
       if (Array.isArray(delta.band.relationshipChange)) {
-        applied.band.relationshipChange =
-          delta.band.relationshipChange.filter(isRelationshipChange)
-      } else {
-        applied.band.relationshipChange = copyFilteredProperties(
-          delta.band.relationshipChange
+        applied.band.relationshipChange = delta.band.relationshipChange.filter(
+          rc =>
+            isRelationshipChange(rc) &&
+            isNotSelfRelationship(rc as RelationshipChange)
         )
+      } else {
+        applied.band.relationshipChange =
+          isRelationshipChange(delta.band.relationshipChange) &&
+          isNotSelfRelationship(
+            delta.band.relationshipChange as RelationshipChange
+          )
+            ? [delta.band.relationshipChange]
+            : []
       }
     }
   }
@@ -802,9 +811,20 @@ export const applyEventDelta = (
     }
 
     const membersDelta = delta.band.membersDelta ?? delta.band.members
+
+    const isNotSelfRelationship = (rc: RelationshipChange) =>
+      rc.member1 !== rc.member2
+
     const relationshipChange = Array.isArray(delta.band.relationshipChange)
-      ? delta.band.relationshipChange.filter(isRelationshipChange)
-      : isRelationshipChange(delta.band.relationshipChange)
+      ? delta.band.relationshipChange.filter(
+          rc =>
+            isRelationshipChange(rc) &&
+            isNotSelfRelationship(rc as RelationshipChange)
+        )
+      : isRelationshipChange(delta.band.relationshipChange) &&
+          isNotSelfRelationship(
+            delta.band.relationshipChange as RelationshipChange
+          )
         ? [delta.band.relationshipChange]
         : []
     const skillDelta = delta.band.skill
@@ -866,7 +886,8 @@ export const applyEventDelta = (
           for (let j = 0; j < relationshipChange.length; j++) {
             const change = relationshipChange[j]
             if (!change || !memberName) continue
-            const relSource = newRelationships || nextMember.relationships || {}
+            const relSource: Record<string, number> =
+              newRelationships || nextMember.relationships || {}
 
             const result = calculateMemberRelationshipChange(
               change,
@@ -876,17 +897,19 @@ export const applyEventDelta = (
               relSource
             )
 
-            if (result) {
-              const { other, newScore } = result
-              const oldExists = Object.hasOwn(relSource, other)
+            if (!result) continue
+            const { other, newScore } = result
 
-              if (oldExists || newScore !== RELATIONSHIP_DEFAULT_SCORE) {
-                if (!newRelationships) {
-                  newRelationships = { ...(nextMember.relationships || {}) }
-                }
-                newRelationships[other] = newScore
-              }
+            if (
+              newScore === RELATIONSHIP_DEFAULT_SCORE &&
+              !Object.hasOwn(relSource, other)
+            )
+              continue
+
+            if (!newRelationships) {
+              newRelationships = { ...relSource }
             }
+            ;(newRelationships as Record<string, number>)[other] = newScore
           }
 
           if (newRelationships) {
@@ -1077,7 +1100,7 @@ export const applyEventDelta = (
  * Used primarily for optimizedState which passes Sets instead of Arrays for performance.
  *
  * @param {Set|Array} collection - The collection to check.
- * @param {any} item - The item to look for.
+ * @param {unknown} item - The item to look for.
  * @returns {boolean} True if the collection contains the item.
  */
 export const hasStateItem = (

@@ -10,6 +10,7 @@ import { useMerchPress } from '../hooks/useMerchPress'
 import { useBloodBank } from '../hooks/useBloodBank'
 import { useDarkWebLeak } from '../hooks/useDarkWebLeak'
 import { GAME_PHASES } from '../context/gameConstants'
+import { createSpawnRivalBandAction } from '../context/actionCreators'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
@@ -49,10 +50,18 @@ export const Overworld = () => {
     advanceDay,
     changeScene,
     startTravelMinigame,
-    activeStoryFlags
+    activeStoryFlags,
+    rivalBand,
+    dispatch
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
+
+  useEffect(() => {
+    if (!rivalBand && gameMap && dispatch) {
+      dispatch(createSpawnRivalBandAction())
+    }
+  }, [rivalBand, gameMap, dispatch])
 
   const [glitch, setGlitch] = useState('')
   useEffect(() => {
@@ -148,7 +157,8 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
-    onStartTravelMinigame: startTravelMinigame
+    onStartTravelMinigame: startTravelMinigame,
+    dispatch
   })
 
   const [isSaving, setIsSaving] = useState(false)
@@ -258,6 +268,7 @@ export const Overworld = () => {
         t={t}
         gameMap={gameMap}
         player={player}
+        rivalBand={rivalBand}
         currentLayer={currentLayer}
         isTraveling={isTraveling}
         pendingTravelNode={pendingTravelNode}

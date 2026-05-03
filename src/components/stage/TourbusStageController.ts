@@ -5,7 +5,7 @@ import {
   TourbusObstacleManager,
   type TourbusRenderState
 } from './TourbusObstacleManager'
-import { getPixiColorFromToken, loadTextures } from './utils'
+import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
 import { logger } from '../../utils/logger'
 import {
   IMG_PROMPTS,
@@ -17,7 +17,7 @@ import {
   TOURBUS_LANE_COUNT,
   TOURBUS_BUS_Y_PERCENT,
   TOURBUS_BUS_HEIGHT_PERCENT
-} from '../../hooks/minigames/constants'
+} from '../../hooks/minigames/minigameConstants'
 import type { StageControllerOptions } from '../../types/components'
 
 type TourbusControllerState = TourbusRenderState & {
@@ -37,6 +37,7 @@ type TourbusColors = {
   warningYellow: number
   bloodRed: number
   toxicGreen: number
+  voidPurple: number
 }
 
 class TourbusStageController extends BaseStageController<TourbusControllerState> {
@@ -77,7 +78,8 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     this.colors = {
       warningYellow: getPixiColorFromToken('--warning-yellow'),
       bloodRed: getPixiColorFromToken('--blood-red'),
-      toxicGreen: getPixiColorFromToken('--toxic-green')
+      toxicGreen: getPixiColorFromToken('--toxic-green'),
+      voidPurple: getPixiColorFromToken('--void-purple')
     }
   }
 

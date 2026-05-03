@@ -11,7 +11,7 @@ import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT,
   ROADIE_MOVE_COOLDOWN_BASE
-} from './constants'
+} from './minigameConstants'
 import { hashString } from '../../utils/stringUtils'
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]

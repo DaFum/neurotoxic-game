@@ -131,7 +131,7 @@ mock.module(new URL('../../src/components/stage/NoteManager.ts', import.meta.url
 })
 
 const { getOptimalResolution } =
-  await import('../../src/components/stage/utils')
+  await import('../../src/components/stage/stageRenderUtils')
 const { createPixiStageController } =
   await import('../../src/components/PixiStageController')
 const { createTourbusStageController } =

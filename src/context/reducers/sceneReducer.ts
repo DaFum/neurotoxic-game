@@ -2,12 +2,14 @@ import { GAME_PHASES } from '../gameConstants'
 import { logger } from '../../utils/logger'
 import type { GameState, GamePhase } from '../../types/game'
 
-const VALID_SCENES: Set<string> = new Set(
-  Object.values(GAME_PHASES) as string[]
+export const ALLOWED_SCENE_VALUES = Object.freeze(
+  Object.values(GAME_PHASES) as GamePhase[]
 )
 
-const isValidGamePhase = (value: string): value is GamePhase => {
-  return VALID_SCENES.has(value)
+const ALLOWED_SCENE_SET: ReadonlySet<string> = new Set(ALLOWED_SCENE_VALUES)
+
+export const isValidGamePhase = (value: string): value is GamePhase => {
+  return ALLOWED_SCENE_SET.has(value)
 }
 
 /**

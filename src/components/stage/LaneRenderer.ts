@@ -1,5 +1,5 @@
 import { Graphics, type Container } from 'pixi.js'
-import { getPixiColorFromToken, type buildRhythmLayout } from './utils'
+import { getPixiColorFromToken, buildRhythmLayout } from './stageRenderUtils'
 
 const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
 const LANE_BASE_ALPHA = 0.7

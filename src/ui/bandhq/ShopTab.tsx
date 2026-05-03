@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../../data/hqItems'
 import { CatalogTab } from './CatalogTab'
 import type {
@@ -93,15 +92,4 @@ export const ShopTab = ({
       processingItemId={processingItemId}
     />
   )
-}
-
-ShopTab.propTypes = {
-  player: PropTypes.shape({
-    money: PropTypes.number
-  }).isRequired,
-  handleBuy: PropTypes.func.isRequired,
-  isItemOwned: PropTypes.func.isRequired,
-  isItemDisabled: PropTypes.func.isRequired,
-  getAdjustedCost: PropTypes.func,
-  processingItemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }

@@ -17,6 +17,7 @@ import { pickRandomContraband } from '../utils/contrabandUtils'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
+import { isPlainObject } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
 // Import modular state management
@@ -61,12 +62,12 @@ import {
   createTradeVoidItemAction,
   createBloodBankDonateAction,
   createAddVenueBlacklistAction,
-  createSetPendingBandHQOpenAction
+  createSetPendingBandHQOpenAction,
+  createLoadGameAction
 } from './actionCreators'
 import type {
   BloodBankDonatePayload,
   ClinicActionPayload,
-  GamePhase,
   GameState,
   MerchPressPayload,
   PirateBroadcastPayload,
@@ -80,6 +81,7 @@ import { useEventSystem } from './useEventSystem'
 import { useMapGeneration } from './useMapGeneration'
 import {
   SAVE_KEY,
+  createRawLoadPayload,
   safeStorage,
   safeStorageNoFallback,
   usePersistence
@@ -214,9 +216,8 @@ type HotGameStateContextStore = typeof globalThis & {
 const getStableGameStateContext = (): Context<GameState | null> => {
   const store = globalThis as HotGameStateContextStore
   if (!store.__NEUROTOXIC_GAME_STATE_CONTEXT__) {
-    store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = createContext<GameState | null>(
-      null
-    )
+    const GameStateContext = createContext<GameState | null>(null)
+    store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = GameStateContext
   }
   return store.__NEUROTOXIC_GAME_STATE_CONTEXT__
 }
@@ -225,8 +226,10 @@ const getStableGameDispatchContext =
   (): Context<GameDispatchActions | null> => {
     const store = globalThis as HotGameStateContextStore
     if (!store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__) {
-      store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__ =
-        createContext<GameDispatchActions | null>(null)
+      const GameDispatchContext = createContext<GameDispatchActions | null>(
+        null
+      )
+      store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__ = GameDispatchContext
     }
     return store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__
   }
@@ -279,30 +282,25 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       const savedGame = safeStorage(
         'loadInjectedState',
         () => {
-          const saved = localStorage.getItem(SAVE_KEY)
-          return saved ? (JSON.parse(saved) as Partial<GameState>) : null
+          try {
+            const saved = localStorage.getItem(SAVE_KEY)
+            if (!saved) return null
+            const parsed: unknown = JSON.parse(saved)
+            return isPlainObject(parsed) ? parsed : null
+          } catch (err) {
+            logger.error('GameState', 'Failed to parse injected state', err)
+            return null
+          }
         },
-        null as Partial<GameState> | null
+        null as Record<string, unknown> | null
       )
 
-      if (savedGame && savedGame.version !== undefined) {
+      if (savedGame && Object.hasOwn(savedGame, 'version')) {
         try {
-          // Merge strategy: freshState spreads first (all defaults), then savedGame
-          // overrides its fields. Incomplete fixtures (e.g. screenshot test stubs)
-          // safely fall back to fresh defaults for any field they omit.
-          // toasts/minigame/isScreenshotMode are re-asserted explicitly because
-          // createPersistedState omits them — savedGame may lack these keys entirely.
-          return {
-            ...freshState,
-            ...savedGame,
-            // Always ensure these critical fields are valid (never undefined)
-            toasts: savedGame.toasts ?? freshState.toasts,
-            minigame: savedGame.minigame ?? freshState.minigame,
-            unlocks,
-            // isScreenshotMode flag is used by scenes to suppress random events
-            isScreenshotMode:
-              savedGame.isScreenshotMode ?? freshState.isScreenshotMode
-          } as GameState
+          return gameReducer(
+            freshState,
+            createLoadGameAction(createRawLoadPayload(savedGame, unlocks))
+          )
         } catch (err) {
           logger.error('GameState', 'Failed to hydrate injected state', err)
         }

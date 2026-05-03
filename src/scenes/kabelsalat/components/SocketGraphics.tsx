@@ -4,7 +4,7 @@
 
  */
 import PropTypes from 'prop-types'
-import { CONNECTOR_TYPES } from '../constants'
+import { CONNECTOR_TYPES } from '../kabelsalatConstants'
 import { XlrSocket } from './sockets/XlrSocket.tsx'
 import { JackSocket } from './sockets/JackSocket.tsx'
 import { DcSocket } from './sockets/DcSocket.tsx'

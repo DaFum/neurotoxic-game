@@ -41,10 +41,13 @@ const mockCalculateGuaranteedDailyCost = mock.fn(guaranteedDailyCostDefault)
 let ensureAudioContextResult = true
 
 const ensureAudioContextDefault = async () => ensureAudioContextResult
+const playSFXDefault = () => {}
+const warnAudioNotAvailableDefault = () => {}
 
 const mockAudioManager = {
-  playSFX: mock.fn(),
-  ensureAudioContext: mock.fn(ensureAudioContextDefault)
+  playSFX: mock.fn(playSFXDefault),
+  ensureAudioContext: mock.fn(ensureAudioContextDefault),
+  warnAudioNotAvailable: mock.fn(warnAudioNotAvailableDefault)
 }
 
 const mockLogger = {

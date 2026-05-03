@@ -5,7 +5,7 @@ import {
   useState,
   type MutableRefObject
 } from 'react'
-import { getPixiColorFromToken } from '../../components/stage/utils'
+import { getPixiColorFromToken } from '../../components/stage/stageRenderUtils'
 import { getSafeRandom } from '../../utils/crypto'
 import type {
   RhythmGameRefState,
@@ -177,6 +177,7 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   songStats: [],
   lastEndedSongIndex: -1,
   currentSongStartScore: 0,
+  rivalPenaltyActive: false,
   currentSongStartPerfectHits: 0,
   currentSongStartMisses: 0,
   // Replaces audioPlaybackEnded; signals multi-song setlist completion

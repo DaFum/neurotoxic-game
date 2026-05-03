@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { getPixiColorFromToken } from './utils'
+import { getPixiColorFromToken } from './stageRenderUtils'
 import { BaseStageController } from './BaseStageController'
 import type {
   StageControllerOptions,
@@ -13,6 +13,8 @@ export class AmpStageController extends BaseStageController {
   targetFreq: number
   currentFreq: number
   time: number
+  isOverdriveActive: boolean
+  isOverheat: boolean
 
   constructor(options: StageControllerOptions<AmpStageOptions>) {
     super(options)
@@ -22,6 +24,8 @@ export class AmpStageController extends BaseStageController {
     this.targetFreq = 500
     this.currentFreq = 500
     this.time = 0
+    this.isOverdriveActive = false
+    this.isOverheat = false
   }
 
   async setup() {
@@ -32,7 +36,13 @@ export class AmpStageController extends BaseStageController {
 
     this.syncState()
     this.drawBackground()
-    this.waveManager.drawWaves(this.targetFreq, this.currentFreq, this.time)
+    this.waveManager.drawWaves(
+      this.targetFreq,
+      this.currentFreq,
+      this.time,
+      this.isOverdriveActive,
+      this.isOverheat
+    )
   }
 
   syncState() {
@@ -55,6 +65,12 @@ export class AmpStageController extends BaseStageController {
           this.currentFreq = boundedCurrentFreq
         }
       }
+      if (Object.hasOwn(state, 'isOverdriveActive')) {
+        this.isOverdriveActive = Boolean(state.isOverdriveActive)
+      }
+      if (Object.hasOwn(state, 'isOverheat')) {
+        this.isOverheat = Boolean(state.isOverheat)
+      }
     }
   }
 
@@ -69,12 +85,24 @@ export class AmpStageController extends BaseStageController {
     this.syncState()
 
     this.time += dt * 0.1
-    this.waveManager?.drawWaves(this.targetFreq, this.currentFreq, this.time)
+    this.waveManager?.drawWaves(
+      this.targetFreq,
+      this.currentFreq,
+      this.time,
+      this.isOverdriveActive,
+      this.isOverheat
+    )
   }
 
   draw() {
     this.drawBackground()
-    this.waveManager?.drawWaves(this.targetFreq, this.currentFreq, this.time)
+    this.waveManager?.drawWaves(
+      this.targetFreq,
+      this.currentFreq,
+      this.time,
+      this.isOverdriveActive,
+      this.isOverheat
+    )
   }
 
   dispose() {

@@ -9,7 +9,12 @@ import { LOG_LEVELS } from '../utils/logger'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
-import type { GameState, GameSettings, BandState } from '../types/game'
+import type {
+  GameState,
+  GameSettings,
+  BandState,
+  RivalBandState
+} from '../types/game'
 
 /**
  * Brand alignment constants
@@ -62,6 +67,13 @@ export const DEFAULT_PLAYER_STATE = {
     proveYourselfMode: false
   }
 }
+
+/**
+ * Default rival band state configuration
+ * @type {Object}
+ */
+
+export const DEFAULT_RIVAL_BAND_STATE: RivalBandState | null = null
 
 /**
  * Default band state configuration
@@ -224,6 +236,7 @@ export const initialState: GameState = {
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
   band: { ...DEFAULT_BAND_STATE },
+  rivalBand: DEFAULT_RIVAL_BAND_STATE,
   social: { ...DEFAULT_SOCIAL_STATE },
   gameMap: null,
   currentGig: null,
@@ -270,6 +283,7 @@ export const createInitialState = (
     stash: Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash),
     activeContrabandEffects: [...DEFAULT_BAND_STATE.activeContrabandEffects]
   },
+  rivalBand: null,
   social: {
     ...DEFAULT_SOCIAL_STATE,
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],

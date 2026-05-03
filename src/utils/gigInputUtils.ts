@@ -13,8 +13,13 @@ export const createKeyToLaneMap = (
     if (!Object.hasOwn(currentLanes, index)) continue
 
     const lane = currentLanes[index] as { key?: string } | null
-    if (lane && Object.hasOwn(lane, 'key') && Number.isInteger(Number(index))) {
-      keyToLaneMap.set((lane.key as string) ?? '', Number(index))
+    if (
+      lane &&
+      Object.hasOwn(lane, 'key') &&
+      lane.key != null &&
+      Number.isInteger(Number(index))
+    ) {
+      keyToLaneMap.set(lane.key, Number(index))
     }
   }
   return keyToLaneMap

@@ -2,7 +2,12 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AmpHUDProps } from '../../../types/components'
 
-export const AmpHUD = memo(function AmpHUD({ timeLeft, score }: AmpHUDProps) {
+export const AmpHUD = memo(function AmpHUD({
+  timeLeft,
+  score,
+  heat,
+  isOverheat
+}: AmpHUDProps) {
   const { t } = useTranslation(['ui'])
 
   return (
@@ -32,6 +37,31 @@ export const AmpHUD = memo(function AmpHUD({ timeLeft, score }: AmpHUDProps) {
             })}
           </span>
           <span className='text-toxic-green'>{Math.floor(score)}%</span>
+        </div>
+
+        <div className='mt-2 w-48'>
+          <div className='flex justify-between items-center mb-1'>
+            <span
+              className={`uppercase text-xs ${isOverheat ? 'text-blood-red animate-pulse font-bold' : 'text-ash-gray'}`}
+            >
+              {isOverheat
+                ? t('ui:minigames.amp.hud.overheat', {
+                    defaultValue: 'OVERHEAT!'
+                  })
+                : t('ui:minigames.amp.hud.heat', { defaultValue: 'HEAT' })}
+            </span>
+            <span
+              className={`text-xs ${isOverheat ? 'text-blood-red' : 'text-warning-yellow'}`}
+            >
+              {Math.floor(heat)}%
+            </span>
+          </div>
+          <div className='h-2 w-full bg-void-black border border-ash-gray overflow-hidden'>
+            <div
+              className={`h-full transition-all duration-100 ${isOverheat ? 'bg-blood-red animate-pulse' : 'bg-warning-yellow'}`}
+              style={{ width: `${heat}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -11,6 +11,20 @@ const RESTRICTED_IMPORTS = {
       group: ['**/data/events.js'],
       message:
         'Use the canonical event DB entrypoint: src/data/events/index.js.'
+    },
+    {
+      group: [
+        '**/components/stage/utils',
+        '**/components/stage/utils.ts',
+        '**/hooks/minigames/constants',
+        '**/hooks/minigames/constants.ts',
+        '**/scenes/kabelsalat/constants',
+        '**/scenes/kabelsalat/constants.ts',
+        '**/scenes/kabelsalat/utils',
+        '**/scenes/kabelsalat/utils.ts'
+      ],
+      message:
+        'Import from domain-qualified modules instead (stageRenderUtils, minigameConstants, kabelsalatConstants, kabelsalatUtils).'
     }
   ]
 }
@@ -97,8 +111,7 @@ export default [
         'warn',
         UNUSED_VARS_IGNORE_PATTERNS
       ],
-      // TODO: Create a tracked issue to move the rule to 'error' after cleaning up existing offenders in economyEngine, gameStateUtils, midiPlayback, logger
-      '@typescript-eslint/no-explicit-any': 'warn'
+      '@typescript-eslint/no-explicit-any': 'error'
     }
   },
   {

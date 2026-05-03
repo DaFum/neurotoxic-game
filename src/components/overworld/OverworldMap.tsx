@@ -12,7 +12,8 @@ import {
 import type {
   MapNode as GameMapNode,
   GameMap,
-  PlayerState
+  PlayerState,
+  RivalBandState
 } from '../../types/game'
 import type { TranslationCallback } from '../../types/callbacks'
 
@@ -20,6 +21,7 @@ interface OverworldMapProps {
   t: TranslationCallback
   gameMap: GameMap | null
   player: PlayerState
+  rivalBand: RivalBandState | null
   currentLayer: number
   isTraveling: boolean
   pendingTravelNode: GameMapNode | null
@@ -52,7 +54,8 @@ export const OverworldMap = React.memo(
     travelTarget,
     travelCompletedRef,
     onTravelComplete,
-    activeStoryFlags
+    activeStoryFlags,
+    rivalBand
   }: OverworldMapProps) => {
     // Memoized URL generators
     const mapBgUrl = useMemo(
@@ -67,6 +70,11 @@ export const OverworldMap = React.memo(
         isImageGenerationAvailable()
           ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
           : getGeneratedImageFallbackUrl(),
+      []
+    )
+    const vanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
+    const rivalVanUrl = useMemo(
+      () => getGenImageUrl(IMG_PROMPTS.ICON_RIVAL_VAN),
       []
     )
     const pinFestivalUrl = useMemo(
@@ -141,6 +149,7 @@ export const OverworldMap = React.memo(
       if (!gameMap) return null
       return Object.values(gameMap.nodes).map(node => {
         const isCurrent = node.id === player.currentNodeId
+        const hasRival = rivalBand?.currentLocationId === node.id
         const visibility = getNodeVisibility(node.layer, currentLayer)
         const isReachable = isConnected(node.id) || node.type === 'START'
 
@@ -158,20 +167,39 @@ export const OverworldMap = React.memo(
         })
 
         return (
-          <MapNode
-            key={node.id}
-            node={node}
-            isCurrent={isCurrent}
-            isTraveling={isTraveling}
-            visibility={visibility}
-            isReachable={isReachable}
-            isPendingConfirm={pendingTravelNode?.id === node.id}
-            handleTravel={handleTravel}
-            setHoveredNode={setHoveredNode}
-            iconUrl={iconUrl}
-            vanUrl={vanUrl}
-            ticketPrice={effectivePrice}
-          />
+          <React.Fragment key={node.id}>
+            <MapNode
+              node={node}
+              isCurrent={isCurrent}
+              isTraveling={isTraveling}
+              visibility={visibility}
+              isReachable={isReachable}
+              isPendingConfirm={pendingTravelNode?.id === node.id}
+              handleTravel={handleTravel}
+              setHoveredNode={setHoveredNode}
+              iconUrl={iconUrl}
+              vanUrl={vanUrl}
+              ticketPrice={effectivePrice}
+            />
+            {hasRival && visibility > 0 && (
+              <div
+                className='absolute z-30 pointer-events-none transition-all duration-300'
+                style={{
+                  left: `${node.x}%`,
+                  top: `${node.y}%`,
+                  transform: 'translate(-50%, -100%)'
+                }}
+              >
+                <img
+                  src={rivalVanUrl}
+                  alt={t('ui:overworld.rival_band', {
+                    defaultValue: 'Rival Band'
+                  })}
+                  className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-toxic-red)] opacity-90'
+                />
+              </div>
+            )}
+          </React.Fragment>
         )
       })
     }, [
@@ -191,7 +219,10 @@ export const OverworldMap = React.memo(
       pinFinaleUrl,
       vanUrl,
       activeStoryFlags,
-      setHoveredNode
+      setHoveredNode,
+      rivalBand?.currentLocationId,
+      rivalVanUrl,
+      t
     ])
 
     // Hover connection memo

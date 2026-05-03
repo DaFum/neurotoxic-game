@@ -1,8 +1,8 @@
-import { CABLE_MAP } from '../constants'
-import { getMessyPath } from '../utils'
+import { CABLE_MAP } from '../kabelsalatConstants'
+import { getMessyPath } from '../kabelsalatUtils'
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
-import type { CableId } from '../constants'
+import type { CableId } from '../kabelsalatConstants'
 
 import type { SocketId } from '../../../types/kabelsalat'
 

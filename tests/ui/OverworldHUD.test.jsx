@@ -57,6 +57,10 @@ describe('OverworldHUD', () => {
 
     rerender(<OverworldHUD player={{ ...player, money: 200 }} band={band} />)
 
+    act(() => {
+      vi.advanceTimersByTime(0)
+    })
+
     const moneyValue = container.querySelector('.money-val')
     expect(moneyValue).toHaveClass('money-anim-up')
 

@@ -1,9 +1,9 @@
-import { CABLES } from '../constants'
+import { CABLES } from '../kabelsalatConstants'
 import PropTypes from 'prop-types'
 import { CableItem } from './CableItem.tsx'
 import type { TFunction } from 'i18next'
 
-import type { CableId } from '../constants'
+import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 type CableListProps = {

@@ -55,7 +55,7 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
 }))
 
-vi.mock('../../src/components/stage/utils', async importOriginal => {
+vi.mock('../../src/components/stage/stageRenderUtils', async importOriginal => {
   const original = await importOriginal()
   return {
     ...original,

@@ -4,7 +4,7 @@ import {
   calculateCrowdOffset,
   CROWD_LAYOUT,
   getPixiColorFromToken
-} from './utils'
+} from './stageRenderUtils'
 import { getSafeRandom } from '../../utils/crypto'
 import { CrowdTextureManager, type CrowdTextures } from './CrowdTextureManager'
 

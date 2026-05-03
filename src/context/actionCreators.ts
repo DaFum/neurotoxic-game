@@ -6,6 +6,7 @@
 
 import { ActionTypes } from './actionTypes'
 import { getSafeUUID } from '../utils/crypto'
+import type { RivalBandState } from '../types/game'
 import {
   clampPlayerMoney,
   clampPlayerFame,
@@ -25,6 +26,7 @@ import type {
   MerchPressPayload,
   PirateBroadcastPayload,
   QuestState,
+  RawLoadedGame,
   ResetStatePayload,
   EventDeltaPayload,
   Venue,
@@ -42,7 +44,7 @@ import type {
  * @returns {Object} Action object
  */
 export const createChangeSceneAction = (
-  scene: string
+  scene: GameState['currentScene']
 ): Extract<GameAction, { type: typeof ActionTypes.CHANGE_SCENE }> => ({
   type: ActionTypes.CHANGE_SCENE,
   payload: scene
@@ -289,7 +291,7 @@ export const createSetGigModifiersAction = (
  * @returns {Object} Action object
  */
 export const createLoadGameAction = (
-  data: Partial<GameState>
+  data: RawLoadedGame
 ): Extract<GameAction, { type: typeof ActionTypes.LOAD_GAME }> => ({
   type: ActionTypes.LOAD_GAME,
   payload: data
@@ -484,6 +486,45 @@ export const createCompleteAmpCalibrationAction = (
   payload: { score }
 })
 
+export const createSpawnRivalBandAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SPAWN_RIVAL_BAND }
+> => ({
+  type: ActionTypes.SPAWN_RIVAL_BAND
+})
+
+export const createMoveRivalBandAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.MOVE_RIVAL_BAND }
+> => ({
+  type: ActionTypes.MOVE_RIVAL_BAND
+})
+
+export const createCheckRivalEncounterAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CHECK_RIVAL_ENCOUNTER }
+> => ({
+  type: ActionTypes.CHECK_RIVAL_ENCOUNTER
+})
+
+export const createUpdateRivalBandAction = (
+  payload: Partial<RivalBandState>
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_RIVAL_BAND }> => {
+  const safeUpdates: Partial<RivalBandState> = {}
+  if (payload.id !== undefined) safeUpdates.id = payload.id
+  if (payload.name !== undefined) safeUpdates.name = payload.name
+  if (payload.alignment !== undefined) safeUpdates.alignment = payload.alignment
+  if (payload.powerLevel !== undefined)
+    safeUpdates.powerLevel = payload.powerLevel
+  if (payload.currentLocationId !== undefined)
+    safeUpdates.currentLocationId = payload.currentLocationId
+
+  return {
+    type: ActionTypes.UPDATE_RIVAL_BAND,
+    payload: safeUpdates
+  }
+}
+
 /**
  * Creates unlock trait action
  * @param {Object} payload - { memberId, traitId }
@@ -674,7 +715,10 @@ export const createPirateBroadcastAction = (
  */
 export const createSetPendingBandHQOpenAction = (
   isOpen: boolean
-): Extract<GameAction, { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }> => ({
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SET_PENDING_BANDHQ_OPEN }
+> => ({
   type: ActionTypes.SET_PENDING_BANDHQ_OPEN,
   payload: isOpen
 })

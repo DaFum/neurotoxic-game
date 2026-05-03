@@ -15,6 +15,13 @@ export const GAME_PHASES = Object.freeze({
   CLINIC: 'CLINIC'
 } as const satisfies Record<string, string>)
 
+import type { GamePhase } from '../types/game'
+
+export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.MENU
+])
+
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
   ROADIE: 'ROADIE',
@@ -71,3 +78,11 @@ export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
   GAME_PHASES.OVERWORLD as GamePhase,
   GAME_PHASES.MENU as GamePhase
 ])
+export const RIVAL_STAY_CHANCE = 0.3
+export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5
+export const MAX_RIVAL_DEAL_CHANCE_PENALTY = 0.2
+export const RIVAL_POWER_TO_DEAL_CHANCE_FACTOR = 0.02
+export const RIVAL_NEGOTIATION_PENALTY = 0.15
+export const DEAL_NEGOTIATION_SAFE_CHANCE = 0.8
+export const DEAL_NEGOTIATION_PERSUASIVE_CHANCE = 0.5
+export const DEAL_NEGOTIATION_AGGRESSIVE_CHANCE = 0.3

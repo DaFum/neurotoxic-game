@@ -3,7 +3,8 @@ import React, {
   useId,
   cloneElement,
   isValidElement,
-  useCallback
+  useCallback,
+  useRef
 } from 'react'
 import { logger } from '../../utils/logger'
 import PropTypes from 'prop-types'
@@ -23,15 +24,18 @@ const getOwn = <T,>(
  * @param {React.ReactElement} props.children - The trigger element. Must be a valid React element.
  * @param {React.ReactNode} props.content - The tooltip content.
  * @param {string} [props.className] - Additional CSS classes for the container.
+ * @param {'top' | 'bottom'} [props.position] - Optional position for the tooltip to appear relative to the trigger.
  */
 export const Tooltip = ({
   children,
   content,
-  className = ''
+  className = '',
+  position = 'top'
 }: {
   children: ReactElement
   content: ReactNode
   className?: string
+  position?: 'top' | 'bottom'
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
@@ -59,44 +63,49 @@ export const Tooltip = ({
       Object.hasOwn(styleValue as Record<string, unknown>, 'pointerEvents') &&
       (styleValue as Record<string, unknown>).pointerEvents === 'none')
 
+  const childPropsRef = useRef(childProps)
+  // Ensure ref is updated synchronously during render so stale handlers are never called
+  // before the effect runs.
+  childPropsRef.current = childProps
+
   const handleMouseEnter = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(true)
-      const fn = getOwn<unknown>(childProps, 'onMouseEnter')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onMouseEnter')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleMouseLeave = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(false)
-      const fn = getOwn<unknown>(childProps, 'onMouseLeave')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onMouseLeave')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleFocus = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(true)
-      const fn = getOwn<unknown>(childProps, 'onFocus')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onFocus')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   const handleBlur = useCallback(
     (e: SyntheticEvent) => {
       setIsVisible(false)
-      const fn = getOwn<unknown>(childProps, 'onBlur')
+      const fn = getOwn<unknown>(childPropsRef.current, 'onBlur')
       if (!isDisabled && typeof fn === 'function')
         (fn as (...args: unknown[]) => void)(e)
     },
-    [childProps, isDisabled]
+    [isDisabled]
   )
 
   React.useEffect(() => {
@@ -164,7 +173,7 @@ export const Tooltip = ({
         <div
           id={tooltipId}
           role='tooltip'
-          className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-50 text-xs text-star-white'
+          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 w-48 p-2 bg-void-black border border-ash-gray shadow-lg z-50 text-xs text-star-white ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}`}
         >
           {content}
         </div>
@@ -176,5 +185,6 @@ export const Tooltip = ({
 Tooltip.propTypes = {
   children: PropTypes.node.isRequired,
   content: PropTypes.node.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
+  position: PropTypes.oneOf(['top', 'bottom'])
 }

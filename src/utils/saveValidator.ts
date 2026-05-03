@@ -17,7 +17,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 
 /**
  * Validates the structure and types of the save data.
- * @param {any} data - The parsed JSON data from localStorage.
+ * @param {unknown} data - The parsed JSON data from localStorage.
  * @returns {boolean} True if valid, throws error if invalid.
  */
 export const validateSaveData = (data: unknown): boolean => {
@@ -147,7 +147,8 @@ const validateBand = (band: unknown): void => {
 
   if (Array.isArray(typedBand.members)) {
     const members = typedBand.members as unknown[]
-    members.forEach((member: unknown, index: number) => {
+    for (let index = 0, len = members.length; index < len; index++) {
+      const member = members[index]
       if (!isPlainObject(member)) {
         throw new StateError(`band.members[${index}] must be an object`)
       }
@@ -184,7 +185,9 @@ const validateBand = (band: unknown): void => {
         throw new StateError(`band.members[${index}].role must be a string`)
       }
       if (m.baseStats !== undefined && !isPlainObject(m.baseStats)) {
-        throw new StateError(`band.members[${index}].baseStats must be an object`)
+        throw new StateError(
+          `band.members[${index}].baseStats must be an object`
+        )
       }
       if (isPlainObject(m.baseStats)) {
         const baseStats = m.baseStats as Record<string, unknown>
@@ -202,7 +205,9 @@ const validateBand = (band: unknown): void => {
         }
       }
       if (m.equipment !== undefined && !isPlainObject(m.equipment)) {
-        throw new StateError(`band.members[${index}].equipment must be an object`)
+        throw new StateError(
+          `band.members[${index}].equipment must be an object`
+        )
       }
       if (m.relationships !== undefined) {
         if (!isPlainObject(m.relationships)) {
@@ -230,7 +235,7 @@ const validateBand = (band: unknown): void => {
           }
         }
       }
-    })
+    }
   }
 
   if (typedBand.harmony !== undefined) {

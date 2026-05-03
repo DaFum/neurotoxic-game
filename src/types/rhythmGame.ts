@@ -102,6 +102,7 @@ export type RhythmGameRefState = {
   songStats: RhythmSongStatsEntry[]
   lastEndedSongIndex: number
   currentSongStartScore: number
+  rivalPenaltyActive: boolean
   currentSongStartPerfectHits: number
   currentSongStartMisses: number
   setlistCompleted: boolean

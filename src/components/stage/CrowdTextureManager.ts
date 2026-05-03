@@ -6,7 +6,7 @@ import {
   getGeneratedImageFallbackUrl
 } from '../../utils/imageGen'
 import { handleError } from '../../utils/errorHandler'
-import { loadTextures } from './utils'
+import { loadTextures } from './stageRenderUtils'
 
 export type CrowdTextures = {
   idle: Texture | null

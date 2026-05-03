@@ -6,7 +6,7 @@
 import PropTypes from 'prop-types'
 import type { FC } from 'react'
 import { SocketItem } from './SocketItem.tsx'
-import type { CableId } from '../constants'
+import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 interface SocketListProps {

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types/game'
 import { StatBox, ProgressBar } from '../shared'
@@ -132,28 +131,4 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
       </div>
     </div>
   )
-}
-
-StatsTab.propTypes = {
-  player: PropTypes.shape({
-    money: PropTypes.number,
-    fame: PropTypes.number,
-    day: PropTypes.number,
-    van: PropTypes.shape({
-      fuel: PropTypes.number,
-      condition: PropTypes.number,
-      breakdownChance: PropTypes.number
-    })
-  }).isRequired,
-  band: PropTypes.shape({
-    members: PropTypes.array,
-    inventorySlots: PropTypes.number,
-    harmony: PropTypes.number
-  }).isRequired,
-  social: PropTypes.shape({
-    instagram: PropTypes.number,
-    tiktok: PropTypes.number,
-    youtube: PropTypes.number,
-    newsletter: PropTypes.number
-  }).isRequired
 }

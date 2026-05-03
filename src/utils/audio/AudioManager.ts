@@ -14,6 +14,7 @@ type AudioSfxType =
   | 'honk'
   | 'pickup'
   | 'deliver'
+  | 'void_hit'
 
 type AudioStateSnapshot = {
   musicVol: number
@@ -65,6 +66,19 @@ class AudioSystem {
       currentSongId: this.currentSongId
     }
   }
+
+  private static readonly VALID_SFX_TYPES = new Set<AudioSfxType>([
+    'hit',
+    'miss',
+    'menu',
+    'travel',
+    'cash',
+    'crash',
+    'honk',
+    'pickup',
+    'deliver',
+    'void_hit'
+  ])
 
   /**
    * Returns true when audio is actively playing through ambient OGG or Tone transport.
@@ -332,18 +346,7 @@ class AudioSystem {
    */
   playSFX(key: AudioSfxType): void {
     if (!this.prefsLoaded) return
-    const validTypes: AudioSfxType[] = [
-      'hit',
-      'miss',
-      'menu',
-      'travel',
-      'cash',
-      'crash',
-      'honk',
-      'pickup',
-      'deliver'
-    ]
-    if (!validTypes.includes(key)) {
+    if (!AudioSystem.VALID_SFX_TYPES.has(key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }

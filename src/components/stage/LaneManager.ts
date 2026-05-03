@@ -1,7 +1,7 @@
 import { Container, type Application } from 'pixi.js'
 import type { RhythmGameRefState, RhythmLane } from '../../types/rhythmGame'
 import type { RefObject } from 'react'
-import { buildRhythmLayout } from './utils'
+import { buildRhythmLayout } from './stageRenderUtils'
 import { LaneRenderer } from './LaneRenderer'
 
 const LANE_GAP = 20

@@ -5,7 +5,7 @@ type TourbusObstacle = {
   id: string | number
   lane: number
   y: number
-  type: 'FUEL' | 'OBSTACLE'
+  type: 'FUEL' | 'OBSTACLE' | 'VOID_HAZARD'
   collided?: boolean
 }
 
@@ -25,6 +25,7 @@ export class TourbusObstacleManager {
     warningYellow: number
     bloodRed: number
     toxicGreen: number
+    voidPurple: number
   }
   obstacleMap: Map<
     string | number,
@@ -44,6 +45,7 @@ export class TourbusObstacleManager {
       warningYellow: number
       bloodRed: number
       toxicGreen: number
+      voidPurple: number
     }
   ) {
     this.container = container
@@ -86,9 +88,18 @@ export class TourbusObstacleManager {
           if (obs.type === 'FUEL') {
             sprite.circle(0, 0, 20)
             sprite.fill(this.colors.warningYellow)
-          } else {
+          } else if (obs.type === 'OBSTACLE') {
             sprite.rect(-25, -25, 50, 50)
             sprite.fill(this.colors.bloodRed)
+          } else if (obs.type === 'VOID_HAZARD') {
+            // A distorted shape or polygon for the void hazard
+            sprite.moveTo(0, -30)
+            sprite.lineTo(25, 0)
+            sprite.lineTo(15, 30)
+            sprite.lineTo(-15, 30)
+            sprite.lineTo(-25, 0)
+            sprite.closePath()
+            sprite.fill(this.colors.voidPurple)
           }
         }
 
@@ -118,6 +129,8 @@ export class TourbusObstacleManager {
             this.effectManager.spawnHitEffect(x, y, this.colors.bloodRed) // Red explosion
           } else if (obs.type === 'FUEL') {
             this.effectManager.spawnHitEffect(x, y, this.colors.toxicGreen) // Green sparkle
+          } else if (obs.type === 'VOID_HAZARD') {
+            this.effectManager.spawnHitEffect(x, y, this.colors.voidPurple)
           }
         }
       } else {

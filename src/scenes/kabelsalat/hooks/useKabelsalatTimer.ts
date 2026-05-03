@@ -5,8 +5,8 @@ import {
   type Dispatch,
   type SetStateAction
 } from 'react'
-import { SOCKET_DEFS } from '../constants'
-import type { CableId } from '../constants'
+import { SOCKET_DEFS } from '../kabelsalatConstants'
+import type { CableId } from '../kabelsalatConstants'
 import type { SocketId } from '../../../types/kabelsalat'
 
 export const useKabelsalatTimer = (
@@ -56,7 +56,8 @@ export const useKabelsalatTimer = (
   useEffect(() => {
     if (
       !finishedRef.current &&
-      Object.values(connections).filter(value => value != null).length === Object.keys(SOCKET_DEFS).length
+      Object.values(connections).filter(value => value != null).length ===
+        Object.keys(SOCKET_DEFS).length
     ) {
       if (timerRef.current) clearInterval(timerRef.current)
       isWinningRef.current = true

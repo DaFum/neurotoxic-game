@@ -4,7 +4,8 @@ import {
   clampVanCondition,
   clampPlayerMoney,
   clampBandHarmony,
-  clampVanFuel
+  clampVanFuel,
+  clampMemberStamina
 } from '../../utils/gameStateUtils'
 import {
   calculateTravelExpenses,
@@ -78,16 +79,32 @@ export const handleCompleteTravelMinigame = (
     state.player,
     state.band
   )
-  const { conditionLoss, fuelBonus } = calculateTravelMinigameResult(
-    damageTaken,
-    itemsCollected
-  )
+  const { conditionLoss, fuelBonus, voidHazardHits } =
+    calculateTravelMinigameResult(damageTaken, itemsCollected)
 
   const nextMoney = clampPlayerMoney(state.player.money - totalCost)
   const nextFuel = clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus)
   const nextCondition = clampVanCondition(
     state.player.van.condition - conditionLoss
   )
+
+  let nextMembers = state.band.members
+  if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
+    const baseRng = typeof rngValue === 'number' ? rngValue : 0
+    const memberIndex = Math.floor(baseRng * nextMembers.length)
+    const hitMember = nextMembers[memberIndex]
+    if (hitMember) {
+      const staminaPenalty = voidHazardHits * 10
+      nextMembers = [...nextMembers]
+      nextMembers[memberIndex] = {
+        ...hitMember,
+        stamina: clampMemberStamina(
+          hitMember.stamina - staminaPenalty,
+          hitMember.staminaMax
+        )
+      }
+    }
+  }
 
   const venueObj =
     typeof targetNode.venue === 'object' && targetNode.venue !== null
@@ -137,7 +154,7 @@ export const handleCompleteTravelMinigame = (
   )
 
   const traitResult = applyTraitUnlocks(
-    { band: state.band, toasts: state.toasts },
+    { band: { ...state.band, members: nextMembers }, toasts: state.toasts },
     travelUnlocks
   )
 

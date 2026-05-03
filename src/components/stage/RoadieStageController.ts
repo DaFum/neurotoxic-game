@@ -5,7 +5,7 @@ import { RoadiePlayerManager } from './RoadiePlayerManager'
 import {
   ROADIE_GRID_WIDTH,
   ROADIE_GRID_HEIGHT
-} from '../../hooks/minigames/constants'
+} from '../../hooks/minigames/minigameConstants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTextures } from './utils'
 import {
