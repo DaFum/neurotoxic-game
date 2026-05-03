@@ -58,7 +58,7 @@ export const Overworld = () => {
   const [hoveredNode, setHoveredNode] = useState(null)
 
   useEffect(() => {
-    if (!rivalBand && gameMap) {
+    if (!rivalBand && gameMap && dispatch) {
       dispatch(createSpawnRivalBandAction())
     }
   }, [rivalBand, gameMap, dispatch])
