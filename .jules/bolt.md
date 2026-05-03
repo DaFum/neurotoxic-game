@@ -117,3 +117,6 @@
 
 **Learning:** Replaced the `new Map(array.map(...))` pattern with a manual `for...of` loop using `.set()`. This avoids the allocation of an intermediate tuple array, reducing memory usage and GC overhead during initialization. Applied across `brandDeals.ts`, `contraband.ts`, `songs.ts`, and `useTravelLogic.ts`.
 **Action:** Always use `for...of` with `.set()` for Map initialization from large arrays to prevent intermediate tuple array allocations.
+## 2026-05-03 - Refactoring high-frequency filter-map chains
+**Learning:** Moving `.filter().map()` chains out of render functions into static loops, especially for modules that export static arrays, avoids repeated array allocations on every render. Changing array iteration methods to simple for-loops significantly improves CPU-bound performance.
+**Action:** Lift array processing pipelines dependent only on static constants to the top level of the module and utilize basic `for` loops for iteration.
