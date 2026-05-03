@@ -1,8 +1,10 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import './ReloadPrompt.css'
 
 export default function ReloadPrompt() {
+  const { t } = useTranslation('ui');
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -30,11 +32,9 @@ export default function ReloadPrompt() {
       <div className='ReloadPrompt-toast bg-void-black border-2 border-toxic-green text-toxic-green p-4 font-mono z-50'>
         <div className='ReloadPrompt-message mb-2'>
           {offlineReady ? (
-            <span>App ready to work offline</span>
+            <span>{t('offline.offlineReady')}</span>
           ) : (
-            <span>
-              New content available, click on reload button to update.
-            </span>
+            <span>{t('offline.needRefresh')}</span>
           )}
         </div>
         <div className='flex gap-4'>
@@ -43,14 +43,14 @@ export default function ReloadPrompt() {
               className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
               onClick={() => updateServiceWorker(true)}
             >
-              Reload
+              {t('offline.reload')}
             </button>
           )}
           <button
             className='ReloadPrompt-toast-button border border-toxic-green px-3 py-1 hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:ring-toxic-green focus-visible:ring-offset-void-black'
             onClick={() => close()}
           >
-            Close
+            {t('offline.close')}
           </button>
         </div>
       </div>
