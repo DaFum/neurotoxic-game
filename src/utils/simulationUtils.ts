@@ -10,6 +10,7 @@ import { applyReputationDecay } from './socialEngine'
 import { calcBaseBreakdownChance } from './upgradeUtils'
 import { hasTrait } from './traitUtils'
 import { getSafeRandom } from './crypto'
+import { NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER } from '../context/gameConstants'
 import {
   clampPlayerMoney,
   clampBandHarmony,
@@ -136,7 +137,7 @@ export const getGigModifiers = (
   }
 
   if (bandState.inventory?.neurotoxicPedal) {
-    modifiers.crowdDecay = 0.5
+    modifiers.crowdDecay = NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER
     modifiers.activeEffects.push({
       key: 'ui:pregig.effects.neurotoxic',
       fallback: 'NEUROTOXIC: Crowd energy drains 50% slower'

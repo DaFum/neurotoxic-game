@@ -10,7 +10,10 @@ import type { SocialPostOption } from '../utils/socialEngine'
 import type { BrandDeal } from '../data/brandDeals'
 import type { PostGigFinancials } from '../types/economy'
 import { useCallback, useRef, useState } from 'react'
-import { GAME_PHASES } from '../context/gameConstants'
+import {
+  GAME_PHASES,
+  NEUROTOXIC_PEDAL_HARMONY_PENALTY
+} from '../context/gameConstants'
 import { secureRandom } from '../utils/crypto'
 import {
   QUEST_APOLOGY_TOUR,
@@ -371,7 +374,9 @@ export const usePostGigHandlers = ({
     if (band.inventory?.neurotoxicPedal) {
       updateBand(prevBand => {
         const currentHarmony = prevBand.harmony ?? 100
-        const newHarmony = clampBandHarmony(currentHarmony - 5)
+        const newHarmony = clampBandHarmony(
+          currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+        )
         return {
           ...prevBand,
           harmony: newHarmony
@@ -445,7 +450,7 @@ export const usePostGigHandlers = ({
     activeStoryFlags,
     addQuest,
     setlist,
-    band.inventory?.neurotoxicPedal,
+    band,
     t
   ])
 

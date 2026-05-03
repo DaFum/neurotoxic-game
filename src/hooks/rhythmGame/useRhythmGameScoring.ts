@@ -138,8 +138,11 @@ export const useRhythmGameScoring = ({
       const currentHealth = gameStateRef.current.health
       const currentOverload = gameStateRef.current.overload
 
-      const activeCrowdDecay =
-        gameStateRef.current.modifiers?.crowdDecay ?? baseCrowdDecay
+      let activeCrowdDecay = baseCrowdDecay
+      if (gameStateRef.current.modifiers?.crowdDecay !== undefined) {
+        activeCrowdDecay *= gameStateRef.current.modifiers.crowdDecay
+      }
+
       const crowdDecay = gameStateRef.current.rivalPenaltyActive
         ? activeCrowdDecay * RIVAL_GIG_CROWD_DECAY_PENALTY
         : activeCrowdDecay
