@@ -237,7 +237,80 @@ This note collects concrete improvement opportunities found during a focused rea
 - [ ] **Sleep-deprived interview mode**: press interactions where truthfulness, sarcasm, or nonsense have consequences.
 - [ ] **Tour documentary crew**: optional film crew captures your choices and affects fame/controversy arcs.
 
-## 8) Technical Debt Tracking
+## 8) Integration Best Practices
+
+### 8.1 Module Contract Enforcement
+
+- [ ] **Declare explicit public APIs per module**: mark internal helpers with a naming convention or barrel re-export pattern so callers never bind to implementation details directly.
+- [ ] **Co-locate integration contracts as TypeScript interface files**: `src/contracts/` holding the shape that `arrivalUtils`, `eventEngine`, and `economyEngine` promise to callers, separate from implementation.
+- [ ] **Enforce barrel-only imports via ESLint `no-restricted-imports`**: prevent cross-module deep imports (`../eventEngine/internalHelper`) that bypass the declared boundary.
+- [ ] **Add contract violation tests**: lightweight tests that `import` only the public barrel and assert missing exports are `undefined`, protecting against accidental removals.
+
+### 8.2 Action Creator ↔ Reducer Integration
+
+- [ ] **Generate action-type ↔ payload mapping at build time**: derive `ActionPayloadMap` from `actionCreators` return types so the reducer's `Extract<GameAction, …>` unions always stay in sync without manual maintenance.
+- [ ] **Add snapshot tests for every action creator output**: one fixture per action type asserting exact shape; any payload drift fails CI immediately.
+- [ ] **Enforce `assertNever` coverage automatically**: a type-level test file that imports the reducer and verifies the default branch receives `never` when all cases are handled.
+- [ ] **Reject unknown action types in production via telemetry stub**: replace the silent fallback with a lightweight `reportUnknownAction(type)` stub (no-op in prod, warn in dev) so integration mistakes surface in monitoring.
+
+### 8.3 Hook ↔ Store Integration
+
+- [ ] **Forbid direct `dispatch` inside domain hooks**: all hooks that compute state deltas must call named action creators exclusively; raw `dispatch({ type: '…' })` is a lint error.
+- [ ] **Add render-free integration tests for hooks via `renderHook`**: test `useEventSystem`, `useArrivalLogic`, and `useEconomyEngine` with a real (non-mocked) store to catch selector/dispatch mismatches.
+- [ ] **Document and test hook tear-down contracts**: each hook's `useEffect` cleanup must be verified to not leave orphan subscriptions or in-flight state refs after unmount.
+- [ ] **Add `useSelector` selector identity tests**: assert that selectors for hot paths (gig state, player money, harmony) return referentially stable values when unrelated state changes, preventing cascade re-renders.
+
+### 8.4 Audio Engine Integration
+
+- [ ] **Isolate `audioEngine` behind a typed service interface**: consumers depend on `IAudioEngine`, not the concrete Tone.js class, enabling test doubles and future engine swaps without touching call sites.
+- [ ] **Add integration test for gig timing contract**: verify that `audioEngine.getGigTimeMs()` values used in scoring windows are within acceptable drift tolerance of wall-clock time under simulated load.
+- [ ] **Guard all Tone.js `start`/`stop` calls with lifecycle assertions**: assert that `AudioContext` is in `running` state before any playback attempt; log a structured warning otherwise rather than silently failing.
+- [ ] **Add cross-module event ordering test**: confirm that `setlistCompleted` fires before `isNearTrackEnd` is consulted so end-detection logic is never inverted by async ordering.
+
+### 8.5 State Persistence Integration
+
+- [ ] **Version the persisted state schema explicitly**: embed `schemaVersion` in saved state; add a migration chain (`migrations/v1→v2.ts`) invoked on load before the reducer sees the data.
+- [ ] **Add round-trip serialization tests**: `serialize(deserialize(serialize(state))) === serialize(state)` for all game state slices.
+- [ ] **Test partial/corrupt save recovery**: simulate truncated JSON, missing top-level keys, and hostile `__proto__` injections; assert the loader returns a valid initial state without throwing.
+- [ ] **Encrypt or sign save data checksum**: prevent trivial client-side cheating while keeping the format debuggable; log a warning on checksum mismatch and fall back to defaults.
+
+### 8.6 Map Generation ↔ Game Engine Integration
+
+- [ ] **Validate generated map against a JSON schema before use**: run a lightweight schema check after `MapGenerator` returns; reject and retry rather than propagating a malformed map silently.
+- [ ] **Add contract test for `MapNode` ↔ travel system**: every node type that exists in the generator must be handled by `handleNodeArrival`; an exhaustiveness test asserts no node type falls through.
+- [ ] **Seed the PRNG from a deterministic run ID**: expose `runSeed` in persisted state so any session can be reproduced exactly from save data for bug reports.
+- [ ] **Add map-generation fuzz harness**: run the generator with 1 000 random seeds in CI and assert structural invariants (connected graph, start node reachable, no duplicate IDs).
+
+### 8.7 Event System ↔ Quest/Flag Integration
+
+- [ ] **Assert no orphaned flag writes**: lint or test that every `flags.addQuest` / `flags.set` written by event resolvers has a corresponding reader somewhere in the codebase.
+- [ ] **Type quest payload strictly**: `QuestPayload` must be a discriminated union; unknown shapes must be caught at the resolver boundary and logged, not silently ignored.
+- [ ] **Add integration test for multi-step event chains**: trigger event A → assert flag set → trigger event B that depends on that flag → assert final state delta.
+- [ ] **Guard against event resolver re-entry**: if the same event fires while its async side effects are in flight, queue rather than re-execute; add a test that verifies no duplicate dispatches.
+
+### 8.8 Economy Engine ↔ UI Integration
+
+- [ ] **Expose a typed `EconomyBreakdown` DTO** from `economyEngine` instead of raw number deltas so UI components never manually re-derive line items from raw values.
+- [ ] **Add visual regression snapshots for breakdown panels**: capture the economy breakdown UI with known fixture data; fail CI on layout drift.
+- [ ] **Test currency formatting under locale change**: assert formatted money strings are stable across `en`, `de`, and other supported locales without altering raw values.
+- [ ] **Ensure all breakdown labels have i18n keys**: a lint rule or test that rejects any `EconomyBreakdown` label literal not present in both `en/` and `de/` locale files.
+
+### 8.9 CI / Integration Gate Hardening
+
+- [ ] **Separate unit, integration, and e2e test jobs**: unit tests should be fast (<30 s); integration tests run against a real store + mocked I/O; e2e (Playwright/golden path) run last gating merge.
+- [ ] **Add a module-boundary check step in CI**: run the `no-restricted-imports` ESLint rule in a dedicated CI step so boundary violations block PRs explicitly.
+- [ ] **Pin external test fixture files in version control**: avoid network fetches in tests; any fixture that calls `fetch` must be replaced with a committed JSON stub.
+- [ ] **Add a schema-drift check job**: compare TypeScript-derived JSON schemas for `GameState` and `MapNode` against committed golden files; fail CI on any unreviewed change.
+- [ ] **Enforce test coverage thresholds per integration module**: set per-file branch coverage floors in `vitest.config` for `economyEngine`, `eventEngine`, and `arrivalUtils`; block merges that regress coverage.
+
+### 8.10 Third-Party / External Integration Boundaries
+
+- [ ] **Wrap all `localStorage` / `sessionStorage` access in a single `StorageAdapter` interface**: allows swap to IndexedDB or in-memory stub in tests without touching call sites.
+- [ ] **Centralize `window`/`document` access behind an environment service**: enables Node-safe test execution and future SSR compatibility without scattered `typeof window` guards.
+- [ ] **Mock `Date.now()` at the integration boundary**: inject a clock service so travel timers, event cooldowns, and daily caps are deterministic in tests.
+- [ ] **Document and test browser API fallbacks explicitly**: Web Audio, `localStorage`, `ResizeObserver`; each must have a graceful-degradation path with a test that simulates the API being absent.
+
+## 9) Technical Debt Tracking
 
 - [ ] **Tag all high-risk paths with structured TODO IDs** (`TODO[STATE-###]`, `TODO[FLOW-###]`) and link to issues.
 - [ ] **Add “design intent” comments for non-obvious mechanics** (e.g., cancellation math, capped penalties) to avoid accidental rebalance.
