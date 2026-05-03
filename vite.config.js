@@ -68,7 +68,14 @@ export default defineConfig({
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*$/i,
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'online-only-font-css'
+              cacheName: 'online-only-font-css',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 Year
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           },
           {

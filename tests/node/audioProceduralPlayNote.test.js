@@ -125,7 +125,7 @@ mock.module(
   new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href,
   {
     namedExports: {
-      isPercussionTrack: mock.fn(),
+      isPercussionTrack: mock.fn(() => false),
       isValidMidiNote: mock.fn(() => true),
       normalizeMidiPitch: mock.fn(n => (typeof n === 'number' ? n : n.midi)),
       getNoteName: mockGetNoteName

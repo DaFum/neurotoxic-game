@@ -25,17 +25,30 @@ const mockRhythmUtils = {
 }
 
 // Apply mocks
-mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
-  namedExports: mockAudioEngine
+mock.module(
+  new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
+  {
+    namedExports: mockAudioEngine
+  }
+)
+mock.module(
+  new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href,
+  {
+    namedExports: { audioManager: mockAudioManager }
+  }
+)
+mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, {
+  namedExports: mockGigStats
 })
-mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
-  namedExports: { audioManager: mockAudioManager }
+mock.module(
+  new URL('../../src/utils/audio/timingUtils.ts', import.meta.url).href,
+  {
+    namedExports: mockTimingUtils
+  }
+)
+mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
+  namedExports: mockRhythmUtils
 })
-mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, { namedExports: mockGigStats })
-mock.module(new URL('../../src/utils/audio/timingUtils.ts', import.meta.url).href, {
-  namedExports: mockTimingUtils
-})
-mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, { namedExports: mockRhythmUtils })
 
 const _stableI18n = {
   t: (key, options) => {
@@ -58,7 +71,9 @@ mock.module('react-i18next', {
 })
 mock.module('react', {
   namedExports: {
+    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useCallback: fn => fn,
+    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useRef: initialValue => ({ current: initialValue }),
     useEffect: () => {}
   }
@@ -77,10 +92,11 @@ describe('useRhythmGameScoring Game Over', () => {
     for (const fn of Object.values(mockRhythmUtils)) fn.mock?.resetCalls()
   })
 
-  afterEach(() => {
-  })
+  afterEach(() => {})
 
-  test('marks game over and stops audio on collapse', () => {
+  test('marks game over and stops audio on collapse', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] })
+
     const gameStateRef = {
       current: {
         stats: { misses: 0 },
@@ -134,6 +150,8 @@ describe('useRhythmGameScoring Game Over', () => {
     // Trigger miss to reduce health below 0
     // Default penalty is 2 per miss. Health is 10. Need 5 misses.
     result.handleMiss(5, false) // 5 misses * 2 dmg = 10 dmg -> 0 health
+
+    t.mock.timers.runAll()
 
     // Check if stopAudio was called
     assert.equal(

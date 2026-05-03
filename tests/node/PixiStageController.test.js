@@ -202,6 +202,14 @@ describe('PixiStageController', () => {
     } else {
       delete globalThis.ResizeObserver
     }
+
+    // Reset loadAssets mocks to prevent stale behavior leaking across tests
+    mockEffectManager.loadAssets.mock.resetCalls()
+    mockEffectManager.loadAssets.mock.mockImplementation(() =>
+      Promise.resolve()
+    )
+    mockNoteManager.loadAssets.mock.resetCalls()
+    mockNoteManager.loadAssets.mock.mockImplementation(() => Promise.resolve())
   })
 
   test('init initializes managers', async () => {

@@ -297,6 +297,15 @@ describe('TourbusStageController', () => {
     stageRenderUtilsMocks.loadTextures.mock.resetCalls()
     stageRenderUtilsMocks.loadTexture.mock.resetCalls()
     stageRenderUtilsMocks.getPixiColorFromToken.mock.resetCalls()
+
+    // Reset mock implementations to restore default behavior for test isolation
+    imageGen.getGenImageUrl.mock.mockImplementation(() => 'mock-url')
+    imageGen.isImageGenerationAvailable.mock.mockImplementation(() => true)
+    imageGen.getGeneratedImageFallbackUrl.mock.mockImplementation(
+      () => 'mock-fallback'
+    )
+
+    // Reset call counts
     imageGen.getGenImageUrl.mock.resetCalls()
     imageGen.isImageGenerationAvailable.mock.resetCalls()
     imageGen.getGeneratedImageFallbackUrl.mock.resetCalls()
@@ -318,7 +327,8 @@ describe('TourbusStageController', () => {
   it('should handle asset loading fallback when offline', async () => {
     imageGen.isImageGenerationAvailable.mock.mockImplementation(() => false)
     await controller.loadAssets()
-    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length > 0, true)
+    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length, 5)
+    assert.equal(imageGen.getGenImageUrl.mock.calls.length, 0)
   })
 
   it('should run update loop via ticker', async () => {
