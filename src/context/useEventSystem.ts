@@ -18,7 +18,8 @@ import {
 import type { GameAction, GameState, QuestState } from '../types/game'
 import type { OptionalToastCallback } from '../types/callbacks'
 
-type ChangeScene = (scene: string) => void
+import type { GamePhase } from '../types/game'
+type ChangeScene = (scene: GamePhase) => void
 type SaveGame = (showToast?: boolean, stateSnapshot?: GameState) => void
 
 type EventResolution = {

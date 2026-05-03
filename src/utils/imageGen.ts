@@ -144,6 +144,8 @@ export const IMG_PROMPTS = {
 
   // Map Icons
   ICON_VAN: 'pixel art black tour van side view small icon',
+  ICON_RIVAL_VAN:
+    'pixel art red tour van side view small icon aggressive spikes',
   ICON_PIN_CLUB: 'pixel art map pin skull shape green',
   ICON_PIN_FESTIVAL: 'pixel art map pin flame shape red',
   ICON_PIN_HOME: 'pixel art home icon rehearsal room garage door grunge style',
