@@ -3,6 +3,7 @@ import { MapConnection } from '../MapConnection'
 import { MapNode } from '../MapNode'
 import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
+import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
   getGenImageUrl,
   IMG_PROMPTS,
@@ -57,68 +58,52 @@ export const OverworldMap = React.memo(
     activeStoryFlags,
     rivalBand
   }: OverworldMapProps) => {
+    const isOnlineNetwork = useNetworkStatus()
+
     // Memoized URL generators
-    const mapBgUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+    const urls = useMemo(() => {
+      const isOnline = isImageGenerationAvailable() && isOnlineNetwork
+      const fallback = getGeneratedImageFallbackUrl()
+      return {
+        mapBgUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const vanUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const vanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
-    const rivalVanUrl = useMemo(
-      () => getGenImageUrl(IMG_PROMPTS.ICON_RIVAL_VAN),
-      []
-    )
-    const pinFestivalUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+          : fallback,
+        vanUrl: isOnline ? getGenImageUrl(IMG_PROMPTS.ICON_VAN) : fallback,
+        rivalVanUrl: isOnline
+          ? getGenImageUrl(IMG_PROMPTS.ICON_RIVAL_VAN)
+          : fallback,
+        pinFestivalUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinHomeUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+          : fallback,
+        pinHomeUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinClubUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+          : fallback,
+        pinClubUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinRestUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+          : fallback,
+        pinRestUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_REST)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinSpecialUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+          : fallback,
+        pinSpecialUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_SPECIAL)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
-    const pinFinaleUrl = useMemo(
-      () =>
-        isImageGenerationAvailable()
+          : fallback,
+        pinFinaleUrl: isOnline
           ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE)
-          : getGeneratedImageFallbackUrl(),
-      []
-    )
+          : fallback
+      }
+    }, [isOnlineNetwork])
+
+    const {
+      mapBgUrl,
+      vanUrl,
+      rivalVanUrl,
+      pinFestivalUrl,
+      pinHomeUrl,
+      pinClubUrl,
+      pinRestUrl,
+      pinSpecialUrl,
+      pinFinaleUrl
+    } = urls
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {

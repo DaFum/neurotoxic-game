@@ -55,18 +55,21 @@ export class CrowdTextureManager {
   }
 
   dispose(): void {
-    if (
-      this.textures.idle &&
-      typeof this.textures.idle.destroy === 'function'
-    ) {
-      this.textures.idle.destroy(true)
+    const uniqueTextures = new Set<Texture>()
+
+    if (this.textures.idle) {
+      uniqueTextures.add(this.textures.idle)
     }
-    if (
-      this.textures.mosh &&
-      typeof this.textures.mosh.destroy === 'function'
-    ) {
-      this.textures.mosh.destroy(true)
+    if (this.textures.mosh) {
+      uniqueTextures.add(this.textures.mosh)
     }
+
+    uniqueTextures.forEach(texture => {
+      if (typeof texture.destroy === 'function') {
+        texture.destroy(true)
+      }
+    })
+
     this.textures = { idle: null, mosh: null }
   }
 }

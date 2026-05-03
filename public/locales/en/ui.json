@@ -969,8 +969,7 @@
     "needRefresh": "New content available, click on reload button to update.",
     "reload": "Reload",
     "close": "Close"
-  }
-},
+  },
   "travel": {
     "rivalEncounter": "Your rival band, {{rivalName}}, is in town!"
   },

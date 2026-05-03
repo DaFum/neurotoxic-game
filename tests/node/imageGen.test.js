@@ -56,24 +56,31 @@ test('IMG_PROMPTS contains expected keys and string values', async () => {
 
 test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
   const originalNavigator = globalThis.navigator
+  const originalFetch = globalThis.fetch
+  const originalCreateObjectURL = globalThis.URL?.createObjectURL
+
+  t.after(() => {
+    if (originalNavigator !== undefined) {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true
+      })
+    } else {
+      delete globalThis.navigator
+    }
+    globalThis.fetch = originalFetch
+    if (globalThis.URL) {
+      globalThis.URL.createObjectURL = originalCreateObjectURL
+    }
+  })
+
   Object.defineProperty(globalThis, 'navigator', {
     value: { onLine: true },
     configurable: true
   })
 
-  t.after(() => {
-    if (originalNavigator) {
-      Object.defineProperty(globalThis, 'navigator', {
-        value: originalNavigator,
-        configurable: true
-      })
-    }
-  })
   const { fetchGenImage, fetchGenImageAsObjectUrl, clearImageCache } =
     await import('../../src/utils/imageGen')
-
-  const originalFetch = globalThis.fetch
-  const originalCreateObjectURL = globalThis.URL?.createObjectURL
 
   t.afterEach(async () => {
     await clearImageCache()

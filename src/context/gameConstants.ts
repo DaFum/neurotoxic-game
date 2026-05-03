@@ -15,13 +15,6 @@ export const GAME_PHASES = Object.freeze({
   CLINIC: 'CLINIC'
 } as const satisfies Record<string, string>)
 
-import type { GamePhase } from '../types/game'
-
-export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
-  GAME_PHASES.OVERWORLD,
-  GAME_PHASES.MENU
-])
-
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
   ROADIE: 'ROADIE',
