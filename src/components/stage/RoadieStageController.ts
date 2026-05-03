@@ -7,7 +7,7 @@ import {
   ROADIE_GRID_HEIGHT
 } from '../../hooks/minigames/minigameConstants'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTextures } from './utils'
+import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
 import {
   IMG_PROMPTS,
   getGenImageUrl,

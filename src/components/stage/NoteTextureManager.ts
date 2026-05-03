@@ -6,7 +6,7 @@ import {
   isImageGenerationAvailable,
   getGeneratedImageFallbackUrl
 } from '../../utils/imageGen'
-import { loadTextures } from './utils'
+import { loadTextures } from './stageRenderUtils'
 
 export type NoteTextures = { skull: Texture | null; lightning: Texture | null }
 
@@ -49,13 +49,11 @@ export class NoteTextureManager {
   }
 
   dispose(): void {
-    if (this.noteTextures.skull) {
-      this.noteTextures.skull.destroy(true)
-      this.noteTextures.skull = null
-    }
-    if (this.noteTextures.lightning) {
-      this.noteTextures.lightning.destroy(true)
-      this.noteTextures.lightning = null
-    }
+    const uniqueTextures = new Set<Texture>()
+    if (this.noteTextures.skull) uniqueTextures.add(this.noteTextures.skull)
+    if (this.noteTextures.lightning)
+      uniqueTextures.add(this.noteTextures.lightning)
+    uniqueTextures.forEach(t => t.destroy(true))
+    this.noteTextures = { skull: null, lightning: null }
   }
 }
