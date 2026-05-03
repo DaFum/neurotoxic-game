@@ -8,7 +8,10 @@ import { secureRandom } from './crypto'
 import {
   MAX_RIVAL_DEAL_CHANCE_PENALTY,
   RIVAL_POWER_TO_DEAL_CHANCE_FACTOR,
-  RIVAL_NEGOTIATION_PENALTY
+  RIVAL_NEGOTIATION_PENALTY,
+  DEAL_NEGOTIATION_SAFE_CHANCE,
+  DEAL_NEGOTIATION_PERSUASIVE_CHANCE,
+  DEAL_NEGOTIATION_AGGRESSIVE_CHANCE
 } from '../context/gameConstants'
 import { POST_OPTIONS } from '../data/postOptions'
 import { SOCIAL_PLATFORMS } from '../data/platforms'
@@ -843,7 +846,7 @@ export const negotiateDeal = (
 
   switch (strategy) {
     case 'SAFE':
-      successChance = 0.8 - rivalPenalty / 2
+      successChance = DEAL_NEGOTIATION_SAFE_CHANCE - rivalPenalty / 2
       if (hasManager) successChance += 0.1
 
       if (roll < successChance) {
@@ -859,7 +862,7 @@ export const negotiateDeal = (
       break
 
     case 'PERSUASIVE':
-      successChance = 0.5 - rivalPenalty
+      successChance = DEAL_NEGOTIATION_PERSUASIVE_CHANCE - rivalPenalty
       if (hasManager) successChance += 0.2
       if (isFamous) successChance += 0.1
 

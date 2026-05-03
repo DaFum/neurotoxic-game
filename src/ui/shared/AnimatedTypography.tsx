@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import type { HTMLMotionProps, Transition } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { useMemo } from 'react'
 import type { ComponentType, ElementType, ReactNode } from 'react'
 
 export const AnimatedDivider = ({
@@ -73,20 +74,18 @@ export const AnimatedSubtitle = ({
     )
   }
 
-  // If `as` is a component, wrap it statically
-  const Component = as as ComponentType<
-    HTMLMotionProps<'div'> & { children?: ReactNode }
-  >
+  // If `as` is a component, memoize the animated version
+  const MotionComponent = useMemo(() => motion(as as ComponentType<any>), [as])
 
   return (
-    <motion.div
+    <MotionComponent
       initial={initial}
       animate={animate}
       transition={transition}
       className={`uppercase ${className}`}
     >
-      <Component>{children}</Component>
-    </motion.div>
+      {children}
+    </MotionComponent>
   )
 }
 

@@ -5,14 +5,16 @@ import { generateBrandName } from './socialEngine'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
 
+import type { BrandAlignment } from '../types/game'
+
 export const generateRivalBand = (
   day: number,
   rng: () => number = secureRandom
 ): RivalBandState => {
-  const alignments = Object.values(BRAND_ALIGNMENTS)
+  const alignments = Object.values(BRAND_ALIGNMENTS) as BrandAlignment[]
   const alignment =
     alignments[Math.floor(rng() * alignments.length)] ||
-    BRAND_ALIGNMENTS.NEUTRAL
+    (BRAND_ALIGNMENTS.NEUTRAL as BrandAlignment)
 
   const powerLevel = Math.max(1, Math.floor(day / 5) + 1)
 
@@ -40,28 +42,25 @@ export const moveRivalBand = (
   }
 
   // Find gig nodes
-  let possibleNodes = Object.values(gameMap.nodes).filter(n => n.type === 'GIG')
+  const allGigNodes = Object.values(gameMap.nodes).filter(n => n.type === 'GIG')
+  let possibleNodes: typeof allGigNodes = []
 
   if (rivalBand.currentLocationId && gameMap.connections) {
-    const connectedNodes = gameMap.connections
-      .filter(
-        c =>
-          c.from === rivalBand.currentLocationId ||
-          c.to === rivalBand.currentLocationId
-      )
-      .map(c => (c.from === rivalBand.currentLocationId ? c.to : c.from))
-
-    const connectedGigNodes = possibleNodes.filter(n =>
-      connectedNodes.includes(n.id)
+    const connectedNodeIds = new Set(
+      gameMap.connections
+        .filter(
+          c =>
+            c.from === rivalBand.currentLocationId ||
+            c.to === rivalBand.currentLocationId
+        )
+        .map(c => (c.from === rivalBand.currentLocationId ? c.to : c.from))
     )
 
-    if (connectedGigNodes.length > 0) {
-      possibleNodes = connectedGigNodes
-    }
+    possibleNodes = allGigNodes.filter(n => connectedNodeIds.has(n.id))
   }
 
   if (possibleNodes.length === 0) {
-    possibleNodes = Object.values(gameMap.nodes).filter(n => n.type === 'GIG')
+    possibleNodes = allGigNodes
   }
 
   if (possibleNodes.length > 0) {
