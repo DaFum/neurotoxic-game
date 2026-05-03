@@ -116,9 +116,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath calculates midpoint correctly', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power']
     const path = getMessyPath('iec', 'power', socketOrder)
 
@@ -128,9 +125,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('getMessyPath creates different paths for different sockets', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    getMessyPath = mod.getMessyPath
-
     const socketOrder = ['power', 'mic', 'amp']
     const path1 = getMessyPath('iec', 'power', socketOrder)
     const path2 = getMessyPath('iec', 'mic', socketOrder)
