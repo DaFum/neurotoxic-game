@@ -196,6 +196,7 @@ export const IMG_PROMPTS = {
   ITEM_GUITAR_CHEAP: 'pixel art cheap beat up electric guitar icon',
   ITEM_DRUM_BROKEN: 'pixel art broken drum kit icon',
   ITEM_PEDAL_CHEAP: 'pixel art cheap plastic guitar pedal icon',
+  ITEM_NEUROTOXIC_PEDAL: 'pixel art glowing green toxic guitar pedal icon',
   ITEM_THEREMIN: 'pixel art theremin instrument icon',
   ITEM_DIDGERIDOO: 'pixel art didgeridoo instrument icon',
 
