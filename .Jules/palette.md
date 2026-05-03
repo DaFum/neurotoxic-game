@@ -103,3 +103,7 @@
 ## 2024-05-15 - Replace Native Title with Tooltip Component
 **Learning:** The native HTML `title` attribute is often used for quick tooltips (e.g., on Mood and Stamina indicators), but it provides poor accessibility, is slow to appear, and cannot be styled.
 **Action:** Always replace native `title` attributes with the application's robust `<Tooltip>` component (found in `src/ui/shared/Tooltip.tsx`) to ensure consistent styling, immediate visual feedback, and proper ARIA descriptions for screen readers.
+
+## 2026-05-03 - [HUD Tooltips]
+**Learning:** Adding `pointer-events-auto` to wrapper elements inside `pointer-events-none` containers is necessary for hover interactions (like tooltips) to work properly.
+**Action:** Always check pointer-events inheritance when adding interactive elements or tooltips to HUD components.

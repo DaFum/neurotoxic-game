@@ -106,38 +106,50 @@ export const HUD = () => {
 
           {/* Van Status Mini Bars */}
           <div className='border-t border-toxic-green/20 pt-2 space-y-1.5'>
-            <div className='flex items-center gap-2'>
-              <Fuel size={12} className='text-fuel-yellow shrink-0' />
-              <ProgressBar
-                value={fuel}
-                max={100}
-                color='bg-fuel-yellow'
-                warn={fuel < 20}
-                size='mini'
-                aria-label={t('ui:hud.fuelLevel', {
-                  defaultValue: 'Fuel Level'
-                })}
-              />
-              <span className='text-[10px] text-ash-gray w-8 text-right tabular-nums'>
-                {Math.round(fuel)}
-              </span>
-            </div>
-            <div className='flex items-center gap-2'>
-              <Wrench size={12} className='text-condition-blue shrink-0' />
-              <ProgressBar
-                value={condition}
-                max={100}
-                color='bg-condition-blue'
-                warn={condition < 25}
-                size='mini'
-                aria-label={t('ui:hud.vanCondition', {
-                  defaultValue: 'Van Condition'
-                })}
-              />
-              <span className='text-[10px] text-ash-gray w-8 text-right tabular-nums'>
-                {Math.round(condition)}
-              </span>
-            </div>
+            <Tooltip
+              content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+              position='bottom'
+            >
+              <div className='flex items-center gap-2 pointer-events-auto'>
+                <Fuel size={12} className='text-fuel-yellow shrink-0' />
+                <ProgressBar
+                  value={fuel}
+                  max={100}
+                  color='bg-fuel-yellow'
+                  warn={fuel < 20}
+                  size='mini'
+                  aria-label={t('ui:hud.fuelLevel', {
+                    defaultValue: 'Fuel Level'
+                  })}
+                />
+                <span className='text-[10px] text-ash-gray w-8 text-right tabular-nums'>
+                  {Math.round(fuel)}
+                </span>
+              </div>
+            </Tooltip>
+            <Tooltip
+              content={t('ui:hud.vanCondition', {
+                defaultValue: 'Van Condition'
+              })}
+              position='bottom'
+            >
+              <div className='flex items-center gap-2 pointer-events-auto'>
+                <Wrench size={12} className='text-condition-blue shrink-0' />
+                <ProgressBar
+                  value={condition}
+                  max={100}
+                  color='bg-condition-blue'
+                  warn={condition < 25}
+                  size='mini'
+                  aria-label={t('ui:hud.vanCondition', {
+                    defaultValue: 'Van Condition'
+                  })}
+                />
+                <span className='text-[10px] text-ash-gray w-8 text-right tabular-nums'>
+                  {Math.round(condition)}
+                </span>
+              </div>
+            </Tooltip>
           </div>
         </div>
 
