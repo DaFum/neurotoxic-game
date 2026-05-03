@@ -165,6 +165,12 @@ describe('useKabelsalatState', () => {
     })
 
     expect(result.current.isGameOver).toBe(true)
+
+    // scheduleGameEnd delays the scene transition by 3500ms after isGameOver
+    await act(async () => {
+      vi.advanceTimersByTime(4000)
+    })
+
     expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
