@@ -149,8 +149,8 @@ export const useMainMenu = () => {
       return
     }
 
-    void enterFullscreen()
     startNewTourFlow()
+    void enterFullscreen()
   }, [startNewTourFlow])
 
   const handleNameSubmit = useCallback(() => {
