@@ -1,4 +1,4 @@
-import { test, describe, mock } from 'node:test'
+import { test, describe, mock, before } from 'node:test'
 import assert from 'node:assert/strict'
 
 // Mock constants module
@@ -15,23 +15,29 @@ const MOCK_CABLE_MAP = MOCK_CABLES.reduce((acc, cable) => {
 
 const MOCK_SLOT_XS = [100, 200, 300, 400, 500]
 
-mock.module(new URL('../../src/scenes/kabelsalat/constants.ts', import.meta.url).href, {
-  namedExports: {
-    CABLES: MOCK_CABLES,
-    CABLE_MAP: MOCK_CABLE_MAP,
-    SLOT_XS: MOCK_SLOT_XS,
-    SOCKET_Y: 120
+mock.module(
+  new URL('../../src/scenes/kabelsalat/constants.ts', import.meta.url).href,
+  {
+    namedExports: {
+      CABLES: MOCK_CABLES,
+      CABLE_MAP: MOCK_CABLE_MAP,
+      SLOT_XS: MOCK_SLOT_XS,
+      SOCKET_Y: 120
+    }
   }
-})
+)
 
 describe('kabelsalat utils', () => {
   let generateLightningSeeds
   let getMessyPath
 
-  test('generateLightningSeeds returns array of lightning objects', async () => {
+  before(async () => {
     const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
     generateLightningSeeds = mod.generateLightningSeeds
+    getMessyPath = mod.getMessyPath
+  })
 
+  test('generateLightningSeeds returns array of lightning objects', async () => {
     const seeds = generateLightningSeeds()
 
     assert.ok(Array.isArray(seeds))
@@ -39,9 +45,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('each lightning seed has required properties', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
@@ -55,9 +58,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('lightning seeds have valid ranges', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
@@ -73,9 +73,6 @@ describe('kabelsalat utils', () => {
   })
 
   test('lightning seeds have unique IDs', async () => {
-    const mod = await import('../../src/scenes/kabelsalat/kabelsalatUtils')
-    generateLightningSeeds = mod.generateLightningSeeds
-
     const seeds = generateLightningSeeds()
     const ids = seeds.map(s => s.id)
     const uniqueIds = new Set(ids)

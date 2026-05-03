@@ -265,13 +265,13 @@ describe('mapUtils', () => {
 
     test('handles venues: prefix without .name suffix', () => {
       const venueId = 'venues:club_toxic'
-      // Should only strip .name, leaving venues:club_toxic as is
+      // venues: prefix is stripped even when no .name suffix is present
       assert.equal(normalizeVenueId(venueId), 'club_toxic')
     })
 
     test('handles .name suffix without venues: prefix', () => {
       const venueId = 'club_toxic.name'
-      // Should only strip venues: prefix, leaving club_toxic.name as is
+      // .name suffix is stripped even when no venues: prefix is present
       assert.equal(normalizeVenueId(venueId), 'club_toxic')
     })
 

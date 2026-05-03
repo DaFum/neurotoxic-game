@@ -165,6 +165,7 @@ describe('useKabelsalatState', () => {
     })
 
     expect(result.current.isGameOver).toBe(true)
+    expect(mockChangeScene).toHaveBeenCalledWith('GIG')
   })
 
   it('generates lightning seeds when shocked', async () => {

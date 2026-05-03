@@ -5,6 +5,7 @@ import { test, mock } from 'node:test'
 const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
   if (label === 'Audio') {
     return {
+      'dir/valid.ogg': 'assets/dir/valid.ogg',
       'valid.ogg': 'assets/valid.ogg',
       'path/to/nested.ogg': 'assets/path/to/nested.ogg',
       'nested.ogg': 'assets/path/to/nested.ogg', // basename entry
@@ -17,14 +18,17 @@ const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
 const mockResolveAssetUrl = mock.fn()
 const PATH_PREFIX_REGEX = /^\.?\//
 
-mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
-  namedExports: {
-    buildAssetUrlMap: mockBuildAssetUrlMap,
-    resolveAssetUrl: mockResolveAssetUrl,
-    PATH_PREFIX_REGEX,
-    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
+mock.module(
+  new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      buildAssetUrlMap: mockBuildAssetUrlMap,
+      resolveAssetUrl: mockResolveAssetUrl,
+      PATH_PREFIX_REGEX,
+      getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
+    }
   }
-})
+)
 
 // Import the module under test
 // Note: We need to import this AFTER mocking
@@ -32,7 +36,7 @@ const { hasAudioAsset } = await import('../../src/utils/audio/assets')
 
 test('hasAudioAsset', async t => {
   await t.test('returns true for existing asset with full path', () => {
-    assert.strictEqual(hasAudioAsset('valid.ogg'), true)
+    assert.strictEqual(hasAudioAsset('dir/valid.ogg'), true)
   })
 
   await t.test('returns true for existing asset with basename', () => {

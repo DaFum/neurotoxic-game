@@ -107,16 +107,19 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 
 // Mock PlaybackUtils
 const mockStopTransportAndClear = mock.fn()
-mock.module(new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href, {
-  namedExports: {
-    stopTransportAndClear: mockStopTransportAndClear,
-    clearTransportEvent: mock.fn(),
-    cleanupTransportEvents: mock.fn(),
-    stopAndDisconnectSource: mock.fn(),
-    cleanupGigPlayback: mock.fn(),
-    cleanupAmbientPlayback: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      stopTransportAndClear: mockStopTransportAndClear,
+      clearTransportEvent: mock.fn(),
+      cleanupTransportEvents: mock.fn(),
+      stopAndDisconnectSource: mock.fn(),
+      cleanupGigPlayback: mock.fn(),
+      cleanupAmbientPlayback: mock.fn()
+    }
   }
-})
+)
 
 // Mock Assets (not used directly but imported)
 mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
@@ -128,11 +131,14 @@ mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
 })
 
 // Mock Shared Buffer Utils (not used directly)
-mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
-  namedExports: {
-    createAndConnectBufferSource: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      createAndConnectBufferSource: mock.fn()
+    }
   }
-})
+)
 
 // Mock other utils
 mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
@@ -142,54 +148,64 @@ mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
   }
 })
 
-mock.module(new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href, {
-  namedExports: {
-    selectRandomItem: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      selectRandomItem: mock.fn()
+    }
   }
-})
+)
 
-mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
-  namedExports: {
-    resolveAssetUrl: mock.fn(),
-    prepareTransportPlayback: mock.fn(async (options = {}) => {
-      const initialReqId = ++mockAudioState.playRequestId
-      const ensured = await mockEnsureAudioContext()
-      if (!ensured) return { success: false }
-      if (initialReqId !== mockAudioState.playRequestId)
-        return { success: false }
+mock.module(
+  new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      resolveAssetUrl: mock.fn(),
+      prepareTransportPlayback: mock.fn(async (options = {}) => {
+        const initialReqId = ++mockAudioState.playRequestId
+        const ensured = await mockEnsureAudioContext()
+        if (!ensured) return { success: false }
+        if (initialReqId !== mockAudioState.playRequestId)
+          return { success: false }
 
-      mockStopTransportAndClear()
+        mockStopTransportAndClear()
 
-      return {
-        success: true,
-        reqId: initialReqId,
-        normalizedOptions: {
-          useCleanPlayback: true,
-          onEnded:
-            typeof options?.onEnded === 'function' ? options.onEnded : null
+        return {
+          success: true,
+          reqId: initialReqId,
+          normalizedOptions: {
+            useCleanPlayback: true,
+            onEnded:
+              typeof options?.onEnded === 'function' ? options.onEnded : null
+          }
         }
-      }
-    }),
-    normalizeMidiPlaybackOptions: options => ({
-      onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null,
-      useCleanPlayback: true
-    })
+      }),
+      normalizeMidiPlaybackOptions: options => ({
+        onEnded:
+          typeof options?.onEnded === 'function' ? options.onEnded : null,
+        useCleanPlayback: true
+      })
+    }
   }
-})
+)
 
-mock.module(new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href, {
-  namedExports: {
-    isPercussionTrack: mock.fn(),
-    isValidMidiNote: mock.fn(),
-    buildMidiTrackEvents: mock.fn(),
-    normalizeMidiPitch: mock.fn(),
-    getNoteName: mock.fn(n => n)
+mock.module(
+  new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      isPercussionTrack: mock.fn(),
+      isValidMidiNote: mock.fn(),
+      buildMidiTrackEvents: mock.fn(),
+      normalizeMidiPitch: mock.fn(),
+      getNoteName: mock.fn(n => n)
+    }
   }
-})
+)
 
 mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
-    SONGS_BY_ID: new Map([].map(s => [s.id, s])),
+    SONGS_BY_ID: new Map(),
     SONGS_DB: []
   }
 })

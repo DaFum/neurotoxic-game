@@ -73,6 +73,8 @@ describe('useGigInput', () => {
 
     mockAudioManager.ensureAudioContext.mock.resetCalls()
     mockStopAudio.mock.resetCalls()
+    mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
+    mockErrorHandler.handleError.mock.resetCalls()
   })
 
   afterEach(() => {

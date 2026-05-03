@@ -72,50 +72,65 @@ const mockNoteManager = {
   dispose: mock.fn()
 }
 
-mock.module(new URL('../../src/components/stage/CrowdManager.ts', import.meta.url).href, {
-  namedExports: {
-    CrowdManager: class {
-      constructor() {
-        Object.assign(this, mockCrowdManager)
+mock.module(
+  new URL('../../src/components/stage/CrowdManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      CrowdManager: class {
+        constructor() {
+          Object.assign(this, mockCrowdManager)
+        }
       }
     }
   }
-})
-mock.module(new URL('../../src/components/stage/LaneManager.ts', import.meta.url).href, {
-  namedExports: {
-    LaneManager: class {
-      constructor() {
-        Object.assign(this, mockLaneManager)
+)
+mock.module(
+  new URL('../../src/components/stage/LaneManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      LaneManager: class {
+        constructor() {
+          Object.assign(this, mockLaneManager)
+        }
       }
     }
   }
-})
-mock.module(new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href, {
-  namedExports: {
-    EffectManager: class {
-      constructor() {
-        Object.assign(this, mockEffectManager)
+)
+mock.module(
+  new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      EffectManager: class {
+        constructor() {
+          Object.assign(this, mockEffectManager)
+        }
       }
     }
   }
-})
-mock.module(new URL('../../src/components/stage/NoteManager.ts', import.meta.url).href, {
-  namedExports: {
-    NoteManager: class {
-      constructor() {
-        Object.assign(this, mockNoteManager)
+)
+mock.module(
+  new URL('../../src/components/stage/NoteManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      NoteManager: class {
+        constructor() {
+          Object.assign(this, mockNoteManager)
+        }
       }
     }
   }
-})
+)
 
 const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
 }
 
-mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
-  namedExports: mockAudioEngine
-})
+mock.module(
+  new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
+  {
+    namedExports: mockAudioEngine
+  }
+)
 
 describe('PixiStageController', () => {
   let controller
@@ -141,6 +156,7 @@ describe('PixiStageController', () => {
     // Reset mocks
     mockCrowdManager.init.mock.resetCalls()
     mockCrowdManager.loadAssets.mock.resetCalls()
+    mockCrowdManager.loadAssets.mock.mockImplementation(() => Promise.resolve())
     mockLaneManager.init.mock.resetCalls()
     mockEffectManager.init.mock.resetCalls()
     mockEffectManager.loadAssets.mock.resetCalls()

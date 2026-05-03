@@ -72,11 +72,14 @@ mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
   }
 })
 
-mock.module(new URL('../src/utils/audio/AudioManager.ts', import.meta.url).href, {
-  namedExports: {
-    audioManager: mockAudioManager
+mock.module(
+  new URL('../src/utils/audio/AudioManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      audioManager: mockAudioManager
+    }
   }
-})
+)
 
 mock.module(new URL('../src/utils/simulationUtils.ts', import.meta.url).href, {
   namedExports: {
@@ -110,8 +113,8 @@ export const resetTravelLogicMockState = () => {
   mockAudioManager.ensureAudioContext.mock.resetCalls()
   mockAudioManager.playSFX.mock.mockImplementation(() => {})
   mockAudioManager.playSFX.mock.resetCalls()
-  mockAudioManager.warnAudioNotAvailable?.mock.mockImplementation(() => {})
-  mockAudioManager.warnAudioNotAvailable?.mock.resetCalls()
+  mockAudioManager.warnAudioNotAvailable.mock.mockImplementation(() => {})
+  mockAudioManager.warnAudioNotAvailable.mock.resetCalls()
 }
 
 beforeEach(resetTravelLogicMockState)

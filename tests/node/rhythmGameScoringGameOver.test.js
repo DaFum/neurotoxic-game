@@ -46,7 +46,11 @@ const { useRhythmGameScoring } =
 describe('useRhythmGameScoring Game Over', () => {
   beforeEach(() => {
     setupJSDOM()
-    mockAudioEngine.stopAudio.mock.resetCalls()
+    for (const fn of Object.values(mockAudioEngine)) fn.mock?.resetCalls()
+    for (const fn of Object.values(mockAudioManager)) fn.mock?.resetCalls()
+    for (const fn of Object.values(mockGigStats)) fn.mock?.resetCalls()
+    for (const fn of Object.values(mockTimingUtils)) fn.mock?.resetCalls()
+    for (const fn of Object.values(mockRhythmUtils)) fn.mock?.resetCalls()
   })
 
   afterEach(() => {
