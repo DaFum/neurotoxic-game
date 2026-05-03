@@ -1,11 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
-import { calculateGigFinancials } from '../utils/economyEngine'
-import { generatePostOptions } from '../utils/socialEngine'
 import { logger } from '../utils/logger'
 import { usePostGigHandlers } from './usePostGigHandlers'
-import { BALANCE_CONSTANTS } from '../utils/gameStateUtils'
 import { calculatePerformanceScore, deriveGigContext, deriveFinancials, derivePostOptions } from '../utils/postGigUtils'
 
 export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
@@ -94,9 +91,7 @@ export const usePostGigLogic = () => {
     social,
     reputationByRegion,
     activeStoryFlags,
-    gigContext: gigContextRef.current,
-    calculateGigFinancials,
-    BALANCE_CONSTANTS
+    gigContext: gigContextRef.current
   }), [
     currentGig,
     lastGigStats,
@@ -110,29 +105,27 @@ export const usePostGigLogic = () => {
   ])
 
   // Derive post options purely without triggering a re-render loop
-  const postOptions = useMemo(() => {
-    const { options, error } = derivePostOptions({
+  const { options: postOptions, error: postOptionsDerivationError } = useMemo(() => {
+    return derivePostOptions({
       currentGig,
       lastGigStats,
       player,
       band,
       social,
-      activeEvent,
-      generatePostOptions
+      activeEvent
     })
-
-    if (error) {
-      // Store the error fact silently inside ref,
-      // which we will read in the useEffect below.
-      if (errorHandledRef.current === false) {
-        errorHandledRef.current = { kind: 'pending', error }
-      }
-      return []
-    }
-
-    errorHandledRef.current = false
-    return options
   }, [currentGig, lastGigStats, player, band, social, activeEvent])
+
+  // Store the error fact silently inside ref, which we will read in the next useEffect
+  useEffect(() => {
+    if (postOptionsDerivationError) {
+      if (errorHandledRef.current === false) {
+        errorHandledRef.current = { kind: 'pending', error: postOptionsDerivationError }
+      }
+    } else {
+      errorHandledRef.current = false
+    }
+  }, [postOptionsDerivationError])
 
   // Process any error that happened during post option generation
   useEffect(() => {

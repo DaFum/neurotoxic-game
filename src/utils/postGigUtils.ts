@@ -1,3 +1,7 @@
+import { BALANCE_CONSTANTS } from './gameStateUtils'
+import { calculateGigFinancials } from './economyEngine'
+import { generatePostOptions } from './socialEngine'
+
 import {
   checkViralEvent,
   calculateSocialGrowth,
@@ -527,9 +531,7 @@ export const deriveFinancials = ({
   social,
   reputationByRegion,
   activeStoryFlags,
-  gigContext,
-  calculateGigFinancials,
-  BALANCE_CONSTANTS
+  gigContext
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -541,8 +543,6 @@ export const deriveFinancials = ({
   reputationByRegion: GameState['reputationByRegion']
   activeStoryFlags: GameState['activeStoryFlags']
   gigContext: { daysSinceLastGig: number; lastGigDifficulty: number | null } | null
-  calculateGigFinancials: typeof import('./economyEngine').calculateGigFinancials
-  BALANCE_CONSTANTS: typeof import('./gameStateUtils').BALANCE_CONSTANTS
 }) => {
   if (!currentGig || !lastGigStats) return null
 
@@ -579,8 +579,7 @@ export const derivePostOptions = ({
   player,
   band,
   social,
-  activeEvent,
-  generatePostOptions
+  activeEvent
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -588,7 +587,6 @@ export const derivePostOptions = ({
   band: GameState['band']
   social: GameState['social']
   activeEvent: GameState['activeEvent']
-  generatePostOptions: typeof import('./socialEngine').generatePostOptions
 }) => {
   if (!currentGig || !lastGigStats) return { options: [], error: null }
 
