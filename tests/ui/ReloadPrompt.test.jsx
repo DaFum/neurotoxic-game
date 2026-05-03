@@ -45,23 +45,23 @@ describe('ReloadPrompt', () => {
   it('shows offlineReady message and close button when offline-ready', () => {
     mockOfflineReady = true
     render(<ReloadPrompt />)
-    expect(screen.getByText('offline.offlineReady')).toBeInTheDocument()
-    expect(screen.getByText('offline.close')).toBeInTheDocument()
-    expect(screen.queryByText('offline.reload')).not.toBeInTheDocument()
+    expect(screen.getByText('ui:offline.offlineReady')).toBeInTheDocument()
+    expect(screen.getByText('ui:offline.close')).toBeInTheDocument()
+    expect(screen.queryByText('ui:offline.reload')).not.toBeInTheDocument()
   })
 
   it('shows needRefresh message with reload and close buttons', () => {
     mockNeedRefresh = true
     render(<ReloadPrompt />)
-    expect(screen.getByText('offline.needRefresh')).toBeInTheDocument()
-    expect(screen.getByText('offline.reload')).toBeInTheDocument()
-    expect(screen.getByText('offline.close')).toBeInTheDocument()
+    expect(screen.getByText('ui:offline.needRefresh')).toBeInTheDocument()
+    expect(screen.getByText('ui:offline.reload')).toBeInTheDocument()
+    expect(screen.getByText('ui:offline.close')).toBeInTheDocument()
   })
 
   it('close button dismisses the prompt', () => {
     mockOfflineReady = true
     render(<ReloadPrompt />)
-    fireEvent.click(screen.getByText('offline.close'))
+    fireEvent.click(screen.getByText('ui:offline.close'))
     expect(mockSetOfflineReady).toHaveBeenCalledWith(false)
     expect(mockSetNeedRefresh).toHaveBeenCalledWith(false)
   })
@@ -69,7 +69,7 @@ describe('ReloadPrompt', () => {
   it('reload button calls updateServiceWorker', () => {
     mockNeedRefresh = true
     render(<ReloadPrompt />)
-    fireEvent.click(screen.getByText('offline.reload'))
+    fireEvent.click(screen.getByText('ui:offline.reload'))
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true)
   })
 })
