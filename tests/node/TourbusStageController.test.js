@@ -204,11 +204,13 @@ mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
       MINIGAME_OBSTACLE_BARRIER: 'MINIGAME_OBSTACLE_BARRIER',
       MINIGAME_FUEL: 'MINIGAME_FUEL'
     },
-    isImageGenerationAvailable: () => true,
-    getGeneratedImageFallbackUrl: () => 'mock-fallback',
+    isImageGenerationAvailable: mock.fn(() => true),
+    getGeneratedImageFallbackUrl: mock.fn(() => 'mock-fallback'),
     getGenImageUrl: mock.fn(() => 'mock-url')
   }
 })
+
+const imageGen = await import('../../src/utils/imageGen.ts')
 
 describe('TourbusStageController', () => {
   let createTourbusStageController
@@ -291,6 +293,13 @@ describe('TourbusStageController', () => {
     currentTickerRemove.mock.resetCalls()
     currentAppDestroy.mock.resetCalls()
     currentLoad.mock.resetCalls()
+
+    stageRenderUtilsMocks.loadTextures.mock.resetCalls()
+    stageRenderUtilsMocks.loadTexture.mock.resetCalls()
+    stageRenderUtilsMocks.getPixiColorFromToken.mock.resetCalls()
+    imageGen.getGenImageUrl.mock.resetCalls()
+    imageGen.isImageGenerationAvailable.mock.resetCalls()
+    imageGen.getGeneratedImageFallbackUrl.mock.resetCalls()
   })
 
   it('should initialize correctly', async () => {
@@ -301,8 +310,15 @@ describe('TourbusStageController', () => {
   })
 
   it('should handle asset loading', async () => {
+    imageGen.isImageGenerationAvailable.mock.mockImplementation(() => true)
     await controller.loadAssets()
     assert.ok(controller.textures.bus)
+  })
+
+  it('should handle asset loading fallback when offline', async () => {
+    imageGen.isImageGenerationAvailable.mock.mockImplementation(() => false)
+    await controller.loadAssets()
+    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length > 0, true)
   })
 
   it('should run update loop via ticker', async () => {

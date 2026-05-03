@@ -155,11 +155,17 @@ export class EffectTextureManager {
   }
 
   dispose(): void {
-    safeDestroyTexture(this.genericHitTexture)
-    this.genericHitTexture = null
+    const uniqueTextures = new Set<Texture>()
 
-    safeDestroyTexture(this.textures.blood)
-    safeDestroyTexture(this.textures.toxic)
+    if (this.genericHitTexture) uniqueTextures.add(this.genericHitTexture)
+    if (this.textures.blood) uniqueTextures.add(this.textures.blood)
+    if (this.textures.toxic) uniqueTextures.add(this.textures.toxic)
+
+    uniqueTextures.forEach(texture => {
+      safeDestroyTexture(texture)
+    })
+
+    this.genericHitTexture = null
     this.textures = { blood: null, toxic: null }
   }
 }

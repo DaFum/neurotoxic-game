@@ -1,7 +1,5 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 // Mocks
 const mockAudioEngine = {
@@ -27,17 +25,44 @@ const mockRhythmUtils = {
 }
 
 // Apply mocks
-mock.module('../../src/utils/audio/audioEngine', {
+mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
   namedExports: mockAudioEngine
 })
-mock.module('../../src/utils/audio/AudioManager', {
+mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/gigStats', { namedExports: mockGigStats })
-mock.module('../../src/utils/audio/timingUtils', {
+mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, { namedExports: mockGigStats })
+mock.module(new URL('../../src/utils/audio/timingUtils.ts', import.meta.url).href, {
   namedExports: mockTimingUtils
 })
-mock.module('../../src/utils/rhythmUtils', { namedExports: mockRhythmUtils })
+mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, { namedExports: mockRhythmUtils })
+
+const _stableI18n = {
+  t: (key, options) => {
+    const template = options?.defaultValue || key
+    return options
+      ? template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+          String(options[token] ?? `{{${token}}}`)
+        )
+      : template
+  },
+  i18n: { language: 'en' }
+}
+mock.module('react-i18next', {
+  namedExports: {
+    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+    useTranslation: () => _stableI18n,
+    Trans: ({ i18nKey }) => i18nKey,
+    initReactI18next: { type: '3rdParty', init: () => {} }
+  }
+})
+mock.module('react', {
+  namedExports: {
+    useCallback: fn => fn,
+    useRef: initialValue => ({ current: initialValue }),
+    useEffect: () => {}
+  }
+})
 
 // Import hook (must be after mocks)
 const { useRhythmGameScoring } =
@@ -45,7 +70,6 @@ const { useRhythmGameScoring } =
 
 describe('useRhythmGameScoring Game Over', () => {
   beforeEach(() => {
-    setupJSDOM()
     for (const fn of Object.values(mockAudioEngine)) fn.mock?.resetCalls()
     for (const fn of Object.values(mockAudioManager)) fn.mock?.resetCalls()
     for (const fn of Object.values(mockGigStats)) fn.mock?.resetCalls()
@@ -54,8 +78,6 @@ describe('useRhythmGameScoring Game Over', () => {
   })
 
   afterEach(() => {
-    cleanup()
-    teardownJSDOM()
   })
 
   test('marks game over and stops audio on collapse', () => {
@@ -94,22 +116,24 @@ describe('useRhythmGameScoring Game Over', () => {
       addToast: mock.fn(),
       changeScene: mock.fn(),
       hasUpgrade: mock.fn(() => false),
-      setLastGigStats: mock.fn()
+      setLastGigStats: mock.fn(),
+      endGig: mock.fn()
     }
 
-    const { result } = renderHook(() =>
-      useRhythmGameScoring({
-        gameStateRef,
-        setters,
-        contextActions
-      })
-    )
-
-    act(() => {
-      // Trigger miss to reduce health below 0
-      // Default penalty is 2 per miss. Health is 10. Need 5 misses.
-      result.current.handleMiss(5, false) // 5 misses * 2 dmg = 10 dmg -> 0 health
+    // Because useRhythmGameScoring relies on React's lifecycle and returns state closures,
+    // we can invoke the hook function directly in node:test to get its exposed methods
+    // without spinning up JSDOM. Note: If it had inner `useEffect`s that fired on mount,
+    // those wouldn't fire here, but since `handleMiss` is just a pure callback returned,
+    // we can invoke it immediately.
+    const result = useRhythmGameScoring({
+      gameStateRef,
+      setters,
+      contextActions
     })
+
+    // Trigger miss to reduce health below 0
+    // Default penalty is 2 per miss. Health is 10. Need 5 misses.
+    result.handleMiss(5, false) // 5 misses * 2 dmg = 10 dmg -> 0 health
 
     // Check if stopAudio was called
     assert.equal(

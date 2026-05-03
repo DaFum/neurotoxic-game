@@ -16,7 +16,7 @@ const MOCK_CABLE_MAP = MOCK_CABLES.reduce((acc, cable) => {
 const MOCK_SLOT_XS = [100, 200, 300, 400, 500]
 
 mock.module(
-  new URL('../../src/scenes/kabelsalat/constants.ts', import.meta.url).href,
+  new URL('../../src/scenes/kabelsalat/kabelsalatConstants.ts', import.meta.url).href,
   {
     namedExports: {
       CABLES: MOCK_CABLES,
@@ -111,8 +111,9 @@ describe('kabelsalat utils', () => {
     const socketOrder = ['power', 'mic', 'amp']
     const path = getMessyPath('iec', 'mic', socketOrder)
 
-    // mic is at index 1, so socketX should be SLOT_XS[1] = 260
-    assert.ok(path.includes('260'))
+    // mic is at index 1, so socketX should be SLOT_XS[1] = 200
+    // SOCKET_Y = 120 and PLUG_DEPTH = 20 -> terminal Y should be 140
+    assert.ok(path.endsWith(` ${MOCK_SLOT_XS[1]} 140`))
   })
 
   test('getMessyPath calculates midpoint correctly', async () => {

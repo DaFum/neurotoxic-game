@@ -21,6 +21,7 @@ import { SettingsTab } from './bandhq/SettingsTab.tsx'
 import { LeaderboardTab } from './bandhq/LeaderboardTab.tsx'
 import { VoidTraderTab } from './bandhq/VoidTraderTab.tsx'
 import { Tooltip } from './shared/Tooltip.tsx'
+import { useNetworkStatus } from '../hooks/useNetworkStatus'
 
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { useAudioControl } from '../hooks/useAudioControl'
@@ -37,6 +38,7 @@ const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
  */
 export const BandHQ = ({ onClose, className = '' }) => {
   const { t } = useTranslation()
+  const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState('STATS')
 
   const player = useGameSelector(state => state.player)
@@ -108,7 +110,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
       <div
         className='fixed inset-0 z-40 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
-          backgroundImage: `url("${isImageGenerationAvailable() ? getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG) : getGeneratedImageFallbackUrl()}")`
+          backgroundImage: `url("${isImageGenerationAvailable(isOnline) ? getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG) : getGeneratedImageFallbackUrl()}")`
         }}
       />
 

@@ -50,7 +50,11 @@ export default defineConfig({
             urlPattern: /\.(?:mp3|ogg|wav|mid|midi)$/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'audio-assets-runtime'
+              cacheName: 'audio-assets-runtime',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+              }
             }
           },
           {
@@ -62,16 +66,23 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*$/i,
-            handler: 'NetworkOnly',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'online-only-font-css'
             }
           },
           {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*$/i,
-            handler: 'NetworkOnly',
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'online-only-font-files'
+              cacheName: 'online-only-font-files',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 Year
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           }
         ],

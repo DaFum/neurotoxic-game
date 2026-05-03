@@ -8,8 +8,8 @@ export const GENERATED_IMAGE_OFFLINE_FALLBACK = `${typeof import.meta !== 'undef
 // navigator.onLine is true for any network connection (LAN, captive portals),
 // not necessarily internet access to gen.pollinations.ai. This is a best-effort
 // check; the error-path fallback in fetchGenImageAsObjectUrl handles the rest.
-export const isImageGenerationAvailable = () =>
-  typeof navigator === 'undefined' || navigator.onLine
+export const isImageGenerationAvailable = (isOnline?: boolean) =>
+  isOnline ?? (typeof navigator === 'undefined' || navigator.onLine)
 
 export const getGeneratedImageFallbackUrl = () =>
   GENERATED_IMAGE_OFFLINE_FALLBACK
