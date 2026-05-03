@@ -384,7 +384,7 @@ export type Action<
 export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], GamePhase>
   | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>
-  | Action<ActionTypes['UPDATE_NEUROTOXIC_PEDAL'], { isActive: boolean | number }>
+  | Action<ActionTypes['UPDATE_NEUROTOXIC_PEDAL'], { isActive: boolean }>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
   | Action<
       ActionTypes['UPDATE_SOCIAL'],

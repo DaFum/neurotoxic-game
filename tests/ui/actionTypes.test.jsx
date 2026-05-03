@@ -7,7 +7,7 @@ describe('ActionTypes', () => {
       'CHANGE_SCENE',
       'UPDATE_PLAYER',
       'UPDATE_BAND',
-    'UPDATE_NEUROTOXIC_PEDAL',
+      'UPDATE_NEUROTOXIC_PEDAL',
       'UPDATE_SOCIAL',
       'UPDATE_SETTINGS',
       'SET_MAP',

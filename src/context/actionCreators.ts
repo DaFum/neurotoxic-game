@@ -139,10 +139,7 @@ export const createUpdateNeurotoxicPedalAction = (
 > => ({
   type: ActionTypes.UPDATE_NEUROTOXIC_PEDAL,
   payload: {
-    isActive:
-      typeof isActive === 'number'
-        ? Math.max(0, Math.min(1, isActive)) > 0
-        : isActive
+    isActive: typeof isActive === 'number' ? isActive > 0 : Boolean(isActive)
   }
 })
 

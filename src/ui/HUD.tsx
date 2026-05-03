@@ -227,7 +227,9 @@ export const HUD = () => {
           <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />
             <span className='font-black uppercase tracking-wider text-[10px]'>
-              NEUROTOXIC ACTIVE
+              {t('ui:hud.neurotoxicActive', {
+                defaultValue: 'NEUROTOXIC ACTIVE'
+              })}
             </span>
           </div>
         )}

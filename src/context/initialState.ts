@@ -123,7 +123,8 @@ export const DEFAULT_BAND_STATE: BandState = {
     strings: true,
     cables: true,
     drum_parts: true,
-    golden_pick: false
+    golden_pick: false,
+    neurotoxicPedal: false
   }
 }
 
