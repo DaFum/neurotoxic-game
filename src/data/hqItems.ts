@@ -2,6 +2,16 @@ export const HQ_ITEMS = {
   gear: [
     // Standard Consumables
     {
+      id: 'hq_gear_neurotoxic_pedal',
+      name: 'items:hq_gear_neurotoxic_pedal.name',
+      category: 'GEAR',
+      cost: 660,
+      currency: 'money',
+      img: 'ITEM_NEUROTOXIC_PEDAL',
+      description: 'items:hq_gear_neurotoxic_pedal.description',
+      effect: { type: 'inventory_set', item: 'neurotoxicPedal', value: true }
+    },
+    {
       id: 'hq_gear_strings',
       name: 'items:hq_gear_strings.name',
       category: 'GEAR',

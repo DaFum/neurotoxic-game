@@ -127,6 +127,23 @@ export const createUpdateBandAction = (
 }
 
 /**
+ * Creates a neurotoxic pedal update action
+ * @param {boolean | number} isActive - The activity state of the pedal. If number, clamped to 0-1 boolean equivalent.
+ * @returns {Object} Action object
+ */
+export const createUpdateNeurotoxicPedalAction = (
+  isActive: boolean | number
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.UPDATE_NEUROTOXIC_PEDAL }
+> => ({
+  type: ActionTypes.UPDATE_NEUROTOXIC_PEDAL,
+  payload: {
+    isActive: typeof isActive === 'number' ? isActive > 0 : Boolean(isActive)
+  }
+})
+
+/**
  * Creates a social update action
  * @param {Object} updates - Social media state updates
  * @returns {Object} Action object

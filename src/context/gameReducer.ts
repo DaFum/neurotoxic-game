@@ -100,6 +100,7 @@ type ActionTypeUnion = (typeof ActionTypes)[keyof typeof ActionTypes]
  */
 export const BAND_ACTIONS = [
   ActionTypes.UPDATE_BAND,
+  ActionTypes.UPDATE_NEUROTOXIC_PEDAL,
   ActionTypes.ADD_CONTRABAND,
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,

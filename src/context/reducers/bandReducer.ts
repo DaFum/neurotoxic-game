@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger'
+import { assertNever } from '../../utils/assertNever'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -395,6 +396,32 @@ export const handleUseContraband = (
  * @param {Object} action - Action with type and payload
  * @returns {Object} New state
  */
+export const handleUpdateNeurotoxicPedal = (
+  state: GameState,
+  payload: { isActive: boolean }
+): GameState => {
+  if (!payload || typeof payload !== 'object') {
+    return state
+  }
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      inventory: {
+        ...(state.band.inventory || {}),
+        neurotoxicPedal: payload.isActive
+      }
+    }
+  }
+}
+
+/**
+ * Main band reducer
+ * @param {Object} state - Current state
+ * @param {Object} action - Action with type and payload
+ * @returns {Object} New state
+ */
 export const bandReducer = (
   state: GameState,
   action: GameAction
@@ -402,6 +429,11 @@ export const bandReducer = (
   if (!('payload' in action)) return state
 
   switch (action.type) {
+    case ActionTypes.UPDATE_NEUROTOXIC_PEDAL:
+      return handleUpdateNeurotoxicPedal(
+        state,
+        action.payload as { isActive: boolean }
+      )
     case ActionTypes.UPDATE_BAND:
       return handleUpdateBand(state, action.payload as UpdateBandPayload)
     case ActionTypes.UNLOCK_TRAIT:
@@ -426,6 +458,6 @@ export const bandReducer = (
         }
       )
     default:
-      return state
+      return assertNever(action as never)
   }
 }

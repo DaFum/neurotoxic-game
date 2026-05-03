@@ -10,7 +10,10 @@ import type { SocialPostOption } from '../utils/socialEngine'
 import type { BrandDeal } from '../data/brandDeals'
 import type { PostGigFinancials } from '../types/economy'
 import { useCallback, useRef, useState } from 'react'
-import { GAME_PHASES } from '../context/gameConstants'
+import {
+  GAME_PHASES,
+  NEUROTOXIC_PEDAL_HARMONY_PENALTY
+} from '../context/gameConstants'
 import { secureRandom } from '../utils/crypto'
 import {
   QUEST_APOLOGY_TOUR,
@@ -19,6 +22,7 @@ import {
 import {
   clampPlayerMoney,
   clampPlayerFame,
+  clampBandHarmony,
   calculateFameLevel,
   calculateFameGain,
   BALANCE_CONSTANTS
@@ -367,6 +371,19 @@ export const usePostGigHandlers = ({
       lastGigNodeId: player.currentNodeId
     })
 
+    if (band.inventory?.neurotoxicPedal) {
+      updateBand(prevBand => {
+        const currentHarmony = prevBand.harmony ?? 100
+        const newHarmony = clampBandHarmony(
+          currentHarmony - NEUROTOXIC_PEDAL_HARMONY_PENALTY
+        )
+        return {
+          ...prevBand,
+          harmony: newHarmony
+        }
+      })
+    }
+
     if (activeStoryFlags?.includes('cancel_quest_active')) {
       addQuest({
         id: QUEST_APOLOGY_TOUR,
@@ -427,11 +444,13 @@ export const usePostGigHandlers = ({
     currentGig,
     lastGigStats,
     updatePlayer,
+    updateBand,
     addToast,
     changeScene,
     activeStoryFlags,
     addQuest,
     setlist,
+    band,
     t
   ])
 

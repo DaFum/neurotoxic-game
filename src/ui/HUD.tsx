@@ -8,7 +8,8 @@ import {
   VolumeX,
   Fuel,
   Wrench,
-  HelpCircle
+  HelpCircle,
+  Skull
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { ProgressBar, Tooltip } from './shared'
@@ -222,6 +223,16 @@ export const HUD = () => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
+        {band?.inventory?.neurotoxicPedal && (
+          <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
+            <Skull size={14} className='text-toxic-green' />
+            <span className='font-black uppercase tracking-wider text-[10px]'>
+              {t('ui:hud.neurotoxicActive', {
+                defaultValue: 'NEUROTOXIC ACTIVE'
+              })}
+            </span>
+          </div>
+        )}
         <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
           <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-[10px] tracking-widest text-ash-gray'>
             {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
