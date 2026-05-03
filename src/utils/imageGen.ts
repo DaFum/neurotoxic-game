@@ -8,6 +8,9 @@ export const GENERATED_IMAGE_OFFLINE_FALLBACK = new URL(
   import.meta.env.BASE_URL
 ).toString()
 
+// navigator.onLine is true for any network connection (LAN, captive portals),
+// not necessarily internet access to gen.pollinations.ai. This is a best-effort
+// check; the error-path fallback in fetchGenImageAsObjectUrl handles the rest.
 export const isImageGenerationAvailable = () =>
   typeof navigator === 'undefined' || navigator.onLine
 

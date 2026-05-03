@@ -2,6 +2,6 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 10000;
+  z-index: var(--z-toast);
   pointer-events: auto;
 }
