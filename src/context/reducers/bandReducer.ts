@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger'
+import { assertNever } from '../../utils/assertNever'
 import {
   clampBandHarmony,
   clampMemberMood,
@@ -453,6 +454,6 @@ export const bandReducer = (
         }
       )
     default:
-      return state
+      return assertNever(action as never)
   }
 }
