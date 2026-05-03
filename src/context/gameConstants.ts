@@ -1,4 +1,4 @@
-import type { MinigameState } from '../types/game'
+import type { MinigameState, GamePhase } from '../types/game'
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',
@@ -66,3 +66,8 @@ export const calculateClinicCost = (
     baseCost * Math.pow(CLINIC_CONFIG.VISIT_MULTIPLIER, currentVisits)
   )
 }
+
+export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
+  GAME_PHASES.OVERWORLD as GamePhase,
+  GAME_PHASES.MENU as GamePhase
+])

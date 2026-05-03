@@ -40,7 +40,7 @@ import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import { handleFailQuests } from './questReducer'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
-import { PRACTICE_RETURN_SCENES } from '../GameState'
+import { PRACTICE_RETURN_SCENES } from '../gameConstants'
 
 export const ALLOWED_SCENES = new Set([
   GAME_PHASES.OVERWORLD,
