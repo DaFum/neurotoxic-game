@@ -1,4 +1,4 @@
-import type { GameMap, PlayerState, RivalBandState } from '../types/game'
+import type { GameMap, RivalBandState } from '../types/game'
 
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { generateBrandName } from './socialEngine'
@@ -72,32 +72,4 @@ export const moveRivalBand = (
   }
 
   return rivalBand
-}
-
-export const calculateRivalImpact = (
-  playerState: PlayerState,
-  rivalState: RivalBandState | null,
-  currentVenueId: string | null
-): { impactLevel: number; sameLocation: boolean } => {
-  if (!rivalState || !currentVenueId) {
-    return { impactLevel: 0, sameLocation: false }
-  }
-
-  const sameLocation = rivalState.currentLocationId === currentVenueId
-  if (!sameLocation) {
-    return { impactLevel: 0, sameLocation: false }
-  }
-
-  // Calculate some impact level based on power vs player day
-  // Just a simple ratio for now
-  const playerExpectedPower = Math.max(
-    1,
-    Math.floor((playerState.day ?? 1) / 5) + 1
-  )
-  const impactLevel = Math.max(
-    0.5,
-    Math.min(2.0, rivalState.powerLevel / playerExpectedPower)
-  )
-
-  return { impactLevel, sameLocation }
 }

@@ -283,9 +283,7 @@ export const createInitialState = (
     stash: Object.assign(Object.create(null), DEFAULT_BAND_STATE.stash),
     activeContrabandEffects: [...DEFAULT_BAND_STATE.activeContrabandEffects]
   },
-  rivalBand: DEFAULT_RIVAL_BAND_STATE
-    ? { ...(DEFAULT_RIVAL_BAND_STATE as RivalBandState) }
-    : null,
+  rivalBand: null,
   social: {
     ...DEFAULT_SOCIAL_STATE,
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
