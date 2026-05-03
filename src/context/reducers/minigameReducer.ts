@@ -79,10 +79,8 @@ export const handleCompleteTravelMinigame = (
     state.player,
     state.band
   )
-  const { conditionLoss, fuelBonus, voidHazardHits } = calculateTravelMinigameResult(
-    damageTaken,
-    itemsCollected
-  )
+  const { conditionLoss, fuelBonus, voidHazardHits } =
+    calculateTravelMinigameResult(damageTaken, itemsCollected)
 
   const nextMoney = clampPlayerMoney(state.player.money - totalCost)
   const nextFuel = clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus)
@@ -90,7 +88,7 @@ export const handleCompleteTravelMinigame = (
     state.player.van.condition - conditionLoss
   )
 
-  let nextMembers = [...state.band.members]
+  const nextMembers = [...state.band.members]
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
     // Pick a random member for each hit, or apply to one member
     // Applying to a random member using the rngValue if possible
@@ -98,14 +96,17 @@ export const handleCompleteTravelMinigame = (
     // Or just pick the first member if rng isn't strictly available to loop.
     // For simplicity, apply a 10 stamina loss per hit to a random member.
     // Since we don't have multiple rng values, we can just use rngValue combined with an index.
-    const baseRng = typeof rngValue === 'number' ? rngValue : Math.random()
+    const baseRng = typeof rngValue === 'number' ? rngValue : 0
     const memberIndex = Math.floor(baseRng * nextMembers.length)
     const hitMember = nextMembers[memberIndex]
     if (hitMember) {
       const staminaPenalty = voidHazardHits * 10
       nextMembers[memberIndex] = {
         ...hitMember,
-        stamina: clampMemberStamina(hitMember.stamina - staminaPenalty, hitMember.staminaMax)
+        stamina: clampMemberStamina(
+          hitMember.stamina - staminaPenalty,
+          hitMember.staminaMax
+        )
       }
     }
   }
