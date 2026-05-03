@@ -4,7 +4,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import './ReloadPrompt.css'
 
 export default function ReloadPrompt() {
-  const { t } = useTranslation('ui');
+  const { t } = useTranslation('ui')
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],

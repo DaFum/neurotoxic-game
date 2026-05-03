@@ -156,7 +156,7 @@ jobs:
         shell: bash
         run: |
           rc=0
-          pnpm run test:ui 2>&1 | tee test-output-vitest-ui.txt || rc=$?
+          pnpm run test:vitest:ui 2>&1 | tee test-output-vitest-ui.txt || rc=$?
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
 
       - name: Upload test log artifact (vitest-ui)
