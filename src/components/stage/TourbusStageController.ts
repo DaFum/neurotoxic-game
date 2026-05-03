@@ -32,6 +32,7 @@ type TourbusColors = {
   warningYellow: number
   bloodRed: number
   toxicGreen: number
+  voidPurple: number
 }
 
 class TourbusStageController extends BaseStageController<TourbusControllerState> {
@@ -72,7 +73,8 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     this.colors = {
       warningYellow: getPixiColorFromToken('--warning-yellow'),
       bloodRed: getPixiColorFromToken('--blood-red'),
-      toxicGreen: getPixiColorFromToken('--toxic-green')
+      toxicGreen: getPixiColorFromToken('--toxic-green'),
+      voidPurple: getPixiColorFromToken('--void-purple')
     }
   }
 

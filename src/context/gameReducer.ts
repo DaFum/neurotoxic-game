@@ -160,6 +160,15 @@ const reducerMap = {
     handleStartAmpCalibration(state, payload as { gigId: string }),
   [ActionTypes.COMPLETE_AMP_CALIBRATION]: (state, payload) =>
     handleCompleteAmpCalibration(state, payload as Record<string, unknown>),
+  [ActionTypes.SPAWN_RIVAL_BAND]: state => handleSpawnRivalBand(state),
+  [ActionTypes.MOVE_RIVAL_BAND]: state => handleMoveRivalBand(state),
+  [ActionTypes.CHECK_RIVAL_ENCOUNTER]: state =>
+    handleCheckRivalEncounter(state),
+  [ActionTypes.UPDATE_RIVAL_BAND]: (state, payload) =>
+    handleUpdateRivalBand(
+      state,
+      payload as Parameters<typeof handleUpdateRivalBand>[1]
+    ),
   [ActionTypes.PIRATE_BROADCAST]: (state, payload) =>
     handlePirateBroadcast(state, payload as PirateBroadcastPayload),
   [ActionTypes.MERCH_PRESS]: (state, payload) =>
@@ -197,31 +206,6 @@ const reducerMap = {
   [ActionTypes.SET_PENDING_BANDHQ_OPEN]: (state, payload) =>
     handleSetPendingBandHQOpen(state, payload as boolean)
 } as ReducerMap
-  [ActionTypes.START_ROADIE_MINIGAME]: handleStartRoadieMinigame,
-  [ActionTypes.COMPLETE_ROADIE_MINIGAME]: handleCompleteRoadieMinigame,
-  [ActionTypes.START_KABELSALAT_MINIGAME]: handleStartKabelsalatMinigame,
-  [ActionTypes.COMPLETE_KABELSALAT_MINIGAME]: handleCompleteKabelsalatMinigame,
-  [ActionTypes.START_AMP_CALIBRATION]: handleStartAmpCalibration,
-  [ActionTypes.COMPLETE_AMP_CALIBRATION]: handleCompleteAmpCalibration,
-  [ActionTypes.SPAWN_RIVAL_BAND]: handleSpawnRivalBand,
-  [ActionTypes.MOVE_RIVAL_BAND]: handleMoveRivalBand,
-  [ActionTypes.UPDATE_RIVAL_BAND]: handleUpdateRivalBand,
-  [ActionTypes.CHECK_RIVAL_ENCOUNTER]: handleCheckRivalEncounter,
-  [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
-  [ActionTypes.MERCH_PRESS]: handleMerchPress,
-  [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
-  [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
-  [ActionTypes.ADD_QUEST]: handleAddQuest,
-  [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
-  [ActionTypes.COMPLETE_QUEST]: handleCompleteQuest,
-  [ActionTypes.FAIL_QUESTS]: (state: GameState) => handleFailQuests(state),
-  [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
-  [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
-  [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
-  [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,
-  [ActionTypes.BLOOD_BANK_DONATE]: handleBloodBankDonate,
-  [ActionTypes.SET_PENDING_BANDHQ_OPEN]: handleSetPendingBandHQOpen
-}
 
 /**
  * Main state reducer for the game.

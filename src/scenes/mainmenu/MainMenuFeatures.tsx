@@ -73,9 +73,9 @@ export const MainMenuFeatures = ({ onClose }: { onClose: () => void }) => {
               {t(section.title)}
             </h3>
             {section.description && t(section.description) && (
-                <p className='text-ash-gray font-mono text-sm md:text-base leading-relaxed mb-2'>
-                  {t(section.description)}
-                </p>
+              <p className='text-ash-gray font-mono text-sm md:text-base leading-relaxed mb-2'>
+                {t(section.description)}
+              </p>
             )}
 
             {section.type === 'bullets' && section.items && (

@@ -36,7 +36,13 @@ export class AmpStageController extends BaseStageController {
 
     this.syncState()
     this.drawBackground()
-    this.waveManager.drawWaves(this.targetFreq, this.currentFreq, this.time, this.isOverdriveActive, this.isOverheat)
+    this.waveManager.drawWaves(
+      this.targetFreq,
+      this.currentFreq,
+      this.time,
+      this.isOverdriveActive,
+      this.isOverheat
+    )
   }
 
   syncState() {
@@ -60,10 +66,10 @@ export class AmpStageController extends BaseStageController {
         }
       }
       if (Object.hasOwn(state, 'isOverdriveActive')) {
-          this.isOverdriveActive = Boolean(state.isOverdriveActive)
+        this.isOverdriveActive = Boolean(state.isOverdriveActive)
       }
       if (Object.hasOwn(state, 'isOverheat')) {
-          this.isOverheat = Boolean(state.isOverheat)
+        this.isOverheat = Boolean(state.isOverheat)
       }
     }
   }
@@ -79,12 +85,24 @@ export class AmpStageController extends BaseStageController {
     this.syncState()
 
     this.time += dt * 0.1
-    this.waveManager?.drawWaves(this.targetFreq, this.currentFreq, this.time, this.isOverdriveActive, this.isOverheat)
+    this.waveManager?.drawWaves(
+      this.targetFreq,
+      this.currentFreq,
+      this.time,
+      this.isOverdriveActive,
+      this.isOverheat
+    )
   }
 
   draw() {
     this.drawBackground()
-    this.waveManager?.drawWaves(this.targetFreq, this.currentFreq, this.time, this.isOverdriveActive, this.isOverheat)
+    this.waveManager?.drawWaves(
+      this.targetFreq,
+      this.currentFreq,
+      this.time,
+      this.isOverdriveActive,
+      this.isOverheat
+    )
   }
 
   dispose() {

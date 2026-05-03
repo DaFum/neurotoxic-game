@@ -16,10 +16,7 @@ const CATEGORY_PROMPTS = {
 
 const getImagePromptForCategory = (category?: string, badges?: string[]) => {
   if (badges?.includes('🔥')) return IMG_PROMPTS.SOCIAL_POST_VIRAL
-  if (
-    category &&
-    Object.hasOwn(CATEGORY_PROMPTS, category)
-  ) {
+  if (category && Object.hasOwn(CATEGORY_PROMPTS, category)) {
     return CATEGORY_PROMPTS[category as keyof typeof CATEGORY_PROMPTS]
   }
   return IMG_PROMPTS.SOCIAL_POST_TECH

@@ -172,7 +172,7 @@ export const useTourbusLogic = () => {
             audioManager.playSFX('pickup')
           } else if (obs.type === 'VOID_HAZARD') {
             game.itemsCollected.push('VOID_HAZARD')
-            audioManager.playSFX('miss')
+            audioManager.playSFX('void_hit')
           }
         }
 

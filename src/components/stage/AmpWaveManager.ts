@@ -23,18 +23,30 @@ export class AmpWaveManager {
   ) {
     if (!this.waveGraphics) return
 
-    const firstY = centerY + Math.sin(0 / period + time) * amplitude + (Math.random() - 0.5) * jitter
+    const firstY =
+      centerY +
+      Math.sin(0 / period + time) * amplitude +
+      (Math.random() - 0.5) * jitter
     this.waveGraphics.moveTo(0, firstY)
 
     for (let x = 5; x < width; x += 5) {
-      const y = centerY + Math.sin(x / period + time) * amplitude + (Math.random() - 0.5) * jitter
+      const y =
+        centerY +
+        Math.sin(x / period + time) * amplitude +
+        (Math.random() - 0.5) * jitter
       this.waveGraphics.lineTo(x, y)
     }
 
     this.waveGraphics.stroke(strokeOptions)
   }
 
-  drawWaves(targetFreq: number, currentFreq: number, time: number, isOverdriveActive: boolean = false, isOverheat: boolean = false) {
+  drawWaves(
+    targetFreq: number,
+    currentFreq: number,
+    time: number,
+    isOverdriveActive: boolean = false,
+    isOverheat: boolean = false
+  ) {
     if (!this.waveGraphics || !this.app || !this.app.screen) return
 
     this.waveGraphics.clear()
@@ -60,15 +72,23 @@ export class AmpWaveManager {
     let targetJitter = 0
 
     if (isOverheat) {
-        targetAmplitude = 150
-        targetJitter = 40
+      targetAmplitude = 150
+      targetJitter = 40
     }
 
-    this.drawSineWave(width, centerY, targetPeriod, time, targetAmplitude, targetJitter, {
-      width: isOverheat ? 4 : 2,
-      color: targetColor,
-      alpha: isMatching ? 0.8 : (isOverheat ? 0.9 : 0.5)
-    })
+    this.drawSineWave(
+      width,
+      centerY,
+      targetPeriod,
+      time,
+      targetAmplitude,
+      targetJitter,
+      {
+        width: isOverheat ? 4 : 2,
+        color: targetColor,
+        alpha: isMatching ? 0.8 : isOverheat ? 0.9 : 0.5
+      }
+    )
 
     // Draw Current Wave
     const currentPeriod = width / (currentFreq / 50 + 1)
@@ -78,22 +98,30 @@ export class AmpWaveManager {
     let currentWidth = 4
 
     if (isOverheat) {
-        currentColor = getPixiColorFromToken('--blood-red')
-        currentAmplitude = 120
-        currentJitter = 60
-        currentWidth = 6
+      currentColor = getPixiColorFromToken('--blood-red')
+      currentAmplitude = 120
+      currentJitter = 60
+      currentWidth = 6
     } else if (isOverdriveActive) {
-        currentColor = getPixiColorFromToken('--warning-yellow')
-        currentAmplitude = 180
-        currentJitter = 10
-        currentWidth = 8
+      currentColor = getPixiColorFromToken('--warning-yellow')
+      currentAmplitude = 180
+      currentJitter = 10
+      currentWidth = 8
     }
 
-    this.drawSineWave(width, centerY, currentPeriod, time, currentAmplitude, currentJitter, {
-      width: currentWidth,
-      color: currentColor,
-      alpha: 0.8
-    })
+    this.drawSineWave(
+      width,
+      centerY,
+      currentPeriod,
+      time,
+      currentAmplitude,
+      currentJitter,
+      {
+        width: currentWidth,
+        color: currentColor,
+        alpha: 0.8
+      }
+    )
   }
 
   dispose() {

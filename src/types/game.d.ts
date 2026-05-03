@@ -167,7 +167,13 @@ export interface BandState {
   [key: string]: unknown
 }
 
-export type BrandAlignment = 'EVIL' | 'CORPORATE' | 'INDIE' | 'SUSTAINABLE' | 'GOOD' | 'NEUTRAL'
+export type BrandAlignment =
+  | 'EVIL'
+  | 'CORPORATE'
+  | 'INDIE'
+  | 'SUSTAINABLE'
+  | 'GOOD'
+  | 'NEUTRAL'
 
 export interface RivalBandState {
   id: string
