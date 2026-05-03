@@ -34,16 +34,14 @@ export const BandHQ = ({ onClose, className = '' }) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('STATS')
 
-  const {
-    player,
-    band,
-    social,
-    settings,
-    setlist,
-    activeQuests,
-    venueBlacklist,
-    reputationByRegion
-  } = useGameSelector(state => state)
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const social = useGameSelector(state => state.social)
+  const settings = useGameSelector(state => state.settings)
+  const setlist = useGameSelector(state => state.setlist)
+  const activeQuests = useGameSelector(state => state.activeQuests)
+  const venueBlacklist = useGameSelector(state => state.venueBlacklist)
+  const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const {
     updatePlayer,
     updateBand,
@@ -184,7 +182,7 @@ export const BandHQ = ({ onClose, className = '' }) => {
               <React.Fragment key={tab.id}>
                 {tab.isLocked ? (
                   <Tooltip
-                    content={t('hq.voidTraderLockedTooltip')}
+                    content={t('ui:hq.voidTraderLockedTooltip')}
                     className='flex-1 flex'
                   >
                     {buttonContent}
