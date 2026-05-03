@@ -223,9 +223,8 @@ export const useMainMenu = () => {
   }, [startNewTourFlow])
 
   const handleLoadExistingFromPrompt = useCallback(() => {
-    void enterFullscreen()
     setShowExistingSavePrompt(false)
-    void handleLoad()
+    handleLoad()
   }, [handleLoad])
 
   return {
