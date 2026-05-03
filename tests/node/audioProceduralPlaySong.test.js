@@ -100,16 +100,19 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 
 // Mock PlaybackUtils
 const mockStopTransportAndClear = mock.fn()
-mock.module(new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href, {
-  namedExports: {
-    stopTransportAndClear: mockStopTransportAndClear,
-    clearTransportEvent: mock.fn(),
-    cleanupTransportEvents: mock.fn(),
-    stopAndDisconnectSource: mock.fn(),
-    cleanupGigPlayback: mock.fn(),
-    cleanupAmbientPlayback: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      stopTransportAndClear: mockStopTransportAndClear,
+      clearTransportEvent: mock.fn(),
+      cleanupTransportEvents: mock.fn(),
+      stopAndDisconnectSource: mock.fn(),
+      cleanupGigPlayback: mock.fn(),
+      cleanupAmbientPlayback: mock.fn()
+    }
   }
-})
+)
 
 // Mock Assets
 const mockMidiUrlMap = {
@@ -125,50 +128,56 @@ mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
 })
 
 // Mock Shared Buffer Utils
-mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
-  namedExports: {
-    createAndConnectBufferSource: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      createAndConnectBufferSource: mock.fn()
+    }
   }
-})
+)
 
 // Mock Data
 mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
-    SONGS_BY_ID: new Map([].map(s => [s.id, s])),
+    SONGS_BY_ID: new Map(),
     SONGS_DB: []
   }
 })
 
 // Mock Playback Utils
-mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
-  namedExports: {
-    resolveAssetUrl: mock.fn(),
-    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' }),
-    prepareTransportPlayback: mock.fn(async (options = {}) => {
-      const initialReqId = ++mockAudioState.playRequestId
-      const ensured = await mockEnsureAudioContext()
-      if (!ensured) return { success: false }
-      if (initialReqId !== mockAudioState.playRequestId)
-        return { success: false }
+mock.module(
+  new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      resolveAssetUrl: mock.fn(),
+      getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' }),
+      prepareTransportPlayback: mock.fn(async (options = {}) => {
+        const initialReqId = ++mockAudioState.playRequestId
+        const ensured = await mockEnsureAudioContext()
+        if (!ensured) return { success: false }
+        if (initialReqId !== mockAudioState.playRequestId)
+          return { success: false }
 
-      mockStopTransportAndClear()
+        mockStopTransportAndClear()
 
-      return {
-        success: true,
-        reqId: initialReqId,
-        normalizedOptions: {
-          useCleanPlayback: true,
-          onEnded:
-            typeof options?.onEnded === 'function' ? options.onEnded : null
+        return {
+          success: true,
+          reqId: initialReqId,
+          normalizedOptions: {
+            useCleanPlayback: true,
+            onEnded:
+              typeof options?.onEnded === 'function' ? options.onEnded : null
+          }
         }
-      }
-    }),
-    normalizeMidiPlaybackOptions: mock.fn(options => ({
-      useCleanPlayback: true,
-      onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null
-    }))
+      }),
+      normalizeMidiPlaybackOptions: mock.fn(options => ({
+        useCleanPlayback: true,
+        onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null
+      }))
+    }
   }
-})
+)
 
 // Mock env
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }

@@ -1,7 +1,7 @@
 import { test, describe, before, after, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils'
+import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 let mockPendingBandHQOpen = false
 const mockSetPendingBandHQOpen = mock.fn()
@@ -24,16 +24,11 @@ const mockUseGameState = mock.fn(() => ({
 mock.module('../../src/context/GameState', {
   namedExports: {
     useGameState: mockUseGameState,
-    useGameSelector: mock.fn(() => false),
-    useGameActions: mock.fn(() => ({ setPendingBandHQOpen: mock.fn() }))
-  }
-})
-
-mock.module(new URL('../../src/hooks/useAudioControl.ts', import.meta.url).href, {
-  namedExports: {
-    useAudioControl: mock.fn(() => ({
-      audioState: {},
-      handleAudioChange: () => {}
+    useGameSelector: mock.fn(selector =>
+      selector({ pendingBandHQOpen: mockPendingBandHQOpen })
+    ),
+    useGameActions: mock.fn(() => ({
+      setPendingBandHQOpen: mockSetPendingBandHQOpen
     }))
   }
 })
@@ -80,7 +75,7 @@ describe('useBandHQModal', () => {
 
     // The effect will run and call setPendingBandHQOpen(false) in a timeout
     await act(async () => {
-       await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise(resolve => setTimeout(resolve, 0))
     })
 
     assert.equal(mockSetPendingBandHQOpen.mock.calls.length, 1)

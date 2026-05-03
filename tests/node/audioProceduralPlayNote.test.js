@@ -80,12 +80,15 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 })
 
 // Mock Playback
-mock.module(new URL('../../src/utils/audio/playback.ts', import.meta.url).href, {
-  namedExports: {
-    stopAudioInternal: mock.fn(),
-    stopAudio: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/playback.ts', import.meta.url).href,
+  {
+    namedExports: {
+      stopAudioInternal: mock.fn(),
+      stopAudio: mock.fn()
+    }
   }
-})
+)
 
 // Mock Assets
 mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
@@ -97,11 +100,14 @@ mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
 })
 
 // Mock Shared Buffer Utils
-mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
-  namedExports: {
-    createAndConnectBufferSource: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      createAndConnectBufferSource: mock.fn()
+    }
   }
-})
+)
 
 // Mock MidiUtils - We want to use the REAL getNoteName if possible, but for isolation we can mock it
 // However, the optimization relies on getNoteName being efficient.
@@ -115,14 +121,17 @@ const mockGetNoteName = mock.fn(midi => {
 
 // We need to allow other exports to pass through if needed, or mock them all.
 // procedural.js uses: isPercussionTrack, isValidMidiNote, normalizeMidiPitch, getNoteName
-mock.module(new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href, {
-  namedExports: {
-    isPercussionTrack: mock.fn(),
-    isValidMidiNote: mock.fn(),
-    normalizeMidiPitch: mock.fn(n => n.midi),
-    getNoteName: mockGetNoteName
+mock.module(
+  new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      isPercussionTrack: mock.fn(),
+      isValidMidiNote: mock.fn(() => true),
+      normalizeMidiPitch: mock.fn(n => (typeof n === 'number' ? n : n.midi)),
+      getNoteName: mockGetNoteName
+    }
   }
-})
+)
 
 // Mock env
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }

@@ -52,9 +52,10 @@ mock.module('pixi.js', {
 })
 
 // Mock dependencies
+let mockIsImageGenerationAvailable = true
 mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
-    isImageGenerationAvailable: () => true,
+    isImageGenerationAvailable: () => mockIsImageGenerationAvailable,
     getGeneratedImageFallbackUrl: () => 'mock-fallback',
     getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { CROWD_IDLE: 'idle', CROWD_MOSH: 'mosh' }
@@ -108,21 +109,24 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
-  namedExports: {
-    ...mockPixiStageUtils,
-    calculateCrowdOffset: mock.fn(() => 10),
-    calculateCrowdY: mock.fn(() => 100),
-    getPixiColorFromToken: mock.fn(() => 0xffffff),
-    CROWD_LAYOUT: {
-      containerYRatio: 0.5,
-      memberCount: 2, // Small count for testing
-      minRadius: 10,
-      radiusVariance: 5,
-      yRangeRatio: 0.1
+mock.module(
+  new URL('../../src/components/stage/utils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      ...mockPixiStageUtils,
+      calculateCrowdOffset: mock.fn(() => 10),
+      calculateCrowdY: mock.fn(() => 100),
+      getPixiColorFromToken: mock.fn(() => 0xffffff),
+      CROWD_LAYOUT: {
+        containerYRatio: 0.5,
+        memberCount: 2, // Small count for testing
+        minRadius: 10,
+        radiusVariance: 5,
+        yRangeRatio: 0.1
+      }
     }
   }
-})
+)
 
 describe('CrowdManager', () => {
   let crowdManager
@@ -144,6 +148,7 @@ describe('CrowdManager', () => {
   })
 
   afterEach(() => {
+    mockIsImageGenerationAvailable = true
     if (PIXI && PIXI.Assets && PIXI.Assets.load.mock) {
       PIXI.Assets.load.mock.resetCalls()
       // Restore default implementation if necessary, or just reset calls
@@ -153,6 +158,23 @@ describe('CrowdManager', () => {
       // Here just resetting calls is good, but preventing leak is better:
       PIXI.Assets.load.mock.mockImplementation(async () => null)
     }
+  })
+
+  test('loadAssets loads offline fallback textures correctly', async () => {
+    mockIsImageGenerationAvailable = false
+
+    // In actual implementation, when offline, we pass the fallback URL to loadTextures.
+    // Our mockPixiStageUtils just returns what we mock it to return, but let's test our object state.
+    // We override PIXI.Assets.load to return fallbacks
+    PIXI.Assets.load.mock.mockImplementation(async url => {
+      if (url.includes('fallback')) return mockTextureIdle
+      return null
+    })
+
+    await crowdManager.loadAssets()
+
+    assert.equal(crowdManager.textures.idle, mockTextureIdle)
+    assert.equal(crowdManager.textures.mosh, mockTextureIdle)
   })
 
   test('loadAssets loads textures correctly', async () => {
