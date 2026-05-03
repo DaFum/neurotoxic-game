@@ -113,23 +113,24 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
 
   async loadAssets() {
     try {
-      // Generate URLs
-      const urls = {
-        bus: isImageGenerationAvailable()
+      // Generate URLs. Game-critical obstacle/pickup sprites (rock, barrier, fuel)
+      // must stay null when offline so TourbusObstacleManager falls back to its
+      // distinct colored Graphics shapes rather than rendering identical SVGs.
+      const online = isImageGenerationAvailable()
+      const urls: Record<string, string | null> = {
+        bus: online
           ? getGenImageUrl(IMG_PROMPTS.ICON_VAN)
           : getGeneratedImageFallbackUrl(),
-        road: isImageGenerationAvailable()
+        road: online
           ? getGenImageUrl(IMG_PROMPTS.MINIGAME_ROAD)
           : getGeneratedImageFallbackUrl(),
-        rock: isImageGenerationAvailable()
+        rock: online
           ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_ROCK)
-          : getGeneratedImageFallbackUrl(),
-        barrier: isImageGenerationAvailable()
+          : null,
+        barrier: online
           ? getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER)
-          : getGeneratedImageFallbackUrl(),
-        fuel: isImageGenerationAvailable()
-          ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
-          : getGeneratedImageFallbackUrl()
+          : null,
+        fuel: online ? getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL) : null
       }
 
       const loaded = (await loadTextures(urls, undefined)) as Record<
