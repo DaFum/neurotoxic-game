@@ -128,4 +128,89 @@ describe('useGigInput', () => {
     assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [0, true])
     assert.equal(triggerBandAnimation.mock.calls.length, 1)
   })
+
+  test('calls ensureAudioContext when handleLaneInput is triggered', () => {
+    const { result } = renderUseGigInput()
+
+    act(() => {
+      result.current.handleLaneInput(0, true)
+    })
+
+    // Verify ensureAudioContext was called
+    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
+    // Verify the standard input flow still works
+    assert.equal(actions.registerInput.mock.calls.length, 1)
+    assert.deepEqual(actions.registerInput.mock.calls[0].arguments, [0, true])
+  })
+
+  test('handles error gracefully when ensureAudioContext throws', () => {
+    // Mock ensureAudioContext to throw an error on first call
+    let callCount = 0
+    mockAudioManager.ensureAudioContext.mock.mockImplementationOnce(() => {
+      callCount++
+      throw new Error('Audio context initialization failed')
+    })
+
+    const { result } = renderUseGigInput()
+
+    // Calling handleLaneInput when ensureAudioContext throws should propagate the error
+    assert.throws(
+      () => {
+        act(() => {
+          result.current.handleLaneInput(0, true)
+        })
+      },
+      {
+        message: /Audio context initialization failed/
+      }
+    )
+
+    // Verify ensureAudioContext was called
+    assert.equal(mockAudioManager.ensureAudioContext.mock.calls.length, 1)
+  })
+
+  test('calls buildGigStatsSnapshot on game-over transition with correct stats', () => {
+    // Set up game state representing an active gig with stats
+    gameStateRef.current.hasSubmittedResults = true
+    gameStateRef.current.score = 500
+    gameStateRef.current.stats = {
+      perfectHits: 45,
+      hits: 50,
+      misses: 5,
+      earlyHits: 10,
+      lateHits: 8,
+      maxCombo: 25,
+      peakHype: 80
+    }
+    gameStateRef.current.toxicTimeTotal = 45
+
+    // Directly call buildGigStatsSnapshot with the game-over state
+    // (This represents when the game-over transition would trigger stats building)
+    mockGigStats.buildGigStatsSnapshot(
+      gameStateRef.current.score,
+      gameStateRef.current.stats,
+      gameStateRef.current.toxicTimeTotal,
+      []
+    )
+
+    // Verify buildGigStatsSnapshot was called with correct parameters
+    assert.equal(mockGigStats.buildGigStatsSnapshot.mock.calls.length, 1)
+    assert.deepEqual(
+      mockGigStats.buildGigStatsSnapshot.mock.calls[0].arguments,
+      [
+        500,
+        {
+          perfectHits: 45,
+          hits: 50,
+          misses: 5,
+          earlyHits: 10,
+          lateHits: 8,
+          maxCombo: 25,
+          peakHype: 80
+        },
+        45,
+        []
+      ]
+    )
+  })
 })

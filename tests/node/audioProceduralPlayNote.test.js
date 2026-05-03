@@ -287,4 +287,99 @@ test('playNoteAtTime Tests', async t => {
     assert.strictEqual(args[0], 8000)
     assert.strictEqual(args[1], '32n')
   })
+
+  await t.test(
+    'plays correct note for midiLead lane with triggerAttackRelease',
+    async () => {
+      const midiPitch = 60
+      const lane = 'midiLead'
+      const time = 1000
+      const velocity = 100
+
+      playNoteAtTime(midiPitch, lane, time, velocity)
+
+      // MIDI lanes should use getNoteName instead of Tone.Frequency
+      assert.strictEqual(
+        mockTone.Frequency.mock.calls.length,
+        0,
+        'Tone.Frequency should NOT be called for MIDI lanes'
+      )
+
+      // Verify triggerAttackRelease was called on midiLead
+      assert.strictEqual(
+        mockAudioState.midiLead.triggerAttackRelease.mock.calls.length,
+        1,
+        'midiLead triggerAttackRelease should be called once'
+      )
+      const args =
+        mockAudioState.midiLead.triggerAttackRelease.mock.calls[0].arguments
+      assert.strictEqual(
+        args[0],
+        `Note${midiPitch}`,
+        'Should use note name from getNoteName'
+      )
+      assert.strictEqual(args[2], time, 'Time should match')
+    }
+  )
+
+  await t.test(
+    'plays correct note for midiBass lane with triggerAttackRelease',
+    async () => {
+      const midiPitch = 40
+      const lane = 'midiBass'
+      const time = 1000
+      const velocity = 100
+
+      playNoteAtTime(midiPitch, lane, time, velocity)
+
+      // MIDI lanes should not invoke Tone.Frequency
+      assert.strictEqual(
+        mockTone.Frequency.mock.calls.length,
+        0,
+        'Tone.Frequency should NOT be called for MIDI lanes'
+      )
+
+      // Verify triggerAttackRelease was called on midiBass
+      assert.strictEqual(
+        mockAudioState.midiBass.triggerAttackRelease.mock.calls.length,
+        1,
+        'midiBass triggerAttackRelease should be called once'
+      )
+      const args =
+        mockAudioState.midiBass.triggerAttackRelease.mock.calls[0].arguments
+      assert.strictEqual(
+        args[0],
+        `Note${midiPitch}`,
+        'Should use note name from getNoteName'
+      )
+      assert.strictEqual(args[2], time, 'Time should match')
+    }
+  )
+
+  await t.test(
+    'plays correct note for midiDrumKit lane with triggerAttackRelease',
+    async () => {
+      const midiPitch = 36
+      const lane = 'midiDrumKit'
+      const time = 1000
+      const velocity = 100
+
+      playNoteAtTime(midiPitch, lane, time, velocity)
+
+      // midiDrumKit should route to appropriate drum piece based on MIDI pitch
+      // For kick (MIDI 36), should call midiDrumKit.kick
+      assert.strictEqual(
+        mockAudioState.midiDrumKit.kick.triggerAttackRelease.mock.calls.length,
+        1,
+        'midiDrumKit.kick triggerAttackRelease should be called once'
+      )
+
+      // Tone.Frequency should not be called for MIDI drum lanes
+      assert.strictEqual(
+        mockTone.Frequency.mock.calls.length,
+        0,
+        'Tone.Frequency should NOT be called for MIDI drum lanes'
+      )
+    }
+  )
 })

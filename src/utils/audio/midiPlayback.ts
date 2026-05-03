@@ -104,10 +104,22 @@ function triggerInstrumentNote(
 ): void {
   if (lane === 'drums') {
     playDrumNote(midiPitch, time, velocity)
+  } else if (lane === 'midiDrumKit') {
+    playDrumNote(midiPitch, time, velocity, audioState.midiDrumKit)
   } else if (lane === 'bass') {
     if (audioState.bass) {
       const freq = noteName ?? getNoteName(midiPitch) ?? 'C3'
       audioState.bass.triggerAttackRelease(freq, '8n', time, velocity)
+    }
+  } else if (lane === 'midiBass') {
+    if (audioState.midiBass) {
+      const freq = noteName ?? getNoteName(midiPitch) ?? 'C3'
+      audioState.midiBass.triggerAttackRelease(freq, '8n', time, velocity)
+    }
+  } else if (lane === 'midiLead') {
+    if (audioState.midiLead) {
+      const freq = noteName ?? getNoteName(midiPitch) ?? 'C4'
+      audioState.midiLead.triggerAttackRelease(freq, '16n', time, velocity)
     }
   } else if (audioState.guitar) {
     const freq = noteName ?? getNoteName(midiPitch) ?? 'C4'
