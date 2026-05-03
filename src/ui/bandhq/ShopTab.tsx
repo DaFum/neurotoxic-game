@@ -41,34 +41,39 @@ const isEffect = (obj: unknown): obj is Effect => {
   }
 }
 
-const RAW_ITEMS: PurchaseItem[] = [
-  ...((HQ_ITEMS.gear as unknown as PurchaseItem[]) || []),
-  ...((HQ_ITEMS.instruments as unknown as PurchaseItem[]) || [])
-]
-
 // ⚡ Bolt Optimization:
 // Lifted expensive array creation and filtering out of the render loop.
-// Combined .filter() and .map() into a single O(n) for-loop, pre-computed once.
-// This prevents unnecessary array allocations on every ShopTab re-render.
+// Iterating over the source arrays directly using a nested loop avoids
+// intermediate array allocations and temporary variables in the module scope.
 const ITEMS: CatalogItem[] = (() => {
   const processed: CatalogItem[] = []
-  for (let i = 0; i < RAW_ITEMS.length; i++) {
-    const item = RAW_ITEMS[i]
-    if (item == null || item.id == null) continue
-    if (typeof item.cost !== 'number' || !Number.isFinite(item.cost)) continue
+  const sources = [
+    (Array.isArray(HQ_ITEMS.gear) ? HQ_ITEMS.gear : []) as unknown as PurchaseItem[],
+    (Array.isArray(HQ_ITEMS.instruments) ? HQ_ITEMS.instruments : []) as unknown as PurchaseItem[]
+  ]
 
-    if (item.effect != null && !isEffect(item.effect)) {
-      throw new Error(
-        `Invalid effect shape in ShopTab for item "${String(item.id)}"`
-      )
+  for (let j = 0; j < sources.length; j++) {
+    const source = sources[j]
+    if (!source || !Array.isArray(source)) continue
+
+    for (let i = 0; i < source.length; i++) {
+      const item = source[i]
+      if (item == null || item.id == null) continue
+      if (typeof item.cost !== 'number' || !Number.isFinite(item.cost)) continue
+
+      if (item.effect != null && !isEffect(item.effect)) {
+        throw new Error(
+          `Invalid effect shape in ShopTab for item "${String(item.id)}"`
+        )
+      }
+
+      processed.push({
+        ...item,
+        id: String(item.id),
+        cost: item.cost,
+        effect: item.effect as Effect | undefined
+      })
     }
-
-    processed.push({
-      ...item,
-      id: String(item.id),
-      cost: item.cost,
-      effect: item.effect as Effect | undefined
-    })
   }
   return processed
 })()
