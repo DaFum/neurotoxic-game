@@ -13,7 +13,7 @@ const mockLogger = {
   error: mock.fn(),
   info: mock.fn()
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -29,7 +29,7 @@ const mockAudioState = {
 }
 const mockResetGigState = mock.fn()
 
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: {
     audioState: mockAudioState,
     resetGigState: mockResetGigState

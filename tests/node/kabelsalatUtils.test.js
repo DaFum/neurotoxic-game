@@ -15,7 +15,7 @@ const MOCK_CABLE_MAP = MOCK_CABLES.reduce((acc, cable) => {
 
 const MOCK_SLOT_XS = [100, 200, 300, 400, 500]
 
-mock.module('../../src/scenes/kabelsalat/constants', {
+mock.module(new URL('../../src/scenes/kabelsalat/constants.ts', import.meta.url).href, {
   namedExports: {
     CABLES: MOCK_CABLES,
     CABLE_MAP: MOCK_CABLE_MAP,

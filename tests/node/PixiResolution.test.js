@@ -81,7 +81,7 @@ mock.module('pixi.js', {
 })
 
 // Mock Managers
-mock.module('../../src/components/stage/CrowdManager', {
+mock.module(new URL('../../src/components/stage/CrowdManager.ts', import.meta.url).href, {
   namedExports: {
     CrowdManager: class {
       init() {}
@@ -93,7 +93,7 @@ mock.module('../../src/components/stage/CrowdManager', {
     }
   }
 })
-mock.module('../../src/components/stage/LaneManager', {
+mock.module(new URL('../../src/components/stage/LaneManager.ts', import.meta.url).href, {
   namedExports: {
     LaneManager: class {
       init() {}
@@ -105,7 +105,7 @@ mock.module('../../src/components/stage/LaneManager', {
     }
   }
 })
-mock.module('../../src/components/stage/EffectManager', {
+mock.module(new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href, {
   namedExports: {
     EffectManager: class {
       constructor() {
@@ -117,7 +117,7 @@ mock.module('../../src/components/stage/EffectManager', {
     }
   }
 })
-mock.module('../../src/components/stage/NoteManager', {
+mock.module(new URL('../../src/components/stage/NoteManager.ts', import.meta.url).href, {
   namedExports: {
     NoteManager: class {
       init() {}

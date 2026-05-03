@@ -8,7 +8,7 @@ const mockLogger = {
   warn: (...args) => loggerHistory.push(['warn', ...args]),
   error: (...args) => loggerHistory.push(['error', ...args])
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -17,7 +17,7 @@ const mockAudioState = {
   playRequestId: 1,
   ambientSource: null
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState }
 })
 
@@ -27,7 +27,7 @@ const mockStopAudio = mock.fn(() => {
   mockAudioState.playRequestId++
   capturedReqIds.push(mockAudioState.playRequestId)
 })
-mock.module('../../src/utils/audio/playback', {
+mock.module(new URL('../../src/utils/audio/playback.ts', import.meta.url).href, {
   namedExports: { stopAudio: mockStopAudio }
 })
 
@@ -43,7 +43,7 @@ const mockLoadAudioBuffer = mock.fn(defaultLoadAudioBufferImpl)
 const mockMidiUrlMap = { 'test1.mid': 'url1', 'test2.mid': 'url2' }
 const mockOggCandidates = ['test1.ogg', 'test2.ogg']
 
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: mockMidiUrlMap,
     oggCandidates: mockOggCandidates,
@@ -54,14 +54,14 @@ mock.module('../../src/utils/audio/assets', {
 // Mock audio routing
 const mockSource = { start: mock.fn(), onended: null }
 const mockCreateAndConnect = mock.fn(() => mockSource)
-mock.module('../../src/utils/audio/sharedBufferUtils', {
+mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
   namedExports: { createAndConnectBufferSource: mockCreateAndConnect }
 })
 
 // Mock generic utils
 let currentMockSelectRandomItem = (arr, _rng) =>
   arr && arr.length > 0 ? arr[0] : null
-mock.module('../../src/utils/audio/selectionUtils', {
+mock.module(new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href, {
   namedExports: {
     selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args)
   }
@@ -72,18 +72,18 @@ const mockEnsureAudioContext = mock.fn(async () => {
   if (ensureAudioDeferred) return ensureAudioDeferred.promise
   return true
 })
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: { ensureAudioContext: mockEnsureAudioContext }
 })
 
 // Mock midi playback
 const mockPlayMidiFileInternal = mock.fn(async () => true)
-mock.module('../../src/utils/audio/midiPlayback', {
+mock.module(new URL('../../src/utils/audio/midiPlayback.ts', import.meta.url).href, {
   namedExports: { playMidiFileInternal: mockPlayMidiFileInternal }
 })
 
 // Mock songs db
-mock.module('../../src/data/songs', {
+mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
     SONGS_BY_ID: new Map([].map(s => [s.id, s])),
     SONGS_DB: [],

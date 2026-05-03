@@ -58,7 +58,7 @@ const mockHandleError = mock.fn()
 class MockStateError extends Error {}
 
 // Mock modules
-mock.module('../src/utils/economyEngine', {
+mock.module(new URL('../src/utils/economyEngine.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
@@ -69,26 +69,26 @@ mock.module('../src/utils/economyEngine', {
   }
 })
 
-mock.module('../src/utils/audio/AudioManager', {
+mock.module(new URL('../src/utils/audio/AudioManager.ts', import.meta.url).href, {
   namedExports: {
     audioManager: mockAudioManager
   }
 })
 
-mock.module('../src/utils/simulationUtils', {
+mock.module(new URL('../src/utils/simulationUtils.ts', import.meta.url).href, {
   namedExports: {
     calculateGuaranteedDailyCost: mockCalculateGuaranteedDailyCost
   }
 })
 
-mock.module('../src/utils/logger', {
+mock.module(new URL('../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: mockLogger,
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
   }
 })
 
-mock.module('../src/utils/errorHandler', {
+mock.module(new URL('../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mockHandleError,
     StateError: MockStateError

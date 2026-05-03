@@ -17,7 +17,7 @@ const mockBuildAssetUrlMap = mock.fn((glob, warn, label) => {
 const mockResolveAssetUrl = mock.fn()
 const PATH_PREFIX_REGEX = /^\.?\//
 
-mock.module('../../src/utils/audio/playbackUtils', {
+mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
   namedExports: {
     buildAssetUrlMap: mockBuildAssetUrlMap,
     resolveAssetUrl: mockResolveAssetUrl,

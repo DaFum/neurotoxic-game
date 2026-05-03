@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -38,7 +38,7 @@ const mockAudioState = {
     ride: { triggerAttackRelease: mock.fn() }
   }
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -72,7 +72,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -80,7 +80,7 @@ mock.module('../../src/utils/audio/context', {
 })
 
 // Mock Playback
-mock.module('../../src/utils/audio/playback', {
+mock.module(new URL('../../src/utils/audio/playback.ts', import.meta.url).href, {
   namedExports: {
     stopAudioInternal: mock.fn(),
     stopAudio: mock.fn()
@@ -88,7 +88,7 @@ mock.module('../../src/utils/audio/playback', {
 })
 
 // Mock Assets
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: {},
     loadAudioBuffer: mock.fn(),
@@ -97,7 +97,7 @@ mock.module('../../src/utils/audio/assets', {
 })
 
 // Mock Shared Buffer Utils
-mock.module('../../src/utils/audio/sharedBufferUtils', {
+mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }
@@ -115,7 +115,7 @@ const mockGetNoteName = mock.fn(midi => {
 
 // We need to allow other exports to pass through if needed, or mock them all.
 // procedural.js uses: isPercussionTrack, isValidMidiNote, normalizeMidiPitch, getNoteName
-mock.module('../../src/utils/audio/midiUtils', {
+mock.module(new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href, {
   namedExports: {
     isPercussionTrack: mock.fn(),
     isValidMidiNote: mock.fn(),

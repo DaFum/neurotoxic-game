@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -42,7 +42,7 @@ const mockAudioState = {
   transportStopEventId: null,
   part: null
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -90,7 +90,7 @@ mock.module('tone', { namedExports: mockTone })
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0),
@@ -100,7 +100,7 @@ mock.module('../../src/utils/audio/context', {
 
 // Mock PlaybackUtils
 const mockStopTransportAndClear = mock.fn()
-mock.module('../../src/utils/audio/cleanupUtils', {
+mock.module(new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href, {
   namedExports: {
     stopTransportAndClear: mockStopTransportAndClear,
     clearTransportEvent: mock.fn(),
@@ -116,7 +116,7 @@ const mockMidiUrlMap = {
   'test.mid': '/assets/test.mid'
 }
 const mockLoadAudioBuffer = mock.fn()
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: mockMidiUrlMap,
     loadAudioBuffer: mockLoadAudioBuffer,
@@ -125,14 +125,14 @@ mock.module('../../src/utils/audio/assets', {
 })
 
 // Mock Shared Buffer Utils
-mock.module('../../src/utils/audio/sharedBufferUtils', {
+mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }
 })
 
 // Mock Data
-mock.module('../../src/data/songs', {
+mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
     SONGS_BY_ID: new Map([].map(s => [s.id, s])),
     SONGS_DB: []
@@ -140,7 +140,7 @@ mock.module('../../src/data/songs', {
 })
 
 // Mock Playback Utils
-mock.module('../../src/utils/audio/playbackUtils', {
+mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
   namedExports: {
     resolveAssetUrl: mock.fn(),
     getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' }),

@@ -83,7 +83,7 @@ mock.module('pixi.js', {
 })
 
 // Mock EffectManager
-mock.module('../../src/components/stage/EffectManager', {
+mock.module(new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href, {
   namedExports: {
     EffectManager: class {
       constructor() {}
@@ -99,7 +99,7 @@ mock.module('../../src/components/stage/EffectManager', {
 })
 
 // Mock TourbusObstacleManager
-mock.module('../../src/components/stage/TourbusObstacleManager', {
+mock.module(new URL('../../src/components/stage/TourbusObstacleManager.ts', import.meta.url).href, {
   namedExports: {
     TourbusObstacleManager: class {
       constructor() {
@@ -137,7 +137,7 @@ mock.module('../../src/components/stage/TourbusObstacleManager', {
 })
 
 // Mock Utils
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: {
       info: mock.fn(),
@@ -147,7 +147,7 @@ mock.module('../../src/utils/logger', {
   }
 })
 
-mock.module('../../src/components/stage/utils', {
+mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
   namedExports: {
     getPixiColorFromToken: mock.fn(() => 0xffffff),
     loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
@@ -164,7 +164,7 @@ mock.module('../../src/components/stage/utils', {
   }
 })
 
-mock.module('../../src/utils/imageGen', {
+mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
     IMG_PROMPTS: {
       ICON_VAN: 'ICON_VAN',

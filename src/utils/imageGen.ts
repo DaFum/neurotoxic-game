@@ -3,8 +3,10 @@ const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
 const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 
-export const GENERATED_IMAGE_OFFLINE_FALLBACK =
-  '/images/generated-offline-fallback.svg'
+export const GENERATED_IMAGE_OFFLINE_FALLBACK = new URL(
+  'images/generated-offline-fallback.svg',
+  import.meta.env.BASE_URL
+).toString()
 
 export const isImageGenerationAvailable = () =>
   typeof navigator === 'undefined' || navigator.onLine

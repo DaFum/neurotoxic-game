@@ -71,7 +71,7 @@ class MockNoteSpritePool {
   dispose = mockPoolDispose
 }
 
-mock.module('../../src/components/stage/NoteSpritePool', {
+mock.module(new URL('../../src/components/stage/NoteSpritePool.ts', import.meta.url).href, {
   namedExports: {
     NoteSpritePool: MockNoteSpritePool,
     NOTE_CENTER_OFFSET: 50
@@ -80,13 +80,13 @@ mock.module('../../src/components/stage/NoteSpritePool', {
 
 // Mock other dependencies
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/imageGen', {
+mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
     isImageGenerationAvailable: () => true,
     getGeneratedImageFallbackUrl: () => 'mock-fallback',
@@ -129,7 +129,7 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/utils', {
+mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
   namedExports: mockPixiStageUtils
 })
 

@@ -12,7 +12,7 @@ const mockBuildRhythmLayout = mock.fn(() => ({
   rhythmOffsetY: 360
 }))
 
-mock.module('../../src/components/stage/utils', {
+mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
   namedExports: {
     buildRhythmLayout: mockBuildRhythmLayout,
     getPixiColorFromToken: mock.fn(tokenName => {

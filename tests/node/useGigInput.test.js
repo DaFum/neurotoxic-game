@@ -27,17 +27,17 @@ const mockErrorHandler = {
 const mockStopAudio = mock.fn()
 
 // Mock imports
-mock.module('../../src/utils/audio/AudioManager', {
+mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/gigStats', {
+mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, {
   namedExports: { buildGigStatsSnapshot: mockGigStats.buildGigStatsSnapshot }
 })
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: { handleError: mockErrorHandler.handleError }
 })
 // Mock dynamic import
-mock.module('../../src/utils/audio/audioEngine', {
+mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
   namedExports: { stopAudio: mockStopAudio }
 })
 

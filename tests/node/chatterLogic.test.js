@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import * as cryptoUtils from '../../src/utils/crypto'
 
 // Mock the data modules before importing the logic
-mock.module('../../src/data/chatter/standardChatter', {
+mock.module(new URL('../../src/data/chatter/standardChatter.ts', import.meta.url).href, {
   namedExports: {
     CHATTER_DB: [
       {
@@ -21,7 +21,7 @@ mock.module('../../src/data/chatter/standardChatter', {
   }
 })
 
-mock.module('../../src/data/chatter/venueChatter', {
+mock.module(new URL('../../src/data/chatter/venueChatter.ts', import.meta.url).href, {
   namedExports: {
     VENUE_CHATTER_DB: [
       {

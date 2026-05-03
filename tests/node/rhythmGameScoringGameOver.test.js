@@ -27,17 +27,17 @@ const mockRhythmUtils = {
 }
 
 // Apply mocks
-mock.module('../../src/utils/audio/audioEngine', {
+mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
   namedExports: mockAudioEngine
 })
-mock.module('../../src/utils/audio/AudioManager', {
+mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
   namedExports: { audioManager: mockAudioManager }
 })
-mock.module('../../src/utils/gigStats', { namedExports: mockGigStats })
-mock.module('../../src/utils/audio/timingUtils', {
+mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, { namedExports: mockGigStats })
+mock.module(new URL('../../src/utils/audio/timingUtils.ts', import.meta.url).href, {
   namedExports: mockTimingUtils
 })
-mock.module('../../src/utils/rhythmUtils', { namedExports: mockRhythmUtils })
+mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, { namedExports: mockRhythmUtils })
 
 // Import hook (must be after mocks)
 const { useRhythmGameScoring } =

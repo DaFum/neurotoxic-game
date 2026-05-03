@@ -6,7 +6,7 @@ const mockCalculateTravelExpenses = mock.fn()
 const mockCalculateRefuelCost = mock.fn()
 
 // Mock module before import
-mock.module('../../src/utils/economyEngine', {
+mock.module(new URL('../../src/utils/economyEngine.ts', import.meta.url).href, {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost

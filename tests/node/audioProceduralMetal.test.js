@@ -11,7 +11,7 @@ const mockLogger = {
   error: mock.fn(),
   logs: []
 }
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
@@ -32,7 +32,7 @@ const mockAudioState = {
   transportEndEventId: null,
   transportStopEventId: null
 }
-mock.module('../../src/utils/audio/state', {
+mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
@@ -98,7 +98,7 @@ mock.module('@tonejs/midi', {
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../../src/utils/audio/context', {
+mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
@@ -107,7 +107,7 @@ mock.module('../../src/utils/audio/context', {
 
 // Mock PlaybackUtils
 const mockStopTransportAndClear = mock.fn()
-mock.module('../../src/utils/audio/cleanupUtils', {
+mock.module(new URL('../../src/utils/audio/cleanupUtils.ts', import.meta.url).href, {
   namedExports: {
     stopTransportAndClear: mockStopTransportAndClear,
     clearTransportEvent: mock.fn(),
@@ -119,7 +119,7 @@ mock.module('../../src/utils/audio/cleanupUtils', {
 })
 
 // Mock Assets (not used directly but imported)
-mock.module('../../src/utils/audio/assets', {
+mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
     midiUrlMap: {},
     loadAudioBuffer: mock.fn(),
@@ -128,27 +128,27 @@ mock.module('../../src/utils/audio/assets', {
 })
 
 // Mock Shared Buffer Utils (not used directly)
-mock.module('../../src/utils/audio/sharedBufferUtils', {
+mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
   namedExports: {
     createAndConnectBufferSource: mock.fn()
   }
 })
 
 // Mock other utils
-mock.module('../../src/utils/rhythmUtils', {
+mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
   namedExports: {
     calculateTimeFromTicks: mock.fn(),
     preprocessTempoMap: mock.fn()
   }
 })
 
-mock.module('../../src/utils/audio/selectionUtils', {
+mock.module(new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href, {
   namedExports: {
     selectRandomItem: mock.fn()
   }
 })
 
-mock.module('../../src/utils/audio/playbackUtils', {
+mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
   namedExports: {
     resolveAssetUrl: mock.fn(),
     prepareTransportPlayback: mock.fn(async (options = {}) => {
@@ -177,7 +177,7 @@ mock.module('../../src/utils/audio/playbackUtils', {
   }
 })
 
-mock.module('../../src/utils/audio/midiUtils', {
+mock.module(new URL('../../src/utils/audio/midiUtils.ts', import.meta.url).href, {
   namedExports: {
     isPercussionTrack: mock.fn(),
     isValidMidiNote: mock.fn(),
@@ -187,7 +187,7 @@ mock.module('../../src/utils/audio/midiUtils', {
   }
 })
 
-mock.module('../../src/data/songs', {
+mock.module(new URL('../../src/data/songs.ts', import.meta.url).href, {
   namedExports: {
     SONGS_BY_ID: new Map([].map(s => [s.id, s])),
     SONGS_DB: []

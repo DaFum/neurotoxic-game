@@ -52,7 +52,7 @@ mock.module('pixi.js', {
 })
 
 // Mock dependencies
-mock.module('../../src/utils/imageGen', {
+mock.module(new URL('../../src/utils/imageGen.ts', import.meta.url).href, {
   namedExports: {
     isImageGenerationAvailable: () => true,
     getGeneratedImageFallbackUrl: () => 'mock-fallback',
@@ -62,13 +62,13 @@ mock.module('../../src/utils/imageGen', {
 })
 
 const mockHandleError = mock.fn()
-mock.module('../../src/utils/errorHandler', {
+mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mockHandleError
   }
 })
 
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: {
       warn: mock.fn()
@@ -108,7 +108,7 @@ const mockPixiStageUtils = {
   })
 }
 
-mock.module('../../src/components/stage/utils', {
+mock.module(new URL('../../src/components/stage/utils.ts', import.meta.url).href, {
   namedExports: {
     ...mockPixiStageUtils,
     calculateCrowdOffset: mock.fn(() => 10),

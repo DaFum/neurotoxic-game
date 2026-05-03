@@ -26,7 +26,7 @@ mock.module('../../src/context/GameState.tsx', {
   }
 })
 
-mock.module('../../src/hooks/useAudioControl', {
+mock.module(new URL('../../src/hooks/useAudioControl.ts', import.meta.url).href, {
   namedExports: {
     useAudioControl: mock.fn(() => ({
       audioState: {},

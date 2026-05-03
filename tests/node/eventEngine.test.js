@@ -19,7 +19,7 @@ const mockLogger = {
   warn: mock.fn()
 }
 
-mock.module('../../src/utils/logger', {
+mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: {
     logger: mockLogger,
     LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 },
@@ -27,12 +27,12 @@ mock.module('../../src/utils/logger', {
   }
 })
 
-mock.module('../../src/data/events/index', {
+mock.module(new URL('../../src/data/events/index.ts', import.meta.url).href, {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
 
 const mockSecureRandom = mock.fn(() => 0.5)
-mock.module('../../src/utils/crypto', {
+mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {
   namedExports: {
     secureRandom: mockSecureRandom,
     getSafeRandom: mockSecureRandom,
