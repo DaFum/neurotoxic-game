@@ -1,6 +1,7 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
+import { disableCorruptionBurstAudio } from './audio/audioEngine'
 import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
 import type { HecklerSession } from './hecklerLogic'
 import type {
@@ -160,6 +161,15 @@ export const processRhythmGameTick = ({
       stateRef.isToxicMode = false
     } else {
       stateRef.toxicTimeTotal += deltaMS
+    }
+  }
+
+  if (stateRef.isCorruptionBurstActive) {
+    if (now > stateRef.corruptionBurstEndTime) {
+      stateRef.isCorruptionBurstActive = false
+      stateRef.corruptionBurstEndTime = 0
+      // Note: setters are not currently available in tick args, so we only mutate the ref.
+      disableCorruptionBurstAudio()
     }
   }
 

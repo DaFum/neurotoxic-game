@@ -25,6 +25,9 @@ export type RhythmUiState = {
   isGameOver: boolean
   isAudioReady: boolean | null
   accuracy: number
+  corruptionLevel: number
+  isCorruptionBurstActive: boolean
+  corruptionBurstEndTime: number
 }
 
 type RhythmStateAction =
@@ -36,6 +39,9 @@ type RhythmStateAction =
   | { type: 'SET_IS_GAME_OVER'; payload: SetterPayload<boolean> }
   | { type: 'SET_IS_AUDIO_READY'; payload: SetterPayload<boolean | null> }
   | { type: 'SET_ACCURACY'; payload: SetterPayload<number> }
+  | { type: 'SET_CORRUPTION_LEVEL'; payload: SetterPayload<number> }
+  | { type: 'SET_IS_CORRUPTION_BURST_ACTIVE'; payload: SetterPayload<boolean> }
+  | { type: 'SET_CORRUPTION_BURST_END_TIME'; payload: SetterPayload<number> }
 
 export type {
   RhythmGameRefState,
@@ -53,6 +59,9 @@ export type RhythmStateSetters = {
   setIsGameOver: (isGameOver: SetterPayload<boolean>) => void
   setIsAudioReady: (isAudioReady: SetterPayload<boolean | null>) => void
   setAccuracy: (accuracy: SetterPayload<number>) => void
+  setCorruptionLevel: (corruptionLevel: SetterPayload<number>) => void
+  setIsCorruptionBurstActive: (isCorruptionBurstActive: SetterPayload<boolean>) => void
+  setCorruptionBurstEndTime: (corruptionBurstEndTime: SetterPayload<number>) => void
 }
 
 export type RhythmGameStateHookReturn = {
@@ -69,7 +78,10 @@ const INITIAL_UI_STATE: RhythmUiState = {
   isToxicMode: false,
   isGameOver: false,
   isAudioReady: null,
-  accuracy: 100
+  accuracy: 100,
+  corruptionLevel: 0,
+  isCorruptionBurstActive: false,
+  corruptionBurstEndTime: 0
 }
 
 function resolvePayload<T>(payload: SetterPayload<T>, currentStateValue: T): T {
@@ -113,6 +125,21 @@ function rhythmGameReducer(
       return {
         ...state,
         accuracy: resolvePayload(action.payload, state.accuracy)
+      }
+    case 'SET_CORRUPTION_LEVEL':
+      return {
+        ...state,
+        corruptionLevel: resolvePayload(action.payload, state.corruptionLevel)
+      }
+    case 'SET_IS_CORRUPTION_BURST_ACTIVE':
+      return {
+        ...state,
+        isCorruptionBurstActive: resolvePayload(action.payload, state.isCorruptionBurstActive)
+      }
+    case 'SET_CORRUPTION_BURST_END_TIME':
+      return {
+        ...state,
+        corruptionBurstEndTime: resolvePayload(action.payload, state.corruptionBurstEndTime)
       }
     default:
       return state
@@ -187,7 +214,10 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   notesVersion: 0,
   transportPausedByOverlay: false,
   toxicTimeTotal: 0,
-  toxicModeEndTime: 0
+  toxicModeEndTime: 0,
+  corruptionLevel: 0,
+  isCorruptionBurstActive: false,
+  corruptionBurstEndTime: 0
   // Note: rng is attached in the ref directly since it isn't cloning friendly
 }
 
@@ -224,7 +254,13 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
       setIsAudioReady: isAudioReady =>
         dispatch({ type: 'SET_IS_AUDIO_READY', payload: isAudioReady }),
       setAccuracy: accuracy =>
-        dispatch({ type: 'SET_ACCURACY', payload: accuracy })
+        dispatch({ type: 'SET_ACCURACY', payload: accuracy }),
+      setCorruptionLevel: corruptionLevel =>
+        dispatch({ type: 'SET_CORRUPTION_LEVEL', payload: corruptionLevel }),
+      setIsCorruptionBurstActive: isCorruptionBurstActive =>
+        dispatch({ type: 'SET_IS_CORRUPTION_BURST_ACTIVE', payload: isCorruptionBurstActive }),
+      setCorruptionBurstEndTime: corruptionBurstEndTime =>
+        dispatch({ type: 'SET_CORRUPTION_BURST_END_TIME', payload: corruptionBurstEndTime })
     }),
     []
   )

@@ -24,6 +24,8 @@ const mockAudioManager = {
   playSFX: mock.fn()
 }
 const mockAudioEngine = {
+  enableCorruptionBurstAudio: mock.fn(),
+  disableCorruptionBurstAudio: mock.fn(),
   startMetalGenerator: mock.fn(),
   playMidiFile: mock.fn(),
   playSongFromData: mock.fn(),

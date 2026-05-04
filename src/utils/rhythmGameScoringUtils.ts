@@ -15,6 +15,7 @@ const CONSTANTS = {
   GUESTLIST_MULTIPLIER: 1.2,
   COMBO_POINT_BONUS: 10,
   TOXIC_MODE_SCORE_MULTIPLIER: 4,
+  CORRUPTION_BURST_SCORE_MULTIPLIER: 2,
   PERFEKTIONIST_ACCURACY_THRESHOLD: 85,
   PERFEKTIONIST_BONUS_MULTIPLIER: 1.15,
   EMPTY_HIT_OVERLOAD_PENALTY: 2,
@@ -104,6 +105,7 @@ export const calculatePoints = (
  * @param {boolean} toxicModeActive - Whether toxic mode is active.
  * @param {boolean} hasPerfektionist - Whether the Perfektionist trait is active.
  * @param {number} currentAccuracy - Current hit accuracy percentage.
+ * @param {boolean} isCorruptionBurstActive - Whether corruption burst is active.
  * @returns {number} The final calculated score increment.
  */
 export const calculateFinalScore = (
@@ -111,10 +113,16 @@ export const calculateFinalScore = (
   currentCombo: number,
   toxicModeActive: boolean,
   hasPerfektionist: boolean,
-  currentAccuracy: number
+  currentAccuracy: number,
+  isCorruptionBurstActive: boolean = false
 ): number => {
   let finalScore = basePoints + currentCombo * CONSTANTS.COMBO_POINT_BONUS
-  if (toxicModeActive) finalScore *= CONSTANTS.TOXIC_MODE_SCORE_MULTIPLIER
+
+  if (isCorruptionBurstActive) {
+    finalScore *= CONSTANTS.CORRUPTION_BURST_SCORE_MULTIPLIER
+  } else if (toxicModeActive) {
+    finalScore *= CONSTANTS.TOXIC_MODE_SCORE_MULTIPLIER
+  }
 
   // Perfektionist Trait: +15% score if accuracy > 85%
   if (

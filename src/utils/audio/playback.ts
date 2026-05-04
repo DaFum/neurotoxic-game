@@ -686,3 +686,18 @@ export function getAudioTimeMs(): number {
 export function getPlayRequestId(): number {
   return audioState.playRequestId
 }
+
+
+export const enableCorruptionBurstAudio = (): void => {
+  if (audioState.isCorruptionAudioActive || !audioState.masterCorruptionBypass || !audioState.masterCorruptionWetGain) return
+  audioState.isCorruptionAudioActive = true
+  audioState.masterCorruptionBypass.gain.value = 0
+  audioState.masterCorruptionWetGain.gain.value = 1
+}
+
+export const disableCorruptionBurstAudio = (): void => {
+  if (!audioState.isCorruptionAudioActive || !audioState.masterCorruptionBypass || !audioState.masterCorruptionWetGain) return
+  audioState.isCorruptionAudioActive = false
+  audioState.masterCorruptionBypass.gain.value = 1
+  audioState.masterCorruptionWetGain.gain.value = 0
+}

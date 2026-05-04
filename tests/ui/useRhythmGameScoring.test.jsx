@@ -78,6 +78,9 @@ const createMockGameState = () => ({
 })
 
 const createMockSetters = gameStateRef => ({
+  setCorruptionLevel: vi.fn(),
+  setIsCorruptionBurstActive: vi.fn(),
+  setCorruptionBurstEndTime: vi.fn(),
   setScore: vi.fn(updater => {
     const next =
       typeof updater === 'function'
