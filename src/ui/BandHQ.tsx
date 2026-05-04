@@ -35,8 +35,8 @@ const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
  * @param {Function} props.onClose - Callback to close the HQ modal.
  * @param {string} [props.className] - Optional custom class name.
  */
-type BandHQProps = {
-  onClose: () => void
+export interface BandHQProps {
+  onClose: (e?: React.MouseEvent | React.KeyboardEvent | Event) => void
   className?: string
 }
 
