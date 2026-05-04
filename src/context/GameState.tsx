@@ -50,6 +50,7 @@ import {
   createCompleteKabelsalatMinigameAction,
   createStartAmpCalibrationAction,
   createCompleteAmpCalibrationAction,
+  createSpawnRivalBandAction,
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
@@ -206,6 +207,7 @@ type GameDispatchActions = {
 export type GameStateWithActions = GameState &
   GameDispatchActions & {
     hasUpgrade: (upgradeId: string) => boolean
+    spawnRivalBand?: () => void
   }
 
 type HotGameStateContextStore = typeof globalThis & {
@@ -771,6 +773,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * Completes the current gig and transitions to the appropriate post-gig scene.
    * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
    */
+
+  const spawnRivalBand = useCallback(
+    () => dispatch(createSpawnRivalBandAction()),
+    []
+  )
+
   const setPendingBandHQOpen = useCallback(
     (isOpen: boolean) => dispatch(createSetPendingBandHQOpenAction(isOpen)),
     []
@@ -837,7 +845,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       merchPress,
       tradeVoidItem,
       bloodBankDonate,
-      setPendingBandHQOpen
+      setPendingBandHQOpen,
+      spawnRivalBand
     }),
     [
       changeScene,
@@ -883,7 +892,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       merchPress,
       tradeVoidItem,
       bloodBankDonate,
-      setPendingBandHQOpen
+      setPendingBandHQOpen,
+      spawnRivalBand
     ]
   )
 
