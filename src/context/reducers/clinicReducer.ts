@@ -185,7 +185,7 @@ export const handleClinicHeal = (
  */
 export const handleBloodBankDonate = (
   state: GameState,
-  payload?: BloodBankDonatePayload
+  payload: BloodBankDonatePayload
 ): GameState => {
   if (!state.player || !state.band || !state.social) {
     logger.warn(

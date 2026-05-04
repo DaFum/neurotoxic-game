@@ -115,13 +115,8 @@ export const handleAddVenueBlacklist = (
 
 export const handleMerchPress = (
   state: GameState,
-  payload: MerchPressPayload | null | undefined
+  payload: MerchPressPayload
 ): GameState => {
-  if (!payload) {
-    logger.warn('GameState', 'Invalid payload for MERCH_PRESS')
-    return state
-  }
-
   const parsedCost = Number(payload.cost)
   const parsedLoyaltyGain = Number(payload.loyaltyGain)
   const parsedControversyGain = Number(payload.controversyGain)
@@ -223,15 +218,11 @@ export const handleMerchPress = (
 
 export const handlePirateBroadcast = (
   state: GameState,
-  payload: PirateBroadcastPayload | null | undefined
+  payload: PirateBroadcastPayload
 ): GameState => {
   const playerDay = Number.isFinite(state.player.day)
     ? (state.player.day as number)
     : 0
-  if (!payload) {
-    logger.warn('GameState', 'Invalid payload for PIRATE_BROADCAST')
-    return state
-  }
 
   const parsedCost = Number(payload.cost)
   const parsedFameGain = Number(payload.fameGain)

@@ -14,10 +14,11 @@ export type PlayerAction =
  * Clamps player.money and player.fame to ensure they never go negative
  * and correctly applied.
  */
-export const handleUpdatePlayer = (
-  state: PlayerSlice,
+type WithPlayer = { player: PlayerState }
+export const handleUpdatePlayer = <TState extends WithPlayer>(
+  state: TState,
   payload: UpdatePlayerPayload
-): PlayerSlice => {
+): TState => {
   logger.debug('GameState', 'Update Player', payload)
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
@@ -31,7 +32,7 @@ export const handleUpdatePlayer = (
     ...updates
   }
 
-  return { ...state, player: mergedPlayer }
+  return { ...state, player: mergedPlayer } as TState
 }
 
 /**

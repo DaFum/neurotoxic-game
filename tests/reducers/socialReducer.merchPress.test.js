@@ -12,15 +12,6 @@ const { handleMerchPress } =
   await import('../../src/context/reducers/socialReducer')
 
 describe('socialReducer.merchPress', () => {
-  test('rejects invalid payloads', () => {
-    const state = {
-      player: { money: 1000, fame: 0, fameLevel: 0 },
-      band: { harmony: 100 },
-      social: { loyalty: 0, controversyLevel: 0 }
-    }
-    assert.strictEqual(handleMerchPress(state, null), state)
-  })
-
   test('rejects if insufficient funds', () => {
     const state = {
       player: { money: 100, fame: 0, fameLevel: 0 },
