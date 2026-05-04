@@ -119,9 +119,15 @@ export function disposeAudio() {
   audioState.reverbSend = safeDispose(audioState.reverbSend)
   audioState.reverb = safeDispose(audioState.reverb)
 
-  audioState.masterCorruptionDistortion = safeDispose(audioState.masterCorruptionDistortion)
-  audioState.masterCorruptionBypass = safeDispose(audioState.masterCorruptionBypass)
-  audioState.masterCorruptionWetGain = safeDispose(audioState.masterCorruptionWetGain)
+  audioState.masterCorruptionDistortion = safeDispose(
+    audioState.masterCorruptionDistortion
+  )
+  audioState.masterCorruptionBypass = safeDispose(
+    audioState.masterCorruptionBypass
+  )
+  audioState.masterCorruptionWetGain = safeDispose(
+    audioState.masterCorruptionWetGain
+  )
 
   audioState.masterComp = safeDispose(audioState.masterComp)
   audioState.masterLimiter = safeDispose(audioState.masterLimiter)

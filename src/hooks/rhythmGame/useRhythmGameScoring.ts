@@ -174,7 +174,7 @@ export const useRhythmGameScoring = ({
       gameStateRef.current.stats = updatedStats
 
       const newAccuracy = calculateAccuracy(
-        updatedStats.perfectHits,
+        updatedStats.perfectHits + (updatedStats.hits || 0),
         updatedStats.misses
       )
 
@@ -343,12 +343,14 @@ export const useRhythmGameScoring = ({
           }
         } else {
           // If needed, keep track of normal hits here, but we removed unconditional perfectHits increment
-          if (!gameStateRef.current.stats.hits) gameStateRef.current.stats.hits = 0
+          if (!gameStateRef.current.stats.hits)
+            gameStateRef.current.stats.hits = 0
           gameStateRef.current.stats.hits++
         }
 
         const currentAccuracy = calculateAccuracy(
-          gameStateRef.current.stats.perfectHits,
+          gameStateRef.current.stats.perfectHits +
+            (gameStateRef.current.stats.hits || 0),
           gameStateRef.current.stats.misses
         )
         setAccuracy(currentAccuracy)

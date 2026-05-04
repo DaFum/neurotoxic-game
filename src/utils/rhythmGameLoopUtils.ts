@@ -25,6 +25,7 @@ interface RhythmTickArgs {
   deltaMS: number
   handleCollision: CollisionHandler
   setIsToxicMode: ToggleBooleanCallback
+  setIsCorruptionBurstActive: ToggleBooleanCallback
   handleMiss: MissHandler
   finalizeGigCallback: (stateRef: RhythmGameRefState) => void
   getGigTimeMs: () => number
@@ -62,6 +63,7 @@ export const processRhythmGameTick = ({
   deltaMS,
   handleCollision,
   setIsToxicMode,
+  setIsCorruptionBurstActive,
   handleMiss,
   finalizeGigCallback,
   getGigTimeMs,
@@ -168,7 +170,7 @@ export const processRhythmGameTick = ({
     if (now > stateRef.corruptionBurstEndTime) {
       stateRef.isCorruptionBurstActive = false
       stateRef.corruptionBurstEndTime = 0
-      // Note: setters are not currently available in tick args, so we only mutate the ref.
+      setIsCorruptionBurstActive(false)
       disableCorruptionBurstAudio()
     }
   }

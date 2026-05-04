@@ -183,8 +183,8 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
 
     if (state.isCorruptionBurstActive) {
       // Deterministic small shake
-      stageContainer.x = (state.rng() * 10) - 5
-      stageContainer.y = (state.rng() * 10) - 5
+      stageContainer.x = Math.random() * 10 - 5
+      stageContainer.y = Math.random() * 10 - 5
     } else {
       stageContainer.x = 0
       stageContainer.y = 0

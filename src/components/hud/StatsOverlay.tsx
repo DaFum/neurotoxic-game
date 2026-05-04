@@ -32,7 +32,10 @@ export const StatsOverlay = memo(function StatsOverlay({
       <ScoreDisplay score={score} />
       <ComboDisplay combo={combo} accuracy={accuracy} />
       <OverloadMeter overload={overload} />
-      <CorruptionMeter corruptionLevel={corruptionLevel} isCorruptionBurstActive={isCorruptionBurstActive} />
+      <CorruptionMeter
+        corruptionLevel={corruptionLevel}
+        isCorruptionBurstActive={isCorruptionBurstActive}
+      />
     </div>
   )
 })

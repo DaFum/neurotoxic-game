@@ -60,8 +60,12 @@ export type RhythmStateSetters = {
   setIsAudioReady: (isAudioReady: SetterPayload<boolean | null>) => void
   setAccuracy: (accuracy: SetterPayload<number>) => void
   setCorruptionLevel: (corruptionLevel: SetterPayload<number>) => void
-  setIsCorruptionBurstActive: (isCorruptionBurstActive: SetterPayload<boolean>) => void
-  setCorruptionBurstEndTime: (corruptionBurstEndTime: SetterPayload<number>) => void
+  setIsCorruptionBurstActive: (
+    isCorruptionBurstActive: SetterPayload<boolean>
+  ) => void
+  setCorruptionBurstEndTime: (
+    corruptionBurstEndTime: SetterPayload<number>
+  ) => void
 }
 
 export type RhythmGameStateHookReturn = {
@@ -134,12 +138,18 @@ function rhythmGameReducer(
     case 'SET_IS_CORRUPTION_BURST_ACTIVE':
       return {
         ...state,
-        isCorruptionBurstActive: resolvePayload(action.payload, state.isCorruptionBurstActive)
+        isCorruptionBurstActive: resolvePayload(
+          action.payload,
+          state.isCorruptionBurstActive
+        )
       }
     case 'SET_CORRUPTION_BURST_END_TIME':
       return {
         ...state,
-        corruptionBurstEndTime: resolvePayload(action.payload, state.corruptionBurstEndTime)
+        corruptionBurstEndTime: resolvePayload(
+          action.payload,
+          state.corruptionBurstEndTime
+        )
       }
     default:
       return state
@@ -258,9 +268,15 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
       setCorruptionLevel: corruptionLevel =>
         dispatch({ type: 'SET_CORRUPTION_LEVEL', payload: corruptionLevel }),
       setIsCorruptionBurstActive: isCorruptionBurstActive =>
-        dispatch({ type: 'SET_IS_CORRUPTION_BURST_ACTIVE', payload: isCorruptionBurstActive }),
+        dispatch({
+          type: 'SET_IS_CORRUPTION_BURST_ACTIVE',
+          payload: isCorruptionBurstActive
+        }),
       setCorruptionBurstEndTime: corruptionBurstEndTime =>
-        dispatch({ type: 'SET_CORRUPTION_BURST_END_TIME', payload: corruptionBurstEndTime })
+        dispatch({
+          type: 'SET_CORRUPTION_BURST_END_TIME',
+          payload: corruptionBurstEndTime
+        })
     }),
     []
   )

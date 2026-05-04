@@ -120,7 +120,9 @@ export const calculateFinalScore = (
 
   if (isCorruptionBurstActive) {
     finalScore *= CONSTANTS.CORRUPTION_BURST_SCORE_MULTIPLIER
-  } else if (toxicModeActive) {
+  }
+
+  if (toxicModeActive) {
     finalScore *= CONSTANTS.TOXIC_MODE_SCORE_MULTIPLIER
   }
 

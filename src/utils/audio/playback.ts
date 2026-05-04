@@ -547,6 +547,7 @@ export function resumeGigPlayback(): boolean {
 export function stopAudioInternal(): void {
   stopTransportAndClear()
   cleanupTransportEvents()
+  disableCorruptionBurstAudio()
 }
 
 /**
@@ -687,17 +688,26 @@ export function getPlayRequestId(): number {
   return audioState.playRequestId
 }
 
-
 export const enableCorruptionBurstAudio = (): void => {
-  if (audioState.isCorruptionAudioActive || !audioState.masterCorruptionBypass || !audioState.masterCorruptionWetGain) return
+  if (
+    audioState.isCorruptionAudioActive ||
+    !audioState.masterCorruptionBypass ||
+    !audioState.masterCorruptionWetGain
+  )
+    return
   audioState.isCorruptionAudioActive = true
-  audioState.masterCorruptionBypass.gain.value = 0
-  audioState.masterCorruptionWetGain.gain.value = 1
+  audioState.masterCorruptionBypass.gain.rampTo(0, 0.05)
+  audioState.masterCorruptionWetGain.gain.rampTo(1, 0.05)
 }
 
 export const disableCorruptionBurstAudio = (): void => {
-  if (!audioState.isCorruptionAudioActive || !audioState.masterCorruptionBypass || !audioState.masterCorruptionWetGain) return
+  if (
+    !audioState.isCorruptionAudioActive ||
+    !audioState.masterCorruptionBypass ||
+    !audioState.masterCorruptionWetGain
+  )
+    return
   audioState.isCorruptionAudioActive = false
-  audioState.masterCorruptionBypass.gain.value = 1
-  audioState.masterCorruptionWetGain.gain.value = 0
+  audioState.masterCorruptionBypass.gain.rampTo(1, 0.05)
+  audioState.masterCorruptionWetGain.gain.rampTo(0, 0.05)
 }

@@ -21,7 +21,10 @@ import type { RhythmStateSetters } from './useRhythmGameState'
 type RhythmGameLoopParams = {
   gameStateRef: { current: RhythmGameRefState }
   scoringActions: { handleMiss: (count?: number, isEmptyHit?: boolean) => void }
-  setters: Pick<RhythmStateSetters, 'setIsToxicMode'>
+  setters: Pick<
+    RhythmStateSetters,
+    'setIsToxicMode' | 'setIsCorruptionBurstActive'
+  >
   contextState: { activeEvent: GameEvent | null }
   contextActions: {
     setLastGigStats: SetLastGigStats
@@ -88,6 +91,7 @@ export const useRhythmGameLoop = ({
         deltaMS,
         handleCollision,
         setIsToxicMode,
+        setIsCorruptionBurstActive: setters.setIsCorruptionBurstActive,
         handleMiss,
         finalizeGigCallback,
         getGigTimeMs,
