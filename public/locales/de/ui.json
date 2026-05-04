@@ -714,7 +714,8 @@
     "common": "GEWÖHNLICH",
     "epic": "EPISCH",
     "rare": "SELTEN",
-    "uncommon": "UNGEWÖHNLICH"
+    "uncommon": "UNGEWÖHNLICH",
+    "unknown": "UNBEKANNT"
   },
   "rewards.fameWithAmount": "+{{count}} Ruhm",
   "rewards.fameWithAmount_one": "+{{count}} Ruhm",
