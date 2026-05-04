@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MerchPressModal } from '../../src/ui/MerchPressModal'
-import { useGameState } from '../../src/context/GameState'
+
 
 
 const { mockState } = vi.hoisted(() => ({
@@ -19,6 +19,10 @@ vi.mock('react-i18next', () => ({
 }))
 
 describe('MerchPressModal', () => {
+  beforeEach(() => {
+    mockState.current = {}
+  })
+
   const mockConfig = {
     cost: 150,
     loyaltyGain: 5,

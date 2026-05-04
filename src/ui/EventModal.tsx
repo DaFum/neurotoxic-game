@@ -8,6 +8,7 @@ import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
 import { resolveEventChoice } from '../utils/eventEngine'
 import { useGameSelector } from '../context/GameState'
+import type { EngineGameState } from '../types/game'
 import type {
   EventModalEvent,
   EventModalOption,
@@ -44,7 +45,17 @@ export const EventModal = ({
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  const gameState = useGameSelector(state => state)
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
+  const activeEvent = useGameSelector(state => state.activeEvent)
+  const social = useGameSelector(state => state.social) // resolveEventChoice sometimes needs social
+
+  const gameState = useMemo(() => ({
+    player,
+    band,
+    activeEvent,
+    social
+  }), [player, band, activeEvent, social]) as unknown as EngineGameState
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)

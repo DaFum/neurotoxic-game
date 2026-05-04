@@ -157,7 +157,7 @@ export const ContrabandStash = ({
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
               const stableKey = item.instanceId || `migrated-${item.id}`
-              return (
+              acc.push(
                 <HexBorder
                   key={stableKey}
                   color='var(--color-toxic-green)'
