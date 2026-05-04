@@ -2,17 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MerchPressModal } from '../../src/ui/MerchPressModal'
 
-
-
 const { mockState } = vi.hoisted(() => ({
   mockState: { current: {} }
 }))
 
 vi.mock('../../src/context/GameState', () => ({
   useGameState: vi.fn().mockImplementation(() => mockState.current),
-  useGameSelector: vi.fn().mockImplementation(selector => selector(mockState.current))
+  useGameSelector: vi
+    .fn()
+    .mockImplementation(selector => selector(mockState.current))
 }))
-
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: key => key })
@@ -66,10 +65,10 @@ describe('MerchPressModal', () => {
   })
 
   it('renders disabled when canPress is false', () => {
-    mockState.current = ({
+    mockState.current = {
       ...defaultState,
       player: { money: 50 }
-    })
+    }
 
     const onClose = vi.fn()
     const onPress = vi.fn()

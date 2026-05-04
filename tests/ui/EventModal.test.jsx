@@ -35,11 +35,12 @@ vi.mock('../../src/ui/shared/Icons', () => ({
 }))
 
 vi.mock('../../src/context/GameState', () => ({
-  useGameSelector: (selector) => selector({
-    player: { money: 100 },
-    band: { members: [{ id: 'm1', skills: {}, traits: {} }] },
-    activeEvent: { id: 'test_event', context: {} }
-  }),
+  useGameSelector: selector =>
+    selector({
+      player: { money: 100 },
+      band: { members: [{ id: 'm1', skills: {}, traits: {} }] },
+      activeEvent: { id: 'test_event', context: {} }
+    }),
   useGameState: () => ({
     player: { money: 100 },
     band: { members: [{ id: 'm1', skills: {}, traits: {} }] },

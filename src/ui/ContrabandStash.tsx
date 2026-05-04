@@ -123,19 +123,20 @@ export const ContrabandStash = ({
             {members.reduce<React.ReactElement[]>((acc, m) => {
               if (isBandMember(m)) {
                 acc.push(
-              <button
-                key={m.id}
-                type='button'
-                aria-pressed={selectedMember === m.id}
-                onClick={makeSelectMember(m.id)}
-                className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${
-                  selectedMember === m.id
-                    ? 'border-toxic-green bg-toxic-green-20 text-star-white'
-                    : 'border-ash-gray bg-transparent text-ash-gray hover:border-toxic-green hover:text-toxic-green'
-                }`}
-              >
-                {m.name ?? t('ui:member.unknown', { defaultValue: 'Unknown' })}
-              </button>
+                  <button
+                    key={m.id}
+                    type='button'
+                    aria-pressed={selectedMember === m.id}
+                    onClick={makeSelectMember(m.id)}
+                    className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${
+                      selectedMember === m.id
+                        ? 'border-toxic-green bg-toxic-green-20 text-star-white'
+                        : 'border-ash-gray bg-transparent text-ash-gray hover:border-toxic-green hover:text-toxic-green'
+                    }`}
+                  >
+                    {m.name ??
+                      t('ui:member.unknown', { defaultValue: 'Unknown' })}
+                  </button>
                 )
               }
               return acc
@@ -154,149 +155,151 @@ export const ContrabandStash = ({
           ) : (
             stash.reduce<React.ReactElement[]>((acc, item) => {
               if (isStashItem(item)) {
-              const requiresTarget =
-                item.effectType === 'stamina' || item.effectType === 'mood'
-              const stableKey = item.instanceId || `migrated-${item.id}`
-              acc.push(
-                <HexBorder
-                  key={stableKey}
-                  color='var(--color-toxic-green)'
-                  className='bg-void-black flex flex-col justify-between'
-                  padding='p-4'
-                >
-                  <div>
-                    <div className='flex justify-between items-start mb-2'>
-                      <div className='flex flex-col gap-1'>
-                        <h4 className='text-toxic-green font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
-                          {t(`items:contraband.${item.id}.name`, {
-                            defaultValue: t('ui:item.unknown', {
-                              defaultValue: 'Unknown Item'
-                            })
-                          })}
-                        </h4>
-                        <div className='flex gap-2 text-xs font-mono'>
-                          <span
-                            className={
-                              item.rarity === 'common'
-                                ? 'text-ash-gray'
-                                : item.rarity === 'uncommon'
-                                  ? 'text-electric-blue'
-                                  : item.rarity === 'rare'
-                                    ? 'text-toxic-green'
-                                    : 'text-alert-amber' // epic
-                            }
-                          >
-                            {t(`ui:rarity.${item.rarity}`, {
-                              defaultValue: item.rarity?.toUpperCase()
+                const requiresTarget =
+                  item.effectType === 'stamina' || item.effectType === 'mood'
+                const stableKey = item.instanceId || `migrated-${item.id}`
+                acc.push(
+                  <HexBorder
+                    key={stableKey}
+                    color='var(--color-toxic-green)'
+                    className='bg-void-black flex flex-col justify-between'
+                    padding='p-4'
+                  >
+                    <div>
+                      <div className='flex justify-between items-start mb-2'>
+                        <div className='flex flex-col gap-1'>
+                          <h4 className='text-toxic-green font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--color-toxic-green-20)]'>
+                            {t(`items:contraband.${item.id}.name`, {
+                              defaultValue: t('ui:item.unknown', {
+                                defaultValue: 'Unknown Item'
+                              })
                             })}
+                          </h4>
+                          <div className='flex gap-2 text-xs font-mono'>
+                            <span
+                              className={
+                                item.rarity === 'common'
+                                  ? 'text-ash-gray'
+                                  : item.rarity === 'uncommon'
+                                    ? 'text-electric-blue'
+                                    : item.rarity === 'rare'
+                                      ? 'text-toxic-green'
+                                      : 'text-alert-amber' // epic
+                              }
+                            >
+                              {t(`ui:rarity.${item.rarity}`, {
+                                defaultValue: item.rarity?.toUpperCase()
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        <div className='flex flex-col gap-1 items-end'>
+                          <span
+                            className={`text-xs px-2 py-1 rounded border font-mono ${
+                              item.type === 'consumable'
+                                ? 'border-blood-red text-blood-red bg-blood-red-20'
+                                : 'border-electric-blue text-electric-blue bg-electric-blue-20'
+                            }`}
+                          >
+                            {item.type
+                              ? t(`ui:item.type_${item.type}`, {
+                                  defaultValue: item.type
+                                })
+                              : t('ui:item.typeUnknown', {
+                                  defaultValue: 'Unknown Type'
+                                })}
                           </span>
+                          {item.duration && (
+                            <span className='text-xs text-ash-gray italic'>
+                              {item.duration}{' '}
+                              {t('ui:contraband.gigs', {
+                                defaultValue: 'GIGS'
+                              })}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className='flex flex-col gap-1 items-end'>
-                        <span
-                          className={`text-xs px-2 py-1 rounded border font-mono ${
-                            item.type === 'consumable'
-                              ? 'border-blood-red text-blood-red bg-blood-red-20'
-                              : 'border-electric-blue text-electric-blue bg-electric-blue-20'
-                          }`}
-                        >
-                          {item.type
-                            ? t(`ui:item.type_${item.type}`, {
-                                defaultValue: item.type
+                      <div className='flex flex-row gap-4 items-start mb-4'>
+                        {item.imagePrompt &&
+                          Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
+                            <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
+                              <img
+                                src={
+                                  isImageGenerationAvailable()
+                                    ? getGenImageUrl(
+                                        IMG_PROMPTS[
+                                          item.imagePrompt as keyof typeof IMG_PROMPTS
+                                        ]
+                                      )
+                                    : getGeneratedImageFallbackUrl()
+                                }
+                                alt={t(`items:contraband.${item.id}.name`)}
+                                className='w-full h-full object-contain'
+                                loading='lazy'
+                                onError={e => {
+                                  e.currentTarget.onerror = null
+                                  e.currentTarget.src =
+                                    getGeneratedImageFallbackUrl()
+                                }}
+                              />
+                            </div>
+                          )}
+                        <p className='text-ash-gray text-xs min-h-[40px] leading-relaxed flex-1'>
+                          {item.description
+                            ? t(item.description, {
+                                defaultValue: t('ui:item.descriptionUnknown', {
+                                  defaultValue: 'Unknown Description'
+                                })
                               })
-                            : t('ui:item.typeUnknown', {
-                                defaultValue: 'Unknown Type'
-                              })}
-                        </span>
-                        {item.duration && (
-                          <span className='text-xs text-ash-gray italic'>
-                            {item.duration}{' '}
-                            {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className='flex flex-row gap-4 items-start mb-4'>
-                      {item.imagePrompt &&
-                        Object.hasOwn(IMG_PROMPTS, item.imagePrompt) && (
-                          <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-void-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
-                            <img
-                              src={
-                                isImageGenerationAvailable()
-                                  ? getGenImageUrl(
-                                      IMG_PROMPTS[
-                                        item.imagePrompt as keyof typeof IMG_PROMPTS
-                                      ]
-                                    )
-                                  : getGeneratedImageFallbackUrl()
-                              }
-                              alt={t(`items:contraband.${item.id}.name`)}
-                              className='w-full h-full object-contain'
-                              loading='lazy'
-                              onError={e => {
-                                e.currentTarget.onerror = null
-                                e.currentTarget.src =
-                                  getGeneratedImageFallbackUrl()
-                              }}
-                            />
-                          </div>
-                        )}
-                      <p className='text-ash-gray text-xs min-h-[40px] leading-relaxed flex-1'>
-                        {item.description
-                          ? t(item.description, {
-                              defaultValue: t('ui:item.descriptionUnknown', {
+                            : t('ui:item.descriptionUnknown', {
                                 defaultValue: 'Unknown Description'
-                              })
-                            })
-                          : t('ui:item.descriptionUnknown', {
-                              defaultValue: 'Unknown Description'
-                            })}
-                      </p>
+                              })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className='mt-auto'>
-                    {requiresTarget &&
-                    !selectedMember &&
-                    !item.applied &&
-                    item.type === 'consumable' ? (
-                      <p className='text-blood-red text-xs mb-2 italic'>
-                        {t('ui:contraband.requiresTarget', {
-                          defaultValue: 'Requires target member.'
-                        })}
-                      </p>
-                    ) : null}
+                    <div className='mt-auto'>
+                      {requiresTarget &&
+                      !selectedMember &&
+                      !item.applied &&
+                      item.type === 'consumable' ? (
+                        <p className='text-blood-red text-xs mb-2 italic'>
+                          {t('ui:contraband.requiresTarget', {
+                            defaultValue: 'Requires target member.'
+                          })}
+                        </p>
+                      ) : null}
 
-                    {item.applied ? (
-                      <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
-                        {t('ui:contraband.applied', {
-                          defaultValue: 'APPLIED'
-                        })}
-                      </div>
-                    ) : item.type === 'consumable' || !item.applyOnAdd ? (
-                      <ActionButton
-                        onClick={makeUseItem(item.instanceId, item)}
-                        disabled={requiresTarget && !selectedMember}
-                        variant='primary'
-                        className='w-full text-sm font-bold'
-                      >
-                        {item.type === 'consumable'
-                          ? t('ui:contraband.useItem', {
-                              defaultValue: 'USE ITEM'
-                            })
-                          : t('ui:contraband.applyItem', {
-                              defaultValue: 'APPLY EFFECT'
-                            })}
-                      </ActionButton>
-                    ) : (
-                      <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
-                        {t('ui:contraband.passiveActive', {
-                          defaultValue: 'PASSIVE EFFECT ACTIVE'
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </HexBorder>
+                      {item.applied ? (
+                        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+                          {t('ui:contraband.applied', {
+                            defaultValue: 'APPLIED'
+                          })}
+                        </div>
+                      ) : item.type === 'consumable' || !item.applyOnAdd ? (
+                        <ActionButton
+                          onClick={makeUseItem(item.instanceId, item)}
+                          disabled={requiresTarget && !selectedMember}
+                          variant='primary'
+                          className='w-full text-sm font-bold'
+                        >
+                          {item.type === 'consumable'
+                            ? t('ui:contraband.useItem', {
+                                defaultValue: 'USE ITEM'
+                              })
+                            : t('ui:contraband.applyItem', {
+                                defaultValue: 'APPLY EFFECT'
+                              })}
+                        </ActionButton>
+                      ) : (
+                        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+                          {t('ui:contraband.passiveActive', {
+                            defaultValue: 'PASSIVE EFFECT ACTIVE'
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </HexBorder>
                 )
               }
               return acc

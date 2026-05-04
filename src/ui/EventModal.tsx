@@ -50,12 +50,15 @@ export const EventModal = ({
   const activeEvent = useGameSelector(state => state.activeEvent)
   const social = useGameSelector(state => state.social) // resolveEventChoice sometimes needs social
 
-  const gameState = useMemo(() => ({
-    player,
-    band,
-    activeEvent,
-    social
-  }), [player, band, activeEvent, social]) as unknown as EngineGameState
+  const gameState = useMemo(
+    () => ({
+      player,
+      band,
+      activeEvent,
+      social
+    }),
+    [player, band, activeEvent, social]
+  ) as unknown as EngineGameState
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)
@@ -68,18 +71,13 @@ export const EventModal = ({
   }, [gameState])
 
   // Reset outcome on new events
-  const [prevEventId, setPrevEventId] = useState<string | undefined>(undefined)
   const eventId = event?.id
   useEffect(() => {
-    if (eventId !== prevEventId) {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
-      setPrevEventId(eventId)
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
-      setOutcome(null)
-      // eslint-disable-next-line @eslint-react/set-state-in-effect
-      setPreviewError(false)
-    }
-  }, [eventId, prevEventId])
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
+    setOutcome(null)
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
+    setPreviewError(false)
+  }, [eventId])
 
   const handleOptionSelect = useCallback((option: EventModalOption) => {
     try {

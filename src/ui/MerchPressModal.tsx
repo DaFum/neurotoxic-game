@@ -16,9 +16,9 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
 
-  const isAffordable = (player?.money || 0) >= (config.cost || 0)
+  const isAffordable = (player?.money ?? 0) >= (config.cost ?? 0)
   const hasEnoughHarmony =
-    (band?.harmony || 0) >= (config.harmonyCostOnFail || 0)
+    (band?.harmony ?? 0) >= (config.harmonyCostOnFail ?? 0)
 
   const disabledReason = !isAffordable
     ? t('ui:merch_press.not_enough_money', { defaultValue: 'Not enough money' })
@@ -148,7 +148,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       <span
                         className={`${isAffordable ? 'text-toxic-green' : 'text-blood-red'}`}
                       >
-                        €{player?.money || 0} / €{config.cost}
+                        €{player?.money ?? 0} / €{config.cost}
                       </span>
                     </div>
                     <ProgressBar
@@ -156,7 +156,7 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                         config.cost > 0
                           ? Math.min(
                               100,
-                              ((player?.money || 0) / config.cost) * 100
+                              ((player?.money ?? 0) / config.cost) * 100
                             )
                           : 0
                       }
@@ -173,11 +173,11 @@ export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
                       <span
                         className={`${hasEnoughHarmony ? 'text-toxic-green' : 'text-blood-red'}`}
                       >
-                        {band?.harmony || 0}%
+                        {band?.harmony ?? 0}%
                       </span>
                     </div>
                     <ProgressBar
-                      value={band?.harmony || 0}
+                      value={band?.harmony ?? 0}
                       max={100}
                       showValue={false}
                       color={
