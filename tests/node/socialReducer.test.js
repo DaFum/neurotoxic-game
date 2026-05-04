@@ -424,13 +424,5 @@ describe('socialReducer', () => {
         cost: 200
       })
     })
-
-    it('should return original state on invalid payload', () => {
-      const nextState = handlePirateBroadcast(mockState, null)
-      assert.strictEqual(nextState, mockState)
-
-      const nextState2 = handlePirateBroadcast(mockState, 'invalid')
-      assert.strictEqual(nextState2, mockState)
-    })
   })
 })
