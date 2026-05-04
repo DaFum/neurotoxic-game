@@ -9,7 +9,6 @@ import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
-import PropTypes from 'prop-types'
 import type { MinigameSceneFrameProps } from '../types/components'
 import { MINIGAME_TYPES } from '../context/gameConstants'
 
@@ -168,22 +167,4 @@ export const MinigameSceneFrame = ({
       )}
     </div>
   )
-}
-
-MinigameSceneFrame.propTypes = {
-  controllerFactory: PropTypes.func,
-  logic: PropTypes.shape({
-    gameStateRef: PropTypes.shape({ current: PropTypes.any }).isRequired,
-    update: PropTypes.func.isRequired,
-    finishMinigame: PropTypes.func,
-    dispatch: PropTypes.func
-  }).isRequired,
-  uiState: PropTypes.shape({
-    isGameOver: PropTypes.bool
-  }),
-  onComplete: PropTypes.func.isRequired,
-  completionTitle: PropTypes.string,
-  renderCompletionStats: PropTypes.func,
-  completionButtonText: PropTypes.string,
-  children: PropTypes.node
 }
