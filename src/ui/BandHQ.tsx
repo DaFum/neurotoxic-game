@@ -1,6 +1,5 @@
 import React, { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import {
@@ -36,7 +35,12 @@ const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
  * @param {Function} props.onClose - Callback to close the HQ modal.
  * @param {string} [props.className] - Optional custom class name.
  */
-export const BandHQ = ({ onClose, className = '' }) => {
+export interface BandHQProps {
+  onClose: (e?: React.MouseEvent | React.KeyboardEvent | Event) => void
+  className?: string
+}
+
+export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
   const { t } = useTranslation()
   const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState('STATS')
@@ -290,9 +294,4 @@ export const BandHQ = ({ onClose, className = '' }) => {
       </div>
     </div>
   )
-}
-
-BandHQ.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  className: PropTypes.string
 }

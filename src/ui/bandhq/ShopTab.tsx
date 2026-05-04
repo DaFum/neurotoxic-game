@@ -1,3 +1,4 @@
+// Legacy PropTypes removed
 import { HQ_ITEMS } from '../../data/hqItems'
 import { CatalogTab } from './CatalogTab'
 import type {
