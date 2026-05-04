@@ -4,7 +4,8 @@
 
  */
 
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
+import type { ReactElement } from 'react'
 import PropTypes from 'prop-types'
 import type { UnknownRecord } from '../types/game'
 import {
@@ -120,7 +121,7 @@ export const ContrabandStash = ({
             })}
           </h3>
           <div className='flex flex-wrap gap-2'>
-            {members.reduce<React.ReactElement[]>((acc, m) => {
+            {members.reduce<ReactElement[]>((acc, m) => {
               if (isBandMember(m)) {
                 acc.push(
                   <button
@@ -153,7 +154,7 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash.reduce<React.ReactElement[]>((acc, item) => {
+            stash.reduce<ReactElement[]>((acc, item) => {
               if (isStashItem(item)) {
                 const requiresTarget =
                   item.effectType === 'stamina' || item.effectType === 'mood'
