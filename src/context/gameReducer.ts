@@ -177,7 +177,7 @@ function runHandledAction<K extends HandledActionTypes>(
   // @ts-expect-error - TS has trouble indexing with K
   const handler = reducerMap[action.type] as ReducerEntry<K>
 
-  if ('payload' in action) {
+  if (Object.hasOwn(action, 'payload')) {
     // @ts-expect-error - action.payload is strictly tied to K, but TS loses the link
     return handler(state, action.payload as PayloadFor<K>)
   }
@@ -196,8 +196,8 @@ export const gameReducer = (
   if (
     action &&
     typeof action === 'object' &&
-    'type' in action &&
-    (action as { type: string }).type in reducerMap
+    Object.hasOwn(action, 'type') &&
+    Object.hasOwn(reducerMap, (action as { type: string }).type)
   ) {
     return runHandledAction(state, action)
   }
