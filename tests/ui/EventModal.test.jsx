@@ -39,14 +39,9 @@ vi.mock('../../src/context/GameState', () => ({
     selector({
       player: { money: 100 },
       band: { members: [{ id: 'm1', skills: {}, traits: {} }] },
-      activeEvent: { id: 'test_event', context: {} }
-    }),
-  useGameState: () => ({
-    player: { money: 100 },
-    band: { members: [{ id: 'm1', skills: {}, traits: {} }] },
-    activeEvent: { id: 'test_event', context: {} }
-  }),
-  GameStateProvider: ({ children }) => <div>{children}</div>
+      activeEvent: { id: 'test_event', context: {} },
+      social: {}
+    })
 }))
 
 test('EventModal renders event details and handles click flow', async () => {

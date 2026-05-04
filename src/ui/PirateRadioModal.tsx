@@ -101,7 +101,7 @@ export const PirateRadioModal = ({
               </span>
               <span
                 className={
-                  player.money >= config.COST
+                  (player?.money ?? 0) >= config.COST
                     ? 'text-ash-gray'
                     : 'text-blood-red'
                 }
@@ -117,7 +117,7 @@ export const PirateRadioModal = ({
               </span>
               <span
                 className={
-                  band.harmony >= config.HARMONY_COST
+                  (band?.harmony ?? 0) >= config.HARMONY_COST
                     ? 'text-ash-gray'
                     : 'text-blood-red'
                 }
