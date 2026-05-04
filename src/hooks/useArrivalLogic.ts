@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   handleNodeArrival,
@@ -12,6 +12,14 @@ import { GAME_PHASES } from '../context/gameConstants'
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
  * Note: While this handles shared side effects and delegated non-performance travel events (via arrivalUtils),
  * inline event triggering for GIG, FESTIVAL, and FINALE destinations remains within useTravelLogic.
+ *
+ * Idempotency: `isHandlingRef` stores the nodeId currently being processed rather than a plain
+ * boolean. This prevents double-execution for the same node while automatically allowing a fresh
+ * arrival when the player navigates to a different node.
+ *
+ * ARRIVAL_REF_RESET_TRIGGER = 'nodeId' — the ref is cleared in a useEffect cleanup keyed on
+ * `player.currentNodeId`, so stale guards never block arrivals at subsequent nodes even after
+ * an error or a rapid node change.
  */
 export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
   const {
@@ -28,11 +36,23 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
     player
   } = useGameState()
 
-  const isHandlingRef = useRef(false)
+  // Stores the nodeId being processed; null means idle. Using the nodeId rather than a plain
+  // boolean handles rapid node changes: two different nodeIds are always distinct guards.
+  const isHandlingRef = useRef<string | null>(null)
+
+  // ARRIVAL_REF_RESET_TRIGGER = 'nodeId'
+  // Reset the guard whenever the player moves to a new node so a stale `true` value from a
+  // previous arrival (or a failed one) never blocks the next legitimate arrival.
+  useEffect(() => {
+    return () => {
+      isHandlingRef.current = null
+    }
+  }, [player.currentNodeId])
 
   const handleArrivalSequence = useCallback(() => {
-    if (isHandlingRef.current) return
-    isHandlingRef.current = true
+    const nodeId = player.currentNodeId
+    if (isHandlingRef.current === nodeId) return
+    isHandlingRef.current = nodeId
 
     try {
       // 1. Advance Day
@@ -81,11 +101,12 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
         changeScene(GAME_PHASES.OVERWORLD)
       }
     } catch (e) {
-      // If error, reset guard so user can try again
-      isHandlingRef.current = false
+      // Reset guard so the user can retry the same node after an error
+      isHandlingRef.current = null
       throw e
     }
-    // Do NOT reset isHandlingRef.current in success path to ensure one-shot behavior until unmount
+    // Do NOT reset isHandlingRef.current in success path; the useEffect cleanup keyed on
+    // player.currentNodeId handles the reset when the node changes.
   }, [
     advanceDay,
     saveGame,
