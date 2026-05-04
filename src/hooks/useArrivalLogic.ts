@@ -36,16 +36,17 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
     player
   } = useGameState()
 
-  // Stores the nodeId being processed; null means idle. Using the nodeId rather than a plain
-  // boolean handles rapid node changes: two different nodeIds are always distinct guards.
-  const isHandlingRef = useRef<string | null>(null)
+  // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
+  // plain boolean handles rapid node changes: two different nodeIds are always distinct guards.
+  // undefined (not null) is the idle sentinel — null is a valid currentNodeId value.
+  const isHandlingRef = useRef<string | null | undefined>(undefined)
 
   // ARRIVAL_REF_RESET_TRIGGER = 'nodeId'
   // Reset the guard whenever the player moves to a new node so a stale `true` value from a
   // previous arrival (or a failed one) never blocks the next legitimate arrival.
   useEffect(() => {
     return () => {
-      isHandlingRef.current = null
+      isHandlingRef.current = undefined
     }
   }, [player.currentNodeId])
 
@@ -102,7 +103,7 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
       }
     } catch (e) {
       // Reset guard so the user can retry the same node after an error
-      isHandlingRef.current = null
+      isHandlingRef.current = undefined
       throw e
     }
     // Do NOT reset isHandlingRef.current in success path; the useEffect cleanup keyed on
