@@ -157,7 +157,7 @@ export const ContrabandStash = ({
               if (isStashItem(item)) {
                 const requiresTarget =
                   item.effectType === 'stamina' || item.effectType === 'mood'
-                const stableKey = item.instanceId || `migrated-${item.id}`
+                const stableKey = item.instanceId ?? `migrated-${item.id}`
                 acc.push(
                   <HexBorder
                     key={stableKey}
@@ -188,7 +188,11 @@ export const ContrabandStash = ({
                               }
                             >
                               {t(`ui:rarity.${item.rarity}`, {
-                                defaultValue: item.rarity?.toUpperCase()
+                                defaultValue:
+                                  item.rarity?.toUpperCase() ??
+                                  t('ui:rarity.unknown', {
+                                    defaultValue: 'UNKNOWN'
+                                  })
                               })}
                             </span>
                           </div>
