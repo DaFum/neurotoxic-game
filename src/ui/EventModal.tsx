@@ -7,7 +7,7 @@ import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
 import { resolveEventChoice } from '../utils/eventEngine'
-import { useGameState } from '../context/GameState'
+import { useGameSelector } from '../context/GameState'
 import type {
   EventModalEvent,
   EventModalOption,
@@ -44,7 +44,7 @@ export const EventModal = ({
   const { t } = useTranslation(['ui', 'events', 'items'])
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  const gameState = useGameState()
+  const gameState = useGameSelector(state => state)
 
   // Track preview outcomes locally instead of injecting them from GameState, avoiding render cycle race conditions
   const [outcome, setOutcome] = useState<EventOutcome | null>(null)

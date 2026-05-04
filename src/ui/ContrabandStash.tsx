@@ -4,7 +4,7 @@
 
  */
 
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import type { UnknownRecord } from '../types/game'
 import {
@@ -120,7 +120,9 @@ export const ContrabandStash = ({
             })}
           </h3>
           <div className='flex flex-wrap gap-2'>
-            {members.filter(isBandMember).map(m => (
+            {members.reduce<React.ReactElement[]>((acc, m) => {
+              if (isBandMember(m)) {
+                acc.push(
               <button
                 key={m.id}
                 type='button'
@@ -134,7 +136,10 @@ export const ContrabandStash = ({
               >
                 {m.name ?? t('ui:member.unknown', { defaultValue: 'Unknown' })}
               </button>
-            ))}
+                )
+              }
+              return acc
+            }, [])}
           </div>
         </div>
 
@@ -147,7 +152,8 @@ export const ContrabandStash = ({
               })}
             </div>
           ) : (
-            stash.filter(isStashItem).map(item => {
+            stash.reduce<React.ReactElement[]>((acc, item) => {
+              if (isStashItem(item)) {
               const requiresTarget =
                 item.effectType === 'stamina' || item.effectType === 'mood'
               const stableKey = item.instanceId || `migrated-${item.id}`
@@ -291,8 +297,10 @@ export const ContrabandStash = ({
                     )}
                   </div>
                 </HexBorder>
-              )
-            })
+                )
+              }
+              return acc
+            }, [])
           )}
         </div>
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
-import { useGameState } from '../context/GameState'
+import { useGameSelector } from '../context/GameState'
 import {
   getGenImageUrl,
   IMG_PROMPTS,
@@ -13,7 +13,8 @@ import {
 
 export const MerchPressModal = ({ onClose, onPress, canPress, config }) => {
   const { t } = useTranslation(['ui'])
-  const { player, band } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
 
   const isAffordable = (player?.money || 0) >= (config.cost || 0)
   const hasEnoughHarmony =

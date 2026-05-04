@@ -3,9 +3,16 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MerchPressModal } from '../../src/ui/MerchPressModal'
 import { useGameState } from '../../src/context/GameState'
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: vi.fn()
+
+const { mockState } = vi.hoisted(() => ({
+  mockState: { current: {} }
 }))
+
+vi.mock('../../src/context/GameState', () => ({
+  useGameState: vi.fn().mockImplementation(() => mockState.current),
+  useGameSelector: vi.fn().mockImplementation(selector => selector(mockState.current))
+}))
+
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: key => key })
@@ -28,7 +35,7 @@ describe('MerchPressModal', () => {
   }
 
   it('renders correctly with sufficient funds', () => {
-    useGameState.mockReturnValue(defaultState)
+    mockState.current = defaultState
     const onClose = vi.fn()
     const onPress = vi.fn()
 
@@ -55,7 +62,7 @@ describe('MerchPressModal', () => {
   })
 
   it('renders disabled when canPress is false', () => {
-    useGameState.mockReturnValue({
+    mockState.current = ({
       ...defaultState,
       player: { money: 50 }
     })
@@ -82,7 +89,7 @@ describe('MerchPressModal', () => {
   })
 
   it('stacks footer actions on mobile to avoid crushed button text', () => {
-    useGameState.mockReturnValue(defaultState)
+    mockState.current = defaultState
 
     render(
       <MerchPressModal

@@ -6,7 +6,7 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
-import { useGameState } from '../context/GameState'
+import { useGameSelector } from '../context/GameState'
 import { formatCurrency } from '../utils/numberUtils'
 import PropTypes from 'prop-types'
 
@@ -24,7 +24,8 @@ export const PirateRadioModal = ({
   contentClassName = ''
 }) => {
   const { t, i18n } = useTranslation(['ui'])
-  const { player, band } = useGameState()
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'>
