@@ -1,7 +1,7 @@
 import { describe, it as test, beforeEach, afterEach, expect } from 'vitest'
 
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import { act, cleanup } from '@testing-library/react'
+import { act, cleanup, renderHook } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 import {
   setupArrivalLogicTest,
@@ -160,6 +160,38 @@ describe('useArrivalLogic', () => {
     })
 
     // Should only call actions once
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+  })
+
+  test('processes new arrival after node change (ARRIVAL_REF_RESET_TRIGGER = nodeId)', () => {
+    // Render at node_start, complete arrival, then simulate moving to node_b.
+    // The second arrival must execute without requiring a page reload.
+    const { result, rerender } = renderHook(props => useArrivalLogic(props), {
+      initialProps: {}
+    })
+
+    // First arrival on node_start
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+    expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
+
+    // Simulate navigation to a second node
+    mockGameState.player.currentNodeId = 'node_b'
+    mockGameState.gameMap = { nodes: { node_b: { type: 'REST_STOP' } } }
+    mockGameState.band.members = [{ mood: 50, stamina: 50 }]
+    mockGameState.advanceDay.mockReset()
+    mockGameState.saveGame.mockReset()
+
+    // Re-render triggers useEffect cleanup for previous nodeId, clearing the ref
+    rerender({})
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // Second arrival must have executed
     expect(mockGameState.advanceDay.mock.calls.length).toBe(1)
     expect(mockGameState.saveGame.mock.calls.length).toBe(1)
   })
