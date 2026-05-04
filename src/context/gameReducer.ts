@@ -189,11 +189,16 @@ export const gameReducer = (
   state: GameState,
   action: GameAction
 ): GameState => {
-  if ((BAND_ACTIONS as readonly string[]).includes(action.type)) {
+  if (!isHandledAction(action)) {
     return bandReducer(state, action)
   }
 
-  if (isHandledAction(action) && action.type in reducerMap) {
+  if (
+    action &&
+    typeof action === 'object' &&
+    'type' in action &&
+    (action as { type: string }).type in reducerMap
+  ) {
     return runHandledAction(state, action)
   }
 
