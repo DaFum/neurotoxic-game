@@ -180,6 +180,14 @@ export function resolveEvent(
         previewState = gameReducer(previewState, unlockAction)
         sideEffects.push({ type: 'persistUnlock', id: safeUnlockId })
         sideEffects.push({ type: 'unlockToast', id: safeUnlockId })
+      } else {
+        logger.warn(
+          'eventResolver',
+          'Skipping empty or invalid unlock string',
+          {
+            unlock: flags.unlock
+          }
+        )
       }
     } else if (flags.unlock != null) {
       logger.warn('eventResolver', 'Skipping non-string unlock value', {
