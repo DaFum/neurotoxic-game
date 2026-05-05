@@ -27,7 +27,12 @@
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k,':',v\\) for k,v in d.get\\('scripts',{}\\).items\\(\\)]\")",
       "mcp__Claude_Preview__preview_start",
       "Bash(pnpm run *)",
-      "Bash(node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/gigStats.test.js)"
+      "Bash(node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/gigStats.test.js)",
+      "Bash(pnpm exec *)",
+      "Bash(git checkout *)",
+      "Bash(git commit -m ' *)",
+      "Bash(python -c \"import json; d=json.load\\(open\\('public/locales/en/ui.json'\\)\\); t=d.get\\('tutorial',{}\\); print\\(json.dumps\\(t, indent=2\\)\\)\")",
+      "mcp__Desktop_Commander__read_file"
     ]
   }
 }
