@@ -41,5 +41,5 @@ if (vitestResult.error) {
 }
 
 if (nodeResult.code !== 0 || vitestResult.code !== 0) {
-  process.exit(1)
+  process.exit(Math.max(nodeResult.code ?? 1, vitestResult.code ?? 1))
 }

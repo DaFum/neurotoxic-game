@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
@@ -10,14 +12,19 @@ const hasFlag = flag => normalizedArgs.includes(flag)
 const flagSkipHeavy = hasFlag('--skip-heavy')
 const flagOnlyHeavy = hasFlag('--only-heavy')
 const nodeTestArgs = normalizedArgs.filter(
-  arg => arg !== '--skip-heavy' && arg !== '--only-heavy'
+  arg =>
+    arg !== '--skip-heavy' &&
+    arg !== '--only-heavy' &&
+    !arg.startsWith('--test-concurrency')
 )
 
-const hasExplicitConcurrency = nodeTestArgs.some(arg =>
+const hasExplicitConcurrency = normalizedArgs.some(arg =>
   arg.startsWith('--test-concurrency')
 )
 
-const testConcurrency = computeWorkerCount('NODE_TEST_CONCURRENCY')
+const testConcurrency = hasExplicitConcurrency
+  ? normalizedArgs.find(arg => arg.startsWith('--test-concurrency')).split('=')[1]
+  : computeWorkerCount('NODE_TEST_CONCURRENCY')
 
 const commandArgs = [
   '--test',
@@ -26,11 +33,8 @@ const commandArgs = [
   '--experimental-test-module-mocks',
   '--import',
   './tests/setup.mjs',
-  ...(hasExplicitConcurrency ? [] : [`--test-concurrency=${testConcurrency}`])
+  `--test-concurrency=${testConcurrency}`
 ]
-
-import fs from 'node:fs'
-import path from 'node:path'
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
@@ -76,7 +80,13 @@ const getRemainingTestFiles = () => {
     for (const item of items) {
       const fullPath = path.join(absoluteDir, item)
       const normalizedPath = fullPath.replace(/\\/g, '/')
-      if (fs.statSync(fullPath).isDirectory()) {
+      let stat
+      try {
+        stat = fs.statSync(fullPath)
+      } catch {
+        continue
+      }
+      if (stat.isDirectory()) {
         crawl(path.relative(REPO_ROOT, fullPath))
       } else if (
         normalizedPath.endsWith('.test.js') ||
@@ -117,25 +127,20 @@ const filterByHeavyMode = testFiles => {
   return testFiles
 }
 
-// Detect specific test file arguments by filtering out options and their values
 const filteredArgs = []
 for (let i = 0; i < nodeTestArgs.length; i++) {
   const arg = nodeTestArgs[i]
-  // If the argument is an option that expects a path (e.g. --import, -r, --require),
-  // skip it and the following value.
   if (arg === '--import' || arg === '-r' || arg === '--require') {
-    i++ // Skip the value
+    i++
   } else if (!arg.startsWith('-')) {
     filteredArgs.push(arg)
   }
 }
 
-// Detect specific test file arguments (positional, non-flag JS test files)
 const specificTestFileArgs = filteredArgs.filter(
   arg => arg.endsWith('.js') || arg.endsWith('.mjs') || arg.endsWith('.cjs')
 )
 
-// Prevent running tests outside tests/node/** with node:test
 const hasNonNodeSpecificFile = specificTestFileArgs.some(
   arg => !isPathInNodeDirs(arg)
 )
