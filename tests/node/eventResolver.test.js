@@ -1,29 +1,34 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { resolveEvent } from '../../src/domain/eventResolver.ts'
-import {
-  createApplyEventDeltaAction,
-  createAddQuestAction,
-  createAddUnlockAction,
-  createAddCooldownAction,
-  createSetActiveEventAction,
-  createPopPendingEventAction,
-} from '../../src/context/actionCreators.ts'
+import { createSetActiveEventAction } from '../../src/context/actionCreators.ts'
 
 const buildState = (overrides = {}) => ({
-  player: { money: 200, time: 10, fame: 2, day: 3, eventsTriggeredToday: 0, van: { fuel: 50, condition: 80 } },
-  band: { members: [{ id: 'alpha', stamina: 6, mood: 50 }], harmony: 60, inventory: {} },
+  player: {
+    money: 200,
+    time: 10,
+    fame: 2,
+    day: 3,
+    eventsTriggeredToday: 0,
+    van: { fuel: 50, condition: 80 }
+  },
+  band: {
+    members: [{ id: 'alpha', stamina: 6, mood: 50 }],
+    harmony: 60,
+    inventory: {}
+  },
   social: { instagram: 0, viral: 0 },
   activeEvent: { id: 'evt_test', titleKey: 'event:test' },
   pendingEvents: [],
   eventCooldowns: [],
   activeStoryFlags: [],
-  ...overrides,
+  ...overrides
 })
 
 // --- null choice ---
 test('resolveEvent: null choice clears active event, no other actions', () => {
-  const { actions, sideEffects, outcomeText, description, result } = resolveEvent(null, buildState())
+  const { actions, sideEffects, outcomeText, description, result } =
+    resolveEvent(null, buildState())
   assert.equal(actions.length, 1)
   assert.deepEqual(actions[0], createSetActiveEventAction(null))
   assert.equal(sideEffects.length, 0)
@@ -37,15 +42,21 @@ test('resolveEvent: choice with resource effect emits applyDelta + cooldown + cl
   const choice = {
     label: 'Pay fine',
     outcomeText: 'event:outcome_paid',
-    effect: { type: 'resource', resource: 'money', value: -40 },
+    effect: { type: 'resource', resource: 'money', value: -40 }
   }
   const state = buildState()
   const { actions, sideEffects } = resolveEvent(choice, state)
 
   const types = actions.map(a => a.type)
-  assert.ok(types.includes('APPLY_EVENT_DELTA'), 'must include APPLY_EVENT_DELTA')
+  assert.ok(
+    types.includes('APPLY_EVENT_DELTA'),
+    'must include APPLY_EVENT_DELTA'
+  )
   assert.ok(types.includes('ADD_COOLDOWN'), 'must include ADD_COOLDOWN')
-  assert.ok(types.includes('SET_ACTIVE_EVENT'), 'must include SET_ACTIVE_EVENT (clear)')
+  assert.ok(
+    types.includes('SET_ACTIVE_EVENT'),
+    'must include SET_ACTIVE_EVENT (clear)'
+  )
 
   // APPLY_EVENT_DELTA carries the money delta
   const deltaAction = actions.find(a => a.type === 'APPLY_EVENT_DELTA')
@@ -66,7 +77,11 @@ test('resolveEvent: choice with addQuest flag emits ADD_QUEST actions', () => {
   const choice = {
     label: 'Accept quest',
     outcomeText: '',
-    effect: { type: 'flag', flag: 'addQuest', value: [{ id: 'q1', deadlineOffset: 5 }] },
+    effect: {
+      type: 'flag',
+      flag: 'addQuest',
+      value: [{ id: 'q1', deadlineOffset: 5 }]
+    }
   }
   const state = buildState()
   const { actions } = resolveEvent(choice, state)
@@ -85,7 +100,7 @@ test('resolveEvent: choice with unlock flag emits ADD_UNLOCK + persistUnlock + u
   const choice = {
     label: 'Unlock something',
     outcomeText: '',
-    effect: { type: 'flag', flag: 'unlock', value: 'My Cool Unlock!' },
+    effect: { type: 'flag', flag: 'unlock', value: 'My Cool Unlock!' }
   }
   const state = buildState()
   const { actions, sideEffects } = resolveEvent(choice, state)
@@ -110,13 +125,16 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
     label: 'Die',
     outcomeText: '',
     description: 'event:death_desc',
-    effect: { type: 'flag', flag: 'gameOver', value: true },
+    effect: { type: 'flag', flag: 'gameOver', value: true }
   }
   const state = buildState()
   const { actions, sideEffects } = resolveEvent(choice, state)
 
   // no cooldown for game over
-  assert.ok(!actions.find(a => a.type === 'ADD_COOLDOWN'), 'no cooldown on game over')
+  assert.ok(
+    !actions.find(a => a.type === 'ADD_COOLDOWN'),
+    'no cooldown on game over'
+  )
 
   const changeScene = sideEffects.find(e => e.type === 'changeScene')
   assert.ok(changeScene)
@@ -139,12 +157,77 @@ test('resolveEvent: does NOT emit POP_PENDING_EVENT (triggerEvent handles it)', 
   const choice = {
     label: 'OK',
     outcomeText: '',
-    effect: { type: 'resource', resource: 'money', value: 0 },
+    effect: { type: 'resource', resource: 'money', value: 0 }
   }
   const state = buildState({ pendingEvents: ['evt_test'] })
   const { actions } = resolveEvent(choice, state)
   const popAction = actions.find(a => a.type === 'POP_PENDING_EVENT')
-  assert.ok(!popAction, 'resolveEvent must not pop pending events (triggerEvent does that)')
+  assert.ok(
+    !popAction,
+    'resolveEvent must not pop pending events (triggerEvent does that)'
+  )
+})
+
+// --- invalid unlock: non-string type ---
+test('resolveEvent: non-string flags.unlock produces no ADD_UNLOCK or unlock side effects', () => {
+  const choice = {
+    label: 'Bad unlock',
+    outcomeText: '',
+    _precomputedResult: {
+      delta: { flags: { unlock: 42 } },
+      result: null
+    }
+  }
+  const { actions, sideEffects } = resolveEvent(choice, buildState())
+
+  assert.ok(
+    !actions.find(a => a.type === 'ADD_UNLOCK'),
+    'no ADD_UNLOCK for non-string unlock'
+  )
+  assert.ok(
+    !sideEffects.find(e => e.type === 'persistUnlock'),
+    'no persistUnlock'
+  )
+  assert.ok(!sideEffects.find(e => e.type === 'unlockToast'), 'no unlockToast')
+  assert.ok(
+    actions.find(a => a.type === 'ADD_COOLDOWN'),
+    'cooldown still applied'
+  )
+  assert.ok(
+    actions.find(a => a.type === 'SET_ACTIVE_EVENT'),
+    'event still cleared'
+  )
+})
+
+// --- invalid unlock: string sanitizes to empty ---
+test('resolveEvent: unlock string that sanitizes to empty produces no ADD_UNLOCK or unlock side effects', () => {
+  const choice = {
+    label: 'Special chars only',
+    outcomeText: '',
+    _precomputedResult: {
+      delta: { flags: { unlock: '!!!' } },
+      result: null
+    }
+  }
+  const { actions, sideEffects } = resolveEvent(choice, buildState())
+
+  assert.ok(
+    !actions.find(a => a.type === 'ADD_UNLOCK'),
+    'no ADD_UNLOCK for empty sanitized id'
+  )
+  assert.ok(
+    !sideEffects.find(e => e.type === 'persistUnlock'),
+    'no persistUnlock'
+  )
+  assert.ok(!sideEffects.find(e => e.type === 'unlockToast'), 'no unlockToast')
+  assert.ok(
+    actions.find(a => a.type === 'ADD_COOLDOWN'),
+    'cooldown still applied'
+  )
+  assert.ok(
+    actions.find(a => a.type === 'SET_ACTIVE_EVENT'),
+    'event still cleared'
+  )
 })
 
 // --- empty-string preservation ---
@@ -153,12 +236,19 @@ test('resolveEvent: explicitly empty outcomeText/description strings are preserv
     label: 'Silent choice',
     outcomeText: '',
     description: '',
-    _precomputedResult: { outcomeText: 'should not see this', description: 'or this', delta: null }
+    _precomputedResult: {
+      outcomeText: 'should not see this',
+      description: 'or this',
+      delta: null
+    }
   }
   const state = buildState()
   const { outcomeText, description, sideEffects } = resolveEvent(choice, state)
   assert.equal(outcomeText, '')
   assert.equal(description, '')
   const outcomeToast = sideEffects.find(e => e.type === 'outcomeToast')
-  assert.ok(!outcomeToast, 'should not emit outcomeToast when both strings are empty')
+  assert.ok(
+    !outcomeToast,
+    'should not emit outcomeToast when both strings are empty'
+  )
 })

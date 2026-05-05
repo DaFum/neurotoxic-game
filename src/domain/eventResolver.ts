@@ -8,7 +8,7 @@ import {
   createAddQuestAction,
   createAddUnlockAction,
   createApplyEventDeltaAction,
-  createSetActiveEventAction,
+  createSetActiveEventAction
 } from '../context/actionCreators'
 import type { GameAction, GameState, QuestState } from '../types/game'
 import type { GamePhase } from '../types/game'
@@ -16,8 +16,17 @@ import type { GamePhase } from '../types/game'
 export type SideEffect =
   | { type: 'persistUnlock'; id: string }
   | { type: 'unlockToast'; id: string }
-  | { type: 'outcomeToast'; outcomeKey: string; descriptionKey: string; context: Record<string, unknown> }
-  | { type: 'gameOverToast'; descriptionKey: string; context: Record<string, unknown> }
+  | {
+      type: 'outcomeToast'
+      outcomeKey: string
+      descriptionKey: string
+      context: Record<string, unknown>
+    }
+  | {
+      type: 'gameOverToast'
+      descriptionKey: string
+      context: Record<string, unknown>
+    }
   | { type: 'changeScene'; scene: GamePhase }
   | { type: 'saveGame'; state: GameState }
 
@@ -30,12 +39,10 @@ export type EventResolution = {
 }
 
 const isQuestStateLike = (value: unknown): value is QuestState =>
-  isPlainObject(value) && typeof (value as Record<string, unknown>).id === 'string'
+  isPlainObject(value) &&
+  typeof (value as Record<string, unknown>).id === 'string'
 
-function buildQuestActions(
-  quests: unknown,
-  currentDay: number
-): GameAction[] {
+function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
   if (!Array.isArray(quests)) return []
   const actions: GameAction[] = []
   for (const q of quests) {
@@ -45,7 +52,8 @@ function buildQuestActions(
       const deadlineOffset =
         typeof rawOffset === 'number'
           ? rawOffset
-          : typeof rawOffset === 'string' && (rawOffset as string).trim().length > 0
+          : typeof rawOffset === 'string' &&
+              (rawOffset as string).trim().length > 0
             ? Number(rawOffset)
             : Number.NaN
       if (Number.isFinite(deadlineOffset)) {
@@ -53,13 +61,17 @@ function buildQuestActions(
       } else {
         logger.warn('eventResolver', 'Skipping invalid quest deadlineOffset', {
           questId: questToAdd.id,
-          deadlineOffset: rawOffset,
+          deadlineOffset: rawOffset
         })
       }
       delete questToAdd.deadlineOffset
     }
     if (!isQuestStateLike(questToAdd)) {
-      logger.warn('eventResolver', 'Skipping malformed quest payload', questToAdd)
+      logger.warn(
+        'eventResolver',
+        'Skipping malformed quest payload',
+        questToAdd
+      )
       continue
     }
     actions.push(createAddQuestAction(questToAdd))
@@ -77,7 +89,7 @@ export function resolveEvent(
       sideEffects: [],
       outcomeText: '',
       description: '',
-      result: null,
+      result: null
     }
   }
 
@@ -92,7 +104,9 @@ export function resolveEvent(
     _precomputedResult?: RawResolution
   }
 
-  const selectedChoice = choice as RawResolution & { _precomputedResult?: RawResolution }
+  const selectedChoice = choice as RawResolution & {
+    _precomputedResult?: RawResolution
+  }
 
   const resolution: RawResolution =
     selectedChoice._precomputedResult ??
@@ -111,11 +125,22 @@ export function resolveEvent(
     addStoryFlag?: string
   }
 
-  // Workaround for `eventEngine` storing flags inside `addStoryFlag`
+  // `eventEngine` uses `{ type: 'flag', flag: '<name>', value: <payload> }` for generic flags.
+  // The engine handler stores only the flag name in `delta.flags.addStoryFlag` and leaves the
+  // payload in `result.value`. We re-map it here so downstream handling can consistently use the
+  // normalized `delta.flags` fields (`unlock`, `addQuest`, and `gameOver`).
   if (flags.addStoryFlag) {
-    if (flags.addStoryFlag === 'addQuest' && isPlainObject(result) && Object.hasOwn(result as object, 'value')) {
+    if (
+      flags.addStoryFlag === 'addQuest' &&
+      isPlainObject(result) &&
+      Object.hasOwn(result as object, 'value')
+    ) {
       flags.addQuest = (result as Record<string, unknown>).value
-    } else if (flags.addStoryFlag === 'unlock' && isPlainObject(result) && Object.hasOwn(result as object, 'value')) {
+    } else if (
+      flags.addStoryFlag === 'unlock' &&
+      isPlainObject(result) &&
+      Object.hasOwn(result as object, 'value')
+    ) {
       flags.unlock = (result as Record<string, unknown>).value
     } else if (flags.addStoryFlag === 'gameOver') {
       flags.gameOver = true
@@ -144,20 +169,38 @@ export function resolveEvent(
       }
     }
 
-    if (flags.unlock && typeof flags.unlock === 'string') {
-      const rawUnlock = flags.unlock
-      const safeUnlockId = rawUnlock.trim().replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()
+    if (typeof flags.unlock === 'string') {
+      const safeUnlockId = flags.unlock
+        .trim()
+        .replace(/[^a-zA-Z0-9_]/g, '')
+        .toLowerCase()
       if (safeUnlockId) {
         const unlockAction = createAddUnlockAction(safeUnlockId)
         actions.push(unlockAction)
         previewState = gameReducer(previewState, unlockAction)
         sideEffects.push({ type: 'persistUnlock', id: safeUnlockId })
         sideEffects.push({ type: 'unlockToast', id: safeUnlockId })
+      } else {
+        logger.warn(
+          'eventResolver',
+          'Skipping empty or invalid unlock string',
+          {
+            unlock: flags.unlock
+          }
+        )
       }
+    } else if (flags.unlock != null) {
+      logger.warn('eventResolver', 'Skipping non-string unlock value', {
+        unlock: flags.unlock
+      })
     }
 
     if (flags.gameOver) {
-      sideEffects.push({ type: 'gameOverToast', descriptionKey: description, context: activeEventContext })
+      sideEffects.push({
+        type: 'gameOverToast',
+        descriptionKey: description,
+        context: activeEventContext
+      })
 
       const clearEventAction = createSetActiveEventAction(null)
       const finalPreviewState = gameReducer(previewState, clearEventAction)
@@ -178,7 +221,7 @@ export function resolveEvent(
       type: 'outcomeToast',
       outcomeKey: outcomeText,
       descriptionKey: description,
-      context: activeEventContext,
+      context: activeEventContext
     })
   }
 
