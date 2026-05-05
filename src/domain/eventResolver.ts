@@ -166,7 +166,10 @@ export function resolveEvent(
     let previewState = gameReducer(state, deltaAction)
 
     if (flags.addQuest) {
-      const questActions = buildQuestActions(flags.addQuest, state.player.day)
+      const questActions = buildQuestActions(
+        flags.addQuest,
+        previewState.player.day
+      )
       actions.push(...questActions)
       for (const qa of questActions) {
         previewState = gameReducer(previewState, qa)
