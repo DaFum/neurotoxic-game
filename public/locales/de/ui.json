@@ -361,6 +361,7 @@
   "mainMenu.existingSave.startNew": "NEUE TOUR STARTEN",
   "mainMenu.existingSave.title": "SPIELSTAND GEFUNDEN",
   "mainMenu.subtitle.grindTheVoid": "Grind The Void",
+  "map.cancellationRisk": "⚠ Absagerisiko: {{pct}}% (1-in-{{freq}} Chance)",
   "map.cap": "Kap",
   "map.click_to_confirm": " - Klicken zum Bestätigen",
   "map.click_to_travel": "KLICKEN ZUM REISEN",

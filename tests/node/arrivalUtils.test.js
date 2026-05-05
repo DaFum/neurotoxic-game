@@ -14,7 +14,6 @@ describe('handleNodeArrival', () => {
     triggerEvent: mock.fn(),
     startGig: mock.fn(),
     addToast: mock.fn(),
-    changeScene: mock.fn(),
     onShowHQ: mock.fn()
   })
 
@@ -28,10 +27,14 @@ describe('handleNodeArrival', () => {
     }
     const node = { type: 'REST_STOP' }
 
-    handleNodeArrival({
+    const result = handleNodeArrival({
       node,
       band,
       ...mocks
+    })
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
     })
 
     assert.strictEqual(mocks.updateBand.mock.calls.length, 1)
@@ -51,9 +54,13 @@ describe('handleNodeArrival', () => {
     const mocks = getMocks()
     const node = { type: 'START' }
 
-    handleNodeArrival({
+    const result = handleNodeArrival({
       node,
       ...mocks
+    })
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
     })
 
     assert.strictEqual(mocks.onShowHQ.mock.calls.length, 1)
@@ -66,10 +73,14 @@ describe('handleNodeArrival', () => {
     mocks.triggerEvent.mock.mockImplementation(() => ({ id: 'some-event' }))
     const node = { type: 'SPECIAL' }
 
-    handleNodeArrival({
+    const result = handleNodeArrival({
       node,
       eventAlreadyActive: false,
       ...mocks
+    })
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
     })
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 1)
@@ -81,10 +92,14 @@ describe('handleNodeArrival', () => {
     const mocks = getMocks()
     const node = { type: 'SPECIAL' }
 
-    handleNodeArrival({
+    const result = handleNodeArrival({
       node,
       eventAlreadyActive: true,
       ...mocks
+    })
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
     })
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 0)
@@ -95,10 +110,14 @@ describe('handleNodeArrival', () => {
     mocks.triggerEvent.mock.mockImplementation(() => null)
     const node = { type: 'SPECIAL' }
 
-    handleNodeArrival({
+    const result = handleNodeArrival({
       node,
       eventAlreadyActive: false,
       ...mocks
+    })
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
     })
 
     assert.strictEqual(mocks.triggerEvent.mock.calls.length, 1)
@@ -114,10 +133,14 @@ describe('handleNodeArrival', () => {
       const node = { type, venue }
       const band = { harmony: 50 }
 
-      handleNodeArrival({
+      const result = handleNodeArrival({
         node,
         band,
         ...mocks
+      })
+      assert.deepStrictEqual(result, {
+        scene: GAME_PHASES.OVERWORLD,
+        gigStarted: true
       })
 
       assert.strictEqual(mocks.startGig.mock.calls.length, 1)
@@ -130,21 +153,20 @@ describe('handleNodeArrival', () => {
       const band = { harmony: 1 }
       const player = { fame: 100 }
 
-      handleNodeArrival({
+      const result = handleNodeArrival({
         node,
         band,
         player,
         ...mocks
       })
+      assert.deepStrictEqual(result, {
+        scene: GAME_PHASES.OVERWORLD,
+        gigStarted: false
+      })
 
       assert.strictEqual(mocks.startGig.mock.calls.length, 0)
       assert.strictEqual(mocks.addToast.mock.calls.length, 1)
       assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'error')
-      assert.strictEqual(mocks.changeScene.mock.calls.length, 1)
-      assert.strictEqual(
-        mocks.changeScene.mock.calls[0].arguments[0],
-        GAME_PHASES.OVERWORLD
-      )
 
       // Check fame penalty (double bad gig loss)
       assert.strictEqual(mocks.updatePlayer.mock.calls.length, 1)
@@ -162,12 +184,16 @@ describe('handleNodeArrival', () => {
       const player = { fame: 100 }
       const rng = () => 0.1 // Triggers cancellation
 
-      handleNodeArrival({
+      const result = handleNodeArrival({
         node,
         band,
         player,
         rng,
         ...mocks
+      })
+      assert.deepStrictEqual(result, {
+        scene: GAME_PHASES.OVERWORLD,
+        gigStarted: false
       })
 
       assert.strictEqual(mocks.startGig.mock.calls.length, 0)
@@ -191,12 +217,16 @@ describe('handleNodeArrival', () => {
       const player = { fame: 100 }
       const rng = () => 0.3 // Does NOT trigger cancellation
 
-      handleNodeArrival({
+      const result = handleNodeArrival({
         node,
         band,
         player,
         rng,
         ...mocks
+      })
+      assert.deepStrictEqual(result, {
+        scene: GAME_PHASES.OVERWORLD,
+        gigStarted: true
       })
 
       assert.strictEqual(mocks.startGig.mock.calls.length, 1)
@@ -213,10 +243,14 @@ describe('handleNodeArrival', () => {
       throw error
     })
 
-    handleNodeArrival({
+    const result = handleNodeArrival({
       node,
       band,
       ...mocks
+    })
+    assert.deepStrictEqual(result, {
+      scene: GAME_PHASES.OVERWORLD,
+      gigStarted: false
     })
 
     assert.strictEqual(mocks.startGig.mock.calls.length, 1)

@@ -168,6 +168,25 @@ export const BALANCE_CONSTANTS = {
   WEALTH_DRAIN_MAX_RATE: 0.05
 }
 
+/**
+ * Pure probability of gig cancellation given current harmony.
+ * Mirrors the engine check in arrivalUtils so UI and runtime are always in sync.
+ *
+ * @param harmony - Current band harmony (clamped to 1..100 by caller)
+ * @param threshold - Low-harmony threshold (default: BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD)
+ * @param chance - Cancellation probability when below threshold (default: BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE)
+ * @returns 0 = no risk, 0..1 = probabilistic, 1 = certain cancellation
+ */
+export const calcCancellationRisk = (
+  harmony: number,
+  threshold = BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD,
+  chance = BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+): number => {
+  if (harmony <= 1) return 1
+  if (harmony < threshold) return chance
+  return 0
+}
+
 export const RELATIONSHIP_GRUDGE_HOLDER_MULTIPLIER = 1.5
 export const RELATIONSHIP_PEACEMAKER_POSITIVE_MULTIPLIER = 1.5
 export const RELATIONSHIP_PEACEMAKER_NEGATIVE_MULTIPLIER = 0.5
