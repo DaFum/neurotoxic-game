@@ -1,4 +1,6 @@
 {
+  "hq_gear_neuro_decimator.name": "Neuro-Decimator",
+  "hq_gear_neuro_decimator.description": "Aggressive harmonic manipulation via Chebyshev overdrive. Warning: Harmony reduction is permanent.",
   "hq_gear_neurotoxic_pedal.name": "Neurotoxic Pedal",
   "hq_gear_neurotoxic_pedal.description": "Produces a mind-bending, heavy distortion that hypes the crowd but destroys harmony.",
   "hq_gear_strings.name": "String Set (10 Pack)",

@@ -124,8 +124,10 @@ export const DEFAULT_BAND_STATE: BandState = {
     cables: true,
     drum_parts: true,
     golden_pick: false,
-    neurotoxicPedal: false
-  }
+    neurotoxicPedal: false,
+    neuroDecimator: false
+  },
+  neuroDecimatorActive: false
 }
 
 /**

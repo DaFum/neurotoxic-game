@@ -1,6 +1,7 @@
 import { useState, useEffect, memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { toggleNeuroDecimator } from '../context/actionCreators'
+import { audioManager } from '../utils/audio/AudioManager'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
@@ -243,9 +244,7 @@ export const HUD = memo(() => {
             onClick={() => {
               const nextState = !band.neuroDecimatorActive
               dispatch(toggleNeuroDecimator(nextState))
-              import('../utils/audio/AudioManager').then(({ AudioManager }) => {
-                AudioManager.getInstance().setNeuroDecimator(nextState)
-              })
+              audioManager.setNeuroDecimator(nextState)
             }}
             className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 ${
               band.neuroDecimatorActive
@@ -255,7 +254,11 @@ export const HUD = memo(() => {
           >
             <Skull size={14} className='inline mr-2' />
             <span className='font-black uppercase tracking-wider text-[10px]'>
-              {band.neuroDecimatorActive ? 'DECIMATOR: ON' : 'DECIMATOR: OFF'}
+              {band.neuroDecimatorActive
+                ? t('ui:hud.decimatorActive', { defaultValue: 'DECIMATOR: ON' })
+                : t('ui:hud.decimatorInactive', {
+                    defaultValue: 'DECIMATOR: OFF'
+                  })}
             </span>
           </button>
         )}

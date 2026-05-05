@@ -305,6 +305,8 @@
   "hq.voidTrader.trade": "BARTER",
   "hqNavigation": "HQ Navigation",
   "hud.bandHarmony": "Band Harmony",
+  "hud.decimatorActive": "DECIMATOR: ON",
+  "hud.decimatorInactive": "DECIMATOR: OFF",
   "hud.neurotoxicActive": "NEUROTOXIC ACTIVE",
   "hud.day": "Day",
   "hud.fuelLevel": "Fuel Level",

@@ -424,10 +424,18 @@ export const handleToggleNeuroDecimator = (
     return state
   }
 
+  if (!state.band.inventory?.neuroDecimator) {
+    return state
+  }
+
   const isActive = Boolean(payload.isActive)
-  const currentHarmony = state.band.harmony ?? 0
+  if (isActive === state.band.neuroDecimatorActive) {
+    return state
+  }
+
+  const currentHarmony = state.band.harmony ?? 1
   const nextHarmony = isActive
-    ? Math.min(100, Math.max(0, currentHarmony - 5))
+    ? clampBandHarmony(currentHarmony - 5)
     : currentHarmony
 
   return {
