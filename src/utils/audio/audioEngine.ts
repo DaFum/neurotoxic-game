@@ -34,7 +34,7 @@ export {
   resumeAudio,
   getTransportState,
   setDestinationMute,
-  getAudioTimeMs,
+  getToneAbsoluteTimeMs,
   getPlayRequestId,
   enableCorruptionBurstAudio,
   disableCorruptionBurstAudio,

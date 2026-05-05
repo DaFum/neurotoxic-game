@@ -10,7 +10,7 @@ const mockAudioEngine = {
   setMusicVolume: vi.fn(),
   setSfxVolume: vi.fn(),
   getGigTimeMs: vi.fn(),
-  getAudioTimeMs: vi.fn(),
+  getToneAbsoluteTimeMs: vi.fn(),
   playNoteAtTime: vi.fn(),
   getScheduledHitTimeMs: vi.fn(),
   getPlayRequestId: vi.fn(),

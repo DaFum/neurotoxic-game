@@ -670,13 +670,12 @@ export function isAmbientOggPlaying(): boolean {
 }
 
 /**
- * Returns the current audio clock time in milliseconds.
- * Uses the Tone.js AudioContext clock so visual elapsed time stays
- * tightly coupled to the audio transport, preventing drift that occurs
- * when mixing Date.now() with Tone scheduling.
+ * Returns the current absolute audio clock time in milliseconds.
+ * Uses the Tone.js AudioContext clock. This absolute time is needed
+ * for MIDI note scheduling (which occurs independent of gig state).
  * @returns {number} Current audio time in ms.
  */
-export function getAudioTimeMs(): number {
+export function getToneAbsoluteTimeMs(): number {
   return Tone.now() * 1000
 }
 

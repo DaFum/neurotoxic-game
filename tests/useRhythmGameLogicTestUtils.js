@@ -27,7 +27,7 @@ const mockAudioEngine = {
   resumeAudio: mock.fn(),
   getAudioContextTimeSec: mock.fn(() => 0),
   getToneStartTimeSec: mock.fn(() => 0),
-  getAudioTimeMs: mock.fn(() => 0),
+  getToneAbsoluteTimeMs: mock.fn(() => 0),
   getPlayRequestId: mock.fn(() => 1),
   getGigTimeMs: mock.fn(() => 0),
   getTransportState: mock.fn(() => 'started')

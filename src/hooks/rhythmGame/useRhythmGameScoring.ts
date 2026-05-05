@@ -8,7 +8,7 @@ import {
 import { audioManager } from '../../utils/audio/AudioManager'
 import {
   getGigTimeMs,
-  getAudioTimeMs,
+  getToneAbsoluteTimeMs,
   playNoteAtTime,
   stopAudio,
   getPlayRequestId,
@@ -295,7 +295,9 @@ export const useRhythmGameScoring = ({
             Number.isFinite(originalNote.velocity)
               ? originalNote.velocity
               : 127
-          const toneNowMs = getAudioTimeMs()
+          // Using Tone's absolute time is necessary here for proper MIDI note scheduling.
+          // For all other gig logic, getGigTimeMs() handles relative timing.
+          const toneNowMs = getToneAbsoluteTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
             noteTimeMs: note.time,
             gigTimeMs: elapsed,
