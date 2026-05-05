@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { logger } from '../utils/logger'
 import { usePostGigHandlers } from './usePostGigHandlers'
-import { calculatePerformanceScore, deriveGigContext, deriveFinancials, derivePostOptions } from '../utils/postGigUtils'
+import {
+  calculatePerformanceScore,
+  deriveGigContext,
+  deriveFinancials,
+  derivePostOptions
+} from '../utils/postGigUtils'
 
 export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
 
@@ -58,7 +63,10 @@ export const usePostGigLogic = () => {
       COMPLETE: 'TOUR UPDATE'
     }[phase] ?? 'TOUR UPDATE'
 
-  const perfScore = useMemo(() => calculatePerformanceScore(lastGigStats?.score || 0), [lastGigStats])
+  const perfScore = useMemo(
+    () => calculatePerformanceScore(lastGigStats?.score || 0),
+    [lastGigStats]
+  )
 
   useEffect(() => {
     if (!currentGig) return
@@ -81,46 +89,54 @@ export const usePostGigLogic = () => {
   }
 
   // Derive financials purely without triggering a re-render loop
-  const financials = useMemo(() => deriveFinancials({
-    currentGig,
-    lastGigStats,
-    perfScore,
-    gigModifiers,
-    bandInventory: band.inventory,
-    player,
-    social,
-    reputationByRegion,
-    activeStoryFlags,
-    gigContext: gigContextRef.current
-  }), [
-    currentGig,
-    lastGigStats,
-    perfScore,
-    gigModifiers,
-    band.inventory,
-    player,
-    social,
-    reputationByRegion,
-    activeStoryFlags
-  ])
-
-  // Derive post options purely without triggering a re-render loop
-  const { options: postOptions, error: postOptionsDerivationError } = useMemo(() => {
-    return derivePostOptions({
+  const financials = useMemo(
+    () =>
+      deriveFinancials({
+        currentGig,
+        lastGigStats,
+        perfScore,
+        gigModifiers,
+        bandInventory: band.inventory,
+        player,
+        social,
+        reputationByRegion,
+        activeStoryFlags,
+        gigContext: gigContextRef.current
+      }),
+    [
       currentGig,
       lastGigStats,
+      perfScore,
+      gigModifiers,
+      band.inventory,
       player,
-      band,
       social,
-      activeEvent
-    })
-  }, [currentGig, lastGigStats, player, band, social, activeEvent])
+      reputationByRegion,
+      activeStoryFlags
+    ]
+  )
+
+  // Derive post options purely without triggering a re-render loop
+  const { options: postOptions, error: postOptionsDerivationError } =
+    useMemo(() => {
+      return derivePostOptions({
+        currentGig,
+        lastGigStats,
+        player,
+        band,
+        social,
+        activeEvent
+      })
+    }, [currentGig, lastGigStats, player, band, social, activeEvent])
 
   // Store the error fact silently inside ref, which we will read in the next useEffect
   useEffect(() => {
     if (postOptionsDerivationError) {
       if (errorHandledRef.current === false) {
-        errorHandledRef.current = { kind: 'pending', error: postOptionsDerivationError }
+        errorHandledRef.current = {
+          kind: 'pending',
+          error: postOptionsDerivationError
+        }
       }
     } else {
       errorHandledRef.current = false

@@ -22,6 +22,6 @@ export const useOverworldModals = () => {
     pirateRadio,
     merchPress,
     bloodBank,
-    darkWebLeak,
+    darkWebLeak
   }
 }

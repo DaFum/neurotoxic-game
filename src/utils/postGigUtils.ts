@@ -542,7 +542,10 @@ export const deriveFinancials = ({
   social: GameState['social']
   reputationByRegion: GameState['reputationByRegion']
   activeStoryFlags: GameState['activeStoryFlags']
-  gigContext: { daysSinceLastGig: number; lastGigDifficulty: number | null } | null
+  gigContext: {
+    daysSinceLastGig: number
+    lastGigDifficulty: number | null
+  } | null
 }) => {
   if (!currentGig || !lastGigStats) return null
 
@@ -558,7 +561,9 @@ export const deriveFinancials = ({
       regionRep: reputationByRegion?.[player?.location] || 0,
       loyalty: social?.loyalty || 0,
       zealotry: social?.zealotry || 0,
-      discountedTickets: activeStoryFlags?.includes('discounted_tickets_active'),
+      discountedTickets: activeStoryFlags?.includes(
+        'discounted_tickets_active'
+      ),
       daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
       lastGigDifficulty: gigContext?.lastGigDifficulty ?? null,
       social

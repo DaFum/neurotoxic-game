@@ -49,8 +49,12 @@ const isEffect = (obj: unknown): obj is Effect => {
 const ITEMS: CatalogItem[] = (() => {
   const processed: CatalogItem[] = []
   const sources = [
-    (Array.isArray(HQ_ITEMS.gear) ? HQ_ITEMS.gear : []) as unknown as PurchaseItem[],
-    (Array.isArray(HQ_ITEMS.instruments) ? HQ_ITEMS.instruments : []) as unknown as PurchaseItem[]
+    (Array.isArray(HQ_ITEMS.gear)
+      ? HQ_ITEMS.gear
+      : []) as unknown as PurchaseItem[],
+    (Array.isArray(HQ_ITEMS.instruments)
+      ? HQ_ITEMS.instruments
+      : []) as unknown as PurchaseItem[]
   ]
 
   for (let j = 0; j < sources.length; j++) {
