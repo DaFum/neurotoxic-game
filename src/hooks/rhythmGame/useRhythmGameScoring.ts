@@ -333,11 +333,13 @@ export const useRhythmGameScoring = ({
             const currentCorruption = gameStateRef.current.corruptionLevel || 0
             const nextCorruption = Math.min(100, currentCorruption + 5)
             gameStateRef.current.corruptionLevel = nextCorruption
+            gameStateRef.current.stats.corruptionLevel = nextCorruption
             setCorruptionLevel(nextCorruption)
 
             if (nextCorruption >= 100) {
               const burstEndTime = elapsed + 1000
               gameStateRef.current.corruptionLevel = 0
+              gameStateRef.current.stats.corruptionLevel = 0
               gameStateRef.current.isCorruptionBurstActive = true
               gameStateRef.current.corruptionBurstEndTime = burstEndTime
               gameStateRef.current.corruptionEndTimeMs = burstEndTime
