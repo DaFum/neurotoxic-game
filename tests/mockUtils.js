@@ -90,6 +90,19 @@ export class MockDistortion {
   dispose() {}
 }
 
+export class MockChebyshev {
+  constructor() {
+    this.wet = { value: 0, rampTo: mock.fn() }
+  }
+  toDestination() {
+    return this
+  }
+  connect() {
+    return this
+  }
+  dispose() {}
+}
+
 export class MockChorus {
   start() {
     return this
@@ -215,6 +228,7 @@ export const createMockTone = () => {
     MetalSynth: MockMetalSynth,
     NoiseSynth: MockNoiseSynth,
     Distortion: MockDistortion,
+    Chebyshev: MockChebyshev,
     Chorus: MockChorus,
     EQ3: MockEQ3,
     StereoWidener: MockStereoWidener,

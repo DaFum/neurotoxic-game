@@ -8,6 +8,7 @@ describe('ActionTypes', () => {
       'UPDATE_PLAYER',
       'UPDATE_BAND',
       'UPDATE_NEUROTOXIC_PEDAL',
+      'TOGGLE_NEURO_DECIMATOR',
       'UPDATE_SOCIAL',
       'UPDATE_SETTINGS',
       'SET_MAP',

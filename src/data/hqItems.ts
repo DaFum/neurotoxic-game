@@ -2,6 +2,16 @@ export const HQ_ITEMS = {
   gear: [
     // Standard Consumables
     {
+      id: 'hq_gear_neuro_decimator',
+      name: 'items:hq_gear_neuro_decimator.name',
+      category: 'GEAR',
+      cost: 660, // Brutalist pricing, rounded to multiple of 10 for integrity test
+      currency: 'money',
+      img: 'ITEM_NEURO_DECIMATOR',
+      description: 'items:hq_gear_neuro_decimator.description',
+      effect: { type: 'inventory_set', item: 'neuroDecimator', value: true }
+    },
+    {
       id: 'hq_gear_neurotoxic_pedal',
       name: 'items:hq_gear_neurotoxic_pedal.name',
       category: 'GEAR',

@@ -305,6 +305,8 @@
   "hq.voidTrader.trade": "TAUSCHEN",
   "hqNavigation": "HQ-Navigation",
   "hud.bandHarmony": "Band Harmonie",
+  "hud.decimatorActive": "DEZIMATOR: AN",
+  "hud.decimatorInactive": "DEZIMATOR: AUS",
   "hud.neurotoxicActive": "NEUROTOXISCH AKTIV",
   "hud.day": "Tag",
   "hud.fuelLevel": "Tankfüllung",

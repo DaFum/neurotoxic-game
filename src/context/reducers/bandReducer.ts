@@ -416,6 +416,38 @@ export const handleUpdateNeurotoxicPedal = (
   }
 }
 
+export const handleToggleNeuroDecimator = (
+  state: GameState,
+  payload: { isActive: boolean }
+): GameState => {
+  if (!payload || typeof payload !== 'object') {
+    return state
+  }
+
+  if (!state.band.inventory?.neuroDecimator) {
+    return state
+  }
+
+  const isActive = Boolean(payload.isActive)
+  if (isActive === state.band.neuroDecimatorActive) {
+    return state
+  }
+
+  const currentHarmony = state.band.harmony ?? 1
+  const nextHarmony = isActive
+    ? clampBandHarmony(currentHarmony - 5)
+    : currentHarmony
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      neuroDecimatorActive: isActive,
+      harmony: nextHarmony
+    }
+  }
+}
+
 /**
  * Main band reducer
  * @param {Object} state - Current state
@@ -431,6 +463,11 @@ export const bandReducer = (
   switch (action.type) {
     case ActionTypes.UPDATE_NEUROTOXIC_PEDAL:
       return handleUpdateNeurotoxicPedal(
+        state,
+        action.payload as { isActive: boolean }
+      )
+    case ActionTypes.TOGGLE_NEURO_DECIMATOR:
+      return handleToggleNeuroDecimator(
         state,
         action.payload as { isActive: boolean }
       )

@@ -126,11 +126,6 @@ export const createUpdateBandAction = (
   }
 }
 
-/**
- * Creates a neurotoxic pedal update action
- * @param {boolean | number} isActive - The activity state of the pedal. If number, clamped to 0-1 boolean equivalent.
- * @returns {Object} Action object
- */
 export const createUpdateNeurotoxicPedalAction = (
   isActive: boolean | number
 ): Extract<
@@ -141,6 +136,16 @@ export const createUpdateNeurotoxicPedalAction = (
   payload: {
     isActive: typeof isActive === 'number' ? isActive > 0 : Boolean(isActive)
   }
+})
+
+export const toggleNeuroDecimator = (
+  isActive: boolean
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.TOGGLE_NEURO_DECIMATOR }
+> => ({
+  type: ActionTypes.TOGGLE_NEURO_DECIMATOR,
+  payload: { isActive: !!isActive }
 })
 
 /**
