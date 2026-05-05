@@ -136,18 +136,14 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
 // Runtime uses it here; tests import and call it directly with fixture data.
 export const SONGS_DB = transformSongsData(rhythmSongs)
 
-// Pre-computed maps for O(1) lookups
-// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
-// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
+// Pre-computed maps for O(1) lookups.
+// Optimized single-pass population of multiple lookup maps.
 export const SONGS_BY_ID = new Map<string, Song>()
+export const SONGS_BY_MID = new Map<string, Song>()
+
 for (const song of SONGS_DB) {
   SONGS_BY_ID.set(song.id, song)
-}
-
-export const SONGS_BY_MID = new Map<string, Song>()
-for (let i = 0; i < SONGS_DB.length; i++) {
-  const song = SONGS_DB[i]
-  if (song && song.sourceMid) {
+  if (song.sourceMid) {
     SONGS_BY_MID.set(song.sourceMid, song)
   }
 }

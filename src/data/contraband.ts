@@ -5,6 +5,9 @@
  * @module contraband
  */
 
+import { logger } from '../utils/logger'
+import type { Rarity } from '../types/game'
+
 const CONTRABAND_DB = [
   // ursprüngliche Items (bewahrt)
   {
@@ -379,25 +382,32 @@ export const VOID_TRADER_COSTS = {
   rare: 400
 }
 
-/**
- * O(1) Lookup Map for Contraband Items
- * @type {Map<string, Object>}
- */
-// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
-// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
 export const CONTRABAND_BY_ID = new Map<
   string,
   (typeof CONTRABAND_DB)[number]
 >()
-for (const item of CONTRABAND_DB) {
-  CONTRABAND_BY_ID.set(item.id, item)
+
+export const CONTRABAND_BY_RARITY: Record<
+  Rarity,
+  (typeof CONTRABAND_DB)[number][]
+> = {
+  common: [],
+  uncommon: [],
+  rare: [],
+  epic: []
 }
 
-export const CONTRABAND_BY_RARITY = {
-  common: CONTRABAND_DB.filter(i => i.rarity === 'common'),
-  uncommon: CONTRABAND_DB.filter(i => i.rarity === 'uncommon'),
-  rare: CONTRABAND_DB.filter(i => i.rarity === 'rare'),
-  epic: CONTRABAND_DB.filter(i => i.rarity === 'epic')
+for (const item of CONTRABAND_DB) {
+  CONTRABAND_BY_ID.set(item.id, item)
+  const rarityGroup = CONTRABAND_BY_RARITY[item.rarity as Rarity]
+  if (rarityGroup) {
+    rarityGroup.push(item)
+  } else {
+    logger.warn(
+      'ContrabandData',
+      `Unknown rarity "${item.rarity}" for item ${item.id}`
+    )
+  }
 }
 
 /**
