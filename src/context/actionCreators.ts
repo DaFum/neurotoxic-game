@@ -126,11 +126,6 @@ export const createUpdateBandAction = (
   }
 }
 
-/**
- * Creates a neurotoxic pedal update action
- * @param {boolean | number} isActive - The activity state of the pedal. If number, clamped to 0-1 boolean equivalent.
- * @returns {Object} Action object
- */
 export const createUpdateNeurotoxicPedalAction = (
   isActive: boolean | number
 ): Extract<
@@ -143,11 +138,6 @@ export const createUpdateNeurotoxicPedalAction = (
   }
 })
 
-/**
- * Creates an action to toggle the Neuro-Decimator
- * @param {boolean} isActive - The activity state
- * @returns {Object} Action object
- */
 export const toggleNeuroDecimator = (
   isActive: boolean
 ): Extract<

@@ -420,14 +420,10 @@ export const handleToggleNeuroDecimator = (
   state: GameState,
   payload: { isActive: boolean }
 ): GameState => {
-  if (!payload || typeof payload !== 'object') {
-    return state
-  }
-
   const isActive = Boolean(payload.isActive)
-  const currentHarmony = state.band.harmony ?? 0
+  const currentHarmony = state.band.harmony ?? 1
   const nextHarmony = isActive
-    ? Math.min(100, Math.max(0, currentHarmony - 5))
+    ? clampBandHarmony(currentHarmony - 5)
     : currentHarmony
 
   return {

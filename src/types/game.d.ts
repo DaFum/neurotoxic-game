@@ -164,7 +164,7 @@ export interface BandState {
     crowdDecay: number
   }
   inventory: Record<string, unknown>
-  neuroDecimatorActive?: boolean
+  neuroDecimatorActive: boolean
   [key: string]: unknown
 }
 
