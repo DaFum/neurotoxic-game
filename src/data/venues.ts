@@ -544,5 +544,12 @@ for (const venue of RAW_VENUES) {
   }
 
   ALL_VENUES.push(finalVenue)
+
+  if (VENUES_BY_ID.has(finalVenue.id)) {
+    logger.error(
+      'VenueValidation',
+      `Duplicate venue ID detected: ${finalVenue.id}. This will overwrite the existing entry.`
+    )
+  }
   VENUES_BY_ID.set(finalVenue.id, finalVenue)
 }
