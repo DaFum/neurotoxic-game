@@ -209,7 +209,11 @@ export const OverworldMap = React.memo(
               iconUrl={iconUrl}
               vanUrl={vanUrl}
               ticketPrice={effectivePrice}
-              harmony={node.type === 'GIG' ? band.harmony : undefined}
+              harmony={
+                ['GIG', 'FESTIVAL', 'FINALE'].includes(node.type)
+                  ? band.harmony
+                  : undefined
+              }
             />
             {hasRival && visibility > 0 && (
               <div
@@ -252,6 +256,7 @@ export const OverworldMap = React.memo(
       setHoveredNode,
       rivalBand?.currentLocationId,
       rivalVanUrl,
+      band.harmony,
       t
     ])
 

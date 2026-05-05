@@ -384,7 +384,8 @@ export const MapNode = memo(
       prev.node.venue?.name === next.node.venue?.name &&
       prev.node.venue?.pay === next.node.venue?.pay &&
       prev.node.venue?.diff === next.node.venue?.diff &&
-      prev.node.venue?.price === next.node.venue?.price
+      prev.node.venue?.price === next.node.venue?.price &&
+      prev.harmony === next.harmony
     )
   }
 )
