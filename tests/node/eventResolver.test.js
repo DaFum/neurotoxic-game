@@ -126,6 +126,8 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
   assert.ok(saveGame, 'must emit saveGame side effect')
   // saveGame carries a state snapshot (object)
   assert.equal(typeof saveGame.state, 'object')
+  // validate the post-resolution snapshot activeEvent is cleared
+  assert.equal(saveGame.state.activeEvent, null)
 
   const gameOverToast = sideEffects.find(e => e.type === 'gameOverToast')
   assert.ok(gameOverToast)

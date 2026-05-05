@@ -102,8 +102,8 @@ export function resolveEvent(
     ) as RawResolution)
 
   const { result, delta } = resolution
-  const outcomeText = selectedChoice.outcomeText || resolution.outcomeText || ''
-  const description = selectedChoice.description || resolution.description || ''
+  const outcomeText = selectedChoice.outcomeText ?? resolution.outcomeText ?? ''
+  const description = selectedChoice.description ?? resolution.description ?? ''
   const flags = (delta?.flags ?? {}) as {
     addQuest?: unknown
     unlock?: unknown
@@ -113,10 +113,10 @@ export function resolveEvent(
 
   // Workaround for `eventEngine` storing flags inside `addStoryFlag`
   if (flags.addStoryFlag) {
-    if (flags.addStoryFlag === 'addQuest' && result && typeof result === 'object' && 'value' in result) {
-      flags.addQuest = result.value
-    } else if (flags.addStoryFlag === 'unlock' && result && typeof result === 'object' && 'value' in result) {
-      flags.unlock = result.value
+    if (flags.addStoryFlag === 'addQuest' && isPlainObject(result) && Object.hasOwn(result as object, 'value')) {
+      flags.addQuest = (result as Record<string, unknown>).value
+    } else if (flags.addStoryFlag === 'unlock' && isPlainObject(result) && Object.hasOwn(result as object, 'value')) {
+      flags.unlock = (result as Record<string, unknown>).value
     } else if (flags.addStoryFlag === 'gameOver') {
       flags.gameOver = true
     }
@@ -158,9 +158,13 @@ export function resolveEvent(
 
     if (flags.gameOver) {
       sideEffects.push({ type: 'gameOverToast', descriptionKey: description, context: activeEventContext })
-      sideEffects.push({ type: 'saveGame', state: previewState })
+
+      const clearEventAction = createSetActiveEventAction(null)
+      const finalPreviewState = gameReducer(previewState, clearEventAction)
+
+      sideEffects.push({ type: 'saveGame', state: finalPreviewState })
       sideEffects.push({ type: 'changeScene', scene: GAME_PHASES.GAMEOVER })
-      actions.push(createSetActiveEventAction(null))
+      actions.push(clearEventAction)
       return { actions, sideEffects, outcomeText, description, result }
     }
   }

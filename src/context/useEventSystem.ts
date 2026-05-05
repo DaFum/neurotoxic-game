@@ -163,7 +163,7 @@ export function useEventSystem({
         }
       }
     },
-    [addToast, changeScene, dispatch, saveGame, setActiveEvent, stateRef, tRef]
+    [addToast, changeScene, dispatch, saveGame, stateRef, tRef]
   )
 
   return { setActiveEvent, triggerEvent, resolveEvent: resolveEventCallback }
