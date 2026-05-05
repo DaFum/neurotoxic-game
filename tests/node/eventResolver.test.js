@@ -1,13 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { resolveEvent } from '../../src/domain/eventResolver.ts'
-import {
-  createApplyEventDeltaAction,
-  createAddQuestAction,
-  createAddUnlockAction,
-  createAddCooldownAction,
-  createSetActiveEventAction
-} from '../../src/context/actionCreators.ts'
+import { createSetActiveEventAction } from '../../src/context/actionCreators.ts'
 
 const buildState = (overrides = {}) => ({
   player: {
@@ -171,6 +165,68 @@ test('resolveEvent: does NOT emit POP_PENDING_EVENT (triggerEvent handles it)', 
   assert.ok(
     !popAction,
     'resolveEvent must not pop pending events (triggerEvent does that)'
+  )
+})
+
+// --- invalid unlock: non-string type ---
+test('resolveEvent: non-string flags.unlock produces no ADD_UNLOCK or unlock side effects', () => {
+  const choice = {
+    label: 'Bad unlock',
+    outcomeText: '',
+    _precomputedResult: {
+      delta: { flags: { unlock: 42 } },
+      result: null
+    }
+  }
+  const { actions, sideEffects } = resolveEvent(choice, buildState())
+
+  assert.ok(
+    !actions.find(a => a.type === 'ADD_UNLOCK'),
+    'no ADD_UNLOCK for non-string unlock'
+  )
+  assert.ok(
+    !sideEffects.find(e => e.type === 'persistUnlock'),
+    'no persistUnlock'
+  )
+  assert.ok(!sideEffects.find(e => e.type === 'unlockToast'), 'no unlockToast')
+  assert.ok(
+    actions.find(a => a.type === 'ADD_COOLDOWN'),
+    'cooldown still applied'
+  )
+  assert.ok(
+    actions.find(a => a.type === 'SET_ACTIVE_EVENT'),
+    'event still cleared'
+  )
+})
+
+// --- invalid unlock: string sanitizes to empty ---
+test('resolveEvent: unlock string that sanitizes to empty produces no ADD_UNLOCK or unlock side effects', () => {
+  const choice = {
+    label: 'Special chars only',
+    outcomeText: '',
+    _precomputedResult: {
+      delta: { flags: { unlock: '!!!' } },
+      result: null
+    }
+  }
+  const { actions, sideEffects } = resolveEvent(choice, buildState())
+
+  assert.ok(
+    !actions.find(a => a.type === 'ADD_UNLOCK'),
+    'no ADD_UNLOCK for empty sanitized id'
+  )
+  assert.ok(
+    !sideEffects.find(e => e.type === 'persistUnlock'),
+    'no persistUnlock'
+  )
+  assert.ok(!sideEffects.find(e => e.type === 'unlockToast'), 'no unlockToast')
+  assert.ok(
+    actions.find(a => a.type === 'ADD_COOLDOWN'),
+    'cooldown still applied'
+  )
+  assert.ok(
+    actions.find(a => a.type === 'SET_ACTIVE_EVENT'),
+    'event still cleared'
   )
 })
 

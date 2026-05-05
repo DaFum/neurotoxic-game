@@ -127,8 +127,8 @@ export function resolveEvent(
 
   // `eventEngine` uses `{ type: 'flag', flag: '<name>', value: <payload> }` for generic flags.
   // The engine handler stores only the flag name in `delta.flags.addStoryFlag` and leaves the
-  // payload in `result.value`. We re-map it here so downstream handling is uniform with the
-  // dedicated `unlock`/`addQuest`/`game_over` effect types.
+  // payload in `result.value`. We re-map it here so downstream handling can consistently use the
+  // normalized `delta.flags` fields (`unlock`, `addQuest`, and `gameOver`).
   if (flags.addStoryFlag) {
     if (
       flags.addStoryFlag === 'addQuest' &&
