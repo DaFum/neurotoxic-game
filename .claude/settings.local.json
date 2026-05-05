@@ -16,7 +16,16 @@
       "Bash(\" | grep -v \"propTypes\\|displayName\" | head -40)",
       "Bash(grep -v \"t\\(\\\\|{t\\\\|Trans\\\\|//\\\\|className\\\\|TODO\\\\|NOTE\\\\|{'\\\\|{`\" | grep -v \"propTypes\\|displayName\" | head -40)",
       "Bash(grep -rn \"\\\"[A-Za-z ]\\{6,\\}\\\"\" ./src --include=\"*.tsx\")",
-      "Bash(grep -v \"t\\(\\\\|{t\\\\|Trans\\\\|//\")"
+      "Bash(grep -v \"t\\(\\\\|{t\\\\|Trans\\\\|//\")",
+      "Bash(gh pr *)",
+      "Bash(git fetch *)",
+      "Bash(git rebase *)",
+      "Bash(git stash *)",
+      "Bash(git add *)",
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(grep -rP *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k,':',v\\) for k,v in d.get\\('scripts',{}\\).items\\(\\)]\")",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }
