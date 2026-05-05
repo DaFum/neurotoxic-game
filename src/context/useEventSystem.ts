@@ -36,23 +36,20 @@ type SideEffectContext = {
 function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
   const { addToast, changeScene, saveGame, tRef } = ctx
   const t = tRef.current
+  const newlyAddedUnlocks = new Set<string>()
 
   for (const effect of effects) {
     switch (effect.type) {
       case 'persistUnlock': {
-        // We track if the unlock was newly added on the effect object temporarily
-        // so that the unlockToast knows whether to show up.
-        const added = addUnlock(effect.id)
-        ;(effect as any)._added = added
+        if (addUnlock(effect.id)) {
+          newlyAddedUnlocks.add(effect.id)
+        }
         break
       }
       case 'unlockToast': {
-        // Find the persistUnlock effect for the same id to see if it was newly added.
-        // We rely on the fact that sideEffects are processed in order and persistUnlock precedes unlockToast.
-        const persistEffect = effects.find(e => e.type === 'persistUnlock' && e.id === effect.id)
-        const added = persistEffect ? (persistEffect as any)._added : true
-
-        if (added) {
+        // This relies on `persistUnlock` for the same ID being processed first,
+        // which is guaranteed by `resolveEvent`.
+        if (newlyAddedUnlocks.has(effect.id)) {
           const unlockKey = `unlocks:${effect.id}`
           const unlockLabel = t(unlockKey, { defaultValue: effect.id.toUpperCase() })
           addToast(
@@ -157,10 +154,10 @@ export function useEventSystem({
         addToast(tRef.current('ui:event_error'), 'error')
         dispatch(createSetActiveEventAction(null))
         return {
-          outcomeText: (choice as Record<string, unknown> | null)?.outcomeText as string ?? '',
+          outcomeText: (choice?.outcomeText as string) ?? '',
           description:
-            typeof (choice as Record<string, unknown> | null)?.description === 'string'
-              ? tRef.current((choice as Record<string, unknown>).description as string)
+            typeof choice?.description === 'string'
+              ? tRef.current(choice.description)
               : '',
           result: null,
         }
