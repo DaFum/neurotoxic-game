@@ -31,6 +31,8 @@ interface RhythmTickArgs {
   getGigTimeMs: () => number
   pauseAudio: AsyncVoidCallback
   resumeAudio: AsyncBooleanCallback
+  setCorruptionState: (level: number, active: boolean) => void
+  setCorruptionEffect: (active: boolean) => void
 }
 
 export const finalizeGig = (
@@ -68,7 +70,9 @@ export const processRhythmGameTick = ({
   finalizeGigCallback,
   getGigTimeMs,
   pauseAudio,
-  resumeAudio
+  resumeAudio,
+  setCorruptionState,
+  setCorruptionEffect
 }: RhythmTickArgs): void => {
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
     if (isTransportRunning && !stateRef.transportPausedByOverlay) {
@@ -131,6 +135,12 @@ export const processRhythmGameTick = ({
   const duration = stateRef.totalDuration
   const rawProgress = duration > 0 ? Math.min(100, (now / duration) * 100) : 0
   stateRef.progress = Math.max(0, rawProgress)
+
+  if (stateRef.corruptionEndTimeMs > 0 && now >= stateRef.corruptionEndTimeMs) {
+    stateRef.corruptionEndTimeMs = 0
+    setCorruptionState(stateRef.stats.corruptionLevel, false)
+    setCorruptionEffect(false)
+  }
 
   const currentInnerHeight = dimensionsRef.current.height
   const currentInnerWidth = dimensionsRef.current.width

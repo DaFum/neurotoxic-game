@@ -20,6 +20,7 @@ export type RhythmLiveStats = {
   lateHits?: number
   maxCombo: number
   peakHype: number
+  corruptionLevel: number
 }
 
 export type RhythmNote = {
@@ -45,6 +46,7 @@ export type GigStats = {
   perfectHits: number
   maxCombo: number
   peakHype: number
+  corruptionLevel: number
   toxicTimeTotal: number
   accuracy: number
   songStats: RhythmSongStatsEntry[]
@@ -115,4 +117,5 @@ export type RhythmGameRefState = {
   isCorruptionBurstActive: boolean
   corruptionBurstEndTime: number
   rng: () => number
+  corruptionEndTimeMs: number
 }

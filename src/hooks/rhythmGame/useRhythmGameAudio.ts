@@ -179,7 +179,8 @@ export const useRhythmGameAudio = ({
                 perfectHits: 0,
                 misses: 0,
                 maxCombo: 0,
-                peakHype: 0
+                peakHype: 0,
+                corruptionLevel: 0
               },
               0,
               []

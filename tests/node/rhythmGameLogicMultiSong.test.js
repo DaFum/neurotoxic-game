@@ -41,7 +41,8 @@ const mockAudioEngine = {
   getAudioTimeMs: mock.fn(() => 0),
   getPlayRequestId: mock.fn(() => 1),
   getGigTimeMs: mock.fn(() => 0),
-  getTransportState: mock.fn(() => 'started')
+  getTransportState: mock.fn(() => 'started'),
+  setCorruptionEffect: mock.fn()
 }
 const mockRhythmUtils = {
   generateNotesForSong: mock.fn(() => []),

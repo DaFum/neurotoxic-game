@@ -63,6 +63,7 @@ export const buildGigStatsSnapshot = (
   perfectHits: number
   maxCombo: number
   peakHype: number
+  corruptionLevel: number
   toxicTimeTotal: number
   accuracy: number
   songStats: Array<{
@@ -77,6 +78,7 @@ export const buildGigStatsSnapshot = (
   perfectHits: stats.perfectHits,
   maxCombo: stats.maxCombo,
   peakHype: stats.peakHype,
+  corruptionLevel: stats.corruptionLevel,
   toxicTimeTotal,
   accuracy: calculateAccuracy(
     stats.perfectHits + (stats.hits || 0),

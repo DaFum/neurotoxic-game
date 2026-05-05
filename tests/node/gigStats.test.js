@@ -35,7 +35,13 @@ test('updateGigPerformanceStats tracks peak combo and hype', () => {
 })
 
 test('buildGigStatsSnapshot includes required economy fields', () => {
-  const stats = { perfectHits: 3, misses: 1, maxCombo: 7, peakHype: 90 }
+  const stats = {
+    perfectHits: 3,
+    misses: 1,
+    maxCombo: 7,
+    peakHype: 90,
+    corruptionLevel: 10
+  }
   const songStats = [{ songId: 'neurotoxic_1_raw', score: 4200, accuracy: 75 }]
 
   const snapshot = buildGigStatsSnapshot(4200, stats, 1500, songStats)
@@ -46,6 +52,7 @@ test('buildGigStatsSnapshot includes required economy fields', () => {
     perfectHits: 3,
     maxCombo: 7,
     peakHype: 90,
+    corruptionLevel: 10,
     toxicTimeTotal: 1500,
     accuracy: 75, // 3 perfect / (3 + 1) * 100
     songStats

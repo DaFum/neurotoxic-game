@@ -5,7 +5,8 @@ import {
   getGigTimeMs,
   pauseAudio,
   resumeAudio,
-  stopAudio
+  stopAudio,
+  setCorruptionEffect
 } from '../../utils/audio/audioEngine'
 import {
   processRhythmGameTick,
@@ -23,7 +24,7 @@ type RhythmGameLoopParams = {
   scoringActions: { handleMiss: (count?: number, isEmptyHit?: boolean) => void }
   setters: Pick<
     RhythmStateSetters,
-    'setIsToxicMode' | 'setIsCorruptionBurstActive'
+    'setIsToxicMode' | 'setIsCorruptionBurstActive' | 'setCorruptionState'
   >
   contextState: { activeEvent: GameEvent | null }
   contextActions: {
@@ -40,7 +41,8 @@ export const useRhythmGameLoop = ({
   contextActions
 }: RhythmGameLoopParams) => {
   const { handleMiss } = scoringActions
-  const { setIsToxicMode } = setters
+  const { setIsToxicMode, setIsCorruptionBurstActive, setCorruptionState } =
+    setters
   const { activeEvent } = contextState
   const { setLastGigStats, endGig } = contextActions
 
@@ -91,12 +93,14 @@ export const useRhythmGameLoop = ({
         deltaMS,
         handleCollision,
         setIsToxicMode,
-        setIsCorruptionBurstActive: setters.setIsCorruptionBurstActive,
+        setIsCorruptionBurstActive,
         handleMiss,
         finalizeGigCallback,
         getGigTimeMs,
         pauseAudio,
-        resumeAudio
+        resumeAudio,
+        setCorruptionState,
+        setCorruptionEffect
       })
     },
     [

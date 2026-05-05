@@ -15,7 +15,8 @@ const mockAudioEngine = {
   getScheduledHitTimeMs: vi.fn(),
   getPlayRequestId: vi.fn(),
   subscribeToAudioState: vi.fn(),
-  playSFX: vi.fn()
+  playSFX: vi.fn(),
+  setCorruptionEffect: vi.fn()
 }
 
 const mockGigStats = {
@@ -126,6 +127,10 @@ const createMockSetters = gameStateRef => ({
         : updater
     gameStateRef.current.accuracy = next
     return next
+  }),
+  setCorruptionState: vi.fn((level, active) => {
+    gameStateRef.current.stats.corruptionLevel = level
+    gameStateRef.current.isCorruptionActive = active
   })
 })
 
