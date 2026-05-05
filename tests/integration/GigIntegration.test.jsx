@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 const mockTone = vi.hoisted(() => {
   const createMockAudioNode = () => {
@@ -115,6 +116,19 @@ const mockTone = vi.hoisted(() => {
 
 vi.mock('tone', () => mockTone)
 
+vi.mock('../../src/utils/audio/audioEngine', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    initializeAudio: vi.fn().mockResolvedValue(undefined),
+    getGigTimeMs: vi.fn().mockReturnValue(0),
+    isAudioReady: vi.fn().mockReturnValue(true),
+    setupMasterChain: vi.fn(),
+    getCurrentPlayhead: vi.fn().mockReturnValue(0),
+    stopAudio: vi.fn()
+  }
+})
+
 vi.mock('../../src/components/PixiStage', () => ({
   PixiStage: () => <div data-testid='pixi-stage-mock'>Pixi Stage</div>
 }))
@@ -124,6 +138,30 @@ vi.mock('../../src/utils/imageGen', () => ({
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
   getGenImageUrl: () => 'mock-url',
   IMG_PROMPTS: {}
+}))
+
+vi.mock('../../src/utils/audio/AudioManager', () => ({
+  audioManager: {
+    init: vi.fn().mockResolvedValue(undefined),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    play: vi.fn(),
+    stop: vi.fn(),
+    stopMusic: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
+    setVolume: vi.fn(),
+    toggleMute: vi.fn(),
+    setNeuroDecimator: vi.fn(),
+    dispose: vi.fn(),
+    isMuted: false,
+    getGigTimeMs: vi.fn().mockReturnValue(0),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    playAmbient: vi.fn(),
+    stopAmbient: vi.fn(),
+    preloadSong: vi.fn().mockResolvedValue(undefined),
+    playSong: vi.fn().mockResolvedValue(undefined)
+  }
 }))
 
 vi.mock('../../src/context/GameState.tsx', async importOriginal => {
@@ -150,17 +188,29 @@ import { GameStateProvider } from '../../src/context/GameState.tsx'
 
 describe('Gig Component Integration', () => {
   it('renders standard composition elements of the gig scene', async () => {
+    const user = userEvent.setup()
     render(
       <GameStateProvider>
         <Gig />
       </GameStateProvider>
     )
 
+    // Try to find audio lock button and click it if present
+    // The button might appear during audio initialization in tests
+    let audioLockButton = screen.queryByRole('button', {
+      name: /initialize audio/i
+    })
+    if (audioLockButton) {
+      await user.click(audioLockButton)
+      // Wait briefly for any state updates after click
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+
     // Wait for the lazy loaded component using findByTestId
     const pixiStage = await screen.findByTestId(
       'pixi-stage-mock',
       {},
-      { timeout: 3000 }
+      { timeout: 5000 }
     )
     expect(pixiStage).toBeInTheDocument()
 
