@@ -96,6 +96,7 @@ describe('useArrivalLogic', () => {
 
     expect(mockGameState.startGig.mock.calls.length).toBe(1)
     expect(mockGameState.startGig.mock.calls[0][0]).toEqual(venue)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
   })
 
   test('prevents GIG if harmony <= 1', () => {

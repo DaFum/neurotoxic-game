@@ -390,6 +390,7 @@
   "mainMenu.existingSave.startNew": "START NEW TOUR",
   "mainMenu.existingSave.title": "SAVE FILE DETECTED",
   "mainMenu.subtitle.grindTheVoid": "Grind The Void",
+  "map.cancellationRisk": "⚠ Cancel risk: {{pct}}% (1-in-{{freq}} chance)",
   "map.cap": "Cap",
   "map.click_to_confirm": " - click to confirm",
   "map.click_to_travel": "CLICK TO TRAVEL",

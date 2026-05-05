@@ -23,6 +23,13 @@ type GigArrivalNode = ArrivalNode & {
   venue: Venue
 }
 
+export type ArrivalResult = {
+  /** Scene to navigate to after processing. Hook is responsible for calling changeScene. */
+  scene: import('../types/game').GamePhase
+  /** True when startGig was called successfully. Hook must not call changeScene when true. */
+  gigStarted: boolean
+}
+
 /**
  * Shared logic for handling arrival at a map node.
  * This can be used by both the legacy travel system and the new arrival logic hook.
@@ -98,13 +105,14 @@ type HandleNodeArrivalParams = {
   triggerEvent: (a: string, b?: string) => boolean
   startGig: (venue: Venue) => void
   addToast: (msg: string, level?: string) => void
-  changeScene?: (scene: string) => void
   onShowHQ?: () => void
   eventAlreadyActive?: boolean
   rng?: () => number
 }
 
-export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
+export const handleNodeArrival = (
+  params: HandleNodeArrivalParams
+): ArrivalResult => {
   const {
     node,
     band,
@@ -114,7 +122,6 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
     triggerEvent,
     startGig,
     addToast,
-    changeScene,
     onShowHQ,
     eventAlreadyActive = false,
     rng = secureRandom
@@ -140,7 +147,7 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
         }),
         'success'
       )
-      break
+      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
     case 'SPECIAL': {
       if (!eventAlreadyActive) {
@@ -154,7 +161,7 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
           )
         }
       }
-      break
+      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
     case 'START': {
       if (onShowHQ) onShowHQ()
@@ -164,7 +171,7 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
         }),
         'success'
       )
-      break
+      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
     case 'FESTIVAL':
     case 'FINALE':
@@ -197,8 +204,7 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
           })
         }
 
-        if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
-        return
+        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
 
       logger.info('ArrivalLogic', 'Starting Gig at destination', {
@@ -206,6 +212,7 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
       })
       try {
         startGig(node.venue)
+        return { scene: GAME_PHASES.OVERWORLD, gigStarted: true }
       } catch (error) {
         handleError(error, {
           addToast,
@@ -213,8 +220,16 @@ export const handleNodeArrival = (params: HandleNodeArrivalParams) => {
             defaultValue: 'Failed to start Gig.'
           })
         })
+        return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
       }
-      break
+    }
+    default: {
+      logger.warn(
+        'ArrivalLogic',
+        'Unhandled node type — routing to OVERWORLD',
+        { type: (node as ArrivalNode).type }
+      )
+      return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
   }
 }

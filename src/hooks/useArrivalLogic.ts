@@ -3,7 +3,6 @@ import { useGameState } from '../context/GameState'
 import {
   handleNodeArrival,
   processHarmonyRegen,
-  isGigNode,
   processTravelEvents
 } from '../utils/arrivalUtils'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -80,26 +79,24 @@ export const useArrivalLogic = ({ onShowHQ, rng } = {}) => {
 
       // 5. Handle Node Arrival & Routing
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
-      if (currentNode) {
-        handleNodeArrival({
-          node: currentNode,
-          band,
-          player,
-          updateBand,
-          updatePlayer,
-          triggerEvent,
-          startGig,
-          addToast,
-          changeScene,
-          onShowHQ,
-          eventAlreadyActive: travelEventActive,
-          rng
-        })
-      }
+      const arrivalResult = currentNode
+        ? handleNodeArrival({
+            node: currentNode,
+            band,
+            player,
+            updateBand,
+            updatePlayer,
+            triggerEvent,
+            startGig,
+            addToast,
+            onShowHQ,
+            eventAlreadyActive: travelEventActive,
+            rng
+          })
+        : { scene: GAME_PHASES.OVERWORLD as const, gigStarted: false }
 
-      // Ensure we route to OVERWORLD if not a Gig/Festival/Finale where action is taken
-      if (!isGigNode(currentNode)) {
-        changeScene(GAME_PHASES.OVERWORLD)
+      if (!arrivalResult.gigStarted) {
+        changeScene(arrivalResult.scene)
       }
     } catch (e) {
       // Reset guard so the user can retry the same node after an error

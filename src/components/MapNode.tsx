@@ -9,6 +9,7 @@ import { HexNode } from '../ui/shared'
 import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode } from '../types/game'
 import type { TranslationCallback } from '../types/callbacks'
+import { calcCancellationRisk } from '../utils/gameStateUtils'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -38,6 +39,7 @@ interface MapNodeTooltipProps {
   nodeLocationName: string
   ticketPrice?: number
   t: TranslationCallback
+  harmony?: number
 }
 
 interface MapNodeProps {
@@ -52,6 +54,7 @@ interface MapNodeProps {
   iconUrl: string
   vanUrl: string
   ticketPrice?: number
+  harmony?: number
 }
 
 const getPinAltText = (t: TranslationCallback, type: string): string => {
@@ -70,13 +73,40 @@ const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
   })
 }
 
+const CancellationBadge = memo(
+  ({ harmony, t }: { harmony: number; t: TranslationCallback }) => {
+    const risk = calcCancellationRisk(harmony)
+    const pct = (risk * 100).toFixed(1)
+    const freqDenom = Math.round(1 / risk)
+    const badgeClass =
+      risk >= 1
+        ? 'text-blood-red font-bold'
+        : risk > 0.3
+          ? 'text-blood-red'
+          : risk > 0.1
+            ? 'text-warning-yellow'
+            : 'text-toxic-green'
+
+    return (
+      <div className={`text-[10px] font-mono mt-1 ${badgeClass}`}>
+        {t('ui:map.cancellationRisk', {
+          defaultValue: '⚠ Cancel risk: {{pct}}% (1-in-{{freq}} chance)',
+          pct,
+          freq: freqDenom
+        })}
+      </div>
+    )
+  }
+)
+
 const MapNodeTooltip = memo(
   ({
     node,
     isCurrent,
     nodeLocationName,
     ticketPrice,
-    t
+    t,
+    harmony
   }: MapNodeTooltipProps) => {
     return (
       <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
@@ -99,6 +129,13 @@ const MapNodeTooltip = memo(
             {'\u2605'.repeat(node.venue?.diff || 0)}
           </div>
         )}
+        {(node.type === 'GIG' ||
+          node.type === 'FESTIVAL' ||
+          node.type === 'FINALE') &&
+          harmony !== undefined &&
+          calcCancellationRisk(harmony) > 0 && (
+            <CancellationBadge harmony={harmony} t={t} />
+          )}
         {node.type === 'REST_STOP' && (
           <div className='text-[10px] text-warning-yellow font-mono'>
             {t('ui:map.rest_stop_desc')}
@@ -138,7 +175,8 @@ export const MapNode = memo(
     setHoveredNode,
     iconUrl,
     vanUrl,
-    ticketPrice
+    ticketPrice,
+    harmony
   }: MapNodeProps) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
@@ -321,6 +359,7 @@ export const MapNode = memo(
           nodeLocationName={nodeLocationName}
           ticketPrice={ticketPrice}
           t={t}
+          harmony={harmony}
         />
       </div>
     )
