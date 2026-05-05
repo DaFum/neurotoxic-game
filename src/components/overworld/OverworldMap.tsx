@@ -14,7 +14,8 @@ import type {
   MapNode as GameMapNode,
   GameMap,
   PlayerState,
-  RivalBandState
+  RivalBandState,
+  BandState
 } from '../../types/game'
 import type { TranslationCallback } from '../../types/callbacks'
 
@@ -23,6 +24,7 @@ interface OverworldMapProps {
   gameMap: GameMap | null
   player: PlayerState
   rivalBand: RivalBandState | null
+  band: Pick<BandState, 'harmony'>
   currentLayer: number
   isTraveling: boolean
   pendingTravelNode: GameMapNode | null
@@ -56,7 +58,8 @@ export const OverworldMap = React.memo(
     travelCompletedRef,
     onTravelComplete,
     activeStoryFlags,
-    rivalBand
+    rivalBand,
+    band
   }: OverworldMapProps) => {
     const isOnlineNetwork = useNetworkStatus()
 
@@ -206,6 +209,7 @@ export const OverworldMap = React.memo(
               iconUrl={iconUrl}
               vanUrl={vanUrl}
               ticketPrice={effectivePrice}
+              harmony={node.type === 'GIG' ? band.harmony : undefined}
             />
             {hasRival && visibility > 0 && (
               <div

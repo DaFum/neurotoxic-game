@@ -99,7 +99,6 @@ export const Overworld = () => {
     }
   } = useOverworldModals()
 
-
   const {
     isTraveling,
     travelTarget,
@@ -188,6 +187,7 @@ export const Overworld = () => {
         t={t}
         gameMap={gameMap}
         player={player}
+        band={band}
         rivalBand={rivalBand}
         currentLayer={currentLayer}
         isTraveling={isTraveling}
