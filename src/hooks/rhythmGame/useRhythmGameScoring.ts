@@ -342,8 +342,6 @@ export const useRhythmGameScoring = ({
               gameStateRef.current.stats.corruptionLevel = 0
               gameStateRef.current.isCorruptionBurstActive = true
               gameStateRef.current.corruptionBurstEndTime = burstEndTime
-              gameStateRef.current.corruptionEndTimeMs = burstEndTime
-              setCorruptionLevel(0)
               setIsCorruptionBurstActive(true)
               setCorruptionBurstEndTime(burstEndTime)
               setCorruptionState(0, true)

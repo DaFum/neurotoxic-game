@@ -33,6 +33,7 @@ test('updateGigPerformanceStats tracks peak combo and hype', () => {
   assert.equal(updated.peakHype, 55)
   assert.equal(updated.misses, 2)
   assert.equal(updated.perfectHits, 10)
+  assert.equal(updated.corruptionLevel, 0)
 })
 
 test('buildGigStatsSnapshot includes required economy fields', () => {

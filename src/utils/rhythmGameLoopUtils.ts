@@ -136,12 +136,6 @@ export const processRhythmGameTick = ({
   const rawProgress = duration > 0 ? Math.min(100, (now / duration) * 100) : 0
   stateRef.progress = Math.max(0, rawProgress)
 
-  if (stateRef.corruptionEndTimeMs > 0 && now >= stateRef.corruptionEndTimeMs) {
-    stateRef.corruptionEndTimeMs = 0
-    setCorruptionState(stateRef.stats.corruptionLevel, false)
-    setCorruptionEffect(false)
-  }
-
   const currentInnerHeight = dimensionsRef.current.height
   const currentInnerWidth = dimensionsRef.current.width
 
@@ -176,13 +170,16 @@ export const processRhythmGameTick = ({
     }
   }
 
-  if (stateRef.isCorruptionBurstActive) {
-    if (now > stateRef.corruptionBurstEndTime) {
-      stateRef.isCorruptionBurstActive = false
-      stateRef.corruptionBurstEndTime = 0
-      setIsCorruptionBurstActive(false)
-      disableCorruptionBurstAudio()
-    }
+  if (
+    stateRef.isCorruptionBurstActive &&
+    now > stateRef.corruptionBurstEndTime
+  ) {
+    stateRef.isCorruptionBurstActive = false
+    stateRef.corruptionBurstEndTime = 0
+    setIsCorruptionBurstActive(false)
+    setCorruptionState(stateRef.stats.corruptionLevel, false)
+    setCorruptionEffect(false)
+    disableCorruptionBurstAudio()
   }
 
   const isNearTrackEnd = duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS
