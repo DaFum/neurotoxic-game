@@ -7,7 +7,7 @@ import { GAME_PHASES } from './gameConstants'
 import {
   createPopPendingEventAction,
   createSetActiveEventAction,
-  createUpdatePlayerAction,
+  createUpdatePlayerAction
 } from './actionCreators'
 import { resolveEvent, type SideEffect } from '../domain/eventResolver'
 import type { GameAction, GameState } from '../types/game'
@@ -51,10 +51,15 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
         // which is guaranteed by `resolveEvent`.
         if (newlyAddedUnlocks.has(effect.id)) {
           const unlockKey = `unlocks:${effect.id}`
-          const unlockLabel = t(unlockKey, { defaultValue: effect.id.toUpperCase() })
+          const unlockLabel = t(unlockKey, {
+            defaultValue: effect.id.toUpperCase()
+          })
           addToast(
             t('ui:unlocked', {
-              unlock: typeof unlockLabel === 'string' ? unlockLabel : String(unlockLabel),
+              unlock:
+                typeof unlockLabel === 'string'
+                  ? unlockLabel
+                  : String(unlockLabel)
             }),
             'success'
           )
@@ -63,14 +68,28 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
       }
       case 'outcomeToast': {
         if (!effect.outcomeKey && !effect.descriptionKey) {
-          logger.warn('EventSystem', 'Skipping outcomeToast: both keys are empty', { effect, context: effect.context })
+          logger.warn(
+            'EventSystem',
+            'Skipping outcomeToast: both keys are empty',
+            { effect, context: effect.context }
+          )
           break
         }
-        const msgOutcome = effect.outcomeKey ? t(effect.outcomeKey, effect.context) : ''
-        const msgDesc = effect.descriptionKey ? t(effect.descriptionKey, effect.context) : ''
-        const message = msgOutcome && msgDesc ? `${msgOutcome} ${msgDesc}` : msgOutcome || msgDesc
+        const msgOutcome = effect.outcomeKey
+          ? t(effect.outcomeKey, effect.context)
+          : ''
+        const msgDesc = effect.descriptionKey
+          ? t(effect.descriptionKey, effect.context)
+          : ''
+        const message =
+          msgOutcome && msgDesc
+            ? `${msgOutcome} ${msgDesc}`
+            : msgOutcome || msgDesc
         if (message) {
-          addToast(typeof message === 'string' ? message : String(message), 'info')
+          addToast(
+            typeof message === 'string' ? message : String(message),
+            'info'
+          )
         }
         break
       }
@@ -92,7 +111,9 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
       default: {
         // Exhaustiveness check
         const _exhaustiveCheck: never = effect
-        logger.warn('EventSystem', `Unhandled side effect type: ${(_exhaustiveCheck as any)?.type}`)
+        logger.warn('EventSystem', 'Unhandled side effect type', {
+          effect: _exhaustiveCheck as unknown
+        })
       }
     }
   }
@@ -104,7 +125,7 @@ export function useEventSystem({
   addToast,
   changeScene,
   saveGame,
-  tRef,
+  tRef
 }: UseEventSystemParams) {
   const setActiveEvent = useCallback(
     (event: Parameters<typeof createSetActiveEventAction>[0]) =>
@@ -130,7 +151,8 @@ export function useEventSystem({
       setActiveEvent(processedEvent)
       dispatch(
         createUpdatePlayerAction({
-          eventsTriggeredToday: (currentState.player?.eventsTriggeredToday ?? 0) + 1,
+          eventsTriggeredToday:
+            (currentState.player?.eventsTriggeredToday ?? 0) + 1
         })
       )
 
@@ -152,23 +174,29 @@ export function useEventSystem({
       try {
         const resolution = resolveEvent(choice, stateRef.current)
         resolution.actions.forEach(dispatch)
-        runSideEffects(resolution.sideEffects, { addToast, changeScene, saveGame, tRef })
+        runSideEffects(resolution.sideEffects, {
+          addToast,
+          changeScene,
+          saveGame,
+          tRef
+        })
         return {
           outcomeText: resolution.outcomeText,
           description: resolution.description,
-          result: resolution.result,
+          result: resolution.result
         }
       } catch (error) {
         logger.error('Event', 'Failed to resolve event choice:', error)
         addToast(tRef.current('ui:event_error'), 'error')
         dispatch(createSetActiveEventAction(null))
         return {
-          outcomeText: (choice?.outcomeText as string) ?? '',
+          outcomeText:
+            typeof choice?.outcomeText === 'string' ? choice.outcomeText : '',
           description:
             typeof choice?.description === 'string'
               ? tRef.current(choice.description)
               : '',
-          result: null,
+          result: null
         }
       }
     },
