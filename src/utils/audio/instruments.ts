@@ -60,6 +60,10 @@ export function setupMasterChain(): void {
   const masterCorruptionBypass = new Tone.Gain(1)
   const masterCorruptionWetGain = new Tone.Gain(0)
 
+  // Neuro-Decimator Distortion
+  const neuroDistortion = new Tone.Chebyshev(50)
+  neuroDistortion.wet.value = 0
+
   // Global reverb for natural space
   const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })
   const reverbSend = new Tone.Gain(0.3)
@@ -67,6 +71,7 @@ export function setupMasterChain(): void {
   // Assign to shared state after construction
   audioState.masterLimiter = masterLimiter
   audioState.masterComp = masterComp
+  audioState.neuroDistortion = neuroDistortion
   audioState.musicGain = musicGain
   audioState.reverb = reverb
   audioState.reverbSend = reverbSend
@@ -84,9 +89,10 @@ export function setupMasterChain(): void {
   masterComp.connect(masterCorruptionDistortion)
   masterCorruptionDistortion.connect(masterCorruptionWetGain)
 
-  // Recombine before limiter
-  masterCorruptionBypass.connect(masterLimiter)
-  masterCorruptionWetGain.connect(masterLimiter)
+  // Route Neuro-Decimator
+  neuroDistortion.connect(masterLimiter)
+  masterCorruptionBypass.connect(neuroDistortion)
+  masterCorruptionWetGain.connect(neuroDistortion)
 
   reverbSend.chain(reverb, musicGain)
 }

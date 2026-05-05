@@ -2,6 +2,7 @@ import * as audioEngine from './audioEngine'
 import { secureRandom } from '../crypto'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
+import { audioState } from './state'
 
 type AudioListener = () => void
 type AudioSfxType =
@@ -456,6 +457,16 @@ class AudioSystem {
       handleError(e, { fallbackMessage: 'Failed to persist mute preference' })
     }
     return this.muted
+  }
+
+  /**
+   * Toggles the Neuro-Decimator WebAudio node.
+   * @param {boolean} active - The active state
+   */
+  setNeuroDecimator(active: boolean): void {
+    if (audioState.neuroDistortion) {
+      audioState.neuroDistortion.wet.rampTo(active ? 0.8 : 0, 0.1)
+    }
   }
 
   /**

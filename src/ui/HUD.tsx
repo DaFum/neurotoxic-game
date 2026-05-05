@@ -1,5 +1,6 @@
 import { useState, useEffect, memo } from 'react'
-import { useGameSelector } from '../context/GameState'
+import { useGameSelector, useGameDispatch } from '../context/GameState'
+import { toggleNeuroDecimator } from '../context/actionCreators'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
@@ -37,6 +38,7 @@ const SHORTCUTS = [
 export const HUD = memo(() => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
+  const dispatch = useGameDispatch()
   const { t } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
@@ -236,6 +238,27 @@ export const HUD = memo(() => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
+        {band?.inventory?.neuroDecimator && (
+          <button
+            onClick={() => {
+              const nextState = !band.neuroDecimatorActive
+              dispatch(toggleNeuroDecimator(nextState))
+              import('../utils/audio/AudioManager').then(({ AudioManager }) => {
+                AudioManager.getInstance().setNeuroDecimator(nextState)
+              })
+            }}
+            className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 ${
+              band.neuroDecimatorActive
+                ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
+                : 'bg-void-black text-blood-red border-blood-red'
+            }`}
+          >
+            <Skull size={14} className='inline mr-2' />
+            <span className='font-black uppercase tracking-wider text-[10px]'>
+              {band.neuroDecimatorActive ? 'DECIMATOR: ON' : 'DECIMATOR: OFF'}
+            </span>
+          </button>
+        )}
         {band?.inventory?.neurotoxicPedal && (
           <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
             <Skull size={14} className='text-toxic-green' />

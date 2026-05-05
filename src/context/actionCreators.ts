@@ -144,6 +144,21 @@ export const createUpdateNeurotoxicPedalAction = (
 })
 
 /**
+ * Creates an action to toggle the Neuro-Decimator
+ * @param {boolean} isActive - The activity state
+ * @returns {Object} Action object
+ */
+export const toggleNeuroDecimator = (
+  isActive: boolean
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.TOGGLE_NEURO_DECIMATOR }
+> => ({
+  type: ActionTypes.TOGGLE_NEURO_DECIMATOR,
+  payload: { isActive: !!isActive }
+})
+
+/**
  * Creates a social update action
  * @param {Object} updates - Social media state updates
  * @returns {Object} Action object
