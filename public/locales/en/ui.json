@@ -714,7 +714,8 @@
     "common": "COMMON",
     "epic": "EPIC",
     "rare": "RARE",
-    "uncommon": "UNCOMMON"
+    "uncommon": "UNCOMMON",
+    "unknown": "UNKNOWN"
   },
   "rewards.fameWithAmount": "+{{count}} Fame",
   "rewards.fameWithAmount_one": "+{{count}} Fame",

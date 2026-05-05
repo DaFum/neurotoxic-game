@@ -34,14 +34,30 @@ vi.mock('../../src/ui/shared/Icons', () => ({
   VoidSkullIcon: () => <svg data-testid='void-skull-icon' />
 }))
 
-vi.mock('../../src/context/GameState', () => ({
-  useGameState: () => ({
-    player: { money: 100 },
-    band: { members: [{ id: 'm1', skills: {}, traits: {} }] },
-    activeEvent: { id: 'test_event', context: {} }
-  }),
-  GameStateProvider: ({ children }) => <div>{children}</div>
-}))
+import {
+  DEFAULT_PLAYER_STATE,
+  DEFAULT_BAND_STATE,
+  DEFAULT_SOCIAL_STATE
+} from '../../src/context/initialState'
+
+vi.mock('../../src/context/GameState', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useGameSelector: selector =>
+      selector({
+        player: { ...DEFAULT_PLAYER_STATE, money: 100 },
+        band: {
+          ...DEFAULT_BAND_STATE,
+          members: [{ id: 'm1', skills: {}, traits: {} }]
+        },
+        social: { ...DEFAULT_SOCIAL_STATE },
+        activeEvent: { id: 'test_event', context: {} },
+        activeQuests: [],
+        inventory: {}
+      })
+  }
+})
 
 test('EventModal renders event details and handles click flow', async () => {
   const mockEvent = {

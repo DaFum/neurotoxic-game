@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useGameState } from '../context/GameState'
+import { useState, useEffect, memo } from 'react'
+import { useGameSelector } from '../context/GameState'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
@@ -34,8 +34,9 @@ const SHORTCUTS = [
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
  */
-export const HUD = () => {
-  const { player, band } = useGameState()
+export const HUD = memo(() => {
+  const player = useGameSelector(state => state.player)
+  const band = useGameSelector(state => state.band)
   const { t } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
@@ -330,4 +331,4 @@ export const HUD = () => {
       </div>
     </div>
   )
-}
+})
