@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { ScoreDisplay } from './ScoreDisplay'
 import { ComboDisplay } from './ComboDisplay'
 import { OverloadMeter } from './OverloadMeter'
+import { CorruptionMeter } from './CorruptionMeter'
 import { UIFrameCorner } from '../../ui/shared/Icons'
 
 interface StatsOverlayProps {
@@ -9,13 +10,17 @@ interface StatsOverlayProps {
   combo: number
   accuracy: number
   overload: number
+  corruptionLevel: number
+  isCorruptionBurstActive: boolean
 }
 
 export const StatsOverlay = memo(function StatsOverlay({
   score,
   combo,
   accuracy,
-  overload
+  overload,
+  corruptionLevel,
+  isCorruptionBurstActive
 }: StatsOverlayProps) {
   return (
     <div className='absolute top-32 left-4 max-sm:top-20 max-sm:left-2 max-sm:scale-75 max-sm:origin-top-left z-10 text-star-white font-mono pointer-events-none p-4 group'>
@@ -27,6 +32,10 @@ export const StatsOverlay = memo(function StatsOverlay({
       <ScoreDisplay score={score} />
       <ComboDisplay combo={combo} accuracy={accuracy} />
       <OverloadMeter overload={overload} />
+      <CorruptionMeter
+        corruptionLevel={corruptionLevel}
+        isCorruptionBurstActive={isCorruptionBurstActive}
+      />
     </div>
   )
 })

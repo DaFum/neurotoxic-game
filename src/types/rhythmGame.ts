@@ -111,5 +111,8 @@ export type RhythmGameRefState = {
   transportPausedByOverlay: boolean
   toxicTimeTotal: number
   toxicModeEndTime: number
+  corruptionLevel: number
+  isCorruptionBurstActive: boolean
+  corruptionBurstEndTime: number
   rng: () => number
 }

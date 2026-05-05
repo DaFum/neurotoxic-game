@@ -181,6 +181,15 @@ class PixiStageController extends BaseStageController<RhythmGameRefState> {
 
     const elapsed = getGigTimeMs()
 
+    if (state.isCorruptionBurstActive) {
+      // Deterministic small shake
+      stageContainer.x = Math.random() * 10 - 5
+      stageContainer.y = Math.random() * 10 - 5
+    } else {
+      stageContainer.x = 0
+      stageContainer.y = 0
+    }
+
     toxic.update(state, elapsed, stageContainer)
 
     this.laneManager.update(state)

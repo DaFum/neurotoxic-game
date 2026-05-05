@@ -1,6 +1,7 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
+import { disableCorruptionBurstAudio } from './audio/audioEngine'
 import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
 import type { HecklerSession } from './hecklerLogic'
 import type {
@@ -24,6 +25,7 @@ interface RhythmTickArgs {
   deltaMS: number
   handleCollision: CollisionHandler
   setIsToxicMode: ToggleBooleanCallback
+  setIsCorruptionBurstActive: ToggleBooleanCallback
   handleMiss: MissHandler
   finalizeGigCallback: (stateRef: RhythmGameRefState) => void
   getGigTimeMs: () => number
@@ -61,6 +63,7 @@ export const processRhythmGameTick = ({
   deltaMS,
   handleCollision,
   setIsToxicMode,
+  setIsCorruptionBurstActive,
   handleMiss,
   finalizeGigCallback,
   getGigTimeMs,
@@ -160,6 +163,15 @@ export const processRhythmGameTick = ({
       stateRef.isToxicMode = false
     } else {
       stateRef.toxicTimeTotal += deltaMS
+    }
+  }
+
+  if (stateRef.isCorruptionBurstActive) {
+    if (now > stateRef.corruptionBurstEndTime) {
+      stateRef.isCorruptionBurstActive = false
+      stateRef.corruptionBurstEndTime = 0
+      setIsCorruptionBurstActive(false)
+      disableCorruptionBurstAudio()
     }
   }
 

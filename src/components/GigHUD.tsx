@@ -18,6 +18,8 @@ interface GigHUDStats {
   isGameOver: boolean
   accuracy?: number
   isToxicMode?: boolean
+  corruptionLevel?: number
+  isCorruptionBurstActive?: boolean
 }
 
 interface GigHUDProps {
@@ -40,7 +42,9 @@ export const GigHUD = memo(function GigHUD({
     overload,
     isGameOver,
     accuracy = 100,
-    isToxicMode = false
+    isToxicMode = false,
+    corruptionLevel = 0,
+    isCorruptionBurstActive = false
   } = stats
 
   return (
@@ -62,6 +66,8 @@ export const GigHUD = memo(function GigHUD({
         combo={combo}
         accuracy={accuracy}
         overload={overload}
+        corruptionLevel={corruptionLevel}
+        isCorruptionBurstActive={isCorruptionBurstActive}
       />
 
       <HealthBar health={health} isToxicMode={isToxicMode} />

@@ -38,7 +38,11 @@ mock.module(import.meta.resolve('../../src/utils/errorHandler.ts'), {
 })
 // Mock dynamic import
 mock.module(import.meta.resolve('../../src/utils/audio/audioEngine.ts'), {
-  namedExports: { stopAudio: mockStopAudio }
+  namedExports: {
+    stopAudio: mockStopAudio,
+    enableCorruptionBurstAudio: mock.fn(),
+    disableCorruptionBurstAudio: mock.fn()
+  }
 })
 
 const { useGigInput } = await import('../../src/hooks/useGigInput')

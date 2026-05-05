@@ -28,20 +28,12 @@ export const calculateAccuracy = (
  * @param {{combo: number, overload: number}} payload - Current combo and hype values.
  * @returns {GigPerformanceStats} Updated stats snapshot.
  */
+import type { RhythmLiveStats } from '../types/rhythmGame'
+
 export const updateGigPerformanceStats = (
-  stats: {
-    perfectHits: number
-    misses: number
-    maxCombo: number
-    peakHype: number
-  },
+  stats: RhythmLiveStats,
   payload: { combo: number; overload: number }
-): {
-  perfectHits: number
-  misses: number
-  maxCombo: number
-  peakHype: number
-} => ({
+): RhythmLiveStats => ({
   ...stats,
   maxCombo: Math.max(stats.maxCombo, payload.combo),
   peakHype: Math.max(stats.peakHype, payload.overload)
@@ -57,12 +49,7 @@ export const updateGigPerformanceStats = (
  */
 export const buildGigStatsSnapshot = (
   score: number,
-  stats: {
-    perfectHits: number
-    misses: number
-    maxCombo: number
-    peakHype: number
-  },
+  stats: RhythmLiveStats,
   toxicTimeTotal: number,
   songStats: Array<{
     songId: string
@@ -91,6 +78,9 @@ export const buildGigStatsSnapshot = (
   maxCombo: stats.maxCombo,
   peakHype: stats.peakHype,
   toxicTimeTotal,
-  accuracy: calculateAccuracy(stats.perfectHits, stats.misses),
+  accuracy: calculateAccuracy(
+    stats.perfectHits + (stats.hits || 0),
+    stats.misses
+  ),
   songStats: songStats.map(s => ({ ...s }))
 })

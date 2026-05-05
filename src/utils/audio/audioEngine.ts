@@ -35,7 +35,9 @@ export {
   getTransportState,
   setDestinationMute,
   getAudioTimeMs,
-  getPlayRequestId
+  getPlayRequestId,
+  enableCorruptionBurstAudio,
+  disableCorruptionBurstAudio
 } from './playback'
 
 export { startMetalGenerator } from './proceduralMetal'

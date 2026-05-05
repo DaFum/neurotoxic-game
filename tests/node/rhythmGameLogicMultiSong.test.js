@@ -24,6 +24,8 @@ const mockAudioManager = {
   playSFX: mock.fn()
 }
 const mockAudioEngine = {
+  enableCorruptionBurstAudio: mock.fn(),
+  disableCorruptionBurstAudio: mock.fn(),
   startMetalGenerator: mock.fn(),
   playMidiFile: mock.fn(),
   playSongFromData: mock.fn(),
@@ -56,12 +58,18 @@ const mockGigStats = {
 mock.module(new URL('../../src/context/GameState.tsx', import.meta.url).href, {
   namedExports: { useGameState: mockUseGameState }
 })
-mock.module(new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href, {
-  namedExports: { audioManager: mockAudioManager }
-})
-mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
-  namedExports: mockAudioEngine
-})
+mock.module(
+  new URL('../../src/utils/audio/AudioManager.ts', import.meta.url).href,
+  {
+    namedExports: { audioManager: mockAudioManager }
+  }
+)
+mock.module(
+  new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
+  {
+    namedExports: mockAudioEngine
+  }
+)
 mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
   namedExports: mockRhythmUtils
 })
@@ -69,16 +77,19 @@ mock.module(new URL('../../src/utils/gigStats.ts', import.meta.url).href, {
   namedExports: mockGigStats
 })
 // Mock other deps to avoid side effects
-mock.module(new URL('../../src/utils/simulationUtils.ts', import.meta.url).href, {
-  namedExports: {
-    calculateGigPhysics: mock.fn(() => ({
-      speedModifier: 1,
-      hitWindows: { guitar: 100, drums: 100, bass: 100 },
-      multipliers: { guitar: 1, drums: 1, bass: 1 }
-    })),
-    getGigModifiers: mock.fn(() => ({}))
+mock.module(
+  new URL('../../src/utils/simulationUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      calculateGigPhysics: mock.fn(() => ({
+        speedModifier: 1,
+        hitWindows: { guitar: 100, drums: 100, bass: 100 },
+        multipliers: { guitar: 1, drums: 1, bass: 1 }
+      })),
+      getGigModifiers: mock.fn(() => ({}))
+    }
   }
-})
+)
 mock.module(new URL('../../src/utils/hecklerLogic.ts', import.meta.url).href, {
   namedExports: {
     createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),

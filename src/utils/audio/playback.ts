@@ -547,6 +547,7 @@ export function resumeGigPlayback(): boolean {
 export function stopAudioInternal(): void {
   stopTransportAndClear()
   cleanupTransportEvents()
+  disableCorruptionBurstAudio()
 }
 
 /**
@@ -685,4 +686,28 @@ export function getAudioTimeMs(): number {
  */
 export function getPlayRequestId(): number {
   return audioState.playRequestId
+}
+
+export const enableCorruptionBurstAudio = (): void => {
+  if (
+    audioState.isCorruptionAudioActive ||
+    !audioState.masterCorruptionBypass ||
+    !audioState.masterCorruptionWetGain
+  )
+    return
+  audioState.isCorruptionAudioActive = true
+  audioState.masterCorruptionBypass.gain.rampTo(0, 0.05)
+  audioState.masterCorruptionWetGain.gain.rampTo(1, 0.05)
+}
+
+export const disableCorruptionBurstAudio = (): void => {
+  if (
+    !audioState.isCorruptionAudioActive ||
+    !audioState.masterCorruptionBypass ||
+    !audioState.masterCorruptionWetGain
+  )
+    return
+  audioState.isCorruptionAudioActive = false
+  audioState.masterCorruptionBypass.gain.rampTo(1, 0.05)
+  audioState.masterCorruptionWetGain.gain.rampTo(0, 0.05)
 }

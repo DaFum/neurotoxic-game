@@ -33,6 +33,9 @@ export const audioState = {
   reverb: null as Nullable<Tone.Reverb>,
   reverbSend: null as Nullable<Tone.Gain>,
   distortion: null as Nullable<Tone.Distortion>,
+  masterCorruptionDistortion: null as Nullable<Tone.Distortion>,
+  masterCorruptionBypass: null as Nullable<Tone.Gain>,
+  masterCorruptionWetGain: null as Nullable<Tone.Gain>,
   guitarChorus: null as Nullable<Tone.Chorus>,
   guitarEq: null as Nullable<Tone.EQ3>,
   widener: null as Nullable<Tone.StereoWidener>,
@@ -48,6 +51,7 @@ export const audioState = {
 
   // State flags & IDs
   isSetup: false,
+  isCorruptionAudioActive: false,
   playRequestId: 0,
   transportEndEventId: null as Nullable<number>,
   transportStopEventId: null as Nullable<number>,

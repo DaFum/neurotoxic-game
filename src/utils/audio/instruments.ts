@@ -55,6 +55,11 @@ export function setupMasterChain(): void {
   const masterComp = new Tone.Compressor(-18, 4)
   const musicGain = new Tone.Gain(1)
 
+  // Corruption Burst Effects
+  const masterCorruptionDistortion = new Tone.Distortion(0.8)
+  const masterCorruptionBypass = new Tone.Gain(1)
+  const masterCorruptionWetGain = new Tone.Gain(0)
+
   // Global reverb for natural space
   const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })
   const reverbSend = new Tone.Gain(0.3)
@@ -66,8 +71,23 @@ export function setupMasterChain(): void {
   audioState.reverb = reverb
   audioState.reverbSend = reverbSend
 
+  audioState.masterCorruptionDistortion = masterCorruptionDistortion
+  audioState.masterCorruptionBypass = masterCorruptionBypass
+  audioState.masterCorruptionWetGain = masterCorruptionWetGain
+  audioState.isCorruptionAudioActive = false
+
   // Signal Routing using local non-null instances
-  musicGain.chain(masterComp, masterLimiter)
+  musicGain.connect(masterComp)
+
+  // Split at masterComp
+  masterComp.connect(masterCorruptionBypass)
+  masterComp.connect(masterCorruptionDistortion)
+  masterCorruptionDistortion.connect(masterCorruptionWetGain)
+
+  // Recombine before limiter
+  masterCorruptionBypass.connect(masterLimiter)
+  masterCorruptionWetGain.connect(masterLimiter)
+
   reverbSend.chain(reverb, musicGain)
 }
 

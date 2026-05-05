@@ -11,7 +11,8 @@ import {
   getAudioTimeMs,
   playNoteAtTime,
   stopAudio,
-  getPlayRequestId
+  getPlayRequestId,
+  enableCorruptionBurstAudio
 } from '../../utils/audio/audioEngine'
 import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
@@ -45,6 +46,9 @@ type RhythmGameScoringParams = {
     | 'setIsToxicMode'
     | 'setIsGameOver'
     | 'setAccuracy'
+    | 'setCorruptionLevel'
+    | 'setIsCorruptionBurstActive'
+    | 'setCorruptionBurstEndTime'
   >
   performance: RhythmPerformance
   contextActions: {
@@ -85,7 +89,10 @@ export const useRhythmGameScoring = ({
     setOverload,
     setIsToxicMode,
     setIsGameOver,
-    setAccuracy
+    setAccuracy,
+    setCorruptionLevel,
+    setIsCorruptionBurstActive,
+    setCorruptionBurstEndTime
   } = setters
   const { addToast, setLastGigStats, endGig } = contextActions
 
@@ -167,7 +174,7 @@ export const useRhythmGameScoring = ({
       gameStateRef.current.stats = updatedStats
 
       const newAccuracy = calculateAccuracy(
-        updatedStats.perfectHits,
+        updatedStats.perfectHits + (updatedStats.hits || 0),
         updatedStats.misses
       )
 
@@ -313,11 +320,37 @@ export const useRhythmGameScoring = ({
           Boolean(state.modifiers.guestlist)
         )
 
-        // Update hits immediately for accuracy calculation
-        gameStateRef.current.stats.perfectHits++
+        const isPerfect = Math.abs(elapsed - note.time) <= hitWindow * 0.4
+
+        if (isPerfect) {
+          gameStateRef.current.stats.perfectHits++
+
+          if (!gameStateRef.current.isCorruptionBurstActive) {
+            const currentCorruption = gameStateRef.current.corruptionLevel || 0
+            const nextCorruption = Math.min(100, currentCorruption + 5)
+            gameStateRef.current.corruptionLevel = nextCorruption
+            setCorruptionLevel(nextCorruption)
+
+            if (nextCorruption >= 100) {
+              gameStateRef.current.corruptionLevel = 0
+              gameStateRef.current.isCorruptionBurstActive = true
+              gameStateRef.current.corruptionBurstEndTime = elapsed + 1000
+              setCorruptionLevel(0)
+              setIsCorruptionBurstActive(true)
+              setCorruptionBurstEndTime(elapsed + 1000)
+              enableCorruptionBurstAudio()
+            }
+          }
+        } else {
+          // If needed, keep track of normal hits here, but we removed unconditional perfectHits increment
+          if (!gameStateRef.current.stats.hits)
+            gameStateRef.current.stats.hits = 0
+          gameStateRef.current.stats.hits++
+        }
 
         const currentAccuracy = calculateAccuracy(
-          gameStateRef.current.stats.perfectHits,
+          gameStateRef.current.stats.perfectHits +
+            (gameStateRef.current.stats.hits || 0),
           gameStateRef.current.stats.misses
         )
         setAccuracy(currentAccuracy)
@@ -327,7 +360,8 @@ export const useRhythmGameScoring = ({
           state.combo,
           toxicModeActive,
           Boolean(state.modifiers.hasPerfektionist),
-          currentAccuracy
+          currentAccuracy,
+          gameStateRef.current.isCorruptionBurstActive
         )
 
         // Extract calculations outside state callbacks
@@ -382,6 +416,9 @@ export const useRhythmGameScoring = ({
       setOverload,
       setScore,
       setAccuracy,
+      setCorruptionLevel,
+      setIsCorruptionBurstActive,
+      setCorruptionBurstEndTime,
       guitarDifficulty,
       drumMultiplier
     ]
