@@ -20,7 +20,8 @@ test('updateGigPerformanceStats tracks peak combo and hype', () => {
     perfectHits: 10,
     misses: 2,
     maxCombo: 5,
-    peakHype: 20
+    peakHype: 20,
+    corruptionLevel: 0
   }
 
   const updated = updateGigPerformanceStats(baseStats, {

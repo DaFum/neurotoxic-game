@@ -77,7 +77,11 @@ describe('useRhythmGameLoop', () => {
       useRhythmGameLoop({
         gameStateRef,
         scoringActions: { handleMiss },
-        setters: { setIsToxicMode },
+        setters: {
+          setIsToxicMode,
+          setIsCorruptionBurstActive: vi.fn(),
+          setCorruptionState: vi.fn()
+        },
         contextState: { activeEvent },
         contextActions: { setLastGigStats, endGig }
       })

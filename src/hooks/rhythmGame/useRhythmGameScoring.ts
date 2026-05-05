@@ -12,7 +12,8 @@ import {
   playNoteAtTime,
   stopAudio,
   getPlayRequestId,
-  enableCorruptionBurstAudio
+  enableCorruptionBurstAudio,
+  setCorruptionEffect
 } from '../../utils/audio/audioEngine'
 import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
@@ -345,6 +346,7 @@ export const useRhythmGameScoring = ({
               setCorruptionBurstEndTime(burstEndTime)
               setCorruptionState(0, true)
               enableCorruptionBurstAudio()
+              setCorruptionEffect(true)
             }
           }
         } else {
