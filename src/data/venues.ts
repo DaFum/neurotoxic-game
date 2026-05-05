@@ -502,8 +502,21 @@ const RAW_VENUES = [
   }
 ]
 
-// Runtime schema validation without mutating the raw array directly
-export const ALL_VENUES = RAW_VENUES.filter(venue => {
+/**
+ * All validated venues in the game.
+ * @type {Array<Object>}
+ */
+export const ALL_VENUES: (typeof RAW_VENUES)[number][] = []
+
+/**
+ * Pre-computed map of venues for O(1) lookups.
+ * @type {Map<string, Object>}
+ */
+export const VENUES_BY_ID = new Map<string, (typeof RAW_VENUES)[number]>()
+
+// Runtime schema validation without mutating the raw array directly.
+// Optimized single-pass population of array and lookup map.
+for (const venue of RAW_VENUES) {
   if (
     typeof venue.id !== 'string' ||
     typeof venue.name !== 'string' ||
@@ -517,17 +530,19 @@ export const ALL_VENUES = RAW_VENUES.filter(venue => {
       `Invalid venue schema for ${venue.id || 'unknown'}`,
       venue
     )
-    return false
+    continue
   }
-  return true
-}).map(venue => {
+
+  let finalVenue = venue
   // Enforce FESTIVAL rule
   if (venue.capacity >= 1000 && venue.type !== 'FESTIVAL') {
     logger.warn(
       'VenueValidation',
       `Correcting type to FESTIVAL for high-capacity venue ${venue.id}`
     )
-    return { ...venue, type: 'FESTIVAL' }
+    finalVenue = { ...venue, type: 'FESTIVAL' }
   }
-  return venue
-})
+
+  ALL_VENUES.push(finalVenue)
+  VENUES_BY_ID.set(finalVenue.id, finalVenue)
+}

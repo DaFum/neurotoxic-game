@@ -1115,8 +1115,7 @@ type TransformedBrandDeal = (typeof BRAND_DEALS)[number] & {
   }
 }
 
-// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
-// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
+// Pre-computed map of brand deals for O(1) lookups.
 export const BRAND_DEALS_BY_ID = new Map<string, TransformedBrandDeal>()
 for (const deal of BRAND_DEALS) {
   const transformedDeal: TransformedBrandDeal = { ...deal }

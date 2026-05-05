@@ -42,7 +42,7 @@ import i18n from '../i18n'
 import { GAME_PHASES } from '../context/gameConstants'
 import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
-import { ALL_VENUES } from '../data/venues'
+import { ALL_VENUES, VENUES_BY_ID } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
 import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
 import {
@@ -50,16 +50,6 @@ import {
   createCheckRivalEncounterAction
 } from '../context/actionCreators'
 
-/**
- * Pre-computed map of venues for O(1) lookups during travel logic
- * @constant {Map<string, Object>}
- */
-// OPTIMIZATION: Use for...of to populate Map instead of new Map(array.map(...))
-// This avoids intermediate array allocation, reducing memory usage and garbage collection overhead.
-const VENUES_MAP = new Map<string, (typeof ALL_VENUES)[number]>()
-for (const v of ALL_VENUES) {
-  VENUES_MAP.set(v.id, v)
-}
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -497,7 +487,7 @@ export const useTravelLogic = ({
           const venueId = normalizeVenueId(node.venue)
           const processedNode = {
             ...node,
-            venue: resolveVenue(node.venue, venueId, VENUES_MAP) || node.venue
+            venue: resolveVenue(node.venue, venueId, VENUES_BY_ID) || node.venue
           }
           handleNodeArrivalCallback(processedNode, false)
         } else if (node.type === 'START') {
@@ -540,7 +530,7 @@ export const useTravelLogic = ({
         player,
         reputationByRegion: reputationByRegionRef.current,
         venueBlacklist: venueBlacklistRef.current,
-        venuesMap: VENUES_MAP,
+        venuesMap: VENUES_BY_ID,
         getLocationName
       })
 
