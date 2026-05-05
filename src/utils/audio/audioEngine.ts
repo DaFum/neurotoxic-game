@@ -37,7 +37,8 @@ export {
   getAudioTimeMs,
   getPlayRequestId,
   enableCorruptionBurstAudio,
-  disableCorruptionBurstAudio
+  disableCorruptionBurstAudio,
+  setCorruptionEffect
 } from './playback'
 
 export { startMetalGenerator } from './proceduralMetal'

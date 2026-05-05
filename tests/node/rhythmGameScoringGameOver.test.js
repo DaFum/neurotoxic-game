@@ -9,7 +9,8 @@ const mockAudioEngine = {
   getAudioTimeMs: mock.fn(() => 1000),
   getPlayRequestId: mock.fn(() => 1),
   enableCorruptionBurstAudio: mock.fn(),
-  disableCorruptionBurstAudio: mock.fn()
+  disableCorruptionBurstAudio: mock.fn(),
+  setCorruptionEffect: mock.fn()
 }
 const mockAudioManager = {
   playSFX: mock.fn()

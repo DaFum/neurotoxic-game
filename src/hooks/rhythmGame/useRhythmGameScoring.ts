@@ -49,6 +49,7 @@ type RhythmGameScoringParams = {
     | 'setCorruptionLevel'
     | 'setIsCorruptionBurstActive'
     | 'setCorruptionBurstEndTime'
+    | 'setCorruptionState'
   >
   performance: RhythmPerformance
   contextActions: {
@@ -92,7 +93,8 @@ export const useRhythmGameScoring = ({
     setAccuracy,
     setCorruptionLevel,
     setIsCorruptionBurstActive,
-    setCorruptionBurstEndTime
+    setCorruptionBurstEndTime,
+    setCorruptionState
   } = setters
   const { addToast, setLastGigStats, endGig } = contextActions
 
@@ -167,7 +169,8 @@ export const useRhythmGameScoring = ({
       const updatedStats = updateGigPerformanceStats(
         {
           ...gameStateRef.current.stats,
-          misses: gameStateRef.current.stats.misses + count
+          misses: gameStateRef.current.stats.misses + count,
+          corruptionLevel: gameStateRef.current.stats.corruptionLevel
         },
         { combo: 0, overload: nextOverload }
       )
@@ -332,17 +335,19 @@ export const useRhythmGameScoring = ({
             setCorruptionLevel(nextCorruption)
 
             if (nextCorruption >= 100) {
+              const burstEndTime = elapsed + 1000
               gameStateRef.current.corruptionLevel = 0
               gameStateRef.current.isCorruptionBurstActive = true
-              gameStateRef.current.corruptionBurstEndTime = elapsed + 1000
+              gameStateRef.current.corruptionBurstEndTime = burstEndTime
+              gameStateRef.current.corruptionEndTimeMs = burstEndTime
               setCorruptionLevel(0)
               setIsCorruptionBurstActive(true)
-              setCorruptionBurstEndTime(elapsed + 1000)
+              setCorruptionBurstEndTime(burstEndTime)
+              setCorruptionState(0, true)
               enableCorruptionBurstAudio()
             }
           }
         } else {
-          // If needed, keep track of normal hits here, but we removed unconditional perfectHits increment
           if (!gameStateRef.current.stats.hits)
             gameStateRef.current.stats.hits = 0
           gameStateRef.current.stats.hits++
@@ -419,6 +424,7 @@ export const useRhythmGameScoring = ({
       setCorruptionLevel,
       setIsCorruptionBurstActive,
       setCorruptionBurstEndTime,
+      setCorruptionState,
       guitarDifficulty,
       drumMultiplier
     ]

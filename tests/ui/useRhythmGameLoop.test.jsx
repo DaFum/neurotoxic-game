@@ -25,7 +25,8 @@ vi.mock('../../src/utils/audio/audioEngine', () => ({
   getTransportState: mocks.getTransportState,
   pauseAudio: mocks.pauseAudio,
   resumeAudio: mocks.resumeAudio,
-  stopAudio: mocks.stopAudio
+  stopAudio: mocks.stopAudio,
+  setCorruptionEffect: vi.fn()
 }))
 
 vi.mock('../../src/utils/gigStats', () => ({

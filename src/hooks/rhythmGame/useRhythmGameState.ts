@@ -28,6 +28,7 @@ export type RhythmUiState = {
   corruptionLevel: number
   isCorruptionBurstActive: boolean
   corruptionBurstEndTime: number
+  isCorruptionActive: boolean
 }
 
 type RhythmStateAction =
@@ -42,6 +43,10 @@ type RhythmStateAction =
   | { type: 'SET_CORRUPTION_LEVEL'; payload: SetterPayload<number> }
   | { type: 'SET_IS_CORRUPTION_BURST_ACTIVE'; payload: SetterPayload<boolean> }
   | { type: 'SET_CORRUPTION_BURST_END_TIME'; payload: SetterPayload<number> }
+  | {
+      type: 'SET_CORRUPTION_STATE'
+      payload: { level: number; active: boolean }
+    }
 
 export type {
   RhythmGameRefState,
@@ -66,6 +71,7 @@ export type RhythmStateSetters = {
   setCorruptionBurstEndTime: (
     corruptionBurstEndTime: SetterPayload<number>
   ) => void
+  setCorruptionState: (level: number, active: boolean) => void
 }
 
 export type RhythmGameStateHookReturn = {
@@ -85,7 +91,8 @@ const INITIAL_UI_STATE: RhythmUiState = {
   accuracy: 100,
   corruptionLevel: 0,
   isCorruptionBurstActive: false,
-  corruptionBurstEndTime: 0
+  corruptionBurstEndTime: 0,
+  isCorruptionActive: false
 }
 
 function resolvePayload<T>(payload: SetterPayload<T>, currentStateValue: T): T {
@@ -151,6 +158,12 @@ function rhythmGameReducer(
           state.corruptionBurstEndTime
         )
       }
+    case 'SET_CORRUPTION_STATE':
+      return {
+        ...state,
+        corruptionLevel: action.payload.level,
+        isCorruptionActive: action.payload.active
+      }
     default:
       return state
   }
@@ -197,7 +210,8 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
     perfectHits: 0,
     misses: 0,
     maxCombo: 0,
-    peakHype: 0
+    peakHype: 0,
+    corruptionLevel: 0
   } as RhythmLiveStats,
   projectiles: [],
   // Mirror React State for Renderer
@@ -227,7 +241,8 @@ const INITIAL_GAME_STATE_REF: Omit<RhythmGameRefState, 'rng'> = {
   toxicModeEndTime: 0,
   corruptionLevel: 0,
   isCorruptionBurstActive: false,
-  corruptionBurstEndTime: 0
+  corruptionBurstEndTime: 0,
+  corruptionEndTimeMs: 0
   // Note: rng is attached in the ref directly since it isn't cloning friendly
 }
 
@@ -276,7 +291,9 @@ export const useRhythmGameState = (): RhythmGameStateHookReturn => {
         dispatch({
           type: 'SET_CORRUPTION_BURST_END_TIME',
           payload: corruptionBurstEndTime
-        })
+        }),
+      setCorruptionState: (level, active) =>
+        dispatch({ type: 'SET_CORRUPTION_STATE', payload: { level, active } })
     }),
     []
   )
