@@ -109,7 +109,9 @@ export const useRhythmGameLoop = ({
       gameStateRef,
       handleCollision,
       handleMiss,
-      setIsToxicMode
+      setIsToxicMode,
+      setIsCorruptionBurstActive,
+      setCorruptionState
     ]
   )
 

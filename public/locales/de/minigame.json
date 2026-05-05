@@ -1,9 +1,4 @@
 {
-  "bandMembers": {
-    "lars": "Lars",
-    "marius": "Marius",
-    "matze": "Matze"
-  },
   "tourbus.damage": "SCHADEN:",
   "tourbus.condition_loss": "Zustandsverlust:",
   "tourbus.destination_reached": "ZIEL ERREICHT",
@@ -11,5 +6,8 @@
   "tourbus.moveLeft": "Nach links",
   "tourbus.moveRight": "Nach rechts",
   "tourbus.title": "TOURBUS TERROR",
-  "tourbus.van_condition": "Van Zustand:"
+  "tourbus.van_condition": "Van Zustand:",
+  "bandMembers.lars": "Lars",
+  "bandMembers.marius": "Marius",
+  "bandMembers.matze": "Matze"
 }

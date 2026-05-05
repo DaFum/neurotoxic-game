@@ -39,6 +39,8 @@ describe('useRhythmGameLoop', () => {
   let gameStateRef
   let handleMiss
   let setIsToxicMode
+  let setIsCorruptionBurstActive
+  let setCorruptionState
   let setLastGigStats
   let endGig
 
@@ -46,6 +48,8 @@ describe('useRhythmGameLoop', () => {
     vi.clearAllMocks()
     handleMiss = vi.fn()
     setIsToxicMode = vi.fn()
+    setIsCorruptionBurstActive = vi.fn()
+    setCorruptionState = vi.fn()
     setLastGigStats = vi.fn()
     endGig = vi.fn()
     gameStateRef = {
@@ -77,7 +81,11 @@ describe('useRhythmGameLoop', () => {
       useRhythmGameLoop({
         gameStateRef,
         scoringActions: { handleMiss },
-        setters: { setIsToxicMode },
+        setters: {
+          setIsToxicMode,
+          setIsCorruptionBurstActive,
+          setCorruptionState
+        },
         contextState: { activeEvent },
         contextActions: { setLastGigStats, endGig }
       })

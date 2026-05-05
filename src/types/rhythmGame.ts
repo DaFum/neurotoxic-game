@@ -117,5 +117,4 @@ export type RhythmGameRefState = {
   isCorruptionBurstActive: boolean
   corruptionBurstEndTime: number
   rng: () => number
-  corruptionEndTimeMs: number
 }
