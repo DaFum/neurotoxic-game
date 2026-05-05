@@ -5,6 +5,9 @@
  * @module contraband
  */
 
+import { logger } from '../utils/logger'
+import type { Rarity } from '../types/game'
+
 const CONTRABAND_DB = [
   // ursprüngliche Items (bewahrt)
   {
@@ -379,20 +382,13 @@ export const VOID_TRADER_COSTS = {
   rare: 400
 }
 
-/**
- * O(1) Lookup Map for Contraband Items
- * @type {Map<string, Object>}
- */
 export const CONTRABAND_BY_ID = new Map<
   string,
   (typeof CONTRABAND_DB)[number]
 >()
 
-/**
- * Contraband items grouped by rarity for weighted drops.
- */
 export const CONTRABAND_BY_RARITY: Record<
-  string,
+  Rarity,
   (typeof CONTRABAND_DB)[number][]
 > = {
   common: [],
@@ -401,12 +397,16 @@ export const CONTRABAND_BY_RARITY: Record<
   epic: []
 }
 
-// Optimized single-pass population of lookup map and rarity grouping.
 for (const item of CONTRABAND_DB) {
   CONTRABAND_BY_ID.set(item.id, item)
-  const rarityGroup = CONTRABAND_BY_RARITY[item.rarity]
+  const rarityGroup = CONTRABAND_BY_RARITY[item.rarity as Rarity]
   if (rarityGroup) {
     rarityGroup.push(item)
+  } else {
+    logger.warn(
+      'ContrabandData',
+      `Unknown rarity "${item.rarity}" for item ${item.id}`
+    )
   }
 }
 

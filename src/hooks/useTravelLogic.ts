@@ -50,7 +50,6 @@ import {
   createCheckRivalEncounterAction
 } from '../context/actionCreators'
 
-
 /**
  * Failsafe timeout duration in milliseconds
  * Travel animation duration (1500ms) + buffer (10ms)

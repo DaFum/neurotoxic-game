@@ -502,16 +502,8 @@ const RAW_VENUES = [
   }
 ]
 
-/**
- * All validated venues in the game.
- * @type {Array<Object>}
- */
 export const ALL_VENUES: (typeof RAW_VENUES)[number][] = []
 
-/**
- * Pre-computed map of venues for O(1) lookups.
- * @type {Map<string, Object>}
- */
 export const VENUES_BY_ID = new Map<string, (typeof RAW_VENUES)[number]>()
 
 // Runtime schema validation without mutating the raw array directly.
@@ -543,13 +535,14 @@ for (const venue of RAW_VENUES) {
     finalVenue = { ...venue, type: 'FESTIVAL' }
   }
 
-  ALL_VENUES.push(finalVenue)
-
   if (VENUES_BY_ID.has(finalVenue.id)) {
     logger.error(
       'VenueValidation',
-      `Duplicate venue ID detected: ${finalVenue.id}. This will overwrite the existing entry.`
+      `Duplicate venue ID detected: ${finalVenue.id}. Skipping.`
     )
+    continue
   }
+
+  ALL_VENUES.push(finalVenue)
   VENUES_BY_ID.set(finalVenue.id, finalVenue)
 }
