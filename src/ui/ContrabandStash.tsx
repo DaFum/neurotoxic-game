@@ -188,12 +188,8 @@ export const ContrabandStash = ({
                                       : 'text-alert-amber' // epic
                               }
                             >
-                              {t(`ui:rarity.${item.rarity}`, {
-                                defaultValue:
-                                  item.rarity?.toUpperCase() ??
-                                  t('ui:rarity.unknown', {
-                                    defaultValue: 'UNKNOWN'
-                                  })
+                              {t(`ui:rarity.${item.rarity ?? 'unknown'}`, {
+                                defaultValue: item.rarity?.toUpperCase() ?? 'UNKNOWN'
                               })}
                             </span>
                           </div>
