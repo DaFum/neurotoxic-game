@@ -193,9 +193,7 @@ export function useEventSystem({
           outcomeText:
             typeof choice?.outcomeText === 'string' ? choice.outcomeText : '',
           description:
-            typeof choice?.description === 'string'
-              ? tRef.current(choice.description)
-              : '',
+            typeof choice?.description === 'string' ? choice.description : '',
           result: null
         }
       }
