@@ -135,9 +135,7 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
 })
 
 // --- pendingEvent pop ---
-test('resolveEvent: active event matching first pendingEvent emits POP_PENDING_EVENT in triggerEvent', () => {
-  // NOTE: popPendingEvent is in triggerEvent, not resolveEvent.
-  // This test verifies resolveEvent does NOT emit it (that is triggerEvent's job).
+test('resolveEvent: does NOT emit POP_PENDING_EVENT (triggerEvent handles it)', () => {
   const choice = {
     label: 'OK',
     outcomeText: '',
@@ -147,4 +145,20 @@ test('resolveEvent: active event matching first pendingEvent emits POP_PENDING_E
   const { actions } = resolveEvent(choice, state)
   const popAction = actions.find(a => a.type === 'POP_PENDING_EVENT')
   assert.ok(!popAction, 'resolveEvent must not pop pending events (triggerEvent does that)')
+})
+
+// --- empty-string preservation ---
+test('resolveEvent: explicitly empty outcomeText/description strings are preserved', () => {
+  const choice = {
+    label: 'Silent choice',
+    outcomeText: '',
+    description: '',
+    _precomputedResult: { outcomeText: 'should not see this', description: 'or this', delta: null }
+  }
+  const state = buildState()
+  const { outcomeText, description, sideEffects } = resolveEvent(choice, state)
+  assert.equal(outcomeText, '')
+  assert.equal(description, '')
+  const outcomeToast = sideEffects.find(e => e.type === 'outcomeToast')
+  assert.ok(!outcomeToast, 'should not emit outcomeToast when both strings are empty')
 })

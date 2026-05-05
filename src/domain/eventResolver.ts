@@ -144,8 +144,8 @@ export function resolveEvent(
       }
     }
 
-    if (flags.unlock) {
-      const rawUnlock = String(flags.unlock)
+    if (flags.unlock && typeof flags.unlock === 'string') {
+      const rawUnlock = flags.unlock
       const safeUnlockId = rawUnlock.trim().replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()
       if (safeUnlockId) {
         const unlockAction = createAddUnlockAction(safeUnlockId)
@@ -170,7 +170,7 @@ export function resolveEvent(
   }
 
   if (state.activeEvent?.id) {
-    actions.push(createAddCooldownAction(state.activeEvent.id as string))
+    actions.push(createAddCooldownAction(state.activeEvent.id))
   }
 
   if (outcomeText || description) {

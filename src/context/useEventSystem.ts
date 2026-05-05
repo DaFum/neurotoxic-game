@@ -62,6 +62,10 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
         break
       }
       case 'outcomeToast': {
+        if (!effect.outcomeKey && !effect.descriptionKey) {
+          logger.warn('EventSystem', 'Skipping outcomeToast: both keys are empty', { effect, context: effect.context })
+          break
+        }
         const msgOutcome = effect.outcomeKey ? t(effect.outcomeKey, effect.context) : ''
         const msgDesc = effect.descriptionKey ? t(effect.descriptionKey, effect.context) : ''
         const message = msgOutcome && msgDesc ? `${msgOutcome} ${msgDesc}` : msgOutcome || msgDesc
@@ -84,6 +88,11 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
       case 'saveGame': {
         saveGame(false, effect.state)
         break
+      }
+      default: {
+        // Exhaustiveness check
+        const _exhaustiveCheck: never = effect
+        logger.warn('EventSystem', `Unhandled side effect type: ${(_exhaustiveCheck as any)?.type}`)
       }
     }
   }
