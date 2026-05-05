@@ -6,7 +6,7 @@ Applies to `src/context/reducers/**`.
 
 ## Rules
 
-- Reducers apply already-sanitized action payloads and must not duplicate action-creator clamps.
+- Reducers apply already-sanitized action payloads and must not duplicate action-creator clamps. Terminal reducers processing raw payloads without pre-clamping creators should use canonical clamp functions from `gameStateUtils`.
 - Keep exhaustive handling with `assertNever(action)` in default branches.
 - Whitelist persisted or loaded payload fields before constructing state.
 - Preserve immutability of untouched branches in reducer tests.
