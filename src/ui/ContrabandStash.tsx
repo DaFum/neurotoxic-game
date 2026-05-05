@@ -189,11 +189,7 @@ export const ContrabandStash = ({
                               }
                             >
                               {t(`ui:rarity.${item.rarity ?? 'unknown'}`, {
-                                defaultValue:
-                                  item.rarity?.toUpperCase() ??
-                                  t('ui:rarity.unknown', {
-                                    defaultValue: 'UNKNOWN'
-                                  })
+                                defaultValue: item.rarity?.toUpperCase() ?? 'UNKNOWN'
                               })}
                             </span>
                           </div>
