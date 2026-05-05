@@ -12,9 +12,9 @@ import {
 } from '../context/actionCreators'
 import type {
   GameAction,
+  GamePhase,
   GameState,
-  QuestState,
-  GamePhase
+  QuestState
 } from '../types/game'
 
 export type SideEffect =
