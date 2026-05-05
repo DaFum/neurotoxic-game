@@ -21,9 +21,11 @@ import {
   clampMemberStamina,
   clampMemberMood,
   calculateFameLevel,
-  isForbiddenKey
+  isForbiddenKey,
+  clampVanFuel
 } from '../../utils/gameStateUtils'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
+import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks, normalizeTraitMap } from '../../utils/traitUtils'
@@ -487,12 +489,10 @@ const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     day: Math.max(1, typeof rawPlayer.day === 'number' ? rawPlayer.day : 1),
     van: {
       ...rawPlayer.van,
-      fuel: Math.max(
-        0,
-        Math.min(
-          100,
-          typeof rawPlayer.van.fuel === 'number' ? rawPlayer.van.fuel : 100
-        )
+      fuel: clampVanFuel(
+        typeof rawPlayer.van.fuel === 'number'
+          ? rawPlayer.van.fuel
+          : EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
       )
     }
   }
@@ -1289,7 +1289,7 @@ const EFFECT_REVERTERS: Record<
 > = {
   harmony: (band: BandState, value: unknown) => ({
     ...band,
-    harmony: clampBandHarmony((band.harmony || 0) - (value as number))
+    harmony: clampBandHarmony((band.harmony ?? 1) - (value as number))
   }),
   guitar_difficulty: (band: BandState, value: unknown) => ({
     ...band,

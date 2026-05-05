@@ -175,7 +175,7 @@ export const checkTraitUnlocks = (
 
     // Peacemaker (Lars): High Band Harmony (e.g. > 90)
     if (Lars && !hasTrait(Lars, 'peacemaker')) {
-      if ((band.harmony || 0) >= 90) {
+      if ((band.harmony ?? 1) >= 90) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'peacemaker' })
       }
     }

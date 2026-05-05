@@ -320,7 +320,7 @@ export const applyStatModifier = (
     case 'band': {
       if (effect.stat === 'harmony') {
         nextBandPatch = {
-          harmony: clampBandHarmony((band.harmony || 0) + val)
+          harmony: clampBandHarmony((band.harmony ?? 1) + val)
         }
       } else {
         const base = getNumericProp(band, effect.stat, 0) || 0
