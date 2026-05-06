@@ -110,7 +110,7 @@ These use `Math.max(0, Math.min(100, ...))` instead of centralized clamp functio
 
 ## 3. Duplicated / Doubled Logic
 
-### D-1: `isPlainRecord` Duplicates `isPlainObject`
+### [Resolved] D-1: `isPlainRecord` Duplicates `isPlainObject`
 
 **Locations:**
 - `src/context/reducers/systemReducer.ts:60` — Defines `isPlainRecord` locally
@@ -122,7 +122,7 @@ These use `Math.max(0, Math.min(100, ...))` instead of centralized clamp functio
 
 ---
 
-### D-2: `simulationUtils.ts` Exports Unused Constants
+### [Resolved] D-2: `simulationUtils.ts` Exports Unused Constants
 
 **Locations:** `src/utils/simulationUtils.ts:281–283`
 
@@ -138,7 +138,7 @@ These three constants are exported but never imported anywhere. They are used on
 
 ---
 
-### D-3: `buildQuestsProps.ts` is a Trivial Wrapper
+### [Resolved] D-3: `buildQuestsProps.ts` is a Trivial Wrapper
 
 **Location:** `src/hooks/buildQuestsProps.ts`
 
@@ -148,7 +148,7 @@ These three constants are exported but never imported anywhere. They are used on
 
 ---
 
-### D-4: `contrabandStashUtils.ts`, `darkWebLeakUtils.ts`, `pirateRadioUtils.ts`
+### [Resolved] D-4: `contrabandStashUtils.ts`, `darkWebLeakUtils.ts`, `pirateRadioUtils.ts`
 
 **Assessment:** These are properly factored with single, focused callers. No duplication detected. Well-integrated.
 
