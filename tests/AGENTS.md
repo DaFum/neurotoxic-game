@@ -16,8 +16,6 @@ Applies to `tests/**` unless a deeper `AGENTS.md` overrides it.
 ## Mocking
 
 - Vitest localStorage assertions must mock/restore `window.localStorage.setItem` in `try/finally`.
-- `react-i18next` mocks require `initReactI18next: { type: '3rdParty', init: () => {} }`.
-- Populate lookup maps such as `SONGS_BY_ID` explicitly in mocked data.
 
 ## Gotchas
 

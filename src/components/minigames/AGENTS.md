@@ -12,5 +12,4 @@ Applies to `src/components/minigames/**` unless a deeper `AGENTS.md` overrides i
 
 ## Gotchas
 
-- `COMPLETE_TRAVEL_MINIGAME` does not change scene; arrival routing belongs to `useArrivalLogic`.
 - Completion overlays need both automatic and manual continue paths covered by tests when changed.

@@ -13,5 +13,4 @@ Applies to `src/scenes/**` unless a deeper `AGENTS.md` overrides it.
 
 ## Gotchas
 
-- `useArrivalLogic` owns arrival routing, including direct PreGig entry.
 - UI controls hidden behind refactors still need reachability assertions.

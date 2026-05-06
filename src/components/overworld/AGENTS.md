@@ -14,4 +14,3 @@ Applies to `src/components/overworld/**`.
 ## Gotchas
 
 - UI refactors here commonly make actions unreachable while components still render in tests. Add reachability coverage for changed menus.
-- `useArrivalLogic` owns direct PreGig entry after travel.
