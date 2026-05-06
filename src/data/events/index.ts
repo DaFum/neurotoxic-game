@@ -1,4 +1,3 @@
-// Aggregate all event categories
 import type { UnknownRecord } from '../../types/game'
 import { TRANSPORT_EVENTS } from './transport'
 import { BAND_EVENTS } from './band'
@@ -11,7 +10,9 @@ import { RELATIONSHIP_EVENTS } from './relationshipEvents'
 import { QUEST_EVENTS } from './quests'
 import { logger } from '../../utils/logger'
 
-const VALID_CATEGORIES = new Set([
+type EventCategory = 'transport' | 'band' | 'gig' | 'financial' | 'special'
+
+const VALID_CATEGORIES = new Set<EventCategory>([
   'transport',
   'band',
   'gig',
@@ -19,139 +20,68 @@ const VALID_CATEGORIES = new Set([
   'special'
 ])
 
-// Validation Helper
-const validateEvents = (
-  events: unknown[],
-  categoryName = 'unknown'
-): UnknownRecord[] => {
-  const ids = new Set<string>()
-  return events.filter((e: unknown) => {
-    if (!e || typeof e !== 'object' || Array.isArray(e)) {
-      logger.error(
-        'EventValidation',
-        `Event must be an object in ${categoryName}`,
-        e
-      )
-      return false
-    }
-    const eObj = e as Record<string, unknown>
-    if (typeof eObj.id !== 'string' || eObj.id.trim() === '') {
-      logger.error('EventValidation', `Event missing ID in ${categoryName}`, e)
-      return false
-    }
-    if (typeof eObj.category !== 'string') {
-      logger.error(
-        'EventValidation',
-        `Event missing category in ${categoryName}: ${eObj.id}`,
-        e
-      )
-      return false
-    }
-    if (ids.has(eObj.id)) {
-      logger.error(
-        'EventValidation',
-        `Duplicate Event ID in ${categoryName}: ${eObj.id}`
-      )
-      return false
-    }
-    ids.add(eObj.id)
-    if (!VALID_CATEGORIES.has(eObj.category)) {
-      logger.error(
-        'EventValidation',
-        `Invalid Event Category in ${categoryName}: ${eObj.category} for event ${eObj.id}`,
-        e
-      )
-      return false
-    }
-    return true
-  }) as UnknownRecord[]
+// Aggregate all raw event definitions from their domain files
+const ALL_RAW_EVENTS = [
+  ...TRANSPORT_EVENTS,
+  ...BAND_EVENTS,
+  ...GIG_EVENTS,
+  ...FINANCIAL_EVENTS,
+  ...SPECIAL_EVENTS,
+  ...CRISIS_EVENTS,
+  ...CONSEQUENCE_EVENTS,
+  ...RELATIONSHIP_EVENTS,
+  ...QUEST_EVENTS
+]
+
+// The final registry of playable events
+export const EVENTS_DB: Record<EventCategory, UnknownRecord[]> = {
+  transport: [],
+  band: [],
+  gig: [],
+  financial: [],
+  special: []
 }
 
-const categorizeEvents = (
-  events: UnknownRecord[]
-): {
-  band: UnknownRecord[]
-  financial: UnknownRecord[]
-  special: UnknownRecord[]
-} => {
-  const result: {
-    band: UnknownRecord[]
-    financial: UnknownRecord[]
-    special: UnknownRecord[]
-  } = {
-    band: [],
-    financial: [],
-    special: []
+const seenIds = new Set<string>()
+
+// Single validation and routing pass
+for (let i = 0; i < ALL_RAW_EVENTS.length; i++) {
+  const e = ALL_RAW_EVENTS[i]
+
+  if (!e || typeof e !== 'object' || Array.isArray(e)) {
+    logger.error('EventValidation', 'Event must be an object', e)
+    continue
   }
 
-  for (let i = 0; i < events.length; i++) {
-    const e = events[i]
-    if (!e) continue
-    const category = typeof e.category === 'string' ? e.category : 'unknown'
-    if (Object.hasOwn(result, category)) {
-      result[category as keyof typeof result].push(e)
-    } else {
-      logger.error(
-        'EventCategorization',
-        `Event ${e.id || 'unknown'} has invalid or unhandled category: ${category}`,
-        e
-      )
-    }
+  const eObj = e as Record<string, unknown>
+
+  if (typeof eObj.id !== 'string' || eObj.id.trim() === '') {
+    logger.error('EventValidation', 'Event missing ID', e)
+    continue
   }
 
-  return result
-}
+  if (typeof eObj.category !== 'string') {
+    logger.error('EventValidation', `Event missing category: ${eObj.id}`, e)
+    continue
+  }
 
-// Split crisis events into their respective category pools
-const {
-  band: crisisBand,
-  financial: crisisFinancial,
-  special: crisisSpecial
-} = categorizeEvents(CRISIS_EVENTS)
+  if (seenIds.has(eObj.id)) {
+    logger.error('EventValidation', `Duplicate Event ID: ${eObj.id}`)
+    continue
+  }
 
-// Split quest events into their respective category pools
-const {
-  band: questBand,
-  financial: questFinancial,
-  special: questSpecial
-} = categorizeEvents(QUEST_EVENTS)
+  seenIds.add(eObj.id)
 
-// Split consequence events into their respective category pools
-const {
-  band: consequenceBand,
-  financial: consequenceFinancial,
-  special: consequenceSpecial
-} = categorizeEvents(CONSEQUENCE_EVENTS)
+  const category = eObj.category as EventCategory
 
-export const EVENTS_DB = {
-  transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
-  band: validateEvents(
-    [
-      ...BAND_EVENTS,
-      ...crisisBand,
-      ...consequenceBand,
-      ...questBand,
-      ...RELATIONSHIP_EVENTS
-    ],
-    'band'
-  ),
-  gig: validateEvents(GIG_EVENTS, 'gig'),
-  financial: validateEvents(
-    [
-      ...FINANCIAL_EVENTS,
-      ...crisisFinancial,
-      ...consequenceFinancial,
-      ...questFinancial
-    ],
-    'financial'
-  ),
-  special: validateEvents(
-    [
-      ...SPECIAL_EVENTS,
-      ...crisisSpecial,
-      ...consequenceSpecial,
-      ...questSpecial
-    ],
-    'special'
-  )
+  if (!VALID_CATEGORIES.has(category)) {
+    logger.error(
+      'EventValidation',
+      `Invalid Event Category: ${category} for event ${eObj.id}`,
+      e
+    )
+    continue
+  }
+
+  EVENTS_DB[category].push(eObj as UnknownRecord)
 }
