@@ -51,7 +51,7 @@ export const handleUpdateSocial = (
   }
 
   if (updates.zealotry !== undefined) {
-    updates.zealotry = clampZealotry(Number(updates.zealotry ?? 0))
+    updates.zealotry = clampZealotry(Number(updates.zealotry) || 0)
   }
 
   if (updates.activeDeals !== undefined) {
@@ -158,9 +158,9 @@ export const handleMerchPress = (
     return state
   }
 
-  const currentLoyalty = Number(state.social.loyalty ?? 0)
-  const currentControversy = Number(state.social.controversyLevel ?? 0)
-  const currentFame = Number(state.player.fame ?? 0)
+  const currentLoyalty = Number(state.social.loyalty) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
+  const currentFame = Number(state.player.fame) || 0
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
@@ -279,9 +279,9 @@ export const handlePirateBroadcast = (
     return state
   }
 
-  const currentFame = Number(state.player.fame ?? 0)
-  const currentZealotry = Number(state.social.zealotry ?? 0)
-  const currentControversy = Number(state.social.controversyLevel ?? 0)
+  const currentFame = Number(state.player.fame) || 0
+  const currentZealotry = Number(state.social.zealotry) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
@@ -402,9 +402,9 @@ export const handleDarkWebLeak = (
     return state
   }
 
-  const currentFame = Number(state.player.fame ?? 0)
-  const currentZealotry = Number(state.social.zealotry ?? 0)
-  const currentControversy = Number(state.social.controversyLevel ?? 0)
+  const currentFame = Number(state.player.fame) || 0
+  const currentZealotry = Number(state.social.zealotry) || 0
+  const currentControversy = Number(state.social.controversyLevel) || 0
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)

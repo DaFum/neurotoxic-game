@@ -124,17 +124,19 @@ export const calculateFameGain = (
   return fameGain
 }
 
+const clamp0to100 = (value: number): number => {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(100, Math.floor(value)))
+}
+
 /**
  * Clamps a social controversy level to be between 0 and 100.
  *
  * @param {number} level - Candidate controversy level.
  * @returns {number} Clamped controversy level in range [0, 100].
  */
-export const clampControversyLevel = (level: number): number => {
-  if (!Number.isFinite(level)) return 0
-  const safeLevel = Math.floor(level)
-  return Math.max(0, Math.min(100, safeLevel))
-}
+export const clampControversyLevel = (level: number): number =>
+  clamp0to100(level)
 
 /**
  * Clamps player money to a safe, non-negative integer.
@@ -212,11 +214,7 @@ export const clampBandHarmony = (harmony: number): number => {
  * @param {number} loyalty - Candidate loyalty value.
  * @returns {number} Clamped loyalty value in range [0, 100].
  */
-export const clampLoyalty = (loyalty: number): number => {
-  if (!Number.isFinite(loyalty)) return 0
-  const safeLoyalty = Math.floor(loyalty)
-  return Math.max(0, Math.min(100, safeLoyalty))
-}
+export const clampLoyalty = (loyalty: number): number => clamp0to100(loyalty)
 
 /**
  * Clamps social zealotry to the canonical gameplay range.
@@ -224,11 +222,7 @@ export const clampLoyalty = (loyalty: number): number => {
  * @param {number} zealotry - Candidate zealotry value.
  * @returns {number} Clamped zealotry value in range [0, 100].
  */
-export const clampZealotry = (zealotry: number): number => {
-  if (!Number.isFinite(zealotry)) return 0
-  const safeZealotry = Math.floor(zealotry)
-  return Math.max(0, Math.min(100, safeZealotry))
-}
+export const clampZealotry = (zealotry: number): number => clamp0to100(zealotry)
 
 /**
  * Clamps van condition to the allowed percentage (0-100).
