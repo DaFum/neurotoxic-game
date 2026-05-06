@@ -69,7 +69,7 @@ export const handleSetGigModifiers = (
 
 const handleRecordBadShow = (state: GameState): GameState => {
   let nextState = { ...state }
-  const currentBadShows = (nextState.player.stats?.consecutiveBadShows || 0) + 1
+  const currentBadShows = (nextState.player.stats?.consecutiveBadShows ?? 0) + 1
 
   nextState.player = {
     ...nextState.player,

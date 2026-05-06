@@ -12,7 +12,9 @@ import {
   clampPlayerMoney,
   clampBandHarmony,
   clampPlayerFame,
-  calculateFameLevel
+  calculateFameLevel,
+  clampLoyalty,
+  clampZealotry
 } from '../../utils/gameStateUtils'
 import { sanitizeSuccessToast } from './toastSanitizers'
 
@@ -49,7 +51,7 @@ export const handleUpdateSocial = (
   }
 
   if (updates.zealotry !== undefined) {
-    updates.zealotry = Math.max(0, Math.min(100, Number(updates.zealotry) || 0))
+    updates.zealotry = clampZealotry(Number(updates.zealotry ?? 0))
   }
 
   if (updates.activeDeals !== undefined) {
@@ -156,13 +158,13 @@ export const handleMerchPress = (
     return state
   }
 
-  const currentLoyalty = Number(state.social.loyalty) || 0
-  const currentControversy = Number(state.social.controversyLevel) || 0
-  const currentFame = Number(state.player.fame) || 0
+  const currentLoyalty = Number(state.social.loyalty ?? 0)
+  const currentControversy = Number(state.social.controversyLevel ?? 0)
+  const currentFame = Number(state.player.fame ?? 0)
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
-  const nextLoyalty = Math.max(0, Math.min(100, currentLoyalty + loyaltyGain))
+  const nextLoyalty = clampLoyalty(currentLoyalty + loyaltyGain)
   const nextControversy = Math.max(
     0,
     Math.min(100, currentControversy + controversyGain)
@@ -277,17 +279,14 @@ export const handlePirateBroadcast = (
     return state
   }
 
-  const currentFame = Number(state.player.fame) || 0
-  const currentZealotry = Number(state.social.zealotry) || 0
-  const currentControversy = Number(state.social.controversyLevel) || 0
+  const currentFame = Number(state.player.fame ?? 0)
+  const currentZealotry = Number(state.social.zealotry ?? 0)
+  const currentControversy = Number(state.social.controversyLevel ?? 0)
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextFame = clampPlayerFame(currentFame + fameGain)
-  const nextZealotry = Math.max(
-    0,
-    Math.min(100, currentZealotry + zealotryGain)
-  )
+  const nextZealotry = clampZealotry(currentZealotry + zealotryGain)
   const nextControversy = Math.max(
     0,
     Math.min(100, currentControversy + controversyGain)
@@ -403,17 +402,14 @@ export const handleDarkWebLeak = (
     return state
   }
 
-  const currentFame = Number(state.player.fame) || 0
-  const currentZealotry = Number(state.social.zealotry) || 0
-  const currentControversy = Number(state.social.controversyLevel) || 0
+  const currentFame = Number(state.player.fame ?? 0)
+  const currentZealotry = Number(state.social.zealotry ?? 0)
+  const currentControversy = Number(state.social.controversyLevel ?? 0)
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
   const nextFame = clampPlayerFame(currentFame + fameGain)
-  const nextZealotry = Math.max(
-    0,
-    Math.min(100, currentZealotry + zealotryGain)
-  )
+  const nextZealotry = clampZealotry(currentZealotry + zealotryGain)
   const nextControversy = Math.max(
     0,
     Math.min(100, currentControversy + controversyGain)

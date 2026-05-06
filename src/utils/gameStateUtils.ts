@@ -207,6 +207,30 @@ export const clampBandHarmony = (harmony: number): number => {
 }
 
 /**
+ * Clamps social loyalty to the canonical gameplay range.
+ *
+ * @param {number} loyalty - Candidate loyalty value.
+ * @returns {number} Clamped loyalty value in range [0, 100].
+ */
+export const clampLoyalty = (loyalty: number): number => {
+  if (!Number.isFinite(loyalty)) return 0
+  const safeLoyalty = Math.floor(loyalty)
+  return Math.max(0, Math.min(100, safeLoyalty))
+}
+
+/**
+ * Clamps social zealotry to the canonical gameplay range.
+ *
+ * @param {number} zealotry - Candidate zealotry value.
+ * @returns {number} Clamped zealotry value in range [0, 100].
+ */
+export const clampZealotry = (zealotry: number): number => {
+  if (!Number.isFinite(zealotry)) return 0
+  const safeZealotry = Math.floor(zealotry)
+  return Math.max(0, Math.min(100, safeZealotry))
+}
+
+/**
  * Clamps van condition to the allowed percentage (0-100).
  *
  * @param {number} condition - Candidate condition value.
