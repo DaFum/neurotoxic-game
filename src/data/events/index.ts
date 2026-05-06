@@ -10,15 +10,17 @@ import { RELATIONSHIP_EVENTS } from './relationshipEvents'
 import { QUEST_EVENTS } from './quests'
 import { logger } from '../../utils/logger'
 
-type EventCategory = 'transport' | 'band' | 'gig' | 'financial' | 'special'
-
-const VALID_CATEGORIES = new Set<EventCategory>([
+export const EVENT_CATEGORIES = [
   'transport',
   'band',
   'gig',
   'financial',
   'special'
-])
+] as const
+
+export type EventCategory = (typeof EVENT_CATEGORIES)[number]
+
+const VALID_CATEGORIES = new Set<EventCategory>(EVENT_CATEGORIES)
 
 // Aggregate all raw event definitions from their domain files
 const ALL_RAW_EVENTS = [
@@ -34,13 +36,9 @@ const ALL_RAW_EVENTS = [
 ]
 
 // The final registry of playable events
-export const EVENTS_DB: Record<EventCategory, UnknownRecord[]> = {
-  transport: [],
-  band: [],
-  gig: [],
-  financial: [],
-  special: []
-}
+export const EVENTS_DB = Object.fromEntries(
+  EVENT_CATEGORIES.map((cat) => [cat, [] as UnknownRecord[]])
+) as Record<EventCategory, UnknownRecord[]>
 
 const seenIds = new Set<string>()
 
