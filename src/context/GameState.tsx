@@ -16,7 +16,7 @@ import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { pickRandomContraband } from '../utils/contrabandUtils'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
-import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
+import { hasUpgrade } from '../utils/upgradeUtils'
 import { isPlainObject } from '../utils/gameStateUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
@@ -984,14 +984,14 @@ export const useGameState = (): GameStateWithActions => {
    * @param {string} upgradeId - The ID of the upgrade.
    * @returns {boolean} True if owned.
    */
-  const hasUpgrade = useCallback(
-    (upgradeId: string) => checkUpgrade(state.player.van.upgrades, upgradeId),
+  const checkHasUpgrade = useCallback(
+    (upgradeId: string) => hasUpgrade(state.player.van.upgrades, upgradeId),
     [state.player.van.upgrades]
   )
 
   const merged = useMemo(
-    () => ({ ...state, ...actions, hasUpgrade }),
-    [state, actions, hasUpgrade]
+    () => ({ ...state, ...actions, hasUpgrade: checkHasUpgrade }),
+    [state, actions, checkHasUpgrade]
   )
 
   return merged
