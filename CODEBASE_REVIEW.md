@@ -9,7 +9,7 @@
 
 ## 1. Critical Issues (Must Fix Before Merge)
 
-### C-1: `getAudioTimeMs()` Bypasses Mandatory Timing API
+### [Resolved] C-1: `getAudioTimeMs()` Bypasses Mandatory Timing API
 
 **Location:** `src/hooks/rhythmGame/useRhythmGameScoring.ts`, line 298
 
@@ -23,7 +23,7 @@ The function at `src/utils/audio/playback.ts:679` implements `getAudioTimeMs()` 
 
 ---
 
-### C-2: Van Fuel Clamped with Hardcoded `100`
+### [Resolved] C-2: Van Fuel Clamped with Hardcoded `100`
 
 **Location:** `src/context/reducers/systemReducer.ts`, lines 490–496
 
@@ -41,7 +41,7 @@ fuel: clampVanFuel(typeof rawPlayer.van.fuel === 'number' ? rawPlayer.van.fuel :
 
 ---
 
-### C-3: `band.harmony || 0` Instead of `?? 1` in 4 Files
+### [Resolved] C-3: `band.harmony || 0` Instead of `?? 1` in 4 Files
 
 **Locations:**
 - `src/context/reducers/bandReducer.ts:276` — `(newBand.harmony || 0) + item.value`
@@ -80,7 +80,7 @@ fuel: clampVanFuel(typeof rawPlayer.van.fuel === 'number' ? rawPlayer.van.fuel :
 
 ---
 
-### AV-2: `||` vs `??` Violations Across Reducer Files
+### [ToDo] AV-2: `||` vs `??` Violations Across Reducer Files
 
 **Rule (AGENTS.md):** "Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`)."
 
@@ -95,7 +95,7 @@ These produce incorrect semantics when state has a valid `0` value.
 
 ---
 
-### AV-3: Missing Canonical Clamp Functions
+### [ToDo] AV-3: Missing Canonical Clamp Functions
 
 **Issue:** Loyalty (`[0, 100]`) and zealotry (`[0, 100]`) lack `clampLoyalty` and `clampZealotry` functions in `src/utils/gameStateUtils.ts`.
 
@@ -156,7 +156,7 @@ These three constants are exported but never imported anywhere. They are used on
 
 ## 4. Unintegrated Utilities
 
-### U-6: `clearImageCache()` Has Zero Call Sites — Memory Leak
+### [Don't proceed this] U-6: `clearImageCache()` Has Zero Call Sites — Memory Leak
 
 **Location:** `src/utils/imageGen.ts`, line 95
 
@@ -175,7 +175,7 @@ This is a 2-line change that closes a real memory leak.
 
 ---
 
-### U-12: `hasUpgrade` Imported with Alias in `GameState.tsx`
+### [ToDo] U-12: `hasUpgrade` Imported with Alias in `GameState.tsx`
 
 **Location:** `src/context/GameState.tsx:19`
 
@@ -206,7 +206,7 @@ The same function is imported directly as `hasUpgrade` in other files (`useTourb
 
 ## 5. Minor Inconsistencies
 
-### M-1: Dead Fallback in `CompletePhase.tsx`
+### [ToDo] M-1: Dead Fallback in `CompletePhase.tsx`
 
 **Location:** `src/components/postGig/CompletePhase.tsx:28, 32`
 
@@ -221,7 +221,7 @@ return IMG_PROMPTS.GIG_FAILURE || IMG_PROMPTS.SOCIAL_POST_DRAMA
 
 ---
 
-### M-2: Inconsistent `clinicVisits` Null-Coalescing
+### [ToDo] M-2: Inconsistent `clinicVisits` Null-Coalescing
 
 **Locations:**
 - `src/hooks/useClinicLogic.ts:143` — correctly uses `?? 0`
@@ -231,7 +231,7 @@ return IMG_PROMPTS.GIG_FAILURE || IMG_PROMPTS.SOCIAL_POST_DRAMA
 
 ---
 
-### M-3: Stale Changelog Comments in Source Files
+### [ToDo] M-3: Stale Changelog Comments in Source Files
 
 **Locations:**
 - `src/utils/simulationUtils.ts:1–5`
@@ -249,7 +249,7 @@ These are git commit artifacts and belong in history, not source files.
 
 ---
 
-### M-4: Inconsistent Nullish Coalescing in `gigReducer.ts`
+### [ToDo] M-4: Inconsistent Nullish Coalescing in `gigReducer.ts`
 
 **Location:** `src/context/reducers/gigReducer.ts:65`
 
@@ -261,7 +261,7 @@ Should use `??` instead of `||` for clarity, though the practical effect is the 
 
 ---
 
-### M-5: `assertNever` Structurally in Dead Code Path
+### [ToDo] M-5: `assertNever` Structurally in Dead Code Path
 
 **Location:** `src/context/gameReducer.ts:205–210`
 
