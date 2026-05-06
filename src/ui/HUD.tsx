@@ -246,10 +246,12 @@ export const HUD = memo(() => {
               dispatch(toggleNeuroDecimator(nextState))
               audioManager.setNeuroDecimator(nextState)
             }}
-            className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 ${
+            type='button'
+            aria-pressed={band.neuroDecimatorActive}
+            className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red ${
               band.neuroDecimatorActive
                 ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
-                : 'bg-void-black text-blood-red border-blood-red'
+                : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
             }`}
           >
             <Skull size={14} className='inline mr-2' />
