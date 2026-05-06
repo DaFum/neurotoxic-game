@@ -45,7 +45,8 @@ const MockPIXI = {
     init() {}
   },
   Assets: {
-    load: mock.fn()
+    load: mock.fn(),
+    cache: new Map()
   },
   ImageSource: class {
     constructor(options) {

@@ -32,7 +32,8 @@ mock.module('pixi.js', {
     ...MockPIXI,
     Assets: {
       load: () => Promise.resolve(),
-      unload: () => Promise.resolve()
+      unload: () => Promise.resolve(),
+      cache: new Map()
     },
     ImageSource: class {
       constructor() {}

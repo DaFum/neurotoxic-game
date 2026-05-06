@@ -65,7 +65,8 @@ mock.module('pixi.js', {
     ...MockPIXI,
     Assets: {
       load: () => Promise.resolve(),
-      unload: () => Promise.resolve()
+      unload: () => Promise.resolve(),
+      cache: new Map()
     },
     ImageSource: class {
       constructor() {}
@@ -81,54 +82,66 @@ mock.module('pixi.js', {
 })
 
 // Mock Managers
-mock.module(new URL('../../src/components/stage/CrowdManager.ts', import.meta.url).href, {
-  namedExports: {
-    CrowdManager: class {
-      init() {}
-      loadAssets() {
-        return Promise.resolve()
-      }
-      update() {}
-      dispose() {}
-    }
-  }
-})
-mock.module(new URL('../../src/components/stage/LaneManager.ts', import.meta.url).href, {
-  namedExports: {
-    LaneManager: class {
-      init() {}
-      update() {}
-      dispose() {}
-      get container() {
-        return new MockPIXI.Container()
+mock.module(
+  new URL('../../src/components/stage/CrowdManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      CrowdManager: class {
+        init() {}
+        loadAssets() {
+          return Promise.resolve()
+        }
+        update() {}
+        dispose() {}
       }
     }
   }
-})
-mock.module(new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href, {
-  namedExports: {
-    EffectManager: class {
-      constructor() {
-        this.init = mock.fn()
-        this.loadAssets = mock.fn(() => Promise.resolve())
-        this.update = mock.fn()
-        this.dispose = mock.fn()
+)
+mock.module(
+  new URL('../../src/components/stage/LaneManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      LaneManager: class {
+        init() {}
+        update() {}
+        dispose() {}
+        get container() {
+          return new MockPIXI.Container()
+        }
       }
     }
   }
-})
-mock.module(new URL('../../src/components/stage/NoteManager.ts', import.meta.url).href, {
-  namedExports: {
-    NoteManager: class {
-      init() {}
-      loadAssets() {
-        return Promise.resolve()
+)
+mock.module(
+  new URL('../../src/components/stage/EffectManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      EffectManager: class {
+        constructor() {
+          this.init = mock.fn()
+          this.loadAssets = mock.fn(() => Promise.resolve())
+          this.update = mock.fn()
+          this.dispose = mock.fn()
+        }
       }
-      update() {}
-      dispose() {}
     }
   }
-})
+)
+mock.module(
+  new URL('../../src/components/stage/NoteManager.ts', import.meta.url).href,
+  {
+    namedExports: {
+      NoteManager: class {
+        init() {}
+        loadAssets() {
+          return Promise.resolve()
+        }
+        update() {}
+        dispose() {}
+      }
+    }
+  }
+)
 
 const { getOptimalResolution } =
   await import('../../src/components/stage/stageRenderUtils')
