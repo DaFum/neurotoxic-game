@@ -172,7 +172,7 @@ export const HUD = memo(() => {
                 defaultValue: 'Toggle mute system'
               })}
               aria-pressed={audioState.isMuted}
-              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 ${
+              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                 audioState.isMuted
                   ? 'border-ash-gray text-ash-gray hover:bg-ash-gray hover:text-void-black focus-visible:ring-ash-gray'
                   : 'border-toxic-green/60 text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
@@ -198,7 +198,7 @@ export const HUD = memo(() => {
               aria-label={t('ui:aria.shortcutsHelp', {
                 defaultValue: 'Toggle keyboard shortcuts help'
               })}
-              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 ${
+              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
                 showHelp
                   ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
                   : 'border-toxic-green/60 text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
@@ -247,8 +247,7 @@ export const HUD = memo(() => {
               audioManager.setNeuroDecimator(nextState)
             }}
             type='button'
-            aria-pressed={band.neuroDecimatorActive}
-            className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red ${
+            className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
               band.neuroDecimatorActive
                 ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
                 : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
