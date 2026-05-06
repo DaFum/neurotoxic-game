@@ -6,7 +6,10 @@ Applies to `src/context/reducers/**`.
 
 ## Rules
 
-- Reducers must ensure state validity by using canonical clamp functions from `gameStateUtils` for all bounded values. While action creators should sanitize payloads where possible, terminal reducers are the final authority for state integrity, especially for functional updates and raw deltas.
+- Reducers may receive payloads that were already sanitized by action creators, but they must still protect final state invariants.
+- Use canonical clamp helpers from `gameStateUtils` when writing bounded values into state, especially when the reducer computes next state from previous state plus a delta, reward, cost, or functional update.
+- Do not remove a reducer clamp merely because the action creator normalizes the incoming payload. Action-creator sanitation protects payload shape; reducer clamps protect stored state.
+- Avoid redundant no-op payload normalization in reducers when the action creator can validate the raw field once, but keep terminal state clamps where bounded state is produced.
 - Keep exhaustive handling with `assertNever(action)` in default branches.
 - Whitelist persisted or loaded payload fields before constructing state.
 - Preserve immutability of untouched branches in reducer tests.

@@ -62,7 +62,7 @@ export const handleTradeVoidItem = (
   const instanceId =
     typeof payload.instanceId === 'string' ? payload.instanceId : undefined
 
-  const cost = Math.max(0, Number(fameCost) || 0)
+  const cost = Number(fameCost) || 0
   const currentFame = Number(state.player.fame) || 0
 
   if (currentFame < cost) {

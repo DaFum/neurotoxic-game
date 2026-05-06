@@ -580,10 +580,28 @@ export const createAddVenueBlacklistAction = (
  */
 export const createAddQuestAction = (
   quest: QuestState
-): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => ({
-  type: ActionTypes.ADD_QUEST,
-  payload: quest
-})
+): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => {
+  const safeQuest = { ...quest }
+
+  if (typeof safeQuest.moneyReward === 'number') {
+    safeQuest.moneyReward = Math.max(0, safeQuest.moneyReward)
+  }
+
+  if (safeQuest.rewardData) {
+    safeQuest.rewardData = { ...safeQuest.rewardData }
+    if (typeof safeQuest.rewardData.fame === 'number') {
+      safeQuest.rewardData.fame = Math.max(0, safeQuest.rewardData.fame)
+    }
+    if (typeof safeQuest.rewardData.harmony === 'number') {
+      safeQuest.rewardData.harmony = Math.max(0, safeQuest.rewardData.harmony)
+    }
+  }
+
+  return {
+    type: ActionTypes.ADD_QUEST,
+    payload: safeQuest
+  }
+}
 
 /**
  * Creates an action to advance a quest's progress.
@@ -682,10 +700,19 @@ export const createUseContrabandAction = (
  */
 export const createClinicHealAction = (
   payload: ClinicActionPayload
-): Extract<GameAction, { type: typeof ActionTypes.CLINIC_HEAL }> => ({
-  type: ActionTypes.CLINIC_HEAL,
-  payload
-})
+): Extract<GameAction, { type: typeof ActionTypes.CLINIC_HEAL }> => {
+  const safePayload = { ...payload }
+  if (typeof safePayload.staminaGain === 'number') {
+    safePayload.staminaGain = Math.max(0, safePayload.staminaGain)
+  }
+  if (typeof safePayload.moodGain === 'number') {
+    safePayload.moodGain = Math.max(0, safePayload.moodGain)
+  }
+  return {
+    type: ActionTypes.CLINIC_HEAL,
+    payload: safePayload
+  }
+}
 
 /**
  * Creates an action to enhance a band member in the Void Clinic.
@@ -723,6 +750,11 @@ export const createPirateBroadcastAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          cost: Math.max(0, Number(payload.cost) || 0),
+          fameGain: Math.max(0, Number(payload.fameGain) || 0),
+          zealotryGain: Math.max(0, Number(payload.zealotryGain) || 0),
+          controversyGain: Math.max(0, Number(payload.controversyGain) || 0),
+          harmonyCost: Math.max(0, Number(payload.harmonyCost) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
@@ -763,6 +795,10 @@ export const createBloodBankDonateAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          moneyGain: Math.max(0, Number(payload.moneyGain) || 0),
+          harmonyCost: Math.max(0, Number(payload.harmonyCost) || 0),
+          staminaCost: Math.max(0, Number(payload.staminaCost) || 0),
+          controversyGain: Math.max(0, Number(payload.controversyGain) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
@@ -786,6 +822,7 @@ export const createTradeVoidItemAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          fameCost: Math.max(0, Number(payload.fameCost) || 0),
           instanceId: getSafeUUID(),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
@@ -813,6 +850,11 @@ export const createDarkWebLeakAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          cost: Math.max(0, Number(payload.cost) || 0),
+          fameGain: Math.max(0, Number(payload.fameGain) || 0),
+          zealotryGain: Math.max(0, Number(payload.zealotryGain) || 0),
+          controversyGain: Math.max(0, Number(payload.controversyGain) || 0),
+          harmonyCost: Math.max(0, Number(payload.harmonyCost) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
@@ -839,6 +881,11 @@ export const createMerchPressAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          cost: Math.max(0, Number(payload.cost) || 0),
+          loyaltyGain: Math.max(0, Number(payload.loyaltyGain) || 0),
+          controversyGain: Math.max(0, Number(payload.controversyGain) || 0),
+          fameGain: Math.max(0, Number(payload.fameGain) || 0),
+          harmonyCost: Math.max(0, Number(payload.harmonyCost) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
