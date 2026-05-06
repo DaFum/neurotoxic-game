@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Added missing REVIEW.md comment block.
-
-
- */
 // Utility functions for Simulation <-> Action connection
 import { CHARACTERS } from '../data/characters'
 import { EXPENSE_CONSTANTS } from './economyEngine'

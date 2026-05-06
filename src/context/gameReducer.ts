@@ -207,5 +207,8 @@ export const gameReducer = (
     `Unhandled action type: ${(action as { type?: unknown }).type}`,
     action
   )
+
+  // This is a defensive structural safety check.
+  // It is only reachable if a truly malformed action bypasses the dispatch system.
   return assertNever(action as never)
 }

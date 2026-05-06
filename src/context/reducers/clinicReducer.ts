@@ -34,7 +34,7 @@ const executeClinicAction = (
   memberUpdater: (member: BandMember) => Record<string, unknown>
 ): GameState => {
   const { memberId, type, successToast, getSuccessToast } = payload
-  const currentVisits = state.player?.clinicVisits || 0
+  const currentVisits = state.player?.clinicVisits ?? 0
   // Calculate costs directly from state
   const cost =
     type === 'heal'
@@ -94,7 +94,7 @@ const executeClinicAction = (
       money: clampPlayerMoney(playerMoney - cost),
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame),
-      clinicVisits: (state.player.clinicVisits || 0) + 1
+      clinicVisits: state.player.clinicVisits + 1
     },
     band: {
       ...state.band,
