@@ -21,7 +21,7 @@
 
 - Do not upgrade pinned dependencies without discussion; do not add Howler.js.
 - All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
-- Sanitize raw payload fields in action creators as early as possible via `src/utils/gameStateUtils.ts` when the invariant is local to the incoming value, such as non-negative costs, rewards, or direct bounded assignments.
+- Sanitize raw payload fields in action creators as early as possible (using inline `Math.max` or `gameStateUtils.ts` helpers) when the invariant is local to the incoming value, such as non-negative costs, rewards, or direct bounded assignments.
 - Reducers remain the final authority for bounded state. When computing next state from prior state plus a payload, delta, reward, cost, or functional update, apply canonical clamp helpers before storing the final value.
 - Do not remove terminal reducer clamps merely because an action creator also normalizes input. Early payload sanitation and final-state clamping serve different purposes and may both be required.
 - Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.

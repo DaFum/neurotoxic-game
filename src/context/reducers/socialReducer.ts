@@ -117,11 +117,27 @@ export const handleMerchPress = (
   state: GameState,
   payload: MerchPressPayload
 ): GameState => {
-  const cost = Number(payload.cost) || 0
-  const loyaltyGain = Number(payload.loyaltyGain) || 0
-  const controversyGain = Number(payload.controversyGain) || 0
-  const harmonyCost = Number(payload.harmonyCost) || 0
-  const fameGain = Number(payload.fameGain) || 0
+  const parsedCost = Number(payload.cost)
+  const parsedLoyaltyGain = Number(payload.loyaltyGain)
+  const parsedControversyGain = Number(payload.controversyGain)
+  const parsedHarmonyCost = Number(payload.harmonyCost)
+  const parsedFameGain = payload.fameGain == null ? 0 : Number(payload.fameGain)
+  if (
+    !Number.isFinite(parsedCost) ||
+    !Number.isFinite(parsedLoyaltyGain) ||
+    !Number.isFinite(parsedControversyGain) ||
+    !Number.isFinite(parsedHarmonyCost) ||
+    !Number.isFinite(parsedFameGain)
+  ) {
+    logger.warn('GameState', 'Invalid numeric payload for MERCH_PRESS')
+    return state
+  }
+
+  const cost = Math.max(0, parsedCost)
+  const loyaltyGain = parsedLoyaltyGain
+  const controversyGain = parsedControversyGain
+  const harmonyCost = Math.max(0, parsedHarmonyCost)
+  const fameGain = Math.max(0, parsedFameGain)
   const successToast = payload.successToast
 
   const currentMoney = clampPlayerMoney(state.player.money)

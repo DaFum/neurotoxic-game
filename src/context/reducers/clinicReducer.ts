@@ -137,8 +137,8 @@ export const handleClinicHeal = (
   state: GameState,
   payload: ClinicActionPayload
 ): GameState => {
-  const staminaGain = (payload.staminaGain as number) || 0
-  const moodGain = (payload.moodGain as number) || 0
+  const staminaGain = Number(payload.staminaGain) || 0
+  const moodGain = Number(payload.moodGain) || 0
 
   return executeClinicAction(state, payload, member => {
     const prevStamina = member.stamina || 0
