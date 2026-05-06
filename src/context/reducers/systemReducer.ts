@@ -1293,13 +1293,13 @@ const EFFECT_REVERTERS: Record<
       ...band.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (band.performance?.guitarDifficulty || 1) - (value as number)
+        (band.performance?.guitarDifficulty ?? 1) - (value as number)
       )
     }
   }),
   luck: (band: BandState, value: unknown) => ({
     ...band,
-    luck: Math.max(0, ((band.luck as number) || 0) - (value as number))
+    luck: Math.max(0, ((band.luck as number) ?? 0) - (value as number))
   }),
   stamina_max: (band: BandState, value: unknown) => ({
     ...band,
@@ -1307,52 +1307,52 @@ const EFFECT_REVERTERS: Record<
       ...m,
       staminaMax: Math.max(
         0,
-        ((m.staminaMax as number) || 100) - (value as number)
+        ((m.staminaMax as number) ?? 100) - (value as number)
       )
     }))
   }),
   style: (band: BandState, value: unknown) => ({
     ...band,
-    style: Math.max(0, ((band.style as number) || 0) - (value as number))
+    style: Math.max(0, ((band.style as number) ?? 0) - (value as number))
   }),
   tour_success: (band: BandState, value: unknown) => ({
     ...band,
     tourSuccess: Math.max(
       0,
-      ((band.tourSuccess as number) || 0) - (value as number)
+      ((band.tourSuccess as number) ?? 0) - (value as number)
     )
   }),
   gig_modifier: (band: BandState, value: unknown) => ({
     ...band,
     gigModifier: Math.max(
       0,
-      ((band.gigModifier as number) || 0) - (value as number)
+      ((band.gigModifier as number) ?? 0) - (value as number)
     )
   }),
   tempo: (band: BandState, value: unknown) => ({
     ...band,
-    tempo: Math.max(0, ((band.tempo as number) || 0) - (value as number))
+    tempo: Math.max(0, ((band.tempo as number) ?? 0) - (value as number))
   }),
   practice_gain: (band: BandState, value: unknown) => ({
     ...band,
     practiceGain: Math.max(
       0,
-      ((band.practiceGain as number) || 0) - (value as number)
+      ((band.practiceGain as number) ?? 0) - (value as number)
     )
   }),
   crit: (band: BandState, value: unknown) => ({
     ...band,
-    crit: Math.max(0, ((band.crit as number) || 0) - (value as number))
+    crit: Math.max(0, ((band.crit as number) ?? 0) - (value as number))
   }),
   affinity: (band: BandState, value: unknown) => ({
     ...band,
-    affinity: Math.max(0, ((band.affinity as number) || 0) - (value as number))
+    affinity: Math.max(0, ((band.affinity as number) ?? 0) - (value as number))
   }),
   crowd_control: (band: BandState, value: unknown) => ({
     ...band,
     crowdControl: Math.max(
       0,
-      ((band.crowdControl as number) || 0) - (value as number)
+      ((band.crowdControl as number) ?? 0) - (value as number)
     )
   })
 }
@@ -1411,7 +1411,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
         const item = nextBand.stash[itemKey]
         if (typeof item !== 'object' || item === null) continue
         const itemObj = item as Record<string, unknown>
-        if (itemObj.instanceId === e.instanceId) {
+        if (e.instanceId != null && itemObj.instanceId === e.instanceId) {
           nextBand.stash[itemKey] = {
             ...itemObj,
             applied: false
