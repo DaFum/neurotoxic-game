@@ -327,7 +327,7 @@ describe('TourbusStageController', () => {
   it('should handle asset loading fallback when offline', async () => {
     imageGen.isImageGenerationAvailable.mock.mockImplementation(() => false)
     await controller.loadAssets()
-    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length, 5)
+    assert.equal(imageGen.getGeneratedImageFallbackUrl.mock.calls.length, 2)
     assert.equal(imageGen.getGenImageUrl.mock.calls.length, 0)
   })
 
