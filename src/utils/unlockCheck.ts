@@ -1,8 +1,3 @@
-/*
- * (#1) Actual Updates: Refactored Grudge holder check to use for...in loop, added Object.hasOwn guard.
-
-
- */
 import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import type { GameState } from '../types/game'

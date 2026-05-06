@@ -94,7 +94,7 @@ const executeClinicAction = (
       money: clampPlayerMoney(playerMoney - cost),
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame),
-      clinicVisits: (state.player.clinicVisits ?? 0) + 1
+      clinicVisits: state.player.clinicVisits + 1
     },
     band: {
       ...state.band,

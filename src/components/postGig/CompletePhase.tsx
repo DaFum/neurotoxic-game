@@ -25,11 +25,11 @@ export const CompletePhase = ({
 
   const getOutcomeImagePrompt = () => {
     if (result.success) {
-      return IMG_PROMPTS.GIG_SUCCESS || IMG_PROMPTS.SOCIAL_POST_VIRAL
+      return IMG_PROMPTS.GIG_SUCCESS
     } else if (result.platform === 'tiktok') {
       return IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
     } else {
-      return IMG_PROMPTS.GIG_FAILURE || IMG_PROMPTS.SOCIAL_POST_DRAMA
+      return IMG_PROMPTS.GIG_FAILURE
     }
   }
 
