@@ -62,7 +62,7 @@ export const handleSetGigModifiers = (
     | ((mods: Record<string, boolean>) => Record<string, boolean>)
 ): GameState => {
   const updates =
-    (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ||
+    (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ??
     {}
   return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
 }
