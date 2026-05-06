@@ -21,7 +21,7 @@
 
 - Do not upgrade pinned dependencies without discussion; do not add Howler.js.
 - All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
-- Clamp bounded state in action creators via `src/utils/gameStateUtils.ts` when possible. Reducers must not re-clamp pre-clamped payloads, but terminal reducers processing raw deltas must use canonical clamp functions.
+- Clamp bounded state in action creators via `src/utils/gameStateUtils.ts` when possible. Terminal reducers must use canonical clamp functions to ensure state validity, particularly for functional updates or raw deltas where pre-clamping is not possible.
 - Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
 - PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
 
