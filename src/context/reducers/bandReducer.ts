@@ -273,7 +273,7 @@ export const applyContrabandEffect = (
     return newBand
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony(
-      (newBand.harmony || 0) + (item.value as number)
+      (newBand.harmony ?? 1) + (item.value as number)
     )
   } else if (item.effectType === 'luck') {
     newBand.luck = (newBand.luck || 0) + (item.value as number)
