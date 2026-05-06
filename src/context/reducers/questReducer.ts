@@ -38,7 +38,7 @@ export const handleCompleteQuest = (
   const generatedToasts: ToastPayload[] = []
 
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
-    const previousMoney = nextState.player?.money || 0
+    const previousMoney = nextState.player?.money ?? 0
     const newMoney = clampPlayerMoney(previousMoney + quest.moneyReward)
     const appliedDelta = newMoney - previousMoney
     nextState.player = {
@@ -72,7 +72,7 @@ export const handleCompleteQuest = (
     })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
     const rawFameReward = Number(quest.rewardData.fame) || 0
-    const previousFame = nextState.player.fame || 0
+    const previousFame = nextState.player.fame ?? 0
     const newFame = clampPlayerFame(previousFame + rawFameReward)
     const appliedDelta = newFame - previousFame
     nextState.player = {
