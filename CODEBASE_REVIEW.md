@@ -57,7 +57,7 @@ fuel: clampVanFuel(typeof rawPlayer.van.fuel === 'number' ? rawPlayer.van.fuel :
 
 ## 2. Architecture Violations
 
-### AV-1: Reducers Re-Clamp Values (Contradiction with AGENTS.md)
+### [Resolved] AV-1: Reducers Re-Clamp Values (Contradiction with AGENTS.md)
 
 **Rule (AGENTS.md):** "Clamp bounded state once in action creators via `src/utils/gameStateUtils.ts`. Reducers must not re-clamp."
 
