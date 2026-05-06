@@ -8,6 +8,7 @@ Applies to `src/scenes/kabelsalat/components/plugs/**`.
 
 - Preserve literal plug ID types and shared drag/drop contracts.
 - Keep pointer/keyboard handlers composed with caller-provided handlers.
+- Keep runtime work short enough for frame-safe UI updates.
 
 ## Gotchas
 
