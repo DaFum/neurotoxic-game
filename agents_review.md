@@ -1,0 +1,520 @@
+# Structured Review of AGENTS.md Files
+
+This repository utilizes hierarchical `AGENTS.md` and `CLAUDE.md` files to enforce domain-specific rules, architectural boundaries, and testing patterns. The scope of each file applies to its directory and subdirectories, with deeper files overriding parent rules.
+
+## Root & Configuration
+### `AGENTS.md`
+**Rules & Principles:**
+- Use the Superpower skill before any repo action that changes code, tests, tooling, docs, config, git history, or agent instructions.
+- Read only the relevant nested `AGENTS.md` files before editing; nested files add scope rules and override root guidance when more specific.
+- Use `pnpm` only. Do not use `npm` or `yarn`.
+- Full PR gate: `pnpm run test:all`.
+- Fast local gate: `pnpm run test`.
+- UI and migrated suites: `pnpm run test:ui`.
+- Full legacy node suites: `pnpm run test:node`.
+- Extended perf and locale suites: `pnpm run test:additional`.
+- Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
+- Single Vitest file: `pnpm run test:ui:file -- tests/<file>.test.js(x)`.
+- Type gates: `pnpm run typecheck:core`; `pnpm run typecheck` is the scoped reducer gate.
+- Do not upgrade pinned dependencies without discussion; do not add Howler.js.
+- All state updates go through action creators. New actions must update `actionTypes`, reducer handling, and `actionCreators` together.
+- Sanitize raw payload fields in action creators as early as possible (using inline `Math.max` or `gameStateUtils.ts` helpers) when the invariant is local to the incoming value, such as non-negative costs, rewards, or direct bounded assignments.
+- Reducers remain the final authority for bounded state. When computing next state from prior state plus a payload, delta, reward, cost, or functional update, apply canonical clamp helpers before storing the final value.
+- Do not remove terminal reducer clamps merely because an action creator also normalizes input. Early payload sanitation and final-state clamping serve different purposes and may both be required.
+- Audio gameplay timing must use `audioEngine.getGigTimeMs()`, never direct Tone.js time reads.
+- PreGig modifier costs come only from `MODIFIER_COSTS` in `src/utils/economyEngine.ts`.
+- User-facing text must use namespaced i18n keys. Update matching EN and DE locale JSON together.
+- CheckJS is strict for `.js/.jsx`. `@ts-nocheck` budget is zero; never add `@ts-ignore`.
+- Avoid `any`. Use `unknown` at boundaries (`JSON.parse`, storage, API payloads, caught errors, postMessage) and narrow before use.
+- Use `Object.hasOwn()` for untrusted property checks; prototype-pollution tests assert hostile keys are stripped.
+- `isolatedModules` requires type-only imports (`import type` or mixed `import { Foo, type Bar }`).
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write action object shapes.
+- Reducer default branches must call `assertNever(action)`.
+- Prefer `as const satisfies Record<Union, T>` for keyed configs; avoid widening with `as Record<...>`.
+- Shared domain contracts belong in `src/types/*.d.ts`; do not duplicate local structural clones.
+- Under `noUncheckedIndexedAccess`, narrow indexed values before use.
+- Preserve valid falsy values with nullish checks (`??`), not truthy fallbacks (`||`).
+- Give categorize/split helpers explicit named return types instead of broad `Record<string, T[]>`.
+- Boundary and error-handler functions must accept `unknown` and narrow before use.
+- Under `noUncheckedIndexedAccess`, guard indexed reads (`const item = array[i]; if (!item) continue`).
+- Commits use Conventional Commits (`feat:`, `fix:`, etc.).
+- Tailwind v4 uses `@import "tailwindcss"`; non-color tokens use syntax such as `z-(--z-crt)` or `style={{ zIndex: 'var(--z-crt)' }}`.
+- Do not hardcode colors. Use CSS vars (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`).
+**Gotchas & Edge Cases:**
+- `currentGig` is the venue object. Use `state.currentGig?.capacity` and `.id`, not `state.currentGig?.venue`.
+- Never add band members to their own `relationships` map; self-relationships corrupt trait and infighting logic.
+- `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
+- `START_GIG` resets `gigModifiers` to defaults.
+- `useArrivalLogic` owns all arrival routing; `COMPLETE_TRAVEL_MINIGAME` must not change scene.
+- Tourbus minigame damage is intentionally converted to van condition loss via `calculateTravelMinigameResult()` at 50% scaling; 100 damage means max 50 condition loss.
+- Travel confirmation must disclose travel cost plus guaranteed daily upkeep because arrival also calls `advanceDay()`.
+- Gig report `net` must equal displayed income minus displayed expenses; economy dampeners and performance miss money penalties belong in the expense breakdown, not hidden continue deductions.
+- Audio end detection uses `setlistCompleted` plus `isNearTrackEnd`; do not use `audioPlaybackEnded`.
+- JSON-note OGG/MIDI caps at `maxNoteTime + NOTE_TAIL_MS`; procedural songs use full excerpt duration.
+- Default chatter scenes are `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` needs explicit conditional entries.
+- Dynamic Pixi images, especially `gen.pollinations.ai`, must load through `loadTexture`.
+- Leaderboards submit `SONGS_BY_ID.get(songId).leaderboardId`, never raw `currentGig.songId`.
+- React 19 passes `ref` as a normal prop; do not introduce `React.forwardRef()`.
+- Consumables use `inventory_add` and must not display as `OWNED`.
+- Success toasts for bounded state changes must show the applied delta, not the requested amount.
+- Include `t` in hook/callback dependency arrays when used in that scope.
+- Use `.cjs` for ad-hoc Node scripts using `require()`.
+- Use `process.env.VITE_VAR` for env vars shared by Vite and `node:test`.
+### `CLAUDE.md`
+
+## API Layer
+### `api/AGENTS.md`
+**Rules & Principles:**
+- Keep endpoint response shapes backward compatible with current client and test contracts unless the change is explicitly versioned.
+- Treat request bodies and query params as `unknown` at route boundaries; narrow with explicit validators before use.
+- Use concrete response interfaces or `Record<string, unknown>` with narrowing. Do not widen handler data to `Record<string, any>`.
+- Keep API error bodies stable in the `{ error: string }` style so node/UI suites can assert deterministic failure paths.
+**Gotchas & Edge Cases:**
+- Leaderboard and song-adjacent endpoints must normalize IDs consistently with `/api/leaderboard/**`; do not accept raw UI IDs without normalization.
+- Avoid backend endpoints for features that are not reachable in current UI flows; dead client paths create misleading API expectations.
+### `api/leaderboard/AGENTS.md`
+**Rules & Principles:**
+- Keep leaderboard payload contracts stable and backward compatible.
+- Validate and normalize incoming IDs before persistence or lookup.
+- Resolve submitted song IDs through the canonical song/leaderboard mapping; do not persist raw UI song IDs.
+- Type request payloads as `unknown` at the boundary and narrow through explicit parsing or guards.
+- Prefer explicit success/error response body types used by UI and tests.
+**Gotchas & Edge Cases:**
+- Do not expose internal storage keys through public response shapes.
+- Keep failure responses deterministic for security and node tests.
+
+## Core Assets & Data
+### `src/assets/AGENTS.md`
+**Rules & Principles:**
+- Keep asset module exports stable for components and scenes that import by named asset keys.
+- Do not hardcode colors in generated or asset-adjacent rendering helpers; use project tokens.
+- For dynamic external images, route loading through `loadTexture` instead of direct Pixi texture parsing.
+**Gotchas & Edge Cases:**
+- Pollinations image URLs are valid project inputs; preserve key handling for them.
+- Audio/rhythm assets must preserve JSON-note cap semantics: OGG/MIDI stop at `maxNoteTime + NOTE_TAIL_MS`, procedural excerpts use full duration.
+### `src/data/AGENTS.md`
+**Rules & Principles:**
+- Data IDs are contracts. Keep IDs stable and update dependent lookup maps/tests when adding or renaming entries.
+- Use `as const satisfies` for keyed config/event lookups so keys are checked and literals stay narrow.
+- User-facing names, descriptions, events, and option text must use namespaced i18n keys with EN/DE updates.
+- Event condition arrows require explicit `(state: GameState) =>` annotations.
+**Gotchas & Edge Cases:**
+- Do not add self-relationships to band members.
+- `hqItems.js` uses singular `effect`; consumables use `inventory_add` and must not display as `OWNED`.
+- `src/data/songs.ts` is intentionally excluded from ESLint autofix workflows.
+- Default chatter scenes exclude `GIG`; add explicit conditional entries for gig chatter.
+### `src/data/chatter/AGENTS.md`
+**Rules & Principles:**
+- Chatter entries must use namespaced i18n keys and have EN/DE translations.
+- Default scenes are `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; add explicit conditions for `GIG`.
+- Keep condition functions deterministic and explicitly typed when they inspect `GameState`.
+**Gotchas & Edge Cases:**
+- Avoid broad fallback chatter in `GIG`; it can mask missing scene-specific conditions.
+- Locale duplicate keys can silently shadow text. Run duplicate-key detection when touching locale JSON.
+### `src/data/events/AGENTS.md`
+**Rules & Principles:**
+- Events require stable unique IDs, valid trigger/category pairing, namespaced i18n keys, and an `options` array.
+- Event conditions must be explicitly typed as `(state: GameState) =>`.
+- Keep effect payloads aligned with reducer/action creator contracts.
+**Gotchas & Edge Cases:**
+- `events/special.js` entries require `category: 'special'`, `events:` i18n keys, and unique IDs.
+- Test both truthy and falsy condition branches without relying on random event selection.
+
+## State Management
+### `src/context/AGENTS.md`
+**Rules & Principles:**
+- All mutations go through action creators and reducers; consumers must not hand-write action payload shapes.
+- New actions require updates to `actionTypes`, action creator return types, reducer handling, and tests in the same change.
+- Action creators sanitize raw payload fields as early as possible (using inline `Math.max` or `gameStateUtils.ts` helpers). Clamp or normalize direct user/input values such as costs, rewards, deltas, ids, and toast payloads before dispatch when the invariant is local to the payload itself.
+- Reducers remain the final authority for state integrity. When a reducer computes next bounded state from prior state plus a payload, it must still apply canonical clamps from `src/utils/gameStateUtils.ts` to the final stored value.
+- Do not remove terminal reducer clamps just because an action creator also sanitizes input. Early payload sanitation and final-state clamping serve different purposes and may both be required.
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>` to preserve discriminated unions.
+- Sanitize untrusted payloads by whitelisting fields; never spread unknown records into state.
+- Preserve `0`, `''`, and `false` where valid; use nullish checks instead of truthy fallbacks.
+**Gotchas & Edge Cases:**
+- `createInitialState` settings sanitization keeps only `crtEnabled`, `tutorialSeen`, and `logLevel`.
+- `useReducer` dispatch is not synchronous for `stateRef`; derive toast values from pre-dispatch state.
+- Toast `options` values must be primitive-only: `string | number | boolean | null`.
+### `src/context/reducers/AGENTS.md`
+**Rules & Principles:**
+- Reducers may receive payloads that were already sanitized by action creators, but they must still protect final state invariants.
+- Use canonical clamp helpers from `gameStateUtils` when writing bounded values into state, especially when the reducer computes next state from previous state plus a delta, reward, cost, or functional update.
+- Do not remove a reducer clamp merely because the action creator normalizes the incoming payload. Action-creator sanitation protects payload shape; reducer clamps protect stored state.
+- Avoid redundant no-op payload normalization in reducers when the action creator can validate the raw field once, but keep terminal state clamps where bounded state is produced.
+- Keep exhaustive handling with `assertNever(action)` in default branches.
+- Whitelist persisted or loaded payload fields before constructing state.
+- Preserve immutability of untouched branches in reducer tests.
+**Gotchas & Edge Cases:**
+- Loaded save compatibility must cover legacy venue, settings, and unlock formats.
+- Reducer typing regressions should fail `pnpm run typecheck`; whole-project issues belong to `pnpm run typecheck:core`.
+
+## Types & Schemas
+### `src/schemas/AGENTS.md`
+**Rules & Principles:**
+- Schemas are boundary contracts. Keep runtime validation and TypeScript types aligned.
+- Reject unknown or hostile fields by whitelist, not by spreading parsed records.
+- Use `unknown` inputs and narrow before constructing typed objects.
+- Add or update security tests when schema hardening changes accepted input.
+**Gotchas & Edge Cases:**
+- Prototype-pollution keys (`__proto__`, `constructor`, `prototype`) must stay stripped at nested object/array levels.
+- Optional numeric/string fields must preserve valid `0` and `''` values.
+### `src/types/AGENTS.md`
+**Rules & Principles:**
+- Shared domain contracts live here; do not duplicate structural clones in consumers.
+- Keep action payload, state, and consumer optionality aligned in the same change.
+- Prefer discriminated unions and literal-safe maps over wide records.
+- Use `import type` for type-only consumers.
+**Gotchas & Edge Cases:**
+- `GameState.lastGigStats` and `SET_LAST_GIG_STATS` payload fields must expose matching optional fields: `score`, `misses`, `accuracy`, `combo`, `health`, `overload`.
+- Shared audio UI contracts belong in `src/types/audio.d.ts`; component-local copies drift quickly.
+- Callback prop names ending in `Callback` are shared UI contracts; rename only with all consumers and tests updated together.
+
+## Utilities & Hooks
+### `src/utils/AGENTS.md`
+**Rules & Principles:**
+- Utilities stay pure and side-effect-free unless the filename explicitly indicates IO, network, or storage.
+- Treat external payloads and caught errors as `unknown` and narrow before access.
+- Fail loudly on invalid invariants in strict domains instead of silently continuing with corrupted state.
+**Gotchas & Edge Cases:**
+- Retry/error helpers must preserve the original failure cause.
+- Map layer fallback selection must explicitly assert non-null venues before capacity/type access.
+- `pickRandomSubset` large-`k` branches must reject sparse arrays instead of unchecked assertions.
+- Purchase effect helpers should fail on invalid numeric payloads and normalize stored upgrade IDs to strings.
+- `calculateTravelMinigameResult()` is the source of truth for Tourbus condition loss; keep its 50% damage-to-condition scaling aligned with reducer and completion UI.
+- `calculateGigFinancials()` reports must reconcile: `net === income.total - expenses.total`; add balancing items to expenses for payout dampeners or penalties.
+### `src/utils/audio/AGENTS.md`
+**Rules & Principles:**
+- `audioEngine.getGigTimeMs()` is the canonical gig clock source.
+- Keep OGG-unavailable fallback paths intact for MIDI/procedural playback.
+- Preserve setup/playback/dispose cleanup semantics.
+- Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.ts`; import with `import type`.
+- Rely on bundled Tone.js and @tonejs/midi declarations; do not add stub `.d.ts` shims.
+**Gotchas & Edge Cases:**
+- Narrow array/map lookups before use; this domain is under stricter CheckJS.
+- Snapshot consumers should prefer `getStateSnapshot()` and normalize partial snapshots to complete `AudioSnapshot` shapes.
+- Native subscription is valid only when `subscribe` is a function; otherwise polling must stay active.
+### `src/hooks/AGENTS.md`
+**Rules & Principles:**
+- Hooks orchestrate callbacks and state reads; reducers/action creators own state transitions.
+- Include complete dependency arrays, including `t` when used.
+- Return stable, explicit APIs for hooks consumed by components or tests.
+- Treat storage, event, API, and unknown callback payloads as `unknown` and narrow before use.
+**Gotchas & Edge Cases:**
+- Derive UI toast values from pre-dispatch state; `useReducer` dispatch does not synchronously update refs.
+- Travel confirmation/resource checks must include guaranteed daily upkeep when the route also advances the day.
+- Lock state such as `processingItemId` must clean up in `finally`, including pre-effect validation failures.
+### `src/hooks/minigames/AGENTS.md`
+**Rules & Principles:**
+- Do not import Pixi into minigame hooks; return reactive state and callbacks only.
+- Keep completion timers cancellable and cleaned up on unmount.
+- Preserve fallback auto-advance and manual overlay continuation paths.
+- Route travel completion through the shared minigame/arrival flow.
+**Gotchas & Edge Cases:**
+- `COMPLETE_TRAVEL_MINIGAME` must not change scene directly.
+- Tourbus completion payload damage is raw minigame damage; van condition loss is derived later at 50% scaling by `calculateTravelMinigameResult()`.
+- StrictMode replay can rerun effects; guard one-shot completion handlers.
+### `src/hooks/rhythmGame/AGENTS.md`
+**Rules & Principles:**
+- Use `audioEngine.getGigTimeMs()` for timing.
+- Import shared note/song/gig contracts from `src/types/audio.d.ts` and `src/types/rhythmGame.ts`.
+- Narrow array/map lookups before use under `noUncheckedIndexedAccess`.
+**Gotchas & Edge Cases:**
+- End detection uses `setlistCompleted` plus `isNearTrackEnd`.
+- JSON-note tracks cap playback to `maxNoteTime + NOTE_TAIL_MS`.
+
+## Components & UI
+### `src/AGENTS.md`
+**Rules & Principles:**
+- Preserve action-creator-driven state transitions; components/hooks must not mutate state directly.
+- Use existing shared contracts from `src/types/**` before adding new domain shapes.
+- Keep user-facing copy in namespaced i18n keys and update EN/DE locale files together.
+- Import React refs as normal props in React 19 code; do not add `forwardRef`.
+- Use CSS variables for colors and Pixi token helpers for rendered colors.
+- CheckJS is strict in migrated domains. Narrow indexed lookups and optional values before use.
+- Use `unknown` and explicit narrowing for storage, API, event, or external payloads.
+- Prefer `as const satisfies` for literal maps and configs.
+### `src/components/AGENTS.md`
+**Rules & Principles:**
+- User-facing text must use namespaced i18n keys and keep EN/DE locale JSON in sync.
+- Use CSS variables for colors; do not introduce literal color values.
+- React 19 refs are normal props. Do not add `React.forwardRef()`.
+- Include `t` in callback/effect dependency arrays when used inside that scope.
+- Trigger state changes through action creators or provided callbacks; do not reconstruct reducer payloads in components.
+- Success toasts for bounded values must display the applied delta after clamping.
+**Gotchas & Edge Cases:**
+- Minigame components must not import Pixi-only logic into hook layers.
+- Overworld, PreGig, PostGig, and Stage routes each have deeper ownership rules; read the nested file before editing those folders.
+### `src/components/clinic/AGENTS.md`
+**Rules & Principles:**
+- Keep clinic actions routed through existing economy/health action creators and callbacks.
+- Display costs, deltas, and failure reasons from resolved state changes, not optimistic requested values.
+- Use i18n keys for treatment names, button labels, and toast text.
+**Gotchas & Edge Cases:**
+- Clinic affordability checks must match the same money clamp and applied-delta behavior used by Band HQ/shop flows.
+### `src/components/hud/AGENTS.md`
+**Rules & Principles:**
+- HUD values must reflect canonical state after clamps; do not reimplement clamp math in display components.
+- Keep audio indicators tied to shared audio contracts from `src/types/audio.d.ts`.
+- Preserve keyboard and overlay event handling so Escape or audio toggles do not race with scene-level handlers.
+**Gotchas & Edge Cases:**
+- If HUD toasts or counters show deltas, show the applied delta, not the requested value.
+- Do not read Tone.js time directly for gig progress displays; use the audio engine clock.
+### `src/components/minigames/AGENTS.md`
+**Rules & Principles:**
+- Hooks return reactive game state only; do not import Pixi into minigame hooks.
+- Completion flow must preserve fallback timers, unmount cleanup, and explicit scene continuation paths.
+- Keep minigame state transitions routed through existing action creators and scene callbacks.
+**Gotchas & Edge Cases:**
+- Completion overlays need both automatic and manual continue paths covered by tests when changed.
+### `src/components/minigames/roadie/AGENTS.md`
+**Rules & Principles:**
+- Keep Roadie hook logic free of Pixi imports and imperative renderer state.
+- Preserve travel completion handoff through the shared minigame/arrival flow.
+**Gotchas & Edge Cases:**
+- Timer cleanup must run on unmount and early completion so scenes cannot auto-advance after teardown.
+### `src/components/minigames/tourbus/AGENTS.md`
+**Rules & Principles:**
+- Keep Tourbus hook logic free of Pixi imports and renderer-only state.
+- Preserve travel completion handoff through `useArrivalLogic` and shared minigame callbacks.
+**Gotchas & Edge Cases:**
+- Treat route/location IDs as canonical venue IDs; include legacy venue cases in tests when travel semantics change.
+- Completion stats should display the same condition loss calculated by `calculateTravelMinigameResult()`; do not show raw `100 - damage` as van condition.
+### `src/components/overworld/AGENTS.md`
+**Rules & Principles:**
+- Preserve every legacy action entry point when regrouping menus, or remove the backing hook/action in the same change.
+- Scene navigation and travel actions must flow through existing scene/action callbacks; do not dispatch raw reducer shapes.
+- Keep Band HQ navigation independent from Overworld category ordering.
+- User-facing labels and toasts require i18n keys in EN and DE.
+**Gotchas & Edge Cases:**
+- UI refactors here commonly make actions unreachable while components still render in tests. Add reachability coverage for changed menus.
+### `src/components/postGig/AGENTS.md`
+**Rules & Principles:**
+- Post-gig summaries must derive displayed score, misses, accuracy, combo, health, and overload from shared gig stats contracts.
+- Toasts and rewards must show actually applied deltas after clamps.
+- Keep scene exit routing explicit through provided callbacks.
+**Gotchas & Edge Cases:**
+- `GameState.lastGigStats` and `SET_LAST_GIG_STATS` payload fields must stay aligned; do not patch consumers with `any`.
+### `src/components/pregig/AGENTS.md`
+**Rules & Principles:**
+- Modifier costs come from `MODIFIER_COSTS`; do not duplicate prices in UI.
+- Starting a gig must respect the `START_GIG` reset of `gigModifiers`.
+- Keep copy and option labels in EN/DE locale files.
+**Gotchas & Edge Cases:**
+- Previous gig selections do not carry over. UI state should initialize from current defaults, not persisted old selections.
+### `src/components/stage/AGENTS.md`
+**Rules & Principles:**
+- Stage gameplay timing must use `audioEngine.getGigTimeMs()`.
+- End-of-song logic uses `setlistCompleted` and `isNearTrackEnd`; do not reintroduce `audioPlaybackEnded`.
+- Keep shared audio and rhythm contracts imported from `src/types/**`.
+**Gotchas & Edge Cases:**
+- Preserve fallback behavior for procedural/MIDI playback when OGG assets are unavailable.
+- Pixi.js v8 cleanup uses two distinct destroy args: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
+### `src/ui/AGENTS.md`
+**Rules & Principles:**
+- Use i18n keys for visible UI text and update EN/DE together.
+- Use CSS variables for colors and Tailwind v4 token syntax for non-color tokens.
+- Keep shared UI contracts imported from `src/types/**`; do not create component-local type clones.
+- Include `t` in dependencies for callbacks/effects that use it.
+- Compose consumer event handlers when wrapping controls.
+**Gotchas & Edge Cases:**
+- PropTypes wrappers must forward the full validator argument list, including the secret, to preserve actionable dev warnings.
+- Do not pass non-string values into `t(...)`; fallback to explicit unknown-item keys for malformed labels.
+### `src/ui/bandhq/AGENTS.md`
+**Rules & Principles:**
+- Band HQ UI remains reducer-action driven; do not bypass centralized cost/effect engines.
+- Display economy/social messages from resolved effects and clamped state.
+- Use shared game/component/audio contracts from `src/types/**`.
+- Keep purchasable/effect payloads as explicit discriminated unions, not generic records.
+**Gotchas & Edge Cases:**
+- `CatalogTab` callback prop names (`*Callback`) are shared contracts; rename only with all tab consumers updated.
+- Shop/catalog labels must pass strings to `t(...)`; use `ui:shop.messages.unknownItem` for malformed names.
+- Band HQ open behavior must not depend on Overworld category ordering.
+### `src/ui/bandhq/hooks/AGENTS.md`
+**Rules & Principles:**
+- Hooks orchestrate Band HQ actions and toasts; reducers/action creators own state transitions.
+- Export explicit named return interfaces (`useX(...): XResult`) for public hooks.
+- Include full dependencies (`social`, `t`, dispatch/update handlers, derived state slices).
+- Clean up processing locks in `finally`, including validation failures before effects run.
+**Gotchas & Edge Cases:**
+- Fame-currency ownership patches must use the resolved effect, not raw validation payloads.
+- Processing lock IDs must use nullish-safe assignment; do not collapse falsy IDs with `|| null`.
+- Toast content must reflect sanitized, actually applied changes.
+### `src/ui/overworld/AGENTS.md`
+**Gotchas & Edge Cases:**
+- Overworld header/HUD/menu split is intentional; keep gameplay state derivation outside these view components and pass precomputed props.
+- Event log entries should stay append-safe and localization-friendly; avoid storing pre-translated strings in state.
+### `src/ui/settings/AGENTS.md`
+**Rules & Principles:**
+- Normalize control input values at the UI boundary before invoking callbacks.
+- Preserve mute, music, and SFX semantics for `0`; use nullish checks, not truthy checks.
+- Keep settings panels stateless where possible and pass side effects through provided callbacks/hooks.
+**Gotchas & Edge Cases:**
+- Slider/input handlers may deliver strings. Coerce and validate numeric ranges before dispatch.
+### `src/ui/shared/AGENTS.md`
+**Rules & Principles:**
+- Shared primitives must remain app-agnostic and presentation-oriented.
+- Treat incoming props/events as boundary data; narrow before reading optional child props.
+- Compose consumer handlers (`onFocus`, `onBlur`, pointer handlers) instead of replacing them.
+**Gotchas & Edge Cases:**
+- Tooltip-like wrappers must preserve disabled-element accessibility behavior (`aria-describedby`, keyboard focusability).
+- Use own-property checks when reading optional `aria-*`, `style`, or `className` props from unknown child objects.
+
+## Scenes (Pixi/Game)
+### `src/scenes/AGENTS.md`
+**Rules & Principles:**
+- Scene transitions must use provided scene callbacks and existing routing hooks.
+- Preserve direct reachability of legacy actions when reorganizing menus or overlays.
+- Use i18n keys for visible scene text and update EN/DE together.
+- Use shared asset/audio utilities rather than direct Pixi/Tone shortcuts.
+**Gotchas & Edge Cases:**
+- UI controls hidden behind refactors still need reachability assertions.
+### `src/scenes/credits/AGENTS.md`
+**Gotchas & Edge Cases:**
+- Credit rows are rendered via dedicated entry/header/footer components; keep ordering/layout concerns in those components instead of introducing route-level state logic.
+- Keep credits static and deterministic; avoid async fetches or randomized order that can break snapshot-style UI tests.
+### `src/scenes/gameover/AGENTS.md`
+**Rules & Principles:**
+- Do not introduce heavy reducer mutations from this scope.
+- Preserve button-group reachability for retry/menu fallbacks.
+**Gotchas & Edge Cases:**
+- Game-over recovery actions must remain reachable through the existing button group; do not hide retry/menu actions behind conditional rendering without explicit fallback.
+- Stats/header/background are intentionally split for composability; keep data formatting in the stats component and avoid duplicating score/date formatting in siblings.
+### `src/scenes/intro/AGENTS.md`
+**Rules & Principles:**
+- Preserve deterministic timing and testability; avoid hidden timers without controllable hooks.
+- Keep skip/autoplay paths accessible via keyboard and pointer.
+**Gotchas & Edge Cases:**
+- Skip and autoplay overlays must preserve keyboard and pointer accessibility paths; do not gate skip behind autoplay-only state.
+- Intro timing/skip behavior should remain deterministic for tests; avoid adding implicit timers without injectable control points.
+### `src/scenes/kabelsalat/AGENTS.md`
+**Rules & Principles:**
+- Keep `forceAdvance(isPowered: boolean)` typed end-to-end.
+- Preserve socket-order literals with `as const` so they do not widen to `string[]`.
+- Game-end paths must eventually call `changeScene('GIG')` for win/continue flows.
+**Gotchas & Edge Cases:**
+- Tests should cover timeout-loss, fully wired win, StrictMode replay, and manual overlay continue paths when end-flow logic changes.
+### `src/scenes/kabelsalat/components/AGENTS.md`
+**Rules & Principles:**
+- Keep plug/socket props aligned with kabelsalat state contracts.
+- Visible labels and overlay text require i18n keys.
+- Avoid widening socket or plug IDs to generic strings.
+**Gotchas & Edge Cases:**
+- Component-only tests are insufficient for end flow; preserve scene-routing coverage when changing controls.
+### `src/scenes/kabelsalat/components/overlays/AGENTS.md`
+**Rules & Principles:**
+- Overlay actions must preserve both automatic and manual continuation paths.
+- Consume Escape/click handlers consistently so overlay controls do not race scene-level handlers.
+- Keep overlay copy in i18n keys.
+**Gotchas & Edge Cases:**
+- Manual continue tests should assert the final scene transition, not just overlay text.
+### `src/scenes/kabelsalat/components/plugs/AGENTS.md`
+**Rules & Principles:**
+- Preserve literal plug ID types and shared drag/drop contracts.
+- Keep pointer/keyboard handlers composed with caller-provided handlers.
+**Gotchas & Edge Cases:**
+- Do not convert plug IDs to arbitrary strings; socket matching depends on narrowed literals.
+### `src/scenes/kabelsalat/components/sockets/AGENTS.md`
+**Rules & Principles:**
+- Preserve literal socket ID/order types with `as const`.
+- Keep socket state transitions aligned with the parent kabelsalat hook contract.
+**Gotchas & Edge Cases:**
+- Socket order widening to `string[]` breaks downstream type narrowing.
+### `src/scenes/kabelsalat/hooks/AGENTS.md`
+**Rules & Principles:**
+- Keep `forceAdvance(isPowered: boolean)` typed through hook APIs and consumers.
+- Guard one-shot end transitions against StrictMode replay.
+- Clean up fallback timers on unmount and completion.
+**Gotchas & Edge Cases:**
+- End-flow tests must assert `changeScene('GIG')` for powered win and manual fallback continuation.
+### `src/scenes/mainmenu/AGENTS.md`
+**Rules & Principles:**
+- Keep menu actions reachable through keyboard and pointer flows.
+- Use i18n keys for all visible menu copy.
+- Preserve audio/settings callback contracts shared with UI settings.
+**Gotchas & Edge Cases:**
+- Main menu chatter uses `MENU`; do not accidentally classify it as generic overworld chatter.
+
+## Testing Environment
+### `tests/AGENTS.md`
+**Rules & Principles:**
+- Choose runner by neighboring tests, not extension alone.
+- Do not mix `node:test` and Vitest idioms in one file.
+- Full PR gate: `pnpm run test:all`.
+- Legacy logic suites: `pnpm run test`.
+- UI/migrated suites: `pnpm run test:ui`.
+- Node split for triage: `pnpm run test:node:quick` and `pnpm run test:node:heavy`.
+- Vitest localStorage assertions must mock/restore `window.localStorage.setItem` in `try/finally`.
+**Gotchas & Edge Cases:**
+- Keep `tests/security/**` adversarial-only.
+- Keep `tests/events/**` on event-data contracts and condition gating; reducer math belongs in node/reducer suites.
+- Build fixtures with canonical state keys so tests mirror runtime sanitizers.
+- Add reachability assertions when UI controls are reorganized.
+- Keep fixture-transform tests separate from real-dataset contract tests.
+### `tests/context/reducers/AGENTS.md`
+**Rules & Principles:**
+- Exercise reducers through realistic action payloads and persisted-state edge cases.
+- Keep action payload fixtures aligned with action creator discriminated unions.
+- Include malformed/hostile payloads for whitelist behavior.
+**Gotchas & Edge Cases:**
+- Cover loaded-save compatibility for legacy venue, settings, and unlock formats.
+- When adding reducer branches, add exhaustive-case coverage that mirrors reducer expectations.
+### `tests/events/AGENTS.md`
+**Rules & Principles:**
+- Validate event pool contracts: required fields, trigger/category consistency, option structure, and i18n keys.
+- Keep condition tests deterministic and data-focused.
+- Verify both truthy and falsy condition branches.
+**Gotchas & Edge Cases:**
+- Do not re-test reducer math here; reducer/application semantics belong in node reducer or engine suites.
+### `tests/logic/AGENTS.md`
+**Rules & Principles:**
+- Keep logic tests pure, deterministic, and free of DOM wiring unless strictly required.
+- Use narrowly scoped fixtures and explicit state-transition assertions.
+- Prefer table-driven assertions for clamp and bounds behavior.
+**Gotchas & Edge Cases:**
+- Reducer tests should assert result values and immutability of untouched branches.
+- If integration suites already cover behavior, keep only contract-level logic assertions here.
+### `tests/node/AGENTS.md`
+**Rules & Principles:**
+- Use focused `node:test` suites for reducer and state-machine regressions.
+- Keep fixtures representative of sanitized runtime shapes.
+- Use `test:node:quick` for normal local loops and `test:node:heavy` for Pixi/render-heavy suites.
+- Model typed fixtures explicitly when testing strict CheckJS paths.
+**Gotchas & Edge Cases:**
+- Travel/location assertions need legacy and canonical venue ID cases.
+- Load/reset tests should verify whitelist sanitization instead of raw spread assumptions.
+- Avoid duplicate callback-reference stability suites; colocate with the main hook behavior suite.
+- Keep `songsData.test.js` focused on transform edge cases and `songs-real.test.js` on production dataset contracts.
+- Split-runner commands must stay Windows-shell portable.
+- Real dataset assertions should include `song.id` in failure messages.
+### `tests/security/AGENTS.md`
+**Rules & Principles:**
+- Keep this folder focused on hostile-input behavior and boundary hardening.
+- Assert malformed payloads are rejected before state mutation.
+- API hardening tests should assert both status code and stable error shape.
+**Gotchas & Edge Cases:**
+- Prototype-pollution probes must include `__proto__`, `constructor`, and `prototype` at nested object/array levels.
+- Use raw JSON strings for `__proto__` probes so hostile keys are actually serialized.
+- Happy-path duplicate checks belong in core unit suites, not security tests.
+### `tests/ui/AGENTS.md`
+**Rules & Principles:**
+- Use Vitest and React Testing Library patterns consistent with neighboring UI tests.
+- Validate rendered behavior and wiring, not reducer internals already covered in node tests.
+- Keep mock props aligned with shared type contracts and prop optionality.
+- Use typed helper builders for repeated render setups.
+**Gotchas & Edge Cases:**
+- If PropTypes optionality changes, add fallback behavior coverage for missing props.
+- Menu redesigns need assertions that legacy actions remain reachable.
+- Kabelsalat tests must assert timeout-loss and fully wired win paths call `changeScene('GIG')`.
+- Minigame completion overlays need fallback-timer and unmount-cleanup coverage.
+### `tests/ui/bandhq/AGENTS.md`
+**Rules & Principles:**
+- Assert reachable user flows: open tab, perform action, see feedback.
+- Mock affordability, ownership, and effect payloads with finite numeric values and explicit IDs.
+**Gotchas & Edge Cases:**
+- Category menu regressions often hide reachability loss; include legacy HQ action assertions after navigation refactors.
+### `tests/ui/bandhq/hooks/AGENTS.md`
+**Rules & Principles:**
+- Verify processing-lock cleanup on success and failure paths.
+- Assert toast content against resolved, actually applied effect deltas.
+**Gotchas & Edge Cases:**
+- Include early-throw cases before `try/finally` effect execution so validation failures cannot leave stale locks.
