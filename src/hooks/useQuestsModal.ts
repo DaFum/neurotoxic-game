@@ -1,8 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState.tsx'
 
-import { buildQuestsProps } from './buildQuestsProps'
-
 /**
  * Hook to manage Quests modal state and props.
  * Used in the Overworld scene.
@@ -15,8 +13,11 @@ export const useQuestsModal = () => {
   const closeQuests = useCallback(() => setShowQuests(false), [])
 
   const questsProps = useMemo(
-    () =>
-      buildQuestsProps(closeQuests, gameState.activeQuests, gameState.player),
+    () => ({
+      onClose: closeQuests,
+      activeQuests: gameState.activeQuests ?? [],
+      player: gameState.player
+    }),
     [closeQuests, gameState.activeQuests, gameState.player]
   )
 

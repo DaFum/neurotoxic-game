@@ -278,9 +278,9 @@ export const calculateGigPhysics = (bandState: BandState, song: Song) => {
  * @param {Function} [rng=getSafeRandom] - Random number generator for determinism.
  * @returns {object} The updated parts of state (player, band, social).
  */
-export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
-export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
-export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
+const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 55
+const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 3
+const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
 
 export const calculateGuaranteedDailyCost = (
   player: Pick<GameState['player'], 'fameLevel'>,
