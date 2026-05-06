@@ -11,7 +11,8 @@ import {
   clampPlayerMoney,
   clampPlayerFame,
   calculateFameLevel,
-  clampBandHarmony
+  clampBandHarmony,
+  clampNonNegative
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -580,10 +581,32 @@ export const createAddVenueBlacklistAction = (
  */
 export const createAddQuestAction = (
   quest: QuestState
-): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => ({
-  type: ActionTypes.ADD_QUEST,
-  payload: quest
-})
+): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => {
+  const safeQuest = { ...(quest || {}) } as QuestState
+
+  if (safeQuest.moneyReward != null) {
+    safeQuest.moneyReward = clampNonNegative(Number(safeQuest.moneyReward) || 0)
+  }
+
+  if (safeQuest.rewardData) {
+    safeQuest.rewardData = { ...safeQuest.rewardData }
+    if (safeQuest.rewardData.fame != null) {
+      safeQuest.rewardData.fame = clampNonNegative(
+        Number(safeQuest.rewardData.fame) || 0
+      )
+    }
+    if (safeQuest.rewardData.harmony != null) {
+      safeQuest.rewardData.harmony = clampNonNegative(
+        Number(safeQuest.rewardData.harmony) || 0
+      )
+    }
+  }
+
+  return {
+    type: ActionTypes.ADD_QUEST,
+    payload: safeQuest
+  }
+}
 
 /**
  * Creates an action to advance a quest's progress.
@@ -682,10 +705,21 @@ export const createUseContrabandAction = (
  */
 export const createClinicHealAction = (
   payload: ClinicActionPayload
-): Extract<GameAction, { type: typeof ActionTypes.CLINIC_HEAL }> => ({
-  type: ActionTypes.CLINIC_HEAL,
-  payload
-})
+): Extract<GameAction, { type: typeof ActionTypes.CLINIC_HEAL }> => {
+  const safePayload = { ...(payload || {}) } as ClinicActionPayload
+  if (safePayload.staminaGain != null) {
+    safePayload.staminaGain = clampNonNegative(
+      Number(safePayload.staminaGain) || 0
+    )
+  }
+  if (safePayload.moodGain != null) {
+    safePayload.moodGain = clampNonNegative(Number(safePayload.moodGain) || 0)
+  }
+  return {
+    type: ActionTypes.CLINIC_HEAL,
+    payload: safePayload
+  }
+}
 
 /**
  * Creates an action to enhance a band member in the Void Clinic.
@@ -723,6 +757,13 @@ export const createPirateBroadcastAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          cost: clampNonNegative(Number(payload.cost) || 0),
+          fameGain: clampNonNegative(Number(payload.fameGain) || 0),
+          zealotryGain: clampNonNegative(Number(payload.zealotryGain) || 0),
+          controversyGain: clampNonNegative(
+            Number(payload.controversyGain) || 0
+          ),
+          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
@@ -763,6 +804,12 @@ export const createBloodBankDonateAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          moneyGain: clampNonNegative(Number(payload.moneyGain) || 0),
+          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
+          staminaCost: clampNonNegative(Number(payload.staminaCost) || 0),
+          controversyGain: clampNonNegative(
+            Number(payload.controversyGain) || 0
+          ),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
@@ -786,6 +833,7 @@ export const createTradeVoidItemAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          fameCost: clampNonNegative(Number(payload.fameCost) || 0),
           instanceId: getSafeUUID(),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
@@ -813,6 +861,13 @@ export const createDarkWebLeakAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          cost: clampNonNegative(Number(payload.cost) || 0),
+          fameGain: clampNonNegative(Number(payload.fameGain) || 0),
+          zealotryGain: clampNonNegative(Number(payload.zealotryGain) || 0),
+          controversyGain: clampNonNegative(
+            Number(payload.controversyGain) || 0
+          ),
+          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined
@@ -839,6 +894,13 @@ export const createMerchPressAction = (
     payload && typeof payload === 'object'
       ? {
           ...payload,
+          cost: clampNonNegative(Number(payload.cost) || 0),
+          loyaltyGain: clampNonNegative(Number(payload.loyaltyGain) || 0),
+          controversyGain: clampNonNegative(
+            Number(payload.controversyGain) || 0
+          ),
+          fameGain: clampNonNegative(Number(payload.fameGain) || 0),
+          harmonyCost: clampNonNegative(Number(payload.harmonyCost) || 0),
           successToast: payload.successToast
             ? { ...payload.successToast, id: getSafeUUID() }
             : undefined

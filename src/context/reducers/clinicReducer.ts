@@ -137,16 +137,8 @@ export const handleClinicHeal = (
   state: GameState,
   payload: ClinicActionPayload
 ): GameState => {
-  const rawStamina = payload.staminaGain as number | undefined
-  const rawMood = payload.moodGain as number | undefined
-  const staminaGain = Math.max(
-    0,
-    Number.isFinite(rawStamina ?? 0) ? (rawStamina ?? 0) : 0
-  )
-  const moodGain = Math.max(
-    0,
-    Number.isFinite(rawMood ?? 0) ? (rawMood ?? 0) : 0
-  )
+  const staminaGain = Number(payload.staminaGain) || 0
+  const moodGain = Number(payload.moodGain) || 0
 
   return executeClinicAction(state, payload, member => {
     const prevStamina = member.stamina || 0
@@ -201,22 +193,10 @@ export const handleBloodBankDonate = (
     staminaCost: 0,
     controversyGain: 0
   }
-  const rawMoneyGain = Number(safePayload.moneyGain)
-  const moneyGain = Number.isFinite(rawMoneyGain)
-    ? Math.max(0, rawMoneyGain)
-    : 0
-  const rawHarmonyCost = Number(safePayload.harmonyCost)
-  const harmonyCost = Number.isFinite(rawHarmonyCost)
-    ? Math.max(0, rawHarmonyCost)
-    : 0
-  const rawStaminaCost = Number(safePayload.staminaCost)
-  const staminaCost = Number.isFinite(rawStaminaCost)
-    ? Math.max(0, rawStaminaCost)
-    : 0
-  const rawControversyGain = Number(safePayload.controversyGain)
-  const controversyGain = Number.isFinite(rawControversyGain)
-    ? Math.max(0, rawControversyGain)
-    : 0
+  const moneyGain = Number(safePayload.moneyGain) || 0
+  const harmonyCost = Number(safePayload.harmonyCost) || 0
+  const staminaCost = Number(safePayload.staminaCost) || 0
+  const controversyGain = Number(safePayload.controversyGain) || 0
   const successToast = safePayload.successToast
 
   // Validate members array
