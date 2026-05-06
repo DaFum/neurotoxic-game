@@ -11,7 +11,8 @@ import {
   clampPlayerMoney,
   clampPlayerFame,
   calculateFameLevel,
-  clampBandHarmony
+  clampBandHarmony,
+  clampNonNegative
 } from '../utils/gameStateUtils'
 import type { RhythmSetlistEntry } from '../types/rhythmGame'
 import type {
@@ -581,7 +582,7 @@ export const createAddVenueBlacklistAction = (
 export const createAddQuestAction = (
   quest: QuestState
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_QUEST }> => {
-  const safeQuest = { ...quest }
+  const safeQuest = { ...(quest || {}) } as QuestState
 
   if (safeQuest.moneyReward != null) {
     safeQuest.moneyReward = clampNonNegative(Number(safeQuest.moneyReward) || 0)
@@ -705,7 +706,7 @@ export const createUseContrabandAction = (
 export const createClinicHealAction = (
   payload: ClinicActionPayload
 ): Extract<GameAction, { type: typeof ActionTypes.CLINIC_HEAL }> => {
-  const safePayload = { ...payload }
+  const safePayload = { ...(payload || {}) } as ClinicActionPayload
   if (safePayload.staminaGain != null) {
     safePayload.staminaGain = clampNonNegative(
       Number(safePayload.staminaGain) || 0
