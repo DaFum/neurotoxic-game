@@ -74,6 +74,7 @@ export { ActionTypes }
 export const BAND_ACTIONS = [
   ActionTypes.UPDATE_BAND,
   ActionTypes.USE_CONTRABAND,
+  ActionTypes.ADD_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
   ActionTypes.UNLOCK_TRAIT
 ] as const
