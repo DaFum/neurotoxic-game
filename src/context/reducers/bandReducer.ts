@@ -167,10 +167,13 @@ export const addContrabandHelper = (
   } else {
     const newInstance = {
       ...item,
-      instanceId,
+      instanceId: instanceId || crypto.randomUUID(),
       remainingDuration: (item.duration as number | undefined) ?? null,
-      applied: !!item.applyOnAdd,
-      stacks: item.stackable ? 1 : undefined
+      applied: !!item.applyOnAdd
+    }
+
+    if (item.stackable) {
+      Object.assign(newInstance, { stacks: 1 })
     }
 
     newBand.stash = Object.assign(Object.create(null), currentStash, {
