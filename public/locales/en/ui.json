@@ -307,6 +307,7 @@
   "hud.bandHarmony": "Band Harmony",
   "hud.decimatorActive": "DECIMATOR: ON",
   "hud.decimatorInactive": "DECIMATOR: OFF",
+  "hud.toggleDecimator": "Toggle decimator",
   "hud.neurotoxicActive": "NEUROTOXIC ACTIVE",
   "hud.day": "Day",
   "hud.fuelLevel": "Fuel Level",
