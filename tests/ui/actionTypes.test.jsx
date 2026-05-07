@@ -43,7 +43,6 @@ describe('ActionTypes', () => {
       'ADD_QUEST',
       'ADVANCE_QUEST',
       'ADD_UNLOCK',
-      'ADD_CONTRABAND',
       'USE_CONTRABAND',
       'CLINIC_HEAL',
       'CLINIC_ENHANCE',

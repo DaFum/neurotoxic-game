@@ -46,19 +46,3 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   return { ...state, player: mergedPlayer } as TState
 }
 
-/**
- * Reducer for player actions.
- * Uses a discriminated union so payload is typed for UPDATE_PLAYER.
- */
-export const playerReducer = (
-  state: PlayerSlice,
-  action: PlayerAction
-): PlayerSlice => {
-  switch (action.type) {
-    case ActionTypes.UPDATE_PLAYER:
-      return handleUpdatePlayer(state, action.payload as UpdatePlayerPayload)
-    default:
-      // Catch unhandled action types
-      return assertNever(action as never)
-  }
-}

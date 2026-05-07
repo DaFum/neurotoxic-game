@@ -323,14 +323,18 @@ describe('Action Creators', () => {
       const action = createCompleteTravelMinigameAction(
         10,
         ['item1'],
-        0.5
+        0.5,
+        'contra1',
+        'inst1'
       )
       assert.deepStrictEqual(action, {
         type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
         payload: {
           damageTaken: 10,
           itemsCollected: ['item1'],
-          rngValue: 0.5
+          rngValue: 0.5,
+          contrabandId: 'contra1',
+          instanceId: 'inst1'
         }
       })
     })

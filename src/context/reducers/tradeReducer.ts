@@ -72,12 +72,32 @@ export const handleTradeVoidItem = (
 
   const nextFame = clampPlayerFame(currentFame - cost)
 
-  const nextState = {
+  const tempState = {
     ...state,
     player: {
       ...state.player,
       fame: nextFame,
       fameLevel: calculateFameLevel(nextFame)
+    }
+  }
+
+  // Use the verified helper to graft the item into the band's stash safely
+  const nextState = addContrabandHelper(tempState, { contrabandId, instanceId })
+
+  // addContrabandHelper returns unmodified state if item invalid or max stacks
+  if (nextState === tempState) {
+    logger.warn(
+      'GameState',
+      'Failed to add void item to stash (max stacks or invalid item)'
+    )
+    const failureToast: ToastPayload = {
+      id: instanceId ?? getSafeUUID(),
+      messageKey: 'ui:shop.messages.purchaseFailed',
+      type: 'error'
+    }
+    return {
+      ...state,
+      toasts: [...(state.toasts || []), failureToast]
     }
   }
 

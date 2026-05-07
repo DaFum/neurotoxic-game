@@ -129,67 +129,41 @@ export const handleConsumeItem = (
  * Pure helper function to handle adding contraband.
  * Extracted to avoid tight coupling between reducers.
  */
-/**
- * Reducer function to handle ADD_CONTRABAND.
- * Uses addContrabandHelper internally.
- */
-export const handleAddContraband = (
-  state: GameState,
-  payload: { contrabandId: string; instanceId?: string }
-): GameState => {
-  if (!payload || typeof payload !== 'object') return state
-  return addContrabandHelper(state, payload)
-}
-
-export const canAddContraband = (
-  state: GameState,
-  contrabandId: string
-): boolean => {
-  if (isForbiddenKey(contrabandId)) return false
-  const item = CONTRABAND_BY_ID.get(contrabandId)
-  if (!item) return false
-
-  const currentStash = state.band.stash || {}
-  const existingItem = currentStash[item.id] as
-    | Record<string, unknown>
-    | undefined
-
-  if (existingItem) {
-    if (!item.stackable) {
-      return false
-    } else {
-      const currentStacks = (existingItem.stacks as number | undefined) ?? 1
-      const max = (item.maxStacks as number) || Infinity
-      return currentStacks < max
-    }
-  }
-  return true
-}
-
 export const addContrabandHelper = (
   state: GameState,
   payload: { contrabandId: string; instanceId?: string }
 ): GameState => {
   const { contrabandId, instanceId } = payload
-  if (!canAddContraband(state, contrabandId)) return state
-
-  const item = CONTRABAND_BY_ID.get(contrabandId)!
+  if (isForbiddenKey(contrabandId)) return state
+  const item = CONTRABAND_BY_ID.get(contrabandId)
+  if (!item) return state
 
   const newBand = { ...state.band }
   const currentStash = newBand.stash || {}
 
   // Handle stackable logic and uniqueness
-  const existingItem = currentStash[item.id] as
-    | Record<string, unknown>
-    | undefined
+  let existingItem: Record<string, unknown> | undefined = undefined
+  if (Object.hasOwn(currentStash, item.id)) {
+    existingItem = currentStash[item.id] as Record<string, unknown>
+  }
+
   if (existingItem) {
-    const currentStacks = (existingItem.stacks as number | undefined) ?? 1
-    newBand.stash = Object.assign(Object.create(null), currentStash, {
-      [item.id]: {
-        ...existingItem,
-        stacks: currentStacks + 1
+    if (!item.stackable) {
+      return state // Don't add duplicate non-stackable items
+    } else {
+      const currentStacks = (existingItem.stacks as number | undefined) ?? 1
+      const max = (item.maxStacks as number) || Infinity
+      if (currentStacks < max) {
+        newBand.stash = Object.assign(Object.create(null), currentStash, {
+          [item.id]: {
+            ...existingItem,
+            stacks: currentStacks + 1
+          }
+        })
+      } else {
+        return state // Reached max stacks
       }
-    })
+    }
   } else {
     const newInstance = {
       ...item,
@@ -467,11 +441,6 @@ export const bandReducer = (
       )
     case ActionTypes.CONSUME_ITEM:
       return handleConsumeItem(state, action.payload as string)
-    case ActionTypes.ADD_CONTRABAND:
-      return handleAddContraband(
-        state,
-        action.payload as { contrabandId: string; instanceId?: string }
-      )
     case ActionTypes.USE_CONTRABAND:
       return handleUseContraband(
         state,

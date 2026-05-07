@@ -24,7 +24,7 @@ describe('Trade Reducer', () => {
     assert.deepStrictEqual(nextState.toasts, initialState.toasts) // Toasts should remain unchanged
   })
 
-  it('should deduct fame on successful trade without modifying stash', () => {
+  it('should deduct fame and add item to stash on successful trade', () => {
     const initialState = {
       player: { fame: 2000 },
       band: { stash: {} },
@@ -41,7 +41,14 @@ describe('Trade Reducer', () => {
     const nextState = handleTradeVoidItem(initialState, payload)
 
     assert.strictEqual(nextState.player.fame, 1000)
-    assert.deepStrictEqual(nextState.band.stash, {}) // Stash shouldn't be modified by TRADE_VOID_ITEM directly
+    assert.ok(
+      nextState.band.stash['c_phantom_strings'],
+      'Item should be in stash'
+    )
+    assert.strictEqual(
+      nextState.band.stash['c_phantom_strings'].instanceId,
+      '123'
+    )
     assert.strictEqual(nextState.toasts.length, 1)
   })
 
