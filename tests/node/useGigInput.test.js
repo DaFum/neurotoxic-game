@@ -149,9 +149,9 @@ describe('useGigInput', () => {
 
   test('handles error gracefully when ensureAudioContext throws', () => {
     // Mock ensureAudioContext to throw an error on first call
-    let callCount = 0
+
     mockAudioManager.ensureAudioContext.mock.mockImplementationOnce(() => {
-      callCount++
+
       throw new Error('Audio context initialization failed')
     })
 

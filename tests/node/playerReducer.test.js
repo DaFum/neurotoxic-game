@@ -57,10 +57,7 @@ describe('playerReducer', () => {
         payload: { money: 200 }
       }
 
-      const newState = playerReducer(initialState, action)
-
-      assert.strictEqual(newState, initialState)
-      assert.strictEqual(newState.player.money, 100)
+      assert.throws(() => playerReducer(initialState, action), /Unhandled action type/)
     })
   })
 

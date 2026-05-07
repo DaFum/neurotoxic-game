@@ -42,7 +42,7 @@ import i18n from '../i18n'
 import { GAME_PHASES } from '../context/gameConstants'
 import { clampPlayerMoney } from '../utils/gameStateUtils'
 import { translateLocation } from '../utils/locationI18n'
-import { ALL_VENUES, VENUES_BY_ID } from '../data/venues'
+import { VENUES_BY_ID } from '../data/venues'
 import { getTravelArrivalUpdates } from '../utils/travelUtils'
 import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
 import {

@@ -42,18 +42,16 @@ export const handleUpdateBand = (
     return state
   }
 
-  let nextHarmony = state.band.harmony
-  if ('harmony' in updates) {
-    // Explicit bounds check mandated by [STATE_SAFETY] critical rules
-    nextHarmony = clampBandHarmony(
-      (updates.harmony as number | undefined) ?? nextHarmony
+  const safeUpdates = { ...updates }
+  if (Object.hasOwn(safeUpdates, 'harmony')) {
+    safeUpdates.harmony = clampBandHarmony(
+      typeof safeUpdates.harmony === 'number' ? safeUpdates.harmony : state.band.harmony
     )
   }
 
   const mergedBand = {
     ...state.band,
-    ...updates,
-    harmony: nextHarmony
+    ...safeUpdates
   }
 
   return { ...state, band: mergedBand }

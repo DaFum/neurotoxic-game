@@ -1,13 +1,12 @@
 import { logger } from '../../utils/logger'
-import { isForbiddenKey, isPlainObject } from '../../utils/gameStateUtils'
+import { isForbiddenKey, isPlainObject, clampPlayerMoney, clampPlayerFame, calculateFameLevel } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
+import { assertNever } from '../../utils/assertNever'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
 type PlayerSlice = { player: PlayerState }
 
-export type PlayerAction =
-  | { type: typeof ActionTypes.UPDATE_PLAYER; payload: UpdatePlayerPayload }
-  | { type: string; payload?: unknown }
+export type PlayerAction = { type: typeof ActionTypes.UPDATE_PLAYER; payload: UpdatePlayerPayload }
 
 /**
  * Handles player update actions
@@ -27,9 +26,21 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
     return state
   }
 
+  const safeUpdates = { ...updates }
+  if (Object.hasOwn(safeUpdates, 'money')) {
+    safeUpdates.money = clampPlayerMoney(
+      typeof safeUpdates.money === 'number' ? safeUpdates.money : state.player.money
+    )
+  }
+  if (Object.hasOwn(safeUpdates, 'fame')) {
+    const nextFame = typeof safeUpdates.fame === 'number' ? safeUpdates.fame : state.player.fame
+    safeUpdates.fame = clampPlayerFame(nextFame)
+    safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
+  }
+
   const mergedPlayer = {
     ...state.player,
-    ...updates
+    ...safeUpdates
   }
 
   return { ...state, player: mergedPlayer } as TState
@@ -47,6 +58,7 @@ export const playerReducer = (
     case ActionTypes.UPDATE_PLAYER:
       return handleUpdatePlayer(state, action.payload as UpdatePlayerPayload)
     default:
-      return state
+      // @ts-expect-error - Catch unhandled action types
+      return assertNever(action as never)
   }
 }
