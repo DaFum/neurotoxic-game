@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { isForbiddenKey, isPlainObject } from '../../utils/gameStateUtils'
+import { isForbiddenKey, isPlainObject, clampPlayerMoney, clampPlayerFame } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
@@ -27,9 +27,17 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
     return state
   }
 
+  const safeUpdates = { ...updates }
+  if ('money' in safeUpdates && typeof safeUpdates.money === 'number') {
+    safeUpdates.money = clampPlayerMoney(safeUpdates.money)
+  }
+  if ('fame' in safeUpdates && typeof safeUpdates.fame === 'number') {
+    safeUpdates.fame = clampPlayerFame(safeUpdates.fame)
+  }
+
   const mergedPlayer = {
     ...state.player,
-    ...updates
+    ...safeUpdates
   }
 
   return { ...state, player: mergedPlayer } as TState

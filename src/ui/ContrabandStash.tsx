@@ -16,7 +16,7 @@ import {
   HexBorder
 } from './shared/index.tsx'
 import { useTranslation } from 'react-i18next'
-import { useNetworkStatus } from '../hooks/useNetworkStatus'
+
 import { GlitchButton } from './GlitchButton'
 import {
   getGenImageUrl,

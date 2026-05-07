@@ -12,7 +12,6 @@ import {
   IMG_PROMPTS,
   getGenImageUrl,
   isImageGenerationAvailable,
-  getGeneratedImageFallbackUrl
 } from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'
