@@ -13,8 +13,10 @@ import {
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
-import { pickRandomContraband } from '../utils/contrabandUtils'
+import { pickRandomContraband, computeDropChance } from '../utils/contrabandUtils'
+import { CONTRABAND_BY_ID } from '../data/contraband'
 import { handleError, StateError } from '../utils/errorHandler'
+import { canAddContraband } from './reducers/bandReducer'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade } from '../utils/upgradeUtils'
 import { isPlainObject } from '../utils/gameStateUtils'
@@ -54,6 +56,7 @@ import {
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
+  createAddContrabandAction,
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
@@ -624,19 +627,28 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
     ) => {
       const rngValue = secureRandom() as number
-      const contrabandId = pickRandomContraband(secureRandom)
-      const instanceId = getSafeUUID()
       dispatch(
         createCompleteTravelMinigameAction(
           damageTaken,
           itemsCollected,
-          rngValue,
-          contrabandId ?? undefined,
-          instanceId
+          rngValue
         )
       )
+
+      // --- Contraband drop logic ---
+      const luck = stateRef.current.band?.luck || 0
+      const chance = computeDropChance(undefined, luck)
+
+      if (rngValue < chance) {
+        const contrabandId = pickRandomContraband(secureRandom)
+        if (contrabandId && canAddContraband(stateRef.current, contrabandId)) {
+          const instanceId = getSafeUUID()
+          dispatch(createAddContrabandAction(contrabandId, instanceId))
+          addToast({ messageKey: 'ui:contraband.dropped' }, 'info')
+        }
+      }
     },
-    []
+    [addToast]
   )
 
   const startRoadieMinigame = useCallback(
@@ -754,9 +766,27 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
    * @param {object} payload - The void trade payload.
    */
   const tradeVoidItem = useCallback(
-    (payload: TradeVoidItemPayload) =>
-      dispatch(createTradeVoidItemAction(payload)),
-    []
+    (payload: TradeVoidItemPayload) => {
+      const currentFame = Number(stateRef.current.player.fame) || 0
+      const cost = Math.max(0, Number(payload.fameCost) || 0)
+
+      const canAdd = canAddContraband(stateRef.current, payload.contrabandId)
+
+      if (currentFame >= cost && canAdd) {
+        dispatch(createTradeVoidItemAction(payload))
+        const instanceId = payload.instanceId ?? getSafeUUID()
+        dispatch(createAddContrabandAction(payload.contrabandId, instanceId))
+      } else {
+        addToast(
+          {
+            id: payload.instanceId ?? getSafeUUID(),
+            messageKey: 'ui:shop.messages.purchaseFailed'
+          },
+          'error'
+        )
+      }
+    },
+    [addToast]
   )
 
   /**

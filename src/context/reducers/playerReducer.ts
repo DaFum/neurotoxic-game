@@ -58,7 +58,7 @@ export const playerReducer = (
     case ActionTypes.UPDATE_PLAYER:
       return handleUpdatePlayer(state, action.payload as UpdatePlayerPayload)
     default:
-      // @ts-expect-error - Catch unhandled action types
+      // Catch unhandled action types
       return assertNever(action as never)
   }
 }

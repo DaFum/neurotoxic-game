@@ -50,12 +50,9 @@ export const handleCompleteTravelMinigame = (
     damageTaken: number
     itemsCollected: unknown[]
     rngValue?: number
-    contrabandId?: string
-    instanceId?: string
   }
 ): GameState => {
-  const { damageTaken, itemsCollected, rngValue, contrabandId, instanceId } =
-    payload
+  const { damageTaken, itemsCollected, rngValue } = payload
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results
@@ -164,57 +161,6 @@ export const handleCompleteTravelMinigame = (
     band: traitResult.band,
     toasts: traitResult.toasts,
     minigame: { ...DEFAULT_MINIGAME_STATE }
-  }
-
-  // --- Contraband drop logic ---
-  const luck = newState.band?.luck || 0
-  const chance = computeDropChance(undefined, luck)
-
-  if (
-    rngValue !== undefined &&
-    rngValue < chance &&
-    contrabandId &&
-    instanceId
-  ) {
-    // Call addContrabandHelper directly to leverage its logic
-    const preStashLength = newState.band.stash
-      ? Object.keys(newState.band.stash).length
-      : 0
-    const preStashItem = newState.band.stash
-      ? (newState.band.stash[contrabandId] as
-          | Record<string, unknown>
-          | undefined)
-      : undefined
-    const preStacks = preStashItem
-      ? (preStashItem.stacks as number | undefined) || 0
-      : 0
-
-    newState = addContrabandHelper(newState, { contrabandId, instanceId })
-
-    // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band?.stash?.[contrabandId] as
-      | Record<string, unknown>
-      | undefined
-    const postStacks = postItem
-      ? (postItem.stacks as number | undefined) || 0
-      : 0
-    const postStashLength = Object.keys(newState.band?.stash || {}).length
-
-    const wasAdded = postStashLength > preStashLength || postStacks > preStacks
-
-    if (wasAdded) {
-      // We reuse the existing toasts array and append our new toast
-      // For deterministic action tests we could rely on a better ID generation strategy
-      // but keeping it simple as it was for now. Toasts are often tricky.
-      newState.toasts = [
-        ...newState.toasts,
-        {
-          id: `toast-${instanceId}`,
-          message: `ui:contraband.dropped`, // Use an i18n key or simple text
-          type: 'info' // Could be 'success'
-        }
-      ]
-    }
   }
 
   return newState

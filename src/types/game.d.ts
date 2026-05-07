@@ -272,8 +272,6 @@ export interface CompleteTravelMinigamePayload {
   damageTaken: number
   itemsCollected: unknown[]
   rngValue?: number
-  contrabandId?: string
-  instanceId?: string
 }
 
 export interface ClinicActionPayload {
@@ -438,6 +436,10 @@ export type GameAction =
       { questId: string; amount: number; randomIdx?: number }
     >
   | Action<ActionTypes['ADD_UNLOCK'], string>
+  | Action<
+      ActionTypes['ADD_CONTRABAND'],
+      { contrabandId: string; instanceId?: string }
+    >
   | Action<
       ActionTypes['USE_CONTRABAND'],
       { instanceId: string; contrabandId: string; memberId?: string }
