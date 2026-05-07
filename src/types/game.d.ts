@@ -385,7 +385,6 @@ export type Action<
 export type GameAction =
   | Action<ActionTypes['CHANGE_SCENE'], GamePhase>
   | Action<ActionTypes['UPDATE_PLAYER'], UpdatePlayerPayload>
-  | Action<ActionTypes['UPDATE_NEUROTOXIC_PEDAL'], { isActive: boolean }>
   | Action<ActionTypes['TOGGLE_NEURO_DECIMATOR'], { isActive: boolean }>
   | Action<ActionTypes['UPDATE_BAND'], UpdateBandPayload>
   | Action<
@@ -437,16 +436,7 @@ export type GameAction =
       ActionTypes['ADVANCE_QUEST'],
       { questId: string; amount: number; randomIdx?: number }
     >
-  | Action<
-      ActionTypes['COMPLETE_QUEST'],
-      { questId: string; randomIdx?: number }
-    >
-  | Action<ActionTypes['FAIL_QUESTS']>
   | Action<ActionTypes['ADD_UNLOCK'], string>
-  | Action<
-      ActionTypes['ADD_CONTRABAND'],
-      { contrabandId: string; instanceId: string }
-    >
   | Action<
       ActionTypes['USE_CONTRABAND'],
       { instanceId: string; contrabandId: string; memberId?: string }
