@@ -1,5 +1,5 @@
 import { logger } from '../../utils/logger'
-import { isForbiddenKey, isPlainObject, clampPlayerMoney, clampPlayerFame } from '../../utils/gameStateUtils'
+import { isForbiddenKey, isPlainObject, clampPlayerMoney, clampPlayerFame, calculateFameLevel } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 import { assertNever } from '../../utils/assertNever'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
@@ -27,11 +27,15 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   }
 
   const safeUpdates = { ...updates }
-  if ('money' in safeUpdates && typeof safeUpdates.money === 'number') {
-    safeUpdates.money = clampPlayerMoney(safeUpdates.money)
+  if (Object.hasOwn(safeUpdates, 'money')) {
+    safeUpdates.money = clampPlayerMoney(
+      typeof safeUpdates.money === 'number' ? safeUpdates.money : state.player.money
+    )
   }
-  if ('fame' in safeUpdates && typeof safeUpdates.fame === 'number') {
-    safeUpdates.fame = clampPlayerFame(safeUpdates.fame)
+  if (Object.hasOwn(safeUpdates, 'fame')) {
+    const nextFame = typeof safeUpdates.fame === 'number' ? safeUpdates.fame : state.player.fame
+    safeUpdates.fame = clampPlayerFame(nextFame)
+    safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
   }
 
   const mergedPlayer = {

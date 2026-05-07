@@ -43,8 +43,10 @@ export const handleUpdateBand = (
   }
 
   const safeUpdates = { ...updates }
-  if ('harmony' in safeUpdates && typeof safeUpdates.harmony === 'number') {
-    safeUpdates.harmony = clampBandHarmony(safeUpdates.harmony)
+  if (Object.hasOwn(safeUpdates, 'harmony')) {
+    safeUpdates.harmony = clampBandHarmony(
+      typeof safeUpdates.harmony === 'number' ? safeUpdates.harmony : state.band.harmony
+    )
   }
 
   const mergedBand = {
