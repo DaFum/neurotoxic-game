@@ -44,7 +44,7 @@ import {
   GAME_PHASES,
   PRACTICE_RETURN_SCENES
 } from '../gameConstants'
-import { handleFailQuests } from './questReducer'
+import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getSafeRandom } from '../../utils/crypto'
 import { ALLOWED_TOAST_TYPES, sanitizeLoadedToast } from './toastSanitizers'
 
@@ -1102,7 +1102,7 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     for (const key of ['label', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]
     }
-    for (const key of ['deadline', 'progress', 'required']) {
+    for (const key of ['deadline', 'progress', 'required', 'moneyReward']) {
       if (quest[key] === null && key === 'deadline') {
         sanitized.deadline = null
         continue
@@ -1481,7 +1481,7 @@ export const handleAdvanceDay = (
     toasts: traitResult.toasts
   }
 
-  nextState = handleFailQuests(nextState)
+  nextState = QuestLifecycle.checkDeadlines(nextState)
 
   const pendingFlagsObj =
     typeof pendingFlags === 'object' && pendingFlags !== null
