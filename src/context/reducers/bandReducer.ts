@@ -128,6 +128,11 @@ export const handleConsumeItem = (
 /**
  * Pure helper function to handle adding contraband.
  * Extracted to avoid tight coupling between reducers.
+ *
+ * Note on `applyOnAdd`: If an item is stackable and specifies `applyOnAdd: true`,
+ * the associated effects are deliberately re-applied on every stack increment,
+ * causing per-stack accumulation of stat deltas (e.g., each neon patch adds to stats).
+ * Symbols involved in this mechanic: `item.stackable`, `item.stacks`, `item.maxStacks`, and `applyOnAdd`.
  */
 export const addContrabandHelper = (
   state: GameState,
@@ -142,11 +147,9 @@ export const addContrabandHelper = (
   const currentStash = newBand.stash || {}
 
   // Handle stackable logic and uniqueness
-  let existingItem: Record<string, unknown> | undefined = undefined
-  if (Object.hasOwn(currentStash, item.id)) {
-    existingItem = currentStash[item.id] as Record<string, unknown>
-  }
-
+  const existingItem = currentStash[item.id] as
+    | Record<string, unknown>
+    | undefined
   if (existingItem) {
     if (!item.stackable) {
       return state // Don't add duplicate non-stackable items
