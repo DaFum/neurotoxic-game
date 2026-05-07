@@ -422,7 +422,10 @@ export type GameAction =
   | Action<ActionTypes['START_KABELSALAT_MINIGAME'], { gigId: string }>
   | Action<ActionTypes['COMPLETE_KABELSALAT_MINIGAME'], { results: unknown }>
   | Action<ActionTypes['START_AMP_CALIBRATION'], { gigId: string }>
-  | Action<ActionTypes['COMPLETE_AMP_CALIBRATION'], { score: number; voidResonance: number }>
+  | Action<
+      ActionTypes['COMPLETE_AMP_CALIBRATION'],
+      { score: number; voidResonance: number }
+    >
   | Action<ActionTypes['SPAWN_RIVAL_BAND']>
   | Action<ActionTypes['MOVE_RIVAL_BAND']>
   | Action<ActionTypes['UPDATE_RIVAL_BAND'], Partial<RivalBandState>>

@@ -938,7 +938,7 @@ export const calculateAmpCalibrationResult = (
     numResonance = 0
   }
   const safeScore = Math.max(0, Math.min(100, numScore))
-  const safeResonance = Math.max(0, numResonance)
+  const safeResonance = Math.min(100, Math.max(0, numResonance))
   let stress = 0
   let reward = 0
 
@@ -953,10 +953,10 @@ export const calculateAmpCalibrationResult = (
     if (bandHasTrait(bandState, 'tech_wizard')) {
       reward = Math.floor(reward * 1.5)
     }
-  }
 
-  // Void Resonance converts to pure money at a 2x rate
-  reward += Math.floor(safeResonance * 2)
+    // Void Resonance converts to pure money at a 2x rate only on success
+    reward += Math.floor(safeResonance * 2)
+  }
 
   return { stress, reward }
 }

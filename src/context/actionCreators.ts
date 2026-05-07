@@ -494,10 +494,15 @@ export const createCompleteAmpCalibrationAction = (
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
-> => ({
-  type: ActionTypes.COMPLETE_AMP_CALIBRATION,
-  payload: { score, voidResonance }
-})
+> => {
+  const safeScore = Math.max(0, Number(score) || 0)
+  const safeResonance = Math.max(0, Number(voidResonance) || 0)
+
+  return {
+    type: ActionTypes.COMPLETE_AMP_CALIBRATION,
+    payload: { score: safeScore, voidResonance: safeResonance }
+  }
+}
 
 export const createSpawnRivalBandAction = (): Extract<
   GameAction,

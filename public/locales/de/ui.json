@@ -1533,7 +1533,7 @@
   "offline.reload": "Neuladen",
   "offline.close": "Schließen",
   "travel.rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!",
-  "minigames.amp.hud.anomaly": "VOID ANOMALY DETECTED",
-  "minigames.amp.hud.resonance": "VOID RESONANCE",
-  "minigames.amp.completion.resonance": "Void Resonance Captured: {{voidResonance}}%"
+  "minigames.amp.hud.anomaly": "VOID-ANOMALIE ENTDECKT",
+  "minigames.amp.hud.resonance": "VOID-RESONANZ",
+  "minigames.amp.completion.resonance": "Void-Resonanz eingefangen: {{voidResonance}}%"
 }

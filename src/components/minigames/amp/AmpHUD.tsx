@@ -9,7 +9,7 @@ export const AmpHUD = memo(function AmpHUD({
   isOverheat,
   voidResonance = 0,
   isAnomalyActive = false
-}: AmpHUDProps & { voidResonance?: number; isAnomalyActive?: boolean }) {
+}: AmpHUDProps) {
   const { t } = useTranslation(['ui'])
 
   return (
@@ -44,10 +44,16 @@ export const AmpHUD = memo(function AmpHUD({
         {(voidResonance > 0 || isAnomalyActive) && (
           <div className='mt-2 w-48'>
             <div className='flex justify-between items-center mb-1'>
-              <span className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue animate-pulse font-bold' : 'text-ash-gray'}`}>
+              <span
+                className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue animate-pulse font-bold' : 'text-ash-gray'}`}
+              >
                 {isAnomalyActive
-                  ? t('ui:minigames.amp.hud.anomaly', { defaultValue: 'VOID ANOMALY DETECTED' })
-                  : t('ui:minigames.amp.hud.resonance', { defaultValue: 'VOID RESONANCE' })}
+                  ? t('ui:minigames.amp.hud.anomaly', {
+                      defaultValue: 'VOID ANOMALY DETECTED'
+                    })
+                  : t('ui:minigames.amp.hud.resonance', {
+                      defaultValue: 'VOID RESONANCE'
+                    })}
               </span>
               <span className='text-electric-blue text-xs'>
                 {Math.floor(voidResonance)}%

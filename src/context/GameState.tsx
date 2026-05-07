@@ -676,9 +676,10 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   const completeAmpCalibration = useCallback(
     (
       score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
-      voidResonance: Parameters<typeof createCompleteAmpCalibrationAction>[1] = 0
-    ) =>
-      dispatch(createCompleteAmpCalibrationAction(score, voidResonance)),
+      voidResonance: Parameters<
+        typeof createCompleteAmpCalibrationAction
+      >[1] = 0
+    ) => dispatch(createCompleteAmpCalibrationAction(score, voidResonance)),
     []
   )
 

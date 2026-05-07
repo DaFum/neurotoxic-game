@@ -157,18 +157,24 @@ export function useAmpLogic() {
       }
 
       // Void Anomaly Logic
-      let currentAnomalyActive = isAnomalyActiveRef.current
-      if (currentOverdriveActive && !currentIsOverheat && !currentAnomalyActive) {
+      if (
+        currentOverdriveActive &&
+        !currentIsOverheat &&
+        !isAnomalyActiveRef.current
+      ) {
         // 2% chance per 100ms to spawn an anomaly during overdrive
         if (getSafeRandom() < 0.02 * (deltaMS / 100)) {
-          currentAnomalyActive = true
+          isAnomalyActiveRef.current = true
           setIsAnomalyActive(true)
           // Force an extreme target frequency
           setTargetValue(getSafeRandom() > 0.5 ? 950 : 50)
         }
-      } else if (currentAnomalyActive && (!currentOverdriveActive || currentIsOverheat)) {
+      } else if (
+        isAnomalyActiveRef.current &&
+        (!currentOverdriveActive || currentIsOverheat)
+      ) {
         // Anomaly ends if overdrive is disabled or overheat happens
-        currentAnomalyActive = false
+        isAnomalyActiveRef.current = false
         setIsAnomalyActive(false)
       }
 
@@ -180,7 +186,10 @@ export function useAmpLogic() {
         shiftSize = 400
       }
 
-      if (!currentAnomalyActive && getSafeRandom() < chance * (deltaMS / 100)) {
+      if (
+        !isAnomalyActiveRef.current &&
+        getSafeRandom() < chance * (deltaMS / 100)
+      ) {
         const shift = (getSafeRandom() - 0.5) * shiftSize
         setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
@@ -202,16 +211,19 @@ export function useAmpLogic() {
         accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
       )
 
-      if (currentAnomalyActive) {
+      if (isAnomalyActiveRef.current) {
         // If dialed in perfectly during anomaly, rapidly gain resonance
         if (diff < 30) {
-          const nextResonance = Math.min(100, voidResonanceRef.current + 20 * deltaSec)
+          const nextResonance = Math.min(
+            100,
+            voidResonanceRef.current + 20 * deltaSec
+          )
           voidResonanceRef.current = nextResonance
           setVoidResonance(nextResonance)
 
           if (nextResonance >= 100) {
-             currentAnomalyActive = false
-             setIsAnomalyActive(false)
+            isAnomalyActiveRef.current = false
+            setIsAnomalyActive(false)
           }
         }
       }
@@ -230,7 +242,15 @@ export function useAmpLogic() {
       isAnomalyActive,
       voidResonance
     }
-  }, [dialValue, targetValue, isOverdriveActive, isOverheat, heat, isAnomalyActive, voidResonance])
+  }, [
+    dialValue,
+    targetValue,
+    isOverdriveActive,
+    isOverheat,
+    heat,
+    isAnomalyActive,
+    voidResonance
+  ])
 
   return {
     dialValue,
