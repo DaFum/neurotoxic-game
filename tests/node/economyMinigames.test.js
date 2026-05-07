@@ -3,7 +3,8 @@ import assert from 'node:assert'
 import {
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
-  calculateKabelsalatMinigameResult
+  calculateKabelsalatMinigameResult,
+  calculateAmpCalibrationResult
 } from '../../src/utils/economyEngine'
 
 test('Minigame Economy Calculations', async t => {
@@ -70,6 +71,25 @@ test('Minigame Economy Calculations', async t => {
     )
     assert.strictEqual(resultFast.stress, 0)
     assert.strictEqual(resultFast.reward, 135)
+  })
+
+  await t.test('Amp Calibration Minigame Results', () => {
+    // Score < 50 yields stress, 0 reward
+    const resultFail = calculateAmpCalibrationResult(40, { members: [] })
+    assert.strictEqual(resultFail.stress, 5) // (50 - 40) / 2 = 5
+    assert.strictEqual(resultFail.reward, 0)
+
+    // Score >= 50 yields reward based on score, 0 stress
+    const resultPass = calculateAmpCalibrationResult(80, { members: [] })
+    assert.strictEqual(resultPass.stress, 0)
+    assert.strictEqual(resultPass.reward, 80)
+  })
+
+  await t.test('Amp Calibration Void Resonance', () => {
+    // 50 Void Resonance -> 100 extra reward
+    const resultAnom = calculateAmpCalibrationResult(80, { members: [] }, 50)
+    assert.strictEqual(resultAnom.stress, 0)
+    assert.strictEqual(resultAnom.reward, 180) // 80 + 50*2
   })
 
   await t.test('Kabelsalat Minigame Edge Cases', () => {

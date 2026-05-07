@@ -1,12 +1,21 @@
 import { logger } from '../../utils/logger'
-import { isForbiddenKey, isPlainObject, clampPlayerMoney, clampPlayerFame, calculateFameLevel } from '../../utils/gameStateUtils'
+import {
+  isForbiddenKey,
+  isPlainObject,
+  clampPlayerMoney,
+  clampPlayerFame,
+  calculateFameLevel
+} from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
 import { assertNever } from '../../utils/assertNever'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
 
 type PlayerSlice = { player: PlayerState }
 
-export type PlayerAction = { type: typeof ActionTypes.UPDATE_PLAYER; payload: UpdatePlayerPayload }
+export type PlayerAction = {
+  type: typeof ActionTypes.UPDATE_PLAYER
+  payload: UpdatePlayerPayload
+}
 
 /**
  * Handles player update actions
@@ -29,11 +38,16 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   const safeUpdates = { ...updates }
   if (Object.hasOwn(safeUpdates, 'money')) {
     safeUpdates.money = clampPlayerMoney(
-      typeof safeUpdates.money === 'number' ? safeUpdates.money : state.player.money
+      typeof safeUpdates.money === 'number'
+        ? safeUpdates.money
+        : state.player.money
     )
   }
   if (Object.hasOwn(safeUpdates, 'fame')) {
-    const nextFame = typeof safeUpdates.fame === 'number' ? safeUpdates.fame : state.player.fame
+    const nextFame =
+      typeof safeUpdates.fame === 'number'
+        ? safeUpdates.fame
+        : state.player.fame
     safeUpdates.fame = clampPlayerFame(nextFame)
     safeUpdates.fameLevel = calculateFameLevel(safeUpdates.fame)
   }
@@ -58,7 +72,7 @@ export const playerReducer = (
     case ActionTypes.UPDATE_PLAYER:
       return handleUpdatePlayer(state, action.payload as UpdatePlayerPayload)
     default:
-      // @ts-expect-error - Catch unhandled action types
+      // Catch unhandled action types (defensive fallback)
       return assertNever(action as never)
   }
 }

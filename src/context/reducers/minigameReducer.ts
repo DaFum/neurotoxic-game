@@ -261,11 +261,15 @@ export const handleCompleteAmpCalibration = (
   state: GameState,
   payload: Record<string, unknown>
 ): GameState => {
-  const { score } = payload
+  const { score, voidResonance } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
-  const { stress, reward } = calculateAmpCalibrationResult(score, state.band)
+  const { stress, reward } = calculateAmpCalibrationResult(
+    score,
+    state.band,
+    typeof voidResonance === 'number' ? voidResonance : 0
+  )
 
   const nextHarmony = clampBandHarmony(state.band.harmony - stress)
   const nextMoney = clampPlayerMoney(state.player.money + reward)

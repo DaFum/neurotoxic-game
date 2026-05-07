@@ -22,6 +22,10 @@ export function useAmpLogic() {
   const [heat, setHeat] = useState(0) // 0 to 100
   const [isOverheat, setIsOverheat] = useState(false)
 
+  // Void Anomaly
+  const [voidResonance, setVoidResonance] = useState(0)
+  const [isAnomalyActive, setIsAnomalyActive] = useState(false)
+
   const isCompleteRef = useRef(false)
   const accumulatedScoreRef = useRef(0)
   const accumulatedMsRef = useRef(0)
@@ -31,6 +35,8 @@ export function useAmpLogic() {
   const heatRef = useRef(heat)
   const isOverdriveActiveRef = useRef(isOverdriveActive)
   const isOverheatRef = useRef(isOverheat)
+  const voidResonanceRef = useRef(voidResonance)
+  const isAnomalyActiveRef = useRef(isAnomalyActive)
   const gameStateRef = useRef(null)
 
   useEffect(() => {
@@ -57,6 +63,14 @@ export function useAmpLogic() {
     isOverheatRef.current = isOverheat
   }, [isOverheat])
 
+  useEffect(() => {
+    voidResonanceRef.current = voidResonance
+  }, [voidResonance])
+
+  useEffect(() => {
+    isAnomalyActiveRef.current = isAnomalyActive
+  }, [isAnomalyActive])
+
   const finishCalledRef = useRef(false)
   const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -68,7 +82,7 @@ export function useAmpLogic() {
 
     const finalScore =
       accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
-    completeAmpCalibration(finalScore)
+    completeAmpCalibration(finalScore, voidResonanceRef.current)
   }, [completeAmpCalibration])
 
   const handleComplete = useCallback(() => {
@@ -142,6 +156,28 @@ export function useAmpLogic() {
         setHeat(currentHeat)
       }
 
+      // Void Anomaly Logic
+      if (
+        currentOverdriveActive &&
+        !currentIsOverheat &&
+        !isAnomalyActiveRef.current
+      ) {
+        // 2% chance per 100ms to spawn an anomaly during overdrive
+        if (getSafeRandom() < 0.02 * (deltaMS / 100)) {
+          isAnomalyActiveRef.current = true
+          setIsAnomalyActive(true)
+          // Force an extreme target frequency
+          setTargetValue(getSafeRandom() > 0.5 ? 950 : 50)
+        }
+      } else if (
+        isAnomalyActiveRef.current &&
+        (!currentOverdriveActive || currentIsOverheat)
+      ) {
+        // Anomaly ends if overdrive is disabled or overheat happens
+        isAnomalyActiveRef.current = false
+        setIsAnomalyActive(false)
+      }
+
       // Approximately 5% chance per 100ms
       let chance = 0.05
       let shiftSize = 200
@@ -150,7 +186,10 @@ export function useAmpLogic() {
         shiftSize = 400
       }
 
-      if (getSafeRandom() < chance * (deltaMS / 100)) {
+      if (
+        !isAnomalyActiveRef.current &&
+        getSafeRandom() < chance * (deltaMS / 100)
+      ) {
         const shift = (getSafeRandom() - 0.5) * shiftSize
         setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
@@ -171,6 +210,23 @@ export function useAmpLogic() {
       setScore(
         accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
       )
+
+      if (isAnomalyActiveRef.current) {
+        // If dialed in perfectly during anomaly, rapidly gain resonance
+        if (diff < 30) {
+          const nextResonance = Math.min(
+            100,
+            voidResonanceRef.current + 20 * deltaSec
+          )
+          voidResonanceRef.current = nextResonance
+          setVoidResonance(nextResonance)
+
+          if (nextResonance >= 100) {
+            isAnomalyActiveRef.current = false
+            setIsAnomalyActive(false)
+          }
+        }
+      }
     },
     [handleComplete]
   )
@@ -182,9 +238,19 @@ export function useAmpLogic() {
       targetValue,
       isOverdriveActive,
       isOverheat,
-      heat
+      heat,
+      isAnomalyActive,
+      voidResonance
     }
-  }, [dialValue, targetValue, isOverdriveActive, isOverheat, heat])
+  }, [
+    dialValue,
+    targetValue,
+    isOverdriveActive,
+    isOverheat,
+    heat,
+    isAnomalyActive,
+    voidResonance
+  ])
 
   return {
     dialValue,
@@ -199,6 +265,8 @@ export function useAmpLogic() {
     isOverdriveActive,
     setIsOverdriveActive,
     heat,
-    isOverheat
+    isOverheat,
+    voidResonance,
+    isAnomalyActive
   }
 }

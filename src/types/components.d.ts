@@ -217,6 +217,8 @@ export interface AmpHUDProps {
   score: number
   heat: number
   isOverheat: boolean
+  voidResonance?: number
+  isAnomalyActive?: boolean
 }
 
 export interface AudioLockedOverlayProps {
