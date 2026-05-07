@@ -8,11 +8,7 @@ import { DEFAULT_GIG_MODIFIERS } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
 import { isForbiddenKey } from '../../utils/gameStateUtils'
 import { handleAddVenueBlacklist } from './socialReducer'
-import {
-  handleAddQuest,
-  handleAdvanceQuest,
-  handleCompleteQuest
-} from './questReducer'
+import { QuestLifecycle } from '../../domain/questLifecycle'
 import {
   QUEST_PROVE_YOURSELF,
   QUEST_EGO_MANAGEMENT,
@@ -80,7 +76,7 @@ const handleRecordBadShow = (state: GameState): GameState => {
     currentBadShows >= 3 &&
     !hasActiveQuest(nextState.activeQuests, QUEST_PROVE_YOURSELF)
   ) {
-    nextState = handleAddQuest(nextState, {
+    nextState = QuestLifecycle.addQuest(nextState, {
       id: QUEST_PROVE_YOURSELF,
       label: 'ui:quests.proveYourself.title',
       deadline: nextState.player.day + 20,
@@ -207,7 +203,7 @@ export const handleSetLastGigStats = (
       capacity !== null &&
       capacity <= 300
     ) {
-      nextState = handleAdvanceQuest(nextState, {
+      nextState = QuestLifecycle.advanceQuest(nextState, {
         questId: QUEST_APOLOGY_TOUR,
         amount: 1
       })
@@ -217,7 +213,7 @@ export const handleSetLastGigStats = (
       capacity !== null &&
       capacity <= 150
     ) {
-      nextState = handleAdvanceQuest(nextState, {
+      nextState = QuestLifecycle.advanceQuest(nextState, {
         questId: QUEST_PROVE_YOURSELF,
         amount: 1
       })
@@ -242,7 +238,7 @@ export const handleSetLastGigStats = (
     QUEST_EGO_MANAGEMENT
   )
   if (hasEgoQuest && nextState.band.harmony >= 50) {
-    nextState = handleCompleteQuest(nextState, {
+    nextState = QuestLifecycle.completeQuest(nextState, {
       questId: QUEST_EGO_MANAGEMENT
     })
   }
