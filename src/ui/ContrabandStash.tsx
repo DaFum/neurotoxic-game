@@ -6,7 +6,6 @@
 
 import { useCallback } from 'react'
 import type { ReactElement } from 'react'
-import PropTypes from 'prop-types'
 import type { UnknownRecord } from '../types/game'
 import {
   Modal,
@@ -69,7 +68,7 @@ const isBandMember = (value: unknown): value is BandMemberItem => {
 const isStashItem = (value: unknown): value is StashItem => {
   if (!value || typeof value !== 'object') return false
   const obj = value as Record<string, unknown>
-  return typeof obj.id === 'string'
+  return typeof obj.id === 'string' && typeof obj.description === 'string'
 }
 
 export const ContrabandStash = ({
@@ -92,6 +91,16 @@ export const ContrabandStash = ({
       handleUseItem?.(instanceId, item),
     [handleUseItem]
   )
+
+  if (
+    !Array.isArray(stash) ||
+    !Array.isArray(members) ||
+    typeof handleUseItem !== 'function' ||
+    typeof onClose !== 'function'
+  ) {
+    console.error('Invalid props passed to ContrabandStash')
+    return null
+  }
 
   return (
     <Modal
@@ -319,29 +328,3 @@ export const ContrabandStash = ({
   )
 }
 
-ContrabandStash.propTypes = {
-  stash: PropTypes.arrayOf(
-    PropTypes.shape({
-      instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      id: PropTypes.string.isRequired,
-      effectType: PropTypes.string,
-      rarity: PropTypes.string,
-      type: PropTypes.string,
-      duration: PropTypes.number,
-      imagePrompt: PropTypes.string,
-      description: PropTypes.string,
-      applied: PropTypes.bool,
-      applyOnAdd: PropTypes.bool
-    })
-  ),
-  members: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string
-    })
-  ),
-  selectedMember: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  setSelectedMember: PropTypes.func,
-  handleUseItem: PropTypes.func,
-  onClose: PropTypes.func
-}
