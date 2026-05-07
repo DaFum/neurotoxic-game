@@ -219,19 +219,6 @@ export const addContrabandHelper = (
 }
 
 /**
- * Handles adding contraband to the stash.
- * @param {Object} state - Current state
- * @param {Object} payload - { contrabandId, instanceId }
- * @returns {Object} Updated state
- */
-export const handleAddContraband = (
-  state: GameState,
-  payload: { contrabandId: string; instanceId?: string }
-): GameState => {
-  return addContrabandHelper(state, payload)
-}
-
-/**
  * Pure helper function to apply the effect of a contraband item.
  * @param {Object} band - Current band state
  * @param {Object} item - Contraband item to apply
@@ -396,26 +383,6 @@ export const handleUseContraband = (
  * @param {Object} action - Action with type and payload
  * @returns {Object} New state
  */
-export const handleUpdateNeurotoxicPedal = (
-  state: GameState,
-  payload: { isActive: boolean }
-): GameState => {
-  if (!payload || typeof payload !== 'object') {
-    return state
-  }
-
-  return {
-    ...state,
-    band: {
-      ...state.band,
-      inventory: {
-        ...(state.band.inventory || {}),
-        neurotoxicPedal: payload.isActive
-      }
-    }
-  }
-}
-
 export const handleToggleNeuroDecimator = (
   state: GameState,
   payload: { isActive: boolean }
@@ -461,11 +428,6 @@ export const bandReducer = (
   if (!('payload' in action)) return state
 
   switch (action.type) {
-    case ActionTypes.UPDATE_NEUROTOXIC_PEDAL:
-      return handleUpdateNeurotoxicPedal(
-        state,
-        action.payload as { isActive: boolean }
-      )
     case ActionTypes.TOGGLE_NEURO_DECIMATOR:
       return handleToggleNeuroDecimator(
         state,
@@ -480,11 +442,6 @@ export const bandReducer = (
       )
     case ActionTypes.CONSUME_ITEM:
       return handleConsumeItem(state, action.payload as string)
-    case ActionTypes.ADD_CONTRABAND:
-      return handleAddContraband(
-        state,
-        action.payload as { contrabandId: string; instanceId?: string }
-      )
     case ActionTypes.USE_CONTRABAND:
       return handleUseContraband(
         state,

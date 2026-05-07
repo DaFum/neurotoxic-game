@@ -127,18 +127,6 @@ export const createUpdateBandAction = (
   }
 }
 
-export const createUpdateNeurotoxicPedalAction = (
-  isActive: boolean | number
-): Extract<
-  GameAction,
-  { type: typeof ActionTypes.UPDATE_NEUROTOXIC_PEDAL }
-> => ({
-  type: ActionTypes.UPDATE_NEUROTOXIC_PEDAL,
-  payload: {
-    isActive: typeof isActive === 'number' ? isActive > 0 : Boolean(isActive)
-  }
-})
-
 export const toggleNeuroDecimator = (
   isActive: boolean
 ): Extract<
@@ -624,32 +612,6 @@ export const createAdvanceQuestAction = (
 })
 
 /**
- * Creates an action to complete a quest.
- * The `handleCompleteQuest` reducer processes it.
- * @param {string} questId - The ID of the quest to complete.
- * @returns {Object} Action object
- */
-export const createCompleteQuestAction = (
-  questId: string,
-  randomIdx: number | undefined = undefined
-): Extract<GameAction, { type: typeof ActionTypes.COMPLETE_QUEST }> => ({
-  type: ActionTypes.COMPLETE_QUEST,
-  payload: { questId, randomIdx }
-})
-
-/**
- * Creates an action to fail expired quests.
- * It utilizes the `handleFailQuests` reducer.
- * @returns {Object} Action object
- */
-export const createFailQuestsAction = (): Extract<
-  GameAction,
-  { type: typeof ActionTypes.FAIL_QUESTS }
-> => ({
-  type: ActionTypes.FAIL_QUESTS
-})
-
-/**
  * Creates an action to add an unlock to the state.
  * @param {string} unlockId - The ID of the unlock.
  * @returns {Object} Action object
@@ -659,21 +621,6 @@ export const createAddUnlockAction = (
 ): Extract<GameAction, { type: typeof ActionTypes.ADD_UNLOCK }> => ({
   type: ActionTypes.ADD_UNLOCK,
   payload: unlockId
-})
-
-/**
- * Creates an action to add a contraband item to the stash.
- * @param {string} contrabandId - The ID of the contraband item.
- * @returns {Object} Action object
- */
-export const createAddContrabandAction = (
-  contrabandId: string
-): Extract<GameAction, { type: typeof ActionTypes.ADD_CONTRABAND }> => ({
-  type: ActionTypes.ADD_CONTRABAND,
-  payload: {
-    contrabandId,
-    instanceId: getSafeUUID()
-  }
 })
 
 /**
