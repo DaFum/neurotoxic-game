@@ -1102,7 +1102,7 @@ const sanitizeActiveQuests = (value: unknown): GameState['activeQuests'] => {
     for (const key of ['label', 'rewardType', 'rewardFlag']) {
       if (typeof quest[key] === 'string') sanitized[key] = quest[key]
     }
-    for (const key of ['deadline', 'progress', 'required']) {
+    for (const key of ['deadline', 'progress', 'required', 'moneyReward']) {
       if (quest[key] === null && key === 'deadline') {
         sanitized.deadline = null
         continue

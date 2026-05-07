@@ -243,6 +243,7 @@ export interface QuestState extends UnknownRecord {
   rewardType?: string
   rewardData?: UnknownRecord
   rewardFlag?: string
+  moneyReward?: number
   failurePenalty?: UnknownRecord
 }
 

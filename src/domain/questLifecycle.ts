@@ -4,7 +4,8 @@ import {
   clampBandHarmony,
   clampPlayerMoney,
   calculateFameLevel,
-  clampControversyLevel
+  clampControversyLevel,
+  isPlainObject
 } from '../utils/gameStateUtils'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
@@ -43,7 +44,7 @@ export const QuestLifecycle = {
       const newMoney = clampPlayerMoney(previousMoney + quest.moneyReward)
       const appliedDelta = newMoney - previousMoney
       nextState.player = {
-        ...(nextState.player || {}),
+        ...(nextState.player ?? {}),
         money: newMoney
       }
       if (appliedDelta !== 0) {
@@ -61,7 +62,7 @@ export const QuestLifecycle = {
       nextState.band = {
         ...nextState.band,
         inventory: {
-          ...(nextState.band?.inventory || {}),
+          ...(nextState.band?.inventory ?? {}),
           [itemKey]: true
         }
       }
@@ -90,7 +91,7 @@ export const QuestLifecycle = {
         })
       }
     } else if (quest.rewardType === 'skill_point') {
-      const originalMembers = nextState.band?.members || []
+      const originalMembers = nextState.band?.members ?? []
       if (originalMembers.length > 0) {
         const memberIdx =
           typeof quest.rewardData?.memberIndex === 'number'
@@ -104,7 +105,7 @@ export const QuestLifecycle = {
 
         const members = originalMembers.map((m, idx) => {
           if (idx === memberIdx) {
-            const baseStats = (m.baseStats || {}) as Record<string, unknown>
+            const baseStats = (m.baseStats ?? {}) as Record<string, unknown>
             const currentSkill = m.baseStats
               ? Number((m.baseStats as Record<string, unknown>).skill)
               : Number((m as Record<string, unknown>).skill)
@@ -166,7 +167,7 @@ export const QuestLifecycle = {
     }
 
     // Toast
-    nextState.toasts = [...(nextState.toasts || []), ...generatedToasts]
+    nextState.toasts = [...(nextState.toasts ?? []), ...generatedToasts]
 
     // Hardcoded old quest logic
     if (quest.id === QUEST_PROVE_YOURSELF) {
@@ -225,7 +226,9 @@ export const QuestLifecycle = {
     for (let i = 0; i < nextState.activeQuests.length; i++) {
       const quest = nextState.activeQuests[i]
       if (!quest) continue
-      const penalty = quest.failurePenalty as Record<string, unknown> | undefined
+      const penalty = isPlainObject(quest.failurePenalty)
+        ? (quest.failurePenalty as Record<string, unknown>)
+        : undefined
 
       if (
         typeof quest.deadline === 'number' &&
@@ -233,9 +236,9 @@ export const QuestLifecycle = {
       ) {
         hasExpired = true
         if (penalty) {
-          const socialPenalty = penalty.social as
-            | Record<string, unknown>
-            | undefined
+          const socialPenalty = isPlainObject(penalty.social)
+            ? (penalty.social as Record<string, unknown>)
+            : undefined
           if (socialPenalty?.controversyLevel != null) {
             // Deep clone before mutating
             nextState.social = { ...nextState.social }
@@ -244,10 +247,12 @@ export const QuestLifecycle = {
               ? controversyDelta
               : 0
             nextState.social.controversyLevel = clampControversyLevel(
-              (nextState.social.controversyLevel || 0) + validPenalty
+              (nextState.social.controversyLevel ?? 0) + validPenalty
             )
           }
-          const bandPenalty = penalty.band as Record<string, unknown> | undefined
+          const bandPenalty = isPlainObject(penalty.band)
+            ? (penalty.band as Record<string, unknown>)
+            : undefined
           if (bandPenalty?.harmony != null) {
             // Deep clone before mutating
             nextState.band = { ...nextState.band }
@@ -273,7 +278,7 @@ export const QuestLifecycle = {
 
     nextState.activeQuests = newActiveQuests
     if (newToasts.length > 0) {
-      nextState.toasts = [...(nextState.toasts || []), ...newToasts]
+      nextState.toasts = [...(nextState.toasts ?? []), ...newToasts]
     }
 
     return nextState
