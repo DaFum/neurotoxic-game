@@ -219,19 +219,6 @@ export const addContrabandHelper = (
 }
 
 /**
- * Handles adding contraband to the stash.
- * @param {Object} state - Current state
- * @param {Object} payload - { contrabandId, instanceId }
- * @returns {Object} Updated state
- */
-export const handleAddContraband = (
-  state: GameState,
-  payload: { contrabandId: string; instanceId?: string }
-): GameState => {
-  return addContrabandHelper(state, payload)
-}
-
-/**
  * Pure helper function to apply the effect of a contraband item.
  * @param {Object} band - Current band state
  * @param {Object} item - Contraband item to apply
@@ -455,11 +442,6 @@ export const bandReducer = (
       )
     case ActionTypes.CONSUME_ITEM:
       return handleConsumeItem(state, action.payload as string)
-    case ActionTypes.ADD_CONTRABAND:
-      return handleAddContraband(
-        state,
-        action.payload as { contrabandId: string; instanceId?: string }
-      )
     case ActionTypes.USE_CONTRABAND:
       return handleUseContraband(
         state,

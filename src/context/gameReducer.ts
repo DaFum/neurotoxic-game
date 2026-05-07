@@ -46,11 +46,7 @@ import {
   handleClinicEnhance,
   handleBloodBankDonate
 } from './reducers/clinicReducer'
-import {
-  handleAddQuest,
-  handleAdvanceQuest,
-  handleFailQuests
-} from './reducers/questReducer'
+import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
 import {
   handleLoadGame,
   handleResetState,
@@ -77,8 +73,6 @@ export { ActionTypes }
  */
 export const BAND_ACTIONS = [
   ActionTypes.UPDATE_BAND,
-  ActionTypes.UPDATE_NEUROTOXIC_PEDAL,
-  ActionTypes.ADD_CONTRABAND,
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
   ActionTypes.UNLOCK_TRAIT
@@ -149,7 +143,6 @@ const reducerMap = {
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
-  [ActionTypes.FAIL_QUESTS]: handleFailQuests,
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
