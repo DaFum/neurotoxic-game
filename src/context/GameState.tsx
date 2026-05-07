@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
 import { pickRandomContraband, computeDropChance } from '../utils/contrabandUtils'
-import { CONTRABAND_BY_ID } from '../data/contraband'
 import { handleError, StateError } from '../utils/errorHandler'
 import { canAddContraband } from './reducers/bandReducer'
 import { getUnlocks } from '../utils/unlockManager'
@@ -636,6 +635,9 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       )
 
       // --- Contraband drop logic ---
+      // Note: `stateRef.current` holds the pre-travel state here since the `COMPLETE_TRAVEL_MINIGAME`
+      // dispatch hasn't re-rendered yet. This ensures `luck` is calculated deterministically
+      // based on the state before any travel rewards or trait unlocks are applied.
       const luck = stateRef.current.band?.luck || 0
       const chance = computeDropChance(undefined, luck)
 

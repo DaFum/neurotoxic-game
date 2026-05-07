@@ -190,20 +190,19 @@ export const addContrabandHelper = (
         stacks: currentStacks + 1
       }
     })
-    return { ...state, band: newBand }
-  }
+  } else {
+    const newInstance = {
+      ...item,
+      instanceId,
+      remainingDuration: (item.duration as number | undefined) ?? null,
+      applied: !!item.applyOnAdd,
+      stacks: item.stackable ? 1 : undefined
+    }
 
-  const newInstance = {
-    ...item,
-    instanceId,
-    remainingDuration: (item.duration as number | undefined) ?? null,
-    applied: !!item.applyOnAdd,
-    stacks: item.stackable ? 1 : undefined
+    newBand.stash = Object.assign(Object.create(null), currentStash, {
+      [item.id]: newInstance
+    })
   }
-
-  newBand.stash = Object.assign(Object.create(null), currentStash, {
-    [item.id]: newInstance
-  })
 
   if (item.applyOnAdd && item.type === 'equipment') {
     if (item.effectType === 'luck') {
