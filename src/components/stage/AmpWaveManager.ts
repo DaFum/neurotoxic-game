@@ -45,7 +45,8 @@ export class AmpWaveManager {
     currentFreq: number,
     time: number,
     isOverdriveActive: boolean = false,
-    isOverheat: boolean = false
+    isOverheat: boolean = false,
+    isAnomalyActive: boolean = false
   ) {
     if (!this.waveGraphics || !this.app || !this.app.screen) return
 
@@ -62,9 +63,11 @@ export class AmpWaveManager {
     const diff = Math.abs(targetFreq - currentFreq)
     const isMatching = diff <= AMP_CALIBRATION_TOLERANCE
 
-    const targetColor = isMatching
-      ? getPixiColorFromToken('--toxic-green')
-      : getPixiColorFromToken('--blood-red')
+    const targetColor = isAnomalyActive
+      ? getPixiColorFromToken('--electric-blue')
+      : isMatching
+        ? getPixiColorFromToken('--toxic-green')
+        : getPixiColorFromToken('--blood-red')
 
     // Draw Target Wave
     const targetPeriod = width / (targetFreq / 50 + 1)
@@ -74,6 +77,9 @@ export class AmpWaveManager {
     if (isOverheat) {
       targetAmplitude = 150
       targetJitter = 40
+    } else if (isAnomalyActive) {
+      targetAmplitude = 200
+      targetJitter = 50
     }
 
     this.drawSineWave(
@@ -84,9 +90,9 @@ export class AmpWaveManager {
       targetAmplitude,
       targetJitter,
       {
-        width: isOverheat ? 4 : 2,
+        width: isAnomalyActive ? 6 : isOverheat ? 4 : 2,
         color: targetColor,
-        alpha: isMatching ? 0.8 : isOverheat ? 0.9 : 0.5
+        alpha: isAnomalyActive ? 1.0 : isMatching ? 0.8 : isOverheat ? 0.9 : 0.5
       }
     )
 
@@ -102,6 +108,11 @@ export class AmpWaveManager {
       currentAmplitude = 120
       currentJitter = 60
       currentWidth = 6
+    } else if (isAnomalyActive) {
+      currentColor = getPixiColorFromToken('--electric-blue')
+      currentAmplitude = 250
+      currentJitter = 25
+      currentWidth = 10
     } else if (isOverdriveActive) {
       currentColor = getPixiColorFromToken('--warning-yellow')
       currentAmplitude = 180

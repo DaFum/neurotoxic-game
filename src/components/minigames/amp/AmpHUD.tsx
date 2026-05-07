@@ -6,8 +6,10 @@ export const AmpHUD = memo(function AmpHUD({
   timeLeft,
   score,
   heat,
-  isOverheat
-}: AmpHUDProps) {
+  isOverheat,
+  voidResonance = 0,
+  isAnomalyActive = false
+}: AmpHUDProps & { voidResonance?: number; isAnomalyActive?: boolean }) {
   const { t } = useTranslation(['ui'])
 
   return (
@@ -38,6 +40,27 @@ export const AmpHUD = memo(function AmpHUD({
           </span>
           <span className='text-toxic-green'>{Math.floor(score)}%</span>
         </div>
+
+        {(voidResonance > 0 || isAnomalyActive) && (
+          <div className='mt-2 w-48'>
+            <div className='flex justify-between items-center mb-1'>
+              <span className={`uppercase text-xs ${isAnomalyActive ? 'text-electric-blue animate-pulse font-bold' : 'text-ash-gray'}`}>
+                {isAnomalyActive
+                  ? t('ui:minigames.amp.hud.anomaly', { defaultValue: 'VOID ANOMALY DETECTED' })
+                  : t('ui:minigames.amp.hud.resonance', { defaultValue: 'VOID RESONANCE' })}
+              </span>
+              <span className='text-electric-blue text-xs'>
+                {Math.floor(voidResonance)}%
+              </span>
+            </div>
+            <div className='h-2 w-full bg-void-black border border-electric-blue overflow-hidden shadow-[0_0_5px_var(--color-electric-blue)]'>
+              <div
+                className={`h-full bg-electric-blue transition-all duration-100 ${isAnomalyActive ? 'animate-pulse' : ''}`}
+                style={{ width: `${voidResonance}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         <div className='mt-2 w-48'>
           <div className='flex justify-between items-center mb-1'>

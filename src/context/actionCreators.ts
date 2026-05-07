@@ -485,16 +485,18 @@ export const createStartAmpCalibrationAction = (
 /**
  * Action creator to complete Amp Calibration minigame
  * @param {number} score
+ * @param {number} voidResonance
  * @returns {Object} Action object
  */
 export const createCompleteAmpCalibrationAction = (
-  score: number
+  score: number,
+  voidResonance: number = 0
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
 > => ({
   type: ActionTypes.COMPLETE_AMP_CALIBRATION,
-  payload: { score }
+  payload: { score, voidResonance }
 })
 
 export const createSpawnRivalBandAction = (): Extract<

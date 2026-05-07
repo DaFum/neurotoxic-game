@@ -926,13 +926,19 @@ export const calculateRoadieMinigameResult = (
  */
 export const calculateAmpCalibrationResult = (
   score: unknown,
-  bandState: Pick<BandState, 'members'> | null | undefined
+  bandState: Pick<BandState, 'members'> | null | undefined,
+  voidResonance: number = 0
 ) => {
   let numScore = Number(score)
   if (!Number.isFinite(numScore)) {
     numScore = 0
   }
+  let numResonance = Number(voidResonance)
+  if (!Number.isFinite(numResonance)) {
+    numResonance = 0
+  }
   const safeScore = Math.max(0, Math.min(100, numScore))
+  const safeResonance = Math.max(0, numResonance)
   let stress = 0
   let reward = 0
 
@@ -948,6 +954,9 @@ export const calculateAmpCalibrationResult = (
       reward = Math.floor(reward * 1.5)
     }
   }
+
+  // Void Resonance converts to pure money at a 2x rate
+  reward += Math.floor(safeResonance * 2)
 
   return { stress, reward }
 }

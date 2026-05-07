@@ -15,6 +15,7 @@ export class AmpStageController extends BaseStageController {
   time: number
   isOverdriveActive: boolean
   isOverheat: boolean
+  isAnomalyActive: boolean
 
   constructor(options: StageControllerOptions<AmpStageOptions>) {
     super(options)
@@ -26,6 +27,7 @@ export class AmpStageController extends BaseStageController {
     this.time = 0
     this.isOverdriveActive = false
     this.isOverheat = false
+    this.isAnomalyActive = false
   }
 
   async setup() {
@@ -41,7 +43,8 @@ export class AmpStageController extends BaseStageController {
       this.currentFreq,
       this.time,
       this.isOverdriveActive,
-      this.isOverheat
+      this.isOverheat,
+      this.isAnomalyActive
     )
   }
 
@@ -71,6 +74,9 @@ export class AmpStageController extends BaseStageController {
       if (Object.hasOwn(state, 'isOverheat')) {
         this.isOverheat = Boolean(state.isOverheat)
       }
+      if (Object.hasOwn(state, 'isAnomalyActive')) {
+        this.isAnomalyActive = Boolean(state.isAnomalyActive)
+      }
     }
   }
 
@@ -90,7 +96,8 @@ export class AmpStageController extends BaseStageController {
       this.currentFreq,
       this.time,
       this.isOverdriveActive,
-      this.isOverheat
+      this.isOverheat,
+      this.isAnomalyActive
     )
   }
 
@@ -101,7 +108,8 @@ export class AmpStageController extends BaseStageController {
       this.currentFreq,
       this.time,
       this.isOverdriveActive,
-      this.isOverheat
+      this.isOverheat,
+      this.isAnomalyActive
     )
   }
 
