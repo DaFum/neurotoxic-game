@@ -4,7 +4,7 @@ import {
   handleUpdateBand,
   handleConsumeItem,
   handleUseContraband,
-  addContrabandHelper
+  handleAddContraband
 } from '../../src/context/reducers/bandReducer'
 
 describe('bandReducer Security - Prototype Pollution', () => {
@@ -114,7 +114,7 @@ describe('bandReducer Security - Prototype Pollution', () => {
     })
   })
 
-  it('should reject forbidden keys in addContrabandHelper', () => {
+  it('should reject forbidden keys in handleAddContraband', () => {
     const baseState = {
       band: {
         stash: {}
@@ -124,7 +124,7 @@ describe('bandReducer Security - Prototype Pollution', () => {
     const forbiddenKeys = ['__proto__', 'constructor', 'prototype']
 
     forbiddenKeys.forEach(key => {
-      const nextState = addContrabandHelper(baseState, { contrabandId: key })
+      const nextState = handleAddContraband(baseState, { contrabandId: key })
       assert.strictEqual(nextState, baseState, `Key ${key} should be blocked`)
       assert.strictEqual(
         Object.prototype.test,
@@ -134,7 +134,7 @@ describe('bandReducer Security - Prototype Pollution', () => {
     })
   })
 
-  it('should reject empty or non-string keys in addContrabandHelper', () => {
+  it('should reject empty or non-string keys in handleAddContraband', () => {
     const baseState = {
       band: {
         stash: {}
@@ -144,7 +144,7 @@ describe('bandReducer Security - Prototype Pollution', () => {
     const invalidKeys = ['', null, undefined, 123, {}, []]
 
     invalidKeys.forEach(key => {
-      const nextState = addContrabandHelper(baseState, { contrabandId: key })
+      const nextState = handleAddContraband(baseState, { contrabandId: key })
       assert.strictEqual(nextState, baseState, `Key ${key} should be rejected`)
     })
   })

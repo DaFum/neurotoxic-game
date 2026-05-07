@@ -37,7 +37,10 @@ import {
   createAddVenueBlacklistAction,
   createAddQuestAction,
   createAdvanceQuestAction,
+  createCompleteQuestAction,
+  createFailQuestsAction,
   createAddUnlockAction,
+  createAddContrabandAction,
   createUseContrabandAction,
   createClinicHealAction,
   createClinicEnhanceAction,
@@ -419,7 +422,24 @@ describe('Action Creators', () => {
     })
   })
 
+  describe('createCompleteQuestAction', () => {
+    it('creates correct action', () => {
+      const action = createCompleteQuestAction('quest_1', 2)
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.COMPLETE_QUEST,
+        payload: { questId: 'quest_1', randomIdx: 2 }
+      })
+    })
+  })
 
+  describe('createFailQuestsAction', () => {
+    it('creates correct action', () => {
+      const action = createFailQuestsAction()
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.FAIL_QUESTS
+      })
+    })
+  })
 
   describe('createAddUnlockAction', () => {
     it('creates correct action', () => {
@@ -431,6 +451,14 @@ describe('Action Creators', () => {
     })
   })
 
+  describe('createAddContrabandAction', () => {
+    it('creates correct action', () => {
+      const action = createAddContrabandAction('smoke')
+      assert.strictEqual(action.type, ActionTypes.ADD_CONTRABAND)
+      assert.strictEqual(action.payload.contrabandId, 'smoke')
+      assert.ok(action.payload.instanceId.length > 0)
+    })
+  })
 
   describe('createUseContrabandAction', () => {
     it('creates correct action', () => {

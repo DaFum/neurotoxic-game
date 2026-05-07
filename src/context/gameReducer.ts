@@ -49,7 +49,7 @@ import {
 import {
   handleAddQuest,
   handleAdvanceQuest,
-  handleCompleteQuest
+  handleFailQuests
 } from './reducers/questReducer'
 import {
   handleLoadGame,
@@ -77,6 +77,8 @@ export { ActionTypes }
  */
 export const BAND_ACTIONS = [
   ActionTypes.UPDATE_BAND,
+  ActionTypes.UPDATE_NEUROTOXIC_PEDAL,
+  ActionTypes.ADD_CONTRABAND,
   ActionTypes.USE_CONTRABAND,
   ActionTypes.CONSUME_ITEM,
   ActionTypes.UNLOCK_TRAIT
@@ -147,6 +149,7 @@ const reducerMap = {
   [ActionTypes.ADD_VENUE_BLACKLIST]: handleAddVenueBlacklist,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,
+  [ActionTypes.FAIL_QUESTS]: handleFailQuests,
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,

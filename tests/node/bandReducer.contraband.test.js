@@ -1,17 +1,17 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  addContrabandHelper,
+  handleAddContraband,
   handleUseContraband
 } from '../../src/context/reducers/bandReducer'
 import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
 
 describe('bandReducer - Contraband', () => {
-  describe('addContrabandHelper', () => {
+  describe('handleAddContraband', () => {
     it('adds an item to the stash', () => {
       const state = { band: { ...DEFAULT_BAND_STATE, stash: {} } }
       const payload = { contrabandId: 'c_void_energy', instanceId: 'test-123' }
-      const newState = addContrabandHelper(state, payload)
+      const newState = handleAddContraband(state, payload)
       assert.equal(Object.keys(newState.band.stash).length, 1)
       assert.equal(Object.values(newState.band.stash)[0].instanceId, 'test-123')
       assert.equal(Object.values(newState.band.stash)[0].applied, false)
@@ -23,7 +23,7 @@ describe('bandReducer - Contraband', () => {
         contrabandId: 'c_rusty_strings',
         instanceId: 'test-456'
       } // luck +5
-      const newState = addContrabandHelper(state, payload)
+      const newState = handleAddContraband(state, payload)
       assert.equal(newState.band.luck, 5)
       assert.equal(Object.values(newState.band.stash)[0].applied, true)
     })
@@ -40,7 +40,7 @@ describe('bandReducer - Contraband', () => {
         contrabandId: 'c_amped_synth',
         instanceId: 'test-synth'
       } // staminaMax +10
-      const newState = addContrabandHelper(state, payload)
+      const newState = handleAddContraband(state, payload)
       assert.equal(newState.band.members[0].staminaMax, 110)
       assert.equal(Object.values(newState.band.stash)[0].applied, true)
     })
