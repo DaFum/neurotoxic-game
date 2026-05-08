@@ -1532,5 +1532,8 @@
   "offline.needRefresh": "New content available, click on reload button to update.",
   "offline.reload": "Reload",
   "offline.close": "Close",
-  "travel.rivalEncounter": "Your rival band, {{rivalName}}, is in town!"
+  "travel.rivalEncounter": "Your rival band, {{rivalName}}, is in town!",
+  "minigames.amp.hud.anomaly": "VOID ANOMALY DETECTED",
+  "minigames.amp.hud.resonance": "VOID RESONANCE",
+  "minigames.amp.completion.resonance": "Void Resonance Captured: {{voidResonance}}%"
 }

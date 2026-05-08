@@ -22,7 +22,9 @@ export const AmpCalibrationScene = () => {
     isOverdriveActive,
     setIsOverdriveActive,
     heat,
-    isOverheat
+    isOverheat,
+    voidResonance,
+    isAnomalyActive
   } = useAmpLogic()
 
   const { changeScene } = useGameState()
@@ -42,12 +44,25 @@ export const AmpCalibrationScene = () => {
   }, [changeScene])
 
   const renderCompletionStats = useCallback(
-    () =>
-      t('ui:minigames.amp.completion.stability', {
-        defaultValue: `Stability Achieved: ${Math.floor(score)}%`,
-        score: Math.floor(score)
-      }),
-    [t, score]
+    () => (
+      <div className='flex flex-col gap-2'>
+        <div>
+          {t('ui:minigames.amp.completion.stability', {
+            defaultValue: `Stability Achieved: ${Math.floor(score)}%`,
+            score: Math.floor(score)
+          })}
+        </div>
+        {voidResonance > 0 && (
+          <div className='text-electric-blue font-bold animate-pulse'>
+            {t('ui:minigames.amp.completion.resonance', {
+              defaultValue: `Void Resonance Captured: ${Math.floor(voidResonance)}%`,
+              voidResonance: Math.floor(voidResonance)
+            })}
+          </div>
+        )}
+      </div>
+    ),
+    [t, score, voidResonance]
   )
 
   return (
@@ -69,6 +84,8 @@ export const AmpCalibrationScene = () => {
         score={score}
         heat={heat}
         isOverheat={isOverheat}
+        voidResonance={voidResonance}
+        isAnomalyActive={isAnomalyActive}
       />
       <AmpControls
         dialValue={dialValue}
