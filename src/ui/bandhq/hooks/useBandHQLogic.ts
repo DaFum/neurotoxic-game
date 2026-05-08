@@ -16,7 +16,7 @@ import type {
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
 
 type StashEntry = {
-  stacks?: number
+  stacks?: number | null
 }
 
 const isStashEntry = (entry: unknown): entry is StashEntry => {
@@ -24,7 +24,7 @@ const isStashEntry = (entry: unknown): entry is StashEntry => {
     entry !== null &&
     typeof entry === 'object' &&
     Object.hasOwn(entry, 'stacks') &&
-    typeof (entry as Record<string, unknown>).stacks === 'number'
+    (typeof (entry as Record<string, unknown>).stacks === 'number' || (entry as Record<string, unknown>).stacks === null)
   )
 }
 

@@ -51,11 +51,9 @@ export const handleCompleteTravelMinigame = (
     damageTaken: number
     itemsCollected: unknown[]
     rngValue?: number
-    contrabandId?: string
-    instanceId?: string
   }
 ): GameState => {
-  const { damageTaken, itemsCollected, rngValue, contrabandId, instanceId } =
+  const { damageTaken, itemsCollected, rngValue } =
     payload
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
@@ -174,18 +172,19 @@ export const handleCompleteTravelMinigame = (
   if (rngValue !== undefined && rngValue < chance) {
     // Generate inner random value deterministically based on rngValue
     // A simple hash function to derive a second deterministic number [0,1)
-    const seed = Math.sin(rngValue * 9999) * 10000;
-    const innerRng = seed - Math.floor(seed);
+    let seedInt = Math.floor(rngValue * 4294967296); // 2**32
+    seedInt = (seedInt * 1664525 + 1013904223) >>> 0; // LCG
+    const innerRng = seedInt / 4294967296;
     const mockRng = () => innerRng;
     const contrabandId = pickRandomContraband(mockRng);
     const instanceId = `drop-${rngValue}`;
 
-    if (contrabandId && instanceId) {
+    if (contrabandId) {
     // Call addContrabandHelper directly to leverage its logic
     const preStashLength = newState.band.stash
       ? Object.keys(newState.band.stash).length
       : 0
-    const preStashItem = newState.band.stash
+    const preStashItem = newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
       ? (newState.band.stash[contrabandId] as
           | Record<string, unknown>
           | undefined)
@@ -197,9 +196,9 @@ export const handleCompleteTravelMinigame = (
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band?.stash?.[contrabandId] as
-      | Record<string, unknown>
-      | undefined
+    const postItem = newState.band?.stash && Object.hasOwn(newState.band.stash, contrabandId)
+      ? (newState.band.stash[contrabandId] as Record<string, unknown>)
+      : undefined
     const postStacks = postItem
       ? (postItem.stacks as number | undefined) || 0
       : 0

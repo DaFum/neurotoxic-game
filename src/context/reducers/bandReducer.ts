@@ -143,9 +143,9 @@ export const addContrabandHelper = (
   const currentStash = newBand.stash || {}
 
   // Handle stackable logic and uniqueness
-  const existingItem = currentStash[item.id] as
-    | Record<string, unknown>
-    | undefined
+  const existingItem = Object.hasOwn(currentStash, item.id)
+    ? (currentStash[item.id] as Record<string, unknown>)
+    : undefined
   if (existingItem) {
     if (!item.stackable) {
       return state // Don't add duplicate non-stackable items
@@ -171,7 +171,7 @@ export const addContrabandHelper = (
     instanceId,
     remainingDuration: (item.duration as number | undefined) ?? null,
     applied: !!item.applyOnAdd,
-    stacks: item.stackable ? 1 : undefined
+    stacks: item.stackable ? 1 : null
   }
 
   newBand.stash = Object.assign(Object.create(null), currentStash, {

@@ -8,6 +8,7 @@ import assert from 'node:assert'
 import {
   handleUpdatePlayer
 } from '../../src/context/reducers/playerReducer.ts'
+import { gameReducer as playerReducer } from '../../src/context/gameReducer.ts'
 
 describe('playerReducer', () => {
 
@@ -79,6 +80,7 @@ describe('playerReducer', () => {
             value: { hacked: true },
             enumerable: true
           })
+          assert(Object.hasOwn(obj, '__proto__'))
           return obj
         }))
       ]
@@ -96,6 +98,37 @@ describe('playerReducer', () => {
           assert.strictEqual(newState, initialState)
           assert.strictEqual(newState.player.money, 100)
         })
+      })
+    })
+
+    describe('Dispatch Paths', () => {
+      it('should delegate UPDATE_PLAYER action correctly', () => {
+        const initialState = {
+          player: { money: 100, fame: 50, day: 1 }
+        }
+
+        const action = {
+          type: 'UPDATE_PLAYER',
+          payload: { money: 200 }
+        }
+
+        const newState = playerReducer(initialState, action)
+        assert.strictEqual(newState.player.money, 200)
+        assert.strictEqual(newState.player.fame, 50)
+      })
+
+      it('should ignore UNKNOWN_ACTION correctly', () => {
+        const initialState = {
+          player: { money: 100, fame: 50, day: 1 },
+          band: { members: [] }
+        }
+
+        const action = {
+          type: 'UNKNOWN_ACTION',
+          payload: { money: 200 }
+        }
+
+        assert.throws(() => playerReducer(initialState, action), /Unhandled action type: UNKNOWN_ACTION/)
       })
     })
   })
