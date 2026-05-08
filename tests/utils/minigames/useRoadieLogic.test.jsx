@@ -5,6 +5,7 @@ import {
   handlePickup,
   handleDelivery
 } from '../../../src/hooks/minigames/useRoadieLogic.ts'
+import { ROADIE_GRID_HEIGHT } from '../../../src/hooks/minigames/minigameConstants.ts'
 
 vi.mock('../../../src/utils/audio/AudioManager.ts', () => ({
   audioManager: { playSFX: vi.fn() }
@@ -80,7 +81,7 @@ describe('useRoadieLogic - Contraband Mechanics and Minigame Rules', () => {
     expect(game.isGameOver).toBe(false)
   })
 
-  test('handlePickup picks up next item if at y=0 and not carrying', () => {
+  test('handlePickup picks up next item if at y=0 and not carrying using shift', () => {
     const game = {
       carrying: null,
       playerPos: { x: 5, y: 0 },
@@ -92,7 +93,7 @@ describe('useRoadieLogic - Contraband Mechanics and Minigame Rules', () => {
 
     handlePickup(game)
 
-    expect(game.carrying.type).toBe('AMP')
+    expect(game.carrying.type).toBe('CONTRABAND')
     expect(game.itemsToDeliver.length).toBe(1)
   })
 
@@ -103,16 +104,15 @@ describe('useRoadieLogic - Contraband Mechanics and Minigame Rules', () => {
     }
 
     const game = {
-      carrying: { type: 'CONTRABAND', weight: 1.5, contrabandCount: 1 },
-      playerPos: { x: 5, y: 7 }, // ROADIE_GRID_HEIGHT is 8 (8-1=7)
+      carrying: { type: 'CONTRABAND', weight: 1.5 },
+      playerPos: { x: 5, y: ROADIE_GRID_HEIGHT - 1 },
       itemsDelivered: [],
       itemsToDeliver: [], // Empty means game over upon delivery
       equipmentDamage: 25,
-      isGameOver: false,
-      contrabandCount: 0 // Injected field for Contraband logic
+      isGameOver: false
     }
 
-    // handleDelivery checks if y === ROADIE_GRID_HEIGHT - 1 (which is 7)
+    // handleDelivery checks if y === ROADIE_GRID_HEIGHT - 1
     handleDelivery(game, onGameOver)
 
     expect(game.itemsDelivered.length).toBe(1)

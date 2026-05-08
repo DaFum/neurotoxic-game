@@ -117,7 +117,7 @@ export function handlePickup(game) {
     !game.carrying &&
     game.itemsToDeliver.length > 0
   ) {
-    game.carrying = game.itemsToDeliver.pop()
+    game.carrying = game.itemsToDeliver.shift()
     audioManager.playSFX('pickup')
   }
 }
