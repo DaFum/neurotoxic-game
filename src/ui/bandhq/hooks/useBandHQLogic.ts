@@ -7,26 +7,15 @@ import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband'
 import { handleError, GameError, StateError } from '../../../utils/errorHandler'
+import { isStashEntry } from '../../../utils/gameStateUtils'
 import type {
   BandState,
   PlayerState,
   ToastPayload,
-  TradeVoidItemPayload
+  TradeVoidItemPayload,
+  StashEntry
 } from '../../../types/game'
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
-
-type StashEntry = {
-  stacks?: number | null
-}
-
-const isStashEntry = (entry: unknown): entry is StashEntry => {
-  return (
-    entry !== null &&
-    typeof entry === 'object' &&
-    Object.hasOwn(entry, 'stacks') &&
-    (typeof (entry as Record<string, unknown>).stacks === 'number' || (entry as Record<string, unknown>).stacks === null)
-  )
-}
 
 type BandHQLogicParams = {
   player: PlayerState

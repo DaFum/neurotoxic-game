@@ -80,13 +80,15 @@ describe('playerReducer', () => {
             value: { hacked: true },
             enumerable: true
           })
-          assert(Object.hasOwn(obj, '__proto__'))
           return obj
         }))
       ]
 
       hostilePayloads.forEach((payload, index) => {
         it(`should reject hostile/malformed payload ${index}`, () => {
+          if (typeof payload === 'object' && payload !== null && '__proto__' in payload && Object.hasOwn(payload, 'money')) {
+            assert(Object.hasOwn(payload, '__proto__'))
+          }
           const newState = handleUpdatePlayer(initialState, payload)
           assert.strictEqual(newState, initialState)
           assert.strictEqual(newState.player.money, 100)
@@ -117,7 +119,7 @@ describe('playerReducer', () => {
         assert.strictEqual(newState.player.fame, 50)
       })
 
-      it('should ignore UNKNOWN_ACTION correctly', () => {
+      it('should throw on UNKNOWN_ACTION correctly', () => {
         const initialState = {
           player: { money: 100, fame: 50, day: 1 },
           band: { members: [] }

@@ -14,6 +14,17 @@ export const clampNonNegative = (value: number): number => {
   return Math.max(0, value)
 }
 
+import type { StashEntry } from '../types/game'
+
+export const isStashEntry = (entry: unknown): entry is StashEntry => {
+  return (
+    entry !== null &&
+    typeof entry === 'object' &&
+    Object.hasOwn(entry, 'stacks') &&
+    (typeof (entry as Record<string, unknown>).stacks === 'number' || (entry as Record<string, unknown>).stacks === null)
+  )
+}
+
 export const isPlainObject = (
   value: unknown
 ): value is Record<string, unknown> =>
