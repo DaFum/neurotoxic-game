@@ -83,7 +83,7 @@ export const useBandHQLogic = ({
   const isVoidItemOwned = useCallback(
     (item: VoidTraderItem) => {
       if (item.stackable) return false
-      return !!(band.stash && band.stash[item.id])
+      return !!(band.stash && Object.hasOwn(band.stash, item.id))
     },
     [band.stash]
   )
@@ -92,7 +92,7 @@ export const useBandHQLogic = ({
     (item: VoidTraderItem) => {
       const fameCost =
         (item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined) ?? 1000
-      const stashEntry = band.stash?.[item.id]
+      const stashEntry = band.stash && Object.hasOwn(band.stash, item.id) ? band.stash[item.id] : undefined
       const currentQuantity = isStashEntry(stashEntry)
         ? (stashEntry.stacks ?? 0)
         : 0

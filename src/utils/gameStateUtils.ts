@@ -1,7 +1,7 @@
 import { hasTrait } from './traitUtils'
 import { EXPENSE_CONSTANTS } from './economyEngine'
 import { logger } from './logger'
-import type { BandMember, GameState } from '../types/game'
+import type { BandMember, GameState, StashEntry } from '../types/game'
 
 /**
  * Clamps a value to be at least 0.
@@ -13,8 +13,6 @@ export const clampNonNegative = (value: number): number => {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, value)
 }
-
-import type { StashEntry } from '../types/game'
 
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
   return (

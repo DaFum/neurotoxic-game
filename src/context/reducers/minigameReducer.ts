@@ -190,7 +190,7 @@ export const handleCompleteTravelMinigame = (
           | undefined)
       : undefined
     const preStacks = preStashItem
-      ? (preStashItem.stacks as number | undefined) || 0
+      ? ((preStashItem.stacks as number | null | undefined) ?? 0)
       : 0
 
     newState = addContrabandHelper(newState, { contrabandId, instanceId })
@@ -200,7 +200,7 @@ export const handleCompleteTravelMinigame = (
       ? (newState.band.stash[contrabandId] as Record<string, unknown>)
       : undefined
     const postStacks = postItem
-      ? (postItem.stacks as number | undefined) || 0
+      ? ((postItem.stacks as number | null | undefined) ?? 0)
       : 0
     const postStashLength = Object.keys(newState.band?.stash || {}).length
 
@@ -214,7 +214,7 @@ export const handleCompleteTravelMinigame = (
         ...newState.toasts,
         {
           id: `toast-${instanceId}`,
-          message: `ui:contraband.dropped`, // Use an i18n key or simple text
+          messageKey: 'ui:contraband.dropped',
           type: 'info' // Could be 'success'
         }
       ]

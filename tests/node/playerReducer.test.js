@@ -8,7 +8,7 @@ import assert from 'node:assert'
 import {
   handleUpdatePlayer
 } from '../../src/context/reducers/playerReducer.ts'
-import { gameReducer as playerReducer } from '../../src/context/gameReducer.ts'
+import { gameReducer } from '../../src/context/gameReducer.ts'
 
 describe('playerReducer', () => {
 
@@ -114,7 +114,7 @@ describe('playerReducer', () => {
           payload: { money: 200 }
         }
 
-        const newState = playerReducer(initialState, action)
+        const newState = gameReducer(initialState, action)
         assert.strictEqual(newState.player.money, 200)
         assert.strictEqual(newState.player.fame, 50)
       })
@@ -130,7 +130,7 @@ describe('playerReducer', () => {
           payload: { money: 200 }
         }
 
-        assert.throws(() => playerReducer(initialState, action), /Unhandled action type: UNKNOWN_ACTION/)
+        assert.throws(() => gameReducer(initialState, action), /Unhandled action type: UNKNOWN_ACTION/)
       })
     })
   })
