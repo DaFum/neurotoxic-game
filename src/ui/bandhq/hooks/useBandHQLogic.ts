@@ -91,7 +91,8 @@ export const useBandHQLogic = ({
     (item: VoidTraderItem) => {
       const fameCost =
         (item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined) ?? 1000
-      const stashEntry = band.stash && Object.hasOwn(band.stash, item.id) ? band.stash[item.id] : undefined
+      const hasStashOwn = !!(band.stash && Object.hasOwn(band.stash, item.id))
+      const stashEntry = hasStashOwn ? band.stash[item.id] : undefined
       const currentQuantity = isStashEntry(stashEntry)
         ? (stashEntry.stacks ?? 0)
         : 0
@@ -102,7 +103,7 @@ export const useBandHQLogic = ({
 
       return (
         player.fame < fameCost ||
-        (!!(band.stash && band.stash[item.id]) && !item.stackable) ||
+        (hasStashOwn && !item.stackable) ||
         isMaxStacks
       )
     },
