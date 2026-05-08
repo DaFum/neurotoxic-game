@@ -106,7 +106,8 @@ describe('playerReducer', () => {
     describe('Dispatch Paths', () => {
       it('should delegate UPDATE_PLAYER action correctly', () => {
         const initialState = {
-          player: { money: 100, fame: 50, day: 1 }
+          player: { money: 100, fame: 50, day: 1 },
+          band: { members: [] }
         }
 
         const action = {
