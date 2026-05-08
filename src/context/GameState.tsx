@@ -624,15 +624,11 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
     ) => {
       const rngValue = secureRandom() as number
-      const contrabandId = pickRandomContraband(secureRandom)
-      const instanceId = getSafeUUID()
       dispatch(
         createCompleteTravelMinigameAction(
           damageTaken,
           itemsCollected,
-          rngValue,
-          contrabandId ?? undefined,
-          instanceId
+          rngValue
         )
       )
     },

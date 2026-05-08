@@ -129,11 +129,6 @@ export const handleConsumeItem = (
 /**
  * Pure helper function to handle adding contraband.
  * Extracted to avoid tight coupling between reducers.
- *
- * Note on `applyOnAdd`: If an item is stackable and specifies `applyOnAdd: true`,
- * the associated effects are deliberately re-applied on every stack increment,
- * causing per-stack accumulation of stat deltas (e.g., each neon patch adds to stats).
- * Symbols involved in this mechanic: `item.stackable`, `item.stacks`, `item.maxStacks`, and `applyOnAdd`.
  */
 export const addContrabandHelper = (
   state: GameState,
@@ -164,26 +159,24 @@ export const addContrabandHelper = (
             stacks: currentStacks + 1
           }
         })
+        return { ...state, band: newBand }
       } else {
         return state // Reached max stacks
       }
     }
-  } else {
-    const newInstance = {
-      ...item,
-      instanceId: instanceId || getSafeUUID(),
-      remainingDuration: (item.duration as number | undefined) ?? null,
-      applied: !!item.applyOnAdd
-    }
-
-    if (item.stackable) {
-      Object.assign(newInstance, { stacks: 1 })
-    }
-
-    newBand.stash = Object.assign(Object.create(null), currentStash, {
-      [item.id]: newInstance
-    })
   }
+
+  const newInstance = {
+    ...item,
+    instanceId,
+    remainingDuration: (item.duration as number | undefined) ?? null,
+    applied: !!item.applyOnAdd,
+    stacks: item.stackable ? 1 : undefined
+  }
+
+  newBand.stash = Object.assign(Object.create(null), currentStash, {
+    [item.id]: newInstance
+  })
 
   if (item.applyOnAdd && item.type === 'equipment') {
     if (item.effectType === 'luck') {

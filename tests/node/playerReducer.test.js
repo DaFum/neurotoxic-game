@@ -7,9 +7,10 @@ import assert from 'node:assert'
 
 import {
   handleUpdatePlayer
-} from '../../src/context/reducers/playerReducer'
+} from '../../src/context/reducers/playerReducer.ts'
 
 describe('playerReducer', () => {
+
   describe('handleUpdatePlayer', () => {
     it('should update player properties based on payload object', () => {
       const initialState = {
