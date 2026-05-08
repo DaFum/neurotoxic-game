@@ -1,3 +1,4 @@
+import { getSafeUUID } from '../../utils/crypto'
 import { logger } from '../../utils/logger'
 import { assertNever } from '../../utils/assertNever'
 import {

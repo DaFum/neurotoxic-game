@@ -395,22 +395,18 @@ export const createStartTravelMinigameAction = (
  * @param {number} damageTaken - Amount of damage taken
  * @param {Array} itemsCollected - Array of collected items
  * @param {number} [rngValue] - The secure random value used for drops
- * @param {string} [contrabandId] - The ID of the contraband item dropped
- * @param {string} [instanceId] - The unique instance ID of the dropped item
- * @returns {Object} Action object with payload { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
+ * @returns {Object} Action object with payload { damageTaken, itemsCollected, rngValue }
  */
 export const createCompleteTravelMinigameAction = (
   damageTaken: number,
   itemsCollected: unknown[],
-  rngValue?: number,
-  contrabandId?: string,
-  instanceId?: string
+  rngValue?: number
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_TRAVEL_MINIGAME }
 > => ({
   type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-  payload: { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
+  payload: { damageTaken, itemsCollected, rngValue }
 })
 
 /**

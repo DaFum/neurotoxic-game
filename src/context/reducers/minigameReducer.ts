@@ -19,6 +19,7 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
+import { pickRandomContraband } from '../../utils/contrabandUtils'
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
@@ -170,12 +171,16 @@ export const handleCompleteTravelMinigame = (
   const luck = newState.band?.luck || 0
   const chance = computeDropChance(undefined, luck)
 
-  if (
-    rngValue !== undefined &&
-    rngValue < chance &&
-    contrabandId &&
-    instanceId
-  ) {
+  if (rngValue !== undefined && rngValue < chance) {
+    // Generate inner random value deterministically based on rngValue
+    // A simple hash function to derive a second deterministic number [0,1)
+    const seed = Math.sin(rngValue * 9999) * 10000;
+    const innerRng = seed - Math.floor(seed);
+    const mockRng = () => innerRng;
+    const contrabandId = pickRandomContraband(mockRng);
+    const instanceId = `drop-${rngValue}`;
+
+    if (contrabandId && instanceId) {
     // Call addContrabandHelper directly to leverage its logic
     const preStashLength = newState.band.stash
       ? Object.keys(newState.band.stash).length
@@ -214,6 +219,7 @@ export const handleCompleteTravelMinigame = (
           type: 'info' // Could be 'success'
         }
       ]
+    }
     }
   }
 
