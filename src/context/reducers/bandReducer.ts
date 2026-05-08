@@ -1,3 +1,4 @@
+import { getSafeUUID } from '../../utils/crypto'
 import { logger } from '../../utils/logger'
 import { assertNever } from '../../utils/assertNever'
 import {
@@ -170,7 +171,7 @@ export const addContrabandHelper = (
   } else {
     const newInstance = {
       ...item,
-      instanceId: instanceId || crypto.randomUUID(),
+      instanceId: instanceId || getSafeUUID(),
       remainingDuration: (item.duration as number | undefined) ?? null,
       applied: !!item.applyOnAdd
     }
