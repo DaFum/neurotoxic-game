@@ -86,7 +86,7 @@ describe('playerReducer', () => {
 
       hostilePayloads.forEach((payload, index) => {
         it(`should reject hostile/malformed payload ${index}`, () => {
-          if (typeof payload === 'object' && payload !== null && '__proto__' in payload && Object.hasOwn(payload, 'money')) {
+          if (typeof payload === 'object' && payload !== null && Object.hasOwn(payload, 'money')) {
             assert(Object.hasOwn(payload, '__proto__'))
           }
           const newState = handleUpdatePlayer(initialState, payload)

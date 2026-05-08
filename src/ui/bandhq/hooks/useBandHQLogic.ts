@@ -12,8 +12,7 @@ import type {
   BandState,
   PlayerState,
   ToastPayload,
-  TradeVoidItemPayload,
-  StashEntry
+  TradeVoidItemPayload
 } from '../../../types/game'
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
 

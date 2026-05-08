@@ -67,6 +67,6 @@ describe('minigameReducer - Travel Complete Drops', () => {
     const droppedItemKey = Object.keys(newState.band.stash)[0];
     assert.equal(newState.band.stash[droppedItemKey].instanceId.startsWith('drop-'), true)
     assert.equal(newState.toasts.length, 1)
-    assert.equal(newState.toasts[0].message, 'ui:contraband.dropped')
+    assert.equal(newState.toasts[0].messageKey, 'ui:contraband.dropped')
   })
 })
