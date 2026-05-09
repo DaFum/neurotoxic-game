@@ -1,8 +1,13 @@
+import { Tooltip } from './Tooltip'
 import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 
+
+interface HazardTickerProps {
+  message: string
+}
 
 interface SvgIconProps {
   className?: string
@@ -727,7 +732,6 @@ export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
 // --- UI COMPONENTS ---
 
 
-import { Tooltip } from './Tooltip'
 
 // 1. Industrial Toggle
 export const BrutalToggle = memo(
@@ -1288,6 +1292,3 @@ export const HazardTicker = memo(({ message }: HazardTickerProps) => {
 
 
 
-interface HazardTickerProps {
-  message: string
-}

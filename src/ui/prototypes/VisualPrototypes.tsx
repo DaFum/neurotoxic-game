@@ -47,11 +47,11 @@ export const TerminalReadout = memo(() => {
             console.warn(
               `Invariant: missing FULL_LOG_KEYS at currentIndex ${currentIndex}`
             )
-            setCurrentIndex(currentIndex + 1)
+            setCurrentIndex(prev => prev + 1)
             return
           }
           setLines(prev => [...prev, nextLine])
-          setCurrentIndex(currentIndex + 1)
+          setCurrentIndex(prev => prev + 1)
         },
         secureRandom() * 400 + 200
       ) // Random typing delay
@@ -154,6 +154,7 @@ export const RhythmMatrix = memo(() => {
       {/* 3 Lanes */}
       <div className='flex-1 flex justify-center gap-4 mt-6'>
         {['GUITAR', 'DRUMS', 'BASS'].map((lane, i) => {
+          const isHit = hits[i] ?? false
           const localizedLane = t(`ui:rhythm.lane_${lane.toLowerCase()}`)
           return (
             <div
@@ -170,7 +171,7 @@ export const RhythmMatrix = memo(() => {
               <button
                 type='button'
                 className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green
-                  ${hits[i] ? 'bg-toxic-green border-toxic-green shadow-[0_0_20px_var(--color-toxic-green)] scale-110' : 'bg-void-black border-toxic-green/50 hover:border-toxic-green'}`}
+                  ${isHit ? 'bg-toxic-green border-toxic-green shadow-[0_0_20px_var(--color-toxic-green)] scale-110' : 'bg-void-black border-toxic-green/50 hover:border-toxic-green'}`}
                 onMouseDown={() => triggerHit(i)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -179,10 +180,10 @@ export const RhythmMatrix = memo(() => {
                   }
                 }}
                 aria-label={t('ui:rhythm.hit_lane', { lane: localizedLane })}
-                aria-pressed={hits[i]}
+                aria-pressed={isHit}
               >
                 <span
-                  className={`text-[8px] font-bold ${hits[i] ? 'text-void-black' : 'text-toxic-green/50'}`}
+                  className={`text-[8px] font-bold ${isHit ? 'text-void-black' : 'text-toxic-green/50'}`}
                 >
                   {t('ui:rhythm.hit')}
                 </span>
@@ -315,7 +316,7 @@ export const ToxicChatter = memo(() => {
       const randomHate = newHate[Math.floor(secureRandom() * newHate.length)]
       setMessages(prev => {
         const uuidPrefix =
-          typeof uuid === 'string' ? uuid.split('-')[0]?.toUpperCase() : null
+          uuid.split('-')[0]?.toUpperCase()
         const newMsg: Message = {
           id: uuid,
           user: `USER_${uuidPrefix ?? t('ui:chatter.unknownUser', { defaultValue: 'UNK' })}`,
