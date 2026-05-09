@@ -211,6 +211,7 @@ export interface AmpControlsProps {
   isOverdriveActive: boolean
   setIsOverdriveActive: React.Dispatch<React.SetStateAction<boolean>>
   purgeInterference?: () => void
+  interference?: number
 }
 
 export interface AmpHUDProps {

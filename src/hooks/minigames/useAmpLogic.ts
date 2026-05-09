@@ -274,6 +274,7 @@ export function useAmpLogic() {
       interference: interferenceRef.current
     }
   }, [
+    interference,
     dialValue,
     targetValue,
     isOverdriveActive,

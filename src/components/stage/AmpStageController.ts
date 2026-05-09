@@ -113,6 +113,7 @@ export class AmpStageController extends BaseStageController {
     this.syncState()
 
     this.time += dt * 0.1
+    this.drawBackground()
 
     // Apply jitter to the stage container based on interference
     if (this.interference > 0) {
