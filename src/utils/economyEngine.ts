@@ -917,7 +917,8 @@ export const calculateRoadieMinigameResult = (
   }
 
   // Brutalist neurotoxic payout
-  const contrabandBonus = Math.max(0, contrabandDelivered * 50)
+  const safeContraband = Math.max(0, Number(contrabandDelivered) || 0)
+  const contrabandBonus = safeContraband * 50
 
   return { stress, repairCost, contrabandBonus }
 }

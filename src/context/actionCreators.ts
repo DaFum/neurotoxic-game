@@ -434,7 +434,10 @@ export const createCompleteRoadieMinigameAction = (
   { type: typeof ActionTypes.COMPLETE_ROADIE_MINIGAME }
 > => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
-  payload: { equipmentDamage, contrabandDelivered }
+  payload: {
+    equipmentDamage: Math.max(0, Math.min(100, Number(equipmentDamage) || 0)),
+    contrabandDelivered: Math.max(0, Number(contrabandDelivered) || 0)
+  }
 })
 
 /**

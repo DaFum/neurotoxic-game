@@ -347,7 +347,7 @@ describe('Action Creators', () => {
       const action = createCompleteRoadieMinigameAction(5)
       assert.deepStrictEqual(action, {
         type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
-        payload: { equipmentDamage: 5, contrabandDelivered: undefined }
+        payload: { equipmentDamage: 5, contrabandDelivered: 0 }
       })
     })
   })

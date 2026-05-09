@@ -143,12 +143,14 @@ export function handleDelivery(game, onGameOver) {
 // --- End Extracted Game Logic ---
 
 export const useRoadieLogic = () => {
-  const { completeRoadieMinigame, currentScene, changeScene } = useGameState()
+  const { completeRoadieMinigame, currentScene, changeScene, band } =
+    useGameState()
 
-  const { inventory } = useGameState()
-
-  // Conditionally inject contraband to escort
-  const hasContraband = inventory?.includes('CONTRABAND')
+  // Conditionally inject contraband to escort if present in stash
+  const hasContraband = !!(
+    band?.stash &&
+    (band.stash['CONTRABAND'] || band.stash['contraband'])
+  )
 
   // Mutable Game State
   const gameStateRef = useRef({
@@ -177,13 +179,13 @@ export const useRoadieLogic = () => {
   })
 
   // UI State
-  const [uiState, setUiState] = useState({
-    itemsRemaining: 3,
+  const [uiState, setUiState] = useState(() => ({
+    itemsRemaining: gameStateRef.current.itemsToDeliver.length,
     itemsDelivered: 0,
     currentDamage: 0,
     carrying: null,
     isGameOver: false
-  })
+  }))
 
   // Stats Ref for Pixi
   const statsRef = useRef({
@@ -250,11 +252,20 @@ export const useRoadieLogic = () => {
       )
 
       if (crashed || (game.carrying && game.carrying.type === 'CONTRABAND')) {
-        setUiState(prev => ({
-          ...prev,
-          currentDamage: game.equipmentDamage,
-          isGameOver: game.isGameOver
-        }))
+        setUiState(prev => {
+          const displayedDamage = Math.floor(game.equipmentDamage)
+          if (
+            prev.currentDamage !== displayedDamage ||
+            prev.isGameOver !== game.isGameOver
+          ) {
+            return {
+              ...prev,
+              currentDamage: displayedDamage,
+              isGameOver: game.isGameOver
+            }
+          }
+          return prev
+        })
       }
     },
     [completeRoadieMinigame]

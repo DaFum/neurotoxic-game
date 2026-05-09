@@ -173,10 +173,16 @@ export const handleCompleteTravelMinigame = (
 
   if (rngValue !== undefined && rngValue < chance) {
     // Generate inner random value deterministically based on rngValue
-    // A simple hash function to derive a second deterministic number [0,1)
-    const seed = Math.sin(rngValue * 9999) * 10000
-    const innerRng = seed - Math.floor(seed)
-    const mockRng = () => innerRng
+    // A simple LCG (Linear Congruential Generator) hash function
+    let seed = Math.sin(rngValue * 9999) * 10000
+    seed = seed - Math.floor(seed)
+
+    // Stateful PRNG closure
+    const mockRng = () => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296
+      return seed / 4294967296
+    }
+
     const contrabandId = pickRandomContraband(mockRng)
     const instanceId = `drop-${rngValue}`
 
@@ -186,23 +192,15 @@ export const handleCompleteTravelMinigame = (
         ? Object.keys(newState.band.stash).length
         : 0
       const preStashItem = newState.band.stash
-        ? (newState.band.stash[contrabandId] as
-            | Record<string, unknown>
-            | undefined)
+        ? newState.band.stash[contrabandId]
         : undefined
-      const preStacks = preStashItem
-        ? (preStashItem.stacks as number | undefined) || 0
-        : 0
+      const preStacks = preStashItem ? preStashItem.stacks || 0 : 0
 
       newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
       // Determine if item was actually added (length increased, or stacks increased)
-      const postItem = newState.band?.stash?.[contrabandId] as
-        | Record<string, unknown>
-        | undefined
-      const postStacks = postItem
-        ? (postItem.stacks as number | undefined) || 0
-        : 0
+      const postItem = newState.band?.stash?.[contrabandId]
+      const postStacks = postItem ? postItem.stacks || 0 : 0
       const postStashLength = Object.keys(newState.band?.stash || {}).length
 
       const wasAdded =

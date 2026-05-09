@@ -150,13 +150,18 @@ export interface BandMember extends UnknownRecord {
   equipment?: Record<string, unknown>
 }
 
+export interface StashItem {
+  stacks: number
+  [key: string]: unknown
+}
+
 export interface BandState {
   members: BandMember[]
   harmony: number
   harmonyRegenTravel: boolean
   inventorySlots: number
   luck: number
-  stash: Record<string, unknown>
+  stash: Record<string, StashItem>
   activeContrabandEffects: unknown[]
   performance: {
     guitarDifficulty: number
