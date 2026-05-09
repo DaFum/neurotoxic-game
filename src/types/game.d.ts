@@ -436,7 +436,7 @@ export type GameAction =
   | Action<ActionTypes['START_AMP_CALIBRATION'], { gigId: string }>
   | Action<
       ActionTypes['COMPLETE_AMP_CALIBRATION'],
-      { score: number; voidResonance: number }
+      { score: number; voidResonance: number; purgesUsed: number }
     >
   | Action<ActionTypes['SPAWN_RIVAL_BAND']>
   | Action<ActionTypes['MOVE_RIVAL_BAND']>

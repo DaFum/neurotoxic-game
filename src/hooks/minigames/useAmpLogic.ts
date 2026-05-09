@@ -26,6 +26,11 @@ export function useAmpLogic() {
   const [voidResonance, setVoidResonance] = useState(0)
   const [isAnomalyActive, setIsAnomalyActive] = useState(false)
 
+  // Neurotoxic Signal Jamming
+  const [interference, setInterference] = useState(0)
+  const interferenceRef = useRef(0)
+  const purgesUsedRef = useRef(0)
+
   const isCompleteRef = useRef(false)
   const accumulatedScoreRef = useRef(0)
   const accumulatedMsRef = useRef(0)
@@ -82,7 +87,11 @@ export function useAmpLogic() {
 
     const finalScore =
       accumulatedScoreRef.current / Math.max(1, accumulatedMsRef.current)
-    completeAmpCalibration(finalScore, voidResonanceRef.current)
+    completeAmpCalibration(
+      finalScore,
+      voidResonanceRef.current,
+      purgesUsedRef.current
+    )
   }, [completeAmpCalibration])
 
   const handleComplete = useCallback(() => {
@@ -106,6 +115,12 @@ export function useAmpLogic() {
       }
     }
   }, [isGameOver, changeScene])
+
+  const purgeInterference = useCallback(() => {
+    setInterference(0)
+    interferenceRef.current = 0
+    purgesUsedRef.current += 1
+  }, [])
 
   // Function called by PixiStage component to get latest state for rendering
   const update = useCallback(
@@ -194,6 +209,12 @@ export function useAmpLogic() {
         setTargetValue(prev => Math.max(0, Math.min(1000, prev + shift)))
       }
 
+      // Neurotoxic interference buildup (kept in ref to avoid frame-by-frame React renders)
+      interferenceRef.current = Math.min(
+        100,
+        interferenceRef.current + (deltaMS / 1000) * 5
+      )
+
       // Time-driven tick for score accumulation
       const diff = Math.abs(dialValueRef.current - targetValueRef.current)
       let currentScore = Math.max(0, 100 - diff / 10) // Max difference 1000 = 0 score
@@ -231,6 +252,15 @@ export function useAmpLogic() {
     [handleComplete]
   )
 
+  // Sync high-frequency refs to React state less frequently to avoid render thrashing
+  useEffect(() => {
+    if (isGameOver) return
+    const syncInterval = setInterval(() => {
+      setInterference(interferenceRef.current)
+    }, 100) // 10fps UI update for interference is plenty
+    return () => clearInterval(syncInterval)
+  }, [isGameOver])
+
   // Keep gameStateRef up to date for Stage Controller
   useEffect(() => {
     gameStateRef.current = {
@@ -240,9 +270,11 @@ export function useAmpLogic() {
       isOverheat,
       heat,
       isAnomalyActive,
-      voidResonance
+      voidResonance,
+      interference: interferenceRef.current
     }
   }, [
+    interference,
     dialValue,
     targetValue,
     isOverdriveActive,
@@ -267,6 +299,8 @@ export function useAmpLogic() {
     heat,
     isOverheat,
     voidResonance,
-    isAnomalyActive
+    isAnomalyActive,
+    interference,
+    purgeInterference
   }
 }

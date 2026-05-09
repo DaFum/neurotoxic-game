@@ -838,6 +838,7 @@
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
   "minigames.amp.controls.overdrive": "ÜBERSTEUERN",
+  "minigames.amp.controls.purge": "SIGNAL BEREINIGEN",
   "minigames.amp.hud.overheat": "ÜBERHITZT!",
   "minigames.amp.hud.heat": "HITZE",
   "featureList.sec0.title": "1. Grundstruktur und Spielphasen",
@@ -1534,6 +1535,7 @@
   "offline.close": "Schließen",
   "travel.rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!",
   "minigames.amp.hud.anomaly": "VOID-ANOMALIE ENTDECKT",
+  "minigames.amp.hud.interference": "INTERFERENZ",
   "minigames.amp.hud.resonance": "VOID-RESONANZ",
   "minigames.amp.completion.resonance": "Void-Resonanz eingefangen: {{voidResonance}}%"
 }

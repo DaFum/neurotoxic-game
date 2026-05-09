@@ -24,7 +24,9 @@ export const AmpCalibrationScene = () => {
     heat,
     isOverheat,
     voidResonance,
-    isAnomalyActive
+    isAnomalyActive,
+    interference,
+    purgeInterference
   } = useAmpLogic()
 
   const { changeScene } = useGameState()
@@ -86,6 +88,7 @@ export const AmpCalibrationScene = () => {
         isOverheat={isOverheat}
         voidResonance={voidResonance}
         isAnomalyActive={isAnomalyActive}
+        interference={interference}
       />
       <AmpControls
         dialValue={dialValue}
@@ -93,6 +96,7 @@ export const AmpCalibrationScene = () => {
         setDialValue={setDialValue}
         isOverdriveActive={isOverdriveActive}
         setIsOverdriveActive={setIsOverdriveActive}
+        purgeInterference={purgeInterference}
       />
     </MinigameSceneFrame>
   )

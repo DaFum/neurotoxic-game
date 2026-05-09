@@ -46,7 +46,8 @@ export class AmpWaveManager {
     time: number,
     isOverdriveActive: boolean = false,
     isOverheat: boolean = false,
-    isAnomalyActive: boolean = false
+    isAnomalyActive: boolean = false,
+    interference: number = 0
   ) {
     if (!this.waveGraphics || !this.app || !this.app.screen) return
 
@@ -73,6 +74,7 @@ export class AmpWaveManager {
     const targetPeriod = width / (targetFreq / 50 + 1)
     let targetAmplitude = 100
     let targetJitter = 0
+    let finalTargetColor = targetColor
 
     if (isOverheat) {
       targetAmplitude = 150
@@ -80,6 +82,11 @@ export class AmpWaveManager {
     } else if (isAnomalyActive) {
       targetAmplitude = 200
       targetJitter = 50
+    }
+
+    if (interference > 0 && Math.random() < interference / 200) {
+      targetJitter += interference
+      finalTargetColor = getPixiColorFromToken('--warning-yellow')
     }
 
     this.drawSineWave(
@@ -91,7 +98,7 @@ export class AmpWaveManager {
       targetJitter,
       {
         width: isAnomalyActive ? 6 : isOverheat ? 4 : 2,
-        color: targetColor,
+        color: finalTargetColor,
         alpha: isAnomalyActive ? 1.0 : isMatching ? 0.8 : isOverheat ? 0.9 : 0.5
       }
     )

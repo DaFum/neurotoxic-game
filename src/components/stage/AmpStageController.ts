@@ -16,6 +16,7 @@ export class AmpStageController extends BaseStageController {
   isOverdriveActive: boolean
   isOverheat: boolean
   isAnomalyActive: boolean
+  interference: number
 
   constructor(options: StageControllerOptions<AmpStageOptions>) {
     super(options)
@@ -28,6 +29,7 @@ export class AmpStageController extends BaseStageController {
     this.isOverdriveActive = false
     this.isOverheat = false
     this.isAnomalyActive = false
+    this.interference = 0
   }
 
   async setup() {
@@ -44,7 +46,8 @@ export class AmpStageController extends BaseStageController {
       this.time,
       this.isOverdriveActive,
       this.isOverheat,
-      this.isAnomalyActive
+      this.isAnomalyActive,
+      this.interference
     )
   }
 
@@ -77,27 +80,58 @@ export class AmpStageController extends BaseStageController {
       if (Object.hasOwn(state, 'isAnomalyActive')) {
         this.isAnomalyActive = Boolean(state.isAnomalyActive)
       }
+      if (Object.hasOwn(state, 'interference')) {
+        const sanitizedInterference = Number(state.interference)
+        if (Number.isFinite(sanitizedInterference)) {
+          this.interference = Math.max(0, Math.min(100, sanitizedInterference))
+        }
+      }
     }
   }
 
   drawBackground() {
     if (!this.bg || !this.app) return
     this.bg.clear()
+
+    // Slight red/yellow tint based on interference
+    const tintValue =
+      this.interference > 0 ? (this.interference / 100) * 0.2 : 0
+
     this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
     this.bg.fill({ color: getPixiColorFromToken('--void-black'), alpha: 1 })
+
+    if (tintValue > 0) {
+      this.bg.rect(0, 0, this.app.screen.width, this.app.screen.height)
+      this.bg.fill({
+        color: getPixiColorFromToken('--blood-red'),
+        alpha: tintValue
+      })
+    }
   }
 
   update(dt: number) {
     this.syncState()
 
     this.time += dt * 0.1
+    this.drawBackground()
+
+    // Apply jitter to the stage container based on interference
+    if (this.interference > 0) {
+      this.container.x = (Math.random() - 0.5) * (this.interference / 10)
+      this.container.y = (Math.random() - 0.5) * (this.interference / 10)
+    } else {
+      this.container.x = 0
+      this.container.y = 0
+    }
+
     this.waveManager?.drawWaves(
       this.targetFreq,
       this.currentFreq,
       this.time,
       this.isOverdriveActive,
       this.isOverheat,
-      this.isAnomalyActive
+      this.isAnomalyActive,
+      this.interference
     )
   }
 
@@ -109,7 +143,8 @@ export class AmpStageController extends BaseStageController {
       this.time,
       this.isOverdriveActive,
       this.isOverheat,
-      this.isAnomalyActive
+      this.isAnomalyActive,
+      this.interference
     )
   }
 

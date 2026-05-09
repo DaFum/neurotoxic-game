@@ -8,7 +8,9 @@ export const AmpControls = memo(function AmpControls({
   targetValue,
   setDialValue,
   isOverdriveActive,
-  setIsOverdriveActive
+  setIsOverdriveActive,
+  purgeInterference,
+  interference
 }: AmpControlsProps) {
   const { t } = useTranslation(['ui'])
 
@@ -123,7 +125,7 @@ export const AmpControls = memo(function AmpControls({
         })}
       </div>
 
-      <div className='mt-2'>
+      <div className='mt-2 flex gap-4'>
         <button
           onClick={handleToggleOverdrive}
           className={`px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 ${
@@ -139,6 +141,21 @@ export const AmpControls = memo(function AmpControls({
             defaultValue: 'OVERDRIVE'
           })}
         </button>
+
+        {purgeInterference && (
+          <button
+            onClick={purgeInterference}
+            disabled={!interference || interference < 1}
+            className='px-6 py-2 font-mono font-bold uppercase border-2 transition-all duration-150 bg-blood-red text-void-black border-blood-red hover:bg-void-black hover:text-blood-red shadow-[0_0_15px_var(--color-blood-red)] disabled:opacity-50 disabled:cursor-not-allowed'
+            aria-label={t('ui:minigames.amp.controls.purge', {
+              defaultValue: 'Purge Signal'
+            })}
+          >
+            {t('ui:minigames.amp.controls.purge', {
+              defaultValue: 'PURGE SIGNAL'
+            })}
+          </button>
+        )}
       </div>
     </div>
   )

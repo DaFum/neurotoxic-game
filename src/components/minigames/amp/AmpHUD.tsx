@@ -8,7 +8,8 @@ export const AmpHUD = memo(function AmpHUD({
   heat,
   isOverheat,
   voidResonance = 0,
-  isAnomalyActive = false
+  isAnomalyActive = false,
+  interference = 0
 }: AmpHUDProps) {
   const { t } = useTranslation(['ui'])
 
@@ -92,6 +93,27 @@ export const AmpHUD = memo(function AmpHUD({
             />
           </div>
         </div>
+
+        {interference > 0 && (
+          <div className='mt-2 w-48'>
+            <div className='flex justify-between items-center mb-1'>
+              <span className='uppercase text-xs text-blood-red animate-pulse font-bold'>
+                {t('ui:minigames.amp.hud.interference', {
+                  defaultValue: 'INTERFERENCE'
+                })}
+              </span>
+              <span className='text-blood-red text-xs'>
+                {Math.floor(interference)}%
+              </span>
+            </div>
+            <div className='h-2 w-full bg-void-black border border-blood-red overflow-hidden shadow-[0_0_5px_var(--color-blood-red)]'>
+              <div
+                className='h-full bg-blood-red transition-all duration-100'
+                style={{ width: `${interference}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

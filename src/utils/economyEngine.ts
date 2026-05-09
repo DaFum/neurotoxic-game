@@ -932,7 +932,8 @@ export const calculateRoadieMinigameResult = (
 export const calculateAmpCalibrationResult = (
   score: unknown,
   bandState: Pick<BandState, 'members'> | null | undefined,
-  voidResonance: number = 0
+  voidResonance: number = 0,
+  purgesUsed: number = 0
 ) => {
   let numScore = Number(score)
   if (!Number.isFinite(numScore)) {
@@ -962,6 +963,10 @@ export const calculateAmpCalibrationResult = (
     // Void Resonance converts to pure money at a 2x rate only on success
     reward += Math.floor(safeResonance * 2)
   }
+
+  // Stress penalty for relying on neurotoxic purges
+  const safePurgesUsed = Math.max(0, Number(purgesUsed) || 0)
+  stress += Math.floor(safePurgesUsed * 5)
 
   return { stress, reward }
 }

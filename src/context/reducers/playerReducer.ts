@@ -7,10 +7,7 @@ import {
   calculateFameLevel
 } from '../../utils/gameStateUtils'
 import { ActionTypes } from '../actionTypes'
-import { assertNever } from '../../utils/assertNever'
 import type { PlayerState, UpdatePlayerPayload } from '../../types/game'
-
-type PlayerSlice = { player: PlayerState }
 
 export type PlayerAction = {
   type: typeof ActionTypes.UPDATE_PLAYER

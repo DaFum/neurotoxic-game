@@ -92,6 +92,23 @@ test('Minigame Economy Calculations', async t => {
     assert.strictEqual(resultAnom.reward, 180) // 80 + 50*2
   })
 
+  await t.test('Amp Calibration Purges (Neurotoxic Signal Jamming)', () => {
+    // 2 purges used -> +10 stress penalty
+    const resultPurge = calculateAmpCalibrationResult(80, { members: [] }, 0, 2)
+    assert.strictEqual(resultPurge.stress, 10)
+    assert.strictEqual(resultPurge.reward, 80)
+
+    // Low score (40 -> 5 stress) + 1 purge (+5 stress) = 10 stress
+    const resultFailPurge = calculateAmpCalibrationResult(
+      40,
+      { members: [] },
+      0,
+      1
+    )
+    assert.strictEqual(resultFailPurge.stress, 10)
+    assert.strictEqual(resultFailPurge.reward, 0)
+  })
+
   await t.test('Kabelsalat Minigame Edge Cases', () => {
     // With Matze's Tech Wizard trait -> reward multiplied by 1.5
     const resultTrait = calculateKabelsalatMinigameResult(

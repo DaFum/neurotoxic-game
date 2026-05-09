@@ -210,6 +210,8 @@ export interface AmpControlsProps {
   setDialValue: React.Dispatch<React.SetStateAction<number>>
   isOverdriveActive: boolean
   setIsOverdriveActive: React.Dispatch<React.SetStateAction<boolean>>
+  purgeInterference?: () => void
+  interference?: number
 }
 
 export interface AmpHUDProps {
@@ -219,6 +221,7 @@ export interface AmpHUDProps {
   isOverheat: boolean
   voidResonance?: number
   isAnomalyActive?: boolean
+  interference?: number
 }
 
 export interface AudioLockedOverlayProps {
