@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react'
+import { memo, useEffect, useState, useRef } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { secureRandom, getSafeUUID } from '../../utils/crypto'
 import { BiohazardIcon, CorporateSeal } from '../shared/BrutalistUI'
@@ -43,13 +43,6 @@ export const TerminalReadout = memo(() => {
       const timer = setTimeout(
         () => {
           const nextLine = FULL_LOG_KEYS[currentIndex]
-          if (nextLine === undefined) {
-            console.warn(
-              `Invariant: missing FULL_LOG_KEYS at currentIndex ${currentIndex}`
-            )
-            setCurrentIndex(prev => prev + 1)
-            return
-          }
           setLines(prev => [...prev, nextLine])
           setCurrentIndex(prev => prev + 1)
         },
@@ -130,19 +123,30 @@ export const RhythmMatrix = memo(() => {
   const { t } = useTranslation(['ui'])
   const [hits, setHits] = useState<boolean[]>([false, false, false])
 
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  useEffect(() => {
+    const currentTimeouts = timeoutsRef.current
+    return () => {
+      currentTimeouts.forEach(clearTimeout)
+      timeoutsRef.current = []
+    }
+  }, [])
+
   const triggerHit = (index: number) => {
     setHits(prev => {
       const newHits = [...prev]
       newHits[index] = true
       return newHits
     })
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setHits(prev => {
         const newHits = [...prev]
         newHits[index] = false
         return newHits
       })
     }, 150)
+    timeoutsRef.current.push(timer)
   }
 
   return (
