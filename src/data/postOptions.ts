@@ -63,11 +63,7 @@ function getMemberWithTrait(
   traitId: string
 ): BandMember | undefined {
   if (!Array.isArray(members) || members.length === 0) return undefined
-  for (let i = 0; i < members.length; i++) {
-    const m = members[i]
-    if (hasTrait(m, traitId)) return m as BandMember
-  }
-  return undefined
+  return members.find(m => hasTrait(m, traitId)) as BandMember | undefined
 }
 
 /**
@@ -83,13 +79,7 @@ function hasMemberWithTrait(
   traitId2?: string
 ): boolean {
   if (!Array.isArray(members) || members.length === 0) return false
-  for (let i = 0; i < members.length; i++) {
-    const m = members[i]
-    if (hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2))) {
-      return true
-    }
-  }
-  return false
+  return members.some(m => hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2)))
 }
 
 const requireBandMembers = (
