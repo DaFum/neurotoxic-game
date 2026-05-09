@@ -12,8 +12,7 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { logger, LOG_LEVELS } from '../utils/logger'
-import { getSafeUUID, secureRandom } from '../utils/crypto'
-import { pickRandomContraband } from '../utils/contrabandUtils'
+import { secureRandom } from '../utils/crypto'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade } from '../utils/upgradeUtils'
@@ -162,7 +161,8 @@ type GameDispatchActions = {
   ) => void
   completeAmpCalibration: (
     score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
-    voidResonance?: Parameters<typeof createCompleteAmpCalibrationAction>[1]
+    voidResonance?: Parameters<typeof createCompleteAmpCalibrationAction>[1],
+    purgesUsed?: Parameters<typeof createCompleteAmpCalibrationAction>[2]
   ) => void
   unlockTrait: (
     memberId: Parameters<typeof createUnlockTraitAction>[0],
@@ -674,8 +674,12 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
       voidResonance: Parameters<
         typeof createCompleteAmpCalibrationAction
-      >[1] = 0
-    ) => dispatch(createCompleteAmpCalibrationAction(score, voidResonance)),
+      >[1] = 0,
+      purgesUsed: Parameters<typeof createCompleteAmpCalibrationAction>[2] = 0
+    ) =>
+      dispatch(
+        createCompleteAmpCalibrationAction(score, voidResonance, purgesUsed)
+      ),
     []
   )
 

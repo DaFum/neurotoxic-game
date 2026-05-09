@@ -1431,6 +1431,7 @@
   "featureList.sec21.description": "22. Persistence and Meta-Progression",
   "featureList.sec22.description": "23. Additional UX/System Features",
   "minigames.amp.controls.overdrive": "OVERDRIVE",
+  "minigames.amp.controls.purge": "PURGE SIGNAL",
   "minigames.amp.hud.overheat": "OVERHEAT!",
   "minigames.amp.hud.heat": "HEAT",
   "contraband.applied": "APPLIED",
@@ -1534,6 +1535,7 @@
   "offline.close": "Close",
   "travel.rivalEncounter": "Your rival band, {{rivalName}}, is in town!",
   "minigames.amp.hud.anomaly": "VOID ANOMALY DETECTED",
+  "minigames.amp.hud.interference": "INTERFERENCE",
   "minigames.amp.hud.resonance": "VOID RESONANCE",
   "minigames.amp.completion.resonance": "Void Resonance Captured: {{voidResonance}}%"
 }

@@ -1,4 +1,3 @@
-import { getSafeUUID } from '../../utils/crypto'
 import { logger } from '../../utils/logger'
 import { assertNever } from '../../utils/assertNever'
 import {
@@ -46,7 +45,9 @@ export const handleUpdateBand = (
   const safeUpdates = { ...updates }
   if (Object.hasOwn(safeUpdates, 'harmony')) {
     safeUpdates.harmony = clampBandHarmony(
-      typeof safeUpdates.harmony === 'number' ? safeUpdates.harmony : state.band.harmony
+      typeof safeUpdates.harmony === 'number'
+        ? safeUpdates.harmony
+        : state.band.harmony
     )
   }
 

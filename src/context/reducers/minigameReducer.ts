@@ -53,8 +53,7 @@ export const handleCompleteTravelMinigame = (
     rngValue?: number
   }
 ): GameState => {
-  const { damageTaken, itemsCollected, rngValue } =
-    payload
+  const { damageTaken, itemsCollected, rngValue } = payload
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results
@@ -172,53 +171,56 @@ export const handleCompleteTravelMinigame = (
   if (rngValue !== undefined && rngValue < chance) {
     // Generate inner random value deterministically based on rngValue
     // A simple hash function to derive a second deterministic number [0,1)
-    let seedInt = Math.floor(rngValue * 4294967296); // 2**32
-    seedInt = (seedInt * 1664525 + 1013904223) >>> 0; // LCG
-    const innerRng = seedInt / 4294967296;
-    const mockRng = () => innerRng;
-    const contrabandId = pickRandomContraband(mockRng);
-    const instanceId = `drop-${rngValue}`;
+    let seedInt = Math.floor(rngValue * 4294967296) // 2**32
+    seedInt = (seedInt * 1664525 + 1013904223) >>> 0 // LCG
+    const innerRng = seedInt / 4294967296
+    const mockRng = () => innerRng
+    const contrabandId = pickRandomContraband(mockRng)
+    const instanceId = `drop-${rngValue}`
 
     if (contrabandId) {
-    // Call addContrabandHelper directly to leverage its logic
-    const preStashLength = newState.band.stash
-      ? Object.keys(newState.band.stash).length
-      : 0
-    const preStashItem = newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
-      ? (newState.band.stash[contrabandId] as
-          | Record<string, unknown>
-          | undefined)
-      : undefined
-    const preStacks = preStashItem
-      ? ((preStashItem.stacks as number | null | undefined) ?? 0)
-      : 0
+      // Call addContrabandHelper directly to leverage its logic
+      const preStashLength = newState.band.stash
+        ? Object.keys(newState.band.stash).length
+        : 0
+      const preStashItem =
+        newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
+          ? (newState.band.stash[contrabandId] as
+              | Record<string, unknown>
+              | undefined)
+          : undefined
+      const preStacks = preStashItem
+        ? ((preStashItem.stacks as number | null | undefined) ?? 0)
+        : 0
 
-    newState = addContrabandHelper(newState, { contrabandId, instanceId })
+      newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
-    // Determine if item was actually added (length increased, or stacks increased)
-    const postItem = newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
-      ? (newState.band.stash[contrabandId] as Record<string, unknown>)
-      : undefined
-    const postStacks = postItem
-      ? ((postItem.stacks as number | null | undefined) ?? 0)
-      : 0
-    const postStashLength = Object.keys(newState.band?.stash || {}).length
+      // Determine if item was actually added (length increased, or stacks increased)
+      const postItem =
+        newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
+          ? (newState.band.stash[contrabandId] as Record<string, unknown>)
+          : undefined
+      const postStacks = postItem
+        ? ((postItem.stacks as number | null | undefined) ?? 0)
+        : 0
+      const postStashLength = Object.keys(newState.band?.stash || {}).length
 
-    const wasAdded = postStashLength > preStashLength || postStacks > preStacks
+      const wasAdded =
+        postStashLength > preStashLength || postStacks > preStacks
 
-    if (wasAdded) {
-      // We reuse the existing toasts array and append our new toast
-      // For deterministic action tests we could rely on a better ID generation strategy
-      // but keeping it simple as it was for now. Toasts are often tricky.
-      newState.toasts = [
-        ...newState.toasts,
-        {
-          id: `toast-${instanceId}`,
-          messageKey: 'ui:contraband.dropped',
-          type: 'info' // Could be 'success'
-        }
-      ]
-    }
+      if (wasAdded) {
+        // We reuse the existing toasts array and append our new toast
+        // For deterministic action tests we could rely on a better ID generation strategy
+        // but keeping it simple as it was for now. Toasts are often tricky.
+        newState.toasts = [
+          ...newState.toasts,
+          {
+            id: `toast-${instanceId}`,
+            messageKey: 'ui:contraband.dropped',
+            type: 'info' // Could be 'success'
+          }
+        ]
+      }
     }
   }
 
@@ -266,14 +268,15 @@ export const handleCompleteAmpCalibration = (
   state: GameState,
   payload: Record<string, unknown>
 ): GameState => {
-  const { score, voidResonance } = payload
+  const { score, voidResonance, purgesUsed } = payload
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
   const { stress, reward } = calculateAmpCalibrationResult(
     score,
     state.band,
-    typeof voidResonance === 'number' ? voidResonance : 0
+    typeof voidResonance === 'number' ? voidResonance : 0,
+    typeof purgesUsed === 'number' ? purgesUsed : 0
   )
 
   const nextHarmony = clampBandHarmony(state.band.harmony - stress)
