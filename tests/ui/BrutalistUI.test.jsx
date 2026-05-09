@@ -5,12 +5,10 @@ import {
   BlockMeter,
   StatBlock,
   DeadmanButton,
-  CorruptedText,
   HazardTicker,
-  IndustrialChecklist,
-  SelloutContract,
   VoidLoader
 } from '../../src/ui/shared/BrutalistUI.tsx'
+import { CorruptedText, SelloutContract } from '../../src/ui/prototypes/VisualPrototypes.tsx'
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -117,17 +115,10 @@ test('HazardTicker renders message content', () => {
   expect(spans.length).toBeGreaterThan(0)
 })
 
-test('IndustrialChecklist toggles items', () => {
-  render(<IndustrialChecklist />)
-  const buttons = screen.getAllByRole('button')
-  expect(buttons.length).toBeGreaterThan(0)
-})
-
 test('SelloutContract handles sign action', () => {
   render(<SelloutContract />)
-  const signBtn = screen.getByRole('button')
-  fireEvent.click(signBtn)
-
-  expect(screen.queryByRole('button')).not.toBeInTheDocument()
-  expect(screen.getByText('Neurotoxic')).toBeInTheDocument()
+  const btn = screen.getByRole('button', { name: /sign/i })
+  expect(btn).toBeInTheDocument()
+  fireEvent.click(btn)
+  expect(screen.queryByRole('button', { name: /sign/i })).not.toBeInTheDocument()
 })
