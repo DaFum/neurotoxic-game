@@ -179,6 +179,50 @@ export const handleCompleteTravelMinigame = (
     const instanceId = `drop-${rngValue}`
 
     if (contrabandId) {
+    // Call addContrabandHelper directly to leverage its logic
+    const preStashLength = newState.band.stash
+      ? Object.keys(newState.band.stash).length
+      : 0
+    const preStashItem = newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
+      ? (newState.band.stash[contrabandId] as
+          | Record<string, unknown>
+          | undefined)
+      : undefined
+    const preStacks = preStashItem
+      ? ((preStashItem.stacks as number | null | undefined) ?? 0)
+      : 0
+
+    newState = addContrabandHelper(newState, { contrabandId, instanceId })
+
+    // Determine if item was actually added (length increased, or stacks increased)
+    const postItem = newState.band.stash && Object.hasOwn(newState.band.stash, contrabandId)
+      ? (newState.band.stash[contrabandId] as Record<string, unknown>)
+      : undefined
+    const postStacks = postItem
+      ? ((postItem.stacks as number | null | undefined) ?? 0)
+      : 0
+    const postStashLength = Object.keys(newState.band?.stash || {}).length
+
+    const wasAdded = postStashLength > preStashLength || postStacks > preStacks
+
+    if (wasAdded) {
+      // We reuse the existing toasts array and append our new toast
+      // For deterministic action tests we could rely on a better ID generation strategy
+      // but keeping it simple as it was for now. Toasts are often tricky.
+      newState.toasts = [
+        ...newState.toasts,
+        {
+          id: `toast-${instanceId}`,
+          messageKey: 'ui:contraband.dropped',
+          type: 'info' // Could be 'success'
+        }
+      ]
+    }
+
+    const contrabandId = pickRandomContraband(mockRng)
+    const instanceId = `drop-${rngValue}`
+
+    if (contrabandId && instanceId) {
       // Call addContrabandHelper directly to leverage its logic
       const preStashLength = newState.band.stash
         ? Object.keys(newState.band.stash).length
@@ -374,19 +418,22 @@ export const handleCompleteKabelsalatMinigame = (
 
 export const handleCompleteRoadieMinigame = (
   state: GameState,
-  payload: { equipmentDamage: number }
+  payload: { equipmentDamage: number; contrabandDelivered?: number }
 ): GameState => {
-  const { equipmentDamage } = payload
+  const { equipmentDamage, contrabandDelivered } = payload
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
   // Apply Results
-  const { stress, repairCost } = calculateRoadieMinigameResult(
+  const { stress, repairCost, contrabandBonus } = calculateRoadieMinigameResult(
     equipmentDamage,
-    state.band
+    state.band,
+    contrabandDelivered
   )
 
   const nextHarmony = clampBandHarmony(state.band.harmony - stress)
-  const nextMoney = clampPlayerMoney(state.player.money - repairCost)
+  const nextMoney = clampPlayerMoney(
+    state.player.money - repairCost + contrabandBonus
+  )
 
   const nextBand = {
     ...state.band,

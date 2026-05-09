@@ -148,7 +148,10 @@ type GameDispatchActions = {
     payload: Parameters<typeof createStartRoadieMinigameAction>[0]
   ) => void
   completeRoadieMinigame: (
-    payload: Parameters<typeof createCompleteRoadieMinigameAction>[0]
+    equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
+    contrabandDelivered?: Parameters<
+      typeof createCompleteRoadieMinigameAction
+    >[1]
   ) => void
   startKabelsalatMinigame: (
     payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]
@@ -644,8 +647,14 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 
   const completeRoadieMinigame = useCallback(
     (
-      equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0]
-    ) => dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
+      equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
+      contrabandDelivered?: Parameters<
+        typeof createCompleteRoadieMinigameAction
+      >[1]
+    ) =>
+      dispatch(
+        createCompleteRoadieMinigameAction(equipmentDamage, contrabandDelivered)
+      ),
     []
   )
 
