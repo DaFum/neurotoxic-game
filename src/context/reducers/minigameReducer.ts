@@ -214,8 +214,8 @@ export const handleCompleteTravelMinigame = (
           ...newState.toasts,
           {
             id: `toast-${instanceId}`,
-            message: `ui:contraband.dropped`, // Use an i18n key or simple text
-            type: 'info' // Could be 'success'
+            messageKey: `ui:contraband.dropped`,
+            type: 'info'
           }
         ]
       }

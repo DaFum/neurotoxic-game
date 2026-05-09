@@ -147,10 +147,7 @@ export const useRoadieLogic = () => {
     useGameState()
 
   // Conditionally inject contraband to escort if present in stash
-  const hasContraband = !!(
-    band?.stash &&
-    (band.stash['CONTRABAND'] || band.stash['contraband'])
-  )
+  const hasContraband = !!(band?.stash && Object.keys(band.stash).length > 0)
 
   // Mutable Game State
   const gameStateRef = useRef({
@@ -243,6 +240,7 @@ export const useRoadieLogic = () => {
         if (game.equipmentDamage >= 100) {
           game.isGameOver = true
           completeRoadieMinigame(100, game.contrabandCount || 0)
+          return
         }
       }
 
