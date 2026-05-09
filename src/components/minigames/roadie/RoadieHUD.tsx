@@ -20,7 +20,13 @@ export const RoadieHUD = memo(function RoadieHUD({ uiState }: RoadieHUDProps) {
         {t('ui:roadieRun.hud.damage')} {uiState.currentDamage}%
       </div>
       {uiState.carrying && (
-        <div className='text-warning-yellow'>
+        <div
+          className={
+            uiState.carrying.type === 'CONTRABAND'
+              ? 'text-toxic-green animate-pulse'
+              : 'text-warning-yellow'
+          }
+        >
           {t('ui:roadieRun.hud.carrying')}{' '}
           {t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`, {
             defaultValue: t('ui:roadieRun.itemTypes.unknown', {
