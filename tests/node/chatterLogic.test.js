@@ -3,57 +3,64 @@ import assert from 'node:assert/strict'
 import * as cryptoUtils from '../../src/utils/crypto'
 
 // Mock the data modules before importing the logic
-mock.module(new URL('../../src/data/chatter/standardChatter.ts', import.meta.url).href, {
-  namedExports: {
-    CHATTER_DB: [
-      {
-        text: 'Standard 1',
-        weight: 1,
-        condition: state => state.currentScene === 'ALLOWED'
-      },
-      {
-        text: 'Standard 2',
-        weight: 9,
-        condition: state => state.currentScene === 'ALLOWED'
-      }
-    ],
-    ALLOWED_DEFAULT_SCENES: ['ALLOWED']
+mock.module(
+  new URL('../../src/data/chatter/standardChatter.ts', import.meta.url).href,
+  {
+    namedExports: {
+      CHATTER_DB: [
+        {
+          text: 'Standard 1',
+          weight: 1,
+          condition: state => state.currentScene === 'ALLOWED'
+        },
+        {
+          text: 'Standard 2',
+          weight: 9,
+          condition: state => state.currentScene === 'ALLOWED'
+        }
+      ],
+      ALLOWED_DEFAULT_SCENES: ['ALLOWED']
+    }
   }
-})
+)
 
-mock.module(new URL('../../src/data/chatter/venueChatter.ts', import.meta.url).href, {
-  namedExports: {
-    VENUE_CHATTER_DB: [
-      {
-        venueId: 'v1',
-        linesByScene: {
-          ANY: ['Venue Any'],
-          SPECIAL: ['Venue Special']
+mock.module(
+  new URL('../../src/data/chatter/venueChatter.ts', import.meta.url).href,
+  {
+    namedExports: {
+      VENUE_CHATTER_DB: [
+        {
+          venueId: 'v1',
+          linesByScene: {
+            ANY: ['Venue Any'],
+            SPECIAL: ['Venue Special']
+          }
+        },
+        {
+          venueId: 'v_legacy',
+          lines: ['Legacy 1', 'Legacy 2']
         }
-      },
-      {
-        venueId: 'v_legacy',
-        lines: ['Legacy 1', 'Legacy 2']
-      }
-    ],
-    VENUE_CHATTER_LOOKUP: {
-      v1: {
-        venueId: 'v1',
-        linesByScene: {
-          ANY: ['Venue Any'],
-          SPECIAL: ['Venue Special']
+      ],
+      VENUE_CHATTER_LOOKUP: {
+        v1: {
+          venueId: 'v1',
+          linesByScene: {
+            ANY: ['Venue Any'],
+            SPECIAL: ['Venue Special']
+          }
+        },
+        v_legacy: {
+          venueId: 'v_legacy',
+          lines: ['Legacy 1', 'Legacy 2']
         }
-      },
-      v_legacy: {
-        venueId: 'v_legacy',
-        lines: ['Legacy 1', 'Legacy 2']
       }
     }
   }
-})
+)
 
 // Now import the function under test
-const { getRandomChatter } = await import('../../src/data/chatter/chatterSystem')
+const { getRandomChatter } =
+  await import('../../src/data/chatter/chatterSystem')
 
 const buildState = (overrides = {}) => ({
   currentScene: 'ALLOWED',

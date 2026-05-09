@@ -13,7 +13,7 @@ import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
-import { SceneRouter } from './components/SceneRouter.tsx'
+import { SceneRouter } from './components/SceneRouter'
 import type { GamePhase } from './types/game'
 
 const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([

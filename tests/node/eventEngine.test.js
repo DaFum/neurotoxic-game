@@ -26,9 +26,12 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-mock.module(new URL('../../src/data/events/eventSystem.ts', import.meta.url).href, {
-  namedExports: { EVENTS_DB: MOCK_EVENTS }
-})
+mock.module(
+  new URL('../../src/data/events/eventSystem.ts', import.meta.url).href,
+  {
+    namedExports: { EVENTS_DB: MOCK_EVENTS }
+  }
+)
 
 const mockSecureRandom = mock.fn(() => 0.5)
 mock.module(new URL('../../src/utils/crypto.ts', import.meta.url).href, {

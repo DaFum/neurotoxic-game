@@ -327,4 +327,3 @@ export const ContrabandStash = ({
     </Modal>
   )
 }
-
