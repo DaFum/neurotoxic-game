@@ -19,7 +19,8 @@ export const isStashEntry = (entry: unknown): entry is StashEntry => {
     entry !== null &&
     typeof entry === 'object' &&
     Object.hasOwn(entry, 'stacks') &&
-    (typeof (entry as Record<string, unknown>).stacks === 'number' || (entry as Record<string, unknown>).stacks === null)
+    (typeof (entry as Record<string, unknown>).stacks === 'number' ||
+      (entry as Record<string, unknown>).stacks === null)
   )
 }
 

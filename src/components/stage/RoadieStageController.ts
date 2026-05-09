@@ -11,7 +11,7 @@ import { getPixiColorFromToken, loadTextures } from './stageRenderUtils'
 import {
   IMG_PROMPTS,
   getGenImageUrl,
-  isImageGenerationAvailable,
+  isImageGenerationAvailable
 } from '../../utils/imageGen'
 import { handleError, GameError } from '../../utils/errorHandler'
 import type { StageControllerOptions } from '../../types/components'

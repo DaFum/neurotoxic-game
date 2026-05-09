@@ -79,7 +79,9 @@ function hasMemberWithTrait(
   traitId2?: string
 ): boolean {
   if (!Array.isArray(members) || members.length === 0) return false
-  return members.some(m => hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2)))
+  return members.some(
+    m => hasTrait(m, traitId1) || (traitId2 && hasTrait(m, traitId2))
+  )
 }
 
 const requireBandMembers = (
