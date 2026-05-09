@@ -239,6 +239,11 @@ export const useRoadieLogic = () => {
 
         if (game.equipmentDamage >= 100) {
           game.isGameOver = true
+          setUiState(prev => ({
+            ...prev,
+            currentDamage: 100,
+            isGameOver: true
+          }))
           completeRoadieMinigame(100, game.contrabandCount || 0)
           return
         }

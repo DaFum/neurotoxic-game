@@ -174,8 +174,7 @@ export const handleCompleteTravelMinigame = (
   if (rngValue !== undefined && rngValue < chance) {
     // Generate inner random value deterministically based on rngValue
     // A simple LCG (Linear Congruential Generator) hash function
-    let seed = Math.sin(rngValue * 9999) * 10000
-    seed = seed - Math.floor(seed)
+    let seed = Math.abs(Math.floor(Math.sin(rngValue * 9999) * 2147483647))
 
     // Stateful PRNG closure
     const mockRng = () => {
