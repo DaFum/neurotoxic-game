@@ -8,7 +8,7 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../ui/GlitchButton'
-import { Tooltip } from '../../ui/shared'
+import { Tooltip } from '../../ui/shared/sharedUI'
 import { CLINIC_CONFIG } from '../../context/gameConstants'
 import type {
   ClinicMemberCardProps,

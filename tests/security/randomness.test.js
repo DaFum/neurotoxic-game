@@ -14,7 +14,7 @@ vi.mock('../../src/utils/logger', () => ({
   logger: { debug: vi.fn(), error: vi.fn() },
   LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
 }))
-vi.mock('../../src/data/events/index', () => ({
+vi.mock('../../src/data/events/eventSystem', () => ({
   EVENTS_DB: { travel: [{ id: 'test', trigger: 'travel', chance: 0.5 }] }
 }))
 

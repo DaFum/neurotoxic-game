@@ -1,6 +1,6 @@
 import { expect, test, afterEach } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
-import { StatBox } from '../../src/ui/shared/index.tsx'
+import { StatBox } from '../../src/ui/shared/sharedUI.tsx'
 
 afterEach(cleanup)
 

@@ -53,7 +53,7 @@ mock.module(new URL('../../src/data/chatter/venueChatter.ts', import.meta.url).h
 })
 
 // Now import the function under test
-const { getRandomChatter } = await import('../../src/data/chatter/index')
+const { getRandomChatter } = await import('../../src/data/chatter/chatterSystem')
 
 const buildState = (overrides = {}) => ({
   currentScene: 'ALLOWED',

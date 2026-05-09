@@ -26,7 +26,7 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-mock.module(new URL('../../src/data/events/index.ts', import.meta.url).href, {
+mock.module(new URL('../../src/data/events/eventSystem.ts', import.meta.url).href, {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
 

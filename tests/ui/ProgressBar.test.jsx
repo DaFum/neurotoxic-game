@@ -2,7 +2,7 @@ import { afterEach, expect, test } from 'vitest'
 
 import { render, cleanup } from '@testing-library/react'
 
-import { ProgressBar } from '../../src/ui/shared/index.tsx'
+import { ProgressBar } from '../../src/ui/shared/sharedUI.tsx'
 
 afterEach(cleanup)
 

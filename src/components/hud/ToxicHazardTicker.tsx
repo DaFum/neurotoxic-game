@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { HazardTicker } from '../../ui/shared'
+import { HazardTicker } from '../../ui/shared/sharedUI'
 import { useTranslation } from 'react-i18next'
 
 interface ToxicHazardTickerProps {

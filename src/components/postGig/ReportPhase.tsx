@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { ActionButton } from '../../ui/shared'
+import { ActionButton } from '../../ui/shared/sharedUI'
 import { FinancialColumn } from './FinancialColumn'
 import { NetResult } from './NetResult'
 import type { ReportPhaseProps } from '../../types/components'

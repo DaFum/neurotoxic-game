@@ -5,7 +5,7 @@ import type {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { HexNode } from '../ui/shared'
+import { HexNode } from '../ui/shared/sharedUI'
 import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode } from '../types/game'
 import type { TranslationCallback } from '../types/callbacks'

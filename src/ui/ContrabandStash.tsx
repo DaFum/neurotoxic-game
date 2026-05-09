@@ -13,7 +13,7 @@ import {
   AnimatedDivider,
   ActionButton,
   HexBorder
-} from './shared/index.tsx'
+} from './shared/sharedUI.tsx'
 import { useTranslation } from 'react-i18next'
 
 import { GlitchButton } from './GlitchButton'

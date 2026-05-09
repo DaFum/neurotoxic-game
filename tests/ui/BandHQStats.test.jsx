@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { cleanup, render } from '@testing-library/react'
 
-vi.mock('../../src/ui/shared/index.tsx', () => ({
+vi.mock('../../src/ui/shared/sharedUI.tsx', () => ({
   StatBox: ({ label, value }) => (
     <div data-testid='stat-box'>
       <span data-testid='stat-label'>{label}</span>

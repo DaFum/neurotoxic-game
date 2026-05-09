@@ -8,7 +8,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
-import { ActionButton } from '../ui/shared'
+import { ActionButton } from '../ui/shared/sharedUI'
 import type { MinigameSceneFrameProps } from '../types/components'
 import { MINIGAME_TYPES } from '../context/gameConstants'
 

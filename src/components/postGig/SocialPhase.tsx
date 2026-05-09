@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { Panel } from '../../ui/shared'
+import { Panel } from '../../ui/shared/sharedUI'
 import { ZealotryGauge } from './ZealotryGauge'
 import { SocialOptionButton } from './SocialOptionButton'
 import type { SocialOption } from '../../types/components'

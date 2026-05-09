@@ -11,7 +11,7 @@ import { LaneManager } from './stage/LaneManager'
 import { EffectManager } from './stage/EffectManager'
 import { NoteManager } from './stage/NoteManager'
 import { getGigTimeMs } from '../utils/audio/audioEngine'
-import { withTimeout } from './stage/utils'
+import { withTimeout } from './stage/stageRenderUtils'
 import type { StageControllerOptions } from '../types/components'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 

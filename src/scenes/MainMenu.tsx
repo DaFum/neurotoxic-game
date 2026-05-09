@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useBandHQModal } from '../hooks/useBandHQModal'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
+import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared/sharedUI'
 import {
   getGenImageUrl,
   IMG_PROMPTS,

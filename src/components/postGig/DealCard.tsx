@@ -12,7 +12,7 @@
 import PropTypes from 'prop-types'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActionButton } from '../../ui/shared'
+import { ActionButton } from '../../ui/shared/sharedUI'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import {
   IMG_PROMPTS,

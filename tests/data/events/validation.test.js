@@ -11,7 +11,7 @@ vi.mock('../../../src/data/events/transport', () => ({
 }))
 
 // Dynamic import to ensure mock is applied
-const { EVENTS_DB } = await import('../../../src/data/events/index')
+const { EVENTS_DB } = await import('../../../src/data/events/eventSystem')
 
 test('Event validation filters out invalid events', async _t => {
   const transportEvents = EVENTS_DB.transport

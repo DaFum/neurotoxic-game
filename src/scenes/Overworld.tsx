@@ -10,7 +10,7 @@ import {
   useOverworldSave,
   useSpawnRivalBand,
   useOverworldModals
-} from '../hooks/overworld'
+} from '../hooks/overworld/overworldHooks'
 
 import { OverworldHeader } from '../ui/overworld/OverworldHeader'
 import { OverworldMenu } from '../ui/overworld/OverworldMenu'
@@ -18,7 +18,7 @@ import { OverworldHUD } from '../ui/overworld/OverworldHUD'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
-import { OverworldMap } from '../components/overworld'
+import { OverworldMap } from '../components/overworld/overworldComponents'
 import { BandHQ } from '../ui/BandHQ'
 import { QuestsModal } from '../ui/QuestsModal'
 import { ContrabandStash } from '../ui/ContrabandStash'

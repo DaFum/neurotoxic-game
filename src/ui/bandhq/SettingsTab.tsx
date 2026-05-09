@@ -1,7 +1,7 @@
 import type { GameSettings } from '../../types/game'
 import type { GameStateWithActions } from '../../context/GameState'
 import type { AudioState, AudioControls } from '../../types/audio'
-import { SettingsPanel } from '../shared'
+import { SettingsPanel } from '../shared/sharedUI'
 import { useSettingsActions } from '../../hooks/useSettingsActions'
 
 type SettingsTabProps = {

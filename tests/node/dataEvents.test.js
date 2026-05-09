@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { EVENTS_DB } from '../../src/data/events/index'
+import { EVENTS_DB } from '../../src/data/events/eventSystem'
 
 test('EVENTS_DB integrity', () => {
   assert.ok(EVENTS_DB)

@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 import { SocialPhase } from '../../src/components/postGig/SocialPhase.tsx'
 
-vi.mock('../../src/ui/shared/index.tsx', () => ({
+vi.mock('../../src/ui/shared/sharedUI.tsx', () => ({
   Panel: ({ children, title, className, contentClassName }) => (
     <div data-testid='panel' className={className}>
       {title}

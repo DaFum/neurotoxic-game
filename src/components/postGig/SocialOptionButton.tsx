@@ -2,7 +2,7 @@ import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
-import { ActionButton } from '../../ui/shared'
+import { ActionButton } from '../../ui/shared/sharedUI'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import {
   getGenImageUrl,

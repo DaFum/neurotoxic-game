@@ -1,1 +1,1 @@
-export * from './chatter/index'
+export * from './chatter/chatterSystem'

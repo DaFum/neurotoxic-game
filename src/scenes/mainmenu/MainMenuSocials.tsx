@@ -14,7 +14,7 @@ import {
   YouTubeIcon,
   BlogIcon,
   GameIcon
-} from '../../ui/shared'
+} from '../../ui/shared/sharedUI'
 
 export const MainMenuSocials = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()

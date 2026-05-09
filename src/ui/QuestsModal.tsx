@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ProgressBar } from './shared/index.tsx'
+import { ProgressBar } from './shared/sharedUI.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
 import { useId, memo, type MouseEvent, type ReactNode } from 'react'

@@ -9,7 +9,7 @@ import {
 } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
-import { Tooltip } from '../shared'
+import { Tooltip } from '../shared/sharedUI'
 
 export interface ShopItemProps {
   item: CatalogItem

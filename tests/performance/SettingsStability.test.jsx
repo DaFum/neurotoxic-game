@@ -33,7 +33,7 @@ vi.mock('../../src/hooks/useAudioControl', () => ({
 // Mock child components to capture props
 // We need to mock the named export from ../../src/ui/shared
 const SettingsPanelCapture = vi.fn(() => <div data-testid='settings-panel' />)
-vi.mock('../../src/ui/shared', () => ({
+vi.mock('../../src/ui/shared/sharedUI', () => ({
   SettingsPanel: SettingsPanelCapture,
   VolumeSlider: () => null,
   ActionButton: () => null,

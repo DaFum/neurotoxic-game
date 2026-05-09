@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
-import { ProgressBar, Tooltip } from './shared/index.tsx'
+import { ProgressBar, Tooltip } from './shared/sharedUI.tsx'
 import { useGameSelector } from '../context/GameState'
 import {
   getGenImageUrl,

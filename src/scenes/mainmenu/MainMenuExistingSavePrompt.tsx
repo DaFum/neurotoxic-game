@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
-import { Modal } from '../../ui/shared'
+import { Modal } from '../../ui/shared/sharedUI'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 export const MainMenuExistingSavePrompt = ({

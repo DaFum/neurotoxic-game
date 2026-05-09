@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { BlockMeter } from '../../ui/shared'
+import { BlockMeter } from '../../ui/shared/sharedUI'
 
 interface CorruptionMeterProps {
   corruptionLevel: number

@@ -19,7 +19,7 @@ import {
   OnAudioChangePropType
 } from '../../src/ui/shared/propTypes'
 
-vi.mock('../../src/ui/shared', () => ({
+vi.mock('../../src/ui/shared/sharedUI', () => ({
   SettingsPanel: ({ onToggleCRT, onLogLevelChange, onDeleteSave }) => (
     <div>
       <button onClick={onToggleCRT}>toggle-crt</button>

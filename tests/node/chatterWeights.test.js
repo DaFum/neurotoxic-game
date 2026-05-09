@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { CHATTER_DB } from '../../src/data/chatter/index.ts'
+import { CHATTER_DB } from '../../src/data/chatter/chatterSystem.ts'
 
 test('chatter data does not use weight 0 entries', () => {
   for (const entry of CHATTER_DB) {

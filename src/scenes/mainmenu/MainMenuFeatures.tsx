@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { Modal } from '../../ui/shared'
+import { Modal } from '../../ui/shared/sharedUI'
 
 type FeatureSection = {
   title: string

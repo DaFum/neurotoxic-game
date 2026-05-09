@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types/game'
-import { StatBox, ProgressBar } from '../shared'
+import { StatBox, ProgressBar } from '../shared/sharedUI'
 
 type StatsTabProps = {
   player: Pick<PlayerState, 'money' | 'fame' | 'day' | 'van'>

@@ -3,7 +3,7 @@ import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { useSettingsActions } from '../hooks/useSettingsActions'
-import { SettingsPanel } from '../ui/shared'
+import { SettingsPanel } from '../ui/shared/sharedUI'
 import { SettingsTitle } from '../ui/settings/SettingsTitle'
 import { SettingsReturnButton } from '../ui/settings/SettingsReturnButton'
 

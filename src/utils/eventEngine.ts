@@ -13,7 +13,7 @@
  * - Found repeated string allocation for `.toLowerCase()` in a hot loop path. Solved by introducing a module-level `toLowerCaseCache`.
  */
 
-import { EVENTS_DB } from '../data/events/index'
+import { EVENTS_DB } from '../data/events/eventSystem'
 import { EVENT_STRINGS } from '../data/events/constants'
 import { logger } from './logger'
 import { secureRandom } from './crypto'

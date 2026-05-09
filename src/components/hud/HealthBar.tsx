@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BlockMeter } from '../../ui/shared'
+import { BlockMeter } from '../../ui/shared/sharedUI'
 
 interface HealthBarProps {
   health: number

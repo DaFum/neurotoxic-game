@@ -28,7 +28,7 @@ vi.mock('../../src/ui/GlitchButton', () => ({
   )
 }))
 
-vi.mock('../../src/ui/shared', () => ({
+vi.mock('../../src/ui/shared/sharedUI', () => ({
   Tooltip: ({ children }) => <>{children}</>
 }))
 

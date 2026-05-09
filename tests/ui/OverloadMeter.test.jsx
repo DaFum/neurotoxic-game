@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { OverloadMeter } from '../../src/components/hud/OverloadMeter.tsx'
 
-vi.mock('../../src/ui/shared/index.tsx', () => ({
+vi.mock('../../src/ui/shared/sharedUI.tsx', () => ({
   BlockMeter: ({ label, value, max, isDanger }) => (
     <div
       data-testid='block-meter'

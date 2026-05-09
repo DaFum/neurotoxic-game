@@ -2,7 +2,7 @@ import { useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { RazorPlayIcon } from '../ui/shared/Icons'
-import { Tooltip } from '../ui/shared'
+import { Tooltip } from '../ui/shared/sharedUI'
 
 export const ToggleRadio = memo(() => {
   const { t } = useTranslation()

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { ProgressBar, Panel, Tooltip } from '../shared'
+import { ProgressBar, Panel, Tooltip } from '../shared/sharedUI'
 import { useMemo, type ReactNode } from 'react'
 import { CHARACTERS } from '../../data/characters'
 import { translateLocation } from '../../utils/locationI18n'

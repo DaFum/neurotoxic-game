@@ -7,7 +7,7 @@ const mockActionButton = vi.fn(({ children }) => (
   <button type='button'>{children}</button>
 ))
 
-vi.mock('../../src/ui/shared', () => ({
+vi.mock('../../src/ui/shared/sharedUI', () => ({
   Panel: ({ children }) => <div>{children}</div>,
   ActionButton: props => mockActionButton(props)
 }))

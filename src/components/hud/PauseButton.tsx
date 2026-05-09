@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Tooltip } from '../../ui/shared'
+import { Tooltip } from '../../ui/shared/sharedUI'
 
 interface PauseButtonProps {
   onTogglePause?: () => void

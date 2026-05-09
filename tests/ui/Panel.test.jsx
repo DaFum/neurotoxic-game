@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { Panel } from '../../src/ui/shared/index.tsx'
+import { Panel } from '../../src/ui/shared/sharedUI.tsx'
 
 test('Panel renders children and optional title', () => {
   render(

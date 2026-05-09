@@ -6,7 +6,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
+import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared/sharedUI'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
 export const GameOverHeader = React.memo(() => {
