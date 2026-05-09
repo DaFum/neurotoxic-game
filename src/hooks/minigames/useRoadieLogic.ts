@@ -262,7 +262,8 @@ export const useRoadieLogic = () => {
       !gameStateRef.current.carrying &&
       gameStateRef.current.itemsToDeliver.length > 0
     ) {
-      gameStateRef.current.carrying = gameStateRef.current.itemsToDeliver.pop()
+      gameStateRef.current.carrying =
+        gameStateRef.current.itemsToDeliver.shift()
       setUiState(prev => ({
         ...prev,
         carrying: gameStateRef.current.carrying,
