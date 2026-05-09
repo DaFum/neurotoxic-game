@@ -1,25 +1,5 @@
 import type { BandMember } from '../types/game'
 
-// Safely read numeric properties from possibly-untyped objects
-const getNumericProp = (
-  obj: unknown,
-  key?: string,
-  fallback?: number
-): number => {
-  if (!key) return fallback ?? 0
-  if (obj == null || typeof obj !== 'object') return fallback ?? 0
-  const o = obj as Record<string, unknown>
-  const raw = o[key]
-  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
-  if (
-    typeof raw === 'string' &&
-    raw.trim() !== '' &&
-    !Number.isNaN(Number(raw))
-  )
-    return Number(raw)
-  return fallback ?? 0
-}
-
 export const validateHealMember = (
   member: BandMember | null | undefined,
   playerMoney: number,
@@ -61,28 +41,4 @@ export const validateEnhanceMember = (
   }
 
   return { isValid: true }
-}
-
-export const calculateHealAmounts = (
-  member: BandMember,
-  healStaminaGain: number,
-  healMoodGain: number
-) => {
-  const maxStamina = getNumericProp(member, 'staminaMax', 100)
-  const currentStamina = member.stamina || 0
-  const healAmountApplied = Math.min(
-    Math.max(0, healStaminaGain),
-    Math.max(0, maxStamina - currentStamina)
-  )
-
-  const currentMood = member.mood || 0
-  const moodAmountApplied = Math.min(
-    Math.max(0, healMoodGain),
-    Math.max(0, 100 - currentMood)
-  )
-
-  return {
-    healAmountApplied,
-    moodAmountApplied
-  }
 }

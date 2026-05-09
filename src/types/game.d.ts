@@ -16,6 +16,10 @@ export interface GameSettings {
 export type UnknownRecord = Record<string, unknown>
 export type RawGameSettings = Partial<Record<keyof GameSettings, unknown>>
 
+export type StashEntry = {
+  stacks?: number | null
+}
+
 export interface EventOption {
   id?: string
   text?: string

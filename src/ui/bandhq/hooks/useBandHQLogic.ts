@@ -7,6 +7,7 @@ import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VOID_TRADER_COSTS } from '../../../data/contraband'
 import { handleError, GameError, StateError } from '../../../utils/errorHandler'
+import { isStashEntry } from '../../../utils/gameStateUtils'
 import type {
   BandState,
   PlayerState,
@@ -14,19 +15,6 @@ import type {
   TradeVoidItemPayload
 } from '../../../types/game'
 import type { PurchaseItem, VoidTraderItem } from '../../../types/components'
-
-type StashEntry = {
-  stacks?: number
-}
-
-const isStashEntry = (entry: unknown): entry is StashEntry => {
-  return (
-    entry !== null &&
-    typeof entry === 'object' &&
-    Object.hasOwn(entry, 'stacks') &&
-    typeof (entry as Record<string, unknown>).stacks === 'number'
-  )
-}
 
 type BandHQLogicParams = {
   player: PlayerState
@@ -94,7 +82,7 @@ export const useBandHQLogic = ({
   const isVoidItemOwned = useCallback(
     (item: VoidTraderItem) => {
       if (item.stackable) return false
-      return !!(band.stash && band.stash[item.id])
+      return !!(band.stash && Object.hasOwn(band.stash, item.id))
     },
     [band.stash]
   )
@@ -103,7 +91,8 @@ export const useBandHQLogic = ({
     (item: VoidTraderItem) => {
       const fameCost =
         (item.rarity ? VOID_TRADER_COSTS[item.rarity] : undefined) ?? 1000
-      const stashEntry = band.stash?.[item.id]
+      const hasStashOwn = !!(band.stash && Object.hasOwn(band.stash, item.id))
+      const stashEntry = hasStashOwn ? band.stash[item.id] : undefined
       const currentQuantity = isStashEntry(stashEntry)
         ? (stashEntry.stacks ?? 0)
         : 0
@@ -114,7 +103,7 @@ export const useBandHQLogic = ({
 
       return (
         player.fame < fameCost ||
-        (!!(band.stash && band.stash[item.id]) && !item.stackable) ||
+        (hasStashOwn && !item.stackable) ||
         isMaxStacks
       )
     },

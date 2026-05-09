@@ -8,6 +8,7 @@ import assert from 'node:assert'
 import {
   handleUpdatePlayer
 } from '../../src/context/reducers/playerReducer.ts'
+import { gameReducer } from '../../src/context/gameReducer.ts'
 
 describe('playerReducer', () => {
 
@@ -85,6 +86,9 @@ describe('playerReducer', () => {
 
       hostilePayloads.forEach((payload, index) => {
         it(`should reject hostile/malformed payload ${index}`, () => {
+          if (typeof payload === 'object' && payload !== null && Object.hasOwn(payload, 'money')) {
+            assert(Object.hasOwn(payload, '__proto__'))
+          }
           const newState = handleUpdatePlayer(initialState, payload)
           assert.strictEqual(newState, initialState)
           assert.strictEqual(newState.player.money, 100)
@@ -96,6 +100,38 @@ describe('playerReducer', () => {
           assert.strictEqual(newState, initialState)
           assert.strictEqual(newState.player.money, 100)
         })
+      })
+    })
+
+    describe('Dispatch Paths', () => {
+      it('should delegate UPDATE_PLAYER action correctly', () => {
+        const initialState = {
+          player: { money: 100, fame: 50, day: 1 },
+          band: { members: [] }
+        }
+
+        const action = {
+          type: 'UPDATE_PLAYER',
+          payload: { money: 200 }
+        }
+
+        const newState = gameReducer(initialState, action)
+        assert.strictEqual(newState.player.money, 200)
+        assert.strictEqual(newState.player.fame, 50)
+      })
+
+      it('should throw on UNKNOWN_ACTION correctly', () => {
+        const initialState = {
+          player: { money: 100, fame: 50, day: 1 },
+          band: { members: [] }
+        }
+
+        const action = {
+          type: 'UNKNOWN_ACTION',
+          payload: { money: 200 }
+        }
+
+        assert.throws(() => gameReducer(initialState, action), /Unhandled action type: UNKNOWN_ACTION/)
       })
     })
   })
