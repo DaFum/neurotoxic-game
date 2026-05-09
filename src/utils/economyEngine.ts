@@ -904,7 +904,8 @@ export const calculateTravelMinigameResult = (
  */
 export const calculateRoadieMinigameResult = (
   equipmentDamage: number,
-  bandState: Pick<BandState, 'members'> | null | undefined
+  bandState: Pick<BandState, 'members'> | null | undefined,
+  contrabandDelivered: number = 0
 ) => {
   const safeDamage = Math.max(0, equipmentDamage)
   const stress = Math.floor(safeDamage / 5)
@@ -915,7 +916,10 @@ export const calculateRoadieMinigameResult = (
     repairCost = Math.floor(repairCost * 0.8)
   }
 
-  return { stress, repairCost }
+  // Brutalist neurotoxic payout
+  const contrabandBonus = Math.max(0, contrabandDelivered * 50)
+
+  return { stress, repairCost, contrabandBonus }
 }
 
 /**

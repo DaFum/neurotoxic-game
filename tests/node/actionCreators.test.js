@@ -320,11 +320,7 @@ describe('Action Creators', () => {
 
   describe('createCompleteTravelMinigameAction', () => {
     it('creates correct action with all params', () => {
-      const action = createCompleteTravelMinigameAction(
-        10,
-        ['item1'],
-        0.5
-      )
+      const action = createCompleteTravelMinigameAction(10, ['item1'], 0.5)
       assert.deepStrictEqual(action, {
         type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
         payload: {
@@ -351,7 +347,7 @@ describe('Action Creators', () => {
       const action = createCompleteRoadieMinigameAction(5)
       assert.deepStrictEqual(action, {
         type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
-        payload: { equipmentDamage: 5 }
+        payload: { equipmentDamage: 5, contrabandDelivered: undefined }
       })
     })
   })

@@ -111,8 +111,22 @@ export class RoadiePlayerManager {
           this.itemSprite.texture = Texture.WHITE
           this.itemSprite.scale.set(0.3)
         }
+
+        // Apply toxic green tint to player sprite when carrying CONTRABAND
+        if (
+          state.carrying.type === 'CONTRABAND' &&
+          this.playerSprite &&
+          !this._flashTimeout
+        ) {
+          this.playerSprite.tint = this.colors.toxicGreen
+        } else if (this.playerSprite && !this._flashTimeout) {
+          this.playerSprite.tint = this.colors.starWhite
+        }
       } else {
         this.itemSprite.visible = false
+        if (this.playerSprite && !this._flashTimeout) {
+          this.playerSprite.tint = this.colors.starWhite
+        }
       }
     }
   }
@@ -135,7 +149,12 @@ export class RoadiePlayerManager {
         this.playerSprite.tint = redColor
         if (this._flashTimeout) clearTimeout(this._flashTimeout)
         this._flashTimeout = setTimeout(() => {
-          if (this.playerSprite) this.playerSprite.tint = this.colors.starWhite
+          if (this.playerSprite) {
+            this.playerSprite.tint =
+              state.carrying && state.carrying.type === 'CONTRABAND'
+                ? this.colors.toxicGreen
+                : this.colors.starWhite
+          }
           this._flashTimeout = null
         }, 200)
       }

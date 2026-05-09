@@ -125,12 +125,17 @@ export function handlePickup(game) {
 export function handleDelivery(game, onGameOver) {
   if (game.playerPos.y === ROADIE_GRID_HEIGHT - 1 && game.carrying) {
     game.itemsDelivered.push(game.carrying)
+
+    if (game.carrying.type === 'CONTRABAND') {
+      game.contrabandCount = (game.contrabandCount || 0) + 1
+    }
+
     game.carrying = null
     audioManager.playSFX('deliver')
 
     if (game.itemsToDeliver.length === 0) {
       game.isGameOver = true
-      onGameOver(game.equipmentDamage)
+      onGameOver(game.equipmentDamage, game.contrabandCount || 0)
     }
   }
 }
@@ -140,16 +145,25 @@ export function handleDelivery(game, onGameOver) {
 export const useRoadieLogic = () => {
   const { completeRoadieMinigame, currentScene, changeScene } = useGameState()
 
+  const { inventory } = useGameState()
+
+  // Conditionally inject contraband to escort
+  const hasContraband = inventory?.includes('CONTRABAND')
+
   // Mutable Game State
   const gameStateRef = useRef({
     playerPos: { x: 6, y: 0 },
     carrying: null, // { type, weight }
     itemsToDeliver: [
+      hasContraband
+        ? { id: 'contraband', type: 'CONTRABAND', weight: 1.5 }
+        : null,
       { id: 'amp', type: 'AMP', weight: 2 },
       { id: 'drums', type: 'DRUMS', weight: 1.5 },
       { id: 'guitar', type: 'GUITAR', weight: 1 }
-    ],
+    ].filter(Boolean),
     itemsDelivered: [],
+    contrabandCount: 0,
     traffic: [], // { id, row, x (float), speed }
     lastMoveTime: 0,
     equipmentDamage: 0,
@@ -219,10 +233,23 @@ export const useRoadieLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
-      spawnTraffic(game, deltaMS)
-      const crashed = processTraffic(game, deltaMS, completeRoadieMinigame)
+      // Passive Neurotoxic Damage Logic
+      if (game.carrying && game.carrying.type === 'CONTRABAND') {
+        game.equipmentDamage += deltaMS * 0.005
+        game.equipmentDamage = Math.min(100, game.equipmentDamage)
 
-      if (crashed) {
+        if (game.equipmentDamage >= 100) {
+          game.isGameOver = true
+          completeRoadieMinigame(100, game.contrabandCount || 0)
+        }
+      }
+
+      spawnTraffic(game, deltaMS)
+      const crashed = processTraffic(game, deltaMS, damage =>
+        completeRoadieMinigame(damage, game.contrabandCount || 0)
+      )
+
+      if (crashed || (game.carrying && game.carrying.type === 'CONTRABAND')) {
         setUiState(prev => ({
           ...prev,
           currentDamage: game.equipmentDamage,

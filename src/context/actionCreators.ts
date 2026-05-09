@@ -427,13 +427,14 @@ export const createStartRoadieMinigameAction = (
  * @returns {Object} Action object
  */
 export const createCompleteRoadieMinigameAction = (
-  equipmentDamage: number
+  equipmentDamage: number,
+  contrabandDelivered?: number
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_ROADIE_MINIGAME }
 > => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
-  payload: { equipmentDamage }
+  payload: { equipmentDamage, contrabandDelivered }
 })
 
 /**

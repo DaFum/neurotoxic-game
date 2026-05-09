@@ -418,7 +418,10 @@ export type GameAction =
       CompleteTravelMinigamePayload
     >
   | Action<ActionTypes['START_ROADIE_MINIGAME'], { gigId: string }>
-  | Action<ActionTypes['COMPLETE_ROADIE_MINIGAME'], { equipmentDamage: number }>
+  | Action<
+      ActionTypes['COMPLETE_ROADIE_MINIGAME'],
+      { equipmentDamage: number; contrabandDelivered?: number }
+    >
   | Action<ActionTypes['START_KABELSALAT_MINIGAME'], { gigId: string }>
   | Action<ActionTypes['COMPLETE_KABELSALAT_MINIGAME'], { results: unknown }>
   | Action<ActionTypes['START_AMP_CALIBRATION'], { gigId: string }>
