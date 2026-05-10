@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { validateSaveData } from '../../src/utils/saveValidator'
 
 describe('saveValidator', () => {
@@ -30,24 +30,12 @@ describe('saveValidator', () => {
   })
 
   describe('root object validation', () => {
-    it('throws if data is null', () => {
-      assert.throws(() => validateSaveData(null), {
-        name: 'StateError',
-        message: /Save data must be an object/
-      })
-    })
-
-    it('throws if data is not an object', () => {
-      assert.throws(() => validateSaveData('invalid'), {
-        name: 'StateError',
-        message: /Save data must be an object/
-      })
-    })
-
-    it('throws if data is an array', () => {
-      assert.throws(() => validateSaveData([]), {
-        name: 'StateError',
-        message: /Save data must be an object/
+    ;[null, 'invalid', []].forEach(input => {
+      it(`throws if data is ${JSON.stringify(input)}`, () => {
+        assert.throws(() => validateSaveData(input), {
+          name: 'StateError',
+          message: /Save data must be an object/
+        })
       })
     })
 
@@ -213,35 +201,18 @@ describe('saveValidator', () => {
           /band\.members\[0\]\.relationships\.sara must be a finite number/
       })
     })
-
-    it('throws if a relationship key is a reserved prototype-polluting name', () => {
-      const data = getValidData()
-      data.band.members = [
-        { name: 'Matze', relationships: { constructor: 75 } }
-      ]
-      assert.throws(() => validateSaveData(data), {
-        name: 'StateError',
-        message: /Prototype pollution detected: constructor/
-      })
-    })
-
-    it('throws if a relationship key is __proto__', () => {
-      const data = getValidData()
-      // JSON.parse creates an own property named '__proto__' without touching the prototype chain
-      const rel = JSON.parse('{"__proto__": 75}')
-      data.band.members = [{ name: 'Matze', relationships: rel }]
-      assert.throws(() => validateSaveData(data), {
-        name: 'StateError',
-        message: /Prototype pollution detected: __proto__/
-      })
-    })
-
-    it('throws if a relationship key is prototype', () => {
-      const data = getValidData()
-      data.band.members = [{ name: 'Matze', relationships: { prototype: 75 } }]
-      assert.throws(() => validateSaveData(data), {
-        name: 'StateError',
-        message: /Prototype pollution detected: prototype/
+    ;['constructor', '__proto__', 'prototype'].forEach(poisonKey => {
+      it(`throws if a relationship key is ${poisonKey}`, () => {
+        const data = getValidData()
+        // JSON.parse creates an own property named '__proto__' without touching the prototype chain
+        const rel = JSON.parse(`{"${poisonKey}": 75}`)
+        data.band.members = [{ name: 'Matze', relationships: rel }]
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: new RegExp(
+            `Prototype pollution detected: ${poisonKey.replace('__', '__')}`
+          )
+        })
       })
     })
   })
@@ -337,32 +308,29 @@ describe('saveValidator', () => {
         })
       })
 
-      it('throws if tier is missing or invalid', () => {
-        const data = getValidData()
-        data.social.influencers = { inf1: { trait: 'music_snob', score: 10 } }
-        assert.throws(() => validateSaveData(data), {
-          name: 'StateError',
-          message: /social.influencers.inf1.tier must be a string/
-        })
-      })
-
-      it('throws if trait is missing or invalid', () => {
-        const data = getValidData()
-        data.social.influencers = { inf1: { tier: 'Micro', score: 10 } }
-        assert.throws(() => validateSaveData(data), {
-          name: 'StateError',
-          message: /social.influencers.inf1.trait must be a string/
-        })
-      })
-
-      it('throws if score is missing or invalid', () => {
-        const data = getValidData()
-        data.social.influencers = {
-          inf1: { tier: 'Micro', trait: 'music_snob' }
+      const influencerFieldCases = [
+        {
+          field: 'tier',
+          base: { trait: 'music_snob', score: 10 },
+          type: 'string'
+        },
+        { field: 'trait', base: { tier: 'Micro', score: 10 }, type: 'string' },
+        {
+          field: 'score',
+          base: { tier: 'Micro', trait: 'music_snob' },
+          type: 'number'
         }
-        assert.throws(() => validateSaveData(data), {
-          name: 'StateError',
-          message: /social.influencers.inf1.score must be a number/
+      ]
+      influencerFieldCases.forEach(({ field, base, type }) => {
+        it(`throws if ${field} is missing or invalid`, () => {
+          const data = getValidData()
+          data.social.influencers = { inf1: base }
+          assert.throws(() => validateSaveData(data), {
+            name: 'StateError',
+            message: new RegExp(
+              `social.influencers.inf1.${field} must be a ${type}`
+            )
+          })
         })
       })
     })
