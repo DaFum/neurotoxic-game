@@ -3,8 +3,6 @@ import { useState, useEffect, useRef, useId, memo, useCallback } from 'react'
 import type { MouseEvent, ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
-
-
 interface HazardTickerProps {
   message: string
 }
@@ -731,8 +729,6 @@ export const CorporateSeal = memo(({ className, title }: SvgIconProps) => {
 
 // --- UI COMPONENTS ---
 
-
-
 // 1. Industrial Toggle
 export const BrutalToggle = memo(
   ({ label, initialState = false }: BrutalToggleProps) => {
@@ -789,7 +785,6 @@ export const BrutalToggle = memo(
   }
 )
 
-
 // 2. Segmented Block Meter
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders when parent components
 // pass frequently changing state (like overload or health) that results in the same quantized value.
@@ -832,7 +827,6 @@ export const BlockMeter = memo(
     )
   }
 )
-
 
 // 3. Brutalist Tabs
 export const BrutalTabs = memo(() => {
@@ -893,7 +887,6 @@ export const BrutalTabs = memo(() => {
   )
 })
 
-
 // 4. Data/Stat Block
 export const StatBlock = memo(
   ({ label, value, icon: Icon }: StatBlockProps) => (
@@ -910,7 +903,6 @@ export const StatBlock = memo(
     </div>
   )
 )
-
 
 // 5. Brutal Amp Fader (Custom Slider)
 export const BrutalFader = memo(
@@ -966,7 +958,6 @@ export const BrutalFader = memo(
     )
   }
 )
-
 
 // 7. Crisis Modal Overlay
 export const CrisisModal = memo(({ isOpen, onClose }: CrisisModalProps) => {
@@ -1044,7 +1035,6 @@ export const CrisisModal = memo(({ isOpen, onClose }: CrisisModalProps) => {
     </div>
   )
 })
-
 
 // 8. Deadman Button (Hold to Confirm)
 export const DeadmanButton = memo(
@@ -1172,7 +1162,6 @@ export const DeadmanButton = memo(
   }
 )
 
-
 // 10. Hardware Inventory Slot
 export const BrutalSlot = memo(({ label, item = null }: BrutalSlotProps) => {
   const { t } = useTranslation(['ui'])
@@ -1215,7 +1204,6 @@ export const BrutalSlot = memo(({ label, item = null }: BrutalSlotProps) => {
     </div>
   )
 })
-
 
 // 11. Void Loader (Geometric Spinner)
 export const VoidLoader = memo(({ size = 'w-16 h-16' }: VoidLoaderProps) => {
@@ -1260,7 +1248,6 @@ export const VoidLoader = memo(({ size = 'w-16 h-16' }: VoidLoaderProps) => {
   )
 })
 
-
 // 14. Hazard Ticker Tape (For Gig Modifiers)
 export const HazardTicker = memo(({ message }: HazardTickerProps) => {
   const { t } = useTranslation(['ui'])
@@ -1289,6 +1276,3 @@ export const HazardTicker = memo(({ message }: HazardTickerProps) => {
     </div>
   )
 })
-
-
-

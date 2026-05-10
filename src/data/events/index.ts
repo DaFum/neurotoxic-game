@@ -37,7 +37,7 @@ const ALL_RAW_EVENTS = [
 
 // The final registry of playable events
 export const EVENTS_DB = Object.fromEntries(
-  EVENT_CATEGORIES.map((cat) => [cat, [] as UnknownRecord[]])
+  EVENT_CATEGORIES.map(cat => [cat, [] as UnknownRecord[]])
 ) as Record<EventCategory, UnknownRecord[]>
 
 const seenIds = new Set<string>()

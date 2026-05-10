@@ -15,11 +15,12 @@ export const clampNonNegative = (value: number): number => {
 }
 
 export const isStashEntry = (entry: unknown): entry is StashEntry => {
+  if (entry === null || typeof entry !== 'object') return false
+  const obj = entry as Record<string, unknown>
+
   return (
-    entry !== null &&
-    typeof entry === 'object' &&
-    Object.hasOwn(entry, 'stacks') &&
-    (typeof (entry as Record<string, unknown>).stacks === 'number' || (entry as Record<string, unknown>).stacks === null)
+    Object.hasOwn(obj, 'stacks') &&
+    (typeof obj.stacks === 'number' || obj.stacks === null)
   )
 }
 

@@ -72,7 +72,6 @@ export const TerminalReadout = memo(() => {
   )
 })
 
-
 // 13. Corrupted Data Stream (Text Reveal Effect)
 export const CorruptedText = memo(({ text, delay = 0 }: CorruptedTextProps) => {
   const [displayedText, setDisplayedText] = useState<string>('')
@@ -116,7 +115,6 @@ export const CorruptedText = memo(({ text, delay = 0 }: CorruptedTextProps) => {
 
   return <span className='font-mono'>{displayedText}</span>
 })
-
 
 // 16. Rhythm Lane Matrix (Simulation of the Rhythm Engine)
 export const RhythmMatrix = memo(() => {
@@ -203,7 +201,6 @@ export const RhythmMatrix = memo(() => {
     </div>
   )
 })
-
 
 // 17. Corporate Sellout Contract (Brand Deals)
 export const SelloutContract = memo(() => {
@@ -292,7 +289,6 @@ export const SelloutContract = memo(() => {
   )
 })
 
-
 // 18. Toxic Hate Feed (Chatter Overlay)
 export const ToxicChatter = memo(() => {
   const { t } = useTranslation(['ui'])
@@ -319,8 +315,7 @@ export const ToxicChatter = memo(() => {
       const uuid = getSafeUUID()
       const randomHate = newHate[Math.floor(secureRandom() * newHate.length)]
       setMessages(prev => {
-        const uuidPrefix =
-          uuid.split('-')[0]?.toUpperCase()
+        const uuidPrefix = uuid.split('-')[0]?.toUpperCase()
         const newMsg: Message = {
           id: uuid,
           user: `USER_${uuidPrefix ?? t('ui:chatter.unknownUser', { defaultValue: 'UNK' })}`,
@@ -363,7 +358,6 @@ export const ToxicChatter = memo(() => {
     </div>
   )
 })
-
 
 // 19. Void Decryptor (Unlocks/Lore)
 export const VoidDecryptor = memo(() => {

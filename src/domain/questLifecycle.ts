@@ -11,10 +11,7 @@ import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
 
 export const QuestLifecycle = {
-  addQuest: (
-    state: GameState,
-    quest: QuestState
-  ): GameState => {
+  addQuest: (state: GameState, quest: QuestState): GameState => {
     if (hasActiveQuest(state.activeQuests, quest.id)) return state
     return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
   },
@@ -97,7 +94,10 @@ export const QuestLifecycle = {
           typeof quest.rewardData?.memberIndex === 'number'
             ? Math.max(
                 0,
-                Math.min(originalMembers.length - 1, quest.rewardData.memberIndex)
+                Math.min(
+                  originalMembers.length - 1,
+                  quest.rewardData.memberIndex
+                )
               )
             : typeof randomIdx === 'number'
               ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
