@@ -204,7 +204,7 @@ Expected: failures on all new `result` assertions.
 Replace `src/utils/arrivalUtils.ts`'s `handleNodeArrival` function. Key rules:
 
 - Remove the `changeScene` parameter from `HandleNodeArrivalParams` (it's no longer needed inside the util).
-- Remove the `onShowHQ` param — this stays because it's a _display_ side effect (opens HQ modal), not scene routing. Keep it.
+- Keep the `onShowHQ` param — it's a _display_ side effect (opens HQ modal), not scene routing, so it stays.
 - Each `case` returns an `ArrivalResult`. The function signature becomes `(params: HandleNodeArrivalParams): ArrivalResult`.
 - In the GIG/FESTIVAL/FINALE case, if `startGig` succeeds, return `{ scene: GAME_PHASES.OVERWORLD, gigStarted: true }`. If cancelled, return `{ scene: GAME_PHASES.OVERWORLD, gigStarted: false }`.
 - Add a default case with logging + explicit OVERWORLD fallback:
@@ -661,7 +661,7 @@ Inside `MapNodeTooltip`, after the existing venue stats block for GIG/FESTIVAL/F
 
 ```tsx
 {
-  ;(node.type === 'GIG' ||
+  (node.type === 'GIG' ||
     node.type === 'FESTIVAL' ||
     node.type === 'FINALE') &&
     harmony !== undefined &&
