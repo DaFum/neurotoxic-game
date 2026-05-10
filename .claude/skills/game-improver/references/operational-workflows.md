@@ -23,7 +23,7 @@
 ## Project Context Awareness
 
 - Read repo guidance in strict order before edits: root instructions, nested instructions, and coding standards.
-- Maintain pinned stack assumptions (React 19.2.5, Vite 8.0.8, Tailwind 4.2.2, Pixi 8, Tone 15.5.6).
+- Maintain pinned stack assumptions (React 19.2.5, Vite 8.0.10, Tailwind 4.2.4, Pixi 8, Tone 15.5.6).
 - Keep brutalist UI intent: uppercase, boxy layout language, direct copy, and strong contrast.
 - Ensure German tour authenticity for places, naming, and narrative framing.
 - Integrate threat-model intent when touching persistence, input handling, or loading paths (see [Security section in CODEBASE_DOCS_MASTER](../../../../docs/CODEBASE_DOCS_MASTER.md#source-neurotoxic-game-threat-modelmd)).

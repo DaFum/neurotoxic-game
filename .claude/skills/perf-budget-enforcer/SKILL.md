@@ -13,7 +13,7 @@ Analyze and optimize application performance, focusing on bundle size and runtim
     Run the production build to see chunk sizes.
 
     ```bash
-    npm run build
+    pnpm run build
     ```
 
     - _Goal_: Main entry point < 300kB gzipped.
