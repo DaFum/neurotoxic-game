@@ -1,228 +1,67 @@
-# Detailed Implementation Instructions — Codebase Review 2026-05-10
+# Implementation Instructions — Codebase Review 2026-05-10
 
-Follow-up to `docs/codebase-review-2026-05-10.md`.
-Each section gives exact file paths, what to change, and why. One correction from the original report is noted in §4.3.
+Companion to `docs/codebase-review-2026-05-10.md`.
+Each section gives exact file paths, line numbers, before/after diffs, and verification commands. Sections appear in the priority order from the review's §8 action list.
 
----
+| Step | Section | Estimated effort |
+|---|---|---|
+| 1 | [Remove `propTypes` everywhere](#1-remove-proptypes-everywhere-67-files) | 60–90 min (mechanical) |
+| 2 | [Delete dead `BrutalistUI` exports](#2-delete-five-dead-brutalistui-exports) | 15 min |
+| 3 | [Extend the audio barrel](#3-extend-the-audio-barrel) | 20 min |
+| 4 | [Relocate `calculateGuaranteedDailyCost`](#4-relocate-calculateguaranteeddailycost) | 10 min |
+| 5 | [Wire `clearImageCache`](#5-wire-clearimagecache-into-the-menu-transition) | 10 min |
+| 6 | [Secure `resetSecureRandomBatchForTesting`](#6-secure-resetsecurerandombatchfortesting) | 15 min |
+| 7 | [Remove unused i18n fallback constants](#7-remove-unused-i18n-fallback-constants) | 5 min |
+| 8 | [Drop unnecessary `export` keywords](#8-drop-unnecessary-export-keywords) | 5 min |
+| 9 | [Rename `rhythmGame.ts` → `.d.ts`](#9-rename-rhythmgamets--d-ts) | 5 min |
+| 10 | [Document `unlockManager` / `unlockCheck` boundary](#10-document-unlockmanager--unlockcheck-boundary) | 5 min |
+| 11 | [Decide on `VisualPrototypes.tsx`](#11-decide-on-visualprototypestsx) | 15–60 min |
 
-## 1. Rename `src/types/rhythmGame.ts` → `rhythmGame.d.ts`
-
-**Why:** Every other type definition file in `src/types/` uses the ambient `.d.ts` extension. `rhythmGame.ts` contains only `type`/`export type` declarations, so the `.ts` extension misleads tools and readers into expecting runtime code.
-
-**Steps:**
-
-```bash
-git mv src/types/rhythmGame.ts src/types/rhythmGame.d.ts
-```
-
-Then update the two import sites that reference it by name (TypeScript resolves `.d.ts` implicitly, so imports that use the bare module path need no change; only explicit path references need updating):
-
-```bash
-grep -rn "from.*types/rhythmGame" src/ --include="*.ts" --include="*.tsx"
-```
-
-If any import reads `from '../types/rhythmGame'`, it will continue to resolve correctly after the rename because TypeScript's module resolution picks up `.d.ts` automatically. Verify with:
-
-```bash
-pnpm run typecheck:core
-```
-
----
-
-## 2. Remove `DEFAULT_POST_FAILED_MSG` — i18n key already exists
-
-**Why:** The i18n key `ui:postGig.postResolutionFailed` is already present in both
-`public/locales/en/ui.json:510` and `public/locales/de/ui.json:510` with the exact same string.
-The constant is a redundant export from a hook file that the `t()` call already covers.
-
-**File:** `src/hooks/usePostGigHandlers.ts`
-
-Remove line 44:
-```ts
-// DELETE this line:
-export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
-```
-
-Change line 136–138, which passes the constant as `defaultValue`:
-```ts
-// BEFORE:
-t('ui:postGig.postResolutionFailed', {
-  defaultValue: DEFAULT_POST_FAILED_MSG
-})
-
-// AFTER:
-t('ui:postGig.postResolutionFailed')
-```
-
-**File:** `src/hooks/usePostGigLogic.ts`
-
-Remove line 13, which re-exports the constant:
-```ts
-// DELETE this line:
-export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
-```
-
-Search for any consumer of the re-export and remove those imports:
-```bash
-grep -rn "DEFAULT_POST_FAILED_MSG" src/ --include="*.ts" --include="*.tsx"
-```
-
----
-
-## 3. Move `calculateGuaranteedDailyCost` to `economyEngine.ts`
-
-**Why:** `economyEngine.ts` is the authoritative module for all money calculations. `calculateGuaranteedDailyCost` is a financial function and already imports `EXPENSE_CONSTANTS` from `economyEngine`. Callers looking for daily cost logic will search `economyEngine` first.
-
-**Step 1 — Move the function.**
-
-In `src/utils/simulationUtils.ts`, cut lines 280–297:
-```ts
-export const calculateGuaranteedDailyCost = (
-  player: Pick<GameState['player'], 'fameLevel'>,
-  band: Pick<GameState['band'], 'members'>,
-  social: Partial<Pick<GameState['social'], 'youtube'>> = {}
-) => {
-  const bandSize = Array.isArray(band.members) ? band.members.length : 3
-  const fameLevel = player.fameLevel || 0
-  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
-  let dailyCost =
-    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
-
-  if ((social.youtube || 0) >= 10000) {
-    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
-    dailyCost -= adRevenue
-  }
-
-  return dailyCost
-}
-```
-
-Paste it into `src/utils/economyEngine.ts` near the other `calculateX` exports. No new imports needed — `EXPENSE_CONSTANTS` is already defined in that file.
-
-**Step 2 — Fix the internal call in `simulationUtils.ts`.**
-
-Line 314 in `simulationUtils.ts` calls `calculateGuaranteedDailyCost` internally. Add an import:
-```ts
-import { calculateGuaranteedDailyCost } from './economyEngine'
-```
-
-Remove the old export from `simulationUtils.ts`. The `EXPENSE_CONSTANTS` import from `economyEngine` at the top of `simulationUtils.ts` is already there — no change needed there.
-
-**Step 3 — Update the two external import sites.**
-
-```
-src/hooks/useTravelLogic.ts:47  import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
-```
-
-Change both occurrences of `'../utils/simulationUtils'` that import this function to `'../utils/economyEngine'`.
-
-**Verify:**
+After every step run:
 ```bash
 pnpm run typecheck:core
 pnpm run test
 ```
+The full PR gate before merge is `pnpm run test:all`.
 
 ---
 
-## 4. Document the `unlockManager` / `unlockCheck` boundary
+## 1. Remove `propTypes` everywhere (67 files)
 
-**Why:** These two modules have names that don't express their different responsibilities. Contributors regularly add unlock-adjacent logic to the wrong file.
+**Why:** `prop-types@15.8.1` is a runtime dependency that duplicates every TypeScript interface. React 19 deprecates `propTypes` validation. The codebase already declares prop shapes in `src/types/components.d.ts` or inline.
 
-Add a comment block at the top of each file (after the imports):
+### 1.1 Mechanical edit per file
 
-**`src/utils/unlockManager.ts`** — add after imports:
-```ts
-/**
- * Persistence layer for earned unlock IDs.
- * Reads and writes the unlock list to localStorage.
- * Does NOT evaluate whether state qualifies for an unlock —
- * see unlockCheck.ts for that logic.
- */
+For each affected file, perform two edits:
+
+1. Delete the line `import PropTypes from 'prop-types'`.
+2. Delete the entire trailing `ComponentName.propTypes = { … }` block (sometimes multiple blocks if the file declares sub-components).
+
+**Example — `src/components/postGig/FinancialList.tsx`:**
+
+```diff
+-import PropTypes from 'prop-types'
+ import { motion } from 'framer-motion'
+ import { useTranslation } from 'react-i18next'
+ …
+ export const FinancialList = ({ items, type }: FinancialListProps) => { … }
+-
+-FinancialList.propTypes = {
+-  items: PropTypes.arrayOf(
+-    PropTypes.shape({
+-      label: PropTypes.string,
+-      labelKey: PropTypes.string.isRequired,
+-      value: PropTypes.number.isRequired,
+-      detail: PropTypes.string,
+-      detailKey: PropTypes.string,
+-      detailParams: PropTypes.object
+-    })
+-  ).isRequired,
+-  type: PropTypes.oneOf(['income', 'expense']).isRequired
+-}
 ```
 
-**`src/utils/unlockCheck.ts`** — add after imports:
-```ts
-/**
- * Domain logic layer for trait unlock evaluation.
- * Inspects game state + a context object to derive which
- * trait unlocks have been earned in a given event.
- * Does NOT persist anything — see unlockManager.ts for that.
- */
-```
-
-Also add to `AGENTS.md` under the "Architecture Constraints" section:
-```markdown
-- `unlockManager` (utils) is the localStorage persistence layer for earned unlock IDs.
-  `unlockCheck` (utils) evaluates game state to derive which trait unlocks apply.
-  Do not add persistence logic to `unlockCheck` or evaluation logic to `unlockManager`.
-```
-
----
-
-## 5. Extend `audioEngine.ts` to cover `audioManager` and `audioService`
-
-**Context:** `src/utils/audio/audioEngine.ts` already functions as an export hub for stateless audio utilities (playback functions, setup, MIDI, etc.) — it says so in its own file header. However, the two stateful objects `audioManager` (used by 14 files) and `audioService` (used by 1 file) are not included. This forces consumers to import from two different paths.
-
-**What `audioEngine.ts` does NOT currently export:**
-- `audioManager` from `./AudioManager`
-- `audioService` from `./audioService`
-
-**Step 1 — Add two export lines to `src/utils/audio/audioEngine.ts`:**
-
-At the end of the file, append:
-```ts
-export { audioManager } from './AudioManager'
-export { audioService } from './audioService'
-```
-
-**Step 2 — Migrate import sites.**
-
-Run:
-```bash
-grep -rn "from.*utils/audio/AudioManager\|from.*utils/audio/audioService" src/ \
-  --include="*.ts" --include="*.tsx"
-```
-
-For each of the 14 `AudioManager` import sites and 1 `audioService` import site outside `src/utils/audio/`, change:
-```ts
-// BEFORE:
-import { audioManager } from '../utils/audio/AudioManager'
-import { audioService } from '../utils/audio/audioService'
-
-// AFTER:
-import { audioManager } from '../utils/audio/audioEngine'
-import { audioService } from '../utils/audio/audioEngine'
-```
-
-**Step 3 — Add a note to the audio AGENTS.md** (`src/utils/audio/AGENTS.md`):
-```markdown
-## Public API
-All imports from outside this directory should use `audioEngine.ts` as the
-single entry point. Direct sub-module imports are only permitted within
-`src/utils/audio/` itself.
-
-- `audioManager` — stateful class instance; use for lifecycle management and
-  direct method calls in non-React contexts (Pixi controllers, imperative hooks).
-- `audioService` — React `useSyncExternalStore`-compatible adapter wrapping
-  `audioManager`; use inside React components and hooks that need reactivity.
-- All stateless utility functions — also re-exported via `audioEngine.ts`.
-```
-
-**Verify:**
-```bash
-pnpm run typecheck:core
-pnpm run test:ui
-```
-
----
-
-## 6. Remove all `.propTypes` blocks (76 occurrences across 67 files)
-
-**Why:** React 19 removes runtime `propTypes` validation. Every prop shape is already enforced statically by TypeScript interfaces declared in `src/types/components.d.ts` or inline in the same file. These blocks duplicate the source of truth and add dead bundle weight.
-
-**Step 1 — Remove `import PropTypes from 'prop-types'` and the `.propTypes = { … }` blocks.**
-
-Complete list of files to touch (all confirmed by `grep -rn "import PropTypes"`):
+### 1.2 Full file list (67 files)
 
 ```
 src/components/PixiStage.tsx
@@ -233,7 +72,7 @@ src/components/minigames/gig/BandMembersLayer.tsx
 src/components/minigames/tourbus/TourbusControls.tsx
 src/components/minigames/tourbus/TourbusHUD.tsx
 src/components/postGig/CompletePhase.tsx
-src/components/postGig/DealCard.tsx
+src/components/postGig/DealCard.tsx          ← 4 sub-component blocks
 src/components/postGig/DealsPhase.tsx
 src/components/postGig/FinancialColumn.tsx
 src/components/postGig/FinancialList.tsx
@@ -294,49 +133,93 @@ src/ui/shared/Modal.tsx
 src/ui/shared/ToggleSwitch.tsx
 src/ui/shared/Tooltip.tsx
 src/ui/shared/VolumeSlider.tsx
-src/ui/shared/propTypes.ts       ← delete this file entirely
 ```
 
-**Pattern per file** (example using `FinancialList.tsx`):
+### 1.3 Delete the shared helper
 
-```ts
-// BEFORE:
-import PropTypes from 'prop-types'
-// … component body …
-FinancialList.propTypes = {
-  items: PropTypes.arrayOf(…).isRequired,
-  type: PropTypes.oneOf(['income', 'expense']).isRequired
-}
-
-// AFTER:
-// (import line removed, propTypes block removed — TypeScript interface in
-//  src/types/components.d.ts already enforces FinancialListProps)
-```
-
-**Step 2 — Delete the shared propTypes helper file:**
 ```bash
 git rm src/ui/shared/propTypes.ts
 ```
-Confirm it has no imports elsewhere:
+
+Verify no imports remain:
 ```bash
-grep -rn "from.*shared/propTypes" src/ --include="*.ts" --include="*.tsx"
+grep -rn "from.*shared/propTypes" src/
+grep -rn "from 'prop-types'" src/
+```
+Both should return no results.
+
+### 1.4 Remove the dependency
+
+```bash
+pnpm remove prop-types @types/prop-types
 ```
 
-**Step 3 — Check if `prop-types` can be removed from dependencies:**
-```bash
-grep -rn "prop-types" package.json
-# If only dev dependency or only in the above files — remove it:
-pnpm remove prop-types
-```
+### 1.5 Add a guardrail to `AGENTS.md`
 
-**Step 4 — Add a guardrail to `AGENTS.md`:**
+Append under the "Style" section:
 ```markdown
-- Do not add `.propTypes` blocks. React 19 has removed runtime propTypes
+- Do not add `.propTypes` blocks. React 19 deprecates runtime propTypes
   validation. TypeScript interfaces in `src/types/components.d.ts` or inline
-  types are the sole source of truth for prop contracts.
+  prop types are the sole source of truth for prop contracts.
 ```
 
-**Verify:**
+---
+
+## 2. Delete five dead `BrutalistUI` exports
+
+**Why:** Five components in `src/ui/shared/BrutalistUI.tsx` are re-exported via `src/ui/shared/index.tsx` but consumed nowhere. They account for ~550 of the file's 1,278 lines.
+
+### 2.1 Verify before deleting
+
+```bash
+grep -rn 'BrutalFader\|BrutalSlot\|BrutalTabs\|BrutalToggle\|CrisisModal' \
+  src/ tests/ --include='*.ts' --include='*.tsx' --include='*.js' \
+  | grep -v 'BrutalistUI.tsx\|ui/shared/index.tsx'
+```
+Expect zero output. If anything appears, stop and re-evaluate.
+
+### 2.2 Delete from `BrutalistUI.tsx`
+
+Delete these export blocks (line numbers reference the current file):
+
+| Export | Start line | End line (approx.) |
+|---|---:|---:|
+| `BrutalToggle` | 733 | ~832 |
+| `BrutalTabs` | 832 | ~908 |
+| `BrutalFader` | 908 | ~963 |
+| `CrisisModal` | 963 | ~1166 |
+| `BrutalSlot` | 1166 | ~1278 |
+
+Also remove their accompanying TypeScript interfaces near the top of the file:
+- `BrutalToggleProps` (line 31)
+- `BrutalSlotItem` (line 41)
+- `BrutalSlotProps` (line 46)
+- `BrutalFaderProps` (line 63)
+- (any `CrisisModalProps` if defined near line 963)
+
+After deletion, confirm any internal helpers used only by these components (e.g. private constants, sub-components) are also removed.
+
+### 2.3 Remove barrel re-exports
+
+In `src/ui/shared/index.tsx`, delete the lines exporting these symbols:
+
+```diff
+-  CrosshairIcon,    # if also unused — verify with grep first
+-  BrutalToggle,
+-  BrutalTabs,
+-  BrutalFader,
+-  CrisisModal,
+-  BrutalSlot,
+```
+
+`CrosshairIcon` and `GearIcon` appeared as unused in the AST sweep but are utility icons — verify before deleting:
+```bash
+grep -rn 'CrosshairIcon\|GearIcon' src/ --include='*.tsx' | grep -v 'BrutalistUI.tsx\|ui/shared/index.tsx'
+```
+Only delete them if the result is empty.
+
+### 2.4 Verify
+
 ```bash
 pnpm run typecheck:core
 pnpm run test:ui
@@ -344,223 +227,445 @@ pnpm run test:ui
 
 ---
 
-## 7. Wire `clearImageCache` into the game reset flow
+## 3. Extend the audio barrel
 
-**Why:** `clearImageCache` revokes blob object-URLs created by `fetchGenImageAsObjectUrl` and clears the in-memory cache. Without it, each game run accumulates unreleased blob URLs. The function is exported and tested but never called in application code.
+**Why:** `src/utils/audio/audioEngine.ts` already re-exports most audio symbols and self-identifies as "an export hub" in its file header. It omits the two stateful objects (`audioManager`, `audioService`) that are imported most often from outside the audio directory. Consumers currently import from two paths.
 
-**Important constraint:** `handleResetState` is a pure reducer — it cannot call async functions. The cache clear must happen in a React hook via a side-effect.
+### 3.1 Append two export lines
 
-**Chosen integration point:** `src/context/GameState.tsx`, using a `useEffect` that fires whenever the scene transitions to `MAIN_MENU` (which is where `RESET_STATE` lands).
+At the bottom of `src/utils/audio/audioEngine.ts`:
 
-**Step 1 — Add the import to `GameState.tsx`:**
+```ts
+// Stateful entry points
+export { audioManager } from './AudioManager'
+export { audioService } from './audioService'
+```
+
+### 3.2 Migrate the 15 external import sites
+
+Run:
+```bash
+grep -rln "from.*utils/audio/AudioManager\|from.*utils/audio/audioService" \
+  src/ --include='*.ts' --include='*.tsx' | grep -v 'src/utils/audio'
+```
+
+For each file in the result, change:
+```ts
+// before:
+import { audioManager } from '../utils/audio/AudioManager'
+// or
+import { audioService } from '../utils/audio/audioService'
+
+// after (path depth may vary):
+import { audioManager } from '../utils/audio/audioEngine'
+import { audioService } from '../utils/audio/audioEngine'
+```
+
+Specific files to touch (paths relative to project root):
+```
+src/hooks/minigames/useRoadieLogic.ts
+src/hooks/minigames/useTourbusLogic.ts
+src/hooks/overworld/useAmbientResume.ts
+src/hooks/rhythmGame/useRhythmGameAudio.ts
+src/hooks/rhythmGame/useRhythmGameScoring.ts
+src/hooks/useAudioControl.ts             ← uses audioService
+src/hooks/useDarkWebLeak.ts
+src/hooks/useGigInput.ts
+src/hooks/usePirateRadio.ts
+src/hooks/usePreGigLogic.ts
+src/hooks/useTravelLogic.ts
+src/scenes/Gig.tsx
+src/scenes/mainmenu/useMainMenu.ts
+src/ui/HUD.tsx
+```
+
+### 3.3 Update audio AGENTS.md
+
+Append to `src/utils/audio/AGENTS.md`:
+
+```markdown
+## Public API
+
+All imports from outside this directory must go through `audioEngine.ts`.
+Direct imports from sub-modules (`./AudioManager`, `./audioService`,
+`./playback`, etc.) are only permitted inside `src/utils/audio/` itself.
+
+Roles:
+- `audioManager` (stateful class instance) — for non-React contexts:
+  Pixi stage controllers, hook lifecycle, imperative timing.
+- `audioService` (React-safe adapter) — for React components and hooks
+  that need `useSyncExternalStore`-style reactivity.
+- All other utilities are stateless and safe to call from anywhere.
+```
+
+---
+
+## 4. Relocate `calculateGuaranteedDailyCost`
+
+**Why:** `economyEngine.ts` already owns all related money calculations and `EXPENSE_CONSTANTS`. The function currently lives in `simulationUtils.ts` for historical reasons; that placement breaks discoverability.
+
+### 4.1 Cut from `simulationUtils.ts:280–297`
+
+Delete this block:
+```ts
+export const calculateGuaranteedDailyCost = (
+  player: Pick<GameState['player'], 'fameLevel'>,
+  band: Pick<GameState['band'], 'members'>,
+  social: Partial<Pick<GameState['social'], 'youtube'>> = {}
+) => {
+  const bandSize = Array.isArray(band.members) ? band.members.length : 3
+  const fameLevel = player.fameLevel || 0
+  const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
+  let dailyCost =
+    EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 8 + lifestyleInflation
+
+  if ((social.youtube || 0) >= 10000) {
+    const adRevenue = Math.floor((social.youtube || 0) / 10000) * 10
+    dailyCost -= adRevenue
+  }
+
+  return dailyCost
+}
+```
+
+### 4.2 Paste into `economyEngine.ts`
+
+Place it near the other `calculateX` exports (around the existing daily/expense helpers). The function references `EXPENSE_CONSTANTS` which is defined in the same file at line 99, so no new imports are needed. `GameState` is already imported.
+
+### 4.3 Fix the internal caller in `simulationUtils.ts`
+
+The function is still used at `simulationUtils.ts:314`. Add an import:
+
+```ts
+import { EXPENSE_CONSTANTS, calculateGuaranteedDailyCost } from './economyEngine'
+```
+
+(Replace the existing `import { EXPENSE_CONSTANTS } from './economyEngine'` line.)
+
+### 4.4 Update external import sites
+
+```
+src/hooks/useTravelLogic.ts:47
+```
+
+Change:
+```diff
+-import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
++import { calculateGuaranteedDailyCost } from '../utils/economyEngine'
+```
+
+Confirm no other importers:
+```bash
+grep -rn "calculateGuaranteedDailyCost" src/ tests/ --include='*.ts' --include='*.tsx' --include='*.js'
+```
+
+---
+
+## 5. Wire `clearImageCache` into the `MENU` transition
+
+**Why:** `clearImageCache` revokes the blob URLs created by `fetchGenImageAsObjectUrl`. Without it, blob URLs accumulate across game runs.
+
+**Important:** Reducers must stay synchronous and pure. `clearImageCache` is async (returns a Promise) and has IO side effects (revoking URLs), so it must live in a `useEffect`, not in `handleResetState`. The original reducer-based recommendation was incorrect.
+
+### 5.1 Choose the integration point
+
+`src/context/GameState.tsx` — the provider that already owns side-effect hooks (`useLeaderboardSync(state)` etc.). The reset flow ultimately lands on `GAME_PHASES.MENU`, which is the safe trigger.
+
+The scene constant is `GAME_PHASES.MENU` (string value `'MENU'`), declared in `src/context/gameConstants.ts:10`.
+
+### 5.2 Add the import
+
+At the top of `src/context/GameState.tsx`:
 ```ts
 import { clearImageCache } from '../utils/imageGen'
+import { GAME_PHASES } from './gameConstants'
 ```
+(If `GAME_PHASES` is already imported, leave that line as-is.)
 
-**Step 2 — Add the effect** (place after the existing `useLeaderboardSync(state)` call, or alongside other side-effect hooks in the provider body):
+### 5.3 Add the effect
+
+Inside the provider body, near the existing `useLeaderboardSync(state)` call:
 ```ts
-const currentScene = state.currentScene
-
 useEffect(() => {
-  if (currentScene === 'MAIN_MENU') {
+  if (state.currentScene === GAME_PHASES.MENU) {
     void clearImageCache()
   }
-}, [currentScene])
+}, [state.currentScene])
 ```
 
-This fires once every time the player returns to the main menu — which covers both the normal post-game-over path and any debug reset. The `void` operator discards the promise because cleanup failure is non-critical.
+The `void` discards the returned promise — failure to revoke a URL is non-critical and shouldn't surface to the user.
 
-**Verify:**
+### 5.4 Verify
+
 ```bash
 pnpm run typecheck:core
-# Then manually: start game → play through → hit game over → return to menu
-# In DevTools Memory tab, verify blob: URLs are revoked
+```
+
+Manual smoke test:
+1. Start a fresh game.
+2. Play through to game over.
+3. Return to main menu.
+4. In Chrome DevTools → Memory → Heap snapshot, filter by `Blob` — confirm the count drops after returning to menu.
+
+---
+
+## 6. Secure `resetSecureRandomBatchForTesting`
+
+`src/utils/crypto.ts:142` exports a test-only function into the production bundle. Pick one of two fixes.
+
+### Option A — Conditional export (minimal change)
+
+Edit `src/utils/crypto.ts:139–146`:
+```diff
+-/**
+- * Resets the batch and error flag for testing purposes.
+- */
+-export const resetSecureRandomBatchForTesting = (): void => {
+-  batchArray = null
+-  batchIndex = BATCH_SIZE
+-  secureRandomErrorReported = false
+-}
++/**
++ * Resets the batch and error flag for testing purposes.
++ * In production builds this is `undefined`.
++ */
++export const resetSecureRandomBatchForTesting: (() => void) | undefined =
++  process.env.NODE_ENV === 'test'
++    ? (): void => {
++        batchArray = null
++        batchIndex = BATCH_SIZE
++        secureRandomErrorReported = false
++      }
++    : undefined
+```
+
+Update test call sites to handle the optional:
+```
+tests/node/crypto.test.js:26
+tests/node/chatterLogic.test.js:133, 140
+tests/security/randomness.test.js:43
+```
+
+```diff
+-resetSecureRandomBatchForTesting()
++resetSecureRandomBatchForTesting?.()
+```
+
+### Option B — Extract to test helper (recommended, removes from prod bundle entirely)
+
+1. Create `tests/helpers/cryptoTestUtils.js`:
+   ```js
+   // Test-only re-export of crypto internals. Do not import from src/.
+   import { __testInternals } from '../../src/utils/crypto.js'
+   export const resetSecureRandomBatchForTesting = __testInternals.resetBatch
+   ```
+
+2. In `src/utils/crypto.ts`, replace the public export with an internal-only namespace:
+   ```ts
+   // Delete the export at line 142–146 above.
+   // Add at the bottom of crypto.ts:
+   export const __testInternals = {
+     resetBatch: (): void => {
+       batchArray = null
+       batchIndex = BATCH_SIZE
+       secureRandomErrorReported = false
+     }
+   }
+   ```
+
+3. Update the three test imports:
+   ```diff
+   -import { resetSecureRandomBatchForTesting } from '../../src/utils/crypto.js'
+   +import { resetSecureRandomBatchForTesting } from '../helpers/cryptoTestUtils.js'
+   ```
+
+Option B is preferred — it makes the test boundary explicit and the symbol cannot be called from production code at all. The `__testInternals` prefix is a strong "do not use" signal for app code.
+
+---
+
+## 7. Remove unused i18n fallback constants
+
+### 7.1 `DEFAULT_POST_FAILED_MSG`
+
+The locale key `ui:postGig.postResolutionFailed` already exists in both `public/locales/en/ui.json:510` and `public/locales/de/ui.json:510`. The `defaultValue:` fallback never fires.
+
+**File:** `src/hooks/usePostGigHandlers.ts`
+
+```diff
+-export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
+```
+
+```diff
+-t('ui:postGig.postResolutionFailed', {
+-  defaultValue: DEFAULT_POST_FAILED_MSG
+-})
++t('ui:postGig.postResolutionFailed')
+```
+
+**File:** `src/hooks/usePostGigLogic.ts`
+
+```diff
+-export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
+```
+
+Verify nothing else imports it:
+```bash
+grep -rn "DEFAULT_POST_FAILED_MSG" src/ tests/
+```
+
+### 7.2 `DEFAULT_SOCIAL_UNAVAILABLE_MSG`
+
+Defined in `src/hooks/usePostGigLogic.ts`, never imported.
+
+```bash
+grep -rn "DEFAULT_SOCIAL_UNAVAILABLE_MSG" src/ tests/
+```
+
+If the only result is the definition line, delete it.
+
+---
+
+## 8. Drop unnecessary `export` keywords
+
+Two functions are exported but only used inside their own file (and not tested directly).
+
+**`src/context/reducers/bandReducer.ts:232`:**
+```diff
+-export const applyContrabandEffect = (
++const applyContrabandEffect = (
+```
+
+**`src/utils/gameStateUtils.ts:736`:**
+```diff
+-export const calculateMemberRelationshipChange = (
++const calculateMemberRelationshipChange = (
+```
+
+Before saving, re-confirm no test or external file imports these:
+```bash
+grep -rn "applyContrabandEffect\|calculateMemberRelationshipChange" src/ tests/ --include='*.ts' --include='*.tsx' --include='*.js'
+```
+
+The internal call sites (`bandReducer.ts:364`, `gameStateUtils.ts:939`) need no change.
+
+---
+
+## 9. Rename `rhythmGame.ts` → `.d.ts`
+
+**Why:** Convention drift — every other file in `src/types/` uses `.d.ts`.
+
+```bash
+git mv src/types/rhythmGame.ts src/types/rhythmGame.d.ts
+```
+
+TypeScript's module resolution picks up `.d.ts` automatically, so imports of the bare module path continue to work. Update the explicit reference in `src/utils/audio/AGENTS.md`:
+
+```diff
+-Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.ts`
++Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.d.ts`
 ```
 
 ---
 
-## 8. Resolve `VisualPrototypes.tsx` — integrate or delete
+## 10. Document `unlockManager` / `unlockCheck` boundary
 
-`src/ui/prototypes/VisualPrototypes.tsx` exports 6 visual components. The i18n keys they use (`ui:terminal.*`) already exist in both EN and DE locale files, so the components are technically functional.
+**Why:** The two filenames look interchangeable. Contributors routinely place new unlock logic in the wrong file.
 
-**Option A — Delete (recommended if prototyping is done):**
+### 10.1 Header comments
+
+Add to `src/utils/unlockManager.ts` after the imports:
+```ts
+/**
+ * Persistence layer for earned unlock IDs.
+ * Reads and writes `neurotoxic_unlocks` in localStorage.
+ *
+ * Does NOT evaluate whether state qualifies for an unlock.
+ * For eligibility logic, see ./unlockCheck.ts.
+ */
+```
+
+Add to `src/utils/unlockCheck.ts` after the imports:
+```ts
+/**
+ * Domain logic for trait unlock evaluation.
+ * Inspects game state + a context envelope and returns the
+ * list of { memberId, traitId } pairs that have been earned.
+ *
+ * Does NOT persist anything. For persistence, see ./unlockManager.ts.
+ */
+```
+
+### 10.2 AGENTS.md note
+
+Append to `AGENTS.md` under "Architecture Constraints":
+```markdown
+- Unlock logic is split across two files. `src/utils/unlockManager.ts` owns
+  localStorage persistence (`getUnlocks`, `addUnlock`). `src/utils/unlockCheck.ts`
+  owns state-based eligibility evaluation (`checkTraitUnlocks`). Do not add
+  persistence logic to `unlockCheck` or evaluation logic to `unlockManager`.
+```
+
+---
+
+## 11. Decide on `VisualPrototypes.tsx`
+
+Six components live in `src/ui/prototypes/VisualPrototypes.tsx` with zero consumers. Pick one path before the decision rots further.
+
+### Option A — Delete entirely
+
 ```bash
 git rm src/ui/prototypes/VisualPrototypes.tsx
-git rm -r src/ui/prototypes/      # if directory becomes empty
+rmdir src/ui/prototypes/ 2>/dev/null   # only if directory becomes empty
 ```
 
-**Option B — Integrate `CorruptedText` into `ChatterOverlay`:**
+Choose this if the design exploration phase is over.
 
-`CorruptedText` is the most reusable export — it takes a `text` string and a `delay` number and applies a character-by-character glitch animation. It would improve the visual quality of the chatter overlay at zero logic cost.
+### Option B — Integrate `CorruptedText` into chatter (highest-value rescue)
 
-In `src/components/ChatterOverlay.tsx` (or wherever individual chatter lines are rendered), import and replace plain text renders:
+1. Move the component to a stable location:
+   ```bash
+   git mv src/ui/prototypes/VisualPrototypes.tsx src/ui/shared/CorruptedText.tsx
+   ```
+   In the new file, delete every export except `CorruptedText`.
 
-```ts
-import { CorruptedText } from '../ui/prototypes/VisualPrototypes'
-```
+2. In `src/components/ChatterOverlay.tsx`, replace plain text rendering with:
+   ```tsx
+   import { CorruptedText } from '../ui/shared/CorruptedText'
 
-In the message list render:
-```tsx
-// BEFORE (approximate):
-<span className='…'>{line.text}</span>
+   // … inside the message render:
+   <CorruptedText text={line.text} delay={index * 80} />
+   ```
 
-// AFTER:
-<CorruptedText text={line.text} delay={index * 80} />
-```
+3. Add a Vitest snapshot test for the overlay to catch regressions.
 
-Move the component out of the `prototypes/` directory into `src/ui/shared/CorruptedText.tsx` before doing so (the `prototypes/` prefix signals "not ready").
+### Option C — Expose as a debug-only route
 
-**Option C — Expose as a debug route** (only if the design exploration tooling is actively used):
+Only worth doing if there's an active visual design loop. Add a `PROTOTYPES` scene gated by `import.meta.env.DEV` in `SceneRouter.tsx`.
 
-Add a `PROTOTYPES` scene value and render `VisualPrototypes` from `SceneRouter.tsx` behind `process.env.NODE_ENV === 'development'`.
+If no decision is made within one sprint, default to Option A. Lingering "prototype" directories rot quickly and confuse contributors.
 
 ---
 
-## 9. Guard `resetSecureRandomBatchForTesting` against production exposure
+## Post-implementation checks
 
-**Why:** `src/utils/crypto.ts` exports a function whose sole purpose is to reset internal CSPRNG batch state for deterministic test runs. Exporting it from a production module means it's included in the production bundle and exposes the ability to reset cryptographic state.
+After all sections are merged:
 
-**File:** `src/utils/crypto.ts`, lines 139–146.
-
-**Option A — Conditional export (minimal change):**
-```ts
-// BEFORE:
-/**
- * Resets the batch and error flag for testing purposes.
- */
-export const resetSecureRandomBatchForTesting = (): void => {
-  batchArray = null
-  batchIndex = BATCH_SIZE
-  secureRandomErrorReported = false
-}
-
-// AFTER:
-export const resetSecureRandomBatchForTesting =
-  process.env.NODE_ENV === 'test'
-    ? (): void => {
-        batchArray = null
-        batchIndex = BATCH_SIZE
-        secureRandomErrorReported = false
-      }
-    : undefined
+```bash
+pnpm run test:all                # full PR gate
+pnpm run typecheck                # strict reducer gate
+pnpm run typecheck:core
 ```
 
-Test files that import this must then guard the call:
-```ts
-// tests/node/crypto.test.js — already imports it, add a guard:
-resetSecureRandomBatchForTesting?.()
-```
+Expected impact on the codebase:
 
-**Option B — Extract to a test-only module (cleaner):**
-
-Create `tests/helpers/cryptoTestUtils.js`:
-```js
-// Re-exports the reset helper for use in test files only.
-// This file must never be imported from src/.
-export { resetSecureRandomBatchForTesting } from '../../src/utils/crypto.js'
-```
-
-Remove the export from `crypto.ts`:
-```ts
-// DELETE lines 139–146 from crypto.ts
-```
-
-Update all three test imports:
-```
-tests/node/crypto.test.js:5
-tests/node/chatterLogic.test.js:133
-tests/security/randomness.test.js:25
-```
-
-Change from:
-```js
-import { resetSecureRandomBatchForTesting } from '../../src/utils/crypto.js'
-```
-To:
-```js
-import { resetSecureRandomBatchForTesting } from '../helpers/cryptoTestUtils.js'
-```
-
-Option B is preferred — it makes the test boundary explicit and removes the symbol from the production bundle entirely.
-
----
-
-## 10. Consolidate image prompt strategy in `imageGen.ts`
-
-**Why:** Two components use `IMG_PROMPTS.<key>` (an exported typed map) while one component uses a local `getImagePromptForCategory(category, badges)` function. Adding a new image prompt category currently requires editing two different patterns.
-
-**Current state:**
-- `src/utils/imageGen.ts` exports `IMG_PROMPTS` (a `const` object with string values)
-- `src/components/postGig/SocialOptionButton.tsx` defines `getImagePromptForCategory` locally and calls it directly
-
-**Step 1 — Move `getImagePromptForCategory` into `imageGen.ts` and export it:**
-
-In `src/components/postGig/SocialOptionButton.tsx`, cut the local `getImagePromptForCategory` function. Paste it into `src/utils/imageGen.ts` as an export:
-
-```ts
-// Add to src/utils/imageGen.ts
-export const getImagePromptForCategory = (
-  category: string,
-  badges: string[]
-): string => {
-  // … existing implementation from SocialOptionButton.tsx …
-}
-```
-
-**Step 2 — Update `SocialOptionButton.tsx`:**
-```ts
-import { getImagePromptForCategory } from '../../utils/imageGen'
-// Remove the local definition
-```
-
-**Step 3 — Verify `IMG_PROMPTS` and `getImagePromptForCategory` are consistent.**
-
-`getImagePromptForCategory` should either delegate to `IMG_PROMPTS` for known categories or return a value from it:
-```ts
-export const getImagePromptForCategory = (
-  category: string,
-  badges: string[]
-): string => {
-  // If a specific prompt exists for this category, use it
-  const key = category.toUpperCase() as keyof typeof IMG_PROMPTS
-  if (Object.hasOwn(IMG_PROMPTS, key)) return IMG_PROMPTS[key]
-  // Fallback
-  return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
-}
-```
-
----
-
-## ⚠️ Correction to Original Report — Finding 4.3
-
-**The original report incorrectly stated that `pickRarity` and `pickRandomContrabandByRarity` were unintegrated.**
-
-On closer inspection, `pickRandomContraband` (line 109–112 of `contrabandUtils.ts`) is a thin wrapper:
-```ts
-export function pickRandomContraband(rng = secureRandom) {
-  const rarity = pickRarity(rng)                         // ← calls pickRarity
-  return pickRandomContrabandByRarity(rarity, rng)       // ← calls the rarity variant
-}
-```
-
-`minigameReducer` uses `pickRandomContraband`, which already applies the full rarity-weighted system. `pickRarity` and `pickRandomContrabandByRarity` are correctly exported for direct testing and for potential future callers that need to control rarity explicitly. **No change needed.**
-
----
-
-## Quick-reference priority order
-
-| Priority | Item | Effort | Impact |
-|---|---|---|---|
-| High | §6 Remove propTypes (67 files) | Medium | Bundle size + maintainability |
-| High | §5 Audio barrel: add 2 export lines + migrate 15 imports | Low | Consistency |
-| Medium | §3 Move `calculateGuaranteedDailyCost` to economyEngine | Low | Discoverability |
-| Medium | §7 Wire `clearImageCache` in GameState.tsx | Low | Memory hygiene |
-| Medium | §9 Guard `resetSecureRandomBatchForTesting` | Low | Security hygiene |
-| Low | §2 Remove `DEFAULT_POST_FAILED_MSG` constant | Low | Clean up |
-| Low | §1 Rename `rhythmGame.ts` → `.d.ts` | Trivial | Convention |
-| Low | §4 Document unlock boundary | Trivial | Onboarding |
-| Low | §8 Decide on VisualPrototypes | Low | Dead code |
-| Low | §10 Consolidate image prompt helpers | Low | Maintainability |
+| Metric | Before | After (estimated) |
+|---|---:|---:|
+| Production dependencies | n | n − 1 (`prop-types` removed) |
+| LoC in `src/ui/shared/BrutalistUI.tsx` | 1,278 | ~728 |
+| `import PropTypes` lines | 67 | 0 |
+| `.propTypes =` blocks | 76 | 0 |
+| Audio import-path variants outside `src/utils/audio/` | 2 | 1 |
+| Truly-unused exports (per AST sweep) | 149 | ~140 |
 
 ---
 

@@ -1,371 +1,348 @@
 # Neurotoxic Codebase Review — 2026-05-10
 
-> Scope: full `src/` tree (371 TypeScript/TSX files, ~44 utility files, 37 custom hooks, 118 components).
-> Purpose: identify inconsistencies, duplicated components/functions, and exported symbols that are available but not yet integrated into application logic.
+> **Scope:** Full `src/` tree — 371 TypeScript/TSX files, 44 utility files (24 under `src/utils/audio/`), 37 custom hooks, 118 components, 48 action types, 2 domain modules.
+> **Purpose:** Identify inconsistencies, duplicated components/functions, and exported symbols that are available but not yet integrated into application logic.
+> **Method:** Manual file inspection plus an AST-flavoured grep sweep across all 371 files, cross-referenced against `tests/` to distinguish "unused in app" from "unused entirely."
 
 ---
 
 ## Table of Contents
 
-1. [Project Overview](#1-project-overview)
-2. [Inconsistencies](#2-inconsistencies)
-3. [Duplicated / Overlapping Code](#3-duplicated--overlapping-code)
-4. [Available but Unintegrated Symbols](#4-available-but-unintegrated-symbols)
-5. [React 19 Deprecations](#5-react-19-deprecations)
-6. [Architecture Observations](#6-architecture-observations)
-7. [Summary Table](#7-summary-table)
+1. [Project Inventory](#1-project-inventory)
+2. [Dead Code](#2-dead-code) — confirmed unreachable from any app entry point
+3. [Inconsistencies](#3-inconsistencies) — convention drift and placement issues
+4. [Available but Unintegrated Symbols](#4-available-but-unintegrated-symbols) — exported and ready to wire up
+5. [Duplicated / Overlapping Code](#5-duplicated--overlapping-code)
+6. [React 19 Drift](#6-react-19-drift)
+7. [Architecture Observations](#7-architecture-observations)
+8. [Severity-Sorted Action List](#8-severity-sorted-action-list)
+9. [Findings Withdrawn After Verification](#9-findings-withdrawn-after-verification)
 
 ---
 
-## 1. Project Overview
+## 1. Project Inventory
 
 | Layer | Count | Notes |
-|---|---|---|
-| TypeScript source files | 371 | All actively imported |
-| Custom hooks | 37 | spread across 6 sub-directories |
-| Utility files | 44 | `src/utils/` + `src/utils/audio/` (24 files) |
-| Components | 118 | scenes, UI, stage, minigame |
-| Action types / creators | 48 / 54 | dispatched via map-based `gameReducer` |
-| Domain modules | 2 | `eventResolver`, `questLifecycle` |
+|---|---:|---|
+| TypeScript / TSX files | 371 | all imported transitively from `App.tsx` |
+| Custom hooks | 37 | 25 root + 12 in 3 sub-dirs (rhythm/minigames/overworld), plus 5 more in `src/scenes/kabelsalat/hooks/` |
+| Utility files | 44 | `src/utils/` (20) + `src/utils/audio/` (24) |
+| Components | 118 | scene, UI, stage, minigame |
+| Action types / creators | 48 / 54 | dispatched via map-based `gameReducer` (`reducerMap satisfies ReducerMap`) |
+| Domain modules | 2 | `eventResolver`, `questLifecycle` (used by 4 files) |
+| Total LoC across 10 largest files | 8,763 | see §7.1 |
 
-No circular imports were detected. All but a handful of exported symbols are actively consumed.
-
----
-
-## 2. Inconsistencies
-
-### 2.1 Type-definition file extensions
-
-Some shared contracts use the ambient `.d.ts` extension; one does not:
-
-| File | Extension | Issue |
-|---|---|---|
-| `src/types/game.d.ts` | `.d.ts` | correct — ambient declarations |
-| `src/types/audio.d.ts` | `.d.ts` | correct |
-| `src/types/rhythmGame.ts` | `.ts` | inconsistent — should be `.d.ts` or a regular module with explicit exports |
-
-**Recommendation:** If `rhythmGame.ts` contains only type/interface declarations, rename it to `rhythmGame.d.ts` to match the convention established by every other file in `src/types/`.
+The dependency graph is acyclic. No file is completely orphaned — every file participates in at least one import chain reachable from `App.tsx`.
 
 ---
 
-### 2.2 `DEFAULT_POST_FAILED_MSG` exported from a hook file
+## 2. Dead Code
+
+### 2.1 Five unused components in `src/ui/shared/BrutalistUI.tsx` (~550 lines)
+
+`BrutalistUI.tsx` is 1,278 lines. Five exported components inside it are re-exported through the `src/ui/shared/index.tsx` barrel but consumed nowhere:
+
+| Export | Lines | Definition |
+|---|---:|---|
+| `BrutalToggle` | ~100 | `BrutalistUI.tsx:733` |
+| `BrutalTabs` | ~77 | `BrutalistUI.tsx:832` |
+| `BrutalFader` | ~56 | `BrutalistUI.tsx:908` |
+| `CrisisModal` | ~204 | `BrutalistUI.tsx:963` |
+| `BrutalSlot` | ~113 | `BrutalistUI.tsx:1166` |
+
+Verification (zero hits outside the file and the barrel):
+```bash
+grep -rn 'BrutalFader\|BrutalSlot\|BrutalTabs\|BrutalToggle\|CrisisModal' \
+  src/ tests/ --include='*.ts' --include='*.tsx' --include='*.js' \
+  | grep -v 'BrutalistUI.tsx\|ui/shared/index.tsx'
+# → no output
+```
+
+These look like UI exploration leftovers. They each instantiate Tailwind brutalist styles already covered by simpler shared primitives (`ActionButton`, `ToggleSwitch`, `Modal`, `VolumeSlider`).
+
+**Recommendation:** Delete the five exports plus their barrel re-exports. ~43% of `BrutalistUI.tsx` evaporates.
+
+---
+
+### 2.2 `src/ui/prototypes/VisualPrototypes.tsx` — six exports, zero consumers
 
 ```
-src/hooks/usePostGigHandlers.ts:44  export const DEFAULT_POST_FAILED_MSG = …
+src/ui/prototypes/VisualPrototypes.tsx
+  TerminalReadout    ← line 36
+  CorruptedText      ← line 76
+  RhythmMatrix       ← line 120
+  SelloutContract    ← line 206
+  ToxicChatter       ← line 293
+  VoidDecryptor      ← line 363
+```
+
+No file under `src/` imports this module. The i18n keys it uses (`ui:terminal.*`) exist in both locales, so the components are functional — but they were never wired into a scene. See §4.4 for the integrate-or-delete decision.
+
+---
+
+### 2.3 `DEFAULT_POST_FAILED_MSG` constant — i18n key already covers it
+
+```
+src/hooks/usePostGigHandlers.ts:44  export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 src/hooks/usePostGigLogic.ts:13     export { DEFAULT_POST_FAILED_MSG } from './usePostGigHandlers'
 ```
 
-A UI string constant is exported from a hook, then re-exported from a second hook. Constants that represent user-facing fallback text belong in a locale JSON entry (i18n key) or, at minimum, in a `src/utils/` or `src/data/` module — not in a hook file.
-
-**Recommendation:** Move the string to a namespaced i18n key (e.g. `ui:postGig.postFailed`) and replace the raw constant with a `t()` call. If a raw constant is required for tests, place it in `src/data/postOptions.ts` or a similar data module.
+The fallback string is used at `usePostGigHandlers.ts:138` as a `defaultValue:` for `t('ui:postGig.postResolutionFailed', …)`. That i18n key already exists in both `public/locales/en/ui.json:510` and `public/locales/de/ui.json:510` with the exact same English/German text. The fallback never fires. Delete the constant and its re-export.
 
 ---
 
-### 2.3 `calculateGuaranteedDailyCost` — split across modules
-
-`src/utils/economyEngine.ts` is named and positioned as the authority for all money calculations, yet `calculateGuaranteedDailyCost` lives in `src/utils/simulationUtils.ts`:
+### 2.4 `DEFAULT_SOCIAL_UNAVAILABLE_MSG` — exported, never imported
 
 ```
-src/utils/simulationUtils.ts:280  export const calculateGuaranteedDailyCost = (…)
-src/hooks/useTravelLogic.ts:47     import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
+src/hooks/usePostGigLogic.ts  export const DEFAULT_SOCIAL_UNAVAILABLE_MSG = …
 ```
 
-`economyEngine` does **not** define or re-export this function. Anyone looking for daily cost logic will look in `economyEngine` first.
-
-**Recommendation:** Move `calculateGuaranteedDailyCost` into `economyEngine.ts` and update the three import sites (`simulationUtils.ts` internal call, `useTravelLogic.ts`).
+No file imports this symbol. Likely the twin of `DEFAULT_POST_FAILED_MSG` from a copy-paste; remove during the same pass as 2.3.
 
 ---
 
-### 2.4 `unlockManager` vs `unlockCheck` — split responsibility with no clear boundary
+### 2.5 Internal-only functions still marked `export`
 
-Two files handle unlocks with no documented division of ownership:
+These are referenced only inside their declaring file (and never in `tests/`), so the `export` keyword serves no purpose and inflates the module's public API:
 
-| File | Exports | Used by |
+| Symbol | File | Internal use site |
 |---|---|---|
-| `src/utils/unlockManager.ts` | `getUnlocks`, `addUnlock` | `usePersistence`, `useEventSystem`, `GameState.tsx` |
-| `src/utils/unlockCheck.ts` | `checkTraitUnlocks` | 5 reducers + `usePurchaseLogic` |
+| `applyContrabandEffect` | `src/context/reducers/bandReducer.ts:232` | line 364 (same file) |
+| `calculateMemberRelationshipChange` | `src/utils/gameStateUtils.ts:736` | line 939 (same file) |
 
-`checkTraitUnlocks` calls `hasTrait` from `traitUtils`. The distinction between "managing the unlock list" (manager) and "checking trait prerequisites" (check) is reasonable, but is not documented anywhere. New contributors routinely add unlock-adjacent logic to the wrong file.
-
-**Recommendation:** Add an `AGENTS.md` note (or inline JSDoc) explaining the boundary: `unlockManager` is the persistence layer for earned unlock IDs; `unlockCheck` is the domain logic that interrogates game state to derive which trait unlocks apply.
+**Recommendation:** Drop the `export` keyword. If a future test needs them, re-add the export at that point.
 
 ---
 
-### 2.5 Audio module — no barrel export, multiple direct sub-module imports
+## 3. Inconsistencies
 
-The 24-file `src/utils/audio/` directory has no `index.ts` barrel. Consumers import directly from individual sub-modules across 22+ import sites:
+### 3.1 Type-definition file extension drift
 
-```ts
-// 13 different files import from AudioManager
-import { audioManager } from '../utils/audio/AudioManager'
+`src/types/` contains 10 files. Nine use `.d.ts`; one uses `.ts`:
 
-// 6 different files import from audioEngine
-import { pauseAudio, resumeAudio, stopAudio } from '../utils/audio/audioEngine'
+| File | Extension | Contents |
+|---|---|---|
+| `audio.d.ts`, `callbacks.d.ts`, `components.d.ts`, `economy.d.ts`, `game.d.ts`, `kabelsalat.d.ts`, `migration-stubs.d.ts`, `react-compat.d.ts` | `.d.ts` | type-only |
+| `rhythmGame.ts` | `.ts` | **type-only** — should be `.d.ts` |
 
-// 1 file imports from audioService
-import { audioService } from '../utils/audio/audioService'
-```
-
-`audioService` is a thin adapter that wraps `audioManager` for React `useSyncExternalStore` consumption, yet it is only imported in one hook (`useAudioControl`). All other audio consumers bypass it and import `audioManager` directly, creating an inconsistent access pattern.
-
-**Recommendation:**
-1. Create `src/utils/audio/index.ts` re-exporting the stable public API (`audioManager`, `audioEngine` functions, `audioService`).
-2. Migrate all import sites to use the barrel.
-3. Document that `audioService` is the intended React-layer interface and `audioManager` is for non-React contexts (Pixi stage controllers, hooks that manage lifecycle imperatively).
+The audio AGENTS.md explicitly references it: *"Song/note contracts live in `src/types/audio.d.ts` and `src/types/rhythmGame.ts`."* The mismatch is a documented but unintentional outlier.
 
 ---
 
-### 2.6 `useAudioControl` overloaded export
+### 3.2 `calculateGuaranteedDailyCost` lives in the wrong module
+
+`economyEngine.ts` (1,015 lines) is the authoritative module for money calculations and already defines `calculateGigFinancials`, `calculateTravelExpenses`, `calculateFuelCost`, `calculateRepairCost`, `calculateRefuelCost`, `EXPENSE_CONSTANTS`, `MAX_GIG_NET`, and `MODIFIER_COSTS`. Yet `calculateGuaranteedDailyCost` is defined in `simulationUtils.ts:280`:
 
 ```
-src/hooks/useAudioControl.ts:164  export function useAudioControl(
-src/hooks/useAudioControl.ts:168  export function useAudioControl<TSelected>(
-src/hooks/useAudioControl.ts:172  export function useAudioControl<TSelected = AudioSnapshot>(
+src/utils/simulationUtils.ts:3    import { EXPENSE_CONSTANTS } from './economyEngine'
+src/utils/simulationUtils.ts:280  export const calculateGuaranteedDailyCost = …
+src/hooks/useTravelLogic.ts:47    import { calculateGuaranteedDailyCost } from '../utils/simulationUtils'
+src/hooks/useTravelLogic.ts:252,570  (two call sites)
 ```
 
-Three overload signatures exported from the same file is correct TypeScript; however, only the third (implementation) signature appears in the deduplicated export scan, which is expected. No actual duplication exists here — this is noted for clarity.
+It reads `EXPENSE_CONSTANTS.DAILY.BASE_COST` from `economyEngine` and produces a daily cost number — it belongs in `economyEngine`.
 
 ---
 
-### 2.7 Hook directory depth inconsistency
+### 3.3 Audio module barrel does not include stateful objects
 
-Root-level hooks co-exist with three sub-directories at different nesting levels:
+`src/utils/audio/audioEngine.ts` already functions as an export hub for the audio directory. Its own header says: *"This module manages the AudioContext and Tone.js logic … This file is an export hub."*
 
-```
-src/hooks/
-  useArrivalLogic.ts          ← root level
-  usePostGigHandlers.ts       ← root level (817 lines)
-  overworld/
-    useAmbientResume.ts
-  rhythmGame/
-    useRhythmGameAudio.ts
-  minigames/
-    useRoadieLogic.ts
-```
+But it omits the two stateful objects that consumers actually need most:
 
-Meanwhile, `src/scenes/kabelsalat/hooks/` contains 5 scene-specific hooks outside `src/hooks/` entirely.
+| Symbol | Where defined | Where imported from |
+|---|---|---|
+| `audioManager` | `src/utils/audio/AudioManager.ts:497` | 14 files import directly from `AudioManager` |
+| `audioService` | `src/utils/audio/audioService.ts:24` | 1 file imports from `audioService` |
 
-**Recommendation:** Adopt a consistent rule: scene-specific hooks live alongside their scene (`scenes/<scene>/hooks/`); shared hooks live in `src/hooks/` with sub-directories for domain groupings. This is already partially followed for kabelsalat — formalise it.
+So `audioEngine.ts` is *almost* a barrel — two missing lines short of being the single public entry point.
 
 ---
 
-## 3. Duplicated / Overlapping Code
+### 3.4 `unlockManager` vs `unlockCheck` — unmarked responsibility split
 
-### 3.1 `calculatePostGigStateUpdates` — mentioned in two utility files
+```
+src/utils/unlockManager.ts   getUnlocks, addUnlock     ← localStorage persistence
+src/utils/unlockCheck.ts     checkTraitUnlocks         ← state-based eligibility eval
+```
 
-The audit surface initially flagged this as a potential duplicate because both `postGigUtils` and `simulationUtils` appeared in the same search. **On closer inspection, no duplication exists.** `calculatePostGigStateUpdates` is defined only in `postGigUtils.ts:37` and imported from there by `usePostGigHandlers`. `simulationUtils` exposes the unrelated `calculateDailyUpdates`.
+The two filenames are nearly interchangeable and there is no comment explaining the split. New unlock-adjacent logic lands in the wrong file with consistent regularity. Both files together are <200 lines, so merging is feasible but documentation is cheaper.
 
 ---
 
-### 3.2 `propTypes` on 20+ components — duplicates TypeScript type-checking
-
-76 occurrences of `.propTypes = { … }` were found across the codebase:
+### 3.5 Hook directory depth is uneven
 
 ```
-src/components/PixiStage.tsx
-src/components/postGig/FinancialList.tsx
-src/components/postGig/SideEffectsPreview.tsx
-src/components/postGig/NegotiationModal.tsx
-src/components/postGig/FinancialColumn.tsx
-src/components/postGig/ZealotryGauge.tsx
-src/components/postGig/NetResult.tsx
-src/components/postGig/DealCard.tsx          ← 4 sub-component blocks
-src/components/postGig/SideEffectsSummary.tsx
-src/components/postGig/SocialOptionButton.tsx
-src/components/postGig/DealsPhase.tsx
-src/components/postGig/CompletePhase.tsx
-src/components/clinic/ClinicHeader.tsx
-src/components/clinic/ClinicMemberCard.tsx
-src/components/pregig/GigModifiersBlock.tsx
-src/components/pregig/PreGigStartButton.tsx
+src/hooks/                   ← 25 root-level hooks
+src/hooks/minigames/         ← 3 hooks
+src/hooks/overworld/         ← 5 hooks
+src/hooks/rhythmGame/        ← 5 hooks
+src/scenes/kabelsalat/hooks/ ← 5 hooks (scene-co-located, breaks the pattern above)
 ```
 
-React 19 removes `propTypes` runtime validation. These blocks add dead weight: every prop shape is already fully enforced by the TypeScript interface/type declared immediately above it, making `propTypes` a maintenance burden that duplicates the source of truth.
+`kabelsalat` is the only scene-co-located hook bucket. Either all scene-specific hooks live next to their scene (move `src/hooks/rhythmGame/*` next to the Gig scene, etc.) or all hooks live under `src/hooks/`. Pick one and document.
 
-**Recommendation:** Remove all `.propTypes` assignments. The AGENTS.md already states "React 19 passes `ref` as a normal prop; do not introduce `React.forwardRef()`" — a companion note banning new `propTypes` blocks is warranted.
+---
+
+### 3.6 `SocialOptionButton.tsx` defines a local prompt mapper
+
+`SocialOptionButton.tsx:15` defines `CATEGORY_PROMPTS` and `getImagePromptForCategory` locally. Both already source their values from the exported `IMG_PROMPTS` map. This is not duplication — but the next contributor adding a category will read `imageGen.ts`, see `IMG_PROMPTS`, and miss the local mapping. Low-priority but worth a doc comment in `imageGen.ts` pointing at consumers.
 
 ---
 
 ## 4. Available but Unintegrated Symbols
 
-### 4.1 `clearImageCache` — exported, never called in application code
+### 4.1 `clearImageCache` — exported, exercised by tests, never called in app
 
-```ts
-// src/utils/imageGen.ts:95
-export const clearImageCache = async () => { … }
+```
+src/utils/imageGen.ts:95  export const clearImageCache = async () => { … }
 ```
 
-`clearImageCache` is exercised by `tests/node/imageGen.test.js` but is never called from any application path (no import in `src/`).
+`fetchGenImageAsObjectUrl` builds blob URLs and stores them in a module-level `objectUrlCache: Map<string, Promise<string>>`. `clearImageCache` iterates that map and calls `URL.revokeObjectURL` on each. Without ever calling it, every game run leaks blob URLs (small but cumulative on long sessions).
 
-**When to integrate:** Image cache should be cleared on hard reset (`RESET_STATE`) or when the user navigates back to the main menu after a full run, to free object-URL memory.
-
-**How to integrate:**
-```ts
-// src/context/reducers/systemReducer.ts — in handleResetState
-import { clearImageCache } from '../../utils/imageGen'
-
-export const handleResetState = (state: GameState): GameState => {
-  void clearImageCache()          // fire-and-forget; non-blocking
-  return createInitialState()
-}
-```
-
-Alternatively, call it inside `usePostGigHandlers` when the "continue" path leads back to the menu after a game-over.
+**Integration point:** A `useEffect` in `GameState.tsx` watching for transitions to `GAME_PHASES.MENU`. Reducers can't host this — they must stay synchronous and pure.
 
 ---
 
-### 4.2 `VisualPrototypes` components — exported, never mounted
+### 4.2 `getMidiNoteFrequency` / various MIDI helpers in `audio/midiUtils.ts`
 
-`src/ui/prototypes/VisualPrototypes.tsx` exports six standalone components:
+Re-exported via `audioEngine.ts` as `export * from './midiUtils'` but several utilities are only consumed inside the audio directory. Not actually a bug — barrel re-export is fine — but worth knowing if you're auditing public API surface.
 
-| Export | Purpose |
+---
+
+### 4.3 `VisualPrototypes` components
+
+Six components ready to drop into the game. The most valuable for low-cost integration:
+
+- **`CorruptedText`** — character-by-character glitch animation. Drop-in replacement for plain text in `ChatterOverlay`, `HecklerOverlay`, or `EventModal` to reinforce the cyberpunk aesthetic.
+- **`TerminalReadout`** — uses i18n keys `ui:terminal.log1` … `log8` (already present in both locales). Could replace the static debug placeholder in `DebugLogViewer`.
+
+The others (`RhythmMatrix`, `SelloutContract`, `ToxicChatter`, `VoidDecryptor`) are more bespoke and need scene-specific placement decisions. If no decision lands within a sprint, delete them — they read as design noise.
+
+---
+
+### 4.4 `resetSecureRandomBatchForTesting` — test utility exported from production module
+
+```
+src/utils/crypto.ts:142  export const resetSecureRandomBatchForTesting
+```
+
+Used in three test files, never in `src/`. Currently ships in the production bundle, exposing a way to reset CSPRNG batch state. Two fixes possible (see instructions doc §9):
+
+- **Cheap:** wrap export in `process.env.NODE_ENV === 'test' ? … : undefined`
+- **Clean:** extract a `tests/helpers/cryptoTestUtils.js` re-export and delete the production export
+
+---
+
+## 5. Duplicated / Overlapping Code
+
+### 5.1 `propTypes` on 67 files — runtime duplicate of TypeScript types
+
+`prop-types@15.8.1` is a **runtime** dependency (not devDependencies). It is imported and applied in 67 source files via 76 `.propTypes = { … }` blocks. Every shape is also enforced statically by the matching TypeScript interface, usually in `src/types/components.d.ts`.
+
+| Directory | Files with propTypes |
+|---|---:|
+| `src/components/postGig/` | 14 |
+| `src/scenes/kabelsalat/components/` | 18 |
+| `src/ui/` and `src/ui/shared/` | 12 |
+| `src/ui/settings/` | 6 |
+| `src/components/clinic/` and `pregig/` | 5 |
+| `src/components/minigames/` | 5 |
+| `src/scenes/mainmenu/` `gameover/` `credits/` | 5 |
+| Other (`PixiStage`, `BloodBankModal`, etc.) | 9 (approx.) |
+
+The full file list is in the instructions doc §6. Total impact:
+- runtime: one extra dependency in production bundle (`prop-types`)
+- maintainability: two sources of truth per component
+- React 19: `propTypes` is deprecated and will warn
+
+**Recommendation:** Mechanical removal in one PR, drop the dependency afterwards. AGENTS.md should ban future additions.
+
+---
+
+### 5.2 `secureRandom` vs `getSafeRandom` — intentional, but worth noting
+
+```
+src/utils/crypto.ts:28   export const secureRandom         ← raw crypto.getRandomValues batch
+src/utils/crypto.ts:62   export const getSafeRandom        ← wraps secureRandom with try/catch
+```
+
+Both are exported and both are used (~25 imports each). `getSafeRandom` is a safety wrapper preventing a circular dependency between the error handler and the RNG. This is intentional and is documented in `crypto.ts:102`. Not a bug — recording so future audits don't flag it again.
+
+---
+
+## 6. React 19 Drift
+
+### 6.1 `propTypes` (covered in §5.1)
+
+### 6.2 No `forwardRef` usage
+
+Verified zero occurrences. The code follows the React 19 convention of `ref` as a normal prop. AGENTS.md already encodes this.
+
+### 6.3 No `PropTypes.func` callbacks where TS would type a `(args) => unknown`
+
+Side benefit of removing §5.1 — drops 67 `import PropTypes from 'prop-types'` lines.
+
+---
+
+## 7. Architecture Observations
+
+### 7.1 The "big-10" files
+
+| File | LoC | Notes |
+|---|---:|---|
+| `src/context/reducers/systemReducer.ts` | 1,528 | candidates for extraction: settings, toast, map, unlock, daily-cycle |
+| `src/ui/shared/BrutalistUI.tsx` | 1,278 | ~550 lines are dead (§2.1); pruning leaves ~730 |
+| `src/utils/gameStateUtils.ts` | 1,213 | 50+ exports; consider splitting clamps, fame, state checks |
+| `src/utils/economyEngine.ts` | 1,015 | will grow by ~17 lines after §3.2 move |
+| `src/utils/eventEngine.ts` | 916 | cohesive — leave as is |
+| `src/utils/socialEngine.ts` | 910 | cohesive — leave as is |
+| `src/hooks/useTravelLogic.ts` | 817 | confirm-travel + travel-execution could split |
+| `src/utils/mapGenerator.ts` | 703 | single class — leave as is |
+| `src/utils/postGigUtils.ts` | 615 | cohesive |
+| `src/utils/simulationUtils.ts` | 576 | will lose ~17 lines after §3.2 move |
+
+### 7.2 `audioService` is barely used
+
+`audioService` is a `useSyncExternalStore`-friendly adapter wrapping `audioManager`. It is imported by exactly one file (`useAudioControl.ts`). All other React-layer consumers import `audioManager` directly and miss React's tearing-protection contract. Two options:
+
+- Promote `audioService` as the *only* React-layer entry point (instructions doc §5)
+- Inline `audioService` into `useAudioControl` and drop the file
+
+### 7.3 `src/domain/` is healthy but underused
+
+`eventResolver.ts` and `questLifecycle.ts` are well-shaped domain modules. New domain concepts (rival band lifecycle, contraband lifecycle, deal negotiation phases) would benefit from the same treatment rather than continuing to grow `systemReducer.ts`.
+
+---
+
+## 8. Severity-Sorted Action List
+
+| # | Severity | Effort | Item |
+|---|---|---|---|
+| §5.1 | High | Medium | Remove 76 `propTypes` blocks across 67 files + drop `prop-types` dep |
+| §2.1 | High | Low | Delete 5 dead components in `BrutalistUI.tsx` (~550 lines) |
+| §3.3 | High | Low | Extend `audioEngine.ts` barrel; migrate 15 import sites |
+| §3.2 | Medium | Low | Move `calculateGuaranteedDailyCost` to `economyEngine.ts` |
+| §4.1 | Medium | Low | Wire `clearImageCache` into `GAME_PHASES.MENU` transition |
+| §4.4 | Medium | Low | Guard or extract `resetSecureRandomBatchForTesting` |
+| §2.3 + §2.4 | Low | Low | Remove `DEFAULT_POST_FAILED_MSG` and `DEFAULT_SOCIAL_UNAVAILABLE_MSG` |
+| §2.5 | Low | Trivial | Drop redundant `export` on `applyContrabandEffect`, `calculateMemberRelationshipChange` |
+| §3.1 | Low | Trivial | Rename `rhythmGame.ts` → `.d.ts` (update one AGENTS.md reference) |
+| §3.4 | Low | Trivial | Document `unlockManager`/`unlockCheck` boundary in AGENTS.md |
+| §4.3 | Low | Low–Medium | Integrate `CorruptedText`/`TerminalReadout` or delete `VisualPrototypes.tsx` |
+| §3.5 | Low | Medium | Pick a hook-location convention; relocate kabelsalat hooks or formalise scene-co-location |
+| §7.1 | Low | Medium | Split `systemReducer.ts` and `gameStateUtils.ts` when next feature touches them |
+
+---
+
+## 9. Findings Withdrawn After Verification
+
+The first draft of this review listed two findings that fail close inspection. They are recorded here so future audits don't re-raise them:
+
+| Withdrawn finding | Reason |
 |---|---|
-| `TerminalReadout` | Animated terminal log |
-| `CorruptedText` | Glitch-text animation |
-| `RhythmMatrix` | Visual rhythm pattern display |
-| `SelloutContract` | Stylised contract prop |
-| `ToxicChatter` | Fake chatter UI |
-| `VoidDecryptor` | Decryption animation |
-
-No file in `src/` imports this module. These are not referenced in any scene, modal, or overlay.
-
-**Assessment:** These appear to be design prototypes created to validate the visual language. Options:
-
-1. **Integrate select components** into the game proper (e.g. `CorruptedText` could replace plain text in `ChatterOverlay`; `TerminalReadout` suits the `DebugLogViewer`).
-2. **Delete if stale.** If the design exploration phase is over, the file adds dead weight.
-3. **Keep as isolated showcase** only if there is an active `/prototypes` debug route.
-
-**Integration example for `CorruptedText`:**
-```tsx
-// src/components/ChatterOverlay.tsx — replace static <p> renders
-import { CorruptedText } from '../ui/prototypes/VisualPrototypes'
-
-// In the message render:
-<CorruptedText text={line.text} delay={index * 120} />
-```
-
----
-
-### 4.3 `pickRarity` and `pickRandomContrabandByRarity` — exported, never used outside tests
-
-```ts
-// src/utils/contrabandUtils.ts
-export function pickRarity(rng = secureRandom) { … }          // line 68
-export function pickRandomContrabandByRarity(…) { … }         // line 94
-```
-
-`minigameReducer` imports only `computeDropChance` and `pickRandomContraband`. The rarity-aware variant `pickRandomContrabandByRarity` and its helper `pickRarity` are not called by any application code.
-
-**When to integrate:** These functions exist to power a weighted drop system based on item rarity. They are the correct foundation for a contraband drop system that respects rarity tiers.
-
-**How to integrate:**
-```ts
-// src/context/reducers/minigameReducer.ts
-// Replace the current flat pick:
-import { pickRandomContrabandByRarity, computeDropChance } from '../../utils/contrabandUtils'
-
-// In the drop logic:
-const item = pickRandomContrabandByRarity()   // respects rarity weights
-```
-
-This replaces the current `pickRandomContraband` (uniform random) with the weighted variant — a balance improvement already coded and waiting to be activated.
-
----
-
-### 4.4 `resetSecureRandomBatchForTesting` — test utility leaked into production bundle
-
-```ts
-// src/utils/crypto.ts:142
-export const resetSecureRandomBatchForTesting = (): void => { … }
-```
-
-This function is exported from a production file (`crypto.ts`) and consumed only by tests. It resets internal CSPRNG batch state, which is useful in tests but represents an unnecessary bundle surface in production.
-
-**Recommendation:** Guard the export behind an environment check or move the function into a test-only helper:
-
-```ts
-// Option A — environment guard in crypto.ts
-export const resetSecureRandomBatchForTesting =
-  process.env.NODE_ENV === 'test'
-    ? (): void => { /* reset logic */ }
-    : undefined
-```
-
-Or extract reset logic into `tests/helpers/cryptoTestUtils.ts` and access the internal via a module mock in tests.
-
----
-
-### 4.5 `getImagePromptForCategory` — internal imageGen helper used inconsistently
-
-```ts
-// src/components/postGig/SocialOptionButton.tsx:53
-backgroundImage: `url("${… ? getGenImageUrl(getImagePromptForCategory(opt.category, opt.badges)) : …}")`
-```
-
-`getImagePromptForCategory` is called inline inside JSX but is not exported from `imageGen.ts` — it must be a local helper inside the component file. Meanwhile, `IMG_PROMPTS` (a typed constant map) is exported from `imageGen.ts` and used by `DealCard` and `CompletePhase` to look up prompts.
-
-There are now two strategies for obtaining image prompts:
-- `IMG_PROMPTS.<key>` — exported typed map (used in 2 components)
-- `getImagePromptForCategory(category, badges)` — local helper (used in 1 component)
-
-**Recommendation:** Consolidate. Either export `getImagePromptForCategory` from `imageGen.ts` so all components use the same function, or have the function delegate to `IMG_PROMPTS` internally. The current split means adding a new prompt category requires editing two different locations.
-
----
-
-## 5. React 19 Deprecations
-
-### 5.1 `propTypes` (76 occurrences) — covered in §3.2
-
-### 5.2 No `forwardRef` usage found
-
-The codebase correctly avoids `React.forwardRef` (zero occurrences). React 19 passes `ref` as a normal prop; AGENTS.md documents this correctly.
-
----
-
-## 6. Architecture Observations
-
-These are not bugs or inconsistencies, but patterns worth acknowledging for future contributors.
-
-### 6.1 Very large single files
-
-| File | Lines | Concern |
-|---|---|---|
-| `src/utils/gameStateUtils.ts` | ~1,213 | 50+ exports; consider splitting into `clampHelpers.ts`, `fameUtils.ts`, `stateChecks.ts` |
-| `src/context/reducers/systemReducer.ts` | ~1,441 | largest reducer; candidates for extraction: settings, toast, map, unlock handlers |
-| `src/hooks/useTravelLogic.ts` | ~817 | two `calculateGuaranteedDailyCost` call sites suggest potential `useConfirmTravel` split |
-| `src/hooks/usePostGigHandlers.ts` | ~470 | deal-accept and story-spin could be separate hooks |
-
-### 6.2 `audioService` vs `audioManager` — intended access pattern undocumented
-
-`audioService` is a React `useSyncExternalStore`-compatible adapter wrapping `audioManager`. It is currently used only by `useAudioControl`. All other hook and component files import `audioManager` directly.
-
-If `audioService` is the intended React-layer interface (preferred for predictable re-renders), this should be documented and enforced. If `audioManager` is acceptable everywhere, `audioService` can be inlined into `useAudioControl`.
-
-### 6.3 `src/domain/` is underutilised
-
-`src/domain/eventResolver.ts` and `src/domain/questLifecycle.ts` are well-placed domain modules that encapsulate complex lifecycle logic. Only 4 files consume them. As the game grows, additional domain concepts (e.g. rival band logic, contraband lifecycle, deal negotiation) would benefit from the same treatment rather than accumulating in large reducer files.
-
----
-
-## 7. Summary Table
-
-| # | Category | Location | Severity | Action |
-|---|---|---|---|---|
-| 2.1 | Inconsistency | `src/types/rhythmGame.ts` | Low | Rename to `.d.ts` |
-| 2.2 | Inconsistency | `usePostGigHandlers.ts:44` | Medium | Move to i18n key |
-| 2.3 | Inconsistency | `simulationUtils.ts:280` | Medium | Move `calculateGuaranteedDailyCost` to `economyEngine.ts` |
-| 2.4 | Inconsistency | `unlockManager` / `unlockCheck` | Low | Document boundary in AGENTS.md |
-| 2.5 | Inconsistency | `src/utils/audio/` | Medium | Add `index.ts` barrel; document `audioService` as React interface |
-| 2.7 | Inconsistency | `src/hooks/` | Low | Document scene-hook co-location rule |
-| 3.2 | Duplication | 16+ component files | Medium | Remove all `.propTypes` blocks |
-| 4.1 | Unintegrated | `imageGen.ts:clearImageCache` | Medium | Call on `RESET_STATE` in `systemReducer` |
-| 4.2 | Unintegrated | `src/ui/prototypes/VisualPrototypes.tsx` | Low–Medium | Integrate or delete |
-| 4.3 | Unintegrated | `contrabandUtils:pickRandomContrabandByRarity` | Medium | Replace `pickRandomContraband` in `minigameReducer` |
-| 4.4 | Unintegrated | `crypto.ts:resetSecureRandomBatchForTesting` | Low | Guard with `NODE_ENV === 'test'` or move to test helpers |
-| 4.5 | Inconsistency | `imageGen` prompt strategy | Low | Consolidate `IMG_PROMPTS` and `getImagePromptForCategory` |
-| 6.1 | Architecture | Large files | Low | Consider splitting when next feature touches them |
-| 6.2 | Architecture | `audioService` | Low | Document intended access pattern |
-| 6.3 | Architecture | `src/domain/` | Low | Prefer domain modules for new lifecycle logic |
+| "`pickRarity` and `pickRandomContrabandByRarity` are unintegrated" | Both are called by `pickRandomContraband` itself (`contrabandUtils.ts:110-111`). The reducer's existing call to `pickRandomContraband` already runs the rarity-weighted path. |
+| "Consolidate `IMG_PROMPTS` and `getImagePromptForCategory`" | `getImagePromptForCategory` already sources its values from `IMG_PROMPTS` via the local `CATEGORY_PROMPTS` const map. Code is composable, not duplicated. |
 
 ---
 
