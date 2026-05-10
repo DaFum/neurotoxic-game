@@ -838,6 +838,7 @@
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
   "minigames.amp.controls.overdrive": "ÜBERSTEUERN",
+  "minigames.amp.controls.overrideHijack": "NEUROTOXISCHEN HIJACK ÜBERSCHREIBEN",
   "minigames.amp.controls.purge": "SIGNAL BEREINIGEN",
   "minigames.amp.hud.overheat": "ÜBERHITZT!",
   "minigames.amp.hud.heat": "HITZE",
@@ -1535,7 +1536,12 @@
   "offline.close": "Schließen",
   "travel.rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!",
   "minigames.amp.hud.anomaly": "VOID-ANOMALIE ENTDECKT",
+  "minigames.amp.hud.hijack": "HIJACK:",
+  "minigames.amp.hud.hijackActive": "AKTIV",
+  "minigames.amp.hud.hijackClear": "GELÖSCHT",
+  "minigames.amp.hud.overrides": "ÜBERSCHREIBUNGEN:",
   "minigames.amp.hud.interference": "INTERFERENZ",
   "minigames.amp.hud.resonance": "VOID-RESONANZ",
-  "minigames.amp.completion.resonance": "Void-Resonanz eingefangen: {{voidResonance}}%"
+  "minigames.amp.completion.resonance": "Void-Resonanz eingefangen: {{voidResonance}}%",
+  "minigames.amp.completion.hijacks": "Überschriebene Hijacks: {{hijacksOverridden}}"
 }

@@ -165,7 +165,8 @@ type GameDispatchActions = {
   completeAmpCalibration: (
     score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
     voidResonance?: Parameters<typeof createCompleteAmpCalibrationAction>[1],
-    purgesUsed?: Parameters<typeof createCompleteAmpCalibrationAction>[2]
+    purgesUsed?: Parameters<typeof createCompleteAmpCalibrationAction>[2],
+    hijacksOverridden?: Parameters<typeof createCompleteAmpCalibrationAction>[3]
   ) => void
   unlockTrait: (
     memberId: Parameters<typeof createUnlockTraitAction>[0],
@@ -684,10 +685,18 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
       voidResonance: Parameters<
         typeof createCompleteAmpCalibrationAction
       >[1] = 0,
-      purgesUsed: Parameters<typeof createCompleteAmpCalibrationAction>[2] = 0
+      purgesUsed: Parameters<typeof createCompleteAmpCalibrationAction>[2] = 0,
+      hijacksOverridden: Parameters<
+        typeof createCompleteAmpCalibrationAction
+      >[3] = 0
     ) =>
       dispatch(
-        createCompleteAmpCalibrationAction(score, voidResonance, purgesUsed)
+        createCompleteAmpCalibrationAction(
+          score,
+          voidResonance,
+          purgesUsed,
+          hijacksOverridden
+        )
       ),
     []
   )

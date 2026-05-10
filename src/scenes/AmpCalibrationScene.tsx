@@ -26,7 +26,10 @@ export const AmpCalibrationScene = () => {
     voidResonance,
     isAnomalyActive,
     interference,
-    purgeInterference
+    purgeInterference,
+    isHijackActive,
+    hijacksOverridden,
+    overrideHijack
   } = useAmpLogic()
 
   const { changeScene } = useGameState()
@@ -62,9 +65,17 @@ export const AmpCalibrationScene = () => {
             })}
           </div>
         )}
+        {hijacksOverridden > 0 && (
+          <div className='text-warning-yellow font-bold'>
+            {t('ui:minigames.amp.completion.hijacks', {
+              defaultValue: `Hijacks Overridden: ${hijacksOverridden}`,
+              hijacksOverridden
+            })}
+          </div>
+        )}
       </div>
     ),
-    [t, score, voidResonance]
+    [t, score, voidResonance, hijacksOverridden]
   )
 
   return (
@@ -89,6 +100,8 @@ export const AmpCalibrationScene = () => {
         voidResonance={voidResonance}
         isAnomalyActive={isAnomalyActive}
         interference={interference}
+        isHijackActive={isHijackActive}
+        hijacksOverridden={hijacksOverridden}
       />
       <AmpControls
         dialValue={dialValue}
@@ -96,7 +109,10 @@ export const AmpCalibrationScene = () => {
         setDialValue={setDialValue}
         isOverdriveActive={isOverdriveActive}
         setIsOverdriveActive={setIsOverdriveActive}
+        interference={interference}
         purgeInterference={purgeInterference}
+        isHijackActive={isHijackActive}
+        overrideHijack={overrideHijack}
       />
     </MinigameSceneFrame>
   )

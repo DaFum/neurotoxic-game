@@ -47,7 +47,8 @@ export class AmpWaveManager {
     isOverdriveActive: boolean = false,
     isOverheat: boolean = false,
     isAnomalyActive: boolean = false,
-    interference: number = 0
+    interference: number = 0,
+    isHijackActive: boolean = false
   ) {
     if (!this.waveGraphics || !this.app || !this.app.screen) return
 
@@ -84,9 +85,16 @@ export class AmpWaveManager {
       targetJitter = 50
     }
 
+    if (isHijackActive) {
+      targetAmplitude = 300
+      targetJitter = 100
+      finalTargetColor = getPixiColorFromToken('--blood-red')
+    }
+
     if (interference > 0 && Math.random() < interference / 200) {
       targetJitter += interference
-      finalTargetColor = getPixiColorFromToken('--warning-yellow')
+      if (!isHijackActive)
+        finalTargetColor = getPixiColorFromToken('--warning-yellow')
     }
 
     this.drawSineWave(
@@ -125,6 +133,13 @@ export class AmpWaveManager {
       currentAmplitude = 180
       currentJitter = 10
       currentWidth = 8
+    }
+
+    if (isHijackActive) {
+      currentColor = getPixiColorFromToken('--warning-yellow')
+      currentAmplitude = 50
+      currentJitter = 200
+      currentWidth = 12
     }
 
     this.drawSineWave(

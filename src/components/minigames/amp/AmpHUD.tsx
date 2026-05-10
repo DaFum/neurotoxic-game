@@ -9,7 +9,9 @@ export const AmpHUD = memo(function AmpHUD({
   isOverheat,
   voidResonance = 0,
   isAnomalyActive = false,
-  interference = 0
+  interference = 0,
+  isHijackActive = false,
+  hijacksOverridden = 0
 }: AmpHUDProps) {
   const { t } = useTranslation(['ui'])
 
@@ -93,6 +95,39 @@ export const AmpHUD = memo(function AmpHUD({
             />
           </div>
         </div>
+
+        {(isHijackActive || hijacksOverridden > 0) && (
+          <div className='mt-2 w-48 border border-blood-red p-2 bg-void-black/50'>
+            <div className='flex justify-between items-center'>
+              <span
+                className={`uppercase text-xs font-bold ${isHijackActive ? 'text-blood-red animate-pulse' : 'text-ash-gray'}`}
+              >
+                {t('ui:minigames.amp.hud.hijack', { defaultValue: 'HIJACK:' })}
+              </span>
+              <span
+                className={`text-xs ${isHijackActive ? 'text-blood-red font-bold' : 'text-ash-gray'}`}
+              >
+                {isHijackActive
+                  ? t('ui:minigames.amp.hud.hijackActive', {
+                      defaultValue: 'ACTIVE'
+                    })
+                  : t('ui:minigames.amp.hud.hijackClear', {
+                      defaultValue: 'CLEAR'
+                    })}
+              </span>
+            </div>
+            <div className='flex justify-between items-center mt-1'>
+              <span className='uppercase text-xs text-ash-gray'>
+                {t('ui:minigames.amp.hud.overrides', {
+                  defaultValue: 'OVERRIDES:'
+                })}
+              </span>
+              <span className='text-toxic-green text-xs font-bold'>
+                {hijacksOverridden}
+              </span>
+            </div>
+          </div>
+        )}
 
         {interference > 0 && (
           <div className='mt-2 w-48'>

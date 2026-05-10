@@ -212,6 +212,8 @@ export interface AmpControlsProps {
   setIsOverdriveActive: React.Dispatch<React.SetStateAction<boolean>>
   purgeInterference?: () => void
   interference?: number
+  isHijackActive?: boolean
+  overrideHijack?: () => void
 }
 
 export interface AmpHUDProps {
@@ -222,6 +224,8 @@ export interface AmpHUDProps {
   voidResonance?: number
   isAnomalyActive?: boolean
   interference?: number
+  isHijackActive?: boolean
+  hijacksOverridden?: number
 }
 
 export interface AudioLockedOverlayProps {

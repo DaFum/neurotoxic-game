@@ -933,7 +933,8 @@ export const calculateAmpCalibrationResult = (
   score: unknown,
   bandState: Pick<BandState, 'members'> | null | undefined,
   voidResonance: number = 0,
-  purgesUsed: number = 0
+  purgesUsed: number = 0,
+  hijacksOverridden: number = 0
 ) => {
   let numScore = Number(score)
   if (!Number.isFinite(numScore)) {
@@ -967,6 +968,11 @@ export const calculateAmpCalibrationResult = (
   // Stress penalty for relying on neurotoxic purges
   const safePurgesUsed = Math.max(0, Number(purgesUsed) || 0)
   stress += Math.floor(safePurgesUsed * 5)
+
+  // Kranker Schrank Hijack bonuses/mitigations
+  const safeHijacksOverridden = Math.max(0, Number(hijacksOverridden) || 0)
+  reward += safeHijacksOverridden * 10
+  stress = Math.max(0, stress - safeHijacksOverridden * 2)
 
   return { stress, reward }
 }
