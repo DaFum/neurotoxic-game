@@ -209,9 +209,7 @@ describe('saveValidator', () => {
         data.band.members = [{ name: 'Matze', relationships: rel }]
         assert.throws(() => validateSaveData(data), {
           name: 'StateError',
-          message: new RegExp(
-            `Prototype pollution detected: ${poisonKey.replace('__', '__')}`
-          )
+          message: new RegExp(`Prototype pollution detected: ${poisonKey}`)
         })
       })
     })
