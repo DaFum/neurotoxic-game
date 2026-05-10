@@ -1,78 +1,60 @@
-import { describe, it } from 'vitest'
-import assert from 'node:assert'
+import { describe, it, beforeEach, afterEach } from 'vitest'
+import assert from 'node:assert/strict'
 import { handleError, StateError } from '../../src/utils/errorHandler'
 
 describe('errorHandler', () => {
   describe('handleError', () => {
-    it('calls addToast on ErrorSeverity.HIGH', () => {
-      const originalConsoleError = console.error
+    let originalConsoleError
+
+    beforeEach(() => {
+      originalConsoleError = console.error
       console.error = () => {}
+    })
 
-      try {
-        let addToastCalled = false
-        let toastType = null
-        const mockAddToast = (message, type) => {
-          addToastCalled = true
-          toastType = type
-        }
+    afterEach(() => {
+      console.error = originalConsoleError
+    })
 
-        handleError(new StateError('Test error'), { addToast: mockAddToast })
-
-        assert.strictEqual(addToastCalled, true)
-        assert.strictEqual(toastType, 'error')
-      } finally {
-        console.error = originalConsoleError
+    it('calls addToast on ErrorSeverity.HIGH', () => {
+      let addToastCalled = false
+      let toastType = null
+      const mockAddToast = (message, type) => {
+        addToastCalled = true
+        toastType = type
       }
+
+      handleError(new StateError('Test error'), { addToast: mockAddToast })
+
+      assert.strictEqual(addToastCalled, true)
+      assert.strictEqual(toastType, 'error')
     })
 
     it('suppresses toast when silent option is true', () => {
-      const originalConsoleError = console.error
-      console.error = () => {}
-
-      try {
-        let addToastCalled = false
-        const mockAddToast = () => {
+      let addToastCalled = false
+      handleError(new Error('Test error'), {
+        addToast: () => {
           addToastCalled = true
-        }
-
-        handleError(new Error('Test error'), {
-          addToast: mockAddToast,
-          silent: true
-        })
-
-        assert.strictEqual(addToastCalled, false)
-      } finally {
-        console.error = originalConsoleError
-      }
+        },
+        silent: true
+      })
+      assert.strictEqual(addToastCalled, false)
     })
 
     it('uses fallbackMessage for non-Error instances without a message property', () => {
-      const originalConsoleError = console.error
-      console.error = () => {}
-
-      try {
-        let addToastCalled = false
-        let toastMessage = null
-        const mockAddToast = message => {
-          addToastCalled = true
-          toastMessage = message
+      let toastMessage = null
+      handleError(
+        { someOtherProp: 'weird object' },
+        {
+          addToast: message => {
+            toastMessage = message
+          },
+          fallbackMessage: 'Fallback message used'
         }
-
-        handleError(
-          { someOtherProp: 'weird object' },
-          { addToast: mockAddToast, fallbackMessage: 'Fallback message used' }
-        )
-        assert.strictEqual(addToastCalled, true)
-        assert.strictEqual(toastMessage, 'Fallback message used')
-      } finally {
-        console.error = originalConsoleError
-      }
+      )
+      assert.strictEqual(toastMessage, 'Fallback message used')
     })
 
     it('catches and falls back when internal mechanisms throw an error', () => {
-      const originalConsoleError = console.error
-      console.error = () => {}
-
       const originalFetch = global.fetch
       const originalWindow = global.window
 
@@ -90,7 +72,6 @@ describe('errorHandler', () => {
       } finally {
         global.fetch = originalFetch
         global.window = originalWindow
-        console.error = originalConsoleError
       }
     })
   })

@@ -97,55 +97,84 @@ describe('purchaseLogicUtils', () => {
   })
 
   describe('canAfford', () => {
-    test('returns true if money >= adjustedCost', () => {
-      const item = { currency: 'money' }
-      const player = { money: 100 }
-      assert.equal(canAfford(item, player, 100), true)
-      assert.equal(canAfford(item, player, 50), true)
-    })
+    const affordCases = [
+      {
+        label: 'money >= cost (exact)',
+        item: { currency: 'money' },
+        player: { money: 100 },
+        cost: 100,
+        expected: true
+      },
+      {
+        label: 'money >= cost (surplus)',
+        item: { currency: 'money' },
+        player: { money: 100 },
+        cost: 50,
+        expected: true
+      },
+      {
+        label: 'money < cost',
+        item: { currency: 'money' },
+        player: { money: 99 },
+        cost: 100,
+        expected: false
+      },
+      {
+        label: 'fame >= cost',
+        item: { currency: 'fame' },
+        player: { fame: 100 },
+        cost: 100,
+        expected: true
+      },
+      {
+        label: 'fame < cost',
+        item: { currency: 'fame' },
+        player: { fame: 50 },
+        cost: 100,
+        expected: false
+      },
+      {
+        label: 'missing money falls back to 0 (cost 0)',
+        item: { currency: 'money' },
+        player: {},
+        cost: 0,
+        expected: true
+      },
+      {
+        label: 'missing money falls back to 0 (cost 10)',
+        item: { currency: 'money' },
+        player: {},
+        cost: 10,
+        expected: false
+      },
+      {
+        label: 'missing fame falls back to 0 (cost 0)',
+        item: { currency: 'fame' },
+        player: {},
+        cost: 0,
+        expected: true
+      },
+      {
+        label: 'missing fame falls back to 0 (cost 10)',
+        item: { currency: 'fame' },
+        player: {},
+        cost: 10,
+        expected: false
+      }
+    ]
 
-    test('returns false if money < adjustedCost', () => {
-      const item = { currency: 'money' }
-      const player = { money: 99 }
-      assert.equal(canAfford(item, player, 100), false)
-    })
-
-    test('returns true if fame >= adjustedCost', () => {
-      const item = { currency: 'fame' }
-      const player = { fame: 100 }
-      assert.equal(canAfford(item, player, 100), true)
-    })
-
-    test('returns false if fame < adjustedCost', () => {
-      const item = { currency: 'fame' }
-      const player = { fame: 50 }
-      assert.equal(canAfford(item, player, 100), false)
-    })
-
-    test('handles missing player.money (falls back to 0)', () => {
-      const item = { currency: 'money' }
-      const player = {} // no money
-      assert.equal(canAfford(item, player, 0), true)
-      assert.equal(canAfford(item, player, 10), false)
-    })
-
-    test('handles missing player.fame (falls back to 0)', () => {
-      const item = { currency: 'fame' }
-      const player = {} // no fame
-      assert.equal(canAfford(item, player, 0), true)
-      assert.equal(canAfford(item, player, 10), false)
+    affordCases.forEach(({ label, item, player, cost, expected }) => {
+      test(label, () => {
+        assert.equal(canAfford(item, player, cost), expected)
+      })
     })
 
     test('defaults to money if item.currency is missing or invalid', () => {
-      const item = {} // no currency
-      const itemInvalid = { currency: 'gold' }
       const player = { money: 50, fame: 100 }
-
-      // Should use money (50) for comparison
-      assert.equal(canAfford(item, player, 40), true)
-      assert.equal(canAfford(item, player, 60), false)
-      assert.equal(canAfford(itemInvalid, player, 40), true)
-      assert.equal(canAfford(itemInvalid, player, 60), false)
+      assert.equal(canAfford({}, player, 40), true)
+      assert.equal(canAfford({}, player, 60), false)
+      assert.equal(canAfford({ currency: 'gold' }, player, 40), true)
+      assert.equal(canAfford({ currency: 'gold' }, player, 60), false)
     })
   })
 

@@ -1,5 +1,5 @@
 import test from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { bandReducer } from '../../src/context/reducers/bandReducer.js'
 import { ActionTypes } from '../../src/context/actionTypes.js'
 

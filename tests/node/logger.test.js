@@ -1,5 +1,5 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { Logger, LOG_LEVELS } from '../../src/utils/logger'
 
 describe('Logger', () => {

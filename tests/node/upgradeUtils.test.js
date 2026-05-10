@@ -1,5 +1,5 @@
 import { test } from 'node:test'
-import { strict as assert } from 'node:assert'
+import assert from 'node:assert/strict'
 import {
   calcBaseBreakdownChance,
   hasUpgrade
@@ -12,65 +12,57 @@ test('hasUpgrade - checks ownership correctly', () => {
   assert.equal(hasUpgrade(undefined, 'van_suspension'), false)
 })
 
-test('calcBaseBreakdownChance - no upgrades', () => {
-  const result = calcBaseBreakdownChance([])
-  assert.equal(result, 0.05)
-})
+const breakdownCases = [
+  { label: 'no upgrades', upgrades: [], expected: 0.05 },
+  { label: 'undefined upgrades', upgrades: undefined, expected: 0.05 },
+  {
+    label: 'single van_suspension (-0.01)',
+    upgrades: ['van_suspension'],
+    expected: 0.04
+  },
+  {
+    label: 'two known upgrades (-0.02)',
+    upgrades: ['van_suspension', 'hq_van_suspension'],
+    expected: 0.03
+  },
+  {
+    label: 'duplicate upgrades (no double count)',
+    upgrades: ['van_suspension', 'van_suspension'],
+    expected: 0.04
+  },
+  {
+    label: 'large reduction hq_van_tyre_spare (-0.05 → 0)',
+    upgrades: ['hq_van_tyre_spare'],
+    expected: 0
+  },
+  {
+    label: 'clamped to 0 (over-reduction)',
+    upgrades: ['hq_van_tyre_spare', 'van_suspension'],
+    expected: 0
+  },
+  {
+    label: 'prototype pollution ignored',
+    upgrades: ['toString', 'constructor'],
+    expected: 0.05
+  },
+  {
+    label: 'unknown upgrade ignored',
+    upgrades: ['unknown_upgrade'],
+    expected: 0.05
+  },
+  {
+    label: 'mixed known and unknown upgrades',
+    upgrades: ['van_suspension', 'unknown_upgrade'],
+    expected: 0.04
+  }
+]
 
-test('calcBaseBreakdownChance - undefined upgrades', () => {
-  const result = calcBaseBreakdownChance(undefined)
-  assert.equal(result, 0.05)
-})
-
-test('calcBaseBreakdownChance - single upgrade (van_suspension)', () => {
-  const result = calcBaseBreakdownChance(['van_suspension'])
-  // 0.05 - 0.01 = 0.04
-  assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
-})
-
-test('calcBaseBreakdownChance - multiple upgrades', () => {
-  const result = calcBaseBreakdownChance([
-    'van_suspension',
-    'hq_van_suspension'
-  ])
-  // 0.05 - 0.01 - 0.01 = 0.03
-  assert.ok(Math.abs(result - 0.03) < Number.EPSILON)
-})
-
-test('calcBaseBreakdownChance - duplicate upgrades (should not double count)', () => {
-  const result = calcBaseBreakdownChance(['van_suspension', 'van_suspension'])
-  // 0.05 - 0.01 = 0.04 (not 0.03)
-  assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
-})
-
-test('calcBaseBreakdownChance - large reduction (hq_van_tyre_spare)', () => {
-  const result = calcBaseBreakdownChance(['hq_van_tyre_spare'])
-  // 0.05 - 0.05 = 0
-  assert.equal(result, 0)
-})
-
-test('calcBaseBreakdownChance - clamping to zero', () => {
-  const result = calcBaseBreakdownChance([
-    'hq_van_tyre_spare',
-    'van_suspension'
-  ])
-  // 0.05 - 0.05 - 0.01 = -0.01 -> clamped to 0
-  assert.equal(result, 0)
-})
-
-test('calcBaseBreakdownChance - prototype pollution attempt', () => {
-  // Should ignore 'toString' even if it exists on Object.prototype
-  const result = calcBaseBreakdownChance(['toString', 'constructor'])
-  assert.equal(result, 0.05)
-})
-
-test('calcBaseBreakdownChance - unknown upgrade', () => {
-  const result = calcBaseBreakdownChance(['unknown_upgrade'])
-  assert.equal(result, 0.05)
-})
-
-test('calcBaseBreakdownChance - mixed known and unknown upgrades', () => {
-  const result = calcBaseBreakdownChance(['van_suspension', 'unknown_upgrade'])
-  // 0.05 - 0.01 = 0.04
-  assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
+breakdownCases.forEach(({ label, upgrades, expected }) => {
+  test(`calcBaseBreakdownChance - ${label}`, () => {
+    const result = calcBaseBreakdownChance(upgrades)
+    assert.ok(
+      Math.abs(result - expected) < Number.EPSILON,
+      `expected ${expected}, got ${result}`
+    )
+  })
 })

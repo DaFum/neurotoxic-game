@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
 test('AudioManager Tests', async t => {
@@ -25,9 +25,12 @@ test('AudioManager Tests', async t => {
     disposeAudio: mock.fn()
   }
 
-  mock.module(new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href, {
-    namedExports: mockAudioEngine
-  })
+  mock.module(
+    new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
+    {
+      namedExports: mockAudioEngine
+    }
+  )
 
   // Import the module under test
   const { audioManager } = await import('../../src/utils/audio/AudioManager')

@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
 // --- Mocks ---
@@ -30,17 +30,20 @@ const mockOggUrlMap = {
   'other.ogg': '/assets/other.ogg',
   'fail.ogg': '/assets/fail.ogg'
 }
-mock.module(new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href, {
-  namedExports: {
-    buildAssetUrlMap: () => mockOggUrlMap,
-    resolveAssetUrl: filename => ({
-      url: mockOggUrlMap[filename],
-      source: 'bundled'
-    }),
-    PATH_PREFIX_REGEX: /^\.?\//,
-    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
+mock.module(
+  new URL('../../src/utils/audio/playbackUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      buildAssetUrlMap: () => mockOggUrlMap,
+      resolveAssetUrl: filename => ({
+        url: mockOggUrlMap[filename],
+        source: 'bundled'
+      }),
+      PATH_PREFIX_REGEX: /^\.?\//,
+      getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
+    }
   }
-})
+)
 
 // Mock Setup
 const mockContext = {

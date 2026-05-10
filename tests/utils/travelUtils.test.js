@@ -16,37 +16,36 @@ describe('travelUtils', () => {
 
   describe('resolveVenue', () => {
     test('resolves venue from ID string', () => {
-      const result = resolveVenue('venue_1', 'venue_1', venuesMap)
-      assert.strictEqual(result.id, 'venue_1')
+      assert.strictEqual(
+        resolveVenue('venue_1', 'venue_1', venuesMap).id,
+        'venue_1'
+      )
     })
 
     test('returns null if ID string not in map', () => {
-      const result = resolveVenue('venue_3', 'venue_3', venuesMap)
-      assert.strictEqual(result, null)
+      assert.strictEqual(resolveVenue('venue_3', 'venue_3', venuesMap), null)
     })
 
     test('returns venue object if it has capacity', () => {
       const venue = { id: 'venue_1', capacity: 100 }
-      const result = resolveVenue(venue, 'venue_1', venuesMap)
-      assert.strictEqual(result, venue)
+      assert.strictEqual(resolveVenue(venue, 'venue_1', venuesMap), venue)
     })
 
     test('resolves from map if venue object lacks capacity', () => {
-      const venue = { id: 'venue_1' }
-      const result = resolveVenue(venue, 'venue_1', venuesMap)
-      assert.strictEqual(result.capacity, 100)
+      assert.strictEqual(
+        resolveVenue({ id: 'venue_1' }, 'venue_1', venuesMap).capacity,
+        100
+      )
     })
   })
 
   describe('getLocationName', () => {
     test('translates location using provided helpers', () => {
-      const t = k => k
-      const translateLocation = (t, key) => `Translated ${key}`
       const result = getLocationName(
         'My Place',
         'venue_1',
-        t,
-        translateLocation
+        k => k,
+        (t, key) => `Translated ${key}`
       )
       assert.strictEqual(result, 'Translated My Place')
     })
@@ -56,8 +55,10 @@ describe('travelUtils', () => {
     const mockGetLocationName = name => name
 
     test('allows access to START node', () => {
-      const result = checkVenueAccess({ node: { type: 'START' } })
-      assert.strictEqual(result.allowed, true)
+      assert.strictEqual(
+        checkVenueAccess({ node: { type: 'START' } }).allowed,
+        true
+      )
     })
 
     test('denies access if venue data is invalid', () => {
@@ -129,64 +130,94 @@ describe('travelUtils', () => {
   })
 
   describe('checkTravelPrerequisites', () => {
-    test('allows START node regardless of visibility', () => {
-      const result = checkTravelPrerequisites(
-        { type: 'START' },
-        'hidden',
-        false
-      )
-      assert.strictEqual(result.allowed, true)
-    })
+    const cases = [
+      {
+        label: 'allows START node regardless of visibility',
+        node: { type: 'START' },
+        visibility: 'hidden',
+        isConnected: false,
+        allowed: true,
+        errorKey: undefined
+      },
+      {
+        label: 'denies if not visible',
+        node: { type: 'GIG' },
+        visibility: 'hidden',
+        isConnected: true,
+        allowed: false,
+        errorKey: 'ui:travel.errors.locationNotVisible'
+      },
+      {
+        label: 'denies if not connected',
+        node: { type: 'GIG' },
+        visibility: 'visible',
+        isConnected: false,
+        allowed: false,
+        errorKey: 'ui:travel.errors.locationNotConnected'
+      },
+      {
+        label: 'allows if visible and connected',
+        node: { type: 'GIG' },
+        visibility: 'visible',
+        isConnected: true,
+        allowed: true,
+        errorKey: undefined
+      }
+    ]
 
-    test('denies if not visible', () => {
-      const result = checkTravelPrerequisites({ type: 'GIG' }, 'hidden', true)
-      assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.locationNotVisible')
-    })
-
-    test('denies if not connected', () => {
-      const result = checkTravelPrerequisites({ type: 'GIG' }, 'visible', false)
-      assert.strictEqual(result.allowed, false)
-      assert.strictEqual(
-        result.errorKey,
-        'ui:travel.errors.locationNotConnected'
-      )
-    })
-
-    test('allows if visible and connected', () => {
-      const result = checkTravelPrerequisites({ type: 'GIG' }, 'visible', true)
-      assert.strictEqual(result.allowed, true)
-    })
+    cases.forEach(
+      ({ label, node, visibility, isConnected, allowed, errorKey }) => {
+        test(label, () => {
+          const result = checkTravelPrerequisites(node, visibility, isConnected)
+          assert.strictEqual(result.allowed, allowed)
+          assert.strictEqual(result.errorKey, errorKey)
+        })
+      }
+    )
   })
 
   describe('checkTravelResources', () => {
-    test('denies if not enough money', () => {
-      const result = checkTravelResources(100, 10, {
+    const cases = [
+      {
+        label: 'denies if not enough money',
+        cost: 100,
+        fuel: 10,
         money: 50,
-        van: { fuel: 20 }
-      })
-      assert.strictEqual(result.allowed, false)
-      assert.strictEqual(
-        result.errorKey,
-        'ui:travel.errors.notEnoughMoneyForTravel'
-      )
-    })
-
-    test('denies if not enough fuel', () => {
-      const result = checkTravelResources(100, 30, {
+        vanFuel: 20,
+        allowed: false,
+        errorKey: 'ui:travel.errors.notEnoughMoneyForTravel'
+      },
+      {
+        label: 'denies if not enough fuel',
+        cost: 100,
+        fuel: 30,
         money: 200,
-        van: { fuel: 20 }
-      })
-      assert.strictEqual(result.allowed, false)
-      assert.strictEqual(result.errorKey, 'ui:travel.errors.notEnoughFuel')
-    })
-
-    test('allows if enough resources', () => {
-      const result = checkTravelResources(100, 10, {
+        vanFuel: 20,
+        allowed: false,
+        errorKey: 'ui:travel.errors.notEnoughFuel'
+      },
+      {
+        label: 'allows if enough resources',
+        cost: 100,
+        fuel: 10,
         money: 200,
-        van: { fuel: 20 }
-      })
-      assert.strictEqual(result.allowed, true)
-    })
+        vanFuel: 20,
+        allowed: true,
+        errorKey: undefined
+      }
+    ]
+
+    cases.forEach(
+      ({ label, cost, fuel, money, vanFuel, allowed, errorKey }) => {
+        test(label, () => {
+          const result = checkTravelResources(cost, fuel, {
+            money,
+            van: { fuel: vanFuel }
+          })
+          assert.strictEqual(result.allowed, allowed)
+          assert.strictEqual(result.errorKey, errorKey)
+        })
+      }
+    )
   })
 })

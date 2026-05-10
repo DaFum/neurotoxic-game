@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { FINANCIAL_EVENTS } from '../../src/data/events/financial'
 import { CRISIS_EVENTS } from '../../src/data/events/crisis'
 

@@ -1,5 +1,5 @@
 import { test } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
 import { initialState } from '../../src/context/initialState'
 import {
@@ -146,31 +146,27 @@ test('Minigame State Transitions', async t => {
     }
   )
 
-  await t.test('START_ROADIE_MINIGAME updates state correctly', () => {
-    const action = {
-      type: ActionTypes.START_ROADIE_MINIGAME,
-      payload: { gigId: 'gig_123' }
+  for (const { actionType, minigameType } of [
+    {
+      actionType: ActionTypes.START_ROADIE_MINIGAME,
+      minigameType: MINIGAME_TYPES.ROADIE
+    },
+    {
+      actionType: ActionTypes.START_KABELSALAT_MINIGAME,
+      minigameType: MINIGAME_TYPES.KABELSALAT
     }
-    const newState = gameReducer(initialState, action)
-
-    assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
-    assert.strictEqual(newState.minigame.active, true)
-    assert.strictEqual(newState.minigame.type, MINIGAME_TYPES.ROADIE)
-    assert.strictEqual(newState.minigame.gigId, 'gig_123')
-  })
-
-  await t.test('START_KABELSALAT_MINIGAME updates state correctly', () => {
-    const action = {
-      type: ActionTypes.START_KABELSALAT_MINIGAME,
-      payload: { gigId: 'gig_123' }
-    }
-    const newState = gameReducer(initialState, action)
-
-    assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
-    assert.strictEqual(newState.minigame.active, true)
-    assert.strictEqual(newState.minigame.type, MINIGAME_TYPES.KABELSALAT)
-    assert.strictEqual(newState.minigame.gigId, 'gig_123')
-  })
+  ]) {
+    await t.test(`${actionType} updates state correctly`, () => {
+      const newState = gameReducer(initialState, {
+        type: actionType,
+        payload: { gigId: 'gig_123' }
+      })
+      assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+      assert.strictEqual(newState.minigame.active, true)
+      assert.strictEqual(newState.minigame.type, minigameType)
+      assert.strictEqual(newState.minigame.gigId, 'gig_123')
+    })
+  }
 
   await t.test(
     'COMPLETE_KABELSALAT_MINIGAME resets minigame state and applies economy effects',

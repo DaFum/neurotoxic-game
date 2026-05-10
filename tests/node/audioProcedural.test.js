@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
 // --- Mocks ---
@@ -133,12 +133,15 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 // Mock Playback
 const mockStopAudioInternal = mock.fn()
 const mockStopAudio = mock.fn()
-mock.module(new URL('../../src/utils/audio/playback.ts', import.meta.url).href, {
-  namedExports: {
-    stopAudioInternal: mockStopAudioInternal,
-    stopAudio: mockStopAudio
+mock.module(
+  new URL('../../src/utils/audio/playback.ts', import.meta.url).href,
+  {
+    namedExports: {
+      stopAudioInternal: mockStopAudioInternal,
+      stopAudio: mockStopAudio
+    }
   }
-})
+)
 
 // Mock Assets
 const mockMidiUrlMap = {
@@ -157,11 +160,14 @@ mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
 })
 
 // Mock Shared Buffer Utils
-mock.module(new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href, {
-  namedExports: {
-    createAndConnectBufferSource: mock.fn()
+mock.module(
+  new URL('../../src/utils/audio/sharedBufferUtils.ts', import.meta.url).href,
+  {
+    namedExports: {
+      createAndConnectBufferSource: mock.fn()
+    }
   }
-})
+)
 
 // Mock env
 globalThis.import = { meta: { env: { BASE_URL: '/' } } }

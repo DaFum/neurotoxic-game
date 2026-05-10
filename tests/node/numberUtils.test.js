@@ -2,15 +2,42 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { formatNumber, formatCurrency } from '../../src/utils/numberUtils'
 
-test('formatNumber - formats numbers with default English locale', () => {
-  assert.equal(formatNumber(1234567.89), '1,234,568')
-  assert.equal(formatNumber(1000), '1,000')
-  assert.equal(formatNumber(0), '0')
-})
+// --- formatNumber ---
 
-test('formatNumber - formats numbers with German locale', () => {
-  assert.equal(formatNumber(1234567.89, 'de'), '1.234.568')
-  assert.equal(formatNumber(1000, 'de'), '1.000')
+const formatNumberCases = [
+  {
+    label: 'en large float',
+    value: 1234567.89,
+    locale: 'en',
+    expected: '1,234,568'
+  },
+  { label: 'en thousands', value: 1000, locale: 'en', expected: '1,000' },
+  { label: 'en zero', value: 0, locale: 'en', expected: '0' },
+  {
+    label: 'de large float',
+    value: 1234567.89,
+    locale: 'de',
+    expected: '1.234.568'
+  },
+  { label: 'de thousands', value: 1000, locale: 'de', expected: '1.000' },
+  {
+    label: 'en negative large',
+    value: -1234567.89,
+    locale: 'en',
+    expected: '-1,234,568'
+  },
+  {
+    label: 'en negative thousands',
+    value: -1000,
+    locale: 'en',
+    expected: '-1,000'
+  }
+]
+
+formatNumberCases.forEach(({ label, value, locale, expected }) => {
+  test(`formatNumber - ${label}`, () => {
+    assert.equal(formatNumber(value, locale), expected)
+  })
 })
 
 test('formatNumber - handles edge cases gracefully', () => {
@@ -20,34 +47,42 @@ test('formatNumber - handles edge cases gracefully', () => {
   assert.equal(formatNumber(undefined), 'NaN')
 })
 
-test('formatNumber - formats negative numbers', () => {
-  assert.equal(formatNumber(-1234567.89), '-1,234,568')
-  assert.equal(formatNumber(-1000), '-1,000')
-})
+// --- formatCurrency ---
 
-test('formatCurrency - formats currency with default English locale', () => {
-  assert.equal(formatCurrency(1234567.89).replace(/\s+/g, ' '), '€1,234,568')
-  assert.equal(formatCurrency(1000).replace(/\s+/g, ' '), '€1,000')
-  assert.equal(formatCurrency(0).replace(/\s+/g, ' '), '€0')
-})
+const formatCurrencyCases = [
+  {
+    label: 'en large float',
+    value: 1234567.89,
+    locale: 'en',
+    expected: '€1,234,568'
+  },
+  { label: 'en thousands', value: 1000, locale: 'en', expected: '€1,000' },
+  { label: 'en zero', value: 0, locale: 'en', expected: '€0' },
+  {
+    label: 'de large float',
+    value: 1234567.89,
+    locale: 'de',
+    expected: '1.234.568 €'
+  },
+  { label: 'de thousands', value: 1000, locale: 'de', expected: '1.000 €' },
+  {
+    label: 'en negative large',
+    value: -1234567.89,
+    locale: 'en',
+    expected: '-€1,234,568'
+  },
+  {
+    label: 'en negative thousands',
+    value: -1000,
+    locale: 'en',
+    expected: '-€1,000'
+  }
+]
 
-test('formatCurrency - formats currency with German locale', () => {
-  assert.equal(
-    formatCurrency(1234567.89, 'de').replace(/\s+/g, ' '),
-    '1.234.568 €'
-  )
-  assert.equal(formatCurrency(1000, 'de').replace(/\s+/g, ' '), '1.000 €')
-})
-
-test('formatCurrency - respects signDisplay option', () => {
-  assert.equal(
-    formatCurrency(1000, 'en', 'always').replace(/\s+/g, ' '),
-    '+€1,000'
-  )
-  assert.equal(
-    formatCurrency(1000, 'de', 'always').replace(/\s+/g, ' '),
-    '+1.000 €'
-  )
+formatCurrencyCases.forEach(({ label, value, locale, expected }) => {
+  test(`formatCurrency - ${label}`, () => {
+    assert.equal(formatCurrency(value, locale).replace(/\s+/g, ' '), expected)
+  })
 })
 
 test('formatCurrency - handles edge cases gracefully', () => {
@@ -57,19 +92,49 @@ test('formatCurrency - handles edge cases gracefully', () => {
   assert.equal(formatCurrency(undefined).replace(/\s+/g, ' '), '€NaN')
 })
 
-test('formatCurrency - formats negative numbers with default English locale', () => {
-  assert.equal(formatCurrency(-1234567.89).replace(/\s+/g, ' '), '-€1,234,568')
-  assert.equal(formatCurrency(-1000).replace(/\s+/g, ' '), '-€1,000')
-})
+const signDisplayCases = [
+  {
+    label: 'en always positive',
+    locale: 'en',
+    signDisplay: 'always',
+    value: 1000,
+    expected: '+€1,000'
+  },
+  {
+    label: 'de always positive',
+    locale: 'de',
+    signDisplay: 'always',
+    value: 1000,
+    expected: '+1.000 €'
+  },
+  {
+    label: 'en exceptZero positive',
+    locale: 'en',
+    signDisplay: 'exceptZero',
+    value: 1000,
+    expected: '+€1,000'
+  },
+  {
+    label: 'en exceptZero zero (no sign)',
+    locale: 'en',
+    signDisplay: 'exceptZero',
+    value: 0,
+    expected: '€0'
+  },
+  {
+    label: 'en never negative',
+    locale: 'en',
+    signDisplay: 'never',
+    value: -1000,
+    expected: '€1,000'
+  }
+]
 
-test('formatCurrency - supports other signDisplay options', () => {
-  assert.equal(
-    formatCurrency(1000, 'en', 'exceptZero').replace(/\s+/g, ' '),
-    '+€1,000'
-  )
-  assert.equal(formatCurrency(0, 'en', 'exceptZero').replace(/\s+/g, ' '), '€0')
-  assert.equal(
-    formatCurrency(-1000, 'en', 'never').replace(/\s+/g, ' '),
-    '€1,000'
-  )
+signDisplayCases.forEach(({ label, locale, signDisplay, value, expected }) => {
+  test(`formatCurrency - signDisplay ${label}`, () => {
+    assert.equal(
+      formatCurrency(value, locale, signDisplay).replace(/\s+/g, ' '),
+      expected
+    )
+  })
 })

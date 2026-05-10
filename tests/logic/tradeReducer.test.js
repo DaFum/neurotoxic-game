@@ -1,16 +1,18 @@
 import { describe, it } from 'vitest'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { handleTradeVoidItem } from '../../src/context/reducers/tradeReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { createTradeVoidItemAction } from '../../src/context/actionCreators'
 
 describe('Trade Reducer', () => {
+  const makeState = fame => ({
+    player: { fame },
+    band: { stash: {} },
+    toasts: []
+  })
+
   it('should reject trades if fame is insufficient', () => {
-    const initialState = {
-      player: { fame: 100 },
-      band: { stash: {} },
-      toasts: []
-    }
+    const initialState = makeState(100)
 
     const payload = {
       contrabandId: 'c_phantom_strings',
@@ -19,17 +21,13 @@ describe('Trade Reducer', () => {
     }
 
     const nextState = handleTradeVoidItem(initialState, payload)
-    assert.strictEqual(nextState.player.fame, 100) // Fame should remain unchanged
-    assert.deepStrictEqual(nextState.band.stash, {}) // Stash should remain empty
-    assert.deepStrictEqual(nextState.toasts, initialState.toasts) // Toasts should remain unchanged
+    assert.strictEqual(nextState.player.fame, 100)
+    assert.deepStrictEqual(nextState.band.stash, {})
+    assert.deepStrictEqual(nextState.toasts, initialState.toasts)
   })
 
   it('should deduct fame and add item to stash on successful trade', () => {
-    const initialState = {
-      player: { fame: 2000 },
-      band: { stash: {} },
-      toasts: []
-    }
+    const initialState = makeState(2000)
 
     const payload = {
       contrabandId: 'c_phantom_strings',
@@ -53,11 +51,7 @@ describe('Trade Reducer', () => {
   })
 
   it('should merge actual fame delta into structured success toast options', () => {
-    const initialState = {
-      player: { fame: 1200 },
-      band: { stash: {} },
-      toasts: []
-    }
+    const initialState = makeState(1200)
 
     const payload = {
       contrabandId: 'c_phantom_strings',
@@ -85,11 +79,7 @@ describe('Trade Reducer', () => {
   })
 
   it('should preserve legacy pipe-message enrichment fallback', () => {
-    const initialState = {
-      player: { fame: 950 },
-      band: { stash: {} },
-      toasts: []
-    }
+    const initialState = makeState(950)
 
     const payload = {
       contrabandId: 'c_phantom_strings',

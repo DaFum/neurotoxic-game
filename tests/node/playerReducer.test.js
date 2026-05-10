@@ -3,15 +3,12 @@
  */
 
 import { describe, it } from 'node:test'
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 
-import {
-  handleUpdatePlayer
-} from '../../src/context/reducers/playerReducer.ts'
+import { handleUpdatePlayer } from '../../src/context/reducers/playerReducer.ts'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 
 describe('playerReducer', () => {
-
   describe('handleUpdatePlayer', () => {
     it('should update player properties based on payload object', () => {
       const initialState = {
@@ -43,8 +40,6 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.fame, 50) // Unchanged
     })
 
-
-
     it('should preserve properties not updated', () => {
       const initialState = {
         otherProp: 'test',
@@ -72,21 +67,23 @@ describe('playerReducer', () => {
         42,
         { constructor: { hacked: true } },
         { prototype: {} },
-        ...([
-          { money: 200 }
-        ].map(p => {
+        ...[{ money: 200 }].map(p => {
           const obj = { ...p }
           Object.defineProperty(obj, '__proto__', {
             value: { hacked: true },
             enumerable: true
           })
           return obj
-        }))
+        })
       ]
 
       hostilePayloads.forEach((payload, index) => {
         it(`should reject hostile/malformed payload ${index}`, () => {
-          if (typeof payload === 'object' && payload !== null && Object.hasOwn(payload, 'money')) {
+          if (
+            typeof payload === 'object' &&
+            payload !== null &&
+            Object.hasOwn(payload, 'money')
+          ) {
             assert(Object.hasOwn(payload, '__proto__'))
           }
           const newState = handleUpdatePlayer(initialState, payload)
@@ -131,7 +128,10 @@ describe('playerReducer', () => {
           payload: { money: 200 }
         }
 
-        assert.throws(() => gameReducer(initialState, action), /Unhandled action type: UNKNOWN_ACTION/)
+        assert.throws(
+          () => gameReducer(initialState, action),
+          /Unhandled action type: UNKNOWN_ACTION/
+        )
       })
     })
   })
