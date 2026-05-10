@@ -19,9 +19,9 @@ Run the bundled script:
 
 The script executes these checks in order:
 
-1.  **Lint**: `npm run lint`. Checks code style and errors.
-2.  **Test**: `npm run test`. Runs the test suite.
-3.  **Build**: `npm run build`. Verifies production build.
+1.  **Lint**: `pnpm run lint`. Checks code style and errors.
+2.  **Test**: `pnpm run test`. Runs the test suite.
+3.  **Build**: `pnpm run build`. Verifies production build.
 
 ## Rules
 
@@ -46,4 +46,4 @@ Run `.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 
 "Quality gate failed at the Test step. Please fix the money initialization regression."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

@@ -148,7 +148,7 @@ This avoids duplication and keeps guardrails as the **operational checklist**, n
 
 ## Performance & Dependencies
 
-- [ ] **Version Pinning**: MUST keep exact versions: React 19.2.4, Vite 8.0.1, Tailwind 4.2.2. See CLAUDE.md → "Architecture Constraints" for rationale. Do NOT upgrade without explicit approval.
+- [ ] **Version Pinning**: MUST keep exact versions: React 19.2.5, Vite 8.0.10, Tailwind 4.2.4. See CLAUDE.md → "Architecture Constraints" for rationale. Do NOT upgrade without explicit approval.
 - [ ] **Howler.js**: NEVER import Howler.js. Use Tone.js only. See webaudio-reliability-fixer skill if audio breaks.
 
 ## Integration with Docs
@@ -166,4 +166,4 @@ See CLAUDE.md → "Critical Commands", "Architecture Constraints", "Gotchas" for
 | No reference to docs              | Duplication and confusion                    | Link to AGENTS.md/CLAUDE.md sections instead of repeating       |
 | Missing the "why"                 | Rules feel arbitrary                         | Explain the failure cost (review time, bugs, onboarding burden) |
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-03-18._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

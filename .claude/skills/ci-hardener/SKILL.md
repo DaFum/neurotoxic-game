@@ -16,7 +16,7 @@ Optimize and harden Continuous Integration (CI) workflows.
     - **Steps**: Are they caching dependencies?
 
 2.  **Apply Hardening Patterns**
-    - **Caching**: Use `actions/setup-node` with `cache: 'npm'`.
+    - **Caching**: Use `actions/setup-node` with `cache: 'pnpm'` and `pnpm/action-setup`.
     - **Timeouts**: Set `timeout-minutes` on every job to prevent hangs.
     - **Concurrency**: Use `concurrency` groups to cancel outdated runs on PRs.
     - **Permissions**: Use least-privilege `permissions` blocks.
@@ -24,7 +24,7 @@ Optimize and harden Continuous Integration (CI) workflows.
 3.  **Optimize Speed**
     - Run independent jobs (`lint`, Test) in parallel.
     - Make `Build` depend on `Test` and `Lint`.
-    - Use `npm ci` instead of `npm install` for deterministic installs.
+    - Use `pnpm install --frozen-lockfile` for deterministic installs.
 
 4.  **Verify**
     Ensure the changes are valid YAML and follow GitHub Actions syntax.
@@ -34,7 +34,7 @@ Optimize and harden Continuous Integration (CI) workflows.
 - [ ] `timeout-minutes` is set.
 - [ ] `concurrency` is set for PRs.
 - [ ] `actions/checkout` uses `fetch-depth: 0` if needed (otherwise default is 1).
-- [ ] `npm ci` is used.
+- [ ] `pnpm install --frozen-lockfile` is used.
 - [ ] Node version is pinned (e.g., `node-version: 20`).
 
 ## Example
@@ -53,12 +53,12 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
       # Cache node_modules for other jobs if needed, or rely on setup-node cache
 ```
 
 **Output**:
-"Added `actions/setup-node` with caching to the install step. This will speed up subsequent runs by reusing the npm cache."
+"Added `pnpm/action-setup` with caching to the install step. This will speed up subsequent runs by reusing the pnpm cache."
 
-_Skill sync: compatible with React 19.2.4 / Vite 8.0.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._

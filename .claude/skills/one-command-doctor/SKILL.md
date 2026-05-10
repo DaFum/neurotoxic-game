@@ -19,12 +19,12 @@ bash .claude/skills/one-command-doctor/scripts/doctor.sh
 
 1.  **Environment Check**
     - Node version (>= 20).
-    - npm version.
+    - pnpm version.
     - Lockfile sync status.
 
 2.  **Build Check**
-    - Does `npm install` work?
-    - Does `npm run build` succeed?
+    - Does `pnpm install` work?
+    - Does `pnpm run build` succeed?
 
 3.  **Lint/Test Check**
     - Basic linting pass.
@@ -33,7 +33,7 @@ bash .claude/skills/one-command-doctor/scripts/doctor.sh
 ## Diagnosis & Fixes
 
 - **Node Version Mismatch**: "Please use `nvm use` to switch to Node 20+."
-- **Lockfile Error**: "Run `npm ci` to restore clean state."
+- **Lockfile Error**: "Run `pnpm install --frozen-lockfile` to restore clean state."
 - **Build Fail**: "Check `vite.config.js` or missing assets."
 
 ## Example
@@ -52,4 +52,4 @@ Run `.claude/skills/one-command-doctor/scripts/doctor.sh`.
 
 "Your Node version is too old. Run `nvm install 20 && nvm use 20`."
 
-_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
+_Skill sync: compatible with React 19.2.5 / Vite 8.0.10 baseline as of 2026-05-10._
